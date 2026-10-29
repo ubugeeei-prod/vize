@@ -42,11 +42,25 @@ export function runFreshProjectInitChecks(context) {
   assert.equal(context.tempDir, path.dirname(context.installDir));
   assert.equal(process.env.COREPACK_HOME, path.join(context.tempDir, "corepack"));
   assert.equal(process.env.COREPACK_ENABLE_DOWNLOAD_PROMPT, "0");
-  for (const name of ["CORSA_PATH", "CORSA_EXECUTABLE", "TSGO_PATH", "TSGO_EXECUTABLE"]) {
+  for (const name of [
+    "CORSA_PATH",
+    "CORSA_EXECUTABLE",
+    "TSGO_PATH",
+    "TSGO_EXECUTABLE",
+    "TSRS_PATH",
+    "TSRS_EXECUTABLE",
+  ]) {
     assert.equal(process.env[name], undefined);
   }
   assert.ok(fs.statSync(context.vizeBin).isFile());
-  assert.deepEqual(Object.keys(context.peers).sort(), ["typescript", "vite", "vite-plus", "vue"]);
+  assert.deepEqual(Object.keys(context.peers).sort(), [
+    "typescript",
+    "typescript-native",
+    "vite",
+    "vite-plus",
+    "vue",
+  ]);
+  assert.equal(context.peers["typescript-native"], "npm:typescript@7.1.0-beta");
   throw new Error("fresh-project oracle reached with complete packed context");
 }
 `,
@@ -80,6 +94,8 @@ export function runFreshProjectInitChecks(context) {
         CORSA_EXECUTABLE: "/unrelated/host/corsa",
         TSGO_PATH: "/unrelated/host/tsgo",
         TSGO_EXECUTABLE: "/unrelated/host/tsgo",
+        TSRS_PATH: "/unrelated/host/tsrs",
+        TSRS_EXECUTABLE: "/unrelated/host/tsrs",
       },
     });
     assert.ifError(result.error);

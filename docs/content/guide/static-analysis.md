@@ -318,9 +318,10 @@ vize lsp
 ```
 
 Use npm package scripts to manage the tool and runtime with your application dependencies. The npm
-launcher calls the Rust CLI through NAPI and resolves its bundled TypeScript runtime, respecting
-explicit runtime settings such as `CORSA_PATH` (the native TypeScript executable). A direct Rust CLI installation is also available
-through Nix and other installation methods.
+launcher calls the Rust CLI through NAPI. Its shared resolver uses your project's installed native
+TypeScript executable, respecting explicit settings such as `CORSA_PATH`. Vize does not bundle
+or download that compiler. A direct Rust CLI installation uses the same resolution rules and is
+also available through Nix and other installation methods.
 
 ## Oxlint
 

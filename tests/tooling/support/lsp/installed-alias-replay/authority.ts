@@ -5,7 +5,43 @@ import path from "node:path";
 import type { VizePublicRegistryInstallAuthority } from "./authority-schema.ts";
 import { recheckPublicPayload } from "./payload.ts";
 import { RawGitRepository } from "./raw-git.ts";
-import { digest, exactFile, sourceOverrideKeys, verifyNativeJournal } from "./custody.ts";
+import {
+  digest,
+  exactFile,
+  sourceOverrideKeys,
+  verifyNativeJournal,
+  verifySourceOverrideReceipt,
+} from "./custody.ts";
+
+const hasCheckerDependency = (manifest: Record<string, unknown>): boolean =>
+  ["dependencies", "optionalDependencies", "peerDependencies"].some((section) => {
+    const declarations = manifest[section];
+    return (
+      declarations !== null &&
+      typeof declarations === "object" &&
+      !Array.isArray(declarations) &&
+      Object.entries(declarations).some(
+        ([name, value]) =>
+          name === "typescript" ||
+          name === "tsrs" ||
+          name.startsWith("@typescript/typescript-") ||
+          name.startsWith("@typescript/native-preview") ||
+          name.startsWith("@tsrs/") ||
+          (typeof value === "string" &&
+            /^npm:(?:typescript|tsrs|@typescript\/(?:typescript-[^@]+|native-preview)|@tsrs\/[^@]+)(?:@|$)/u.test(
+              value,
+            )),
+      )
+    );
+  });
+
+export function explicitProviderMode(value: unknown): boolean {
+  assert.ok(
+    value === undefined || value === "explicit-user-provider",
+    "unsupported runtime resolution mode",
+  );
+  return value === "explicit-user-provider";
+}
 
 /** The caller supplies a reviewed concrete installation receipt and its exact digest. */
 export function loadPublicAuthority(
@@ -18,8 +54,9 @@ export function loadPublicAuthority(
   const authority: VizePublicRegistryInstallAuthority = JSON.parse(bytes.toString("utf8"));
   assert.equal(authority.schema, "vize-public-registry-install-v1");
   assert.equal(authority.success, true);
+  const explicitProvider = explicitProviderMode(authority.resolutionMode);
+  verifySourceOverrideReceipt(authority.sourceOverrides, explicitProvider);
   for (const key of sourceOverrideKeys) {
-    assert.equal(authority.sourceOverrides[key], "");
     assert.equal(
       process.env[key] ?? "",
       "",
@@ -68,7 +105,6 @@ export function loadPublicAuthority(
   assert.equal(authority.cli.versionStdout.trim(), `vize ${authority.version}`);
   assert.equal(authority.cli.versionStderr, "");
   for (const key of sourceOverrideKeys) {
-    assert.equal(authority.sourceOverrides[key], "");
     assert.equal(process.env[key] ?? "", "", "ambient source provider override is forbidden");
   }
   exactFile(authority.native.journalPath, authority.native.journalSha256);
@@ -103,10 +139,36 @@ export function loadPublicAuthority(
   const cliManifest = JSON.parse(
     fs.readFileSync(path.join(authority.installRoot, "node_modules/vize/package.json"), "utf8"),
   );
-  assert.equal(
-    cliManifest.optionalDependencies[authority.bundledCorsa.packageName],
-    authority.bundledCorsa.version,
-  );
+  if (explicitProvider) {
+    assert.equal(authority.bundledCorsa.authority, "explicit-user-provider");
+    assert.equal(authority.bundledCorsa.declaration, "devDependencies");
+    assert.equal(authority.bundledCorsa.selection, "installation-only");
+    assert.equal(hasCheckerDependency(cliManifest), false, "public CLI must not install a checker");
+    const consumer = JSON.parse(
+      fs.readFileSync(path.join(authority.installRoot, "package.json"), "utf8"),
+    );
+    assert.equal(
+      consumer.devDependencies?.[authority.bundledCorsa.packageName],
+      authority.bundledCorsa.version,
+    );
+    assert.equal(
+      lock.packages[""].devDependencies?.[authority.bundledCorsa.packageName],
+      authority.bundledCorsa.version,
+    );
+  } else {
+    assert.ok(
+      authority.bundledCorsa.authority === undefined ||
+        authority.bundledCorsa.authority === "bundled-cli",
+    );
+    assert.ok(
+      authority.bundledCorsa.selection === undefined ||
+        authority.bundledCorsa.selection === "cli-selected",
+    );
+    assert.equal(
+      cliManifest.optionalDependencies[authority.bundledCorsa.packageName],
+      authority.bundledCorsa.version,
+    );
+  }
   const corsa = lock.packages[`node_modules/${authority.bundledCorsa.packageName}`];
   assert.equal(corsa.version, authority.bundledCorsa.version);
   assert.equal(corsa.resolved, authority.bundledCorsa.resolved);

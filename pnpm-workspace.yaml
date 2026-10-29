@@ -157,8 +157,8 @@ catalogs:
     typescript: "6.0.3"
     vue-tsc: "3.3.11"
 
-  # Corsa runtime shipped by the Vize CLI. Keep separate from the workspace
-  # TypeScript toolchain so consumers and repo packages can stay on TS 6.
+  # Private immutable comparison runtime for tests and release qualification.
+  # Published CLI and editor packages must not depend on this catalog.
   corsa-runtime:
     "@typescript/typescript-darwin-arm64": "7.0.2"
     "@typescript/typescript-darwin-x64": "7.0.2"

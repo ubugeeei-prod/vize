@@ -66,6 +66,7 @@ pub enum PackageManager {
 pub struct CorsaNotFoundError {
     detected_pm: Option<PackageManager>,
     explicit_path: Option<PathBuf>,
+    invalid_runtime: Option<PathBuf>,
 }
 
 impl CorsaNotFoundError {
@@ -75,6 +76,7 @@ impl CorsaNotFoundError {
         Self {
             detected_pm,
             explicit_path: None,
+            invalid_runtime: None,
         }
     }
 
@@ -84,6 +86,16 @@ impl CorsaNotFoundError {
         Self {
             detected_pm,
             explicit_path: Some(path.to_path_buf()),
+            invalid_runtime: None,
+        }
+    }
+
+    /// Create an error for an installed but incomplete or mismatched package.
+    pub fn new_invalid(project_root: &Path, package: &Path) -> Self {
+        Self {
+            detected_pm: detect_package_manager(project_root),
+            explicit_path: None,
+            invalid_runtime: Some(package.to_path_buf()),
         }
     }
 
@@ -96,22 +108,35 @@ impl CorsaNotFoundError {
     pub fn display_message(&self) -> String {
         let mut msg = String::default();
 
-        msg.push_str("error: corsa not found\n\n");
+        if let Some(package) = &self.invalid_runtime {
+            msg.push_str("error: native TypeScript runtime is invalid\n\n");
+            append!(
+                msg,
+                "The declared package {} is incomplete or mismatched (package metadata, platform package, or native executable).\n\n",
+                package.display()
+            );
+            msg.push_str("Reinstall that package, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to an existing native executable.\n");
+            return msg;
+        }
+        msg.push_str("error: native TypeScript runtime not found\n\n");
         if let Some(path) = &self.explicit_path {
             append!(
                 msg,
                 "Configured Corsa executable does not exist: {}\n\n",
                 path.display()
             );
-        } else {
-            msg.push_str("vize check requires 'typescript@^7' to be installed.\n\n");
+            msg.push_str("Correct the configured path, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to an existing native executable.\n");
+            return msg;
         }
+        msg.push_str("vize check requires a user-installed native TypeScript/tsgo executable.\n");
+        msg.push_str("Keep your existing 'typescript' package. Install a native compiler under a separate alias, or configure typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH.\n\n");
+        msg.push_str("The example below selects native TypeScript 7.1.0-beta; choose the native version you want to run.\n\n");
 
         if let Some(pm) = self.detected_pm {
-            msg.push_str("To install, run:\n\n");
+            msg.push_str("Example install command:\n\n");
             append!(msg, "  {}\n", self.install_command(pm));
         } else {
-            msg.push_str("To install, run one of the following:\n\n");
+            msg.push_str("Example install commands (choose your package manager):\n\n");
             append!(
                 msg,
                 "  {}  # npm\n",
@@ -139,10 +164,16 @@ impl CorsaNotFoundError {
 
     fn install_command(&self, pm: PackageManager) -> String {
         match pm {
-            PackageManager::Npm => cstr!("npm install -D typescript@^7"),
-            PackageManager::Pnpm => cstr!("pnpm add -D typescript@^7"),
-            PackageManager::Yarn => cstr!("yarn add -D typescript@^7"),
-            PackageManager::Bun => cstr!("bun add -D typescript@^7"),
+            PackageManager::Npm => {
+                cstr!("npm install -D typescript-native@npm:typescript@7.1.0-beta")
+            }
+            PackageManager::Pnpm => {
+                cstr!("pnpm add -D typescript-native@npm:typescript@7.1.0-beta")
+            }
+            PackageManager::Yarn => {
+                cstr!("yarn add -D typescript-native@npm:typescript@7.1.0-beta")
+            }
+            PackageManager::Bun => cstr!("bun add -D typescript-native@npm:typescript@7.1.0-beta"),
         }
     }
 }
@@ -254,6 +285,7 @@ mod tests {
         let error = CorsaNotFoundError {
             detected_pm: Some(PackageManager::Pnpm),
             explicit_path: None,
+            invalid_runtime: None,
         };
 
         let msg = error.display_message();
@@ -265,9 +297,64 @@ mod tests {
         let error = CorsaNotFoundError {
             detected_pm: None,
             explicit_path: None,
+            invalid_runtime: None,
         };
 
         let msg = error.display_message();
         insta::assert_snapshot!(msg.as_str());
+    }
+    #[test]
+    fn explicit_missing_runtime_reports_the_full_path_without_install_advice() {
+        let error = CorsaNotFoundError {
+            detected_pm: Some(PackageManager::Npm),
+            explicit_path: Some(std::path::PathBuf::from("/project/bin/missing-tsgo")),
+            invalid_runtime: None,
+        };
+        assert_eq!(
+            error.display_message().as_str(),
+            "error: native TypeScript runtime not found\n\nConfigured Corsa executable does not exist: /project/bin/missing-tsgo\n\nCorrect the configured path, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to an existing native executable.\n"
+        );
+    }
+
+    #[test]
+    fn invalid_declared_runtime_names_its_package_without_install_advice() {
+        let error = CorsaNotFoundError {
+            detected_pm: Some(PackageManager::Npm),
+            explicit_path: None,
+            invalid_runtime: Some(std::path::PathBuf::from("/project/node_modules/typescript")),
+        };
+        assert_eq!(
+            error.display_message().as_str(),
+            "error: native TypeScript runtime is invalid\n\nThe declared package /project/node_modules/typescript is incomplete or mismatched (package metadata, platform package, or native executable).\n\nReinstall that package, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to an existing native executable.\n"
+        );
+    }
+
+    #[test]
+    fn every_package_manager_keeps_the_existing_typescript_dependency() {
+        let error = CorsaNotFoundError {
+            detected_pm: None,
+            explicit_path: None,
+            invalid_runtime: None,
+        };
+        for (manager, expected) in [
+            (
+                PackageManager::Npm,
+                "npm install -D typescript-native@npm:typescript@7.1.0-beta",
+            ),
+            (
+                PackageManager::Pnpm,
+                "pnpm add -D typescript-native@npm:typescript@7.1.0-beta",
+            ),
+            (
+                PackageManager::Yarn,
+                "yarn add -D typescript-native@npm:typescript@7.1.0-beta",
+            ),
+            (
+                PackageManager::Bun,
+                "bun add -D typescript-native@npm:typescript@7.1.0-beta",
+            ),
+        ] {
+            assert_eq!(error.install_command(manager).as_str(), expected);
+        }
     }
 }

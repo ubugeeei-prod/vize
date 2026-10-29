@@ -145,7 +145,7 @@ pub struct Diagnostic {
 /// Server configuration
 #[derive(Debug, Clone)]
 pub struct ServerConfig {
-    /// Path to the Corsa executable (uses PATH if not specified)
+    /// Explicit path to the Corsa executable; otherwise use the selected project's provider.
     pub corsa_path: Option<String>,
     /// Working directory for module resolution
     pub working_dir: Option<String>,

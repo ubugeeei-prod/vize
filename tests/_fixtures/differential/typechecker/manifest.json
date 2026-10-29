@@ -10288,6 +10288,34 @@
       ]
     },
     {
+      "id": "typechecker/runtime/project-native-runtime-authority-10694",
+      "state": "active",
+      "targets": ["batch"],
+      "inputs": [
+        {
+          "path": "project-native-runtime-authority-10694/App.vue.txt",
+          "role": "regression-reproduction",
+          "sha256": "2242be3767180506e0b9be4d9aeda69169a853d2705896e79aca53287ccacbaa"
+        },
+        {
+          "path": "project-native-runtime-authority-10694/package.json.txt",
+          "role": "project-provider-declaration",
+          "sha256": "28bf6be8d60c345b957740ae97f0daa5dc9cdd953a290dfc3f1ecf7a5d6d9f3f"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/shorthand-double-diagnostic-10920",
       "state": "active",
       "targets": ["batch"],

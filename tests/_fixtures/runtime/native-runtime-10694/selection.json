@@ -1,0 +1,171 @@
+{
+  "schema": "vize.native-runtime-selection",
+  "version": 1,
+  "graphCases": [
+    {
+      "id": "canonical-beta",
+      "manifests": {
+        "package.json": {
+          "devDependencies": {
+            "typescript": "7.1.0-beta"
+          }
+        },
+        "node_modules/typescript/package.json": {
+          "name": "typescript",
+          "version": "7.1.0-beta",
+          "optionalDependencies": {
+            "@typescript/typescript-$PLATFORM": "7.1.0-beta"
+          }
+        },
+        "node_modules/@typescript/typescript-$PLATFORM/package.json": {
+          "name": "@typescript/typescript-$PLATFORM",
+          "version": "7.1.0-beta"
+        }
+      },
+      "files": [
+        "node_modules/@typescript/typescript-$PLATFORM/lib/tsc"
+      ],
+      "expected": "node_modules/@typescript/typescript-$PLATFORM/lib/tsc"
+    },
+    {
+      "id": "typescript-six-beta-alias",
+      "manifests": {
+        "package.json": {
+          "devDependencies": {
+            "typescript": "6.0.3",
+            "typescript-native": "npm:typescript@7.1.0-beta"
+          }
+        },
+        "node_modules/typescript/package.json": {
+          "name": "typescript",
+          "version": "6.0.3"
+        },
+        "node_modules/typescript-native/package.json": {
+          "name": "typescript",
+          "version": "7.1.0-beta",
+          "optionalDependencies": {
+            "@typescript/typescript-$PLATFORM": "7.1.0-beta"
+          }
+        },
+        "node_modules/@typescript/typescript-$PLATFORM/package.json": {
+          "name": "@typescript/typescript-$PLATFORM",
+          "version": "7.1.0-beta"
+        }
+      },
+      "files": [
+        "node_modules/@typescript/typescript-$PLATFORM/lib/tsc"
+      ],
+      "expected": "node_modules/@typescript/typescript-$PLATFORM/lib/tsc"
+    },
+    {
+      "id": "stale-bundle-refused",
+      "manifests": {
+        "package.json": {
+          "dependencies": {
+            "vize": "0.570.0"
+          }
+        },
+        "node_modules/vize/node_modules/typescript/package.json": {
+          "name": "typescript",
+          "version": "7.0.2",
+          "optionalDependencies": {
+            "@typescript/typescript-$PLATFORM": "7.0.2"
+          }
+        },
+        "node_modules/vize/node_modules/@typescript/typescript-$PLATFORM/package.json": {
+          "name": "@typescript/typescript-$PLATFORM",
+          "version": "7.0.2"
+        }
+      },
+      "files": [
+        "node_modules/vize/node_modules/@typescript/typescript-$PLATFORM/lib/tsc"
+      ],
+      "expected": null
+    },
+    {
+      "id": "unlinked-store-refused",
+      "manifests": {
+        "package.json": {},
+        "node_modules/.pnpm/@typescript+typescript-$PLATFORM@7.0.2/node_modules/@typescript/typescript-$PLATFORM/package.json": {
+          "name": "@typescript/typescript-$PLATFORM",
+          "version": "7.0.2"
+        }
+      },
+      "files": [
+        "node_modules/.pnpm/@typescript+typescript-$PLATFORM@7.0.2/node_modules/@typescript/typescript-$PLATFORM/lib/tsc"
+      ],
+      "expected": null
+    },
+    {
+      "id": "platform-mismatch-refused",
+      "manifests": {
+        "package.json": {
+          "devDependencies": {
+            "typescript": "7.1.0-beta"
+          }
+        },
+        "node_modules/typescript/package.json": {
+          "name": "typescript",
+          "version": "7.1.0-beta",
+          "optionalDependencies": {
+            "@typescript/typescript-$PLATFORM": "7.1.0-beta"
+          }
+        },
+        "node_modules/@typescript/typescript-$PLATFORM/package.json": {
+          "name": "@typescript/typescript-$PLATFORM",
+          "version": "7.0.2"
+        }
+      },
+      "files": [
+        "node_modules/@typescript/typescript-$PLATFORM/lib/tsc"
+      ],
+      "expected": null
+    }
+  ],
+  "overrideCases": [
+    {
+      "id": "explicit-valid",
+      "source": "configuration",
+      "requested": "bin/selected-tsgo",
+      "present": true
+    },
+    {
+      "id": "explicit-missing",
+      "source": "configuration",
+      "requested": "bin/selected-tsgo",
+      "present": false
+    },
+    {
+      "id": "environment-valid",
+      "source": "CORSA_PATH",
+      "requested": "bin/selected-tsgo",
+      "present": true
+    },
+    {
+      "id": "environment-missing",
+      "source": "CORSA_PATH",
+      "requested": "bin/selected-tsgo",
+      "present": false
+    }
+  ],
+  "routingCases": [
+    {
+      "id": "selected-config-root",
+      "kind": "config-parent",
+      "selectedConfig": "selected/tsconfig.app.json",
+      "expectedRoot": "selected"
+    },
+    {
+      "id": "closest-package-before-ancestor-vue",
+      "kind": "nearest-package",
+      "selectedConfig": null,
+      "expectedRoot": "package"
+    },
+    {
+      "id": "no-config-package-root",
+      "kind": "config-parent",
+      "selectedConfig": null,
+      "expectedRoot": "package"
+    }
+  ]
+}
