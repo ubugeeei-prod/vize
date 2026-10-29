@@ -163,8 +163,8 @@ function install(directory: string, dependencies: Record<string, string>, eviden
 export async function installedIdentity(
   directory: string,
   output: string,
-  authority: OfficialRuntimeAuthority,
   probeNative = true,
+  authority: OfficialRuntimeAuthority = officialRuntimeAuthority(fixture),
 ) {
   const require = createRequire(path.join(directory, "package.json"));
   const records = ["typescript", "vue", "vize", "@vizejs/native"].map((name) => {
@@ -181,16 +181,6 @@ export async function installedIdentity(
     fs.copyFileSync(file, path.join(output, "manifests", name.replaceAll("/", "-") + ".json"));
     return { name, version: manifest.version as string, manifest: identity(file) };
   });
-  const request = JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8"));
-  const lock = JSON.parse(fs.readFileSync(path.join(directory, "package-lock.json"), "utf8"));
-  assertOfficialRuntimeCustody(authority, {
-    request: request.dependencies,
-    lock: lock.packages?.[""]?.dependencies,
-    installed: {
-      typescript: records[0].version,
-      vue: records[1].version,
-    },
-  });
   const cliManifest = JSON.parse(
     fs.readFileSync(path.join(directory, "node_modules/vize/package.json"), "utf8"),
   );
@@ -204,6 +194,16 @@ export async function installedIdentity(
     nativeEntry,
     "official mapper CLI must resolve the candidate native wrapper",
   );
+  const request = JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8"));
+  const lock = JSON.parse(fs.readFileSync(path.join(directory, "package-lock.json"), "utf8"));
+  assertOfficialRuntimeCustody(authority, {
+    request: request.dependencies,
+    lock: lock.packages?.[""]?.dependencies,
+    installed: {
+      typescript: records[0].version,
+      vue: records[1].version,
+    },
+  });
   const typescript = path.dirname(require.resolve("typescript/package.json"));
   const getExePath = (await import(pathToFileURL(path.join(typescript, "lib/getExePath.js")).href))
     .default as () => string;
@@ -415,6 +415,7 @@ export async function main(args = process.argv.slice(2)) {
       const observed = await installedIdentity(
         baseline,
         path.join(output, "baseline-identity" + suffix),
+        true,
         suite.runtime,
       );
       assert.equal(observed.packages.find((pkg) => pkg.name === "vize")!.version, version);
@@ -460,21 +461,24 @@ export async function main(args = process.argv.slice(2)) {
       { ...suite.runtime, ...candidatePackage },
       path.join(output, "candidate-install-process" + suffix),
     );
-    const observed = await installedIdentity(
+    const candidateIdentity = await installedIdentity(
       candidate,
       path.join(output, "candidate-identity" + suffix),
-      suite.runtime,
       !options.candidateOnly,
+      suite.runtime,
     );
     if (publicVersion)
-      assert.equal(observed.packages.find((pkg) => pkg.name === "vize")!.version, publicVersion);
+      assert.equal(
+        candidateIdentity.packages.find((pkg) => pkg.name === "vize")!.version,
+        publicVersion,
+      );
     else
       assert.equal(
-        observed.nativeImage.sha256,
+        candidateIdentity.nativeImage.sha256,
         identity(path.join(root, "npm/native/vize-vitrine.linux-x64-gnu.node")).sha256,
         "fresh packed mapper must load the source-built image",
       );
-    candidates.set(candidateKey, { directory: candidate, identity: observed });
+    candidates.set(candidateKey, { directory: candidate, identity: candidateIdentity });
   }
   if (options.candidateOnly) {
     assert.equal(candidates.size, 1, "public validation requires one exact runtime cohort");
