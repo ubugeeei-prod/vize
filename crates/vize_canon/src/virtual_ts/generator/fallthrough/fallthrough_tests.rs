@@ -5,7 +5,10 @@ use vize_relief::{
     TemplateChildNode,
 };
 
-use super::{FallthroughComponentScope, fallthrough_props_type_ref, possible_raw_if_chain_tags};
+use super::{
+    FallthroughComponentScope, fallthrough_props_type_ref, has_only_native_fallthrough_targets,
+    possible_raw_if_chain_tags,
+};
 use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions};
 
 fn fallthrough_type(script: &str, template: &str) -> Option<vize_carton::String> {
@@ -44,6 +47,39 @@ fn fallthrough_type_with_checks(
         },
     };
     fallthrough_props_type_ref(&scope, Some(&root), false)
+}
+
+fn only_native_targets(script: &str, template: &str) -> bool {
+    let allocator = Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    has_only_native_fallthrough_targets(&analyzer.finish(), Some(&root))
+}
+
+#[test]
+fn native_listener_marker_excludes_component_and_open_roots() {
+    assert!(only_native_targets("", "<div />"));
+    assert!(only_native_targets(
+        "const ready = true",
+        "<button v-if=\"ready\" /><a v-else />"
+    ));
+    assert!(!only_native_targets(
+        "import Basic from './Basic.vue'",
+        "<Basic />"
+    ));
+    assert!(!only_native_targets("", "<UnresolvedRoot />"));
+    assert!(!only_native_targets(
+        "import Basic from './Basic.vue'\nconst ready = true",
+        "<div v-if=\"ready\" /><Basic v-else />"
+    ));
+
+    let analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    assert!(!has_only_native_fallthrough_targets(
+        &analyzer.finish(),
+        None
+    ));
 }
 
 // Without `fallthroughAttributes` a component root stays the open surface it

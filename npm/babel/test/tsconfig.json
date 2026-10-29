@@ -1,0 +1,13 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "paths": {
+      "vue": ["../node_modules/vue/dist/vue.d.mts"],
+      "playwright": ["../node_modules/playwright/index.d.ts"]
+    }
+  },
+  "references": [],
+  "include": ["**/*.ts"],
+  "exclude": ["**/node_modules/**", "**/fixtures/**"]
+}

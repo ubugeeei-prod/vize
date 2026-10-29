@@ -81,6 +81,21 @@ pub(super) fn fallthrough_targets(
     explicit_attrs_targets(template_ast).or_else(|| possible_single_root_targets(template_ast))
 }
 
+pub(in crate::virtual_ts::generator) fn has_only_native_fallthrough_targets(
+    summary: &Croquis,
+    template_ast: Option<&RootNode<'_>>,
+) -> bool {
+    let Some(template_ast) = template_ast else {
+        return false;
+    };
+    fallthrough_targets(summary, template_ast).is_some_and(|targets| {
+        !targets.is_empty()
+            && targets
+                .iter()
+                .all(|target| matches!(target, FallthroughRootTarget::Native(_)))
+    })
+}
+
 pub(in crate::virtual_ts::generator) fn fallthrough_props_type_ref(
     scope: &FallthroughComponentScope<'_>,
     template_ast: Option<&RootNode<'_>>,

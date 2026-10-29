@@ -133,6 +133,11 @@ impl ContentMapperTransformOptions {
         let explicit = options.get("checkUnknownProps").and_then(Value::as_bool);
         self.check_unknown_props = explicit.or(strict_templates).unwrap_or(false);
         self.check_unknown_fallthrough_props = explicit == Some(true);
+        let fallthrough_attributes = options.get("fallthroughAttributes");
+        self.fallthrough_attributes_specified = fallthrough_attributes.is_some();
+        self.fallthrough_attributes = fallthrough_attributes
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
         self.check_unknown_directives = options
             .get("checkUnknownDirectives")
             .and_then(Value::as_bool)
@@ -158,6 +163,8 @@ impl ContentMapperTransformOptions {
             check_unknown_components: self.check_unknown_components,
             check_unknown_props: self.check_unknown_props,
             check_unknown_fallthrough_props: self.check_unknown_fallthrough_props,
+            fallthrough_attributes: self.fallthrough_attributes,
+            fallthrough_attributes_specified: self.fallthrough_attributes_specified,
             check_unknown_directives: self.check_unknown_directives,
             vue_compiler_target: self.vue_compiler_target,
             ..Default::default()

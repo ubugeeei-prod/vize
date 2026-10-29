@@ -89,3 +89,88 @@ const maybe = undefined as string | undefined
         "the declared prop value error must stay on aria-label: {snapshot:#?}"
     );
 }
+
+#[test]
+fn required_quoted_aria_key_accepts_both_bindings_and_stays_required() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "required-quoted-aria-prop",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+defineProps<{ 'aria-label': string }>()
+</script>
+
+<template><span /></template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import Child from './Child.vue'
+
+const maybe = undefined as string | undefined
+</script>
+
+<template>
+  <Child aria-label="kebab" />
+  <Child ariaLabel="camel" />
+  <Child aria-label="native fallthrough" aria-hidden="true" />
+  <Child :ariaLabel="maybe" />
+  <Child :aria-label="123" />
+  <Child />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let Some(snapshot) = snapshot else {
+        return;
+    };
+
+    let normalized: Vec<_> = snapshot
+        .iter()
+        .map(|(file, code, message)| {
+            (
+                file.as_str(),
+                *code,
+                super::super::normalize_component_check_props_tail(message),
+            )
+        })
+        .collect();
+    assert_eq!(
+        normalized,
+        vec![
+            (
+                "src/Parent.vue",
+                Some(2322),
+                String::from(concat!(
+                    "11:11:error Type 'string | undefined' is not assignable to type 'string'.\n",
+                    "Type 'undefined' is not assignable to type 'string'.",
+                )),
+            ),
+            (
+                "src/Parent.vue",
+                Some(2322),
+                String::from("12:11:error Type 'number' is not assignable to type 'string'."),
+            ),
+            (
+                "src/Parent.vue",
+                Some(2345),
+                String::from(concat!(
+                    "13:4:error Argument of type '{}' is not assignable to parameter of type ",
+                    "'__VizeComponentCheckProps<Props, __VizeFallthroughAttrs>'.\n",
+                    "Property '\"aria-label\"' is missing in type '{}' but required in type ",
+                    "'{ readonly \"aria-label\": string; }'.",
+                )),
+            ),
+        ],
+        "valid aliases and native fallthrough stay clean while nullable, wrong and missing values remain exact authored diagnostics"
+    );
+}

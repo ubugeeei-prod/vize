@@ -1,0 +1,11 @@
+{
+  "name": "vize-babel-runtime-stable",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vue/server-renderer": "3.5.44",
+    "playwright": "1.62.1",
+    "vue": "3.5.44"
+  }
+}

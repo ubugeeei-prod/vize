@@ -51,6 +51,8 @@ export const TYPECHECKER_TESTS = {
   "content-mapper-props-binding-10196": "authored_props_binding_preserves_batch_acceptance",
   "content-mapper-slot-host-callbacks-10774":
     "content_mapper_slot_host_callbacks_keep_native_diagnostics",
+  "content-mapper-template-callback-listener-11023":
+    "content_mapper_template_callback_listener_11023::content_mapper_template_callback_listener_preserves_contextual_parameters",
   "content-mapper-template-expression-syntax":
     "template_expression_syntax_preserves_complete_authored_diagnostics",
   "content-mapper-type-only-import-use":
@@ -178,6 +180,7 @@ export const sourceRevisions = {
   "content-mapper-nuxt-emit-10195": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
   "content-mapper-props-binding-10196": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
   "content-mapper-slot-host-callbacks-10774": "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+  "content-mapper-template-callback-listener-11023": "407e7cf15219405110efdd0c977bb30cb1db1644",
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
   "content-mapper-type-only-import-use": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
   "content-mapper-unknown-options-10218": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
