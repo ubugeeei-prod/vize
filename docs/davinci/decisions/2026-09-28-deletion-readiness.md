@@ -95,3 +95,29 @@ successful readiness audits at the exact base and candidate SHAs. Native-only
 compiler, lint, typechecker and LSP adapters and complete formatter
 candidate/history evidence remain unfinished, so #6854 stays open. This gate
 does not certify legacy deletion.
+
+## Exact-head linter preflight observation (2026-10-29)
+
+The measured source-and-test head
+`cf2cb81305be83a53dab3060c9ed30dff895171f` ran the complete Real Project
+Matrix in Actions run `40829529787` from `2026-10-29T06:29:37Z` through
+`2026-10-29T07:03:44Z`. All 22 real-project shards reached the fail-closed
+surface-verdict step. Their linter preflight recorders accounted for the full
+150-project registry, 42,640 files and 361 machine-readable blockers.
+Every shard retained its report artifact; the run published 22 shard reports,
+22 LSP wire artifacts and six supporting DOM corpus, reduction and promotion
+artifacts.
+
+The run finished with 22 failed jobs and eight successful supporting jobs. All
+22 failures occurred only at `Enforce all real-project surface verdicts`; no
+workflow setup, runner or artifact-upload step failed. The observed failure
+categories were `lint-divergence` in 22 shards, `typecheck-divergence` in eight,
+`glyph` in six, `lsp` in two and `core-tools` in two. Categories overlap when a
+shard exposed more than one blocked surface. The eight successes were project
+selection, the DOM, reach and SSR/Pug canonical observers, the S2 DOM corpus,
+and the reduction, promotion and filing jobs for canonical DOM divergence.
+
+This observation proves that the linter preflight executes across the complete
+registered T2 corpus and preserves evidence when product surfaces are blocked.
+It does not change any threshold, register the linter as a deletion verifier,
+grant native-only credit or make the five-product deletion gate ready.
