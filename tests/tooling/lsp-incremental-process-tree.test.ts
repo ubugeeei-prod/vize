@@ -232,20 +232,21 @@ test("Linux process-tree attribution retains stable executable and argv identity
 test("Linux proc parsing binds first-sample ancestry, birth, and RSS custody", () => {
   const before = parseLinuxProcStat(procStat(41, 7, "100", 12), 4);
   assert.deepEqual(before, { pid: 41, parentPid: 7, birthTicks: "100", rssKiB: 48 });
-  assert.equal(
-    sameLinuxProcessAnchor(before, parseLinuxProcStat(procStat(41, 7, "101", 12), 4)),
-    false,
-    "same-PPID PID reuse must be rejected on the first sample",
+  assert.deepEqual(
+    [
+      sameLinuxProcessAnchor(before, parseLinuxProcStat(procStat(41, 7, "101", 12), 4)),
+      sameLinuxProcessAnchor(before, parseLinuxProcStat(procStat(41, 8, "100", 12), 4)),
+    ],
+    [false, false],
+    "birth or parent changes must reject first-sample identity custody",
   );
+  const changedRss = parseLinuxProcStat(procStat(41, 7, "100", 13), 4);
   assert.equal(
-    sameLinuxProcessCustody(before, parseLinuxProcStat(procStat(41, 7, "100", 13), 4)),
-    false,
-    "RSS changing inside the executable/argv custody window must be rejected",
-  );
-  assert.equal(
-    sameLinuxProcessCustody(before, parseLinuxProcStat(procStat(41, 7, "100", 12), 4)),
+    sameLinuxProcessCustody(before, changedRss),
     true,
+    "RSS may change while argv and executable hashes are captured",
   );
+  assert.equal(before.rssKiB, 48, "the attributed sample keeps the anchored before RSS");
   assert.throws(() => parseLinuxProcStat(procStat(41, 7, "100", -1), 4), /invalid Linux/);
   assert.throws(() => parseLinuxProcStat(procStat(41, "1e2", "100", 12), 4), /invalid Linux/);
   assert.throws(() => parseLinuxProcStat(procStat(41, 7, "100", "0x10"), 4), /invalid Linux/);
@@ -397,7 +398,7 @@ test("sampling ambiguity cannot replace a lane or hard-timeout error", async () 
 
   const successful = new IncrementalMetrics(process.pid, suite);
   mutableBudget(successful).laneBudgetsMs = { probe: 1_000 };
-  successful.sampleRss = metrics.sampleRss;
+  successful.sampleRss = (name) => metrics.sampleRss(name);
   await assert.rejects(
     successful.measure("probe", async () => 42),
     /sampling failed/,

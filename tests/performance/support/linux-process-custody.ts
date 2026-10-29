@@ -81,7 +81,9 @@ export function sameLinuxProcessAnchor(expected: LinuxProcStat, actual: LinuxPro
 }
 
 export function sameLinuxProcessCustody(before: LinuxProcStat, after: LinuxProcStat): boolean {
-  return sameLinuxProcessAnchor(before, after) && before.rssKiB === after.rssKiB;
+  // RSS is the value captured by `before`; it may legitimately move while the
+  // executable and argv are hashed. Only process identity must stay stable.
+  return sameLinuxProcessAnchor(before, after);
 }
 
 export function readLinuxProcessTable(): Map<number, LinuxProcStat> {
