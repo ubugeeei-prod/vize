@@ -5,43 +5,15 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { spawnSync, execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { artSource, componentSource, runLifecycleWorker } from "./sfc-optional-lifecycle-worker.ts";
 const sourceSha = "1525ff2f7621e8f0b3053451568bec48ff5b8855";
-const members =
-  'spaced? : string;\ntabbed?\t: number;\ncommented? /* question */ : boolean;\ncompact?: string;\nrequired : number;\nreadonly read? : string;\n"scope.name"? : string;\ncafé? : number;\n"why?:"? /* trivia */ : boolean;';
-const componentSource =
-  '<script setup lang="ts">const props = defineProps<{ ' +
-  members +
-  " }>();</script><template><div>{{ props.required }}</div></template>";
-const artSource =
-  '<script setup lang="ts">defineArt("./SpacingProbe.vue", { title: "Optional Spacing" })</script><art><variant name="Default"><SpacingProbe :required="1" /></variant></art>';
-const names = [
-  "spaced",
-  "tabbed",
-  "commented",
-  "compact",
-  "required",
-  "read",
-  "scope.name",
-  "café",
-  "why?:",
-];
-const types = [
-  "string",
-  "number",
-  "boolean",
-  "string",
-  "number",
-  "string",
-  "string",
-  "number",
-  "boolean",
-];
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const fileHash = (file) => hash(fs.readFileSync(file));
 const git = (root, ...args) =>
   execFileSync("git", ["-C", root, ...args], { encoding: "utf8" }).trim();
 const write = (file, value) => fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
 const self = fileURLToPath(import.meta.url);
+/** Preserve both process streams and defer the verdict until every diagnostic mode ran. */
 function run(args, cwd, env, log) {
   const fd = fs.openSync(log, "w");
   const stderr = fs.openSync(log + ".stderr", "w");
@@ -71,162 +43,7 @@ function success(value) {
   assert.equal(value.signal, null, JSON.stringify(value));
   assert.equal(value.status, 0, JSON.stringify(value));
 }
-async function worker(identityFile, output) {
-  const identity = JSON.parse(fs.readFileSync(identityFile, "utf8"));
-  const trace = (phase, extra = {}) => {
-    fs.appendFileSync(
-      path.join(output, "phases.jsonl"),
-      JSON.stringify({ phase, ...extra }) + "\n",
-    );
-    console.log(JSON.stringify({ phase, ...extra }));
-  };
-  process.on("beforeExit", (code) => trace("process-before-exit", { code }));
-  process.on("exit", (code) => trace("process-exit", { code }));
-  const root = fs.mkdtempSync(path.join(identity.fixtureParent, "lifecycle-"));
-  const component = path.join(root, "src/SpacingProbe.vue"),
-    art = path.join(root, "src/SpacingProbe.art.vue");
-  fs.mkdirSync(path.dirname(component), { recursive: true });
-  fs.writeFileSync(component, componentSource);
-  fs.writeFileSync(art, artSource);
-  fs.writeFileSync(path.join(root, "index.html"), "<!doctype html><html><body></body></html>");
-  const { default: ts } = await import(pathToFileURL(identity.typescriptEntry).href);
-  assert.equal(ts.version, "6.0.3");
-  const truth = ts.createSourceFile(
-    "truth.ts",
-    "type Props = { " + members + " }",
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  );
-  assert.deepEqual(truth.parseDiagnostics, []);
-  const alias = truth.statements[0];
-  assert.ok(ts.isTypeAliasDeclaration(alias) && ts.isTypeLiteralNode(alias.type));
-  assert.deepEqual(
-    alias.type.members.map((member) => member.questionToken !== undefined),
-    names.map((name) => name !== "required"),
-  );
-  const require = createRequire(identity.nativeEntry);
-  const binding = require(identity.nativeEntry);
-  const images = () =>
-    Object.keys(require.cache).filter(
-      (file) => file.endsWith(".node") && path.basename(file).startsWith("vize-vitrine"),
-    );
-  assert.deepEqual(images(), [identity.binary]);
-  assert.equal(fileHash(identity.binary), identity.binarySha256);
-  const token = binding.getNativeBuildToken();
-  assert.equal(typeof token, "string");
-  if (identity.side === "source") assert.equal(token, identity.token);
-  const packets = [];
-  const retain = () =>
-    write(path.join(output, "packets.json"), {
-      identity,
-      loadedToken: token,
-      root,
-      fixtureSha256: hash(componentSource),
-      artSha256: hash(artSource),
-      throughputMeasured: false,
-      packets,
-    });
-  retain();
-  trace("native-loaded", { binary: identity.binary, sha256: identity.binarySha256, token });
-  const { createServer } = await import(pathToFileURL(identity.viteEntry).href);
-  const { default: vize } = await import(pathToFileURL(identity.pluginEntry).href);
-  const { musea } = await import(pathToFileURL(identity.museaEntry).href);
-  trace("create-server-begin");
-  const server = await createServer({
-    root,
-    configFile: false,
-    resolve: { alias: { vue: identity.vueEntry } },
-    plugins: [vize(), musea({ include: ["src/**/*.art.vue"] })],
-    server: { host: "127.0.0.1", port: 0 },
-  });
-  let failure;
-  try {
-    trace("listen-begin");
-    await server.listen();
-    trace("listen-end");
-    const address = server.httpServer.address();
-    assert.ok(address && typeof address !== "string");
-    const endpoint =
-      "http://127.0.0.1:" + address.port + "/__musea__/api/arts/" + encodeURIComponent(art);
-    for (const newline of ["\n", "\r\n"]) {
-      const source = componentSource.replaceAll("\n", newline);
-      trace("write-begin", { newline });
-      await fs.promises.writeFile(component, source);
-      trace("write-end");
-      trace("native-begin");
-      const native = binding.analyzeSfc(source, {
-        filename: component,
-        cache: false,
-        profile: false,
-      });
-      const expected = {
-        emits: [],
-        props: names.map((name, i) => ({
-          name,
-          type: types[i],
-          required: name === "required" || (identity.side === "public" && i < 3),
-        })),
-      };
-      assert.deepEqual(
-        native,
-        expected,
-        "published optional flags differ only for the three proven cases",
-      );
-      trace("native-end");
-      const packet = { newline, source, native };
-      packets.push(packet);
-      retain();
-      trace("http-analysis-begin");
-      const analysis = await fetch(endpoint + "/analysis");
-      assert.equal(analysis.status, 200);
-      packet.analysis = await analysis.json();
-      assert.deepEqual(packet.analysis, native);
-      retain();
-      trace("http-analysis-end");
-      trace("http-palette-begin");
-      const palette = await fetch(endpoint + "/palette");
-      assert.equal(palette.status, 200);
-      packet.palette = await palette.json();
-      assert.deepEqual(
-        packet.palette.controls.map(({ name, required }) => ({ name, required })),
-        expected.props.map(({ name, required }) => ({ name, required })),
-      );
-      assert.deepEqual(JSON.parse(packet.palette.json).controls, packet.palette.controls);
-      const exported = ts.createSourceFile(
-        "palette.ts",
-        packet.palette.typescript,
-        ts.ScriptTarget.Latest,
-        true,
-        ts.ScriptKind.TS,
-      );
-      assert.deepEqual(exported.parseDiagnostics, []);
-      const declaration = exported.statements[0];
-      assert.ok(ts.isInterfaceDeclaration(declaration));
-      assert.deepEqual(
-        declaration.members.map((member) => ({
-          name: ts.isStringLiteral(member.name) ? member.name.text : member.name.getText(exported),
-          required: member.questionToken === undefined,
-        })),
-        expected.props.map(({ name, required }) => ({ name, required })),
-      );
-      retain();
-      trace("http-palette-end");
-    }
-  } catch (error) {
-    failure = error;
-    trace("functional-error", { message: error.message, stack: error.stack });
-  } finally {
-    retain();
-    trace("close-begin");
-    await server.close();
-    trace("close-end");
-  }
-  assert.deepEqual(images(), [identity.binary]);
-  assert.equal(fileHash(identity.binary), identity.binarySha256);
-  trace("worker-complete");
-  if (failure) throw failure;
-}
+/** Install and authenticate the immutable public control without workspace links. */
 async function install(project, output) {
   const packages = [
     "@vizejs/native",
@@ -300,7 +117,8 @@ async function install(project, output) {
   }
   write(path.join(output, "public-package-lock.json"), lock);
 }
-function identity(side, root, source, binary, token) {
+/** Bind a worker to one exact native image and its actual JS dependency entries. */
+function identity(label, side, mode, root, source, binary, token) {
   const require = createRequire(path.join(root, "package.json"));
   const esmEntry = (name) => {
     const folder = path.join(root, "node_modules", name);
@@ -320,7 +138,10 @@ function identity(side, root, source, binary, token) {
     binary = path.join(folder, binaries[0]);
   }
   return {
+    label,
     side,
+    mode,
+    attempt: 1,
     nativeEntry,
     binary: fs.realpathSync(binary),
     binarySha256: fileHash(binary),
@@ -339,6 +160,7 @@ function identity(side, root, source, binary, token) {
     fixtureParent: root,
   };
 }
+/** Replay one attempt per retained image and publish a qualified receipt only after all pass. */
 async function campaign(source, output) {
   assert.equal(process.env.GITHUB_ACTIONS, "true");
   assert.equal(process.platform, "linux");
@@ -348,6 +170,10 @@ async function campaign(source, output) {
     "NAPI_RS_FORCE_WASI",
     "RUSTC_WRAPPER",
     "RUSTC_WORKSPACE_WRAPPER",
+    "MALLOC_CHECK_",
+    "MALLOC_PERTURB_",
+    "GLIBC_TUNABLES",
+    "LD_PRELOAD",
   ])
     assert.equal(process.env[key], undefined, key);
   source = fs.realpathSync(source);
@@ -358,17 +184,58 @@ async function campaign(source, output) {
   const temporary = fs.mkdtempSync(
     path.join(fs.realpathSync(process.env.RUNNER_TEMP), "sfc-optional-lifecycle-"),
   );
-  const target = path.join(temporary, "source-" + sourceSha);
-  assert.equal(fs.existsSync(target), false);
-  fs.mkdirSync(target);
   const publicProject = path.join(temporary, "public");
   fs.mkdirSync(publicProject);
+  const libcFiles = execFileSync("dpkg-query", ["-L", "libc6"], { encoding: "utf8" })
+    .split("\n")
+    .filter((file) => path.basename(file) === "libc_malloc_debug.so.0");
+  assert.equal(libcFiles.length, 1, "libc6 must provide one malloc debug image");
+  const mallocDebug = {
+    packagePath: libcFiles[0],
+    realpath: fs.realpathSync(libcFiles[0]),
+    sha256: fileHash(libcFiles[0]),
+  };
   const receipt = {
+    schemaVersion: 2,
+    issue: {
+      number: 10582,
+      url: "https://github.com/ubugeeei-prod/vize/issues/10582",
+      author: "ubugeeei",
+      reported: {
+        run: "https://github.com/ubugeeei-prod/vize/actions/runs/40176237408",
+        job: 121117574432,
+        head: "63f34b0ac2d7fb81aa9c0c989f87ed2b03c1b9a3",
+        workflowSource: "4094fcf8fa07d02cc8307f6773d3ebeb37895ed6",
+        artifact: {
+          id: 12592975351,
+          name: "musea-native-inline-4094fcf8fa07d02cc8307f6773d3ebeb37895ed6",
+          size: 62118,
+          digest: "sha256:526751a52a8850b3e3e0a968f54df9029e336b72930bea2c7b4975305bb6ff58",
+        },
+      },
+      controlled: {
+        run: "https://github.com/ubugeeei-prod/vize/actions/runs/40177938970",
+        source: sourceSha,
+        driver: "879bc5b087b28daecb7bb284aa64630e0fdbc9f3",
+        artifact: {
+          id: 12592534636,
+          name: "sfc-optional-lifecycle-879bc5b087b28daecb7bb284aa64630e0fdbc9f3-1",
+          size: 87263,
+          digest: "sha256:15ee0dd32e3ba9640ca357989a5fe214591233883125bf92ef5ca6cbb3d98320",
+        },
+        images: {
+          public: "837681f00ae64f54837138fa0c5eda28fe337d4920b87de4d1fbc1d55587d1dc",
+          source: "22a7d8dfa32482726dc2721aa3fbbb0d163f7a10c75d96a0b2e95ddd630459cf",
+        },
+      },
+    },
     source: sourceSha,
     driver: process.env.GITHUB_SHA,
     driverSha256: fileHash(self),
-    target,
-    targetInitiallyEmpty: fs.readdirSync(target).length === 0,
+    workerSha256: fileHash(
+      fileURLToPath(new URL("./sfc-optional-lifecycle-worker.ts", import.meta.url)),
+    ),
+    recordedRun: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
     fixtureSha256: hash(componentSource),
     artSha256: hash(artSource),
     sourceTrees: Object.fromEntries(
@@ -379,13 +246,28 @@ async function campaign(source, output) {
     ),
     throughputMeasured: false,
     attemptsPerImage: 1,
+    imageOrder: ["public", "source", "source-allocator", "source-memcheck"],
+    environment: {
+      node: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      valgrind: execFileSync("valgrind", ["--version"], { encoding: "utf8" }).trim(),
+      libc: execFileSync("getconf", ["GNU_LIBC_VERSION"], { encoding: "utf8" }).trim(),
+      packages: execFileSync("dpkg-query", ["-W", "valgrind", "libc6"], {
+        encoding: "utf8",
+      }).trim(),
+      mallocDebug,
+    },
+    builds: [],
     workers: [],
+    observationsComplete: false,
+    qualified: false,
   };
+  assert.equal(receipt.environment.valgrind, "valgrind-3.22.0");
   const retain = () => write(path.join(output, "receipt.json"), receipt);
   retain();
   await install(publicProject, output);
-  const native = path.join(source, "npm/native"),
-    token = randomBytes(16).toString("hex");
+  const native = path.join(source, "npm/native");
   const command = [
     "vp",
     "exec",
@@ -406,55 +288,155 @@ async function campaign(source, output) {
     "--message-format=json-render-diagnostics",
     "--locked",
   ];
-  receipt.build = run(
-    command,
-    native,
-    { ...process.env, CARGO_TARGET_DIR: target, VIZE_NATIVE_BUILD_TOKEN: token },
-    path.join(output, "source-build.log"),
-  );
-  retain();
-  success(receipt.build);
-  const artifacts = fs
-    .readFileSync(path.join(output, "source-build.log"), "utf8")
-    .split("\n")
-    .flatMap((line) => {
-      try {
-        const packet = JSON.parse(line);
-        return packet.reason === "compiler-artifact" ? [packet] : [];
-      } catch {
-        return [];
-      }
-    });
-  assert.ok(artifacts.length > 0);
-  const owned = artifacts.filter((artifact) =>
-    artifact.target.src_path.startsWith(source + path.sep),
-  );
-  assert.ok(owned.some((artifact) => artifact.target.name === "vize_croquis"));
-  for (const artifact of owned) {
-    assert.equal(artifact.fresh, false, artifact.target.name + " reused a compiled artifact");
-    assert.ok(artifact.filenames.every((filename) => filename.startsWith(target + path.sep)));
-  }
-  write(path.join(output, "source-cargo-artifacts.json"), artifacts);
-  success(
-    run(
-      [process.execPath, path.join(native, "scripts/sync-entrypoint.mjs")],
-      native,
-      process.env,
-      path.join(output, "source-entrypoint.log"),
-    ),
-  );
-  const binaries = fs.readdirSync(native).filter((file) => file.endsWith(".node"));
-  assert.equal(binaries.length, 1);
-  const identities = [
-    identity("public", publicProject),
-    identity(
+  /** Build one token-distinct image from an initially empty Cargo target. */
+  const buildSource = (label, mode) => {
+    const target = path.join(temporary, label + "-" + sourceSha);
+    assert.equal(fs.existsSync(target), false);
+    fs.mkdirSync(target);
+    const token = randomBytes(16).toString("hex");
+    const log = path.join(output, label + "-build.log");
+    const build = {
+      label,
+      mode,
+      target,
+      targetInitiallyEmpty: fs.readdirSync(target).length === 0,
+      profileDebug: mode === "memcheck" ? 1 : false,
+      token,
+      process: run(
+        command,
+        native,
+        {
+          ...process.env,
+          ...(mode === "memcheck" ? { CARGO_PROFILE_CI_DEBUG: "1" } : {}),
+          CARGO_TARGET_DIR: target,
+          VIZE_NATIVE_BUILD_TOKEN: token,
+        },
+        log,
+      ),
+    };
+    receipt.builds.push(build);
+    retain();
+    success(build.process);
+    const artifacts = fs
+      .readFileSync(log, "utf8")
+      .split("\n")
+      .flatMap((line) => {
+        try {
+          const packet = JSON.parse(line);
+          return packet.reason === "compiler-artifact" ? [packet] : [];
+        } catch {
+          return [];
+        }
+      });
+    assert.ok(artifacts.length > 0);
+    const owned = artifacts.filter((artifact) =>
+      artifact.target.src_path.startsWith(source + path.sep),
+    );
+    assert.ok(owned.some((artifact) => artifact.target.name === "vize_croquis"));
+    for (const artifact of owned) {
+      assert.equal(artifact.fresh, false, artifact.target.name + " reused a compiled artifact");
+      assert.ok(artifact.filenames.every((filename) => filename.startsWith(target + path.sep)));
+    }
+    write(path.join(output, label + "-cargo-artifacts.json"), artifacts);
+    success(
+      run(
+        [process.execPath, path.join(native, "scripts/sync-entrypoint.mjs")],
+        native,
+        process.env,
+        path.join(output, label + "-entrypoint.log"),
+      ),
+    );
+    build.sourceChanges = git(source, "diff", "--name-only", "HEAD").split("\n").filter(Boolean);
+    assert.ok(
+      build.sourceChanges.every((file) =>
+        ["npm/native/index.js", "npm/native/index.d.ts"].includes(file),
+      ),
+      "diagnostic build changed authored source",
+    );
+    retain();
+    const binaries = fs.readdirSync(native).filter((file) => file.endsWith(".node"));
+    assert.equal(binaries.length, 1);
+    return identity(
+      label,
       "source",
+      mode,
       path.join(source, "npm/builder/vite-musea"),
       source,
       path.join(native, binaries[0]),
       token,
-    ),
-  ];
+    );
+  };
+  const retainImage = (image) => {
+    const directory = path.join(output, "loaded-images");
+    fs.mkdirSync(directory, { recursive: true });
+    image.retainedBinary = path.join(directory, image.label + ".node");
+    fs.copyFileSync(image.binary, image.retainedBinary, fs.constants.COPYFILE_EXCL);
+    assert.equal(fileHash(image.retainedBinary), image.binarySha256);
+  };
+  /** Run exactly one worker with the diagnostic runtime proven inside that same process. */
+  const runImage = (image) => {
+    retainImage(image);
+    const identityFile = path.join(output, image.label + "-identity.json");
+    const workerOutput = path.join(output, image.label);
+    fs.mkdirSync(workerOutput);
+    let environment = process.env;
+    let workerCommand = ["vp", "exec", "tsx", self, "--worker", identityFile, workerOutput];
+    if (image.mode === "allocator") {
+      image.diagnosticRuntime = mallocDebug;
+      environment = {
+        ...process.env,
+        LD_PRELOAD: mallocDebug.realpath,
+        GLIBC_TUNABLES: "glibc.malloc.tcache_count=0:glibc.malloc.perturb=165",
+        MALLOC_CHECK_: "3",
+        MALLOC_PERTURB_: "165",
+      };
+    } else if (image.mode === "memcheck") {
+      const require = createRequire(path.join(source, "npm/builder/vite-musea/package.json"));
+      const tsxLoader = fs.realpathSync(require.resolve("tsx/esm"));
+      image.loader = { path: tsxLoader, sha256: fileHash(tsxLoader) };
+      workerCommand = [
+        "/usr/bin/timeout",
+        "600",
+        "valgrind",
+        "--tool=memcheck",
+        "--error-exitcode=97",
+        "--undef-value-errors=no",
+        "--leak-check=no",
+        "--num-callers=40",
+        "--trace-children=no",
+        `--log-file=${path.join(workerOutput, "memcheck.log")}`,
+        process.execPath,
+        "--import",
+        pathToFileURL(tsxLoader).href,
+        self,
+        "--worker",
+        identityFile,
+        workerOutput,
+      ];
+    }
+    write(identityFile, image);
+    receipt.workers.push({
+      label: image.label,
+      side: image.side,
+      mode: image.mode,
+      attempt: image.attempt,
+      environment: Object.fromEntries(
+        ["GLIBC_TUNABLES", "MALLOC_CHECK_", "MALLOC_PERTURB_", "LD_PRELOAD"]
+          .filter((key) => Object.hasOwn(environment, key))
+          .map((key) => [key, environment[key]]),
+      ),
+      ...run(
+        workerCommand,
+        path.join(source, "npm/builder/vite-musea"),
+        environment,
+        path.join(output, image.label + "-worker.log"),
+      ),
+    });
+    retain();
+  };
+  const publicImage = identity("public", "public", "baseline", publicProject);
+  runImage(publicImage);
+  const sourceImage = buildSource("source", "baseline");
   for (const name of ["./npm/cli", "./npm/builder/vite", "./npm/builder/vite-musea"]) {
     success(
       run(
@@ -465,27 +447,24 @@ async function campaign(source, output) {
       ),
     );
   }
-  for (const image of identities) {
-    const identityFile = path.join(output, image.side + "-identity.json");
-    write(identityFile, image);
-    const workerOutput = path.join(output, image.side);
-    fs.mkdirSync(workerOutput);
-    receipt.workers.push({
-      side: image.side,
-      ...run(
-        ["vp", "exec", "tsx", self, "--worker", identityFile, workerOutput],
-        path.join(source, "npm/builder/vite-musea"),
-        process.env,
-        path.join(output, image.side + "-worker.log"),
-      ),
-    });
-    retain();
-  }
+  runImage(sourceImage);
+  const allocatorImage = buildSource("source-allocator", "allocator");
+  runImage(allocatorImage);
+  const memcheckImage = buildSource("source-memcheck", "memcheck");
+  runImage(memcheckImage);
+  const sourceImages = [sourceImage, allocatorImage, memcheckImage];
+  assert.equal(new Set(sourceImages.map(({ token }) => token)).size, sourceImages.length);
+  assert.equal(
+    new Set(sourceImages.map(({ binarySha256 }) => binarySha256)).size,
+    sourceImages.length,
+  );
+  receipt.observationsComplete = receipt.workers.length === receipt.imageOrder.length;
+  retain();
   for (const child of receipt.workers) success(child);
-  receipt.complete = true;
+  receipt.qualified = true;
   retain();
 }
-if (process.argv[2] === "--worker") await worker(process.argv[3], process.argv[4]);
+if (process.argv[2] === "--worker") await runLifecycleWorker(process.argv[3], process.argv[4]);
 else {
   assert.equal(process.argv.length, 4);
   await campaign(process.argv[2], process.argv[3]);
