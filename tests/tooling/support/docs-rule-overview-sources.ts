@@ -17,13 +17,13 @@ export function verifyRuleOverviewSource(root: string, locale: string) {
       }),
     ),
   );
-  assert.equal(references.size, 332);
+  assert.equal(references.size, 333);
   const source = read(`generated/rules/${locale}/all.md`);
   const headings = [...source.matchAll(/^### `([^`]+)`$/gm)];
   assert.deepEqual(
     headings.map((match) => match[1]).sort(),
     [...references.keys()].sort(),
-    `${locale}: all 332 independent source identities`,
+    `${locale}: all 333 independent source identities`,
   );
   assert.doesNotMatch(source, /^```/m, `${locale}: All Rules is an overview without full packets`);
   const anchors = [...source.matchAll(/<span id="([^"\n]+)"><\/span>/g)].map((match) => match[1]);
