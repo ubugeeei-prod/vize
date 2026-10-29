@@ -44,6 +44,7 @@ pub(crate) enum TemplatePart {
 pub struct SsrSfcContext {
     pub(crate) slotted: bool,
     pub(crate) development: bool,
+    pub(crate) jsx_closure: bool,
 }
 
 impl SsrSfcContext {
@@ -53,7 +54,16 @@ impl SsrSfcContext {
         Self {
             slotted,
             development: false,
+            jsx_closure: false,
         }
+    }
+
+    /// A JSX component owns lexical bindings directly, rather than the SFC
+    /// `$setup` object. This host role does not alter template defaults.
+    #[must_use]
+    pub const fn with_jsx_closure(mut self) -> Self {
+        self.jsx_closure = true;
+        self
     }
 
     /// The adapter's explicit development target; never read the environment
@@ -77,6 +87,8 @@ pub struct SsrCodegenContext<'a> {
     /// Whether slot outlets contribute this component's own slotted scope ID.
     pub(crate) slotted: bool,
     development: bool,
+    runtime_module_name: String,
+    pub(crate) jsx_closure: bool,
     /// The structured emission document: generated code plus, when a Source
     /// Map v3 document is requested, the links from its bytes to the template.
     pub(crate) out: EmitDocument,
@@ -139,6 +151,8 @@ impl<'a> SsrCodegenContext<'a> {
             experimental_self_component: experimental_options.self_component,
             slotted: true,
             development: false,
+            runtime_module_name: String::from("vue"),
+            jsx_closure: false,
             source,
             out: EmitDocument::with_capacity(1024, experimental_options.source_map),
             indent_level: 0,
@@ -155,9 +169,14 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
+    pub(crate) fn set_runtime_module_name(&mut self, runtime_module_name: &str) {
+        self.runtime_module_name = String::from(runtime_module_name);
+    }
+
     pub(crate) fn apply_sfc_context(&mut self, context: SsrSfcContext) {
         self.slotted = context.slotted;
         self.development = context.development;
+        self.jsx_closure = context.jsx_closure;
     }
 
     pub(crate) fn conditional_comment_vnode(&self) -> &'static str {
@@ -166,6 +185,13 @@ impl<'a> SsrCodegenContext<'a> {
         } else {
             "_createCommentVNode(\"\", true)"
         }
+    }
+
+    /// Apply an explicit host-owned emission role before generating an AST.
+    #[must_use]
+    pub fn with_host_context(mut self, context: SsrSfcContext) -> Self {
+        self.apply_sfc_context(context);
+        self
     }
 
     /// Generate SSR code from the AST
@@ -195,7 +221,7 @@ impl<'a> SsrCodegenContext<'a> {
             "function ssrRender(_ctx, _push, _parent, _attrs",
             template_start,
         );
-        if self.options.binding_metadata.is_some() {
+        if self.options.binding_metadata.is_some() && !self.jsx_closure {
             self.push(", $props, $setup, $data, $options");
         }
         self.push(") {\n");

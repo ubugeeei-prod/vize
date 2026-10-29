@@ -10,6 +10,7 @@ import { cadenceDecision } from "../../../tools/support/release/release/cadence.
 import {
   cadenceRegistryDecision,
   incompletePriorReleaseTargets,
+  laggingPriorReleaseCrates,
   priorReleaseCompleteness,
 } from "../../../tools/support/release/release/main.ts";
 import { extraReleasePackageJsonPaths } from "../../../tools/support/release/release/preparation.ts";
@@ -36,6 +37,12 @@ const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
   jobs: Record<string, Job>;
 };
 const needs = (job: string) => [workflow.jobs[job]?.needs ?? []].flat();
+const verify = parse(readRepoFile(".github", "workflows", "release-verify.yml")) as {
+  on: { workflow_dispatch: { inputs: Record<string, unknown> } };
+  concurrency: Record<string, unknown>;
+  jobs: Record<string, Job & { if?: string }>;
+};
+const verifyNeeds = (job: string) => [verify.jobs[job]?.needs ?? []].flat();
 
 test("the next release bumps the minor above every claimed version", () => {
   assert.equal(nextReleaseVersion(["0.474.0", "v0.471.0", "v0.474.0", "0.1.0"]), "0.475.0");
@@ -48,35 +55,36 @@ test("the next release bumps the minor above every claimed version", () => {
   assert.ok(!isUnclaimedVersion("0.476.0-rc", ["0.474.0"]));
 });
 
-test("a new release requires the prior tag on npm and every crates.io target", async () => {
-  const complete = await incompletePriorReleaseTargets("0.510.0", ["0.510.0"], async () => ({
-    kind: "published",
-  }));
-  assert.deepEqual(complete, []);
+test("a new release requires the prior tag on npm", () => {
+  assert.deepEqual(incompletePriorReleaseTargets("0.510.0", ["0.510.0"]), []);
+  assert.deepEqual(incompletePriorReleaseTargets("0.510.0", ["0.509.0"]), ["npm:vize@0.510.0"]);
+});
 
+test("crates.io gaps of the prior tag are reported for every published crate", async () => {
   let calls = 0;
-  const incomplete = await incompletePriorReleaseTargets("0.510.0", [], async (crate) => {
+  const lagging = await laggingPriorReleaseCrates("0.510.0", async (crate) => {
     calls += 1;
     if (crate === "vize_oxc_parser") return { kind: "missing" };
     if (crate === "vize_patina") return { kind: "query-failed", message: "HTTP 429" };
     return { kind: "published" };
   });
   assert.equal(calls, 28);
-  assert.deepEqual(incomplete, [
-    "npm:vize@0.510.0",
-    "crates:vize_oxc_parser@0.510.0",
-    "crates:vize_patina@0.510.0",
-  ]);
+  assert.deepEqual(lagging, ["crates:vize_oxc_parser@0.510.0", "crates:vize_patina@0.510.0"]);
 });
 
-test("cadence stops redispatching while the prior release is incomplete", async () => {
-  const incomplete = await priorReleaseCompleteness(
+test("cadence waits for npm but not for a stalled crates.io index", async () => {
+  const stalledIndex = await priorReleaseCompleteness(
     ["v0.509.0", "v0.510.0"],
     ["0.510.0"],
-    async (crate) =>
-      crate === "vize_patina"
-        ? { kind: "query-failed", message: "HTTP 429" }
-        : { kind: "published" },
+    async (crate) => (crate === "vize_patina" ? { kind: "missing" } : { kind: "published" }),
+  );
+  assert.deepEqual(stalledIndex.lagging, ["crates:vize_patina@0.510.0"]);
+  assert.equal(cadenceRegistryDecision(stalledIndex), null);
+
+  const incomplete = await priorReleaseCompleteness(
+    ["v0.509.0", "v0.510.0"],
+    ["0.509.0"],
+    async () => ({ kind: "published" }),
   );
   assert.deepEqual(cadenceRegistryDecision(incomplete), {
     release: false,
@@ -200,19 +208,25 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
   const prePublish = (name: string) =>
     name.startsWith("build-") || name === "smoke" || name === "tag";
   for (const [name, job] of Object.entries(workflow.jobs)) {
-    // publish-jsr only dispatches release-jsr.yml and checks nothing out.
-    if (name === "version" || name === "publish-jsr") continue;
+    // dispatch-verify only dispatches release-verify.yml and checks nothing out.
+    if (name === "version" || name === "dispatch-verify") continue;
     assert.ok(needs(name).includes("version"), `${name} needs version`);
     const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
     const ref = prePublish(name) ? "ref" : "tag";
     const expected =
-      name === "publish-npm"
-        ? "${{ inputs.npm_resume_run != '' && github.sha || needs.version.outputs.tag }}"
-        : `${"${{"} needs.version.outputs.${ref} }}`;
+      name === "publication-quota"
+        ? "${{ github.sha }}"
+        : name === "publish-npm"
+          ? "${{ inputs.npm_resume_run != '' && github.sha || needs.version.outputs.tag }}"
+          : `${"${{"} needs.version.outputs.${ref} }}`;
     assert.equal(checkout?.with?.ref, expected, name);
   }
   for (const gate of ["smoke", "build-cli", "build-editor-extensions"]) {
     assert.ok(needs("tag").includes(gate), `tag waits for ${gate}`);
+  }
+  // Platform editor packaging is never a release gate.
+  for (const name of ["tag", "publish-npm", "publish-vscode", "publish-open-vsx"]) {
+    assert.ok(!needs(name).includes("build-editor-platforms"), name);
   }
   assert.match(JSON.stringify(workflow.jobs.tag.steps), /refs\/tags\/\$RELEASE_TAG/);
   for (const build of ["build-cli", "build-native", "build-packages", "build-wasm"]) {
@@ -226,15 +240,16 @@ test("registries publish in parallel behind one credential-free smoke", () => {
   const publishers = Object.keys(workflow.jobs).filter((name) => name.startsWith("publish-"));
   assert.deepEqual(publishers.sort(), [
     "publish-crates",
-    "publish-jsr",
     "publish-npm",
     "publish-open-vsx",
+    "publish-open-vsx-platforms",
     "publish-vscode",
+    "publish-vscode-platforms",
   ]);
   for (const build of ["build-packages", "build-native", "build-wasm"]) {
     assert.ok(needs("smoke").includes(build), `smoke waits for ${build}`);
   }
-  for (const name of ["publish-crates", "publish-npm", "publish-open-vsx", "publish-vscode"]) {
+  for (const name of publishers) {
     assert.ok(needs(name).includes("tag"), name);
     assert.ok(!needs(name).some((other) => other.startsWith("publish-")), name);
   }
@@ -291,43 +306,104 @@ test("npm exposes every native platform before packages that depend on it", () =
   assert.ok((job["timeout-minutes"] ?? 0) >= 55, "the job can outlive both visibility barriers");
 });
 
-test("final registry verification checks every package and gates only JSR", () => {
-  assert.deepEqual(needs("verify-npm"), ["version", "publish-npm"]);
-  assert.deepEqual(needs("publish-jsr"), ["version", "verify-npm"]);
-  assert.match(String((workflow.jobs["verify-npm"] as Job & { if?: string }).if), /always\(\)/);
-  assert.match(
-    String((workflow.jobs["verify-npm"] as Job & { if?: string }).if),
-    /publish-npm\.result == 'success'/,
+test("the release ends at publishing and dispatches verification as the maintainer", () => {
+  const dispatch = workflow.jobs["dispatch-verify"] as Job & { if?: string };
+  assert.deepEqual(needs("dispatch-verify"), ["version", "publish-npm"]);
+  assert.match(String(dispatch.if), /always\(\)/);
+  assert.match(String(dispatch.if), /publish-npm\.result == 'success'/);
+  // release-verify.yml dispatches JSR, which refuses github-actions[bot].
+  assert.equal(dispatch.environment, "release-operator");
+  assert.equal(dispatch.env, undefined);
+  const step = dispatch.steps?.[0] as { run?: string; env?: Record<string, string> };
+  assert.equal(step.env?.GH_TOKEN, "${{ secrets.RELEASE_OPERATOR_TOKEN }}");
+  assert.deepEqual(
+    [...String(step.run).matchAll(/-f (\w+)="\$(\w+)"/g)].map(([, input, name]) => [
+      input,
+      step.env?.[name],
+    ]),
+    [
+      ["version", "${{ needs.version.outputs.version }}"],
+      ["tag", "${{ needs.version.outputs.tag }}"],
+      ["sha", "${{ needs.version.outputs.sha }}"],
+      ["packages", "${{ needs.publish-npm.outputs.packages }}"],
+    ],
   );
-  assert.match(
-    String((workflow.jobs["publish-jsr"] as Job & { if?: string }).if),
-    /verify-npm\.result == 'success'/,
-  );
-  assert.ok(!needs("github-release").includes("verify-npm"));
-  // JSR runs as its own workflow so its slow server-side processing never
-  // holds this run (and with it the cadence) open.
-  const jsr = workflow.jobs["publish-jsr"];
-  assert.equal(jsr.uses, undefined);
+  assert.match(String(step.run), /^gh workflow run release-verify\.yml .*--ref main/);
+  assert.deepEqual(Object.keys(verify.on.workflow_dispatch.inputs), [
+    "quota_dry_run",
+    "version",
+    "tag",
+    "sha",
+    "packages",
+  ]);
+  const dryInput = verify.on.workflow_dispatch.inputs.quota_dry_run as {
+    required?: boolean;
+    default?: boolean;
+    type?: string;
+  };
+  assert.equal(dryInput.required, false);
+  assert.equal(dryInput.default, false);
+  assert.equal(dryInput.type, "boolean");
+  for (const name of ["version", "tag", "sha", "packages"]) {
+    assert.equal(
+      (verify.on.workflow_dispatch.inputs[name] as { required?: boolean }).required,
+      true,
+      name,
+    );
+  }
+  // Nothing in the Release run waits on npm propagation or JSR any more.
+  for (const name of Object.keys(workflow.jobs)) {
+    assert.ok(!/^verify-|^publish-jsr$/.test(name), name);
+    assert.ok(!needs(name).includes("dispatch-verify"), name);
+  }
+});
+
+test("verification runs outside the release concurrency group and gates only JSR", () => {
+  // Its own per-version group: a slow verify never delays the next release,
+  // and a newer release's verify never cancels a pending one.
+  assert.deepEqual(verify.concurrency, {
+    group: "release-verify-${{ inputs.version }}",
+    "cancel-in-progress": false,
+  });
+  assert.equal(verifyNeeds("verify-npm").length, 0);
+  assert.match(String(verify.jobs["verify-npm"].if), /github\.ref == 'refs\/heads\/main'/);
+  const steps = (verify.jobs["verify-npm"].steps ?? []).map((step) => step.run ?? "").join("\n");
+  assert.match(steps, /^\[\[ "\$RELEASE_TAG" == "v\$RELEASE_VERSION" \]\]$/m);
+  assert.match(steps, /^\[\[ "\$\(git rev-parse HEAD\)" == "\$RELEASE_SHA" \]\]$/m);
+  assert.match(steps, /verify_published\/main\.ts "\$RELEASE_VERSION" "\$\{packages\[@\]\}"/);
+  for (const [name, job] of Object.entries(verify.jobs)) {
+    const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
+    if (name !== "publish-jsr") {
+      const expected = name === "quota-dry-run" ? "${{ github.sha }}" : "${{ inputs.tag }}";
+      assert.equal(checkout?.with?.ref, expected, name);
+    }
+  }
+  assert.deepEqual(verify.jobs["quota-dry-run"].permissions, { contents: "read", actions: "read" });
+  assert.match(String(verify.jobs["quota-dry-run"].if), /quota_dry_run == true/);
+  assert.match(String(verify.jobs["verify-npm"].if), /quota_dry_run != true/);
+  // A failed or skipped verify-npm skips the JSR dispatch for that version.
+  const jsr = verify.jobs["publish-jsr"];
+  assert.deepEqual(verifyNeeds("publish-jsr"), ["verify-npm"]);
+  assert.equal(jsr.if, undefined);
   assert.equal(jsr.environment, "release-operator");
   assert.match(JSON.stringify(jsr.steps), /gh workflow run release-jsr\.yml/);
   assert.match(JSON.stringify(jsr.steps), /secrets\.RELEASE_OPERATOR_TOKEN/);
+  assert.match(JSON.stringify(jsr.steps), /"JSR_VERSION":"\$\{\{ inputs\.tag \}\}"/);
+  assert.match(JSON.stringify(jsr.steps), /"JSR_SOURCE":"\$\{\{ inputs\.sha \}\}"/);
 });
 
 test("post-publish product checks follow npm verification and gate nothing", () => {
   for (const check of ["verify-config", "verify-musea-vrt"]) {
-    assert.deepEqual(needs(check), ["version", "verify-npm"]);
-    assert.match(
-      String((workflow.jobs[check] as Job & { if?: string }).if),
-      /verify-npm\.result == 'success'/,
-    );
-    for (const name of Object.keys(workflow.jobs)) assert.ok(!needs(name).includes(check), name);
+    assert.deepEqual(verifyNeeds(check), ["verify-npm"]);
+    assert.equal(verify.jobs[check].if, undefined);
+    for (const name of Object.keys(verify.jobs)) assert.ok(!verifyNeeds(name).includes(check));
   }
   assert.match(
-    JSON.stringify(workflow.jobs["verify-musea-vrt"].steps),
+    JSON.stringify(verify.jobs["verify-musea-vrt"].steps),
     /verify_published\/musea_vrt\.ts/,
   );
   assert.match(
-    JSON.stringify(workflow.jobs["verify-config"].steps),
+    JSON.stringify(verify.jobs["verify-config"].steps),
     /verify_published\/config_free\.ts/,
   );
 });

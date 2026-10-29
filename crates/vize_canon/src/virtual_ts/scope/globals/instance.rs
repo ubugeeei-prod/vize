@@ -1,12 +1,19 @@
 //! Template references to `$`-prefixed component instance globals.
 //!
-//! Vue 3 reads each authored occurrence off its typed public instance. Missing
-//! members therefore report TypeScript property errors instead of acquiring an
-//! `any` fallback.
-//! Explicit strict mode uses its narrower template context, while Vue 2 retains
-//! the structural compatibility fallback because its context is not a complete
-//! public instance. An unavailable Vue instance type still degrades to `any` at
-//! the import boundary, rather than inventing declarations for plugin names.
+//! A Vue 3 template reads each authored occurrence off its typed public
+//! instance, so an undeclared global reports the TypeScript property error
+//! `vue-tsc` reports instead of acquiring an `any` fallback. Ordinary reads
+//! are rewritten at the authored expression. Strict mode, Vue 2, `$props`,
+//! `$el`, and the authored Options API instance still use the prelude: that
+//! Options API receiver is the component instance, where mixins and
+//! `$`-named members exist, strict mode uses the template context, and every
+//! other Vue 3 read uses `__ctx`. A `vue` that cannot be resolved types
+//! `__ctx` as `any`, so nothing is invented there.
+//!
+//! Vue 2's context is structural and its plugin globals come from
+//! `vue/types/vue` augmentations the Vue 3 instance never sees, so it keeps the
+//! permissive form: each name declared once, widened to `any` when the context
+//! does not carry it.
 //!
 //! Names the caller already declared, including the ones mined out of a
 //! generated `ComponentCustomProperties`, never reach either form: they are
@@ -32,7 +39,8 @@ use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 use super::super::context::ScopeGenerationOptions;
 use super::template_scope::is_visible_template_binding_in_scope;
 use super::{
-    has_script_setup, is_declared_template_context_name, is_template_instance_global_name,
+    is_declared_template_context_name, is_template_instance_global_name,
+    resolves_on_authored_instance,
 };
 
 #[cfg(test)]
@@ -75,6 +83,7 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
         // require this prelude; do not parse every dollar expression twice.
         if !scope_options.legacy_vue2
             && !scope_options.virtual_ts_options.strict_instance_globals
+            && !resolves_on_authored_instance(summary, scope_options)
             && !expr.content.as_str().contains("$props")
             && !(scope_options.check_options.infer_template_dollar_el
                 && expr.content.as_str().contains("$el"))
@@ -107,6 +116,7 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
         if !data.source.contains('$')
             || (!scope_options.legacy_vue2
                 && !scope_options.virtual_ts_options.strict_instance_globals
+                && !resolves_on_authored_instance(summary, scope_options)
                 && !data.source.contains("$props")
                 && !(scope_options.check_options.infer_template_dollar_el
                     && data.source.contains("$el")))
@@ -185,16 +195,16 @@ fn instance_props_type(
     {
         return Some(props_type);
     }
-    let resolve_on_instance = scope_options.options_api
-        && scope_options.has_default_alias
-        && !scope_options.legacy_vue2
-        && !has_script_setup(summary);
-    resolve_on_instance.then(|| {
+    resolves_on_authored_instance(summary, scope_options).then(|| {
         String::from(
             "(typeof __default__ extends abstract new (...args: any) => infer __I ? __VizeIsAny<__I> extends true ? any : __I extends { $props: infer __P } ? __P : {} : {})",
         )
     })
 }
+
+/// The authored Options API instance, with the public instance as the fallback
+/// for a default export that is not a component constructor.
+const AUTHORED_INSTANCE_RECEIVER: &str = "__vize_instance_globals";
 
 struct InstanceGlobalRefsEmitter<'a> {
     ts: &'a mut String,
@@ -206,7 +216,7 @@ struct InstanceGlobalRefsEmitter<'a> {
     synthetic_setup_bindings: FxHashSet<&'a str>,
     type_export_names: FxHashSet<&'a str>,
     seen_names: FxHashSet<String>,
-    /// Authored `(name, source offset)` pairs already emitted. Checked resolution
+    /// Authored `(name, source offset)` pairs already emitted. A typed receiver
     /// reports one diagnostic per authored occurrence the way `vue-tsc` does, so
     /// it deduplicates by position; the two collection passes above can reach the
     /// same occurrence twice.
@@ -215,6 +225,7 @@ struct InstanceGlobalRefsEmitter<'a> {
     instance_props_type: Option<Option<String>>,
     emitted_header: bool,
     emitted_instance_global_alias: bool,
+    emitted_authored_instance: bool,
 }
 
 impl<'a> InstanceGlobalRefsEmitter<'a> {
@@ -251,6 +262,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
             instance_props_type: None,
             emitted_header: false,
             emitted_instance_global_alias: false,
+            emitted_authored_instance: false,
         }
     }
 
@@ -258,6 +270,20 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         self.instance_props_type
             .get_or_insert_with(|| instance_props_type(self.summary, self.scope_options))
             .clone()
+    }
+
+    /// The typed surface an undeclared name is read from; `None` is Vue 2's
+    /// `any` fallback.
+    fn instance_receiver(&self) -> Option<&'static str> {
+        if self.options.strict_instance_globals {
+            Some("__vize_strict_template_context")
+        } else if self.scope_options.legacy_vue2 {
+            None
+        } else if resolves_on_authored_instance(self.summary, self.scope_options) {
+            Some(AUTHORED_INSTANCE_RECEIVER)
+        } else {
+            Some("__ctx")
+        }
     }
 
     fn emit(&mut self, name: &str, src_start: usize, src_end: usize) {
@@ -282,26 +308,26 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
             None
         };
 
+        // Ordinary Vue 3 reads are rewritten at the authored expression. The
+        // prelude still owns strict context, Vue 2, `$props` / `$el`, and the
+        // authored Options API instance (its mixins are not on `__ctx`).
         if !self.scope_options.legacy_vue2
             && !self.options.strict_instance_globals
             && declared_type.is_none()
             && name != "$props"
+            && !resolves_on_authored_instance(self.summary, self.scope_options)
         {
             return;
         }
 
-        let receiver = if self.options.strict_instance_globals {
-            Some("__vize_strict_template_context")
-        } else if !self.scope_options.legacy_vue2 {
-            Some("__ctx")
-        } else {
-            None
-        };
-        let checked = receiver.is_some() && declared_type.is_none();
-        // A checked access preserves every authored occurrence, including loop
-        // sources, so a missing member reports at each use. The legacy fallback
-        // declares a name once and later uses resolve to that binding.
-        let already_declared = if checked {
+        let receiver = declared_type
+            .is_none()
+            .then(|| self.instance_receiver())
+            .flatten();
+        // A typed receiver keeps every authored occurrence so an undeclared
+        // name reports once per use, the way `vue-tsc` does. The permissive form
+        // declares the name once and every later use resolves to that binding.
+        let already_declared = if receiver.is_some() {
             if !self.seen_occurrences.insert((name.into(), src_start)) {
                 return;
             }
@@ -321,11 +347,18 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         // The `__VizeInstanceGlobal` alias is only emitted for names that
         // actually read the public instance: an alias declared and never used
         // is a `TS6196` under `noUnusedLocals`.
-        if !checked && declared_type.is_none() && !self.emitted_instance_global_alias {
+        if receiver.is_none() && declared_type.is_none() && !self.emitted_instance_global_alias {
             self.ts.push_str(
                 "  type __VizeInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;\n",
             );
             self.emitted_instance_global_alias = true;
+        }
+        if receiver == Some(AUTHORED_INSTANCE_RECEIVER) && !self.emitted_authored_instance {
+            append!(
+                *self.ts,
+                "  const {AUTHORED_INSTANCE_RECEIVER} = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : __Ctx);\n",
+            );
+            self.emitted_authored_instance = true;
         }
 
         let gen_start = self.ts.len();
@@ -336,16 +369,13 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
             (None, None, _) => {
                 cstr!("  const {name}: __VizeInstanceGlobal<'{name}'> = undefined as any;\n")
             }
-            (None, Some(receiver), false) => {
-                cstr!("  const {name} = {receiver}.{name};\n")
-            }
+            (None, Some(receiver), false) => cstr!("  const {name} = {receiver}.{name};\n"),
             (None, Some(receiver), true) => cstr!("  void ({receiver}.{name});\n"),
         };
-        // Checked forms read the name off the instance/template context,
-        // where TypeScript reports an undeclared global, so
-        // the mapping anchors to the trailing occurrence rather than the leading
-        // binding name.
-        let name_offset = if checked {
+        // The receiver access is where TypeScript reports an undeclared global,
+        // so the mapping anchors to the trailing occurrence rather than the
+        // leading binding name.
+        let name_offset = if receiver.is_some() {
             stmt.rfind(name)
         } else {
             stmt.find(name)

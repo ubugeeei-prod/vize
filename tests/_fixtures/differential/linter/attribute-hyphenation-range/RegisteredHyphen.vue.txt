@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import MyWidget from "./MyWidget.vue";
+</script>
+
+<template>
+  <MyWidget foo-bar="value" :active-key="key" v-model:page-size="size" />
+</template>

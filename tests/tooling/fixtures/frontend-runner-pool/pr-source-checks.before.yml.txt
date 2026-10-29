@@ -1,0 +1,424 @@
+name: PR source checks
+on:
+  workflow_call:
+permissions: { contents: read, pull-requests: read, actions: read }
+env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
+jobs:
+  nuxt-module-qualification:
+    name: Nuxt module qualification
+    if: ${{ github.event_name == 'merge_group' }}
+    uses: ./.github/workflows/nuxt3-module-build.yml
+  pr-source-plan:
+    name: Plan PR source checks
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    outputs:
+      comparison-base: ${{ steps.comparison.outputs.base }}
+      # Canonical/browser qualification runs in the merge queue; PRs can opt
+      # into the duplicate qualification with the `full-ci` label.
+      heavy: ${{ steps.plan.outputs.heavy }}
+      canonical-corpus: ${{ steps.plan.outputs.heavy == 'true' && steps.canonical-corpus-plan.outputs.canonical-corpus || 'false' }}
+      rust: ${{ steps.plan.outputs.rust }}
+      rust-plan: ${{ steps.plan.outputs.rust-plan }}
+      source-contracts: ${{ steps.plan.outputs.source-contracts }}
+      js: ${{ steps.plan.outputs.js }}
+      js-plan: ${{ steps.plan.outputs.js-plan }}
+      native-runtime-matrix: ${{ steps.plan.outputs.native-runtime-matrix }}
+      playground: ${{ steps.plan.outputs.playground }}
+      tooling: ${{ steps.plan.outputs.tooling }}
+      affected-tooling: ${{ steps.tooling-plan.outputs.tooling }}
+      affected-tooling-matrix: ${{ steps.tooling-plan.outputs.tooling-matrix }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Resolve and fetch comparison base
+        id: comparison
+        env:
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          comparison_base="$(node tools/support/compat/github/comparison-base.ts)"
+          if [[ ! "$comparison_base" =~ ^0+$ ]]; then
+            # Only the two trees are compared, so the base needs no history.
+            git fetch --no-tags --depth=1 origin "$comparison_base"
+          fi
+      - name: Plan source checks
+        id: plan
+        env:
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: node tools/support/compat/github/plan-pr-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
+      - name: Require legacy fix differential inputs
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
+        run: node tools/support/compat/github/report-legacy-fix-fixtures.ts "$BASE_SHA" "$GITHUB_SHA"
+      - name: Hold the Clippy test-target ratchet
+        if: ${{ github.event_name == 'pull_request' }}
+        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
+        run: node tools/support/compat/github/clippy-test-targets.ts hold "$BASE_SHA"
+      - name: Plan canonical corpus inputs
+        id: canonical-corpus-plan
+        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
+        run: node tools/support/compat/github/canonical-corpus-selection.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
+      - name: Plan affected tooling tests
+        id: tooling-plan
+        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
+        run: node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json" --github-output
+  # PR and queue Rust lanes build only native configurations; the release
+  # also builds @vizejs/wasm without it. Check that configuration first.
+  wasm-release-check:
+    name: WASM release build check
+    needs: pr-source-plan
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: "24"
+      AFFECTED: ${{ contains(fromJSON(needs.pr-source-plan.outputs.rust-plan).packages, 'vize_vitrine') }}
+    steps:
+      - name: Explain unaffected skip
+        if: ${{ env.AFFECTED != 'true' }}
+        run: echo 'The WASM release crate depends on no changed Rust package.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ env.AFFECTED == 'true' }}
+      - uses: ./.github/actions/check-wasm-release
+        if: ${{ env.AFFECTED == 'true' }}
+  # Tooling tests otherwise ran only in scheduled Full qualification, so docs
+  # and tooling breaks reached main. The PR tier selects what a change affects.
+  # Built beside the planner, not after it: nearly every PR selects tooling.
+  affected-tooling-cli:
+    name: Affected tooling CLI
+    uses: ./.github/workflows/full-source-cli.yml
+  affected-tooling:
+    name: Affected tooling (${{ matrix.name }})
+    needs: [pr-source-plan, affected-tooling-cli]
+    if: ${{ needs.pr-source-plan.outputs.affected-tooling == 'true' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.pr-source-plan.outputs.affected-tooling-matrix) }}
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.affected-tooling-cli.outputs.receipt-sha256 }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0 }
+      - uses: ./.github/actions/test-affected-tooling
+        with:
+          producer: ${{ toJSON(needs.affected-tooling-cli.outputs) }}
+          base: ${{ needs.pr-source-plan.outputs.comparison-base }}
+          shard: ${{ matrix.index }}
+          total: ${{ matrix.total }}
+  affected-tooling-report:
+    name: Affected tooling report
+    if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
+    needs: [pr-source-plan, affected-tooling-cli, affected-tooling]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require every selected tooling worker
+        env:
+          SELECTED: ${{ needs.pr-source-plan.outputs.affected-tooling }}
+          CLI: ${{ needs.affected-tooling-cli.result }}
+          WORKERS: ${{ needs.affected-tooling.result }}
+        run: |
+          echo "selected=$SELECTED cli=$CLI workers=$WORKERS"
+          [[ "$CLI" == success ]]
+          if [[ "$SELECTED" == true ]]; then [[ "$WORKERS" == success ]]
+          else [[ "$SELECTED" == false && "$WORKERS" == skipped ]]; fi
+  # Beside the lanes, not before them: every lane already waits for the source
+  # report, which requires this job.
+  ci-selection-tests:
+    name: CI selection tests
+    needs: pr-source-plan
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - name: Explain unrelated skip
+        if: ${{ needs.pr-source-plan.outputs.tooling != 'true' }}
+        run: echo 'No CI selection inputs changed.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Test CI selection when its inputs change
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        run: >-
+          node --test tests/tooling/ci-iteration-plans.test.ts
+          tests/tooling/pr-required-rust.test.ts
+          tests/tooling/rust-test-cohorts.test.ts
+          tests/tooling/rust-build-evidence.test.mjs
+          tests/tooling/pinned-fixture-hydration.test.ts
+          tests/tooling/native-preparation-identity.test.ts tests/tooling/native-formatter-build-custody.test.mjs tests/tooling/native-ci-formatter-custody.test.mjs tests/tooling/native-history-profile.test.ts
+          tests/tooling/publish-npm-package*.test.ts
+          tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts
+  canonical-corpus:
+    permissions: { contents: read, actions: read, checks: read }
+    needs: pr-source-plan
+    if: ${{ !cancelled() && needs.pr-source-plan.result == 'success' && needs.pr-source-plan.outputs.canonical-corpus == 'true' }}
+    uses: ./.github/workflows/davinci-canonical-corpus.yml
+  pr-rust-source:
+    name: PR Rust Clippy, tests, and fixtures
+    permissions: { contents: read, actions: read }
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    needs: pr-source-plan
+    uses: ./.github/workflows/pr-rust-checks.yml
+    with:
+      # Every PR and queue candidate must execute Rust checks. The planner
+      # narrows packages; it cannot disable test or Clippy acceptance.
+      run-rust: true
+      rust-plan: ${{ needs.pr-source-plan.outputs.rust-plan }}
+      run-source-contracts: ${{ needs.pr-source-plan.outputs.source-contracts == 'true' }}
+  pr-rust-products:
+    name: PR Rust workspace products
+    permissions: { contents: read, actions: read, pull-requests: read }
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    needs: pr-source-plan
+    uses: ./.github/workflows/pr-rust-products.yml
+    with:
+      run-rust: true
+      rust-plan: ${{ needs.pr-source-plan.outputs.rust-plan }}
+  pr-js-packages:
+    name: PR JS packages
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    needs: pr-source-plan
+    uses: ./.github/workflows/pr-js-checks.yml
+    with:
+      run-js: ${{ needs.pr-source-plan.outputs.js == 'true' }}
+      run-original-project: false
+      js-plan: ${{ needs.pr-source-plan.outputs.js-plan }}
+  pr-native-runtime:
+    name: Native runtime (${{ matrix.lane }})
+    needs: pr-source-plan
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.pr-source-plan.outputs.native-runtime-matrix) }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      CARGO_BUILD_JOBS: "12"
+      VIZE_NATIVE_RUST_TOOLCHAIN: "1.99.1"
+      VIZE_NATIVE_RUST_COMPONENTS: clippy,rust-src,rustfmt
+      VIZE_NATIVE_RUST_TARGETS: wasm32-unknown-unknown,wasm32-wasip2
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - name: Explain unrelated skip
+        if: ${{ matrix.lane == 'none' }}
+        run: echo 'No native runtime inputs changed.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ matrix.lane != 'none' }}
+        with: { fetch-depth: "${{ matrix.lane == 'attributes' && '0' || '1' }}" }
+      - uses: ./.github/actions/cache-vp-bootstrap
+        if: ${{ matrix.lane != 'none' }}
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        if: ${{ matrix.lane != 'none' }}
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        if: ${{ matrix.lane != 'none' }}
+        with:
+          toolchain: ${{ env.VIZE_NATIVE_RUST_TOOLCHAIN }}
+          components: ${{ env.VIZE_NATIVE_RUST_COMPONENTS }}
+          targets: ${{ env.VIZE_NATIVE_RUST_TARGETS }}
+      - name: Verify configured native runtime toolchain
+        if: ${{ matrix.lane != 'none' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Verify the repository toolchain setup here, before a Cargo proxy can
+          # implicitly download missing components inside a runtime test step.
+          host=$(rustup run "$VIZE_NATIVE_RUST_TOOLCHAIN" rustc --version --verbose | sed -n 's/^host: //p')
+          test -n "$host"
+          components=$(rustup component list --toolchain "$VIZE_NATIVE_RUST_TOOLCHAIN" --installed)
+          targets=$(rustup target list --toolchain "$VIZE_NATIVE_RUST_TOOLCHAIN" --installed)
+          printf '%s\n' "$components" "$targets"
+          IFS=',' read -r -a required_components <<< "$VIZE_NATIVE_RUST_COMPONENTS"
+          for component in "${required_components[@]}"; do
+            if ! grep -Fxq -- "$component" <<< "$components" && ! grep -Fxq -- "$component-$host" <<< "$components"; then
+              echo "::error::Missing configured Rust component: $component" >&2
+              exit 1
+            fi
+          done
+          IFS=',' read -r -a required_targets <<< "$VIZE_NATIVE_RUST_TARGETS"
+          for target in "${required_targets[@]}"; do
+            if ! grep -Fxq -- "$target" <<< "$targets"; then
+              echo "::error::Missing configured Rust target: $target" >&2
+              exit 1
+            fi
+          done
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: ${{ matrix.lane != 'none' }}
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ matrix.lane != 'none' }}
+        with:
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install native runtime oracle dependencies
+        if: ${{ matrix.lane != 'none' }}
+        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './npm/native...' --filter './npm/ui...' --filter './tests...'
+      - name: Test native typechecker ownership and projection laws
+        if: ${{ matrix.lane == 'canon' }}
+        uses: ./.github/actions/test-native-canon
+      - name: Test actual source LSP feature and project responses
+        if: ${{ matrix.lane == 'lsp' }}
+        uses: ./.github/actions/test-native-lsp
+      - name: Replay complete formatter CLI stock semantics with the source CLI
+        if: ${{ success() && matrix.lane == 'lsp' }}
+        run: |
+          set -euo pipefail
+          mkdir -p target/differential
+          node --test tests/tooling/formatter-expression-width-semantics.test.mjs tests/tooling/formatter-continuation-prefix-width.test.mjs 2>&1 | tee target/differential/formatter-source.log
+      - name: Preserve complete source formatter semantic observations
+        if: ${{ always() && matrix.lane == 'lsp' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: source-formatter-semantics-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: |
+            target/differential/formatter-expression-width-semantics.json
+            target/differential/formatter-continuation-prefix-width.json
+            target/differential/formatter-source.log
+            target/ci/vize.differential-build.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Test fresh native SSR modules
+        if: ${{ matrix.lane == 'ssr' }}
+        uses: ./.github/actions/test-native-ssr
+      - name: Verify native scoped CSS in real Vue
+        if: ${{ matrix.lane == 'scoped-css' }}
+        uses: ./.github/actions/test-native-scoped-css
+      - name: Test native setup modules and runtime
+        if: ${{ matrix.lane == 'setup' }}
+        uses: ./.github/actions/test-native-js-setup
+      - name: Test native Vapor modules and runtime
+        if: ${{ matrix.lane == 'vapor' }}
+        uses: ./.github/actions/test-native-vapor
+      - name: Test native attribute values across targets
+        if: ${{ matrix.lane == 'attributes' }}
+        uses: ./.github/actions/test-native-attribute-values-7502
+      - name: Execute original selected-template DOM modules
+        if: ${{ matrix.lane == 'selected-template' }}
+        uses: ./.github/actions/test-native-selected-template
+  pr-playground-test:
+    name: PR playground browser tests
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    needs: pr-source-plan
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    env:
+      CARGO_BUILD_JOBS: "12"
+      RUN_PLAYGROUND: ${{ needs.pr-source-plan.outputs.playground }}
+    steps:
+      - name: Explain unrelated skip
+        if: ${{ env.RUN_PLAYGROUND != 'true' }}
+        run: echo 'Playground browser tests skipped because this PR changes no compiler, Vite, or playground source paths.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+        with: { toolchain: stable, targets: wasm32-unknown-unknown }
+      - uses: ./.github/actions/setup-wild-http-recovery # v0.9.0
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+        with: { wild-version: 0.9.0 }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+        with:
+          key: build-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+      - name: Cache WASM build
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+        id: cache-wasm
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: playground/src/wasm/vize_vitrine*
+          key: ${{ runner.os }}-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/support/github/build-vitrine-wasm.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}
+      - name: Install wasm-bindgen-cli
+        if: ${{ env.RUN_PLAYGROUND == 'true' && steps.cache-wasm.outputs.cache-hit != 'true' }}
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: wasm-bindgen-cli@0.2.129
+      - uses: ./.github/actions/cache-vp-bootstrap
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: false
+      - name: Build WASM
+        if: ${{ env.RUN_PLAYGROUND == 'true' && steps.cache-wasm.outputs.cache-hit != 'true' }}
+        run: node tools/support/github/build-vitrine-wasm.ts playground/src/wasm
+      - name: Install JS dependencies
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build playground dependencies
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+        run: vp run --filter './npm/native' build:ci && vp run --workspace-root build:packages
+      - name: Cache Playwright browsers
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+        id: cache-playwright
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Install Playwright browsers
+        if: ${{ env.RUN_PLAYGROUND == 'true' && steps.cache-playwright.outputs.cache-hit != 'true' }}
+        uses: ./.github/actions/install-playwright-browsers
+      - name: Run playground tests
+        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+        run: vp run --filter './playground' test:browser
+      - name: Run VRT
+        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' }}
+        run: vp run --filter './playground' test:vrt
+        continue-on-error: true
+        id: vrt
+      - name: Upload VRT report
+        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pr-playground-vrt-report
+          path: playground/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload VRT diff artifacts
+        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pr-vrt-diff
+          path: playground/e2e/vrt/test-results/
+          retention-days: 7
+      - name: Fail if VRT failed
+        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        run: exit 1
+  source-report:
+    name: PR source report
+    permissions: { contents: read, actions: read, pull-requests: read }
+    # A superseded run reports nothing: its required check fails in test-report.
+    if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
+    # prettier-ignore
+    needs: [pr-source-plan, pr-rust-source, pr-rust-products, pr-js-packages, pr-native-runtime, pr-playground-test, nuxt-module-qualification, canonical-corpus, ci-selection-tests, wasm-release-check, affected-tooling-report]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Require every source gate to succeed
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          GH_TOKEN: ${{ github.token }}
+        run: node tools/support/compat/github/canonical-corpus-selection.mjs --check

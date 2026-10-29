@@ -13,6 +13,7 @@ use std::sync::Arc;
 use vize_l0::{FxHashMap, String};
 
 mod bootstrap;
+mod completion_order;
 mod diagnostics;
 mod diagnostics_api;
 mod diagnostics_lsp;

@@ -98,8 +98,11 @@ export interface BatchCompileOptionsNapi {
   experimentalSelfComponent?: boolean;
   experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
+  /** Module for generated Vue helpers; preserves authored imports and the SSR renderer. */
   runtimeModuleName?: string;
+  /** Runtime global expression for standalone (`mode: "function"`) output. */
   runtimeGlobalName?: string;
+  /** Runtime dialect selector; omitted or "3" uses Vue 3. Legacy code generation is unavailable. */
   vueVersion?: string;
   styleTrim?: boolean;
   templateCacheHandlers?: boolean;
@@ -186,6 +189,8 @@ export interface BatchFileResultNapi {
   customBlocks: Array<CustomBlockNapi>;
   macroArtifacts: Array<MacroArtifactNapi>;
   moduleShape?: ModuleShapeNapi;
+  /** Files the compile read besides the SFC (pug `include`s). */
+  dependencies?: Array<string>;
 }
 
 /** Batch type check result for NAPI */
@@ -317,7 +322,10 @@ export interface CompilerOptions {
   experimentalStrictSlotChildren?: boolean;
   /** Enable experimental server-script related RFC surface. */
   experimentalServerScript?: boolean;
-  /** Module name for runtime imports. */
+  /**
+   * Module for compiler-generated Vue helpers. Authored module imports and the
+   * SSR renderer module retain their own sources. Defaults to "vue".
+   */
   runtimeModuleName?: string;
   /** Global variable name for standalone/function mode. */
   runtimeGlobalName?: string;
@@ -568,7 +576,11 @@ export interface FormatOptionsNapi {
   /** Layout line endings; auto follows the first source terminator. */
   endOfLine?: EndOfLineNapi;
   sortAttributes?: boolean;
+  /** Choose the order of attributes within each Vue priority group. */
+  attributeSortOrder?: "alphabetical" | "as-written";
   singleAttributePerLine?: boolean;
+  /** Indent the contents of `<script>` and `<style>` blocks. */
+  vueIndentScriptAndStyle?: boolean;
   maxAttributesPerLine?: number;
   normalizeDirectiveShorthands?: boolean;
   /** Order SFC blocks canonically; false preserves their authored order. */
@@ -1081,7 +1093,7 @@ export interface SfcAnalyzeOptions {
 export declare function parseSfc(
   source: string,
   options?: SfcParseOptionsNapi | undefined | null,
-): any;
+): SfcParseResultNapi;
 
 /** Parse template to AST only */
 export declare function parseTemplate(
@@ -1331,8 +1343,11 @@ export interface SfcCompileOptionsNapi {
   experimentalSelfComponent?: boolean;
   experimentalStrictSlotChildren?: boolean;
   experimentalServerScript?: boolean;
+  /** Module for generated Vue helpers; preserves authored imports and the SSR renderer. */
   runtimeModuleName?: string;
+  /** Runtime global expression for standalone (`mode: "function"`) output. */
   runtimeGlobalName?: string;
+  /** Runtime dialect selector; omitted or "3" uses Vue 3. Legacy code generation is unavailable. */
   vueVersion?: string;
   styleTrim?: boolean;
   templateCacheHandlers?: boolean;
@@ -1369,6 +1384,8 @@ export interface SfcCompileResultNapi {
   customBlocks: Array<CustomBlockNapi>;
   macroArtifacts: Array<MacroArtifactNapi>;
   moduleShape?: ModuleShapeNapi;
+  /** Files the compile read besides the SFC (pug `include`s). */
+  dependencies?: Array<string>;
 }
 
 /** SFC element order options for NAPI */
@@ -1378,6 +1395,67 @@ export interface SfcElementOrderOptionsNapi {
 
 export interface SfcParseOptionsNapi {
   filename?: string;
+  /** Include effective parser attributes in authored name order. */
+  includeAttrs?: boolean;
+}
+
+export interface SfcParseResultNapi {
+  filename: string;
+  source: string;
+  template: SfcParsedTemplateNapi | null;
+  script: SfcParsedScriptNapi | null;
+  scriptSetup: SfcParsedScriptNapi | null;
+  styles: Array<SfcParsedStyleNapi>;
+  customBlocks: Array<SfcParsedCustomBlockNapi>;
+}
+
+/** An effective parsed attribute. Boolean and empty values remain empty strings. */
+export interface SfcParsedAttributeNapi {
+  name: string;
+  value: string;
+}
+
+export interface SfcParsedCustomBlockNapi {
+  type: string;
+  content: string;
+  loc: SfcParsedLocationNapi;
+  attrs?: Array<SfcParsedAttributeNapi>;
+}
+
+/** All offsets and columns use UTF-8 bytes in the original source. */
+export interface SfcParsedLocationNapi {
+  start: number;
+  end: number;
+  tagStart: number;
+  tagEnd: number;
+  startLine: number;
+  startColumn: number;
+  endLine: number;
+  endColumn: number;
+}
+
+export interface SfcParsedScriptNapi {
+  content: string;
+  loc: SfcParsedLocationNapi;
+  lang: string | null;
+  setup: boolean;
+  attrs?: Array<SfcParsedAttributeNapi>;
+}
+
+export interface SfcParsedStyleNapi {
+  content: string;
+  loc: SfcParsedLocationNapi;
+  lang: string | null;
+  scoped: boolean;
+  module: string | null;
+  attrs?: Array<SfcParsedAttributeNapi>;
+}
+
+export interface SfcParsedTemplateNapi {
+  content: string;
+  loc: SfcParsedLocationNapi;
+  lang: string | null;
+  attrs?: Array<SfcParsedAttributeNapi>;
 }
 
 export interface SfcSrcInfoNapi {
@@ -1450,11 +1528,39 @@ export declare function transformViteCssVarsForPipeline(
   productionFilename?: string | undefined | null,
 ): string;
 
+/** Canon's configuration identity and the exact files observed while resolving it. */
+export interface VueLanguageProjectMetadata {
+  configIdentity: string;
+  watchedFiles: Array<string>;
+}
+
 /**
- * Perform type checking on a Vue SFC
- *
- * This performs AST-based type analysis without requiring a TypeScript compiler.
- * For full type checking, use the CLI with Corsa integration.
+ * Snapshot the explicit project's existing Canon configuration resolver.
+ * An empty path denotes an inferred project and performs no file reads.
+ */
+export declare function getVueLanguageProjectMetadata(
+  configFileName: string,
+): VueLanguageProjectMetadata;
+
+/** Explicit options for the shared Canon language projection. */
+export interface VueLanguageCodeOptions {
+  filename: string;
+  /** Explicit host-selected tsconfig; omitted performs no config file reads. */
+  configFileName?: string;
+  optionsApi?: boolean;
+  checkJavaScript?: boolean;
+  preserveUnusedDiagnostics?: boolean;
+}
+
+/** Canon's existing Content Mapper protocol JSON, with UTF-8 offsets. */
+export declare function generateVueLanguageCode(
+  source: string,
+  options: VueLanguageCodeOptions,
+): string;
+
+/**
+ * Perform type checking on a Vue SFC.
+ * This performs AST-based analysis. For full checking, use the CLI with Corsa.
  */
 export declare function typeCheck(
   source: string,

@@ -1,0 +1,12 @@
+import { defineComponent, type SlotsType, type VNode, type PropType } from 'vue';
+const VueChild = defineComponent({
+  props: { value: { type: Number, required: true }, render: Function as PropType<(value: number) => string> },
+  slots: Object as SlotsType<{ default(props: { item: number }): VNode[] }>,
+});
+type Instance = InstanceType<typeof VueChild>;
+type Typed<T> = Omit<Instance, '$props' | '$slots'> & {
+  readonly $props: Readonly<{ value: T }>;
+  readonly $slots: { default(props: { item: T }): VNode[] };
+};
+export declare const WitnessChild: unknown;
+export default WitnessChild;

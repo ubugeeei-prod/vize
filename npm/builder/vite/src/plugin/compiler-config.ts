@@ -2,10 +2,13 @@ import type { ResolvedVizeConfig, VizeOptions } from "../types.ts";
 import { resolveExperimentalCompilerOptions } from "./experimentals.ts";
 import { resolveCompatibilityOptions } from "./index-helpers.ts";
 
+/** Host defaults, such as Nuxt's `vue.compilerOptions`, that every other source overrides. */
+export type VizeCompilerDefaults = Pick<VizeOptions, "whitespace"> & { comments?: boolean };
+
 export function mergeCompilerOptions(
   options: VizeOptions,
   sharedConfig: ResolvedVizeConfig | null,
-  defaults: Pick<VizeOptions, "whitespace"> = {},
+  defaults: VizeCompilerDefaults = {},
 ): VizeOptions {
   const viteConfig = sharedConfig?.vite ?? {};
   const compilerConfig = sharedConfig?.compiler ?? {};
@@ -33,6 +36,11 @@ export function mergeCompilerOptions(
         hoistStatic: compilerConfig.hoistStatic,
         prefixIdentifiers: compilerConfig.prefixIdentifiers,
         ...options.template?.compilerOptions,
+        // An explicit `undefined` still admits the shared and host defaults.
+        comments:
+          options.template?.compilerOptions?.comments ??
+          compilerConfig.comments ??
+          defaults.comments,
       },
     },
     compatibility,

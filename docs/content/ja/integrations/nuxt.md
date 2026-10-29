@@ -61,6 +61,12 @@ export default defineNuxtConfig({
 
 Nuxt ではコンポーネントを必要になった時点でコンパイルするため、`[vize] load: on-demand compiling ...` というログは、リクエストで実際に読み込まれたファイルにだけ出力されます。確認できたら `debug` は外してください。
 
+## Vue ファイルの型チェック
+
+Nuxt 3 と 4 では、モジュールが `prepare:types` の実行時に `{ "package": "vize", "extensions": [".vue"] }` を生成済みの `.nuxt/tsconfig.app.json` へ追加します。この処理は `compiler` オプションとは独立しています。型チェックを担当するのは SFC のビルドコンパイラではなく、TypeScript ホストだからです。`contentMappers` に `.vue` 用のマッパーがすでにある場合は、その明示的な選択を維持し、重複する項目を追加しません。他のマッパーの順序と値も変えません。Nuxt 2 の出力は変更しません。
+
+外部マッパーのコードを実行できるかどうかは、引き続き TypeScript ホストが管理します。CLI では TypeScript 7.1 以降を `--runExternalCode` とともに使い、エディターの Content Mapper 対応は信頼できるワークスペースでだけ有効にしてください。ホストとエディターの完全な設定手順は、[TypeScript Content Mapper](../guide/content-mapper.md)を参照してください。
+
 <span id="options"></span>
 
 ## オプション
@@ -128,11 +134,21 @@ export default defineNuxtConfig({
 
 各コンパイラオプションの意味は [Vite プラグインのガイド](../guide/vite-plugin.md#compiler-options)にまとめています。`compiler: false` を指定すると、コンパイルは Nuxt 標準のコンパイラに任せたまま、lint や Musea だけを使えます。
 
+Nuxt の `vue.compilerOptions.whitespace` と `vue.compilerOptions.comments` は Vize の既定値として渡り、`vite.config.*` の `vue.compiler` や `vize.compiler` で上書きできます。それ以外の `vue.compilerOptions` を指定すると、警告を出して Nuxt の Vue コンパイラを使い続けます。
+
 <span id="lint"></span>
 
 ### lint
 
 `lint` が有効な場合、モジュールはプロジェクトのルートに `.oxlint.vize.json` を書き出します。これは `@nuxt/eslint` が生成する設定の Oxlint 版で、Nuxt のバージョンとディレクトリ構成に合わせたルールが入ります。このファイルは `.gitignore` に追加してください。
+
+lint の生成と `checker` には `oxlint-plugin-vize` が必要で、ルールの実行には `oxlint` を使います。どちらも任意の peer dependency なので、自分でインストールしてください。
+
+```bash
+vp install -D oxlint oxlint-plugin-vize
+```
+
+プラグインがない場合、モジュールは lint を飛ばし、それ以外の機能はそのまま動きます。`lint` や `checker` を自分で設定したとき、または以前の `.oxlint.vize.json` が残っているときは、インストールコマンドを示す警告を 1 行だけ出します。
 
 プロジェクトに Oxlint や Vite の設定ファイルがまだない場合は、生成したファイルを読み込む `oxlint.config.mts` もあわせて作成します。既存の設定ファイルを書き換えることはありません。その場合は、自分の設定から `.oxlint.vize.json` を読み込んでください。
 
@@ -281,7 +297,17 @@ Nuxt アプリの中では、モジュールはこれらのモックをグロー
 
 ## Nuxt 2 と Vue 2
 
-モジュールは Nuxt 2、3、4 に対応しています。Vize のコンパイラは Vue 3 向けのコードを出力するため、Nuxt 2 では `.vue` のコンパイルを既存のコンパイラ（`@vitejs/plugin-vue2`、`vue-loader`、または Nuxt 自身）に任せ、lint と Musea だけを提供します。さらに古い Vue のプロジェクトでも、`vueVersion: 0.11`、`vueVersion: 1`、`vueVersion: "legacy"` を指定すれば同じように動作します。
+Nuxt 2 でも同じ `@vizejs/nuxt` パッケージを使用します。CommonJS entry が Nuxt 2 の module loader に対応し、Vue 2 を自動検出します。コンパイル・SSR・style・HMR は既存の Vue 2 compiler と Nuxt が担当します。Vize の native runtime compiler が出力するのは Vue 3 のコードで、Vue 2 compiler を置き換えません。
+
+Nuxt 2 の検証は Nuxt 2.17.3、Vue/compiler/renderer 2.7.16、vue-loader 15、webpack 4 を固定し、本番 SSR、hydration 後の操作と画面遷移、状態を維持した dev HMR、scoped Sass、assets、`~`/`@` alias を実行します。生成した lint 設定と source typechecker についても、正当な Vue 2/Nuxt template と不正入力を確認します。OpenSSL 互換フラグは検証用 webpack 4 の子プロセスだけに適用します。
+
+Nuxt 2 では lint 設定の生成を利用できます。明示的に有効化する `checker` は dev server と並行して動き、builder 名を持たない通常の Nuxt 2 では webpack を使用します。Musea は Nuxt 2 では無効です。
+
+Nuxt Bridge も Vue 2 を使用するため、既存の `@vitejs/plugin-vue2` を維持してください。Vite 構成は `bridge.vite: true` と `bridge.nitro: true` の両方が必要です（[公式ガイド](https://nuxt.com/docs/4.x/bridge/vite)）。module を import できるだけでは、その builder の runtime 対応を検証したことにはなりません。
+
+Bridge の source 検証は Nuxt 2.18.1、Bridge 3.6.1、Vue 2.7.16 を固定し、同じアプリを webpack と Vite で実行します。Vite は module を外した対照実験も実行します。Vite 7.1.12 の fixture には、Vue 2 の runtime platform hook を保持する `nitro.rollupConfig.treeshake: false` と、client/SSR の asset URL を揃える `vite.build.rollupOptions.output.assetFileNames: "_nuxt/[name].[hash].[ext]"` を明示しています。この固定環境の runtime 検証には、これらの host 設定も含まれます。
+
+パッケージの Vite peer 範囲は `^7.3.0 || ^8.0.0` のままです。source を直接接続した Vite 7.1 の検証は、Vite 7.1 に公開パッケージを新規インストールした際の互換性を保証するものではありません。
 
 バージョンは自動的に検出されます。ラッパーによって Nuxt Kit からバージョンが見えない場合は、明示的に指定してください。
 

@@ -1,0 +1,1 @@
+{ "compilerOptions": { "strict": true, "skipLibCheck": true, "noEmit": true, "module": "ESNext", "moduleResolution": "Bundler" }, "include": ["src/**/*.vue"] }

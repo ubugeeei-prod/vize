@@ -1,11 +1,12 @@
 //! Resolve a generic child's instantiated props before checking inline callbacks.
 
-use super::component_props::{
-    ComponentPropSource, collect_generated_class_bindings, is_checkable_prop,
-    merged_class_binding_value,
+use super::component_prop_bindings::{
+    collect_generated_class_bindings, merged_class_binding_value,
 };
+use super::component_props::{ComponentPropSource, is_checkable_prop};
 use super::prop_sources::{append_prop_value, generated_prop_value};
 use super::spread_reserved_props::rewrite_reserved_spread_references;
+use super::ts_suppression_comments::callback_parameters_on_ignored_line;
 use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::scope::is_inline_callback_prop;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
@@ -15,6 +16,35 @@ use vize_croquis::croquis::ComponentUsage;
 pub(super) struct CallbackPropsResolution {
     pub(super) resolved_props: String,
     pub(super) selected_props: String,
+}
+
+pub(super) fn append_prop_check_type(
+    ts: &mut String,
+    (resolution, hoist_shared_preamble): (Option<&CallbackPropsResolution>, bool),
+    (component_type_name, idx, safe_prop_name, prop_name): (&str, usize, &str, &str),
+) {
+    let Some(resolution) = resolution else {
+        append!(
+            *ts,
+            ": __{component_type_name}_{idx}_prop_{safe_prop_name} = ",
+        );
+        return;
+    };
+    let camel_prop_name = super::super::helpers::to_camel_case(prop_name);
+    let resolved_props = resolution.resolved_props.as_str();
+    let selected_props = resolution.selected_props.as_str();
+    if hoist_shared_preamble {
+        let resolved_prop = crate::virtual_ts::helpers::shared_types::RESOLVED_PROP.select(true);
+        append!(
+            *ts,
+            ": {resolved_prop}<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+        );
+    } else {
+        append!(
+            *ts,
+            ": __VizeResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+        );
+    }
 }
 
 /// Invoke the child's props resolver solely to capture its instantiated return
@@ -32,8 +62,8 @@ pub(super) fn generate_callback_props_resolution(
     idx: usize,
     component_ref: &str,
     template_binding_access: &TemplateBindingAccess,
-    source_context: ComponentPropSource<'_>,
     indent: &str,
+    (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
 ) -> Option<CallbackPropsResolution> {
     let scoped_access = template_binding_access.for_scope(usage.scope_id);
     let template_binding_access = &scoped_access;
@@ -45,11 +75,20 @@ pub(super) fn generate_callback_props_resolution(
     let resolved_props = cstr!("__vize_resolved_{component_type_name}_props_{idx}");
     let selected_props = cstr!("__vize_selected_{component_type_name}_props_{idx}");
     let expr_indent = String::from(indent);
-
-    append!(
-        *ts,
-        "{expr_indent}const {resolved_props} = (undefined as unknown as __VizeResolvedContextProps)((undefined as unknown as __VizePropsResolver<typeof {component_ref}>)({{\n",
-    );
+    if hoist_shared_preamble {
+        let resolved_context_props =
+            crate::virtual_ts::helpers::shared_types::RESOLVED_CONTEXT_PROPS.select(true);
+        let props_resolver = crate::virtual_ts::helpers::shared_types::PROPS_RESOLVER.select(true);
+        append!(
+            *ts,
+            "{expr_indent}const {resolved_props} = (undefined as unknown as {resolved_context_props})((undefined as unknown as {props_resolver}<typeof {component_ref}>)({{\n",
+        );
+    } else {
+        append!(
+            *ts,
+            "{expr_indent}const {resolved_props} = (undefined as unknown as __VizeResolvedContextProps)((undefined as unknown as __VizePropsResolver<typeof {component_ref}>)({{\n",
+        );
+    }
 
     append_props_object(
         ts,
@@ -60,10 +99,18 @@ pub(super) fn generate_callback_props_resolution(
         false,
     );
     append!(*ts, "{expr_indent}}}));\n");
-    append!(
-        *ts,
-        "{expr_indent}const {selected_props} = (undefined as unknown as __VizePropsSelector<typeof {resolved_props}>)({{\n",
-    );
+    if hoist_shared_preamble {
+        let props_selector = crate::virtual_ts::helpers::shared_types::PROPS_SELECTOR.select(true);
+        append!(
+            *ts,
+            "{expr_indent}const {selected_props} = (undefined as unknown as {props_selector}<typeof {resolved_props}>)({{\n",
+        );
+    } else {
+        append!(
+            *ts,
+            "{expr_indent}const {selected_props} = (undefined as unknown as __VizePropsSelector<typeof {resolved_props}>)({{\n",
+        );
+    }
     append_props_object(
         ts,
         usage,
@@ -126,18 +173,29 @@ fn append_props_object(
             );
         }
         let name = super::super::helpers::to_camel_case(prop.name.as_str());
-        append!(*ts, "{expr_indent}  \"{name}\": ");
+        append!(*ts, "{expr_indent}  ");
+        let key_start = ts.len();
+        append!(*ts, "\"{name}\"");
+        let key_end = ts.len();
+        ts.push_str(": ");
         // This copy is intentionally unmapped. `@ts-ignore` covers only the
         // next line, so the parameter tokens have to sit on the property line
         // even when the author broke them inside the opening parenthesis.
         let owned;
         let value = if inline_callback {
-            owned = callback_parameters_on_first_line(value.trim_start());
-            owned.as_str()
+            let value = value.trim_start();
+            owned = callback_parameters_on_ignored_line(value);
+            owned.as_ref().map_or(value, |owned| owned.as_str())
         } else {
             value.as_str()
         };
-        append_prop_value(ts, value);
+        let value_range = append_prop_value(ts, value);
+        source_context.inference_only().record_prop_projection(
+            usage,
+            prop,
+            key_start..key_end,
+            value_range,
+        );
         ts.push_str(",\n");
     }
     for spread in spreads {
@@ -151,71 +209,6 @@ fn append_props_object(
         );
         ts.push_str(",\n");
     }
-}
-
-/// Collapse line breaks that occur before the callback's own `=>`.
-///
-/// `(\n  params\n) => body` otherwise leaves `params` on a line `@ts-ignore`
-/// does not cover, and the unmapped inference copy reports TS7006.
-fn callback_parameters_on_first_line(value: &str) -> String {
-    let Some(arrow) = arrow_token_offset(value) else {
-        return String::from(value);
-    };
-    let Some(prefix) = value.get(..arrow) else {
-        return String::from(value);
-    };
-    if !prefix.contains(['\n', '\r']) {
-        return String::from(value);
-    }
-    let mut collapsed = String::with_capacity(value.len());
-    for ch in prefix.chars() {
-        collapsed.push(if ch == '\n' || ch == '\r' { ' ' } else { ch });
-    }
-    if let Some(rest) = value.get(arrow..) {
-        collapsed.push_str(rest);
-    }
-    collapsed
-}
-
-fn arrow_token_offset(value: &str) -> Option<usize> {
-    let bytes = value.as_bytes();
-    let mut index: usize = 0;
-    while bytes.get(index.saturating_add(1)).is_some() {
-        let current = bytes.get(index).copied()?;
-        match current {
-            b'/' if bytes.get(index.saturating_add(1)) == Some(&b'/') => {
-                index = index.saturating_add(2);
-                while bytes.get(index).is_some_and(|byte| *byte != b'\n') {
-                    index = index.saturating_add(1);
-                }
-            }
-            b'/' if bytes.get(index.saturating_add(1)) == Some(&b'*') => {
-                index = index.saturating_add(2);
-                while bytes.get(index.saturating_add(1)).is_some()
-                    && !(bytes.get(index) == Some(&b'*')
-                        && bytes.get(index.saturating_add(1)) == Some(&b'/'))
-                {
-                    index = index.saturating_add(1);
-                }
-                index = index.saturating_add(2).min(bytes.len());
-            }
-            b'\'' | b'"' | b'`' => {
-                index = index.saturating_add(1);
-                while bytes.get(index).is_some_and(|byte| *byte != current) {
-                    let skip = if bytes.get(index) == Some(&b'\\') {
-                        2
-                    } else {
-                        1
-                    };
-                    index = index.saturating_add(skip);
-                }
-                index = index.saturating_add(1).min(bytes.len());
-            }
-            b'=' if bytes.get(index.saturating_add(1)) == Some(&b'>') => return Some(index),
-            _ => index = index.saturating_add(1),
-        }
-    }
-    None
 }
 
 fn append_spread_value(

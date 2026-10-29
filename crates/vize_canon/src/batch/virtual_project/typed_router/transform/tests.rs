@@ -1,8 +1,11 @@
-use super::{SourceType, apply};
+use super::{SourceType, plan};
 use crate::virtual_ts::{
     ProjectionMapping, ProjectionMeta, ProjectionSpanKind, VirtualTsOutput, VizeMapping,
     VizeSemanticLink, VizeSemanticLinkKind, VizeSubSpan,
 };
+mod experimental_imports;
+mod ownership_tests;
+mod route_props_tests;
 mod traversal_tests;
 const FILE: &str = "\"/src/pages/[id].vue\"";
 const ROUTE: &str =
@@ -24,13 +27,51 @@ fn transform(script: &str, javascript: bool) -> (VirtualTsOutput, bool) {
     (result, imported)
 }
 
+/// The published capability: only the file generic and route names apply.
+fn apply(
+    output: &mut VirtualTsOutput,
+    script: &str,
+    source_offset: impl Fn(usize) -> usize + Copy,
+    setup_range: std::ops::Range<usize>,
+    source_type: SourceType,
+    file: &str,
+    ownership: Option<&crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
+) -> bool {
+    plan(
+        script,
+        source_offset,
+        setup_range.clone(),
+        source_type,
+        false,
+    )
+    .is_some_and(|plan| {
+        super::apply(
+            output,
+            &plan,
+            script,
+            source_offset,
+            setup_range,
+            (file, None),
+            ownership,
+        )
+    })
+}
+
 fn rewrite(result: &mut VirtualTsOutput, script: &str, js: bool) -> bool {
     let language = if js {
         SourceType::mjs()
     } else {
         SourceType::ts()
     };
-    apply(result, script, |at| at, 0..script.len(), language, FILE)
+    apply(
+        result,
+        script,
+        |at| at,
+        0..script.len(),
+        language,
+        FILE,
+        None,
+    )
 }
 
 fn unchanged(script: &str, javascript: bool) {
@@ -201,7 +242,8 @@ fn physical_setup_gates_split_blocks_with_out_of_line_generated_order() {
         },
         200..200 + setup.len(),
         SourceType::ts(),
-        FILE
+        FILE,
+        None,
     ));
     assert!(result.code.ends_with(plain));
     assert!(
@@ -238,7 +280,8 @@ fn authored_base_and_semantic_link_endpoints_keep_their_original_tokens() {
         |at| at + 50,
         50..50 + script.len(),
         SourceType::ts(),
-        FILE
+        FILE,
+        None,
     ));
     let actual = &result.mapping.semantic_links()[0];
     assert_eq!(actual.source_range, link.source_range);
@@ -316,7 +359,8 @@ fn mismatching_generated_bytes_and_discontinuous_physical_sites_are_unchanged() 
             |at| if discontinuous && at >= 8 { at + 1 } else { at },
             0..script.len() + 1,
             SourceType::ts(),
-            FILE
+            FILE,
+            None,
         ));
         assert_eq!(result.code, original_code);
         assert_eq!(result.mapping, original_mapping);
@@ -335,7 +379,8 @@ fn empty_setup_invalid_literal_and_repeat_application_do_not_mutate() {
             |at| at,
             setup,
             SourceType::ts(),
-            literal
+            literal,
+            None,
         ));
         assert_eq!(result.code, script);
         assert_eq!(result.mapping, original_mapping);

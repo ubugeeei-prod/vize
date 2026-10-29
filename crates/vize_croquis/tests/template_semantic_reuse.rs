@@ -5,6 +5,7 @@
 
 #![expect(
     clippy::expect_used,
+    clippy::indexing_slicing,
     clippy::panic,
     reason = "fixture helpers retain complete failure receipts before assertions"
 )]

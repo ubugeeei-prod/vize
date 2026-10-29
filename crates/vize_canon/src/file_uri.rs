@@ -115,6 +115,11 @@ fn append_percent_encoded(uri: &mut String, byte: u8) {
     }
 }
 
+/// Percent-decode a URI path, rejecting escapes that are not valid UTF-8.
+pub fn decode_uri_path(path: &str) -> Option<String> {
+    decode_path(path)
+}
+
 fn decode_path(path: &str) -> Option<String> {
     let bytes = path.as_bytes();
     let mut decoded = std::vec::Vec::with_capacity(bytes.len());
@@ -149,8 +154,8 @@ fn hex_value(byte: u8) -> Option<u8> {
 #[cfg(test)]
 mod tests {
     use super::{
-        PathStyle, file_uri_to_path, file_uri_to_path_in, path_to_file_uri, path_to_file_uri_in,
-        typescript_name_in,
+        PathStyle, decode_uri_path, file_uri_to_path, file_uri_to_path_in, path_to_file_uri,
+        path_to_file_uri_in, typescript_name_in,
     };
     use std::path::{Path, PathBuf};
 
@@ -168,6 +173,15 @@ mod tests {
             file_uri_to_path("file:///workspace/pages/%5B%5Borg%5D%5D/%5Bname%5D%20%231.vue.ts"),
             Some(PathBuf::from("/workspace/pages/[[org]]/[name] #1.vue.ts"))
         );
+    }
+
+    #[test]
+    fn decodes_uri_paths_exactly_once() {
+        assert_eq!(
+            decode_uri_path("/pages/%255Bid%253Dint%255D.art.vue.setup.ts").as_deref(),
+            Some("/pages/%5Bid%3Dint%5D.art.vue.setup.ts")
+        );
+        assert_eq!(decode_uri_path("/pages/%FF.vue"), None);
     }
 
     #[test]

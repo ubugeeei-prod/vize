@@ -5,12 +5,12 @@
 //! variant happened to be default and leave every other variant's expressions
 //! outside the checker entirely (#4015).
 
-use tower_lsp::lsp_types::Url;
+use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range, Url};
 use vize_canon::virtual_ts::{VirtualTsOptions, generate_virtual_ts_with_offsets};
 use vize_croquis::{Drawer, DrawerOptions};
 use vize_l0::cstr;
 
-use super::super::{DiagnosticService, VirtualTsResult};
+use super::super::{DiagnosticService, VirtualTsResult, sources};
 use super::virtual_ts_art_bindings::add_art_target_component_bindings;
 
 /// One art variant projected into its own typed virtual TypeScript document.
@@ -149,6 +149,46 @@ impl DiagnosticService {
             ),
         }
     }
+}
+
+/// An invalid Art container is refused explicitly instead of being published
+/// as a clean, checked file.
+pub(in crate::ide::diagnostics) fn invalid_art_diagnostic(
+    content: &str,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+) -> Option<Diagnostic> {
+    let allocator = vize_l0::Allocator::new();
+    let error =
+        vize_musea::parse_art(&allocator, content, vize_musea::ArtParseOptions::default()).err()?;
+    let template_tag = descriptor.template.as_ref().and_then(|template| {
+        let start = content.get(..template.loc.start)?.rfind("<template")?;
+        Some(start..template.loc.start)
+    });
+    let (range, message) = match (&error, template_tag) {
+        (vize_musea::ArtParseError::NoArtBlock, Some(tag)) => {
+            let (start_line, start_character) = crate::ide::offset_to_position(content, tag.start);
+            let (end_line, end_character) = crate::ide::offset_to_position(content, tag.end);
+            (
+                Range::new(
+                    tower_lsp::lsp_types::Position::new(start_line, start_character),
+                    tower_lsp::lsp_types::Position::new(end_line, end_character),
+                ),
+                "Art files need an `<art>` block with `<variant>` templates; this `<template>` is not type checked.".to_string(),
+            )
+        }
+        _ => (
+            Range::default(),
+            cstr!("This Art file is not type checked: {error}.").to_string(),
+        ),
+    };
+    Some(Diagnostic {
+        range,
+        severity: Some(DiagnosticSeverity::ERROR),
+        code: Some(NumberOrString::String("invalid-art".to_string())),
+        source: Some(sources::TYPE_CHECKER.to_string()),
+        message,
+        ..Default::default()
+    })
 }
 
 struct ArtVariantGeneration {

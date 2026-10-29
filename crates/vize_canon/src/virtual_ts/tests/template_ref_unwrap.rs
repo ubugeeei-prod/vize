@@ -49,7 +49,7 @@ const direction = ref<'rtl'>('rtl')
 
     const WIDEN_HELPER: &str = "type __VizeWidenTemplateRef<T> = __VizeIsAny<T> extends true ? T : __VizeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;";
     assert_eq!(
-        exact_line_count(SHARED_PREAMBLE_DTS, WIDEN_HELPER),
+        exact_line_count(SHARED_PREAMBLE_DTS, &format!("export {WIDEN_HELPER}")),
         1,
         "the shared template-ref helper must preserve the exact widening oracle:\n{}",
         SHARED_PREAMBLE_DTS,
@@ -68,7 +68,7 @@ const direction = ref<'rtl'>('rtl')
         assert_eq!(
             exact_line_count(
                 &code,
-                "    var direction: __U<__R_direction> = undefined as any;",
+                "    var direction: __U<__R_direction> = (void 0) as any;",
             ),
             1,
             "template expressions should emit the exact unwrapped ref shadow:\n{code}",
@@ -93,7 +93,7 @@ const { props, size } = useField()
         "the authored maybe-ref binding must retain its exact template capture:\n{code}",
     );
     assert_eq!(
-        exact_line_count(&code, "    var props: __UN<__R_props> = undefined as any;",),
+        exact_line_count(&code, "    var props: __UN<__R_props> = (void 0) as any;",),
         1,
         "the authored binding must remain the exact template-visible `props`:\n{code}",
     );

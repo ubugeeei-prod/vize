@@ -1,0 +1,13 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<!--[-->`)
+  _ssrRenderList($data.items, ({ label = $data.fallback, [$data.key]: tag }) => {
+    _push(`<p>${_ssrInterpolate(label)}${_ssrInterpolate(tag)}</p>`)
+  })
+  _push(`<!--]-->`)
+}
+
+const _sfc_main = { data: () => ({ fallback: "A", key: "k", items: [{}] }) }
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

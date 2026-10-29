@@ -1,6 +1,6 @@
 //! Visibility of template-scope bindings at a template-relative offset.
 
-use vize_croquis::{Croquis, Scope, ScopeId, ScopeKind};
+use vize_croquis::{Croquis, Scope, ScopeData, ScopeId, ScopeKind};
 
 /// Whether `name` is already bound where a template expression uses it.
 ///
@@ -74,6 +74,19 @@ pub(super) fn is_inside_template_scope(summary: &Croquis, template_offset: u32) 
 }
 
 fn binds_in_enclosing_template_scope(summary: &Croquis, name: &str, template_offset: u32) -> bool {
+    // An iterable is evaluated before its own aliases exist. Resolve its
+    // references from the actual parent rather than the enclosing element span.
+    if let Some(parent) = summary.scopes.iter().find_map(|scope| {
+        let ScopeData::VFor(data) = scope.data() else {
+            return None;
+        };
+        let start = summary.scopes.v_for_source_offset(scope.id)?;
+        (start <= template_offset && template_offset < start + data.source.len() as u32)
+            .then(|| scope.parent())
+            .flatten()
+    }) {
+        return is_visible_template_binding_in_scope(summary, name, parent);
+    }
     summary.scopes.iter().any(|scope| {
         is_active_template_scope(scope, template_offset)
             && scope.bindings().any(|(binding, data)| {

@@ -43,6 +43,7 @@
 //! ```
 
 mod authored_sfc;
+pub mod binding_origins;
 mod checker;
 mod context;
 #[cfg(feature = "native")]
@@ -53,9 +54,14 @@ pub mod css_classes;
 mod diagnostic;
 #[cfg(feature = "native")]
 mod file_uri;
+#[cfg(feature = "native")]
+pub use file_uri::decode_uri_path;
 pub mod intelligence;
 mod options_api_setup_spread;
 pub mod package_route;
+#[cfg(feature = "profiling")]
+#[doc(hidden)]
+pub mod profiling;
 mod script_parse;
 pub use script_parse::supports_native_script_syntax;
 mod sfc_diagnostics;
@@ -138,7 +144,7 @@ pub use corsa_bridge::{
     LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent,
     LspParameterInformation, LspParameterLabel, LspPosition, LspRange, LspSignatureHelp,
     LspSignatureInformation, NativeVueCheck, NativeVueError, OriginalProgramCheck,
-    OriginalProgramError, VIRTUAL_URI_SCHEME,
+    OriginalProgramError, VIRTUAL_URI_SCHEME, is_editor_mirror_path,
 };
 
 // Re-export batch type checker
@@ -147,19 +153,20 @@ pub use batch::{
     BatchTopologyMetrics, BatchTypeChecker, BatchTypeCheckerOptions,
     CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE, CONTENT_MAPPER_SFC_PARSE_ERROR_CODE,
     CONTENT_MAPPER_VIRTUAL_EXTENSION, CompilerConfigurationAttempt, CompilerConfigurationSnapshot,
-    ConfigurationObservations, ContentMapperDiagnostic, ContentMapperDiagnosticDirective,
-    ContentMapperDiagnosticDirectives, ContentMapperProjectConfiguration,
-    ContentMapperSemanticLink, ContentMapperSpan, ContentMapperTransform,
-    ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic, CorsaError, CorsaExecutor,
-    CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput,
-    Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap, IncrementalCheckMetrics,
-    PackageManager, TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind,
-    TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait,
-    UnresolvedExtends, VirtualFile, VirtualProject, generate_vue_content_mapper_transform,
-    generate_vue_content_mapper_transform_with_options, legacy_project_virtual_roots,
-    project_virtual_access_path, project_virtual_lock_paths, project_virtual_root,
-    snapshot_tsconfig_compiler_options, snapshot_tsconfig_vue_compiler_options,
-    snapshot_tsconfig_vue_target,
+    CompilerOptionsSnapshot, ConfigurationObservations, ContentMapperDiagnostic,
+    ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives,
+    ContentMapperProjectConfiguration, ContentMapperSemanticLink, ContentMapperSpan,
+    ContentMapperTransform, ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic,
+    CorsaError, CorsaExecutor, CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult,
+    DeclarationOutput, Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap,
+    IncrementalCheckMetrics, PackageManager, TsconfigOwnershipCache, TsconfigOwnershipOptions,
+    TsconfigSourceKind, TypeCheckResult as BatchTypeCheckResult,
+    TypeChecker as BatchTypeCheckerTrait, UnresolvedExtends, VirtualFile, VirtualProject,
+    generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
+    generate_vue_content_mapper_transform_with_project_options, legacy_project_virtual_roots,
+    persistent_batch_storage_root, persistent_batch_virtual_root, project_virtual_access_path,
+    project_virtual_lock_paths, project_virtual_root, snapshot_tsconfig_compiler_options,
+    snapshot_tsconfig_vue_compiler_options, snapshot_tsconfig_vue_target,
 };
 
 #[cfg(feature = "native")]

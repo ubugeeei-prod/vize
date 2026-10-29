@@ -1,3 +1,4 @@
+use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 
 use serde_json::Value;
@@ -7,7 +8,7 @@ use super::imports::ImportFileOptions;
 use super::path_cache::CanonicalPathCache;
 use super::tsconfig_inputs::{parse_jsonc_value, read_extends_entries, resolve_extended_tsconfig};
 
-#[derive(Default)]
+#[derive(Default, Hash)]
 pub(super) struct PathAliasResolver {
     aliases: Vec<PathAlias>,
     base_url: Option<PathBuf>,
@@ -18,6 +19,7 @@ pub(super) struct PathAliasResolver {
     paths_set: bool,
 }
 
+#[derive(Hash)]
 struct PathAlias {
     prefix: String,
     suffix: String,
@@ -33,6 +35,30 @@ impl PathAliasResolver {
         };
         let mut seen = FxHashSet::default();
         load_aliases(tsconfig_path, &mut seen).unwrap_or_default()
+    }
+
+    /// Identifies this configuration, so a cache keyed by it never answers a
+    /// walk configured differently. Equal configurations share one value.
+    pub(super) fn fingerprint(&self) -> u64 {
+        let mut hasher = std::hash::DefaultHasher::new();
+        self.hash(&mut hasher);
+        hasher.finish()
+    }
+
+    /// Identifies the package resolution contexts these options derive.
+    /// Unlike [`Self::fingerprint`], `paths` and `baseUrl` stay out, and
+    /// equivalent `module` spellings agree.
+    pub(super) fn resolution_fingerprint(aliases: Option<&Self>) -> u64 {
+        let unset = Self::default();
+        let aliases = aliases.unwrap_or(&unset);
+        let mut hasher = std::hash::DefaultHasher::new();
+        vize_canon::PackageResolutionContext::settings_identity(
+            aliases.module_resolution.as_deref(),
+            aliases.module.as_deref(),
+            aliases.custom_conditions.iter().cloned(),
+        )
+        .hash(&mut hasher);
+        hasher.finish()
     }
 
     pub(super) fn resolve(

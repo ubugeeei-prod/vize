@@ -50,6 +50,13 @@ pub(super) fn generate_vue_virtual_ts(
     options: &VirtualTsOptions,
     mut codegen_options: VueCodegenOptions<'_>,
 ) -> CorsaResult<GeneratedVueFile> {
+    crate::virtual_ts::validate_reference_paths(&options.reference_paths).map_err(|error| {
+        crate::batch::error::CorsaError::Configuration(vize_carton::cstr!(
+            "Invalid declaration reference path {:?}: {}",
+            error.path,
+            error.reason
+        ))
+    })?;
     codegen_options.check_options =
         super::vue_compiler_comments::apply(source, codegen_options.check_options);
     // All consumers resolve per-SFC metadata after project and top-level options.
@@ -233,18 +240,17 @@ pub(super) fn generate_vue_virtual_ts(
         diagnostic.severity = if pattern.warning { 2 } else { 1 };
         diagnostics.push(diagnostic);
     }
-    let typed_router = super::typed_router::Generation::new(
-        codegen_options.typed_router_root,
+    let mut typed_router = super::typed_router::Generation::new(
+        codegen_options.typed_router,
         path,
         options,
-        codegen_options.typed_router_root.is_some()
+        codegen_options.typed_router.is_some()
             && template_ast.as_ref().is_some_and(|root| {
                 vize_atelier_sfc::script::resolve_template_used_identifiers(root)
                     .used_ids
                     .contains("$route")
             }),
     );
-    let options = typed_router.options(options);
     let script_content = analysis.script_content;
     let script_offset = analysis.script_offset;
     let local_runtime_prop_resolve_cache;
@@ -278,8 +284,17 @@ pub(super) fn generate_vue_virtual_ts(
         names
     });
 
+    typed_router.prepare(
+        &mut croquis,
+        descriptor,
+        script_content.as_deref(),
+        script_offset,
+        split_script_setup_offsets,
+    );
+    let options = typed_router.options(options);
     let hoist_shared_preamble = codegen_options.hoist_shared_preamble && !vue2_compat;
     let generation_options = VirtualTsGenerationOptions {
+        diagnostic_ownership: codegen_options.diagnostic_ownership,
         generic_parameters: generic_parameters.as_ref(),
         authored_scripts: Some(AuthoredScriptMetadata::from_descriptor(descriptor)),
         check_options: codegen_options.check_options,
@@ -357,6 +372,7 @@ pub(super) fn generate_vue_virtual_ts(
         script_content.as_deref(),
         script_offset,
         split_script_setup_offsets,
+        codegen_options.diagnostic_ownership,
     );
 
     // Surface Vue-specific semantic errors (e.g. DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE)

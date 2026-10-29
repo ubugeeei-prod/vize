@@ -7,6 +7,7 @@ use oxc_ast::ast::Program;
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use oxc_syntax::identifier::is_identifier_part;
 use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
 mod authored_vue_ts;
@@ -40,6 +41,11 @@ pub(in crate::batch) use project_mirror::VirtualProjectRewriteOptions;
 
 mod source_map;
 pub use source_map::{ImportSourceMap, OffsetAdjustment, RewriteResult};
+
+mod literal_rewrite;
+
+#[cfg(test)]
+mod literal_geometry_tests;
 
 pub struct ImportRewriter;
 
@@ -125,9 +131,39 @@ impl ImportRewriter {
 
     /// Capture declaration-owned edits while reusing the specifier pass's AST.
     /// Captured byte ranges refer to the original, pre-import-rewrite source.
+    #[cfg(test)]
     pub(crate) fn rewrite_declaration_with_capture(
         &self,
         source: &str,
+        capture: impl FnOnce(&Program<'_>) -> Vec<std::ops::Range<usize>>,
+    ) -> (RewriteResult, Vec<std::ops::Range<usize>>) {
+        self.rewrite_declaration_with_capture_and_helper(source, None, capture)
+    }
+
+    /// Rewrite a generated Vue declaration onto its published helper module.
+    ///
+    /// Batch checking reaches collision-proof program helpers through the
+    /// private `vize:virtual-ts` module. That module is not part of a published
+    /// declaration package, so declaration emit relocates the same import-type
+    /// identity to the package-local `__vize_helpers.js` module in this parse
+    /// pass.
+    pub(crate) fn rewrite_vue_declaration_with_capture(
+        &self,
+        source: &str,
+        declaration_helper_specifier: &str,
+        capture: impl FnOnce(&Program<'_>) -> Vec<std::ops::Range<usize>>,
+    ) -> (RewriteResult, Vec<std::ops::Range<usize>>) {
+        self.rewrite_declaration_with_capture_and_helper(
+            source,
+            Some(declaration_helper_specifier),
+            capture,
+        )
+    }
+
+    fn rewrite_declaration_with_capture_and_helper(
+        &self,
+        source: &str,
+        declaration_helper_specifier: Option<&str>,
         capture: impl FnOnce(&Program<'_>) -> Vec<std::ops::Range<usize>>,
     ) -> (RewriteResult, Vec<std::ops::Range<usize>>) {
         let allocator = Allocator::default();
@@ -137,14 +173,28 @@ impl ImportRewriter {
         } else {
             capture(&parsed.program)
         };
-        let rewritten = self
-            .rewrite_parsed(
-                source,
-                &parsed.program,
-                |path, _| self.rewrite_declaration_specifier(path),
-                false,
-            )
-            .0;
+        let mut collector = ModuleSpecifierCollector::new();
+        collector.visit_program(&parsed.program);
+        let rewritten =
+            self.rewrite_occurrences_with_span(source, &collector.specifiers, |_, end, path, _| {
+                if let Some(rewrite) = self.rewrite_declaration_specifier(path) {
+                    return Some(rewrite);
+                }
+                if path != "vize:virtual-ts" {
+                    return None;
+                }
+                let suffix = source
+                    .get((end as usize).saturating_add(1)..)?
+                    .strip_prefix(").__EmitProps")?;
+                if suffix
+                    .chars()
+                    .next()
+                    .is_some_and(|next| next == '\\' || is_identifier_part(next))
+                {
+                    return None;
+                }
+                declaration_helper_specifier.map(String::from)
+            });
         (rewritten, ranges)
     }
 
@@ -203,10 +253,18 @@ impl ImportRewriter {
         F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
     {
         let allocator = Allocator::default();
-        let result = vize_croquis::script_parser::parse_program_for_analysis(
-            &allocator,
-            source,
-            source_type,
+        vize_carton::micro_count!("canon.import_rewriter.rewrite_parse.calls", 1);
+        vize_carton::micro_count!(
+            "canon.import_rewriter.rewrite_parse.source_bytes",
+            source.len()
+        );
+        let result = vize_carton::micro_span!(
+            "canon.import_rewriter.rewrite_parse",
+            vize_croquis::script_parser::parse_program_for_analysis(
+                &allocator,
+                source,
+                source_type
+            )
         );
 
         if result.panicked {
@@ -266,34 +324,46 @@ impl ImportRewriter {
     where
         F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
     {
+        self.rewrite_occurrences_with_span(source, occurrences, |_, _, path, mode| {
+            rewrite_specifier(path, mode)
+        })
+    }
+
+    fn rewrite_occurrences_with_span<F>(
+        &self,
+        source: &str,
+        occurrences: &[(u32, u32, String, crate::PackageResolutionMode)],
+        rewrite_specifier: F,
+    ) -> RewriteResult
+    where
+        F: Fn(u32, u32, &str, crate::PackageResolutionMode) -> Option<String>,
+    {
         let mut rewrites: Vec<(u32, u32, String)> = Vec::new();
         for (start, end, path, mode) in occurrences {
-            if let Some(rewrite) = rewrite_specifier(path, *mode) {
+            if let Some(rewrite) = rewrite_specifier(*start, *end, path, *mode) {
+                if source.get(*start as usize..*end as usize) == Some(rewrite.as_str()) {
+                    continue;
+                }
                 rewrites.push((*start, *end, rewrite));
             }
         }
         rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
         let mut output = source.to_compact_string();
-        let mut adjustments = Vec::new();
+        let mut source_map = ImportSourceMap::for_rewrites(rewrites.len());
 
         for (start, end, new_path) in rewrites {
-            let original_len = (end - start) as i32;
-            let new_len = new_path.len() as i32;
-
-            output.replace_range(start as usize..end as usize, new_path.as_str());
-
-            adjustments.push(OffsetAdjustment {
-                original_offset: start,
-                adjustment: new_len - original_len,
-            });
+            if let Some(length) =
+                literal_rewrite::replace(&mut output, source, start, end, &new_path)
+            {
+                source_map.record_replacement(start, end, length);
+            }
         }
-
-        adjustments.reverse();
+        source_map.finish_descending_replacements();
 
         RewriteResult {
             code: output,
-            source_map: ImportSourceMap::new(adjustments),
+            source_map,
         }
     }
 

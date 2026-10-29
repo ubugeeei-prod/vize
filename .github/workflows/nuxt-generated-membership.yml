@@ -1,0 +1,102 @@
+name: Nuxt generated declaration membership
+run-name: Nuxt generated declaration membership @ ${{ github.event.pull_request.head.sha || github.sha }}
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/nuxt-generated-membership.yml
+      - crates/vize/tests/check_cli.rs
+      - crates/vize/src/commands/check/nuxt/**
+      - crates/vize/src/commands/check/nuxt.rs
+      - crates/vize/src/commands/check/tsconfig_inputs.rs
+      - crates/vize/src/commands/check/tsconfig_inputs/**
+      - crates/vize/src/commands/check/runner/execution.rs
+      - crates/vize_canon/src/batch/virtual_project/tsconfig_gen/**
+permissions:
+  contents: read
+concurrency:
+  group: nuxt-generated-membership-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "12"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  configured-membership:
+    name: Required native and stock Nuxt complete packets
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: nuxt-generated-membership
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install pinned stock and native providers
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Require real backends and preserve source identity
+        run: |
+          test -z "${VIZE_TEST_DISABLE_TSGO:-}"
+          test -f tests/node_modules/vue-tsc/bin/vue-tsc.js
+          mkdir -p "$RUNNER_TEMP/nuxt-membership-packets"
+          git rev-parse HEAD > "$RUNNER_TEMP/nuxt-membership-packets/source-sha.txt"
+          git rev-parse 'HEAD^{tree}' > "$RUNNER_TEMP/nuxt-membership-packets/source-tree.txt"
+          git status --porcelain > "$RUNNER_TEMP/nuxt-membership-packets/source-status.txt"
+      - name: Verify original negative and configured reference positive whole packets
+        env:
+          VIZE_TEST_REQUIRE_TSGO: "1"
+          VIZE_TEST_STOCK_VUE_TSC: ${{ github.workspace }}/tests/node_modules/vue-tsc/bin/vue-tsc.js
+          VIZE_NUXT_MEMBERSHIP_ARTIFACTS: ${{ runner.temp }}/nuxt-membership-packets
+        run: cargo test --locked --profile ci -p vize --test integration check_cli::check_nuxt_generated_computed_map_values_preserve_record_types -- --exact --nocapture
+      - name: Require every executed native stock and graph control
+        env:
+          PACKETS: ${{ runner.temp }}/nuxt-membership-packets
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          root = pathlib.Path(os.environ["PACKETS"])
+          expected = {"unreferenced-native":1,"unreferenced-stock":2,"referenced-native":0,"referenced-stock":0,"typed-invalid-native":1,"typed-invalid-stock":2,"repair-native":0,"repair-stock":0,"unreferenced-stock-files":0,"referenced-stock-files":0}
+          assert {p.stem.removesuffix(".process") for p in root.glob("*.process.json")} == set(expected)
+          for name, status in expected.items():
+              process = json.loads((root / (name + ".process.json")).read_text())
+              assert process["exitCode"] == status, (name, process)
+              assert (root / (name + ".stdout")).is_file()
+              assert (root / (name + ".stderr")).is_file()
+              if name.endswith("-native"):
+                  packet = json.loads((root / (name + ".stdout")).read_text())
+                  assert packet["programs"][0]["files"] == ["nuxt.config.ts", "src/App.vue"]
+          PY
+      - name: Preserve actual executable and providers
+        if: ${{ always() }}
+        run: |
+          binary="${CARGO_TARGET_DIR:-target}/ci/vize"
+          test -f "$binary"
+          if [[ -f "$binary" ]]; then
+            sha256sum "$binary" > "$RUNNER_TEMP/nuxt-membership-packets/binary-sha256.txt"
+            "$binary" --version > "$RUNNER_TEMP/nuxt-membership-packets/binary-version.txt"
+          fi
+          node -e 'const fs=require("node:fs"); for(const p of ["node_modules/vue/package.json","tests/node_modules/vue-tsc/package.json","tests/node_modules/typescript/package.json","node_modules/@typescript/typescript-linux-x64/package.json"]) if(fs.existsSync(p)) console.log(p,fs.readFileSync(p,"utf8"));' > "$RUNNER_TEMP/nuxt-membership-packets/providers.txt"
+      - name: Preserve every complete packet and original input
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nuxt-membership-whole-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/nuxt-membership-packets
+          if-no-files-found: error
+          retention-days: 14
+          include-hidden-files: true

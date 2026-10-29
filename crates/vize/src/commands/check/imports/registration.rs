@@ -4,12 +4,14 @@ use vize_l0::{FxHashMap, FxHashSet};
 
 use super::super::imports_aliases::PathAliasResolver;
 use super::super::path_cache::CanonicalPathCache;
+use super::session::{EdgeScope, LocalImportSession};
 use super::{
     ImportFileOptions, extract_module_specifier_occurrences, is_declaration_file,
     is_relative_specifier, resolve_import_base, resolve_import_base_with_inputs,
     resolve_relative_import,
 };
 
+mod reachability;
 mod scan;
 
 use scan::source_needs_virtual_registration;
@@ -38,36 +40,72 @@ type PackageReachabilityKey = (
     u8,
 );
 
+type ParsedSpecifiers = Option<Box<[super::specifiers::ModuleSpecifierOccurrence]>>;
+
+#[derive(Default)]
 pub(super) struct VirtualRegistrationCache {
     registrations: FxHashMap<(PathBuf, bool), CachedVirtualRegistration>,
     reachability: FxHashMap<PackageReachabilityKey, vize_canon::batch::PackageRouteReachability>,
-    /// Package files every reachability scan of this walk reads and parses.
-    reachability_sources: vize_canon::batch::ReachabilitySources,
+    /// Package files every reachability scan of this check reads and parses.
+    /// Their edges depend on the [`EdgeScope`]; finished scans are reused
+    /// across alias configurations whose answers agree.
+    reachability_sources: FxHashMap<EdgeScope, vize_canon::batch::ReachabilitySources>,
     negative_alias_sources: FxHashSet<PathBuf>,
-    /// Specifiers read by registration frontiers in this check. Overlapping
+    /// Specifiers read by registration frontiers in this program. Overlapping
     /// candidates share the immutable parse result.
-    pub(super) module_specifiers:
-        FxHashMap<PathBuf, Option<Box<[super::specifiers::ModuleSpecifierOccurrence]>>>,
+    pub(super) module_specifiers: FxHashMap<PathBuf, ParsedSpecifiers>,
+    /// Specifiers earlier programs read. A program still prepares each file
+    /// it reaches once, so its frontiers look ahead as before.
+    parsed: FxHashMap<PathBuf, ParsedSpecifiers>,
     #[cfg(test)]
     source_reads: usize,
 }
 
-impl Default for VirtualRegistrationCache {
-    fn default() -> Self {
-        Self {
-            registrations: FxHashMap::default(),
-            reachability: FxHashMap::default(),
-            // `vize check` runs once: nothing refreshes from these inputs.
-            reachability_sources: vize_canon::batch::ReachabilitySources::untracked(),
-            negative_alias_sources: FxHashSet::default(),
-            module_specifiers: FxHashMap::default(),
-            #[cfg(test)]
-            source_reads: 0,
-        }
-    }
-}
-
 impl VirtualRegistrationCache {
+    /// Drop what depends on the previous program's aliases.
+    pub(super) fn begin_program(&mut self) {
+        self.registrations.clear();
+        self.reachability.clear();
+        self.negative_alias_sources.clear();
+        self.parsed.extend(self.module_specifiers.drain());
+    }
+
+    /// Adopt the specifiers an earlier program read for `pending`, returning
+    /// the paths still unread.
+    pub(super) fn adopt_parsed(&mut self, pending: Vec<PathBuf>) -> Vec<PathBuf> {
+        if self.parsed.is_empty() {
+            return pending;
+        }
+        pending
+            .into_iter()
+            .filter(|path| match self.parsed.remove(path) {
+                Some(parsed) => {
+                    self.module_specifiers.insert(path.clone(), parsed);
+                    false
+                }
+                None => true,
+            })
+            .collect()
+    }
+
+    pub(super) fn reachability_sources(
+        &mut self,
+        scope: EdgeScope,
+    ) -> &mut vize_canon::batch::ReachabilitySources {
+        // `vize check` runs once: nothing refreshes from these inputs.
+        self.reachability_sources
+            .entry(scope)
+            .or_insert_with(vize_canon::batch::ReachabilitySources::untracked)
+    }
+
+    #[cfg(test)]
+    pub(super) fn finished_scans(&self) -> usize {
+        self.reachability_sources
+            .values()
+            .map(vize_canon::batch::ReachabilitySources::finished_scans)
+            .sum()
+    }
+
     #[cfg(test)]
     pub(super) fn registration_entries(&self) -> usize {
         self.registrations.len()
@@ -111,15 +149,20 @@ pub(super) fn non_relative_import_needs_virtual_registration(
     options: ImportFileOptions,
     aliases: Option<&PathAliasResolver>,
     packages: Option<&mut vize_canon::PackageRouteResolver>,
-    cache: &mut VirtualRegistrationCache,
+    session: &mut LocalImportSession,
     discovery: &mut VirtualRegistrationDiscovery,
 ) -> bool {
     let pure_alias = packages.is_none();
-    if pure_alias && cache.negative_alias_sources.contains(path) {
+    if pure_alias
+        && session
+            .registration_cache
+            .negative_alias_sources
+            .contains(path)
+    {
         return false;
     }
     let cache_key = (path.to_path_buf(), packages.is_some());
-    if let Some(cached) = cache.registrations.get_mut(&cache_key) {
+    if let Some(cached) = session.registration_cache.registrations.get_mut(&cache_key) {
         // Route bindings are collection-global facts; sources are caller-local
         // invalidation inputs for the outer route that reached this memo.
         if !cached.package_routes_reported {
@@ -145,17 +188,18 @@ pub(super) fn non_relative_import_needs_virtual_registration(
         options,
         aliases,
         packages,
-        cache,
+        session,
         &mut discovered,
     );
     #[cfg(test)]
     {
-        cache.source_reads += frontier.source_reads;
+        session.registration_cache.source_reads += frontier.source_reads;
     }
     // A completely scanned Vue-free closure proves every member negative.
     // Package walks retain their full caller-specific invalidation inputs.
     if pure_alias && !needs_registration {
-        cache
+        session
+            .registration_cache
             .negative_alias_sources
             .extend(frontier.visited.iter().cloned());
     }
@@ -173,7 +217,7 @@ pub(super) fn non_relative_import_needs_virtual_registration(
     discovery
         .package_sources
         .extend(resolved_discovery.package_sources.iter().cloned());
-    cache.registrations.insert(
+    session.registration_cache.registrations.insert(
         cache_key,
         CachedVirtualRegistration {
             needs_registration,

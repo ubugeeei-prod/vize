@@ -3,8 +3,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-const root = fileURLToPath(new URL("../../", import.meta.url));
-
 // Controlled protocol fixtures never execute the stand-in binary or claim native
 // acceptance. Real source/Rust/TS40 observations remain an Actions obligation.
 import { execFileSync, spawnSync } from "node:child_process";
@@ -17,19 +15,17 @@ import {
   type WorkspaceSource,
 } from "../differential/typechecker.ts";
 import {
+  TYPECHECKER_TS40_TESTS,
   prepareTypecheckerWorkspace,
   finishTypecheckerWorkspace,
   aggregateTypecheckerWorkspace,
 } from "../differential/typechecker-workspace.ts";
 import { normalizeWorkspaceInventory } from "../../tools/support/compat/github/rust-workspace-inventory.ts";
+import { dialectReadiness } from "./support/typechecker-dialect-readiness.ts";
 
+const root = fileURLToPath(new URL("../../", import.meta.url));
 const execution = { runId: 53, runAttempt: 2 };
 const names = Object.values(TYPECHECKER_TESTS);
-const ts40Names = [
-  "current_projection_matrix_is_exact_and_non_empty",
-  "mapping_drift_fails_closed",
-  "diagnostic_drift_fails_closed",
-];
 function controlled(t: { after: (callback: () => void) => void }) {
   const repoRoot = fs.realpathSync(
     fs.mkdtempSync(path.join(tmpdir(), "vize-workspace-observation-control-")),
@@ -164,7 +160,7 @@ function controlled(t: { after: (callback: () => void) => void }) {
         "vize_maestro::davinci_ts40_projection",
         "vize_maestro",
         "davinci_ts40_projection",
-        ts40Names,
+        [...TYPECHECKER_TS40_TESTS],
       ),
     },
   };
@@ -302,7 +298,6 @@ function controlled(t: { after: (callback: () => void) => void }) {
     complete,
   };
 }
-
 type Fixture = ReturnType<typeof controlled>;
 const artifact = (f: Fixture, name: string) => path.join(f.resultDir, name);
 void test("workspace producer/consumer bind physical bytes, all registered bodies, complete JUnit and raw TS40 without native credit", (t) => {
@@ -325,7 +320,8 @@ void test("workspace producer/consumer bind physical bytes, all registered bodie
   const downloaded = path.join(f.repoRoot, ".artifacts/rust-full-workspace");
   fs.cpSync(f.resultDir, downloaded, { recursive: true });
   const result = aggregateTypecheckerWorkspace({ ...f, resultDir: downloaded });
-  assert.equal(result.report.summary.legacyMatches, 144);
+  assert(result.report.summary.plannedCases >= 164);
+  assert.equal(result.report.summary.legacyMatches, result.report.summary.plannedCases);
   assert.equal(result.acceptance.total.nativeHandled, 0);
   assert.equal(result.acceptance.total.nativeEquivalent, 0);
   assert(
@@ -356,7 +352,7 @@ void test("pre-run attestation refuses stale capture state, changed provenance, 
       f.source.tree = "0".repeat(40);
     },
     (f: Fixture) => {
-      f.source.rustc = "rustc 1.98.0 controlled";
+      f.source.rustc = "rustc 1.99.0 controlled";
     },
     (f: Fixture) => {
       f.source.runtime.RUST_TEST_THREADS = "1";
@@ -373,6 +369,7 @@ void test("pre-run attestation refuses stale capture state, changed provenance, 
     (f: Fixture) => {
       delete f.raw["rust-suites"]["vize_canon::fix_history_diagnostics"].testcases[names[0]];
     },
+    ...dialectReadiness.preRunChanges,
     (f: Fixture) => {
       f.raw["rust-suites"]["vize_canon::fix_history_diagnostics"].testcases[names[0]].ignored =
         true;
@@ -417,6 +414,7 @@ void test("no missing, forged, failed, stale or modified workspace chain can pro
       "cases.0.inputs.0.sha256",
       "0".repeat(64),
     ],
+    ...dialectReadiness.captureChanges,
     [
       "typechecker-workspace/event-handler-narrowing.json",
       "cases.0.publicResult.exitCode",
@@ -445,6 +443,7 @@ void test("no missing, forged, failed, stale or modified workspace chain can pro
         `<testcase classname="vize_canon::fix_history_diagnostics" name="${names[0]}"/>`,
       );
     },
+    ...dialectReadiness.packetChanges,
     (f) => {
       const file = artifact(f, "workspace-junit-ci.xml");
       fs.writeFileSync(file, fs.readFileSync(file, "utf8").replace("/>", "><skipped/></testcase>"));

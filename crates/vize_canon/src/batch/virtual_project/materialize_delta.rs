@@ -114,6 +114,9 @@ impl VirtualProject {
             .map(|path| Ok((path.clone(), revision_if_file(path)?)))
             .collect::<CorsaResult<FxHashMap<_, _>>>()?;
 
+        if self.private_batch_namespace {
+            self.prepare_owned_batch_writes(&self.expected_materialized_files())?;
+        }
         ensure_materialize_root(&self.virtual_root)?;
         if let Some(desired) = desired_links.as_ref() {
             remove_stale_package_links(&self.materialized_package_links, desired)?;
@@ -283,6 +286,15 @@ pub(crate) struct MaterializedFileSnapshot {
 }
 
 impl MaterializedFileSnapshot {
+    pub(super) fn retire_obsolete_files(&self, current: &Self, root: &Path) -> CorsaResult<()> {
+        for path in self.revisions.keys() {
+            if !current.revisions.contains_key(path) {
+                crate::batch::materialize_fs::retire_owned_file(root, path)?;
+            }
+        }
+        Ok(())
+    }
+
     #[cfg(feature = "native")]
     pub(crate) fn contains_file(&self, path: &Path) -> bool {
         self.revisions.contains_key(path)

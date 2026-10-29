@@ -6,10 +6,25 @@ import { createHash } from "node:crypto";
 import { appendFileSync } from "node:fs";
 
 import { changedPaths } from "./plan-source-checks.ts";
+import { newLanguageProjectCases } from "./language-project-fixtures.ts";
+import {
+  compilerCssApiSources,
+  newCompilerCssApiCases,
+  onlyCompilerCssChanges,
+} from "../../../../tests/differential/compiler-css-api.ts";
 import {
   nativeShutdownProtocolSource,
   newNativeShutdownProtocolCases,
 } from "./native-shutdown-protocol-fixtures.ts";
+import {
+  NATIVE_BETA_DTO_PROTOCOL_ID,
+  nativeBetaDtoProtocolSource,
+  newNativeBetaDtoProtocolCases,
+} from "./native-beta-dto-fixtures.ts";
+
+import { knownCompilerCssSource } from "../../../../tests/differential/compiler-css-api-registry.ts";
+import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
+import { newVaporStyleApiCases } from "./vapor-style-api-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -44,6 +59,12 @@ interface ManifestCase {
   adapters?: { legacy?: unknown; native?: unknown; reasons?: { native?: unknown } };
   comparison?: { contract?: unknown; requiredFacets?: unknown };
   reference?: { path?: string; sha256?: string; source?: unknown };
+  dialectCoverage?: DialectCoverage;
+}
+
+interface DialectCoverage {
+  state?: string;
+  evidence?: { dialects?: unknown }[];
 }
 
 interface PinnedInput {
@@ -58,6 +79,10 @@ interface Manifest {
   product?: unknown;
   cases?: ManifestCase[];
   protocolCases?: unknown;
+  languageProjectCases?: unknown;
+  runtimeCases?: unknown;
+  cssApiCases?: unknown;
+  vaporStyleApiCases?: unknown;
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
@@ -66,6 +91,10 @@ const COMPILER_FACETS = ["code", "css", "errors", "warnings", "macro_artifacts"]
 export function legacyProducts(paths: readonly string[]): Product[] {
   const products = new Set<Product>();
   for (const path of paths) {
+    if (knownCompilerCssSource(path)) {
+      products.add("compiler");
+      continue;
+    }
     if (!/^crates\/[^/]+\/src\//.test(path)) continue;
     if (path.startsWith("crates/vize_glyph/")) products.add("formatter");
     else if (path.startsWith("crates/vize_patina/")) products.add("linter");
@@ -76,6 +105,37 @@ export function legacyProducts(paths: readonly string[]): Product[] {
     }
   }
   return [...products].sort((left, right) => left.localeCompare(right));
+}
+
+const COVERAGE_RANK: Record<string, number> = { partial: 1, "source-inspected": 1, verified: 2 };
+
+// Lower readiness, or fewer dialects at the same readiness.
+function coverageLost(before?: DialectCoverage, after?: DialectCoverage): boolean {
+  const rank = (coverage?: DialectCoverage) => COVERAGE_RANK[coverage?.state ?? ""] ?? 0;
+  const dialects = (coverage?: DialectCoverage) =>
+    new Set(
+      (coverage?.evidence ?? []).flatMap((item) =>
+        Array.isArray(item.dialects) ? (item.dialects as unknown[]) : [],
+      ),
+    );
+  if (rank(before) !== rank(after)) return rank(after) < rank(before);
+  const kept = dialects(after);
+  return [...dialects(before)].some((dialect) => !kept.has(dialect));
+}
+
+// Route only one explicitly registered protocol ID; malformed/unknown rows
+// remain with the original closed validator and cannot disappear in filtering.
+function protocolPartition(value: unknown, id: string, include: boolean): unknown {
+  if (!Array.isArray(value)) return value;
+  return value.filter((row: unknown) => {
+    const matches =
+      row !== null &&
+      typeof row === "object" &&
+      !Array.isArray(row) &&
+      "id" in row &&
+      row.id === id;
+    return matches === include;
+  });
 }
 
 function sha256(bytes: Buffer): string {
@@ -151,6 +211,16 @@ function checkProduct(
     const allIds = manifest.cases.map((entry) => entry.id);
     if (new Set(allIds).size !== allIds.length) throw new Error("duplicate case ID");
     const oldIds = new Set(before?.cases?.map((entry) => entry.id) ?? []);
+    // Unit tests only keep baseline floors, so a fix must not drop or
+    // downgrade a case that is already planned.
+    const planned = new Map(manifest.cases.map((entry) => [entry.id, entry]));
+    for (const entry of before?.cases ?? []) {
+      const kept = planned.get(entry.id);
+      if (kept === undefined) throw new Error(`drops planned case: ${entry.id}`);
+      if (coverageLost(entry.dialectCoverage, kept.dialectCoverage)) {
+        throw new Error(`downgrades dialect coverage: ${entry.id}`);
+      }
+    }
     const cases = manifest.cases
       .filter((entry) => !oldIds.has(entry.id))
       .map((entry) => {
@@ -198,18 +268,88 @@ function checkProduct(
     const canonPaths = paths.filter((path) => path.startsWith("crates/vize_canon/src/"));
     const protocolRequired =
       product === "typechecker" && canonPaths.some(nativeShutdownProtocolSource);
+    const languageProject =
+      product === "typechecker"
+        ? newLanguageProjectCases(
+            before?.languageProjectCases,
+            manifest.languageProjectCases,
+            readFile,
+          )
+        : { ids: [] as string[], sources: new Set<string>() };
+    const dtoProtocols =
+      product === "typechecker"
+        ? newNativeBetaDtoProtocolCases(
+            protocolPartition(before?.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, true),
+            protocolPartition(manifest.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, true),
+            readFile,
+          )
+        : [];
+    const dtoRegistered = dtoProtocols.includes(NATIVE_BETA_DTO_PROTOCOL_ID);
+    const dtoRequired = product === "typechecker" && canonPaths.some(nativeBetaDtoProtocolSource);
+    const runtime = newNativeRuntimeCases(
+      product,
+      before?.runtimeCases,
+      manifest.runtimeCases,
+      readFile,
+    );
+    const productPaths = paths.filter((path) =>
+      path.startsWith(product === "linter" ? "crates/vize_patina/src/" : "crates/vize_canon/src/"),
+    );
     const batchRequired =
-      product !== "typechecker" || canonPaths.some((path) => !nativeShutdownProtocolSource(path));
+      product === "linter" || product === "typechecker"
+        ? productPaths.some(
+            (path) =>
+              !runtime.sources.has(path) &&
+              !languageProject.sources.has(path) &&
+              !(dtoRegistered && nativeBetaDtoProtocolSource(path)) &&
+              !(product === "typechecker" && nativeShutdownProtocolSource(path)),
+          )
+        : true;
     const protocols =
       product === "typechecker"
-        ? newNativeShutdownProtocolCases(before?.protocolCases, manifest.protocolCases, readFile)
+        ? newNativeShutdownProtocolCases(
+            protocolPartition(before?.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
+            protocolPartition(manifest.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
+            readFile,
+          )
         : [];
+    const cssApi =
+      product === "compiler"
+        ? newCompilerCssApiCases(before?.cssApiCases, manifest.cssApiCases, readFile)
+        : [];
+    const cssOnly =
+      product === "compiler" &&
+      cssApi.length > 0 &&
+      onlyCompilerCssChanges(paths, compilerCssApiSources(cssApi));
+    const vaporStyle =
+      product === "compiler"
+        ? newVaporStyleApiCases(before?.vaporStyleApiCases, manifest.vaporStyleApiCases, readFile)
+        : { ids: [] as string[], sources: new Set<string>() };
+    const compilerPaths = paths.filter((path) => legacyProducts([path]).includes("compiler"));
+    const vaporIds = compilerPaths.some((path) => vaporStyle.sources.has(path))
+      ? vaporStyle.ids
+      : [];
+    const vaporOnly =
+      product === "compiler" &&
+      vaporIds.length > 0 &&
+      compilerPaths.length > 0 &&
+      compilerPaths.every((path) => vaporStyle.sources.has(path));
     const registered =
-      (!batchRequired || cases.length > 0) && (!protocolRequired || protocols.length > 0);
+      (cssOnly || vaporOnly || !batchRequired || cases.length > 0) &&
+      (!protocolRequired || protocols.length > 0) &&
+      (!dtoRequired || dtoRegistered);
     return {
       product,
       state: registered ? "new-inputs-registered" : "new-input-missing",
-      cases: [...cases, ...protocols],
+      cases: [
+        ...cases,
+        ...protocols,
+        ...runtime.ids,
+        ...cssApi,
+        ...vaporIds,
+        ...languageProject.ids,
+        ...dtoProtocols,
+      ],
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };
@@ -265,7 +405,7 @@ export function formatSummary(report: LegacyFixReport, enforce: boolean): string
     if (enforce && failingProducts(report).length > 0) {
       lines.push(
         "",
-        "Add the fixed input under `tests/_fixtures/differential/<product>/<case>/` and register it in that product's `manifest.json` with its SHA-256.",
+        "Add the fixed input under `tests/_fixtures/differential/<product>/<case>/` and register it at its sorted position in that product's `manifest.json` with its SHA-256.",
       );
     }
   }
@@ -273,10 +413,17 @@ export function formatSummary(report: LegacyFixReport, enforce: boolean): string
   return `${lines.join("\n")}\n`;
 }
 
-function gitFile(revision: string, path: string): Buffer | null {
-  const result = spawnSync("git", ["show", `${revision}:${path}`], { encoding: "buffer" });
+export function gitFixtureFile(revision: string, path: string, cwd = process.cwd()): Buffer | null {
+  const result = spawnSync("git", ["show", `${revision}:${path}`], { cwd, encoding: "buffer" });
   if (result.status === 0) return result.stdout;
-  if (result.stderr.toString().includes("does not exist")) return null;
+  // New files can exist in the checkout while being absent from the baseline.
+  // Inspect the actual tree, rather than matching localized Git stderr. An
+  // unreadable revision/tree/blob remains an error instead of becoming absence.
+  const tree = spawnSync("git", ["ls-tree", "-z", revision, "--", path], {
+    cwd,
+    encoding: "buffer",
+  });
+  if (tree.status === 0 && tree.stdout.length === 0) return null;
   throw new Error(`git show failed for ${revision}:${path}: ${result.stderr.toString()}`);
 }
 
@@ -291,7 +438,7 @@ if (process.argv[1]?.endsWith("/report-legacy-fix-fixtures.ts")) {
   const report = analyzeLegacyFix({
     title: process.env.PR_TITLE ?? "",
     paths: changedPaths(base, head),
-    readFile: (side, path) => gitFile(side === "base" ? base : head, path),
+    readFile: (side, path) => gitFixtureFile(side === "base" ? base : head, path),
   });
   const enforce = enforced(process.env.PR_CREATED_AT);
   const summary = formatSummary(report, enforce);

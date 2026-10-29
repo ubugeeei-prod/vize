@@ -47,6 +47,13 @@ vp exec vsce package --no-dependencies --out dist/vize.vsix
   pnpm installations. The extension checks its version and LSP initialization contract before use;
   a different release number from the extension does not replace the project's engine.
 
+- Type checking and semantic editor features require a native TypeScript compiler installed by
+  the project or explicitly selected with `typeChecker.corsaPath` / `CORSA_PATH`. The extension
+  does not download a compiler or use its old compiler cache. Its language server shares the
+  CLI's project runtime resolver. A TypeScript 6 JavaScript compiler cannot provide this native
+  runtime; install `typescript@7.1.0-beta`, use a separate native compiler alias, or select an
+  external executable explicitly.
+
 `vize.server.preferWorkspace` defaults to `true`; set it to `false` to use the extension's usual
 bundled, development, cached GitHub release, cargo, and `PATH` resolution. The matching GitHub
 release is downloaded when needed. Missing, broken, or incompatible workspace installations fall

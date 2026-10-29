@@ -93,6 +93,10 @@ test("only the present audited real-TSGO cases leave the PR default filter", () 
   }
   assert.ok(source.includes("real-Corsa isolation coverage cannot be skipped"));
   const canon = readRepoFile("crates/vize_canon/tests/fix_history_diagnostics.rs");
+  const runner = readRepoFile("crates/vize_canon/tests/support/fix_history_runner.rs");
+  assert.ok(canon.includes("pub(crate) mod fix_history_runner;"));
+  assert.ok(canon.includes("use support::fix_history_runner::check_pack;"));
+  assert.equal(canon.includes("fn check_pack("), false);
   assert.ok(readRepoFile("crates/vize_canon/Cargo.toml").includes('name = "vize_canon"'));
   assert.equal(new Set(canonDeferred.map(({ name }) => name)).size, canonDeferred.length);
   for (const { name, pack } of canonDeferred) {
@@ -102,7 +106,7 @@ test("only the present audited real-TSGO cases leave the PR default filter", () 
     );
     assert.equal(fixture.diagnosticContract.requiredTier, "T1");
   }
-  assert.ok(canon.includes('assert_eq!(pack.diagnostic_contract.required_tier, "T1")'));
+  assert.ok(runner.includes('assert_eq!(pack.diagnostic_contract.required_tier, "T1")'));
 
   const cohorts = workflow.jobs["pr-rust-shard"].steps;
   assert.ok(
@@ -140,11 +144,15 @@ for (const [event, profile] of [
     try {
       const bin = join(cwd, "bin");
       mkdirSync(bin);
+      const runtimeDir = join(cwd, "node_modules/@typescript/typescript-linux-x64/lib");
+      mkdirSync(runtimeDir, { recursive: true });
+      const nativeRuntime = join(runtimeDir, "tsc");
+      writeFileSync(nativeRuntime, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
       const argv = join(cwd, "argv.json");
       writeFileSync(
         join(bin, "cargo"),
         `#!/bin/sh
-exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);const full=process.env.NEXTEST_PROFILE==="full";if(full?(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")):(process.env.VIZE_TEST_DISABLE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_REQUIRE_TSGO")))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(args.includes("--archive-file"))process.exit(91);fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
+exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);const full=process.env.NEXTEST_PROFILE==="full";if(full?(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")):(process.env.VIZE_TEST_DISABLE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_REQUIRE_TSGO")))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(process.env.CORSA_PATH!==process.env.EXPECTED_CORSA_PATH)process.exit(94);try{fs.accessSync(process.env.CORSA_PATH,fs.constants.X_OK)}catch{process.exit(95)}if(args.includes("--archive-file"))process.exit(91);fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
 `,
         { mode: 0o755 },
       );
@@ -167,7 +175,8 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
         GITHUB_WORKSPACE: cwd,
         GITHUB_ENV: join(cwd, "github-env"),
         GITHUB_EVENT_NAME: event,
-        COHORT: "compiler",
+        COHORT: "typechecker",
+        EXPECTED_CORSA_PATH: nativeRuntime,
         NEXTEST_FILTER: "package(=vize_armature) | package(=vize_l1)",
         NEXTEST_PROFILE: profile,
         VIZE_NUXT_CONFIG_ITERATIONS: "100",

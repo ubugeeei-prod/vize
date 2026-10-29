@@ -31,6 +31,7 @@ const DEPENDENCY_SECTIONS: &[&str] = &[
 ];
 const RUNTIME_PEER_DEPENDENCIES: &[(&str, &str)] = &[
     ("typescript", "6.0.3"),
+    ("typescript-native", "npm:typescript@7.1.0-beta"),
     ("vite", "^8.0.0"),
     ("vite-plus", "0.1.24"),
     ("vue", "3.5.34"),
@@ -824,7 +825,7 @@ fn assert_installed_mapper_contract(install_dir: &Path) -> Result<(), String> {
         != Some(&json!({
             "dynamicConfig": true,
             "exec": ["node", "./bin/vize", "content-mapper"],
-            "compilerOptions": ["checkJs", "noUnusedLocals"],
+            "compilerOptions": ["checkJs", "noUnusedLocals", "rootDir"],
         }))
     {
         return Err(format!(

@@ -36,6 +36,7 @@ pub use content_mapper::{
     ContentMapperDiagnosticDirectives, ContentMapperSemanticLink, ContentMapperSpan,
     ContentMapperTransform, ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic,
     generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
+    generate_vue_content_mapper_transform_with_project_options,
 };
 pub use content_mapper_config::ContentMapperProjectConfiguration;
 mod cache_gc;
@@ -61,6 +62,9 @@ pub(in crate::batch) use diagnostic_route::DiagnosticRoute;
 mod esm_declaration_spelling;
 mod external_mirror;
 pub use external_mirror::external_mirror_original_path;
+mod persistent_namespace;
+pub(in crate::batch) use persistent_namespace::prepare_persistent_batch_root;
+pub use persistent_namespace::{persistent_batch_storage_root, persistent_batch_virtual_root};
 mod identity;
 pub use identity::{
     legacy_project_virtual_roots, project_virtual_access_path, project_virtual_lock_paths,
@@ -112,8 +116,9 @@ pub use topology::BatchTopologyMetrics;
 mod included_sources;
 mod tsconfig_gen;
 pub use tsconfig_gen::{
-    CompilerConfigurationAttempt, CompilerConfigurationSnapshot, ConfigurationObservations,
-    TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind, UnresolvedExtends,
+    CompilerConfigurationAttempt, CompilerConfigurationSnapshot, CompilerOptionsSnapshot,
+    ConfigurationObservations, TsconfigOwnershipCache, TsconfigOwnershipOptions,
+    TsconfigSourceKind, TsconfigWildcard, TsconfigWildcardUsage, UnresolvedExtends,
     snapshot_tsconfig_compiler_options, snapshot_tsconfig_vue_compiler_options,
     snapshot_tsconfig_vue_target,
 };
@@ -123,6 +128,8 @@ pub(crate) use tsconfig_paths::{parse_jsonc_value, resolve_extended_tsconfig_pat
 mod vue_codegen;
 mod vue_compiler_comments;
 
+#[cfg(test)]
+mod content_mapper_config_tests;
 #[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
@@ -198,6 +205,7 @@ pub struct VirtualProject {
     /// outside the checked tree and `node_modules`; editor projects are
     /// re-scoped to a session-private namespace.
     virtual_root: PathBuf,
+    private_batch_namespace: bool,
 
     /// Shared owner lock held for as long as this project can read or patch
     /// its materialized cache. Cache GC takes the same file exclusively.

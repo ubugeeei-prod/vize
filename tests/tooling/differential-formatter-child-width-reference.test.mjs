@@ -154,21 +154,34 @@ void test("sole-child Vue references retain old whole bytes and reject altered i
   const livePath = path.join(scratch, cliPath);
   const liveBytes = fs.readFileSync(livePath);
   const appended = JSON.parse(liveBytes);
-  appended.cases.push({ ...appended.cases[0], id: "formatter/sfc/new-issue-input" });
+  const added = {
+    ...appended.cases.find((row) => row.id === first.id),
+    id: "formatter/sfc/new-issue-input",
+  };
+  appended.cases.splice(
+    appended.cases.findIndex((row) => row.id > added.id),
+    0,
+    added,
+  );
   fs.writeFileSync(livePath, `${JSON.stringify(appended, null, 2)}\n`);
   soleChildVueAuthority(scratch);
   for (const mutate of [
     (manifest) => {
-      manifest.cases[0].witnesses = [];
+      manifest.cases.find((row) => row.id === first.id).witnesses = [];
     },
     (manifest) => {
-      manifest.cases.shift();
+      manifest.cases.find(
+        (row) => row.id === "formatter/sfc/split-v-pre-indentation",
+      ).dialectCoverage.evidence[0].selector = "foreign selector";
+    },
+    (manifest) => {
+      manifest.cases = manifest.cases.filter((row) => row.id !== first.id);
     },
     (manifest) => {
       manifest.baseRevision = "0".repeat(40);
     },
     (manifest) => {
-      manifest.cases.push(manifest.cases[0]);
+      manifest.cases.push(manifest.cases.find((row) => row.id === first.id));
     },
   ]) {
     const changed = structuredClone(appended);

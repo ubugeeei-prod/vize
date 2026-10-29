@@ -7,6 +7,7 @@ import { cadenceDecision, readCadenceInput, releaseRunning } from "./cadence.ts"
 import { publishedCrates } from "../publish_crates/main.ts";
 import { queryCrateVersion, type CrateVersionState } from "../publish_crates/registry.ts";
 import { stampVersion } from "./stamp.ts";
+import { releaseQuota, rollingQuotaDecision } from "./quota_entry.ts";
 import {
   highestReleaseVersion,
   isUnclaimedVersion,
@@ -20,6 +21,9 @@ const USAGE = `Usage:
   main.ts stamp <version>    stamp <version> into the working tree
   main.ts cut [version]      CI only: stamp, commit and push a release candidate ref
   main.ts cadence            CI only: decide whether a scheduled run releases
+  main.ts quota <version>    CI only: fresh publication admission
+  main.ts quota-prepare <version> CI only: refuse a cut without fresh admission
+  main.ts quota-dry-run <version> CI only: read public quota without publishing
 `;
 
 function fail(message: string): number {
@@ -60,30 +64,41 @@ type CrateVersionQuery = (crateName: string, version: string) => Promise<CrateVe
 
 export interface PriorReleaseCompleteness {
   version: string | null;
+  /** Targets that block the next version. */
   incomplete: string[];
+  /** crates.io targets that are still missing; reported, never blocking. */
+  lagging: string[];
 }
 
 /**
- * Every tagged release must reach both package registries before another
- * version can be cut. Checking the publisher's canonical crate list keeps the
- * preflight aligned with the actual release surface.
+ * Every tagged release must reach npm before another version can be cut, so
+ * no install skips a version. crates.io only gets reported: its index can
+ * stall for hours (it did on 2026-10-26), and holding npm releases behind it
+ * breaks release-per-fix while leaving no npm user on a newer engine.
  */
-export async function incompletePriorReleaseTargets(
+export function incompletePriorReleaseTargets(
   version: string,
   npmPublished: readonly string[],
+): string[] {
+  return npmPublished.includes(version) ? [] : [`npm:vize@${version}`];
+}
+
+/** Crates from the publisher's canonical list that crates.io lacks at `version`. */
+export async function laggingPriorReleaseCrates(
+  version: string,
   query: CrateVersionQuery = queryCrateVersion,
 ): Promise<string[]> {
-  const incomplete = npmPublished.includes(version) ? [] : [`npm:vize@${version}`];
+  const lagging: string[] = [];
   for (let index = 0; index < publishedCrates.length; index += 4) {
     const batch = publishedCrates.slice(index, index + 4);
     const states = await Promise.all(batch.map((crate) => query(crate, version)));
     states.forEach((state, offset) => {
       if (state.kind !== "published") {
-        incomplete.push(`crates:${batch[offset]}@${version}`);
+        lagging.push(`crates:${batch[offset]}@${version}`);
       }
     });
   }
-  return incomplete;
+  return lagging;
 }
 
 /** Public-registry state for the newest release tag. */
@@ -93,11 +108,17 @@ export async function priorReleaseCompleteness(
   query: CrateVersionQuery = queryCrateVersion,
 ): Promise<PriorReleaseCompleteness> {
   const version = highestReleaseVersion(tags);
+  if (version === null) return { version, incomplete: [], lagging: [] };
   return {
     version,
-    incomplete:
-      version === null ? [] : await incompletePriorReleaseTargets(version, npmPublished, query),
+    incomplete: incompletePriorReleaseTargets(version, npmPublished),
+    lagging: await laggingPriorReleaseCrates(version, query),
   };
+}
+
+function reportLagging({ version, lagging }: PriorReleaseCompleteness): void {
+  if (lagging.length === 0) return;
+  writeStderr(`v${version} is still missing on crates.io: ${lagging.join(", ")}\n`);
 }
 
 /** A cadence skip when the registry preflight cannot prove the prior release complete. */
@@ -116,7 +137,9 @@ async function priorReleaseIsComplete(
   tags: readonly string[],
   npmPublished: readonly string[],
 ): Promise<boolean> {
-  const { version, incomplete } = await priorReleaseCompleteness(tags, npmPublished);
+  const completeness = await priorReleaseCompleteness(tags, npmPublished);
+  reportLagging(completeness);
+  const { version, incomplete } = completeness;
   if (incomplete.length === 0) return true;
   writeStderr(
     `Refusing to cut a new version before v${version} is complete: ${incomplete.join(", ")}\n`,
@@ -157,6 +180,8 @@ export const candidateRef = (source: string) => `refs/release-candidates/${sourc
 async function cut(current: string, requested: string | undefined): Promise<number> {
   const version = await resolveVersion(current, requested);
   if (version === null) return 1;
+  const quotaDecision = rollingQuotaDecision(await releaseQuota(version));
+  if (quotaDecision !== null) return fail(quotaDecision.reason + "\n");
   const tag = `v${version}`;
   const source = (await collectStdout("git", ["rev-parse", "HEAD"])).stdout.trim();
   const ref = candidateRef(source);
@@ -203,9 +228,9 @@ async function cadence(): Promise<number> {
   if (tags === null || npmPublished === null) {
     return finishCadence(cadenceRegistryDecision(null)!, null);
   }
-  const registryDecision = cadenceRegistryDecision(
-    await priorReleaseCompleteness(tags, npmPublished),
-  );
+  const completeness = await priorReleaseCompleteness(tags, npmPublished);
+  reportLagging(completeness);
+  const registryDecision = cadenceRegistryDecision(completeness);
   if (registryDecision !== null) return finishCadence(registryDecision, null);
   const highest = highestReleaseVersion(tags);
   const input = await readCadenceInput(highest === null ? null : `v${highest}`);
@@ -215,7 +240,17 @@ async function cadence(): Promise<number> {
       await collectStdout("git", ["ls-remote", "origin", candidateRef(input.greenSha)])
     ).stdout.trim() !== "";
   const decision = cadenceDecision({ ...input, attempted, running: await releaseRunning() });
-  return finishCadence(decision, input.greenSha);
+  if (!decision.release) return finishCadence(decision, input.greenSha);
+  const version = nextReleaseVersion([workspaceVersion() ?? "", ...tags, ...npmPublished]);
+  if (version === null)
+    return finishCadence(
+      { release: false, reason: "next release version unavailable" },
+      input.greenSha,
+    );
+  const quotaDecision = rollingQuotaDecision(
+    await releaseQuota(version, false, input.greenSha ?? undefined),
+  );
+  return finishCadence(quotaDecision ?? decision, input.greenSha);
 }
 
 export async function release(args: readonly string[]): Promise<number> {
@@ -232,6 +267,19 @@ export async function release(args: readonly string[]): Promise<number> {
     }
     case "cadence":
       return cadence();
+    case "quota":
+    case "quota-dry-run":
+    case "quota-prepare": {
+      if (nonEmptyEnv("GITHUB_ACTIONS") !== "true" || value === undefined) return fail(USAGE);
+      const report = await releaseQuota(value, command === "quota");
+      return command === "quota-dry-run"
+        ? report.kind === "unavailable"
+          ? 1
+          : 0
+        : report.kind === "allowed"
+          ? 0
+          : 1;
+    }
     case "stamp":
       if (value === undefined) return fail(USAGE);
       return (await stampVersion(current, value)) ? 0 : 1;

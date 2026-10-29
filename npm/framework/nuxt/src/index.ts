@@ -1,7 +1,6 @@
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
-import { injectNuxtI18nHelpers } from "./i18n";
-import { setupNuxtLintChecker } from "./lint/checker/setup";
-import { setupLintInspector, setupNuxtLintConfigGeneration } from "./lint/generation";
+import { setupLintInspector } from "./lint/generation";
+import { setupNuxtLint } from "./lint/module-setup";
 import { appendMuseaArtComponentIgnore } from "./musea-components";
 import { registerNuxtMuseaStaticPublicAsset } from "./musea-static";
 import { patchNuxtClientManifestCloseBundlePlugin } from "./client-manifest-bridge";
@@ -28,6 +27,7 @@ import { createNuxtModuleResolver } from "./resolver";
 import { mergePlainRecords } from "./module-records";
 import { setupNuxtViteCompiler } from "./vite-compiler";
 import { setupVizeLibraries } from "./libraries";
+import { registerNuxtContentMapper } from "./content-mapper";
 import {
   buildNuxtDevAssetBase,
   isVizeGeneratedVueModuleId,
@@ -80,7 +80,6 @@ type NuxtWithBuilderOptions = {
   };
 };
 type VizeNuxtModuleContext = { nuxt?: NuxtWithBuilderOptions };
-
 const moduleMeta = { name: "@vizejs/nuxt", configKey: "vize" } as const;
 
 const moduleDefaults = {
@@ -236,11 +235,12 @@ function patchNuxtAutoImportTransformPlugin(
   plugin[VIZE_NUXT_AUTO_IMPORT_PATCHED] = true;
 }
 
-async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuilderOptions) {
-  const lintGeneration = await setupNuxtLintConfigGeneration(options.lint, nuxt);
-  await setupNuxtLintChecker(options.checker, nuxt, lintGeneration);
+async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWithBuilderOptions) {
+  const options = resolveModuleOptions(raw, nuxt);
+  const lintGeneration = await setupNuxtLint(options, nuxt, raw);
   const resolver = createNuxtModuleResolver(nuxt.options.rootDir);
   const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
+  registerNuxtContentMapper(nuxt, detectedNuxtMajor);
   const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
   const nuxtWithBuilderOptions = nuxt as NuxtWithBuilderOptions;
   const supportsViteCompiler = hasNuxtViteCompilerSupport(nuxtWithBuilderOptions);
@@ -250,7 +250,6 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
   const devOptions = resolveNuxtDevOptions(options.dev);
   const museaOptions = detectedNuxtMajor === 2 ? false : resolveNuxtMuseaOptions(options.musea);
   const unocssOptions = resolveNuxtUnoCssOptions(options.unocss);
-
   if (museaOptions !== false) nuxt.hook("components:dirs", appendMuseaArtComponentIgnore);
 
   await setupVizeLibraries(
@@ -453,6 +452,7 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
         // Parse the virtual module so string literals, comments, and Vue template
         // globals do not look like setup-scope runtime helper calls.
         if (bridgeOptions.i18n && bridgeFastPath.hasI18nBridgeInput(result)) {
+          const { injectNuxtI18nHelpers } = await import("./i18n");
           const nextResult = injectNuxtI18nHelpers(result, id);
           if (nextResult !== result) {
             result = nextResult;
@@ -594,7 +594,7 @@ const vizeNuxtModule = Object.assign(
 
     markNuxtRequiredModule(nuxt);
     registerNuxt2CompatibilityHooks(nuxt);
-    await setupVizeNuxtModule(resolveModuleOptions(inlineOptions, nuxt), nuxt);
+    await setupVizeNuxtModule(inlineOptions, nuxt);
   },
   {
     getMeta: () => moduleMeta,

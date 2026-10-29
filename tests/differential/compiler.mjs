@@ -3,8 +3,22 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts";
+import {
+  BUILD_RECIPE,
+  LEGACY_BUILD_RECIPE,
+  expectedBuildIdentity,
+  validateBuildReceipt,
+} from "./build-receipt.ts";
 import { compareBytes } from "./compare.mjs";
+import { compilerCssApiReport, loadCompilerCssApiCases } from "./compiler-css-api.ts";
+import {
+  COMPILER_ARGV,
+  DIALECT_VITE_CONFIG_PATH,
+  compilerArgv,
+  dialectResultInput,
+  loadDialectInput,
+} from "./compiler-dialect.ts";
+import { closedSetupReference } from "../tooling/support/script-setup-default-expose.ts";
 import {
   loadProductManifest,
   readPinnedArtifact,
@@ -13,97 +27,22 @@ import {
   validateResultEnvelope,
 } from "./harness.mjs";
 
-export const COMPILER_ARGV = [
-  "build",
-  "Layout.vue",
-  "--format",
-  "json",
-  "--output",
-  "out",
-  "--ssr",
-  "--no-config",
-];
-const DIALECT_INVENTORY_REF = "tests/_fixtures/differential/dialect-inputs/inventory.json";
-const DIALECT_TEMPLATE_TRANSPORT = "sfc-template-wrapper-v1";
-const DIALECT_TEMPLATE_PREFIX = Buffer.from("<template>\n");
-const DIALECT_TEMPLATE_SUFFIX = Buffer.from("</template>\n");
-const DIALECT_VITE_CONFIG_PATH = "vite.config.mjs";
+export { COMPILER_ARGV, compilerArgv };
+
 const OUTPUT_FILE = "out/Layout.json";
 const NOT_COMPARED = "whole-product native compiler path unavailable";
-
-export function compilerArgv(fixture) {
-  if (!fixture.dialectInput) return [...COMPILER_ARGV];
-  const argv = [
-    ...COMPILER_ARGV.slice(0, -1),
-    "--template-syntax",
-    fixture.dialectInput.selector.templateSyntax,
-  ];
-  return fixture.dialectInput.selector.vueVersion === "3"
-    ? [...argv, "--no-config"]
-    : [...argv, "--config", DIALECT_VITE_CONFIG_PATH];
-}
-
-function dialectViteConfig(registered) {
-  if (registered.selector.vueVersion === "3") return null;
-  return Buffer.from(`export default { vue: { version: "${registered.selector.vueVersion}" } };\n`);
-}
-
-function dialectResultInput(fixture) {
-  return {
-    id: fixture.dialectInputId,
-    sha256: fixture.dialectInputSha256,
-    transport: fixture.dialectTransport,
-    ...(fixture.dialectConfig
-      ? {
-          config: {
-            path: fixture.dialectConfigPath,
-            sha256: fixture.dialectConfigSha256,
-          },
-        }
-      : {}),
-  };
-}
-
-function loadDialectInput(root, fixture) {
-  const registryPath = path.resolve(root, "../dialect-inputs/inventory.json");
-  const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
-  assert.equal(registry.schema, "vize.dialectInputInventory");
-  assert.equal(registry.version, 1);
-  const registered = registry.cases.find((entry) => entry.id === fixture.inputs.dialectInput.id);
-  assert(registered, `unknown dialect input: ${fixture.inputs.dialectInput.id}`);
-  assert.deepEqual(fixture.inputs.dialectInput, {
-    id: registered.id,
-    sha256: registered.input.sha256,
-    selector: registered.selector,
-    expectedParserMode: registered.expectedParserMode,
-    transport: DIALECT_TEMPLATE_TRANSPORT,
-  });
-  assert.equal(registered.state, "input-only");
-  const raw = readPinnedArtifact(path.dirname(registryPath), registered.input);
-  const input = Buffer.concat([DIALECT_TEMPLATE_PREFIX, raw, DIALECT_TEMPLATE_SUFFIX]);
-  const config = dialectViteConfig(registered);
-  const selector = config
-    ? `compiler-cli-ssr-template-v1 Vue ${registered.selector.vueVersion} via generated ${DIALECT_VITE_CONFIG_PATH}; --template-syntax ${registered.selector.templateSyntax}; parser ${registered.expectedParserMode}`
-    : `compiler-cli-ssr-template-v1 default Vue ${registered.selector.vueVersion}; --template-syntax ${registered.selector.templateSyntax}; parser ${registered.expectedParserMode}`;
-  assert.deepEqual(fixture.dialectCoverage, {
-    state: "verified",
-    registryRef: DIALECT_INVENTORY_REF,
-    evidence: [
-      {
-        kind: "adapter-execution",
-        dialects: registered.dialects,
-        selector,
-      },
-    ],
-  });
-  return { raw, input, config, registered };
-}
 
 export function loadCompilerManifest(manifestPath) {
   const loaded = loadProductManifest(manifestPath, "compiler");
   const root = path.dirname(manifestPath);
+  const cssApiCases = loadCompilerCssApiCases(loaded.manifest.cssApiCases, (file) => {
+    const relative = file.slice("tests/_fixtures/differential/compiler/".length);
+    const physical = path.join(root, relative);
+    return fs.existsSync(physical) ? fs.readFileSync(physical) : null;
+  });
   return {
     ...loaded,
+    cssApiCases,
     cases: loaded.cases.map((fixture) => {
       assert.deepEqual(fixture.targets, ["ssr"]);
       assert.equal(fixture.state, "active");
@@ -112,10 +51,10 @@ export function loadCompilerManifest(manifestPath) {
       const isDialectInput = fixture.inputs.dialectInput !== undefined;
       const dialect = isDialectInput ? loadDialectInput(root, fixture) : null;
       if (dialect) {
-        assert.equal(fixture.adapters.legacy, "compiler-cli-ssr-template-v1");
         assert.equal(fixture.id, `compiler/${dialect.registered.id}`);
       } else {
         assert.equal(fixture.adapters.legacy, "compiler-cli-ssr-v1");
+        assert.equal(fixture.adapters.legacyRecipe, undefined);
         assert.match(fixture.inputs.root, /^[a-z0-9-]+$/);
         assert.equal(fixture.id, `compiler/sfc/${fixture.inputs.root}`);
         assert.equal(fixture.inputs.files.length, 1);
@@ -160,7 +99,13 @@ export function loadCompilerManifest(manifestPath) {
       const input = dialect
         ? dialect.input
         : readPinnedArtifact(path.join(root, fixture.inputs.root), fixture.inputs.files[0]);
-      const expected = readPinnedArtifact(root, fixture.reference);
+      const archivedExpected = readPinnedArtifact(root, fixture.reference);
+      // Authenticate the original reference before applying the reviewed
+      // closed-by-default setup contract. Candidate bytes remain untouched.
+      const expected = Buffer.from(
+        closedSetupReference({ code: archivedExpected.toString("utf8") }, input.toString("utf8"))
+          .code,
+      );
       const expectedCss = fixture.reference.cssPath
         ? readPinnedArtifact(root, {
             path: fixture.reference.cssPath,
@@ -172,13 +117,14 @@ export function loadCompilerManifest(manifestPath) {
         input,
         expected,
         expectedCss,
+        requiredBuildRecipe: fixture.adapters.legacyRecipe ?? null,
         argv: compilerArgv(dialect ? { dialectInput: dialect.registered } : fixture),
         ...(dialect
           ? {
               dialectInput: dialect.raw,
               dialectInputId: dialect.registered.id,
               dialectInputSha256: dialect.registered.input.sha256,
-              dialectTransport: DIALECT_TEMPLATE_TRANSPORT,
+              dialectTransport: dialect.transport,
               dialectConfig: dialect.config,
               dialectConfigPath: dialect.config ? DIALECT_VITE_CONFIG_PATH : null,
               dialectConfigSha256: dialect.config ? sha256(dialect.config) : null,
@@ -250,10 +196,23 @@ export function compilerAttempt(
   return observation;
 }
 
-export function validateCompilerReport(loaded, report, expectedBuild) {
+function compilerRecipeFailure(fixture, observedRecipe) {
+  return fixture.requiredBuildRecipe && fixture.requiredBuildRecipe !== observedRecipe
+    ? `${fixture.id} requires source-build recipe ${fixture.requiredBuildRecipe}; observed ${observedRecipe}`
+    : null;
+}
+
+export function validateCompilerReport(
+  loaded,
+  report,
+  expectedBuild,
+  expectedRecipe = BUILD_RECIPE,
+) {
   validateResultEnvelope(loaded, report, expectedBuild.sourceRevision);
+  assert.deepEqual(report.cssApi, compilerCssApiReport(loaded.cssApiCases));
   assert.deepEqual(report.argv, COMPILER_ARGV);
-  if (report.buildReceipt) validateBuildReceipt(report.buildReceipt, expectedBuild);
+  assert.equal(report.buildRecipe, expectedRecipe);
+  if (report.buildReceipt) validateBuildReceipt(report.buildReceipt, expectedBuild, expectedRecipe);
   if (report.binary) {
     assert(report.buildReceipt, "executable observation requires a build receipt");
     assert.equal(report.binary.path, expectedBuild.binaryPath);
@@ -276,6 +235,8 @@ export function validateCompilerReport(loaded, report, expectedBuild) {
     assert.equal(row.target, "ssr");
     assert.deepEqual(row.native, { state: "unsupported", reason: fixture.adapters.reasons.native });
     assert.deepEqual(row.comparison, { state: "not-compared", reason: NOT_COMPARED });
+    assert.equal(row.legacy.adapter, fixture.adapters.legacy);
+    assert.equal(row.legacy.requiredBuildRecipe, fixture.requiredBuildRecipe);
     assert.deepEqual(row.legacy.argv, fixture.argv);
     assert.equal(row.legacy.inputSha256, sha256(fixture.input));
     assert.deepEqual(
@@ -284,6 +245,13 @@ export function validateCompilerReport(loaded, report, expectedBuild) {
     );
     assert(["completed", "failed"].includes(row.legacy.state));
     const attempt = row.legacy.observation;
+    const recipeFailure = compilerRecipeFailure(fixture, expectedRecipe);
+    if (recipeFailure) {
+      assert.equal(row.legacy.state, "failed", "an incompatible build recipe cannot get credit");
+      assert.equal(row.legacy.verdict, "failed");
+      assert.equal(row.legacy.error, recipeFailure);
+      assert.equal(attempt, null, "an incompatible build recipe must not execute the case");
+    }
     if (attempt) {
       assert.equal(typeof attempt.stdoutBase64, "string");
       assert.equal(typeof attempt.stderrBase64, "string");
@@ -338,6 +306,8 @@ function runCompilerCase(fixture, binaryPath, binaryFailure) {
     legacy: {
       state: "failed",
       verdict: "failed",
+      adapter: fixture.adapters.legacy,
+      requiredBuildRecipe: fixture.requiredBuildRecipe,
       argv: fixture.argv,
       inputSha256: sha256(fixture.input),
       ...(fixture.dialectInput
@@ -392,9 +362,19 @@ function runCompilerCase(fixture, binaryPath, binaryFailure) {
   return row;
 }
 
-export function runCompilerPack({ manifestPath, binaryPath, sourceRevision, repoRoot }) {
+export function runCompilerPack({
+  manifestPath,
+  binaryPath,
+  sourceRevision,
+  repoRoot,
+  buildRecipe = BUILD_RECIPE,
+}) {
   const loaded = loadCompilerManifest(manifestPath);
   assert.match(sourceRevision, /^[a-f0-9]{40}$/);
+  assert(
+    buildRecipe === BUILD_RECIPE || buildRecipe === LEGACY_BUILD_RECIPE,
+    "compiler pack requires a registered source-build recipe",
+  );
   const report = {
     schema: "vize.differential.result",
     version: 1,
@@ -402,9 +382,11 @@ export function runCompilerPack({ manifestPath, binaryPath, sourceRevision, repo
     manifestSha256: loaded.manifestSha256,
     sourceRevision,
     argv: COMPILER_ARGV,
+    buildRecipe,
     buildReceipt: null,
     binary: null,
     rows: [],
+    cssApi: compilerCssApiReport(loaded.cssApiCases),
     summary: null,
   };
   let build = { sourceRevision };
@@ -425,7 +407,7 @@ export function runCompilerPack({ manifestPath, binaryPath, sourceRevision, repo
       fs.realpathSync(path.join(repoRoot, build.binaryPath)),
     );
     const receipt = JSON.parse(fs.readFileSync(`${binaryPath}.differential-build.json`, "utf8"));
-    validateBuildReceipt(receipt, build);
+    validateBuildReceipt(receipt, build, buildRecipe);
     const version = spawnSync(binaryPath, ["--version"], { timeout: 30_000 });
     assert.equal(version.status, 0, version.stderr?.toString());
     assert.equal(version.stdout.toString().trim(), build.cliVersion);
@@ -439,7 +421,10 @@ export function runCompilerPack({ manifestPath, binaryPath, sourceRevision, repo
     binaryFailure = error.message;
   }
   report.rows = runPlannedCases(loaded, {
-    runCase: (fixture) => [runCompilerCase(fixture, binaryPath, binaryFailure)],
+    runCase: (fixture) => {
+      const recipeFailure = compilerRecipeFailure(fixture, buildRecipe);
+      return [runCompilerCase(fixture, binaryPath, recipeFailure ?? binaryFailure)];
+    },
   });
   report.summary = {
     plannedCases: loaded.cases.length,
@@ -451,6 +436,6 @@ export function runCompilerPack({ manifestPath, binaryPath, sourceRevision, repo
     nativeHandled: 0,
     nativeEquivalent: 0,
   };
-  validateCompilerReport(loaded, report, build);
+  validateCompilerReport(loaded, report, build, buildRecipe);
   return report;
 }

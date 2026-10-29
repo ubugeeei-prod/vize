@@ -1,0 +1,420 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+import { sourceInspectedDialectCoverage } from "../differential/source-dialect-coverage.ts";
+import { loadTypecheckerManifest } from "../differential/typechecker.ts";
+import {
+  assertSortedCases,
+  canonicalDialects,
+  classifyDialectCoverage,
+  loadProductManifest,
+  normalizeDialectCoverage,
+  sha256,
+  summarizeDialectCoverage,
+} from "../differential/harness.mjs";
+
+const root = fileURLToPath(new URL("../../", import.meta.url));
+const products = ["compiler", "formatter", "linter", "lsp", "typechecker"];
+
+type Coverage = {
+  state: string;
+  registryRef: string | null;
+  evidence: Array<{ kind: string; dialects: string[]; selector: string; extra?: boolean }>;
+  extra?: boolean;
+};
+
+type Fixture = {
+  id: string;
+  dialectCoverage: Coverage;
+  inputs:
+    | Array<{ file: string; path: string; sha256: string }>
+    | { root: string; files: Array<{ path: string; sha256: string }> };
+};
+
+const promotedEvidence = [
+  {
+    product: "compiler",
+    id: "compiler/sfc/jsx-vapor-runtime-slots-6889",
+    input: "jsx-vapor-runtime-slots-6889/Layout.vue.txt",
+    sha256: "d0efd072e39bb5c7979ccf95061f62811d565883764dce352e07e2a2cb3aebf2",
+    dialects: ["vue3-sfc", "html-template"],
+    selector: "compiler-cli-ssr-v1 default Vue 3 dialect",
+  },
+  {
+    product: "compiler",
+    id: "compiler/sfc/scoped-checkout-stability-10067",
+    input: "scoped-checkout-stability-10067/Layout.vue.txt",
+    sha256: "1a3f415e27c6a2a541da2b717ddd5b1b3e4bf8b9b3770e7975a6e39990f47526",
+    dialects: ["vue3-sfc", "html-template"],
+    selector: "compiler-cli-ssr-v1 default Vue 3 dialect",
+  },
+  {
+    product: "formatter",
+    id: "formatter/sfc/plain-style-nested-comments",
+    input: "sfc-plain-style-nested-comments/App.vue",
+    sha256: "3bb6591e44487de32067d123b9dfdf303a4381c53f0c8bcebf3026c23b4021ed",
+    dialects: ["vue3-sfc", "html-template", "css-scoped"],
+    selector: "default Vue version with --no-config",
+  },
+  {
+    product: "formatter",
+    id: "formatter/sfc/split-v-pre-indentation",
+    input: "sfc-split-v-pre-indentation/App.vue",
+    sha256: "7ee5086667bb92cab2e96bbf0e19507182fd8643cd9c9194efd9a6d391b45660",
+    dialects: ["vue3-sfc", "html-template", "v-pre"],
+    selector: "default Vue version with --no-config",
+  },
+] as const;
+
+const verifiedTypecheckerEvidence = {
+  product: "typechecker",
+  id: "typechecker/nuxt-plugin-injection-types/authored-dependency-identity",
+  input: "nuxt-plugin-injection-types/project.json",
+  sha256: "2ad499a9665600b7ce468b7568641491f1262c3010dc40d5d4c53b2b5b775412",
+  dialects: ["ts"],
+  selector:
+    "batch-typechecker-fixture-v1 full-workspace nuxt_reference_graph_preserves_plugin_injection_import_types",
+} as const;
+
+function load(product: string): { cases: Fixture[] } {
+  return loadProductManifest(
+    path.join(root, `tests/_fixtures/differential/${product}/manifest.json`),
+    product,
+  );
+}
+
+type Summary = {
+  plannedCases: number;
+  verifiedCases: number;
+  provisionalCases: number;
+  unknownReadinessCases: number;
+  verified: Record<string, number>;
+  provisional: Record<string, number>;
+};
+
+// Baseline floors: new cases need no edit here, while losing baseline cases or
+// coverage still fails. Verified claims stay exact.
+function assertCoverageFloor(summary: Summary, floor: Summary) {
+  assert.equal(summary.verifiedCases, floor.verifiedCases);
+  assert.deepEqual(summary.verified, floor.verified);
+  for (const key of ["plannedCases", "provisionalCases", "unknownReadinessCases"] as const) {
+    assert(summary[key] >= floor[key], `${key}: ${summary[key]} < ${floor[key]}`);
+  }
+  for (const [dialect, count] of Object.entries(floor.provisional)) {
+    const actual = summary.provisional[dialect] ?? 0;
+    assert(actual >= count, `provisional ${dialect}: ${actual} < ${count}`);
+  }
+}
+
+void test("every product manifest contributes to the case-level dialect denominator", () => {
+  const manifests = Object.fromEntries(products.map((product) => [product, load(product)]));
+  const summaries = Object.fromEntries(
+    products.map((product) => [product, summarizeDialectCoverage(manifests[product].cases)]),
+  );
+  const custody = Object.fromEntries(
+    products.map((product) => [
+      product,
+      manifests[product].cases.map((fixture) => ({
+        id: fixture.id,
+        ...classifyDialectCoverage(fixture.dialectCoverage),
+      })),
+    ]),
+  );
+  assert.deepEqual(
+    Object.fromEntries(products.map((product) => [product, summaries[product].plannedCases])),
+    Object.fromEntries(products.map((product) => [product, custody[product].length])),
+  );
+  assert.deepEqual(
+    Object.fromEntries(products.map((product) => [product, summaries[product].provisionalCases])),
+    Object.fromEntries(
+      products.map((product) => [
+        product,
+        custody[product].filter((fixture) => fixture.measurement === "provisional").length,
+      ]),
+    ),
+  );
+  const plannedCases = Object.values(summaries).reduce(
+    (count, summary) => count + summary.plannedCases,
+    0,
+  );
+  assert.equal(
+    Object.values(summaries).reduce(
+      (count, summary) => count + summary.unknownReadinessCases + summary.verifiedCases,
+      0,
+    ),
+    plannedCases,
+    "every case must remain visible in either the verified or unknown readiness denominator",
+  );
+  for (const product of products) {
+    assert.equal(
+      new Set(custody[product].map((fixture) => fixture.id)).size,
+      custody[product].length,
+    );
+    for (const measurement of ["provisional", "verified"] as const) {
+      const dialects: Record<string, number> = {};
+      for (const fixture of custody[product].filter((row) => row.measurement === measurement)) {
+        for (const dialect of fixture.dialects) dialects[dialect] = (dialects[dialect] ?? 0) + 1;
+      }
+      assert.deepEqual(summaries[product][measurement], dialects, `${product} ${measurement}`);
+    }
+  }
+});
+
+void test("four source-inspected and one adapter-verified row exhaust measurement unknowns", () => {
+  assert.equal(promotedEvidence.length, 4);
+  for (const expected of promotedEvidence) {
+    const fixture = load(expected.product).cases.find((item) => item.id === expected.id);
+    assert(fixture, `${expected.id}: fixture is required`);
+    assert.deepEqual(fixture.dialectCoverage, {
+      state: "source-inspected",
+      registryRef: null,
+      evidence: [
+        {
+          kind: "source-inspection",
+          dialects: expected.dialects,
+          selector: expected.selector,
+        },
+      ],
+    });
+    assert.deepEqual(classifyDialectCoverage(fixture.dialectCoverage), {
+      state: "source-inspected",
+      dialects: [...expected.dialects].sort((a, b) => a.localeCompare(b)),
+      readiness: "unknown",
+      measurement: "provisional",
+    });
+
+    let input;
+    if (Array.isArray(fixture.inputs)) {
+      input = fixture.inputs.find((candidate) => candidate.path === expected.input);
+    } else {
+      const inputs = fixture.inputs;
+      input = inputs.files.find(
+        (candidate) => path.posix.join(inputs.root, candidate.path) === expected.input,
+      );
+    }
+    assert(input, `${expected.id}: pinned input is required`);
+    assert.equal(input.sha256, expected.sha256);
+    assert.equal(
+      sha256(
+        fs.readFileSync(
+          path.join(root, `tests/_fixtures/differential/${expected.product}`, expected.input),
+        ),
+      ),
+      expected.sha256,
+    );
+  }
+
+  const expected = verifiedTypecheckerEvidence;
+  const fixture = load(expected.product).cases.find((item) => item.id === expected.id);
+  assert(fixture, `${expected.id}: fixture is required`);
+  assert.deepEqual(fixture.dialectCoverage, {
+    state: "verified",
+    registryRef: "tests/differential/typechecker-registry.ts",
+    evidence: [
+      {
+        kind: "adapter-execution",
+        dialects: expected.dialects,
+        selector: expected.selector,
+      },
+    ],
+  });
+  assert.deepEqual(classifyDialectCoverage(fixture.dialectCoverage), {
+    state: "verified",
+    dialects: [...expected.dialects],
+    readiness: "verified",
+    measurement: "verified",
+  });
+  assert(Array.isArray(fixture.inputs));
+  const input = fixture.inputs.find((candidate) => candidate.path === expected.input);
+  assert(input, `${expected.id}: pinned input is required`);
+  assert.equal(input.sha256, expected.sha256);
+  assert.equal(
+    sha256(
+      fs.readFileSync(
+        path.join(root, `tests/_fixtures/differential/${expected.product}`, expected.input),
+      ),
+    ),
+    expected.sha256,
+  );
+
+  loadTypecheckerManifest(
+    path.join(root, "tests/_fixtures/differential/typechecker/manifest.json"),
+  );
+  const summaries = Object.fromEntries(
+    products.map((product) => [product, summarizeDialectCoverage(load(product).cases)]),
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      products.map((product) => [
+        product,
+        load(product).cases.filter(
+          (fixture) => classifyDialectCoverage(fixture.dialectCoverage).measurement === "unknown",
+        ).length,
+      ]),
+    ),
+    { compiler: 0, formatter: 0, linter: 0, lsp: 0, typechecker: 0 },
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      products.map((product) => [product, summaries[product].unknownReadinessCases]),
+    ),
+    { compiler: 43, formatter: 25, linter: 112, lsp: 70, typechecker: 221 },
+  );
+});
+
+void test("product manifests keep cases sorted so registrations merge cleanly", () => {
+  for (const product of products) assertSortedCases(load(product).cases);
+});
+
+void test("compiler promotes rare inventory rows through actual adapter coordinates", () => {
+  assertCoverageFloor(summarizeDialectCoverage(load("compiler").cases), {
+    plannedCases: 35,
+    verifiedCases: 7,
+    provisionalCases: 26,
+    unknownReadinessCases: 28,
+    verified: {
+      "vue0-template": 2,
+      "vue1-template": 3,
+      "vue-quirks": 2,
+    },
+    provisional: {
+      "html-template": 26,
+      ts: 5,
+      "vue3-sfc": 26,
+    },
+  });
+});
+
+void test("coverage schema rejects malformed and noncanonical verified claims", () => {
+  const valid: Coverage = {
+    state: "source-inspected",
+    registryRef: null,
+    evidence: [
+      {
+        kind: "source-inspection",
+        dialects: ["vue3-sfc", "html-template"],
+        selector: "default Vue 3 dialect",
+      },
+    ],
+  };
+  assert.deepEqual(normalizeDialectCoverage(valid, "fixture"), valid);
+  const malformed: Array<[(value: Coverage) => unknown, RegExp]> = [
+    [(value) => (value.state = "complete"), /invalid coverage state/],
+    [(value) => (value.evidence = []), /needs evidence/],
+    [(value) => value.evidence[0].dialects.push("vue3-sfc"), /duplicate dialect/],
+    [(value) => (value.evidence[0].dialects = ["Vue 3"]), /invalid dialect label/],
+    [(value) => (value.extra = true), /coverage schema is closed/],
+    [(value) => (value.evidence[0].extra = true), /evidence schema is closed/],
+    [
+      (value) => {
+        value.state = "verified";
+        value.evidence[0].dialects = ["html-template"];
+      },
+      /verified dialect must be canonical/,
+    ],
+  ];
+  for (const [change, error] of malformed) {
+    const value = structuredClone(valid);
+    change(value);
+    assert.throws(() => normalizeDialectCoverage(value, "fixture"), error);
+  }
+  const verified = structuredClone(valid);
+  verified.state = "verified";
+  verified.evidence[0].dialects = [...canonicalDialects];
+  normalizeDialectCoverage(verified, "fixture");
+});
+
+void test("missing case coverage becomes explicit unknown without changing manifest bytes", () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-dialect-ledger-"));
+  try {
+    const file = path.join(temporary, "manifest.json");
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(root, "tests/_fixtures/differential/lsp/manifest.json"), "utf8"),
+    );
+    delete manifest.cases[0].dialectCoverage;
+    fs.writeFileSync(file, `${JSON.stringify(manifest)}\n`);
+    const before = fs.readFileSync(file);
+    const source = loadProductManifest(file, "lsp");
+    assert.equal(source.cases[0].dialectCoverage.state, "unknown");
+    assert.deepEqual(fs.readFileSync(file), before);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+void test("linter and LSP coverage record every pinned authored source dialect", () => {
+  assertCoverageFloor(summarizeDialectCoverage(load("linter").cases), {
+    plannedCases: 101,
+    verifiedCases: 0,
+    provisionalCases: 101,
+    unknownReadinessCases: 101,
+    verified: {},
+    provisional: {
+      "html-template": 57,
+      js: 11,
+      jsx: 2,
+      "pug-template": 4,
+      ts: 43,
+      tsx: 2,
+      "vue2-sfc": 2,
+      "vue3-sfc": 81,
+    },
+  });
+  assertCoverageFloor(summarizeDialectCoverage(load("lsp").cases), {
+    plannedCases: 66,
+    verifiedCases: 0,
+    provisionalCases: 66,
+    unknownReadinessCases: 66,
+    verified: {},
+    provisional: {
+      "html-template": 57,
+      js: 10,
+      jsx: 4,
+      "pug-template": 4,
+      ts: 48,
+      tsx: 4,
+      "vue3-sfc": 65,
+    },
+  });
+});
+
+void test("Pug and Jade spellings record the same authored preprocessor dialect", () => {
+  for (const lang of ["pug", "jade", "PuG", "JADE"]) {
+    for (const value of [`"${lang}"`, `'${lang}'`, lang]) {
+      const coverage = sourceInspectedDialectCoverage(
+        [{ filename: "Original.vue.txt", source: `<template lang=${value}>div</template>` }],
+        "preprocessor aliases",
+      );
+      assert.deepEqual(coverage.evidence[0].dialects, ["vue3-sfc", "pug-template"]);
+    }
+  }
+});
+
+void test("typechecker coverage records every pinned authored source dialect", () => {
+  const source = load("typechecker");
+  assertCoverageFloor(summarizeDialectCoverage(source.cases), {
+    plannedCases: 164,
+    verifiedCases: 1,
+    provisionalCases: 163,
+    unknownReadinessCases: 163,
+    verified: { ts: 1 },
+    provisional: {
+      "html-template": 156,
+      js: 1,
+      jsx: 1,
+      "pug-template": 2,
+      ts: 162,
+      tsx: 4,
+      "vue3-sfc": 160,
+    },
+  });
+  assert.deepEqual(
+    source.cases
+      .filter((fixture) => fixture.dialectCoverage.state === "unknown")
+      .map((fixture) => fixture.id),
+    [],
+  );
+});

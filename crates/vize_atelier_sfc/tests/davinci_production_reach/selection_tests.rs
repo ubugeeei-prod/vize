@@ -11,7 +11,7 @@ use crate::Sweep;
 fn vapor_counter() -> CounterSummary {
     CounterSummary {
         entries: vec![CounterEntry {
-            name: "davinci.s3_vapor.accepted",
+            name: "l3.vapor.accepted",
             samples: 1,
             total: 1,
             average: 1.0,

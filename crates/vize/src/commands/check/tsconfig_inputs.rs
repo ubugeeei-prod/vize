@@ -34,6 +34,8 @@ mod hidden_include_tests;
 #[cfg(test)]
 mod ignore_file_tests;
 #[cfg(test)]
+mod literal_bracket_tests;
+#[cfg(test)]
 mod nuxt_manifest_tests;
 #[cfg(test)]
 mod ownership_shared_tests;
@@ -43,13 +45,15 @@ mod package_folder_tests;
 mod tests;
 
 pub(crate) use ambient::{
-    collect_ambient_declaration_files, collect_hidden_ambient_declaration_files,
-    collect_tsconfig_type_declaration_files,
+    collect_ambient_declaration_files, collect_declaration_reference_graph,
+    collect_hidden_ambient_declaration_files, collect_tsconfig_type_declaration_files,
 };
 pub(super) use jsonc::parse_jsonc_value;
 pub(crate) use loader::{TsconfigInputCache, load_tsconfig_declaration_options};
 pub(super) use loader::{read_extends_entries, resolve_extended_tsconfig};
-pub(crate) use ownership::{resolve_tsconfig_for_files, resolve_tsconfig_program_inputs};
+pub(crate) use ownership::{
+    TsconfigProgramInputs, resolve_tsconfig_for_files, resolve_tsconfig_program_inputs,
+};
 pub(crate) use spec::TsconfigDeclarationOptions;
 pub(crate) use type_references::{
     collect_tsconfig_type_packages, reference_type_packages, resolve_type_package_declaration_files,
@@ -59,7 +63,7 @@ use collect::{
     collect_supported_files_for_include_roots, collect_supported_files_with_options,
     explicit_hidden_include_roots, explicit_hidden_pattern_roots,
 };
-use glob::normalize_input_path;
+pub(super) use glob::normalize_input_path;
 use matching::{
     SupportedFileOptions, is_declaration_path, is_generated_codegen_declaration_path,
     is_nuxt_import_manifest_path, is_supported_check_file_with_options,
@@ -187,7 +191,7 @@ fn collect_default_check_files_for_tsconfig(
 
     let default_includes;
     let includes: &[GlobSpec] = if !spec.has_includes && !spec.has_files && files.is_empty() {
-        default_includes = GlobSpec::new(&default_base_dir, "**/*")
+        default_includes = GlobSpec::include(&default_base_dir, "**/*")
             .into_iter()
             .collect::<Vec<_>>();
         &default_includes

@@ -30,6 +30,7 @@
     "content-mapper-helpers.d.cts",
     "content-mapper-helpers.d.mts",
     "content-mapper-helpers.d.ts",
+    "generated/content-mapper-types.d.ts",
     "dist",
     "src",
     "schemas",
@@ -98,19 +99,12 @@
       "optional": true
     }
   },
-  "optionalDependencies": {
-    "@typescript/typescript-darwin-arm64": "catalog:corsa-runtime",
-    "@typescript/typescript-darwin-x64": "catalog:corsa-runtime",
-    "@typescript/typescript-linux-arm64": "catalog:corsa-runtime",
-    "@typescript/typescript-linux-x64": "catalog:corsa-runtime",
-    "@typescript/typescript-win32-arm64": "catalog:corsa-runtime",
-    "@typescript/typescript-win32-x64": "catalog:corsa-runtime"
-  },
   "typescript": {
     "contentMapper": {
       "compilerOptions": [
         "checkJs",
-        "noUnusedLocals"
+        "noUnusedLocals",
+        "rootDir"
       ],
       "dynamicConfig": true,
       "exec": [

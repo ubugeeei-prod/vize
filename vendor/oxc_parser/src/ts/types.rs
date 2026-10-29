@@ -7,6 +7,7 @@ use crate::{
     Context, ParserConfig as Config, ParserImpl, diagnostics,
     lexer::Kind,
     modifiers::{ModifierKind, ModifierKinds, Modifiers},
+    speculation::SpeculativeProduction,
     state::FailedSpeculation,
 };
 
@@ -14,6 +15,13 @@ use super::{super::js::FunctionKind, statement::CallOrConstructorSignature};
 
 impl<'a, C: Config> ParserImpl<'a, C> {
     pub(crate) fn parse_ts_type(&mut self) -> TSType<'a> {
+        self.memoize_failed_speculative_subproblem(
+            SpeculativeProduction::Type,
+            Self::parse_ts_type_uncached,
+        )
+    }
+
+    fn parse_ts_type_uncached(&mut self) -> TSType<'a> {
         if self.is_start_of_function_type_or_constructor_type() {
             return self.parse_function_or_constructor_type();
         }
@@ -939,6 +947,22 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         if !matches!(self.cur_kind(), Kind::LAngle | Kind::ShiftLeft) {
             return None;
         }
+        // Every successful type-argument list needs a literal `>` after its
+        // opener. `>>`/`>>>` also contain that byte; escapes cannot spell a
+        // punctuator. Quotes, comments, templates and JSX may add false
+        // positives, which only retain the normal parser path. Cache this
+        // necessary condition once per immutable source, outside checkpoints.
+        // Without it, distinct `<` probes in an unclosed malformed tail each
+        // parse the remaining nested arrays/property expressions before
+        // failing, even though failed-probe memoization prevents retrying any
+        // one opener (#10401).
+        let last_close = *self
+            .state
+            .last_type_argument_close
+            .get_or_insert_with(|| memchr::memrchr(b'>', self.source_text.as_bytes()).unwrap_or(0));
+        if self.cur_token().start() as usize >= last_close {
+            return None;
+        }
         let probe = FailedSpeculation::type_arguments(self.cur_token().start(), self.ctx);
         if self.state.failed_speculations.contains(&probe) {
             return None;
@@ -951,12 +975,15 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         }
         let opening_span = self.cur_token().span();
         self.expect(Kind::LAngle);
+        self.state.type_argument_speculation_depth += 1;
         let (params, _) =
             self.parse_delimited_list(Kind::RAngle, Kind::Comma, opening_span, Self::parse_ts_type);
+        self.state.type_argument_speculation_depth -= 1;
         // `a < b> = c` is valid but `a < b >= c` is BinaryExpression
         if matches!(self.re_lex_right_angle(), Kind::GtEq) {
             self.rewind(checkpoint);
             self.state.failed_speculations.insert(probe);
+            self.state.reuse_failed_type_argument_subproblems = true;
             return None;
         }
         self.re_lex_ts_r_angle();
@@ -964,6 +991,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         if self.fatal_error.is_some() || !self.can_follow_type_arguments_in_expr() {
             self.rewind(checkpoint);
             self.state.failed_speculations.insert(probe);
+            self.state.reuse_failed_type_argument_subproblems = true;
             return None;
         }
         let span = self.end_span(span);
@@ -1686,3 +1714,6 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         }
     }
 }
+
+#[cfg(test)]
+mod type_argument_close_tests;

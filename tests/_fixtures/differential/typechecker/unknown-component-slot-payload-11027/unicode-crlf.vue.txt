@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import WitnessChild from '../component';
+type IsAny<T> = 0 extends 1 & T ? true : false;
+type IsNever<T> = [T] extends [never] ? true : false;
+type IsUnknown<T> = IsAny<T> extends true ? false : unknown extends T ? keyof T extends never ? true : false : false;
+type Exact<A,B> = (<T>()=>T extends A?1:2) extends (<T>()=>T extends B?1:2) ? true : false;
+type SlotReport<T> = IsAny<T> extends true ? 'any' : IsNever<T> extends true ? 'never' : IsUnknown<T> extends true ? 'unknown' : Exact<T, number> extends true ? 'number' : 'other';
+function slotReport<T>(_value: T): SlotReport<T> { throw new Error('witness'); }
+function expectNumber(_value: 'number'): void {}
+</script>
+<template>
+  <WitnessChild :value="1">
+    <template #default="{ item }">日本 🧭{{ expectNumber(slotReport(item)) }}</template>
+  </WitnessChild>
+</template>

@@ -47,7 +47,7 @@ impl EmitCx<'_> {
             || if self.prefix_identifiers {
                 self.scope.is_slot_param(source)
             } else {
-                self.scope.binds_in_pattern(source)
+                self.scope.is_slot_param(source) || self.scope.binds_in_pattern(source)
             }
     }
 
@@ -72,19 +72,6 @@ impl EmitCx<'_> {
         self.hoist_static_vnodes = self.hoist_static && enabled;
         let result = write(self);
         self.hoist_static_vnodes = previous;
-        result
-    }
-
-    pub(super) fn with_once_element<T>(
-        &mut self,
-        write: impl FnOnce(&mut Self) -> Result<T, EmitError>,
-    ) -> Result<T, EmitError> {
-        let previous = self.once_element_depth;
-        if self.once_depth > 0 {
-            self.once_element_depth = self.once_element_depth.saturating_add(1);
-        }
-        let result = write(self);
-        self.once_element_depth = previous;
         result
     }
 
@@ -169,7 +156,7 @@ impl EmitCx<'_> {
     /// `TransformContext::enter_v_for_scope` + `add_slot_params` for the
     /// callback params; pop with [`Self::leave_scope`]. The default lane
     /// records only the raw patterns (see [`PrefixScope`]).
-    pub(super) fn enter_for_scope(&mut self, for_op: &ForOp<'_>) -> ScopeMark {
+    pub(super) fn enter_for_scope(&mut self, for_op: &ForOp<'_>, id: Option<NodeId>) -> ScopeMark {
         let mark = self.scope.mark();
         let binding = &for_op.binding;
         let aliases = [
@@ -177,13 +164,14 @@ impl EmitCx<'_> {
             binding.key.as_ref().map(|expr| expr.source()),
             binding.index.as_ref().map(|expr| expr.source()),
         ];
-        if self.prefix_identifiers {
-            self.scope.push_for(aliases);
-        } else {
-            for alias in aliases.into_iter().flatten() {
-                self.scope.push_pattern(alias);
-            }
-        }
+        let spans = [
+            Some(binding.value.span()),
+            binding.key.as_ref().map(ExprRef::span),
+            binding.index.as_ref().map(ExprRef::span),
+        ];
+        let facts = id.and_then(|id| self.scopes.get(id));
+        self.scope
+            .push_for_bindings(aliases, spans, facts, !self.prefix_identifiers);
         mark
     }
 

@@ -54,7 +54,7 @@ export default defineComponent({
         assert!(
             output
                 .code
-                .contains(&format!("var {name}: __U<__R_{name}> = undefined as any;")),
+                .contains(&format!("var {name}: __U<__R_{name}> = (void 0) as any;")),
             "setup spread template reference should be declared in template scope:\n{}",
             output.code
         );
@@ -137,9 +137,13 @@ export default defineComponent({
         &Default::default(),
     );
 
-    assert!(
-        output.code.contains("(__ctx.$fetch)"),
-        "instance globals should remain available without a spread setup return:\n{}",
+    assert_eq!(
+        output
+            .code
+            .matches("const $fetch = __vize_instance_globals.$fetch;")
+            .count(),
+        1,
+        "instance globals should read the authored instance without a spread setup return:\n{}",
         output.code
     );
     assert!(

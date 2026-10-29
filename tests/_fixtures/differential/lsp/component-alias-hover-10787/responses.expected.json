@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 8,
+      "character": 5
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst LazyChild: VueComponent &\n{\n  props: { title: string };\n  emits: { close: [] };\n}\n```\n\nVue component: MyChild.vue"
+      },
+      "range": {
+        "start": {
+          "line": 8,
+          "character": 3
+        },
+        "end": {
+          "line": 8,
+          "character": 12
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 9,
+      "character": 5
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst Same: VueComponent &\n{\n  props: { title: string };\n  emits: { close: [] };\n}\n```\n\nVue component: MyChild.vue"
+      },
+      "range": {
+        "start": {
+          "line": 9,
+          "character": 3
+        },
+        "end": {
+          "line": 9,
+          "character": 7
+        }
+      }
+    }
+  }
+]

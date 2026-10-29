@@ -1,4 +1,5 @@
 import { appendFileSync } from "node:fs";
+import { editorPlatformMatrix } from "../release/editor-platforms.ts";
 import { isEntrypoint, runEntrypoint } from "../command-runtime.ts";
 
 export interface ReleaseVersion {
@@ -117,6 +118,7 @@ export function releasePlatformPlan(refName: string) {
     skippedTargets: [] as string[],
     cliMatrix: cliReleasePlatforms,
     nativeMatrix: nativeReleasePlatforms,
+    editorMatrix: editorPlatformMatrix(),
   };
 }
 
@@ -150,6 +152,7 @@ export function main(args: readonly string[]): number {
         `release_minor=${plan.version.minor}`,
         `cli_matrix=${JSON.stringify(plan.cliMatrix)}`,
         `native_matrix=${JSON.stringify(plan.nativeMatrix)}`,
+        `editor_matrix=${JSON.stringify(plan.editorMatrix)}`,
         "",
       ].join("\n"),
     );

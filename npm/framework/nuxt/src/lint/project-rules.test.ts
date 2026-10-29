@@ -71,7 +71,7 @@ void test("Vite+ Oxlint rules are retained with their authored namespaces", asyn
           "no-console": "error",
           "no-debugger": "warn",
           "vue/no-unused-properties": "error",
-          ignored: ["error", { option: true }]
+          withOptions: ["error", { option: true }]
         }
       }
     };`,
@@ -84,6 +84,7 @@ void test("Vite+ Oxlint rules are retained with their authored namespaces", asyn
       "no-console": "error",
       "no-debugger": "warn",
       "vue/no-unused-properties": "error",
+      withOptions: ["error", { option: true }],
     },
   });
 });

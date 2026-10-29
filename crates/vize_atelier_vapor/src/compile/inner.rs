@@ -63,6 +63,34 @@ pub(super) fn compile_vapor_inner_scoped_captured<'a, C: CaptureSink>(
     scope_id: Option<&str>,
     capture: &mut C,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    compile_vapor_inner_scoped_captured_with_runtime(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        scope_id,
+        "vue",
+        capture,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC options, generated runtime and capture"
+)]
+pub(super) fn compile_vapor_inner_scoped_captured_with_runtime<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: VaporCompilerExperimentalOptions,
+    scope_id: Option<&str>,
+    runtime_module_name: &str,
+    capture: &mut C,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     vize_carton::ensure_sufficient_stack(|| {
         compile_vapor_inner_with_stack(
             allocator,
@@ -72,6 +100,7 @@ pub(super) fn compile_vapor_inner_scoped_captured<'a, C: CaptureSink>(
             custom_elements,
             experimental_options,
             scope_id,
+            runtime_module_name,
             capture,
         )
     })
@@ -89,6 +118,7 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
     custom_elements: CustomElementMatcher,
     experimental_options: VaporCompilerExperimentalOptions,
     scope_id: Option<&str>,
+    runtime_module_name: &str,
     capture: &mut C,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     #[cfg(feature = "davinci-benchmark")]
@@ -145,7 +175,14 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
     // needs beyond the IR (Davinci P3-9).
     let source_map = experimental_options.source_map;
     let emit = |ir: &crate::ir::RootIRNode<'a>, errors, spans: Option<&VaporSourceSpans>| {
-        generate(ir, &options, &experimental_options, errors, spans)
+        generate(
+            ir,
+            &options,
+            &experimental_options,
+            errors,
+            spans,
+            runtime_module_name,
+        )
     };
     if let VaporL3BridgeStatus::Accepted(artifact) = l3_bridge_status {
         let diagnostics = artifact.legacy_diagnostics();
@@ -314,8 +351,9 @@ fn generate(
     experimental_options: &VaporCompilerExperimentalOptions,
     error_messages: Vec<String>,
     spans: Option<&VaporSourceSpans>,
+    runtime_module_name: &str,
 ) -> VaporCompileResult {
-    let result = crate::generate::generate_vapor_with_spans(
+    let result = crate::generate::generate_vapor_with_spans_and_runtime(
         ir,
         options.binding_metadata.as_ref(),
         crate::generate::VaporGenerateOptions::default(),
@@ -326,6 +364,7 @@ fn generate(
             source_map_filename: experimental_options.source_map_filename.as_deref(),
         },
         spans,
+        runtime_module_name,
     );
 
     VaporCompileResult {

@@ -3,21 +3,20 @@
 #![expect(clippy::expect_used, reason = "fixture assertions fail by panicking")]
 #![expect(clippy::disallowed_types, reason = "JSON fixtures use std strings")]
 
-use std::path::Path;
-
-use vize_canon::{
-    BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, PackageResolutionMode,
-    PackageRouteBinding, PackageRouteResolver, PackageSourceOptions,
-};
-
 mod support {
     pub(crate) mod fix_history_contract;
+    pub(crate) mod fix_history_normalization;
     pub(crate) mod fix_history_observation;
     pub(crate) mod fix_history_paths;
+    pub(crate) mod fix_history_reference_paths;
+    pub(crate) mod fix_history_router_provider;
+    pub(crate) mod fix_history_runner;
 }
-use support::fix_history_contract::{Diagnostic, Input, Pack};
-use support::fix_history_observation as observation;
-use support::fix_history_paths::{link_vue, safe_relative};
+mod aria_kebab_prop_11048;
+mod content_mapper_vue_generic_11051;
+use support::fix_history_normalization::assert_generated_check_ordinal_normalization_preserves_markers_without_digits;
+use support::fix_history_runner::check_pack;
+use support::fix_history_runner::native_fixture_runtime_disabled;
 
 #[test]
 fn contextual_prop_anchors_preserve_authored_diagnostics() {
@@ -722,10 +721,6 @@ fn pins_incomplete_setup_import_corpus() {
     );
 }
 
-fn native_fixture_runtime_disabled() -> bool {
-    std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
-}
-
 #[test]
 fn dynamic_directive_expressions_preserve_typed_slot_payloads() {
     check_pack(
@@ -824,6 +819,24 @@ fn content_mapper_nested_vfor_reuses_branch_guards() {
 }
 
 #[test]
+fn generic_slot_outlets_check_against_the_setup_parameters() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "generic-slot-outlet-10883",
+        "generic_slot_outlets_check_against_the_setup_parameters",
+        "42ca747027a86da7f94b473cff737cb330134d8c",
+        Some(10883),
+        &[
+            "defaulted-parameter",
+            "constrained-parameter",
+            "wrong-payload",
+        ],
+    );
+}
+
+#[test]
 fn slot_host_guards_preserve_authored_impossible_comparisons() {
     if native_fixture_runtime_disabled() {
         return;
@@ -851,390 +864,72 @@ fn empty_generic_markers_preserve_functional_public_contracts() {
     );
 }
 
-fn check_pack(
-    name: &str,
-    test: &str,
-    regression: &str,
-    historical_issue: Option<u32>,
-    case_ids: &[&str],
-) {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let fixtures = root
-        .join("tests/_fixtures/differential/typechecker")
-        .join(name);
-    let fixture_pack =
-        std::fs::read(fixtures.join("cases.json")).expect("the fixture pack must exist");
-    let pack: Pack = serde_json::from_slice(&fixture_pack)
-        .expect("the fixture pack must have the expected schema");
-    assert_eq!(pack.version, 1);
-    assert_eq!(pack.issue, 6879);
-    assert_eq!(pack.historical_issue, historical_issue);
-    assert_eq!(
-        pack.historical_issues.as_deref(),
-        (name == "runtime-props-report-10100-10101").then_some(&[10100, 10101][..]),
-        "every historical issue must retain exact fixture custody"
+#[test]
+fn global_scope_build_info_keeps_complete_diagnostics() {
+    check_pack(
+        "global-scope-build-info-10819",
+        "global_scope_build_info_keeps_complete_diagnostics",
+        "61d756842bb44a72c84982f01dc40d3423c96503",
+        Some(10819),
+        &["imported-global-declaration", "edited-global-declaration"],
     );
-    assert_eq!(pack.regression_commit, regression);
-    assert_eq!(
-        pack.source_revision,
-        match name {
-            "contextual-prop-anchors-10661"
-            | "typed-import-meta"
-            | "slot-outlet-key"
-            | "options-api-any-instance"
-            | "authored-unused-symbols"
-            | "split-script-original"
-            | "v-for-source-original"
-            | "v-for-component-source-original"
-            | "declared-prop-names-original"
-            | "template-suppression-original"
-            | "native-pointer-events-original"
-            | "cache-maintenance-9860"
-            | "workspace-alias-cache-10063"
-            | "workspace-package-import-alias-10175"
-            | "nuxt-unknown-template-options-10013"
-            | "reactive-props-destructure-10008"
-            | "generic-fallthrough-spread-9956"
-            | "optional-fallthrough-spread-10170"
-            | "misskey-generated-inference-9516"
-            | "component-v-bind-duplicate-diagnostic-10069"
-            | "inferred-project-tsconfig-9718"
-            | "content-mapper-global-component-10185"
-            | "allow-importing-ts-extensions-9890"
-            | "nuxt-plugin-injection-types"
-            | "listener-attribute-parity-9852"
-            | "dynamic-component-union-listener-10026"
-            | "native-inline-event-handler-9835"
-            | "art-variant-implicit-component-9854"
-            | "runtime-props-report-10100-10101"
-            | "component-render-h-props-9855"
-            | "component-listener-alias-scope-10112"
-            | "content-mapper-duplicate-attributes-10184"
-            | "content-mapper-musea-art-10186"
-            | "content-mapper-nuxt-emit-10195"
-            | "incomplete-script-setup-recovery-10200"
-            | "dynamic-directive-expression-mapping-10182"
-            | "content-mapper-template-expression-syntax"
-            | "content-mapper-const-enum-import"
-            | "content-mapper-diagnostics-10187"
-            | "content-mapper-javascript-checkjs-10217"
-            | "content-mapper-dynamic-template-ref-10198"
-            | "content-mapper-type-only-import-use"
-            | "content-mapper-unknown-options-10218"
-            | "content-mapper-dynamic-template-ref-union-10251"
-            | "content-mapper-dynamic-template-ref-scope-10251"
-            | "content-mapper-props-binding-10196"
-            | "strict-fallthrough-default-7856"
-            | "content-mapper-multiline-callback-10191"
-            | "content-mapper-define-slots-typeof-10197"
-            | "content-mapper-nested-vfor-guard-10216"
-            | "content-mapper-filename-globals-10190"
-            | "native-expect-error-10413"
-            | "generic-constructor-slots-10416"
-            | "long-prop-kebab-case-10423"
-            | "pug-refusal-10430"
-            | "portable-pug-10434"
-            | "jsx-prop-token-ranges-10494"
-            | "quoted-generic-parameters-10540"
-            | "planned-generic-syntax-route-10598"
-            | "unicode-prop-bindings-10573"
-            | "undeclared-instance-globals-10617"
-            | "narrowed-slot-host-guard-10660"
-            | "empty-generic-public-contract-10540" => regression,
-            "valueless-directive-import-3140" => {
-                "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
-            }
-            _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
-        }
-    );
-    assert_eq!(pack.diagnostic_contract.position_base, 1);
-    assert_eq!(pack.diagnostic_contract.positions, "authored UTF16 start");
-    assert_eq!(
-        pack.diagnostic_contract.comparison,
-        "all production diagnostics in returned order"
-    );
-    assert_eq!(
-        pack.diagnostic_contract.missing_fields,
-        ["end", "relatedInformation", "raw backend diagnostics"]
-    );
-    assert_eq!(pack.diagnostic_contract.native, "unsupported");
-    assert_eq!(pack.diagnostic_contract.required_tier, "T1");
-    assert_eq!(
-        pack.checker_options
-            .as_ref()
-            .map(|options| options.options_api),
-        matches!(
-            name,
-            "options-api-any-instance" | "jsx-prop-token-ranges-10494"
-        )
-        .then_some(name == "options-api-any-instance"),
-        "the original explicit checker options must be retained"
-    );
-    assert_eq!(
-        pack.checker_options
-            .as_ref()
-            .map(|options| options.jsx_typecheck),
-        matches!(
-            name,
-            "options-api-any-instance" | "jsx-prop-token-ranges-10494"
-        )
-        .then_some(name == "jsx-prop-token-ranges-10494"),
-        "the authored JSX lowering option must be retained"
-    );
-    assert_eq!(
-        pack.cases
-            .iter()
-            .map(|case| case.id.as_str())
-            .collect::<Vec<_>>(),
-        case_ids,
-        "missing, duplicated or reordered cases must not pass"
-    );
-    let vue = std::fs::canonicalize(root.join("tests/node_modules/vue"))
-        .expect("the pinned real Vue package must be installed");
-    assert_eq!(
-        pack.project_options,
-        (name == "authored-unused-symbols").then(|| serde_json::json!({"vuePackage":"absent"}))
-    );
-    let mut capture = observation::Capture::from_environment();
-    for case in pack.cases {
-        let project = tempfile::tempdir().expect("a project must be created");
-        let project_root =
-            std::fs::canonicalize(project.path()).expect("project identity must resolve");
-        if pack.project_options.is_none() {
-            std::fs::create_dir(project_root.join("node_modules"))
-                .expect("node_modules must be created");
-            link_vue(&vue, &project_root.join("node_modules/vue"));
-            if name == "empty-generic-public-contract-10540" {
-                let helpers = std::fs::canonicalize(
-                    root.join("tests/node_modules/vue-component-type-helpers"),
-                )
-                .expect("the pinned real public component type helpers must be installed");
-                link_vue(
-                    &helpers,
-                    &project_root.join("node_modules/vue-component-type-helpers"),
-                );
-            }
-        }
-        for input in &case.inputs {
-            let file = safe_relative(&input.file);
-            let source = safe_relative(&input.source);
-            let destination = project_root.join(file);
-            std::fs::create_dir_all(destination.parent().expect("an input must have a parent"))
-                .expect("input parents must be created");
-            std::fs::copy(fixtures.join(source), destination)
-                .expect("exact fixture bytes must copy");
-        }
-        if pack.project_options.is_some() {
-            assert!(!project_root.join("node_modules").exists());
-        }
-        if name == "workspace-alias-cache-10063" {
-            for (source, destination) in [
-                ("packages/b", "packages/a/node_modules/@demo/b"),
-                ("packages/c", "packages/b/node_modules/@demo/c"),
-            ] {
-                let destination = project_root.join(destination);
-                std::fs::create_dir_all(
-                    destination
-                        .parent()
-                        .expect("a workspace link must have a parent"),
-                )
-                .expect("workspace link parents must be created");
-                link_vue(&project_root.join(source), &destination);
-            }
-            let check = |config: &str| {
-                let mut checker = BatchTypeChecker::with_options(
-                    &project_root,
-                    BatchTypeCheckerOptions {
-                        tsconfig_path: Some(project_root.join(config)),
-                        ..Default::default()
-                    },
-                )
-                .expect("the package selection must start");
-                checker
-                    .scan_project()
-                    .expect("the package selection must scan");
-                checker
-                    .check_project()
-                    .expect("the package selection must finish")
-            };
-            if case.id == "repaired-private-package-identity" {
-                // The exact shared-divergent-shared mutation runs in the
-                // pnpm workspace route oracle. This pinned corpus retains the
-                // private-brand sources independently of that filesystem
-                // lifecycle harness.
-                let direct = project_root.join("packages/a/node_modules/@demo/c");
-                std::fs::create_dir_all(direct.parent().expect("a direct link has a parent"))
-                    .expect("the direct link parent must be created");
-                link_vue(&project_root.join("packages/c"), &direct);
-                assert!(check("tsconfig.a.json").diagnostics.is_empty());
-            } else {
-                // #10063 is a hard materialization error before diagnostics.
-                // Both orderings must complete and preserve the empty authored
-                // result; the complete contract is compared again below.
-                assert!(check("tsconfig.b.json").diagnostics.is_empty());
-                assert!(check("tsconfig.a.json").diagnostics.is_empty());
-            }
-        }
-        if name == "workspace-package-import-alias-10175" {
-            for (source, destination) in [
-                ("packages/ui", "node_modules/@demo/ui"),
-                ("packages/core", "packages/ui/node_modules/@demo/core"),
-            ] {
-                let destination = project_root.join(destination);
-                std::fs::create_dir_all(
-                    destination
-                        .parent()
-                        .expect("a workspace link must have a parent"),
-                )
-                .expect("workspace link parents must be created");
-                link_vue(&project_root.join(source), &destination);
-            }
-        }
-        let options = BatchTypeCheckerOptions {
-            tsconfig_path: (name == "workspace-alias-cache-10063")
-                .then(|| project_root.join("tsconfig.a.json")),
-            ..Default::default()
-        };
-        let mut checker =
-            BatchTypeChecker::with_options(&project_root, options).expect("the checker must start");
-        if name == "workspace-package-import-alias-10175" {
-            let mut resolver = PackageRouteResolver::default();
-            let bindings = [
-                ("src/main.ts", "#app"),
-                ("src/main.ts", "@demo/ui"),
-                ("packages/ui/src/MyButton.vue", "@demo/core"),
-            ]
-            .into_iter()
-            .map(|(importer, specifier)| {
-                let importer = project_root.join(importer);
-                let (context, mut context_inputs) = resolver.resolution_context(
-                    &importer,
-                    PackageResolutionMode::Import,
-                    Some("bundler"),
-                    Some("esnext"),
-                    std::iter::empty::<&str>(),
-                );
-                let (route, mut invalidation_paths) = resolver
-                    .lookup_with_context(
-                        importer.parent().expect("the importer must have a parent"),
-                        specifier,
-                        PackageSourceOptions::new(false, false),
-                        context.clone(),
-                    )
-                    .into_parts();
-                invalidation_paths.append(&mut context_inputs);
-                PackageRouteBinding {
-                    importer_path: importer.clone(),
-                    specifier: specifier.into(),
-                    occurrence_mode: PackageResolutionMode::Import,
-                    context,
-                    route: Some(route.expect("the fixture package route must resolve")),
-                    invalidation_paths,
-                    shared_invalidation_paths: Vec::new(),
-                }
-            })
-            .collect::<Vec<_>>();
-            checker.set_package_route_resolver(resolver);
-            checker.set_package_routes(bindings);
-        }
-        if pack
-            .checker_options
-            .as_ref()
-            .is_some_and(|options| options.options_api)
-        {
-            checker.enable_options_api();
-        }
-        if pack
-            .checker_options
-            .as_ref()
-            .is_some_and(|options| options.jsx_typecheck)
-        {
-            checker.enable_jsx_typecheck();
-        }
-        checker.scan_project().expect("the project must scan");
-        let result = checker
-            .check_project()
-            .expect("the production checker must finish");
-        let actual: Vec<Diagnostic> = result
-            .diagnostics
-            .iter()
-            .map(|diagnostic| Diagnostic {
-                file: diagnostic
-                    .file
-                    .strip_prefix(&project_root)
-                    .expect("every diagnostic must belong to this exact project")
-                    .to_string_lossy()
-                    .replace('\\', "/"),
-                line: diagnostic.line + 1,
-                column: diagnostic.column + 1,
-                severity: diagnostic.severity,
-                code: diagnostic.code,
-                message: String::from(diagnostic.message.as_str()),
-            })
-            .collect();
-        let (compared_actual, compared_expected) = if name == "required-props-edges" {
-            (
-                normalize_generated_check_ordinals(&actual),
-                normalize_generated_check_ordinals(&case.diagnostics),
-            )
-        } else {
-            (actual.clone(), case.diagnostics.clone())
-        };
-        assert_eq!(
-            compared_actual, compared_expected,
-            "complete diagnostic list for {}",
-            case.id
-        );
-        if let Some(capture) = &mut capture {
-            capture.record(case.id, &case.inputs, &project_root, actual, &result);
-        }
-    }
-    if let Some(capture) = capture {
-        capture.finish(name, test, &fixture_pack);
-    }
 }
 
-fn normalize_generated_check_ordinals(diagnostics: &[Diagnostic]) -> Vec<Diagnostic> {
-    diagnostics
-        .iter()
-        .cloned()
-        .map(|mut diagnostic| {
-            let mut message = diagnostic.message.as_str();
-            let mut normalized = std::string::String::with_capacity(message.len());
-            while let Some(at) = message.find("_CheckProps_") {
-                let after_marker = at + "_CheckProps_".len();
-                normalized.push_str(&message[..after_marker]);
-                let digit_count = message[after_marker..]
-                    .bytes()
-                    .take_while(u8::is_ascii_digit)
-                    .count();
-                if digit_count > 0 {
-                    normalized.push('#');
-                }
-                message = &message[after_marker + digit_count..];
-            }
-            normalized.push_str(message);
-            diagnostic.message = normalized;
-            diagnostic
-        })
-        .collect()
+#[test]
+fn literal_bracket_pages_keep_their_project_options() {
+    check_pack(
+        "tsconfig-literal-brackets-10819",
+        "literal_bracket_pages_keep_their_project_options",
+        "26b8fa31c7933d800c8bf4c2f37057864caaae9d",
+        Some(10819),
+        &["literal-page-include", "bracket-directory-exclude"],
+    );
 }
 
-fn assert_generated_check_ordinal_normalization_preserves_markers_without_digits() {
-    let diagnostics = [Diagnostic {
-        file: String::from("src/App.vue"),
-        line: 1,
-        column: 1,
-        severity: 1,
-        code: Some(2322),
-        message: String::from("_CheckProps_ stays distinct from _CheckProps_12"),
-    }];
+#[test]
+fn relative_sibling_imports_preserve_complete_package_diagnostics() {
+    check_pack(
+        "relative-sibling-storage-10934",
+        "relative_sibling_imports_preserve_complete_package_diagnostics",
+        "cb9c06d2b879da6b47a0a2f783d9a5f324776585",
+        Some(10934),
+        &["typed-sibling-error", "repaired-sibling-import"],
+    );
+}
 
-    let normalized = normalize_generated_check_ordinals(&diagnostics);
+#[test]
+fn missing_exported_package_target_preserves_ts2307() {
+    check_pack(
+        "package-target-deletion-refresh",
+        "missing_exported_package_target_preserves_ts2307",
+        "9dfa45b2bcbbb5ca2ff3548ba16e607f0fc283f0",
+        None,
+        &["missing-target"],
+    );
+}
 
-    assert_eq!(
-        normalized[0].message,
-        "_CheckProps_ stays distinct from _CheckProps_#"
+#[test]
+fn rewritten_import_literals_preserve_complete_batch_diagnostics() {
+    check_pack(
+        "import-literal-geometry-10762",
+        "rewritten_import_literals_preserve_complete_batch_diagnostics",
+        "51d3bebcc8988ba6bf42bb5f6b7fdc102de47ee3",
+        Some(10762),
+        &["original-alias-graph", "after-import-type-error"],
+    );
+}
+
+#[test]
+fn escaped_module_paths_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "escaped-import-literals-10763",
+        "escaped_module_paths_preserve_complete_authored_diagnostics",
+        "178f9d7b9137d34941cfdd8cf6b9051bef3b79bd",
+        Some(10763),
+        &[
+            "original-quoted-alias-graph",
+            "quoted-alias-with-authored-type-error",
+        ],
     );
 }
 
@@ -1283,6 +978,22 @@ fn jsx_prop_tokens_preserve_complete_batch_diagnostics() {
 }
 
 #[test]
+fn undeclared_instance_globals_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "undeclared-instance-globals-10617",
+        "undeclared_instance_globals_preserve_complete_authored_diagnostics",
+        "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
+        Some(10617),
+        &[
+            "original",
+            "repaired",
+            "undeclared-dollar-globals",
+            "undeclared-only",
+        ],
+    );
+}
+
+#[test]
 fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
     check_pack(
         "unicode-prop-bindings-10573",
@@ -1306,12 +1017,280 @@ fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
 }
 
 #[test]
-fn undeclared_instance_globals_preserve_complete_authored_diagnostics() {
+fn content_mapper_merged_class_values_keep_native_diagnostics() {
     check_pack(
-        "undeclared-instance-globals-10617",
-        "undeclared_instance_globals_preserve_complete_authored_diagnostics",
-        "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
-        Some(10617),
-        &["original", "undeclared-only", "repaired"],
+        "content-mapper-merged-class-10788",
+        "content_mapper_merged_class_values_keep_native_diagnostics",
+        "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+        Some(10788),
+        &["dynamic-component-class"],
+    );
+}
+
+#[test]
+fn content_mapper_slot_host_callbacks_keep_native_diagnostics() {
+    check_pack(
+        "content-mapper-slot-host-callbacks-10774",
+        "content_mapper_slot_host_callbacks_keep_native_diagnostics",
+        "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+        Some(10774),
+        &["function-prop-with-named-slot"],
+    );
+}
+
+#[test]
+fn native_completion_project_keeps_clean_diagnostics() {
+    check_pack(
+        "native-completion-order-10747",
+        "native_completion_project_keeps_clean_diagnostics",
+        "7e710ef9e094eb3244e332c90f21727d290b4a35",
+        Some(10747),
+        &["imported-identifier-project"],
+    );
+}
+
+#[test]
+fn repaired_dependency_buffer_keeps_its_own_diagnostics() {
+    check_pack(
+        "reopen-repaired-diagnostics-10730",
+        "repaired_dependency_buffer_keeps_its_own_diagnostics",
+        "9403195279c75693aea30f097bf996cb83dd9729",
+        Some(10730),
+        &["error", "repaired"],
+    );
+}
+
+#[test]
+fn editor_alias_import_extension_styles_keep_native_diagnostics() {
+    check_pack(
+        "editor-alias-import-extension-10753",
+        "editor_alias_import_extension_styles_keep_native_diagnostics",
+        "377e5df97c4effa786a6426a62f61296ce16c750",
+        Some(10753),
+        &["authored-extension-styles"],
+    );
+}
+
+#[test]
+fn callback_render_position_preserves_complete_authored_diagnostics() {
+    check_pack(
+        "callback-render-position-10738",
+        "callback_render_position_preserves_complete_authored_diagnostics",
+        "78719553cf550bcffbf1d0fb891fda642f42de3a",
+        Some(10738),
+        &["type-query-before-delete"],
+    );
+}
+
+#[test]
+fn experimental_page_import_preserves_published_path_diagnostics() {
+    check_pack(
+        "experimental-router-import-10520",
+        "experimental_page_import_preserves_published_path_diagnostics",
+        "a29d9c0b1961ada51037db402c3b74436a56d623",
+        Some(10520),
+        &["imported-define-page-unknown-path"],
+    );
+}
+
+#[test]
+fn experimental_route_props_follow_the_admitted_project_types() {
+    check_pack(
+        "experimental-router-props-10579",
+        "experimental_route_props_follow_the_admitted_project_types",
+        "5b5ca8272070fffb67152c1ccb20644abe11c62d",
+        Some(10579),
+        &["required-component-prop", "route-params-as-props"],
+    );
+}
+
+#[test]
+fn literal_reference_paths_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "literal-reference-paths-10551",
+        "literal_reference_paths_preserve_complete_authored_diagnostics",
+        "0a7f029e3be412a89232bd82127d3ac9bb058514",
+        Some(10551),
+        &["valid-external-reference", "invalid-external-reference"],
+    );
+}
+
+#[test]
+fn content_mapper_experimental_router_context_preserves_published_page_types() {
+    check_pack(
+        "content-mapper-experimental-router-10526",
+        "content_mapper_experimental_router_context_preserves_published_page_types",
+        "190c82fb9c8bbdc2c519b335b1661563270f4d2c",
+        Some(10526),
+        &["published-page-valid", "published-page-invalid-number"],
+    );
+}
+
+#[test]
+fn component_input_copies_preserve_complete_authored_diagnostics() {
+    check_pack(
+        "component-input-diagnostic-owners-10607",
+        "component_input_copies_preserve_complete_authored_diagnostics",
+        "bd905e766c37ad5bacabaacbec02c90def36726e",
+        Some(10607),
+        &[
+            "art-generic-form-invalid",
+            "art-generic-form-repaired",
+            "slot-prop-without-children-invalid",
+            "slot-prop-named-child-invalid",
+            "slot-prop-two-named-children-invalid",
+            "slot-prop-named-child-repaired",
+            "two-files-same-offset-invalid",
+        ],
+    );
+}
+
+#[test]
+fn undefined_context_keeps_complete_authored_diagnostics() {
+    check_pack(
+        "template-context-undefined-10667",
+        "undefined_context_keeps_complete_authored_diagnostics",
+        "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
+        Some(10667),
+        &["prop-used"],
+    );
+}
+
+#[test]
+fn options_api_reserved_props_resolve_dynamic_component_references() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "options-api-reserved-component-reference",
+        "options_api_reserved_props_resolve_dynamic_component_references",
+        "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+        None,
+        &[
+            "reserved-prop-dynamic-component",
+            "reserved-prop-dynamic-component-wrong-member",
+            "reserved-prop-authored-local-collision",
+        ],
+    );
+}
+
+#[test]
+fn empty_v_slot_expressions_keep_slot_scopes_checked() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "empty-v-slot-expression",
+        "empty_v_slot_expressions_keep_slot_scopes_checked",
+        "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+        None,
+        &[
+            "empty-expression",
+            "blank-expression",
+            "empty-expression-unknown-slot",
+        ],
+    );
+}
+
+#[test]
+fn template_ref_signatures_preserve_readonly_unknown_and_repairs() {
+    check_pack(
+        "template-ref-signatures-10948",
+        "template_ref_signatures_preserve_readonly_unknown_and_repairs",
+        "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+        Some(10948),
+        &[
+            "valid-imported-signatures",
+            "invalid-original-operations",
+            "repaired-imported-signatures",
+        ],
+    );
+}
+
+#[test]
+fn custom_properties_resolve_on_the_template_instance() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "setup-custom-properties",
+        "custom_properties_resolve_on_the_template_instance",
+        "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+        None,
+        &[
+            "script-setup-custom-properties",
+            "script-setup-wrong-use-and-unknown-name",
+            "options-api-slot-loop-source",
+            "options-api-slot-loop-unknown-name",
+        ],
+    );
+}
+
+#[test]
+fn dependency_probe_histories_preserve_complete_diagnostics() {
+    check_pack(
+        "dependency-probe-history-10936",
+        "dependency_probe_histories_preserve_complete_diagnostics",
+        "1266cd3a014654bbdcf3378500b93447411b26d9",
+        Some(10936),
+        &[
+            "valid-precedence-and-alias",
+            "invalid-authored-model",
+            "repaired-authored-model",
+        ],
+    );
+}
+
+#[test]
+fn public_instance_ts_directives_preserve_owned_native_diagnostics() {
+    check_pack(
+        "public-instance-ts-directives-10984",
+        "public_instance_ts_directives_preserve_owned_native_diagnostics",
+        "c001dc27973a316351d1d45739ad84a7db544f11",
+        Some(10984),
+        &[
+            "original-expectation",
+            "no-directive-missing-member",
+            "valid-local-unused-expectation",
+        ],
+    );
+}
+
+#[test]
+fn imported_component_tag_aliases_preserve_batch_prop_diagnostics() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "component-tag-aliases-11020",
+        "imported_component_tag_aliases_preserve_batch_prop_diagnostics",
+        "d653e04143051768a96ba51a35fe64c055caf0c5",
+        Some(11020),
+        &["valid", "invalid", "repaired"],
+    );
+}
+
+#[test]
+fn unknown_component_slots_preserve_authored_type_diagnostics() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "unknown-component-slot-payload-11027",
+        "unknown_component_slots_preserve_authored_type_diagnostics",
+        "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+        Some(11027),
+        &[
+            "valid",
+            "unknown",
+            "unknown-union",
+            "repaired",
+            "unresolved-tag",
+            "slot-any",
+            "slot-unknown",
+            "slot-never",
+            "slot-string",
+            "unicode-crlf-unknown",
+        ],
     );
 }

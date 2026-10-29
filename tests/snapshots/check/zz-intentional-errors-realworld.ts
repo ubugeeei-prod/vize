@@ -38,6 +38,7 @@ const misskeySourceCheckApp: AppConfig = {
   check: {
     cwd: misskeySourceFrontendDir,
     patterns: ["src/**/*.vue"],
+    noConfig: true,
   },
 };
 

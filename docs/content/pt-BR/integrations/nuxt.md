@@ -128,11 +128,21 @@ export default defineNuxtConfig({
 
 O [guia do plugin Vite](../guide/vite-plugin.md#compiler-options) descreve cada opção do compilador. Com `compiler: false`, o Nuxt mantém o compilador padrão e você usa apenas o lint ou o Musea.
 
+`vue.compilerOptions.whitespace` e `vue.compilerOptions.comments` do Nuxt chegam ao Vize como padrões; `vue.compiler` no `vite.config.*` e `vize.compiler` os substituem. Qualquer outra chave de `vue.compilerOptions` mantém o compilador Vue do Nuxt e exibe um aviso.
+
 <span id="lint"></span>
 
 ### Lint
 
 Com `lint` ativado, o módulo grava `.oxlint.vize.json` na raiz do projeto. É o equivalente para o Oxlint da configuração gerada pelo `@nuxt/eslint`: blocos de regras de acordo com a sua versão do Nuxt e seus diretórios. Adicione esse arquivo ao `.gitignore`.
+
+A geração do lint e o `checker` precisam do `oxlint-plugin-vize`, e o `oxlint` executa as regras. Os dois são dependências peer opcionais, então instale-os você mesmo:
+
+```bash
+vp install -D oxlint oxlint-plugin-vize
+```
+
+Sem o plugin, o módulo pula o lint e o resto continua funcionando. Ele mostra um único aviso com o comando de instalação quando você define `lint` ou `checker`, ou quando um `.oxlint.vize.json` antigo ainda existe.
 
 Se o projeto ainda não tem configuração do Oxlint nem do Vite, o módulo também cria um `oxlint.config.mts` que carrega o arquivo gerado. Uma configuração existente nunca é reescrita; carregue `.oxlint.vize.json` nela você mesmo.
 
@@ -277,7 +287,7 @@ Dentro de uma aplicação Nuxt, o módulo não instala esses mocks globalmente, 
 
 ## Nuxt 2 e Vue 2
 
-O módulo oferece suporte a Nuxt 2, 3 e 4. O compilador do Vize gera código Vue 3, então no Nuxt 2 o módulo deixa a compilação de `.vue` com o compilador existente (`@vitejs/plugin-vue2`, `vue-loader` ou o do próprio Nuxt) e continua fornecendo lint e Musea. O mesmo vale para projetos Vue mais antigos com `vueVersion: 0.11`, `vueVersion: 1` ou `vueVersion: "legacy"`.
+No Nuxt 2, use o mesmo pacote `@vizejs/nuxt`. O compilador, o SSR e o HMR continuam sendo os do Vue 2 e do Nuxt. O Vize gera a configuração de lint; o `checker` opcional usa o builder de desenvolvimento. O Musea fica desativado no Nuxt 2. O compilador nativo do Vize gera código Vue 3 e não substitui o compilador do Vue 2.
 
 As versões são detectadas automaticamente. Se um wrapper as esconde do Nuxt Kit, defina-as você mesmo:
 

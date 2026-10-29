@@ -183,6 +183,33 @@ fn preset_rule_membership_snapshot() {
     );
 }
 
+/// `LINT_RULE_NAMES` is generated from the membership snapshot, so every rule
+/// `--preset all` can report must appear in it.
+#[test]
+fn preset_rule_membership_covers_every_rule() {
+    let mut listed = BTreeSet::new();
+    for preset in LintPreset::ALL {
+        listed.extend(rule_names(preset));
+    }
+    listed.extend(ecosystem_rule_names());
+    listed.extend(opt_in_rule_names());
+
+    let all = Linter::with_all();
+    let missing: Vec<_> = all
+        .registry
+        .rule_names()
+        .iter()
+        .chain(all.script_rules)
+        .chain(all.css_rules)
+        .chain(all.musea_rules)
+        .filter(|name| !listed.contains(*name))
+        .collect();
+    assert!(
+        missing.is_empty(),
+        "missing from rule membership: {missing:?}"
+    );
+}
+
 #[test]
 fn script_preset_membership_matches_builtin_rule_metadata() {
     for meta in crate::linter::script_rules::builtin_script_rules() {

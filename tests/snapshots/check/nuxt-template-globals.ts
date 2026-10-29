@@ -134,6 +134,12 @@ function missingProperty(name: string): string {
 }
 
 const WRONG_ARGUMENT = "Argument of type 'number' is not assignable to parameter of type 'string'.";
+const WRONG_ARGUMENT_LINE = "<p>{{ wrongAlias }} {{ $t(2) }} {{ $shout(3) }}</p>";
+
+// Template diagnostics in JSON carry the authored line as `(source: …)` (#10335).
+function inTemplate(message: string, line: string): string {
+  return `${message} (source: ${line})`;
+}
 
 describe("nuxt template globals check (generated declarations are authoritative)", () => {
   before(requireVizeAndCorsaBins);
@@ -150,14 +156,17 @@ describe("nuxt template globals check (generated declarations are authoritative)
     assert.deepEqual(diagnosticsFor(vize, "pages/index.vue"), []);
     assert.deepEqual(diagnosticsFor(vize, "pages/wrong-argument.vue"), [
       `error:7:31 [TS2345] ${WRONG_ARGUMENT}`,
-      `error:11:29 [TS2345] ${WRONG_ARGUMENT}`,
-      `error:11:45 [TS2345] ${WRONG_ARGUMENT}`,
+      `error:11:29 [TS2345] ${inTemplate(WRONG_ARGUMENT, WRONG_ARGUMENT_LINE)}`,
+      `error:11:45 [TS2345] ${inTemplate(WRONG_ARGUMENT, WRONG_ARGUMENT_LINE)}`,
     ]);
     assert.deepEqual(diagnosticsFor(vize, "pages/undeclared-global.vue"), [
       "error:7:15 [TS2304] Cannot find name 'notDeclaredAnywhere'.",
-      `error:11:9 [TS2339] ${missingProperty("$missing")}`,
-      `error:12:9 [TS2339] ${missingProperty("$missing")}`,
-      `error:13:14 [TS2339] ${missingProperty("$missing")}`,
+      `error:11:9 [TS2339] ${inTemplate(missingProperty("$missing"), "<p>{{ $missing('a') }}</p>")}`,
+      `error:12:9 [TS2339] ${inTemplate(missingProperty("$missing"), "<p>{{ $missing('b') }}</p>")}`,
+      `error:13:14 [TS2339] ${inTemplate(
+        missingProperty("$missing"),
+        "<p :title=\"$missing('c')\">{{ value }}</p>; binding: 'title'",
+      )}`,
     ]);
     assert.equal(vize.errorCount, 7, JSON.stringify(vize.files, null, 2));
     assert.equal(vize.fileCount, 3);
@@ -177,8 +186,11 @@ describe("nuxt template globals check (generated declarations are authoritative)
 
     assert.deepEqual(vizeRows(vize), runVueTsc(UNDECLARED_DIR));
     assert.deepEqual(diagnosticsFor(vize, "pages/index.vue"), [
-      `error:11:9 [TS2339] ${missingProperty("$t")}`,
-      `error:12:14 [TS2339] ${missingProperty("$t")}`,
+      `error:11:9 [TS2339] ${inTemplate(missingProperty("$t"), "<p>{{ $t('nav.about') }}</p>")}`,
+      `error:12:14 [TS2339] ${inTemplate(
+        missingProperty("$t"),
+        "<p :title=\"$t('nav.help')\">{{ locale }}</p>; binding: 'title'",
+      )}`,
     ]);
     assert.equal(vize.errorCount, 2, JSON.stringify(vize.files, null, 2));
     assert.equal(vize.fileCount, 1);

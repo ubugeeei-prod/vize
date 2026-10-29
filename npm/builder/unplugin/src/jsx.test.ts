@@ -1,5 +1,7 @@
 import fs from "node:fs";
 import { test } from "node:test";
+import { compileJsx } from "@vizejs/native";
+import ts from "typescript";
 import { vizeUnplugin } from "./unplugin.ts";
 import { packageRoot, resolveFixturePath } from "./test/helpers.ts";
 
@@ -8,7 +10,12 @@ interface TransformResult {
   map?: unknown;
 }
 
-function createPlugin(vapor: boolean, jsxMode?: "vdom" | "vapor", jsxCompat?: "native" | "babel") {
+function createPlugin(
+  vapor: boolean,
+  jsxMode?: "vdom" | "vapor",
+  jsxCompat?: "native" | "babel",
+  sourceMap?: boolean,
+) {
   return vizeUnplugin.raw(
     {
       isProduction: true,
@@ -16,6 +23,7 @@ function createPlugin(vapor: boolean, jsxMode?: "vdom" | "vapor", jsxCompat?: "n
       vapor,
       jsxMode,
       jsxCompat,
+      sourceMap,
     },
     {
       framework: "rollup",
@@ -29,8 +37,9 @@ async function runTransform(
   id: string,
   jsxMode?: "vdom" | "vapor",
   jsxCompat?: "native" | "babel",
+  sourceMap?: boolean,
 ): Promise<{ result: TransformResult | null; warnings: string[] }> {
-  const plugin = createPlugin(vapor, jsxMode, jsxCompat);
+  const plugin = createPlugin(vapor, jsxMode, jsxCompat, sourceMap);
 
   const transformInclude = plugin.transformInclude;
   if (typeof transformInclude === "function") {
@@ -107,12 +116,98 @@ void test("jsxMode:'vapor' selects the vapor default and wins over vapor:false",
   t.assert.match(result.code, /template\(/, "jsxMode:'vapor' produces vapor template output");
 });
 
-void test("Vapor authored exports fail explicitly through the unplugin transform", async (t) => {
-  await t.assert.rejects(() => runTransform(true, APP_JSX, resolveFixturePath("jsx", "App.jsx")), {
-    name: "Error",
-    message:
-      "Vapor/SSR authored module preservation is not supported for imports, exports or captured setup bindings; use VDOM output or consume the per-component renderer",
-  });
+void test("Vapor authored exports retain the complete native module and requested map", async (t) => {
+  // Keep the original exported fixture that formerly required an explicit
+  // refusal. This is the adapter contract; actual renderer execution and
+  // backend-origin validation have separate native and consumer tests.
+  t.assert.equal(
+    APP_JSX,
+    'const App = () => <div class="greeting">{message}</div>;\n\nexport default App;\n',
+  );
+  const id = resolveFixturePath("jsx", "App.jsx");
+  const outputs = [];
+  for (const sourceMap of [false, true]) {
+    const native = compileJsx(APP_JSX, { filename: id, lang: "jsx", vapor: true, sourceMap });
+    t.assert.deepEqual(native.errors, []);
+    t.assert.deepEqual(native.warnings, []);
+    t.assert.deepEqual(native.scopedStyles, []);
+    const actual = await runTransform(true, APP_JSX, id, undefined, undefined, sourceMap);
+    t.assert.ok(actual.result);
+    t.assert.deepEqual(actual, {
+      result: { code: native.code, map: native.map ?? null },
+      warnings: [],
+    });
+    outputs.push(actual.result.code);
+
+    const module = ts.createSourceFile(
+      id,
+      actual.result.code,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.JS,
+    );
+    t.assert.deepEqual(
+      ts.transpileModule(actual.result.code, {
+        fileName: id,
+        reportDiagnostics: true,
+        compilerOptions: { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.ESNext },
+      }).diagnostics ?? [],
+      [],
+    );
+    const exports = module.statements.filter(ts.isExportAssignment);
+    t.assert.equal(exports.length, 1);
+    t.assert.equal(exports[0].isExportEquals, undefined);
+    t.assert.ok(ts.isIdentifier(exports[0].expression));
+    t.assert.equal(exports[0].expression.text, "App");
+    const variables = module.statements
+      .filter(ts.isVariableStatement)
+      .flatMap((statement) => [...statement.declarationList.declarations]);
+    const app = variables.filter(
+      (declaration) => ts.isIdentifier(declaration.name) && declaration.name.text === "App",
+    );
+    t.assert.equal(app.length, 1);
+    let component = app[0].initializer;
+    t.assert.ok(component);
+    while (ts.isParenthesizedExpression(component)) component = component.expression;
+    t.assert.ok(ts.isObjectLiteralExpression(component));
+    t.assert.deepEqual(
+      component.properties.map((property) =>
+        "name" in property ? property.name?.getText(module) : undefined,
+      ),
+      ["__vapor", "name", "setup"],
+    );
+    const marker = component.properties[0];
+    t.assert.ok(ts.isPropertyAssignment(marker));
+    t.assert.equal(marker.initializer.kind, ts.SyntaxKind.TrueKeyword);
+    const name = component.properties[1];
+    t.assert.ok(ts.isPropertyAssignment(name));
+    t.assert.ok(ts.isStringLiteral(name.initializer));
+    t.assert.equal(name.initializer.text, "App");
+    const setup = component.properties[2];
+    t.assert.ok(ts.isMethodDeclaration(setup));
+    t.assert.equal(setup.parameters.length, 0);
+    t.assert.ok(setup.body);
+    t.assert.ok(setup.body.statements.some(ts.isReturnStatement));
+    t.assert.ok(actual.result.code.endsWith(";\n\nexport default App;\n"));
+    const remainingJsx: ts.Node[] = [];
+    const visit = (node: ts.Node) => {
+      if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node) || ts.isJsxFragment(node))
+        remainingJsx.push(node);
+      ts.forEachChild(node, visit);
+    };
+    visit(module);
+    t.assert.deepEqual(remainingJsx, []);
+
+    if (sourceMap) {
+      t.assert.equal(typeof native.map, "string");
+      const map = JSON.parse(native.map!);
+      t.assert.equal(map.version, 3);
+      t.assert.deepEqual(map.sourcesContent, [APP_JSX]);
+      t.assert.equal(map.sources.length, 1);
+      t.assert.ok(map.mappings.length > 0);
+    } else t.assert.equal(actual.result.map, null);
+  }
+  t.assert.equal(outputs[0], outputs[1], "requesting maps preserves every generated byte");
 });
 
 void test("jsxMode:'vdom' keeps the vdom default even when vapor:true", async (t) => {

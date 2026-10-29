@@ -1,0 +1,13 @@
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<img${_ssrRenderAttrs(_mergeProps({ src: "./a.svg" }, _attrs))}>`)
+}
+
+
+const _imports_0 = 'authored'
+const _sfc_main = { value: _imports_0 }
+
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

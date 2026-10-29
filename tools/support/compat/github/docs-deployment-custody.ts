@@ -6,6 +6,7 @@ import {
   validateArtifact,
   validateBuild,
   type Artifact,
+  type ArtifactIdentity,
   type PublisherJob,
   type Receipt,
   type WorkflowRun,
@@ -50,7 +51,7 @@ async function buildFromReceipt(api: GitHub, repositoryId: number, receipt: Rece
     "/actions/runs/" + receipt.build.runId + "/attempts/" + receipt.build.attempt,
   );
   const values = await Promise.all(
-    receipt.build.artifacts.map((item) => api.json<Artifact>("/actions/artifacts/" + item.id)),
+    receipt.build.artifacts.map((item) => historicalArtifact(api, item)),
   );
   // The immutable receipt is bound to the exact successful custody step's log.
   // Historical archives can expire; primary IDs/digests/run provenance must remain.
@@ -66,6 +67,16 @@ async function buildFromReceipt(api: GitHub, repositoryId: number, receipt: Rece
     receipt.build.manifest,
     false,
   );
+}
+async function historicalArtifact(api: GitHub, identity: ArtifactIdentity): Promise<Artifact> {
+  const path = "/actions/artifacts/" + identity.id;
+  const response = await api.response(path);
+  // This path is used only after the whole historical receipt is authenticated
+  // against its original publisher log. Retention can remove metadata as well
+  // as archive bytes; a deleted artifact cannot erase an actual Pages success.
+  if (response.status === 404) return { ...identity, expired: true };
+  assert(response.ok, "GitHub metadata request failed: " + response.status + " " + path);
+  return (await response.json()) as Artifact;
 }
 export async function qualifyDeployment(
   api: GitHub,
@@ -115,7 +126,7 @@ export async function qualifyDeployment(
   );
   const [build, pages] = await Promise.all([
     buildFromReceipt(api, repositoryId, receipt),
-    api.json<Artifact>("/actions/artifacts/" + receipt.pagesArtifact.id),
+    historicalArtifact(api, receipt.pagesArtifact),
   ]);
   const result = publishedReceipt(receipt, publisher, job, build, pages);
   assert(result, "An unexecuted candidate receipt cannot establish a floor");

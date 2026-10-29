@@ -15,23 +15,7 @@ use vize_carton::{CompactString, FxHashSet, String};
 use vize_croquis::Croquis;
 
 pub(super) fn emit_reference_path_directives(ts: &mut String, paths: &[String]) {
-    let mut seen = FxHashSet::default();
-    for path in paths {
-        if path.is_empty() || path.contains(['\n', '\r']) || !seen.insert(path.as_str()) {
-            continue;
-        }
-        ts.push_str("/// <reference path=\"");
-        for character in path.chars() {
-            match character {
-                '&' => ts.push_str("&amp;"),
-                '"' => ts.push_str("&quot;"),
-                '<' => ts.push_str("&lt;"),
-                '>' => ts.push_str("&gt;"),
-                _ => ts.push(character),
-            }
-        }
-        ts.push_str("\" />\n");
-    }
+    super::super::reference_paths::emit(ts, paths);
 }
 
 pub(super) fn emit_reference_type_directives(
@@ -168,7 +152,7 @@ pub(super) fn collect_value_import_binding_names(
     summary: &Croquis,
     script: &str,
 ) -> FxHashSet<CompactString> {
-    summary
+    let mut names = summary
         .import_statements
         .iter()
         .flat_map(|imp| {
@@ -180,8 +164,16 @@ pub(super) fn collect_value_import_binding_names(
                 .map(CompactString::new)
                 .collect::<Vec<_>>()
         })
-        .filter(|name| crate::virtual_ts::script_facts::contains_binding(summary, name))
-        .collect()
+        .peekable();
+    // Preserve the allocation-free fact path for scripts with no value imports.
+    if names.peek().is_none() {
+        return FxHashSet::default();
+    }
+    crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+        names
+            .filter(|name| bindings.contains_binding(name))
+            .collect()
+    })
 }
 
 #[derive(Default)]

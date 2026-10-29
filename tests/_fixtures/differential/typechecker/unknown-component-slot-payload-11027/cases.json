@@ -1,0 +1,260 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 11027,
+  "regressionCommit": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+  "sourceRevision": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "valid",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-known.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unknown",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-unknown.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "unknown-union",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-union.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "repaired",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-known.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unresolved-tag",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-known.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "unresolved.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "slot-any",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-slot-any.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "slot-unknown",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-slot-unknown.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"unknown\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "slot-never",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-slot-never.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"never\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "slot-string",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-slot-string.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"other\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "unicode-crlf-unknown",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-unknown.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "unicode-crlf.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 56,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    }
+  ]
+}

@@ -11,7 +11,7 @@ mod build;
 mod cache;
 pub(in crate::corsa_bridge) use cache::SessionCache;
 pub(in crate::corsa_bridge) use cache::recover_lock;
-use cache::{ContextFingerprint, ProjectMember};
+use cache::{ContextFingerprint, ProjectMember, RevisionKey};
 mod namespace;
 mod prebuild;
 mod prepare;

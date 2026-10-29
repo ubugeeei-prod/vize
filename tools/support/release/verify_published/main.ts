@@ -32,16 +32,34 @@ async function smokeInstall(version: string): Promise<boolean> {
   }
 }
 
+/**
+ * Names not visible at `version` after npm's propagation window. This runs
+ * outside the Release run, so a later release may already have moved
+ * `latest` past `version`; the exact version and archive must still resolve.
+ */
+export async function missingFromRegistry(
+  version: string,
+  names: readonly string[],
+  attempts = 180,
+  delaySeconds = 10,
+): Promise<string[]> {
+  const visible = await Promise.all(
+    names.map((name) =>
+      waitForRegistryVisibility({ name, version, tag: "latest" }, attempts, delaySeconds, {
+        allowNewerTag: true,
+      }),
+    ),
+  );
+  return names.filter((_, index) => visible[index] !== 0);
+}
+
 export async function verifyPublished(args: readonly string[]): Promise<number> {
   const [version, ...names] = args;
   if (version === undefined || names.length === 0) {
     writeStderr("Usage: verify_published/main.ts <version> <package-name>...\n");
     return 1;
   }
-  const visible = await Promise.all(
-    names.map((name) => waitForRegistryVisibility({ name, version, tag: "latest" }, 180, 10)),
-  );
-  const missing = names.filter((_, index) => visible[index] !== 0);
+  const missing = await missingFromRegistry(version, names);
   if (missing.length > 0) {
     writeStderr(`Not visible on npm at ${version}: ${missing.join(", ")}\n`);
     return 1;

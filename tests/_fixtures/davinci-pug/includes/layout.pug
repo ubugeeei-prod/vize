@@ -1,0 +1,8 @@
+section.page
+  include partials/header.pug
+  include partials/card.pug
+    p(v-if="ready") Card body {{ query }}
+  include partials/list.pug
+    .item(v-for="item in items" :key="item") {{ item }}
+  include partials/note.txt
+  +title('Again')

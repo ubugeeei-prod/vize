@@ -66,11 +66,11 @@ already carries `content` as a source slice or arena copy, so it reads that
 text directly and also preserves text changed by transforms. Representative
 migrated sites:
 
-- `crates/vize_atelier_core/src/codegen/expression/generate.rs:48` — codegen reads `simple.content` directly; its retained
+- `crates/vize_atelier_core/src/codegen/expression/generate.rs:77` — codegen reads `simple.content` directly; its retained
   expression text can differ from the original span after a transform
 - `crates/vize_croquis/src/drawer/template/components.rs:48` — croquis captures component/expression text into
   analysis products
-- `crates/vize_patina/src/rules/script/template_scan.rs:193` — lint rule matches against raw expression text
+- `crates/vize_patina/src/rules/script/template_scan.rs:225` — lint rule matches against raw expression text
 - `crates/vize_atelier_vapor/src/steps/v_on.rs:47` — vapor transform re-wraps an expression from the covered
   text (the owned copy the pre-span node stored is gone; see also group 3)
 

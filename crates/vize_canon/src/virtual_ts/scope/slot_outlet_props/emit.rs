@@ -30,16 +30,21 @@ pub(super) fn emit_slot_outlet_helpers(
     ts: &mut String,
     slot_outlets_by_scope: &FxHashMap<u32, Vec<SlotOutlet>>,
 ) {
-    let mut needs_static = false;
-    let mut needs_dynamic = false;
-    let mut needs_spread = false;
+    let mut has_outlet = false;
+    let mut needs_static_spread = false;
+    let mut needs_dynamic_spread = false;
     let mut needs_key = false;
     for outlet in slot_outlets_by_scope
         .values()
         .flat_map(|outlets| outlets.iter())
     {
+        has_outlet = true;
         if !outlet.spread_props.is_empty() {
-            needs_spread = true;
+            if outlet.name_is_dynamic {
+                needs_dynamic_spread = true;
+            } else {
+                needs_static_spread = true;
+            }
         }
         if outlet
             .props
@@ -48,21 +53,19 @@ pub(super) fn emit_slot_outlet_helpers(
         {
             needs_key = true;
         }
-        if outlet.name_is_dynamic {
-            needs_dynamic = true;
-        } else {
-            needs_static = true;
-        }
     }
-    if !needs_static && !needs_dynamic && !needs_spread {
+    if !has_outlet {
         return;
     }
+    let needs_spread = needs_static_spread || needs_dynamic_spread;
 
     // Match Vue's functional-slot normalization without erasing overloaded call signatures.
     ts.push_str("  function __vizeSlotOutlet<S>(slot: S): S extends () => infer R ? (props: {}) => R : NonNullable<S> { return slot as any; }\n");
     // Payload aliases provide contextual typing for v-bind spreads.
-    ts.push_str("  type __VizeSlotOutletFn = (...args: any[]) => any;\n");
-    if needs_static {
+    if needs_spread {
+        ts.push_str("  type __VizeSlotOutletFn = (...args: any[]) => any;\n");
+    }
+    if needs_static_spread {
         ts.push_str(
             "  type __VizeSlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, __VizeSlotOutletFn>;\n",
         );
@@ -73,7 +76,7 @@ pub(super) fn emit_slot_outlet_helpers(
             "  type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = [__VizeSlotOutletArgs<__S, __K>] extends [[]] ? unknown : __VizeSlotOutletArgs<__S, __K>[0];\n",
         );
     }
-    if needs_dynamic {
+    if needs_dynamic_spread {
         ts.push_str(
             "  type __VizeAnySlotOutletTarget<__S> = Extract<NonNullable<__S[keyof __S]>, __VizeSlotOutletFn>;\n",
         );

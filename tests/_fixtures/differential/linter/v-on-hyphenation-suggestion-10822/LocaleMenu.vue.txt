@@ -1,0 +1,23 @@
+<template>
+  <a-config-provider :locale="locale">
+    <a-select @Change="onLocale" @dropdownVisibleChange="onOpen" />
+    <a-input @update:modelValue="onInput" @pressEnter="onSubmit" />
+    <a-tree v-on:node_Expand="onExpand" @XMLParsed="onParsed" />
+    <a-modal @vue:beforeMount="onMount" @vue:unmounted="onUnmount" @after-close="onClose" />
+    <button @Click="onClick" />
+  </a-config-provider>
+</template>
+
+<script setup lang="ts">
+const locale = undefined;
+function onLocale() {}
+function onOpen() {}
+function onInput() {}
+function onSubmit() {}
+function onExpand() {}
+function onParsed() {}
+function onMount() {}
+function onUnmount() {}
+function onClose() {}
+function onClick() {}
+</script>

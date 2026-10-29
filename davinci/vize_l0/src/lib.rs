@@ -60,6 +60,7 @@ pub mod flags;
 pub mod general;
 pub mod hash;
 pub mod interner;
+pub mod js_string;
 pub mod line_index;
 pub mod pool;
 pub mod profiler;
@@ -70,6 +71,8 @@ pub mod source_range;
 pub mod span;
 pub mod string_builder;
 pub mod telegraph;
+pub mod template_globals;
+pub mod ts_emit;
 
 // Re-export allocator types
 pub use allocator::{Allocator, ArenaStamp};
@@ -88,6 +91,7 @@ pub use oxc_allocator::StringBuilder;
 pub use compact_str::CompactString;
 pub use compact_str::CompactString as String;
 pub use compact_str::ToCompactString;
+pub use vize_l0_derive::{emit_ts, ts};
 
 // Re-export smallvec for stack-optimized collections
 pub use smallvec::{SmallVec, smallvec};

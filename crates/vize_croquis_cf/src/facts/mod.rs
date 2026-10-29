@@ -11,9 +11,11 @@ mod render_tree_tests;
 use vize_croquis::facts::{Bindings, Demand, FactConsumer, FactGroup};
 use vize_l0::fact::{FactManager, FactRegistry};
 
-pub(crate) use render_tree::resolve_module;
 pub use render_tree::{
     RenderEdgeKey, RenderSite, RenderTree, component_usage_targets, imported_render_target,
+};
+pub(crate) use render_tree::{
+    has_local_render_binding, imported_render_target_at, resolve_module, template_usage_is_shadowed,
 };
 
 use crate::registry::ModuleRegistry;
@@ -70,3 +72,9 @@ impl<'a> ProjectFacts<'a> {
         self.manager.view::<C>()
     }
 }
+
+#[cfg(test)]
+mod async_component_ancestry_tests;
+
+#[cfg(test)]
+mod template_shadow_tests;

@@ -27,6 +27,7 @@ These options live under `compiler` in `defineConfig`; not every integration con
 | `prefixIdentifiers` | `boolean`                                                           | Prefix template identifiers with `_ctx`                          |
 | `hoistStatic`       | `boolean`                                                           | Control static node hoisting                                     |
 | `cacheHandlers`     | `boolean`                                                           | Control event handler caching                                    |
+| `comments`          | `boolean`                                                           | Keep template comments; unset keeps them in development only     |
 | `isTs`              | `boolean`                                                           | Parse script blocks as TypeScript                                |
 | `runtimeModuleName` | `string`                                                            | Override runtime import module                                   |
 | `runtimeGlobalName` | `string`                                                            | Override runtime global for function/IIFE-style output           |

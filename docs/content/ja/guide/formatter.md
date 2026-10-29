@@ -104,7 +104,7 @@ export default defineConfig({}).withVue({
 });
 ```
 
-`fmt.ignorePatterns` は両方のフォーマッタに適用されます。`.vue` ファイルも Oxfmt に任せるには、`vue.formatter` を省略し、`fmt.vue: false` を指定します。明示した `vue.formatter` はタスクの制御設定より優先されます。単独の CLI やエディターが同じ設定をどこから読むかは、[設定](./configuration.md)を参照してください。
+`fmt.ignorePatterns` は両方のフォーマッタに適用されます。ただし、すべての Vue ファイルを除外するエントリ（`**/*.vue`）は Oxfmt から `.vue` を外すだけです。`.vue` ファイルも Oxfmt に任せるには、`vue.formatter` を省略し、`fmt.vue: false` を指定します。明示した `vue.formatter` はタスクの制御設定より優先されます。単独の CLI やエディターが同じ設定をどこから読むかは、[設定](./configuration.md)を参照してください。
 
 同じオプションは CLI のフラグでも指定できます。
 
@@ -121,9 +121,12 @@ export default defineConfig({}).withVue({
 | `--end-of-line`                    | 改行を `lf`、`crlf`、`cr`、自動検出の `auto` から選びます。       |
 | `--no-semi`                        | 文末のセミコロンを省略します。                                  |
 | `--sort-attributes`                | テンプレートとブロックタグの属性を並べ替えます。                |
+| `--attribute-sort-order`           | 優先グループ内で `alphabetical` または `as-written` を選びます。 |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ書きます。                                |
+| `--vue-indent-script-and-style`    | `<script>` と `<style>` の内容をインデントします。               |
 | `--max-attributes-per-line`        | 指定した数を超えると、属性を折り返します。                      |
 | `--normalize-directive-shorthands` | `v-bind:`、`v-on:`、`v-slot:` を `:`、`@`、`#` に置き換えます。 |
+| `--sort-blocks`                    | SFC ブロックの標準順序を切り替えます。                          |
 
 個々の設定は、次のガイドで詳しく説明しています。
 
@@ -173,6 +176,12 @@ Node の native `formatSfc` API でも、Prettier 移行用の 5 つの真偽値
 `selfCloseVoidElements`、`reindentPreprocessorStyles` を同じ名前で指定できます。
 明示した値は `false` を含めて `preset` より優先されます。
 
+空要素を閉じるポリシーは、CLI でも
+`--self-close-void-elements[=false]` で直接上書きできます。明示した値は設定と
+選択したプリセットより優先されます。`true` は `<img />` のように HTML の空要素を
+閉じ、`false` は記述された開始タグを保ちます。空要素ではないタグと Vue
+コンポーネントは変更しません。
+
 スクリプトの引用符ポリシーも設定、CLI の直接上書き、Node で共有されます。
 `--jsx-single-quote[=false]` は `jsxSingleQuote`、
 `--quote-props <as-needed|consistent|preserve>` は `quoteProps` に対応します。
@@ -193,6 +202,23 @@ Node・設定オプション `bracketSpacing` と `bracketSameLine` に対応し
 改行コードも同じように公開されます。
 `--end-of-line <lf|crlf|cr|auto>` は、型付きの Node・設定オプション
 `endOfLine` に対応します。CLI の明示値は、設定と選択したプリセットより優先されます。
+
+SFC 本体のインデントも、すべての直接フォーマッタ境界で明示的に有効化できます。
+`--vue-indent-script-and-style[=false]` は、型付きの Node・設定オプション
+`vueIndentScriptAndStyle` に対応します。このオプションを明示しない限り、既定値と
+すべてのプリセットは変わりません。
+
+属性の順序も、各公開境界で同じように指定できます。
+`--attribute-sort-order <alphabetical|as-written>` は、型付きの Node・設定オプション
+`attributeSortOrder` に対応します。`as-written` でも Vue の優先グループは適用され、
+同じグループ内だけ記述順を保ちます。属性全体の記述順を保つ場合は
+`--sort-attributes=false` を使います。
+
+SFC ブロックの順序も、各公開境界で同じように指定できます。
+`--sort-blocks[=false]` は、型付きの Node・設定オプション `sortBlocks` に
+対応します。CLI の明示値は設定と選択したプリセットより優先されます。`false` は
+ルートブロックの記述順を保ち、`true` は script、script setup、template、style、
+カスタムブロックの順に並べます。
 
 ## コンパクトなアプリケーションコード
 

@@ -58,6 +58,7 @@ pub(super) fn generate_empty_root_checks(
         source_context: ctx.source_context(),
         indent: "  ",
         typed_fallthrough_values: ctx.typed_fallthrough_values,
+        hoist_shared_preamble: ctx.hoist_shared_preamble,
         experimental_strict_slot_children: ctx.experimental_strict_slot_children,
         explicit_generics: ctx.explicit_generics,
     };
@@ -75,6 +76,7 @@ struct EmptyChecksContext<'a, 'template, 'b> {
     source_context: ComponentPropSource<'a>,
     indent: &'b str,
     typed_fallthrough_values: bool,
+    hoist_shared_preamble: bool,
     experimental_strict_slot_children: bool,
     explicit_generics: &'a ExplicitGenerics,
 }
@@ -107,7 +109,8 @@ fn generate_empty_checks(
             ctx.source_context,
             body_indent.as_str(),
         )
-        .typed_fallthrough_values(ctx.typed_fallthrough_values);
+        .typed_fallthrough_values(ctx.typed_fallthrough_values)
+        .hoist_shared_preamble(ctx.hoist_shared_preamble);
         profile!(
             "canon.virtual_ts.empty_component_prop_checks",
             generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
@@ -168,7 +171,8 @@ pub(super) fn generate_scope_checks(
                 indent,
             )
             .strict_v_model(ctx.strict_v_model)
-            .typed_fallthrough_values(ctx.typed_fallthrough_values);
+            .typed_fallthrough_values(ctx.typed_fallthrough_values)
+            .hoist_shared_preamble(ctx.hoist_shared_preamble);
             generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str());
             generate_component_slot_checks(
                 &mut check_context,
@@ -202,6 +206,7 @@ pub(super) fn generate_scope_checks(
             source_context: ctx.source_context,
             indent,
             typed_fallthrough_values: ctx.typed_fallthrough_values,
+            hoist_shared_preamble: ctx.hoist_shared_preamble,
             experimental_strict_slot_children: ctx.experimental_strict_slot_children,
             explicit_generics: ctx.explicit_generics,
         };

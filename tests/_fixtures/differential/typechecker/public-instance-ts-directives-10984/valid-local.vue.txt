@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const x: number = 3;
+</script>
+
+<template>
+	{{ 
+		// @ts-expect-error
+		x
+	}}
+</template>

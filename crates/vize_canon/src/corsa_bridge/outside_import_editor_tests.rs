@@ -77,32 +77,10 @@ fn original_outside_import_preserves_types_in_native_editor() {
                 std::fs::write(file, source.as_str().unwrap()).unwrap();
             }
         }
-        let generated_extension: Vec<_> = diagnostics
-            .iter()
-            .filter(|diagnostic| diagnostic.code == Some(json!(5097)))
-            .collect();
-        assert_eq!(generated_extension.len(), 1, "{complete}");
-        assert_eq!(generated_extension[0].range.start.line, 0, "{complete}");
+        // The extensionless authored edge stays extensionless in the mirror, so
+        // the raw response equals the native CLI without a generated TS5097 (#10753).
         assert_eq!(
-            generated_extension[0].range.start.character, 23,
-            "{complete}"
-        );
-        assert_eq!(generated_extension[0].range.end.line, 0, "{complete}");
-        assert!(
-            generated_extension[0].range.end.character
-                > generated_extension[0].range.start.character,
-            "{complete}"
-        );
-        assert_eq!(
-            generated_extension[0].message,
-            "An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled."
-        );
-        let authored: Vec<_> = diagnostics
-            .iter()
-            .filter(|diagnostic| diagnostic.code != Some(json!(5097)))
-            .collect();
-        assert_eq!(
-            serde_json::to_value(authored).unwrap(),
+            complete,
             json!([{
                 "range": {"start": {"line": 2, "character": 13}, "end": {"line": 2, "character": 16}},
                 "severity": 1, "code": 2322, "source": "ts",
@@ -137,15 +115,17 @@ pub(super) fn assert_complete_alias_response(
         std::fs::copy(config, capture.join("generated-tsconfig.json")).unwrap();
         copy_inputs(root, &capture.join("inputs"));
     }
-    // The raw native protocol retains four unused generated type suggestions.
-    // Assert every field; package-resolution errors or new suggestions must fail.
+    // The raw native protocol retains five unused generated type suggestions.
+    // Assert every field; package-resolution errors, TS5097 on the generated
+    // extensionless alias edge (#10753) or new suggestions must fail.
     assert_eq!(
         complete,
         json!([
             {"range":{"start":{"line":41,"character":5},"end":{"line":41,"character":10}},"severity":4,"code":6196,"source":"ts","message":"'__Ref' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":49,"character":5},"end":{"line":49,"character":19}},"severity":4,"code":6196,"source":"ts","message":"'__VizePrettify' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":51,"character":5},"end":{"line":51,"character":36}},"severity":4,"code":6196,"source":"ts","message":"'__VizeComponentFallthroughProps' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":58,"character":5},"end":{"line":58,"character":37}},"severity":4,"code":6196,"source":"ts","message":"'__VizeComponentMissingInputGuard' is declared but never used.","relatedInformation":null}
+            {"range":{"start":{"line":52,"character":5},"end":{"line":52,"character":32}},"severity":4,"code":6196,"source":"ts","message":"'__VizeUnownedComponentAttrs' is declared but never used.","relatedInformation":null},
+            {"range":{"start":{"line":53,"character":5},"end":{"line":53,"character":19}},"severity":4,"code":6196,"source":"ts","message":"'__VizePrettify' is declared but never used.","relatedInformation":null},
+            {"range":{"start":{"line":55,"character":5},"end":{"line":55,"character":36}},"severity":4,"code":6196,"source":"ts","message":"'__VizeComponentFallthroughProps' is declared but never used.","relatedInformation":null},
+            {"range":{"start":{"line":62,"character":5},"end":{"line":62,"character":37}},"severity":4,"code":6196,"source":"ts","message":"'__VizeComponentMissingInputGuard' is declared but never used.","relatedInformation":null}
         ])
     );
 }

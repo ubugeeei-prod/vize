@@ -14,6 +14,7 @@ mod control;
 mod element;
 mod spans;
 mod spread;
+mod static_style;
 mod structural_slots;
 mod text;
 
@@ -57,7 +58,11 @@ pub(super) fn emit<'a>(
     // updated, listened to, or anchors an insertion (control flow, slots).
     let mut dynamic = Vec::with_capacity_in(artifact.nodes.len(), &allocator);
     dynamic.resize(artifact.nodes.len(), false);
-    for (index, node) in artifact.nodes.iter().enumerate().rev() {
+    let mut static_styles = FxHashMap::default();
+    for (index, node) in artifact.nodes.iter_mut().enumerate().rev() {
+        if let Some(style) = static_style::fold(node, source) {
+            static_styles.insert(index, style);
+        }
         let is_dynamic = match node.content {
             Content::Text { dynamic, .. } => dynamic,
             Content::Element { .. } => {
@@ -79,6 +84,7 @@ pub(super) fn emit<'a>(
         allocator,
         artifact,
         dynamic,
+        static_styles,
         ir: &mut ir,
         next_id: 0,
         non_reactive_depth: 0,
@@ -111,6 +117,7 @@ struct Emitter<'a, 'b> {
     allocator: &'a Allocator,
     artifact: NativeArtifact<'a>,
     dynamic: Vec<'a, bool>,
+    static_styles: FxHashMap<usize, static_style::StaticStyle>,
     ir: &'b mut RootIRNode<'a>,
     next_id: usize,
     non_reactive_depth: usize,

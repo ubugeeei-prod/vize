@@ -8,7 +8,7 @@
 //! `optionDiagnostics` addressed into the entry's options object instead of
 //! failing the request, so TypeScript can surface them in the tsconfig.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -23,9 +23,10 @@ const OPTION_CODE_UNKNOWN_OPTION: i32 = 2;
 const OPTION_CODE_INVALID_TYPE: i32 = 3;
 
 /// Mapper settings resolved when TypeScript opens a project.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub(super) struct ProjectSettings {
     pub transform_options: ContentMapperTransformOptions,
+    pub typed_router_root: Option<PathBuf>,
 }
 
 /// Open mapper projects, keyed by the host-assigned opaque handle.
@@ -43,8 +44,8 @@ impl ProjectRegistry {
         self.projects.remove(handle);
     }
 
-    pub fn settings(&self, handle: &str) -> Option<ProjectSettings> {
-        self.projects.get(handle).copied()
+    pub fn settings(&self, handle: &str) -> Option<&ProjectSettings> {
+        self.projects.get(handle)
     }
 }
 
@@ -98,8 +99,15 @@ pub(super) struct OpenProjectResult {
 pub(super) fn resolve_open_project(
     params: &OpenProjectParams,
 ) -> Result<(ProjectSettings, OpenProjectResult), CorsaError> {
-    let configuration =
-        ContentMapperProjectConfiguration::load(Path::new(params.config_file_name.as_str()))?;
+    let empty_compiler_options = serde_json::Map::new();
+    let (configuration, typed_router_root) =
+        ContentMapperProjectConfiguration::load_with_compiler_options(
+            Path::new(params.config_file_name.as_str()),
+            params
+                .compiler_options
+                .as_object()
+                .unwrap_or(&empty_compiler_options),
+        )?;
     let mut options_api = true;
     let mut no_unused_locals = false;
     let mut check_javascript = false;
@@ -135,16 +143,18 @@ pub(super) fn resolve_open_project(
         no_unused_locals = compiler_options.get("noUnusedLocals") == Some(&Value::Bool(true));
         check_javascript = compiler_options.get("checkJs") == Some(&Value::Bool(true));
     }
+    let shared_helpers =
+        content_mapper_helper_capability(Path::new(params.config_file_name.as_str()));
     Ok((
         ProjectSettings {
+            typed_router_root,
             transform_options: configuration
                 .transform_options
                 .with_options_api(options_api)
                 .with_preserve_unused_diagnostics(no_unused_locals)
                 .with_check_javascript(check_javascript)
-                .with_external_component_attrs_module(has_content_mapper_helpers(Path::new(
-                    params.config_file_name.as_str(),
-                ))),
+                .with_external_component_attrs_module(shared_helpers.is_some())
+                .with_external_component_type_helpers(shared_helpers == Some(true)),
         },
         OpenProjectResult {
             config_identity: configuration.config_identity,
@@ -154,23 +164,29 @@ pub(super) fn resolve_open_project(
     ))
 }
 
-fn has_content_mapper_helpers(config_file_name: &Path) -> bool {
-    let Some(project_directory) = config_file_name.parent() else {
-        return false;
-    };
-    let Some(helper) = project_directory
+/// `Some(false)` retains the legacy attribute-only package surface.
+fn content_mapper_helper_capability(config_file_name: &Path) -> Option<bool> {
+    let project_directory = config_file_name.parent()?;
+    let helper = project_directory
         .ancestors()
         .map(|directory| directory.join("node_modules/vize/content-mapper-helpers.d.ts"))
-        .find(|candidate| candidate.is_file())
-    else {
-        return false;
-    };
-    let Some(helper_directory) = helper.parent() else {
-        return false;
-    };
-    resolve_node_package(project_directory, "vue")
+        .find(|candidate| candidate.is_file())?;
+    let helper_directory = helper.parent()?;
+    let same_vue = resolve_node_package(project_directory, "vue")
         .zip(resolve_node_package(helper_directory, "vue"))
-        .is_some_and(|(project_vue, helper_vue)| project_vue == helper_vue)
+        .is_some_and(|(project_vue, helper_vue)| project_vue == helper_vue);
+    if !same_vue {
+        return None;
+    }
+    let shared_types = helper_directory.join("generated/content-mapper-types.d.ts");
+    Some(
+        shared_types.is_file()
+            && std::fs::read_to_string(helper).is_ok_and(|contents| {
+                contents.lines().any(|line| {
+                    line == "export type * from \"./generated/content-mapper-types.js\" with { \"resolution-mode\": \"import\" };"
+                })
+            }),
+    )
 }
 
 fn resolve_node_package(from: &Path, package: &str) -> Option<std::path::PathBuf> {

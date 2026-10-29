@@ -1,0 +1,12 @@
+---
+source: crates/vize_vitrine/src/napi/jsx.rs
+assertion_line: 430
+expression: "serde_json::to_string_pretty(&serde_json::json!({\n    \"code\": &result.code, \"map\": &result.map, \"errors\": &result.errors,\n    \"warnings\": &result.warnings, \"scopedStyles\":\n    result.scoped_styles.iter().map(|style|\n    serde_json::json!({\"scopeId\":&style.scope_id,\"css\":&style.css})).collect::<Vec<_>>(),\n})).expect(\"complete NAPI result\")"
+---
+{
+  "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nconst App = ({\n__ssrInlineRender: true,\nname: \"App\",\nsetup() {\n return (() => {\n\n\nreturn ((_ctx, _push, _parent, _attrs) => {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(message)}</div>`)\n})\n})()\n}\n});",
+  "errors": [],
+  "map": "{\"file\":\"module.jsx\",\"mappings\":\";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;AAAQ;;;;UAAS,gDAAK;;;;EAAiB\",\"names\":[],\"sources\":[\"module.jsx\"],\"sourcesContent\":[\"const App = () => { return <div>{message}</div>; };\"],\"version\":3}",
+  "scopedStyles": [],
+  "warnings": []
+}

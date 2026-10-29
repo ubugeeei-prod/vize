@@ -31,6 +31,17 @@ Failed type-argument and arrow probes share the existing table with disjoint
 one-word keys, avoiding another table initialization/drop for ordinary parses.
 The type-argument key retains all grammar-context bits.
 
+Expression type-argument probes also lazily retain the last raw `>` offset in
+the immutable parser source. An opener with no later `>` cannot close a valid
+type-argument list, so it returns before checkpointing or recursive parsing.
+This bounds impossible trailing probes in the Vize
+[#10401](https://github.com/ubugeeei-prod/vize/issues/10401) slow unit without
+changing the shared expression guard or refusing any valid generic syntax.
+The source fact survives rewinds and is reset by each parser constructor.
+Raw `>` bytes inside strings, comments, templates or JSX only retain the old
+parser path. Private state tests assert that an impossible probe does no work;
+the exact artifact is retained in the expression fuzz regression corpus.
+
 Vize publishes this unofficial fork as `vize_oxc_parser`, synchronized with the
 Vize workspace version. Its Rust library remains `oxc_parser`, and consumers
 use a direct `path` plus exact `version` dependency with the `package` alias.
@@ -73,3 +84,15 @@ positions. Original AST spans, regex/comment boundaries, complete-input checks,
 and rest-last/trailing-comma errors remain under that parser; ordinary JavaScript
 and `parse_slot_parameters()` explicitly keep elisions disabled. Focused parser
 API tests and public native template-scope controls cover this fork addition.
+
+Expression type-argument transactions also share proven fatal type/assignment
+subproblems across distinct overlapping probes (#10845, #10682). The original
+production bodies remain intact. Sharing is scoped to reversible probes, keyed
+by full grammar and lexer state, and fenced by nontransactional state revisions;
+committed parses and successful productions are never replaced. The first failed
+type-argument probe enables this table, preserving ordinary successful-generic
+fast paths. A reused failure restores its end-token and trivia state before the
+owning probe rewinds. Private tests compare complete Program/expression packets
+with sharing disabled and count the exact original input's repeated work.
+The immutable source audit retains before/after source profiles, complete packets
+and original sanitizer resource limits. See `tests/fuzz/ISSUE-10845.md`.

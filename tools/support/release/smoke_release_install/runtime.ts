@@ -16,6 +16,7 @@ import {
 
 export const RUNTIME_PEER_DEPENDENCIES = {
   typescript: "6.0.3",
+  "typescript-native": "npm:typescript@7.1.0-beta",
   vite: "^8.0.0",
   "vite-plus": "0.1.24",
   vue: "3.5.34",
@@ -75,7 +76,14 @@ function runInitChecks(
     COREPACK_HOME: path.join(tempDir, "corepack"),
     COREPACK_ENABLE_DOWNLOAD_PROMPT: "0",
   };
-  for (const key of ["CORSA_PATH", "CORSA_EXECUTABLE", "TSGO_PATH", "TSGO_EXECUTABLE"])
+  for (const key of [
+    "CORSA_PATH",
+    "CORSA_EXECUTABLE",
+    "TSGO_PATH",
+    "TSGO_EXECUTABLE",
+    "TSRS_PATH",
+    "TSRS_EXECUTABLE",
+  ])
     delete env[key];
   const output = spawnSync(
     process.env.NODE_BIN ?? "node",
@@ -197,7 +205,7 @@ export function assertInstalledMapperContract(installDir: string): void {
     !isDeepStrictEqual(contract, {
       dynamicConfig: true,
       exec: ["node", "./bin/vize", "content-mapper"],
-      compilerOptions: ["checkJs", "noUnusedLocals"],
+      compilerOptions: ["checkJs", "noUnusedLocals", "rootDir"],
     })
   ) {
     throw new Error(

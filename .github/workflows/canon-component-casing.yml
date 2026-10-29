@@ -1,0 +1,112 @@
+name: Canon component casing accuracy
+on:
+  pull_request:
+    paths:
+      - crates/vize_canon/src/virtual_ts/scope/component_props.rs
+      - tools/benchmarks/scripts/canon-component-casing*.ts
+      - .github/workflows/canon-component-casing.yml
+permissions: { contents: read }
+concurrency:
+  group: canon-component-casing-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  accuracy:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      GOMAXPROCS: "2"
+      RAYON_NUM_THREADS: "2"
+      NODE_DISABLE_COMPILE_CACHE: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { fetch-depth: 2, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Build one exact normal source CLI and preserve Cargo identity
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD^2)" == "$PR_HEAD_SHA" ]]
+          export EVIDENCE="$RUNNER_TEMP/component-casing"
+          mkdir "$EVIDENCE"
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/component-casing-target"
+          cargo build --locked --profile ci-opt -p vize --bin vize --message-format=json > "$EVIDENCE/build.jsonl" 2> "$EVIDENCE/build.stderr"
+          python3 - <<'PY'
+          import json, pathlib, os, subprocess, hashlib
+          root=pathlib.Path(os.environ['EVIDENCE'])
+          rows=[json.loads(line) for line in (root/'build.jsonl').read_text().splitlines()]
+          binaries=[r for r in rows if r.get('reason')=='compiler-artifact' and r.get('target',{}).get('name')=='vize' and r.get('executable')]
+          assert len(binaries)==1 and binaries[0]['fresh'] is False
+          item=binaries[0]; binary=pathlib.Path(item['executable'])
+          receipt={'sourceRevision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'actualParents':subprocess.check_output(['git','show','-s','--format=%P','HEAD'],text=True).split(),'pullRequestHead':os.environ['PR_HEAD_SHA'],'binary':str(binary),'sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'bytes':binary.stat().st_size,'cargoArtifact':item,'target':os.environ['CARGO_TARGET_DIR'],'overlay':False,'RUSTFLAGS':os.environ.get('RUSTFLAGS'),'version':subprocess.check_output([str(binary),'--version'],text=True).strip(),'timingUsable':False}
+          assert len(receipt['actualParents'])==2 and receipt['actualParents'][1]==receipt['pullRequestHead']
+          (root/'source-build.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          (root/'source-binary.path').write_text(str(binary))
+          PY
+          cargo test --locked --profile ci-opt -p vize_canon --test constructor_emission_projection -- --nocapture > "$EVIDENCE/rust.stdout" 2> "$EVIDENCE/rust.stderr"
+      - name: Install one pinned independent public framework provider
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/component-casing-provider"
+          cd "$RUNNER_TEMP/component-casing-provider"
+          node --input-type=module -e 'import fs from "node:fs";fs.writeFileSync("package.json",JSON.stringify({private:true,type:"module",dependencies:{vize:"0.602.0","@vizejs/native":"0.602.0",vue:"3.5.42",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta","vue-tsc":"3.3.13"},overrides:{"@vue/compiler-dom":"3.5.42","@vue/compiler-core":"3.5.42","@vue/compiler-sfc":"3.5.42","@vue/shared":"3.5.42"}}));'
+          npm install --ignore-scripts --no-audit --no-fund
+      - name: Check the pinned complete batch-diagnostic fixture with the same native compiler
+        run: |
+          set -euo pipefail
+          [[ -z "${VIZE_TEST_DISABLE_TSGO+x}" ]]
+          mkdir -p tests/node_modules
+          ln -s "$RUNNER_TEMP/component-casing-provider/node_modules/vue" tests/node_modules/vue
+          checker=$(node --input-type=module -e 'import {pathToFileURL} from "node:url";const {default:get}=await import(pathToFileURL(process.argv[1]).href);console.log(get());' "$RUNNER_TEMP/component-casing-provider/node_modules/typescript-native/lib/getExePath.js")
+          CARGO_TARGET_DIR="$RUNNER_TEMP/component-casing-target" CORSA_PATH="$checker" cargo test --locked --profile ci-opt -p vize_canon --test fix_history_diagnostics imported_component_tag_aliases_preserve_batch_prop_diagnostics -- --exact --nocapture > "$RUNNER_TEMP/component-casing/pinned-batch.stdout" 2> "$RUNNER_TEMP/component-casing/pinned-batch.stderr"
+          python3 - <<'PY'
+          import os, pathlib, json, hashlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'component-casing'
+          stdout=(root/'pinned-batch.stdout').read_bytes()
+          stderr=(root/'pinned-batch.stderr').read_bytes()
+          assert b'running 1 test' in stdout and b'1 passed; 0 failed; 0 ignored;' in stdout
+          assert 'VIZE_TEST_DISABLE_TSGO' not in os.environ
+          pack=pathlib.Path('tests/_fixtures/differential/typechecker/component-tag-aliases-11020/cases.json').read_bytes()
+          case_ids=[case['id'] for case in json.loads(pack)['cases']]
+          assert case_ids==['valid','invalid','repaired']
+          receipt={'test':'imported_component_tag_aliases_preserve_batch_prop_diagnostics','passed':1,'failed':0,'ignored':0,'caseIds':case_ids,'packSha256':hashlib.sha256(pack).hexdigest(),'stdoutSha256':hashlib.sha256(stdout).hexdigest(),'stderrSha256':hashlib.sha256(stderr).hexdigest(),'nativeDisablePresent':False,'timingUsable':False}
+          (root/'pinned-batch.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          PY
+      - name: Preserve published false negatives and prove source invalid poison repair
+        run: |
+          set -euo pipefail
+          binary=$(cat "$RUNNER_TEMP/component-casing/source-binary.path")
+          node tools/benchmarks/scripts/canon-component-casing.ts "$RUNNER_TEMP/component-casing-provider" "$binary" "$RUNNER_TEMP/component-casing/proof"
+      - name: Package raw provider input configurations whole packets and compiler receipts
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ -f "$RUNNER_TEMP/component-casing-provider/package-lock.json" ]]; then
+            cp "$RUNNER_TEMP/component-casing-provider/package.json" "$RUNNER_TEMP/component-casing-provider/package-lock.json" "$RUNNER_TEMP/component-casing/"
+          fi
+          if [[ -d "$RUNNER_TEMP/component-casing" ]]; then
+            cd "$RUNNER_TEMP"
+            tar --exclude=node_modules -czf component-casing-raw.tgz component-casing
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: component-casing-summary-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/component-casing/source-build.json
+            ${{ runner.temp }}/component-casing/pinned-batch.json
+            ${{ runner.temp }}/component-casing/proof/summary.json
+            ${{ runner.temp }}/component-casing/proof/failures.json
+          retention-days: 14
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: component-casing-raw-${{ github.sha }}
+          path: ${{ runner.temp }}/component-casing-raw.tgz
+          retention-days: 14

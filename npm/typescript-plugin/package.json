@@ -1,0 +1,41 @@
+{
+  "name": "@vizejs/typescript-vue-plugin",
+  "version": "0.474.0",
+  "description": "Vize language service plugin for the JavaScript TypeScript server",
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/typescript-plugin"
+  },
+  "files": [
+    "*.cjs",
+    "index.d.cts",
+    "README.md"
+  ],
+  "main": "index.cjs",
+  "types": "index.d.cts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@vizejs/native": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.7 <7",
+    "vue": ">=2.6.0 <3 || >=3.5.0 || >=3.6.0-0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "experimental",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}

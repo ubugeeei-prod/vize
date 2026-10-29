@@ -7,7 +7,7 @@
 //! object. The VNode expression form lives in `vnode_create_slots`.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_l0::{FxHashSet, String, ToCompactString, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 use vize_l1_to_l2::TransformContent;
 use vize_l2::op::{self as l2, DynamicName};
 
@@ -16,7 +16,6 @@ use super::slots::{ComponentSlots, SlotSpec, slot_pattern};
 use super::spans::expression_span;
 use super::{Emitter, Result};
 use crate::codegen::element::props::quoted_js_string;
-use crate::codegen::helpers::extract_destructure_params;
 use crate::l4::AdmissionFailure;
 use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
 
@@ -152,13 +151,20 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let key = binding.key.as_ref().map(alias).transpose()?;
         let index = binding.index.as_ref().map(alias).transpose()?;
         let aliases = [Some(value), key, index];
-        let list = aliases.into_iter().flatten().collect::<std::vec::Vec<_>>();
-        let mut params = FxHashSet::default();
-        for alias in &list {
-            extract_destructure_params(alias.trim(), &mut params);
-        }
-        let mark = self.exprs.enter_for(aliases);
-        self.scoped_params.push(params);
+        let fact = self.segment(at)?.fact;
+        let mark = self.enter_for_bindings(for_op, aliases, fact);
+        let texts = match self.for_alias_texts(aliases) {
+            Ok(texts) => texts,
+            Err(error) => {
+                self.leave_loop(mark);
+                return Err(error);
+            }
+        };
+        let list = texts
+            .iter()
+            .flatten()
+            .map(String::as_str)
+            .collect::<std::vec::Vec<_>>();
         Ok((source, list.join(", ").to_compact_string(), mark))
     }
 

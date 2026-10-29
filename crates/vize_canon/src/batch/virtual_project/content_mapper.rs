@@ -12,7 +12,7 @@ use crate::batch::error::CorsaResult;
 use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VirtualTsOptions, VizeMapping};
 
 mod alias;
-use alias::{is_alias_projection, is_synthetic_content_mapper_identifier};
+use alias::is_synthetic_content_mapper_identifier;
 
 mod protocol;
 use protocol::protocol_semantic_links;
@@ -24,7 +24,10 @@ pub use protocol::{
 };
 
 mod directives;
-use directives::{sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes};
+use directives::{
+    sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes,
+    with_owned_input_echoes,
+};
 
 mod component_name;
 use component_name::content_mapper_component_name;
@@ -50,75 +53,8 @@ enum ContentMapperSpanKind {
     Alias = 2,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[non_exhaustive]
-pub struct ContentMapperTransformOptions {
-    options_api: bool,
-    preserve_unused_diagnostics: bool,
-    check_javascript: bool,
-    external_component_attrs_module: bool,
-    pub(super) check_unknown_components: bool,
-    pub(super) check_unknown_props: bool,
-    pub(super) check_unknown_fallthrough_props: bool,
-    pub(super) check_unknown_directives: bool,
-    pub(super) strict_css_modules: bool,
-    /// Resolved `vueCompilerOptions.target`. `None` leaves intrinsic names checked.
-    pub(super) vue_compiler_target: Option<VueVersion>,
-}
-
-impl Default for ContentMapperTransformOptions {
-    fn default() -> Self {
-        Self {
-            options_api: true,
-            preserve_unused_diagnostics: false,
-            check_javascript: false,
-            external_component_attrs_module: false,
-            check_unknown_components: false,
-            check_unknown_props: true,
-            check_unknown_fallthrough_props: false,
-            check_unknown_directives: false,
-            strict_css_modules: false,
-            vue_compiler_target: None,
-        }
-    }
-}
-
-impl ContentMapperTransformOptions {
-    /// Enable or disable Vue Options API instance bindings.
-    #[must_use]
-    pub const fn with_options_api(mut self, enabled: bool) -> Self {
-        self.options_api = enabled;
-        self
-    }
-
-    /// Whether Vue Options API instance bindings are enabled.
-    #[must_use]
-    pub const fn options_api(self) -> bool {
-        self.options_api
-    }
-
-    /// Preserve diagnostics for user-authored unused locals.
-    #[must_use]
-    pub const fn with_preserve_unused_diagnostics(mut self, enabled: bool) -> Self {
-        self.preserve_unused_diagnostics = enabled;
-        self
-    }
-
-    /// Check JavaScript SFC script blocks as TypeScript input.
-    #[must_use]
-    pub const fn with_check_javascript(mut self, enabled: bool) -> Self {
-        self.check_javascript = enabled;
-        self
-    }
-
-    /// Import shared component-attribute aliases from the installed `vize`
-    /// package instead of embedding them in every virtual module.
-    #[must_use]
-    pub const fn with_external_component_attrs_module(mut self, enabled: bool) -> Self {
-        self.external_component_attrs_module = enabled;
-        self
-    }
-}
+mod options;
+pub use options::ContentMapperTransformOptions;
 
 /// Generate self-contained TypeScript and protocol-v1 mappings for one Vue SFC.
 ///
@@ -141,6 +77,43 @@ pub fn generate_vue_content_mapper_transform_with_options(
     path: &Path,
     content: &str,
     transform_options: ContentMapperTransformOptions,
+) -> CorsaResult<ContentMapperTransform> {
+    generate_vue_content_mapper_transform_with_project_options(
+        path,
+        content,
+        transform_options,
+        None,
+    )
+}
+
+/// Generate a transform using configuration admitted when the host opened the project.
+/// The borrowed router root performs no configuration reads during transformation.
+pub fn generate_vue_content_mapper_transform_with_project_options(
+    path: &Path,
+    content: &str,
+    transform_options: ContentMapperTransformOptions,
+    typed_router_root: Option<&Path>,
+) -> CorsaResult<ContentMapperTransform> {
+    vize_l0::profile!(
+        "canon.content_mapper.transform",
+        transform_with_diagnostic_ownership(
+            path,
+            content,
+            transform_options,
+            typed_router_root,
+            Some(Default::default()),
+        )
+    )
+}
+
+fn transform_with_diagnostic_ownership(
+    path: &Path,
+    content: &str,
+    transform_options: ContentMapperTransformOptions,
+    typed_router_root: Option<&Path>,
+    diagnostic_ownership: Option<
+        crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+    >,
 ) -> CorsaResult<ContentMapperTransform> {
     let authored_content = content;
     let authored = crate::authored_sfc::AuthoredSfc::new(content);
@@ -187,8 +160,9 @@ pub fn generate_vue_content_mapper_transform_with_options(
         &descriptor,
         &virtual_ts_options,
         VueCodegenOptions {
+            diagnostic_ownership: diagnostic_ownership.as_ref(),
             check_options: transform_options.virtual_ts_check_options(),
-            typed_router_root: None,
+            typed_router: typed_router_root.map(super::typed_router::Config::files_only),
             preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
             options_api: transform_options.options_api(),
             preserve_authored_component: true,
@@ -196,7 +170,11 @@ pub fn generate_vue_content_mapper_transform_with_options(
             component_name: Some(component_name.as_str()),
             external_component_attrs_module: transform_options
                 .external_component_attrs_module
-                .then_some(crate::virtual_ts::CONTENT_MAPPER_HELPERS_MODULE),
+                .then_some(if transform_options.external_component_type_helpers {
+                    crate::virtual_ts::ComponentHelperModule::Types
+                } else {
+                    crate::virtual_ts::ComponentHelperModule::Attributes
+                }),
             preserve_event_navigation: true,
             legacy_vue2: false,
             dialect: VueVersion::default(),
@@ -215,20 +193,32 @@ pub fn generate_vue_content_mapper_transform_with_options(
 
     let unprefixed_len = code.len();
     if use_tsx {
+        let previous_length = code.len();
         prepend_vue_jsx_reference(
             &mut code,
             &mut mappings,
             &mut semantic_links,
             &mut prop_default_key_links,
         );
+        if let Some(collector) = &diagnostic_ownership {
+            collector
+                .borrow_mut()
+                .note_generated_insertion(0, code.len() - previous_length);
+        }
     }
     if suppress_typescript_diagnostics {
+        let previous_length = code.len();
         prepend_typescript_nocheck(
             &mut code,
             &mut mappings,
             &mut semantic_links,
             &mut prop_default_key_links,
         );
+        if let Some(collector) = &diagnostic_ownership {
+            collector
+                .borrow_mut()
+                .note_generated_insertion(0, code.len() - previous_length);
+        }
     }
     if let Some(copies) = &mut generic_copies {
         copies.shift_generated(code.len() - unprefixed_len);
@@ -241,18 +231,31 @@ pub fn generate_vue_content_mapper_transform_with_options(
     }
     let content = authored_content;
     let spans = protocol_spans(content, &code, &mappings, &mapping_meta);
+    let (mut diagnostic_echoes, callback_primaries) = diagnostic_ownership
+        .map(|collector| {
+            let mut ownership = collector.into_inner();
+            let primaries = ownership.take_callback_primaries();
+            (ownership.into_echoes(), primaries)
+        })
+        .unwrap_or_default();
+    for echo in &mut diagnostic_echoes {
+        echo.authored = authored.to_authored(echo.authored.clone());
+    }
     Ok(ContentMapperTransform {
         extension: CONTENT_MAPPER_VIRTUAL_EXTENSION,
         // Directive comments are read from HTML templates and SFC blocks only.
-        diagnostic_directives: (!authored.is_derived())
-            .then(|| {
-                let directives = with_generic_echoes(
-                    sfc_diagnostic_directives(content, &descriptor, &spans),
-                    generic_copies.as_ref(),
-                );
-                with_component_prop_echoes(directives, &code, &mappings)
-            })
-            .flatten(),
+        diagnostic_directives: with_owned_input_echoes(
+            (!authored.is_derived())
+                .then(|| {
+                    let directives = with_generic_echoes(
+                        sfc_diagnostic_directives(content, &descriptor, &spans, &diagnostic_echoes),
+                        generic_copies.as_ref(),
+                    );
+                    with_component_prop_echoes(directives, &code, &mappings, &callback_primaries)
+                })
+                .flatten(),
+            &diagnostic_echoes,
+        ),
         mappings: spans,
         semantic_links: protocol_semantic_links(&semantic_links),
         diagnostics: diagnostics
@@ -521,16 +524,11 @@ fn candidate(
     }
 
     Some(SpanCandidate {
-        generated: generated_range,
+        generated: generated_range.clone(),
         original: original_range,
-        kind: if is_alias_projection(generated_text, original_text) {
-            ContentMapperSpanKind::Alias
-        } else {
-            ContentMapperSpanKind::Atom
-        },
+        kind: alias::span_kind(generated, generated_range, original_text),
     })
 }
-
 fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
     left.start < right.end && right.start < left.end
 }
@@ -549,3 +547,6 @@ mod unknown_options_tests;
 
 #[cfg(test)]
 mod directive_tests;
+
+#[cfg(test)]
+mod typed_router_profile_tests;

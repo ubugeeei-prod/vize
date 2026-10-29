@@ -73,6 +73,17 @@ fn prepare_project(project: &Path, shared_helpers: bool) {
             include_str!("../../../../npm/cli/content-mapper-helpers.d.ts"),
         )
         .unwrap();
+        // The helper's type-only `.js` specifier resolves to this declaration
+        // under the fixture's Bundler module resolution, as in the package.
+        let generated_root = package_root.join("generated");
+        std::fs::create_dir_all(&generated_root).unwrap();
+        let shared_types = include_str!("../../../../npm/cli/generated/content-mapper-types.d.ts");
+        let installed_types = generated_root.join("content-mapper-types.d.ts");
+        std::fs::write(&installed_types, shared_types).unwrap();
+        assert_eq!(
+            std::fs::read_to_string(installed_types).unwrap(),
+            shared_types
+        );
     }
 
     let source_root = project.join("src");

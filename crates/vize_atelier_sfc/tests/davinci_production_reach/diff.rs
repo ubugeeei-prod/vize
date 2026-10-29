@@ -122,6 +122,7 @@ mod tests {
                     warnings: Vec::new(),
                     bindings: None,
                     macro_artifacts: Vec::new(),
+                    dependencies: Vec::new(),
                 })
             )
             .is_some()

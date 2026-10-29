@@ -127,11 +127,23 @@ pub(crate) fn fallback_editor_session() -> &'static EditorMirrorSession {
     SESSION.with(|session| *session)
 }
 
-fn create_storage() -> std::io::Result<EditorStorage> {
-    let base = vize_carton::path::canonicalize_non_verbatim(&std::env::temp_dir())
+fn sessions_base() -> std::path::PathBuf {
+    vize_carton::path::canonicalize_non_verbatim(&std::env::temp_dir())
         .join("vize-canon")
         .join("editor")
-        .join("sessions");
+        .join("sessions")
+}
+
+/// True for a file in any editor session's private mirror tree. Those files
+/// are generated checker inputs, never a location an editor client can open.
+pub fn is_editor_mirror_path(path: &Path) -> bool {
+    static BASE: std::sync::OnceLock<std::path::PathBuf> = std::sync::OnceLock::new();
+    let base = BASE.get_or_init(sessions_base);
+    path.starts_with(base) || vize_carton::path::canonicalize_non_verbatim(path).starts_with(base)
+}
+
+fn create_storage() -> std::io::Result<EditorStorage> {
+    let base = sessions_base();
     std::fs::create_dir_all(&base)?;
     let gc_lock = open_lock(&base.join(".gc.lock"))?;
     gc_lock.lock()?;
@@ -201,7 +213,20 @@ fn legacy_session_expired(path: &Path, grace: Duration) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{EditorMirrorSession, open_lock, reap_abandoned_sessions};
+    use super::{EditorMirrorSession, is_editor_mirror_path, open_lock, reap_abandoned_sessions};
+
+    #[test]
+    fn mirror_paths_are_recognized_only_inside_session_storage() {
+        let session = EditorMirrorSession::new();
+        let mirrored = session.root().unwrap().join("projects/p/App.art.vue.ts");
+        std::fs::create_dir_all(mirrored.parent().unwrap()).unwrap();
+        std::fs::write(&mirrored, "export {}\n").unwrap();
+        assert!(is_editor_mirror_path(&mirrored));
+        let authored = tempfile::tempdir().unwrap();
+        let authored = authored.path().join("App.art.vue.ts");
+        std::fs::write(&authored, "export {}\n").unwrap();
+        assert!(!is_editor_mirror_path(&authored));
+    }
 
     #[test]
     fn sessions_own_distinct_private_roots() {

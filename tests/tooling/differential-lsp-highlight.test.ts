@@ -14,12 +14,16 @@ import { referenceObservation, rewriteFrames } from "./support/lsp/differential-
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const pack = path.join(root, "tests/_fixtures/differential/lsp");
 const loaded = loadLspManifest(path.join(pack, "manifest.json"));
-const originals = loaded.cases.filter((fixture) =>
-  fixture.id.startsWith("lsp/fix-history/highlight-original-"),
-);
+const prefix = "lsp/fix-history/highlight-original-";
+// The original sessions in their authored order.
+const originals = ["rw", "pair", "tag", "crlf", "empty"].map((name) => {
+  const fixture = loaded.cases.find((current) => current.id === `${prefix}${name}`);
+  assert(fixture, name);
+  return fixture;
+});
 
 void test("original five highlight sessions retain source, settings and all nine authored requests", () => {
-  assert.equal(originals.length, 5);
+  assert.equal(loaded.cases.filter((fixture) => fixture.id.startsWith(prefix)).length, 5);
   assert.deepEqual(
     originals.map((fixture) => fixture.requests.length),
     [1, 4, 1, 1, 2],

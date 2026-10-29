@@ -1,6 +1,4 @@
-use super::{
-    DocumentLexicalRefusal, DocumentTokenKind as Kind, DocumentTreePolicy, NativeDocument,
-};
+use super::{DocumentLexicalRefusal, DocumentTokenKind as Kind, NativeDocument};
 use crate::markup::{LexErrorCode, ProfileKind, parse_component};
 use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceRoot, Span};
@@ -171,16 +169,8 @@ fn lexical_completion_never_certifies_browser_tree_policies() {
         "<table>text<tr><td>x</td></tr></table>",
     ] {
         let document = NativeDocument::lex_in(&allocator, root(source));
-        assert!(document.normal_completion().is_ok(), "{source}");
-        assert_eq!(
-            document.unfinished_tree_policies(),
-            &[
-                DocumentTreePolicy::FoldNameCase,
-                DocumentTreePolicy::HtmlSelfClosing,
-                DocumentTreePolicy::ImpliedEndTags,
-                DocumentTreePolicy::TableContentModel
-            ]
-        );
+        let completion = document.normal_completion().expect(source);
+        assert_eq!(completion.profile(), ProfileKind::Document);
     }
     let document = NativeDocument::lex_in(&allocator, root("<MyComp></mycomp>"));
     assert_eq!(
@@ -239,7 +229,6 @@ fn pinned_petite_vue_document_keeps_tags_interpolations_and_raw_script_style() {
             .any(|token| token.kind() == Kind::DirectiveName && token.source() == Some("v-scope"))
     );
     assert_eq!(document.source().as_bytes(), source.as_bytes());
-    assert_eq!(document.unfinished_tree_policies().len(), 4);
 }
 
 #[test]

@@ -1,0 +1,4 @@
+<script setup lang="js">
+defineProps({ undefined: { type: String, required: true } });
+</script>
+<template><p>{{ undefined }}</p></template>

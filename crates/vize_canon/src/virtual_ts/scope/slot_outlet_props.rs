@@ -19,6 +19,7 @@ use vize_croquis::{
 use vize_relief::RootNode;
 
 use crate::virtual_ts::generator::generics::references_any_identifier;
+use crate::virtual_ts::generator::setup_scope::define_slots_type_requires_setup_scope;
 use crate::virtual_ts::generic_parameters::GenericParameters;
 use std::ops::Range;
 
@@ -113,9 +114,10 @@ impl SlotOutletChecks {
 }
 
 /// The type `<slot>` outlet payloads are resolved through. A generic SFC whose
-/// `defineSlots` type references its type parameters exports `Slots` with those
-/// parameters re-declared, so the bare alias would collapse to their defaults
-/// (#3065); instantiate it with the SFC's own parameters instead.
+/// `defineSlots` type references its type parameters, or setup bindings that
+/// may depend on them, exports `Slots` with those parameters re-declared, so
+/// the bare alias would collapse to their defaults (#3065, #10221); instantiate
+/// it with the SFC's own parameters instead.
 fn slots_type_ref(summary: &Croquis, generic_parameters: Option<&GenericParameters>) -> String {
     let Some(define_slots) = summary.macros.define_slots() else {
         return String::from("__VizeSlots");
@@ -134,7 +136,9 @@ fn slots_type_ref(summary: &Croquis, generic_parameters: Option<&GenericParamete
         .map(String::from)
         .collect();
     let slots_type = define_slots.type_args.as_deref().unwrap_or_default();
-    if references_any_identifier(slots_type, &names) {
+    if define_slots_type_requires_setup_scope(summary)
+        || references_any_identifier(slots_type, &names)
+    {
         cstr!("__VizeSlots<{generic_names}>")
     } else {
         String::from("__VizeSlots")

@@ -131,6 +131,20 @@ export default defineConfig({}, { tasks: { check: "verify", preview: false } });
 
 `tasks: false` ですべての生成タスクを無効化できます。
 
+生成タスクはデフォルトではキャッシュしません。読み取り専用の `lint`、`fmt:check`、`check`、`typecheck` は
+第2引数の `taskCache: true` で Vite+ のキャッシュを有効にできます。
+
+```ts
+export default defineConfig({}, { taskCache: true });
+```
+
+Vite+ がソース、設定の import、依存関係、ディレクトリ内のファイルを自動追跡します。
+生成される `node_modules/.vize/**` と `**/.vize/**` は入力から除外し、出力ファイルの復元は行いません。
+`fmt` や `lint:fix` などソースを書き換えるタスクはキャッシュしません。チェックに `--fix` を渡した場合も、
+入力が変われば実行し、以前と同じ未整形のソースに戻した場合も修正を再適用します。
+既存の `run.tasks` のキャッシュ設定を保持し、生成タスクの名前を変えても方針は変わりません。
+Vite+ 0.x と 1.x の両方のキャッシュ API に対応しています。
+
 <span id="lint-and-formatter-ownership"></span>
 
 ## lint とフォーマットの担当範囲
@@ -139,7 +153,7 @@ Vize のネイティブ linter は Oxlint と一緒に動作します。`oxlint-
 Vue ルールの重複はデフォルトで調整され、明示的な `lint.rules` や overrides が優先されます。
 
 Vize は Vue ファイル、Oxfmt はその他のファイルをフォーマットします。
-`fmt.ignorePatterns` は両方に適用されます。
+`fmt.ignorePatterns` は両方に適用されます。ただし、すべての Vue ファイルを除外するエントリ（`**/*.vue` や `*.vue`）は、統合がデフォルトで追加するものと同じく Oxfmt から `.vue` を外すだけで、`vize fmt` は引き続きフォーマットします。
 `vue.linter.enabled: false` でネイティブ lint を無効にできます。
 `lint.vue: false`・`fmt.vue: false` を使う場合は、対応する共有ネイティブ設定がツールを明示的に有効化しないようにします。
 `vue.compiler` を省略して `compiler: false` を指定すると、既存の Vue コンパイラプラグインを保持します。

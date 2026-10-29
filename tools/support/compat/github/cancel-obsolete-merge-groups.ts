@@ -17,7 +17,7 @@ type Queue = {
           pageInfo: { hasNextPage: boolean };
           nodes: { headCommit: { oid: string } | null }[];
         };
-      };
+      } | null;
     };
   };
 };
@@ -30,6 +30,7 @@ export async function cancelObsoleteMergeGroup(
   api: Api,
   repository: string,
   runId: number,
+  queueHeads: ReadonlySet<string>,
 ): Promise<Cancellation> {
   const prefix = `repos/${repository}`;
   const run = (await api(`${prefix}/actions/runs/${runId}`)) as Run;
@@ -45,9 +46,23 @@ export async function cancelObsoleteMergeGroup(
     object: { sha: string };
   } | null;
   if (ref?.object.sha === run.head_sha) return { ...result, reason: "current-ref" };
+  // The batch captures one complete queue snapshot after listing candidates,
+  // then this fresh run/ref read closes over replacements before each cancel.
+  if (queueHeads.has(run.head_sha)) {
+    return { ...result, reason: "current-queue-head" };
+  }
+  const cancellation = await api(`${prefix}/actions/runs/${run.id}/cancel`, { method: "POST" });
+  if (cancellation && typeof cancellation === "object" && "alreadyCompleted" in cancellation) {
+    return { ...result, reason: "completed-during-check" };
+  }
+  return {
+    run,
+    reason: "cancel-requested: absent queue head and obsolete ref",
+    refSha: ref?.object.sha ?? null,
+  };
+}
 
-  // Refresh after the ref lookup and immediately before cancellation. A rebuilt
-  // candidate can have appeared since the workflow run was first listed.
+async function loadMergeQueueHeads(api: Api, repository: string): Promise<ReadonlySet<string>> {
   const [owner, name] = repository.split("/");
   const queue = (await api("graphql", {
     method: "POST",
@@ -62,21 +77,19 @@ export async function cancelObsoleteMergeGroup(
       variables: { owner, name },
     },
   })) as Queue;
-  const entries = queue.data.repository.mergeQueue.entries;
-  if (entries.pageInfo.hasNextPage !== false)
+  const entries = queue.data.repository.mergeQueue?.entries;
+  if (!entries || entries.pageInfo.hasNextPage !== false) {
     throw new Error("Refusing cancellation with an incomplete queue");
-  if (entries.nodes.some((entry) => entry.headCommit?.oid === run.head_sha)) {
-    return { ...result, reason: "current-queue-head" };
   }
-  const cancellation = await api(`${prefix}/actions/runs/${run.id}/cancel`, { method: "POST" });
-  if (cancellation && typeof cancellation === "object" && "alreadyCompleted" in cancellation) {
-    return { ...result, reason: "completed-during-check" };
+  const heads = new Set<string>();
+  for (const entry of entries.nodes) {
+    const oid = entry.headCommit?.oid;
+    if (!oid || !/^[a-f0-9]{40}$/u.test(oid)) {
+      throw new Error("Refusing cancellation with an unresolved queue head");
+    }
+    heads.add(oid);
   }
-  return {
-    run,
-    reason: "cancel-requested: absent queue head and obsolete ref",
-    refSha: ref?.object.sha ?? null,
-  };
+  return heads;
 }
 
 export async function cleanObsoleteMergeGroups(
@@ -94,9 +107,11 @@ export async function cleanObsoleteMergeGroups(
       if (response.workflow_runs.length < 100) break;
     }
   }
+  if (ids.size === 0) return [];
+  const queueHeads = await loadMergeQueueHeads(api, repository);
   const results: Cancellation[] = [];
   for (const id of ids) {
-    results.push(await cancelObsoleteMergeGroup(api, repository, id));
+    results.push(await cancelObsoleteMergeGroup(api, repository, id, queueHeads));
     record(results);
   }
   return results;

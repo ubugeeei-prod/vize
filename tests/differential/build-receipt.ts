@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { sha256 } from "./sha256.ts";
 
 export const BUILD_RECIPE = "cargo build --profile ci -p vize";
+export const PROFILE_BUILD_RECIPE = "cargo build --profile ci-opt -p vize --features profiling";
 export const SHIPPING_BUILD_RECIPE = "cargo build --release -p vize";
 // Source launchers retain their owned target/ci staging path; paired build
 // custody attests that this is a byte-exact copy of the actual release ELF.
@@ -13,6 +14,7 @@ export const LEGACY_BUILD_RECIPE = `${BUILD_RECIPE} --features legacy`;
 
 export type BuildRecipe =
   | typeof BUILD_RECIPE
+  | typeof PROFILE_BUILD_RECIPE
   | typeof LEGACY_BUILD_RECIPE
   | typeof SHIPPING_BUILD_RECIPE;
 
@@ -37,12 +39,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function validateBuildRecipe(recipe: unknown): asserts recipe is BuildRecipe {
   assert.ok(
-    recipe === BUILD_RECIPE || recipe === LEGACY_BUILD_RECIPE || recipe === SHIPPING_BUILD_RECIPE,
+    recipe === BUILD_RECIPE ||
+      recipe === PROFILE_BUILD_RECIPE ||
+      recipe === LEGACY_BUILD_RECIPE ||
+      recipe === SHIPPING_BUILD_RECIPE,
     "unknown source-build recipe",
   );
 }
-export const binaryRelativePath = (): string =>
-  `target/ci/${process.platform === "win32" ? "vize.exe" : "vize"}`;
+export const binaryRelativePath = (profile = "ci"): string =>
+  `target/${profile}/${process.platform === "win32" ? "vize.exe" : "vize"}`;
 
 export function sourceRevision(repoRoot: string): string {
   const result = spawnSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" });
@@ -74,8 +79,10 @@ export function validateBuildReceipt(
   }
 }
 
-export function expectedBuildIdentity(repoRoot: string): BuildIdentity {
-  const binaryPath = binaryRelativePath();
+export function expectedBuildIdentity(
+  repoRoot: string,
+  binaryPath = binaryRelativePath(),
+): BuildIdentity {
   const cargo = fs.readFileSync(path.join(repoRoot, "Cargo.toml"), "utf8");
   const version = cargo.match(/\[workspace\.package\][\s\S]*?^version = "([^"]+)"/m);
   assert(version, "workspace package version is required");
@@ -92,11 +99,12 @@ export function expectedBuildIdentity(repoRoot: string): BuildIdentity {
 // This receipt records that CI build; it never runs or builds the CLI itself.
 export function writeBuildReceipt(repoRoot: string, recipe: unknown = BUILD_RECIPE): string {
   validateBuildRecipe(recipe);
+  const binaryPath = binaryRelativePath(recipe === PROFILE_BUILD_RECIPE ? "ci-opt" : "ci");
   const receipt: BuildReceipt = {
     schema: "vize.differential.build",
     version: 1,
     recipe,
-    ...expectedBuildIdentity(repoRoot),
+    ...expectedBuildIdentity(repoRoot, binaryPath),
   };
   const destination = path.join(repoRoot, `${receipt.binaryPath}.differential-build.json`);
   fs.writeFileSync(destination, `${JSON.stringify(receipt, null, 2)}\n`);
@@ -105,11 +113,17 @@ export function writeBuildReceipt(repoRoot: string, recipe: unknown = BUILD_RECI
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
-  assert.ok(args.length === 0 || (args.length === 1 && args[0] === "--legacy"));
+  assert.ok(
+    args.length === 0 ||
+      (args.length === 1 && (args[0] === "--legacy" || args[0] === "--profile-ci-opt")),
+  );
+  const recipe =
+    args[0] === "--legacy"
+      ? LEGACY_BUILD_RECIPE
+      : args[0] === "--profile-ci-opt"
+        ? PROFILE_BUILD_RECIPE
+        : BUILD_RECIPE;
   console.log(
-    writeBuildReceipt(
-      path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.."),
-      args.length ? LEGACY_BUILD_RECIPE : BUILD_RECIPE,
-    ),
+    writeBuildReceipt(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.."), recipe),
   );
 }

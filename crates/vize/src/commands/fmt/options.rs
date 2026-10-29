@@ -1,8 +1,62 @@
 //! Project formatting settings with CLI overrides.
 
-use super::{FmtArgs, FormatOptions};
+use super::{FmtArgs, FmtEndOfLine, FormatOptions};
 use crate::config;
+use clap::ValueEnum;
 use vize_glyph::VueVersion;
+
+/// Named formatter defaults selectable from the CLI.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum FmtPreset {
+    /// The Vize defaults
+    Vize,
+    /// Prettier's Vue layout, as listed in the formatter guide
+    Prettier,
+    /// Dense application layout that preserves authored order
+    Compact,
+    /// Readable documentation examples with one attribute per line
+    Documentation,
+}
+
+impl From<FmtPreset> for vize_glyph::FormatPreset {
+    fn from(preset: FmtPreset) -> Self {
+        match preset {
+            FmtPreset::Vize => Self::Vize,
+            FmtPreset::Prettier => Self::Prettier,
+            FmtPreset::Compact => Self::Compact,
+            FmtPreset::Documentation => Self::Documentation,
+        }
+    }
+}
+
+/// Attribute order modes selectable from the CLI.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub(in crate::commands) enum FmtAttributeSortOrder {
+    /// Sort alphabetically within each priority group
+    Alphabetical,
+    /// Preserve the authored order within each priority group
+    AsWritten,
+}
+
+impl From<FmtAttributeSortOrder> for vize_glyph::AttributeSortOrder {
+    fn from(value: FmtAttributeSortOrder) -> Self {
+        match value {
+            FmtAttributeSortOrder::Alphabetical => Self::Alphabetical,
+            FmtAttributeSortOrder::AsWritten => Self::AsWritten,
+        }
+    }
+}
+
+impl From<FmtEndOfLine> for vize_glyph::EndOfLine {
+    fn from(value: FmtEndOfLine) -> Self {
+        match value {
+            FmtEndOfLine::Lf => Self::Lf,
+            FmtEndOfLine::Crlf => Self::Crlf,
+            FmtEndOfLine::Cr => Self::Cr,
+            FmtEndOfLine::Auto => Self::Auto,
+        }
+    }
+}
 
 /// Build format options: config file as base, CLI flags override.
 #[inline]
@@ -68,14 +122,26 @@ pub(super) fn build_format_options(
     if let Some(v) = args.sort_attributes {
         opts.sort_attributes = v;
     }
+    if let Some(v) = args.attribute_sort_order {
+        opts.attribute_sort_order = v.into();
+    }
     if let Some(v) = args.single_attribute_per_line {
         opts.single_attribute_per_line = v;
+    }
+    if let Some(v) = args.vue_indent_script_and_style {
+        opts.vue_indent_script_and_style = v;
     }
     if let Some(v) = args.max_attributes_per_line {
         opts.max_attributes_per_line = Some(v);
     }
     if let Some(v) = args.normalize_directive_shorthands {
         opts.normalize_directive_shorthands = v;
+    }
+    if let Some(v) = args.sort_blocks {
+        opts.sort_blocks = v;
+    }
+    if let Some(v) = args.self_close_void_elements {
+        opts.self_close_void_elements = v;
     }
     opts.skip_script_stabilization = !args.write;
     (

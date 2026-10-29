@@ -15,6 +15,7 @@ mod component_tag;
 mod defaults_key_links_tests;
 #[cfg(test)]
 mod define_emits_usage_tests;
+pub(crate) mod diagnostic_ownership;
 #[cfg(test)]
 mod dynamic_component_names_tests;
 #[cfg(test)]
@@ -24,8 +25,10 @@ pub(crate) use expressions::NAMED_PROP_DIAGNOSTIC_MARKER;
 #[cfg(feature = "native")]
 pub(crate) use expressions::key_sub_spans;
 mod generator;
+mod reference_paths;
 #[cfg(feature = "native")]
 pub(crate) use generator::generic_recovery;
+pub(crate) use reference_paths::validate_reference_paths;
 pub(crate) mod generic_parameters;
 mod helpers;
 mod import_meta;
@@ -74,7 +77,6 @@ pub use generator::{
     generate_virtual_ts_with_offsets_options_api,
 };
 pub(crate) use generator::{extract_declared_name, generate_virtual_ts_with_offsets_and_checks};
-pub(crate) use helpers::CONTENT_MAPPER_HELPERS_MODULE;
 #[cfg(feature = "native")]
 pub(crate) use helpers::ERROR_COMPONENT_STUB;
 pub use helpers::{
@@ -142,7 +144,7 @@ pub(crate) use types::AuthoredScriptMetadata;
 pub(crate) use types::ResolveStyleClassNames;
 #[cfg(any(test, feature = "native"))]
 pub(crate) use types::VirtualTsCheckOptions;
-pub(crate) use types::VirtualTsGenerationOptions;
+pub(crate) use types::{ComponentHelperModule, VirtualTsGenerationOptions};
 
 pub fn generate_virtual_ts_with_offsets_and_lib_references(
     summary: &vize_croquis::Croquis,

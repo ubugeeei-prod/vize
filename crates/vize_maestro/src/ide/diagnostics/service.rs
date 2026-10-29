@@ -25,7 +25,7 @@ pub struct DiagnosticService;
 impl DiagnosticService {
     /// Collect all diagnostics for a document.
     pub fn collect(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
-        let Some(content) = state.documents.text(uri) else {
+        let Some(content) = state.documents.text_snapshot(uri) else {
             tracing::warn!("collect: document not found for {}", uri);
             return vec![];
         };
@@ -168,7 +168,7 @@ impl DiagnosticService {
         }
 
         if features.ecosystem {
-            let ecosystem_diags = ecosystem::diagnostics(uri, &descriptor);
+            let ecosystem_diags = ecosystem::diagnostics(state, uri, &descriptor);
             tracing::info!(
                 "collect: ecosystem editor diagnostics: {}",
                 ecosystem_diags.len()
@@ -213,7 +213,7 @@ impl DiagnosticService {
     /// that gates them — while skipping the expensive SFC compile, ecosystem,
     /// and uncached SFC type-check passes that hover discards.
     pub fn collect_lint_only(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
-        let Some(content) = state.documents.text(uri) else {
+        let Some(content) = state.documents.text_snapshot(uri) else {
             return vec![];
         };
 

@@ -56,16 +56,7 @@ impl PackageResolutionContext {
         active_conditions: impl IntoIterator<Item = impl Into<String>>,
         nearest_package_is_module: Option<bool>,
     ) -> Self {
-        let inferred_module_resolution = module.and_then(|module| {
-            if matches_ignore_ascii_case(module, &["node16", "node18", "node20", "nodenext"]) {
-                Some(module)
-            } else if module.eq_ignore_ascii_case("preserve") {
-                Some("bundler")
-            } else {
-                None
-            }
-        });
-        let module_resolution = module_resolution.or(inferred_module_resolution);
+        let module_resolution = effective_module_resolution(module_resolution, module);
         let mode = match occurrence_mode {
             PackageResolutionMode::Import | PackageResolutionMode::Require => occurrence_mode,
             PackageResolutionMode::Contextual => {
@@ -98,6 +89,46 @@ impl PackageResolutionContext {
         };
         Self::new(module_resolution, mode, active_conditions)
     }
+
+    /// What [`Self::for_importer`] reads from the compiler options. Equal
+    /// identities derive equal contexts for every importer, however the
+    /// options spell them (`module: "preserve"` or `moduleResolution:
+    /// "bundler"`).
+    pub fn settings_identity(
+        module_resolution: Option<&str>,
+        module: Option<&str>,
+        active_conditions: impl IntoIterator<Item = impl Into<String>>,
+    ) -> (Option<String>, bool, Vec<String>) {
+        let context = Self::new(
+            effective_module_resolution(module_resolution, module),
+            PackageResolutionMode::Contextual,
+            active_conditions,
+        );
+        let commonjs = module.is_some_and(|module| module.eq_ignore_ascii_case("commonjs"));
+        (
+            context.module_resolution,
+            commonjs,
+            context.active_conditions,
+        )
+    }
+}
+
+/// `moduleResolution`, or the one `module` implies.
+fn effective_module_resolution<'a>(
+    module_resolution: Option<&'a str>,
+    module: Option<&'a str>,
+) -> Option<&'a str> {
+    module_resolution.or_else(|| {
+        module.and_then(|module| {
+            if matches_ignore_ascii_case(module, &["node16", "node18", "node20", "nodenext"]) {
+                Some(module)
+            } else if module.eq_ignore_ascii_case("preserve") {
+                Some("bundler")
+            } else {
+                None
+            }
+        })
+    })
 }
 
 fn matches_ignore_ascii_case(value: &str, expected: &[&str]) -> bool {
@@ -185,13 +216,12 @@ impl PackageRoute {
     /// Callers that cannot preserve importer context must fail closed instead of
     /// silently selecting a conditional branch.
     pub fn unambiguous_source_path(&self) -> Option<&PathBuf> {
-        let mut paths = self.source_paths.iter().collect::<Vec<_>>();
-        for route in &self.nested_routes {
-            paths.extend(route.candidate_source_paths());
+        let mut selected = None;
+        if self.retain_single_source_identity(&mut selected) {
+            selected
+        } else {
+            None
         }
-        paths.sort();
-        paths.dedup();
-        (paths.len() == 1).then(|| paths.first().copied()).flatten()
     }
 
     pub fn all_source_paths(&self) -> Vec<&PathBuf> {
@@ -225,12 +255,23 @@ impl PackageRoute {
         }
     }
 
-    fn candidate_source_paths(&self) -> Vec<&PathBuf> {
-        let mut paths = self.source_paths.iter().collect::<Vec<_>>();
-        for route in &self.nested_routes {
-            paths.extend(route.candidate_source_paths());
+    /// Walk candidate identities without materializing and sorting every
+    /// nested subtree. Once two paths differ, no later route can restore an
+    /// unambiguous identity, so the traversal can stop immediately.
+    fn retain_single_source_identity<'a>(&'a self, selected: &mut Option<&'a PathBuf>) -> bool {
+        for path in &self.source_paths {
+            match *selected {
+                Some(current) if current != path => return false,
+                Some(_) => {}
+                None => *selected = Some(path),
+            }
         }
-        paths
+        for route in &self.nested_routes {
+            if !route.retain_single_source_identity(selected) {
+                return false;
+            }
+        }
+        true
     }
 
     #[cfg(feature = "native")]

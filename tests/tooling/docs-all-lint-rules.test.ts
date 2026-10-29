@@ -52,7 +52,7 @@ function implementations(directory = "crates/vize_patina/src/rules") {
 
 await test("the generated bilingual reference covers every implemented rule with real example context", () => {
   const names = [...implementations()].sort((a, b) => a.localeCompare(b));
-  assert.equal(names.length, 266);
+  assert.equal(names.length, 267);
   for (const locale of ["", "ja/"]) {
     const index = read(`docs/content/${locale}rules/all.md`);
     const links = [

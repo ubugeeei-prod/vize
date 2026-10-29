@@ -3,8 +3,8 @@ use super::{
     errors::{compact_error, io_error_message},
     paths::{
         TSCONFIG_FILE_NAME, allocate_session_root, path_to_wire, remove_session_root,
-        resolve_corsa_executable, resolve_project_root, session_tsconfig_contents,
-        virtual_file_path,
+        resolve_corsa_executable, resolve_project_root, runtime_project_root,
+        session_tsconfig_contents, virtual_file_path,
     },
 };
 use corsa::{
@@ -32,7 +32,8 @@ impl CorsaTypeAwareSession {
         configure: impl FnOnce(ApiSpawnConfig) -> ApiSpawnConfig,
     ) -> Result<Self, String> {
         let project_root = resolve_project_root(filename);
-        let executable = resolve_corsa_executable(&project_root, corsa_path)?;
+        let runtime_root = runtime_project_root(&project_root, tsconfig_path.as_deref());
+        let executable = resolve_corsa_executable(&project_root, runtime_root, corsa_path)?;
         let session_root = allocate_session_root(&project_root);
         let cleanup_guard = SessionRootCleanup::new(session_root.clone());
         profile!(
@@ -225,6 +226,10 @@ impl CorsaTypeAwareSession {
         self.active_filename
             .as_deref()
             .and_then(|filename| self.opened_documents.get(filename))
+    }
+
+    pub(in crate::linter) fn is_closed(&self) -> bool {
+        self.closed
     }
 
     pub(in crate::linter) fn close(&mut self) {

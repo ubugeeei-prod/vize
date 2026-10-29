@@ -119,7 +119,7 @@
         "severity": "error",
         "message": "Attribute should be hyphenated",
         "start": 37,
-        "end": 43,
+        "end": 47,
         "help": "Use kebab-case for attribute names",
         "labels": [],
         "fix": {
@@ -144,7 +144,7 @@
         "severity": "error",
         "message": "Attribute should not be hyphenated",
         "start": 48,
-        "end": 55,
+        "end": 59,
         "help": "Use camelCase or a single-word attribute name instead of kebab-case.",
         "labels": [],
         "fix": {

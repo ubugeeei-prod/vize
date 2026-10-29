@@ -42,6 +42,7 @@ pub(super) fn generate_generic_props_call(
     source_context: ComponentPropSource<'_>,
     indent: &str,
     typed_fallthrough_values: bool,
+    hoist_shared_preamble: bool,
 ) {
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     let expr_indent = if usage.vif_guard.is_some() {
@@ -91,10 +92,19 @@ pub(super) fn generate_generic_props_call(
             expr_indent.as_str(),
         );
         ts.push_str(";\n");
-        append!(
-            *ts,
-            "{expr_indent}(undefined as unknown as __VizeFallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
-        );
+        if hoist_shared_preamble {
+            let fallthrough_spread_checker =
+                crate::virtual_ts::helpers::shared_types::FALLTHROUGH_SPREAD_CHECKER.select(true);
+            append!(
+                *ts,
+                "{expr_indent}(undefined as unknown as {fallthrough_spread_checker}<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
+            );
+        } else {
+            append!(
+                *ts,
+                "{expr_indent}(undefined as unknown as __VizeFallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
+            );
+        }
         let start = ts.len();
         append!(*ts, "__VizeFallthroughProps_{idx}");
         let range = start..ts.len();
@@ -140,10 +150,13 @@ pub(super) fn generate_generic_props_call(
 /// erases every parameter to its constraint even when the props determine it.
 /// Higher-order inference preserves native functional generics, but an
 /// intersection of generic and non-generic construct signatures fixes its type
-/// parameters too early (#10416). A direct `new C(props, ...args)` preserves
-/// overload selection and inference until the props are available. The selector
-/// returns that instance's slots only for native constructors; Vize components
-/// retain their authored resolver signature directly.
+/// parameters too early (#10416). A direct `new C(...args)` preserves overload
+/// selection and inference until the props are available. The first-argument
+/// instance selector preserves a direct zero-argument construction for an
+/// all-zero-argument signature and the exact legacy props construction for
+/// every other signature. The selector returns that instance's slots only for
+/// native constructors; Vize components retain their authored resolver
+/// signature directly.
 /// Select one factory signature before inference: overloading the factory
 /// erases generics in library declarations whose parameters reference their
 /// own setup context (for example vue-virtual-scroller).
@@ -152,7 +165,9 @@ pub(super) fn generate_generic_props_call(
 /// is already emitted, mapped, against the child's prop checker, so an authored
 /// prop error is reported exactly once from there. A generated position with no
 /// mapping has no authored position and is dropped by the diagnostics path, so
-/// this construct is diagnostically inert by construction.
+/// this construct is diagnostically inert by construction. The content mapper
+/// host reports unmapped positions as they are, so these copies are recorded
+/// as inert echoes for it.
 ///
 /// The `v-if` guard is reproduced as a conditional *expression* rather than a
 /// statement so the narrowing that guard performs still applies to the props
@@ -163,8 +178,8 @@ pub(crate) fn generate_slot_host_binding(
     binding_name: &str,
     component_ref: &str,
     template_binding_access: &TemplateBindingAccess,
-    source_context: ComponentPropSource<'_>,
     indent: &str,
+    (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
 ) {
     let mut discarded = Vec::new();
     if usage.vif_guard.is_some() {
@@ -173,10 +188,28 @@ pub(crate) fn generate_slot_host_binding(
             "{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n"
         );
     }
-    append!(
-        *ts,
-        "{indent}const {binding_name} = (undefined as unknown as __VizeSlotHostSelector<typeof {component_ref}>)(new (undefined as unknown as __VizeSlotConstructor<typeof {component_ref}>)(",
-    );
+    if hoist_shared_preamble {
+        let slot_host_selector =
+            crate::virtual_ts::helpers::shared_types::SLOT_HOST_SELECTOR.select(true);
+        let slot_constructor =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR.select(true);
+        let slot_constructor_without_arguments =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITHOUT_ARGUMENTS
+                .select(true);
+        let slot_constructor_with_arguments =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITH_ARGUMENTS.select(true);
+        let slot_constructor_instance =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_INSTANCE.select(true);
+        append!(
+            *ts,
+            "{indent}const {binding_name} = (undefined as unknown as {slot_host_selector}<typeof {component_ref}>)((undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => {slot_constructor_instance}<{slot_constructor}<typeof {component_ref}>, __Z, __P>)(new (undefined as unknown as {slot_constructor_without_arguments}<{slot_constructor}<typeof {component_ref}>>)(), new (undefined as unknown as {slot_constructor_with_arguments}<{slot_constructor}<typeof {component_ref}>>)(",
+        );
+    } else {
+        append!(
+            *ts,
+            "{indent}const {binding_name} = (undefined as unknown as __VizeSlotHostSelector<typeof {component_ref}>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof {component_ref}>>()(new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof {component_ref}>>)(), new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof {component_ref}>>)(",
+        );
+    }
     let isolated_guard = usage
         .vif_guard
         .as_ref()
@@ -190,16 +223,28 @@ pub(crate) fn generate_slot_host_binding(
         &mut discarded,
         usage,
         template_binding_access,
-        source_context,
+        source_context.inert(),
         indent,
     );
     if usage.vif_guard.is_some() {
         ts.push_str(" : (undefined as unknown as never)");
     }
-    append!(
-        *ts,
-        ", ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof {component_ref}>>)), (undefined as unknown as __VizeSlotsFactory<typeof {component_ref}>)({component_ref})(",
-    );
+    if hoist_shared_preamble {
+        let slot_constructor =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR.select(true);
+        let slot_constructor_args =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_ARGS.select(true);
+        let slots_factory = crate::virtual_ts::helpers::shared_types::SLOTS_FACTORY.select(true);
+        append!(
+            *ts,
+            ", ...([] as unknown as {slot_constructor_args}<{slot_constructor}<typeof {component_ref}>>))), (undefined as unknown as {slots_factory}<typeof {component_ref}>)({component_ref})(",
+        );
+    } else {
+        append!(
+            *ts,
+            ", ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof {component_ref}>>))), (undefined as unknown as __VizeSlotsFactory<typeof {component_ref}>)({component_ref})(",
+        );
+    }
     if let Some(guard) = isolated_guard.as_ref() {
         // The constructor's props literal inserts a newline. The factory's
         // repeated guard needs its own physical-line suppression: it can be
@@ -216,7 +261,7 @@ pub(crate) fn generate_slot_host_binding(
         &mut discarded,
         usage,
         template_binding_access,
-        source_context,
+        source_context.inert(),
         indent,
     );
     if usage.vif_guard.is_some() {

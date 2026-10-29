@@ -3,6 +3,7 @@ use super::{
     retained::Retained,
 };
 
+mod builtin_prop_names;
 mod component_names;
 mod computed_dom;
 mod keep_alive;

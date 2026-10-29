@@ -59,6 +59,12 @@ export default defineNuxtConfig({
 
 Nuxt compiles components on demand, so the log prints `[vize] load: on-demand compiling ...` only for the files a request actually reaches. Remove `debug` once you have confirmed the setup.
 
+## Type checking Vue files
+
+On Nuxt 3 and 4, the module adds `{ "package": "vize", "extensions": [".vue"] }` to the generated `.nuxt/tsconfig.app.json` during `prepare:types`. This is independent of the `compiler` option because the TypeScript host, not the SFC build compiler, owns type checking. If `contentMappers` already contains a mapper for `.vue`, the module keeps that explicit choice and does not add a duplicate. Other mapper entries keep their original order and values. Nuxt 2 output is unchanged.
+
+The TypeScript host still controls whether external mapper code may run. Use TypeScript 7.1 or later with `--runExternalCode` for CLI checks, and enable Content Mapper support only in a trusted editor workspace. See [TypeScript Content Mapper](../guide/content-mapper.md) for the complete host and editor setup.
+
 ## Options
 
 All options live under `vize` in `nuxt.config.ts`. Most projects only need the first four.
@@ -124,9 +130,19 @@ export default defineNuxtConfig({
 
 The [Vite plugin guide](../guide/vite-plugin.md#compiler-options) describes each compiler option. Set `compiler: false` to keep Nuxt's default compiler and use only lint or Musea.
 
+Nuxt's `vue.compilerOptions.whitespace` and `vue.compilerOptions.comments` reach Vize as defaults; `vue.compiler` in `vite.config.*` and `vize.compiler` override them. Any other `vue.compilerOptions` key keeps Nuxt's Vue compiler and prints a warning.
+
 ### Lint
 
 With `lint` enabled, the module writes `.oxlint.vize.json` to the project root. It is the Oxlint counterpart of the configuration that `@nuxt/eslint` generates: rule blocks that match your Nuxt version and directories. Add the file to `.gitignore`.
+
+Lint generation and `checker` need `oxlint-plugin-vize`, and `oxlint` runs the rules. Both are optional peer dependencies, so install them yourself:
+
+```bash
+vp install -D oxlint oxlint-plugin-vize
+```
+
+Without the plugin, the module skips lint and everything else keeps working. It prints one warning with the install command when you set `lint` or `checker` yourself, or when an older `.oxlint.vize.json` is still present.
 
 If the project has no Oxlint or Vite configuration yet, the module also creates an `oxlint.config.mts` that loads the generated file. An existing configuration is never rewritten; load `.oxlint.vize.json` from it yourself.
 
@@ -265,7 +281,17 @@ Inside a Nuxt app the module does not install these mocks globally: they would r
 
 ## Nuxt 2 and Vue 2
 
-The module supports Nuxt 2, 3 and 4. Vize's compiler produces Vue 3 output, so on Nuxt 2 the module leaves `.vue` compilation to the existing compiler (`@vitejs/plugin-vue2`, `vue-loader` or Nuxt's own) and still provides lint and Musea. The same applies to older Vue projects through `vueVersion: 0.11`, `vueVersion: 1` or `vueVersion: "legacy"`.
+Use the same `@vizejs/nuxt` package on Nuxt 2. The CommonJS entry supports Nuxt 2's module loader, and the module detects Vue 2 automatically. Nuxt's existing Vue 2 compiler, renderer, styles and HMR remain in charge. Vize's native runtime compiler produces Vue 3 output and does not replace the Vue 2 compiler.
+
+The Nuxt 2 campaign pins Nuxt 2.17.3, Vue/compiler/renderer 2.7.16, vue-loader 15 and webpack 4. It exercises production SSR, hydrated interaction and navigation, development template HMR with state retention, scoped Sass, asset imports and `~`/`@` aliases. It also runs generated lint configurations and the source typechecker with valid and invalid Vue 2/Nuxt template inputs. The OpenSSL compatibility flag is confined to that webpack 4 fixture's child processes.
+
+Lint configuration generation works on Nuxt 2. The opt-in `checker` runs the generated configuration beside the development server and uses webpack when Nuxt 2 has no explicit builder name. Musea is disabled on Nuxt 2.
+
+Nuxt Bridge also uses Vue 2. Preserve its `@vitejs/plugin-vue2` compiler. Bridge's Vite mode requires both `bridge.vite: true` and `bridge.nitro: true`; see the [official Bridge Vite guide](https://nuxt.com/docs/4.x/bridge/vite). A module-import check alone does not establish runtime support for a Bridge builder.
+
+The Bridge source campaign pins Nuxt 2.18.1, Bridge 3.6.1 and Vue 2.7.16 and runs the same application on webpack and Vite, including a Vite control without the module. Its Vite 7.1.12 fixture explicitly uses `nitro.rollupConfig.treeshake: false` to preserve Vue 2's runtime platform hooks and `vite.build.rollupOptions.output.assetFileNames: "_nuxt/[name].[hash].[ext]"` to align client and SSR asset URLs. These host settings are part of that pinned runtime qualification.
+
+The package's Vite peer range remains `^7.3.0 || ^8.0.0`. The source-bound Vite 7.1 campaign does not qualify a fresh published-package installation on Vite 7.1.
 
 The versions are detected automatically. If a wrapper hides them from Nuxt Kit, set them yourself:
 
@@ -304,7 +330,7 @@ A project still running Nuxt 2 keeps its existing compiler as described above.
 
 ## Use the Vite plugin directly
 
-Nuxt builds with Vite, so the Vite plugin also works without the module. You lose the Nuxt-specific bridges and lint generation described above:
+In a Nuxt 3 or 4 Vite application, the Vite plugin also works without the module. You lose the Nuxt-specific bridges and lint generation described above:
 
 ```ts
 // nuxt.config.ts

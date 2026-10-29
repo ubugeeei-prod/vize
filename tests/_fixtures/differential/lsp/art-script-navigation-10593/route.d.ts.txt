@@ -1,0 +1,3 @@
+declare function useRoute(name: '/art'): {
+  params: { id: number; 'page': number }
+}

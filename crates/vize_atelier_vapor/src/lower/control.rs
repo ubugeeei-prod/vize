@@ -2,7 +2,7 @@
 //!
 //! Handles `IfNode` and `ForNode` from the template AST.
 
-use vize_carton::Box;
+use vize_carton::{Box, Vec};
 
 use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, InsertionAnchor, NegativeBranch, OperationNode};
 use vize_atelier_core::{
@@ -211,19 +211,19 @@ fn transform_for_node_with_options<'a>(
     let value = for_node
         .value_alias
         .as_ref()
-        .map(|v| crate::ir::untype_alias(clone_simple_expr(ctx, v)));
+        .map(|v| clone_simple_expr(ctx, v));
 
     // Get key alias
     let key = for_node
         .key_alias
         .as_ref()
-        .map(|k| crate::ir::untype_alias(clone_simple_expr(ctx, k)));
+        .map(|k| clone_simple_expr(ctx, k));
 
     // Get index alias
     let index = for_node
         .object_index_alias
         .as_ref()
-        .map(|i| crate::ir::untype_alias(clone_simple_expr(ctx, i)));
+        .map(|i| clone_simple_expr(ctx, i));
 
     // Extract :key from the first child element's props
     let key_prop = extract_key_prop(ctx, for_node);
@@ -287,7 +287,14 @@ fn clone_simple_expr<'a>(
 ) -> Box<'a, SimpleExpressionNode<'a>> {
     match expr {
         ExpressionNode::Simple(simple) => {
-            let node = SimpleExpressionNode::from_node(simple);
+            let mut node = SimpleExpressionNode::from_node(simple);
+            if let Some(names) = simple.retained_parameter_names() {
+                let mut retained = Vec::new_in(&ctx.allocator);
+                for name in names {
+                    retained.push(*name);
+                }
+                node.identifiers = Some(retained);
+            }
             Box::new_in(node, &ctx.allocator)
         }
         ExpressionNode::Compound(compound) => {

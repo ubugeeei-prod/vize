@@ -14,6 +14,7 @@ use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_litera
 use super::context::{ComponentPropsContext, VForPropsContext};
 use super::event_handler::event_name_source_range;
 use super::vif_guard_chain::{append_chained_vif_guard_close, append_chained_vif_guard_open};
+use crate::virtual_ts::expressions::callback_parameters_on_ignored_line;
 use crate::virtual_ts::expressions::generated_prop_value;
 
 pub(super) fn emit_event_references(
@@ -23,12 +24,15 @@ pub(super) fn emit_event_references(
     checkable_usages: &[(usize, &ComponentUsage)],
 ) {
     let navigation_ctx = EventNavigationContext {
+        inference_prelude: ctx.inference_prelude,
+        diagnostic_ownership: ctx.diagnostic_ownership,
         scopes: &ctx.summary.scopes,
         template_source: ctx.template_source,
         template_offset: ctx.template_offset,
         template_binding_access: ctx.template_binding_access,
         preserve_event_navigation: ctx.preserve_event_navigation,
         check_unknown_events: ctx.check_unknown_events,
+        hoist_shared_preamble: ctx.hoist_shared_preamble,
     };
     for &(idx, usage) in checkable_usages {
         if is_closure_scoped(ctx.summary, usage) {
@@ -60,12 +64,15 @@ pub(super) fn emit_scoped_event_references(
     indent: &str,
 ) {
     let navigation_ctx = EventNavigationContext {
+        inference_prelude: None,
+        diagnostic_ownership: ctx.source_context.diagnostic_ownership,
         scopes: ctx.source_context.scopes,
         template_source: ctx.source_context.template,
         template_offset: ctx.source_context.offset,
         template_binding_access: ctx.template_binding_access,
         preserve_event_navigation: ctx.preserve_event_navigation,
         check_unknown_events: ctx.check_unknown_events,
+        hoist_shared_preamble: ctx.hoist_shared_preamble,
     };
     for &(idx, usage) in usages {
         let component_ref = component_binding_reference(
@@ -87,12 +94,16 @@ pub(super) fn emit_scoped_event_references(
 }
 
 struct EventNavigationContext<'a> {
+    inference_prelude: Option<&'a std::cell::RefCell<super::root_owner_packets::RootOwnerBuffer>>,
+    diagnostic_ownership:
+        Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     scopes: &'a vize_croquis::ScopeChain,
     template_source: Option<&'a str>,
     template_offset: u32,
     template_binding_access: &'a TemplateBindingAccess<'a>,
     preserve_event_navigation: bool,
     check_unknown_events: bool,
+    hoist_shared_preamble: bool,
 }
 
 fn is_closure_scoped(summary: &Croquis, usage: &ComponentUsage) -> bool {
@@ -111,6 +122,8 @@ fn emit_usage_event_references(
     component_ref: &str,
     indent: &str,
 ) {
+    let component_events = crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS
+        .select(ctx.hoist_shared_preamble);
     if ctx.check_unknown_events {
         emit_event_name_checks(ts, mappings, ctx, idx, usage, component_ref, indent);
     }
@@ -145,15 +158,37 @@ fn emit_usage_event_references(
         }
         let is_model_event = ctx.preserve_event_navigation && event.name.starts_with("update:");
         if !emitted_resolved_events && ctx.preserve_event_navigation {
-            emit_resolved_events(
-                ts,
-                ctx,
-                usage,
-                component_ref,
-                idx,
-                resolved_events.as_str(),
-                event_indent,
-            );
+            if let Some(prelude) = ctx.inference_prelude {
+                let mut prelude = prelude.borrow_mut();
+                let super::root_owner_packets::RootOwnerBuffer {
+                    text,
+                    diagnostic_ownership,
+                    ..
+                } = &mut *prelude;
+                let inference_ctx = EventNavigationContext {
+                    diagnostic_ownership: ctx.diagnostic_ownership.map(|_| &*diagnostic_ownership),
+                    ..*ctx
+                };
+                emit_resolved_events(
+                    text,
+                    &inference_ctx,
+                    usage,
+                    component_ref,
+                    idx,
+                    resolved_events.as_str(),
+                    event_indent,
+                );
+            } else {
+                emit_resolved_events(
+                    ts,
+                    ctx,
+                    usage,
+                    component_ref,
+                    idx,
+                    resolved_events.as_str(),
+                    event_indent,
+                );
+            }
             emitted_resolved_events = true;
         }
         if is_model_event {
@@ -189,7 +224,7 @@ fn emit_usage_event_references(
             } else {
                 append!(
                     *ts,
-                    "{event_indent}const {events_ref} = undefined as unknown as __VizeComponentEvents<typeof {component_ref}> & Record<string, unknown>;\n"
+                    "{event_indent}const {events_ref} = undefined as unknown as {component_events}<typeof {component_ref}> & Record<string, unknown>;\n"
                 );
             }
             *emitted_ref = true;
@@ -243,11 +278,13 @@ fn emit_event_name_checks(
     if !usage.events.iter().any(|event| !event.name_is_dynamic) {
         return;
     }
+    let component_events = crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS
+        .select(ctx.hoist_shared_preamble);
     // Handler values are checked separately. Use the canonical event map so
     // raw emits, listener props and kebab aliases all share the same names.
     append!(
         *ts,
-        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof __VizeComponentEvents<typeof {component_ref}> & string as `on${{Capitalize<__VizeComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
+        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof {component_events}<typeof {component_ref}> & string as `on${{Capitalize<__VizeComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
     );
     let mut emitted_names = FxHashSet::default();
     for event in &usage.events {
@@ -284,9 +321,11 @@ fn emit_resolved_events(
     resolved_events: &str,
     indent: &str,
 ) {
+    let component_events = crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS
+        .select(ctx.hoist_shared_preamble);
     append!(
         *ts,
-        "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeComponentEvents<typeof {component_ref}>) : (props: any) => __VizeComponentEvents<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
+        "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {component_events}<typeof {component_ref}>) : (props: any) => {component_events}<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
     );
     if !usage.spread_props.is_empty() {
         crate::virtual_ts::expressions::append_inference_props_literal(
@@ -297,7 +336,8 @@ fn emit_resolved_events(
                 ctx.template_source,
                 ctx.template_offset,
                 ctx.scopes,
-            ),
+            )
+            .with_diagnostic_ownership(ctx.diagnostic_ownership),
             indent,
         );
         ts.push_str(");\n");
@@ -316,7 +356,39 @@ fn emit_resolved_events(
         if !emitted.insert(name.clone()) {
             continue;
         }
-        append!(*ts, "{indent}  \"{name}\": {value},\n");
+        let inline_callback = super::is_inline_callback_prop(prop);
+        if inline_callback {
+            append!(
+                *ts,
+                "{indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
+            );
+        }
+        append!(*ts, "{indent}  ");
+        let key_start = ts.len();
+        append!(*ts, "\"{name}\"");
+        let key_end = ts.len();
+        ts.push_str(": ");
+        let value_start = ts.len();
+        let owned;
+        let value = if inline_callback {
+            let value = value.trim_start();
+            owned = callback_parameters_on_ignored_line(value);
+            owned.as_ref().map_or(value, |owned| owned.as_str())
+        } else {
+            value.as_str()
+        };
+        ts.push_str(value);
+        let value_end = ts.len();
+        crate::virtual_ts::expressions::ComponentPropSource::new(
+            ctx.template_source,
+            ctx.template_offset,
+            ctx.scopes,
+        )
+        .with_diagnostic_ownership(ctx.diagnostic_ownership)
+        .with_expected_packet(ctx.inference_prelude.is_some())
+        .inference_only()
+        .record_prop_projection(usage, prop, key_start..key_end, value_start..value_end);
+        ts.push_str(",\n");
     }
     append!(*ts, "{indent}}});\n");
 }

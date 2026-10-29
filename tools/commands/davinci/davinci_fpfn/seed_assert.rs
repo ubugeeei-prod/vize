@@ -25,8 +25,15 @@ pub fn assert_seeded_tree(
         .iter()
         .map(|file| file.path.clone())
         .collect::<Vec<_>>();
-    let baseline_rows = load_lint_rows(baseline_hook, cli, &out_dir.join("original"), &files)?;
-    let seeded_rows = load_lint_rows(seeded_hook, cli, &out_dir.join("seeded"), &files)?;
+    let created = created_setup_paths(manifest);
+    let baseline_rows = without_created_setup_rows(
+        load_lint_rows(baseline_hook, cli, &out_dir.join("original"), &files)?,
+        &created,
+    );
+    let seeded_rows = without_created_setup_rows(
+        load_lint_rows(seeded_hook, cli, &out_dir.join("seeded"), &files)?,
+        &created,
+    );
     // Opt-in class (b) runs on a copy with only its own mutation. A class-(a)
     // rename can itself make a declaration unread, and is not a class-(b) defect.
     let baseline_rows: Vec<_> = baseline_rows
@@ -245,8 +252,9 @@ fn assert_unused(
         };
         Ok(rows)
     };
-    let baseline = load(baseline_hook, "original")?;
-    let seeded = load(seeded_hook, "seeded")?;
+    let created = created_setup_paths(manifest);
+    let baseline = without_created_setup_rows(load(baseline_hook, "original")?, &created);
+    let seeded = without_created_setup_rows(load(seeded_hook, "seeded")?, &created);
     let (shifted, unmappable) = shift_baseline(&baseline, &b_manifest, &plane)?;
     let expected: Vec<_> = manifest
         .injections
@@ -294,4 +302,30 @@ fn assert_unused(
         unmappable,
         unexpected,
     ))
+}
+
+/// eslint-plugin-vue checks a template's `$emit` calls against `<script setup>`
+/// once one exists, so a block the class-(b) seed creates turns them into
+/// undeclared events. Those findings belong to the created block, not to a
+/// seeded class, on either side of the comparison.
+const CREATED_SETUP_RULE: &str = "script/require-explicit-emits";
+
+fn created_setup_paths(manifest: &SeedManifest) -> BTreeSet<String> {
+    manifest
+        .injections
+        .iter()
+        .filter(|injection| {
+            injection.class_name == CLASS_B && injection.created_script_setup_block == Some(true)
+        })
+        .map(|injection| injection.path.clone())
+        .collect()
+}
+
+fn without_created_setup_rows(
+    rows: Vec<DiagnosticRow>,
+    created: &BTreeSet<String>,
+) -> Vec<DiagnosticRow> {
+    rows.into_iter()
+        .filter(|row| !(row.rule_id == CREATED_SETUP_RULE && created.contains(&row.path)))
+        .collect()
 }

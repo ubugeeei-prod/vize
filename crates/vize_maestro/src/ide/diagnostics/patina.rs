@@ -21,6 +21,7 @@ pub(in crate::ide) fn linter_for_uri(
     } else {
         vize_patina::Linter::with_preset(preset)
     }
+    .with_report_unused_disable_directives(linter_config.report_unused_disable_directives())
     .with_additional_rules(lint_options.additional_rules)
     .with_disabled_rules(lint_options.disabled_rules)
     .with_category_severity_overrides(lint_options.category_severity_overrides)

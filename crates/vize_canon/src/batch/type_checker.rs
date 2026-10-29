@@ -13,6 +13,7 @@ mod diagnostic_paths;
 mod generic_private_names;
 mod incremental;
 mod installed_sources;
+mod installed_storage;
 mod metrics;
 mod paths;
 mod registered;
@@ -77,7 +78,10 @@ pub struct BatchTypeChecker {
     /// Source membership carried across incremental checks.
     incremental_paths: IncrementalPaths,
     // Dropped after the executor, so live sessions cannot outlast their files.
-    owned_storage: Option<tempfile::TempDir>,
+    owned_storage: Option<installed_storage::InstalledStorage>,
+    persistent_storage_owner: Option<installed_sources::PersistentStorageOwner>,
+    // Owner and context leases both outlive the executor.
+    _persistent_storage_leases: Option<(std::fs::File, std::fs::File)>,
 }
 
 impl BatchTypeChecker {
@@ -246,6 +250,11 @@ impl BatchTypeChecker {
         paths: impl IntoIterator<Item = PathBuf>,
     ) -> CorsaResult<()> {
         self.project.adopt_diagnostic_sources(paths)
+    }
+
+    /// The directory this checker materializes into.
+    pub fn virtual_root(&self) -> &Path {
+        self.project.virtual_root()
     }
 
     /// Get the number of registered files.

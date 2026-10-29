@@ -15,6 +15,7 @@ import {
   validateCompilerReport,
 } from "../differential/compiler.mjs";
 import { sha256 } from "../differential/harness.mjs";
+import { compilerCssApiReport } from "../differential/compiler-css-api.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const pack = path.join(root, "tests/_fixtures/differential/compiler");
@@ -64,12 +65,18 @@ function syntheticReport(code = fixture.expected) {
         observation.cssReferenceComparison.state === "equal")
         ? "matched-reference"
         : "baseline-drift";
-    return {
+    const recipeFailure =
+      current.requiredBuildRecipe && current.requiredBuildRecipe !== BUILD_RECIPE
+        ? `${current.id} requires source-build recipe ${current.requiredBuildRecipe}; observed ${BUILD_RECIPE}`
+        : null;
+    const row = {
       id: current.id,
       target: "ssr",
       legacy: {
-        state: "completed",
-        verdict,
+        state: recipeFailure ? "failed" : "completed",
+        verdict: recipeFailure ? "failed" : verdict,
+        adapter: current.adapters.legacy,
+        requiredBuildRecipe: current.requiredBuildRecipe,
         argv: current.argv,
         inputSha256: sha256(current.input),
         ...(current.dialectInput
@@ -89,7 +96,8 @@ function syntheticReport(code = fixture.expected) {
               },
             }
           : {}),
-        observation,
+        observation: recipeFailure ? null : observation,
+        ...(recipeFailure ? { error: recipeFailure } : {}),
       },
       native: { state: "unsupported", reason: current.adapters.reasons.native },
       comparison: {
@@ -97,8 +105,10 @@ function syntheticReport(code = fixture.expected) {
         reason: "whole-product native compiler path unavailable",
       },
     };
+    return row;
   });
   const baselineDrift = rows.filter((row) => row.legacy.verdict === "baseline-drift").length;
+  const legacyFailures = rows.filter((row) => row.legacy.verdict === "failed").length;
   return {
     schema: "vize.differential.result",
     version: 1,
@@ -106,13 +116,20 @@ function syntheticReport(code = fixture.expected) {
     manifestSha256: loaded.manifestSha256,
     sourceRevision,
     argv: COMPILER_ARGV,
-    buildReceipt: { schema: "vize.differential.build", version: 1, recipe: BUILD_RECIPE, ...build },
+    buildRecipe: BUILD_RECIPE,
+    buildReceipt: {
+      schema: "vize.differential.build",
+      version: 1,
+      recipe: BUILD_RECIPE,
+      ...build,
+    },
     binary: { path: build.binaryPath, sha256: build.binarySha256, version: build.cliVersion },
     rows,
+    cssApi: compilerCssApiReport(loaded.cssApiCases),
     summary: {
       plannedCases: rows.length,
-      legacyMatches: rows.length - baselineDrift,
-      legacyFailures: 0,
+      legacyMatches: rows.length - baselineDrift - legacyFailures,
+      legacyFailures,
       baselineDrift,
       nativeUnsupported: rows.length,
       pairedComparisons: 0,
@@ -123,45 +140,56 @@ function syntheticReport(code = fixture.expected) {
 }
 
 void test("compiler fixture pins a real full-module reference without native credit", () => {
+  // Baseline cases stay registered; new cases need no edit here.
+  const ids = new Set(loaded.cases.map((current) => current.id));
   assert.deepEqual(
-    loaded.cases.map((current) => current.id),
     [
-      "compiler/sfc/ssr-slot-scope",
-      "compiler/sfc/slot-fallback-compound-text-9889",
-      "compiler/sfc/slot-fallback-adjacent-text-10087",
-      "compiler/sfc/production-v-if-comment-9920",
-      "compiler/sfc/template-asset-urls-9895",
-      "compiler/sfc/v-model-maybe-ref-9897",
-      "compiler/sfc/maybe-ref-model-parity-10044",
-      "compiler/sfc/maybe-ref-authored-handlers-10164",
-      "compiler/sfc/vue2-preserve-boundaries-9886",
-      "compiler/sfc/vue2-preserve-comment-edges-10065",
-      "compiler/sfc/package-import-prop-type-9894",
-      "compiler/sfc/scoped-where-nesting-9830",
-      "compiler/sfc/scoped-keyframes-nesting-9829",
-      "compiler/sfc/scoped-checkout-stability-10067",
-      "compiler/sfc/jsx-vapor-runtime-slots-6889",
-      "compiler/sfc/root-text-patch-flag-10168",
-      "compiler/sfc/scoped-slot-closure-10169",
-      "compiler/dialect/vue0-10-repeat",
-      "compiler/dialect/vue0-11-repeat",
       "compiler/dialect/quirks-adjacent-attributes",
       "compiler/dialect/quirks-void-close",
-      "compiler/sfc/incomplete-script-setup-recovery-10200",
-      "compiler/sfc/ordered-object-props-10458",
-      "compiler/sfc/scoped-list-nesting-10606",
-      "compiler/sfc/sibling-script-import-reads-10616",
+      "compiler/dialect/vue0-10-repeat",
+      "compiler/dialect/vue0-11-repeat",
+      "compiler/dialect/vue1-attribute-interpolation",
+      "compiler/dialect/vue1-list",
+      "compiler/dialect/vue1-raw-html",
+      "compiler/sfc/asset-import-binding-collision-10710",
       "compiler/sfc/compact-scoped-at-rules-10639",
-    ],
+      "compiler/sfc/escaped-for-bindings-10714",
+      "compiler/sfc/for-alias-initializers-10746",
+      "compiler/sfc/incomplete-script-setup-recovery-10200",
+      "compiler/sfc/jsx-vapor-runtime-slots-6889",
+      "compiler/sfc/maybe-ref-authored-handlers-10164",
+      "compiler/sfc/maybe-ref-model-parity-10044",
+      "compiler/sfc/ordered-object-props-10458",
+      "compiler/sfc/package-import-prop-type-9894",
+      "compiler/sfc/production-v-if-comment-9920",
+      "compiler/sfc/root-text-patch-flag-10168",
+      "compiler/sfc/scoped-checkout-stability-10067",
+      "compiler/sfc/scoped-keyframes-nesting-9829",
+      "compiler/sfc/scoped-list-nesting-10606",
+      "compiler/sfc/scoped-scope-nesting-10648",
+      "compiler/sfc/scoped-slot-closure-10169",
+      "compiler/sfc/scoped-where-nesting-9830",
+      "compiler/sfc/sfc-runtime-options-native",
+      "compiler/sfc/sibling-script-import-reads-10616",
+      "compiler/sfc/slot-fallback-adjacent-text-10087",
+      "compiler/sfc/slot-fallback-compound-text-9889",
+      "compiler/sfc/ssr-slot-scope",
+      "compiler/sfc/template-asset-markup-10761",
+      "compiler/sfc/template-asset-urls-9895",
+      "compiler/sfc/v-model-maybe-ref-9897",
+      "compiler/sfc/vue2-preserve-boundaries-9886",
+      "compiler/sfc/vue2-preserve-comment-edges-10065",
+    ].filter((id) => !ids.has(id)),
+    [],
   );
   const report = syntheticReport();
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   const acceptance = summarizeNativeAcceptance(loaded, report, { sourceRevision });
   assert.deepEqual(acceptance.total, {
-    planned: 26,
+    planned: loaded.cases.length,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 26,
+    unsupported: loaded.cases.length,
     legacyBacked: 0,
     unverified: 0,
   });
@@ -181,7 +209,18 @@ void test("compiler fixture pins a real full-module reference without native cre
     legacyBacked: 0,
     unverified: 0,
   });
-  assert.equal(acceptance.dialectCoverage.unknown.planned, 22);
+  assert.deepEqual(acceptance.dialectCoverage.verified["vue1-template"], {
+    planned: 3,
+    nativeHandled: 0,
+    nativeEquivalent: 0,
+    unsupported: 3,
+    legacyBacked: 0,
+    unverified: 0,
+  });
+  assert.equal(
+    acceptance.dialectCoverage.unknown.planned,
+    loaded.cases.filter((current) => !current.dialectInput).length,
+  );
   assert.equal(
     loaded.cases.find((current) => current.id === "compiler/sfc/package-import-prop-type-9894")
       .comparison.scriptLang,
@@ -193,7 +232,7 @@ void test("compiler fixture pins a real full-module reference without native cre
       .every((current) => Buffer.isBuffer(current.expectedCss)),
   );
   const dialects = loaded.cases.filter((current) => current.dialectInput);
-  assert.equal(dialects.length, 4);
+  assert.equal(dialects.length, 7);
   const quirks = dialects.filter((current) => current.dialectInputId.includes("quirks"));
   assert.equal(quirks.length, 2);
   for (const current of quirks) {
@@ -331,18 +370,22 @@ void test("compiler plans and byte-compares every registered SSR case", () => {
       recursive: true,
     });
     const manifest = JSON.parse(fs.readFileSync(path.join(compiler, "manifest.json"), "utf8"));
-    const second = structuredClone(manifest.cases[0]);
+    const sourceId = "compiler/sfc/ssr-slot-scope";
+    const second = structuredClone(manifest.cases.find((current) => current.id === sourceId));
     second.id = "compiler/sfc/second-slot-scope";
     second.inputs.root = "second-slot-scope";
     second.reference.path = "second-slot-scope/module.expected.txt";
-    manifest.cases.push(second);
+    // Registrations insert at their sorted position.
+    const position = manifest.cases.findIndex((current) => current.id > second.id);
+    manifest.cases.splice(position, 0, second);
     fs.writeFileSync(path.join(compiler, "manifest.json"), JSON.stringify(manifest));
     const multiple = loadCompilerManifest(path.join(compiler, "manifest.json"));
     assert.equal(multiple.cases.length, loaded.cases.length + 1);
 
     const report = syntheticReport();
     report.manifestSha256 = multiple.manifestSha256;
-    report.rows.push({ ...structuredClone(report.rows[0]), id: second.id });
+    const sourceRow = report.rows.find((row) => row.id === sourceId);
+    report.rows.splice(position, 0, { ...structuredClone(sourceRow), id: second.id });
     report.summary = {
       ...report.summary,
       plannedCases: report.summary.plannedCases + 1,
@@ -403,8 +446,8 @@ void test("malformed compiler output retains raw evidence and cannot complete", 
   };
   report.summary = {
     ...report.summary,
-    legacyMatches: loaded.cases.length - 1,
-    legacyFailures: 1,
+    legacyMatches: report.summary.legacyMatches - 1,
+    legacyFailures: report.summary.legacyFailures + 1,
   };
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   const forged = structuredClone(report);

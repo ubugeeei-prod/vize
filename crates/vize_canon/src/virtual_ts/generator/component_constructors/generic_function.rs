@@ -38,6 +38,8 @@ pub(super) fn emit(
             slots,
             exposed: expose,
             emit_props: aliases.has_emits_for_props,
+            emit_props_type: crate::virtual_ts::helpers::shared_types::EMIT_PROPS
+                .select(aliases.hoist_shared_preamble),
             jsx_slots: aliases.jsx_slots,
             root_element: aliases.has_root_el,
             template_refs: aliases.has_refs,

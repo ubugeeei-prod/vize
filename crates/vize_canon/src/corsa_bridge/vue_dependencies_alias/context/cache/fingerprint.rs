@@ -12,6 +12,8 @@ pub(crate) struct ContextFingerprint {
     host_content: u64,
     overlays: u64,
     generation_options: u64,
+    /// Requested workspace sources are part of this revision.
+    workspace: bool,
     stamps: Vec<crate::package_route::stamp::InputStamp>,
 }
 
@@ -34,12 +36,12 @@ impl ContextFingerprint {
         tsconfig_path: Option<&Path>,
     ) -> Self {
         use std::hash::{Hash, Hasher};
-        let mut host = std::hash::DefaultHasher::new();
+        let mut host = vize_l0::micro_default_hasher!("canon.context.host");
         source_path.hash(&mut host);
         content.hash(&mut host);
         let mut overlay_entries: Vec<_> = overlays.iter().collect();
         overlay_entries.sort_by(|left, right| left.0.cmp(right.0));
-        let mut overlay_hash = std::hash::DefaultHasher::new();
+        let mut overlay_hash = vize_l0::micro_default_hasher!("canon.context.overlays");
         for (path, text) in overlay_entries {
             path.hash(&mut overlay_hash);
             text.hash(&mut overlay_hash);
@@ -50,6 +52,7 @@ impl ContextFingerprint {
             host_content: host.finish(),
             overlays: overlay_hash.finish(),
             generation_options,
+            workspace: false,
             stamps: Vec::new(),
         }
     }
@@ -119,7 +122,7 @@ impl ContextFingerprint {
             return;
         }
         use std::hash::{Hash, Hasher};
-        let mut hash = std::hash::DefaultHasher::new();
+        let mut hash = vize_l0::micro_default_hasher!("canon.context.requested_sources");
         self.host_content.hash(&mut hash);
         let mut sources = sources.iter().collect::<Vec<_>>();
         sources.sort_by(|left, right| left.0.cmp(&right.0));
@@ -128,15 +131,20 @@ impl ContextFingerprint {
             source.hash(&mut hash);
         }
         self.host_content = hash.finish();
+        self.workspace = true;
+    }
+
+    pub(super) fn workspace(&self) -> bool {
+        self.workspace
     }
 
     pub(super) fn stamps_still_valid(
         &self,
-        observed: &mut crate::package_route::stamp::InputStampCache,
+        observed: &mut crate::package_route::stamp::InputStampValidation,
     ) -> bool {
         self.stamps
             .iter()
-            .all(|stamp| stamp.is_current_with_cache(observed))
+            .all(|stamp| observed.is_current(stamp, None))
     }
 
     pub(crate) fn input_stamps(&self) -> Vec<crate::package_route::stamp::InputStamp> {
@@ -151,7 +159,7 @@ impl ContextFingerprint {
     /// requests can share one preparation.
     pub(crate) fn identity(&self) -> u64 {
         use std::hash::{Hash, Hasher};
-        let mut hash = std::hash::DefaultHasher::new();
+        let mut hash = vize_l0::micro_default_hasher!("canon.context.identity");
         (self.host_content, self.overlays, self.generation_options).hash(&mut hash);
         hash.finish()
     }
@@ -164,7 +172,9 @@ impl super::SessionCache {
         source_path: &Path,
     ) -> Option<Vec<crate::package_route::stamp::InputStamp>> {
         self.slots
-            .get(source_path)
-            .map(|cached| cached.fingerprint.input_stamps())
+            .iter()
+            .filter(|(key, _)| key.source_path == source_path)
+            .max_by_key(|(_, cached)| cached.last_used)
+            .map(|(_, cached)| cached.fingerprint.input_stamps())
     }
 }

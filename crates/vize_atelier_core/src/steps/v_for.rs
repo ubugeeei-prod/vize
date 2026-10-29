@@ -4,6 +4,12 @@
 
 use vize_l0::{Allocator, Box};
 
+mod alias_rewrite;
+mod bindings;
+
+pub(crate) use alias_rewrite::process_for_alias;
+pub(crate) use bindings::alias_needs_expression_rewrite;
+
 use crate::lane::TransformContext;
 use crate::{
     ElementNode, ElementType, ExpressionNode, ForParseResult, PropNode, RuntimeHelper,
@@ -155,38 +161,15 @@ pub fn parse_for_expression_with_options<'a>(
 
     let aliases = split_for_aliases(alias_str, template_syntax_quirks)?;
 
-    let value = aliases.first().and_then(|alias| {
-        if alias.is_empty() {
-            None
-        } else {
-            Some(ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode::new(alias, false, SourceLocation::default()),
-                &allocator,
-            )))
-        }
-    });
-
-    let key = aliases.get(1).and_then(|alias| {
-        if alias.is_empty() {
-            None
-        } else {
-            Some(ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode::new(alias, false, SourceLocation::default()),
-                &allocator,
-            )))
-        }
-    });
-
-    let index = aliases.get(2).and_then(|alias| {
-        if alias.is_empty() {
-            None
-        } else {
-            Some(ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode::new(alias, false, SourceLocation::default()),
-                &allocator,
-            )))
-        }
-    });
+    let value = aliases
+        .first()
+        .and_then(|alias| bindings::alias_node(allocator, alias));
+    let key = aliases
+        .get(1)
+        .and_then(|alias| bindings::alias_node(allocator, alias));
+    let index = aliases
+        .get(2)
+        .and_then(|alias| bindings::alias_node(allocator, alias));
 
     Some(ForParseResult::new(source, value, key, index))
 }

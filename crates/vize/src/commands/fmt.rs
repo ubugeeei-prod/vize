@@ -27,7 +27,8 @@ use format_source::format_file_source;
 mod patterns;
 pub(crate) use files::collect_files;
 use ignores::load_fmt_ignore_set;
-use options::build_format_options;
+pub use options::FmtPreset;
+use options::{FmtAttributeSortOrder, build_format_options};
 use patterns::{FORMAT_EXTENSIONS_DISPLAY, FORMAT_PATTERN_HELP};
 #[derive(Args)]
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
@@ -104,18 +105,30 @@ pub struct FmtArgs {
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub sort_attributes: Option<bool>,
 
+    /// Choose the order of attributes within each Vue priority group
+    #[arg(long, value_enum)]
+    pub(in crate::commands) attribute_sort_order: Option<FmtAttributeSortOrder>,
+
     /// Put each HTML attribute on its own line
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub single_attribute_per_line: Option<bool>,
 
+    /// Indent script and style block contents
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
+    pub vue_indent_script_and_style: Option<bool>,
+
     /// Maximum number of attributes per line before wrapping
     #[arg(long)]
     pub max_attributes_per_line: Option<u32>,
-
     /// Normalize directive shorthands (v-bind: → :, v-on: → @, v-slot: → #)
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub normalize_directive_shorthands: Option<bool>,
-
+    /// Order SFC blocks canonically instead of preserving their authored order
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
+    pub sort_blocks: Option<bool>,
+    /// Close HTML void elements such as `<img>` with `/>`
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
+    pub self_close_void_elements: Option<bool>,
     /// Apply a named set of defaults before the flags above
     #[arg(long, value_enum)]
     pub preset: Option<FmtPreset>,
@@ -127,19 +140,6 @@ pub struct FmtArgs {
     /// Slow file threshold in milliseconds for profile output
     #[arg(long, default_value = "100")]
     pub slow_threshold: u64,
-}
-
-/// Named formatter defaults selectable from the CLI.
-#[derive(Debug, Clone, Copy, ValueEnum)]
-pub enum FmtPreset {
-    /// The Vize defaults
-    Vize,
-    /// Prettier's Vue layout, as listed in the formatter guide
-    Prettier,
-    /// Dense application layout that preserves authored order
-    Compact,
-    /// Readable documentation examples with one attribute per line
-    Documentation,
 }
 
 /// Object property quote modes selectable from the CLI.
@@ -215,28 +215,6 @@ impl From<FmtArrowParens> for vize_glyph::ArrowParens {
     }
 }
 
-impl From<FmtEndOfLine> for vize_glyph::EndOfLine {
-    fn from(value: FmtEndOfLine) -> Self {
-        match value {
-            FmtEndOfLine::Lf => Self::Lf,
-            FmtEndOfLine::Crlf => Self::Crlf,
-            FmtEndOfLine::Cr => Self::Cr,
-            FmtEndOfLine::Auto => Self::Auto,
-        }
-    }
-}
-
-impl From<FmtPreset> for vize_glyph::FormatPreset {
-    fn from(preset: FmtPreset) -> Self {
-        match preset {
-            FmtPreset::Vize => Self::Vize,
-            FmtPreset::Prettier => Self::Prettier,
-            FmtPreset::Compact => Self::Compact,
-            FmtPreset::Documentation => Self::Documentation,
-        }
-    }
-}
-
 pub fn run(args: FmtArgs) {
     let start = Instant::now();
     let snapshot = if args.no_config {
@@ -247,6 +225,7 @@ pub fn run(args: FmtArgs) {
             std::process::exit(2);
         })
     };
+    let config_time = start.elapsed();
     let (options, vue_version, sort_imports) = build_format_options(&args, &snapshot);
     let config_dir = snapshot
         .project_root
@@ -273,6 +252,14 @@ pub fn run(args: FmtArgs) {
     let collect_start = Instant::now();
     let files: Vec<PathBuf> = collect_files(&patterns.values, ignore_set.as_ref());
     let collect_time = collect_start.elapsed();
+    if let Some(ignore_set) = ignore_set.as_ref().filter(|_| patterns.explicit) {
+        for path in ignore_set.excluded_arguments(&args.patterns) {
+            eprintln!(
+                "Skipping {}: excluded by the configured ignore patterns",
+                path.display()
+            );
+        }
+    }
 
     if files.is_empty() {
         eprintln!("No {FORMAT_EXTENSIONS_DISPLAY} files found matching the patterns");
@@ -401,6 +388,12 @@ pub fn run(args: FmtArgs) {
         let file_rows: Vec<_> = profiles.iter().map(|profile| profile.row.clone()).collect();
 
         let phases = [
+            ProfilePhase {
+                name: "load config",
+                duration: config_time,
+                kind: ProfilePhaseKind::Wall,
+                note: "configuration discovery and evaluation",
+            },
             ProfilePhase {
                 name: "collect files",
                 duration: collect_time,
@@ -592,25 +585,5 @@ struct FormatFileProfile {
     read_time: Duration,
 }
 
-#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
-mod tests {
-    use super::format_file_source;
-    use std::path::Path;
-
-    #[test]
-    fn format_file_source_formats_standalone_tsx() {
-        let options = super::FormatOptions::default();
-        let allocator = super::Allocator::default();
-        let result = format_file_source(
-            Path::new("Component.tsx"),
-            "const Component=({label}:{label:string})=><button>{label}</button>",
-            &options,
-            &allocator,
-            (super::VueVersion::V3, None, false),
-        )
-        .unwrap();
-
-        insta::assert_snapshot!(result.code.as_str());
-    }
-}
+mod tests;

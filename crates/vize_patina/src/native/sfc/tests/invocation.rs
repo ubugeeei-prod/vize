@@ -91,7 +91,10 @@ fn offered_get_instance_refuses_both_implicit_skip_and_explicit_original_dispatc
                     .collect();
                 configured.with_disabled_rules(disabled)
             };
-            assert_eq!(configured.explicit_no_get_current_instance, explicit);
+            assert_eq!(
+                configured.explicit_vapor_rules,
+                if explicit { vec![GET.name] } else { vec![] }
+            );
             assert_eq!(
                 configured.lint_native_sfc(SOURCE, FILE).unwrap_err(),
                 Refusal::UnprovidedInvocationPolicy {

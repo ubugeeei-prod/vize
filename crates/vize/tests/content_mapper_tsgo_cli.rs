@@ -23,6 +23,7 @@ mod pug_refusal;
 mod quoted_generic_parameters;
 mod template_expression_syntax;
 mod type_only_import_use;
+mod typed_context_undefined;
 mod unicode_prop_bindings;
 mod unknown_options_10218;
 
@@ -59,7 +60,7 @@ fn install_mapper_manifest(project_root: &Path) {
         "typescript": {
             "contentMapper": {
                 "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
-                "compilerOptions": ["checkJs", "noUnusedLocals"],
+                "compilerOptions": ["checkJs", "noUnusedLocals", "rootDir"],
                 "dynamicConfig": true,
             },
         },

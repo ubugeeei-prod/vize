@@ -238,7 +238,8 @@ defineProps<Props>()
 /// A Vue 2 dialect declares `$listeners` and friends in the template context,
 /// so the instance-global emitter must not declare them a second time in the
 /// same closure (`TS2451`). Vue 3 has no such declaration, so there the
-/// instance-global form stays the only one.
+/// public instance read stays the only one, and reports the `TS2339` `vue-tsc`
+/// reports for a member Vue 3 removed.
 #[test]
 fn vue2_instance_members_are_declared_once() {
     let script = "";

@@ -27,7 +27,7 @@ fn test_transform_vapor_template_output_current_render_format() {
         attrs: Default::default(),
     };
 
-    let vapor_code = r#"import { template as _template } from 'vue/vapor';
+    let vapor_code = r#"import { template as _template } from 'vue';
 const t0 = _template("<div> </div>", true)
 
 export function render(_ctx) {
@@ -35,7 +35,7 @@ export function render(_ctx) {
   return n0
 }"#;
 
-    let result = transform_vapor_template_output(vapor_code, &template, None, "vue")
+    let result = transform_vapor_template_output(vapor_code, &template, None)
         .expect("current Vapor output should be transformed");
     insta::assert_snapshot!(result.as_str());
 }

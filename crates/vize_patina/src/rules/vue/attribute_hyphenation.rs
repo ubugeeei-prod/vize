@@ -26,7 +26,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::{String, ToCompactString, camelize, hyphenate, is_native_tag};
+use vize_l0::{Span, String, ToCompactString, camelize, hyphenate, is_native_tag};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -228,8 +228,9 @@ impl Rule for AttributeHyphenation {
         }
 
         for prop in &element.props {
-            let (name, loc) = match prop {
-                PropNode::Attribute(attr) => (attr.name, &attr.name_loc),
+            // Like eslint-plugin-vue, report the whole attribute and fix only its name.
+            let (name, name_loc, loc) = match prop {
+                PropNode::Attribute(attr) => (attr.name, &attr.name_loc, &attr.loc),
                 PropNode::Directive(dir) => {
                     let Some(ExpressionNode::Simple(arg)) = dir.arg.as_ref() else {
                         continue;
@@ -237,7 +238,7 @@ impl Rule for AttributeHyphenation {
                     if !matches!(dir.name, "bind" | "model") || !arg.is_static {
                         continue;
                     }
-                    (arg.content, &arg.loc)
+                    (arg.content, &arg.loc, &dir.loc)
                 }
             };
 
@@ -258,8 +259,8 @@ impl Rule for AttributeHyphenation {
                             ctx,
                             "vue/attribute-hyphenation.message",
                             "vue/attribute-hyphenation.help",
-                            loc.span.start,
-                            loc.span.end,
+                            loc.span,
+                            name_loc.span,
                             hyphenate(name),
                         );
                     }
@@ -270,8 +271,8 @@ impl Rule for AttributeHyphenation {
                             ctx,
                             "vue/attribute-hyphenation.message_never",
                             "vue/attribute-hyphenation.help_never",
-                            loc.span.start,
-                            loc.span.end,
+                            loc.span,
+                            name_loc.span,
                             camelize(name),
                         );
                     }
@@ -285,16 +286,17 @@ fn report(
     ctx: &mut LintContext<'_>,
     message: &str,
     help: &str,
-    start: u32,
-    end: u32,
+    span: Span,
+    name: Span,
     replacement: impl Into<String>,
 ) {
     let message = ctx.t(message).into_owned();
     let help = ctx.t(help).into_owned();
+    let edit = TextEdit::replace(name.start, name.end, replacement);
     ctx.report(
-        LintDiagnostic::warn(META.name, message, start, end)
+        LintDiagnostic::warn(META.name, message, span.start, span.end)
             .with_help(help.clone())
-            .with_fix(Fix::new(help, TextEdit::replace(start, end, replacement))),
+            .with_fix(Fix::new(help, edit)),
     );
 }
 
@@ -473,6 +475,16 @@ mod tests {
             r#"<UserBadge display-name="a" :active-key="key" v-model:page-size="size" />"#
         );
         assert_eq!(linter.lint_template(&fixed, "test.vue").warning_count, 0);
+        let report = linter.lint_template(source, "test.vue");
+        let spans: Vec<_> = report
+            .diagnostics
+            .iter()
+            .filter_map(|d| source.get(d.start as usize..d.end as usize))
+            .collect();
+        assert_eq!(
+            spans.join(" "),
+            r#"displayName="a" :activeKey="key" v-model:pageSize="size""#
+        );
     }
 
     #[test]

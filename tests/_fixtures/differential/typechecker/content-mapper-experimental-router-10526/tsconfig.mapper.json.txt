@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "contentMappers": [
+    {
+      "package": "router-source-mapper",
+      "extensions": [
+        ".vue"
+      ]
+    }
+  ]
+}

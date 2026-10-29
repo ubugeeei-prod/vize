@@ -1,0 +1,50 @@
+{
+  "schema": "vize.optional-inject.explicit-transition.v1",
+  "issue": 10918,
+  "base": "b6127a994f7e2a75eb2c89de44d54cf8a0f17fcd",
+  "production": {
+    "path": "crates/vize_croquis_cf/src/rules/provide_inject/analysis.rs",
+    "originalBlob": "cf13e762f8561cfefdf2e1e90aa914f25c3ad6c2",
+    "change": "Only optional-default unmatched-diagnostic admission. Resolution/matches/branches/summary/type/reactivity unchanged."
+  },
+  "historical": [
+    {
+      "path": "tools/support/compat/defaulted-inject/historical-partial.snap.txt",
+      "originalPath": "crates/vize_croquis_cf/src/analyzer/tests_snapshots/snapshots/vize_croquis_cf__analyzer__tests_snapshots__provide_inject__snapshot_partial_shared_child_branches.snap",
+      "originalBlob": "4a81c16af4ce3bfc19ec1b349a936adf55a5726f",
+      "sha256": "fcfe962d0668607b3d7ce8945175198f58d946778d7c5affffcd5688cb36ae91"
+    },
+    {
+      "path": "tools/support/compat/defaulted-inject/historical-tree-partial.rs.txt",
+      "originalPath": "crates/vize_croquis_cf/src/analyzer/tests_provide_inject/tree_partial.rs",
+      "originalBlob": "0eeaf57d84ca553cadcb98257921eebd8a091eac",
+      "sha256": "27904032c9c4b143f0d27a1cc1af18d1934fe07392bd76c900db65e8d3e32bcb"
+    },
+    {
+      "path": "tools/support/compat/defaulted-inject/historical-provider-context.rs.txt",
+      "originalPath": "crates/vize_croquis_cf/src/analyzer/tests_provide_inject/provider_context.rs",
+      "originalBlob": "1d3a08f03f6040c29af5a55d5bb11454fb4d44fe",
+      "sha256": "269133ee988831a850ea833cdce51065e1fd6fb01beb6cbd4cc39b391cdd0e70"
+    }
+  ],
+  "retiredSnapshotLine": "Warning: **Conditionally Defaulted Inject**: `inject('locale')` falls back to its default value in 1 of 2 ancestor branches.",
+  "requiredControls": {
+    "rust": 4,
+    "defaultBranchVectors": 21,
+    "cliWholePairs": 9
+  },
+  "publicBefore": "0.602.0",
+  "qualification": "pending Actions; formatting/strict TS6 passed",
+  "providerContextTransition": {
+    "before": "Explicit fallback was expected to emit UnmatchedInject Warning",
+    "after": "Explicit fallback has no UnmatchedInject finding",
+    "scope": "Only the final provider-context test changes; every preceding original byte remains identical",
+    "actualBefore": {
+      "run": 40580412455,
+      "job": 122457972423,
+      "artifact": 12770180297,
+      "passed": 49,
+      "failed": 1
+    }
+  }
+}

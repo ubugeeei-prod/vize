@@ -27,7 +27,8 @@ export default {
     }
   }, checkboxDefaults),
   render: _sfc_render,
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    __expose();
     const props = __props;
     const __returned__ = { props };
     Object.defineProperty(__returned__, "__isScriptSetup", {

@@ -1,0 +1,61 @@
+/**
+ * Current #8371 initializer capability over the unchanged #3956 shape archive,
+ * plus new shapes authored after dedicated configs stopped being generated.
+ * For the archived shapes, only generated plans/files change; their authored
+ * inputs and complete diagnostic oracles remain owned by the historical modules.
+ */
+import type { PackageManager } from "./smoke-release-init-managers.ts";
+import { NUXT_VUE_TS_SHAPE } from "./smoke-release-init-nuxt-shape.ts";
+import { PROJECT_SHAPES, type Detection, type ProjectShape } from "./smoke-release-init-shapes.ts";
+
+function sharedDetection(detect: Detection): Detection {
+  return (manager) =>
+    detect(manager).map((line) =>
+      line.startsWith("  vize config:") ? "  Vue settings:    vue: in vite.config.*" : line,
+    );
+}
+
+function configFreeShape(shape: ProjectShape): ProjectShape {
+  const javascript = shape.id === "vite-vue-js-checkjs";
+  const { "vize.config.ts": historicalConfig, ...expectedFiles } = shape.expectedFiles;
+  if (historicalConfig === undefined) throw new Error(`${shape.id}: missing historical config`);
+  return {
+    ...shape,
+    detection: sharedDetection(shape.detection),
+    features: [
+      shape.features[0],
+      shape.features[1],
+      "  fmt       configured uses project settings and formatter defaults",
+      javascript
+        ? "  typecheck configured writes tsconfig.json"
+        : "  typecheck configured uses tsconfig.json and project settings",
+      shape.features[4],
+    ],
+    reconfiguredDetection: javascript
+      ? (manager: PackageManager) => [
+          "  framework:       Vite (vite.config.js)",
+          `  package manager: ${manager.detectedPackageManager}`,
+          "  language:        TypeScript (tsconfig.json)",
+          "  lint command:    oxlint",
+          "  Vue settings:    vue: in vite.config.*",
+          "  oxlint config:   none",
+        ]
+      : sharedDetection(shape.detection),
+    reconfiguredFeatures: [
+      shape.reconfiguredFeatures[0],
+      shape.reconfiguredFeatures[1],
+      "  fmt       unchanged  uses project settings and formatter defaults",
+      "  typecheck unchanged  uses tsconfig.json and project settings",
+      shape.reconfiguredFeatures[4],
+    ],
+    createdFiles: shape.createdFiles.filter((filename) => filename !== "vize.config.ts"),
+    expectedFiles,
+  };
+}
+
+export const CONFIG_FREE_PROJECT_SHAPES: Readonly<Record<string, ProjectShape>> = {
+  ...Object.fromEntries(
+    Object.entries(PROJECT_SHAPES).map(([id, shape]) => [id, configFreeShape(shape)]),
+  ),
+  [NUXT_VUE_TS_SHAPE.id]: NUXT_VUE_TS_SHAPE,
+};

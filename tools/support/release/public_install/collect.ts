@@ -14,6 +14,7 @@ import {
   digest,
   exactPath,
   freshOutputs,
+  hasCheckerDependency,
   lookup,
   majorAtLeast7,
   overrides,
@@ -104,13 +105,27 @@ export async function collect(args: CollectArguments): Promise<Record<string, un
     );
   const cliRoot = path.join(install, "node_modules/vize");
   const cliManifest = readJson(exactPath(path.join(cliRoot, "package.json"), install));
-  const corsaVersion = lookup(cliManifest, "optionalDependencies", corsa);
+  const userProvider = sourceDeclarations.corsaResolutionMode === "explicit-user-provider";
+  if (userProvider && hasCheckerDependency(cliManifest))
+    throw new CustodyError("public CLI checker dependency differs from its actual H declaration");
+  // The Darwin public-install receipt deliberately requires a private
+  // devDependency. Cross-platform LSP acceptance separately admits either
+  // dependencies or devDependencies because it observes an existing consumer.
+  const corsaVersion = userProvider
+    ? lookup(consumer, "devDependencies", corsa)
+    : lookup(cliManifest, "optionalDependencies", corsa);
   if (
     typeof corsaVersion !== "string" ||
     !corsaVersionPattern.test(corsaVersion) ||
     !majorAtLeast7(corsaVersion)
   )
-    throw new CustodyError("exact public bundled Corsa version declaration missing");
+    throw new CustodyError(
+      userProvider
+        ? "exact explicitly declared private user provider required"
+        : "exact public bundled Corsa version declaration missing",
+    );
+  if (userProvider && lookup(lock, "packages", "", "devDependencies", corsa) !== corsaVersion)
+    throw new CustodyError("explicit user provider must match the root lock declaration");
   if (
     corsaVersion !== sourceDeclarations.corsaVersion ||
     lookup(cliManifest, "dependencies", "@vizejs/native") !== version
@@ -166,7 +181,7 @@ export async function collect(args: CollectArguments): Promise<Record<string, un
     } else {
       const launcher = exactPath(path.join(packageDir, "lib/tsc"), packageDir);
       if (!executable(launcher))
-        throw new CustodyError("public bundled Corsa launcher is not executable");
+        throw new CustodyError("public checker provider launcher is not executable");
       bundledCorsa = {
         packageName: name,
         version: expected,
@@ -199,7 +214,7 @@ export async function collect(args: CollectArguments): Promise<Record<string, un
     cliBin,
     journal,
     version,
-    bundledCorsa.path,
+    userProvider ? "" : bundledCorsa.path,
   );
   recheckFiles(archiveReceipts);
   if (
@@ -219,7 +234,20 @@ export async function collect(args: CollectArguments): Promise<Record<string, un
     packageLockPath: lockPath,
     packageLockSha256: digest(lockBytes),
     registry: records,
-    bundledCorsa,
+    ...(userProvider ? { resolutionMode: "explicit-user-provider" } : {}),
+    // Retain the historical field name so existing receipt consumers can
+    // replay both lineages. In explicit mode this receipt authenticates the
+    // installed provider archive only; it does not claim runtime selection.
+    bundledCorsa: {
+      ...bundledCorsa,
+      ...(userProvider
+        ? {
+            authority: "explicit-user-provider",
+            declaration: "devDependencies",
+            selection: "installation-only",
+          }
+        : { authority: "bundled-cli", selection: "cli-selected" }),
+    },
     publicArchiveComparison: archiveReceipts.map(({ files: _files, ...item }) => item),
     payloadManifestPath: payloadManifest,
     payloadManifestSha256: digest(payloadBytes),

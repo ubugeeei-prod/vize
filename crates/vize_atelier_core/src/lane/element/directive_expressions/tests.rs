@@ -92,7 +92,7 @@ mod original_argument_ownership {
                         ..Default::default()
                     },
                 );
-                process_directive_expressions(&mut ctx, el);
+                process_directive_expressions(&mut ctx, el, false);
                 assert!(std::ptr::eq(owner, &**el));
                 let processed: std::vec::Vec<_> = el
                     .props
@@ -189,7 +189,7 @@ mod original_argument_ownership {
                     ..Default::default()
                 },
             );
-            process_directive_expressions(&mut ctx, el);
+            process_directive_expressions(&mut ctx, el, false);
             let after: std::vec::Vec<_> = el
                 .props
                 .iter()
@@ -262,7 +262,7 @@ mod original_argument_ownership {
                     ..Default::default()
                 },
             );
-            process_directive_expressions(&mut ctx, el);
+            process_directive_expressions(&mut ctx, el, false);
             assert_eq!(arguments(el), original);
             assert_eq!(original.len(), 2);
             assert!(ctx.errors.is_empty(), "{:?}", ctx.errors);

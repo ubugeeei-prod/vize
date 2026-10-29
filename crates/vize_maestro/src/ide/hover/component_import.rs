@@ -15,6 +15,8 @@ use super::HoverService;
 use crate::ide::IdeContext;
 use crate::ide::markup;
 
+#[cfg(test)]
+mod alias_tests;
 mod fallback;
 mod keys;
 mod presentation;
@@ -41,7 +43,7 @@ pub(super) fn rewrite_vue_component_import_hover(
     }
 }
 
-fn contains_generated_component_marker(markdown: &str) -> bool {
+pub(crate) fn contains_generated_component_marker(markdown: &str) -> bool {
     markdown.contains("__vizeComponentMarker")
         || markdown.contains("__vizeRawProps")
         || markdown.contains("__VizeComponentConstructor")
@@ -52,6 +54,47 @@ pub(super) fn component_contract_markdown(
     ctx: &IdeContext<'_>,
     local_name: &str,
 ) -> Option<String> {
+    let (resolved_path, fields) = component_contract(ctx, local_name)?;
+    let mut lines = vec![format!("const {local_name}: VueComponent")];
+    if !fields.is_empty() {
+        if let Some(header) = lines.first_mut() {
+            header.push_str(" &");
+        }
+        lines.push("{".to_string());
+        lines.extend(
+            fields
+                .iter()
+                .map(|(name, value)| presentation::field(name, value)),
+        );
+        lines.push("}".to_string());
+    }
+
+    let mut markdown = markup::code_block("typescript", &lines.join("\n"));
+    if let Some(file_name) = resolved_path.file_name().and_then(|name| name.to_str()) {
+        markdown.push_str("\n\nVue component: ");
+        markdown.push_str(file_name);
+    }
+    Some(markdown)
+}
+
+/// The same contract on one line, for a type inlay hint.
+pub(crate) fn component_contract_inline(ctx: &IdeContext<'_>, local_name: &str) -> Option<String> {
+    let (_, fields) = component_contract(ctx, local_name)?;
+    if fields.is_empty() {
+        return Some("VueComponent".to_string());
+    }
+    let fields = fields
+        .iter()
+        .map(|(name, value)| format!("{name}: {value}"))
+        .collect::<Vec<_>>()
+        .join("; ");
+    Some(format!("VueComponent & {{ {fields} }}"))
+}
+
+fn component_contract(
+    ctx: &IdeContext<'_>,
+    local_name: &str,
+) -> Option<(std::path::PathBuf, Vec<(&'static str, String)>)> {
     let resolved_path = imported_vue_component_path(ctx, local_name)?;
     let source = component_source(ctx, &resolved_path)?;
     let filename = resolved_path.to_string_lossy();
@@ -65,45 +108,23 @@ pub(super) fn component_contract_markdown(
         &filename,
     );
     let macros = &analysis.croquis.macros;
-
-    let mut lines = vec![format!("const {local_name}: VueComponent")];
-    let mut fields = Vec::new();
-
-    if let Some(props) = props_contract(macros) {
-        fields.push(presentation::field("props", &props));
-    }
-    if let Some(emits) = emits_contract(macros) {
-        fields.push(presentation::field("emits", &emits));
-    }
-    if let Some(slots) = slots_contract(macros) {
-        fields.push(presentation::field("slots", &slots));
-    }
-    if let Some(model) = model_contract(macros) {
-        fields.push(presentation::field("model", &model));
-    }
-
-    if !fields.is_empty() {
-        if let Some(header) = lines.first_mut() {
-            header.push_str(" &");
-        }
-        lines.push("{".to_string());
-        lines.extend(fields);
-        lines.push("}".to_string());
-    }
-
-    let mut markdown = markup::code_block("typescript", &lines.join("\n"));
-    if let Some(file_name) = resolved_path.file_name().and_then(|name| name.to_str()) {
-        markdown.push_str("\n\nVue component: ");
-        markdown.push_str(file_name);
-    }
-    Some(markdown)
+    let fields = [
+        ("props", props_contract(macros)),
+        ("emits", emits_contract(macros)),
+        ("slots", slots_contract(macros)),
+        ("model", model_contract(macros)),
+    ]
+    .into_iter()
+    .filter_map(|(name, value)| Some((name, value?)))
+    .collect();
+    Some((resolved_path, fields))
 }
 
 fn imported_vue_component_path(
     ctx: &IdeContext<'_>,
     local_name: &str,
 ) -> Option<std::path::PathBuf> {
-    crate::ide::definition::component_import::resolve_component_file(ctx, local_name)
+    crate::ide::definition::component_import::resolve_component_value_file(ctx, local_name)
 }
 
 fn component_source(ctx: &IdeContext<'_>, path: &Path) -> Option<String> {

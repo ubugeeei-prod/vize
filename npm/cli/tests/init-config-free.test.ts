@@ -6,13 +6,13 @@ import { fileURLToPath } from "node:url";
 
 import { test } from "vite-plus/test";
 
-import { CONFIG_FREE_PROJECT_SHAPES } from "../../../tools/support/compat/npm/smoke-release-init-config-free.mjs";
-import { FRESH_INIT_MATRIX } from "../../../tools/support/compat/npm/smoke-release-init-shapes.mjs";
-import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.mjs";
+import { CONFIG_FREE_PROJECT_SHAPES } from "../../../tools/support/compat/npm/smoke-release-init-config-free.ts";
+import { FRESH_INIT_MATRIX } from "../../../tools/support/compat/npm/smoke-release-init-shapes.ts";
+import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.ts";
 import {
   expectedInitOutput,
   writeFiles,
-} from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
+} from "../../../tools/support/compat/npm/smoke-release-init-project.ts";
 
 import { setupProject } from "../src/setup.ts";
 import { VIZE_CONFIG_FILES } from "../src/setup/config.ts";

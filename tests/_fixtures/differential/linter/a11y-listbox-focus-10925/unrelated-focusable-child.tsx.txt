@@ -1,0 +1,1 @@
+const App = () => (<><ul id="outer" role="listbox" ><button type="button">Other</button></ul></>);

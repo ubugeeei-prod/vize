@@ -165,7 +165,7 @@ fn real_check_message_profile_preserves_complete_native_packets_and_repair() {
             "canon.diagnostics.restore_specifiers.source_searches",
             8
         ),
-        14
+        1
     );
     assert_eq!(
         counter(
@@ -173,7 +173,7 @@ fn real_check_message_profile_preserves_complete_native_packets_and_repair() {
             "canon.diagnostics.restore_specifiers.source_search_input_bytes",
             8
         ),
-        14 * SOURCE.len() as u64
+        SOURCE.len() as u64
     );
     assert_eq!(
         counter(&profile, "canon.diagnostics.restore_specifiers.rewrites", 8),

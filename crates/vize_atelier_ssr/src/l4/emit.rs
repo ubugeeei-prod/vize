@@ -15,6 +15,7 @@ mod control;
 mod create_slots;
 mod directive_props;
 mod element;
+mod for_bindings;
 mod inline_bind;
 mod merged;
 mod model;
@@ -49,6 +50,7 @@ type Result<T> = core::result::Result<T, AdmissionFailure>;
 
 /// The L2 side facts the emitter reads beside the plan.
 pub(super) struct PlanFacts<'s, 'a> {
+    pub(super) scopes: &'s SideTable<vize_l2::scope::ScopeFacts>,
     pub(super) texts: &'s SideTable<TextParts>,
     pub(super) for_wrappers: &'s SideTable<ForWrapper>,
     pub(super) wrappers: &'s SideTable<WrapperKeys>,

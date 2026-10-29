@@ -2,9 +2,7 @@
 
 use serde_json::{Value, json};
 use vize_l0::{Allocator, SourceRoot, String, cstr};
-use vize_l1::markup::document::{
-    DocumentHtmlNode, DocumentHtmlRefusal, DocumentTreePolicy, NativeDocument,
-};
+use vize_l1::markup::document::{DocumentHtmlNode, DocumentHtmlRefusal, NativeDocument};
 
 const CORPUS: &str = include_str!("fixtures/document/html-grouping-body-containers.json");
 const TAGS: [&str; 6] = [
@@ -157,17 +155,9 @@ fn grouping_names_keep_wrong_mode_implied_end_and_vue_refusals() {
         let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert!(matches!(
             (expected, owner.html_structure()),
-            (
-                "implied",
-                Err(DocumentHtmlRefusal::UnsupportedPolicy(
-                    DocumentTreePolicy::ImpliedEndTags
-                ))
-            ) | (
-                "table",
-                Err(DocumentHtmlRefusal::UnsupportedPolicy(
-                    DocumentTreePolicy::TableContentModel
-                ))
-            ) | ("element", Err(DocumentHtmlRefusal::UnsupportedElement(_)))
+            ("implied", Err(DocumentHtmlRefusal::ImpliedEnd(_)))
+                | ("table", Err(DocumentHtmlRefusal::FosterParenting(_)))
+                | ("element", Err(DocumentHtmlRefusal::UnsupportedElement(_)))
         ));
     }
 }

@@ -1,3 +1,4 @@
+use super::codegen_options::sfc_codegen_options;
 use napi::{Result, Status};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
@@ -9,12 +10,14 @@ use vize_atelier_sfc::module_shape::finalize_module_output_with_map;
 use vize_l0::cstr;
 
 use super::types::ModuleShapeNapi;
+use super::vue_version::resolve_sfc_vue_version;
 use super::{
     experimentals::ExperimentalTemplateOptions,
     thread_pool::BatchThreadPool,
     types::{
         BatchCompileOptionsNapi, BatchCompileResultWithFilesNapi, BatchFileInputNapi,
-        BatchFileResultNapi, custom_blocks_to_napi, macro_artifacts_to_napi, style_blocks_to_napi,
+        BatchFileResultNapi, custom_blocks_to_napi, dependencies_to_napi, macro_artifacts_to_napi,
+        style_blocks_to_napi,
     },
 };
 use crate::template_syntax::resolve_template_syntax;
@@ -26,13 +29,15 @@ pub fn compile_sfc_batch_with_results(
     options: Option<BatchCompileOptionsNapi>,
 ) -> Result<BatchCompileResultWithFilesNapi> {
     let opts = options.unwrap_or_default();
+    let vue_version = resolve_sfc_vue_version(opts.vue_version.as_deref())?;
     BatchThreadPool::new(opts.threads)?
-        .install(|| compile_sfc_batch_with_results_inner(files, opts))
+        .install(|| compile_sfc_batch_with_results_inner(files, opts, vue_version))
 }
 
 fn compile_sfc_batch_with_results_inner(
     files: Vec<BatchFileInputNapi>,
     opts: BatchCompileOptionsNapi,
+    vue_version: vize_l0::config::VueVersion,
 ) -> Result<BatchCompileResultWithFilesNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
@@ -121,6 +126,7 @@ fn compile_sfc_batch_with_results_inner(
                         styles: vec![],
                         custom_blocks: vec![],
                         macro_artifacts: vec![],
+                        dependencies: None,
                         module_shape: None,
                     };
                 }
@@ -180,6 +186,7 @@ fn compile_sfc_batch_with_results_inner(
                     is_ts,
                     is_prod: shape.is_prod,
                     custom_renderer,
+                    dialect: vue_version,
                     compiler_options: template_compiler_options,
                     ..Default::default()
                 },
@@ -200,10 +207,11 @@ fn compile_sfc_batch_with_results_inner(
                     template_syntax,
                     custom_elements.clone(),
                     // A requested map is the compiler's structured SFC module map.
-                    vize_atelier_core::CodegenOptions {
-                        source_map: include_source_map,
-                        ..Default::default()
-                    },
+                    sfc_codegen_options(
+                        include_source_map,
+                        opts.runtime_module_name.as_deref(),
+                        opts.runtime_global_name.as_deref(),
+                    ),
                     script_output,
                     experimentals.sfc_options(),
                 )
@@ -267,6 +275,7 @@ fn compile_sfc_batch_with_results_inner(
                         styles,
                         custom_blocks,
                         macro_artifacts,
+                        dependencies: dependencies_to_napi(&result.dependencies),
                     }
                 }
                 Err(error) => BatchFileResultNapi {
@@ -284,6 +293,7 @@ fn compile_sfc_batch_with_results_inner(
                     styles,
                     custom_blocks,
                     macro_artifacts: vec![],
+                    dependencies: None,
                     module_shape: None,
                 },
             }

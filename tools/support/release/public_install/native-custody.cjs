@@ -11,10 +11,11 @@ for (const key of [
   "NAPI_RS_NATIVE_LIBRARY_PATH",
   "NAPI_RS_FORCE_WASI",
   "VIZE_ALLOW_NATIVE_VERSION_MISMATCH",
-  "CORSA_PATH",
   "CORSA_EXECUTABLE",
   "TSGO_PATH",
   "TSGO_EXECUTABLE",
+  "TSRS_PATH",
+  "TSRS_EXECUTABLE",
   "VIZE_OXLINT_NATIVE_CUSTODY",
 ]) {
   if (process.env[key]) throw new Error("Initial source/native override must be empty: " + key);
@@ -45,6 +46,27 @@ if (
 const digest = (filename) =>
   crypto.createHash("sha256").update(fs.readFileSync(filename)).digest("hex");
 if (digest(nativePath) !== config.nativeSha256) throw new Error("Native custody digest differs");
+const checkerBinding = config.checkerPath !== undefined || config.checkerSha256 !== undefined;
+if (checkerBinding) {
+  if (
+    typeof config.checkerPath !== "string" ||
+    !path.isAbsolute(config.checkerPath) ||
+    !/^[0-9a-f]{64}$/.test(config.checkerSha256)
+  )
+    throw new Error("Missing exact checker custody");
+  const checkerPath = fs.realpathSync(config.checkerPath);
+  if (
+    checkerPath !== config.checkerPath ||
+    !checkerPath.startsWith(installRoot + path.sep) ||
+    !fs.statSync(checkerPath).isFile() ||
+    digest(checkerPath) !== config.checkerSha256
+  )
+    throw new Error("Checker custody escaped the registry installation");
+  if (process.env.CORSA_PATH !== checkerPath)
+    throw new Error("Explicit checker override differs from custody");
+} else if (process.env.CORSA_PATH) {
+  throw new Error("Initial source/native override must be empty: CORSA_PATH");
+}
 const original = Module._extensions[".node"];
 if (typeof original !== "function") throw new Error("Original Node native loader is unavailable");
 const journal = fs.openSync(config.journalPath, "wx", 0o600);

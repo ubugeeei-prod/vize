@@ -12,8 +12,9 @@ import { resolveVizeCommand } from "../../_helpers/realworld-typecheck.ts";
 const appPath = "packages/playground/src/AppLink.vue";
 const sourceSha256 = "f5c888da7bae9c61151c7fbfde578ccdb768e75fbe2e69637d8298ca4f702c96";
 const formattedSourceSha256 = "28cf96bec91ca56fff12447fa4fb135c28a40586421729ff274e9c5f9764f712";
-const formattedOutputSha256 = "3713f2ddd52bd7722925b7458c64e89cf48b5670c0a611374430c3137f0e9a48";
-const formattedCodeSha256 = "c68549e117eb5d7669c9591ed8299b1c8fc37b3e26772ffd60163723fbfbbd66";
+const formattedOutputSha256 = "ba44075a761657226cd3dd5778f16e1a5cdd69c219f61bd362b218c248e9030c";
+const formattedCodeSha256 = "96aa37af88d4fb125777215fd8aaa6560c7434f89fad3964242ecfb7e524cfc2";
+const compilerChange = "#10800 / 42ca747027a86da7f94b473cff737cb330134d8c";
 const cleanAttrs = "const attrs = useAttrs();";
 const brokenAttrs = "const  attrs = useAttrs();";
 
@@ -40,8 +41,9 @@ type BuildResult = CommandResult & {
 };
 
 test("Vue Router formatter converges without moving object v-bind spreads", async () => {
+  // This standalone consumer must not inherit the repository's target/** exclusion.
   await withPinnedFixtureWorkspace(
-    { fixtureId: "vue-router", includePaths: [appPath] },
+    { fixtureId: "vue-router", includePaths: [appPath], outsideRepository: true },
     async (fixture) => {
       const pinnedSource = fixture.read(appPath);
       const sourceMode = fs.statSync(fixture.resolve(appPath)).mode & 0o777;
@@ -70,7 +72,12 @@ test("Vue Router formatter converges without moving object v-bind spreads", asyn
       const compiled = runBuild(fixture.workspaceDir);
       assert.equal(compiled.status, 0, compiled.stderr || compiled.stdout);
       assert.deepEqual(compiled.files, ["AppLink.json"]);
-      assert.equal(sha256(compiled.outputText), formattedOutputSha256);
+      const outputSha256 = sha256(compiled.outputText);
+      assert.equal(
+        outputSha256,
+        formattedOutputSha256,
+        `whole compiler output changed after ${compilerChange}; actual=${outputSha256}`,
+      );
       assert.deepEqual(
         {
           css: compiled.output.css,
@@ -89,8 +96,23 @@ test("Vue Router formatter converges without moving object v-bind spreads", asyn
           warnings: [],
         },
       );
-      assert.equal(sha256(compiled.output.code), formattedCodeSha256, compiled.output.code);
+      const codeSha256 = sha256(compiled.output.code);
+      assert.equal(
+        codeSha256,
+        formattedCodeSha256,
+        `compiled code changed after ${compilerChange}; actual=${codeSha256}\n${compiled.output.code}`,
+      );
       assertParsesAsModule(compiled.output.code, "formatted vue-router AppLink.json#code");
+      const cachedNavigateHandler =
+        "onClick: _cache[0] || (_cache[0] = (...args) => " +
+        "_unref(navigate) && _unref(navigate)(...args))";
+      assert.equal(count(compiled.output.code, cachedNavigateHandler), 1, compiled.output.code);
+      assert.equal(count(compiled.output.code, "onClick"), 1, compiled.output.code);
+      assert.equal(
+        compiled.output.code.includes("onClick: _unref(navigate)"),
+        false,
+        compiled.output.code,
+      );
       for (const branchKey of [0, 1]) {
         assert.equal(
           count(

@@ -53,6 +53,75 @@
       ]
     },
     {
+      "id": "repaired",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/globals.d.ts",
+          "source": "globals.d.ts.txt"
+        },
+        {
+          "file": "src/Globals.vue",
+          "source": "sources/repaired.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "undeclared-dollar-globals",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.dollar-globals.json.txt"
+        },
+        {
+          "file": "src/augment.d.ts",
+          "source": "src/augment.d.ts.txt"
+        },
+        {
+          "file": "src/Globals.vue",
+          "source": "src/Globals.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Globals.vue",
+          "line": 6,
+          "column": 57,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property '$undeclared' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$declared'?"
+        },
+        {
+          "file": "src/Globals.vue",
+          "line": 7,
+          "column": 14,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property '$undeclared' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$declared'?"
+        },
+        {
+          "file": "src/Globals.vue",
+          "line": 7,
+          "column": 32,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property '$undeclared' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$declared'?"
+        },
+        {
+          "file": "src/Globals.vue",
+          "line": 6,
+          "column": 43,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ known: number; }'."
+        }
+      ]
+    },
+    {
       "id": "undeclared-only",
       "inputs": [
         {
@@ -78,24 +147,6 @@
           "message": "Property '$undeclared' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$declared'?"
         }
       ]
-    },
-    {
-      "id": "repaired",
-      "inputs": [
-        {
-          "file": "tsconfig.json",
-          "source": "tsconfig.json.txt"
-        },
-        {
-          "file": "src/globals.d.ts",
-          "source": "globals.d.ts.txt"
-        },
-        {
-          "file": "src/Globals.vue",
-          "source": "sources/repaired.vue.txt"
-        }
-      ],
-      "diagnostics": []
     }
   ]
 }

@@ -1,0 +1,27 @@
+[
+  {
+    "name": "vue",
+    "version": "3.5.35",
+    "sha256": "bfcb34fd1c45a973dff086362c30d477f664781edc82447acb7cd34ff97cee59"
+  },
+  {
+    "name": "vue-router",
+    "version": "5.4.0",
+    "sha256": "79ef1456483509599772a9ae8d7253194a149adfc2f399c85005685a6f341517"
+  },
+  {
+    "name": "typescript",
+    "version": "5.9.3",
+    "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+  },
+  {
+    "name": "vue-tsc",
+    "version": "3.3.13",
+    "sha256": "1dfd0d3841336062c2f1b6e2238ad9a83571066336daee01804ca4d2e571022f"
+  },
+  {
+    "name": "vize",
+    "version": "0.562.0",
+    "sha256": "b306e381d0a22acd6c0e5285b7aa55e576b960e89637e6ce4701187926451872"
+  }
+]

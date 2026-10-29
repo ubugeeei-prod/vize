@@ -1,0 +1,1 @@
+<template><p v-for="\u005frow of items">{{ _row }}</p></template>

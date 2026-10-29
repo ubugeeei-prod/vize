@@ -301,7 +301,7 @@ fn empty_editor_workspace_is_valid_without_weakening_explicit_cli_selection() {
     );
     assert_eq!(
         super::try_load_project_config_with_source(Some(project.path())).unwrap_err(),
-        format!(
+        crate::cstr!(
             "no Vite config file found under {}",
             project.path().display()
         )
@@ -331,10 +331,15 @@ fn empty_editor_directory_retains_fresh_defaults_and_strict_cli_checks() {
         )
     );
     assert_eq!(
-        super::load_raw_config_checked(Some(project.path())).err(),
-        Some(format!(
-            "no Vite config file found under {}",
-            project.path().display()
-        ))
+        super::load_raw_config_checked(Some(project.path()))
+            .err()
+            .as_deref(),
+        Some(
+            crate::cstr!(
+                "no Vite config file found under {}",
+                project.path().display()
+            )
+            .as_str()
+        )
     );
 }

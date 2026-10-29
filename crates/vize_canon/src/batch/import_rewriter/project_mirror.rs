@@ -60,6 +60,10 @@ impl ImportRewriter {
             );
         }
 
+        vize_carton::micro_count!("canon.source_census.producer.calls", 1);
+        vize_carton::micro_count!("canon.source_census.producer.source_bytes", source.len());
+        #[cfg(feature = "profiling")]
+        crate::profiling::observe_rewrite_input(source, source_type);
         self.rewrite_with_star_capture(
             source,
             source_type,

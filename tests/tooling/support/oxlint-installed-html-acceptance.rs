@@ -22,6 +22,8 @@ fn main() -> ExitCode {
         "CORSA_EXECUTABLE",
         "TSGO_PATH",
         "TSGO_EXECUTABLE",
+        "TSRS_PATH",
+        "TSRS_EXECUTABLE",
         "VIZE_PUBLIC_NATIVE_CUSTODY",
         "VIZE_OXLINT_NATIVE_CUSTODY",
         "VIZE_OXLINT_PUBLIC_CUSTODY",

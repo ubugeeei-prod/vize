@@ -35,7 +35,7 @@ export function defineConfig(
   return Object.assign(
     async (env: Parameters<VizePlusConfigFactory>[0]) => {
       const source = await resolveConfig(config, env);
-      const { vp, metadata, compiler } = normalizeConfig(source, integration);
+      const { vp, metadata, compiler, plugin } = normalizeConfig(source, integration);
       const { options } = metadata;
       const legacy =
         compiler !== false &&
@@ -50,7 +50,7 @@ export function defineConfig(
         // User pre-plugins must be able to resolve imports before the compiler.
         plugins.push(
           vize({
-            ...compiler,
+            ...plugin,
             configMode: false,
             config: metadata.config,
           }) as unknown as PluginOption,
@@ -65,7 +65,10 @@ export function defineConfig(
             ? vp.run
             : {
                 ...vp.run,
-                tasks: { ...createTasks(vp.run?.tasks, options.tasks), ...vp.run?.tasks },
+                tasks: {
+                  ...createTasks(vp.run?.tasks, options.tasks, options.taskCache),
+                  ...vp.run?.tasks,
+                },
               },
         [sourceConfigKey]: source,
         [taskConfigKey]: metadata,

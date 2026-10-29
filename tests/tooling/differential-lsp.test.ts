@@ -23,6 +23,13 @@ const pack = path.join(root, "tests/_fixtures/differential/lsp");
 const manifestPath = path.join(pack, "manifest.json");
 const loaded = loadLspManifest(manifestPath);
 const inventory = lspFixtureInventory(loaded);
+const fixtureById = (id: string) => {
+  const fixture = loaded.cases.find((current) => current.id === id);
+  assert(fixture, id);
+  return fixture;
+};
+const links = "lsp/fix-history/inactive-imports";
+const onTypeCrlf = "lsp/fix-history/on-type-crlf";
 const build = {
   sourceRevision: loaded.manifest.baseRevision,
   binaryPath: "target/ci/vize",
@@ -51,7 +58,7 @@ void test("LSP manifest binds original complete contracts and every original req
     loaded.cases.map((fixture) => fixture.requests.length),
     inventory.map(({ requestCount }) => requestCount),
   );
-  assert.equal(loaded.cases[1].files[0].bytes.filter((byte) => byte === 13).length, 18);
+  assert.equal(fixtureById(onTypeCrlf).files[0].bytes.filter((byte) => byte === 13).length, 18);
   for (const relative of [
     "inactive-imports/case.json",
     "inactive-imports/response.expected.json",
@@ -71,6 +78,36 @@ void test("LSP manifest binds original complete contracts and every original req
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
+  }
+});
+
+void test("configured initial diagnostics reject missing codes, messages and UTF16 ranges", () => {
+  const fixture = fixtureById("lsp/regression/unused-disable-config-10930");
+  assert.deepEqual(inspectLspObservation(fixture, referenceObservation(fixture)), [
+    { requestId: 2, state: "equal" },
+  ]);
+  for (const mutation of ["missing", "code", "message", "range"]) {
+    const observation = referenceObservation(fixture);
+    rewriteFrames(observation, "server", (messages) => {
+      const publication = messages.find(
+        (message) => message.method === "textDocument/publishDiagnostics",
+      )!;
+      const params = publication.params as {
+        diagnostics: Array<{
+          code: string;
+          message: string;
+          range: { start: { character: number } };
+        }>;
+      };
+      if (mutation === "missing") params.diagnostics = [];
+      else if (mutation === "code") params.diagnostics[0]!.code = "vue/no-v-html";
+      else if (mutation === "message") params.diagnostics[0]!.message = "different";
+      else params.diagnostics[0]!.range.start.character += 1;
+    });
+    assert.throws(
+      () => inspectLspObservation(fixture, observation),
+      /complete configured initial diagnostic packet/,
+    );
   }
 });
 
@@ -267,34 +304,34 @@ void test("LSP contract rejects stale readiness, duplicate replies and incomplet
 });
 
 void test("LSP complete JSON comparison preserves link order, extra fields and null versus array", () => {
-  for (const [index, mutate] of [
-    [0, (messages: JsonRpcMessage[]) => resultArray(messages[2]).reverse()],
+  for (const [id, mutate] of [
+    [links, (messages: JsonRpcMessage[]) => resultArray(messages[2]).reverse()],
     [
-      0,
+      links,
       (messages: JsonRpcMessage[]) => {
         linkAt(messages[2], 0).tooltip = "extra";
       },
     ],
     [
-      0,
+      links,
       (messages: JsonRpcMessage[]) => {
         linkAt(messages[2], 0).range.start.character += 1;
       },
     ],
     [
-      1,
+      onTypeCrlf,
       (messages: JsonRpcMessage[]) => {
         messages[5].result = [];
       },
     ],
     [
-      1,
+      onTypeCrlf,
       (messages: JsonRpcMessage[]) => {
         messages[4].result = null;
       },
     ],
-  ] as Array<[number, (messages: JsonRpcMessage[]) => void]>) {
-    const fixture = loaded.cases[index];
+  ] as Array<[string, (messages: JsonRpcMessage[]) => void]>) {
+    const fixture = fixtureById(id);
     const observation = referenceObservation(fixture);
     rewriteFrames(observation, "server", mutate);
     assert(

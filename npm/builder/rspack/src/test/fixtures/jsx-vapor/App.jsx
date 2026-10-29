@@ -5,3 +5,5 @@ const _App = () => (
     <span>{1 + 1}</span>
   </div>
 );
+
+export default _App;

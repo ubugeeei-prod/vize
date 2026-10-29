@@ -3,12 +3,39 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use oxc_ast::ast::AssignmentExpression;
 use oxc_span::Span;
 
-use crate::{Context, cursor::ParserCheckpoint};
+use crate::{Context, cursor::ParserCheckpoint, speculation::FailedSubproblems};
 
 pub struct ParserState<'a> {
+    /// Last raw `>` in this parser's immutable source, computed on the first
+    /// expression type-argument probe. Zero also represents no `>`: an opener
+    /// at any source offset cannot be closed by a byte at offset zero.
+    /// This source fact survives speculative rewinds, like failed probes.
+    pub last_type_argument_close: Option<usize>,
+
     /// Failed probes survive rewinds. Share the existing arrow-probe table so
     /// ordinary parses incur no additional table initialization or drop cost.
     pub failed_speculations: FxHashSet<FailedSpeculation>,
+
+    /// Dynamic scope of reversible expression type-argument probes. The
+    /// committed parser never consumes memoized failing subproblems.
+    pub type_argument_speculation_depth: usize,
+    /// Keep valid generic fast paths free of memo-table/key work. The first
+    /// failed expression type-argument probe enables sharing for later probes.
+    pub reuse_failed_type_argument_subproblems: bool,
+    /// Keys include grammar/lexer context and persistent effect revisions.
+    /// Both the header and buckets are allocated only for an admitted failure.
+    pub failed_speculative_subproblems: FailedSubproblems<'a>,
+    /// Cover-grammar table mutations survive parser rewind. Fence sharing
+    /// across those changes, including changes which keep table length fixed.
+    pub speculation_effects_revision: u64,
+    #[cfg(test)]
+    pub disable_failed_subproblems: bool,
+    #[cfg(test)]
+    pub subproblem_visits: usize,
+    #[cfg(test)]
+    pub subproblem_reuses: usize,
+    #[cfg(test)]
+    pub memo_entry_calls: usize,
 
     /// Temporary storage for `CoverInitializedName` `({ foo = bar })`.
     /// Keyed by `ObjectProperty`'s span.start.
@@ -38,7 +65,20 @@ pub struct ParserState<'a> {
 impl ParserState<'_> {
     pub fn new() -> Self {
         Self {
+            last_type_argument_close: None,
             failed_speculations: FxHashSet::default(),
+            type_argument_speculation_depth: 0,
+            reuse_failed_type_argument_subproblems: false,
+            failed_speculative_subproblems: FailedSubproblems::default(),
+            speculation_effects_revision: 0,
+            #[cfg(test)]
+            disable_failed_subproblems: false,
+            #[cfg(test)]
+            subproblem_visits: 0,
+            #[cfg(test)]
+            subproblem_reuses: 0,
+            #[cfg(test)]
+            memo_entry_calls: 0,
             cover_initialized_name: FxHashMap::default(),
             trailing_commas: FxHashMap::default(),
             potential_await_reparse: Vec::new(),

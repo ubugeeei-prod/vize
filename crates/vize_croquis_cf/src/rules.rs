@@ -47,6 +47,7 @@ pub(crate) use complexity::{
 };
 pub use component_resolution::{ComponentResolutionIssue, analyze_component_resolution};
 pub use element_id::{UniqueIdIssue, analyze_element_ids};
+pub(crate) use element_id::{analyze_element_ids_with_nuxt_context, has_closed_nuxt_render_facts};
 pub use emit::{EmitFlow, analyze_emits};
 pub use event_bubbling::{EventBubble, analyze_event_bubbling};
 pub use fallthrough::{
@@ -54,9 +55,8 @@ pub use fallthrough::{
     FallthroughUsageAttrKind, FallthroughUsageFact, analyze_fallthrough,
     collect_fallthrough_component_facts, collect_fallthrough_usage_facts, summarize_fallthrough,
 };
-pub use props_validation::{
-    PropsValidationIssue, PropsValidationIssueKind, analyze_props_validation,
-};
+pub(crate) use props_validation::analyze_props_validation_with_nuxt_outlets;
+pub use props_validation::{PropsValidationIssue, PropsValidationIssueKind};
 pub(crate) use provide_inject::{
     ProvideInjectAnalysis, ProvideInjectIndex, analyze_provide_inject_with_index,
     build_provide_inject_tree_with_index,

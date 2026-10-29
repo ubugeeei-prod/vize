@@ -99,7 +99,7 @@ fn encodes_reserved_characters_in_virtual_file_uris() {
 }
 
 #[test]
-fn normalizes_explicit_node_modules_bin_wrapper_to_native_preview_binary() {
+fn keeps_explicit_opaque_wrapper_instead_of_unrelated_native_preview() {
     let temp_dir = TempDir::new().unwrap();
     let root = temp_dir.path();
     let wrapper = root.join("node_modules/.bin/tsgo");
@@ -117,7 +117,7 @@ fn normalizes_explicit_node_modules_bin_wrapper_to_native_preview_binary() {
 
     let executor = CorsaExecutor::with_corsa_path(root, Some(&wrapper)).unwrap();
 
-    assert_eq!(executor.corsa_path(), native.canonicalize().unwrap());
+    assert_eq!(executor.corsa_path(), wrapper.canonicalize().unwrap());
 }
 
 #[test]
@@ -195,7 +195,7 @@ fn cli_global_diagnostics_do_not_trigger_session_fallback() {
 
     let mut project = VirtualProject::new(&case_dir).unwrap();
     project.register_path(&source).unwrap();
-    let executor = CorsaExecutor::new(&case_dir).unwrap();
+    let executor = CorsaExecutor::with_corsa_path(&case_dir, Some(&tsgo)).unwrap();
     let result = executor.check(&project).unwrap();
 
     assert!(!result.success);
@@ -236,7 +236,7 @@ fn checks_with_cli_when_project_session_api_is_unavailable() {
 
     let mut project = VirtualProject::new(&case_dir).unwrap();
     project.register_path(&source).unwrap();
-    let executor = CorsaExecutor::new(&case_dir).unwrap();
+    let executor = CorsaExecutor::with_corsa_path(&case_dir, Some(&tsgo)).unwrap();
     let result = executor.check(&project).unwrap();
 
     assert!(result.success);

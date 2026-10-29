@@ -4,6 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gzipSync, gunzipSync } from "node:zlib";
+import { readPinnedArtifact } from "../differential/harness.mjs";
 import { loadLspManifest } from "../differential/lsp-manifest.ts";
 import { validateLspReport } from "../differential/lsp-report.ts";
 import {
@@ -13,6 +14,10 @@ import {
   validateLocalResolveSourceSession,
 } from "../differential/lsp-source-sessions.ts";
 import { referenceObservation, referenceReport } from "./support/lsp/differential-reference.ts";
+import {
+  NATIVE_CAPACITY_ID,
+  NATIVE_CAPACITY_UNSUPPORTED_REASON,
+} from "../differential/lsp-native-capacity-contract.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const fixture = readLocalResolveSourceSession(root);
@@ -62,7 +67,9 @@ test("only the closed transition profile can have an empty generic request list"
       delete value.sourceSession;
     },
     (value: typeof fixture.data) => {
-      value.sourceSession!.plannedClientRpcCount = 22 as 23;
+      const session = value.sourceSession;
+      assert.ok(session?.kind === "local-completion-resolve-v1");
+      session.plannedClientRpcCount = 22 as 23;
     },
     (value: typeof fixture.data) => {
       value.provenance.witness!.path = "unrelated.rs";
@@ -116,8 +123,21 @@ test("unsupported transitions get no synthetic wire, reference match or native c
   const row = report.rows.find(({ id }) => id === LOCAL_RESOLVE_SESSION_ID)!;
   assert.deepEqual(row.legacy, sourceSessionUnsupportedLegacy());
   const summary = validateLspReport(loaded, report, build);
-  assert.equal(summary.legacyUnsupported, 1);
-  assert.equal(summary.legacyMatches, loaded.cases.length - 1);
+  const unsupportedIds = [LOCAL_RESOLVE_SESSION_ID, NATIVE_CAPACITY_ID];
+  assert.deepEqual(
+    report.rows.filter(({ legacy }) => legacy.state === "unsupported").map(({ id }) => id),
+    unsupportedIds,
+  );
+  const capacity = report.rows.find(({ id }) => id === NATIVE_CAPACITY_ID);
+  assert.ok(capacity);
+  assert.deepEqual(capacity.legacy, {
+    state: "unsupported",
+    verdict: "unsupported-transition",
+    comparator: "source-inspected-session",
+    reason: NATIVE_CAPACITY_UNSUPPORTED_REASON,
+  });
+  assert.equal(summary.legacyUnsupported, unsupportedIds.length);
+  assert.equal(summary.legacyMatches, loaded.cases.length - unsupportedIds.length);
   assert.equal(summary.nativeHandled, 0);
   for (const extra of [
     { state: "completed", verdict: "matched-reference" },
@@ -125,13 +145,17 @@ test("unsupported transitions get no synthetic wire, reference match or native c
     { observation: {} },
     { workspace: {} },
   ]) {
-    const forged = structuredClone(report);
-    Object.assign(forged.rows.find(({ id }) => id === LOCAL_RESOLVE_SESSION_ID)!.legacy, extra);
-    assert.throws(() => validateLspReport(loaded, forged, build));
+    for (const id of unsupportedIds) {
+      const forged = structuredClone(report);
+      const changed = forged.rows.find((row) => row.id === id);
+      assert.ok(changed);
+      Object.assign(changed.legacy, extra);
+      assert.throws(() => validateLspReport(loaded, forged, build));
+    }
   }
 });
 
-test("the handler compares complete CSS documentation from the retained public response", () => {
+test("the handler compares complete CURRENT CSS documentation and preserves the public response", () => {
   const before = JSON.parse(
     gunzipSync(fixture.files.get("custody/public-before-observation.json.gz")!).toString("utf8"),
   );
@@ -147,5 +171,24 @@ test("the handler compares complete CSS documentation from the retained public r
   );
   const literal = source.match(/documentation\.value,\s*r#"([\s\S]*?)"#/u);
   assert.ok(literal);
-  assert.deepEqual({ kind: "markdown", value: literal[1] }, response.documentation);
+  const current = JSON.parse(
+    readPinnedArtifact(
+      path.join(root, "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572"),
+      {
+        path: "local-completion-resolve.expected-current.json",
+        sha256: "33f35ddde74f1bc0221e47d07d891d594bac2c86fdaea0c21b3ae2539a667035",
+      },
+    ).toString("utf8"),
+  );
+  // This reference-only law permits exactly the authored Example delta.
+  // Runtime comparisons use the complete fixed CURRENT object unchanged.
+  assert.deepEqual({ ...current, documentation: response.documentation }, response);
+  assert.equal(
+    current.documentation.value,
+    response.documentation.value.replace(
+      "```css\ndisplay: block;\n```",
+      "```css\n.example {\n  display: block;\n}\n```",
+    ),
+  );
+  assert.deepEqual({ kind: "markdown", value: literal[1] }, current.documentation);
 });

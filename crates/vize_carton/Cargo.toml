@@ -15,13 +15,19 @@ globset = { workspace = true, optional = true }
 vize_l0 = { workspace = true }
 serde.workspace = true
 serde_json.workspace = true
+sha2.workspace = true
 tempfile.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+oxc_allocator.workspace = true
+oxc_ast.workspace = true
+oxc_parser.workspace = true
+oxc_span.workspace = true
 which = { workspace = true }
 
 [features]
 default = []
+micro-profiling = ["vize_l0/micro-profiling"]
 lint-glob = ["dep:globset"]
 
 [dev-dependencies]

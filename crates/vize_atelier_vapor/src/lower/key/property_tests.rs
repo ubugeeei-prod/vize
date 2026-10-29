@@ -182,8 +182,8 @@ fn transferred_branch_keys_keep_ineligible_original_targets_unwrapped() {
         };
         let authored_span = authored_key.loc().span;
         assert_eq!(
-            &source[authored_span.start as usize..authored_span.end as usize],
-            "epoch"
+            source.get(authored_span.start as usize..authored_span.end as usize),
+            Some("epoch")
         );
         let errors = transform(
             &allocator,

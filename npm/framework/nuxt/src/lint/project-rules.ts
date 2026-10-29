@@ -24,11 +24,18 @@ export interface ProjectLintRuleEntry {
   rules: ProjectLintRules;
 }
 
+/** A Vite+ `lint.overrides` block; `files` are resolved from the Vite config directory. */
+export interface ProjectOxlintOverride {
+  files: string[];
+  rules: ProjectLintRules;
+}
+
 export interface ProjectLintRuleSets {
   entries?: ProjectLintRuleEntry[];
   jsPlugins?: string[];
   vize?: ProjectLintRules;
   oxlint?: ProjectLintRules;
+  oxlintOverrides?: ProjectOxlintOverride[];
   warnings?: string[];
 }
 
@@ -81,6 +88,7 @@ export async function readProjectLintRuleSets(
   const linter = project.linter;
   const oxlint = explicitOxlintRules(project.oxlint);
   const jsPlugins = explicitOxlintJsPlugins(project.oxlint, project.oxlintConfigDir);
+  const oxlintOverrides = explicitOxlintOverrides(project.oxlint, project.oxlintConfigDir);
   const warnings: string[] = [];
   let vize: ProjectLintRules | undefined;
   if (linter) {
@@ -119,6 +127,7 @@ export async function readProjectLintRuleSets(
     ...(jsPlugins.length > 0 ? { jsPlugins } : {}),
     ...(vize ? { vize } : {}),
     ...(Object.keys(oxlint).length > 0 ? { oxlint } : {}),
+    ...(oxlintOverrides.length > 0 ? { oxlintOverrides } : {}),
     ...(warnings.length > 0 ? { warnings } : {}),
   };
 }
@@ -233,15 +242,56 @@ async function loadProjectViteConfigSource(
   }
 }
 
+const OXLINT_SEVERITIES = new Map<unknown, NuxtLintSeverity>([
+  ["off", "off"],
+  ["allow", "off"],
+  [0, "off"],
+  ["warn", "warn"],
+  [1, "warn"],
+  ["error", "error"],
+  ["deny", "error"],
+  [2, "error"],
+]);
+
 function explicitOxlintRules(value: unknown): ProjectLintRules {
   if (!value || typeof value !== "object") return {};
-  const rules = "rules" in value ? (value as { rules?: unknown }).rules : undefined;
-  if (!rules || typeof rules !== "object") return {};
+  return oxlintRules("rules" in value ? (value as { rules?: unknown }).rules : undefined);
+}
+
+/** Oxlint's `severity` and `[severity, ...options]` forms, with severity aliases normalized. */
+function oxlintRules(value: unknown): ProjectLintRules {
+  if (!value || typeof value !== "object") return {};
   const result: ProjectLintRules = {};
-  for (const [id, severity] of Object.entries(rules)) {
-    if (isSeverity(severity)) result[id] = severity;
+  for (const [id, config] of Object.entries(value)) {
+    const severity = OXLINT_SEVERITIES.get(Array.isArray(config) ? config[0] : config);
+    if (!severity) continue;
+    result[id] = Array.isArray(config) ? [severity, ...config.slice(1)] : severity;
   }
   return result;
+}
+
+function explicitOxlintOverrides(
+  value: unknown,
+  configDir: string | undefined,
+): ProjectOxlintOverride[] {
+  if (!value || typeof value !== "object" || !configDir) return [];
+  const overrides = "overrides" in value ? (value as { overrides?: unknown }).overrides : undefined;
+  if (!Array.isArray(overrides)) return [];
+  return overrides.flatMap((candidate) => {
+    if (!candidate || typeof candidate !== "object") return [];
+    const raw = candidate as { files?: unknown; rules?: unknown };
+    const files = Array.isArray(raw.files)
+      ? raw.files.flatMap((glob) => {
+          if (typeof glob !== "string" || !glob) return [];
+          // Oxlint matches override globs from the config file's directory.
+          const negated = glob.startsWith("!");
+          const resolved = path.resolve(configDir, negated ? glob.slice(1) : glob);
+          return [negated ? `!${resolved}` : resolved];
+        })
+      : [];
+    const rules = oxlintRules(raw.rules);
+    return files.length > 0 && Object.keys(rules).length > 0 ? [{ files, rules }] : [];
+  });
 }
 
 function explicitOxlintJsPlugins(value: unknown, configDir: string | undefined): string[] {

@@ -20,14 +20,14 @@ on:
       - tools/support/compat/nuxt/relative-glob-*
       - tools/support/compat/nuxt/fixtures/vite-relative-glob/**
       - tests/_fixtures/differential/compiler/vite-relative-glob/**
-      - tests/tooling/vite-relative-glob.test.mjs
+      - tests/tooling/vite-relative-glob.test.ts
       - tests/_fixtures/differential/compiler/nuxt-compiler-defaults/**
       - tests/tooling/nuxt-compiler-defaults.test.mjs
       - tests/_fixtures/differential/linter/nuxt-oxlint-config-root/**
       - tests/tooling/nuxt-oxlint-config-root.test.mjs
       - tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**
       - tests/_fixtures/differential/compiler/nuxt-prefetch-manifest/**
-      - tests/tooling/nuxt-prefetch-manifest.test.mjs
+      - tests/tooling/nuxt-prefetch-manifest.test.ts
       - tests/tooling/nuxt-source-binding.test.mjs
       - tests/tooling/vue-config-nuxt-host-context.test.ts
       - tests/_fixtures/differential/config/nuxt-elk-host-options/**
@@ -57,14 +57,14 @@ on:
       - tools/support/compat/nuxt/relative-glob-*
       - tools/support/compat/nuxt/fixtures/vite-relative-glob/**
       - tests/_fixtures/differential/compiler/vite-relative-glob/**
-      - tests/tooling/vite-relative-glob.test.mjs
+      - tests/tooling/vite-relative-glob.test.ts
       - tests/_fixtures/differential/compiler/nuxt-compiler-defaults/**
       - tests/tooling/nuxt-compiler-defaults.test.mjs
       - tests/_fixtures/differential/linter/nuxt-oxlint-config-root/**
       - tests/tooling/nuxt-oxlint-config-root.test.mjs
       - tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**
       - tests/_fixtures/differential/compiler/nuxt-prefetch-manifest/**
-      - tests/tooling/nuxt-prefetch-manifest.test.mjs
+      - tests/tooling/nuxt-prefetch-manifest.test.ts
       - tests/tooling/nuxt-source-binding.test.mjs
       - tests/tooling/vue-config-nuxt-host-context.test.ts
       - tests/_fixtures/differential/config/nuxt-elk-host-options/**

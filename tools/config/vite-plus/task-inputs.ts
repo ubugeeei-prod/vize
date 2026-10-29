@@ -158,12 +158,35 @@ export const cacheInputs = {
     "playground/e2e/**",
   ],
   tooling: toolingInputs,
+  // Strict project gates spawn the checker instead of importing every file in
+  // the root solution. Include source/config inputs even when they are deleted.
+  toolingTypeScriptProjects: [
+    "tsconfig.json",
+    "vite.config.ts",
+    "{tools,tests,npm,docs,.github}/**/*.{ts,mts,cts,js,mjs,cjs,json}",
+    "examples/oxlint-vize/check-configs.ts",
+  ],
   // These two original product observers consume source-built CLI/NAPI,
   // owned fixtures and runtime packages. Plan docs remain compile-time inputs;
   // release prose and decision records are not read by their producers.
   toolingProductObservers: [
     ...toolingInputs.filter((input) => input !== "docs/**"),
     "docs/davinci/plan/**",
+  ],
+  // Real published Router corpus; the runtime oracle consumes the exact source
+  // CLI and the provider helper verifies the complete frozen project first.
+  toolingExperimentalRouter: [
+    ".github/**",
+    ".cargo/**",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "crates/vize_canon/**",
+    "crates/vize_corsa/**",
+    "crates/vize/src/commands/check*",
+    "crates/vize/src/commands/check/**",
+    "tests/fixtures/typechecker/experimental-router-5.4/**",
+    "tools/support/compat/github/source-cli*",
   ],
   toolingPlans: ["docs/**", "tests/tooling/**"],
   toolingLedgers: ["docs/**", "tests/**", "tools/support/compat/fixtures/**"],

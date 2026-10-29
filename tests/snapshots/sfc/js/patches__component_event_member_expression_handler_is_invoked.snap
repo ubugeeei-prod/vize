@@ -15,8 +15,8 @@ return (_ctx, _cache) => {
   const _component_ActionPanel = _resolveComponent("ActionPanel")
 
   return (_openBlock(), _createBlock(_component_ActionPanel, {
-    onSelectItem: _cache[0] || (_cache[0] = (...args) => (_unref(actionHandler).selectItem && _unref(actionHandler).selectItem(...args)))
-  }))
+    onSelectItem: _unref(actionHandler).selectItem
+  }, null, 8 /* PROPS */, ["onSelectItem"]))
 }
 }
 

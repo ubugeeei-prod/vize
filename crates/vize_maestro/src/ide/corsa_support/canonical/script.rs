@@ -107,7 +107,7 @@ async fn open_script_workspace(
         .dependencies
         .push(super::CanonicalDependencyDocument {
             source_uri: std::mem::replace(&mut document.source_uri, ctx.uri.clone()),
-            source: host.content.into(),
+            source: host.content.as_str().into(),
             request_uri: std::mem::replace(&mut document.request_uri, selected.request_uri),
             virtual_result: std::mem::replace(
                 &mut document.virtual_result,

@@ -13,30 +13,48 @@ const ts = require(
     paths: [path.join(root, "editors/vscode"), path.join(root, "tests")],
   }),
 ) as typeof import("typescript");
-const initVuePlugin = require(
-  path.join(root, "editors/vscode/typescript-vue-plugin/index.cjs"),
-) as (modules: { typescript: typeof ts }) => {
+const initVuePlugin = require(path.join(root, "npm/typescript-plugin/index.cjs")) as (modules: {
+  typescript: typeof ts;
+}) => {
   create(info: {
     languageService: import("typescript").LanguageService;
     languageServiceHost: import("typescript").LanguageServiceHost;
-    project: { getCurrentDirectory(): string };
+    project: {
+      getCurrentDirectory(): string;
+      projectService?: {
+        getScriptInfo(
+          fileName: string,
+        ): { hasMixedContent: boolean; isScriptOpen(): boolean } | undefined;
+      };
+    };
     serverHost: typeof ts.sys;
+    config?: { nativePath: string };
   }): import("typescript").LanguageService;
 };
 
 test("TypeScript Vue plugin exposes generated SFC component types", () => {
   const project = createProject();
   try {
-    const { bumpProjectVersion, host } = createHost(project.root, [
+    const { bumpProjectVersion, host, getScriptInfo } = createHost(project.root, [
       project.mainTs,
       project.ambientDts,
     ]);
+    const originalOptions = host.getCompilationSettings();
+    const configFile = ts.parseJsonText("tsconfig.json", "{}");
+    Object.defineProperty(originalOptions, "configFile", { value: configFile });
     const service = initVuePlugin({ typescript: ts }).create({
       languageService: ts.createLanguageService(host),
       languageServiceHost: host,
-      project: { getCurrentDirectory: () => project.root },
+      project: { getCurrentDirectory: () => project.root, projectService: { getScriptInfo } },
       serverHost: ts.sys,
+      config: { nativePath: project.nativeDir },
     });
+    assert.equal(host.getCompilationSettings().configFile, configFile);
+    assert.equal(
+      Object.getOwnPropertyDescriptor(host.getCompilationSettings(), "configFile")?.enumerable,
+      false,
+    );
+    assert.equal(originalOptions.allowNonTsExtensions, undefined);
     const source = fs.readFileSync(project.mainTs, "utf8");
     const quickInfo = service.getQuickInfoAtPosition(
       project.mainTs,
@@ -113,10 +131,14 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       formatDiagnostics(service.getSemanticDiagnostics(project.mainTs)),
       /Property 'title' is missing/,
     );
+    assert.match(
+      formatDiagnostics(service.getSemanticDiagnostics(project.mainTs)),
+      /declaredTitle/,
+    );
     assert.equal(
       nativeGenerationCount(project.nativeCalls),
-      2,
-      "expected native generation for the imported component and side-effect specifier",
+      3,
+      "expected native generation for the imported component, package component and side-effect specifier",
     );
 
     fs.writeFileSync(
@@ -138,7 +160,7 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
     );
     assert.equal(
       nativeGenerationCount(project.nativeCalls),
-      3,
+      4,
       "expected one additional native generation after the SFC edit",
     );
   } finally {
@@ -156,15 +178,21 @@ function createProject() {
     mainTs,
     [
       'import App from "./App.vue";',
+      'import Declared from "./Declared.vue";',
       'import { BarrelApp } from "./components";',
       'import { PackageApp } from "@acme/ui";',
       'import "./SideEffect.vue";',
       'const props: InstanceType<typeof App>["$props"] = {};',
+      'const declaredProps: InstanceType<typeof Declared>["$props"] = {};',
       "BarrelApp;",
       "PackageApp;",
       "props;",
       "",
     ].join("\n"),
+  );
+  fs.writeFileSync(
+    path.join(srcDir, "Declared.d.vue.ts"),
+    "declare const component: new () => { $props: { declaredTitle: string } };\nexport default component;\n",
   );
   const appVue = path.join(srcDir, "App.vue");
   fs.writeFileSync(
@@ -226,6 +254,10 @@ function createProject() {
     path.join(nativeDir, "package.json"),
     JSON.stringify({ main: "index.cjs", name: "@vizejs/native", version: "0.0.0" }),
   );
+  fs.copyFileSync(
+    path.join(root, "npm/native/language-projection.js"),
+    path.join(nativeDir, "language-projection.js"),
+  );
   const nativeCalls = path.join(nativeDir, "calls.txt");
   fs.writeFileSync(nativeCalls, "0");
   fs.writeFileSync(
@@ -234,23 +266,24 @@ function createProject() {
       '"use strict";',
       'const fs = require("node:fs");',
       'const path = require("node:path");',
-      "exports.typeCheck = (source) => {",
+      "exports.generateVueLanguageCode = (source) => {",
       '  const callsFile = path.join(__dirname, "calls.txt");',
       '  const calls = Number(fs.readFileSync(callsFile, "utf8")) + 1;',
       "  fs.writeFileSync(callsFile, String(calls));",
       "  const props = source.match(/^\\s*defineProps<([\\s\\S]*?)>\\s*\\(\\s*\\)/m)?.[1] || '{}';",
-      "  return { virtualTs: `declare const component: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: ${props} } & (new () => { $props: ${props} });\\nexport default component;\\n` };",
+      "  return JSON.stringify({ extension: '.tsx', mappings: [], diagnostics: [], text: `declare const component: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: ${props} } & (new () => { $props: ${props} });\\nexport default component;\\n` });",
       "};",
       "",
     ].join("\n"),
   );
 
-  return { ambientDts, appVue, mainTs, nativeCalls, packageVue, root: rootDir };
+  return { ambientDts, appVue, mainTs, nativeCalls, nativeDir, packageVue, root: rootDir };
 }
 
 function createHost(rootDir: string, rootFiles: string[]) {
   const options: import("typescript").CompilerOptions = {
     allowSyntheticDefaultImports: true,
+    allowArbitraryExtensions: true,
     module: ts.ModuleKind.ESNext,
     moduleResolution: ts.ModuleResolutionKind.Bundler,
     noEmit: true,
@@ -259,6 +292,7 @@ function createHost(rootDir: string, rootFiles: string[]) {
   };
 
   let projectVersion = 0;
+  const mixedInfos = new Set<string>();
   const host: import("typescript").LanguageServiceHost = {
     directoryExists: (directoryName) => ts.sys.directoryExists(directoryName),
     fileExists: (fileName) => ts.sys.fileExists(fileName),
@@ -269,6 +303,10 @@ function createHost(rootDir: string, rootFiles: string[]) {
     getProjectVersion: () => String(projectVersion),
     getScriptFileNames: () => rootFiles,
     getScriptSnapshot(fileName) {
+      if (fileName.endsWith(".vue")) {
+        mixedInfos.add(fileName);
+        return ts.ScriptSnapshot.fromString("");
+      }
       const source = ts.sys.readFile(fileName);
       return source === undefined ? undefined : ts.ScriptSnapshot.fromString(source);
     },
@@ -278,7 +316,12 @@ function createHost(rootDir: string, rootFiles: string[]) {
     readFile: (fileName, encoding) => ts.sys.readFile(fileName, encoding),
     useCaseSensitiveFileNames: () => ts.sys.useCaseSensitiveFileNames,
   };
-  return { bumpProjectVersion: () => projectVersion++, host };
+  return {
+    bumpProjectVersion: () => projectVersion++,
+    host,
+    getScriptInfo: (file: string) =>
+      mixedInfos.has(file) ? { hasMixedContent: true, isScriptOpen: () => false } : undefined,
+  };
 }
 
 function displayPartsText(parts: readonly import("typescript").SymbolDisplayPart[] | undefined) {

@@ -1,0 +1,8 @@
+import 'vue'
+
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    isSP: boolean
+    appName: string
+  }
+}

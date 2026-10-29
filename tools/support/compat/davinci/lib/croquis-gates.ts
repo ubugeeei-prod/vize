@@ -31,7 +31,7 @@ export const GATES: Record<string, readonly string[]> = {
     "SemanticTemplateExpressionSnapshot",
     "UnusedTemplateVar",
   ],
-  ComponentUsages: ["Croquis.component_usages", "Croquis.used_components"],
+  ComponentUsages: ["Croquis.used_components"],
   analyze_hoisting: ["Croquis.hoists", "HoistTracker"],
   "symbol-table": ["Croquis.symbols", "Symbol", "SymbolFlags", "SymbolId", "SymbolTable"],
   UndefinedRefs: ["Croquis.undefined_refs"],

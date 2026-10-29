@@ -66,6 +66,7 @@ pub use bridge::{
 };
 pub use diagnosing_configuration::{DiagnosingConfiguration, DiagnosingSnapshot};
 pub(crate) use editor_session::EditorMirrorSession;
+pub use editor_session::is_editor_mirror_path;
 pub use native_vue::{NativeVueCheck, NativeVueError};
 pub use original_program::{OriginalProgramCheck, OriginalProgramError};
 #[doc(hidden)]

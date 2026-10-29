@@ -14,7 +14,10 @@ mod l2_input;
 mod select;
 mod string_plan;
 
-pub use l2_input::compile_l2_to_ssr;
+pub use l2_input::{
+    compile_l2_to_ssr, compile_l2_to_ssr_with_experimental_options,
+    compile_l2_to_ssr_with_host_context,
+};
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_l0::config::VueVersion;
@@ -32,6 +35,7 @@ pub(crate) struct SsrL4Request<'o> {
     pub(crate) options: &'o SsrCompilerOptions,
     pub(crate) experimental: &'o SsrCompilerExperimentalOptions,
     pub(crate) context: crate::SsrSfcContext,
+    pub(crate) runtime_module_name: &'o str,
     pub(crate) template_syntax: TemplateSyntaxMode,
     pub(crate) has_custom_elements: bool,
     /// Original parser bundle; direct L2 entry never receives this authority.

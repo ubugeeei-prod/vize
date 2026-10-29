@@ -12,7 +12,7 @@
 //! - the enclosing component function's name (`function App` or
 //!   `const App = () => …`).
 
-mod signature;
+pub(crate) mod signature;
 
 use oxc_ast::ast::{
     ArrowFunctionExpression, Expression, FormalParameters, Function, FunctionBody, JSXElement,

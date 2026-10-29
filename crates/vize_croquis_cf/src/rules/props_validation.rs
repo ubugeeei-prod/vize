@@ -10,9 +10,10 @@ use vize_carton::{CompactString, FxHashMap, cstr};
 mod helpers;
 
 use helpers::{
-    actual_literal_type, declared_prop, define_props_offset, extract_passed_props_for_component,
+    actual_literal_type, declared_prop, define_props_offset,
+    extract_authored_passed_props_for_component, extract_passed_props_for_component,
     has_dynamic_prop_name, has_passed_prop, imported_aliases_for_child, is_builtin_attr,
-    prop_type_accepts_actual,
+    nuxt_page_forwards_prop, prop_type_accepts_actual,
 };
 
 /// Information about a props validation issue.
@@ -58,14 +59,10 @@ struct PropInfo {
     prop_type: Option<CompactString>,
 }
 
-/// Analyze props validation across component boundaries.
-///
-/// This analyzer checks:
-/// 1. Props passed to children are declared in their defineProps
-/// 2. Required props are always passed
-pub fn analyze_props_validation(
+pub(crate) fn analyze_props_validation_with_nuxt_outlets(
     registry: &ModuleRegistry,
     graph: &DependencyGraph,
+    nuxt_page_outlets: &FxHashMap<(FileId, FileId), FileId>,
 ) -> (Vec<PropsValidationIssue>, Vec<CrossFileDiagnostic>) {
     let mut issues = Vec::new();
     let mut diagnostics = Vec::new();
@@ -142,13 +139,46 @@ pub fn analyze_props_validation(
         // This requires parsing the template to find the actual props passed
         // For now, we focus on checking required props from the child's perspective
         let aliases = imported_aliases_for_child(registry, parent_entry, child_entry);
-        let passed_usages = extract_passed_props_for_component(
+        let mut passed_usages = extract_authored_passed_props_for_component(
             &parent_entry.analysis,
             child_component_name.as_str(),
             &aliases,
-        );
+        )
+        .into_iter()
+        .map(|usage| (parent_id, usage))
+        .collect::<Vec<_>>();
+        if let Some(outlet) = nuxt_page_outlets.get(&(parent_id, child_id)).copied()
+            && let Some(outlet_entry) = registry.get(outlet)
+        {
+            passed_usages.extend(
+                extract_authored_passed_props_for_component(
+                    &outlet_entry.analysis,
+                    "NuxtPage",
+                    &[],
+                )
+                .into_iter()
+                .map(|mut usage| {
+                    usage.props.retain(nuxt_page_forwards_prop);
+                    // The authored carrier is `<NuxtPage>`, but the contract
+                    // being validated belongs to the resolved route component.
+                    usage.component_name = child_component_name.clone();
+                    (outlet, usage)
+                }),
+            );
+        }
+        if passed_usages.is_empty() {
+            passed_usages.extend(
+                extract_passed_props_for_component(
+                    &parent_entry.analysis,
+                    child_component_name.as_str(),
+                    &aliases,
+                )
+                .into_iter()
+                .map(|usage| (parent_id, usage)),
+            );
+        }
 
-        for passed_usage in passed_usages {
+        for (usage_file, passed_usage) in passed_usages {
             let child_component_name = &passed_usage.component_name;
             // Check for missing required props. A spread v-bind can provide any
             // required prop, so only validate required props for non-spread usages.
@@ -156,7 +186,7 @@ pub fn analyze_props_validation(
                 for (prop_name, prop_info) in &child_props_info.props {
                     if prop_info.required && !has_passed_prop(&passed_usage, prop_name.as_str()) {
                         let issue = PropsValidationIssue {
-                            parent_file: parent_id,
+                            parent_file: usage_file,
                             child_file: child_id,
                             component_name: child_component_name.clone(),
                             kind: PropsValidationIssueKind::MissingRequiredProp {
@@ -172,7 +202,7 @@ pub fn analyze_props_validation(
                                 component_name: child_component_name.clone(),
                             },
                             DiagnosticSeverity::Error,
-                            parent_id,
+                            usage_file,
                             passed_usage.start,
                             passed_usage.end,
                             cstr!(
@@ -220,7 +250,7 @@ pub fn analyze_props_validation(
                         continue;
                     }
                     let issue = PropsValidationIssue {
-                        parent_file: parent_id,
+                        parent_file: usage_file,
                         child_file: child_id,
                         component_name: child_component_name.clone(),
                         kind: PropsValidationIssueKind::UndeclaredProp {
@@ -236,7 +266,7 @@ pub fn analyze_props_validation(
                             component_name: child_component_name.clone(),
                         },
                         DiagnosticSeverity::Warning, // Warning since it might be intentional $attrs
-                        parent_id,
+                        usage_file,
                         passed_prop.start,
                         passed_prop.end,
                         cstr!(
@@ -265,7 +295,7 @@ pub fn analyze_props_validation(
                     child_entry.analysis.types.definitions(),
                 ) {
                     let issue = PropsValidationIssue {
-                        parent_file: parent_id,
+                        parent_file: usage_file,
                         child_file: child_id,
                         component_name: child_component_name.clone(),
                         kind: PropsValidationIssueKind::TypeMismatch {
@@ -284,7 +314,7 @@ pub fn analyze_props_validation(
                             actual_type: actual.clone(),
                         },
                         DiagnosticSeverity::Error,
-                        parent_id,
+                        usage_file,
                         passed_prop.start,
                         passed_prop.end,
                         cstr!(

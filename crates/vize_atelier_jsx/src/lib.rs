@@ -48,6 +48,7 @@ pub mod vapor;
 pub mod vdom;
 
 mod analyze;
+mod emission;
 mod finder;
 mod forwarded_slots;
 mod spread_children;

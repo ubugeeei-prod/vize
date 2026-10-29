@@ -1,0 +1,98 @@
+name: Nuxt public runtime dependencies
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/nuxt-public-dependencies.yml
+      - npm/framework/nuxt/**
+      - pnpm-workspace.yaml
+      - pnpm-lock.yaml
+      - tools/support/security/**
+      - tests/tooling/nuxt-kit-consumer.test.ts
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/nuxt-public-dependencies.yml
+      - npm/framework/nuxt/**
+      - pnpm-workspace.yaml
+      - pnpm-lock.yaml
+      - tools/support/security/**
+      - tests/tooling/nuxt-kit-consumer.test.ts
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuxt-public-dependencies-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runtime-kit:
+    name: Packed module runtime Kit without workspace overrides
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install workspace tooling
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify full historical audit refusals
+        run: vp node --test tests/tooling/nuxt-kit-consumer.test.ts
+      - name: Capture every actual patched Braces instance and consumer path
+        run: vp node tools/support/security/nuxt-kit-census.ts "$RUNNER_TEMP/nuxt-public-kit-proof"
+      - name: Preserve the original pinned Kit and Braces consumer graph
+        run: |
+          baseline_sha=9157b9fa83dbdc98100be084be288f21d0d1bc18
+          baseline_root="$RUNNER_TEMP/nuxt-kit-before-source"
+          git fetch --no-tags --depth=1 origin "$baseline_sha"
+          git worktree add --detach "$baseline_root" "$baseline_sha"
+          (cd "$baseline_root" && pnpm install --frozen-lockfile --ignore-scripts)
+          vp node tools/support/security/nuxt-kit-census.ts "$RUNNER_TEMP/nuxt-public-kit-proof/before" "$baseline_root"
+      - name: Require every original whole consumer packet after the explicit oracle move
+        run: |
+          vp node --input-type=module <<'JS'
+          import assert from "node:assert/strict";
+          import fs from "node:fs";
+          import path from "node:path";
+          const artifacts = path.join(process.env.RUNNER_TEMP, "nuxt-public-kit-proof");
+          const before = JSON.parse(fs.readFileSync(path.join(artifacts, "before/installed-consumer-census.json"), "utf8"));
+          const after = JSON.parse(fs.readFileSync(path.join(artifacts, "installed-consumer-census.json"), "utf8"));
+          assert.equal(before.head, "9157b9fa83dbdc98100be084be288f21d0d1bc18");
+          for (const packet of [before, after]) assert.equal(packet.proofSourceSha256, packet.executedProofSourceSha256);
+          assert.equal(before.proofSourceSha256, after.proofSourceSha256);
+          const normalized = (packet, field) => JSON.parse(JSON.stringify(packet[field]).replaceAll(path.resolve(packet.root), "<ROOT>"));
+          for (const field of ["instances", "consumers"]) assert.deepEqual(normalized(after, field), normalized(before, field));
+          assert.equal(before.moduleKit.version, "3.11.2");
+          assert.equal(after.moduleKit.version, "3.21.8");
+          assert.equal(before.explicitDevOracle, null);
+          const identity = ({ braces, ...identity }) => identity;
+          assert.deepEqual(before.kitChokidar, identity(before.consumers.find((packet) => packet.name === "chokidar")));
+          assert.deepEqual(after.explicitDevOracle, identity(after.consumers.find((packet) => packet.name === "chokidar")));
+          assert.equal(after.kitChokidar.version, "5.0.0");
+          assert.equal(JSON.parse(after.kitChokidar.manifestBytes).dependencies.braces, undefined);
+          fs.writeFileSync(path.join(artifacts, "census-transition.json"), JSON.stringify({ before: before.head, after: after.head, everyOriginalWholeConsumerPreserved: true }, null, 2) + "\n");
+          JS
+      - name: Build the candidate Nuxt module
+        run: |
+          pnpm --filter @vizejs/nuxt-lint-config build
+          pnpm --filter @vizejs/nuxt build
+      - name: Pack the actual publishable manifest
+        working-directory: npm/framework/nuxt
+        run: pnpm pack --pack-destination "$RUNNER_TEMP/nuxt-public-kit-pack"
+      - name: Resolve and audit the packed public Kit edge in a fresh consumer
+        run: vp node tools/support/security/nuxt-kit-consumer.ts "$RUNNER_TEMP"/nuxt-public-kit-pack/*.tgz "$RUNNER_TEMP/nuxt-public-kit-proof"
+      - name: Preserve archive, manifest, full graph and raw audit packets
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nuxt-public-kit-proof-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/nuxt-public-kit-proof
+          if-no-files-found: error

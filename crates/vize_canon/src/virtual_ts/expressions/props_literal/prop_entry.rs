@@ -1,6 +1,5 @@
-use crate::virtual_ts::expressions::component_props::{
-    ComponentPropSource, merged_class_binding_value,
-};
+use crate::virtual_ts::expressions::component_prop_bindings::merged_class_binding_value;
+use crate::virtual_ts::expressions::component_props::ComponentPropSource;
 use crate::virtual_ts::expressions::map_rewritten_template_binding;
 use crate::virtual_ts::expressions::prop_sources::{
     PropSpan, append_prop_value, generated_prop_span, prop_name_source_range,
@@ -14,8 +13,17 @@ use vize_croquis::croquis::PassedProp;
 
 use super::NAMED_PROP_DIAGNOSTIC_MARKER;
 
+pub(super) struct PropDiagnosticRows<'p> {
+    pub(super) name: std::ops::Range<usize>,
+    pub(super) value: std::ops::Range<usize>,
+    pub(super) ignored_primary: bool,
+    pub(super) merged: bool,
+    /// Dynamic values repeated inside a merged `class`/`style` entry.
+    pub(super) merged_values: Vec<(&'p PassedProp, std::ops::Range<usize>)>,
+}
+
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
-pub(super) fn append_prop_entry(
+pub(super) fn append_prop_entry<'p>(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     prop: &PassedProp,
@@ -23,18 +31,18 @@ pub(super) fn append_prop_entry(
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
     merge_class_bindings: bool,
-    class_bindings: &[(&PassedProp, String)],
+    class_bindings: &[(&'p PassedProp, String)],
     emitted_merged_class: &mut bool,
     before_following_spread: bool,
     authored_named_keys: &mut FxHashSet<String>,
-) {
+) -> Option<PropDiagnosticRows<'p>> {
     let template_offset = source_context.offset;
     let mut merged_value_ranges = Vec::new();
     let merge_named_bindings =
         merge_class_bindings && matches!(prop.name.as_str(), "class" | "style");
     let generated_value = if merge_named_bindings {
         if *emitted_merged_class {
-            return;
+            return None;
         }
         *emitted_merged_class = true;
         merged_class_binding_value(class_bindings, Some(&mut merged_value_ranges))
@@ -42,9 +50,7 @@ pub(super) fn append_prop_entry(
     } else {
         generated_prop_span(prop, template_binding_access)
     };
-    let Some(mut generated_value) = generated_value else {
-        return;
-    };
+    let mut generated_value = generated_value?;
     let inline_callback = crate::virtual_ts::scope::is_inline_callback_prop(prop);
     if inline_callback {
         // The authored callback is checked against its resolved type separately.
@@ -75,16 +81,21 @@ pub(super) fn append_prop_entry(
         )
     };
     let camel_prop_name = component_prop_key(prop.name.as_str());
+    let aria_present_value = prop.name.starts_with("aria-");
 
     let repeated_named_key = !authored_named_keys.insert(camel_prop_name.clone());
-    if before_following_spread && !repeated_named_key {
-        // Keep named props direct so TypeScript contextually elaborates their
-        // value errors at the property instead of reporting a second TS2345 on
-        // the whole object when a later v-bind spread exists (#10069). The
-        // dedicated per-prop assignment above owns that diagnostic. Ignoring
-        // this generated entry also suppresses TS2783 when the later spread
-        // deliberately overwrites it, while the spread itself remains fully
-        // checked by the surrounding call.
+    // Keep named props direct so TypeScript contextually elaborates their
+    // value errors at the property instead of reporting a second TS2345 on
+    // the whole object when a later v-bind spread exists (#10069). The
+    // dedicated per-prop assignment above owns that diagnostic. Ignoring
+    // this generated entry also suppresses TS2783 when the later spread
+    // deliberately overwrites it, while the spread itself remains fully
+    // checked by the surrounding call.
+    // The camel key witnesses required-prop presence and generic inference,
+    // while the dedicated assignment owns its value diagnostic. Suppressing
+    // this synthetic entry also retains `aria-*` as an undeclared HTML attr
+    // without adding a mapped type to every generated SFC (#11048, #9658).
+    if aria_present_value || (before_following_spread && !repeated_named_key) {
         append!(
             *ts,
             "{expr_indent}  // {NAMED_PROP_DIAGNOSTIC_MARKER} are owned by the per-prop check.\n",
@@ -96,7 +107,13 @@ pub(super) fn append_prop_entry(
     append!(*ts, "\"{camel_prop_name}\"");
     let key_gen_end = ts.len();
     ts.push_str(": ");
+    if aria_present_value {
+        ts.push_str("__vizeComponentAriaPropValue(");
+    }
     let value_gen_range = append_prop_value(ts, generated_value.text.as_str());
+    if aria_present_value {
+        ts.push(')');
+    }
     let entry_gen_end = if generated_value.omits_tail() {
         generated_value.mapped_limit(value_gen_range.start)
     } else {
@@ -109,14 +126,23 @@ pub(super) fn append_prop_entry(
     };
     ts.push_str(",\n");
 
+    let merged_values: Vec<_> = class_bindings
+        .iter()
+        .zip(&merged_value_ranges)
+        .filter(|((binding, _), _)| binding.is_dynamic)
+        .map(|((binding, _), generated)| {
+            (
+                *binding,
+                value_span.start + generated.start..value_span.start + generated.end,
+            )
+        })
+        .collect();
     let sub_spans = match merge_named_bindings {
-        true => class_bindings
+        true => merged_values
             .iter()
-            .zip(&merged_value_ranges)
-            .filter(|((binding, _), _)| binding.is_dynamic)
-            .filter_map(|((binding, _), generated)| {
+            .filter_map(|(binding, gen_range)| {
                 Some(VizeSubSpan {
-                    gen_range: value_span.start + generated.start..value_span.start + generated.end,
+                    gen_range: gen_range.clone(),
                     src_range: prop_value_source_range(source_context, binding)?,
                 })
             })
@@ -178,6 +204,15 @@ pub(super) fn append_prop_entry(
             template_binding_access,
         );
     }
+    Some(PropDiagnosticRows {
+        name: entry_gen_start..key_gen_end,
+        // A callback literal carries a synthetic `never`, not the authored
+        // body. Only the separately checked callback can own its value range.
+        value: if inline_callback { 0..0 } else { value_span },
+        ignored_primary: before_following_spread && !repeated_named_key,
+        merged: merge_named_bindings,
+        merged_values,
+    })
 }
 
 pub(crate) fn entry_sub_spans(

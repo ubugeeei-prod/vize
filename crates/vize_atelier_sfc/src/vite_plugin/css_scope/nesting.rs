@@ -1,9 +1,10 @@
 //! Keep selector-list nesting intact: `&` inherits the maximum specificity of
 //! its entire parent list, which cannot be represented by a Cartesian product.
+//! A nested `@scope` stays inside its parent rule for the same reason.
 use super::{
     find_matching_brace, find_next_top_level_brace, find_pseudo_function_any,
-    find_rule_header_start, scope_attr, scope_selector_list, should_recurse_at_rule,
-    split_leading_trivia, split_selector_list, unwrap_deep_selectors,
+    find_rule_header_start, is_scope_at_rule, scope_attr, scope_selector_list,
+    should_recurse_at_rule, split_leading_trivia, split_selector_list, unwrap_deep_selectors,
 };
 use vize_carton::{SmallVec, String};
 
@@ -62,7 +63,10 @@ pub(super) fn requires_preservation(selector: &str, body: &str) -> bool {
             if is_style(header) {
                 requires_preservation(statement, body)
             } else {
-                should_recurse_at_rule(statement) && requires_preservation("", body)
+                // Hoisting a nested `@scope` out of its parent rule changes the
+                // scoping root, so the authored nesting context must stay.
+                is_scope_at_rule(statement)
+                    || (should_recurse_at_rule(statement) && requires_preservation("", body))
             }
         }
         Node::Declarations(_) => false,
@@ -71,6 +75,24 @@ pub(super) fn requires_preservation(selector: &str, body: &str) -> bool {
 
 fn has_deep(selector: &str) -> bool {
     find_pseudo_function_any(selector, &[":deep(", "::v-deep(", "::deep("]).is_some()
+}
+
+fn anchor_bare_deep_selectors(selector_list: &str) -> String {
+    let mut result = String::default();
+    for (index, selector) in split_selector_list(selector_list).iter().enumerate() {
+        if index > 0 {
+            result.push(',');
+        }
+        let (leading, selector) = split_leading_trivia(selector);
+        result.push_str(leading);
+        if find_pseudo_function_any(selector, &[":deep(", "::v-deep(", "::deep("])
+            .is_some_and(|deep| deep.parts(selector).0.trim().is_empty())
+        {
+            result.push('&');
+        }
+        result.push_str(selector);
+    }
+    result
 }
 
 fn without_scope(selector_list: &str) -> String {
@@ -94,6 +116,7 @@ pub(super) fn scope_rule(
     body: &str,
     scope_id: &str,
     inherited_deep: bool,
+    inside_preserved_rule: bool,
 ) -> String {
     let children = nodes(body);
     let has_nested_rule = children
@@ -101,8 +124,15 @@ pub(super) fn scope_rule(
         .any(|node| matches!(node, Node::Rule { header, .. } if is_style(header)));
     let own_deep = has_deep(selector);
     let inject = !inherited_deep && (!has_nested_rule || own_deep);
+    let anchored_selector;
+    let selector = if inject && inside_preserved_rule {
+        anchored_selector = anchor_bare_deep_selectors(selector.trim());
+        anchored_selector.as_str()
+    } else {
+        selector.trim()
+    };
     let mut result = if inject {
-        scope_selector_list(selector.trim(), scope_id)
+        scope_selector_list(selector, scope_id)
     } else {
         without_scope(selector)
     };
@@ -151,7 +181,7 @@ fn render_body(css: &str, scope_id: &str, deep: bool, wrap_declarations: bool) -
                 let (leading, statement) = split_leading_trivia(header);
                 result.push_str(leading);
                 if is_style(header) {
-                    result.push_str(scope_rule(statement, body, scope_id, deep).as_str());
+                    result.push_str(scope_rule(statement, body, scope_id, deep, true).as_str());
                 } else {
                     result.push_str(statement);
                     result.push('{');
@@ -205,6 +235,87 @@ mod tests {
             (
                 ".a,#b{:slotted(.child){color:blue}}",
                 ".a,#b{.child[data-v-x-s]{color:blue}}",
+            ),
+            (
+                ".a{@scope (.s) to (.e){.child{color:blue}}}",
+                ".a[data-v-x]{@scope (.s) to (.e){.child[data-v-x]{color:blue}}}",
+            ),
+            (
+                ".a{@scope (.s){color:red;:scope{color:blue}& .c{color:blue}}}",
+                ".a[data-v-x]{@scope (.s){color:red;[data-v-x]:scope{color:blue}& .c[data-v-x]{color:blue}}}",
+            ),
+            (
+                ".a{@media (min-width:1px){@SCOPE(.s){.child{color:blue}}}}",
+                ".a[data-v-x]{@media (min-width:1px){@SCOPE(.s){.child[data-v-x]{color:blue}}}}",
+            ),
+            (
+                ".a{.b{@scope (.s){.c{color:blue}}}}",
+                ".a{.b[data-v-x]{@scope (.s){.c[data-v-x]{color:blue}}}}",
+            ),
+            (
+                ".a{@media (min-width:1px){.child{color:blue}}}",
+                "@media (min-width:1px){.a .child[data-v-x]{color:blue}}",
+            ),
+        ] {
+            assert_eq!(
+                scope_css_for_pipeline(source, "data-v-x").as_str(),
+                expected,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn bare_deep_inside_preserved_nesting_keeps_the_parent_anchor() {
+        for (source, expected) in [
+            (
+                ".a{&.b,&.c{.d{color:red}}:deep(.e){color:blue}}",
+                ".a{&.b,&.c{.d[data-v-x]{color:red}}&[data-v-x] .e{color:blue}}",
+            ),
+            (
+                ".a{&.b,&.c{.d{color:red}}:deep(.e),.local{color:blue}}",
+                ".a{&.b,&.c{.d[data-v-x]{color:red}}&[data-v-x] .e,.local[data-v-x]{color:blue}}",
+            ),
+            (
+                ".a{&.b,&.c{.d{color:red}}::deep(.e){color:blue}}",
+                ".a{&.b,&.c{.d[data-v-x]{color:red}}&[data-v-x] .e{color:blue}}",
+            ),
+            (
+                ".a{&.b,&.c{.d{color:red}}::v-deep(.e){color:blue}}",
+                ".a{&.b,&.c{.d[data-v-x]{color:red}}&[data-v-x] .e{color:blue}}",
+            ),
+        ] {
+            assert_eq!(
+                scope_css_for_pipeline(source, "data-v-x").as_str(),
+                expected,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn deep_anchor_is_limited_to_bare_preserved_children() {
+        for (source, expected) in [
+            (".a{:deep(.e){color:blue}}", ".a[data-v-x] .e{color:blue}"),
+            (
+                ".a{&.b,&.c{.d{color:red}}.x :deep(.e){color:blue}}",
+                ".a{&.b,&.c{.d[data-v-x]{color:red}}.x[data-v-x] .e{color:blue}}",
+            ),
+            (
+                ".a{&.b,&.c{.d{color:red}}& :deep(.e){color:blue}}",
+                ".a{&.b,&.c{.d[data-v-x]{color:red}}&[data-v-x] .e{color:blue}}",
+            ),
+            (
+                ".a{&.b,&.c{.d{color:red}}:slotted(.e){color:blue}}",
+                ".a{&.b,&.c{.d[data-v-x]{color:red}}.e[data-v-x-s]{color:blue}}",
+            ),
+            (
+                ".a{&.b,&.c{.d{color:red}}:global(.e){color:blue}}",
+                ".a{&.b,&.c{.d[data-v-x]{color:red}}.e{color:blue}}",
+            ),
+            (
+                ".a{&.b,&.c{.d{color:red}}.e{color:blue}}",
+                ".a{&.b,&.c{.d[data-v-x]{color:red}}.e[data-v-x]{color:blue}}",
             ),
         ] {
             assert_eq!(

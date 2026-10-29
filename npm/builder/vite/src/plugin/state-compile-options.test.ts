@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 
 import { compileFile } from "../compiler.ts";
 import { buildCompileBatchOptions } from "../compile-options.ts";
+import { mergeCompilerOptions } from "./compiler-config.ts";
 import { getCompileOptionsForRequest } from "./state.ts";
 
 assert.deepEqual(
@@ -164,3 +165,15 @@ assert.doesNotMatch(productionCode, /_Fragment/);
 
 assert.doesNotMatch(compileWithComments(false, false), / note /);
 assert.match(compileWithComments(true, true), /createCommentVNode\(" note "\)/);
+
+// Shared `vue.compiler.comments` reaches requests; direct plugin options still win.
+for (const [options, expected] of [
+  [{}, false],
+  [{ template: { compilerOptions: { comments: true } } }, true],
+] as const) {
+  const mergedOptions = mergeCompilerOptions(options, { compiler: { comments: false } });
+  assert.equal(
+    getCompileOptionsForRequest({ isProduction: false, mergedOptions }, false).templateComments,
+    expected,
+  );
+}

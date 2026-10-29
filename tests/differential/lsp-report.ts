@@ -27,6 +27,7 @@ import {
 function uniqueResponse(messages: JsonRpcMessage[], id: number): JsonRpcMessage {
   const responses = messages.filter((message) => message.id === id && !message.method);
   assert.equal(responses.length, 1, `one complete response required for request ${id}`);
+  assert(responses[0]);
   return responses[0];
 }
 
@@ -106,6 +107,13 @@ export function inspectLspObservation(
   );
   if (opensDocument) {
     assert(diagnosticsIndex >= 0, "exact entry and version diagnostics are required");
+    if (fixture.data.initialDiagnostics !== undefined) {
+      assert.deepEqual(
+        server[diagnosticsIndex]?.params?.diagnostics,
+        materializeWorkspace(fixture.data.initialDiagnostics, workspaceUri),
+        "complete configured initial diagnostic packet must match",
+      );
+    }
   } else {
     assert.equal(diagnosticsIndex, -1, "unopened sessions must not invent readiness diagnostics");
   }
@@ -197,7 +205,7 @@ export function validateLspReport(
     if (fixture.data.sourceSession) {
       assert.deepEqual(
         row.legacy,
-        sourceSessionUnsupportedLegacy(),
+        sourceSessionUnsupportedLegacy(fixture.data.sourceSession),
         "an unsupported source session cannot claim wire or reference credit",
       );
       summary.legacyUnsupported += 1;

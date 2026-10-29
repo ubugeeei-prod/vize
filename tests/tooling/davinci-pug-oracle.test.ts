@@ -12,6 +12,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { assertStaticPug, parseSfc, pug, pugOptions } from "./support/pug/oracle-runtime.ts";
 
@@ -48,12 +49,25 @@ function render(content: string, filename: string): string {
 
 test("pug oracle: every matrix fixture's HTML is the pinned pug rendering", () => {
   const matrix = names("matrix");
-  assert.equal(matrix.length, 26, "the matrix is pinned; grow it deliberately");
+  assert.equal(matrix.length, 33, "the matrix is pinned; grow it deliberately");
   for (const name of matrix) {
     const filename = `${name}.pug`;
     const content = vueContent(source("matrix", name), filename);
     const html = render(content, filename);
     const target = new URL(`matrix/${name}.html`, fixtures);
+    if (write) fs.writeFileSync(target, html);
+    assert.equal(fs.readFileSync(target, "utf8"), html, `${name}.html drifted from pug`);
+  }
+});
+
+test("pug oracle: every include fixture's HTML is the pinned pug rendering", () => {
+  // Includes resolve against the template's file, as compiler-sfc passes it.
+  const includes = names("includes");
+  assert.deepEqual(includes, ["layout"], "the include fixtures are pinned");
+  for (const name of includes) {
+    const filename = fileURLToPath(new URL(`includes/${name}.pug`, fixtures));
+    const html = render(vueContent(source("includes", name), filename), filename);
+    const target = new URL(`includes/${name}.html`, fixtures);
     if (write) fs.writeFileSync(target, html);
     assert.equal(fs.readFileSync(target, "utf8"), html, `${name}.html drifted from pug`);
   }

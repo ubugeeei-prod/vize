@@ -1,0 +1,143 @@
+{
+  "schema": "vize.cross-file-directives-public-controls-before",
+  "issue": 10912,
+  "version": "0.602.0",
+  "bodySha256": "8f36827bc9581d07eaa2629c3c2150ba31c70b50192fbaff2f86dd22e7e8d7e0",
+  "reportedSha256": "a337d3a58254db813c2705b84bc5e7fafbd7426da02b021df4341389b1999103",
+  "originalSources": [
+    {
+      "path": "src/Editor.vue",
+      "sha256": "240acdb1362ed71863cce0d4aad9800a55ffdfe9e19413433aa183a93a113a01",
+      "bytes": 317
+    },
+    {
+      "path": "src/PageA.vue",
+      "sha256": "9daff2c17a056a03f85325b83ba04fcf4af33d22e62d8e42a7633e3c9969c6b2",
+      "bytes": 162
+    },
+    {
+      "path": "src/PageB.vue",
+      "sha256": "96b829042c822870854281d11e3438786fbb715f452a1d5d5f7a2451f5fc71a1",
+      "bytes": 109
+    }
+  ],
+  "cases": [
+    {
+      "id": "original-issue",
+      "files": {
+        "src/Editor.vue": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\nconst { initial } = defineProps<{ initial: { name: string } }>();\n\n// eslint-disable-next-line croquis/cf/spread-breaks-reactivity -- a draft copy of the prop\nconst draft = reactive({ ...initial });\n</script>\n\n<template>\n  <p>{{ draft.name }}</p>\n</template>\n",
+        "src/PageA.vue": "<script setup lang=\"ts\">\nimport Editor from \"./Editor.vue\";\n</script>\n\n<template>\n  <div id=\"panel\">\n    <Editor :initial=\"{ name: 'a' }\" />\n  </div>\n</template>\n",
+        "src/PageB.vue": "<template>\n  <!-- eslint-disable-next-line croquis/cf/duplicate-id -->\n  <div id=\"panel\">b</div>\n</template>\n",
+        "src/host-control.ts": "export const taskControl = 1;\n"
+      },
+      "crossFile": true,
+      "reportUnused": false,
+      "original": true
+    },
+    {
+      "id": "normal-eslint-used",
+      "files": {
+        "src/Normal.vue": "<template>\n  <!-- eslint-disable-next-line vue/require-v-for-key -->\n  <div v-for=\"item in items\">{{ item }}</div>\n</template>\n",
+        "src/host-control.ts": "export const taskControl = 1;\n"
+      },
+      "crossFile": false,
+      "reportUnused": true,
+      "original": false
+    },
+    {
+      "id": "normal-eslint-unused",
+      "files": {
+        "src/Normal.vue": "<template>\n  <!-- eslint-disable-next-line vue/require-v-for-key -->\n  <div v-for=\"item in items\" :key=\"item\">{{ item }}</div>\n</template>\n",
+        "src/host-control.ts": "export const taskControl = 1;\n"
+      },
+      "crossFile": false,
+      "reportUnused": true,
+      "original": false
+    },
+    {
+      "id": "normal-eslint-repair",
+      "files": {
+        "src/Normal.vue": "<template>\n  <div v-for=\"item in items\" :key=\"item\">{{ item }}</div>\n</template>\n",
+        "src/host-control.ts": "export const taskControl = 1;\n"
+      },
+      "crossFile": false,
+      "reportUnused": true,
+      "original": false
+    },
+    {
+      "id": "literal-repair-comments-retained",
+      "files": {
+        "src/Editor.vue": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\ndefineProps<{ initial: { name: string } }>();\n\n// eslint-disable-next-line croquis/cf/spread-breaks-reactivity -- a draft copy of the prop\nconst draft = reactive({ name: \"draft\" });\n</script>\n\n<template>\n  <p>{{ draft.name }}</p>\n</template>\n",
+        "src/PageA.vue": "<script setup lang=\"ts\">\nimport Editor from \"./Editor.vue\";\n</script>\n\n<template>\n  <div id=\"panel\">\n    <Editor :initial=\"{ name: 'a' }\" />\n  </div>\n</template>\n",
+        "src/PageB.vue": "<template>\n  <!-- eslint-disable-next-line croquis/cf/duplicate-id -->\n  <div id=\"only-b\">b</div>\n</template>\n",
+        "src/host-control.ts": "export const taskControl = 1;\n"
+      },
+      "crossFile": true,
+      "reportUnused": true,
+      "original": false
+    },
+    {
+      "id": "literal-repair-comments-removed",
+      "files": {
+        "src/Editor.vue": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\ndefineProps<{ initial: { name: string } }>();\n\nconst draft = reactive({ name: \"draft\" });\n</script>\n\n<template>\n  <p>{{ draft.name }}</p>\n</template>\n",
+        "src/PageA.vue": "<script setup lang=\"ts\">\nimport Editor from \"./Editor.vue\";\n</script>\n\n<template>\n  <div id=\"panel\">\n    <Editor :initial=\"{ name: 'a' }\" />\n  </div>\n</template>\n",
+        "src/PageB.vue": "<template>\n  <div id=\"only-b\">b</div>\n</template>\n",
+        "src/host-control.ts": "export const taskControl = 1;\n"
+      },
+      "crossFile": true,
+      "reportUnused": true,
+      "original": false
+    },
+    {
+      "id": "canonical-vize-ignore",
+      "files": {
+        "src/Editor.vue": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\nconst { initial } = defineProps<{ initial: { name: string } }>();\n\n// @vize:ignore-start\nconst draft = reactive({ ...initial });\n</script>\n\n<template>\n  <p>{{ draft.name }}</p>\n</template>\n",
+        "src/PageA.vue": "<script setup lang=\"ts\">\nimport Editor from \"./Editor.vue\";\n</script>\n\n<template>\n  <div id=\"panel\">\n    <Editor :initial=\"{ name: 'a' }\" />\n  </div>\n</template>\n",
+        "src/PageB.vue": "<template>\n  <!-- @vize:ignore-start -->\n  <div id=\"panel\">b</div>\n</template>\n",
+        "src/host-control.ts": "export const taskControl = 1;\n"
+      },
+      "crossFile": true,
+      "reportUnused": true,
+      "original": false
+    },
+    {
+      "id": "canonical-vize-expected",
+      "files": {
+        "src/Editor.vue": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\nconst { initial } = defineProps<{ initial: { name: string } }>();\n\n// @vize:expected deliberate\nconst draft = reactive({ ...initial });\n</script>\n\n<template>\n  <p>{{ draft.name }}</p>\n</template>\n",
+        "src/PageA.vue": "<script setup lang=\"ts\">\nimport Editor from \"./Editor.vue\";\n</script>\n\n<template>\n  <div id=\"panel\">\n    <Editor :initial=\"{ name: 'a' }\" />\n  </div>\n</template>\n",
+        "src/PageB.vue": "<template>\n  <!-- @vize:expected deliberate -->\n  <div id=\"panel\">b</div>\n</template>\n",
+        "src/host-control.ts": "export const taskControl = 1;\n"
+      },
+      "crossFile": true,
+      "reportUnused": true,
+      "original": false
+    },
+    {
+      "id": "canonical-vize-level-off",
+      "files": {
+        "src/Editor.vue": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\nconst { initial } = defineProps<{ initial: { name: string } }>();\n\n// @vize:level off\nconst draft = reactive({ ...initial });\n</script>\n\n<template>\n  <p>{{ draft.name }}</p>\n</template>\n",
+        "src/PageA.vue": "<script setup lang=\"ts\">\nimport Editor from \"./Editor.vue\";\n</script>\n\n<template>\n  <div id=\"panel\">\n    <Editor :initial=\"{ name: 'a' }\" />\n  </div>\n</template>\n",
+        "src/PageB.vue": "<template>\n  <!-- @vize:level off -->\n  <div id=\"panel\">b</div>\n</template>\n",
+        "src/host-control.ts": "export const taskControl = 1;\n"
+      },
+      "crossFile": true,
+      "reportUnused": true,
+      "original": false
+    },
+    {
+      "id": "canonical-vize-level-warn",
+      "files": {
+        "src/Editor.vue": "<script setup lang=\"ts\">\nimport { reactive } from \"vue\";\n\nconst { initial } = defineProps<{ initial: { name: string } }>();\n\n// @vize:level warn\nconst draft = reactive({ ...initial });\n</script>\n\n<template>\n  <p>{{ draft.name }}</p>\n</template>\n",
+        "src/PageA.vue": "<script setup lang=\"ts\">\nimport Editor from \"./Editor.vue\";\n</script>\n\n<template>\n  <div id=\"panel\">\n    <Editor :initial=\"{ name: 'a' }\" />\n  </div>\n</template>\n",
+        "src/PageB.vue": "<template>\n  <!-- @vize:level warn -->\n  <div id=\"panel\">b</div>\n</template>\n",
+        "src/host-control.ts": "export const taskControl = 1;\n"
+      },
+      "crossFile": true,
+      "reportUnused": true,
+      "original": false
+    }
+  ],
+  "parentBeforeRun": 40583916685,
+  "parentBeforeHead": "f8eec86cc0758521cbad4e8eb9a6a1bbc1099505",
+  "purpose": "Preserve original Vue bytes; add an explicit host TypeScript input so the actual generated task can finish its Oxlint stage. Literal reactivity repair avoids introducing another CF diagnostic."
+}

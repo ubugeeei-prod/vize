@@ -11,6 +11,13 @@ use vize_carton::{FxHashSet, String, config::VueVersion, cstr};
 /// model, owned by [`super::mapping`].
 pub use super::mapping::{VizeMapping, VizeSubSpan};
 
+/// The installed package's shared component-helper surface.
+#[derive(Debug, Clone, Copy)]
+pub(crate) enum ComponentHelperModule {
+    Attributes,
+    Types,
+}
+
 /// A user-defined template global variable (e.g., `$t` from vue-i18n).
 #[derive(Debug, Clone)]
 pub struct TemplateGlobal {
@@ -201,6 +208,8 @@ impl<'a> AuthoredScriptMetadata<'a> {
 
 #[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct VirtualTsGenerationOptions<'a> {
+    pub(crate) diagnostic_ownership:
+        Option<&'a super::diagnostic_ownership::DiagnosticOwnershipCollector>,
     /// Shared parser-owned generic metadata, prepared once by a high-level caller.
     pub(crate) generic_parameters: Option<&'a super::generic_parameters::GenericParameters>,
     /// Descriptor-owned block roles and attributes survive script parse failure.
@@ -245,7 +254,7 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     pub(crate) hoist_shared_preamble: bool,
     /// Type-only module that owns expensive component-attribute aliases for
     /// standalone Content Mapper output.
-    pub(crate) external_component_attrs_module: Option<&'a str>,
+    pub(crate) external_component_attrs_module: Option<ComponentHelperModule>,
     /// Override standard library triple-slash references for this generation.
     pub(crate) lib_references: Option<&'a [&'a str]>,
     /// Avoid introducing a `vite/client` type dependency in arbitrary projects.

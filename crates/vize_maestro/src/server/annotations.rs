@@ -24,9 +24,14 @@ use document_color::DocumentColorService;
 use super::ServerState;
 use crate::ide::CodeLensService;
 
+/// Existing catalogue hover wins; this only supplies concrete color literals.
+pub(super) fn color_hover(ctx: &crate::ide::IdeContext<'_>) -> Option<tower_lsp::lsp_types::Hover> {
+    document_color::hover::hover(ctx)
+}
+
 pub(super) fn code_lens(state: &ServerState, params: &CodeLensParams) -> Option<Vec<CodeLens>> {
     let uri = &params.text_document.uri;
-    let content = state.documents.text(uri)?;
+    let content = state.documents.text_snapshot(uri)?;
     let lenses = CodeLensService::get_lenses(state, &content, uri);
     (!lenses.is_empty()).then_some(lenses)
 }
@@ -39,7 +44,7 @@ pub(super) fn document_color(
     params: &DocumentColorParams,
 ) -> Vec<ColorInformation> {
     let uri = &params.text_document.uri;
-    let Some(content) = state.documents.text(uri) else {
+    let Some(content) = state.documents.text_snapshot(uri) else {
         return Vec::new();
     };
     let Some(descriptor) = state.sfc_descriptor(uri, &content) else {

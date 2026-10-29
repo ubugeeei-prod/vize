@@ -54,7 +54,23 @@ pub(super) fn scan(
         };
         let open_rules =
             matches!(directive.kind, EslintDisableKind::Disable).then(|| directive.rules.clone());
-        state.record(directive, line);
+        let comment = source.get(start..end).unwrap_or_default();
+        let marker_offset = comment
+            .find("eslint-")
+            .into_iter()
+            .chain(comment.find("oxlint-"))
+            .min()
+            .unwrap_or(0);
+        let comment_end = comment
+            .strip_suffix("-->")
+            .unwrap_or(comment)
+            .trim_end()
+            .len();
+        state.record_at(
+            directive,
+            line,
+            Some(((start + marker_offset) as u32, (start + comment_end) as u32)),
+        );
 
         // An open region ends with the next top-level element.
         if let Some(rules) = open_rules

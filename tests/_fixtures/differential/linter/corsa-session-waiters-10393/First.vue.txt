@@ -1,0 +1,6 @@
+<script setup lang="ts">
+async function loadFirst(): Promise<number> {
+  return 1
+}
+loadFirst()
+</script>

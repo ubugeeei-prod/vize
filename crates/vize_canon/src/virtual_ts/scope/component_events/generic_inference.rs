@@ -28,6 +28,7 @@ pub(super) struct EmitInferenceContext<'a, 'template> {
     pub(super) enclosing_vif_guard: Option<&'a str>,
     pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,
     pub(super) indent: &'a str,
+    pub(super) hoist_shared_preamble: bool,
 }
 
 pub(super) fn generate_inferred_emit_args(
@@ -58,6 +59,8 @@ pub(super) fn generate_inferred_emit_args(
         ctx.safe_event_name
     );
     let first_listener = ctx.event_inference_usages.borrow_mut().insert(usage_idx);
+    let emit_props_factory = crate::virtual_ts::helpers::shared_types::EMIT_PROPS_FACTORY
+        .select(ctx.hoist_shared_preamble);
     let dynamic_component =
         crate::virtual_ts::scope::is_owned_dynamic_component_alias(ctx.template_ast, &usage)
             || crate::virtual_ts::scope::is_owned_named_dynamic_component(ctx.template_ast, &usage);
@@ -132,7 +135,7 @@ pub(super) fn generate_inferred_emit_args(
     if first_listener {
         append!(
             *ts,
-            "{}type {resolver_type} = __VizeEmitPropsFactory<typeof {}>;\n",
+            "{}type {resolver_type} = {emit_props_factory}<typeof {}>;\n",
             ctx.indent,
             ctx.component_ref,
         );
@@ -172,7 +175,7 @@ pub(super) fn generate_inferred_emit_args(
                 mappings,
                 &usage,
                 ctx.template_binding_access,
-                ctx.source_context,
+                ctx.source_context.inference_only(),
                 call_indent,
             );
             ts.push_str(");\n");
@@ -249,6 +252,12 @@ pub(super) fn generate_inferred_emit_args(
                         value_start..entry_end,
                     ),
                 });
+                ctx.source_context.inference_only().record_prop_projection(
+                    &usage,
+                    prop,
+                    entry_start..key_end,
+                    value_start..entry_end,
+                );
                 if !ctx.template_binding_access.is_empty()
                     && prop.is_dynamic
                     && !is_inline_callback_prop(prop)

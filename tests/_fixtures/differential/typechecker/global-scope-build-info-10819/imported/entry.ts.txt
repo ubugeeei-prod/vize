@@ -1,0 +1,2 @@
+import "scoped-globals";
+export const entry = 1;

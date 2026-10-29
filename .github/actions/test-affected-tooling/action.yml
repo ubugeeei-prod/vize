@@ -34,9 +34,9 @@ runs:
       run: |
         if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags origin "$BASE_SHA"; fi
         node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json"
-    - name: Hydrate CLI diagnostic fixtures and install JS dependencies
+    - name: Hydrate CLI and fact corpus fixtures and install JS dependencies
       shell: bash
-      run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline
+      run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline
     - uses: ./.github/actions/restore-source-cli
       with: { producer: "${{ inputs.producer }}" }
     - name: Prepare the pinned plugin isolation runtime
@@ -58,3 +58,19 @@ runs:
         VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
         VIZE_TOOLING_TEST_SHARD: ${{ inputs.shard }}/${{ inputs.total }}
       run: vp run --workspace-root test:scripts:pr
+    - name: Retain complete experimental Router observations
+      if: ${{ always() && hashFiles('target/differential/experimental-router-check/provider-processes.json', 'target/differential/experimental-router-params/provider-processes.json', 'target/differential/experimental-router-params/observation.json', 'target/differential/experimental-router-variable-roots/observation.json', 'target/differential/reference-path-attributes/provider-processes.json') != '' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: experimental-router-tooling-${{ inputs.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          target/differential/experimental-router-check/
+          target/differential/experimental-router-params/
+          target/differential/experimental-router-variable-roots/
+          target/differential/reference-path-attributes/
+          target/ci/vize.differential-build.json
+          target/ci/vize.source-build.json
+          target/ci/vize.source-use.json
+          !target/differential/**/node_modules/**
+        if-no-files-found: ignore
+        retention-days: 7

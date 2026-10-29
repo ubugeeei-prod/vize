@@ -15,6 +15,7 @@ use super::context::ScopeGenerationOptions;
 
 mod authored_ranges;
 mod instance;
+mod loop_sources;
 pub(super) use instance::generate_instance_global_refs;
 mod member_root;
 mod strict_candidate;
@@ -40,6 +41,13 @@ use {
 /// there the plain script's default export is a partial options object
 /// (`inheritAttrs`, `name`, ...) whose instance type describes none of the
 /// template's real bindings, which live in the setup scope.
+///
+/// Every other Vue 3 template reads its unknown names off the template
+/// context's public instance (`__VizeTemplateInstance`, see
+/// [`PUBLIC_INSTANCE_PRELUDE`]): a `ComponentCustomProperties` member resolves
+/// with its declared type, and a name nothing declares reports once per
+/// authored occurrence with the instance wording. Legacy Vue 2 and the strict
+/// instance-global form keep their own emission.
 pub(super) fn generate_undefined_refs(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -58,21 +66,36 @@ pub(super) fn generate_undefined_refs(
     {
         return;
     }
-    let resolve_on_instance = options.options_api
-        && options.has_default_alias
+    let resolve_on_instance = resolves_on_authored_instance(summary, options);
+    // Every other Vue 3 template reads an unknown name off the public instance
+    // its context is typed as (`__Ctx`, Vue's `ComponentPublicInstance`), the
+    // way `vue-tsc` reads it off its template context. A member a global mixin
+    // or a plugin declares through `ComponentCustomProperties` then resolves
+    // with its declared type, while a name nothing declares still reports once
+    // per authored occurrence. Legacy Vue 2 keeps the free-name form: its
+    // context is a structural fallback that carries none of the instance
+    // surface. The strict instance-global form (a project with generated
+    // types, Nuxt) keeps resolving names on its own strict context.
+    let resolve_on_public_instance = !resolve_on_instance
         && !options.legacy_vue2
-        && !has_script_setup(summary);
+        && !options.virtual_ts_options.strict_instance_globals;
+    let undefined_refs = if resolve_on_public_instance {
+        loop_sources::authored_references(summary, undefined_refs)
+    } else {
+        undefined_refs
+    };
     let script_content = options.script_content;
-    // Names the plain script declares itself resolve from an enclosing scope of
-    // the template closure even when the analyzer never tracked them as
-    // bindings (a `namespace` is the measured case). Those are not unknown
-    // template names, so they keep the free-name emission: a property access on
-    // the instance would invent a `TS2339` `vue-tsc` does not report.
+    // Names the script declares itself resolve from an enclosing scope of the
+    // template closure even when the analyzer never tracked them as bindings
+    // (a `namespace` is the measured case). Those are not unknown template
+    // names, so they keep the free-name emission: a property access on the
+    // instance would invent a `TS2339` `vue-tsc` does not report.
     //
-    // `None` turns the form off for the whole template: either this shape never
-    // resolves one, or the script did not parse, in which case which names it
-    // declares is unknown and the free-name emission is the only safe one.
-    let script_scope_names = if resolve_on_instance {
+    // `None` turns both instance forms off for the whole template: either this
+    // shape never resolves one, or the script did not parse, in which case
+    // which names it declares is unknown and the free-name emission is the
+    // only safe one.
+    let script_scope_names = if resolve_on_instance || resolve_on_public_instance {
         match script_content {
             Some(script) => script_top_level_binding_names(script),
             None => Some(FxHashSet::default()),
@@ -91,6 +114,7 @@ pub(super) fn generate_undefined_refs(
     let mut seen_strict_occurrences: FxHashSet<(String, usize)> = FxHashSet::default();
     let mut emitted_header = false;
     let mut emitted_instance = false;
+    let mut emitted_public_instance = false;
     let authored_ranges = authored_ranges::collect(mappings);
     let interpolations = authored_ranges::interpolations(summary, template_offset);
     for undef in &undefined_refs {
@@ -112,7 +136,8 @@ pub(super) fn generate_undefined_refs(
         }
 
         let src_start = (template_offset + undef.offset) as usize;
-        let src_end = src_start + undef.name.len();
+        let template = options.template_ast.map(|root| root.source);
+        let src_end = src_start + authored_binding_len(template, undef.offset, name);
         // A name a configured `globalTypes` entry or a CSS module already
         // declares in this scope keeps the free-name emission too: the `var` the
         // instance form hoists would redeclare it (`TS2451`).
@@ -120,9 +145,13 @@ pub(super) fn generate_undefined_refs(
             .as_ref()
             .is_some_and(|names| names.contains(name));
         let context_declared = is_declared_template_context_name(name, options.virtual_ts_options);
-        let on_instance = script_scope_names
-            .as_ref()
-            .is_some_and(|_| !script_declared && !context_declared);
+        // A keyed prop local is declared by the props projection (an opaque
+        // props type hides the name from the analyzer); it resolves lexically.
+        let unknown_to_scope = script_scope_names.is_some()
+            && !script_declared
+            && !context_declared
+            && !options.keyed_prop_bindings.contains(name);
+        let on_instance = resolve_on_instance && unknown_to_scope;
         let member_root = is_member_root_occurrence(summary, undef.offset, name);
         let call_root = is_call_root_occurrence(summary, undef.offset, name);
         let strict_ref_shape = member_root || call_root;
@@ -133,12 +162,15 @@ pub(super) fn generate_undefined_refs(
                 && !script_declared
                 && !context_declared
                 && strict_ref_shape;
+        let on_public_instance =
+            resolve_on_public_instance && unknown_to_scope && !on_strict_template_context;
 
         // Interpolations are checked as authored expressions in their lexical
         // scope. A duplicate read would escape their authored TS directives.
         // Control-flow guards still need the fallback: some generated guard
         // copies exist only for narrowing and deliberately suppress diagnostics.
         if !on_instance
+            && !on_public_instance
             && !on_strict_template_context
             && authored_ranges::contains(&interpolations, src_start)
             && authored_ranges::contains(&authored_ranges, src_start)
@@ -169,10 +201,39 @@ pub(super) fn generate_undefined_refs(
                 already_declared,
             );
             continue;
-        } else {
-            if !seen_names.insert(String::from(name)) {
+        }
+        if on_public_instance {
+            // One read per authored occurrence, the way `vue-tsc` reports an
+            // undeclared name, and one hoisted declaration per name so the
+            // authored expressions resolve it with the member's type (`any`
+            // when the instance does not carry it, so a missing member reports
+            // exactly once per use, from the read below).
+            if !seen_strict_occurrences.insert((undef.name.clone(), src_start)) {
                 continue;
             }
+            emit_header(ts, &mut emitted_header);
+            if !emitted_public_instance {
+                ts.push_str(PUBLIC_INSTANCE_PRELUDE);
+                emitted_public_instance = true;
+            }
+            if seen_names.insert(String::from(name)) {
+                append!(
+                    *ts,
+                    "  var {name}!: __VizeTemplateInstanceMember<\"{name}\">; void ({name});\n"
+                );
+            }
+            emit_strict_template_context_ref(
+                ts,
+                mappings,
+                (PUBLIC_INSTANCE_RECEIVER, name),
+                src_start,
+                src_end,
+                true,
+            );
+            continue;
+        }
+        if !seen_names.insert(String::from(name)) {
+            continue;
         }
 
         emit_header(ts, &mut emitted_header);
@@ -238,6 +299,38 @@ pub(super) fn generate_undefined_refs(
     }
 }
 
+/// The value a Vue 3 template without an Options API default export reads its
+/// unknown names off. The mapped alias keeps the public instance's members and
+/// gives the missing-property diagnostic a type name of its own
+/// (`__VizeTemplateInstance`), which the projection rewrites to the component
+/// instance wording the lexical form reports. `__Ctx` is the template context
+/// type, so a `vue` without `ComponentPublicInstance` degrades to an index
+/// signature and reports nothing, as the context itself does.
+const PUBLIC_INSTANCE_PRELUDE: &str = "  type __VizeTemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };\n  type __VizeTemplateInstanceMember<__K extends string> = __K extends keyof __VizeTemplateInstance ? __VizeTemplateInstance[__K] : any;\n  const __vize_public_instance = undefined as unknown as __VizeTemplateInstance;\n  void __vize_public_instance;\n";
+
+const PUBLIC_INSTANCE_RECEIVER: &str = "__vize_public_instance";
+
+/// Same-name shorthand (`:aria-labelledby`) stores the camelized binding while
+/// the authored token is longer. A prefix range overlaps the attribute and is
+/// dropped, so the instance read is reported in unmapped virtual code.
+fn authored_binding_len(template: Option<&str>, offset: u32, name: &str) -> usize {
+    let Some(rest) = template.and_then(|source| source.get(offset as usize..)) else {
+        return name.len();
+    };
+    if rest.starts_with(name) {
+        return name.len();
+    }
+    let token_len = rest
+        .find(|ch: char| !ch.is_ascii_alphanumeric() && ch != '-' && ch != '_')
+        .unwrap_or(rest.len());
+    let token = rest.get(..token_len).unwrap_or("");
+    if crate::virtual_ts::helpers::to_camel_case(token).as_str() == name {
+        token_len
+    } else {
+        name.len()
+    }
+}
+
 pub(super) fn emit_header(ts: &mut String, emitted_header: &mut bool) {
     if !*emitted_header {
         ts.push_str("\n  // Undefined references from template:\n");
@@ -283,6 +376,18 @@ pub(super) fn emit_strict_template_context_ref(
         *ts,
         "  // @vize-map: {gen_name_start}:{gen_name_end} -> {src_start}:{src_end}\n",
     );
+}
+
+/// Whether template names resolve on the authored default export's instance:
+/// the Vue 3 Options API shape described on `generate_undefined_refs`.
+pub(super) fn resolves_on_authored_instance(
+    summary: &Croquis,
+    options: &ScopeGenerationOptions<'_, '_>,
+) -> bool {
+    options.options_api
+        && options.has_default_alias
+        && !options.legacy_vue2
+        && !has_script_setup(summary)
 }
 
 /// Whether the SFC authored a `<script setup>` block: its bindings are the

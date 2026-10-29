@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "lsp/regression/art-script-navigation-10593",
+  "provenance": {
+    "fixCommit": "3ab096096f155637cc0a27b7756e0a192f4d4d18",
+    "issue": 10593,
+    "witnessPath": "tests/tooling/lsp-art-script-navigation.test.ts",
+    "inputOrigin": "Minimized typed-router Art page from #10593 with a quoted route param member and a special file name",
+    "contractOrigin": "Complete authored and declaration locations from the Art setup and variant projections; no private mirror location"
+  },
+  "files": [
+    {
+      "source": "Page.art.vue.txt",
+      "runtimePath": "src/pages/[id=int].art.vue",
+      "sha256": "3bd06f83fee5d75401a6b657039e1c48d17f20911222ffbf514534840fa649d8"
+    },
+    {
+      "source": "route.d.ts.txt",
+      "runtimePath": "route.d.ts",
+      "sha256": "26a933773daa011a95a48672548206ed2903f115534cc5c4f08931981288b0f2"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31"
+    }
+  ],
+  "entry": "src/pages/[id=int].art.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "e505a62a9ac816df59ddd23e1bdb6465c7e21112b8e195e0019877577d03fd75"
+  },
+  "method": "textDocument/references",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "Complete type-service-backed Art script references; source-inspected input custody does not establish native whole-product parity"
+}

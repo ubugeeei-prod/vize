@@ -149,6 +149,12 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
 }
 
 impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
+    fn visit_ts_type_annotation(&mut self, _annotation: &oxc_ast_types::TSTypeAnnotation<'_>) {
+        // Type-only names never participate in runtime identifier prefixing.
+        // In particular, a typed `v-for` parameter still needs its default
+        // initializer visited without turning `: Row` into `: _ctx.Row`.
+    }
+
     fn visit_identifier_reference(&mut self, ident: &oxc_ast_types::IdentifierReference<'_>) {
         self.has_identifiers = true;
         let name = ident.name.as_str();

@@ -41,14 +41,12 @@ fn output(strict: bool) -> VirtualTsOutput {
     generate_virtual_ts_with_offsets(&summary, Some(SCRIPT), Some(&root), 0, 1000, &options)
 }
 
-#[test]
-fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges() {
-    assert_instance_reads(true, "__vize_strict_template_context.");
-    assert_instance_reads(false, "__ctx.");
-}
-
-fn assert_instance_reads(strict: bool, receiver: &str) {
-    let output = output(strict);
+/// Every authored instance read with its exact range, keyed by the receiver
+/// the form reads it off.
+fn instance_reads<'o>(
+    output: &'o VirtualTsOutput,
+    receiver: &str,
+) -> Vec<(&'o str, std::ops::Range<usize>)> {
     let mut reads: Vec<_> = output
         .mapping
         .spans()
@@ -65,38 +63,52 @@ fn assert_instance_reads(strict: bool, receiver: &str) {
         })
         .collect();
     reads.sort_by_key(|(_, range)| range.start);
-    let mut expected = vec![
+    reads
+}
+
+const REAL_INSTANCE_READS: [(&str, std::ops::Range<usize>); 6] = [
+    ("$before", 1293..1300),
+    ("$after", 1384..1390),
+    ("$form", 1428..1433),
+    ("$field", 1445..1451),
+    ("$unknown", 1463..1471),
+    ("$self", 1500..1505),
+];
+
+#[test]
+fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges() {
+    let strict = output(true);
+    assert_eq!(
+        instance_reads(&strict, "__vize_strict_template_context."),
+        REAL_INSTANCE_READS,
+        "{}",
+        strict.code
+    );
+    let loose = output(false);
+    let mut expected = REAL_INSTANCE_READS.to_vec();
+    // Bare binding navigation, the canonical initializer and the mapped
+    // props literal are separate emissions of each parent-scope prop read.
+    // The loop body also has its own generated position. Relative-cache
+    // reuse never shares those positions or invents navigation on an
+    // unmapped inference copy.
+    expected.extend([
+        ("$before", 1293..1300),
         ("$before", 1293..1300),
         ("$after", 1384..1390),
-        ("$form", 1428..1433),
-        ("$field", 1445..1451),
-        ("$unknown", 1463..1471),
+        ("$after", 1384..1390),
         ("$self", 1500..1505),
-    ];
-    if !strict {
-        // Bare binding navigation, the canonical initializer and the mapped
-        // props literal are separate emissions of each parent-scope prop read.
-        // The loop body also has its own generated position. Relative-cache
-        // reuse never shares those positions or invents navigation on an
-        // unmapped inference copy.
-        expected.extend([
-            ("$before", 1293..1300),
-            ("$before", 1293..1300),
-            ("$after", 1384..1390),
-            ("$after", 1384..1390),
-            ("$self", 1500..1505),
-        ]);
-        expected.sort_by_key(|(_, range)| range.start);
-    }
-    let generated: Vec<_> = output
+    ]);
+    expected.sort_by_key(|(_, range)| range.start);
+    assert_eq!(instance_reads(&loose, "__ctx."), expected, "{}", loose.code);
+    let generated: Vec<_> = loose
         .mapping
         .spans()
         .iter()
         .filter(|mapping| {
-            output
+            loose
                 .code
                 .get(..mapping.gen_range.start)
-                .is_some_and(|head| head.ends_with(receiver))
+                .is_some_and(|head| head.ends_with("__ctx."))
         })
         .map(|mapping| mapping.gen_range.clone())
         .collect();
@@ -108,11 +120,10 @@ fn assert_instance_reads(strict: bool, receiver: &str) {
         unique_generated.len(),
         "one mapping per actual emitted property read"
     );
-    assert_eq!(reads, expected, "{}", output.code);
 }
 
 #[test]
-fn default_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names() {
+fn public_instance_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names() {
     let output = output(false);
     let declarations: Vec<_> = output
         .code
@@ -128,4 +139,9 @@ fn default_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names() {
             "    const $emit = __ctx.$emit;",
         ]
     );
+}
+
+#[test]
+fn default_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names() {
+    public_instance_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names();
 }

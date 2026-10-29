@@ -86,6 +86,11 @@ export class LspSession {
     return this.process.pid;
   }
 
+  /** A profile is admissible only after successful exit and actual stdio EOF. */
+  get exitedGracefully(): boolean {
+    return this.process.exitCode === 0 && this.process.signalCode === null;
+  }
+
   /**
    * Server stderr captured so far. Timeout errors raised by this session
    * already embed it; suites with their own deadlines (for example the churn
@@ -158,6 +163,12 @@ export class LspSession {
 
   notify(method: string, params: unknown): void {
     this.send({ jsonrpc: "2.0", method, params });
+  }
+
+  /** Write several already ordered protocol messages as one stdio frame batch. */
+  sendBatch(...messages: JsonRpcMessage[]): void {
+    assert.ok(messages.length > 0, "an LSP batch must contain at least one message");
+    this.send(...messages);
   }
 
   waitForNotification(

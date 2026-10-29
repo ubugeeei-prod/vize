@@ -137,7 +137,7 @@ fn append_child_templates(
     for child in children {
         match child {
             TemplateChildNode::Text(text) => {
-                template.push_linked(&escape_html_text(text.content), text.loc.span);
+                push_escaped(template, text.content, text.loc.span);
             }
             TemplateChildNode::Interpolation(_) => {
                 template.push_str(" ");
@@ -172,6 +172,19 @@ fn append_child_templates(
             }
             _ => {}
         }
+    }
+}
+
+/// Push `text` with HTML special characters escaped. Most text has none, so
+/// it is copied whole instead of rebuilt one char at a time.
+fn push_escaped(template: &mut impl TemplateWriter, text: &str, authored: Span) {
+    if text
+        .bytes()
+        .any(|byte| matches!(byte, b'&' | b'<' | b'>' | b'"' | b'\''))
+    {
+        template.push_linked(&escape_html_text(text), authored);
+    } else {
+        template.push_linked(text, authored);
     }
 }
 
