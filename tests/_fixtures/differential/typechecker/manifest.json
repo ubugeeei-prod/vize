@@ -10345,6 +10345,29 @@
       ]
     },
     {
+          "id": "typechecker/expect-sibling-interpolation-10871",
+          "state": "active",
+          "targets": ["batch"],
+          "inputs": [
+            {
+              "path": "expect-sibling-interpolation-10871/Probe.vue.txt",
+              "sha256": "a57f563535d4e9e049121ad11abdf26cd4fee2a9802cf686711ba8c9ffcebb00",
+              "role": "regression-reproduction"
+            }
+          ],
+          "dialectCoverage": {
+            "state": "source-inspected",
+            "registryRef": null,
+            "evidence": [
+              {
+                "kind": "source-inspection",
+                "dialects": ["vue3-sfc", "html-template", "ts"],
+                "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+              }
+            ]
+          }
+        },
+    {
       "id": "typechecker/runtime/project-native-runtime-authority-10694",
       "state": "active",
       "targets": ["batch"],
