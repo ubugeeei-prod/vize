@@ -5,6 +5,13 @@
 > These sections are historical design context, not current implementation
 > commitments. See the [scope decision](../decisions/2026-10-17-vue-toolchain-scope.md). Vue compiler and editor quality takes priority.
 
+> [!IMPORTANT]
+> This entire phase is a frozen historical plan. Its task checkboxes and exit
+> lines preserve the state at retirement; unchecked entries are not current
+> backlog, completion blockers, or release gates. Supported JavaScript plugin
+> work and generic compatibility classification continue under their product
+> plans, independently of the retired component ABI.
+
 > [!NOTE]
 > **Early re-cut 2026-09-21, while phases 3–5 are still live**, under the plan README's [early re-cut rule](./README.md#task-format), in the same shape as [phase 4](./phase-4.md) and [phase 5](./phase-5.md). The maintainer's completion target (**2026-09-23**) and the public presentation at Vue Fes Japan 2026 (**2026-10-24**) make the contract work that needs no later substrate worth starting now: the input-dialect WIT world, the versioning policy, the wasmtime lane, the MoonBit hosting spike and the communications decision. Every task states its **start gate**: _startable now_ or _gated on_ a named earlier-phase task. The exit gate is unchanged and still follows the phase-5 exit (P6-13 depends on P5-14). Tasks whose acceptance needs people outside the repository (the Volt maintainer, a third-party dialect author, the maintainer's own decisions) say so as **review points**, never as green checks.
 
@@ -61,7 +68,9 @@ Ordered for the 2026-09-23 completion target; **bold** tasks carry the most pres
 
 ## TODO index
 
-Each ID links to its contract; the box is checked only in the PR that satisfies its acceptance criteria, with a record under `phase-6-records/`.
+Historical snapshot: each ID links to its archived contract. Checked entries
+retain their landed records; unchecked entries preserve the work that the scope
+decision retired and must not be interpreted as current commitments.
 
 - [x] [P6-1a](./phase-6-tasks.md#p6-1a--input-dialect-wit-world-and-capability-handshake) Input-dialect WIT world and capability handshake — lane A · startable now
 - [x] [P6-1b](./phase-6-tasks.md#p6-1b--expression-dialect-wit-world) Expression-dialect WIT world — lane A · gated on P4-5a
@@ -84,7 +93,9 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 
 ## Exit gate (machine-checkable)
 
-The three provisional lines are normative and kept verbatim; the re-cut only adds lines.
+Historical snapshot: these lines are retained verbatim for auditability. They
+are non-normative after the 2026-10-17 scope decision and do not gate current
+Davinci completion or a Vize release.
 
 - [ ] TS-48..51 green; contracts documented with semver policy
 - [ ] MoonBit + Volt + JS-rule validations complete; `ExprRef` report closed
