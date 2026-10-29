@@ -1036,6 +1036,7 @@ importers:
       vue:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
+
   npm/compose/core:
     dependencies:
       temporal-polyfill-lite:
