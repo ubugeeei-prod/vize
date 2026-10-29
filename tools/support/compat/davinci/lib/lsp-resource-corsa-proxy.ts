@@ -6,7 +6,8 @@ const { spawn } = require("node:child_process");
 const gate = JSON.parse(fs.readFileSync(path.join(__dirname, "gate.json"), "utf8"));
 const args = process.argv.slice(2);
 const framed = args.includes("--lsp");
-const mirroredDocuments = new Map();
+const targetAccess = "peer.value?.publicState";
+let mirroredDocument;
 
 function procIdentity(role, pid) {
   const stat = fs.readFileSync("/proc/" + pid + "/stat", "utf8");
@@ -114,21 +115,29 @@ function updateMirroredDocument(message) {
     if (!document || typeof document.uri !== "string" || typeof document.text !== "string") {
       throw new Error("invalid mirrored didOpen");
     }
-    mirroredDocuments.set(document.uri, {
+    const first = document.text.indexOf(targetAccess);
+    if (first < 0) return;
+    if (document.text.indexOf(targetAccess, first + 1) >= 0) {
+      throw new Error("canonical hover target must be unique");
+    }
+    if (mirroredDocument && mirroredDocument.openedUri !== document.uri) {
+      throw new Error("refusing a second canonical hover target");
+    }
+    mirroredDocument = {
       openedUri: document.uri,
       text: document.text,
       version: document.version ?? null,
-    });
+    };
     return;
   }
   if (message.method === "textDocument/didChange") {
     const document = params && params.textDocument;
     const changes = params && params.contentChanges;
-    const previous = document && mirroredDocuments.get(document.uri);
-    if (!document || !previous || !Array.isArray(changes)) {
+    if (!document || !mirroredDocument || document.uri !== mirroredDocument.openedUri) return;
+    if (!Array.isArray(changes)) {
       throw new Error("invalid mirrored didChange");
     }
-    let text = previous.text;
+    let text = mirroredDocument.text;
     for (const change of changes) {
       if (!change || typeof change.text !== "string") throw new Error("invalid mirrored change");
       if (!change.range) {
@@ -140,16 +149,16 @@ function updateMirroredDocument(message) {
       if (end < start) throw new Error("reversed mirrored change range");
       text = text.slice(0, start) + change.text + text.slice(end);
     }
-    mirroredDocuments.set(document.uri, {
-      openedUri: previous.openedUri,
+    mirroredDocument = {
+      openedUri: mirroredDocument.openedUri,
       text,
-      version: document.version ?? previous.version,
-    });
+      version: document.version ?? mirroredDocument.version,
+    };
     return;
   }
   if (message.method === "textDocument/didClose") {
     const uri = params && params.textDocument && params.textDocument.uri;
-    if (typeof uri === "string") mirroredDocuments.delete(uri);
+    if (typeof uri === "string" && uri === mirroredDocument?.openedUri) mirroredDocument = undefined;
   }
 }
 
@@ -179,7 +188,8 @@ if (framed) {
         try {
           fs.writeFileSync(path.join(directory, "claimed"), "", { flag: "wx" });
           const uri = message.params && message.params.textDocument && message.params.textDocument.uri;
-          const document = typeof uri === "string" && mirroredDocuments.get(uri);
+          const document =
+            typeof uri === "string" && mirroredDocument?.openedUri === uri && mirroredDocument;
           if (!document) throw new Error("native hover has no exact mirrored source clone");
           selected = { token, id: message.id, directory };
           fs.writeFileSync(path.join(directory, "request.bin"), frame);

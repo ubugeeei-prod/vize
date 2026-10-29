@@ -23,6 +23,7 @@ import {
   nativeFrameEvidence,
   resourceCorsaGateScript,
 } from "../../tools/support/compat/davinci/lib/lsp-resource-corsa-gate.ts";
+import { resourceCorsaProxySource } from "../../tools/support/compat/davinci/lib/lsp-resource-corsa-proxy.ts";
 import {
   createCancellationPublicationProgress,
   finalizeCancellationProfileLink,
@@ -112,6 +113,14 @@ test("generated repeatable Corsa gate is valid CommonJS", () => {
   } finally {
     fs.rmSync(directory, { force: true, recursive: true });
   }
+});
+
+test("generated Corsa gate retains only the unique canonical hover target", () => {
+  assert.match(resourceCorsaProxySource, /let mirroredDocument;/);
+  assert.doesNotMatch(resourceCorsaProxySource, /mirroredDocuments|new Map\(\)/);
+  assert.match(resourceCorsaProxySource, /if \(first < 0\) return;/);
+  assert.match(resourceCorsaProxySource, /refusing a second canonical hover target/);
+  assert.match(resourceCorsaProxySource, /document\.uri !== mirroredDocument\.openedUri\) return;/);
 });
 
 test("resource cancellation statistics use every nearest-rank sample", () => {
