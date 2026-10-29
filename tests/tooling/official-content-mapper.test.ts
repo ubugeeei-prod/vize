@@ -7,8 +7,11 @@ import { test } from "node:test";
 import { gzipSync } from "node:zlib";
 import {
   assertOfficialDiagnostics,
+  assertOfficialRuntimeCustody,
   loadOfficialFixture,
   officialCases,
+  officialDiagnostics,
+  officialRuntimeAuthority,
   officialRunOptions,
   resolveOfficialNativeImage,
   officialActorInputs,
@@ -175,6 +178,29 @@ test("all TypeScript error headers require authored mappings even without a whol
       () => assertOfficialDiagnostics(legacy, original, false, result(output)),
       /every TypeScript error must map to authored source/u,
     );
+});
+
+test("diagnostic terms include only attached indented continuation lines", () => {
+  const term = "Property '$emit' is missing";
+  const multiline = `${stdout.trimEnd()}\n  ${term} in the component instance.\n`;
+  const baseline = {
+    ...original,
+    baselineCodes: [2322],
+    baselineTerms: [term],
+    baselineStdout: undefined,
+    baselineStderr: undefined,
+  };
+  assertOfficialDiagnostics(row, baseline, true, result(multiline));
+  assert.throws(
+    () => assertOfficialDiagnostics(row, baseline, true, result(`  ${term}\n${stdout}`)),
+    /must retain the original diagnostic term/u,
+  );
+  const separate = officialDiagnostics(
+    `${stdout}Other.vue(1,1): error TS2344: Separate diagnostic.\n  ${term}.\n`,
+  );
+  assert.equal(separate.length, 2);
+  assert.equal(separate[0].message.includes(term), false);
+  assert.equal(separate[1].message.includes(term), true);
 });
 
 test("public identity resolves an inert native archive without evaluating its wrapper or image", () => {
@@ -414,6 +440,7 @@ test("fixture admission rejects malformed exact fields, status downgrades and es
       return loadOfficialFixture(file);
     };
     assert.equal(load(fixture).originals.length, 1);
+    assert.equal(load({ ...fixture, vue: "3.5.43" }).vue, "3.5.43");
     for (const value of [
       { ...fixture, originals: [{ ...original, expectedStdout: null }] },
       { ...fixture, originals: [{ ...original, baselineStderr: [] }] },
@@ -424,9 +451,38 @@ test("fixture admission rejects malformed exact fields, status downgrades and es
       { ...fixture, controls: [{ ...row, status: 0 }] },
       { ...fixture, controls: [{ ...row, files: { ...files, "../escape.vue": "" } }] },
       { ...fixture, typescript: "7.1.0-dev.other" },
+      { ...fixture, vue: "^3.5.43" },
+      { ...fixture, vue: "3.5.43-beta.1" },
+      { ...fixture, vue: "03.5.43" },
     ])
       assert.throws(() => load(value));
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
+});
+
+test("runtime custody rejects request, lock and installed-version drift", () => {
+  const expected = officialRuntimeAuthority({
+    typescript: "7.1.0-dev.20261017.1",
+    vue: "3.5.43",
+  });
+  const exact = { ...expected };
+  assert.doesNotThrow(() =>
+    assertOfficialRuntimeCustody(expected, {
+      request: exact,
+      lock: exact,
+      installed: exact,
+    }),
+  );
+  for (const name of ["request", "lock", "installed"])
+    assert.throws(
+      () =>
+        assertOfficialRuntimeCustody(expected, {
+          request: exact,
+          lock: exact,
+          installed: exact,
+          [name]: { ...exact, vue: "3.5.20" },
+        }),
+      new RegExp(`${name} must preserve the fixture runtime authority`, "u"),
+    );
 });
