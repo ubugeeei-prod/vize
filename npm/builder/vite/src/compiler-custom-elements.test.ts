@@ -32,26 +32,35 @@ const customElementPatternCompiled = compileFile(
   customElementPatternSource,
 );
 
-assert.match(
+assert.equal(
   customElementPatternCompiled.code,
-  /_createBlock\(\$setup\.TresCanvas/,
-  "Explicit script setup imports should still win over custom-element patterns",
-);
-assert.match(customElementPatternCompiled.code, /import \{ TresCanvas \}/);
-assert.match(
-  customElementPatternCompiled.code,
-  /_createElementBlock\("TresMesh"/,
-  "Matched PascalCase renderer tags should compile as element blocks",
-);
-assert.match(
-  customElementPatternCompiled.code,
-  /_createElementVNode\("TresSpotLight"/,
-  "Matched PascalCase renderer child tags should compile as element vnodes",
-);
-assert.doesNotMatch(
-  customElementPatternCompiled.code,
-  /_resolveComponent\("Tres(?:Canvas|Mesh|SpotLight)"\)/,
-  "Matched PascalCase renderer tags must not use runtime component resolution",
+  `import { createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, withCtx as _withCtx } from "vue";
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode("TresSpotLight");
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _openBlock(), _createBlock($setup["TresCanvas"], null, {
+    default: _withCtx(() => [$setup.visible ? (_openBlock(), _createElementBlock("TresMesh", { key: 0 }, [_hoisted_1])) : _createCommentVNode("v-if", true)]),
+    _: 1
+  });
+}
+import { TresCanvas } from "@tresjs/core";
+const visible = true;
+export default {
+  __name: "TresCustomElements",
+  render: _sfc_render,
+  setup(__props, { expose: __expose }) {
+    __expose();
+    const __returned__ = {
+      visible,
+      TresCanvas
+    };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};`,
+  "explicit setup imports and custom-element pattern lowering should match exactly",
 );
 
 // Control: without `customElements`, `customRenderer` alone keeps the same tags
