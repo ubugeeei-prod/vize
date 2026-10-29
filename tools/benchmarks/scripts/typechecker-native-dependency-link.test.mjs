@@ -1,4 +1,4 @@
-/** Real checkout controls for the sole manual source dependency-link exception. */
+/** Real checkout controls for the manual source dependency-link exceptions. */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -17,9 +17,24 @@ import {
 import os from "node:os";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
-import { captureSourceCustody } from "./typechecker-native-source-custody.mjs";
+import {
+  SOURCE_DEPENDENCY_LINKS,
+  captureSourceCustody,
+} from "./typechecker-native-source-custody.mjs";
 
 const WORKFLOW = ".github/workflows/typechecker-native-phases.yml";
+const PATINA_REPORT_FIXTURE =
+  "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755";
+const REQUIRED_PACKAGE_JSONS = [
+  "node_modules/oxfmt/package.json",
+  "tests/node_modules/vue/package.json",
+  "tests/node_modules/vue-component-type-helpers/package.json",
+  "tests/node_modules/vue-ssr-css-vars-oracle/package.json",
+  "playground/node_modules/vue/package.json",
+  "npm/cli/node_modules/vue/package.json",
+  `${PATINA_REPORT_FIXTURE}/node_modules/vue/package.json`,
+  `${PATINA_REPORT_FIXTURE}/node_modules/vue-router/package.json`,
+];
 const BRIDGES = [
   "Cargo.toml",
   "Cargo.lock",
@@ -78,52 +93,112 @@ function fixture(run) {
         MAIN_SOURCE_SHA: sha,
       },
     };
+    const dependencyRoots = Object.fromEntries(
+      SOURCE_DEPENDENCY_LINKS.map((relativePath) => [
+        relativePath,
+        {
+          modules: join(root, relativePath),
+          link: join(sourceRoot, relativePath),
+        },
+      ]),
+    );
     run({
       root,
       sourceRoot,
       temporary,
       options,
-      modules: join(root, "node_modules"),
-      link: join(sourceRoot, "node_modules"),
+      dependencyRoots,
+      modules: dependencyRoots.node_modules.modules,
+      link: dependencyRoots.node_modules.link,
     });
   } finally {
     rmSync(temporary, { recursive: true, force: true });
   }
 }
 function install(f) {
-  put(f.modules, "locked-fixture.txt");
-  symlinkSync(f.modules, f.link);
+  for (const { modules, link } of Object.values(f.dependencyRoots)) {
+    put(modules, "locked-fixture.txt");
+    mkdirSync(dirname(link), { recursive: true });
+    symlinkSync(modules, link);
+  }
 }
 function hide(f) {
   writeFileSync(join(f.root, ".git/info/exclude"), "node_modules\n");
 }
 
+await test("manual workflow links every allowlisted workspace dependency root before qualification", () => {
+  const workflow = readFileSync(WORKFLOW, "utf8");
+  const rootLoop = workflow.indexOf(
+    `for dependency_root in ${SOURCE_DEPENDENCY_LINKS.join(" ")}; do`,
+  );
+  const link = workflow.indexOf(
+    'ln -s "$GITHUB_WORKSPACE/$dependency_root" "$NATIVE_PHASE_SOURCE_ROOT/$dependency_root"',
+  );
+  const packageLoop = workflow.indexOf(
+    `for package_json in ${REQUIRED_PACKAGE_JSONS.join(" ")}; do`,
+  );
+  const preflight = workflow.indexOf('test -f "$NATIVE_PHASE_SOURCE_ROOT/$package_json"');
+  const qualification = workflow.indexOf(
+    "Qualify declared template emits and config-scoped Vue helpers",
+  );
+  assert(rootLoop > 0);
+  assert(link > rootLoop);
+  assert(packageLoop > link);
+  assert(preflight > packageLoop);
+  assert(qualification > preflight);
+});
+
+await test("Patina report fixture recipe preflights every declared dependency", () => {
+  const dependencyRoot = `${PATINA_REPORT_FIXTURE}/node_modules`;
+  assert(SOURCE_DEPENDENCY_LINKS.includes(dependencyRoot));
+  const manifest = JSON.parse(readFileSync(`${PATINA_REPORT_FIXTURE}/package.json`, "utf8"));
+  assert.deepEqual(Object.keys(manifest.dependencies).toSorted(), ["vue", "vue-router"]);
+  assert.deepEqual(
+    Object.keys(manifest.dependencies)
+      .map((dependency) => `${dependencyRoot}/${dependency}/package.json`)
+      .toSorted(),
+    REQUIRED_PACKAGE_JSONS.filter((path) => path.startsWith(`${dependencyRoot}/`)).toSorted(),
+  );
+});
+
 await test("actual directory ignore exposes the link; valid installation changes only its custody", () => {
   fixture((f) => {
     const before = captureSourceCustody(f.options);
-    assert.equal(before.sourceDependencyLink, null);
+    assert.equal(before.schemaVersion, 2);
+    assert.deepEqual(
+      before.sourceDependencyLinks,
+      Object.fromEntries(SOURCE_DEPENDENCY_LINKS.map((relativePath) => [relativePath, null])),
+    );
     install(f);
-    assert.equal(untracked(f.sourceRoot), "node_modules\0");
+    const expectedUntracked = SOURCE_DEPENDENCY_LINKS.toSorted()
+      .map((relativePath) => `${relativePath}\0`)
+      .join("");
+    assert.equal(untracked(f.sourceRoot), expectedUntracked);
     const after = captureSourceCustody(f.options);
     assert.deepEqual(captureSourceCustody(f.options), after);
-    const { sourceDependencyLink: _beforeLink, ...beforeAuthority } = before;
-    const { sourceDependencyLink: link, ...afterAuthority } = after;
+    const { sourceDependencyLinks: _beforeLinks, ...beforeAuthority } = before;
+    const { sourceDependencyLinks: links, ...afterAuthority } = after;
     assert.deepEqual(beforeAuthority, afterAuthority);
-    assert.equal(link.path, f.link);
-    assert.equal(link.target, f.modules);
-    assert.equal(link.canonicalTarget, realpathSync(f.link));
-    const stat = lstatSync(f.link, { bigint: true });
-    for (const key of "dev ino mode size mtimeNs ctimeNs".split(" "))
-      assert.equal(link.revision[key], stat[key].toString());
-    assert.deepEqual(Object.keys(link.driverDirectory), ["path", "dev", "ino", "mode"]);
-    assert.equal(link.driverDirectory.ino, lstatSync(f.modules, { bigint: true }).ino.toString());
-    assert.equal(lstatSync(f.modules).isDirectory(), true);
-    assert.equal(lstatSync(f.modules).isSymbolicLink(), false);
+    assert.deepEqual(Object.keys(links), SOURCE_DEPENDENCY_LINKS);
+    for (const relativePath of SOURCE_DEPENDENCY_LINKS) {
+      const { modules, link: path } = f.dependencyRoots[relativePath];
+      const link = links[relativePath];
+      assert.equal(link.path, path);
+      assert.equal(link.target, modules);
+      assert.equal(link.canonicalTarget, realpathSync(path));
+      const stat = lstatSync(path, { bigint: true });
+      for (const key of "dev ino mode size mtimeNs ctimeNs".split(" "))
+        assert.equal(link.revision[key], stat[key].toString());
+      assert.deepEqual(Object.keys(link.driverDirectory), ["path", "dev", "ino", "mode"]);
+      assert.equal(link.driverDirectory.ino, lstatSync(modules, { bigint: true }).ino.toString());
+      assert.equal(lstatSync(modules).isDirectory(), true);
+      assert.equal(lstatSync(modules).isSymbolicLink(), false);
+    }
     assert.equal(
       readFileSync(join(f.sourceRoot, ".gitignore"), "utf8"),
       "node_modules/\ntarget/\n",
     );
-    assert.equal(untracked(f.sourceRoot), "node_modules\0");
+    assert.equal(untracked(f.sourceRoot), expectedUntracked);
   });
 });
 
@@ -132,7 +207,12 @@ await test("ignored valid link still receives a nonnull custody record", () => {
     install(f);
     hide(f);
     assert.equal(untracked(f.sourceRoot), "");
-    assert.equal(captureSourceCustody(f.options).sourceDependencyLink.target, f.modules);
+    const { sourceDependencyLinks } = captureSourceCustody(f.options);
+    for (const relativePath of SOURCE_DEPENDENCY_LINKS)
+      assert.equal(
+        sourceDependencyLinks[relativePath].target,
+        f.dependencyRoots[relativePath].modules,
+      );
   });
 });
 
@@ -252,7 +332,7 @@ for (const ignored of [false, true]) {
       mkdirSync(join(f.temporary, "offsite"));
       rmSync(f.link);
       symlinkSync(join(f.temporary, "offsite"), f.link);
-      assert.equal(before.sourceDependencyLink.target, f.modules);
+      assert.equal(before.sourceDependencyLinks.node_modules.target, f.modules);
       assert.throws(() => captureSourceCustody(f.options), /target mismatch/u);
     }));
 }
@@ -272,8 +352,8 @@ for (const mode of ["recreated-link", "same-inode-timestamp", "replaced-driver-d
         put(f.modules, "locked-fixture.txt");
       }
       const after = captureSourceCustody(f.options);
-      const beforeLink = before.sourceDependencyLink;
-      const afterLink = after.sourceDependencyLink;
+      const beforeLink = before.sourceDependencyLinks.node_modules;
+      const afterLink = after.sourceDependencyLinks.node_modules;
       assert.equal(readlinkSync(f.link), f.modules);
       assert.equal(afterLink.canonicalTarget, beforeLink.canonicalTarget);
       assert.notDeepEqual(after, before, "final campaign receipt equality must detect replacement");

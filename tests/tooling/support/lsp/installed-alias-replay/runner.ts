@@ -56,7 +56,9 @@ export async function replayInstalledAliases(options: ReplayOptions) {
     cases: 32,
     outcomes,
     adaptation:
-      "The original explicit workspace Corsa path is absent; the public npm CLI configures its bundled Corsa. Project options use canonical vue: settings in Vite, preserving native defaults. All original tsconfig options and authored source/oracle bytes are retained.",
+      options.authority.resolutionMode === "explicit-user-provider"
+        ? "The original workspace provider is absent; the authenticated installed user provider is supplied as explicit CORSA_PATH authority. Project options use canonical vue: settings in Vite, preserving native defaults. All original tsconfig options and authored source/oracle bytes are retained."
+        : "The original explicit workspace Corsa path is absent; the historical public npm CLI configures its bundled Corsa. Project options use canonical vue: settings in Vite, preserving native defaults. All original tsconfig options and authored source/oracle bytes are retained.",
     configuration: {
       originalNative: {
         file: "vize.config.json",
@@ -159,7 +161,12 @@ export async function replayInstalledAliases(options: ReplayOptions) {
         .map((name) => path.join(caseRoot, name));
       try {
         const terminal = outcome.terminal as { pid?: number } | undefined;
-        outcome.nativeCustody = verifyNativeJournal(journalPath, options.authority, terminal?.pid);
+        outcome.nativeCustody = verifyNativeJournal(
+          journalPath,
+          options.authority,
+          terminal?.pid,
+          options.authority.bundledCorsa.path,
+        );
         for (const input of configuration) exactFile(input.path, input.sha256, projectRoot);
         recheckPublicBytes(options.authority);
         options.recheckVue();

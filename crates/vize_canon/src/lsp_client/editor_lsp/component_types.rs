@@ -52,6 +52,15 @@ impl EditorLspSession {
             .ok_or_else(|| cstr!("Component type attachment is missing"))?;
         capture.record("retainedAttachment", || json!(api.session));
         let communication = |error| cstr!("Cannot classify component types: {error}");
+        // Move the existing one-time handshake before capability selection;
+        // SourceOwner::create would otherwise perform exactly this handshake.
+        block_on(api.client.initialize()).map_err(communication)?;
+        if api.client.dialect() == Some(corsa::api::ApiDialect::DerivedSnapshots) {
+            capture.record("unsupportedSnapshotView", || {
+                json!("derived API lineage is not the editor overlay graph")
+            });
+            return Ok(None);
+        }
         let snapshot = SnapshotSourceOwner::create(&api.client).map_err(communication);
         capture.record("snapshot", || json!({"error":snapshot.as_ref().err()}));
         let mut owner = snapshot?;

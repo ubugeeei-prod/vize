@@ -61,8 +61,25 @@ pub(crate) fn transform_to_ir_with_spans<'a>(
     std::vec::Vec<String>,
     Option<TemplateSpans>,
 ) {
+    transform_to_ir_with_host_context(allocator, root, source, scope_id, spans, false)
+}
+
+pub(crate) fn transform_to_ir_with_host_context<'a>(
+    allocator: &'a Allocator,
+    root: &RootNode<'a>,
+    source: &'a str,
+    scope_id: Option<&str>,
+    spans: bool,
+    jsx_closure: bool,
+) -> (
+    RootIRNode<'a>,
+    std::vec::Vec<String>,
+    std::vec::Vec<String>,
+    Option<TemplateSpans>,
+) {
     let mut ctx = TransformContext::new(allocator, source);
     ctx.scope_id = scope_id.map(String::from);
+    ctx.jsx_closure = jsx_closure;
     ctx.template_spans = spans.then(TemplateSpans::default);
 
     vize_atelier_core::walk_probe::record_walk(

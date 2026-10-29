@@ -1,6 +1,6 @@
 //! Retain exceptional aliases' actual original parameter goal once.
 
-use oxc_ast::ast::BindingPattern;
+use oxc_ast::ast::{BindingPattern, FormalParameters};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::{Allocator, Box, SmallVec, Vec, profiler::global_profiler};
@@ -9,7 +9,7 @@ use crate::{
     ExpressionNode, RetainedJsAst, RetainedJsAstKind, SimpleExpressionNode, SourceLocation,
 };
 
-pub(super) fn alias_node<'a>(
+pub(crate) fn alias_node<'a>(
     allocator: &'a Allocator,
     alias: &'a str,
 ) -> Option<ExpressionNode<'a>> {
@@ -17,8 +17,12 @@ pub(super) fn alias_node<'a>(
         return None;
     }
     let mut node = SimpleExpressionNode::new(alias, false, SourceLocation::default());
-    // Ordinary ASCII aliases retain their existing zero-parse representation.
-    if !alias.is_ascii() || alias.contains('\\') {
+    // Ordinary aliases without initializer/computed-key work retain their
+    // existing zero-parse representation. Rewritable aliases keep the real
+    // parameter carrier so their cooked names survive a content rewrite.
+    let expression_candidate = alias.contains('=') || alias.contains('{') && alias.contains('[');
+    let exceptional_alias = !alias.is_ascii() || alias.contains('\\');
+    if exceptional_alias || expression_candidate {
         let mut names = Vec::new_in(&allocator);
         if vize_l0::expression_guard::expression_is_safe_to_parse(alias) {
             global_profiler().record_counter("atelier.for_binding.parses", 1);
@@ -65,33 +69,88 @@ pub(super) fn alias_node<'a>(
                     }
                 }
                 drop(pending);
-                // The existing parameter carrier retains the genuine goal;
-                // ForNode ownership distinguishes it from a v-slot goal.
-                node.js_ast = Some(RetainedJsAst {
-                    ast: allocator
-                        .as_oxc()
-                        .alloc(RetainedJsAstKind::SlotBindings(Ok(parameters))),
-                    raw: alias,
-                });
-                global_profiler().record_counter("atelier.for_binding.retained", 1);
+                if exceptional_alias || parameters_need_expression_rewrite(&parameters) {
+                    // The existing parameter carrier retains the genuine goal;
+                    // ForNode ownership distinguishes it from a v-slot goal.
+                    node.js_ast = Some(RetainedJsAst {
+                        ast: allocator
+                            .as_oxc()
+                            .alloc(RetainedJsAstKind::SlotBindings(Ok(parameters))),
+                        raw: alias,
+                    });
+                    global_profiler().record_counter("atelier.for_binding.retained", 1);
+                } else {
+                    names.clear();
+                }
             }
         }
-        // A refused goal yields no partial names or raw-escape fallback.
-        node.identifiers = Some(names);
+        // A refused goal yields no partial names or raw-escape fallback. An
+        // ordinary parsed candidate returns to the zero-parse representation.
+        if exceptional_alias || node.js_ast.is_some() {
+            node.identifiers = Some(names);
+        }
     }
     Some(ExpressionNode::Simple(Box::new_in(node, &allocator)))
 }
 
+pub(crate) fn alias_needs_expression_rewrite(node: &SimpleExpressionNode<'_>) -> bool {
+    node.retained_parameters()
+        .is_some_and(parameters_need_expression_rewrite)
+}
+
+fn parameters_need_expression_rewrite(parameters: &FormalParameters<'_>) -> bool {
+    parameters
+        .items
+        .iter()
+        .any(|parameter| pattern_needs_expression_rewrite(&parameter.pattern))
+        || parameters
+            .rest
+            .as_ref()
+            .is_some_and(|rest| pattern_needs_expression_rewrite(&rest.rest.argument))
+}
+
+fn pattern_needs_expression_rewrite(pattern: &BindingPattern<'_>) -> bool {
+    match pattern {
+        BindingPattern::BindingIdentifier(_) => false,
+        BindingPattern::AssignmentPattern(_) => true,
+        BindingPattern::ObjectPattern(object) => {
+            object.properties.iter().any(|property| {
+                property.computed || pattern_needs_expression_rewrite(&property.value)
+            }) || object
+                .rest
+                .as_ref()
+                .is_some_and(|rest| pattern_needs_expression_rewrite(&rest.argument))
+        }
+        BindingPattern::ArrayPattern(array) => {
+            array
+                .elements
+                .iter()
+                .flatten()
+                .any(pattern_needs_expression_rewrite)
+                || array
+                    .rest
+                    .as_ref()
+                    .is_some_and(|rest| pattern_needs_expression_rewrite(&rest.argument))
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::alias_node;
+    use super::{alias_needs_expression_rewrite, alias_node};
     use crate::ExpressionNode;
     use vize_l0::Allocator;
 
     #[test]
     fn ordinary_aliases_keep_zero_parse_representation_and_original_bytes() {
         let allocator = Allocator::default();
-        for alias in ["row", "{ label: row }", "[row, index]", "row: string"] {
+        for alias in [
+            "row",
+            "{ label: row }",
+            "[row, index]",
+            "{ items: [row] }",
+            "row: string",
+        ] {
             let ExpressionNode::Simple(node) = alias_node(&allocator, alias).unwrap() else {
                 unreachable!()
             };
@@ -99,6 +158,22 @@ mod tests {
             assert!(node.identifiers.is_none());
             assert!(node.js_ast.is_none());
             assert_eq!(node.loc.span, vize_l0::Span::new(0, 0));
+        }
+    }
+
+    #[test]
+    fn rewritable_ascii_aliases_retain_their_parameter_names() {
+        let allocator = Allocator::default();
+        for (alias, expected) in [
+            ("[row = fallback, index]", vec!["row", "index"]),
+            ("{ label = fallback, [key]: tag }", vec!["label", "tag"]),
+        ] {
+            let ExpressionNode::Simple(node) = alias_node(&allocator, alias).unwrap() else {
+                unreachable!()
+            };
+            assert_eq!(node.content, alias);
+            assert!(alias_needs_expression_rewrite(&node));
+            assert_eq!(node.retained_parameter_names().unwrap(), expected);
         }
     }
 

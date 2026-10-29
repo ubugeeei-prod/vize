@@ -1,12 +1,13 @@
-// The Vue release whose Vapor runtime Vize's Vapor codegen targets.
+// Historical and current Vue Vapor runtime contracts.
 //
 // Vue 3.6 changed the insertion model between betas and release candidates
 // (`setInsertionState(parent, anchor?)`, trailing blocks without template
 // placeholders), so mounted-behavior and upstream-parity harnesses must run
-// Vize output and the official compiler-vapor output under the same release
-// Vize emits for. It is the `vue-vapor-runtime` alias `@vizejs/ui` pins for
-// its Vapor runtime conformance lane; the official compiler is resolved
-// through that runtime's own dependency graph so the two cannot drift.
+// Each observation pairs Vize and the official compiler with the same exact
+// runtime graph. The original rc.9 aliases below are retained for historical
+// regression evidence; they do not establish support for current generated
+// listener APIs. The current experimental target is rc.11, exposed explicitly
+// below. A failed older-runtime row remains failed rather than target credit.
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 
@@ -14,20 +15,20 @@ const fromUi = createRequire(new URL("../../../npm/ui/package.json", import.meta
 const fromVue = createRequire(fromUi.resolve("vue-vapor-runtime/package.json"));
 const fromSfc = createRequire(fromVue.resolve("@vue/compiler-sfc"));
 
-/** Version of the targeted Vue release. */
+/** Version of the historical pinned regression release. */
 export const vueVaporVersion = fromVue("./package.json").version;
 
-/** Absolute path of the targeted release's bundler runtime entry. */
+/** Historical pinned release's bundler runtime entry. */
 export const vueVaporRuntimeEntry = fromUi.resolve(
   "vue-vapor-runtime/dist/vue.runtime.esm-bundler.js",
 );
 
-/** Absolute path of the targeted release's browser build carrying both renderers. */
+/** Historical pinned release's browser build carrying both renderers. */
 export const vueVaporBrowserRuntime = fromUi.resolve(
   "vue-vapor-runtime/dist/vue.runtime-with-vapor.esm-browser.js",
 );
 
-/** The official `@vue/compiler-vapor` of the targeted release. */
+/** Historical release's official compiler, retained with its original graph. */
 export const officialCompilerVapor = fromSfc("@vue/compiler-vapor");
 
 assert.equal(fromSfc("@vue/compiler-vapor/package.json").version, vueVaporVersion);
@@ -46,4 +47,11 @@ export const supportedCompilerVapor = fromSupportedSfc("@vue/compiler-vapor");
 assert.equal(
   fromSupportedSfc("@vue/compiler-vapor/package.json").version,
   vueVaporSupportedVersion,
+);
+
+/** Current experimental codegen/runtime API target, independent of old receipts. */
+export const vueVaporTargetVersion = vueVaporSupportedVersion;
+export const targetCompilerVapor = supportedCompilerVapor;
+export const vueVaporTargetBrowserRuntime = fromUi.resolve(
+  "vue-vapor-runtime-supported/dist/vue.runtime-with-vapor.esm-browser.js",
 );

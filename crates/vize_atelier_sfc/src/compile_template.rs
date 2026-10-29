@@ -25,13 +25,20 @@ use vize_atelier_core::{CodegenExperimentalOptions, CodegenOptions};
 use vize_l0::Allocator;
 
 use vize_atelier_core::CompilerErrorWithSource;
+use vize_l1_to_l2::lower::pug::PugSourceMap;
 
-use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
+use crate::module_map::{Runs, source_map_points};
+use crate::types::{
+    BindingMetadata, BlockLocation, SfcError, SfcTemplateBlock, TemplateCompileOptions,
+};
 use vize_atelier_core::options::CustomElementMatcher;
 use vize_l4::module::OutputModule;
 
 pub(crate) struct TemplateBlockCompileResult {
     pub(crate) code: String,
+    /// Generated-module byte positions mapped into `template.content`.
+    /// The enclosing SFC assembly composes these with the authored Pug map.
+    pub(crate) map: Option<Runs>,
     pub(crate) warnings: std::vec::Vec<SfcError>,
     /// Section boundaries of `code`, recorded while the render module was
     /// emitted. `None` for the SSR/Vapor lanes (they re-scan via
@@ -71,6 +78,13 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) experimental_self_component: bool,
     pub(crate) bindings: Option<&'a BindingMetadata>,
     pub(crate) croquis: Option<vize_croquis::croquis::Croquis>,
+    /// Whether the caller will compose the backend template map into its result.
+    pub(crate) collect_map: bool,
+    /// The complete authored SFC, used only when a template diagnostic needs
+    /// an exact host-file location.
+    pub(crate) authored_source: Option<&'a str>,
+    /// Derived-HTML offsets to authored-Pug offsets for `lang="pug|jade"`.
+    pub(crate) pug_source_map: Option<&'a PugSourceMap>,
 }
 
 /// Compile template block
@@ -125,6 +139,9 @@ pub(crate) fn compile_template_block_with_capture(
         experimental_self_component,
         bindings,
         croquis,
+        collect_map,
+        authored_source,
+        pug_source_map,
     } = ctx;
     let compiler_options = options.compiler_options.as_ref();
     let scope_attr = if apply_scope_id {
@@ -209,13 +226,19 @@ pub(crate) fn compile_template_block_with_capture(
             return Err(SfcError {
                 message,
                 code: Some("TEMPLATE_ERROR".to_compact_string()),
-                loc: Some(template.loc.clone()),
+                loc: Some(fatal_location(
+                    &errors,
+                    template,
+                    authored_source,
+                    pug_source_map,
+                )),
             });
         }
 
         let output = OutputModule::from_render_chunks(result.preamble, result.code).into_code();
         return Ok(TemplateBlockCompileResult {
             code: output,
+            map: None,
             warnings: recoverable_template_warnings(&errors),
             sections: None,
         });
@@ -225,6 +248,11 @@ pub(crate) fn compile_template_block_with_capture(
     let mut dom_opts = options.compiler_options.clone().unwrap_or_default();
     dom_opts.mode = vize_atelier_core::options::CodegenMode::Module;
     dom_opts.prefix_identifiers = true;
+    // Template-only assembly composes these anchors into the complete SFC map.
+    // Script-bearing assembly owns its map separately and does not consume this map.
+    if collect_map {
+        dom_opts.source_map = codegen_options.source_map;
+    }
     // Vue applies SFC scope IDs at runtime. Only module-level hoisted VNodes
     // need an explicit scope attr baked into their props.
     dom_opts.scope_id = None;
@@ -325,9 +353,24 @@ pub(crate) fn compile_template_block_with_capture(
         return Err(SfcError {
             message,
             code: Some("TEMPLATE_ERROR".to_compact_string()),
-            loc: Some(template.loc.clone()),
+            loc: Some(fatal_location(
+                &errors,
+                template,
+                authored_source,
+                pug_source_map,
+            )),
         });
     }
+
+    let template_map = if collect_map {
+        result
+            .result
+            .map
+            .as_deref()
+            .and_then(|map| source_map_points(map, &result.result.code, &template.content))
+    } else {
+        None
+    };
 
     // Translate the emission-recorded section offsets into the concatenated
     // output: `output = preamble + '\n' + code + '\n'`, where `preamble` is
@@ -336,6 +379,11 @@ pub(crate) fn compile_template_block_with_capture(
         OutputModule::from_render_chunks(result.result.preamble, result.result.code);
     let preamble_len = output_module.imports.len();
     let fn_base = output_module.function_base_offset();
+    let map = template_map.map(|map| {
+        let mut placed = Runs::default();
+        placed.append(fn_base, &map);
+        placed
+    });
     let sections = result.sections.map(|s| TemplateCodeSections {
         imports: (0, s.imports_len),
         hoisted: if preamble_len > s.imports_len {
@@ -350,9 +398,73 @@ pub(crate) fn compile_template_block_with_capture(
 
     Ok(TemplateBlockCompileResult {
         code: output,
+        map,
         warnings: recoverable_template_warnings(&errors),
         sections,
     })
+}
+
+fn fatal_location(
+    errors: &[vize_atelier_core::CompilerError],
+    template: &SfcTemplateBlock<'_>,
+    authored_source: Option<&str>,
+    pug_source_map: Option<&PugSourceMap>,
+) -> BlockLocation {
+    let Some(pug_source_map) = pug_source_map else {
+        return template.loc.clone();
+    };
+    let Some(source) = authored_source else {
+        return template.loc.clone();
+    };
+    let Some(span) = errors
+        .iter()
+        .find(|error| !error.is_recoverable())
+        .and_then(|error| error.loc.as_ref())
+        .map(|location| location.span)
+    else {
+        return template.loc.clone();
+    };
+    let span = pug_source_map.to_pug(span);
+    block_location(
+        source,
+        template.loc.start + span.start as usize,
+        template.loc.start + span.end as usize,
+    )
+}
+
+fn block_location(source: &str, start: usize, end: usize) -> BlockLocation {
+    fn line_column(source: &str, offset: usize) -> (usize, usize) {
+        let target = offset.min(source.len());
+        let mut line = 1;
+        let mut column = 1;
+        for (index, ch) in source.char_indices() {
+            if index >= target {
+                break;
+            }
+            if ch == '\n' {
+                line += 1;
+                column = 1;
+            } else {
+                column += ch.len_utf8();
+            }
+        }
+        (line, column)
+    }
+
+    let start = start.min(source.len());
+    let end = end.clamp(start, source.len());
+    let (start_line, start_column) = line_column(source, start);
+    let (end_line, end_column) = line_column(source, end);
+    BlockLocation {
+        start,
+        end,
+        tag_start: start,
+        tag_end: end,
+        start_line,
+        start_column,
+        end_line,
+        end_column,
+    }
 }
 
 pub(crate) fn recoverable_template_warnings(

@@ -1,0 +1,6 @@
+declare module "vize:virtual-ts" {
+  // @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
+  type __VizeSilentAny = {}["__vizeSilentAny"];
+  type __VizeNamedSlotPayload<S, N> = { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] extends infer P ? ([P] extends [never] ? any : P) : any;
+  export type __VizeSlotPayload<S, N> = __VizeIsAny<S> extends true ? __VizeSilentAny : string extends N ? string extends keyof S ? __VizeNamedSlotPayload<S, N> : any : __VizeNamedSlotPayload<S, N>;
+}

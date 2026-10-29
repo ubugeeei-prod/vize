@@ -123,6 +123,7 @@ fn style_workspace_edit(
     collect_style_edits(
         query,
         query.uri,
+        query.content.clone(),
         query.offset,
         new_name,
         &mut seeds,
@@ -130,7 +131,7 @@ fn style_workspace_edit(
     );
     for edit in semantic {
         for (uri, range) in authored_edit_ranges(edit) {
-            let Some(source) = query.state.documents.text(&uri) else {
+            let Some(source) = query.state.documents.text_snapshot(&uri) else {
                 continue;
             };
             let Some(offset) =
@@ -138,7 +139,15 @@ fn style_workspace_edit(
             else {
                 continue;
             };
-            collect_style_edits(query, &uri, offset, new_name, &mut seeds, &mut changes);
+            collect_style_edits(
+                query,
+                &uri,
+                source,
+                offset,
+                new_name,
+                &mut seeds,
+                &mut changes,
+            );
         }
     }
     (!changes.is_empty()).then_some(WorkspaceEdit {
@@ -151,14 +160,12 @@ fn style_workspace_edit(
 fn collect_style_edits(
     query: &IdeContext<'_>,
     uri: &Url,
+    source: std::sync::Arc<std::string::String>,
     offset: usize,
     new_name: &str,
     seeds: &mut FxHashSet<(Url, String)>,
     changes: &mut HashMap<Url, Vec<TextEdit>>,
 ) {
-    let Some(source) = query.state.documents.text(uri) else {
-        return;
-    };
     let Some(word) = crate::ide::token_at_offset(&source, offset, |byte| {
         byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')
     }) else {
@@ -167,9 +174,7 @@ fn collect_style_edits(
     if !seeds.insert((uri.clone(), word.clone().into())) {
         return;
     }
-    let Some(ctx) = IdeContext::new(query.state, uri, offset) else {
-        return;
-    };
+    let ctx = IdeContext::with_content(query.state, uri, offset, source.clone());
     if !crate::ide::template_scope::may_reference_style_binding(&ctx, &word) {
         return;
     }

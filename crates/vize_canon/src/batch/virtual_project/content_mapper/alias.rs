@@ -4,6 +4,29 @@ pub(super) fn is_synthetic_content_mapper_identifier(text: &str) -> bool {
     text.starts_with("__vize_prop_check_")
 }
 
+/// Property navigation (`foo-bar` → `fooBar`) is an alias. A shorthand value
+/// or public-instance read stays an atom so the diagnostic names the binding
+/// (`ariaLabelledby`), not the authored attribute.
+pub(super) fn span_kind(
+    generated_file: &str,
+    generated_range: std::ops::Range<usize>,
+    original: &str,
+) -> super::ContentMapperSpanKind {
+    let generated = generated_file.get(generated_range.clone()).unwrap_or("");
+    let binding = generated_file
+        .get(..generated_range.start)
+        .is_some_and(|prefix| {
+            prefix.ends_with("__vize_public_instance.")
+                || prefix.ends_with("void (")
+                || prefix.ends_with("= (")
+        });
+    if !binding && is_alias_projection(generated, original) {
+        super::ContentMapperSpanKind::Alias
+    } else {
+        super::ContentMapperSpanKind::Atom
+    }
+}
+
 pub(super) fn is_alias_projection(generated: &str, original: &str) -> bool {
     let generated_name = unquoted_ts_string(generated);
     let original_name = unquoted_ts_string(original);

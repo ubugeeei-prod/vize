@@ -1,0 +1,162 @@
+name: Canon slot constructor admission
+on:
+  pull_request:
+    paths:
+      - crates/vize_canon/src/virtual_ts/expressions/generic_props_call.rs
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-resolver.d.ts.txt
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/slot-resolver.d.ts.txt
+      - crates/vize_canon/src/virtual_ts/helpers/preamble.rs
+      - crates/vize_canon/src/virtual_ts/helpers/shared_types.rs
+      - crates/vize_canon/src/virtual_ts/scope/slot_scope/payload.rs
+      - crates/vize_canon/src/virtual_ts/tests/slot_component_bindings.rs
+      - crates/vize_canon/src/snapshots/vize_canon__tests__virtual_ts_tests__virtual_ts_scoped_slots.snap
+      - crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_scoped_slot_expressions.snap
+      - crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_reserved_prop_and_hyphenated_slot_names.snap
+      - crates/vize_canon/tests/zero_argument_slot_constructor_diagnostics.rs
+      - crates/vize_canon/tests/support/fix_history_runner.rs
+      - tests/differential/typechecker-registry.ts
+      - tests/_fixtures/differential/typechecker/manifest.json
+      - tests/_fixtures/differential/typechecker/zero-argument-slot-constructor-11013/**
+      - tools/benchmarks/scripts/canon-slot-constructor-*.ts
+      - .github/workflows/canon-slot-constructor.yml
+permissions: { contents: read }
+concurrency:
+  group: canon-slot-constructor-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  admission:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: "4"
+      CARGO_INCREMENTAL: "0"
+      GOMAXPROCS: "2"
+      RAYON_NUM_THREADS: "2"
+      NODE_DISABLE_COMPILE_CACHE: "1"
+      PR_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { fetch-depth: 2, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Build the exact source CLI in an independent target
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD^2)" == "$PR_HEAD" ]]
+          export SLOT_EVIDENCE="$RUNNER_TEMP/slot-evidence"
+          mkdir "$SLOT_EVIDENCE"
+          git diff --exit-code
+          git rev-parse HEAD > "$SLOT_EVIDENCE/product-source.txt"
+          git show -s --format=%P HEAD > "$SLOT_EVIDENCE/product-parents.txt"
+          rustc -Vv > "$SLOT_EVIDENCE/rustc.txt"
+          lscpu > "$SLOT_EVIDENCE/cpu.txt"
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/slot-head-target"
+          cargo build --locked --profile ci-opt -p vize --bin vize --message-format=json > "$SLOT_EVIDENCE/head-cargo.jsonl" 2> "$SLOT_EVIDENCE/head-cargo.stderr"
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, shutil, subprocess
+          root=pathlib.Path(os.environ['SLOT_EVIDENCE'])
+          rows=[json.loads(line) for line in (root/'head-cargo.jsonl').read_text().splitlines()]
+          images=[r for r in rows if r.get('reason')=='compiler-artifact' and r.get('target',{}).get('name')=='vize' and r.get('executable')]
+          assert len(images)==1 and images[0]['fresh'] is False
+          image=pathlib.Path(images[0]['executable']); destination=pathlib.Path(os.environ['RUNNER_TEMP'])/'slot-head'
+          shutil.copy2(image,destination)
+          receipt={'source':(root/'product-source.txt').read_text().strip(),'parents':(root/'product-parents.txt').read_text().split(),'prHead':os.environ['PR_HEAD'],'profile':'ci-opt','argv':['cargo','build','--locked','--profile','ci-opt','-p','vize','--bin','vize','--message-format=json'],'cargoArtifact':images[0],'targetDirectory':os.environ['CARGO_TARGET_DIR'],'sha256':hashlib.sha256(destination.read_bytes()).hexdigest(),'bytes':destination.stat().st_size,'overlay':False,'timingComparison':False,'environment':{k:os.environ.get(k) for k in ['RUSTFLAGS','CARGO_ENCODED_RUSTFLAGS','CARGO_INCREMENTAL']}}
+          assert receipt['parents'][1]==receipt['prHead']
+          (root/'head-build.json').write_text(json.dumps(receipt,indent=2))
+          PY
+      - name: Validate direct constructor emission, snapshots and complete constructor packets
+        run: |
+          set -euo pipefail
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/slot-head-target"
+          evidence="$RUNNER_TEMP/slot-evidence"
+          run_exact_test() {
+            local label="$1"
+            shift
+            cargo test "$@" -- --exact --nocapture > "$evidence/$label.stdout" 2> "$evidence/$label.stderr"
+            grep -Fxq "running 1 test" "$evidence/$label.stdout"
+            grep -Fq "test result: ok. 1 passed; 0 failed; 0 ignored;" "$evidence/$label.stdout"
+          }
+          run_exact_test tuple-tests --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::slot_component_bindings::slot_constructor_calls_adapt_the_first_argument_without_replacing_the_signature
+          run_exact_test hoisted-owner --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::slot_component_bindings::hoisted_slot_constructor_branches_keep_the_component_owner
+          run_exact_test scoped-slots-snapshot --locked --profile ci-opt -p vize_canon --lib tests::virtual_ts_tests::snapshot_virtual_ts_scoped_slots
+          run_exact_test scoped-slot-expressions --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::test_scoped_slot_expressions
+          run_exact_test reserved-props-snapshot --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::test_reserved_prop_and_hyphenated_slot_names
+          run_exact_test constructor-packets --locked --profile ci-opt -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets
+      - name: Install the pinned public release baseline and provider
+        run: |
+          set -euo pipefail
+          fixture=tests/_fixtures/differential/typechecker/zero-argument-slot-constructor-11013/real-project/provider
+          mkdir "$RUNNER_TEMP/slot-provider"
+          cp "$fixture/package.json" "$fixture/package-lock.json" "$RUNNER_TEMP/slot-provider/"
+          cd "$RUNNER_TEMP/slot-provider"
+          printf '%s  %s\n' \
+            9ca03c3cb103e1ff8d0a8c633145a743a056f21c5a0be56fa633a19541ab5256 \
+            package-lock.json | sha256sum --check --strict
+          npm ci --ignore-scripts --no-audit --no-fund
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          runner=pathlib.Path(os.environ['RUNNER_TEMP']); provider=runner/'slot-provider'
+          lock_bytes=(provider/'package-lock.json').read_bytes()
+          assert hashlib.sha256(lock_bytes).hexdigest()=='9ca03c3cb103e1ff8d0a8c633145a743a056f21c5a0be56fa633a19541ab5256'
+          lock=json.loads(lock_bytes); package=lock['packages']['node_modules/vize']
+          assert package['version']=='0.603.0'
+          assert package['integrity']=='sha512-uuQ+uXHCbsUTcSsA37edH3hxg3OpnM95odFmEkXsntEi3Wo6Wk8d/mCanBcxKgRr989bKdxrmZi7BQZ+SPbFlA=='
+          root=provider/'node_modules/vize'; manifest=json.loads((root/'package.json').read_text())
+          assert manifest['version']=='0.603.0' and manifest['bin']['vize']=='bin/vize'
+          entries=[]
+          for file in sorted(path for path in root.rglob('*') if path.is_file() and 'node_modules' not in path.relative_to(root).parts):
+            data=file.read_bytes()
+            entries.append({'path':file.relative_to(root).as_posix(),'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})
+          encoded=json.dumps(entries,separators=(',',':')).encode()
+          tree_identity={'files':len(entries),'bytes':sum(entry['bytes'] for entry in entries),'sha256':hashlib.sha256(encoded).hexdigest()}
+          assert tree_identity=={'files':78,'bytes':737358,'sha256':'d7cdc31d3cd55b8495a3649598971950819b95becbcbd85c5bf6a088a6189d1e'}
+          tree={**tree_identity,'scope':'published vize package-owned files; nested dependencies are pinned by package-lock'}
+          binary=root/'bin/vize'; binary_bytes=binary.read_bytes()
+          entrypoint={'path':str(binary),'bytes':len(binary_bytes),'sha256':hashlib.sha256(binary_bytes).hexdigest()}
+          assert entrypoint['sha256']=='c468a9fe05d3f46520392ed4bdbccf1ff9b323308f9aa23cca0b507b829a6f54'
+          receipt={'version':manifest['version'],'lockSha256':hashlib.sha256(lock_bytes).hexdigest(),'registryIntegrity':package['integrity'],'packageTree':tree,'entrypoint':entrypoint,'timingUsable':False}
+          evidence=runner/'slot-evidence'; (evidence/'public-baseline.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          (evidence/'package.json').write_bytes((provider/'package.json').read_bytes())
+          (evidence/'package-lock.json').write_bytes(lock_bytes)
+          PY
+      - name: Require the pinned batch diagnostic fixture through the native provider
+        run: |
+          set -euo pipefail
+          [[ -z "${VIZE_TEST_DISABLE_TSGO+x}" ]]
+          mkdir -p tests/node_modules
+          ln -s "$RUNNER_TEMP/slot-provider/node_modules/vue" tests/node_modules/vue
+          checker=$(node --input-type=module -e 'import {pathToFileURL} from "node:url";const {default:get}=await import(pathToFileURL(process.argv[1]).href);console.log(get());' "$RUNNER_TEMP/slot-provider/node_modules/typescript-native/lib/getExePath.js")
+          [[ -f "$checker" ]]
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/slot-head-target"
+          VIZE_TEST_REQUIRE_TSGO=1 CORSA_PATH="$checker" cargo test --locked --profile ci-opt -p vize_canon --test zero_argument_slot_constructor_diagnostics zero_argument_slot_constructors_preserve_mapper_and_authored_diagnostics -- --exact --nocapture > "$RUNNER_TEMP/slot-evidence/fix-history.stdout" 2> "$RUNNER_TEMP/slot-evidence/fix-history.stderr"
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'slot-evidence'
+          stdout=(root/'fix-history.stdout').read_bytes(); stderr=(root/'fix-history.stderr').read_bytes()
+          assert b'running 1 test' in stdout and b'1 passed; 0 failed; 0 ignored;' in stdout
+          pack=pathlib.Path('tests/_fixtures/differential/typechecker/zero-argument-slot-constructor-11013/cases.json').read_bytes()
+          case_ids=[case['id'] for case in json.loads(pack)['cases']]
+          assert case_ids==['zero-argument-valid','generic-default-zero-valid','slot-string-invalid']
+          receipt={'test':'zero_argument_slot_constructors_preserve_mapper_and_authored_diagnostics','passed':1,'failed':0,'ignored':0,'caseIds':case_ids,'packSha256':hashlib.sha256(pack).hexdigest(),'stdoutSha256':hashlib.sha256(stdout).hexdigest(),'stderrSha256':hashlib.sha256(stderr).hexdigest(),'nativeDisablePresent':False,'nativeRequired':True,'timingUsable':False}
+          (root/'fix-history.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          PY
+      - name: Require exact native negative, real-project, and repair admission
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/canon-slot-constructor-repair.ts "$RUNNER_TEMP/slot-provider" "$RUNNER_TEMP/slot-provider/node_modules/vize/bin/vize" "$RUNNER_TEMP/slot-head" "$RUNNER_TEMP/slot-evidence/native"
+      - name: Preserve raw failures and authored inputs
+        if: always()
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          tar --exclude=project --exclude=node_modules --exclude=tmp --exclude=cache -czf slot-constructor-evidence.tgz slot-evidence
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: slot-constructor-${{ github.sha }}
+          path: ${{ runner.temp }}/slot-constructor-evidence.tgz
+          retention-days: 14

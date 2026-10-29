@@ -19,8 +19,11 @@ P3-6's complete surface and performance acceptance remain open.
 - [Controlled Transition hooks and keyed groups](p3-6-transitions.md)
 - [Retained custom directive payloads](p3-6-custom-directives.md)
 
-Computed prop names on Teleport, KeepAlive and Suspense remain unproved. Their checked
-schemas reject such names even when the raw JavaScript happens to spell a known
-prop. Ordinary component computed names have their own wider contract.
+Computed prop names on Teleport, KeepAlive and Suspense are admitted. A Teleport
+still needs a static `to`; other static names stay in each built-in's known set.
+The raw text of a computed name is not that static name, so `:[to]` alone stays
+retained. Computed listener names, prop modifiers, spreads and unknown static
+props stay retained. Ordinary component computed names have their own wider
+contract.
 
 Contract: [P3-6](p3-6.md).

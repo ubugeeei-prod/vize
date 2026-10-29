@@ -141,7 +141,10 @@ fn project<'a>(
     };
     super::expression_bindings::hoist_type_imports(&mut document, script_text);
     if !component_only {
-        super::expression_bindings::bind_template_expressions(&mut document);
+        super::expression_bindings::bind_template_expressions_from_source(
+            &mut document,
+            descriptor.source.as_ref(),
+        );
     }
     super::relative_imports::absolutize_relative_imports(&mut document, filename);
     // An unresolved `Ref` is `any` to this check, and the stock alias then

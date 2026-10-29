@@ -5,7 +5,7 @@ use tower_lsp::{
 
 use super::super::MaestroServer;
 #[cfg(feature = "native")]
-use crate::ide::{IdeContext, SignatureHelpService, position_to_offset};
+use crate::ide::{IdeContext, SignatureHelpService};
 
 pub(super) type SigHelpParams = SignatureHelpParams;
 pub(super) type SigHelp = SignatureHelp;
@@ -26,14 +26,7 @@ pub(super) async fn signature_help(
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(content) = server.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-            return Ok(None);
-        };
-
-        let Some(ctx) = IdeContext::new(&server.state, uri, offset) else {
+        let Some(ctx) = IdeContext::at_position(&server.state, uri, position) else {
             return Ok(None);
         };
         let corsa_bridge = server.state.get_corsa_bridge().await;

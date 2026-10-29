@@ -146,13 +146,13 @@ impl ServerState {
             break sources;
         };
         let mut sources = sources.into_iter().collect::<FxHashMap<_, _>>();
-        for uri in self.documents.uris() {
+        for uri in self.documents.uris().iter() {
             if uri
                 .to_file_path()
                 .is_ok_and(|path| is_project_source(&path))
-                && let Some(source) = self.documents.text(&uri)
+                && let Some(source) = self.documents.text(uri)
             {
-                sources.insert(uri, source);
+                sources.insert(uri.clone(), source);
             }
         }
         let mut sources = sources.into_iter().collect::<Vec<_>>();

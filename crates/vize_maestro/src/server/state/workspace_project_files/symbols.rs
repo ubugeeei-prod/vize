@@ -33,13 +33,13 @@ impl ServerState {
                 continue;
             };
             let mut open = FxHashMap::default();
-            for uri in self.documents.uris() {
+            for uri in self.documents.uris().iter() {
                 if uri
                     .to_file_path()
                     .is_ok_and(|path| is_project_source(&path))
-                    && let Some(source) = self.documents.text(&uri)
+                    && let Some(source) = self.documents.text(uri)
                 {
-                    open.insert(uri, source);
+                    open.insert(uri.clone(), source);
                 }
             }
             if self.documents.stable_revision() != Some(revision) {

@@ -38,8 +38,8 @@ pub(super) fn is_local_query(
         } else {
             document
                 .authored_source(&definition.uri)
-                .map(str::to_owned)
-                .or_else(|| ctx.state.documents.text(&definition.uri))
+                .map(|source| std::sync::Arc::new(source.to_owned()))
+                .or_else(|| ctx.state.documents.text_snapshot(&definition.uri))
         };
         source.is_some_and(|source| {
             crate::ide::position_to_offset(

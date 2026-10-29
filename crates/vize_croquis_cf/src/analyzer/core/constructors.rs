@@ -15,6 +15,7 @@ impl CrossFileAnalyzer {
             nuxt_scope_once: false,
             registry: ModuleRegistry::new(),
             graph: DependencyGraph::new(),
+            nuxt_page_outlets: Default::default(),
             effect_graph_summaries: Default::default(),
             template_complexity: Default::default(),
             single_file_options: AnalyzerOptions::full(),
@@ -30,6 +31,7 @@ impl CrossFileAnalyzer {
             nuxt_scope_once: false,
             registry: ModuleRegistry::with_project_root(root.as_ref()),
             graph: DependencyGraph::new(),
+            nuxt_page_outlets: Default::default(),
             effect_graph_summaries: Default::default(),
             template_complexity: Default::default(),
             single_file_options: AnalyzerOptions::full(),
@@ -47,6 +49,7 @@ impl CrossFileAnalyzer {
     #[doc(hidden)]
     pub fn set_nuxt_render_dirs(&mut self, dirs: Option<NuxtRenderDirs>) {
         self.nuxt_scope_once = false;
+        self.nuxt_page_outlets.clear();
         self.nuxt_dirs = dirs;
     }
 

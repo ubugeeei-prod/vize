@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "pullRequest": 11064,
+  "observation": {
+    "rawProductRevision": "5128bc7a70a1d14eafded753d9c691b403f4537e",
+    "testedMerge": "e1336dc82afb00d75d7e236429e1e0c58a9ec5b8",
+    "run": 40697523928,
+    "languageServerJob": 122849073449,
+    "nativeCanonJob": 122849073259,
+    "nativeCanonArtifact": 12820356605,
+    "nativeCanonArtifactArchiveSha256": "3e9cce6e08ac23a89b81853b860a48bcecd34cfb7559009e97263a68b9e48229",
+    "nativeCanonPacketPath": "_temp/native-syntax-semantics/empty-vue-star-exports/malformed-refusal.json",
+    "nativeCanonExtractedPacketSha256": "c2ebbf4bf04c46e270d134dbc4a4b969b8b0768a39ceb6640da3eeab02572e4c"
+  },
+  "predecessor": {
+    "path": "after/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "7f53c3ac733d2e64a753846d1b56baa189dd81754264df86a3e11115eccc58e7"
+  },
+  "successor": {
+    "path": "successor-11064/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "af4cf35979a62432f6bfea3718507f3eae1ea59d0e151c37d6736cb3a1293241"
+  },
+  "delta": {
+    "generatedTextBytesPerProjection": -499,
+    "omittedStaticNoSpreadAliases": 4,
+    "diagnosticCountsUnchanged": true,
+    "semanticLinkCountsUnchanged": true,
+    "mappingCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "scope": "The frozen 194-file before/after custody remains byte-identical. This receipt authenticates only the live no-spread projection successor observed at the tested merge."
+}

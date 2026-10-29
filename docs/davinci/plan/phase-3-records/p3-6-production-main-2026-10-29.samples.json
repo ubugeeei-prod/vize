@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "workflow_run": "https://github.com/ubugeeei-prod/vize/actions/runs/40853274181",
+  "dispatch": {
+    "base_sha": "f726433219b3369151efa8a15f26cecde3b4a9a2",
+    "head_sha": "44f1aff002c56b932c9be27f225f7b844ab16290",
+    "production_only": true
+  },
+  "head_sha": "44f1aff002c56b932c9be27f225f7b844ab16290",
+  "manifest_sha256": "2074f89546701138e83585db2274be9ecbd535f4cc01fef30c1ec60201699011",
+  "files": 561,
+  "profile": "ci-opt (opt-level=3, thin LTO, 16 codegen units)",
+  "allocator": "mimalloc (same default as native CLI; allocation tracking disabled)",
+  "features": "native,davinci-production-bench; no retained-AST differential dual-run",
+  "options": "P3-17 shipping adapter shapes; Standard syntax, default codegen, default DOM compiler options, script/style ids=fixture path; scoped styles inferred; inline DOM/Vapor, separate DOM module/SSR",
+  "window": "parse_sfc + compile_sfc_for_adapter + result destruction; source I/O excluded; profiler disabled; retained scope changes outside timing",
+  "sampling": "one warmup batch per lane; 9 samples, 5 corpus passes each; lane order alternates each sample; all/accepted/fallback/diagnostic/no-template/parse-error/routed-Vapor cohorts reported separately",
+  "scope": "committed fixture SFCs, excluding _git, _git-worktrees and node_modules; this report does not establish universal speed or semantic parity",
+  "input_observations_sha256": "05470329c62dbc0f266793b53ebec6704ae9859e464a64097b74b09a34c6a43e",
+  "input_observations_hash": "sha256 of jq -cS '[.shapes[] | {shape,observations}]'",
+  "maps": "default/off; this run does not establish source-map parity",
+  "native_only_acceptance": "not measured; emitter selection is not native-only fact production",
+  "acceptance": "not accepted: selected remains slower in every clean accepted shape and no gate closes",
+  "vapor_observation": {
+    "compiled_templates": 467,
+    "accepted": 276,
+    "fallback_rejected_or_unrecorded": 191,
+    "clean_accepted_code_differences": 27,
+    "diagnostic_message_differences": 0
+  },
+  "artifacts": [
+    {
+      "name": "davinci-production-perf-1",
+      "id": 12887639614,
+      "size_in_bytes": 347901,
+      "archive_sha256": "565467ce0bc12012fed84c8b5e502d0d48646f6d922d47dc6004ec907812c976",
+      "files": {
+        "samples.json": "2f9dff63565cfafb72c012be672c74541710c65f2757aa23504b78ae9a4e7a9c",
+        "runner.txt": "22bfbfe366cde6446eae8bfc706bb068b6a50293f1ebae4a7f4b50088b7b182a",
+        "bridge-attribution.json": "5329f0886f073f80163826ab65f2baeaffc946172988e8acfa964803857699af"
+      }
+    },
+    {
+      "name": "davinci-production-perf-2",
+      "id": 12888012086,
+      "size_in_bytes": 254460,
+      "archive_sha256": "d16aba654027c0c3cc50998360d22c5dbce049f9a74f09855adfd9e33f816486",
+      "files": {
+        "samples.json": "f0579a1540ada6e789aa591df4c843c3a7b23bb0905918e06022fa7296072379",
+        "runner.txt": "a86e92522fa6a7a639f231991f37044926c6415dab46e1a5e9d7eac126e94a93"
+      }
+    },
+    {
+      "name": "davinci-production-perf-3",
+      "id": 12888232427,
+      "size_in_bytes": 254498,
+      "archive_sha256": "f4e984175df99a93b155b6da97f2f475cc96947ffd50fd1d8b9b7529ac53f9c0",
+      "files": {
+        "samples.json": "349aa892f6f6eb19c463a0c20baccdd21dd839400128d1676230159a6c01cb08",
+        "runner.txt": "604355e5e19fc47c3e89c853ab5b27a519bd91f0f39ea17e391db1e01df7a965"
+      }
+    },
+    {
+      "name": "davinci-production-summary",
+      "id": 12888272210,
+      "size_in_bytes": 1728,
+      "archive_sha256": "60e58971f3a625440a27e646377f80001b143bb85cff1d9c5573245c849e25b6",
+      "files": {
+        "summary.md": "32ba618152bd94492008ae34e89142464bdffef0819752967c72eb752bffd3cc"
+      }
+    }
+  ],
+  "attribution": "./p3-6-production-main-2026-10-29.attribution.json",
+  "runners": [
+    {
+      "repetition": 1,
+      "record": "./p3-6-production-main-2026-10-29.runner-1.json",
+      "raw_report_sha256": "2f9dff63565cfafb72c012be672c74541710c65f2757aa23504b78ae9a4e7a9c"
+    },
+    {
+      "repetition": 2,
+      "record": "./p3-6-production-main-2026-10-29.runner-2.json",
+      "raw_report_sha256": "f0579a1540ada6e789aa591df4c843c3a7b23bb0905918e06022fa7296072379"
+    },
+    {
+      "repetition": 3,
+      "record": "./p3-6-production-main-2026-10-29.runner-3.json",
+      "raw_report_sha256": "349aa892f6f6eb19c463a0c20baccdd21dd839400128d1676230159a6c01cb08"
+    }
+  ]
+}

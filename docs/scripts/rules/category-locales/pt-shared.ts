@@ -15,6 +15,8 @@ export const portugueseShared: Record<string, string> = {
     "Documentos HTML detectados como petite-vue; SFCs Vue comuns ficam fora do escopo desta regra.",
   "JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form":
     "Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup",
+  "Vue SFCs with `<script setup>` and a compiler-provided `defineEmits` call; checks template `$emit` calls":
+    "SFCs Vue com `<script setup>` e uma chamada `defineEmits` fornecida pelo compilador; verifica chamadas `$emit` no template",
   "Musea .art.vue art, variant, and style blocks":
     "Blocos art, variant e style de arquivos .art.vue do Musea",
   "Nuxt configuration files (nuxt.config.ts)": "Arquivos de configuração do Nuxt (nuxt.config.ts)",

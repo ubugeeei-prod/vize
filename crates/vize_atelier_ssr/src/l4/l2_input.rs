@@ -34,6 +34,7 @@ pub fn compile_l2_to_ssr<'a>(
         options,
         &SsrCompilerExperimentalOptions::default(),
         None,
+        crate::SsrSfcContext::new(true),
     )
 }
 
@@ -51,6 +52,30 @@ pub fn compile_l2_to_ssr_with_experimental_options<'a>(
     options: &SsrCompilerOptions,
     experimental: &SsrCompilerExperimentalOptions,
 ) -> Option<SsrCodegenResult> {
+    compile_l2_to_ssr_with_host_context(
+        allocator,
+        source,
+        root,
+        root_origin,
+        options,
+        experimental,
+        crate::SsrSfcContext::new(true),
+    )
+}
+
+/// Emit an authored JSX root with its genuine lexical binding role. This uses
+/// the same L4 admission and emitter as template callers, without forcing the
+/// legacy lane through `inline` options.
+#[doc(hidden)]
+pub fn compile_l2_to_ssr_with_host_context<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    root: &Region<'a>,
+    root_origin: Span,
+    options: &SsrCompilerOptions,
+    experimental: &SsrCompilerExperimentalOptions,
+    context: crate::SsrSfcContext,
+) -> Option<SsrCodegenResult> {
     if root_origin.start >= root_origin.end
         || root_origin.end as usize > source.len()
         || !source.is_char_boundary(root_origin.start as usize)
@@ -65,6 +90,7 @@ pub fn compile_l2_to_ssr_with_experimental_options<'a>(
         options,
         experimental,
         Some(root_origin),
+        context,
     )
 }
 
@@ -75,6 +101,7 @@ fn emit_l2<'a>(
     options: &SsrCompilerOptions,
     experimental: &SsrCompilerExperimentalOptions,
     root_origin: Option<Span>,
+    context: crate::SsrSfcContext,
 ) -> Option<SsrCodegenResult> {
     let selection = vize_l0::profile!(
         "atelier.ssr.caller_l2.select_and_emit",
@@ -84,7 +111,8 @@ fn emit_l2<'a>(
             root,
             options,
             experimental,
-            root_origin
+            root_origin,
+            context
         )
     );
     record_selection(&selection);
@@ -108,6 +136,7 @@ pub(super) fn select_l2_lane<'a>(
         options,
         &SsrCompilerExperimentalOptions::default(),
         None,
+        crate::SsrSfcContext::new(true),
     )
 }
 
@@ -118,6 +147,7 @@ fn select_l2_lane_with_experimental_options<'a>(
     options: &SsrCompilerOptions,
     experimental: &SsrCompilerExperimentalOptions,
     root_origin: Option<Span>,
+    context: crate::SsrSfcContext,
 ) -> SsrL4Selection {
     let texts = SideTable::new();
     let scopes = SideTable::new();
@@ -143,10 +173,13 @@ fn select_l2_lane_with_experimental_options<'a>(
         &artifact,
         options,
         experimental,
-        crate::SsrSfcContext::new(true),
+        context,
         "vue",
         || {
-            if options.croquis.is_some() || options.binding_metadata.is_some() || options.inline {
+            if options.croquis.is_some()
+                || (options.binding_metadata.is_some() && !context.jsx_closure)
+                || options.inline
+            {
                 return Err(LegacyReason::Options);
             }
             Ok(TransformExpressions::unprefixed(source, false))

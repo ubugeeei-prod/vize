@@ -1,0 +1,5 @@
+<script setup>
+import MyButton from "./MyButton.vue"
+const msg = "hi"
+</script>
+<template><MyButton :label="msg" /></template>

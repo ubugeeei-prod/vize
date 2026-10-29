@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { assertPreservedFormatterCase } from "./formatter-dialect-promotion.ts";
 import { assertSortedCases } from "./harness.mjs";
 import { sha256 } from "./manifest.mjs";
 
@@ -60,7 +61,8 @@ export function preservedDirectiveWidthCliManifest(
   );
   assertSortedCases(currentCases);
   const currentById = new Map(currentCases.map((item: any) => [item.id, item]));
-  for (const item of originalCases) assert.deepEqual(currentById.get(item.id), item);
+  for (const item of originalCases)
+    assertPreservedFormatterCase(currentById.get(item.id) as any, item);
   assert(
     currentCases.some((item: any) => item.id === AUTHORITY.addedCase),
     "directive width CLI case removed",

@@ -48,7 +48,11 @@ pub(super) fn mark_inferred_binding(
     );
 }
 
-pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: &mut u32) {
+pub(super) fn bind_checked_expressions(
+    document: &mut TypeAwareDocument,
+    authored_source: Option<&str>,
+    index: &mut u32,
+) {
     let text = document.content.as_str();
     let mut edits = Vec::new();
     let mut allocator = Allocator::default();
@@ -141,12 +145,15 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
             if inferred_binding_offset(document, authored).is_some() {
                 continue;
             }
-            if generated.len() != authored.len() {
-                continue;
-            }
             let Some(expression) = text.get(generated.clone()) else {
                 continue;
             };
+            let affine = generated.len() == authored.len();
+            if !affine
+                && !comment_stripped_expression_matches(authored_source, authored, expression)
+            {
+                continue;
+            }
             let complete = Parser::new(&allocator, expression, SourceType::ts())
                 .parse_expression()
                 .is_ok_and(|parsed| parsed.span().end as usize == expression.trim_end().len());
@@ -170,7 +177,7 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
                     authored: authored.clone(),
                     probe: Some(Probe {
                         name: name_start..name_start + name.len(),
-                        copy: prefix.len()..prefix.len() + expression.len(),
+                        copy: affine.then(|| prefix.len()..prefix.len() + expression.len()),
                     }),
                     inline: false,
                 });
@@ -186,7 +193,7 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
                 authored: authored.clone(),
                 probe: Some(Probe {
                     name: 3..3 + name.len(),
-                    copy: prefix.len()..prefix.len() + expression.len(),
+                    copy: affine.then(|| prefix.len()..prefix.len() + expression.len()),
                 }),
                 inline: true,
             });
@@ -229,10 +236,12 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
             .mapping
             .note_generated_replacement(edit.at, 0, edit.text.len());
         if let Some(Probe { name, copy }) = edit.probe {
-            document.mapping.push(VizeMapping::new(
-                edit.at + copy.start..edit.at + copy.end,
-                edit.authored.clone(),
-            ));
+            if let Some(copy) = copy {
+                document.mapping.push(VizeMapping::new(
+                    edit.at + copy.start..edit.at + copy.end,
+                    edit.authored.clone(),
+                ));
+            }
             document.mapping.push_with(
                 VizeMapping::new(edit.at + name.start..edit.at + name.end, edit.authored),
                 INFERRED_BINDING,
@@ -241,6 +250,23 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
         updated.insert_str(edit.at, &edit.text);
     }
     document.content = updated;
+}
+
+/// Authenticate a non-affine expression before giving it an inferred owner.
+///
+/// Canon shortens comments to a newline or one space. No other generated
+/// rewrite may claim the authored expression's whole-expression type.
+fn comment_stripped_expression_matches(
+    authored_source: Option<&str>,
+    authored: &std::ops::Range<usize>,
+    generated: &str,
+) -> bool {
+    let Some(authored_expression) = authored_source.and_then(|source| source.get(authored.clone()))
+    else {
+        return false;
+    };
+    let stripped = vize_croquis::drawer::strip_js_comments(authored_expression);
+    matches!(&stripped, std::borrow::Cow::Owned(_)) && stripped.as_ref() == generated
 }
 
 #[derive(Clone, Copy)]
@@ -334,7 +360,8 @@ struct Edit {
 
 struct Probe {
     name: std::ops::Range<usize>,
-    copy: std::ops::Range<usize>,
+    /// Exact affine copy. Comment-stripped copies deliberately stay unmapped.
+    copy: Option<std::ops::Range<usize>>,
 }
 
 /// An `if` / `else if` header line.

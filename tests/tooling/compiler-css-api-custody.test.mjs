@@ -75,10 +75,9 @@ await test("the actual required fixture gate admits only the exact CSS producer 
   const after = "510b0bb1033a22265e3408693a4aa00b78351cef";
   const original = JSON.parse(historical(before, manifestRelative));
   const cssOnly = {
-    ...manifest,
-    // This historical CSS-only change predates later ordinary compiler cases.
-    // Keep those genuine current additions outside this unit test's diff.
-    cases: original.cases,
+    // Certify this historical registration against its complete historical
+    // envelope. Later independent CSS/Vapor registrations have separate proof.
+    ...original,
     cssApiCases: manifest.cssApiCases.filter((row) => row.id === "compiler/css/source-map-10693"),
   };
   const readSide = (side, file) => {

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "lsp/regression/project-native-runtime-authority-10694",
+  "provenance": {
+    "fixCommit": "af271f502d38aeafaae2e18e9a33a123374cfb38",
+    "witnessPath": "tests/tooling/package-manifests-corsa-runtime.test.ts",
+    "witnessTest": "published CLI and editor do not install or constrain a user's compiler",
+    "inputOrigin": "Minimal authored project with an explicit private native TypeScript provider and an editor-safe Vue document",
+    "contractOrigin": "Complete fallback DOM hover packets and authored UTF-16 ranges retained while type-aware services stay explicitly disabled"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "0f17d0822660dd69705aa86c8899fa5c965b74ec6910f8f953f6738c7bf6ed4e"
+    },
+    {
+      "source": "package.json.txt",
+      "runtimePath": "package.json",
+      "sha256": "28bf6be8d60c345b957740ae97f0daa5dc9cdd953a290dfc3f1ecf7a5d6d9f3f"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "2eec73beee0c3b68585375d20dcd499c05cd022b50602d821c26bc1f11981ea4"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "Editor-safe fallback hover continuity with project provider ownership declared; this does not claim provider selection because type-aware services are disabled"
+}

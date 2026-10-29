@@ -24,7 +24,7 @@ pub(super) async fn linked_editing_range(
 
     let uri = &params.text_document_position_params.text_document.uri;
     let position = params.text_document_position_params.position;
-    let Some(content) = server.state.documents.text(uri) else {
+    let Some(content) = server.state.documents.text_snapshot(uri) else {
         return Ok(None);
     };
     let Some(offset) = position_to_offset(&content, position.line, position.character) else {

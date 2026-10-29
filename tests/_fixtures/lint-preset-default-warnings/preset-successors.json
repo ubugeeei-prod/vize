@@ -844,5 +844,67 @@
         "after": "    \"vue/max-template-complexity\",\n    \"script/no-next-tick\",\n    \"ecosystem/pinia-prefer-store-to-refs\",\n"
       }
     ]
+  },
+  {
+    "reason": "opt-in script/prefer-define-emits-binding for compiler-owned setup macro captures (#11106)",
+    "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+    "before": {
+      "bytes": 25424,
+      "sha256": "310c9cd02cf968262ff2d6b22cf41d58138f02409fcdc8c66d9db7823522c333"
+    },
+    "after": {
+      "bytes": 25724,
+      "sha256": "6e29b2f9380623eacd2b71c5033a206c7a8443fda687c25c459c69aaeaf27044"
+    },
+    "hunks": [
+      {
+        "before": "    RULE_NUXT_PREFER_IMPORT_META, RULE_ONE_COMPONENT_PER_FILE, RULE_ORDER_IN_COMPONENTS,\n    RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_PREFER_DEFINE_OPTIONS,\n    RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE, RULE_PREFER_USE_ATTRS,\n    RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,\n    RULE_REQUIRE_DEFAULT_PROP, RULE_REQUIRE_EXPLICIT_EMITS, RULE_REQUIRE_EXPLICIT_SLOTS,\n    RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES,\n",
+        "after": "    RULE_NUXT_PREFER_IMPORT_META, RULE_ONE_COMPONENT_PER_FILE, RULE_ORDER_IN_COMPONENTS,\n    RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_PREFER_DEFINE_EMITS_BINDING,\n    RULE_PREFER_DEFINE_OPTIONS, RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE,\n    RULE_PREFER_USE_ATTRS, RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,\n    RULE_REQUIRE_DEFAULT_PROP, RULE_REQUIRE_EXPLICIT_EMITS, RULE_REQUIRE_EXPLICIT_SLOTS,\n    RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES,\n"
+      },
+      {
+        "before": "    PiniaPreferStoreToRefs, PreferComputed, PreferDefineOptions, PreferImportFromVue,\n    PreferImportMeta, PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots,\n    PreferUseTemplateRef, RequireDefaultProp, RequireExplicitEmits, RequireExplicitSlots,\n    RequireFunctionReturnType, RequirePropTypeConstructor, RequirePropTypes, RequireRenderReturn,\n    RequireSlotsAsFunctions, RequireSymbolProvide, RequireTypedObjectProp, RequireTypedRef,\n    RequireValidDefaultProp, ReturnInComputedProperty, ReturnInEmitsValidator, ValidDefineEmits,\n    ValidDefineOptions, ValidDefineProps, ValidNextTick, VueRouterPreferNamedPush,\n    VueTestUtilsNoHtmlSnapshot,\n",
+        "after": "    PiniaPreferStoreToRefs, PreferComputed, PreferDefineEmitsBinding, PreferDefineOptions,\n    PreferImportFromVue, PreferImportMeta, PreferRefOverReactive, PreferUseAttrs, PreferUseId,\n    PreferUseSlots, PreferUseTemplateRef, RequireDefaultProp, RequireExplicitEmits,\n    RequireExplicitSlots, RequireFunctionReturnType, RequirePropTypeConstructor, RequirePropTypes,\n    RequireRenderReturn, RequireSlotsAsFunctions, RequireSymbolProvide, RequireTypedObjectProp,\n    RequireTypedRef, RequireValidDefaultProp, ReturnInComputedProperty, ReturnInEmitsValidator,\n    ValidDefineEmits, ValidDefineOptions, ValidDefineProps, ValidNextTick,\n    VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,\n"
+      },
+      {
+        "before": "    BuiltinScriptRuleEntry { rule_name: RULE_ORDER_IN_COMPONENTS, profile_name: \"patina.script_rule.order_in_components\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &OrderInComponents },\n];\n",
+        "after": "    BuiltinScriptRuleEntry { rule_name: RULE_ORDER_IN_COMPONENTS, profile_name: \"patina.script_rule.order_in_components\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &OrderInComponents },\n    BuiltinScriptRuleEntry { rule_name: RULE_PREFER_DEFINE_EMITS_BINDING, profile_name: \"patina.script_rule.prefer_define_emits_binding\", category: \"Script\", fixable: true, presets: OPT_IN_SCRIPT_PRESETS, rule: &PreferDefineEmitsBinding },\n];\n"
+      }
+    ]
+  },
+  {
+    "reason": "opt-in script/prefer-define-emits-binding for compiler-owned setup macro captures (#11106)",
+    "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "before": {
+      "bytes": 33750,
+      "sha256": "2043073f9c246bf295b7a0b5c6d3fb7777055004b41bbd372c1e2a05ed60696c"
+    },
+    "after": {
+      "bytes": 33792,
+      "sha256": "2aa167b30dd9665eef3f9ef440dcb2cbe1f4f45e0a09979481a7df3f7bd95a52"
+    },
+    "hunks": [
+      {
+        "before": "    \"script/require-slots-as-functions\",\n    \"script/one-component-per-file\",\n    \"script/order-in-components\",\n    \"musea/require-title\",\n",
+        "after": "    \"script/require-slots-as-functions\",\n    \"script/one-component-per-file\",\n    \"script/order-in-components\",\n    \"script/prefer-define-emits-binding\",\n    \"musea/require-title\",\n"
+      }
+    ]
+  },
+  {
+    "reason": "opt-in script/prefer-define-emits-binding for compiler-owned setup macro captures (#11106)",
+    "path": "crates/vize_patina/src/linter/script_rules/registry.rs",
+    "before": {
+      "bytes": 5215,
+      "sha256": "5ae0dc6ed8213db2d4290129da4266255d9c5373e0a4bae57680a08a7cc87487"
+    },
+    "after": {
+      "bytes": 5249,
+      "sha256": "dc8023d6c67373216c4e4a4f714f9ee73156ede1053bdbd9b36e9e69fe914bae"
+    },
+    "hunks": [
+      {
+        "before": "    RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,\n    RULE_REQUIRE_PROP_TYPES, RULE_REQUIRE_RENDER_RETURN, RULE_REQUIRE_SLOTS_AS_FUNCTIONS,\n    RULE_REQUIRE_TYPED_REF, RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,\n    RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,\n    RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,\n    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,\n",
+        "after": "    RULE_PREFER_COMPUTED, RULE_PREFER_DEFINE_EMITS_BINDING, RULE_PREFER_IMPORT_FROM_VUE,\n    RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES, RULE_REQUIRE_RENDER_RETURN,\n    RULE_REQUIRE_SLOTS_AS_FUNCTIONS, RULE_REQUIRE_TYPED_REF, RULE_REQUIRE_VALID_DEFAULT_PROP,\n    RULE_RETURN_IN_COMPUTED_PROPERTY, RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS,\n    RULE_VALID_DEFINE_OPTIONS, RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK,\n    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,\n"
+      }
+    ]
   }
 ]

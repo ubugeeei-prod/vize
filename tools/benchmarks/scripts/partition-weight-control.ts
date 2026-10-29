@@ -48,7 +48,7 @@ export function verifyPartitionWeightControl(
     const child = spawnSync(rustfmt, ["--edition", "2024", "--emit", "stdout"], {
       input: text,
       encoding: "utf8",
-      timeout: 5000,
+      timeout: 30_000,
     });
     assert.equal(child.error, undefined);
     assert.equal(child.status, 0, child.stderr);

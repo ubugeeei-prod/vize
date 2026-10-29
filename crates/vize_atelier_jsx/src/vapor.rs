@@ -14,7 +14,9 @@
 
 use vize_atelier_core::lane::transform_with_source_text;
 use vize_atelier_core::options::TransformOptions;
-use vize_atelier_vapor::{VaporGenerateOptions, generate_vapor_with_options, transform_to_ir};
+use vize_atelier_vapor::{
+    VaporGenerateExperimentalOptions, VaporGenerateOptions, generate_vapor_from_transformed_root,
+};
 use vize_croquis::Croquis;
 use vize_l0::{Allocator, String};
 
@@ -129,6 +131,33 @@ pub(crate) fn compile_root_to_vapor(
     source: &str,
     diagnostics: &mut Vec<JsxDiagnostic>,
 ) -> VaporComponent {
+    compile_root_to_vapor_with_origins(
+        allocator,
+        lowered,
+        analysis,
+        options,
+        source,
+        diagnostics,
+        None,
+        false,
+    )
+    .0
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "shared root emission with private map/binding sidecars"
+)]
+pub(crate) fn compile_root_to_vapor_with_origins(
+    allocator: &Allocator,
+    lowered: LoweredRoot,
+    analysis: &Croquis,
+    options: &VaporCompileOptions,
+    source: &str,
+    diagnostics: &mut Vec<JsxDiagnostic>,
+    bindings: Option<&vize_atelier_core::BindingMetadata>,
+    source_map: bool,
+) -> (VaporComponent, crate::emission::RootSourceMap) {
     if options.ssr {
         let ssr = crate::ssr::compile_lowered_root_to_ssr(
             allocator,
@@ -138,14 +167,17 @@ pub(crate) fn compile_root_to_vapor(
             source,
             diagnostics,
         );
-        return VaporComponent {
-            component_name: ssr.component_name,
-            component_setup: ssr.component_setup,
-            mode: ssr.mode,
-            code: ssr.code,
-            templates: Vec::new(),
-            scoped_style: ssr.scoped_style,
-        };
+        return (
+            VaporComponent {
+                component_name: ssr.component_name,
+                component_setup: ssr.component_setup,
+                mode: ssr.mode,
+                code: ssr.code,
+                templates: Vec::new(),
+                scoped_style: ssr.scoped_style,
+            },
+            crate::emission::RootSourceMap::default(),
+        );
     }
 
     let LoweredRoot {
@@ -163,8 +195,8 @@ pub(crate) fn compile_root_to_vapor(
     // Extract + rewrite the `<style scoped>` CSS and derive the scope id, reusing
     // the SFC scope infrastructure. Unlike VDOM (where the codegen injects the
     // scope attribute via `CodegenOptions.scope_id`), the Vapor generator emits
-    // static `_template("…")` strings, so — mirroring the SFC Vapor path — the
-    // `data-v-<hash>` attribute is injected into those strings post-generation.
+    // static template strings. Scope attributes are inserted by shared IR
+    // lowering before escaping and source mapping.
     let scoped_style =
         scoped_css.map(|css| build_scoped_style(component_name.as_deref(), css.as_str()));
 
@@ -180,108 +212,47 @@ pub(crate) fn compile_root_to_vapor(
     };
     transform_with_source_text(allocator, &mut root, transform_opts, Some(analysis), source);
 
-    let ir = transform_to_ir(allocator, &root, source);
-    let generated =
-        generate_vapor_with_options(&ir, None, VaporGenerateOptions { jsx_closure: true });
-
-    let (code, templates) = if let Some(style) = scoped_style.as_ref() {
-        inject_scope_id(&generated.code, &generated.templates, &style.scope_id)
-    } else {
-        (generated.code, generated.templates)
-    };
-
-    VaporComponent {
-        component_name,
-        component_setup,
-        mode: mode.unwrap_or(JsxOutputMode::Vapor),
-        code,
-        templates,
-        scoped_style,
+    let (generated, errors, warnings) = generate_vapor_from_transformed_root(
+        allocator,
+        &root,
+        source,
+        bindings,
+        scoped_style.as_ref().map(|style| style.scope_id.as_str()),
+        VaporGenerateOptions { jsx_closure: true },
+        VaporGenerateExperimentalOptions {
+            source_map,
+            source_map_filename: Some("module.tsx"),
+            ..Default::default()
+        },
+    );
+    for message in errors {
+        diagnostics.push(JsxDiagnostic::error(
+            message,
+            root.loc.span.start,
+            root.loc.span.end,
+        ));
     }
-}
-
-/// Inject the `data-v-<hash>` scope attribute into every Vapor `_template("…")`
-/// declaration's first element, mirroring the SFC Vapor scope path
-/// (`vize_atelier_sfc::compile_template::vapor::add_scope_id_to_template`).
-///
-/// Both the generated `code` (which inlines the `_template(...)` declarations)
-/// and the separately-collected `templates` are rewritten so the two stay in
-/// sync.
-fn inject_scope_id(code: &str, templates: &[String], scope_id: &str) -> (String, Vec<String>) {
-    let mut out_code = String::default();
-    for (index, line) in code.lines().enumerate() {
-        if index > 0 {
-            out_code.push('\n');
-        }
-        let trimmed = line.trim_start();
-        if trimmed.starts_with("const t") && trimmed.contains("_template(") {
-            out_code.push_str(&add_scope_id_to_template_line(line, scope_id));
-        } else {
-            out_code.push_str(line);
-        }
+    for message in warnings {
+        diagnostics.push(JsxDiagnostic::warning(
+            message,
+            root.loc.span.start,
+            root.loc.span.end,
+        ));
     }
-    if code.ends_with('\n') {
-        out_code.push('\n');
-    }
-
-    let out_templates = templates
-        .iter()
-        .map(|template| add_scope_id_to_template_html(template, scope_id))
-        .collect();
-
-    (out_code, out_templates)
-}
-
-/// Inject the scope attribute into a `const tN = _template("<tag…>…")` line.
-fn add_scope_id_to_template_line(line: &str, scope_id: &str) -> String {
-    let Some(start) = line.find("\"<") else {
-        return String::from(line);
+    let origins = crate::emission::RootSourceMap {
+        json: generated.map,
+        code_start: 0,
     };
-    let Some(end_rel) = line.get(start..).unwrap_or_default().find(">\"") else {
-        return String::from(line);
-    };
-    let end = start + end_rel;
 
-    let prefix = line.get(..start + 2).unwrap_or_default(); // up to and including the opening `<`
-    let content = line.get(start + 2..end + 1).unwrap_or_default(); // element content (no closing quote)
-    let suffix = line.get(end + 1..).unwrap_or_default(); // closing quote + remainder
-
-    let Some(tag_end) = content.find(|c: char| c.is_whitespace() || c == '>') else {
-        return String::from(line);
-    };
-    let tag_name = content.get(..tag_end).unwrap_or_default();
-    let rest = content.get(tag_end..).unwrap_or_default();
-
-    let mut result = String::default();
-    result.push_str(prefix);
-    result.push_str(tag_name);
-    result.push(' ');
-    result.push_str(scope_id);
-    result.push_str(rest);
-    result.push_str(suffix);
-    result
-}
-
-/// Inject the scope attribute into a raw template HTML string (no quoting), used
-/// for the `templates` vector.
-fn add_scope_id_to_template_html(template: &str, scope_id: &str) -> String {
-    let Some(open) = template.find('<') else {
-        return String::from(template);
-    };
-    let after_open = open + 1;
-    let Some(tag_end_rel) = template
-        .get(after_open..)
-        .unwrap_or_default()
-        .find(|c: char| c.is_whitespace() || c == '>')
-    else {
-        return String::from(template);
-    };
-    let tag_end = after_open + tag_end_rel;
-
-    let mut result = String::default();
-    result.push_str(template.get(..tag_end).unwrap_or_default());
-    result.push(' ');
-    result.push_str(scope_id);
-    result.push_str(template.get(tag_end..).unwrap_or_default());
-    result
+    (
+        VaporComponent {
+            component_name,
+            component_setup,
+            mode: mode.unwrap_or(JsxOutputMode::Vapor),
+            code: generated.code,
+            templates: generated.templates,
+            scoped_style,
+        },
+        origins,
+    )
 }

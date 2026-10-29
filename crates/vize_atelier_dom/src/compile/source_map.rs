@@ -7,8 +7,11 @@
 
 use vize_atelier_core::{
     RootNode,
-    codegen::{CodegenResultWithSections, generate_with_sections},
-    options::CodegenOptions,
+    codegen::{
+        CodegenResultWithSections,
+        generate_with_sections_and_experimental_options_slot_scope_and_environment,
+    },
+    options::{CodegenExperimentalOptions, CodegenOptions},
 };
 use vize_l0::dump::capture::{CaptureOutcome, CaptureSink};
 use vize_l0::profile;
@@ -45,6 +48,9 @@ impl SourceMapSelection {
 pub(super) fn attach_compat_map(
     root: &RootNode<'_>,
     codegen_options: &CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
+    development: bool,
     s2: CodegenResultWithSections,
 ) -> SourceMapSelection {
     if !codegen_options.source_map {
@@ -53,7 +59,13 @@ pub(super) fn attach_compat_map(
 
     let compat = profile!(
         "atelier.dom.template.codegen_sourcemap_compat",
-        generate_with_sections(root, codegen_options.clone())
+        generate_with_sections_and_experimental_options_slot_scope_and_environment(
+            root,
+            codegen_options.clone(),
+            codegen_experimental_options,
+            no_slotted,
+            development,
+        )
     );
     select_with_compat(s2, compat)
 }

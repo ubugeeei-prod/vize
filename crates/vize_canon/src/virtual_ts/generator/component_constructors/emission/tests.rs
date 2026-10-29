@@ -93,6 +93,7 @@ fn context_views_emit_complete_plain_and_refined_public_surfaces() {
             slots: AliasReference::new("__VizeSlots", refined, "T"),
             exposed: AliasReference::new(if refined { "Exposed" } else { "{}" }, refined, "T"),
             emit_props: refined,
+            emit_props_type: "__EmitProps",
             jsx_slots: refined,
             root_element: refined,
             template_refs: refined,

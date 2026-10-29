@@ -29,7 +29,11 @@ impl<'a, C: Config> ParserImpl<'a, C> {
             )
         });
         if let Some(comma_span) = comma_span {
-            self.state.trailing_commas.insert(span, self.end_span(comma_span));
+            let comma = self.end_span(comma_span);
+            if self.state.trailing_commas.get(&span) != Some(&comma) {
+                self.state.speculation_effects_revision += 1;
+                self.state.trailing_commas.insert(span, comma);
+            }
         }
         self.expect(Kind::RCurly);
         ObjectExpression::boxed(self.end_span(span), object_expression_properties, self)
@@ -114,6 +118,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
                         right,
                         self,
                     );
+                    self.state.speculation_effects_revision += 1;
                     self.state.cover_initialized_name.insert(span, expr);
                 }
                 let value =

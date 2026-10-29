@@ -48,13 +48,38 @@ fn check(
     if mode == "sharded" {
         command.args(["--servers", "2"]);
     }
+    // The CLI expands this workspace beyond the app and therefore writes its
+    // persistent namespace, not the ordinary project mirror. Acquire the same
+    // owner/context leases before spawning so parallel cache maintenance
+    // cannot retire that namespace before capture finishes.
+    let config = app.join("tsconfig.json");
+    let capture_checker = std::env::var_os("VIZE_VUE_HELPER_CAPTURE").map(|_| {
+        let mut checker = vize_canon::BatchTypeChecker::with_options_and_corsa_path(
+            root,
+            vize_canon::BatchTypeCheckerOptions::default(),
+            Some(corsa),
+        )
+        .unwrap();
+        checker
+            .set_persistent_storage_owner(&app, Some(&config))
+            .unwrap();
+        checker.scan_paths(&[]).unwrap();
+        assert_eq!(
+            checker.virtual_root(),
+            vize_canon::persistent_batch_virtual_root(root, &app, Some(&config))
+        );
+        checker
+    });
     let output = command.output().unwrap();
     if let Some(target) = fixture::capture(root, vue, corsa, case).unwrap() {
         std::fs::write(target.join(format!("{mode}.stdout.txt")), &output.stdout).unwrap();
         std::fs::write(target.join(format!("{mode}.stderr.txt")), &output.stderr).unwrap();
         std::fs::write(target.join(format!("{mode}.runtime.json")), json!({"cliBinary":env!("CARGO_BIN_EXE_vize"),"exitCode":output.status.code(),"arguments":command.get_args().map(|arg|arg.to_string_lossy()).collect::<Vec<_>>()}).to_string()).unwrap();
-        let project = vize_canon::VirtualProject::new(root).unwrap();
-        let mirror = project.virtual_root();
+        let checker = capture_checker
+            .as_ref()
+            .expect("capture checker must accompany the capture environment");
+        let mirror = checker.virtual_root();
+        assert_ne!(mirror, vize_canon::project_virtual_root(root));
         assert!(!mirror.join("__vize_helpers.d.ts").exists());
         for name in [
             "apps/web/__vize_helpers.d.ts",

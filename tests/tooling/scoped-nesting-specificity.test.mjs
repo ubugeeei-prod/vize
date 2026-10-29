@@ -33,8 +33,24 @@ await test(
     assert.equal(pack.schema, "vize.scoped-nesting.specificity");
     assert.equal(pack.reference, "@vue/compiler-sfc@3.5.35");
     assert.equal(compiler.version, "3.5.35");
-    assert.equal(pack.cases.length, 31);
-    assert.equal(new Set(pack.cases.map((item) => item.id)).size, 31);
+    assert.equal(pack.cases.length, 32);
+    assert.equal(new Set(pack.cases.map((item) => item.id)).size, 32);
+    const inheritedCases = pack.cases.filter((item) => item.id !== "nested-list-sibling-bare-deep");
+    assert.equal(inheritedCases.length, 31);
+    assert.equal(
+      createHash("sha256").update(JSON.stringify(inheritedCases)).digest("hex"),
+      "4e748135f5ca63b9ca7d87afed52dff1f5272b71ed2854946c985f9b5cfb305f",
+    );
+    const upstreamDeviations = pack.cases.filter((item) => item.upstreamReferenceCss);
+    assert.deepEqual(
+      upstreamDeviations.map((item) => item.id),
+      ["nested-list-sibling-bare-deep"],
+    );
+    assert.equal(
+      upstreamDeviations[0].upstreamDefect,
+      "https://github.com/ubugeeei-prod/vize/issues/11109",
+    );
+    assert.notEqual(upstreamDeviations[0].upstreamReferenceCss, upstreamDeviations[0].referenceCss);
     assert.ok(captures || referenceOnly, "fresh current-source capture is mandatory");
     if (captures) assert.equal(captures.length, pack.cases.length * 3);
     const browser = await chromium.launch();
@@ -50,11 +66,11 @@ await test(
         assert.deepEqual(reference.errors, [], fixture.id);
         assert.equal(
           reference.code,
-          fixture.referenceCss,
-          fixture.id + ": whole independent reference CSS",
+          fixture.upstreamReferenceCss ?? fixture.referenceCss,
+          fixture.id + ": pinned upstream CSS",
         );
         const variants = [
-          { name: "reference", css: reference.code },
+          { name: "semantic-reference", css: fixture.referenceCss },
           { name: "public-0.566.0", css: fixture.beforeCss },
           ...(captures ?? [])
             .filter((capture) => capture.id === fixture.id)
@@ -168,7 +184,7 @@ await test(
           regressions.includes(id),
           id + ": the physical public baseline must distinguish the regression",
         );
-      assert.equal(captures ? captures.length : 0, referenceOnly ? 0 : 93);
+      assert.equal(captures ? captures.length : 0, referenceOnly ? 0 : 96);
     } finally {
       if (output) {
         fs.mkdirSync(path.dirname(output), { recursive: true });

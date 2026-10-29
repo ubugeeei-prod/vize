@@ -4,16 +4,17 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import ts from "typescript";
 
-const implementation = fs.readFileSync(
-  new URL(
-    "../../crates/vize_canon/src/virtual_ts/scope/component_events/inference_helpers.rs",
-    import.meta.url,
-  ),
-  "utf8",
+const implementationUrl = new URL(
+  "../../crates/vize_canon/src/virtual_ts/scope/component_events/inference_helpers.rs",
+  import.meta.url,
 );
-const declaration = implementation.match(/const EMIT_INFERENCE_HELPERS: &str = r#"([\s\S]+?)"#;/);
+const implementation = fs.readFileSync(implementationUrl, "utf8");
+const declaration = implementation.match(
+  /const EMIT_INFERENCE_HELPERS: &str =\s*include_str!\("([^"]+)"\);/u,
+);
 assert.ok(declaration);
-const helper = declaration[1];
+assert.equal(declaration[1], "../../helpers/declarations/emit-inference.d.ts.txt");
+const helper = fs.readFileSync(new URL(declaration[1], implementationUrl), "utf8");
 const shared = fs.readFileSync(
   new URL("../../crates/vize_canon/src/virtual_ts/component_prop_helpers.txt", import.meta.url),
   "utf8",

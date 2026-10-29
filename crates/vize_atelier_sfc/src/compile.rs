@@ -15,6 +15,7 @@ mod stage_capture;
 #[cfg(test)]
 mod stage_capture_tests;
 mod styles;
+mod template_context;
 mod template_only;
 #[cfg(test)]
 #[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
@@ -23,8 +24,8 @@ mod tests;
 use crate::compile_script::props::{is_valid_identifier, validate_macro_scope_for_descriptor};
 use crate::compile_script::{SetupTrace, TemplateParts, compile_script_setup_inline_with_context};
 use crate::compile_template::{
-    TemplateBlockCompileContext, compile_template_block_vapor, compile_template_block_with_capture,
-    extract_template_parts, extract_template_parts_full, slice_template_parts,
+    compile_template_block_vapor, compile_template_block_with_capture, extract_template_parts,
+    extract_template_parts_full, slice_template_parts,
 };
 use crate::script::ScriptCompileContext;
 use crate::types::{
@@ -53,6 +54,7 @@ mod public;
 pub use public::*;
 use vize_carton::{String, ToCompactString, profile};
 use vize_l0::dump::capture::StageCapture;
+use vize_l1_to_l2::lower::pug::PugSourceMap;
 use vize_l4::module::RenderFunctionName;
 
 #[expect(clippy::too_many_arguments, reason = "optional stage capture")]
@@ -65,6 +67,7 @@ fn compile_sfc_inner(
     script_output: SfcScriptOutputMode,
     experimental_options: SfcCompileExperimentalOptions,
     nuxt_page_meta: bool,
+    pug_source_map: Option<&PugSourceMap>,
     mut capture: Option<&mut StageCapture>,
 ) -> Result<SfcCompileResult, SfcError> {
     let mut errors = Vec::new();
@@ -129,6 +132,16 @@ fn compile_sfc_inner(
     let template_is_ts = template_is_ts(descriptor, &options);
 
     let component_name = extract_component_name(filename);
+    let template_context = template_context::SfcTemplateContext {
+        scope_id: &scope_id,
+        has_scoped,
+        slotted,
+        is_ts: template_is_ts,
+        component_name: &component_name,
+        experimental_self_component: experimental_options.self_component,
+        authored_source: descriptor.source.as_ref(),
+        pug_source_map,
+    };
 
     // Determine output mode based on script type
     let has_script_setup = descriptor.script_setup.is_some();
@@ -146,6 +159,9 @@ fn compile_sfc_inner(
         return template_only::compile_template_only(
             template_only::TemplateOnlyInput {
                 template,
+                source: descriptor.source.as_ref(),
+                filename,
+                pug_source_map,
                 options: &options,
                 custom_elements: &custom_elements,
                 template_syntax,
@@ -217,18 +233,7 @@ fn compile_sfc_inner(
                         template,
                         &options.template,
                         &custom_elements,
-                        TemplateBlockCompileContext {
-                            scope_id: &scope_id,
-                            apply_scope_id: has_scoped,
-                            has_scoped,
-                            slotted,
-                            is_ts: template_is_ts,
-                            inline: false,
-                            component_name: Some(&component_name),
-                            experimental_self_component: experimental_options.self_component,
-                            bindings: options_api_bindings.as_ref(),
-                            croquis: None,
-                        },
+                        template_context.block(false, options_api_bindings.as_ref(), None),
                         template_syntax,
                         &codegen_options,
                         capture.as_deref_mut(),
@@ -256,18 +261,7 @@ fn compile_sfc_inner(
                         template,
                         &template_opts,
                         &custom_elements,
-                        TemplateBlockCompileContext {
-                            scope_id: &scope_id,
-                            apply_scope_id: has_scoped,
-                            has_scoped,
-                            slotted,
-                            is_ts: template_is_ts,
-                            inline: false,
-                            component_name: Some(&component_name),
-                            experimental_self_component: experimental_options.self_component,
-                            bindings: options_api_bindings.as_ref(),
-                            croquis: None,
-                        },
+                        template_context.block(false, options_api_bindings.as_ref(), None),
                         template_syntax,
                         &codegen_options,
                         capture.as_deref_mut(),
@@ -554,18 +548,11 @@ fn compile_sfc_inner(
                     template,
                     &options.template,
                     &custom_elements,
-                    TemplateBlockCompileContext {
-                        scope_id: &scope_id,
-                        apply_scope_id: has_scoped,
-                        has_scoped,
-                        slotted,
-                        is_ts: template_is_ts,
-                        inline: false,
-                        component_name: Some(&component_name),
-                        experimental_self_component: experimental_options.self_component,
-                        bindings: Some(&bindings::for_vapor(&script_bindings, &setup_program)),
-                        croquis: None,
-                    },
+                    template_context.block(
+                        false,
+                        Some(&bindings::for_vapor(&script_bindings, &setup_program)),
+                        None,
+                    ),
                     template_syntax,
                     &codegen_options,
                     capture.as_deref_mut(),
@@ -592,18 +579,11 @@ fn compile_sfc_inner(
                     template,
                     &template_opts,
                     &custom_elements,
-                    TemplateBlockCompileContext {
-                        scope_id: &scope_id,
-                        apply_scope_id: has_scoped,
-                        has_scoped,
-                        slotted,
-                        is_ts: template_is_ts,
-                        inline: !script_output.separates_template(),
-                        component_name: Some(&component_name),
-                        experimental_self_component: experimental_options.self_component,
-                        bindings: Some(&script_bindings),
-                        croquis: Some(croquis),
-                    },
+                    template_context.block(
+                        !script_output.separates_template(),
+                        Some(&script_bindings),
+                        Some(croquis),
+                    ),
                     template_syntax,
                     &codegen_options,
                     capture.as_deref_mut(),

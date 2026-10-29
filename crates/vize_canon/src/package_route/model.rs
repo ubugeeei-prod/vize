@@ -216,13 +216,12 @@ impl PackageRoute {
     /// Callers that cannot preserve importer context must fail closed instead of
     /// silently selecting a conditional branch.
     pub fn unambiguous_source_path(&self) -> Option<&PathBuf> {
-        let mut paths = self.source_paths.iter().collect::<Vec<_>>();
-        for route in &self.nested_routes {
-            paths.extend(route.candidate_source_paths());
+        let mut selected = None;
+        if self.retain_single_source_identity(&mut selected) {
+            selected
+        } else {
+            None
         }
-        paths.sort();
-        paths.dedup();
-        (paths.len() == 1).then(|| paths.first().copied()).flatten()
     }
 
     pub fn all_source_paths(&self) -> Vec<&PathBuf> {
@@ -256,12 +255,23 @@ impl PackageRoute {
         }
     }
 
-    fn candidate_source_paths(&self) -> Vec<&PathBuf> {
-        let mut paths = self.source_paths.iter().collect::<Vec<_>>();
-        for route in &self.nested_routes {
-            paths.extend(route.candidate_source_paths());
+    /// Walk candidate identities without materializing and sorting every
+    /// nested subtree. Once two paths differ, no later route can restore an
+    /// unambiguous identity, so the traversal can stop immediately.
+    fn retain_single_source_identity<'a>(&'a self, selected: &mut Option<&'a PathBuf>) -> bool {
+        for path in &self.source_paths {
+            match *selected {
+                Some(current) if current != path => return false,
+                Some(_) => {}
+                None => *selected = Some(path),
+            }
         }
-        paths
+        for route in &self.nested_routes {
+            if !route.retain_single_source_identity(selected) {
+                return false;
+            }
+        }
+        true
     }
 
     #[cfg(feature = "native")]

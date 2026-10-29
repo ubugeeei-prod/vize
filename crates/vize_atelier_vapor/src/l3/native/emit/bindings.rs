@@ -116,7 +116,10 @@ impl<'a> Emitter<'a, '_> {
                         value: Some(self.spanned(binding.value, false, value_span)),
                         modifiers,
                         delegate,
-                        effect: dynamic.is_some(),
+                        // `v-once` fixes a computed event name at mount. The
+                        // handler closure still reads the current render
+                        // context when the frozen listener fires.
+                        effect: dynamic.is_some() && self.non_reactive_depth == 0,
                     }));
             }
             BindingKind::Prop => {

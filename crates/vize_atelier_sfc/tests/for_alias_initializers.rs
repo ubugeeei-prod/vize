@@ -43,6 +43,20 @@ fn template(script: &str, body: &str, newline: &str) -> std::string::String {
 
 const OPTIONS: &str = "<script>export default {}</script>";
 const SETUP: &str = "<script setup>const fallback = 'A'; const items = [{}]</script>";
+const LEGACY_ALIAS_MODULE: &str = r#"const _sfc_main = {}
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.rows, (outer) => {
+    return (_openBlock(), _createElementBlock("div", null, [
+      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(outer.items, ({ label = _ctx.fallback, [_ctx.key]: tag }) => {
+        return (_openBlock(), _createElementBlock("p", null, _toDisplayString(label + tag + _ctx.outside), 1 /* TEXT */))
+      }), 256 /* UNKEYED_FRAGMENT */))
+    ]))
+  }), 256 /* UNKEYED_FRAGMENT */))
+}
+_sfc_main.render = _sfc_render
+export default _sfc_main"#;
 
 #[test]
 fn initializers_and_computed_keys_read_component_context() {
@@ -81,6 +95,17 @@ fn initializers_and_computed_keys_read_component_context() {
             assert_eq!(loop_heads(&compile(&source, false)), heads, "VDOM {body}");
         }
     }
+}
+
+#[test]
+fn directive_comment_legacy_dom_keeps_alias_scope_and_free_reads_distinct() {
+    let source = template(
+        OPTIONS,
+        r#"<!-- @vize:todo x --><div v-for="outer in rows"><p v-for="{ label = fallback, [key]: tag } in outer.items">{{ label + tag + outside }}</p></div>"#,
+        "\n",
+    );
+    let code = compile(&source, false);
+    assert_eq!(code, LEGACY_ALIAS_MODULE);
 }
 
 #[test]
