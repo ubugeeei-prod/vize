@@ -4,7 +4,7 @@ use super::{transform, transform_with_template_syntax_quirks};
 use crate::codegen::generate;
 use crate::options::{CodegenOptions, TransformOptions};
 use crate::parser::parse;
-use vize_l0::Allocator;
+use vize_l0::{Allocator, Span};
 
 #[test]
 fn test_transform_simple_element() {
@@ -51,6 +51,152 @@ fn test_transform_v_if() {
 #[test]
 fn test_transform_v_for() {
     assert_transform!("<div v-for=\"item in items\">{{ item }}</div>" => helpers: [RenderList, OpenBlock, CreateBlock, Fragment]);
+}
+
+#[test]
+fn v_for_alias_rewrites_keep_cooked_names_and_nested_scope() {
+    let allocator = Allocator::new();
+    let source = r#"<div v-for="outer in rows"><p v-for="{ \u006cabel = fallback, [key]: tag, nested: { name = pick(name, other) } } in outer.items">{{ label }}{{ tag }}{{ name }}{{ outside }}</p></div>"#;
+    let (mut root, errors) = parse(&allocator, source);
+    assert!(errors.is_empty(), "Parse errors: {errors:?}");
+
+    let errors = transform(
+        &allocator,
+        &mut root,
+        TransformOptions {
+            prefix_identifiers: true,
+            ..Default::default()
+        },
+        None,
+    );
+    assert!(errors.is_empty(), "Transform errors: {errors:?}");
+
+    let crate::TemplateChildNode::For(outer) = &root.children[0] else {
+        panic!("expected outer ForNode")
+    };
+    let Some(crate::ExpressionNode::Simple(outer_alias)) = &outer.value_alias else {
+        panic!("expected outer value alias")
+    };
+    assert_eq!(outer_alias.content, "outer");
+    assert!(outer_alias.js_ast.is_none());
+    assert!(outer_alias.identifiers.is_none());
+    let crate::TemplateChildNode::Element(outer_element) = &outer.children[0] else {
+        panic!("expected outer element")
+    };
+    let crate::TemplateChildNode::For(inner) = &outer_element.children[0] else {
+        panic!("expected inner ForNode")
+    };
+    let crate::ExpressionNode::Simple(source) = &inner.source else {
+        panic!("expected inner source")
+    };
+    assert_eq!(source.content, "outer.items");
+    let Some(crate::ExpressionNode::Simple(alias)) = &inner.value_alias else {
+        panic!("expected value alias")
+    };
+    assert_eq!(
+        alias.content,
+        r#"{ \u006cabel = _ctx.fallback, [_ctx.key]: tag, nested: { name = _ctx.pick(name, _ctx.other) } }"#
+    );
+    assert_eq!(
+        alias.retained_parameter_names().unwrap(),
+        ["label", "tag", "name"]
+    );
+
+    let crate::TemplateChildNode::Element(inner_element) = &inner.children[0] else {
+        panic!("expected inner element")
+    };
+    let expressions: std::vec::Vec<_> = inner_element
+        .children
+        .iter()
+        .map(|child| match child {
+            crate::TemplateChildNode::Interpolation(interpolation) => {
+                match &interpolation.content {
+                    crate::ExpressionNode::Simple(expression) => expression.content,
+                    crate::ExpressionNode::Compound(_) => panic!("expected simple interpolation"),
+                }
+            }
+            _ => panic!("expected interpolation"),
+        })
+        .collect();
+    assert_eq!(expressions, ["label", "tag", "name", "_ctx.outside"]);
+}
+
+#[test]
+fn typed_v_for_alias_rewrites_runtime_defaults_without_prefixing_types() {
+    let allocator = Allocator::new();
+    let source = r#"<p v-for="({ label = fallback }: Row) in items">{{ label }}{{ outside }}</p>"#;
+    let (mut root, errors) = parse(&allocator, source);
+    assert!(errors.is_empty(), "Parse errors: {errors:?}");
+
+    let errors = transform(
+        &allocator,
+        &mut root,
+        TransformOptions {
+            prefix_identifiers: true,
+            is_ts: true,
+            ..Default::default()
+        },
+        None,
+    );
+    assert!(errors.is_empty(), "Transform errors: {errors:?}");
+
+    let crate::TemplateChildNode::For(for_node) = &root.children[0] else {
+        panic!("expected ForNode")
+    };
+    let Some(crate::ExpressionNode::Simple(alias)) = &for_node.value_alias else {
+        panic!("expected value alias")
+    };
+    assert_eq!(alias.content, "{ label = _ctx.fallback }: Row");
+    assert_eq!(alias.retained_parameter_names().unwrap(), ["label"]);
+    let crate::ExpressionNode::Simple(iterable) = &for_node.source else {
+        panic!("expected simple iterable")
+    };
+    assert_eq!(iterable.content, "_ctx.items");
+
+    let crate::TemplateChildNode::Element(element) = &for_node.children[0] else {
+        panic!("expected loop element")
+    };
+    let expressions: std::vec::Vec<_> = element
+        .children
+        .iter()
+        .map(|child| match child {
+            crate::TemplateChildNode::Interpolation(interpolation) => {
+                match &interpolation.content {
+                    crate::ExpressionNode::Simple(expression) => expression.content,
+                    crate::ExpressionNode::Compound(_) => panic!("expected simple interpolation"),
+                }
+            }
+            _ => panic!("expected interpolation"),
+        })
+        .collect();
+    assert_eq!(expressions, ["label", "_ctx.outside"]);
+}
+
+#[test]
+fn v_for_alias_parse_errors_use_authored_expression_span() {
+    let allocator = Allocator::new();
+    let expression = "({ label = fallback }: Row) in items";
+    let source = format!(r#"<p v-for="{expression}"></p>"#);
+    let (mut root, errors) = parse(&allocator, &source);
+    assert!(errors.is_empty(), "Parse errors: {errors:?}");
+
+    let errors = transform(
+        &allocator,
+        &mut root,
+        TransformOptions {
+            prefix_identifiers: true,
+            ..Default::default()
+        },
+        None,
+    );
+    assert_eq!(errors.len(), 1, "Transform errors: {errors:?}");
+    let error = &errors[0];
+    assert_eq!(error.code, crate::errors::ErrorCode::InvalidExpression);
+
+    let start = source.find(expression).unwrap() as u32;
+    let expected = Span::new(start, start + expression.len() as u32);
+    assert_eq!(error.loc.as_ref().map(|loc| loc.span), Some(expected));
+    assert_eq!(error.loc.as_ref().unwrap().span.slice(&source), expression);
 }
 
 #[test]
