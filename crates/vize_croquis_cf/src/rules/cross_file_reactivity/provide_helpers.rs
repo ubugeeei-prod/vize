@@ -82,7 +82,8 @@ pub(super) fn classify_provided_value(
     };
     ProvidedValueClassification {
         reactive_kind,
-        is_reactive_service: is_reactive_service_expression(analysis, expression),
+        is_reactive_service: reactive_kind.is_none()
+            && is_reactive_service_expression(analysis, expression),
     }
 }
 
@@ -253,7 +254,7 @@ mod tests {
             ("({value: 1}) as unknown as Ref<number>", None, false),
             ("source.value as unknown as Ref<number>", None, false),
             ("snapshot as unknown as Ref<number>", None, false),
-            ("getValue() as Ref<number>", None, false),
+            ("getValue() as Ref<number>", None, true),
             (
                 "(true ? source : plain) as unknown as Ref<number>",
                 None,
