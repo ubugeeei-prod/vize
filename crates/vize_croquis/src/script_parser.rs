@@ -86,6 +86,9 @@ mod interface_extends_tests;
 mod doctor_batch_tests;
 
 #[cfg(test)]
+mod async_boundary_tests;
+
+#[cfg(test)]
 mod legacy_vue2_tests;
 
 #[cfg(test)]

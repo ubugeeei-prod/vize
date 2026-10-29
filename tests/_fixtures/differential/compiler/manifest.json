@@ -885,6 +885,52 @@
       }
     },
     {
+      "id": "compiler/sfc/legacy-for-alias-initializers-10811",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "legacy-for-alias-initializers-10811",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "1ee81a191f4619ce66c94e6226e2e3bcc4c236d44a0e8a57c6306e014046b1f2",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "legacy-for-alias-initializers-10811/module.expected.txt",
+        "sha256": "7ad59bf428e4f74c79d2ada72ce2aa9d3bbf614e6320405fceeb0ba27ab92671",
+        "source": "GitHub Actions source-cli-40840949018-1 artifact: receipt source b601f33030e0ef9afd6dd654a159bbb4b54d9908, binary 245f42c8b0f4bad58f16e3c3056471dee754635ebf1d29ad9f5c0bec2591c7a6; focused SFC and public client CLI regressions independently pin alias and nested-loop scope semantics."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); the forced legacy DOM and source-built CLI paths are qualified separately."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10811",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/maybe-ref-authored-handlers-10164",
       "state": "active",
       "targets": ["ssr"],

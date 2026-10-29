@@ -91,6 +91,10 @@ pub struct ScriptParseResult {
     pub(crate) nuxt_page_meta_calls: u8,
     pub reactivity: ReactivityTracker,
     pub race_conditions: RaceConditionTracker,
+    /// Calls whose surrounding control flow proves that their deferred write
+    /// cannot overlap or commit a stale value. This is parser-private and is
+    /// never copied into Croquis facts.
+    pub(crate) race_safe_call_spans: FxHashSet<(u32, u32)>,
     /// Local `interface` / `type` definitions registered by name, so
     /// `defineProps<Name>()` and template-binding analysis can resolve the
     /// fields of a locally declared type through an OXC-backed AST walk
