@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Comp from './Comp.vue'
+const state: { value?: number } = {}
+state.value = 1
+const noop = () => {}
+</script>
+<template>
+  <!-- @vue-expect-error -->
+  <Comp :pick="(field: number) => !!field" @save="noop" />
+  <div>{{ state.missing }}</div>
+</template>

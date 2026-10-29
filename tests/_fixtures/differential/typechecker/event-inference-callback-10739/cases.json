@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 10739,
+  "regressionCommit": "1afbda7e3875d350a56e9a55b9b8753c8fbfadb6",
+  "sourceRevision": "1afbda7e3875d350a56e9a55b9b8753c8fbfadb6",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "untyped-contextual-callback",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/Min.vue", "source": "Min.vue.txt" },
+        { "file": "src/Comp.vue", "source": "Comp.vue.txt" }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "genuine-callback-body-error",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/Min.vue", "source": "Broken.vue.txt" },
+        { "file": "src/Comp.vue", "source": "Comp.vue.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Min.vue",
+          "line": 8,
+          "column": 33,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'number'."
+        }
+      ]
+    }
+  ]
+}

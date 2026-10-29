@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const releasePackageJsonPaths = [
+  "npm/babel/package.json",
   "npm/builder/rspack/package.json",
   "npm/builder/unplugin/package.json",
   "npm/builder/vite/package.json",

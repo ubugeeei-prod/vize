@@ -1,0 +1,1 @@
+mod nuxt_pattern_emit_10195;

@@ -760,9 +760,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 &global_components,
                 &syntactic_type_only_imported_names,
             );
-
             binding_anchors.emit(&mut ts, "canon.virtual_ts.emit_setup_binding_anchors");
-
             ts.push_str("  })();\n");
         });
     }
@@ -887,6 +885,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 legacy_vue2,
             )
             .as_deref(),
+            check_options.infers_omitted_native_fallthrough_listeners(legacy_vue2)
+                && self::fallthrough::has_only_native_fallthrough_targets(summary, template_ast),
             check_options,
             hoist_shared_preamble,
         ),

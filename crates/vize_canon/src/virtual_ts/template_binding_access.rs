@@ -62,6 +62,9 @@ impl InstanceStorage<'_> {
 #[derive(Debug)]
 pub(crate) struct TemplateBindingAccess<'a> {
     names: Cow<'a, FxHashMap<String, Receiver>>,
+    /// Authored Options API members that already have lexical declarations.
+    /// They stay out of the property-receiver projection.
+    lexical: Cow<'a, FxHashSet<String>>,
     instance: Option<InstanceStorage<'a>>,
     scope_id: ScopeId,
 }
@@ -70,6 +73,7 @@ impl Default for TemplateBindingAccess<'_> {
     fn default() -> Self {
         Self {
             names: Cow::Owned(FxHashMap::default()),
+            lexical: Cow::Owned(FxHashSet::default()),
             instance: None,
             scope_id: ScopeId::ROOT,
         }
@@ -79,18 +83,34 @@ impl Default for TemplateBindingAccess<'_> {
 impl<'a> TemplateBindingAccess<'a> {
     pub(crate) fn collect(summary: &Croquis, options_api: bool) -> Self {
         let mut result = Self::from_props(collect_template_prop_names(summary));
+        if !options_api && let Some(descriptor) = summary.options_descriptor.as_ref() {
+            for member in &descriptor.members {
+                let Some(name) = vize_croquis::croquis::normalize_options_template_binding_name(
+                    member.name.as_str(),
+                ) else {
+                    continue;
+                };
+                result.names.to_mut().remove(name.as_str());
+                result.lexical.to_mut().insert(name);
+            }
+        }
         if options_api {
             super::script_facts::with_bindings(summary, |bindings| {
                 let script_setup = bindings.is_script_setup();
                 for (name, binding) in bindings.typed() {
-                    if (matches!(binding, BindingType::Data | BindingType::Options)
-                        || (binding == BindingType::Props && !script_setup))
-                        && is_reserved_identifier(name)
+                    if matches!(binding, BindingType::Data | BindingType::Options)
+                        || (binding == BindingType::Props && !script_setup)
                     {
-                        result
-                            .names
-                            .to_mut()
-                            .insert(name.into(), Receiver::OptionsInstance);
+                        if is_reserved_identifier(name) {
+                            result.lexical.to_mut().remove(name);
+                            result
+                                .names
+                                .to_mut()
+                                .insert(name.into(), Receiver::OptionsInstance);
+                        } else {
+                            result.names.to_mut().remove(name);
+                            result.lexical.to_mut().insert(name.into());
+                        }
                     }
                 }
             });
@@ -163,6 +183,7 @@ impl<'a> TemplateBindingAccess<'a> {
                     .map(|row| String::from(row.name.as_str())),
             );
             names.extend(self.names.keys().cloned());
+            names.extend(self.lexical.iter().cloned());
             for scope in summary.scopes.iter() {
                 names.extend(scope.bindings().map(|(name, _)| String::from(name)));
             }
@@ -301,6 +322,7 @@ impl<'a> TemplateBindingAccess<'a> {
     pub(crate) fn for_scope(&self, scope_id: ScopeId) -> TemplateBindingAccess<'_> {
         TemplateBindingAccess {
             names: Cow::Borrowed(self.names.as_ref()),
+            lexical: Cow::Borrowed(self.lexical.as_ref()),
             instance: self
                 .instance
                 .as_ref()
@@ -409,6 +431,12 @@ impl<'a> TemplateBindingAccess<'a> {
 
     pub(crate) fn contains(&self, name: &str) -> bool {
         self.names.contains_key(name) || self.is_instance_global(name)
+    }
+
+    /// A prop receiver or an authored Options API member. Instance-global
+    /// `$` names stay out of this set so an undeclared global is still checked.
+    pub(crate) fn is_known(&self, name: &str) -> bool {
+        self.names.contains_key(name) || self.lexical.contains(name)
     }
 
     pub(crate) fn receiver(&self, name: &str) -> Option<&str> {

@@ -4,8 +4,8 @@ use vize_carton::config::VueVersion;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 use super::{
-    VirtualTsGenerationOptions, VirtualTsOptions, generate_virtual_ts_with_offsets,
-    generate_virtual_ts_with_offsets_and_checks,
+    VirtualTsCheckOptions, VirtualTsGenerationOptions, VirtualTsOptions,
+    generate_virtual_ts_with_offsets, generate_virtual_ts_with_offsets_and_checks,
 };
 
 fn standard_virtual_ts(script: &str, template: &str, options: &VirtualTsOptions) -> String {
@@ -20,6 +20,15 @@ fn standard_virtual_ts(script: &str, template: &str, options: &VirtualTsOptions)
 }
 
 fn legacy_virtual_ts(script: &str, template: &str, options: &VirtualTsOptions) -> String {
+    legacy_virtual_ts_with_checks(script, template, options, VirtualTsCheckOptions::default())
+}
+
+fn legacy_virtual_ts_with_checks(
+    script: &str,
+    template: &str,
+    options: &VirtualTsOptions,
+    check_options: VirtualTsCheckOptions,
+) -> String {
     let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -34,11 +43,51 @@ fn legacy_virtual_ts(script: &str, template: &str, options: &VirtualTsOptions) -
         options,
         VirtualTsGenerationOptions {
             legacy_vue2: true,
+            check_options,
             ..Default::default()
         },
     )
     .code
     .to_string()
+}
+
+#[test]
+fn legacy_vue2_fallthrough_listener_payloads_remain_explicit_only() {
+    let script = r#"import MyItem from './MyItem.vue'
+function onClick(event: string) {
+  void event
+}
+"#;
+    let template = r#"<MyItem @click="onClick" />"#;
+    let generated = |enabled, specified| {
+        legacy_virtual_ts_with_checks(
+            script,
+            template,
+            &VirtualTsOptions::default(),
+            VirtualTsCheckOptions {
+                fallthrough_attributes: enabled,
+                fallthrough_attributes_specified: specified,
+                ..Default::default()
+            },
+        )
+    };
+    let omitted = generated(false, false);
+    let explicit_false = generated(false, true);
+    let explicit_true = generated(true, true);
+    let marker = "_click_fallthrough_args";
+
+    for open in [&omitted, &explicit_false] {
+        assert_eq!(
+            open.matches(marker).count(),
+            0,
+            "Vue 2 omitted/false listener payloads must remain open:\n{open}"
+        );
+    }
+    assert_eq!(
+        explicit_true.matches(marker).count(),
+        2,
+        "Vue 2 explicit true must retain its existing fallthrough listener path:\n{explicit_true}"
+    );
 }
 
 fn dialect_virtual_ts(

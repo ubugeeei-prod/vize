@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "pullRequest": 11069,
+  "observation": {
+    "rawProductRevision": "c83987a7c1ce79b9465d672b20b4c548992b5bf5",
+    "testedMerge": "a433c1430c55dc2e725bbb1e411226a598069212",
+    "run": 40878269645,
+    "job": 123462630312,
+    "artifact": 12899266775,
+    "pendingSnapshotPath": "pending-snapshots/davinci_ts40_projection__davinci_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
+    "pendingSnapshotBytes": 2441,
+    "pendingSnapshotSha256": "5ceee86bc29f6ed713334f55448a7f4e3031653a4fdf0d4efe5a3f18c924e47a"
+  },
+  "predecessor": {
+    "path": "after/projection-record.txt",
+    "bytes": 2325,
+    "sha256": "ab6913fd891b081b103e26b075b3ed5aa4527893974666c41ad08957cfdd71f1"
+  },
+  "successor": {
+    "path": "successor-11069/projection-record.txt",
+    "bytes": 2325,
+    "sha256": "1ae7fe09812291aae4ff51af41efd28c547faeb03100d3191d78d95d3f113974"
+  },
+  "delta": {
+    "maestroGeneratedTextBytes": -593,
+    "maestroMappingCount": -2,
+    "maestroAuthoredHitCount": -2,
+    "diagnosticCountsUnchanged": true,
+    "canonAndContentMapperUnchanged": true
+  },
+  "scope": "The frozen 205-file mixed-Vue custody remains byte-identical. This receipt authenticates only the live legacy Options API lexical-member projection observed at the tested merge."
+}

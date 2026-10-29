@@ -468,3 +468,32 @@ fn block_directives_do_not_reach_the_block_body_or_other_blocks() {
         assert!(end <= body || body + 25 <= start, "{:?}", &text[start..end]);
     }
 }
+
+/// #10871: nav reads bookend the element and must not hide the next sibling.
+#[test]
+fn expect_interval_leaves_a_later_sibling_interpolation_visible() {
+    let source = "<script setup lang=\"ts\">\nimport Comp from './Comp.vue'\nconst state: { value?: number } = {}\nstate.value = 1\nconst noop = () => {}\n</script>\n<template>\n  <!-- @vue-expect-error -->\n  <Comp :pick=\"(field: number) => !!field\" @save=\"noop\" />\n  <div>{{ state.missing }}</div>\n</template>\n";
+    let result = transform(source);
+    let text = result.text.as_str();
+    let directives = result.diagnostic_directives.expect("expect directive");
+    let [_, _, start, end, _, _] = directives
+        .directives
+        .iter()
+        .find(|row| row.0[4] == DIRECTIVE_POLICY_EXPECT)
+        .expect("expect")
+        .0;
+    let owner = text.find("__vize_prop_check_0_pick:").expect("owner");
+    let copies = text.match_indices("state.missing").collect::<Vec<_>>();
+    assert_eq!(directives.unused_expect_directive_diagnostics.len(), 1);
+    assert!(
+        start <= owner && owner < end && text[owner..end].contains("(field: number) => !!field"),
+        "{start}..{end} misses {owner}"
+    );
+    assert!(!copies.is_empty(), "sibling was not generated");
+    assert!(
+        copies
+            .iter()
+            .all(|(at, needle)| end <= *at || *at + needle.len() <= start),
+        "{start}..{end}"
+    );
+}

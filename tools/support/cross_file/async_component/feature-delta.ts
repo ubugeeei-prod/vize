@@ -7,6 +7,8 @@ type FeatureDeltaOptions = {
   cwd: string;
   historicalParent: string;
   historicalFeature: string;
+  landedFeature: string;
+  landedMerge: string;
   head: string;
   paths: string[];
 };
@@ -18,6 +20,8 @@ type FeatureDelta = {
   selectedFeature: string;
   parentPatchId: string;
   featurePatchId: string;
+  landedFeature: string;
+  landedMerge: string;
   head: string;
   changed: string[];
 };
@@ -78,13 +82,14 @@ export function rebasedEquivalent(historical: string, head: string, cwd: string)
 }
 
 export function selectFeatureDelta(options: FeatureDeltaOptions): FeatureDelta {
-  const { cwd, historicalParent, historicalFeature, head, paths } = options;
+  const { cwd, historicalParent, historicalFeature, landedFeature, landedMerge, head, paths } =
+    options;
   assert.ok(
     isAncestor(historicalParent, historicalFeature, cwd),
     "the historical feature must descend from its pinned production parent",
   );
-  const selectedParent = rebasedEquivalent(historicalParent, head, cwd);
-  const selectedFeature = rebasedEquivalent(historicalFeature, head, cwd);
+  const selectedParent = rebasedEquivalent(historicalParent, landedFeature, cwd);
+  const selectedFeature = rebasedEquivalent(historicalFeature, landedFeature, cwd);
   assert.ok(
     isAncestor(selectedParent, selectedFeature, cwd),
     "the selected feature must descend from its selected production parent",
@@ -92,6 +97,19 @@ export function selectFeatureDelta(options: FeatureDeltaOptions): FeatureDelta {
   const changed = git(["diff", "--name-only", selectedParent, selectedFeature, "--", ...paths], cwd)
     .split("\n")
     .filter(Boolean);
+  assert.ok(changed.length > 0, "the selected feature delta must not be empty");
+  const landingDrift = git(
+    ["diff", "--name-only", landedFeature, landedMerge, "--", ...changed],
+    cwd,
+  )
+    .split("\n")
+    .filter(Boolean);
+  assert.deepEqual(
+    landingDrift,
+    [],
+    "the landed squash must preserve every selected feature path byte-for-byte",
+  );
+  assert.ok(isAncestor(landedMerge, head, cwd), "the landed squash must be an ancestor of head");
   return {
     historicalParent,
     historicalFeature,
@@ -99,6 +117,8 @@ export function selectFeatureDelta(options: FeatureDeltaOptions): FeatureDelta {
     selectedFeature,
     parentPatchId: stablePatchId(historicalParent, cwd),
     featurePatchId: stablePatchId(historicalFeature, cwd),
+    landedFeature,
+    landedMerge,
     head,
     changed,
   };
@@ -106,13 +126,32 @@ export function selectFeatureDelta(options: FeatureDeltaOptions): FeatureDelta {
 
 function main(): void {
   const separator = process.argv.indexOf("--", 2);
-  assert.ok(separator >= 0, "usage: feature-delta.ts <parent> <feature> <head> -- <paths...>");
-  const [historicalParent, historicalFeature, head] = process.argv.slice(2, separator);
+  assert.ok(
+    separator >= 0,
+    "usage: feature-delta.ts <parent> <feature> <landed-feature> <landed-merge> <head> -- <paths...>",
+  );
+  const [historicalParent, historicalFeature, landedFeature, landedMerge, head] =
+    process.argv.slice(2, separator);
   const paths = process.argv.slice(separator + 1);
-  assert.ok(historicalParent && historicalFeature && head && paths.length > 0);
+  assert.ok(
+    historicalParent &&
+      historicalFeature &&
+      landedFeature &&
+      landedMerge &&
+      head &&
+      paths.length > 0,
+  );
   process.stdout.write(
     `${JSON.stringify(
-      selectFeatureDelta({ cwd: process.cwd(), historicalParent, historicalFeature, head, paths }),
+      selectFeatureDelta({
+        cwd: process.cwd(),
+        historicalParent,
+        historicalFeature,
+        landedFeature,
+        landedMerge,
+        head,
+        paths,
+      }),
       null,
       2,
     )}\n`,

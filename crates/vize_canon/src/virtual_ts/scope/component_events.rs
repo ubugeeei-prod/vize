@@ -5,13 +5,15 @@ use crate::virtual_ts::{expressions::ComponentPropSource, types::VizeMapping};
 mod generic_inference;
 mod handler_context;
 mod inference_helpers;
+mod listener_return;
+mod native_fallthrough;
 pub(crate) use inference_helpers::emit_event_inference_helpers;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, cstr};
 use vize_croquis::{Croquis, EventHandlerScopeData, Scope, naming::to_pascal_case};
 
 use super::context::EventContractKey;
-use crate::virtual_ts::component_reference::component_binding_reference;
+use crate::virtual_ts::component_reference::component_binding_reference_with_resolution;
 use crate::virtual_ts::helpers::{
     push_ts_string_literal, to_safe_identifier, to_safe_identifier_fragment,
 };
@@ -47,6 +49,8 @@ pub(super) struct ComponentEventTypeContext<'a, 'template> {
     /// `fallthroughAttributes`: a listener the child neither declares nor
     /// emits may still be typed from its root's forwarded props.
     pub(super) fallthrough_listeners: bool,
+    /// An omitted Vue 3 option accepts only an immediate native-root payload.
+    pub(super) native_fallthrough_only: bool,
     /// The `@vue-generic` binding this listener's component resolves through.
     pub(super) explicit_generic: Option<&'a str>,
     pub(super) enclosing_vif_guard: Option<&'a str>,
@@ -73,6 +77,7 @@ pub(super) fn generate_component_event_types(
         hoist_shared_preamble,
         needs_typed_handler_assignment,
         fallthrough_listeners,
+        native_fallthrough_only,
         explicit_generic,
         enclosing_vif_guard,
         event_inference_usages,
@@ -82,21 +87,24 @@ pub(super) fn generate_component_event_types(
     let component_name = data.target_component.as_ref()?;
     let scope_id = scope.id.as_u32();
     let safe_event_name = to_safe_identifier(data.event_name.as_str());
-    let component_ref = explicit_generic.map_or_else(
-        || {
-            component_binding_reference(
-                summary,
-                virtual_ts_options,
-                syntactic_type_only_imported_names,
-                component_name.as_str(),
-            )
-        },
-        String::from,
-    );
+    let (resolved_component_ref, has_resolved_component_binding) =
+        component_binding_reference_with_resolution(
+            summary,
+            virtual_ts_options,
+            syntactic_type_only_imported_names,
+            component_name.as_str(),
+        );
+    let component_ref = explicit_generic.map_or(resolved_component_ref, String::from);
     let component_type_name = to_safe_identifier_fragment(component_name.as_str());
     let is_any = crate::virtual_ts::helpers::shared_types::IS_ANY.select(hoist_shared_preamble);
     let emit_owned_keys =
         crate::virtual_ts::helpers::shared_types::EMIT_OWNED_KEYS.select(hoist_shared_preamble);
+    let has_script_component_binding =
+        super::super::script_facts::binding_span(summary, component_name.as_str()).is_some();
+    let requested_native_fallthrough = native_fallthrough_only;
+    let native_fallthrough_only = requested_native_fallthrough && has_resolved_component_binding;
+    let fallthrough_listeners =
+        fallthrough_listeners && (!requested_native_fallthrough || native_fallthrough_only);
     let pascal_event = to_pascal_case(data.event_name.as_str());
     let on_handler = cstr!("on{pascal_event}");
     let mut owned_listener_key = String::default();
@@ -108,21 +116,21 @@ pub(super) fn generate_component_event_types(
     } else {
         on_handler
     };
-    let has_script_component_binding =
-        super::super::script_facts::binding_span(summary, component_name.as_str()).is_some();
-    let contract_key = (
-        component_type_name.clone(),
-        component_ref.clone(),
-        String::from(data.event_name.as_str()),
+    let contract_key = EventContractKey {
+        component_type_name: component_type_name.clone(),
+        component_ref: component_ref.clone(),
+        event_name: String::from(data.event_name.as_str()),
         legacy_vue2,
         fallthrough_listeners,
-        needs_typed_handler_assignment && has_script_component_binding,
-        enclosing_vif_guard.map(String::from),
-        scope.parent().map(|parent| parent.as_u32()),
+        native_fallthrough_only,
+        needs_typed_handler_assignment: needs_typed_handler_assignment
+            && has_script_component_binding,
+        enclosing_vif_guard: enclosing_vif_guard.map(String::from),
+        parent_scope: scope.parent().map(|parent| parent.as_u32()),
         // Aliases of the first usage are declared inside its guarded block;
         // a later block with the same guard cannot see them.
-        super::open_chained_vif_guard_block(),
-    );
+        chained_guard_block: super::open_chained_vif_guard_block(),
+    };
     let (contract_scope_id, first_contract) = {
         let mut contracts = event_contracts.borrow_mut();
         if let Some(&contract_scope_id) = contracts.get(&contract_key) {
@@ -159,7 +167,6 @@ pub(super) fn generate_component_event_types(
     let return_type = cstr!("__{component_type_name}_{contract_scope_id}_{safe_event_name}_return");
     let event_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
     let listener_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_listener");
-
     // A vue-tsc generic library export instantiates its generics with their
     // constraints here; its listener stays untyped rather than wrong.
     if first_contract {
@@ -171,7 +178,8 @@ pub(super) fn generate_component_event_types(
     // Constructor `$props` contains ambient DOM listeners. For a generated,
     // non-generic child, an unowned listener can instead belong to its typed
     // root. Select that contract once for arguments, returns and arrays.
-    let contextual_props = (fallthrough_listeners && !legacy_vue2).then(|| {
+    let contextual_props =
+        (fallthrough_listeners && !native_fallthrough_only && !legacy_vue2).then(|| {
         let public_props = cstr!("{prop_args}_public_props");
         let resolved_props = cstr!("{prop_args}_resolved_props");
         if first_contract {
@@ -212,24 +220,32 @@ pub(super) fn generate_component_event_types(
             append!(*ts, "{indent}    : unknown[];\n");
         }
     }
-    // Under `fallthroughAttributes`, a listener the child neither declares
-    // nor emits can still be a fallthrough attribute of its root: `<child
-    // @input>` over a `<input />` root receives the `InputEvent` that
-    // `NativeElements['input']` declares for `onInput`, and a component root
-    // contributes the listener props of the component it renders. The open
-    // `Record<string, unknown>` surface resolves to `unknown[]`, so an
-    // unresolved root keeps the untyped listener it has today. Without the
-    // option the listener stays untyped, as it does under `vue-tsc`.
-    let unresolved_args: &str = if fallthrough_listeners {
+    // Explicit `fallthroughAttributes` admits a forwarded listener contract.
+    // When Vue 3 omits the option, only an immediate native-root marker admits
+    // that payload. Explicit false, Vue 2, component roots and open no-root or
+    // unresolved surfaces retain their untyped listener contract.
+    let unresolved_args: &str = if native_fallthrough_only {
+        if first_contract {
+            // A forwarded listener with no parameters is left untyped rather than
+            // imposed: the root's own declaration may be looser than the child's
+            // documented payload, and a zero-parameter contextual type would make
+            // an authored `(event) => ...` callback implicitly `any` (TS7006).
+            native_fallthrough::emit_args(
+                ts,
+                indent,
+                fallthrough_args.as_str(),
+                component_ref.as_str(),
+                prop_listener_args.as_str(),
+                is_any,
+            );
+        }
+        fallthrough_args.as_str()
+    } else if fallthrough_listeners {
         if first_contract {
             append!(
                 *ts,
                 "{indent}type {fallthrough_args} = typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }}\n",
             );
-            // A forwarded listener with no parameters is left untyped rather than
-            // imposed: the root's own declaration may be looser than the child's
-            // documented payload, and a zero-parameter contextual type would make
-            // an authored `(event) => ...` callback implicitly `any` (TS7006).
             if legacy_vue2 {
                 append!(
                     *ts,
@@ -325,39 +341,23 @@ pub(super) fn generate_component_event_types(
     // with the same expected type `vue-tsc` prints (#3889), and the authored
     // return type of a prop such as `onClick?: () => number`, so a handler
     // that returns nothing is rejected as it is under `vue-tsc`.
-    let listener_type_expr = if legacy_vue2 {
-        cstr!("(...args: {listener_args_type}) => unknown")
-    } else {
-        if first_contract {
-            if let Some(props) = contextual_props.as_ref() {
-                append!(
-                    *ts,
-                    "{indent}type {return_type} = unknown[] extends {prop_args} ? any : {props} extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any;\n",
-                );
-            } else {
-                append!(
-                    *ts,
-                    "{indent}type {return_type} = unknown[] extends {prop_args} ? any : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }}\n",
-                );
-                append!(
-                    *ts,
-                    "{indent}  ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any)\n",
-                );
-                append!(
-                    *ts,
-                    "{indent}  : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any\n",
-                );
-                append!(
-                    *ts,
-                    "{indent}    ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any)\n",
-                );
-                append!(*ts, "{indent}    : any;\n");
-            }
-        }
-        cstr!(
-            "unknown[] extends {args_type} ? ((...args: any[]) => any) : ((...args: {listener_args_type}) => {return_type})"
-        )
-    };
+    let listener_type_expr = listener_return::emit(
+        ts,
+        listener_return::Context {
+            legacy_vue2,
+            first_contract,
+            native_fallthrough_only,
+            contextual_props: contextual_props.as_deref(),
+            indent,
+            listener_args_type: listener_args_type.as_str(),
+            args_type: args_type.as_str(),
+            return_type: return_type.as_str(),
+            prop_args: prop_args.as_str(),
+            component_ref: component_ref.as_str(),
+            prop_key: prop_key.as_str(),
+            is_any,
+        },
+    );
     let requires_unresolved_handler =
         requires_unresolved_handler_implicit_any(summary, component_name, data, scope);
     let mut prop_arrays = None;

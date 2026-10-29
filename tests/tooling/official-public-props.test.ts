@@ -98,7 +98,7 @@ test("public9498 retains the canonical eleven-case selection without default sui
     createHash("sha256")
       .update(fs.readFileSync(path.join(root, fixturePath)))
       .digest("hex"),
-    "fdcc0187a0042d5fd59e9e75366467df09bbd6b3e91b262645bbd7eff34b7fd6",
+    "841ff82c683f41eb0147868e12c5e721f6dac0d0ddb5621dd3d3e3a93cc16f2b",
   );
   // A parser-only synthetic tuple gives no release or installed-product credit.
   const options = officialRunOptions(

@@ -55,7 +55,10 @@ pub use bindings::{
     UnusedTemplateVar, UnusedVarContext,
 };
 pub use model::{AnalysisStats, CroquisStats};
-pub use options_descriptor::{OptionGroup, OptionKey, OptionMember, OptionsDescriptor};
+pub use options_descriptor::{
+    OptionGroup, OptionKey, OptionMember, OptionsDescriptor,
+    normalize_options_template_binding_name,
+};
 pub use snapshot::{
     CroquisSemanticSnapshot, SemanticBindingSnapshot, SemanticComponentUsageSnapshot,
     SemanticEventListenerSnapshot, SemanticInjectSnapshot, SemanticPassedPropSnapshot,

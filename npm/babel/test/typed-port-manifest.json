@@ -1,0 +1,271 @@
+{
+  "schemaVersion": 1,
+  "scope": "source driver type migration only; original source and fixture authority retained in the immutable parent; full native/browser requalification is pending",
+  "originalHead": "64e2ef33a80e702b6a3fd2d889542cb16ed98278",
+  "originalTree": "8722bb1d394b110bfa5becef7cdbfc2043b53b31",
+  "originalQualification": {
+    "run": 40496401635,
+    "artifact": 12731620390,
+    "digest": "sha256:3202cc773d97fadb3c56272cc261f5ea21e6a86c8dc4a42f1920b25c3f41c76f",
+    "hostRows": 96,
+    "runtimeRows": 8,
+    "stylePackets": 80
+  },
+  "typedValidation": {
+    "typescript": "6.0.3",
+    "strictErrors": 0,
+    "typescriptSourceFiles": 27,
+    "retiredDrivers": 23,
+    "scope": "virtual compiler host over complete candidate source, no install or source build"
+  },
+  "browserDriverValidation": {
+    "scope": "RAM-only executable browser driver comparison against immutable original; no native/browser qualification credit",
+    "typescript": "6.0.3",
+    "babel": "7.29.0",
+    "observations": [
+      {
+        "name": "runtime/browser-page",
+        "originalBytes": 3978,
+        "servedBytes": 4302,
+        "executableAstEqual": true
+      },
+      {
+        "name": "style-guards/page",
+        "originalBytes": 2569,
+        "servedBytes": 2891,
+        "executableAstEqual": true
+      }
+    ]
+  },
+  "publication": {
+    "state": "unpublished; draft activation held",
+    "authentication": "initial npm publisher/trusted-publisher setup boundary remains",
+    "qualification": "96/8/80 actual package/runtime/source binding requalification remains required"
+  },
+  "files": [
+    {
+      "path": ".github/workflows/babel-plugin-hosts.yml",
+      "sha256": "0aedf8a38ec4247595c03baf6bc22ccc899186d9a5b33fd1b210fb457028140e"
+    },
+    {
+      "path": "npm/babel/package.json",
+      "sha256": "6ce476a81d84fe31906035eff67ddb0b693aa6f8b8cd4669b4efa56533c38d90"
+    },
+    {
+      "path": "npm/babel/test/host-types.ts",
+      "sha256": "57167c277e3e9274e724e4118d37b471172003078a934dccad9fb0080531da05"
+    },
+    {
+      "path": "npm/babel/test/hosts/README.md",
+      "sha256": "635f8d0789b4330fd79cd8c59e74adb69e6fc6543bb30a4f6f8be1fe4d232353"
+    },
+    {
+      "path": "npm/babel/test/hosts/contracts.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/hosts/contracts.ts",
+      "sha256": "197765bfb990aed8a361d0a84f117022dcadaa6ed56c5d30a43d5a0cbc00c226"
+    },
+    {
+      "path": "npm/babel/test/hosts/environment.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/hosts/environment.ts",
+      "sha256": "7f0ed44adb93f7bb0c355e5c59a5d0f5817b9364c4d8896a066beaea5830aaa8"
+    },
+    {
+      "path": "npm/babel/test/hosts/fixtures.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/hosts/fixtures.ts",
+      "sha256": "b92532ec02acf465bb21be2adf27fa981c639e5ec13b17ea3d7dc7887b68afb6"
+    },
+    {
+      "path": "npm/babel/test/hosts/host-controls.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/hosts/host-controls.ts",
+      "sha256": "00a3cd118936afce9115ae3022ba2df6400f3b6fe0b46c1a06786d0a9efbf59d"
+    },
+    {
+      "path": "npm/babel/test/hosts/runner.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/hosts/runner.ts",
+      "sha256": "a6dd907b2a5e3f56dad012534a191f7ebec2372533c254876298288c990ad924"
+    },
+    {
+      "path": "npm/babel/test/packed-hosts.test.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/packed-hosts.test.ts",
+      "sha256": "8f28040e9dde93f511a73a48e30c27b7fad7f9be403a13a77ab13fda4cd58ef5"
+    },
+    {
+      "path": "npm/babel/test/profile-host.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/profile-host.ts",
+      "sha256": "0dd7f9d6c37a8b2d460ba0919316bb1655202778ea62330e204f5fcd17c1c0ff"
+    },
+    {
+      "path": "npm/babel/test/runtime-renderers.test.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/runtime-renderers.test.ts",
+      "sha256": "082789b99bebcb088f0e59de9f33eceb7e50af6b80a17865d1bed95dcd4293db"
+    },
+    {
+      "path": "npm/babel/test/runtime/README.md",
+      "sha256": "647675a5039716d6362606b28934d852bc07f9add24793041c6ce9ccb4283a30"
+    },
+    {
+      "path": "npm/babel/test/runtime/browser-page.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/runtime/browser-page.ts",
+      "sha256": "71bfcdf197d6aed7650fcfd16a6c324f613abd10c72c292e9a23a81fb3b971ac"
+    },
+    {
+      "path": "npm/babel/test/runtime/browser-source.ts",
+      "sha256": "3d06147ea3f8885e14010028b8bd903fa222f0095a7c2ad69febbf1c2b120dbb"
+    },
+    {
+      "path": "npm/babel/test/runtime/browser.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/runtime/browser.ts",
+      "sha256": "7422f08f5f58077cb559375a8e93a1c7c039968808c1bc2b16ea215cdd77dc80"
+    },
+    {
+      "path": "npm/babel/test/runtime/compile.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/runtime/compile.ts",
+      "sha256": "68ebc49a1363ad56cc808b61864b0e2dd502809011c84fc7adf1eff6497ef8db"
+    },
+    {
+      "path": "npm/babel/test/runtime/environment.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/runtime/environment.ts",
+      "sha256": "b1eea15a55147e873f3b613824715a8859e9879b7327bdf40c7487bc54599ff3"
+    },
+    {
+      "path": "npm/babel/test/runtime/fixtures.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/runtime/fixtures.ts",
+      "sha256": "e378f6d7b52dfbfb5b46e26e1e52d2646f75cc076b7898f2c5dc727dec1d48c6"
+    },
+    {
+      "path": "npm/babel/test/runtime/infrastructure.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/runtime/infrastructure.ts",
+      "sha256": "02aebf62ed03a38c903fedfbe40aa63c8dab6b62a301f1240be36540f33104ee"
+    },
+    {
+      "path": "npm/babel/test/runtime/node-ssr.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/runtime/node-ssr.ts",
+      "sha256": "3522d11a9867ffa7eb683e7d8fe43eb8891c2abb684080b2060d3d3ae1839430"
+    },
+    {
+      "path": "npm/babel/test/runtime/reference.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/runtime/reference.ts",
+      "sha256": "9cb984e84323313e5bf732bf6c6b1565633a25606e47031bd895081acedc5917"
+    },
+    {
+      "path": "npm/babel/test/runtime/run.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/runtime/run.ts",
+      "sha256": "8d7aba2358cedc6fa2e8eeb9c6684bd80e788962e05d3d32c9af6d019474cb1b"
+    },
+    {
+      "path": "npm/babel/test/runtime/types.ts",
+      "sha256": "e205df48c4a14d72932626da0d289417e522b7eb0a9da54f1fa01131221116c3"
+    },
+    {
+      "path": "npm/babel/test/style-guards.test.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/style-guards.test.ts",
+      "sha256": "7fd455e924a53ba019daa67318d94ebcad3f61d7f37452e943239d93d71253d3"
+    },
+    {
+      "path": "npm/babel/test/style-guards/README.md",
+      "sha256": "057c8e313d8881826feac891065da895e2e41fbe4c0ec4e4d178b0335a8b1255"
+    },
+    {
+      "path": "npm/babel/test/style-guards/browser.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/style-guards/browser.ts",
+      "sha256": "92f29028b2ccb25415ff0a72a657a84266c7968afd07b828736c2d1cbaaff021"
+    },
+    {
+      "path": "npm/babel/test/style-guards/cases.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/style-guards/cases.ts",
+      "sha256": "6051a097bd4f6ba6c5d1049dae34d1667ace24cfa8b1cdd1d737a19e16973c97"
+    },
+    {
+      "path": "npm/babel/test/style-guards/maps.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/style-guards/maps.ts",
+      "sha256": "3648f54009d90b6eb4c602569b41623443744667dc76af2e68fa08cfb15fac99"
+    },
+    {
+      "path": "npm/babel/test/style-guards/page.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/style-guards/page.ts",
+      "sha256": "12c539cb7b8f578b96608ffd61f95dbc017015c349858338656c7f0253e46df1"
+    },
+    {
+      "path": "npm/babel/test/style-guards/run.mjs",
+      "sha256": null
+    },
+    {
+      "path": "npm/babel/test/style-guards/run.ts",
+      "sha256": "dd284005c914d50200ac90291e632e48c6aab5d5c18ef1602412037d70885a4b"
+    },
+    {
+      "path": "npm/babel/test/style-guards/types.ts",
+      "sha256": "99341e939a154203d1836d31175e9e05e25d984edd2bbf22c7bb4e7c7de83089"
+    },
+    {
+      "path": "npm/babel/test/tsconfig.json",
+      "sha256": "68e9f79e60de567eb25dfb856dd46e40a110d53f1f08d28f933cf359065b5a57"
+    }
+  ]
+}

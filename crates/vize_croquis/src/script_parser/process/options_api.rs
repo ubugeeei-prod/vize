@@ -21,8 +21,9 @@ use oxc_span::GetSpan;
 use crate::ScopeBinding;
 use crate::croquis::{
     ComponentRegistration, OptionGroup, OptionKey, OptionMember, OptionsDescriptor,
+    normalize_options_template_binding_name,
 };
-use vize_carton::{CompactString, FxHashMap, FxHashSet, String};
+use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
@@ -367,7 +368,7 @@ fn collect_array_string_bindings(
         let ArrayExpressionElement::StringLiteral(literal) = element else {
             continue;
         };
-        let name = normalize_template_binding_name(literal.value.as_str());
+        let name = normalize_options_template_binding_name(literal.value.as_str());
         if let Some(name) = name {
             let start = literal.span.start.saturating_add(1);
             let end = literal.span.end.saturating_sub(1);
@@ -392,7 +393,7 @@ fn collect_object_property_bindings(
         let Some(raw_name) = property_key_name(&property.key) else {
             continue;
         };
-        let Some(name) = normalize_template_binding_name(raw_name) else {
+        let Some(name) = normalize_options_template_binding_name(raw_name) else {
             continue;
         };
         let span = property.key.span();
@@ -416,48 +417,6 @@ pub(super) fn add_template_binding(
         CompactString::new(name),
         ScopeBinding::new(binding_type, start),
     );
-}
-
-pub(super) fn normalize_template_binding_name(name: &str) -> Option<CompactString> {
-    if is_valid_template_binding_name(name) {
-        return Some(CompactString::new(name));
-    }
-
-    if name.contains('-') {
-        let camel = kebab_to_camel(name);
-        if is_valid_template_binding_name(&camel) {
-            return Some(CompactString::new(camel));
-        }
-    }
-
-    None
-}
-
-fn is_valid_template_binding_name(name: &str) -> bool {
-    let mut chars = name.chars();
-    let Some(first) = chars.next() else {
-        return false;
-    };
-    if !(first.is_ascii_alphabetic() || first == '_' || first == '$') {
-        return false;
-    }
-    chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
-}
-
-fn kebab_to_camel(name: &str) -> String {
-    let mut result = String::with_capacity(name.len());
-    let mut upper_next = false;
-    for ch in name.chars() {
-        if ch == '-' {
-            upper_next = true;
-        } else if upper_next {
-            result.push(ch.to_ascii_uppercase());
-            upper_next = false;
-        } else {
-            result.push(ch);
-        }
-    }
-    result
 }
 
 fn collect_component_registrations_from_components_object<'a>(

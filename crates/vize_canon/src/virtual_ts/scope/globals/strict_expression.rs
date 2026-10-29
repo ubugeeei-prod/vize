@@ -51,7 +51,7 @@ pub(super) fn generate_strict_expression_refs(
                     && (!options.strict_instance_globals
                         || (!member_root && !call_root && !scoped_bare_ref)))
                 || is_declared_template_context_name(name, options)
-                || template_binding_access.contains(name)
+                || template_binding_access.is_known(name)
                 || type_export_names.contains(name)
                 || is_visible_template_binding_in_scope(summary, name, expr.scope_id)
                 || head.ends_with('.')

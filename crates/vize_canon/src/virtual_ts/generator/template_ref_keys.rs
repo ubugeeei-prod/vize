@@ -205,7 +205,7 @@ fn helper_name(scoping: &Scoping) -> String {
 }
 
 fn occupies_helper(name: &str, candidate: &str) -> bool {
-    ["", "Source", "Equal", "Result", "IsVue", "Global"]
+    ["", "Source", "IsVue", "Global"]
         .iter()
         .any(|suffix| name.strip_prefix(candidate) == Some(suffix))
 }

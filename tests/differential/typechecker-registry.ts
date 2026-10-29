@@ -51,6 +51,8 @@ export const TYPECHECKER_TESTS = {
   "content-mapper-props-binding-10196": "authored_props_binding_preserves_batch_acceptance",
   "content-mapper-slot-host-callbacks-10774":
     "content_mapper_slot_host_callbacks_keep_native_diagnostics",
+  "content-mapper-template-callback-listener-11023":
+    "content_mapper_template_callback_listener_11023::content_mapper_template_callback_listener_preserves_contextual_parameters",
   "content-mapper-template-expression-syntax":
     "template_expression_syntax_preserves_complete_authored_diagnostics",
   "content-mapper-type-only-import-use":
@@ -73,6 +75,7 @@ export const TYPECHECKER_TESTS = {
   "empty-v-slot-expression": "empty_v_slot_expressions_keep_slot_scopes_checked",
   "escaped-import-literals-10763": "escaped_module_paths_preserve_complete_authored_diagnostics",
   "event-handler-narrowing": "inline_event_assignments_preserve_exact_diagnostics",
+  "event-inference-callback-10739": "event_inference_callbacks_keep_contextual_native_diagnostics",
   "experimental-router-import-10520":
     "experimental_page_import_preserves_published_path_diagnostics",
   "experimental-router-props-10579": "experimental_route_props_follow_the_admitted_project_types",
@@ -178,6 +181,7 @@ export const sourceRevisions = {
   "content-mapper-nuxt-emit-10195": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
   "content-mapper-props-binding-10196": "232f8f514e0ea55a7aeef08bc883b46e0608d12f",
   "content-mapper-slot-host-callbacks-10774": "a92a2dfaf9d6b62e567c61edb12c6e4f9196c3ea",
+  "content-mapper-template-callback-listener-11023": "407e7cf15219405110efdd0c977bb30cb1db1644",
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
   "content-mapper-type-only-import-use": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
   "content-mapper-unknown-options-10218": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
@@ -192,6 +196,7 @@ export const sourceRevisions = {
   "empty-v-slot-expression": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
   "escaped-import-literals-10763": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
   "event-handler-narrowing": originalFixtureRevision,
+  "event-inference-callback-10739": "1afbda7e3875d350a56e9a55b9b8753c8fbfadb6",
   "experimental-router-import-10520": "a29d9c0b1961ada51037db402c3b74436a56d623",
   "experimental-router-props-10579": "5b5ca8272070fffb67152c1ccb20644abe11c62d",
   "generic-constructor-slots-10416": "036b1a34364c3568b8f19d4dad7479aadcff9860",

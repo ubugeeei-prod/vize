@@ -16,38 +16,31 @@ fn public_instance_slot_packets_remain_authenticated() {
         ],
         14,
     );
-    let successor_receipt_text =
+    let historical_receipt =
         include_str!("fixtures/public-instance-options-api-slots/successor-11064/receipt.json");
-    assert_eq!(
-        sha256(successor_receipt_text),
-        "e8916bf8eff167bc482fa64de01be67f384284d400ef69e1f8d854694108127c"
-    );
-    let successor_receipt: serde_json::Value =
-        serde_json::from_str(successor_receipt_text).expect("slot outlet alias successor receipt");
-    assert_eq!(successor_receipt["version"], 1);
-    assert_eq!(successor_receipt["pullRequest"], 11064);
     let predecessor =
         include_str!("fixtures/public-instance-options-api-slots/after/projection-record.txt");
-    assert_eq!(
-        successor_receipt["predecessor"]["bytes"].as_u64(),
-        Some(predecessor.len() as u64)
-    );
-    let predecessor_sha = sha256(predecessor);
-    assert_eq!(
-        successor_receipt["predecessor"]["sha256"].as_str(),
-        Some(predecessor_sha.as_str())
-    );
-    let successor = include_str!(
+    let historical_successor = include_str!(
         "fixtures/public-instance-options-api-slots/successor-11064/projection-record.txt"
     );
-    assert_eq!(
-        successor_receipt["successor"]["bytes"].as_u64(),
-        Some(successor.len() as u64)
+    authenticate_successor_receipt(
+        historical_receipt,
+        "e8916bf8eff167bc482fa64de01be67f384284d400ef69e1f8d854694108127c",
+        11064,
+        predecessor,
+        historical_successor,
     );
-    let successor_sha = sha256(successor);
-    assert_eq!(
-        successor_receipt["successor"]["sha256"].as_str(),
-        Some(successor_sha.as_str())
+    let current_receipt =
+        include_str!("fixtures/public-instance-options-api-slots/successor-11069/receipt.json");
+    let current_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11069/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        current_receipt,
+        "afc2f211f4b841b1385f09924a3593dadad1fb280b694d233250639a7020be7f",
+        11069,
+        historical_successor,
+        current_successor,
     );
     let matrix = load_matrix();
     let fixture = matrix
@@ -55,7 +48,10 @@ fn public_instance_slot_packets_remain_authenticated() {
         .iter()
         .find(|fixture| fixture.id == "options-api-slots")
         .expect("reviewed Options API slot fixture");
-    assert_eq!(capture_fixture(fixture).render().as_str(), successor);
+    assert_eq!(
+        capture_fixture(fixture).render().as_str(),
+        current_successor
+    );
 }
 
 #[test]
@@ -86,11 +82,52 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         assert_eq!((fixture.options_api, fixture.legacy_vue2), (true, true));
         // Canon opts into Vue 2; Maestro's existing generator uses Vue 3
         // defaults. The feature enables this mixed fixture's capture only.
-        assert_eq!(
-            capture_fixture(fixture).render().as_str(),
-            include_str!("fixtures/public-instance-mixed-vue2/after/projection-record.txt")
+        let predecessor =
+            include_str!("fixtures/public-instance-mixed-vue2/after/projection-record.txt");
+        let successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-11069/projection-record.txt"
         );
+        authenticate_successor_receipt(
+            include_str!("fixtures/public-instance-mixed-vue2/successor-11069/receipt.json"),
+            "3c486d9b75a1a25cc6e1815fb478f00a89334c48627621ab552e47e0e05d6330",
+            11069,
+            predecessor,
+            successor,
+        );
+        assert_eq!(capture_fixture(fixture).render().as_str(), successor);
     }
+}
+
+fn authenticate_successor_receipt(
+    receipt_text: &str,
+    expected_receipt_sha: &str,
+    pull_request: u64,
+    predecessor: &str,
+    successor: &str,
+) {
+    assert_eq!(sha256(receipt_text), expected_receipt_sha);
+    let receipt: serde_json::Value =
+        serde_json::from_str(receipt_text).expect("projection successor receipt");
+    assert_eq!(receipt["version"], 1);
+    assert_eq!(receipt["pullRequest"].as_u64(), Some(pull_request));
+    assert_eq!(
+        receipt["predecessor"]["bytes"].as_u64(),
+        Some(predecessor.len() as u64)
+    );
+    let predecessor_sha = sha256(predecessor);
+    assert_eq!(
+        receipt["predecessor"]["sha256"].as_str(),
+        Some(predecessor_sha.as_str())
+    );
+    assert_eq!(
+        receipt["successor"]["bytes"].as_u64(),
+        Some(successor.len() as u64)
+    );
+    let successor_sha = sha256(successor);
+    assert_eq!(
+        receipt["successor"]["sha256"].as_str(),
+        Some(successor_sha.as_str())
+    );
 }
 
 fn authenticate_packets(

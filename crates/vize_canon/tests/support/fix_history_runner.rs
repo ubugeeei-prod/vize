@@ -45,6 +45,7 @@ pub(crate) fn check_pack(
         pack.source_revision,
         match name {
             "aria-kebab-prop-11048" | "component-tag-aliases-11020" => regression,
+            "content-mapper-template-callback-listener-11023" => regression,
             "content-mapper-vue-generic-11051" => regression,
             "unknown-component-slot-payload-11027" => regression,
             "import-literal-geometry-10762" | "escaped-import-literals-10763" => {
@@ -136,7 +137,8 @@ pub(crate) fn check_pack(
             | "setup-custom-properties"
             | "empty-v-slot-expression"
             | "public-instance-ts-directives-10984"
-            | "zero-argument-slot-constructor-11013" => regression,
+            | "zero-argument-slot-constructor-11013"
+            | "event-inference-callback-10739" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
