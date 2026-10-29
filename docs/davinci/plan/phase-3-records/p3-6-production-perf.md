@@ -209,12 +209,12 @@ hash is identical on all three runners.
 Ratios remain selected divided by retained. These are report-only observations;
 they neither change a budget nor close an acceptance gate.
 
-| Shape | Clean accepted files | Median ratio | Runner range | Three runner ratios |
-| --- | ---: | ---: | --- | --- |
-| DOM inline | 462 | 1.0703 | 1.0690–1.0716 | 1.0690, 1.0716, 1.0703 |
-| DOM module | 462 | 1.0677 | 1.0598–1.0699 | 1.0677, 1.0598, 1.0699 |
-| SSR | 462 | 1.3294 | 1.3277–1.3375 | 1.3375, 1.3294, 1.3277 |
-| Vapor | 276 | 1.0655 | 1.0617–1.0751 | 1.0655, 1.0617, 1.0751 |
+| Shape      | Clean accepted files | Median ratio | Runner range  | Three runner ratios    |
+| ---------- | -------------------: | -----------: | ------------- | ---------------------- |
+| DOM inline |                  462 |       1.0703 | 1.0690–1.0716 | 1.0690, 1.0716, 1.0703 |
+| DOM module |                  462 |       1.0677 | 1.0598–1.0699 | 1.0677, 1.0598, 1.0699 |
+| SSR        |                  462 |       1.3294 | 1.3277–1.3375 | 1.3375, 1.3294, 1.3277 |
+| Vapor      |                  276 |       1.0655 | 1.0617–1.0751 | 1.0655, 1.0617, 1.0751 |
 
 There are 467 compiled templates. DOM inline and module select the requested
 emitter for 462, SSR for 464, and Vapor for 276. Vapor leaves 191 templates
@@ -242,12 +242,12 @@ Across the 276 accepted Vapor inputs, selected attribution requested
 48,506 allocations. The native bridge stages account for 1,874,617 ns of self
 time and 4,941,023 self-allocated bytes. The four largest self-time stages are:
 
-| Stage | Self time | Total allocation |
-| --- | ---: | ---: |
-| S1 to S2 | 703,393 ns | 664,998 bytes |
-| native admission | 380,396 ns | 32,240 bytes |
-| S1 parse | 270,729 ns | 4,550,320 bytes |
-| IR projection | 209,886 ns | 42,148 bytes |
+| Stage            |  Self time | Total allocation |
+| ---------------- | ---------: | ---------------: |
+| S1 to S2         | 703,393 ns |    664,998 bytes |
+| native admission | 380,396 ns |     32,240 bytes |
+| S1 parse         | 270,729 ns |  4,550,320 bytes |
+| IR projection    | 209,886 ns |     42,148 bytes |
 
 S1 parse plus S1-to-S2 lowering account for 1,062,625 ns of attributed total
 time and 5,215,318 bytes, 98.6% of bridge allocation traffic. The next bounded
