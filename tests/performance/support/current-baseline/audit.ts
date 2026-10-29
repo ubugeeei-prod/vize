@@ -218,15 +218,23 @@ export function auditSession(
   const { budget } = loadLspChurnBudget("misskey-lsp-churn");
   assert.deepEqual(metrics.budget, { scale: 1, ...budget });
   const cycleStats = object(metrics.cycleStats);
+  const timings = object(metrics.timingsMs);
+  assert.ok(Array.isArray(timings.cycle), "cycle timings must retain their raw population");
+  assert.equal(timings.cycle.length, 40);
+  assert.ok(
+    timings.cycle.every(
+      (duration): duration is number =>
+        typeof duration === "number" && Number.isFinite(duration) && duration >= 0,
+    ),
+    "cycle timings must be finite non-negative milliseconds",
+  );
+  const sortedCycles = [...timings.cycle].sort((a, b) => a - b);
+  const nearestRank = (quantile: number) =>
+    sortedCycles[Math.ceil(quantile * sortedCycles.length) - 1];
   assert.equal(cycleStats.cycles, 40);
-  for (const percentile of ["p50Ms", "p95Ms", "p99Ms"] as const) {
-    assert.ok(
-      typeof cycleStats[percentile] === "number" && Number.isFinite(cycleStats[percentile]),
-      `${percentile} must be a finite latency observation`,
-    );
-  }
-  assert.ok(Number(cycleStats.p50Ms) <= Number(cycleStats.p95Ms));
-  assert.ok(Number(cycleStats.p95Ms) <= Number(cycleStats.p99Ms));
+  assert.equal(cycleStats.p50Ms, nearestRank(0.5));
+  assert.equal(cycleStats.p95Ms, nearestRank(0.95));
+  assert.equal(cycleStats.p99Ms, nearestRank(0.99));
   assert.deepEqual(cycleStats.samplePolicy, churnCycleSamplePolicy);
   const fixture = readJson(directory, "fixture.json");
   assert.equal(object(fixture.entry).fixturePath, object(custody.fixture).path);

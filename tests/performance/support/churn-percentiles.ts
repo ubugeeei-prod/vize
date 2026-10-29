@@ -7,7 +7,7 @@ export const churnCycleSamplePolicy = {
     "initialize, cold open, and baseline convergence finish before cycle timing starts",
   warmupCyclesExcluded: 0,
   outlierSamplesExcluded: 0,
-  percentileMethod: "higher order statistic at sorted[ceil(q * (n - 1))]",
+  percentileMethod: "nearest-rank order statistic at sorted[ceil(q * n) - 1]",
 } as const;
 
 export type ChurnCycleStats = {
@@ -29,13 +29,13 @@ export function summarizeChurnCycles(values: number[]): ChurnCycleStats {
     "churn cycle durations must be finite non-negative milliseconds",
   );
   const sorted = [...values].sort((a, b) => a - b);
-  const percentile = (quantile: number) => sorted[Math.ceil(quantile * (sorted.length - 1))];
+  const percentile = (quantile: number) => sorted[Math.ceil(quantile * sorted.length) - 1];
   const p50Ms = percentile(0.5);
   return {
     cycles: sorted.length,
     minMs: sorted[0],
     // Preserve the existing upper-median value for additive schema compatibility.
-    medianMs: p50Ms,
+    medianMs: sorted[Math.floor(sorted.length / 2)],
     p50Ms,
     p95Ms: percentile(0.95),
     p99Ms: percentile(0.99),
