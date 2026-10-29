@@ -57,6 +57,13 @@ export const scriptType2Explanations: readonly ExplanationRecord[] = [
     "`computed(() => count.value * 2)` で導出を直接表し、書き込み可能な追加 ref と同期用 watcher を取り除きます。",
   ],
   [
+    "script/prefer-define-emits-binding",
+    "The template calls the component-only `$emit` helper even though `<script setup>` already captures the typed function returned by `defineEmits`.",
+    "The template calls the captured `emit` binding, so event names and payloads go through the component's `defineEmits` contract.",
+    "template がコンポーネント専用の `$emit` ヘルパーを呼び出していますが、`<script setup>` では `defineEmits` が返す型付き関数をすでに受け取っています。",
+    "template から受け取った `emit` を呼び出し、イベント名と payload をコンポーネントの `defineEmits` 契約に通します。",
+  ],
+  [
     "script/prefer-define-options",
     "The plain script’s only meaningful statement exports an object containing just `name` and `inheritAttrs`; these options can be expressed by `defineOptions`.",
     "The shown `data()` method makes the script carry real Options API logic, so it falls outside this rule’s conservative options-only suggestion. This Good demonstrates an allowed exception; the direct migration would put `defineOptions({ name: 'MyComponent', inheritAttrs: false })` in `<script setup>`.",

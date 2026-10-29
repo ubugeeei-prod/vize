@@ -2934,6 +2934,16 @@ script/prefer-computed · lint ルール
 カテゴリー: script
 自動修正: なし
 ドキュメント: docs/content/rules/type-and-script.md
+=== script/prefer-define-emits-binding
+script/prefer-define-emits-binding · lint ルール
+テンプレートの $emit より defineEmits で捕捉した関数を優先する
+
+精度: complete
+対象: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+重大度: 警告
+カテゴリー: script
+自動修正: あり
+ドキュメント: docs/content/rules/type-and-script.md
 === script/prefer-define-options
 script/prefer-define-options · lint ルール
 name や inheritAttrs を設定するだけの通常の <script> より defineOptions() を推奨する

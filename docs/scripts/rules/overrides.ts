@@ -141,6 +141,15 @@ export const overrides: Record<string, RuleExample> = {
     script('const emit = defineEmits(["save"]);\nemit("save");'),
     "crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs",
   ),
+  "script/prefer-define-emits-binding": pair(
+    vue(
+      '<script setup lang="ts">\nconst emit = defineEmits<{ save: [id: number] }>();\n</script>\n<template><button @click="$emit(\'save\', 1)">Save</button></template>',
+    ),
+    vue(
+      '<script setup lang="ts">\nconst emit = defineEmits<{ save: [id: number] }>();\n</script>\n<template><button @click="emit(\'save\', 1)">Save</button></template>',
+    ),
+    "crates/vize_patina/src/rules/script/props_emits/prefer_define_emits_binding.rs",
+  ),
   "script/no-required-prop-with-default": pair(
     script(
       'export default { props: { title: { type: String, required: true, default: "Untitled" } } };',

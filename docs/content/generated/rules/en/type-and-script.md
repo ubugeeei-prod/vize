@@ -59,6 +59,7 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 | [`script/one-component-per-file`](#script-one-component-per-file) | [Bad](#script-one-component-per-file-bad) · [Good](#script-one-component-per-file-good) | Disallow more than one component definition in a file |
 | [`script/order-in-components`](#script-order-in-components) | [Bad](#script-order-in-components-bad) · [Good](#script-order-in-components-good) | Enforce the default order of properties in component options |
 | [`script/prefer-computed`](#script-prefer-computed) | [Bad](#script-prefer-computed-bad) · [Good](#script-prefer-computed-good) | Prefer computed() for derived reactive state |
+| [`script/prefer-define-emits-binding`](#script-prefer-define-emits-binding) | [Bad](#script-prefer-define-emits-binding-bad) · [Good](#script-prefer-define-emits-binding-good) | Prefer the captured defineEmits function over template $emit |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [Bad](#script-prefer-define-options-bad) · [Good](#script-prefer-define-options-good) | Prefer defineOptions() over a plain &lt;script&gt; that only sets name/inheritAttrs |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [Bad](#script-prefer-import-from-vue-bad) · [Good](#script-prefer-import-from-vue-good) | Prefer importing from 'vue' instead of internal packages |
 | [`script/prefer-ref-over-reactive`](#script-prefer-ref-over-reactive) | [Bad](#script-prefer-ref-over-reactive-bad) · [Good](#script-prefer-ref-over-reactive-good) | Recommend using ref() over reactive() for state management |
@@ -3500,6 +3501,73 @@ const doubled = computed(() => count.value * 2);
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) · [All rules](all.md)
+
+### `script/prefer-define-emits-binding`
+
+Prefer the captured defineEmits function over template $emit
+
+[Bad](#script-prefer-define-emits-binding-bad) · [Good](#script-prefer-define-emits-binding-good)
+
+Default severity: `warning`
+
+Presets: _none_
+
+Automatic fix: Available for supported findings
+
+Applies to: Vue SFCs with `<script setup>` and a compiler-provided `defineEmits` call; checks template `$emit` calls
+
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/prefer-define-emits-binding": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-prefer-define-emits-binding-bad"></span>
+
+**Bad**
+
+The template calls the component-only `$emit` helper even though `<script setup>` already captures the typed function returned by `defineEmits`.
+
+```vue annotate="remove:4"
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>();
+</script>
+<template><button @click="$emit('save', 1)">Save</button></template>
+```
+
+<span id="script-prefer-define-emits-binding-good"></span>
+
+**Good**
+
+The template calls the captured `emit` binding, so event names and payloads go through the component's `defineEmits` contract.
+
+```vue annotate="add:4"
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>();
+</script>
+<template><button @click="emit('save', 1)">Save</button></template>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/prefer_define_emits_binding.rs#L16) · [All rules](all.md)
 
 ### `script/prefer-define-options`
 

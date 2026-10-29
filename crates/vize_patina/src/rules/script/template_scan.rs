@@ -34,7 +34,8 @@
 //!   variable reusing a name), and it errs towards *not* reporting.
 //! * **Under-match** loses a report: an expression oxc cannot parse is skipped,
 //!   as is a member callee (`bus.emit('x')`, deliberately — it dispatches on
-//!   another object) and a dynamic directive argument (`:[key]="…"`).
+//!   another object), a callee shadowed by an arrow parameter, and a dynamic
+//!   directive argument (`:[key]="…"`).
 
 mod calls;
 
@@ -56,6 +57,34 @@ pub(super) const DOLLAR_EMIT: &str = "$emit";
 /// variable are skipped: inside that subtree the name is the iteration /slot
 /// binding, not the component's own.
 pub(super) fn for_each_template_call(root: &RootNode<'_>, mut visit: impl FnMut(TemplateCall<'_>)) {
+    for_each_template_call_scoped(root, |call, _| visit(call));
+}
+
+/// Visit every plain-identifier call and state whether `replacement` is bound
+/// by the surrounding `v-for` or `v-slot` scope.
+///
+/// The call's own callee is already guaranteed not to be shadowed. The scope
+/// bit lets a fixer additionally prove that a replacement identifier would
+/// still name the component binding at that location without exposing the
+/// walker's borrowed scope storage.
+pub(super) fn for_each_template_call_with_replacement(
+    root: &RootNode<'_>,
+    replacement: Option<&str>,
+    mut visit: impl FnMut(TemplateCall<'_>, bool),
+) {
+    for_each_template_call_scoped(root, |call, shadowed| {
+        let replacement_shadowed = replacement.is_some_and(|replacement| {
+            call.is_locally_shadowed(replacement)
+                || shadowed.iter().any(|name| name.as_str() == replacement)
+        });
+        visit(call, replacement_shadowed);
+    });
+}
+
+fn for_each_template_call_scoped(
+    root: &RootNode<'_>,
+    mut visit: impl FnMut(TemplateCall<'_>, &[String]),
+) {
     let mut walker = Walker {
         source: root.source,
         shadowed: Vec::new(),
@@ -81,7 +110,7 @@ impl Walker<'_> {
     fn walk(
         &mut self,
         children: &[TemplateChildNode<'_>],
-        visit: &mut impl FnMut(TemplateCall<'_>),
+        visit: &mut impl FnMut(TemplateCall<'_>, &[String]),
     ) {
         for child in children {
             match child {
@@ -106,7 +135,7 @@ impl Walker<'_> {
     fn walk_element(
         &mut self,
         element: &ElementNode<'_>,
-        visit: &mut impl FnMut(TemplateCall<'_>),
+        visit: &mut impl FnMut(TemplateCall<'_>, &[String]),
     ) {
         let depth = self.shadowed.len();
 
@@ -148,18 +177,21 @@ impl Walker<'_> {
         self.shadowed.truncate(depth);
     }
 
-    fn scan(&self, exp: &ExpressionNode<'_>, visit: &mut impl FnMut(TemplateCall<'_>)) {
+    fn scan(&self, exp: &ExpressionNode<'_>, visit: &mut impl FnMut(TemplateCall<'_>, &[String])) {
         let shadowed = &self.shadowed;
-        calls::for_each_call(
-            expression_source(exp, self.source),
-            exp.loc().span.start,
-            &mut |call| {
-                if shadowed.iter().any(|name| name.as_str() == call.callee) {
-                    return;
-                }
-                visit(call);
-            },
-        );
+        let decoded = expression_source(exp, self.source);
+        let span = exp.loc().span;
+        let Some(authored) = self.source.get(span.start as usize..span.end as usize) else {
+            return;
+        };
+        calls::for_each_call(decoded, authored, span.start, &mut |call| {
+            if call.is_locally_shadowed(call.callee)
+                || shadowed.iter().any(|name| name.as_str() == call.callee)
+            {
+                return;
+            }
+            visit(call, shadowed);
+        });
     }
 }
 

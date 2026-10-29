@@ -14,7 +14,7 @@ Severity is the implementation default; override it with `off`, `warn`, or `erro
 
 See the [ESLint migration map](./migration.md) for rule IDs, differences, and unsupported mappings.
 
-## Single-file rules (266)
+## Single-file rules (267)
 
 | Rule | Examples | Severity | Presets | Fixable | Options | Implementation | Description | Category |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -255,6 +255,7 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`script/one-component-per-file`](https://vizejs.dev/rules/all.html#script-one-component-per-file) | [Bad](https://vizejs.dev/rules/all.html#script-one-component-per-file-bad) · [Good](https://vizejs.dev/rules/all.html#script-one-component-per-file-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L30) | Disallow more than one component definition in a file | Script |
 | [`script/order-in-components`](https://vizejs.dev/rules/all.html#script-order-in-components) | [Bad](https://vizejs.dev/rules/all.html#script-order-in-components-bad) · [Good](https://vizejs.dev/rules/all.html#script-order-in-components-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/order_in_components.rs#L35) | Enforce the default order of properties in component options | Script |
 | [`script/prefer-computed`](https://vizejs.dev/rules/all.html#script-prefer-computed) | [Bad](https://vizejs.dev/rules/all.html#script-prefer-computed-bad) · [Good](https://vizejs.dev/rules/all.html#script-prefer-computed-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) | Prefer computed() for derived reactive state | Script |
+| [`script/prefer-define-emits-binding`](https://vizejs.dev/rules/all.html#script-prefer-define-emits-binding) | [Bad](https://vizejs.dev/rules/all.html#script-prefer-define-emits-binding-bad) · [Good](https://vizejs.dev/rules/all.html#script-prefer-define-emits-binding-good) | `warning` | _none_ | Yes | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/prefer_define_emits_binding.rs#L16) | Prefer the captured defineEmits function over template $emit | Script |
 | [`script/prefer-define-options`](https://vizejs.dev/rules/all.html#script-prefer-define-options) | [Bad](https://vizejs.dev/rules/all.html#script-prefer-define-options-bad) · [Good](https://vizejs.dev/rules/all.html#script-prefer-define-options-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) | Prefer defineOptions() over a plain &lt;script&gt; that only sets name/inheritAttrs | Script |
 | [`script/prefer-import-from-vue`](https://vizejs.dev/rules/all.html#script-prefer-import-from-vue) | [Bad](https://vizejs.dev/rules/all.html#script-prefer-import-from-vue-bad) · [Good](https://vizejs.dev/rules/all.html#script-prefer-import-from-vue-good) | `warning` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | Yes | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) | Prefer importing from 'vue' instead of internal packages | Script |
 | [`script/prefer-ref-over-reactive`](https://vizejs.dev/rules/all.html#script-prefer-ref-over-reactive) | [Bad](https://vizejs.dev/rules/all.html#script-prefer-ref-over-reactive-bad) · [Good](https://vizejs.dev/rules/all.html#script-prefer-ref-over-reactive-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_ref_over_reactive.rs#L44) | Recommend using ref() over reactive() for state management | Script |
@@ -287,7 +288,7 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 
 ## Project rules and analyzer contracts (66)
 
-These project entries supplement the 266 single-file catalog entries above. Each example includes its component/project context or an explicit tracked-graph scenario. CLI, experimental library producers, and contracts without a producer have different support boundaries; see the [cross-file overview](./cross-file.md).
+These project entries supplement the 267 single-file catalog entries above. Each example includes its component/project context or an explicit tracked-graph scenario. CLI, experimental library producers, and contracts without a producer have different support boundaries; see the [cross-file overview](./cross-file.md).
 
 | Rule / code | Examples | Current support |
 | --- | --- | --- |

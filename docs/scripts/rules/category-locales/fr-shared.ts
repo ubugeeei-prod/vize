@@ -24,6 +24,8 @@ export const frenchShared = {
     "Documents HTML détectés comme petite-vue ; les SFC Vue ordinaires sont hors du champ de cette règle.",
   "JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form":
     "Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup",
+  "Vue SFCs with `<script setup>` and a compiler-provided `defineEmits` call; checks template `$emit` calls":
+    "SFC Vue avec `<script setup>` et un appel à `defineEmits` fourni par le compilateur ; vérifie les appels `$emit` du template",
   "Musea .art.vue art, variant, and style blocks":
     "Blocs art, variant et style des fichiers .art.vue de Musea",
   "Nuxt configuration files (nuxt.config.ts)": "Fichiers de configuration Nuxt (nuxt.config.ts)",

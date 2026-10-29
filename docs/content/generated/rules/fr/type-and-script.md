@@ -60,6 +60,7 @@ Chaque règle présente sur cette page son objectif, sa configuration et ses exe
 | [`script/one-component-per-file`](#script-one-component-per-file) | [Mauvais](#script-one-component-per-file-bad) · [Bon](#script-one-component-per-file-good) | Interdire plus d’une définition de composant dans un fichier |
 | [`script/order-in-components`](#script-order-in-components) | [Mauvais](#script-order-in-components-bad) · [Bon](#script-order-in-components-good) | Imposer l’ordre par défaut des propriétés des options de composant |
 | [`script/prefer-computed`](#script-prefer-computed) | [Mauvais](#script-prefer-computed-bad) · [Bon](#script-prefer-computed-good) | Préférer computed() pour l’état réactif dérivé |
+| [`script/prefer-define-emits-binding`](#script-prefer-define-emits-binding) | [Mauvais](#script-prefer-define-emits-binding-bad) · [Bon](#script-prefer-define-emits-binding-good) | Préférer la fonction capturée de defineEmits au $emit du template |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [Mauvais](#script-prefer-define-options-bad) · [Bon](#script-prefer-define-options-good) | Préférer defineOptions() à un &lt;script&gt; ordinaire qui ne définit que name/inheritAttrs |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [Mauvais](#script-prefer-import-from-vue-bad) · [Bon](#script-prefer-import-from-vue-good) | Préférer les imports depuis 'vue' plutôt que depuis les packages internes |
 | [`script/prefer-ref-over-reactive`](#script-prefer-ref-over-reactive) | [Mauvais](#script-prefer-ref-over-reactive-bad) · [Bon](#script-prefer-ref-over-reactive-good) | Recommander ref() plutôt que reactive() pour gérer l’état |
@@ -3501,6 +3502,73 @@ const doubled = computed(() => count.value * 2);
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
 [Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) · [Toutes les règles](all.md)
+
+### `script/prefer-define-emits-binding`
+
+Préférer la fonction capturée de defineEmits au $emit du template
+
+[Mauvais](#script-prefer-define-emits-binding-bad) · [Bon](#script-prefer-define-emits-binding-good)
+
+Gravité par défaut: `warning`
+
+Préréglages: _none_
+
+Correction automatique: Disponible pour les diagnostics pris en charge
+
+Champ d’application: SFC Vue avec `<script setup>` et un appel à `defineEmits` fourni par le compilateur ; vérifie les appels `$emit` du template
+
+Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/prefer-define-emits-binding": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-prefer-define-emits-binding-bad"></span>
+
+**Mauvais**
+
+Le template appelle le helper `$emit` du composant alors que `<script setup>` capture déjà la fonction typée renvoyée par `defineEmits`.
+
+```vue annotate="remove:4"
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>();
+</script>
+<template><button @click="$emit('save', 1)">Save</button></template>
+```
+
+<span id="script-prefer-define-emits-binding-good"></span>
+
+**Bon**
+
+Le template appelle la liaison `emit` capturée, de sorte que les noms d’événements et les payloads passent par le contrat `defineEmits` du composant.
+
+```vue annotate="add:4"
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>();
+</script>
+<template><button @click="emit('save', 1)">Save</button></template>
+```
+
+Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
+
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/prefer_define_emits_binding.rs#L16) · [Toutes les règles](all.md)
 
 ### `script/prefer-define-options`
 
