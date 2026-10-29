@@ -233,6 +233,7 @@ mod lint_supported_targets_cli;
 mod lint_unchecked_indexed_access_cli;
 mod lint_undefined_refs_cli;
 mod lint_unknown_rule_ids_cli;
+mod lint_unsafe_template_binding_unicode_cli;
 mod lint_vue_compatibility_cli;
 mod lsp_ambient_captures_cli;
 mod lsp_ambient_setup_cli;
