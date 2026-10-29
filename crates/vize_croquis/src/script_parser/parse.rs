@@ -156,6 +156,10 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
         source_len,
     );
 
+    if !skip_diagnostics {
+        super::extract::prepare_race_analysis(&mut result, program);
+    }
+
     // Process all statements
     profile!("croquis.script_setup.walk_statements", {
         for stmt in program.body.iter() {
@@ -295,6 +299,10 @@ pub(crate) fn parse_script_with_options_source_type(
         0,
         source_len,
     );
+
+    if !skip_diagnostics {
+        super::extract::prepare_race_analysis(&mut result, &ret.program);
+    }
 
     process::collect_options_api_component_metadata(
         &mut result,
