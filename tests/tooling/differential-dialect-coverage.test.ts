@@ -21,7 +21,7 @@ const products = ["compiler", "formatter", "linter", "lsp", "typechecker"];
 
 type Coverage = {
   state: string;
-  registryRef: null;
+  registryRef: string | null;
   evidence: Array<{ kind: string; dialects: string[]; selector: string; extra?: boolean }>;
   extra?: boolean;
 };
@@ -67,15 +67,17 @@ const promotedEvidence = [
     dialects: ["vue3-sfc", "html-template", "v-pre"],
     selector: "default Vue version with --no-config",
   },
-  {
-    product: "typechecker",
-    id: "typechecker/nuxt-plugin-injection-types/authored-dependency-identity",
-    input: "nuxt-plugin-injection-types/project.json",
-    sha256: "2ad499a9665600b7ce468b7568641491f1262c3010dc40d5d4c53b2b5b775412",
-    dialects: ["ts"],
-    selector: "batch-typechecker-fixture-v1 pinned authored sources",
-  },
 ] as const;
+
+const verifiedTypecheckerEvidence = {
+  product: "typechecker",
+  id: "typechecker/nuxt-plugin-injection-types/authored-dependency-identity",
+  input: "nuxt-plugin-injection-types/project.json",
+  sha256: "2ad499a9665600b7ce468b7568641491f1262c3010dc40d5d4c53b2b5b775412",
+  dialects: ["ts"],
+  selector:
+    "batch-typechecker-fixture-v1 full-workspace nuxt_reference_graph_preserves_plugin_injection_import_types",
+} as const;
 
 function load(product: string): { cases: Fixture[] } {
   return loadProductManifest(
@@ -161,8 +163,8 @@ void test("every product manifest contributes to the case-level dialect denomina
   }
 });
 
-void test("five source-inspected rows exhaust manifest measurement unknowns", () => {
-  assert.equal(promotedEvidence.length, 5);
+void test("four source-inspected and one adapter-verified row exhaust measurement unknowns", () => {
+  assert.equal(promotedEvidence.length, 4);
   for (const expected of promotedEvidence) {
     const fixture = load(expected.product).cases.find((item) => item.id === expected.id);
     assert(fixture, `${expected.id}: fixture is required`);
@@ -205,6 +207,39 @@ void test("five source-inspected rows exhaust manifest measurement unknowns", ()
     );
   }
 
+  const expected = verifiedTypecheckerEvidence;
+  const fixture = load(expected.product).cases.find((item) => item.id === expected.id);
+  assert(fixture, `${expected.id}: fixture is required`);
+  assert.deepEqual(fixture.dialectCoverage, {
+    state: "verified",
+    registryRef: "tests/differential/typechecker-registry.ts",
+    evidence: [
+      {
+        kind: "adapter-execution",
+        dialects: expected.dialects,
+        selector: expected.selector,
+      },
+    ],
+  });
+  assert.deepEqual(classifyDialectCoverage(fixture.dialectCoverage), {
+    state: "verified",
+    dialects: [...expected.dialects],
+    readiness: "verified",
+    measurement: "verified",
+  });
+  assert(Array.isArray(fixture.inputs));
+  const input = fixture.inputs.find((candidate) => candidate.path === expected.input);
+  assert(input, `${expected.id}: pinned input is required`);
+  assert.equal(input.sha256, expected.sha256);
+  assert.equal(
+    sha256(
+      fs.readFileSync(
+        path.join(root, `tests/_fixtures/differential/${expected.product}`, expected.input),
+      ),
+    ),
+    expected.sha256,
+  );
+
   loadTypecheckerManifest(
     path.join(root, "tests/_fixtures/differential/typechecker/manifest.json"),
   );
@@ -226,7 +261,7 @@ void test("five source-inspected rows exhaust manifest measurement unknowns", ()
     Object.fromEntries(
       products.map((product) => [product, summaries[product].unknownReadinessCases]),
     ),
-    { compiler: 43, formatter: 25, linter: 112, lsp: 70, typechecker: 216 },
+    { compiler: 43, formatter: 25, linter: 112, lsp: 70, typechecker: 215 },
   );
 });
 
@@ -362,16 +397,16 @@ void test("typechecker coverage records every pinned authored source dialect", (
   const source = load("typechecker");
   assertCoverageFloor(summarizeDialectCoverage(source.cases), {
     plannedCases: 164,
-    verifiedCases: 0,
-    provisionalCases: 164,
-    unknownReadinessCases: 164,
-    verified: {},
+    verifiedCases: 1,
+    provisionalCases: 163,
+    unknownReadinessCases: 163,
+    verified: { ts: 1 },
     provisional: {
       "html-template": 156,
       js: 1,
       jsx: 1,
       "pug-template": 2,
-      ts: 163,
+      ts: 162,
       tsx: 4,
       "vue3-sfc": 160,
     },

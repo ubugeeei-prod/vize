@@ -15,22 +15,17 @@ import {
   type WorkspaceSource,
 } from "../differential/typechecker.ts";
 import {
+  TYPECHECKER_TS40_TESTS,
   prepareTypecheckerWorkspace,
   finishTypecheckerWorkspace,
   aggregateTypecheckerWorkspace,
 } from "../differential/typechecker-workspace.ts";
 import { normalizeWorkspaceInventory } from "../../tools/support/compat/github/rust-workspace-inventory.ts";
+import { dialectReadiness } from "./support/typechecker-dialect-readiness.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const execution = { runId: 53, runAttempt: 2 };
 const names = Object.values(TYPECHECKER_TESTS);
-const ts40Names = [
-  "current_projection_matrix_is_exact_and_non_empty",
-  "davinci_ts40_projection_support::evidence::public_instance_mixed_vue2_packets_remain_authenticated",
-  "davinci_ts40_projection_support::evidence::public_instance_slot_packets_remain_authenticated",
-  "mapping_drift_fails_closed",
-  "diagnostic_drift_fails_closed",
-];
 function controlled(t: { after: (callback: () => void) => void }) {
   const repoRoot = fs.realpathSync(
     fs.mkdtempSync(path.join(tmpdir(), "vize-workspace-observation-control-")),
@@ -165,7 +160,7 @@ function controlled(t: { after: (callback: () => void) => void }) {
         "vize_maestro::davinci_ts40_projection",
         "vize_maestro",
         "davinci_ts40_projection",
-        ts40Names,
+        [...TYPECHECKER_TS40_TESTS],
       ),
     },
   };
@@ -374,6 +369,7 @@ void test("pre-run attestation refuses stale capture state, changed provenance, 
     (f: Fixture) => {
       delete f.raw["rust-suites"]["vize_canon::fix_history_diagnostics"].testcases[names[0]];
     },
+    ...dialectReadiness.preRunChanges,
     (f: Fixture) => {
       f.raw["rust-suites"]["vize_canon::fix_history_diagnostics"].testcases[names[0]].ignored =
         true;
@@ -418,6 +414,7 @@ void test("no missing, forged, failed, stale or modified workspace chain can pro
       "cases.0.inputs.0.sha256",
       "0".repeat(64),
     ],
+    ...dialectReadiness.captureChanges,
     [
       "typechecker-workspace/event-handler-narrowing.json",
       "cases.0.publicResult.exitCode",
@@ -446,6 +443,7 @@ void test("no missing, forged, failed, stale or modified workspace chain can pro
         `<testcase classname="vize_canon::fix_history_diagnostics" name="${names[0]}"/>`,
       );
     },
+    ...dialectReadiness.packetChanges,
     (f) => {
       const file = artifact(f, "workspace-junit-ci.xml");
       fs.writeFileSync(file, fs.readFileSync(file, "utf8").replace("/>", "><skipped/></testcase>"));

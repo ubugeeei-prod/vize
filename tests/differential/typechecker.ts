@@ -9,8 +9,13 @@ import {
 } from "./harness.mjs";
 
 import { packCases, TYPECHECKER_TESTS, sourceRevisions } from "./typechecker-registry.ts";
-import { typecheckerDialectCoverage, type DialectCoverage } from "./typechecker-dialect.ts";
+import {
+  typecheckerDialectCoverage,
+  verifiedTypecheckerDialectCoverage,
+  type DialectCoverage,
+} from "./typechecker-dialect.ts";
 export { TYPECHECKER_TESTS } from "./typechecker-registry.ts";
+export { assertVerifiedTypecheckerDialectExecutions } from "./typechecker-dialect.ts";
 
 export type Artifact = { path: string; sha256: string };
 export type Diagnostic = {
@@ -199,10 +204,13 @@ export function loadTypecheckerManifest(manifestPath: string) {
       fixture.inputs.map((input) => [input.file, input.path]),
       original.inputs.map((input) => [input.file, `${fixture.pack}/${input.source}`]),
     );
+    const inspectedCoverage = typecheckerDialectCoverage(root, fixture.inputs);
     assert.deepEqual(
       fixture.dialectCoverage,
-      typecheckerDialectCoverage(root, fixture.inputs),
-      "dialect coverage must match the pinned authored sources",
+      fixture.dialectCoverage.state === "verified"
+        ? verifiedTypecheckerDialectCoverage(inspectedCoverage, fixture.test)
+        : inspectedCoverage,
+      "dialect coverage must match the pinned authored sources and registered execution",
     );
     packs.set(fixture.pack, pack);
     return { ...fixture, diagnostics: original.diagnostics };

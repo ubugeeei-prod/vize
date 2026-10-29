@@ -3,16 +3,38 @@ import path from "node:path";
 import { readPinnedArtifact } from "./harness.mjs";
 
 export type DialectCoverage = {
-  state: "unknown" | "source-inspected";
-  registryRef: null;
+  state: "unknown" | "source-inspected" | "verified";
+  registryRef: string | null;
   evidence: Array<{
-    kind: "source-inspection";
+    kind: "source-inspection" | "adapter-execution";
     dialects: string[];
     selector: string;
   }>;
 };
 
+export const typecheckerDialectRegistry = "tests/differential/typechecker-registry.ts";
+
 type Input = { file: string; path: string; sha256: string };
+
+type VerifiedFixture = {
+  id: string;
+  pack: string;
+  test: string;
+  case: string;
+  inputs: Array<{ file: string; sha256: string }>;
+  diagnostics: unknown;
+  dialectCoverage: DialectCoverage;
+};
+
+type VerifiedCapture = {
+  pack: string;
+  test: string;
+  cases: Array<{
+    id: string;
+    inputs: Array<{ file: string; sha256: string }>;
+    diagnostics: unknown;
+  }>;
+};
 
 const dialectOrder = ["vue3-sfc", "pug-template", "html-template", "js", "ts", "jsx", "tsx"];
 
@@ -82,4 +104,53 @@ export function typecheckerDialectCoverage(root: string, inputs: Input[]): Diale
       },
     ],
   };
+}
+
+export function verifiedTypecheckerDialectCoverage(
+  inspected: DialectCoverage,
+  test: string,
+): DialectCoverage {
+  assert.equal(inspected.state, "source-inspected");
+  assert.equal(inspected.registryRef, null);
+  assert.equal(inspected.evidence.length, 1);
+  assert.equal(inspected.evidence[0].kind, "source-inspection");
+  assert.equal(
+    inspected.evidence[0].selector,
+    "batch-typechecker-fixture-v1 pinned authored sources",
+  );
+  assert(test.length > 0);
+  return {
+    state: "verified",
+    registryRef: typecheckerDialectRegistry,
+    evidence: [
+      {
+        kind: "adapter-execution",
+        dialects: inspected.evidence[0].dialects,
+        selector: `batch-typechecker-fixture-v1 full-workspace ${test}`,
+      },
+    ],
+  };
+}
+
+export function assertVerifiedTypecheckerDialectExecutions(
+  fixtures: VerifiedFixture[],
+  tests: string[],
+  captures: VerifiedCapture[],
+) {
+  const passed = new Set(tests);
+  for (const fixture of fixtures.filter(
+    (candidate) => candidate.dialectCoverage.state === "verified",
+  )) {
+    assert(passed.has(fixture.test), `${fixture.id}: registered execution did not pass`);
+    const capture = captures.find((candidate) => candidate.pack === fixture.pack);
+    assert(capture, `${fixture.id}: registered capture is missing`);
+    assert.equal(capture.test, fixture.test);
+    const observed = capture.cases.find((candidate) => candidate.id === fixture.case);
+    assert(observed, `${fixture.id}: registered case observation is missing`);
+    assert.deepEqual(
+      observed.inputs,
+      fixture.inputs.map((input) => ({ file: input.file, sha256: input.sha256 })),
+    );
+    assert.deepEqual(observed.diagnostics, fixture.diagnostics);
+  }
 }
