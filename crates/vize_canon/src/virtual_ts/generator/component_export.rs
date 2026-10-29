@@ -125,8 +125,9 @@ pub(super) fn emit_default_export_declaration(
     authored_default: AuthoredDefaultKind,
     static_raw_props_ref: Option<&str>,
     static_slots_ref: Option<&str>,
-    (fallthrough_props_ref, checks, hoist_shared_preamble): (
+    (fallthrough_props_ref, native_fallthrough_root, checks, hoist_shared_preamble): (
         Option<&str>,
+        bool,
         VirtualTsCheckOptions,
         bool,
     ),
@@ -170,12 +171,24 @@ pub(super) fn emit_default_export_declaration(
     // partial so parent payload inference remains exact without turning an
     // omitted slot into a component-usage error.
     if let Some(slots_ref) = static_slots_ref {
+        // The public `Slots` alias is already exported. Naming it here keeps
+        // an unknown slot diagnostic from printing `Partial<__VizeSlots>`.
+        let slots_ref = if slots_ref == "__VizeSlots" {
+            "Slots"
+        } else {
+            slots_ref
+        };
         append!(
             component_contract_fields,
             " readonly __vizeSlots?: Partial<{slots_ref}>;"
         );
     }
     if let Some(fallthrough_ref) = fallthrough_props_ref {
+        if native_fallthrough_root {
+            // ContentMapper consumers use this private bit to distinguish a
+            // native target from open or component-root fallthrough surfaces.
+            component_contract_fields.push_str(" readonly __vizeNativeFallthroughRoot: true;");
+        }
         // Props and emits are consumed by this component; its root's native
         // attrs must not reintroduce those keys with an incompatible type when
         // another component forwards this component's public surface.

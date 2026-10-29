@@ -26,7 +26,7 @@ fn define_slots_exports_static_slot_marker_for_parents() {
     assert!(
         output
             .code
-            .contains("readonly __vizeSlots?: Partial<__VizeSlots>;"),
+            .contains("readonly __vizeSlots?: Partial<Slots>;"),
         "defineSlots must expose optional parent-provided slots without losing payload types:\n{}",
         output.code
     );

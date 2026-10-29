@@ -9,10 +9,10 @@ runs:
     - uses: ./.github/actions/setup-rust-script
     - name: Install package build dependencies
       shell: bash
-      run: node tools/support/github/vp-install.ts --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxlint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt-lint-config...' --filter './npm/framework/nuxt...' --filter './npm/marquette...' --filter './npm/compose/core...' --filter './npm/ui...'
+      run: node tools/support/github/vp-install.ts --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxlint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt-lint-config...' --filter './npm/framework/nuxt...' --filter './npm/marquette...' --filter './npm/compose/core...' --filter './npm/ui...' --filter './npm/babel...'
     - name: Build release npm packages
       shell: bash
-      run: node tools/support/github/run-many.ts vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/oxlint' build -- vp run --filter './npm/builder/unplugin' build -- vp run --filter './npm/fresco' build -- vp run --filter './npm/mcp-musea' build -- vp run --filter './npm/builder/vite-musea' build -- vp run --filter './npm/builder/vite-musea' build:gallery -- vp run --filter './npm/builder/rspack' build -- vp run --filter './npm/framework/musea-nuxt' build -- vp run --filter './npm/framework/nuxt-lint-config' build -- vp run --filter './npm/framework/nuxt' build -- vp run --filter './npm/marquette' build -- vp run --filter './npm/compose/core' build -- vp run --filter './npm/ui' build
+      run: node tools/support/github/run-many.ts vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/oxlint' build -- vp run --filter './npm/builder/unplugin' build -- vp run --filter './npm/fresco' build -- vp run --filter './npm/mcp-musea' build -- vp run --filter './npm/builder/vite-musea' build -- vp run --filter './npm/builder/vite-musea' build:gallery -- vp run --filter './npm/builder/rspack' build -- vp run --filter './npm/framework/musea-nuxt' build -- vp run --filter './npm/framework/nuxt-lint-config' build -- vp run --filter './npm/framework/nuxt' build -- vp run --filter './npm/marquette' build -- vp run --filter './npm/compose/core' build -- vp run --filter './npm/ui' build -- vp run --filter './npm/babel' build
     # Paths share the npm/ root, so downloading into npm/ restores every package in place.
     - name: Upload npm packages
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -34,6 +34,7 @@ runs:
           npm/compose/core
           npm/ui
           npm/plugin-sdk
+          npm/babel
           !npm/**/node_modules
         if-no-files-found: error
         compression-level: 1

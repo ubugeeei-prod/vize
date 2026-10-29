@@ -38,6 +38,37 @@
         }
       ],
       "diagnostics": []
+    },
+    {
+      "id": "pattern-injections-keep-listener-errors",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/augment.d.ts",
+          "source": "src/augment.d.ts.txt"
+        },
+        {
+          "file": "src/MyItem.vue",
+          "source": "src/MyItem.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "src/App.invalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 26,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(event: string) => number' is not assignable to type '(event: MouseEvent) => void'.\nTypes of parameters 'event' and 'event' are incompatible.\nType 'MouseEvent' is not assignable to type 'string'."
+        }
+      ]
     }
   ]
 }

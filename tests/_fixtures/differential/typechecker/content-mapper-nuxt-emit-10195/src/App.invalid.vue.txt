@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import MyItem from "./MyItem.vue";
+const onClick = (event: string) => event.length;
+</script>
+<template>
+  <MyItem role="button" @click="onClick" />
+</template>
