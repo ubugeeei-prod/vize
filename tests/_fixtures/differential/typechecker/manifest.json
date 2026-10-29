@@ -9679,6 +9679,38 @@
       }
     },
     {
+      "id": "typechecker/template-callback-listener-11023/parent-beside-quit",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "template-callback-listener-11023/Foo.vue.txt",
+          "sha256": "088bad1461609c248fe491b5f190a11d26639cf5f4ee0d2d4d83b7477dee6d47"
+        },
+        {
+          "path": "template-callback-listener-11023/parent.vue.txt",
+          "sha256": "ee44e35de708d92771203b9126b425767b8280112b68e7610145c59c0187ba8f"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/template-context-undefined-10667/prop-used",
       "state": "active",
       "targets": [
@@ -12002,38 +12034,6 @@
           "file": "packages/core/src/MyIcon.vue",
           "path": "workspace-package-import-alias-10175/packages/core/src/MyIcon.vue.txt",
           "sha256": "d989af6921d440bbcad191b29f3d27eee298021270a906a17296dc9c4d8cd4e1"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "typechecker/template-callback-listener-11023/parent-beside-quit",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "template-callback-listener-11023/Foo.vue.txt",
-          "sha256": "088bad1461609c248fe491b5f190a11d26639cf5f4ee0d2d4d83b7477dee6d47"
-        },
-        {
-          "path": "template-callback-listener-11023/parent.vue.txt",
-          "sha256": "ee44e35de708d92771203b9126b425767b8280112b68e7610145c59c0187ba8f"
         }
       ],
       "dialectCoverage": {
