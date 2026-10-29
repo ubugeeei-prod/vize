@@ -5,14 +5,21 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { setTimeout as sleep } from "node:timers/promises";
 import { createHash } from "node:crypto";
 import { LspSession } from "../../../../tests/tooling/support/lsp/session.ts";
 import { isRecord } from "../../json-value.ts";
 import type { JsonRecord } from "../../json-value.ts";
 import { componentSource, documentUri, prepareWorkspace } from "./lib/lsp-resource-workspace.ts";
 import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
-import type { ObservedProcess, ProcessEntry } from "./lib/lsp-resource-sampler.ts";
-import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.ts";
+import type { ObservedProcess, ProcessEntry, TreeSample } from "./lib/lsp-resource-sampler.ts";
+import {
+  bodyEditChurn,
+  cancelledConcurrentEdits,
+  controlledEdits,
+  metadataCompletion,
+  verifyCancellationRecovery,
+} from "./lib/lsp-resource-witness.ts";
 import { profiledLauncher } from "./lib/lsp-profile-launch.ts";
 import { captureLspResourceCorpus } from "./lib/lsp-resource-corpus.ts";
 import { finalizeSampledLspRun } from "./lib/lsp-resource-finalize.ts";
@@ -30,6 +37,16 @@ interface RunResult {
   initialized_ms?: number;
   controlled_edits_scope?: string;
   body_edit_churn?: Awaited<ReturnType<typeof bodyEditChurn>>;
+  cancellation_churn?: Awaited<ReturnType<typeof cancelledConcurrentEdits>> & {
+    recovery: Awaited<ReturnType<typeof verifyCancellationRecovery>>;
+    retention: CancellationRetention;
+    allocation_profile: {
+      same_session: boolean;
+      expected_path: string | null;
+      receipt_field: "profile_json";
+      scope: string;
+    };
+  };
   controlled_edits?: JsonRecord[];
   warming_elapsed_ms?: number;
   current_rss_mib?: number;
@@ -46,6 +63,21 @@ interface RunResult {
   resource_samples?: number;
   profile_json?: { path: string; bytes: number; sha256: string };
   finalization_error?: string;
+}
+
+interface ResourceCheckpoint {
+  monotonic_ns: string;
+  server_rss_mib: number;
+  process_tree_rss_mib: number;
+  processes: ProcessEntry[];
+}
+
+interface CancellationRetention {
+  scope: string;
+  before: ResourceCheckpoint;
+  immediately_after_responses: ResourceCheckpoint;
+  after_10s_quiescence: ResourceCheckpoint;
+  retained_delta_mib: { server: number; process_tree: number };
 }
 
 interface Measurement {
@@ -85,6 +117,21 @@ const runs = Number(flag("--runs", "1"));
 const idleSeconds = Number(flag("--idle-seconds", "10"));
 const preset = flag("--preset", "linux-x64-ci");
 await measure();
+
+function checkpoint(sample: TreeSample, serverPid: number): ResourceCheckpoint {
+  const server = sample.processes.find((process) => process.pid === serverPid);
+  assert.ok(server, "the measured Maestro server must own each RSS checkpoint");
+  return {
+    monotonic_ns: process.hrtime.bigint().toString(),
+    server_rss_mib: mib(server.rss_bytes),
+    process_tree_rss_mib: mib(sample.rss_bytes),
+    processes: sample.processes,
+  };
+}
+
+function deltaMib(after: number, before: number): number {
+  return Math.round((after - before) * 10) / 10;
+}
 
 async function measure() {
   assert.ok(Number.isInteger(files) && files >= 2 && files % 2 === 0);
@@ -177,12 +224,57 @@ async function measure() {
       open(0);
       open(1);
       await metadataCompletion(session, documentUri(workspace, 1), componentSource(1));
-      result.controlled_edits_scope = "two open files before the bulk residency workload";
+      result.controlled_edits_scope =
+        "two open files before cancellation, controlled edits and bulk residency";
       result.body_edit_churn = await bodyEditChurn(session, workspace);
-      result.controlled_edits = await controlledEdits(
+      const beforeCancellation = checkpoint(sampler.sample(), session.processId);
+      const cancellation = await cancelledConcurrentEdits(
         session,
         workspace,
         result.body_edit_churn.final_version,
+      );
+      const immediatelyAfterCancellation = checkpoint(sampler.sample(), session.processId);
+      const recovery = await verifyCancellationRecovery(
+        session,
+        workspace,
+        cancellation.final_version,
+      );
+      await sleep(10_000);
+      const afterCancellationQuiescence = checkpoint(sampler.sample(), session.processId);
+      result.cancellation_churn = {
+        ...cancellation,
+        recovery,
+        retention: {
+          scope:
+            "Maestro server and every live descendant; exact PID/birth-tick identities at each checkpoint",
+          before: beforeCancellation,
+          immediately_after_responses: immediatelyAfterCancellation,
+          after_10s_quiescence: afterCancellationQuiescence,
+          retained_delta_mib: {
+            server: deltaMib(
+              afterCancellationQuiescence.server_rss_mib,
+              beforeCancellation.server_rss_mib,
+            ),
+            process_tree: deltaMib(
+              afterCancellationQuiescence.process_tree_rss_mib,
+              beforeCancellation.process_tree_rss_mib,
+            ),
+          },
+        },
+        allocation_profile: {
+          same_session: profilePath !== null,
+          expected_path: profilePath,
+          receipt_field: "profile_json",
+          scope: profilePath
+            ? "the sibling profile_json receipt is exported by this exact server process after graceful shutdown; cumulative requested/released Rust allocation traffic, not cancellation-only peak-live bytes"
+            : "no allocation profile requested for this ordinary-process run",
+        },
+      };
+      save();
+      result.controlled_edits = await controlledEdits(
+        session,
+        workspace,
+        cancellation.final_version,
       );
       save();
       // Bulk notifications avoid repeated full native analysis between batches.
@@ -275,16 +367,44 @@ async function measure() {
         },
         persist: save,
       });
+      if (profilePath && result.cancellation_churn) {
+        assert.equal(
+          result.profile_json?.path,
+          result.cancellation_churn.allocation_profile.expected_path,
+          "the allocation profile must belong to this exact cancellation session",
+        );
+      }
     }
     measurement.completed_runs++;
     save();
   }
-  measurement.metrics = Object.fromEntries(
-    (["rss_peak_mib", "rss_idle_mib", "idle_cpu_pct"] as const).map((key) => [
-      key,
-      Math.max(...measurement.per_run.map((run) => run[key] ?? Number.NaN)),
-    ]),
-  );
+  measurement.metrics = {
+    ...Object.fromEntries(
+      (["rss_peak_mib", "rss_idle_mib", "idle_cpu_pct"] as const).map((key) => [
+        key,
+        Math.max(...measurement.per_run.map((run) => run[key] ?? Number.NaN)),
+      ]),
+    ),
+    cancellation_p50_ms: Math.max(
+      ...measurement.per_run.map((run) => run.cancellation_churn?.statistics.p50_ms ?? Number.NaN),
+    ),
+    cancellation_p95_ms: Math.max(
+      ...measurement.per_run.map((run) => run.cancellation_churn?.statistics.p95_ms ?? Number.NaN),
+    ),
+    cancellation_p99_ms: Math.max(
+      ...measurement.per_run.map((run) => run.cancellation_churn?.statistics.p99_ms ?? Number.NaN),
+    ),
+    cancellation_retained_server_mib: Math.max(
+      ...measurement.per_run.map(
+        (run) => run.cancellation_churn?.retention.retained_delta_mib.server ?? Number.NaN,
+      ),
+    ),
+    cancellation_retained_process_tree_mib: Math.max(
+      ...measurement.per_run.map(
+        (run) => run.cancellation_churn?.retention.retained_delta_mib.process_tree ?? Number.NaN,
+      ),
+    ),
+  };
   measurement.complete = true;
   save();
   console.log(JSON.stringify({ out, metrics: measurement.metrics, files, openFiles, runs }));

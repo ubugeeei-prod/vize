@@ -9,7 +9,10 @@ on:
       - "crates/vize_maestro/src/server/state/project_contexts/root_discovery.rs"
       - "tools/support/compat/davinci/lsp-resources.ts"
       - "tools/support/compat/davinci/lib/lsp-profile-launch.ts"
+      - "tools/support/compat/davinci/lib/lsp-resource-cancellation.ts"
       - "tools/support/compat/davinci/lib/lsp-resource-finalize.ts"
+      - "tools/support/compat/davinci/lib/lsp-resource-witness.ts"
+      - "tests/tooling/lsp-resource-cancellation.test.ts"
       - "tests/tooling/lsp-resource-finalize.test.ts"
       - "tests/tooling/support/lsp/session.ts"
   workflow_dispatch:
@@ -41,8 +44,11 @@ jobs:
           run-install: false
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Verify profile failure cleanup and primary error preservation
-        run: vp exec node --test tests/tooling/lsp-resource-finalize.test.ts
+      - name: Verify LSP resource evidence helpers
+        run: >-
+          vp exec node --test
+          tests/tooling/lsp-resource-cancellation.test.ts
+          tests/tooling/lsp-resource-finalize.test.ts
       - name: Install the repository Rust toolchain
         run: rustup toolchain install || rustup show active-toolchain
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -80,6 +86,9 @@ jobs:
             echo '### LSP source operations and Rust allocation requests'
             echo 'Every size starts a new server process; no persisted Vize cache is reused.'
             echo 'Synthetic SFCs; complete residency witnesses, 16 providers and controlled edits.'
+            echo 'Each session retains 40 actual stdio cancellations interleaved with complete document edits.'
+            echo 'Cancellation latency reports the complete raw population with nearest-rank p50/p95/p99.'
+            echo 'Server/process-tree RSS is captured before, after responses and after 10s quiescence.'
             echo 'Source counts and allocator requested bytes are instrumented observations.'
             echo 'Allocator totals cover Rust only; sampled RSS also includes Corsa children.'
             echo 'These measurements do not qualify TS-44 latency or the private canonical cold-check goal.'
