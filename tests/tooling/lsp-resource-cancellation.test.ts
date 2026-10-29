@@ -5,6 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { offsetToPosition } from "./support/lsp/assertions.ts";
 import {
   auditCancellationPublications,
   cancellationBatch,
@@ -26,6 +27,11 @@ import {
   updateCancellationPublicationProgress,
   type AllocationProfileLink,
 } from "../../tools/support/compat/davinci/lib/lsp-resource-cancellation-run.ts";
+import { corsaHoverParams } from "../../tools/support/compat/davinci/lib/lsp-resource-witness.ts";
+import {
+  componentSource,
+  documentUri,
+} from "../../tools/support/compat/davinci/lib/lsp-resource-workspace.ts";
 
 test("resource cancellation frames retain exact write order, version and source identity", () => {
   const source = "<template><p>日本語</p></template>\n";
@@ -49,6 +55,16 @@ test("resource cancellation frames retain exact write order, version and source 
     source_bytes: Buffer.byteLength(source),
     source_sha256: sourceSha256(source),
     source_utf8_base64: Buffer.from(source).toString("base64"),
+  });
+});
+
+test("resource cancellation selects a backend-owned authored property hover", () => {
+  const source = componentSource(1);
+  const access = source.indexOf("peer.value?.publicState");
+  assert.ok(access >= 0);
+  assert.deepEqual(corsaHoverParams("/workspace"), {
+    textDocument: { uri: documentUri("/workspace", 1) },
+    position: offsetToPosition(source, access + "peer.value?.".length + 2),
   });
 });
 
