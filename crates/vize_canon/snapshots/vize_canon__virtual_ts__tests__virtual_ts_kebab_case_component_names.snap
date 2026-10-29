@@ -194,7 +194,7 @@ __setup();
 
 export type Emits = {};
 type $Slots = {};
-export type { $Slots as Slots };
+export type Slots = $Slots;
 
 type $EmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
 type $EmitRequiredFields<T> = T extends unknown ? Pick<T, $EmitRequiredKeys<T>> : never;

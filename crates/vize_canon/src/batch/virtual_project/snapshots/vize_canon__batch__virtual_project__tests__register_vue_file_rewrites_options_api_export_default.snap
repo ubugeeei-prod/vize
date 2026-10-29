@@ -68,7 +68,7 @@ type $AuthoredInstance = $AuthoredComponent extends abstract new (...args: any[]
 
 export type Emits = {};
 type $Slots = {};
-export type { $Slots as Slots };
+export type Slots = $Slots;
 
 // ========== Default Export ==========
 type $ComponentInstance = Omit<$AuthoredInstance, '$props' | '$emit' | '$slots'> & {
