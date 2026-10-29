@@ -242,7 +242,7 @@ fn checkout_caches_are_never_implicit_providers() {
         fs::create_dir_all(&root).unwrap();
         let binary = root.join(relative);
         write_file(&binary);
-        assert_eq!(discover_in_walk(&[root.clone()]), None);
+        assert_eq!(discover_in_walk(std::slice::from_ref(&root)), None);
         assert_eq!(
             resolve(Some(&binary), Some(&root), &[]).unwrap(),
             binary.canonicalize().unwrap()

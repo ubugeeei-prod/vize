@@ -82,7 +82,7 @@ fn undeclared_packages_and_checkout_caches_are_never_selected() {
     let cache = root.join("ref/typescript-go/built/local/tsgo");
     write_file(&cache);
 
-    assert_eq!(discover_in_walk(&[root.clone()]), None);
+    assert_eq!(discover_in_walk(std::slice::from_ref(&root)), None);
     assert_eq!(
         resolve(Some(&preview), Some(&root), &[]).unwrap(),
         preview.canonicalize().unwrap()
@@ -164,7 +164,7 @@ fn unlinked_store_and_vize_owned_runtime_need_explicit_selection() {
             .join("lib/tsc"),
     );
 
-    assert_eq!(discover_in_walk(&[project.clone()]), None);
+    assert_eq!(discover_in_walk(std::slice::from_ref(&project)), None);
     assert_eq!(
         resolve(Some(&unlinked), Some(&project), &[]).unwrap(),
         unlinked.canonicalize().unwrap()
