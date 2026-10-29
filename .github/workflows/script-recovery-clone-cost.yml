@@ -2,7 +2,7 @@ name: Script recovery clone cost
 on:
   pull_request:
     paths:
-      - .github/workflows/script-recovery-clone-clone-cost.yml
+      - .github/workflows/script-recovery-clone-cost.yml
       - crates/vize_croquis/src/script_parser/recovery.rs
       - crates/vize_croquis/src/script_parser/recovery/**
       - davinci/vize_l0/examples/source_recovery_clone_benchmark.rs
