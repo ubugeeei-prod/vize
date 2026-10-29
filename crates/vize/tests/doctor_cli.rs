@@ -328,6 +328,83 @@ fn public_sfc_json_is_deterministic_for_input_order() {
     assert_eq!(first.stdout, second.stdout);
 }
 
+#[test]
+fn nuxt_nested_routes_use_parent_outlets_and_forward_page_props() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path();
+    write(root, "package.json", r#"{"private":true}"#);
+    write(
+        root,
+        "nuxt.config.ts",
+        "export default defineNuxtConfig({ ssr: false, srcDir: \"src\" });\n",
+    );
+    write(
+        root,
+        "src/composables/keys.ts",
+        r#"import type { InjectionKey, Ref } from "vue";
+export const NoticeKey: InjectionKey<{ show(text: string): void }> = Symbol("notice");
+export const OrderKey: InjectionKey<Ref<string>> = Symbol("order");
+"#,
+    );
+    write(
+        root,
+        "src/app.vue",
+        "<template><NuxtLayout><NuxtPage /></NuxtLayout></template>\n",
+    );
+    write(
+        root,
+        "src/layouts/default.vue",
+        r#"<script setup lang="ts">
+import { provide, reactive } from "vue";
+import { NoticeKey } from "../composables/keys";
+provide(NoticeKey, reactive({ show: text => console.warn(text) }));
+</script>
+<template><main><slot /></main></template>
+"#,
+    );
+    write(
+        root,
+        "src/pages/shop.vue",
+        "<template><section><NuxtPage /></section></template>\n",
+    );
+    write(
+        root,
+        "src/pages/shop/orders.vue",
+        r#"<script setup lang="ts">
+import { provide, ref } from "vue";
+import { OrderKey } from "../../composables/keys";
+const order = ref("A-1");
+provide(OrderKey, order);
+</script>
+<template><section><NuxtPage v-bind="{ order }" /></section></template>
+"#,
+    );
+    write(
+        root,
+        "src/pages/shop/orders/detail.vue",
+        r#"<script setup lang="ts">
+import { inject } from "vue";
+import { NoticeKey, OrderKey } from "../../../composables/keys";
+defineProps<{ order: string }>();
+const notice = inject(NoticeKey)!;
+const current = inject(OrderKey)!;
+</script>
+<template><button type="button" @click="notice.show(current)">{{ order }}</button></template>
+"#,
+    );
+
+    let output = doctor(root, &["src", "--format", "json"]);
+    let report: DoctorReport = serde_json::from_slice(&output.stdout).unwrap();
+
+    assert!(
+        output.status.success(),
+        "stderr: {}\nfindings: {:#?}",
+        String::from_utf8_lossy(&output.stderr),
+        report.findings()
+    );
+    assert!(report.findings().is_empty(), "{:#?}", report.findings());
+}
+
 fn doctor(root: &Path, arguments: &[&str]) -> std::process::Output {
     Command::new(env!("CARGO_BIN_EXE_vize"))
         .arg("doctor")
