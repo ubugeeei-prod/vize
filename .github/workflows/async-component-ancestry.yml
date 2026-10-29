@@ -5,6 +5,7 @@ on:
       - .github/workflows/async-component-ancestry.yml
       - crates/vize_croquis/**
       - crates/vize_croquis_cf/**
+      - tests/tooling/async-component-ancestry-workflow.test.ts
       - tools/support/cross_file/async_component/**
   workflow_dispatch:
 permissions: { contents: read }
@@ -28,13 +29,16 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: ${{ matrix.role == 'candidate' && '0' || '1' }}
           persist-credentials: false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: qualification
           persist-credentials: false
-          sparse-checkout: tools/support/cross_file/async_component
+          sparse-checkout: |
+            tests/tooling/async-component-ancestry-workflow.test.ts
+            tools/support/cross_file/async_component
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "26.6.0" }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
@@ -61,7 +65,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags --depth=1 origin 4c7211a42ef27ba8fc3bae4c220fc95cd6ac8278 a15d99e984886cd7b13e706cc755290d4fc98d8c
+          node --test qualification/tests/tooling/async-component-ancestry-workflow.test.ts
+          git fetch --no-tags --depth=16 origin 748876d5d580aa5c6d0fb0bf32108b8bb0429951
           python3 - <<'PY'
           import hashlib, json, os, pathlib, subprocess
           paths = [
@@ -74,12 +79,14 @@ jobs:
           specs = [
               {
                   "id": "mixed-demand", "parent": "4c7211a42ef27ba8fc3bae4c220fc95cd6ac8278",
+                  "feature": "748876d5d580aa5c6d0fb0bf32108b8bb0429951",
                   "test": "facts::components::tests::missing_setup_capture_cannot_reuse_plain_program_names",
                   "marker": b"    fn uncaptured_setup(", "failure": b"LocalComponentBinding::Opaque",
                   "changed": paths,
               },
               {
                   "id": "component-spelling", "parent": "a15d99e984886cd7b13e706cc755290d4fc98d8c",
+                  "feature": "748876d5d580aa5c6d0fb0bf32108b8bb0429951",
                   "test": "facts::components::tests::component_binding_spelling_follows_vue_lookup_order",
                   "marker": b"    #[test]\n    fn component_binding_spelling_follows_vue_lookup_order",
                   "failure": b"./Camel.vue", "changed": [paths[0], paths[1], paths[3], paths[4]],
@@ -87,33 +94,47 @@ jobs:
           ]
           head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
           assert head == os.environ["SOURCE_SHA"]
-          current = {p: pathlib.Path(p).read_bytes() for p in paths}
+          root = pathlib.Path.cwd()
           component = paths[-1]
-          new = current[component]
+          new = pathlib.Path(component).read_bytes()
           proof = pathlib.Path("target/vize-tests/async-component")
           for spec in specs:
               parent = spec["parent"]
-              changed = subprocess.check_output(["git", "diff", "--name-only", parent, head, "--", "crates", "davinci", "Cargo.toml", "Cargo.lock"], text=True).splitlines()
+              delta = json.loads(subprocess.check_output([
+                  "node", "qualification/tools/support/cross_file/async_component/feature-delta.ts",
+                  parent, spec["feature"], head, "--", "crates", "davinci", "Cargo.toml", "Cargo.lock",
+              ], text=True))
+              changed = delta["changed"]
               assert sorted(changed) == sorted(spec["changed"]), changed
               previous = {p: subprocess.check_output(["git", "show", parent + ":" + p]) for p in paths}
               marker = spec["marker"]
               assert marker in new and marker not in previous[component]
               tail = new[new.index(marker):new.rindex(b"\n}")]
-              old = previous[component]
-              rewritten = old[:old.rindex(b"\n}")] + b"\n" + tail + old[old.rindex(b"\n}"):]
               receipt = {
                   "schema": "vize.asyncComponentPrecisionBefore.v1",
                   "productionSource": parent, "observer": head, "test": spec["test"],
+                  "productionTree": subprocess.check_output(["git", "rev-parse", parent + "^{tree}"], text=True).strip(),
+                  "featureDelta": delta,
                   "newTestTailSha256": hashlib.sha256(tail).hexdigest(),
                   "productionFiles": [{"path": p, "sha256": hashlib.sha256(b).hexdigest()} for p, b in previous.items()],
-                  "claim": "pinned parent production with only new regression tests; not source SDK or public acceptance",
+                  "claim": "full pinned parent production with only new regression tests; not source SDK or public acceptance",
               }
               prefix = proof / (spec["id"] + "-parent")
               prefix.with_suffix(".json").write_text(json.dumps(receipt, indent=2) + "\n")
+              worktree = pathlib.Path(os.environ["RUNNER_TEMP"]) / ("async-component-" + spec["id"] + "-parent")
+              subprocess.run(["git", "worktree", "add", "--detach", str(worktree), parent], check=True)
               try:
-                  for p, b in previous.items():
-                      pathlib.Path(p).write_bytes(rewritten if p == component else b)
-                  run = subprocess.run(["cargo", "test", "--locked", "-p", "vize_croquis", receipt["test"], "--", "--exact", "--nocapture"], capture_output=True)
+                  old_path = worktree / component
+                  old = old_path.read_bytes()
+                  rewritten = old[:old.rindex(b"\n}")] + b"\n" + tail + old[old.rindex(b"\n}"):]
+                  old_path.write_bytes(rewritten)
+                  assert subprocess.check_output(["git", "diff", "--name-only"], cwd=worktree, text=True).splitlines() == [component]
+                  run = subprocess.run(
+                      ["cargo", "test", "--locked", "-p", "vize_croquis", receipt["test"], "--", "--exact", "--nocapture"],
+                      cwd=worktree,
+                      env={**os.environ, "CARGO_TARGET_DIR": str(root / "target")},
+                      capture_output=True,
+                  )
                   prefix.with_suffix(".stdout").write_bytes(run.stdout)
                   prefix.with_suffix(".stderr").write_bytes(run.stderr)
                   receipt.update(status=run.returncode, stdoutSha256=hashlib.sha256(run.stdout).hexdigest(), stderrSha256=hashlib.sha256(run.stderr).hexdigest())
@@ -123,9 +144,7 @@ jobs:
                   assert b"test result: FAILED. 0 passed; 1 failed;" in run.stdout
                   assert b"assertion" in run.stderr and b"failed" in run.stderr and spec["failure"] in run.stderr
               finally:
-                  for p, b in current.items():
-                      pathlib.Path(p).write_bytes(b)
-                  assert all(pathlib.Path(p).read_bytes() == b for p, b in current.items())
+                  subprocess.run(["git", "worktree", "remove", "--force", str(worktree)], check=True)
               subprocess.run(["git", "diff", "--exit-code"], check=True)
           PY
       - name: Require complete Croquis and cross-file unit suites
