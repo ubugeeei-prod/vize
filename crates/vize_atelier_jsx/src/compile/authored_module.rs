@@ -3,6 +3,7 @@
 mod collisions;
 mod component_uses;
 mod contexts;
+mod legacy_fallback;
 mod mapped;
 mod native;
 mod plans;
@@ -52,10 +53,18 @@ pub(super) fn emit(
             (!matches!(component, JsxComponent::Vdom(_))).then_some(*span)
         })
         .collect();
-    let native_plans = vize_l0::profile!(
+    let native_plans = match vize_l0::profile!(
         "atelier.jsx.module.component_plans",
         plans::collect(&parsed.program, &native_roots)
-    )?;
+    ) {
+        Ok(plans) => plans,
+        Err(diagnostic) => {
+            if legacy_fallback::admitted(components, spans, source, lang) {
+                return Ok(None);
+            }
+            return Err(diagnostic);
+        }
+    };
     let profiler = vize_l0::profiler::global_profiler();
     if profiler.is_enabled() {
         profiler
@@ -77,17 +86,21 @@ pub(super) fn emit(
             .map(|plan| plan.span)
             .collect::<Vec<_>>(),
     )?;
-    for &(start, end) in &native_roots {
-        if !native_plans
+    if let Some(&(start, end)) = native_roots.iter().find(|&&(start, end)| {
+        !native_plans
             .iter()
             .any(|plan| plan.setup.render_start == start && plan.setup.render_end == end)
-        {
-            return Err(error(
-                start,
-                end,
-                "Vapor/SSR authored modules require a directly returned JSX root in an owned component arrow; function declarations, callbacks and other expression contexts are not represented yet",
-            ));
+    }) {
+        if legacy_fallback::admitted(components, spans, source, lang) {
+            return Ok(None);
         }
+        return Err(error(
+            start,
+            end,
+            "Vapor/SSR authored modules require a directly returned JSX root in an owned component arrow; function declarations, callbacks and other expression contexts are not represented yet",
+        ));
+    }
+    for &(start, end) in &native_roots {
         if let Some((index, _)) = spans
             .iter()
             .enumerate()

@@ -210,6 +210,56 @@ fn native_module_admission_is_owned_by_ast_not_enclosing_name_spelling() {
 }
 
 #[test]
+fn plan_ineligible_native_roots_keep_the_legacy_renderer_fallback() {
+    for ssr in [false, true] {
+        for source in [
+            "function App(props) { return <div/>; }",
+            "const App = props => <div/>;",
+            "[1].map(() => <i/>);",
+        ] {
+            let allocator = Allocator::new();
+            let out = compile_jsx(
+                &allocator,
+                source,
+                JsxLang::Jsx,
+                &JsxCompileConfig {
+                    ssr,
+                    default_mode: JsxOutputMode::Vapor,
+                    ..Default::default()
+                },
+            );
+            assert!(!out.has_errors(), "{source}: {:?}", out.diagnostics);
+            assert_eq!(out.components.len(), 1, "{source}");
+            let renderer = out.components[0].code();
+            assert!(!renderer.is_empty(), "{source}");
+            assert!(out.module_code().ends_with(renderer), "{source}");
+        }
+    }
+}
+
+#[test]
+fn authored_vapor_directives_keep_script_setup_bindings_bare() {
+    let allocator = Allocator::new();
+    let source = "const vFocus = {}; export const App = () => <div v-focus/>;";
+    let out = compile_jsx(
+        &allocator,
+        source,
+        JsxLang::Jsx,
+        &JsxCompileConfig {
+            default_mode: JsxOutputMode::Vapor,
+            ..Default::default()
+        },
+    );
+    assert!(!out.has_errors(), "{:?}", out.diagnostics);
+    let module = out.module_code();
+    assert!(
+        module.contains("const _directive_focus = vFocus"),
+        "{module}"
+    );
+    assert!(!module.contains("_ctx.vFocus"), "{module}");
+}
+
+#[test]
 fn ssr_keeps_existing_object_and_functional_roles_distinct() {
     for source in [
         "export const App=()=> <p/>;",

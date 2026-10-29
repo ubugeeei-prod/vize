@@ -52,20 +52,13 @@ pub fn compile_l2_to_ssr_with_experimental_options<'a>(
     options: &SsrCompilerOptions,
     experimental: &SsrCompilerExperimentalOptions,
 ) -> Option<SsrCodegenResult> {
-    if root_origin.start >= root_origin.end
-        || root_origin.end as usize > source.len()
-        || !source.is_char_boundary(root_origin.start as usize)
-        || !source.is_char_boundary(root_origin.end as usize)
-    {
-        return None;
-    }
-    emit_l2(
+    compile_l2_to_ssr_with_host_context(
         allocator,
         source,
         root,
+        root_origin,
         options,
         experimental,
-        Some(root_origin),
         crate::SsrSfcContext::new(true),
     )
 }

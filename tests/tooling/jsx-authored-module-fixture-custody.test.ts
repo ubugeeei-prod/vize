@@ -372,10 +372,16 @@ void test("the same whole-packet custody rejects unreviewed mutations independen
     for (const mutate of mutations) {
       const changed = structuredClone(successor);
       mutate(changed);
-      assert.throws(() => verifySuccessor(specs[index], row, historical, changed, source));
+      assert.throws(
+        () => verifySuccessor(specs[index], row, historical, changed, source),
+        assert.AssertionError,
+      );
     }
     const broadened = { ...row, allowedChangedFacets: [...row.allowedChangedFacets, "components"] };
-    assert.throws(() => verifySuccessor(specs[index], broadened, historical, successor, source));
+    assert.throws(
+      () => verifySuccessor(specs[index], broadened, historical, successor, source),
+      assert.AssertionError,
+    );
   }
 });
 
