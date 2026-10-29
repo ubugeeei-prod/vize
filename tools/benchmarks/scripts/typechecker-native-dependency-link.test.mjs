@@ -23,6 +23,8 @@ import {
 } from "./typechecker-native-source-custody.mjs";
 
 const WORKFLOW = ".github/workflows/typechecker-native-phases.yml";
+const PATINA_REPORT_FIXTURE =
+  "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755";
 const REQUIRED_PACKAGE_JSONS = [
   "node_modules/oxfmt/package.json",
   "tests/node_modules/vue/package.json",
@@ -30,6 +32,8 @@ const REQUIRED_PACKAGE_JSONS = [
   "tests/node_modules/vue-ssr-css-vars-oracle/package.json",
   "playground/node_modules/vue/package.json",
   "npm/cli/node_modules/vue/package.json",
+  `${PATINA_REPORT_FIXTURE}/node_modules/vue/package.json`,
+  `${PATINA_REPORT_FIXTURE}/node_modules/vue-router/package.json`,
 ];
 const BRIDGES = [
   "Cargo.toml",
@@ -142,6 +146,19 @@ await test("manual workflow links every allowlisted workspace dependency root be
   assert(packageLoop > link);
   assert(preflight > packageLoop);
   assert(qualification > preflight);
+});
+
+await test("Patina report fixture recipe preflights every declared dependency", () => {
+  const dependencyRoot = `${PATINA_REPORT_FIXTURE}/node_modules`;
+  assert(SOURCE_DEPENDENCY_LINKS.includes(dependencyRoot));
+  const manifest = JSON.parse(readFileSync(`${PATINA_REPORT_FIXTURE}/package.json`, "utf8"));
+  assert.deepEqual(Object.keys(manifest.dependencies).toSorted(), ["vue", "vue-router"]);
+  assert.deepEqual(
+    Object.keys(manifest.dependencies)
+      .map((dependency) => `${dependencyRoot}/${dependency}/package.json`)
+      .toSorted(),
+    REQUIRED_PACKAGE_JSONS.filter((path) => path.startsWith(`${dependencyRoot}/`)).toSorted(),
+  );
 });
 
 await test("actual directory ignore exposes the link; valid installation changes only its custody", () => {

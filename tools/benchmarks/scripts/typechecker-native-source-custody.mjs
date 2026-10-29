@@ -119,6 +119,7 @@ export const SOURCE_DEPENDENCY_LINKS = Object.freeze([
   "tests/node_modules",
   "playground/node_modules",
   "npm/cli/node_modules",
+  "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/node_modules",
 ]);
 function dependencyLink(sourceRoot, driverRoot, relativePath) {
   const path = join(sourceRoot, relativePath);
