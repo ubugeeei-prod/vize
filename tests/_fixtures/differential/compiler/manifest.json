@@ -1545,6 +1545,52 @@
       }
     },
     {
+      "id": "compiler/sfc/setup-component-literal-const-10877",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "setup-component-literal-const-10877",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "5d12c39ae0c2653572088cecff267ca3e753f7a541a78011eab1d1061fcb7c92",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "setup-component-literal-const-10877/module.expected.txt",
+        "sha256": "00ac80b43a45f209606c0ed2cda0dd328d881d9c4f54735a373852a13ce82294",
+        "source": "Exact source-built compiler-cli-ssr-v1 packet captured by Check job 123337564381. #10877 is client-only: its bracket read and literal-const patch-flag parity are independently pinned by whole-packet jobs and setup_literal_const_prop.rs, while this case guards unchanged SSR bytes including the absent final newline."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC path remains unavailable; focused source-native whole-packet jobs independently require the branch compiler identity and exact client output."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10877",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/sfc-runtime-options-native",
       "state": "active",
       "targets": ["ssr"],

@@ -14,7 +14,7 @@ mod tests;
 use alloc::vec::Vec as StdVec;
 use vize_l0::id::NodeId;
 use vize_l0::{Span, String};
-use vize_l2::op::{Attribute, BindingOp, OnOp};
+use vize_l2::op::{Attribute, BindOp, BindingOp, ModelOp, OnOp};
 use vize_l3::lattice::{
     BindingFact, BindingId, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind,
     ReactivityClass, Verdict, evaluate_binding,
@@ -49,6 +49,8 @@ impl super::EmitCx<'_> {
             if_key,
             for_item,
             self.is_ts,
+            &|bind| !self.scope.inline() && self.literal_const_identifier(bind),
+            &|model| !self.scope.inline() && self.literal_const_model(model),
             &|on| {
                 super::props::handler_is_constant(self.source, on, &|name| {
                     // The shipped patch gate looks up raw handler names in SFC
@@ -67,6 +69,34 @@ impl super::EmitCx<'_> {
         self.patch_facts.materialize(owner, facts)
     }
 
+    fn literal_const_identifier(&self, bind: &BindOp<'_>) -> bool {
+        let Ok(value) = super::props::bind_value(bind) else {
+            return false;
+        };
+        let Some(js) = value.js() else {
+            return false;
+        };
+        self.literal_const_name(js.source)
+    }
+
+    fn literal_const_model(&self, model: &ModelOp<'_>) -> bool {
+        let Ok(value) = super::model::js_source(model) else {
+            return false;
+        };
+        self.literal_const_name(value.as_str())
+    }
+
+    fn literal_const_name(&self, source: &str) -> bool {
+        let name = source.trim();
+        if !vize_l0::is_simple_identifier(name)
+            || self.scope.is_slot_param(name)
+            || self.scope.binds_in_pattern(name)
+        {
+            return false;
+        }
+        self.scope.bindings().and_then(|table| table.kind(name)) == Some(BindingKind::LiteralConst)
+    }
+
     fn reads_lattice_static_patch_binding_name(&self, name: &str) -> bool {
         self.scope
             .bindings()
@@ -82,6 +112,8 @@ pub(super) fn binding_patch_facts<'a>(
     if_key: Option<&str>,
     for_item: bool,
     is_ts: bool,
+    bind_is_literal_const: &dyn Fn(&BindOp<'a>) -> bool,
+    model_is_literal_const: &dyn Fn(&ModelOp<'a>) -> bool,
     handler_is_constant: &dyn Fn(&OnOp<'a>) -> bool,
     handler_is_cached: &dyn Fn(&OnOp<'a>) -> bool,
     caches_handlers: bool,
@@ -93,6 +125,8 @@ pub(super) fn binding_patch_facts<'a>(
             if_key,
             for_item,
             is_ts,
+            bind_is_literal_const,
+            model_is_literal_const,
             handler_is_constant,
             handler_is_cached,
             caches_handlers,
@@ -108,35 +142,54 @@ pub(super) fn binding_patch_facts<'a>(
                         flag |= 16;
                     }
                 }
-                Ok(BindName::Static(raw_name)) => match raw_name {
-                    "ref" => flag |= 512,
-                    "class"
-                        if bind_value_is_static_patchless(bind, is_ts)
-                            || (!for_item
-                                && bind_value_uses_legacy_patchless_runtime_expr(bind)) => {}
-                    "class" if !is_component => flag |= 2,
-                    "style"
-                        if bind_value_is_static_patchless(bind, is_ts)
-                            || (!for_item
-                                && bind_value_uses_legacy_patchless_runtime_expr(bind)) => {}
-                    "style" if !is_component => flag |= 4,
-                    "key" => {}
-                    key if key.ends_with("Modifiers")
-                        || bind_value_is_static_patchless(bind, is_ts) => {}
-                    _ => {
-                        flag |= 8;
-                        let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
-                            continue;
-                        };
-                        let owned = String::from(key.as_str());
-                        if !dynamic_props.contains(&owned) {
-                            dynamic_props.push(owned);
+                Ok(BindName::Static(raw_name)) => {
+                    let literal_const = bind_is_literal_const(bind);
+                    match raw_name {
+                        "ref" => flag |= 512,
+                        "key" => {}
+                        key if key.ends_with("Modifiers") => {}
+                        "class" if literal_const => {
+                            if has_prop_modifier(bind) {
+                                flag |= 32;
+                            }
                         }
-                        if has_prop_modifier(bind) {
-                            flag |= 32;
+                        "class"
+                            if bind_value_is_static_patchless(bind, is_ts)
+                                || (!for_item
+                                    && bind_value_uses_legacy_patchless_runtime_expr(bind)) => {}
+                        "class" if !is_component => flag |= 2,
+                        "style" if literal_const => {
+                            if has_prop_modifier(bind) {
+                                flag |= 32;
+                            }
+                        }
+                        "style"
+                            if bind_value_is_static_patchless(bind, is_ts)
+                                || (!for_item
+                                    && bind_value_uses_legacy_patchless_runtime_expr(bind)) => {}
+                        "style" if !is_component => flag |= 4,
+                        _ if literal_const => {
+                            if has_prop_modifier(bind) {
+                                flag |= 32;
+                            }
+                        }
+                        _ if bind_value_is_static_patchless(bind, is_ts) => {}
+                        _ => {
+                            flag |= 8;
+                            let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve)
+                            else {
+                                continue;
+                            };
+                            let owned = String::from(key.as_str());
+                            if !dynamic_props.contains(&owned) {
+                                dynamic_props.push(owned);
+                            }
+                            if has_prop_modifier(bind) {
+                                flag |= 32;
+                            }
                         }
                     }
-                },
+                }
                 Ok(BindName::Dynamic(_)) => {
                     flag |= 16;
                     if has_prop_modifier(bind) {
@@ -167,6 +220,7 @@ pub(super) fn binding_patch_facts<'a>(
                 super::model::patch(
                     model,
                     is_component,
+                    model_is_literal_const(model),
                     &mut flag,
                     &mut dynamic_props,
                     caches_handlers,
