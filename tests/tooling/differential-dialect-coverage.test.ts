@@ -116,12 +116,13 @@ void test("product manifests keep cases sorted so registrations merge cleanly", 
 
 void test("compiler promotes rare inventory rows through actual adapter coordinates", () => {
   assertCoverageFloor(summarizeDialectCoverage(load("compiler").cases), {
-    plannedCases: 32,
-    verifiedCases: 4,
+    plannedCases: 35,
+    verifiedCases: 7,
     provisionalCases: 26,
     unknownReadinessCases: 28,
     verified: {
       "vue0-template": 2,
+      "vue1-template": 3,
       "vue-quirks": 2,
     },
     provisional: {

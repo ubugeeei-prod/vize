@@ -82,16 +82,21 @@ pub(super) fn append_prop_entry<'p>(
         )
     };
     let camel_prop_name = component_prop_key(prop.name.as_str());
+    let aria_present_value = prop.name.starts_with("aria-");
 
     let repeated_named_key = !authored_named_keys.insert(camel_prop_name.clone());
-    if before_following_spread && !repeated_named_key {
-        // Keep named props direct so TypeScript contextually elaborates their
-        // value errors at the property instead of reporting a second TS2345 on
-        // the whole object when a later v-bind spread exists (#10069). The
-        // dedicated per-prop assignment above owns that diagnostic. Ignoring
-        // this generated entry also suppresses TS2783 when the later spread
-        // deliberately overwrites it, while the spread itself remains fully
-        // checked by the surrounding call.
+    // Keep named props direct so TypeScript contextually elaborates their
+    // value errors at the property instead of reporting a second TS2345 on
+    // the whole object when a later v-bind spread exists (#10069). The
+    // dedicated per-prop assignment above owns that diagnostic. Ignoring
+    // this generated entry also suppresses TS2783 when the later spread
+    // deliberately overwrites it, while the spread itself remains fully
+    // checked by the surrounding call.
+    // The camel key witnesses required-prop presence and generic inference,
+    // while the dedicated assignment owns its value diagnostic. Suppressing
+    // this synthetic entry also retains `aria-*` as an undeclared HTML attr
+    // without adding a mapped type to every generated SFC (#11048, #9658).
+    if aria_present_value || (before_following_spread && !repeated_named_key) {
         append!(
             *ts,
             "{expr_indent}  // {NAMED_PROP_DIAGNOSTIC_MARKER} are owned by the per-prop check.\n",
@@ -103,7 +108,13 @@ pub(super) fn append_prop_entry<'p>(
     append!(*ts, "\"{camel_prop_name}\"");
     let key_gen_end = ts.len();
     ts.push_str(": ");
+    if aria_present_value {
+        ts.push_str("__vizeComponentAriaPropValue(");
+    }
     let value_gen_range = append_prop_value(ts, generated_value.text.as_str());
+    if aria_present_value {
+        ts.push(')');
+    }
     let entry_gen_end = if generated_value.omits_tail() {
         generated_value.mapped_limit(value_gen_range.start)
     } else {

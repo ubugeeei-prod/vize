@@ -68,6 +68,7 @@ const PHASE_FILES_BEFORE_SUPERVISION = [
   "snapshots/check/vue2-elm.ts",
   "snapshots/check/vue2-class-component-oracle.ts",
   "snapshots/check/zz-intentional-errors-fixtures.ts",
+  "differential/compiler-legacy-cli.test.ts",
   "tooling/compat-ratchet.test.ts",
 ];
 
@@ -113,7 +114,7 @@ test("the phase manifest carries every fixture the shell string ran, in order", 
     checkFixturePhases.map((phase) => phase.file),
     PHASE_FILES_BEFORE_SUPERVISION,
   );
-  assert.equal(checkFixturePhases.length, 39);
+  assert.equal(checkFixturePhases.length, 40);
 });
 
 test("every phase has a unique id and a file that exists", () => {

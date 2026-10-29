@@ -44,8 +44,24 @@ interface SourceSpan {
   wall_ns: { total: number; self: number };
   alloc: { calls: number; bytes: number; self_calls: number; self_bytes: number };
 }
+interface RootAllocation {
+  invocations: number;
+  total: { self_calls: number; self_bytes: number };
+  per_invocation: { self_calls: number; self_bytes: number };
+}
 const median = (values: number[]) =>
   [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
+const rootAllocation = (root: SourceSpan): RootAllocation => ({
+  invocations: root.count,
+  total: {
+    self_calls: root.alloc.self_calls,
+    self_bytes: root.alloc.self_bytes,
+  },
+  per_invocation: {
+    self_calls: root.alloc.self_calls / root.count,
+    self_bytes: root.alloc.self_bytes / root.count,
+  },
+});
 
 /** Reject mismatched executables, inputs, providers or complete diagnostic packets. */
 export function compareLspMarkerScans(directory: string) {
@@ -124,6 +140,7 @@ export function compareLspMarkerScans(directory: string) {
     "base" | "head",
     {
       root: SourceSpan;
+      root_allocation: RootAllocation;
       allocation: unknown;
       calls: number;
       entries: number;
@@ -177,6 +194,7 @@ export function compareLspMarkerScans(directory: string) {
     assert.ok(calls > 0 && entries > baseline.workspace_files);
     profiles[role] = {
       root,
+      root_allocation: rootAllocation(root),
       allocation: profile.allocation,
       calls,
       entries,
@@ -189,12 +207,27 @@ export function compareLspMarkerScans(directory: string) {
     };
   }
   assert.ok(
-    profiles.head.root.alloc.self_calls < profiles.base.root.alloc.self_calls,
-    "the measured allocation hotspot must decrease",
+    profiles.head.root_allocation.total.self_calls < profiles.base.root_allocation.total.self_calls,
+    "the measured total allocation hotspot calls must decrease",
   );
   assert.ok(
-    profiles.head.root.alloc.self_bytes < profiles.base.root.alloc.self_bytes,
-    "the measured requested bytes must decrease",
+    profiles.head.root_allocation.total.self_bytes < profiles.base.root_allocation.total.self_bytes,
+    "the measured total allocation hotspot bytes must decrease",
+  );
+  assert.ok(
+    profiles.head.root_allocation.per_invocation.self_calls <
+      profiles.base.root_allocation.per_invocation.self_calls,
+    "the measured per-invocation allocation hotspot calls must decrease",
+  );
+  assert.ok(
+    profiles.head.root_allocation.per_invocation.self_bytes <
+      profiles.base.root_allocation.per_invocation.self_bytes,
+    "the measured per-invocation allocation hotspot bytes must decrease",
+  );
+  assert.ok(
+    profiles.head.operations.getdents64Calls > 0 &&
+      profiles.head.operations.standardReadDirCalls === 0,
+    "the candidate must scan through the native Linux path",
   );
   return {
     scope:

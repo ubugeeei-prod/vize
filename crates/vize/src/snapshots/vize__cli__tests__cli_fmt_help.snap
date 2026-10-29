@@ -101,6 +101,11 @@ Options:
 
           [possible values: true, false]
 
+      --vue-indent-script-and-style[=<VUE_INDENT_SCRIPT_AND_STYLE>]
+          Indent script and style block contents
+
+          [possible values: true, false]
+
       --max-attributes-per-line <MAX_ATTRIBUTES_PER_LINE>
           Maximum number of attributes per line before wrapping
 

@@ -136,6 +136,12 @@ export const mergeOnlyToolingTests = [
 // imported modules are added by the selector, including transitive helpers.
 // Unlisted tests retain the broad tooling inputs until separately audited.
 export const toolingTestScopes = [
+  // Source layout is a whole-checkout invariant; import and prose inference
+  // cannot describe every source file scanned by this test.
+  {
+    input: "tooling",
+    tests: ["tests/tooling/source-file-lengths.test.ts"],
+  },
   {
     input: "toolingExperimentalRouter",
     tests: [

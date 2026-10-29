@@ -1,0 +1,14 @@
+---
+source: crates/vize_atelier_core/src/codegen/expression/prefix_context.rs
+assertion_line: 388
+expression: code
+---
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("button", {
+    type: "button",
+    onClick: _cache[0] || (_cache[0] = (event) => {
+	if (_ctx.document.activeElement !== event.currentTarget) return;
+	emit("press");
+})
+  }, "press"))
+}

@@ -11,11 +11,11 @@ import { isRecord } from "../../json-value.ts";
 import type { JsonRecord } from "../../json-value.ts";
 import { componentSource, documentUri, prepareWorkspace } from "./lib/lsp-resource-workspace.ts";
 import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
-import type { ProcessEntry } from "./lib/lsp-resource-sampler.ts";
+import type { ObservedProcess, ProcessEntry } from "./lib/lsp-resource-sampler.ts";
 import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.ts";
 import { profiledLauncher } from "./lib/lsp-profile-launch.ts";
 import { captureLspResourceCorpus } from "./lib/lsp-resource-corpus.ts";
-import { finalizeLspResources } from "./lib/lsp-resource-finalize.ts";
+import { finalizeSampledLspRun } from "./lib/lsp-resource-finalize.ts";
 
 interface RunResult {
   run: number;
@@ -42,6 +42,7 @@ interface RunResult {
   server_stderr?: string;
   rss_peak_mib?: number;
   peak_processes?: ProcessEntry[];
+  observed_processes?: ObservedProcess[];
   resource_samples?: number;
   profile_json?: { path: string; bytes: number; sha256: string };
   finalization_error?: string;
@@ -239,10 +240,19 @@ async function measure() {
       const before = sampler.sample();
       await new Promise((resolve) => setTimeout(resolve, idleSeconds * 1000));
       const after = sampler.sample();
+      const corsaExecutable = fs.realpathSync(dependencies.corsaPath);
+      const corsaCommand = path.basename(corsaExecutable);
+      const observedProcesses = sampler.observedProcesses();
       assert.ok(
-        after.processes.some((entry) => entry.pid !== session.processId),
-        "typecheck acceptance requires the live Corsa descendant to be measured",
+        observedProcesses.some(
+          (entry) =>
+            entry.pid !== session.processId &&
+            entry.commands.includes(corsaCommand) &&
+            entry.executables.includes(corsaExecutable),
+        ),
+        "typecheck acceptance requires the Corsa executable to be sampled as a descendant",
       );
+      result.observed_processes = observedProcesses;
       result.rss_idle_mib = mib(after.rss_bytes);
       result.idle_cpu_pct =
         ((after.cpu_seconds - before.cpu_seconds) / ((performance.now() - idleStart) / 1000)) * 100;
@@ -253,17 +263,12 @@ async function measure() {
       result.server_stderr = session.stderrText;
       throw error;
     } finally {
-      const { peak, samples } = sampler.stop();
-      result.rss_peak_mib = mib(peak.rss_bytes);
-      result.peak_processes = peak.processes;
-      result.resource_samples = samples;
-      measurement.per_run.push(result);
-      delete measurement.active_run;
-      await finalizeLspResources({
+      await finalizeSampledLspRun({
+        sampler,
+        measurement,
+        result,
         session,
         profilePath,
-        workloadFailed: result.error !== undefined,
-        result,
         cleanup() {
           process.env.VIZE_LSP_BIN = server;
           fs.rmSync(workspace, { force: true, recursive: true });

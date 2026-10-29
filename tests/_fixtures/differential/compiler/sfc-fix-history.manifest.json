@@ -26,6 +26,12 @@
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/imported-component-before-prop.expected.json",
         "sha256": "600994e6a994599c266d81c8536343a16d1de82c5b6a773636bfd9ebc16a879a"
       },
+      "currentReference": {
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/imported-component-before-prop.closed-setup-10923.expected.json",
+        "sha256": "0cb1a8fe8c462c494a2f60795d911809ce374098c70376f8a795a3475915f6ab",
+        "supersedesSha256": "600994e6a994599c266d81c8536343a16d1de82c5b6a773636bfd9ebc16a879a",
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10891"
+      },
       "historicalObservation": {
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/imported-component-before-prop.observation.json",
         "sha256": "c37bffbae08fa05462ca3d541ad4e5aae0d6e18cf27295b6f876e6db6615521d"
@@ -153,6 +159,12 @@
       "reference": {
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dynamic-loop-ref-for.expected.json",
         "sha256": "f80949fc60b3b574b15ceed7a03dc97903dfc8e0d1bf37bb71ba32927ab85b93"
+      },
+      "currentReference": {
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dynamic-loop-ref-for.closed-setup-10923.expected.json",
+        "sha256": "7e2b40ff2f730178bee68dbcaa9dc14b016d3195d78b1eb8bff08a2d8e600ac7",
+        "supersedesSha256": "f80949fc60b3b574b15ceed7a03dc97903dfc8e0d1bf37bb71ba32927ab85b93",
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10891"
       },
       "historicalObservation": {
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dynamic-loop-ref-for.observation.json",
@@ -346,6 +358,12 @@
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dual-script-inline-type-only-imports.expected.json",
         "sha256": "089a7afd83b8e69b95867d2fdd2c23785a06a5856ffe1a12608d4d4adff03478"
       },
+      "currentReference": {
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dual-script-import-bindings-10903.expected.json",
+        "sha256": "856c0adaf0ae01447d3dcedce0a52f515fac782dc78d7accbca25df682480955",
+        "supersedesSha256": "089a7afd83b8e69b95867d2fdd2c23785a06a5856ffe1a12608d4d4adff03478",
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10903"
+      },
       "historicalObservation": {
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dual-script-inline-type-only-imports.observation.json",
         "sha256": "c0e66d51544c0103fa34338ad4d75e4b70a7bb321e1bd0b98bdba1f71e152bc3"
@@ -410,11 +428,19 @@
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/separate-template-authored-render-binding.expected.json",
         "sha256": "3ae9fe5c25c8772fbb479603b15a9269694fef630c1e4278ee3f4d96f552bc92"
       },
+      "referenceHistory": [
+        {
+          "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/separate-template-authored-render-binding.current.expected.json",
+          "sha256": "6c5470866ed41cd45674a8b154abf4b1840b433c6e9e0b4c31181a6b8d807b16",
+          "supersedesSha256": "3ae9fe5c25c8772fbb479603b15a9269694fef630c1e4278ee3f4d96f552bc92",
+          "issue": "https://github.com/ubugeeei-prod/vize/issues/6504"
+        }
+      ],
       "currentReference": {
-        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/separate-template-authored-render-binding.current.expected.json",
-        "sha256": "6c5470866ed41cd45674a8b154abf4b1840b433c6e9e0b4c31181a6b8d807b16",
-        "supersedesSha256": "3ae9fe5c25c8772fbb479603b15a9269694fef630c1e4278ee3f4d96f552bc92",
-        "issue": "https://github.com/ubugeeei-prod/vize/issues/6504"
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/separate-template-authored-render-binding.closed-setup-10923.expected.json",
+        "sha256": "86c4d5c864d83d43294fb3f3aebce62f0bca3f66b51c93a7210c0eac12c33245",
+        "supersedesSha256": "6c5470866ed41cd45674a8b154abf4b1840b433c6e9e0b4c31181a6b8d807b16",
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10891"
       },
       "historicalObservation": {
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/separate-template-authored-render-binding.observation.json",
@@ -479,6 +505,12 @@
       "reference": {
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/invalid-template-expression-diagnostic.expected.json",
         "sha256": "94ed965cb74011fa8abe1e2e2104e481d3ebd6d5a191fd83f6ed7ae9ee5e227a"
+      },
+      "currentReference": {
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/invalid-template-expression-diagnostic.closed-setup-10923.expected.json",
+        "sha256": "b8d0f15bcae7004cfc0f1b420dd21f6429cabaf26f49559433c4a3f5ff619593",
+        "supersedesSha256": "94ed965cb74011fa8abe1e2e2104e481d3ebd6d5a191fd83f6ed7ae9ee5e227a",
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10891"
       },
       "historicalObservation": {
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/invalid-template-expression-diagnostic.observation.json",

@@ -191,6 +191,7 @@ mod lib_real_registry_cli;
 mod lint_call_source_cli;
 mod lint_component_context_cli;
 mod lint_component_value_reads_cli;
+mod lint_composable_inject_cli;
 mod lint_config_cli;
 mod lint_cross_component_cli;
 mod lint_cross_file_rule_severity_cli;

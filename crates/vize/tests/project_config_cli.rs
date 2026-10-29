@@ -217,6 +217,35 @@ fn formatter_cli_exposes_bracket_layout_policies() {
 
 #[cfg(feature = "glyph")]
 #[test]
+fn formatter_cli_exposes_sfc_body_indentation_policy() {
+    let project = project();
+    let root = project.path();
+    let source = "<script setup lang=\"ts\">\nconst value=1\n</script>\n<style>\n.card{color:red}\n</style>\n";
+    let expected = "<script setup lang=\"ts\">\n  const value = 1;\n</script>\n\n<style>\n  .card {\n    color: red;\n  }\n</style>\n";
+    write(root, "IndentedBodies.vue", source);
+    let args = [
+        "fmt",
+        "--write",
+        "IndentedBodies.vue",
+        "--no-config",
+        "--preset",
+        "vize",
+        "--vue-indent-script-and-style",
+    ];
+    assert_success(&run(root, &args));
+    assert_eq!(
+        fs::read_to_string(root.join("IndentedBodies.vue")).unwrap(),
+        expected
+    );
+    assert_success(&run(root, &args));
+    assert_eq!(
+        fs::read_to_string(root.join("IndentedBodies.vue")).unwrap(),
+        expected
+    );
+}
+
+#[cfg(feature = "glyph")]
+#[test]
 fn formatter_cli_exposes_line_ending_policy() {
     let project = project();
     let root = project.path();

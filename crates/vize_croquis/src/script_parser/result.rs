@@ -17,7 +17,7 @@ use crate::macros::{EmitDefinition, MacroTracker, PropDefinition};
 use crate::provide::ProvideInjectTracker;
 use crate::race::RaceConditionTracker;
 use crate::reactivity::ReactivityTracker;
-use crate::scope::{ScopeChain, ScopeId};
+use crate::scope::{ScopeChain, ScopeData, ScopeId};
 use crate::script_parser::typeof_refs::TypeDependencyRefs;
 use crate::setup_context::SetupContextTracker;
 use crate::types::TypeResolver;
@@ -141,6 +141,9 @@ pub struct ScriptParseResult {
     pub binding_spans: FxHashMap<CompactString, (u32, u32)>,
     /// Value import source by local binding name.
     pub import_sources: FxHashMap<CompactString, CompactString>,
+    /// Non-`use*` local aliases whose imported identity is a composable.
+    /// Empty for the common case, so ordinary analysis pays no allocation.
+    pub(crate) imported_composable_aliases: FxHashSet<CompactString>,
     /// Normal `<script>` value exports that canon re-emits at module scope.
     /// Type exports may reference these through `typeof` without being
     /// demoted into `__setup()`.
@@ -183,6 +186,49 @@ pub struct ScriptParserOptions {
 }
 
 impl ScriptParseResult {
+    /// Classify a provide/inject call by the runtime setup effect that owns it.
+    /// Only top-level setup code and the body of a called composable are
+    /// synchronous setup effects; callbacks and ordinary helper functions are
+    /// deferred until proven otherwise.
+    pub(crate) fn setup_effect_context(&self) -> SetupEffectContext {
+        let mut current = Some(self.scopes.current_id());
+        while let Some(id) = current {
+            let Some(scope) = self.scopes.get_scope(id) else {
+                return SetupEffectContext::Deferred;
+            };
+            if let ScopeData::Closure(data) = scope.data() {
+                return data
+                    .name
+                    .as_ref()
+                    .filter(|name| is_composable_name(name.as_str()))
+                    .cloned()
+                    .map_or(SetupEffectContext::Deferred, SetupEffectContext::Composable);
+            }
+            current = scope.parent();
+        }
+        SetupEffectContext::TopLevel
+    }
+
+    /// Name the directly enclosing `use*` function, if this expression belongs
+    /// to the composable body itself.
+    ///
+    /// A nested closure is a hard boundary: merely declaring a callback inside
+    /// a composable does not prove that callback executes during setup.
+    pub(crate) fn current_composable_name(&self) -> Option<CompactString> {
+        if let SetupEffectContext::Composable(name) = self.setup_effect_context() {
+            return Some(name);
+        }
+        None
+    }
+
+    /// Imported composable calls are setup effects only at the script-setup
+    /// top level. Calls nested in a function may never execute, and normal
+    /// `<script>` runs at module evaluation rather than component setup.
+    pub(crate) fn records_setup_composable_call(&self) -> bool {
+        !self.is_non_setup_script
+            && matches!(self.setup_effect_context(), SetupEffectContext::TopLevel)
+    }
+
     /// Record a `TypeExport` together with type/value dependency references
     /// found in its body. Must be the only call site that pushes to
     /// `type_exports` so the parallel dependency vectors stay in lockstep for
@@ -316,4 +362,20 @@ impl ScriptParseResult {
         self.apply_to_croquis(&mut summary);
         summary
     }
+}
+
+pub(crate) enum SetupEffectContext {
+    TopLevel,
+    Composable(CompactString),
+    Deferred,
+}
+
+pub(crate) fn is_composable_name(name: &str) -> bool {
+    name.strip_prefix("use")
+        .and_then(|suffix| suffix.as_bytes().first())
+        .is_some_and(|first| first.is_ascii_uppercase() || first.is_ascii_digit())
+}
+
+pub(crate) fn is_local_module_specifier(specifier: &str) -> bool {
+    specifier.starts_with('.') || specifier.starts_with("@/") || specifier.starts_with('/')
 }

@@ -86,7 +86,7 @@ impl ExplicitGenerics {
             return;
         };
         ts.push_str(
-            "  // Explicit `@vue-generic` arguments: the instantiated call signature.\n  const __vizeExplicitGeneric = <C>(component: C) => component as unknown as (C extends (...args: infer __A) => infer __R ? (...args: __A) => __R : C);\n",
+            "  // Explicit `@vue-generic` arguments: the instantiated call signature.\n  const __vizeExplicitGeneric = <C,>(component: C) => component as unknown as (C extends (...args: infer __A) => infer __R ? (...args: __A) => __R : C);\n",
         );
         for usage in vize_croquis::facts::component_usage_list(summary) {
             let Some((generic, arguments)) = self

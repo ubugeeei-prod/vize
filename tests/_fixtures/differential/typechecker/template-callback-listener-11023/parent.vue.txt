@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import type { VNode } from "vue";
+import Foo from "./Foo.vue";
+const emit = defineEmits<{ quit: [] }>();
+const slots = defineSlots<Partial<Record<"a" | "b", () => VNode>>>();
+</script>
+<template>
+  <Foo :bar="(baz) => Boolean(slots[baz])" @quit="emit('quit')" />
+</template>

@@ -6,6 +6,11 @@ on:
         description: "Immutable main ancestor; production/dependency/corpus bytes must equal this main driver"
         required: true
         type: string
+      historical_projection_receipt:
+        description: "Run the schedule-only template projection history qualification at the exact driver"
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: "37 18 * * *"
 permissions: { contents: read }
@@ -18,6 +23,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.source_sha || github.sha }}
   DRIVER_SHA: ${{ github.workflow_sha }}
+  HISTORICAL_PROJECTION_RECEIPT: ${{ inputs.historical_projection_receipt || false }}
   CARGO_TARGET_DIR: ${{ github.workspace }}/target
 jobs:
   native-phases:
@@ -43,6 +49,10 @@ jobs:
             [[ "$SOURCE_SHA" == "$DRIVER_SHA" && "$SOURCE_SHA" == "$GITHUB_SHA" ]]
           else
             [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]
+          fi
+          if [[ "$HISTORICAL_PROJECTION_RECEIPT" == true ]]; then
+            [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]
+            [[ "$SOURCE_SHA" == "$DRIVER_SHA" && "$SOURCE_SHA" == "$GITHUB_SHA" ]]
           fi
           source_base_sha="$SOURCE_SHA"
           echo "MAIN_SOURCE_SHA=$source_base_sha" >> "$GITHUB_ENV"
@@ -85,7 +95,7 @@ jobs:
           fi
           bash tools/support/compat/github/native-syntax-semantics.sh; bash tools/support/compat/github/native-javascript-sfc-membership.sh; bash tools/support/compat/github/native-empty-vue-star-exports.sh
       - name: Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.historical_projection_receipt)
         env:
           VIZE_TEST_REQUIRE_TSGO: "1"
           VIZE_TEMPLATE_EMIT_CAPTURE: ${{ runner.temp }}/template-dollar-emit
@@ -98,7 +108,12 @@ jobs:
           set -euo pipefail
           [[ "$GITHUB_WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags origin "$GITHUB_WORKFLOW_SHA"
           for helper in typechecker-native-source-recipe.mjs typechecker-native-release-metadata.mjs; do git show "$GITHUB_WORKFLOW_SHA:tools/benchmarks/scripts/$helper" > "$RUNNER_TEMP/$helper"; done
-          recipe="$(node "$RUNNER_TEMP/typechecker-native-source-recipe.mjs")"
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            [[ "$HISTORICAL_PROJECTION_RECEIPT" == true && "$SOURCE_SHA" == "$DRIVER_SHA" ]]
+            recipe=""
+          else
+            recipe="$(node "$RUNNER_TEMP/typechecker-native-source-recipe.mjs")"
+          fi
           if [[ -n "$recipe" ]]; then
             if [[ "$(node -p 'Boolean(JSON.parse(require("node:fs").readFileSync(process.env.RUNNER_TEMP+"/native-source-recipe.json")).originalEnvironment.VIZE_TSCONFIG_TYPES_CAPTURE)')" != true ]]; then unset VIZE_TSCONFIG_TYPES_CAPTURE; fi; unset GH_TOKEN; bash --noprofile --norc -e -o pipefail "$recipe"
           else

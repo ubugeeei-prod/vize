@@ -4,13 +4,17 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { finalizeLspResources } from "../../tools/support/compat/davinci/lib/lsp-resource-finalize.ts";
+import {
+  finalizeLspResources,
+  finalizeSampledLspRun,
+} from "../../tools/support/compat/davinci/lib/lsp-resource-finalize.ts";
 
 function fixture() {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-lsp-finalize-"));
   const profile = path.join(directory, "profile.json");
   const events: string[] = [];
   const result: {
+    error?: string;
     profile_json?: { path: string; bytes: number; sha256: string };
     finalization_error?: string;
   } = {};
@@ -116,4 +120,73 @@ await test("nonprofiled runs retain shutdown fallback and still persist after cl
   await finalizeLspResources(options);
   assert.deepEqual(events, ["shutdown", "kill", "cleanup", "persist"]);
   assert.deepEqual(result, {});
+});
+
+await test("sampler failures still persist the run and clean before retaining the failure", async () => {
+  const { directory, events, result, options } = fixture();
+  const samplingFailure = new Error("the measured Maestro PID was reused");
+  const measurement = { per_run: [] as (typeof result)[], active_run: result };
+  options.profilePath = null;
+  options.persist = () => {
+    events.push("persist");
+    assert.deepEqual(measurement.per_run, [result]);
+    assert.equal("active_run" in measurement, false);
+  };
+  await assert.rejects(
+    finalizeSampledLspRun({
+      sampler: {
+        stop() {
+          events.push("stop");
+          throw samplingFailure;
+        },
+      },
+      measurement,
+      result,
+      session: options.session,
+      profilePath: options.profilePath,
+      cleanup: () => options.cleanup(),
+      persist: () => options.persist(),
+    }),
+    (error) => error === samplingFailure,
+  );
+  assert.deepEqual(events, ["stop", "shutdown", "cleanup", "persist"]);
+  assert.equal(result.error, String(samplingFailure));
+  assert.equal(fs.existsSync(directory), false);
+});
+
+await test("sampler failures never replace an existing workload failure", async () => {
+  const { directory, events, result, options } = fixture();
+  const workloadFailure = new Error("controlled edit returned an incorrect diagnostic");
+  const samplingFailure = new Error("the measured Maestro server exited");
+  const measurement = { per_run: [] as (typeof result)[], active_run: result };
+  result.error = String(workloadFailure);
+  options.profilePath = null;
+  await assert.rejects(
+    async () => {
+      try {
+        throw workloadFailure;
+      } finally {
+        await finalizeSampledLspRun({
+          sampler: {
+            stop() {
+              events.push("stop");
+              throw samplingFailure;
+            },
+          },
+          measurement,
+          result,
+          session: options.session,
+          profilePath: options.profilePath,
+          cleanup: () => options.cleanup(),
+          persist: () => options.persist(),
+        });
+      }
+    },
+    (error) => error === workloadFailure,
+  );
+  assert.deepEqual(events, ["stop", "shutdown", "cleanup", "persist"]);
+  assert.equal(result.error, String(workloadFailure));
+  assert.deepEqual(measurement.per_run, [result]);
+  assert.equal("active_run" in measurement, false);
+  assert.equal(fs.existsSync(directory), false);
 });
