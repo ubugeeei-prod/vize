@@ -184,11 +184,15 @@ void test("five source-inspected rows exhaust manifest measurement unknowns", ()
       measurement: "provisional",
     });
 
-    const input = Array.isArray(fixture.inputs)
-      ? fixture.inputs.find((candidate) => candidate.path === expected.input)
-      : fixture.inputs.files.find(
-          (candidate) => path.posix.join(fixture.inputs.root, candidate.path) === expected.input,
-        );
+    let input;
+    if (Array.isArray(fixture.inputs)) {
+      input = fixture.inputs.find((candidate) => candidate.path === expected.input);
+    } else {
+      const inputs = fixture.inputs;
+      input = inputs.files.find(
+        (candidate) => path.posix.join(inputs.root, candidate.path) === expected.input,
+      );
+    }
     assert(input, `${expected.id}: pinned input is required`);
     assert.equal(input.sha256, expected.sha256);
     assert.equal(

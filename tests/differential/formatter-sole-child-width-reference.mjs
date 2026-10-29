@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
+import { assertPreservedFormatterCase } from "./formatter-dialect-promotion.ts";
 
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const DIRECTORY = "tests/_fixtures/differential/formatter-regressions/sole-child-width-7876";
@@ -18,36 +19,6 @@ const ORIGINAL_OWNER = "12e3264f660e8d19aee1c949e0789a8137eb6c0f31ec6ef8ee1e30fa
 const CURRENT_OWNER = "9223c36becb9c341533eef9029d9a60607806ae05977119ae5ec61376dd92d11";
 const IDS = ["sfc-vue2-filter-chain-crlf", "sfc-vue3-bitwise-or"];
 const API_IDS = ["vue-version/sfc/filter-chain-crlf-v2", "vue-version/sfc/bitwise-or-v3"];
-const DIALECT_MEASUREMENT_PROMOTIONS = new Map([
-  [
-    "formatter/sfc/plain-style-nested-comments",
-    {
-      state: "source-inspected",
-      registryRef: null,
-      evidence: [
-        {
-          kind: "source-inspection",
-          dialects: ["vue3-sfc", "html-template", "css-scoped"],
-          selector: "default Vue version with --no-config",
-        },
-      ],
-    },
-  ],
-  [
-    "formatter/sfc/split-v-pre-indentation",
-    {
-      state: "source-inspected",
-      registryRef: null,
-      evidence: [
-        {
-          kind: "source-inspection",
-          dialects: ["vue3-sfc", "html-template", "v-pre"],
-          selector: "default Vue version with --no-config",
-        },
-      ],
-    },
-  ],
-]);
 
 function bytes(root, relative) {
   const file = fs.realpathSync(path.join(root, relative));
@@ -65,18 +36,8 @@ export function assertClosedFormatterManifest(root) {
   // New issue fixtures join the sorted active registry without rebasing history.
   assert.deepEqual(liveBytes, Buffer.from(`${JSON.stringify(liveManifest, null, 2)}\n`));
   const live = new Map(liveManifest.cases.map((row) => [row.id, row]));
-  for (const original of originalManifest.cases) {
-    const current = live.get(original.id);
-    const promotion = DIALECT_MEASUREMENT_PROMOTIONS.get(original.id);
-    if (!promotion) {
-      assert.deepEqual(current, original, "original formatter cases changed");
-      continue;
-    }
-    const { dialectCoverage, ...currentCustody } = current;
-    const { dialectCoverage: _originalCoverage, ...originalCustody } = original;
-    assert.deepEqual(currentCustody, originalCustody, "original formatter case custody changed");
-    assert.deepEqual(dialectCoverage, promotion, "dialect measurement promotion changed");
-  }
+  for (const original of originalManifest.cases)
+    assertPreservedFormatterCase(live.get(original.id), original);
   assert.deepEqual(
     { ...liveManifest, cases: [] },
     { ...originalManifest, cases: [] },
