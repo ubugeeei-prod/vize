@@ -6,6 +6,7 @@ fn strips_internal_fallthrough_fields_from_vue_declarations() {
 declare const __vize_component__: {
     readonly __vizeComponentMarker: true;
     readonly __vizeRawProps?: Props;
+    readonly __vizeNativeFallthroughRoot: true;
     readonly __vizeHasFallthroughProps: true;
     readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<\"button\">>;
 } & __VizeComponentConstructor;

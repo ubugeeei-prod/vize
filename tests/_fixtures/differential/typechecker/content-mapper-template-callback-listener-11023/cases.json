@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 11023,
+  "regressionCommit": "407e7cf15219405110efdd0c977bb30cb1db1644",
+  "sourceRevision": "407e7cf15219405110efdd0c977bb30cb1db1644",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "reporter-valid",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "Foo.vue", "source": "Foo.vue.txt" },
+        { "file": "parent.vue", "source": "parent.vue.txt" }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "authored-invalid-control",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "Foo.vue", "source": "Foo.vue.txt" },
+        { "file": "parent.vue", "source": "parent.invalid.vue.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "parent.vue",
+          "line": 12,
+          "column": 57,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'number'."
+        }
+      ]
+    }
+  ]
+}

@@ -39,12 +39,12 @@ allowed while Node 23 stays outside the tested compatibility matrix.
 
 Native packages ship for macOS, Linux, and Windows on x64 and arm64:
 
-| Platform                           | How it is verified                                                  |
-| ---------------------------------- | ------------------------------------------------------------------- |
-| darwin-arm64, darwin-x64           | Fresh install on hosted runners, Node 22 and 24                     |
-| linux-x64-gnu, linux-arm64-gnu     | Fresh install on hosted runners, Node 22 and 24                     |
-| win32-x64-msvc, win32-arm64-msvc   | Fresh install on hosted runners, Node 22 and 24                     |
-| linux-x64-musl, linux-arm64-musl   | Built every release; install checked manually on Alpine ([#493](https://github.com/ubugeeei-prod/vize/issues/493)) |
+| Platform                         | How it is verified                                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| darwin-arm64, darwin-x64         | Fresh install on hosted runners, Node 22 and 24                                                                    |
+| linux-x64-gnu, linux-arm64-gnu   | Fresh install on hosted runners, Node 22 and 24                                                                    |
+| win32-x64-msvc, win32-arm64-msvc | Fresh install on hosted runners, Node 22 and 24                                                                    |
+| linux-x64-musl, linux-arm64-musl | Built every release; install checked manually on Alpine ([#493](https://github.com/ubugeeei-prod/vize/issues/493)) |
 
 Before any npm release, the packed tarballs are installed and must pass `vize --version`,
 `vize check`, loading `@vizejs/native` through both `require` and `import`, and a `vite build` with
@@ -63,7 +63,8 @@ the move is called out in release notes when it changes. Downstream packagers sh
 | Alpha-supported               | `vize`, `@vizejs/native`, `@vizejs/vite-plugin`, `@vizejs/plugin-sdk`                                         | Intended for early production trials with release-note-backed breaking changes.                                    |
 | Compatibility preview         | `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/nuxt-lint-config`, `@vizejs/musea-nuxt` | Expected to work for common host setups, but host-framework compatibility can move quickly.                        |
 | Experimental                  | `oxlint-plugin-vize`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/wasm`                 | Public packages, but APIs, commands, output, and workflow shape may change during alpha.                           |
-| Experimental                  | `@vizejs/composable`, `@vizejs/ui`, `@vizejs/marquette`                                                       | Public libraries, but API families and generated reference data may change during alpha.                       |
+| Experimental                  | `@vizejs/composable`, `@vizejs/ui`, `@vizejs/marquette`                                                       | Public libraries, but API families and generated reference data may change during alpha.                           |
+| Compatibility preview         | `@vizejs/babel-plugin`                                                                                        | Vue JSX transforms for supported Babel 7/8 hosts; host compatibility may change during alpha.                      |
 | Experimental (workspace only) | `@vizejs/data`, `@vizejs/devtools`, `@vizejs/router`, `@vizejs/state`                                         | Implemented in this repository but not yet published to npm. These packages cannot be installed from the registry. |
 | Experimental (workspace only) | `@vizejs/typescript-vue-plugin`                                                                               | TypeScript server plugin staged into the VS Code extension; not yet published to npm.                              |
 | Experimental (workspace only) | `@vizejs/volar-plugin`                                                                                        | Volar language and TypeScript services using Vize native Vue projections; not yet published to npm.                |

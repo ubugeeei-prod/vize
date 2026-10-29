@@ -31,7 +31,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   # One Linux/Node 24 fresh-install row builds the complete graph so the packed
   # Nuxt consumer and its LSP run before release, not only in the release job.
-  RELEASE_JS_PACKAGES: npm/cli npm/builder/vite npm/oxlint npm/builder/unplugin npm/fresco npm/mcp-musea npm/builder/vite-musea npm/builder/rspack npm/framework/musea-nuxt npm/framework/nuxt-lint-config npm/framework/nuxt npm/marquette npm/compose/core npm/ui npm/plugin-sdk
+  RELEASE_JS_PACKAGES: npm/cli npm/builder/vite npm/oxlint npm/builder/unplugin npm/fresco npm/mcp-musea npm/builder/vite-musea npm/builder/rspack npm/framework/musea-nuxt npm/framework/nuxt-lint-config npm/framework/nuxt npm/marquette npm/compose/core npm/ui npm/plugin-sdk npm/babel
 
 jobs:
   host-native-smoke:

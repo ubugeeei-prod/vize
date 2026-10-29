@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Box from "./Box.vue";
+</script>
+
+<template>
+  <Box>
+    <template #heder>typo</template>
+    body
+  </Box>
+</template>

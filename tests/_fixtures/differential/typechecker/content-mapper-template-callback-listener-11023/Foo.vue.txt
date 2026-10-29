@@ -1,0 +1,14 @@
+<script setup lang="ts">
+interface Props {
+  bar: (baz: "a" | "b") => boolean;
+}
+
+defineProps<Props>();
+defineEmits<{
+  quit: [];
+}>();
+</script>
+
+<template>
+  <div />
+</template>

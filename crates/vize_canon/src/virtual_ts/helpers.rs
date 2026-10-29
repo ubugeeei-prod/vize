@@ -199,6 +199,45 @@ pub(crate) fn component_prop_key(name: &str) -> String {
     to_camel_case(name)
 }
 
+/// Whether a component prop spelling belongs to the explicit ARIA namespace.
+///
+/// Keep this narrower than a general camel/kebab conversion: arbitrary attrs
+/// must not gain a second accepted spelling just because ARIA needs to retain
+/// both its declared string-literal key and Vue's generated camel key.
+pub(crate) fn is_component_aria_prop_name(name: &str) -> bool {
+    name.starts_with("aria-")
+        || name
+            .strip_prefix("aria")
+            .and_then(|tail| tail.as_bytes().first())
+            .is_some_and(u8::is_ascii_uppercase)
+}
+
+/// Return the declared kebab spelling and Vue's generated camel spelling for
+/// an ARIA prop. Both are needed by the whole-object required-prop witness:
+/// `defineProps<{ 'aria-label': string }>()` retains the raw key, while a
+/// parent binding is generated as `ariaLabel`.
+pub(crate) fn component_aria_prop_keys(name: &str) -> Option<(String, String)> {
+    if name.starts_with("aria-") {
+        return Some((String::from(name), to_camel_case(name)));
+    }
+    let tail = name.strip_prefix("aria")?;
+    if !tail.as_bytes().first().is_some_and(u8::is_ascii_uppercase) {
+        return None;
+    }
+
+    let mut raw = String::with_capacity(name.len().saturating_add(4));
+    raw.push_str("aria");
+    for ch in tail.chars() {
+        if ch.is_ascii_uppercase() {
+            raw.push('-');
+            raw.push(ch.to_ascii_lowercase());
+        } else {
+            raw.push(ch);
+        }
+    }
+    Some((raw, to_camel_case(name)))
+}
+
 pub(crate) fn to_camel_case(s: &str) -> String {
     let mut result = String::with_capacity(s.len());
     let mut capitalize_next = false;
