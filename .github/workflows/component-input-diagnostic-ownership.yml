@@ -23,6 +23,7 @@ on:
       - "tools/support/compat/content-mapper/callback-owner*.ts"
       - "tools/support/compat/content-mapper/constructor-projection-parity.ts"
       - "tests/tooling/constructor-projection-parity.test.ts"
+      - "tests/tooling/component-input-diagnostic-ownership-workflow.test.ts"
       - "tests/_fixtures/differential/typechecker/component-input-diagnostic-owners-10607/**"
       - ".github/workflows/component-input-diagnostic-ownership.yml"
 
@@ -39,11 +40,15 @@ jobs:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
       SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HISTORICAL_CALLBACK_BEFORE: 78719553cf550bcffbf1d0fb891fda642f42de3a
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Prove callback comparison custody before building either source
+        run: node --test tests/tooling/component-input-diagnostic-ownership-workflow.test.ts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           repository: microsoft/TypeScript
@@ -74,20 +79,24 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/component-input-ownership"
           cargo test --locked --profile ci -p vize_canon --lib 'root_callback_owners::tests::' -- --nocapture > "$RUNNER_TEMP/component-input-ownership/root-callback-unit.stdout" 2> "$RUNNER_TEMP/component-input-ownership/root-callback-unit.stderr"
-      - name: Build the immutable callback-CFA before source separately
+      - name: Build the exact authenticated PR base separately
         run: |
           set -euo pipefail
-          before=78719553cf550bcffbf1d0fb891fda642f42de3a
-          git fetch --no-tags https://github.com/ubugeeei-prod/vize.git "$before"
-          git worktree add --detach "$RUNNER_TEMP/callback-cfa-before" "$before"
-          [[ "$(git -C "$RUNNER_TEMP/callback-cfa-before" rev-parse HEAD)" == "$before" ]]
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HISTORICAL_CALLBACK_BEFORE" == 78719553cf550bcffbf1d0fb891fda642f42de3a ]]
+          [[ "$SOURCE_SHA" != "$BASE_SHA" ]]
+          git fetch --no-tags https://github.com/ubugeeei-prod/vize.git "$BASE_SHA"
+          git worktree add --detach "$RUNNER_TEMP/callback-cfa-base" "$BASE_SHA"
+          [[ "$(git -C "$RUNNER_TEMP/callback-cfa-base" rev-parse HEAD)" == "$BASE_SHA" ]]
           mkdir -p "$RUNNER_TEMP/component-input-ownership/source-images"
           cp target/ci/vize "$RUNNER_TEMP/component-input-ownership/source-images/candidate-vize"
-          (cd "$RUNNER_TEMP/callback-cfa-before" && CARGO_TARGET_DIR="$RUNNER_TEMP/callback-cfa-before-target" cargo build --locked --profile ci -p vize --bin vize)
-          cp "$RUNNER_TEMP/callback-cfa-before-target/ci/vize" "$RUNNER_TEMP/component-input-ownership/source-images/before-vize"
-          git -C "$RUNNER_TEMP/callback-cfa-before" diff --exit-code
+          (cd "$RUNNER_TEMP/callback-cfa-base" && CARGO_TARGET_DIR="$RUNNER_TEMP/callback-cfa-base-target" cargo build --locked --profile ci -p vize --bin vize)
+          cp "$RUNNER_TEMP/callback-cfa-base-target/ci/vize" "$RUNNER_TEMP/component-input-ownership/source-images/base-vize"
+          git -C "$RUNNER_TEMP/callback-cfa-base" diff --exit-code
           sha256sum "$RUNNER_TEMP/component-input-ownership/source-images/"*-vize > "$RUNNER_TEMP/component-input-ownership/source-images/binaries.sha256"
-          printf '%s\n' "$before" > "$RUNNER_TEMP/component-input-ownership/source-images/before.source"
+          printf '%s\n' "$BASE_SHA" > "$RUNNER_TEMP/component-input-ownership/source-images/base.source"
+          printf '%s\n' "$HISTORICAL_CALLBACK_BEFORE" > "$RUNNER_TEMP/component-input-ownership/source-images/historical-before.source"
           printf '%s\n' "$SOURCE_SHA" > "$RUNNER_TEMP/component-input-ownership/source-images/candidate.source"
       - name: Install exact published SDK and baseline packages
         run: |
@@ -209,7 +218,7 @@ jobs:
           assert.equal(packets.length, 144);
           writeFileSync(`${capture}/whole-packet-inventory.json`, JSON.stringify({source: process.env.SOURCE_SHA, executedPid: executed.pid, binarySha256, completePackets: packets.length, packets}, null, 2) + '\n');
           JS
-      - name: Retain every callback-CFA before, head and independent reference packet
+      - name: Retain every callback-CFA base, head and independent reference packet
         run: |
           set -uo pipefail
           failed=0
@@ -227,8 +236,10 @@ jobs:
               --consumer "$RUNNER_TEMP/component-input-consumer" \
               --candidate-cli "$RUNNER_TEMP/component-input-ownership/source-images/candidate-vize" \
               --source-sha "$SOURCE_SHA" \
-              --comparison-cli "$RUNNER_TEMP/component-input-ownership/source-images/before-vize" \
-              --comparison-source-sha 78719553cf550bcffbf1d0fb891fda642f42de3a \
+              --comparison-cli "$RUNNER_TEMP/component-input-ownership/source-images/base-vize" \
+              --comparison-source-sha "$BASE_SHA" \
+              --historical-comparison-source-sha "$HISTORICAL_CALLBACK_BEFORE" \
+              --comparison-role pull-request-base \
               --output "$RUNNER_TEMP/component-input-ownership/callback-cfa/$sdk" "${extra[@]}" || failed=1
           done
           exit "$failed"

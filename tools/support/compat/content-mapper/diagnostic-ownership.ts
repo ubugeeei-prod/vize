@@ -74,6 +74,8 @@ for (let index = 0; index < args.length; index++) {
       "--mapper-version",
       "--comparison-cli",
       "--comparison-source-sha",
+      "--historical-comparison-source-sha",
+      "--comparison-role",
     ].includes(key),
   );
   const value = args.at(++index);
@@ -96,12 +98,20 @@ if (!baselineOnly) assert.match(sourceSha ?? "", /^[0-9a-f]{40}$/u);
 assert.equal(options.has("--comparison-cli"), options.has("--comparison-source-sha"));
 if (options.has("--comparison-cli")) {
   assert.ok((relocationOnly || callbackOnly) && !baselineOnly);
-  assert.equal(
-    required("--comparison-source-sha"),
-    callbackOnly
-      ? "78719553cf550bcffbf1d0fb891fda642f42de3a"
-      : "5597001751a477402537a1cc61cae487feefef9c",
-  );
+  const comparisonSourceSha = required("--comparison-source-sha");
+  assert.match(comparisonSourceSha, /^[0-9a-f]{40}$/u);
+  if (callbackOnly) {
+    assert.equal(required("--comparison-role"), "pull-request-base");
+    assert.equal(
+      required("--historical-comparison-source-sha"),
+      "78719553cf550bcffbf1d0fb891fda642f42de3a",
+    );
+    assert.notEqual(comparisonSourceSha, sourceSha);
+  } else {
+    assert.equal(comparisonSourceSha, "5597001751a477402537a1cc61cae487feefef9c");
+    assert.equal(options.has("--comparison-role"), false);
+    assert.equal(options.has("--historical-comparison-source-sha"), false);
+  }
 }
 const comparisonCli = options.has("--comparison-cli")
   ? fs.realpathSync(required("--comparison-cli"))
@@ -216,6 +226,8 @@ for (const [id, file, expected] of versions) {
 write(path.join(output, "providers.json"), {
   sourceSha,
   comparisonSourceSha: options.get("--comparison-source-sha"),
+  comparisonRole: options.get("--comparison-role"),
+  historicalComparisonSourceSha: options.get("--historical-comparison-source-sha"),
   mode: callbackOnly
     ? "callback-cfa-control-observations-not-qualified"
     : relocationOnly

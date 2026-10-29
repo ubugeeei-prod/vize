@@ -150,8 +150,11 @@ export function auditCallbackOwners(directory: string) {
   const read = (file: string) => JSON.parse(fs.readFileSync(path.join(directory, file), "utf8"));
   const providers = read("providers.json"),
     inventory = read("inventory.json");
-  assert.equal(providers.comparisonSourceSha, "78719553cf550bcffbf1d0fb891fda642f42de3a");
   assert.match(providers.sourceSha, /^[0-9a-f]{40}$/u);
+  assert.match(providers.comparisonSourceSha, /^[0-9a-f]{40}$/u);
+  assert.notEqual(providers.comparisonSourceSha, providers.sourceSha);
+  assert.equal(providers.comparisonRole, "pull-request-base");
+  assert.equal(providers.historicalComparisonSourceSha, "78719553cf550bcffbf1d0fb891fda642f42de3a");
   assert.equal(inventory.cases, 92);
   assert.equal(inventory.executedProcesses, 736);
   const rows = read("callback-cfa-observations.json") as Row[];
@@ -388,7 +391,8 @@ export function auditCallbackOwners(directory: string) {
   assert.equal(frontiers, 8);
   const report = {
     source: providers.sourceSha,
-    before: providers.comparisonSourceSha,
+    base: providers.comparisonSourceSha,
+    historicalBefore: providers.historicalComparisonSourceSha,
     completeObservedProjects: rows.length,
     completeObservedCommands: inventory.executedProcesses,
     qualifiedReferenceProjects: qualified,
