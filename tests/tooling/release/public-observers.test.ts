@@ -48,8 +48,39 @@ function job(workflow: Workflow, name: string): Job {
   return result;
 }
 
-function withoutSDK(source: Job): Job {
+const typeGuardSuffix =
+  " || (github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main' && inputs.type_admission == true)";
+const typeProof = "Prove the first containing type-admission publication";
+const typeObserver = "Qualify independent published template type admission";
+const hostSetup = "Install the isolated native TypeScript mapper host";
+const cppBefore = "Preserve the original CPP consumer before template admission";
+const cppAfter = "Verify the original CPP consumer after template admission";
+const typeEvidence = [
+  "${{ runner.temp }}/public-type-admission-eligibility.json",
+  "${{ runner.temp }}/public-custom-properties-consumer/type-admission/",
+  "${{ runner.temp }}/public-type-admission-mapper-host-proof/",
+  "${{ runner.temp }}/public-type-admission-cpp-custody.json*",
+];
+function withoutTypeAdmission(source: Job): Job {
   const result = structuredClone(source);
+  assert.ok(result.if?.endsWith(typeGuardSuffix));
+  result.if = result.if?.slice(0, -typeGuardSuffix.length);
+  result.steps = result.steps.filter(
+    (step) =>
+      step.name !== typeProof &&
+      step.name !== typeObserver &&
+      step.name !== hostSetup &&
+      step.name !== cppBefore &&
+      step.name !== cppAfter,
+  );
+  for (const step of result.steps)
+    if (step.with?.path)
+      for (const entry of typeEvidence) step.with.path = step.with.path.replace(entry + "\n", "");
+  return result;
+}
+
+function withoutSDK(source: Job): Job {
+  const result = withoutTypeAdmission(source);
   result.steps = result.steps.filter((step) => step.name !== sdkStep);
   const upload = result.steps.find((step) => step.with?.path?.includes(evidence));
   assert.ok(upload?.with?.path);
@@ -61,7 +92,9 @@ test("optional observers retain every original core workflow contract", () => {
   for (const { file, current, before } of workflows) {
     const retained = structuredClone(current);
     delete retained.on.workflow_dispatch.inputs.additional_observers;
-    const standard = job(retained, "public-release-contracts");
+    delete retained.on.workflow_dispatch.inputs.type_admission;
+    const standard = withoutTypeAdmission(job(retained, "public-release-contracts"));
+    retained.jobs["public-release-contracts"] = standard;
     assert.ok(standard.if);
     assert.ok(standard.if.endsWith(guardSuffix));
     standard.if = standard.if.slice(0, -guardSuffix.length);
@@ -71,9 +104,16 @@ test("optional observers retain every original core workflow contract", () => {
     if (file === "release-contracts.yml") {
       delete retained.on.workflow_dispatch.inputs.custom_properties;
       delete retained.jobs["public-custom-properties"];
+      delete retained.jobs["type-admission-source-capability"];
+      const contracts = job(retained, "contracts");
+      assert.ok(contracts.if?.endsWith(" && inputs.phase != 'type-admission-capability'"));
+      contracts.if = contracts.if?.replace(" && inputs.phase != 'type-admission-capability'", "");
       const unit = job(retained, "contracts").steps.find((step) => step.run?.includes(testPath));
       assert.ok(unit?.run);
-      unit.run = unit.run.replace(testPath + " ", "");
+      unit.run = unit.run
+        .replace(testPath + " ", "")
+        .replace("tests/tooling/release/public-type-admission.test.ts ", "")
+        .replace("tests/tooling/release/public-type-admission-capability.test.ts ", "");
     } else {
       retained.jobs["public-custom-properties"] = withoutSDK(
         job(retained, "public-custom-properties"),

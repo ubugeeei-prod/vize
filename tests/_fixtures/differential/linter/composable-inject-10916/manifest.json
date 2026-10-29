@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "issue": 10916,
+  "command": "vize lint -f json --no-config --cross-file \"src/**/*.vue\"",
+  "cases": [
+    {
+      "name": "matched-slot-provider",
+      "root": "matched",
+      "status": 0
+    },
+    {
+      "name": "missing-provider",
+      "root": "missing",
+      "status": 1
+    }
+  ]
+}

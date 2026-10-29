@@ -5,18 +5,22 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { LspSession } from "../../../../tests/tooling/support/lsp/session.ts";
 import { isRecord } from "../../json-value.ts";
 import type { JsonRecord } from "../../json-value.ts";
 import { componentSource, documentUri, prepareWorkspace } from "./lib/lsp-resource-workspace.ts";
 import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
-import type { ProcessEntry } from "./lib/lsp-resource-sampler.ts";
+import type { ObservedProcess, ProcessEntry } from "./lib/lsp-resource-sampler.ts";
 import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.ts";
 import { profiledLauncher } from "./lib/lsp-profile-launch.ts";
-import { finalizeLspResources } from "./lib/lsp-resource-finalize.ts";
+import { captureLspResourceCorpus } from "./lib/lsp-resource-corpus.ts";
+import { finalizeSampledLspRun } from "./lib/lsp-resource-finalize.ts";
 
 interface RunResult {
   run: number;
+  corpus: ReturnType<typeof captureLspResourceCorpus>;
+  fixture_preparation_ms: number;
   dependencies: { corsaPath: string; vuePath: string };
   opened_files: number;
   metadata_requests: number;
@@ -38,6 +42,7 @@ interface RunResult {
   server_stderr?: string;
   rss_peak_mib?: number;
   peak_processes?: ProcessEntry[];
+  observed_processes?: ObservedProcess[];
   resource_samples?: number;
   profile_json?: { path: string; bytes: number; sha256: string };
   finalization_error?: string;
@@ -56,6 +61,7 @@ interface Measurement {
   services: { editor: boolean; ecosystem: boolean; lint: boolean; typecheck: boolean };
   server: string;
   server_binary_mib: number;
+  server_sha256: string;
   build: string;
   sampler: string;
   idle_seconds: number;
@@ -109,6 +115,7 @@ async function measure() {
     services: { editor: true, ecosystem: true, lint: true, typecheck: true },
     server,
     server_binary_mib: mib(fs.statSync(server).size),
+    server_sha256: createHash("sha256").update(fs.readFileSync(server)).digest("hex"),
     build: flag("--build", "unspecified: pass --build to record the actual server recipe"),
     sampler: "Linux /proc process-tree summed RSS every 50 ms, from spawn through idle",
     idle_seconds: idleSeconds,
@@ -126,16 +133,21 @@ async function measure() {
   save();
   for (let run = 0; run < runs; run++) {
     const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-real-lsp-resource-"));
-    const started = performance.now();
+    const setupStarted = performance.now();
     const dependencies = prepareWorkspace(workspace, files);
+    const corpus = captureLspResourceCorpus(workspace, dependencies);
     const profilePath = profileDirectory && path.join(profileDirectory, `run-${run + 1}.json`);
     process.env.VIZE_LSP_BIN = profilePath
       ? profiledLauncher(server, workspace, profilePath)
       : server;
+    const fixturePreparationMs = performance.now() - setupStarted;
+    const started = performance.now();
     const session = new LspSession();
     const sampler = createSampler(session.processId);
     const result: RunResult = {
       run: run + 1,
+      corpus,
+      fixture_preparation_ms: fixturePreparationMs,
       dependencies,
       opened_files: 0,
       metadata_requests: 0,
@@ -228,10 +240,19 @@ async function measure() {
       const before = sampler.sample();
       await new Promise((resolve) => setTimeout(resolve, idleSeconds * 1000));
       const after = sampler.sample();
+      const corsaExecutable = fs.realpathSync(dependencies.corsaPath);
+      const corsaCommand = path.basename(corsaExecutable);
+      const observedProcesses = sampler.observedProcesses();
       assert.ok(
-        after.processes.some((entry) => entry.pid !== session.processId),
-        "typecheck acceptance requires the live Corsa descendant to be measured",
+        observedProcesses.some(
+          (entry) =>
+            entry.pid !== session.processId &&
+            entry.commands.includes(corsaCommand) &&
+            entry.executables.includes(corsaExecutable),
+        ),
+        "typecheck acceptance requires the Corsa executable to be sampled as a descendant",
       );
+      result.observed_processes = observedProcesses;
       result.rss_idle_mib = mib(after.rss_bytes);
       result.idle_cpu_pct =
         ((after.cpu_seconds - before.cpu_seconds) / ((performance.now() - idleStart) / 1000)) * 100;
@@ -242,17 +263,12 @@ async function measure() {
       result.server_stderr = session.stderrText;
       throw error;
     } finally {
-      const { peak, samples } = sampler.stop();
-      result.rss_peak_mib = mib(peak.rss_bytes);
-      result.peak_processes = peak.processes;
-      result.resource_samples = samples;
-      measurement.per_run.push(result);
-      delete measurement.active_run;
-      await finalizeLspResources({
+      await finalizeSampledLspRun({
+        sampler,
+        measurement,
+        result,
         session,
         profilePath,
-        workloadFailed: result.error !== undefined,
-        result,
         cleanup() {
           process.env.VIZE_LSP_BIN = server;
           fs.rmSync(workspace, { force: true, recursive: true });

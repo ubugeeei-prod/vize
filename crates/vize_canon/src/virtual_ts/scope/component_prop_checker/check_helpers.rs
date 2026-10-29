@@ -18,6 +18,23 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     typed_fallthrough_values: bool,
 ) {
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
+    if usages.iter().any(|(_, usage)| {
+        usage
+            .props
+            .iter()
+            .any(|prop| !prop.name_is_dynamic && prop.name.starts_with("aria-"))
+    }) {
+        // Vue camelizes `aria-label` onto a declared `ariaLabel` prop, while
+        // vue-tsc's default `htmlAttributes: ['aria-*']` lets an optional
+        // `string | undefined` value pass under exactOptionalPropertyTypes.
+        // The dedicated per-prop assignment owns the real value check. This
+        // whole-object witness therefore removes only `undefined`: required
+        // props remain present, generic inference retains the authored value
+        // type, and wrong values are still diagnosed once (#11048, #9658).
+        ts.push_str(
+            "  function __vizeComponentAriaPropValue<const T>(value: T): __VizeNotUndefined<T> { return value as __VizeNotUndefined<T>; }\n",
+        );
+    }
     ts.push_str(
         "  type __VizeComponentNavigationProps<P> = __VizeIsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;\n",
     );

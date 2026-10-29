@@ -61,7 +61,10 @@ void test("the actual protocol registration pins full wire selectors without cha
     cases: [row.id],
   });
   const loaded = loadTypecheckerManifest(new URL(manifestPath, root).pathname);
-  assert.equal(loaded.cases.length, manifest.cases.length);
+  assert.equal(
+    loaded.cases.length,
+    manifest.cases.filter((entry: { pack?: string }) => entry.pack !== undefined).length,
+  );
   assert(!loaded.cases.some((entry) => entry.id === row.id));
 });
 

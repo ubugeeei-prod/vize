@@ -150,6 +150,7 @@ Default discovery formats Vue, JavaScript/TypeScript and JSON/JSONC files. YAML 
 | `--no-semi`                        | Omit semicolons                                      |
 | `--sort-attributes`                | Sort template attributes                             |
 | `--single-attribute-per-line`      | Put one attribute per line                           |
+| `--vue-indent-script-and-style`    | Indent the contents of script and style blocks       |
 | `--max-attributes-per-line`        | Wrap after a given attribute count                   |
 | `--normalize-directive-shorthands` | Normalize `v-bind:` / `v-on:` / `v-slot:` shorthands |
 | `--preset`                         | Apply `vize`, `prettier`, `compact` or `documentation` formatter defaults |

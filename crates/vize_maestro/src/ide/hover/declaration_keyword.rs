@@ -16,18 +16,13 @@
     reason = "tower_lsp::lsp_types payloads take std `String`, built with `format!`"
 )]
 
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{
-    BindingPattern, Declaration, ImportDeclarationSpecifier, Statement, VariableDeclarationKind,
-};
-use oxc_parser::Parser;
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::{Hover, HoverContents};
 
 use crate::ide::IdeContext;
 
 mod imported_tag;
-use imported_tag::imported_tag_property_keyword;
+mod script_facts;
 
 /// Replace a leading synthesized `var` in a Corsa hover with the authored
 /// declaration keyword for the hovered template binding, and a leading
@@ -39,12 +34,14 @@ pub(super) fn align_hover(ctx: &IdeContext<'_>, word: &str, hover: &mut Hover) {
     let HoverContents::Markup(ref mut markup) = hover.contents else {
         return;
     };
-    let Some(descriptor) = ctx.descriptor() else {
-        return;
-    };
-    if let Some(script_setup) = descriptor.script_setup.as_ref() {
-        let lang = script_setup.lang.as_deref();
-        if let Some(aligned) = align_leading_var(&markup.value, &script_setup.content, lang, word) {
+    // Drop the descriptor borrow before the memoized walk, which reads `ctx` again.
+    if ctx
+        .descriptor()
+        .is_some_and(|descriptor| descriptor.script_setup.is_some())
+    {
+        if let Some(aligned) =
+            rewrite_leading_var(&markup.value, word, || script_facts::keyword(ctx, word))
+        {
             markup.value = aligned;
             return;
         }
@@ -53,28 +50,26 @@ pub(super) fn align_hover(ctx: &IdeContext<'_>, word: &str, hover: &mut Hover) {
         // For an imported SFC the authored fact is the import; present it the
         // way Volar does (#3912). Anything not imported keeps the checker's
         // answer until its own shape is measured.
-        if markup.value.contains("__vize_component__")
-            && let Some(aligned) = imported_component_quick_info(&script_setup.content, lang, word)
-        {
-            markup.value = aligned;
+        if markup.value.contains("__vize_component__") && script_facts::imports_value(ctx, word) {
+            markup.value = import_quick_info(word);
             return;
         }
         // A tag whose import carries no marker — a .ts `defineComponent`
         // export like reka-ui's Primitive — hovers with the synthesized `var`
         // and a type body that already matches the oracle; Volar opens with
         // its ctx-property keyword there. Rewrite the keyword only (#3937).
-        if let Some(aligned) = imported_tag_property_keyword(
-            &markup.value,
-            &ctx.content,
-            ctx.offset,
-            &script_setup.content,
-            lang,
-            word,
-        ) {
+        if let Some(aligned) =
+            imported_tag::imported_tag_with(&markup.value, &ctx.content, ctx.offset, word, || {
+                script_facts::imports_value(ctx, word)
+            })
+        {
             markup.value = aligned;
             return;
         }
     }
+    let Some(descriptor) = ctx.descriptor() else {
+        return;
+    };
     if let Some(template) = descriptor.template.as_ref()
         && ctx.offset >= template.loc.start
         && ctx.offset < template.loc.end
@@ -88,44 +83,27 @@ pub(super) fn align_hover(ctx: &IdeContext<'_>, word: &str, hover: &mut Hover) {
 /// The Volar-shaped quick info for a component imported in `<script setup>`:
 /// ` ```typescript\nimport {word}\n``` `, produced only when an import
 /// declaration actually binds `word` (default, named, aliased, or namespace).
+fn import_quick_info(word: &str) -> String {
+    format!("```typescript\nimport {word}\n```")
+}
+
+#[cfg(test)]
 fn imported_component_quick_info(
     script_setup: &str,
     lang: Option<&str>,
     word: &str,
 ) -> Option<String> {
-    import_binds_word(script_setup, lang, word)
-        .then(|| format!("```typescript\nimport {word}\n```"))
+    import_binds_word(script_setup, lang, word).then(|| import_quick_info(word))
 }
 
 /// Whether a value import declaration in `script_setup` binds `word`
 /// (default, named, aliased, or namespace).
+#[cfg(test)]
 fn import_binds_word(script_setup: &str, lang: Option<&str>, word: &str) -> bool {
     if word.is_empty() {
         return false;
     }
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script_setup, script_source_type(lang)).parse();
-    parsed.program.body.iter().any(|statement| {
-        let Statement::ImportDeclaration(import) = statement else {
-            return false;
-        };
-        // `import type { Child }` binds a type, not a runtime component, so it
-        // never backs a component tag: keep the checker's answer.
-        if import.import_kind.is_type() {
-            return false;
-        }
-        import.specifiers.as_ref().is_some_and(|specifiers| {
-            specifiers.iter().any(|specifier| {
-                // Same for a specifier-level `{ type Child }`.
-                if let ImportDeclarationSpecifier::ImportSpecifier(named) = specifier
-                    && named.import_kind.is_type()
-                {
-                    return false;
-                }
-                specifier.local().name == word
-            })
-        })
-    })
+    script_facts::parse_facts(script_setup, lang).imports_word(word)
 }
 
 /// Rewrite a quick-info block opening with `(parameter) {word}` to
@@ -192,91 +170,55 @@ fn is_v_for_alias(template: &str, word: &str, offset: u32) -> bool {
 /// `var` survives. Everything else parses as TypeScript, a superset of the
 /// plain-JS default that only has to yield declaration kinds and patterns here.
 fn script_source_type(lang: Option<&str>) -> SourceType {
+    match script_lang_id(lang) {
+        1 => SourceType::tsx(),
+        2 => SourceType::jsx(),
+        _ => SourceType::ts(),
+    }
+}
+
+/// `1` for tsx, `2` for jsx, `0` for every other `<script setup lang>`.
+fn script_lang_id(lang: Option<&str>) -> u8 {
     let lang = lang.unwrap_or_default().trim();
     if lang.eq_ignore_ascii_case("tsx") {
-        SourceType::tsx()
+        1
     } else if lang.eq_ignore_ascii_case("jsx") {
-        SourceType::jsx()
+        2
     } else {
-        SourceType::ts()
+        0
     }
 }
 
 /// The authored declaration keyword for `word`, when its top-level
 /// `<script setup>` declaration is a `const` or `let` binding (including
 /// destructuring patterns and default values).
+#[cfg(test)]
 pub(super) fn authored_keyword(
     script_setup: &str,
     lang: Option<&str>,
     word: &str,
 ) -> Option<&'static str> {
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script_setup, script_source_type(lang)).parse();
-    let mut found: Option<&'static str> = None;
-    for statement in &parsed.program.body {
-        let declaration = match statement {
-            Statement::VariableDeclaration(declaration) => declaration,
-            Statement::ExportNamedDeclaration(export) => match &export.declaration {
-                Some(Declaration::VariableDeclaration(declaration)) => declaration,
-                _ => continue,
-            },
-            _ => continue,
-        };
-        let keyword = match declaration.kind {
-            VariableDeclarationKind::Const => "const",
-            VariableDeclarationKind::Let => "let",
-            _ => continue,
-        };
-        for declarator in &declaration.declarations {
-            if pattern_binds(&declarator.id, word) {
-                match found {
-                    None => found = Some(keyword),
-                    Some(existing) if existing == keyword => {}
-                    // Two top-level declarations of one name is invalid code;
-                    // do not guess which one the checker resolved.
-                    Some(_) => return None,
-                }
-            }
-        }
-    }
-    found
-}
-
-fn pattern_binds(pattern: &BindingPattern<'_>, word: &str) -> bool {
-    match pattern {
-        BindingPattern::BindingIdentifier(identifier) => identifier.name == word,
-        BindingPattern::ObjectPattern(object) => {
-            object
-                .properties
-                .iter()
-                .any(|property| pattern_binds(&property.value, word))
-                || object
-                    .rest
-                    .as_ref()
-                    .is_some_and(|rest| pattern_binds(&rest.argument, word))
-        }
-        BindingPattern::ArrayPattern(array) => {
-            array
-                .elements
-                .iter()
-                .flatten()
-                .any(|element| pattern_binds(element, word))
-                || array
-                    .rest
-                    .as_ref()
-                    .is_some_and(|rest| pattern_binds(&rest.argument, word))
-        }
-        BindingPattern::AssignmentPattern(assignment) => pattern_binds(&assignment.left, word),
-    }
+    script_facts::parse_facts(script_setup, lang).keyword(word)
 }
 
 /// Rewrite a quick-info markdown block whose code fence opens with
 /// `var {word}` to the authored keyword. Returns `None` when nothing applies.
+#[cfg(test)]
 pub(super) fn align_leading_var(
     markdown: &str,
     script_setup: &str,
     lang: Option<&str>,
     word: &str,
+) -> Option<String> {
+    rewrite_leading_var(markdown, word, || {
+        authored_keyword(script_setup, lang, word)
+    })
+}
+
+fn rewrite_leading_var(
+    markdown: &str,
+    word: &str,
+    keyword: impl FnOnce() -> Option<&'static str>,
 ) -> Option<String> {
     if word.is_empty() {
         return None;
@@ -294,7 +236,7 @@ pub(super) fn align_leading_var(
     if following.is_some_and(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric()) {
         return None;
     }
-    let keyword = authored_keyword(script_setup, lang, word)?;
+    let keyword = keyword()?;
     let mut rewritten = String::with_capacity(markdown.len());
     rewritten.push_str(head);
     rewritten.push_str(keyword);

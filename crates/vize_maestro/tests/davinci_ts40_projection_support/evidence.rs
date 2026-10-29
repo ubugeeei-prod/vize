@@ -16,16 +16,46 @@ fn public_instance_slot_packets_remain_authenticated() {
         ],
         14,
     );
+    let successor_receipt_text =
+        include_str!("fixtures/public-instance-options-api-slots/successor-11064/receipt.json");
+    assert_eq!(
+        sha256(successor_receipt_text),
+        "e8916bf8eff167bc482fa64de01be67f384284d400ef69e1f8d854694108127c"
+    );
+    let successor_receipt: serde_json::Value =
+        serde_json::from_str(successor_receipt_text).expect("slot outlet alias successor receipt");
+    assert_eq!(successor_receipt["version"], 1);
+    assert_eq!(successor_receipt["pullRequest"], 11064);
+    let predecessor =
+        include_str!("fixtures/public-instance-options-api-slots/after/projection-record.txt");
+    assert_eq!(
+        successor_receipt["predecessor"]["bytes"].as_u64(),
+        Some(predecessor.len() as u64)
+    );
+    let predecessor_sha = sha256(predecessor);
+    assert_eq!(
+        successor_receipt["predecessor"]["sha256"].as_str(),
+        Some(predecessor_sha.as_str())
+    );
+    let successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11064/projection-record.txt"
+    );
+    assert_eq!(
+        successor_receipt["successor"]["bytes"].as_u64(),
+        Some(successor.len() as u64)
+    );
+    let successor_sha = sha256(successor);
+    assert_eq!(
+        successor_receipt["successor"]["sha256"].as_str(),
+        Some(successor_sha.as_str())
+    );
     let matrix = load_matrix();
     let fixture = matrix
         .fixtures
         .iter()
         .find(|fixture| fixture.id == "options-api-slots")
         .expect("reviewed Options API slot fixture");
-    assert_eq!(
-        capture_fixture(fixture).render().as_str(),
-        include_str!("fixtures/public-instance-options-api-slots/after/projection-record.txt")
-    );
+    assert_eq!(capture_fixture(fixture).render().as_str(), successor);
 }
 
 #[test]

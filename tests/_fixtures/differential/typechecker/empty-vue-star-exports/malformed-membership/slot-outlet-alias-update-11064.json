@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "pullRequest": 11064,
+  "rawProductRevision": "5128bc7a70a1d14eafded753d9c691b403f4537e",
+  "testedMerge": "e1336dc82afb00d75d7e236429e1e0c58a9ec5b8",
+  "observedRun": 40697523928,
+  "observedJob": 122849073259,
+  "artifact": 12820356605,
+  "artifactArchiveSha256": "3e9cce6e08ac23a89b81853b860a48bcecd34cfb7559009e97263a68b9e48229",
+  "packetPath": "_temp/native-syntax-semantics/empty-vue-star-exports/malformed-refusal.json",
+  "extractedPacketSha256": "c2ebbf4bf04c46e270d134dbc4a4b969b8b0768a39ceb6640da3eeab02572e4c",
+  "completeObservation": {
+    "rawEvidenceRevision": "773d1fbaba11efc41b8eb80399a95827da23c75f",
+    "testedMerge": "978b44c494324bf3035238811cfaebbff92ec291",
+    "observedRun": 40699448621,
+    "observedJob": 122856474080,
+    "artifact": 12821192217,
+    "artifactArchiveSha256": "021aa5226b11901134969a6e15102b281315fb7d818a6830356011e8182dc0f0",
+    "packetPath": "_temp/native-syntax-semantics/empty-vue-star-exports/malformed-refusal.json",
+    "extractedPacketSha256": "6ceeac95522aebdcddc3add8f4ef786938c8ea8ab7f05e92999315910b639509"
+  },
+  "entries": [
+    {
+      "entry": 74,
+      "before": [
+        "project/A.vue.ts",
+        4619,
+        "2c9f69da2b1149b73833cb5df1190d952fe1870283407240ec23d3a133c0628c"
+      ],
+      "after": [
+        "project/A.vue.ts",
+        4120,
+        "e10241d8a37cb1aacec155cef53c080a1f7e69599910c99e7801df616a18c8d3"
+      ]
+    },
+    {
+      "entry": 75,
+      "before": [
+        "project/B.vue.ts",
+        4843,
+        "5a96c64abd5b922e17c48c5aaae13fa9a39d25581ad82a138c779422f0d7125f"
+      ],
+      "after": [
+        "project/B.vue.ts",
+        4344,
+        "1987438ba338865f75c1160122b27d3f67d49a1beb8fd0feef456e486d477673"
+      ]
+    }
+  ],
+  "deltaBytes": -998,
+  "deltaBytesPerEntry": -499,
+  "omittedStaticNoSpreadAliasesPerEntry": 4,
+  "diagnosticParity": "The same configured native run reached the exact membership gate after preserving the authored input, generated project root, provider roots, and ordered 86-member census; no diagnostic-green credit is inferred from this body receipt.",
+  "proof": "The generated A.vue.ts and B.vue.ts bodies each omit only the four source-defined static slot-outlet spread aliases. The base outlet helper and all no-spread calls remain; the frozen manifest, part files, helper update, and context update remain byte-identical."
+}

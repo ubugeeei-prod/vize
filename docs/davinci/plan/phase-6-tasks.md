@@ -1,5 +1,11 @@
 # Phase 6 — Task contracts, P6-1a through P6-6
 
+> [!IMPORTANT]
+> Frozen historical contracts. The 2026-10-17
+> [scope decision](../decisions/2026-10-17-vue-toolchain-scope.md) retired this
+> component ABI, guest SDK, host, and MoonBit work. Incomplete steps below are
+> not current backlog or release gates.
+
 > [!NOTE]
 > Full contracts for [Phase 6 — Extension Contracts GA](./phase-6.md), early re-cut 2026-09-21; [phase-6-tasks-later.md](./phase-6-tasks-later.md) continues them under the 350-line source budget. Charter #15's two tiers govern: first-party dialects stay compiled in behind traits and features, external ones cross the serialized WIT contract with coarse-grained interfaces only; charter #39 governs new runtime dependencies (pin, audit, feature isolation).
 

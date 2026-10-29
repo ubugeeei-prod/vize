@@ -14,6 +14,7 @@ use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_litera
 use super::context::{ComponentPropsContext, VForPropsContext};
 use super::event_handler::event_name_source_range;
 use super::vif_guard_chain::{append_chained_vif_guard_close, append_chained_vif_guard_open};
+use crate::virtual_ts::expressions::callback_parameters_on_ignored_line;
 use crate::virtual_ts::expressions::generated_prop_value;
 
 pub(super) fn emit_event_references(
@@ -346,13 +347,28 @@ fn emit_resolved_events(
         if !emitted.insert(name.clone()) {
             continue;
         }
+        let inline_callback = super::is_inline_callback_prop(prop);
+        if inline_callback {
+            append!(
+                *ts,
+                "{indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
+            );
+        }
         append!(*ts, "{indent}  ");
         let key_start = ts.len();
         append!(*ts, "\"{name}\"");
         let key_end = ts.len();
         ts.push_str(": ");
         let value_start = ts.len();
-        ts.push_str(value.as_str());
+        let owned;
+        let value = if inline_callback {
+            let value = value.trim_start();
+            owned = callback_parameters_on_ignored_line(value);
+            owned.as_ref().map_or(value, |owned| owned.as_str())
+        } else {
+            value.as_str()
+        };
+        ts.push_str(value);
         let value_end = ts.len();
         crate::virtual_ts::expressions::ComponentPropSource::new(
             ctx.template_source,

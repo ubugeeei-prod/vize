@@ -9,6 +9,7 @@ use vize_carton::CompactString;
 use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
+use super::super::result::{is_composable_name, is_local_module_specifier};
 use super::vue_runtime_api::is_vue_runtime_api;
 
 /// Record one import: its scope, its local bindings, and — for each value
@@ -119,6 +120,14 @@ pub(super) fn process_import(result: &mut ScriptParseResult, import: &ImportDecl
             );
 
             if !is_type_only && !is_type_spec {
+                if is_local_module_specifier(source_name)
+                    && is_composable_name(exported)
+                    && !is_composable_name(name)
+                {
+                    result
+                        .imported_composable_aliases
+                        .insert(CompactString::new(name));
+                }
                 if !instance_member {
                     super::template_components::name(result, name);
                     result.bindings.add(name, binding_type);

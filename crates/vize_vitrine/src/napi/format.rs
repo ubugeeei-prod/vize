@@ -59,6 +59,8 @@ pub struct FormatOptionsNapi {
     pub end_of_line: Option<EndOfLineNapi>,
     pub sort_attributes: Option<bool>,
     pub single_attribute_per_line: Option<bool>,
+    /// Indent the contents of `<script>` and `<style>` blocks.
+    pub vue_indent_script_and_style: Option<bool>,
     pub max_attributes_per_line: Option<u32>,
     pub normalize_directive_shorthands: Option<bool>,
     /// Order SFC blocks canonically; false preserves their authored order.
@@ -174,6 +176,9 @@ fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
     }
     if let Some(value) = opts.single_attribute_per_line {
         options.single_attribute_per_line = value;
+    }
+    if let Some(value) = opts.vue_indent_script_and_style {
+        options.vue_indent_script_and_style = value;
     }
     if let Some(value) = opts.max_attributes_per_line {
         options.max_attributes_per_line = Some(value);
@@ -294,6 +299,20 @@ mod tests {
         assert!(!disabled.normalize_v_for_parens);
         assert!(!disabled.self_close_void_elements);
         assert!(!disabled.reindent_preprocessor_styles);
+    }
+
+    #[test]
+    fn native_sfc_body_indentation_is_an_explicit_opt_in() {
+        let defaults = apply_options(FormatOptionsNapi::default()).expect("native defaults");
+        assert!(!defaults.vue_indent_script_and_style);
+
+        let indented = apply_options(FormatOptionsNapi {
+            preset: Some("vize".into()),
+            vue_indent_script_and_style: Some(true),
+            ..Default::default()
+        })
+        .expect("native indentation option");
+        assert!(indented.vue_indent_script_and_style);
     }
 
     #[test]

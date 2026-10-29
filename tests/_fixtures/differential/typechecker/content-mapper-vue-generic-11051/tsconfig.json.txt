@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "preserve",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
+  "include": ["src"]
+}
