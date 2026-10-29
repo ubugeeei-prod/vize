@@ -82,7 +82,8 @@ pub(super) fn classify_provided_value(
     };
     ProvidedValueClassification {
         reactive_kind,
-        is_reactive_service: is_reactive_service_expression(analysis, expression),
+        is_reactive_service: reactive_kind.is_none()
+            && is_reactive_service_expression(analysis, expression),
     }
 }
 
@@ -96,12 +97,14 @@ fn is_reactive_service_expression(
     expression: &Expression<'_>,
 ) -> bool {
     match expression.get_inner_expression() {
-        Expression::CallExpression(call) => match &call.callee {
-            Expression::Identifier(callee) => {
-                vize_croquis::call_graph::is_composable_name(callee.name.as_str())
-            }
-            _ => false,
-        },
+        Expression::Identifier(identifier) => {
+            binding_may_preserve_liveness(analysis, identifier.name.as_str())
+        }
+        // A call result is not evidence of a plain snapshot. In particular,
+        // composables routinely return refs or service objects, while an
+        // arbitrary imported call can do the same. Only emit the diagnostic
+        // when the value is known to be plain rather than guessing here.
+        Expression::CallExpression(_) => true,
         Expression::ObjectExpression(object) => {
             !object.properties.is_empty()
                 && object.properties.iter().all(|property| {
@@ -113,6 +116,18 @@ fn is_reactive_service_expression(
         }
         _ => false,
     }
+}
+
+fn binding_may_preserve_liveness(analysis: &vize_croquis::Croquis, name: &str) -> bool {
+    named_reactive_kind(analysis, name).is_some()
+        || matches!(
+            analysis.get_binding_type(name),
+            Some(
+                BindingType::SetupRef
+                    | BindingType::SetupReactiveConst
+                    | BindingType::SetupMaybeRef
+            )
+        ) && !is_known_plain_snapshot(analysis, name)
 }
 
 fn is_live_service_member(analysis: &vize_croquis::Croquis, value: &Expression<'_>) -> bool {
@@ -129,13 +144,7 @@ fn is_live_service_member(analysis: &vize_croquis::Croquis, value: &Expression<'
                 || (analysis.get_binding_type(name) == Some(BindingType::SetupMaybeRef)
                     && !is_known_plain_snapshot(analysis, name))
         }
-        Expression::CallExpression(call) => match &call.callee {
-            Expression::Identifier(callee) => {
-                ReactiveKind::from_name(callee.name.as_str()).is_some()
-                    || vize_croquis::call_graph::is_composable_name(callee.name.as_str())
-            }
-            _ => false,
-        },
+        Expression::CallExpression(_) => true,
         _ => false,
     }
 }
@@ -245,7 +254,7 @@ mod tests {
             ("({value: 1}) as unknown as Ref<number>", None, false),
             ("source.value as unknown as Ref<number>", None, false),
             ("snapshot as unknown as Ref<number>", None, false),
-            ("getValue() as Ref<number>", None, false),
+            ("getValue() as Ref<number>", None, true),
             (
                 "(true ? source : plain) as unknown as Ref<number>",
                 None,
@@ -292,10 +301,10 @@ mod tests {
     }
 
     #[test]
-    fn composable_results_form_services_but_arbitrary_calls_do_not() {
+    fn call_results_remain_unknown_instead_of_becoming_plain_snapshots() {
         let analysis = analyze("const { state, open } = useToast()");
         assert!(is_reactive_service(&analysis, "{ state, open }"));
         assert!(is_reactive_service(&analysis, "useToast()"));
-        assert!(!is_reactive_service(&analysis, "getToast()"));
+        assert!(is_reactive_service(&analysis, "getToast()"));
     }
 }
