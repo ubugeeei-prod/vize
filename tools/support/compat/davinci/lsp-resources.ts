@@ -5,21 +5,19 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { setTimeout as sleep } from "node:timers/promises";
 import { createHash } from "node:crypto";
 import { LspSession } from "../../../../tests/tooling/support/lsp/session.ts";
 import { isRecord } from "../../json-value.ts";
 import type { JsonRecord } from "../../json-value.ts";
 import { componentSource, documentUri, prepareWorkspace } from "./lib/lsp-resource-workspace.ts";
-import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
-import type { ObservedProcess, ProcessEntry, TreeSample } from "./lib/lsp-resource-sampler.ts";
+import { ResourceCorsaGate, type GateCleanupReceipt } from "./lib/lsp-resource-corsa-gate.ts";
 import {
-  bodyEditChurn,
-  cancelledConcurrentEdits,
-  controlledEdits,
-  metadataCompletion,
-  verifyCancellationRecovery,
-} from "./lib/lsp-resource-witness.ts";
+  finalizeCancellationProfileLink,
+  measureCancellationRetention,
+} from "./lib/lsp-resource-cancellation-run.ts";
+import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
+import type { ObservedProcess, ProcessEntry } from "./lib/lsp-resource-sampler.ts";
+import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.ts";
 import { profiledLauncher } from "./lib/lsp-profile-launch.ts";
 import { captureLspResourceCorpus } from "./lib/lsp-resource-corpus.ts";
 import { finalizeSampledLspRun } from "./lib/lsp-resource-finalize.ts";
@@ -28,7 +26,7 @@ interface RunResult {
   run: number;
   corpus: ReturnType<typeof captureLspResourceCorpus>;
   fixture_preparation_ms: number;
-  dependencies: { corsaPath: string; vuePath: string };
+  dependencies: ReturnType<typeof prepareWorkspace>;
   opened_files: number;
   metadata_requests: number;
   successful_unique_provider_requests: number;
@@ -37,16 +35,8 @@ interface RunResult {
   initialized_ms?: number;
   controlled_edits_scope?: string;
   body_edit_churn?: Awaited<ReturnType<typeof bodyEditChurn>>;
-  cancellation_churn?: Awaited<ReturnType<typeof cancelledConcurrentEdits>> & {
-    recovery: Awaited<ReturnType<typeof verifyCancellationRecovery>>;
-    retention: CancellationRetention;
-    allocation_profile: {
-      same_session: boolean;
-      expected_path: string | null;
-      receipt_field: "profile_json";
-      scope: string;
-    };
-  };
+  cancellation_churn?: Awaited<ReturnType<typeof measureCancellationRetention>>;
+  corsa_gate_cleanup?: GateCleanupReceipt;
   controlled_edits?: JsonRecord[];
   warming_elapsed_ms?: number;
   current_rss_mib?: number;
@@ -63,21 +53,6 @@ interface RunResult {
   resource_samples?: number;
   profile_json?: { path: string; bytes: number; sha256: string };
   finalization_error?: string;
-}
-
-interface ResourceCheckpoint {
-  monotonic_ns: string;
-  server_rss_mib: number;
-  process_tree_rss_mib: number;
-  processes: ProcessEntry[];
-}
-
-interface CancellationRetention {
-  scope: string;
-  before: ResourceCheckpoint;
-  immediately_after_responses: ResourceCheckpoint;
-  after_10s_quiescence: ResourceCheckpoint;
-  retained_delta_mib: { server: number; process_tree: number };
 }
 
 interface Measurement {
@@ -118,21 +93,6 @@ const idleSeconds = Number(flag("--idle-seconds", "10"));
 const preset = flag("--preset", "linux-x64-ci");
 await measure();
 
-function checkpoint(sample: TreeSample, serverPid: number): ResourceCheckpoint {
-  const server = sample.processes.find((process) => process.pid === serverPid);
-  assert.ok(server, "the measured Maestro server must own each RSS checkpoint");
-  return {
-    monotonic_ns: process.hrtime.bigint().toString(),
-    server_rss_mib: mib(server.rss_bytes),
-    process_tree_rss_mib: mib(sample.rss_bytes),
-    processes: sample.processes,
-  };
-}
-
-function deltaMib(after: number, before: number): number {
-  return Math.round((after - before) * 10) / 10;
-}
-
 async function measure() {
   assert.ok(Number.isInteger(files) && files >= 2 && files % 2 === 0);
   assert.ok(
@@ -150,7 +110,8 @@ async function measure() {
   const profileDirectory = profileDirectoryArgument ? path.resolve(profileDirectoryArgument) : null;
   process.env.VIZE_LSP_BIN = server;
   const measurement: Measurement = {
-    scope: "production Maestro LSP with all descendants, including Corsa; harness excluded",
+    scope:
+      "production Maestro LSP with every descendant, including actual Corsa and its test-only byte-preserving Node gate proxy; outer harness excluded",
     preset,
     workspace_files: files,
     open_files: openFiles,
@@ -182,6 +143,7 @@ async function measure() {
     const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-real-lsp-resource-"));
     const setupStarted = performance.now();
     const dependencies = prepareWorkspace(workspace, files);
+    const corsaGate = new ResourceCorsaGate(dependencies.corsaGate);
     const corpus = captureLspResourceCorpus(workspace, dependencies);
     const profilePath = profileDirectory && path.join(profileDirectory, `run-${run + 1}.json`);
     process.env.VIZE_LSP_BIN = profilePath
@@ -227,49 +189,15 @@ async function measure() {
       result.controlled_edits_scope =
         "two open files before cancellation, controlled edits and bulk residency";
       result.body_edit_churn = await bodyEditChurn(session, workspace);
-      const beforeCancellation = checkpoint(sampler.sample(), session.processId);
-      const cancellation = await cancelledConcurrentEdits(
+      const cancellation = await measureCancellationRetention({
         session,
+        sampler,
         workspace,
-        result.body_edit_churn.final_version,
-      );
-      const immediatelyAfterCancellation = checkpoint(sampler.sample(), session.processId);
-      const recovery = await verifyCancellationRecovery(
-        session,
-        workspace,
-        cancellation.final_version,
-      );
-      await sleep(10_000);
-      const afterCancellationQuiescence = checkpoint(sampler.sample(), session.processId);
-      result.cancellation_churn = {
-        ...cancellation,
-        recovery,
-        retention: {
-          scope:
-            "Maestro server and every live descendant; exact PID/birth-tick identities at each checkpoint",
-          before: beforeCancellation,
-          immediately_after_responses: immediatelyAfterCancellation,
-          after_10s_quiescence: afterCancellationQuiescence,
-          retained_delta_mib: {
-            server: deltaMib(
-              afterCancellationQuiescence.server_rss_mib,
-              beforeCancellation.server_rss_mib,
-            ),
-            process_tree: deltaMib(
-              afterCancellationQuiescence.process_tree_rss_mib,
-              beforeCancellation.process_tree_rss_mib,
-            ),
-          },
-        },
-        allocation_profile: {
-          same_session: profilePath !== null,
-          expected_path: profilePath,
-          receipt_field: "profile_json",
-          scope: profilePath
-            ? "the sibling profile_json receipt is exported by this exact server process after graceful shutdown; cumulative requested/released Rust allocation traffic, not cancellation-only peak-live bytes"
-            : "no allocation profile requested for this ordinary-process run",
-        },
-      };
+        initialVersion: result.body_edit_churn.final_version,
+        gate: corsaGate,
+        profilePath,
+      });
+      result.cancellation_churn = cancellation;
       save();
       result.controlled_edits = await controlledEdits(
         session,
@@ -363,15 +291,22 @@ async function measure() {
         profilePath,
         cleanup() {
           process.env.VIZE_LSP_BIN = server;
-          fs.rmSync(workspace, { force: true, recursive: true });
+          try {
+            result.corsa_gate_cleanup = corsaGate.cleanup();
+            assert.ok(result.corsa_gate_cleanup.no_orphans, "Corsa gate cleanup left an orphan");
+          } finally {
+            fs.rmSync(workspace, { force: true, recursive: true });
+          }
         },
         persist: save,
       });
       if (profilePath && result.cancellation_churn) {
-        assert.equal(
-          result.profile_json?.path,
-          result.cancellation_churn.allocation_profile.expected_path,
-          "the allocation profile must belong to this exact cancellation session",
+        const allocation = result.cancellation_churn.allocation_profile;
+        finalizeCancellationProfileLink(
+          allocation,
+          result.profile_json?.path ?? null,
+          result.error !== undefined || result.finalization_error !== undefined,
+          save,
         );
       }
     }

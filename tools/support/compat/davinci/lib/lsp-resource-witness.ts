@@ -3,7 +3,10 @@ import {
   hoverToText,
   offsetToPosition,
 } from "../../../../../tests/tooling/support/lsp/assertions.ts";
-import type { PublishDiagnosticsParams } from "../../../../../tests/tooling/support/lsp/protocol.ts";
+import type {
+  JsonRpcMessage,
+  PublishDiagnosticsParams,
+} from "../../../../../tests/tooling/support/lsp/protocol.ts";
 import {
   LspRequestError,
   type LspSession,
@@ -12,11 +15,13 @@ import { asString, at, isRecord } from "../../../json-value.ts";
 import type { JsonRecord } from "../../../json-value.ts";
 import {
   cancellationCycles,
-  cancellationFollowing,
+  cancellationBatch,
   sourceSha256,
   summarizeCancellationDurations,
   type CancellationFrameReceipt,
+  type CancellationPublication,
 } from "./lsp-resource-cancellation.ts";
+import type { NativeAdmissionReceipt, ResourceCorsaGate } from "./lsp-resource-corsa-gate.ts";
 import { componentSource, documentUri } from "./lsp-resource-workspace.ts";
 
 function isPublication(value: unknown): value is PublishDiagnosticsParams & object {
@@ -71,22 +76,81 @@ export async function bodyEditChurn(
 }
 
 type CancellationAttempt = {
-  cycle: number;
-  query: string;
-  started_ns: string;
-  frame: CancellationFrameReceipt;
-  response: Promise<unknown>;
+  raw_request_id: number;
+  request_started_ns: string;
+  request_write_returned_ns: string;
 };
 
+type RawResponse = { message: JsonRpcMessage; completed_ns: string };
+
+type CancellationSample = CancellationFrameReceipt & {
+  cycle: number;
+  admission: NativeAdmissionReceipt;
+  gate_release: Awaited<ReturnType<ResourceCorsaGate["waitReleased"]>>;
+  outer_method: "textDocument/hover";
+  outer_request_started_ns: string;
+  outer_request_write_returned_ns: string;
+  batch_write_started_ns: string;
+  batch_write_returned_ns: string;
+  raw_response_completed_ns: string;
+  raw_outer_response: JsonRpcMessage;
+  raw_outer_response_sha256: string;
+  raw_response_observer: string;
+  elapsed_scope: string;
+  elapsed_ms: number;
+  post_write_return_ms: number;
+};
+
+const peerHoverParams = (workspace: string) => {
+  const uri = documentUri(workspace, 1);
+  const source = componentSource(1);
+  return {
+    textDocument: { uri },
+    position: offsetToPosition(source, source.indexOf("\nPeer\n") + 2),
+  };
+};
+
+/** Retain every child diagnostics payload observed during the measured window. */
+export function recordCancellationPublications(session: LspSession, workspace: string) {
+  const uri = documentUri(workspace, 0);
+  const rows: CancellationPublication[] = [];
+  let stopped = false;
+  const observer = (method: string, value: unknown): void => {
+    if (method !== "textDocument/publishDiagnostics" || !isPublication(value)) return;
+    if (value.uri !== uri) return;
+    const diagnostics = JSON.parse(JSON.stringify(value.diagnostics)) as unknown[];
+    rows.push({
+      received_order: rows.length + 1,
+      received_ns: process.hrtime.bigint().toString(),
+      uri,
+      version: Number.isSafeInteger(value.version) ? Number(value.version) : null,
+      diagnostics,
+      diagnostics_sha256: sourceSha256(JSON.stringify(diagnostics)),
+    });
+  };
+  session.notificationObservers.push(observer);
+  return {
+    count: () => rows.length,
+    since: (index: number): CancellationPublication[] => rows.slice(index),
+    stop() {
+      if (stopped) return;
+      stopped = true;
+      const index = session.notificationObservers.indexOf(observer);
+      if (index >= 0) session.notificationObservers.splice(index, 1);
+    },
+  };
+}
+
 /**
- * Submit every cancellation, its `$/cancelRequest`, and one complete edit in
- * the same real stdio write. All requests are live before awaiting responses,
- * so the edits exercise the production dispatcher's concurrent revision path.
+ * Admit one real hover into Corsa, hold its already-produced native response,
+ * and only then send the outer cancellation plus one complete edit. Releasing
+ * each token before arming the next gives every sample its own proven overlap.
  */
 export async function cancelledConcurrentEdits(
   session: LspSession,
   workspace: string,
   initialVersion: number,
+  gate: ResourceCorsaGate,
 ) {
   assert.ok(Number.isSafeInteger(initialVersion) && initialVersion > 0);
   const uri = documentUri(workspace, 0);
@@ -96,68 +160,156 @@ export async function cancelledConcurrentEdits(
     'const checked: number = "cancelled-edit"',
   );
   assert.notEqual(brokenSource, cleanSource);
-  const attempts: CancellationAttempt[] = [];
+  const samples: CancellationSample[] = [];
   let version = initialVersion;
+  const waiters = new Map<
+    number,
+    {
+      resolve: (response: RawResponse) => void;
+      reject: (error: Error) => void;
+      timeout?: NodeJS.Timeout;
+    }
+  >();
+  const responseObserver = (message: JsonRpcMessage): void => {
+    if (typeof message.id !== "number") return;
+    const waiter = waiters.get(message.id);
+    if (!waiter) return;
+    if (waiter.timeout) clearTimeout(waiter.timeout);
+    waiters.delete(message.id);
+    waiter.resolve({ message, completed_ns: process.hrtime.bigint().toString() });
+  };
+  session.responseObservers.push(responseObserver);
+  try {
+    for (let cycle = 1; cycle <= cancellationCycles; cycle++) {
+      gate.arm(cycle);
+      let admission: NativeAdmissionReceipt | undefined;
+      let release: Awaited<ReturnType<ResourceCorsaGate["waitReleased"]>> | undefined;
+      let attempt: CancellationAttempt | undefined;
+      let rawResponse: Promise<RawResponse> | undefined;
+      let sample: Omit<CancellationSample, "gate_release"> | undefined;
+      let gateReleaseError: unknown;
+      try {
+        const requestStartedNs = process.hrtime.bigint().toString();
+        let rawRequestId = -1;
+        const response = session.request(
+          "textDocument/hover",
+          peerHoverParams(workspace),
+          180_000,
+          (requestId) => {
+            rawRequestId = requestId;
+            rawResponse = new Promise<RawResponse>((resolve, reject) => {
+              waiters.set(requestId, { resolve, reject });
+            });
+            void rawResponse.catch(() => undefined);
+            return [];
+          },
+        );
+        const settled = response.then(
+          (value) => ({ status: "fulfilled" as const, value }),
+          (error: unknown) => ({ status: "rejected" as const, error }),
+        );
+        attempt = {
+          raw_request_id: rawRequestId,
+          request_started_ns: requestStartedNs,
+          request_write_returned_ns: process.hrtime.bigint().toString(),
+        };
+        assert.ok(rawRequestId > 0 && rawResponse, "outer hover metadata must precede its write");
+        admission = await gate.waitEntered(cycle);
+        assert.equal(admission.request.method, "textDocument/hover");
+        assert.equal(admission.response.id, admission.request.id);
 
-  for (let cycle = 1; cycle <= cancellationCycles; cycle++) {
-    const source = cycle % 2 === 0 ? cleanSource : brokenSource;
-    const query = `cancelled-resource-${cycle}`;
-    let frame: CancellationFrameReceipt | undefined;
-    let startedNs = "";
-    const response = session.request("workspace/symbol", { query }, 30_000, (requestId) => {
-      startedNs = process.hrtime.bigint().toString();
-      const following = cancellationFollowing(requestId, uri, ++version, source);
-      frame = following.receipt;
-      return following.messages;
-    });
-    assert.ok(frame && startedNs, "request metadata must exist before the stdio write returns");
-    attempts.push({ cycle, query, started_ns: startedNs, frame, response });
+        const source = cycle % 2 === 0 ? cleanSource : brokenSource;
+        const batch = cancellationBatch(rawRequestId, uri, ++version, source);
+        const rawWaiter = waiters.get(rawRequestId);
+        assert.ok(rawWaiter, "raw response observer must remain armed before cancellation");
+        rawWaiter.timeout = setTimeout(() => {
+          waiters.delete(rawRequestId);
+          rawWaiter.reject(new Error(`timed out waiting for raw response ${rawRequestId}`));
+        }, 30_000);
+        const batchWriteStarted = process.hrtime.bigint();
+        session.sendBatch(...batch.messages);
+        const batchWriteReturned = process.hrtime.bigint();
+        const observed = await rawResponse;
+        const observedNs = BigInt(observed.completed_ns);
+        assert.ok(batchWriteStarted <= batchWriteReturned);
+        assert.ok(batchWriteReturned <= observedNs);
+        assert.deepEqual(observed.message, {
+          jsonrpc: "2.0",
+          id: rawRequestId,
+          error: { code: -32800, message: "Canceled" },
+        });
+        const settlement = await settled;
+        assert.equal(settlement.status, "rejected", `outer hover ${rawRequestId} must cancel`);
+        if (settlement.status !== "rejected") throw new Error("unreachable fulfilled cancellation");
+        assert.ok(settlement.error instanceof LspRequestError);
+        assert.equal(settlement.error.id, rawRequestId);
+        assert.equal(settlement.error.method, "textDocument/hover");
+        assert.equal(settlement.error.code, -32800);
+        sample = {
+          cycle,
+          ...batch.receipt,
+          admission,
+          outer_method: "textDocument/hover",
+          outer_request_started_ns: attempt.request_started_ns,
+          outer_request_write_returned_ns: attempt.request_write_returned_ns,
+          batch_write_started_ns: batchWriteStarted.toString(),
+          batch_write_returned_ns: batchWriteReturned.toString(),
+          raw_response_completed_ns: observed.completed_ns,
+          raw_outer_response: observed.message,
+          raw_outer_response_sha256: sourceSha256(JSON.stringify(observed.message)),
+          raw_response_observer:
+            "LspSession.responseObservers captured this parsed outer response before promise settlement",
+          elapsed_scope:
+            "immediately before the one-write cancellation/edit batch until raw outer response observation",
+          elapsed_ms: Number(observedNs - batchWriteStarted) / 1e6,
+          post_write_return_ms: Number(observedNs - batchWriteReturned) / 1e6,
+        };
+      } finally {
+        try {
+          gate.release(cycle);
+          if (admission) release = await gate.waitReleased(cycle);
+        } catch (releaseError) {
+          gateReleaseError = releaseError;
+        }
+      }
+      if (gateReleaseError !== undefined) throw gateReleaseError;
+      assert.ok(sample && release, `cycle ${cycle} must retain sample and gate release receipts`);
+      samples.push({ ...sample, gate_release: release });
+    }
+  } finally {
+    const observerIndex = session.responseObservers.indexOf(responseObserver);
+    if (observerIndex >= 0) session.responseObservers.splice(observerIndex, 1);
+    for (const waiter of waiters.values()) {
+      if (waiter.timeout) clearTimeout(waiter.timeout);
+      waiter.reject(new Error("cancellation response observer stopped"));
+    }
+    waiters.clear();
   }
 
   assert.equal(version, initialVersion + cancellationCycles);
-  assert.equal(attempts.at(-1)?.frame.source_sha256, sourceSha256(cleanSource));
-  assert.equal(
-    new Set(attempts.map((attempt) => attempt.frame.raw_request_id)).size,
-    attempts.length,
-  );
-  for (let index = 1; index < attempts.length; index++) {
+  assert.equal(samples.at(-1)?.source_sha256, sourceSha256(cleanSource));
+  assert.equal(new Set(samples.map((sample) => sample.raw_request_id)).size, samples.length);
+  assert.equal(new Set(samples.map((sample) => sample.admission.native_process.pid)).size, 1);
+  for (let index = 1; index < samples.length; index++) {
     assert.ok(
-      attempts[index].frame.raw_request_id > attempts[index - 1].frame.raw_request_id,
-      "raw request IDs must increase in actual write order",
+      samples[index].raw_request_id > samples[index - 1].raw_request_id,
+      "raw outer request IDs must increase in actual write order",
+    );
+    assert.deepEqual(
+      samples[index].admission.native_process,
+      samples[0].admission.native_process,
+      "all admitted hovers must use the same actual Corsa process identity",
+    );
+    assert.deepEqual(
+      samples[index].admission.proxy_process,
+      samples[0].admission.proxy_process,
+      "all admitted hovers must use the same gate proxy process identity",
     );
   }
 
-  const samples = await Promise.all(
-    attempts.map(async (attempt) => {
-      let error: unknown;
-      try {
-        await attempt.response;
-      } catch (reason) {
-        error = reason;
-      }
-      const completedNs = process.hrtime.bigint();
-      assert.ok(
-        error instanceof LspRequestError,
-        `request ${attempt.frame.raw_request_id} must cancel`,
-      );
-      assert.equal(error.id, attempt.frame.raw_request_id);
-      assert.equal(error.method, "workspace/symbol");
-      assert.equal(error.code, -32800);
-      return {
-        cycle: attempt.cycle,
-        query: attempt.query,
-        ...attempt.frame,
-        response_error_code: error.code,
-        started_ns: attempt.started_ns,
-        completed_ns: completedNs.toString(),
-        elapsed_ms: Number(completedNs - BigInt(attempt.started_ns)) / 1e6,
-      };
-    }),
-  );
-
   return {
     transport:
-      "each request, $/cancelRequest and full-document didChange share one LspSession stdin.write",
+      "each outer hover is admitted through an actual held Corsa response before $/cancelRequest and full-document didChange share one LspSession stdin.write",
     initial_version: initialVersion,
     final_version: version,
     final_source_sha256: sourceSha256(cleanSource),
@@ -191,14 +343,7 @@ export async function verifyCancellationRecovery(
   assert.ok(isPublication(publish));
 
   const completion = await metadataCompletion(session, parentUri, parent);
-  const hover = await session.request(
-    "textDocument/hover",
-    {
-      textDocument: { uri: parentUri },
-      position: offsetToPosition(parent, parent.indexOf("\nPeer\n") + 2),
-    },
-    120_000,
-  );
+  const hover = await session.request("textDocument/hover", peerHoverParams(workspace), 120_000);
   const hoverResult = isRecord(hover) ? hover : null;
   const hoverText = hoverToText(hoverResult);
   assert.match(hoverText, /save: \[value: string\]/);
