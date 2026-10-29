@@ -3,7 +3,7 @@ import { mergeProps as _mergeProps } from "vue"
 
 
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
-  _push(_ssrRenderComponent($setup["MyButton"], _mergeProps({ label: $setup.msg }, _attrs), null, _parent))
+  _push(_ssrRenderComponent($setup.MyButton, _mergeProps({ label: $setup.msg }, _attrs), null, _parent))
 }
 import MyButton from './MyButton.vue'
 

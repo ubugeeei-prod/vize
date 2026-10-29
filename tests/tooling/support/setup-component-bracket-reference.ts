@@ -37,13 +37,15 @@ export function setupComponentBracketReference(
   out.code = packet.code.slice(0, start) + after + packet.code.slice(start + before.length);
   const byteDelta = Buffer.byteLength(after) - Buffer.byteLength(before);
   const moduleShape = out.moduleShape as ComponentModuleShape | undefined;
-  for (const key of [
-    "defaultExportStart",
-    "defaultExportKeywordEnd",
-    "defaultExportEnd",
-  ] as const) {
-    const offset = moduleShape?.[key];
-    if (typeof offset === "number" && offset > start) moduleShape[key] = offset + byteDelta;
+  if (moduleShape) {
+    for (const key of [
+      "defaultExportStart",
+      "defaultExportKeywordEnd",
+      "defaultExportEnd",
+    ] as const) {
+      const offset = moduleShape[key];
+      if (typeof offset === "number" && offset > start) moduleShape[key] = offset + byteDelta;
+    }
   }
   return out;
 }
