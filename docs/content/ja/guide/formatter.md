@@ -126,6 +126,7 @@ export default defineConfig({}).withVue({
 | `--vue-indent-script-and-style`    | `<script>` と `<style>` の内容をインデントします。               |
 | `--max-attributes-per-line`        | 指定した数を超えると、属性を折り返します。                      |
 | `--normalize-directive-shorthands` | `v-bind:`、`v-on:`、`v-slot:` を `:`、`@`、`#` に置き換えます。 |
+| `--sort-blocks`                    | SFC ブロックの標準順序を切り替えます。                          |
 
 個々の設定は、次のガイドで詳しく説明しています。
 
@@ -206,6 +207,12 @@ SFC 本体のインデントも、すべての直接フォーマッタ境界で�
 `attributeSortOrder` に対応します。`as-written` でも Vue の優先グループは適用され、
 同じグループ内だけ記述順を保ちます。属性全体の記述順を保つ場合は
 `--sort-attributes=false` を使います。
+
+SFC ブロックの順序も、各公開境界で同じように指定できます。
+`--sort-blocks[=false]` は、型付きの Node・設定オプション `sortBlocks` に
+対応します。CLI の明示値は設定と選択したプリセットより優先されます。`false` は
+ルートブロックの記述順を保ち、`true` は script、script setup、template、style、
+カスタムブロックの順に並べます。
 
 ## コンパクトなアプリケーションコード
 

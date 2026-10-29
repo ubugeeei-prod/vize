@@ -27,6 +27,7 @@ use format_source::format_file_source;
 mod patterns;
 pub(crate) use files::collect_files;
 use ignores::load_fmt_ignore_set;
+pub use options::FmtPreset;
 use options::{FmtAttributeSortOrder, build_format_options};
 use patterns::{FORMAT_EXTENSIONS_DISPLAY, FORMAT_PATTERN_HELP};
 #[derive(Args)]
@@ -124,6 +125,10 @@ pub struct FmtArgs {
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub normalize_directive_shorthands: Option<bool>,
 
+    /// Order SFC blocks canonically instead of preserving their authored order
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
+    pub sort_blocks: Option<bool>,
+
     /// Apply a named set of defaults before the flags above
     #[arg(long, value_enum)]
     pub preset: Option<FmtPreset>,
@@ -135,19 +140,6 @@ pub struct FmtArgs {
     /// Slow file threshold in milliseconds for profile output
     #[arg(long, default_value = "100")]
     pub slow_threshold: u64,
-}
-
-/// Named formatter defaults selectable from the CLI.
-#[derive(Debug, Clone, Copy, ValueEnum)]
-pub enum FmtPreset {
-    /// The Vize defaults
-    Vize,
-    /// Prettier's Vue layout, as listed in the formatter guide
-    Prettier,
-    /// Dense application layout that preserves authored order
-    Compact,
-    /// Readable documentation examples with one attribute per line
-    Documentation,
 }
 
 /// Object property quote modes selectable from the CLI.
@@ -219,17 +211,6 @@ impl From<FmtArrowParens> for vize_glyph::ArrowParens {
         match value {
             FmtArrowParens::Always => Self::Always,
             FmtArrowParens::Avoid => Self::Avoid,
-        }
-    }
-}
-
-impl From<FmtPreset> for vize_glyph::FormatPreset {
-    fn from(preset: FmtPreset) -> Self {
-        match preset {
-            FmtPreset::Vize => Self::Vize,
-            FmtPreset::Prettier => Self::Prettier,
-            FmtPreset::Compact => Self::Compact,
-            FmtPreset::Documentation => Self::Documentation,
         }
     }
 }

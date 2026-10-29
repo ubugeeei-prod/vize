@@ -155,6 +155,7 @@ vize fmt --write src
 | `--vue-indent-script-and-style`    | script と style ブロックの内容をインデントする         |
 | `--max-attributes-per-line`        | 指定した属性数で改行する                               |
 | `--normalize-directive-shorthands` | `v-bind:` / `v-on:` / `v-slot:` の省略記法を正規化する |
+| `--sort-blocks`                    | SFC ブロックの標準順序を切り替える                     |
 | `--preset`                         | `vize`、`prettier`、`compact`、`documentation` のフォーマッタ既定値を適用する |
 | `--profile`                        | 処理時間のプロファイルを表示する                       |
 

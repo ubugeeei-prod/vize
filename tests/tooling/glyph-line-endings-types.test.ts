@@ -121,7 +121,7 @@ test("config schema and shipped Node types share the Prettier normalizer boolean
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
 
-test("config schema and shipped Node types share SFC body indentation", (t) => {
+test("config schema and shipped Node types share SFC layout booleans", (t) => {
   const schema = JSON.parse(
     fs.readFileSync(path.join(root, "npm/cli/schemas/vize.config.schema.json"), "utf8"),
   );
@@ -129,21 +129,25 @@ test("config schema and shipped Node types share SFC body indentation", (t) => {
     schema.definitions.FormatterConfig.properties.vueIndentScriptAndStyle.type,
     "boolean",
   );
+  assert.equal(schema.definitions.FormatterConfig.properties.sortBlocks.type, "boolean");
 
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "glyph-sfc-body-indent-types-"));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "glyph-sfc-layout-types-"));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   fs.writeFileSync(
     path.join(directory, "consumer.mts"),
     [
       `import { formatSfc, type FormatOptionsNapi } from ${JSON.stringify(path.join(root, "npm/native/index.js"))};`,
       `import type { FormatterConfig } from ${JSON.stringify(path.join(root, "npm/cli/src/types/generated.js"))};`,
-      "const config: FormatterConfig = { vueIndentScriptAndStyle: true };",
+      "const config: FormatterConfig = { vueIndentScriptAndStyle: true, sortBlocks: false };",
       "const native: FormatOptionsNapi = {",
       "  vueIndentScriptAndStyle: config.vueIndentScriptAndStyle,",
+      "  sortBlocks: config.sortBlocks,",
       "};",
       "formatSfc('', native);",
       "// @ts-expect-error SFC body indentation remains boolean-only.",
       "formatSfc('', { vueIndentScriptAndStyle: 'yes' });",
+      "// @ts-expect-error SFC block ordering remains boolean-only.",
+      "formatSfc('', { sortBlocks: 'authored' });",
       "",
     ].join("\n"),
   );

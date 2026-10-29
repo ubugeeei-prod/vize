@@ -124,6 +124,7 @@ The same options are available as CLI flags:
 | `--vue-indent-script-and-style`    | Indents the contents of `<script>` and `<style>`.              |
 | `--max-attributes-per-line`        | Wraps after the given number of attributes.                   |
 | `--normalize-directive-shorthands` | Turns `v-bind:`, `v-on:` and `v-slot:` into `:`, `@` and `#`. |
+| `--sort-blocks`                    | Toggles canonical SFC block ordering.                         |
 
 Each of these guides covers one setting in detail:
 
@@ -204,6 +205,11 @@ Attribute order is projected consistently too:
 config option `attributeSortOrder`. The formatter still applies Vue priority
 groups; `as-written` only preserves authored order inside each group. Use
 `--sort-attributes=false` to preserve the complete authored order instead.
+
+SFC block order is projected consistently too: `--sort-blocks[=false]` maps
+to the typed Node and config option `sortBlocks`. An explicit CLI value
+overrides config and a selected preset. `false` preserves authored root-block
+order; `true` uses script, script setup, template, styles, then custom blocks.
 
 ## Compact application code
 
