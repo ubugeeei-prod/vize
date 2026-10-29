@@ -144,6 +144,7 @@ Cross-crate aggregates — per-product totals, the products with no external con
 | `build_effect_graph_from_script`           | type  | `effect_graph`                 |
 | `build_effect_graph_from_script_setup`     | type  | `effect_graph`                 |
 | `build_effect_graph_from_sfc_scripts`      | type  | `effect_graph`                 |
+| `normalize_options_template_binding_name`  | type  | `croquis::options_descriptor`  |
 | `note_mounted_resources`                   | type  | `mounted`                      |
 | `Croquis.binding_spans`                    | field | `croquis`                      |
 | `Croquis.bindings`                         | field | `croquis`                      |

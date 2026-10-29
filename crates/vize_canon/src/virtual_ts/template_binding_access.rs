@@ -31,7 +31,7 @@ impl TemplateBindingAccess {
                     continue;
                 };
                 result.receivers.remove(name.as_str());
-                result.lexical.insert(name.into());
+                result.lexical.insert(name);
             }
         }
         if options_api {

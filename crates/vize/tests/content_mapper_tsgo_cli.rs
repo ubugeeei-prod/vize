@@ -143,6 +143,16 @@ fn output_text(output: &Output) -> CompactString {
     )
 }
 
+fn raw_diagnostic_lines(output: &Output) -> Vec<std::string::String> {
+    assert!(output.stderr.is_empty(), "{}", output_text(output));
+    std::str::from_utf8(&output.stdout)
+        .unwrap()
+        .lines()
+        .filter(|line| !line.is_empty())
+        .map(|line| line.replace('\\', "/"))
+        .collect()
+}
+
 fn assert_success(output: &Output) {
     assert!(output.status.success(), "{}", output_text(output));
 }
@@ -506,11 +516,11 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
         !options_disabled.status.success(),
         "Options API disabled fixture passed unexpectedly"
     );
-    let options_disabled_output = output_text(&options_disabled);
     assert_eq!(
-        options_disabled_output.lines().collect::<Vec<_>>(),
+        raw_diagnostic_lines(&options_disabled),
         options_api_diagnostics::DISABLED_OPTIONS_API,
-        "Options API opt-out diagnostics must retain their exact authored identity"
+        "Options API opt-out diagnostics must retain their exact authored identity: {}",
+        output_text(&options_disabled)
     );
 
     let broken = check_project(&tsgo, project.path(), "tsconfig.error.json");
