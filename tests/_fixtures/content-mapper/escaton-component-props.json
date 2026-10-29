@@ -249,7 +249,7 @@
   "limitations": [
     "The three originals and data/aria positives are also accepted by genuine vue-tsc3.3.9/TypeScript6.0.3/Vue3.5.20.",
     "Typed abstract dynamic components are unchecked by that vue-tsc oracle; negative expectations retain Vize existing typed-concrete constructor contract.",
-    "Owned data props and functional components preserve current Vize stricter two-diagnostic output rather than claiming primary diagnostic parity.",
+    "Owned data props and functional components preserve one authored TS2322 each; this fixture does not claim primary diagnostic text parity.",
     "No locally built or edited native candidate executed; source and all expected candidate behavior require Actions."
   ]
 }
