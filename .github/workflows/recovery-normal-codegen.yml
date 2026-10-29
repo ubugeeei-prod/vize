@@ -1,0 +1,133 @@
+name: Recovery normal codegen
+on:
+  pull_request:
+    paths: [.github/workflows/recovery-normal-codegen.yml]
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: recovery-normal-codegen-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  codegen:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      CARGO_BUILD_JOBS: "4"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: never
+      PINNED_BASE: 21dbb3573d46655954de79ac90df14d24d657be9
+      PINNED_HEAD: 4f435a77902c570252e6c3ef322bf51ebdee5393
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - run: rustup toolchain install 1.99.1 --profile minimal
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: script-recovery-clone-codegen-v1
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Pin the original normal source and carrier without changing compiler flags
+        run: |
+          set -euo pipefail
+          mkdir -p codegen
+          for role in base head; do
+            sha="$PINNED_HEAD"
+            if [[ "$role" == base ]]; then sha="$PINNED_BASE"; fi
+            git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
+            git worktree add --detach "$RUNNER_TEMP/recovery-codegen-$role" "$sha"
+            git -C "$RUNNER_TEMP/recovery-codegen-$role" rev-parse HEAD > "codegen/$role.sha"
+          done
+          git cat-file commit "$PINNED_HEAD" > codegen/head.commit
+          python3 -c 'import os,pathlib; h=pathlib.Path("codegen/head.commit").read_bytes().partition(b"\n\n")[0].splitlines(); p=[x.split()[1].decode() for x in h if x.startswith(b"parent ")]; assert p[0]==os.environ["PINNED_BASE"]'
+          cp "$RUNNER_TEMP/recovery-codegen-head/davinci/vize_l0/examples/source_recovery_clone_benchmark.rs" "$RUNNER_TEMP/recovery-codegen-base/davinci/vize_l0/examples/"
+          git diff --name-status "$PINNED_BASE" "$PINNED_HEAD" > codegen/source-diff.txt
+          rustc +1.99.1 -vV > codegen/rustc.txt
+          objdump --version > codegen/objdump.txt
+          nm --version > codegen/nm.txt
+          lscpu > codegen/cpu.txt
+      - name: Build fresh normal images and retain exact artifact manifests
+        run: |
+          set -euo pipefail
+          for role in base head; do
+            source="$RUNNER_TEMP/recovery-codegen-$role"
+            target="$GITHUB_WORKSPACE/target/recovery-codegen-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+            cargo +1.99.1 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$target" -p vize_l0 --example source_recovery_clone_benchmark --message-format json > "codegen/build-$role.jsonl"
+            cp "$target/ci-opt/examples/source_recovery_clone_benchmark" "codegen/normal-$role"
+            nm -n --defined-only "codegen/normal-$role" > "codegen/nm-$role.txt"
+            nm -D "codegen/normal-$role" > "codegen/dynamic-$role.txt"
+            ldd "codegen/normal-$role" > "codegen/ldd-$role.txt"
+          done
+      - name: Correlate normal allocator shims and recovery code without executing a timing window
+        run: |
+          set -euo pipefail
+          python3 - <<'PYCODEGEN'
+          import hashlib,json,os,pathlib,re,subprocess
+          root=pathlib.Path("codegen")
+          digest=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+          expected={"base":"7c45cf385a6cb75d149f8c8f22a3901499eb64dc2292e295b635a89a5879fb9b","head":"4546f3d4fa466b18845379b80715eac5f047cc499c92e7097c16c30356fa83b3"}
+          receipt={"scope":"codegen-only normal rebuild; no timing, RSS, or allocation measurement","pinnedBase":os.environ["PINNED_BASE"],"pinnedHead":os.environ["PINNED_HEAD"],"runner":{k:os.environ.get(k) for k in ("RUNNER_NAME","RUNNER_OS","RUNNER_ARCH","RUNNER_ENVIRONMENT","CARGO_BUILD_JOBS","RUSTFLAGS","CARGO_ENCODED_RUSTFLAGS","CARGO_INCREMENTAL")},"roles":{}}
+          for role in ("base","head"):
+              source=pathlib.Path(os.environ["RUNNER_TEMP"])/("recovery-codegen-"+role)
+              binary=root/("normal-"+role)
+              recovery=source/"crates/vize_croquis/src/script_parser/recovery.rs"
+              assert digest(recovery)==expected[role]
+              assert digest(source/"Cargo.lock")=="1b6040a4bedd2393261364237dc67474d436a7919d54bbdf7638133b2375010d"
+              assert digest(source/"davinci/vize_l0/examples/source_recovery_clone_benchmark.rs")=="30d7478d54d0eccf631a3c8171beeef791d4acb75bdf5db8f228c6d8d3517404"
+              artifacts=[json.loads(x) for x in (root/("build-"+role+".jsonl")).read_text().splitlines()]
+              selected=[x for x in artifacts if x.get("reason")=="compiler-artifact" and x["target"]["name"] in ("vize_croquis","source_recovery_clone_benchmark")]
+              assert len(selected)==2
+              for a in selected:
+                  assert not a["fresh"] and a["profile"]["opt_level"]=="3" and a["profile"]["debuginfo"]==0
+                  assert a["features"]==([] if a["target"]["name"]=="vize_croquis" else ["default"])
+                  assert pathlib.Path(a["manifest_path"]).is_relative_to(source)
+              symbols=[]
+              for line in (root/("nm-"+role+".txt")).read_text().splitlines():
+                  p=line.split()
+                  if len(p)==3 and re.fullmatch("[0-9a-fA-F]+",p[0]):
+                      symbols.append((int(p[0],16),p[1],p[2]))
+              addresses=sorted(set(x[0] for x in symbols))
+              wanted=[x for x in symbols if x[1] in ("t","T") and ("parse_program_for_analysis" in x[2] or "incomplete_call_before_declaration" in x[2] or ("source_recovery_clone_benchmark" in x[2] and "main" in x[2]) or "__rust_alloc" in x[2] or "__rdl_alloc" in x[2])]
+              exports=[]
+              with (root/("assembly-"+role+".txt")).open("w") as out:
+                  for start,kind,name in wanted:
+                      stop=next((a for a in addresses if a>start),None)
+                      if stop is None: continue
+                      out.write("\nSYMBOL "+name+"\n")
+                      p=subprocess.run(["objdump","-d","-C","--start-address="+str(start),"--stop-address="+str(stop),str(binary)],stdout=out,stderr=subprocess.PIPE,text=True)
+                      assert p.returncode==0,p.stderr
+                      exports.append({"symbol":name,"address":start,"end":stop})
+              for rel,label in (("Cargo.toml","cargo"),("davinci/vize_l0/examples/source_recovery_clone_benchmark.rs","carrier"),("crates/vize_croquis/src/script_parser/recovery.rs","recovery")):
+                  (root/(label+"-"+role+".txt")).write_bytes((source/rel).read_bytes())
+              receipt["roles"][role]={"sourceRoot":str(source),"source":(root/(role+".sha")).read_text().strip(),"binarySha256":digest(binary),"binaryBytes":binary.stat().st_size,"recoverySha256":digest(recovery),"lockSha256":digest(source/"Cargo.lock"),"carrierSha256":digest(source/"davinci/vize_l0/examples/source_recovery_clone_benchmark.rs"),"artifacts":selected,"assemblySymbols":exports,"recoveryOutOfLine":any("parse_program_for_analysis" in x["symbol"] for x in exports),"allocatorQualification":"inspect actual shim assembly and dynamic symbols; dependency compilation alone is not allocator selection","normalSpeedQualified":False,"allocationTrace":None}
+          assert receipt["roles"]["base"]["binarySha256"]!=receipt["roles"]["head"]["binarySha256"]
+          (root/"receipt.json").write_text(json.dumps(receipt,indent=2)+"\n")
+          print(json.dumps(receipt,indent=2))
+          PYCODEGEN
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: recovery-normal-codegen-receipt-${{ github.run_id }}
+          path: |
+            codegen/receipt.json
+            codegen/assembly-*.txt
+            codegen/dynamic-*.txt
+            codegen/rustc.txt
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: recovery-normal-codegen-metadata-${{ github.run_id }}
+          path: |
+            codegen/*.json
+            codegen/*.jsonl
+            codegen/*.txt
+            codegen/*.sha
+            codegen/*.commit
+          if-no-files-found: error
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: success()
+        with:
+          name: recovery-normal-codegen-images-${{ github.run_id }}
+          path: codegen/normal-*
+          if-no-files-found: error

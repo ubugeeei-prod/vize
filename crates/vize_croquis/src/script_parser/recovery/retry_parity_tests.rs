@@ -120,3 +120,29 @@ fn retry_budget_and_nested_independent_holes_remain_exact() {
         assert_eq!(same_packet(&nested, SourceType::ts()), holes > 3);
     }
 }
+
+#[test]
+fn irreparable_large_unicode_crlf_sources_keep_complete_parser_packets() {
+    for minimum_bytes in [128 * 1024, 1024 * 1024, 10 * 1024 * 1024] {
+        let mut source = std::string::String::from("const broken = ;\r\n");
+        let mut row = 0;
+        while source.len() < minimum_bytes {
+            use std::fmt::Write;
+            assert!(write!(&mut source, "const 雪_{row}: string = \"日本🙂\";\r\n").is_ok());
+            row += 1;
+        }
+        let previous_allocator = Allocator::default();
+        let current_allocator = Allocator::default();
+        let current = parse_program_for_analysis(&current_allocator, &source, SourceType::ts());
+        let old = previous(&previous_allocator, &source, SourceType::ts());
+        assert!(current.panicked && old.panicked);
+        assert!(!current.diagnostics.is_empty());
+        assert_eq!(current.program.source_text, source);
+        assert_eq!(
+            packet(&current),
+            packet(&old),
+            "all public parser observations match at {} authored bytes",
+            source.len()
+        );
+    }
+}
