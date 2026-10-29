@@ -90,11 +90,11 @@ jobs:
         run: |
           set -euo pipefail; vp install --frozen-lockfile --prefer-offline; bash tools/support/compat/github/native-syntax-semantics.sh
           if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
-            for dependency_root in node_modules tests/node_modules playground/node_modules npm/cli/node_modules; do
+            for dependency_root in node_modules tests/node_modules playground/node_modules npm/cli/node_modules crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/node_modules; do
               [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/$dependency_root" ]]
               ln -s "$GITHUB_WORKSPACE/$dependency_root" "$NATIVE_PHASE_SOURCE_ROOT/$dependency_root"
             done
-            for package_json in node_modules/oxfmt/package.json tests/node_modules/vue/package.json tests/node_modules/vue-component-type-helpers/package.json tests/node_modules/vue-ssr-css-vars-oracle/package.json playground/node_modules/vue/package.json npm/cli/node_modules/vue/package.json; do
+            for package_json in node_modules/oxfmt/package.json tests/node_modules/vue/package.json tests/node_modules/vue-component-type-helpers/package.json tests/node_modules/vue-ssr-css-vars-oracle/package.json playground/node_modules/vue/package.json npm/cli/node_modules/vue/package.json crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/node_modules/vue/package.json crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/node_modules/vue-router/package.json; do
               test -f "$NATIVE_PHASE_SOURCE_ROOT/$package_json"
             done
           fi
