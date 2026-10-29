@@ -1,9 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
 import test from "node:test";
 import { offsetToPosition } from "./support/lsp/assertions.ts";
 import {
@@ -21,9 +17,7 @@ import {
   gateCleanupStatus,
   identifierAtLspPosition,
   nativeFrameEvidence,
-  resourceCorsaGateScript,
 } from "../../tools/support/compat/davinci/lib/lsp-resource-corsa-gate.ts";
-import { resourceCorsaProxySource } from "../../tools/support/compat/davinci/lib/lsp-resource-corsa-proxy.ts";
 import {
   createCancellationPublicationProgress,
   finalizeCancellationProfileLink,
@@ -102,25 +96,6 @@ test("native gate maps canonical UTF-16 coordinates to the selected identifier",
   );
   assert.throws(() => identifierAtLspPosition(source, 3, 0), /line must exist/);
   assert.throws(() => identifierAtLspPosition(source, 1, 999), /character must fit/);
-});
-
-test("generated repeatable Corsa gate is valid CommonJS", () => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-resource-gate-test-"));
-  try {
-    const proxy = path.join(directory, "corsa-gate.cjs");
-    fs.writeFileSync(proxy, resourceCorsaGateScript());
-    execFileSync(process.execPath, ["--check", proxy], { stdio: "pipe" });
-  } finally {
-    fs.rmSync(directory, { force: true, recursive: true });
-  }
-});
-
-test("generated Corsa gate retains only the unique canonical hover target", () => {
-  assert.match(resourceCorsaProxySource, /let mirroredDocument;/);
-  assert.doesNotMatch(resourceCorsaProxySource, /mirroredDocuments|new Map\(\)/);
-  assert.match(resourceCorsaProxySource, /if \(first < 0\) return;/);
-  assert.match(resourceCorsaProxySource, /refusing a second canonical hover target/);
-  assert.match(resourceCorsaProxySource, /document\.uri !== mirroredDocument\.openedUri\) return;/);
 });
 
 test("resource cancellation statistics use every nearest-rank sample", () => {

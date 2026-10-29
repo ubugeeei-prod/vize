@@ -12,13 +12,19 @@ on:
       - "tools/support/compat/davinci/lib/lsp-resource-cancellation.ts"
       - "tools/support/compat/davinci/lib/lsp-resource-cancellation-run.ts"
       - "tools/support/compat/davinci/lib/lsp-resource-corsa-gate.ts"
+      - "tools/support/compat/davinci/lib/lsp-resource-corsa-mirror.cjs"
       - "tools/support/compat/davinci/lib/lsp-resource-corsa-proxy.ts"
       - "tools/support/compat/davinci/lib/lsp-resource-corpus.ts"
       - "tools/support/compat/davinci/lib/lsp-resource-finalize.ts"
+      - "tools/support/compat/davinci/lib/lsp-resource-sampler.ts"
       - "tools/support/compat/davinci/lib/lsp-resource-witness.ts"
       - "tools/support/compat/davinci/lib/lsp-resource-workspace.ts"
+      - "tools/support/json-value.ts"
       - "tests/tooling/lsp-resource-cancellation.test.ts"
+      - "tests/tooling/lsp-resource-corsa-gate.test.ts"
       - "tests/tooling/lsp-resource-finalize.test.ts"
+      - "tests/tooling/support/lsp/assertions.ts"
+      - "tests/tooling/support/lsp/protocol.ts"
       - "tests/tooling/support/lsp/session.ts"
   workflow_dispatch:
 
@@ -57,6 +63,7 @@ jobs:
         run: >-
           vp exec node --test
           tests/tooling/lsp-resource-cancellation.test.ts
+          tests/tooling/lsp-resource-corsa-gate.test.ts
           tests/tooling/lsp-resource-finalize.test.ts
       - name: Install the repository Rust toolchain
         run: rustup toolchain install || rustup show active-toolchain

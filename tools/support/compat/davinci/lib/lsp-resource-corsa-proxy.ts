@@ -3,10 +3,10 @@ export const resourceCorsaProxySource = String.raw`
 const fs = require("node:fs");
 const path = require("node:path");
 const { spawn } = require("node:child_process");
+const { nextMirroredDocument } = require("./corsa-mirror.cjs");
 const gate = JSON.parse(fs.readFileSync(path.join(__dirname, "gate.json"), "utf8"));
 const args = process.argv.slice(2);
 const framed = args.includes("--lsp");
-const targetAccess = "peer.value?.publicState";
 let mirroredDocument;
 
 function procIdentity(role, pid) {
@@ -23,6 +23,12 @@ function procIdentity(role, pid) {
 
 function recordProcess(identity) {
   fs.appendFileSync(path.join(gate.root, "processes.jsonl"), JSON.stringify(identity) + "\n");
+}
+
+function publishJson(file, value) {
+  const temporary = file + ".next-" + process.pid;
+  fs.writeFileSync(temporary, JSON.stringify(value));
+  fs.renameSync(temporary, file);
 }
 
 recordProcess(procIdentity("proxy", process.pid));
@@ -81,87 +87,6 @@ function armedToken() {
   }
 }
 
-function lineStartOffset(text, line) {
-  if (!Number.isSafeInteger(line) || line < 0) throw new Error("invalid LSP line");
-  let current = 0;
-  let offset = 0;
-  while (current < line) {
-    const lf = text.indexOf("\n", offset);
-    const cr = text.indexOf("\r", offset);
-    const boundary = lf < 0 ? cr : cr < 0 ? lf : Math.min(lf, cr);
-    if (boundary < 0) throw new Error("LSP line is outside mirrored document");
-    offset = boundary + (text[boundary] === "\r" && text[boundary + 1] === "\n" ? 2 : 1);
-    current++;
-  }
-  return offset;
-}
-
-function positionOffset(text, position) {
-  if (!position || !Number.isSafeInteger(position.character) || position.character < 0) {
-    throw new Error("invalid LSP character");
-  }
-  const start = lineStartOffset(text, position.line);
-  const lf = text.indexOf("\n", start);
-  const cr = text.indexOf("\r", start);
-  const end = lf < 0 ? (cr < 0 ? text.length : cr) : cr < 0 ? lf : Math.min(lf, cr);
-  if (start + position.character > end) throw new Error("LSP character is outside mirrored line");
-  return start + position.character;
-}
-
-function updateMirroredDocument(message) {
-  const params = message.params;
-  if (message.method === "textDocument/didOpen") {
-    const document = params && params.textDocument;
-    if (!document || typeof document.uri !== "string" || typeof document.text !== "string") {
-      throw new Error("invalid mirrored didOpen");
-    }
-    const first = document.text.indexOf(targetAccess);
-    if (first < 0) return;
-    if (document.text.indexOf(targetAccess, first + 1) >= 0) {
-      throw new Error("canonical hover target must be unique");
-    }
-    if (mirroredDocument && mirroredDocument.openedUri !== document.uri) {
-      throw new Error("refusing a second canonical hover target");
-    }
-    mirroredDocument = {
-      openedUri: document.uri,
-      text: document.text,
-      version: document.version ?? null,
-    };
-    return;
-  }
-  if (message.method === "textDocument/didChange") {
-    const document = params && params.textDocument;
-    const changes = params && params.contentChanges;
-    if (!document || !mirroredDocument || document.uri !== mirroredDocument.openedUri) return;
-    if (!Array.isArray(changes)) {
-      throw new Error("invalid mirrored didChange");
-    }
-    let text = mirroredDocument.text;
-    for (const change of changes) {
-      if (!change || typeof change.text !== "string") throw new Error("invalid mirrored change");
-      if (!change.range) {
-        text = change.text;
-        continue;
-      }
-      const start = positionOffset(text, change.range.start);
-      const end = positionOffset(text, change.range.end);
-      if (end < start) throw new Error("reversed mirrored change range");
-      text = text.slice(0, start) + change.text + text.slice(end);
-    }
-    mirroredDocument = {
-      openedUri: mirroredDocument.openedUri,
-      text,
-      version: document.version ?? mirroredDocument.version,
-    };
-    return;
-  }
-  if (message.method === "textDocument/didClose") {
-    const uri = params && params.textDocument && params.textDocument.uri;
-    if (typeof uri === "string" && uri === mirroredDocument?.openedUri) mirroredDocument = undefined;
-  }
-}
-
 function writeFrame(frame) {
   return new Promise((resolve, reject) => {
     process.stdout.write(frame, (error) => error ? reject(error) : resolve());
@@ -180,7 +105,7 @@ if (framed) {
   let selected;
   let lastToken = 0;
   process.stdin.on("data", parseFrames((frame, message) => {
-    updateMirroredDocument(message);
+    mirroredDocument = nextMirroredDocument(mirroredDocument, message);
     if (message.method === "textDocument/hover" && selected === undefined) {
       const token = armedToken();
       if (token !== undefined && token > lastToken) {
@@ -193,11 +118,11 @@ if (framed) {
           if (!document) throw new Error("native hover has no exact mirrored source clone");
           selected = { token, id: message.id, directory };
           fs.writeFileSync(path.join(directory, "request.bin"), frame);
-          fs.writeFileSync(path.join(directory, "request.json"), JSON.stringify(message));
+          publishJson(path.join(directory, "request.json"), message);
           fs.writeFileSync(path.join(directory, "canonical-source.bin"), document.text);
-          fs.writeFileSync(
+          publishJson(
             path.join(directory, "canonical.json"),
-            JSON.stringify({ opened_uri: document.openedUri, version: document.version }),
+            { opened_uri: document.openedUri, version: document.version },
           );
         } catch (error) {
           if (!error || error.code !== "EEXIST") throw error;
@@ -213,16 +138,16 @@ if (framed) {
       if (selected !== undefined && message.id === selected.id) {
         const held = selected;
         fs.writeFileSync(path.join(held.directory, "response.bin"), frame);
-        fs.writeFileSync(path.join(held.directory, "response.json"), JSON.stringify(message));
-        fs.writeFileSync(
+        publishJson(path.join(held.directory, "response.json"), message);
+        publishJson(
           path.join(held.directory, "entered.json"),
-          JSON.stringify({ token: held.token, entered_ns: process.hrtime.bigint().toString() }),
+          { token: held.token, entered_ns: process.hrtime.bigint().toString() },
         );
         await awaitRelease(held.directory);
         await writeFrame(frame);
-        fs.writeFileSync(
+        publishJson(
           path.join(held.directory, "released.json"),
-          JSON.stringify({ token: held.token, released_ns: process.hrtime.bigint().toString() }),
+          { token: held.token, released_ns: process.hrtime.bigint().toString() },
         );
         lastToken = held.token;
         selected = undefined;

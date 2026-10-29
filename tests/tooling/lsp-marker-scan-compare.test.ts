@@ -224,6 +224,20 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
     write("profile-base/run-1.json", unchangedBase);
     write("profile-head/run-1.json", originalProfile);
     write("source-selection.json", productionReceipt(false));
+    const identicalHeadNormal = identity("head", false);
+    identicalHeadNormal.binary.sha256 = identity("base", false).binary.sha256;
+    write("head-normal-identity.json", identicalHeadNormal);
+    for (let round = 1; round <= 3; round++) {
+      const identicalCapture = capture("head", false, 70);
+      identicalCapture.server_sha256 = identicalHeadNormal.binary.sha256;
+      write(`head-normal-${round}.json`, identicalCapture);
+    }
+    const identicalHeadProfile = identity("head", true);
+    identicalHeadProfile.binary.sha256 = identity("base", true).binary.sha256;
+    write("head-profile-identity.json", identicalHeadProfile);
+    const identicalProfileCapture = capture("head", true, 200);
+    identicalProfileCapture.server_sha256 = identicalHeadProfile.binary.sha256;
+    write("head-profile.json", identicalProfileCapture);
     const unchanged = compareLspMarkerScans(directory);
     assert.equal(unchanged.production.comparisonMode, "unchanged native per-invocation parity");
     assert.deepEqual(unchanged.production.totalDrift, {

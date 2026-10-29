@@ -226,6 +226,10 @@ export function installResourceCorsaGate(
     path.join(root, "gate.json"),
     `${JSON.stringify({ runtime: fs.realpathSync(actualCorsaPath), root })}\n`,
   );
+  fs.copyFileSync(
+    new URL("./lsp-resource-corsa-mirror.cjs", import.meta.url),
+    path.join(root, "corsa-mirror.cjs"),
+  );
   fs.writeFileSync(proxyPath, resourceCorsaGateScript());
   fs.chmodSync(proxyPath, 0o755);
   return { root, proxyPath, actualCorsaPath: fs.realpathSync(actualCorsaPath) };

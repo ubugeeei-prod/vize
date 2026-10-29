@@ -79,11 +79,12 @@ export function compareLspMarkerScans(directory: string) {
     headIdentity.source.revision,
   );
   assert.notEqual(baseIdentity.source.revision, headIdentity.source.revision);
-  assert.notEqual(
-    baseIdentity.binary.sha256,
-    headIdentity.binary.sha256,
-    "different production code must produce distinct actual measured binaries",
-  );
+  if (production.productionChanged)
+    assert.notEqual(
+      baseIdentity.binary.sha256,
+      headIdentity.binary.sha256,
+      "different production code must produce distinct actual measured binaries",
+    );
   assert.deepEqual(
     baseIdentity.build,
     headIdentity.build,
@@ -93,11 +94,12 @@ export function compareLspMarkerScans(directory: string) {
     !baseIdentity.build.features.includes("profiling"),
     "ordinary timing must use the ordinary allocator",
   );
-  assert.notEqual(
-    load<Identity>("base-profile-identity.json").binary.sha256,
-    load<Identity>("head-profile-identity.json").binary.sha256,
-    "source profiles must use distinct actual baseline and candidate binaries",
-  );
+  if (production.productionChanged)
+    assert.notEqual(
+      load<Identity>("base-profile-identity.json").binary.sha256,
+      load<Identity>("head-profile-identity.json").binary.sha256,
+      "source profiles must use distinct actual baseline and candidate binaries",
+    );
   const baseline = load<Capture>("base-normal-1.json");
   const reference = baseline.per_run[0];
   const semantics = (run: Run) => ({
