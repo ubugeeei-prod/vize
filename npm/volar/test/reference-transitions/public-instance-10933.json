@@ -30,7 +30,7 @@
           "length": 6,
           "code": 2339,
           "category": 1,
-          "messageText": "Property 'absent' does not exist on type '__VizeTemplateInstance'."
+          "messageText": "Property 'absent' does not exist on type '$TemplateInstance'."
         }
       ]
     },
@@ -451,7 +451,7 @@
           "length": 6,
           "code": 2339,
           "category": 1,
-          "messageText": "Property 'absent' does not exist on type '__VizeTemplateInstance'."
+          "messageText": "Property 'absent' does not exist on type '$TemplateInstance'."
         }
       ]
     },
@@ -514,7 +514,7 @@
           "length": 6,
           "code": 2339,
           "category": 1,
-          "messageText": "Property 'absent' does not exist on type '__VizeTemplateInstance'."
+          "messageText": "Property 'absent' does not exist on type '$TemplateInstance'."
         }
       ]
     },
@@ -566,7 +566,7 @@
           "length": 6,
           "code": 2339,
           "category": 1,
-          "messageText": "Property 'absent' does not exist on type '__VizeTemplateInstance'."
+          "messageText": "Property 'absent' does not exist on type '$TemplateInstance'."
         }
       ]
     },
@@ -655,7 +655,7 @@
           "length": 11,
           "code": 2339,
           "category": 1,
-          "messageText": "Property 'realMissing' does not exist on type '__VizeTemplateInstance'."
+          "messageText": "Property 'realMissing' does not exist on type '$TemplateInstance'."
         },
         {
           "file": {
@@ -666,7 +666,7 @@
           "length": 12,
           "code": 2339,
           "category": 1,
-          "messageText": "Property 'childMissing' does not exist on type '__VizeTemplateInstance'."
+          "messageText": "Property 'childMissing' does not exist on type '$TemplateInstance'."
         },
         {
           "code": 4,
@@ -862,7 +862,7 @@
           "length": 19,
           "code": 2339,
           "category": 1,
-          "messageText": "Property 'unknownStoryBinding' does not exist on type '__VizeTemplateInstance'."
+          "messageText": "Property 'unknownStoryBinding' does not exist on type '$TemplateInstance'."
         }
       ]
     }

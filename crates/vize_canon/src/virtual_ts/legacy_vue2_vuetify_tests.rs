@@ -172,8 +172,8 @@ function moveToDetail(item: Manager) {
 
     let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
     assert!(
-        legacy.contains("__VizeVue2LooseEventArg<__A[0]>")
-            && legacy.contains("__VizeVue2LooseEmitArgs<__DataTable_"),
+        legacy.contains("$Vue2LooseEventArg<__A[0]>")
+            && legacy.contains("$Vue2LooseEmitArgs<__DataTable_"),
         "legacy Vue 2 broad Object component event payloads should be loosened:\n{legacy}"
     );
 }

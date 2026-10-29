@@ -2,7 +2,7 @@ use std::fs;
 
 use super::{VirtualProject, snapshot_text, unique_case_dir};
 
-const MODERN_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? import(\"vize:virtual-ts\").__VizeWidenTemplateRef<T['value']> : T : T;";
+const MODERN_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? import(\"vize:virtual-ts\").$WidenTemplateRef<T['value']> : T : T;";
 const LEGACY_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: infer __V } ? __V : T;";
 
 #[test]
@@ -66,8 +66,8 @@ const count = ref(0)
     assert!(!v2_content.contains("Ref<infer"));
     assert!(v2_content.contains("$listeners"));
     assert!(!default_content.contains("$listeners"));
-    assert!(v2_content.contains("type __VizeVue2ComponentInstance = {\n  $el: Element;"));
-    assert!(!default_content.contains("__VizeVue2ComponentInstance"));
+    assert!(v2_content.contains("type $Vue2ComponentInstance = {\n  $el: Element;"));
+    assert!(!default_content.contains("$Vue2ComponentInstance"));
     assert!(!v2_content.contains("Ref<infer V, any>"));
     assert!(!v2_content.contains("import('vue').Ref"));
     assert!(!v2_content.contains("import('vue').ComponentPublicInstance"));
@@ -168,16 +168,16 @@ export default {
         .clone();
     assert!(setup_content.contains(LEGACY_REF_UNWRAP_HELPER));
     for content in [setup_content.as_str(), options_content.as_str()] {
-        assert!(content.contains("type __VizeVue2ComponentInstance = {\n  $el: Element;"));
+        assert!(content.contains("type $Vue2ComponentInstance = {\n  $el: Element;"));
         assert!(content.contains("  $refs: Record<string, any>;"));
-        assert!(content.contains("} & __VizeVue2ComponentInstance;"));
+        assert!(content.contains("} & $Vue2ComponentInstance;"));
         assert!(!content.contains("import('vue').Ref"));
         assert!(!content.contains("import('vue').ShallowRef"));
         assert!(!content.contains("import('vue').ComponentPublicInstance"));
         assert!(!content.contains("import('vue').defineComponent"));
     }
     assert!(options_content.contains(
-        "declare function __vizeDefineComponent<T>(options: T & __VizeNuxt2PageOptions): T;",
+        "declare function __vizeDefineComponent<T>(options: T & $Nuxt2PageOptions): T;",
     ));
 
     project.materialize().unwrap();
@@ -195,22 +195,22 @@ export default {
 /// defeats its instantiation cache — the effect measured in #3443 and bisected in
 /// #3460.
 const PROGRAM_WIDE_TEMPLATE_HELPERS: &[&str] = &[
-    "type __VizeIsUnion<",
-    "type __VizeWidenTemplateRef<",
-    "type __VizeSlotHostSlots<",
-    "type __VizeSlotPayload<",
-    "type __VizeEmitRequiredKeys<",
+    "type $IsUnion<",
+    "type $WidenTemplateRef<",
+    "type $SlotHostSlots<",
+    "type $SlotPayload<",
+    "type $EmitRequiredKeys<",
     "type __EmitProps<",
-    "type __VizeComponentNavigationProps<",
+    "type $ComponentNavigationProps<",
 ];
 
 const MODULE_LOCAL_VUE_PUBLIC_ATTRS: &[&str] = &[
-    "type __VizeVueVNodeProps = import('vue').VNodeProps;",
-    "type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;",
-    "type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;",
-    "interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}",
+    "type $VueVNodeProps = import('vue').VNodeProps;",
+    "type $VueAllowedComponentProps = import('vue').AllowedComponentProps;",
+    "type $VueComponentCustomProps = import('vue').ComponentCustomProps;",
+    "interface $PublicComponentAttrs extends $VueVNodeProps, $VueAllowedComponentProps, $VueComponentCustomProps {}",
 ];
-const MODULE_LOCAL_EXPOSED_UNWRAP: &str = "type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };";
+const MODULE_LOCAL_EXPOSED_UNWRAP: &str = "type $ShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };";
 
 fn ref_sfc(binding: &str) -> vize_carton::String {
     vize_carton::cstr!(

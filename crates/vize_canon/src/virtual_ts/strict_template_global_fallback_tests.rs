@@ -20,10 +20,7 @@ fn template_global_helper_uses_fallback_for_unknown_public_instance_members() {
         (None, None, None),
     );
 
-    assert!(
-        ctx.contains("type __VizeGlobalContextProperty<T, F>"),
-        "{ctx}"
-    );
+    assert!(ctx.contains("type $GlobalContextProperty<T, F>"), "{ctx}");
     assert!(ctx.contains("unknown extends T ? F : T"), "{ctx}");
     assert!(
         ctx.contains("const $route: __Global<'$route', ReturnType<typeof useRoute>>"),

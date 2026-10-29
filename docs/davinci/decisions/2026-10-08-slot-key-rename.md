@@ -15,7 +15,7 @@ no static declaration claim. Shift these ranges with the existing macro
 coordinates when script blocks are composed. The public SlotsDefinition
 moves unchanged into an ordinary module in a separate move-only commit.
 
-The existing public `__VizeSlots` type copies the macro's inner type text.
+The existing public `$Slots` type copies the macro's inner type text.
 Map only its retained, unchanged static keys to the authored declaration.
 The complete public slot alias text remains unchanged. Payload type
 references keep their existing setup-scope diagnostic ownership; this adds

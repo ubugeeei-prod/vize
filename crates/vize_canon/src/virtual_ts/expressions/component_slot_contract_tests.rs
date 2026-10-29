@@ -48,9 +48,7 @@ fn required_slot_check_anchors_to_component_name() {
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output
-            .code
-            .contains("__VizeRequiredSlots<__VizeSlotContract_0, {}>"),
+        output.code.contains("$RequiredSlots<$SlotContract_0, {}>"),
         "component usages must check required child slots even with no authored slots:\n{}",
         output.code
     );
@@ -89,7 +87,7 @@ fn required_slot_check_records_static_slot_names() {
     assert!(
         output
             .code
-            .contains("__VizeRequiredSlots<__VizeSlotContract_0, { readonly \"header\": true; }>"),
+            .contains("$RequiredSlots<$SlotContract_0, { readonly \"header\": true; }>"),
         "static slot names must satisfy required child slots:\n{}",
         output.code
     );
@@ -118,7 +116,7 @@ fn required_slot_check_skips_open_index_signature_slot_contracts() {
     assert!(
         output
             .code
-            .contains("__VizeRequiredSlots<__VizeSlotContract_0, { readonly \"header\": true; }>"),
+            .contains("$RequiredSlots<$SlotContract_0, { readonly \"header\": true; }>"),
         "static parent slot names must still be recorded for finite contracts:\n{}",
         output.code
     );
@@ -141,7 +139,7 @@ import TabItem from "./TabItem.vue";
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        !output.code.contains("__VizeSlotChildren<"),
+        !output.code.contains("$SlotChildren<"),
         "strict slot child helpers must stay out of the default output:\n{}",
         output.code
     );
@@ -176,7 +174,7 @@ import TabItem from "./TabItem.vue";
 
     assert!(
         output.code.contains(
-            r#"const __vize_slot_children_1_item: __VizeSlotChildren<__VizeSlotContract_1, "item"> = null as unknown as __VizeProvidedSlotChildren<[HTMLInputElement, typeof TabItem]>;"#,
+            r#"const __vize_slot_children_1_item: $SlotChildren<$SlotContract_1, "item"> = null as unknown as $ProvidedSlotChildren<[HTMLInputElement, typeof TabItem]>;"#,
         ),
         "strict slot child checks must describe named slot children:\n{}",
         output.code
@@ -211,7 +209,7 @@ fn strict_slot_child_checks_emit_default_slot_children() {
 
     assert!(
         output.code.contains(
-            r#"const __vize_slot_children_0_default: __VizeSlotChildren<__VizeSlotContract_0, "default"> = null as unknown as __VizeProvidedSlotChildren<[HTMLButtonElement]>;"#,
+            r#"const __vize_slot_children_0_default: $SlotChildren<$SlotContract_0, "default"> = null as unknown as $ProvidedSlotChildren<[HTMLButtonElement]>;"#,
         ),
         "strict slot child checks must describe default slot children:\n{}",
         output.code

@@ -6,7 +6,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString};
 
-const TYPE_ALIAS_PREFIX: &str = "type __VizeEmits = ";
+const TYPE_ALIAS_PREFIX: &str = "type $Emits = ";
 
 /// Extract emit names from TypeScript type definition.
 pub fn extract_emit_names_from_type(type_args: &str) -> Vec<String> {

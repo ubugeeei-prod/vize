@@ -24,7 +24,7 @@ pub(super) fn slot_resolver_field(
     }
     let resolver_decl = generic_decl;
     cstr!(
-        "__vizeResolveSlots?: <{resolver_decl}>(props: Partial<{props_type}<{generic_names}>> & Record<string, unknown>) => __VizeSlots<{generic_names}>; "
+        "__vizeResolveSlots?: <{resolver_decl}>(props: Partial<{props_type}<{generic_names}>> & Record<string, unknown>) => $Slots<{generic_names}>; "
     )
 }
 
@@ -52,7 +52,7 @@ pub(super) fn generic_check_props_param(
         "{props_type}<{generic_names}> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps"
     );
     if !strict_component_attrs {
-        param.push_str(" & __VizeComponentGlobalHtmlAttrs");
+        param.push_str(" & $ComponentGlobalHtmlAttrs");
     }
     if let Some(fallthrough) = fallthrough_props_ref {
         if check_unknown_fallthrough_props || strict_component_attrs {
@@ -71,23 +71,23 @@ mod tests {
     use super::generic_check_props_param;
     #[test]
     fn explicit_strict_generic_contract_closes_only_the_arbitrary_fallthrough_tail() {
-        let closed = "Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs";
+        let closed = "Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & $ComponentGlobalHtmlAttrs";
         assert_eq!(
             generic_check_props_param(
                 "T",
-                Some("Partial<__VizeNativeElement<\"span\">>"),
+                Some("Partial<$NativeElement<\"span\">>"),
                 "Props",
                 true,
                 false
             ),
             vize_l0::cstr!(
-                "{closed} & {{ [K in keyof (Partial<__VizeNativeElement<\"span\">>) as string extends K ? never : K]?: unknown }}"
+                "{closed} & {{ [K in keyof (Partial<$NativeElement<\"span\">>) as string extends K ? never : K]?: unknown }}"
             )
         );
         assert_eq!(
             generic_check_props_param(
                 "T",
-                Some("Partial<__VizeNativeElement<\"span\">>"),
+                Some("Partial<$NativeElement<\"span\">>"),
                 "Props",
                 false,
                 false
@@ -113,13 +113,13 @@ mod tests {
         assert_eq!(
             generic_check_props_param(
                 "T",
-                Some("Partial<__VizeNativeElement<\"div\">>"),
+                Some("Partial<$NativeElement<\"div\">>"),
                 "Props",
                 false,
                 true
             ),
             vize_l0::cstr!(
-                "{declared} & {{ [K in keyof (Partial<__VizeNativeElement<\"div\">>) as string extends K ? never : K]?: unknown }}"
+                "{declared} & {{ [K in keyof (Partial<$NativeElement<\"div\">>) as string extends K ? never : K]?: unknown }}"
             )
         );
     }

@@ -17,6 +17,7 @@ use super::super::options_api::{
 use super::inherited::collect_inherited_components;
 use super::{BridgeSpans, MappedType, OptionsApiBridge, OptionsFunction, OptionsFunctionKind};
 use vize_carton::{CompactString, FxHashSet, String, append};
+use vize_l0::ts;
 
 /// Generated prefix that wraps a concise arrow body into a statement body.
 const ARROW_BODY_PREFIX: &str = "{ return ";
@@ -175,9 +176,15 @@ fn arrow_function_parts(
     if arrow.expression {
         // A concise body is wrapped, so only the expression itself is verbatim.
         let expression = body_source.trim_end_matches(';');
-        let mut body = String::from(ARROW_BODY_PREFIX);
-        body.push_str(expression);
-        body.push_str("; }");
+        let mut body = String::default();
+        ts! { &mut body =>
+            {
+                #(" return ")
+                #expression
+                #(";")
+                #{ }
+            }
+        }
         let spans = BridgeSpans {
             function,
             body: Some((

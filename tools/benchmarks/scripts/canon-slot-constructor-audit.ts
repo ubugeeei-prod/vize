@@ -120,8 +120,8 @@ export function auditPackets(
     headText = text(after),
     legacy = `__VizeSlotConstructor<typeof ${component}>)({`,
     directConstructorBranches = {
-      withoutArguments: directConstructorOwners(headText, "__VizeSlotConstructorWithoutArguments"),
-      withArguments: directConstructorOwners(headText, "__VizeSlotConstructorWithArguments"),
+      withoutArguments: directConstructorOwners(headText, "$SlotConstructorWithoutArguments"),
+      withArguments: directConstructorOwners(headText, "$SlotConstructorWithArguments"),
     },
     headSemanticLinks = semanticLinkContract(after);
   assert.deepEqual(
@@ -134,16 +134,16 @@ export function auditPackets(
   );
   assert.ok(!headText.includes(legacy), "the unconditional first argument must be gone");
   assert.ok(
-    headText.includes("type __VizeSlotConstructorArgumentLists<C> ="),
+    headText.includes("type $SlotConstructorArgumentLists<C> ="),
     "the complete constructor overload set is inspected",
   );
   assert.ok(
-    headText.includes("type __VizeSlotConstructorWithoutArguments<C> =") &&
-      headText.includes("type __VizeSlotConstructorWithArguments<C> ="),
+    headText.includes("type $SlotConstructorWithoutArguments<C> =") &&
+      headText.includes("type $SlotConstructorWithArguments<C> ="),
     "both structurally valid direct constructor branches are emitted",
   );
   assert.ok(
-    headText.includes("type __VizeNativeSlotsFactory<C> = [C] extends [new"),
+    headText.includes("type $NativeSlotsFactory<C> = [C] extends [new"),
     "constructor unions use one non-distributive native factory",
   );
   assert.notEqual(headText, baseText, "the source repair must change the virtual program");

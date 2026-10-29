@@ -15,7 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = typecheckErrorsApp;
 const qualifiedEmitProps = 'import("vize:virtual-ts").__EmitProps<';
-const qualifiedWidenTemplateRef = 'import("vize:virtual-ts").__VizeWidenTemplateRef';
+const qualifiedWidenTemplateRef = 'import("vize:virtual-ts").$WidenTemplateRef';
 const currentReceipt = {
   diagnosticSha256: "6b8cd236559e23b4795f404049af0ed5d6b3b9748b28fdd5867b74ebc3d43eef",
   emitHelperFiles: ["src/DefineEmitsMethodInterfaceError.vue", "src/EmitArgsMismatch.vue"],
@@ -48,7 +48,7 @@ const currentReceipt = {
     "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
   slotAliasProvenance: "#11064 / c2ee0878fec5d53edb7c30e10f374e37ab256f02",
   slotCallFiles: ["src/DefineSlotsError.vue"],
-  snapshotSha256: "c591528331bdd35e330994bfb6b9bb7bdcef07d63a9e242b29caf776f5004ed7",
+  snapshotSha256: "a2b925a525c0bf8add628fa6b2ad3b92f6b7932df641cfd62bc7cf7829be0495",
   warningCount: 0,
   widenHelperFiles: [
     "src/DefineExposeError.vue",
@@ -114,7 +114,7 @@ describe(`${app.name} check (type checker)`, () => {
     );
     for (const { file, virtualTs = "" } of parsed.files) {
       assert.equal(
-        count(virtualTs, "__VizeWidenTemplateRef"),
+        count(virtualTs, "$WidenTemplateRef"),
         count(virtualTs, qualifiedWidenTemplateRef),
         `${file} must not restore a file-local widening helper`,
       );
@@ -124,12 +124,12 @@ describe(`${app.name} check (type checker)`, () => {
         `${file} must not restore a file-local emit helper`,
       );
       assert.equal(
-        count(virtualTs, "type __VizeSlotOutletTarget"),
+        count(virtualTs, "type $SlotOutletTarget"),
         0,
         `${file} must not restore the unused slot target alias`,
       );
       assert.equal(
-        count(virtualTs, "type __VizeSlotOutletArgs"),
+        count(virtualTs, "type $SlotOutletArgs"),
         0,
         `${file} must not restore the unused slot argument alias`,
       );

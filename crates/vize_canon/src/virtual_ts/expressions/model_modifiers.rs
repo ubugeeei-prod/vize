@@ -5,6 +5,7 @@ use crate::virtual_ts::{helpers::push_ts_string_literal, types::VizeSubSpan};
 use std::ops::Range;
 use vize_carton::{CompactString, FxHashMap, String, cstr, is_native_tag};
 use vize_croquis::croquis::PassedProp;
+use vize_l0::ts;
 use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 pub(crate) type ModelModifierBindings = FxHashMap<(u32, u32), ModelModifierBinding>;
@@ -44,29 +45,36 @@ fn collect_children(children: &[TemplateChildNode<'_>], bindings: &mut ModelModi
                             Some(ExpressionNode::Simple(arg)) if arg.is_static => arg.content,
                             _ => continue,
                         };
-                        let mut value = String::from("{ ");
+                        let mut value = String::default();
                         let mut spans = Vec::new();
-                        for (index, modifier) in directive.modifiers.iter().enumerate() {
-                            if index > 0 {
-                                value.push_str(", ");
+                        ts! { &mut value =>
+                            {
+                                #(" ")
+                                #{
+                                    for (index, modifier) in directive.modifiers.iter().enumerate() {
+                                        if index > 0 {
+                                            __ts.push_str(", ");
+                                        }
+                                        let start = __ts.len();
+                                        push_ts_string_literal(__ts, modifier.content);
+                                        let end = __ts.len();
+                                        let source = modifier.loc.span.start as usize
+                                            ..modifier.loc.span.end as usize;
+                                        // Rename selects string contents; diagnostics can include quotes.
+                                        spans.push(VizeSubSpan {
+                                            gen_range: start + 1..end - 1,
+                                            src_range: source.clone(),
+                                        });
+                                        spans.push(VizeSubSpan {
+                                            gen_range: start..end,
+                                            src_range: source,
+                                        });
+                                        __ts.push_str(": true");
+                                    }
+                                }
+                                #(" ")
                             }
-                            let start = value.len();
-                            push_ts_string_literal(&mut value, modifier.content);
-                            let end = value.len();
-                            let source =
-                                modifier.loc.span.start as usize..modifier.loc.span.end as usize;
-                            // Rename selects string contents; diagnostics can include quotes.
-                            spans.push(VizeSubSpan {
-                                gen_range: start + 1..end - 1,
-                                src_range: source.clone(),
-                            });
-                            spans.push(VizeSubSpan {
-                                gen_range: start..end,
-                                src_range: source,
-                            });
-                            value.push_str(": true");
                         }
-                        value.push_str(" }");
                         bindings.insert(
                             (directive.loc.span.start, directive.loc.span.end),
                             ModelModifierBinding {

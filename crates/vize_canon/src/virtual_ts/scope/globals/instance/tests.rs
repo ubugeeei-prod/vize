@@ -88,7 +88,9 @@ fn the_default_vue3_form_checks_every_occurrence_on_the_public_instance() {
         .code
         .lines()
         .filter(|line| {
-            line.contains("__VizeInstanceGlobal") || line.contains("__vize_strict_template_context")
+            line.contains("__VizeInstanceGlobal")
+                || line.contains("$InstanceGlobal")
+                || line.contains("__vize_strict_template_context")
         })
         .collect::<Vec<_>>();
     assert_eq!(context_helpers, Vec::<&str>::new());
@@ -105,7 +107,7 @@ fn vue2_declares_the_name_once_with_an_any_fallback() {
 
     assert!(
         output.code.contains(
-            "type __VizeInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;"
+            "type $InstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;"
         ),
         "{}",
         output.code
@@ -113,7 +115,7 @@ fn vue2_declares_the_name_once_with_an_any_fallback() {
     assert_eq!(
         output
             .code
-            .matches("const $missing: __VizeInstanceGlobal<'$missing'> = undefined as any;")
+            .matches("const $missing: $InstanceGlobal<'$missing'> = undefined as any;")
             .count(),
         1,
         "{}",
@@ -126,11 +128,7 @@ fn vue2_declares_the_name_once_with_an_any_fallback() {
 fn the_strict_form_reads_every_occurrence_off_the_template_context() {
     let output = generate(true);
 
-    assert!(
-        !output.code.contains("__VizeInstanceGlobal"),
-        "{}",
-        output.code
-    );
+    assert!(!output.code.contains("$InstanceGlobal"), "{}", output.code);
     assert_eq!(
         output
             .code
@@ -275,9 +273,7 @@ fn options_api_lexical_members_do_not_gain_public_instance_reads() {
         assert_eq!(
             output
                 .code
-                .matches(&format!(
-                    "__VizeOptionsBinding<typeof __default__, \"{name}\""
-                ))
+                .matches(&format!("$OptionsBinding<typeof __default__, \"{name}\""))
                 .count(),
             1,
             "missing lexical Options API binding for {name}:\n{}",
@@ -295,7 +291,7 @@ fn options_api_lexical_members_do_not_gain_public_instance_reads() {
         assert_eq!(
             output
                 .code
-                .matches(&format!("__VizeTemplateInstanceMember<\"{name}\">"))
+                .matches(&format!("$TemplateInstanceMember<\"{name}\">"))
                 .count(),
             0,
             "Options API member {name} gained a public-instance declaration:\n{}",
@@ -343,7 +339,7 @@ export default {
         &VirtualTsOptions::default(),
     );
 
-    assert_eq!(output.code.matches("__VizeOptionsBinding").count(), 0);
+    assert_eq!(output.code.matches("$OptionsBinding").count(), 0);
     for name in ["label", "count", "doubled", "increment"] {
         assert_eq!(
             output
@@ -357,7 +353,7 @@ export default {
         assert_eq!(
             output
                 .code
-                .matches(&format!("__VizeTemplateInstanceMember<\"{name}\">"))
+                .matches(&format!("$TemplateInstanceMember<\"{name}\">"))
                 .count(),
             0,
             "disabled Options API member {name} gained a public-instance declaration:\n{}",
@@ -368,7 +364,7 @@ export default {
         assert_eq!(
             output
                 .code
-                .matches(&format!("__VizeTemplateInstanceMember<\"{name}\">"))
+                .matches(&format!("$TemplateInstanceMember<\"{name}\">"))
                 .count(),
             1,
             "dynamic and unknown controls must retain public-instance resolution:\n{}",

@@ -3,6 +3,7 @@
 use oxc_span::Span;
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
+use vize_l0::ts;
 
 use crate::virtual_ts::VizeMapping;
 
@@ -172,18 +173,26 @@ impl AmbientProjection {
         }
         // Explicit, lazy accessor types avoid both return-object widening and
         // synthetic cycles through exposed values or exported type artifacts.
-        ts.push_str("\n  return {\n");
-        for field in fields {
-            append!(*ts, "    get {field}() {{ return {field}; }},\n");
+        ts! { &mut *ts =>
+            #("\n  return ")
+            {
+                #("\n")
+                #{
+                    for field in fields {
+                        append!(*__ts, "    get {field}() {{ return {field}; }},\n");
+                    }
+                    for index in 0..self.captures.len() {
+                        let prefix = &self.prefix;
+                        append!(
+                            *__ts,
+                            "    get {prefix}capture_{index}(): {prefix}type_{index} {{ return null!; }},\n"
+                        );
+                    }
+                }
+                #("  ")
+            }
+            ;
         }
-        for index in 0..self.captures.len() {
-            let prefix = &self.prefix;
-            append!(
-                *ts,
-                "    get {prefix}capture_{index}(): {prefix}type_{index} {{ return null!; }},\n"
-            );
-        }
-        ts.push_str("  };\n");
         // Authored expression mappings come first for editor requests; the
         // replacement constructor name still needs an authored diagnostic target.
         mappings.extend(self.diagnostic_mappings.iter().cloned());

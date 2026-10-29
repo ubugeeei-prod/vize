@@ -184,7 +184,7 @@ mod tests {
         let state = ServerState::new();
         let ctx = IdeContext::testing(&state, &uri, 0, source.into());
         let doc = document(&uri, source);
-        let generated = "{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props } & __VizeComponentConstructor";
+        let generated = "{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props } & $ComponentConstructor";
         let hint = |name: &str| {
             let end = source.find(name).unwrap() + name.len();
             serde_json::from_value(json!({

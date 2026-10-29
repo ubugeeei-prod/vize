@@ -1,10 +1,12 @@
-use vize_carton::{FxHashSet, String, append, cstr};
+use vize_carton::{String, cstr};
 use vize_croquis::Croquis;
+use vize_l0::ts;
+use vize_l0::ts_emit::TsString;
 
 use super::setup_scope::{define_emits_type_requires_setup_scope, macro_type_requires_setup_scope};
 use crate::virtual_ts::{
     generic_parameters::GenericParameters,
-    helpers::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER, push_ts_string_literal},
+    helpers::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER},
     macro_type_mappings::MacroTypeMappings,
 };
 
@@ -37,7 +39,7 @@ impl EmitsInfo {
 
     pub(super) fn static_emit_props_field(&self) -> &'static str {
         if self.has_emits_for_props {
-            "__vizeEmitProps?: __VizeStaticEmitProps;"
+            "__vizeEmitProps?: $StaticEmitProps;"
         } else {
             ""
         }
@@ -45,7 +47,7 @@ impl EmitsInfo {
 
     pub(super) fn static_event_map_field(&self) -> &'static str {
         if self.has_emits_for_props && self.preserve_event_navigation {
-            "__vizeRawEmits?: __VizeAuthoredEventMap; __vizeEventMap?: __VizeStaticEventMap;"
+            "__vizeRawEmits?: $AuthoredEventMap; __vizeEventMap?: $StaticEventMap;"
         } else {
             ""
         }
@@ -79,19 +81,17 @@ impl EmitsInfo {
         if self.has_emits_for_props && self.has_generic_emits {
             let emit_props =
                 crate::virtual_ts::helpers::shared_types::EMIT_PROPS.select(hoist_shared_preamble);
-            append!(
-                field,
-                "__vizeResolveEmitProps?: <{generic_decl}>(props: Partial<{props_type}<{generic_names}>> & Record<string, unknown>) => {emit_props}<Emits<{generic_names}>>;"
-            );
+            ts! { &mut field =>
+                __vizeResolveEmitProps?: <#generic_decl>(props: Partial<#props_type<#generic_names>> & Record<string, unknown>) => #emit_props<Emits<#generic_names>>;
+            }
         }
         if !self.generic_event_map_decl.is_empty() {
             if !field.is_empty() {
                 field.push(' ');
             }
-            append!(
-                field,
-                "__vizeResolveEvents?: <{generic_decl}>(props: Partial<{props_type}<{generic_names}>> & Record<string, unknown>) => __VizeAuthoredEventMap<{generic_names}>;"
-            );
+            ts! { &mut field =>
+                __vizeResolveEvents?: <#generic_decl>(props: Partial<#props_type<#generic_names>> & Record<string, unknown>) => $AuthoredEventMap<#generic_names>;
+            }
         }
         field
     }
@@ -125,19 +125,15 @@ pub(super) fn template_model_emit_type(
     if summary.macros.models().is_empty() {
         return None;
     }
-    let mut ts = String::from("__EmitFn<{\n");
-    for model in summary.macros.models() {
-        push_model_update_event_literal(&mut ts, model.name.as_str());
-        let payload = model_update_payload(generic_parameters, model);
-        append!(ts, ": [value: {payload}];\n");
+    let mut ts = String::default();
+    ts! { &mut ts =>
+        __EmitFn<{
+            #(model in summary.macros.models() =>
+                #TsString(cstr!("update:{}", model.name).as_str()): [value: #(model_update_payload(generic_parameters, model))];
+            )*
+        }>
     }
-    ts.push_str("}>");
     Some(ts)
-}
-
-fn push_model_update_event_literal(ts: &mut String, model_name: &str) {
-    let event_name = cstr!("update:{model_name}");
-    push_ts_string_literal(ts, event_name.as_str());
 }
 
 pub(super) fn emit_emits_type(
@@ -194,60 +190,53 @@ pub(super) fn emit_emits_type(
                 String::from(inner_type_of(type_args))
             };
             if has_model_emits {
-                append!(
-                    *ts,
-                    "export type Emits{emits_generic_suffix} = __EmitFn<{inner_type}> & __EmitFn<{{\n"
-                );
-                for model in models {
-                    let name = model.name.as_str();
-                    let payload = model_update_payload(generic_param, model);
-                    ts.push_str("  ");
-                    push_model_update_event_literal(ts, name);
-                    append!(*ts, ": [value: {payload}];\n");
+                ts! { &mut *ts =>
+                    export type Emits #emits_generic_suffix = __EmitFn<#inner_type> & __EmitFn<{
+                        #(model in models =>
+                            #("  ") #TsString(cstr!("update:{}", model.name).as_str()): [value: #(model_update_payload(generic_param, model))];
+                        )*
+                    }>;
                 }
-                ts.push_str("}>;\n");
             } else {
-                append!(
-                    *ts,
-                    "export type Emits{emits_generic_suffix} = {inner_type};\n"
-                );
+                ts! { &mut *ts =>
+                    export type Emits #emits_generic_suffix = #inner_type;
+                }
             }
         } else if has_runtime_emits {
-            append!(
-                *ts,
-                "export type Emits{emits_generic_suffix} = Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]",
-            );
-            for model in models {
-                let name = model.name.as_str();
-                let payload = model_update_payload(generic_param, model);
-                ts.push_str(" & ((event: ");
-                push_model_update_event_literal(ts, name);
-                append!(*ts, ", value: {payload}) => void)");
+            ts! { &mut *ts =>
+                export type Emits #emits_generic_suffix = Awaited<ReturnType<typeof __setup>>["__vize_emits"]
+                #(model in models =>
+                    & ((event: #TsString(cstr!("update:{}", model.name).as_str()), value: #(model_update_payload(generic_param, model))) => void)
+                )*
+                ;
             }
-            ts.push_str(";\n");
         } else if has_macro_emits || has_model_emits {
-            append!(*ts, "export type Emits{emits_generic_suffix} = {{\n");
-            let mut emitted_names: FxHashSet<String> = FxHashSet::default();
+            let mut fields: Vec<(String, String)> = Vec::new();
             for emit in summary.macros.emits() {
-                let payload = emit.payload_type.as_deref().unwrap_or("any[]");
-                ts.push_str("  ");
-                push_ts_string_literal(ts, emit.name.as_str());
-                append!(*ts, ": {payload};\n");
-                emitted_names.insert(emit.name.as_str().into());
+                fields.push((
+                    emit.name.clone(),
+                    emit.payload_type.as_deref().unwrap_or("any[]").into(),
+                ));
             }
             for model in models {
                 let event_name = cstr!("update:{}", model.name);
-                if emitted_names.contains(event_name.as_str()) {
+                if fields
+                    .iter()
+                    .any(|(name, _)| name.as_str() == event_name.as_str())
+                {
                     continue;
                 }
-                let payload = model_update_payload(generic_param, model);
-                ts.push_str("  ");
-                push_ts_string_literal(ts, event_name.as_str());
-                append!(*ts, ": [value: {payload}];\n");
+                fields.push((event_name, model_update_payload(generic_param, model)));
             }
-            ts.push_str("};\n");
+            ts! { &mut *ts =>
+                export type Emits #emits_generic_suffix = {
+                    #(field in fields.iter() =>
+                        #("  ") #TsString(field.0.as_str()): #(field.1.as_str());
+                    )*
+                };
+            }
         } else {
-            ts.push_str("export type Emits = {};\n");
+            ts! { &mut *ts => export type Emits = {}; }
         }
     }
 
@@ -290,11 +279,10 @@ fn emit_emit_props_helper(
         return;
     }
     if !hoist_shared_preamble {
-        ts.push_str(EMIT_OVERLOAD_HELPERS);
+        ts! { &mut *ts => #EMIT_OVERLOAD_HELPERS }
     }
     if !hoist_shared_preamble {
-        ts.push_str(EMIT_PROPS_HELPER);
-        ts.push('\n');
+        ts! { &mut *ts => #EMIT_PROPS_HELPER #("\n") }
     }
     if !info.has_emits_for_props {
         return;
@@ -303,25 +291,29 @@ fn emit_emit_props_helper(
         crate::virtual_ts::helpers::shared_types::EMIT_PROPS.select(hoist_shared_preamble);
     if info.has_runtime_emits {
         if info.preserve_event_navigation {
-            ts.push_str("type __VizeStaticEventMap = __EmitOptions<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>;\n");
+            ts! { &mut *ts =>
+                type $StaticEventMap = __EmitOptions<Awaited<ReturnType<typeof __setup>>["__vize_emits"]>;
+            }
         }
-        append!(
-            *ts,
-            "type __VizeStaticEmitProps = {emit_props}<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>;\n\n"
-        );
+        ts! { &mut *ts =>
+            type $StaticEmitProps = #emit_props<Awaited<ReturnType<typeof __setup>>["__vize_emits"]>;
+            #("\n")
+        }
     } else {
         if info.preserve_event_navigation {
             if info.generic_event_map_decl.is_empty() {
-                ts.push_str("type __VizeStaticEventMap = __EmitOptions<Emits>;\n");
+                ts! { &mut *ts => type $StaticEventMap = __EmitOptions<Emits>; }
             } else {
-                append!(
-                    *ts,
-                    "type __VizeStaticEventMap<{}> = __EmitOptions<Emits<{}>>;\n",
-                    info.generic_event_map_decl,
-                    info.generic_event_map_names
-                );
+                let declaration = info.generic_event_map_decl.as_str();
+                let names = info.generic_event_map_names.as_str();
+                ts! { &mut *ts =>
+                    type $StaticEventMap<#declaration> = __EmitOptions<Emits<#names>>;
+                }
             }
         }
-        append!(*ts, "type __VizeStaticEmitProps = {emit_props}<Emits>;\n\n");
+        ts! { &mut *ts =>
+            type $StaticEmitProps = #emit_props<Emits>;
+            #("\n")
+        }
     }
 }

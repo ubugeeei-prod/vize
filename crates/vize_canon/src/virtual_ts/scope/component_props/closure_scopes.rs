@@ -59,29 +59,26 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
                 scope,
                 ctx.template_binding_access,
                 false,
+                |ts, mappings| {
+                    for value in &data.value_bindings {
+                        append!(*ts, "{vfor_inner_indent}void {value};\n");
+                    }
+                    if let Some(ref key) = data.key_alias {
+                        append!(*ts, "{vfor_inner_indent}void {key};\n");
+                    }
+                    if let Some(ref index) = data.index_alias {
+                        append!(*ts, "{vfor_inner_indent}void {index};\n");
+                    }
+
+                    {
+                        let prefix = enclosing_guard
+                            .map(super::super::vif_guard_chain::ActiveGuardPrefix::push);
+                        generate_scope_checks(ts, mappings, ctx, scope_id, &vfor_inner_indent);
+                        drop(prefix);
+                    }
+                    recurse_child_closure_scopes(ts, mappings, ctx, scope_id, &vfor_inner_indent);
+                },
             );
-
-            for value in &data.value_bindings {
-                append!(*ts, "{vfor_inner_indent}void {value};\n");
-            }
-            if let Some(ref key) = data.key_alias {
-                append!(*ts, "{vfor_inner_indent}void {key};\n");
-            }
-            if let Some(ref index) = data.index_alias {
-                append!(*ts, "{vfor_inner_indent}void {index};\n");
-            }
-
-            {
-                let prefix =
-                    enclosing_guard.map(super::super::vif_guard_chain::ActiveGuardPrefix::push);
-                generate_scope_checks(ts, mappings, ctx, scope_id, &vfor_inner_indent);
-                drop(prefix);
-            }
-            recurse_child_closure_scopes(ts, mappings, ctx, scope_id, &vfor_inner_indent);
-
-            ts.push_str(&loop_indent);
-            ts.push_str("}\n");
-            append!(*ts, "{loop_indent}}}\n");
             drop(suspended);
             if emitted_guard.is_some() {
                 super::super::append_chained_vif_guard_close(ts, indent);

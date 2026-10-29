@@ -173,7 +173,7 @@ Child
     assert.match(childHoverText, /Vue component: Child\.vue/);
     assert.doesNotMatch(
       childHoverText,
-      /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/,
+      /__vizeComponentMarker|__vizeRawProps|\$ComponentConstructor/,
     );
 
     const slotPropOffset = source.indexOf("row.id") + "row".length;

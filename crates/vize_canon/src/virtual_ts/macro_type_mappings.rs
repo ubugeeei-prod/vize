@@ -4,6 +4,7 @@ use std::ops::Range;
 
 use vize_carton::{FxHashSet, String, cstr};
 use vize_croquis::macros::{MacroCall, ModelDefinition};
+use vize_l0::ts;
 
 use crate::virtual_ts::helpers::push_ts_string_literal;
 
@@ -129,14 +130,18 @@ impl<'a> MacroTypeMappings<'a> {
             return;
         }
 
-        ts.push_str(" & { ");
-        for (authored, key) in keys {
-            let start = ts.len();
-            ts.push_str(key.as_str());
-            self.map_exact(start..ts.len(), authored);
-            ts.push_str("?: unknown; ");
+        ts! { &mut *ts =>
+            #(" & ")
+            {
+                #(" ")
+                #(entry in keys.iter() =>
+                    #{ let start = __ts.len(); }
+                    #entry.1.as_str()
+                    #{ self.map_exact(start..__ts.len(), entry.0); }
+                    #("?: unknown; ")
+                )*
+            }
         }
-        ts.push('}');
     }
 
     pub(crate) fn map_model_props(

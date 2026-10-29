@@ -62,7 +62,7 @@ export async function helperCensus(
         value.kind === aliasKind &&
         isRecord(value.name) &&
         typeof value.name.text === "string" &&
-        value.name.text.startsWith("__Vize")
+        value.name.text.startsWith("$")
       ) {
         assert.ok(typeof value.end === "number");
         const getStart = value.getStart;

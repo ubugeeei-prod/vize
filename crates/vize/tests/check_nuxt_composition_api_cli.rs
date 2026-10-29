@@ -237,7 +237,7 @@ export default defineComponent({
         "the setup-spread fallback should declare $fetch exactly once:\n{stderr}"
     );
     assert!(
-        !stderr.contains("const $fetch: __VizeInstanceGlobal<'$fetch'>"),
+        !stderr.contains("const $fetch: $InstanceGlobal<'$fetch'>"),
         "the instance-global pass must not redeclare $fetch:\n{stderr}"
     );
 

@@ -16,13 +16,13 @@ fn test_strict_template_context_keeps_router_but_not_unknown_plugin_globals() {
         (None, None, None),
     );
 
-    assert!(ctx.contains("type __VizeStrictPublicInstanceGlobals = {"));
+    assert!(ctx.contains("type $StrictPublicInstanceGlobals = {"));
     assert!(ctx.contains("string extends __Rest ? never"));
     // vue-router registers both `$route` and `$router`; no special case (#4963).
     assert!(!ctx.contains("\"$route\""));
     assert!(ctx.contains("unknown extends T ? any : T"));
-    assert!(ctx.contains("type __VizeStrictTemplateContext = {"));
-    assert!(ctx.contains("} & __VizeStrictPublicInstanceGlobals;"));
+    assert!(ctx.contains("type $StrictTemplateContext = {"));
+    assert!(ctx.contains("} & $StrictPublicInstanceGlobals;"));
     assert!(!ctx.contains("& __Ctx"));
     assert!(!ctx.contains("$route: any;"));
     assert!(!ctx.contains("$router: any;"));
@@ -60,7 +60,7 @@ fn test_strict_template_context_does_not_inherit_public_instance_unknowns() {
         output.code
     );
     assert!(
-        !output.code.contains("__VizeStrictTemplateContext & __Ctx"),
+        !output.code.contains("$StrictTemplateContext & __Ctx"),
         "{}",
         output.code
     );

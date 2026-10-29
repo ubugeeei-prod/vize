@@ -2,6 +2,7 @@
 
 use vize_carton::{String, append, cstr};
 use vize_croquis::{Croquis, macros::ModelDefinition};
+use vize_l0::ts;
 
 use super::{generic_parameters::GenericParameters, helpers::push_ts_string_literal};
 
@@ -26,7 +27,7 @@ pub(crate) fn model_value_type(
     let arguments = generic_parameters
         .map(|generic| cstr!("<{}>", generic.names))
         .unwrap_or_default();
-    let mut ty = cstr!("__VizeModelDefaults{arguments}[");
+    let mut ty = cstr!("$ModelDefaults{arguments}[");
     push_ts_string_literal(&mut ty, model.name.as_str());
     ty.push(']');
     ty
@@ -36,19 +37,27 @@ pub(crate) fn emit_defaults_artifact(ts: &mut String, summary: &Croquis, fields:
     if !has_inferred_defaults(summary) {
         return;
     }
-    ts.push_str("\n  const __vize_model_defaults = {\n");
-    for model in summary.macros.models() {
-        if model.model_type.is_some() {
-            continue;
+    ts! { &mut *ts =>
+        #("\n  const __vize_model_defaults = ")
+        {
+            #("\n")
+            #{
+                for model in summary.macros.models() {
+                    if model.model_type.is_some() {
+                        continue;
+                    }
+                    let Some(default) = &model.default_value else {
+                        continue;
+                    };
+                    __ts.push_str("    ");
+                    push_ts_string_literal(__ts, model.name.as_str());
+                    append!(*__ts, ": ({default}),\n");
+                }
+            }
+            #("  ")
         }
-        let Some(default) = &model.default_value else {
-            continue;
-        };
-        ts.push_str("    ");
-        push_ts_string_literal(ts, model.name.as_str());
-        append!(*ts, ": ({default}),\n");
+        ;
     }
-    ts.push_str("  };\n");
     fields.push("__vize_model_defaults".into());
 }
 
@@ -58,6 +67,6 @@ pub(crate) fn emit_defaults_type(ts: &mut String, generic_param: Option<&Generic
         .unwrap_or_default();
     append!(
         *ts,
-        "type __VizeModelDefaults{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>[\"__vize_model_defaults\"];\n"
+        "type $ModelDefaults{declaration} = Awaited<ReturnType<typeof __setup{arguments}>>[\"__vize_model_defaults\"];\n"
     );
 }

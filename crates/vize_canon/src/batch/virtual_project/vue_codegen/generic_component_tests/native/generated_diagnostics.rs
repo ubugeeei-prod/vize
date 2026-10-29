@@ -411,12 +411,12 @@ fn replay_prior_runtime_tuple_read(
 // them once in the ambient shared preamble, so the generated SFC must contain
 // neither the declarations nor their old unmapped suggestion vector.
 const EVENT_HOISTED_HELPERS: &[&str] = &[
-    "__VizeHasRawProps",
-    "__VizeFallthroughValue",
-    "__VizeNavigationSlots",
-    "__VizeEmitPropsFactory",
+    "$HasRawProps",
+    "$FallthroughValue",
+    "$NavigationSlots",
+    "$EmitPropsFactory",
 ];
-const PROP_HOISTED_HELPERS: &[&str] = &["__VizeHasRawProps", "__VizeNavigationSlots"];
+const PROP_HOISTED_HELPERS: &[&str] = &["$HasRawProps", "$NavigationSlots"];
 
 fn hoisted_helper_hints(generated: &str, names: &[&str]) -> Vec<Value> {
     assert_eq!(

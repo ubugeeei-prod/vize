@@ -106,7 +106,7 @@ test("LSP type evidence and unique ref mutations survive open, change, and repai
       record("typed-hover-whole-packets", hoverPackets);
       const text = hoverToText(hover as { contents?: unknown } | null);
       assert.match(text, expected, file);
-      assert.doesNotMatch(text, /\b(?:any|unknown|never)\b|__Vize|__VLS/, file);
+      assert.doesNotMatch(text, /\b(?:any|unknown|never)\b|\$\$|__VLS/, file);
     }
 
     for (const row of rows) {

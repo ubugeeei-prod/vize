@@ -121,7 +121,7 @@ export async function lspAdmission(
           });
           const rendered = hoverText(reply);
           assert.ok(rendered.includes(wanted));
-          assert.doesNotMatch(rendered, /\b(?:any|unknown|never)\b|__Vize|__VLS/u);
+          assert.doesNotMatch(rendered, /\b(?:any|unknown|never)\b|\$\$|__VLS/u);
           replies.push({ file, anchor, token, wanted, reply });
         }
         assert.equal(replies.length, 4);

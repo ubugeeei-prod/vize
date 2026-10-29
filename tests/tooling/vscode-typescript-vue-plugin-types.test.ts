@@ -79,7 +79,7 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       "the component contract must be valid TypeScript for syntax highlighting",
     );
     assert.doesNotMatch(display, /ignored|notAnEmit/);
-    assert.doesNotMatch(display, /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/);
+    assert.doesNotMatch(display, /__vizeComponentMarker|__vizeRawProps|\$ComponentConstructor/);
     const sideEffectInfo = service.getQuickInfoAtPosition(
       project.mainTs,
       source.indexOf("SideEffect.vue") + 1,
@@ -94,7 +94,7 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
     assert.match(barrelDisplay, /props: \{ title: "hello   world"/);
     assert.doesNotMatch(
       barrelDisplay,
-      /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/,
+      /__vizeComponentMarker|__vizeRawProps|\$ComponentConstructor/,
     );
     assert.equal(
       service.getDefinitionAtPosition(project.mainTs, source.indexOf("BarrelApp;") + 1)?.[0]
@@ -115,7 +115,7 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
     assert.match(packageDisplay, /props: \{ packageTitle: string \}/);
     assert.doesNotMatch(
       packageDisplay,
-      /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/,
+      /__vizeComponentMarker|__vizeRawProps|\$ComponentConstructor/,
     );
     assert.equal(
       service.getDefinitionAtPosition(project.mainTs, source.indexOf("PackageApp;") + 1)?.[0]
@@ -156,7 +156,7 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
     assert.doesNotMatch(refreshedDisplay, /title: string/);
     assert.doesNotMatch(
       refreshedDisplay,
-      /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/,
+      /__vizeComponentMarker|__vizeRawProps|\$ComponentConstructor/,
     );
     assert.equal(
       nativeGenerationCount(project.nativeCalls),

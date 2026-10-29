@@ -7,10 +7,10 @@
 use super::{TemplateGlobal, VirtualTsOptions};
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
-const PRELUDE: &str = "  type __VizeTemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };";
-const MEMBER_ALIAS: &str = "  type __VizeTemplateInstanceMember<__K extends string> = __K extends keyof __VizeTemplateInstance ? __VizeTemplateInstance[__K] : any;";
+const PRELUDE: &str = "  type $TemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };";
+const MEMBER_ALIAS: &str = "  type $TemplateInstanceMember<__K extends string> = __K extends keyof $TemplateInstance ? $TemplateInstance[__K] : any;";
 const INSTANCE: &str =
-    "  const __vize_public_instance = undefined as unknown as __VizeTemplateInstance;";
+    "  const __vize_public_instance = undefined as unknown as $TemplateInstance;";
 
 fn setup_output(
     script: &str,
@@ -58,7 +58,7 @@ fn script_setup_reads_an_unknown_name_off_the_public_instance_once_per_use() {
     assert_eq!(
         count_lines(
             &code,
-            "  var isSP!: __VizeTemplateInstanceMember<\"isSP\">; void (isSP);"
+            "  var isSP!: $TemplateInstanceMember<\"isSP\">; void (isSP);"
         ),
         1,
         "{code}"
@@ -116,7 +116,7 @@ fn a_declared_template_global_keeps_its_context_binding() {
     assert_eq!(
         count_lines(
             &code,
-            "  var appName!: __VizeTemplateInstanceMember<\"appName\">; void (appName);"
+            "  var appName!: $TemplateInstanceMember<\"appName\">; void (appName);"
         ),
         0,
         "{code}"
@@ -148,7 +148,7 @@ fn a_script_declared_type_only_name_is_not_read_off_the_instance() {
     assert_eq!(
         count_lines(
             &code,
-            "  var Bare!: __VizeTemplateInstanceMember<\"Bare\">; void (Bare);"
+            "  var Bare!: $TemplateInstanceMember<\"Bare\">; void (Bare);"
         ),
         0,
         "{code}"

@@ -1,25 +1,25 @@
-//! `mixins:` / `extends:` members incorporated into the Options API `__VizeThis`.
+//! `mixins:` / `extends:` members incorporated into the Options API `$This`.
 //!
-//! Without this, `__VizeThis` only lists the component's own
+//! Without this, `$This` only lists the component's own
 //! `props`/`data`/`computed`/`methods`/`inject`/`setup` names, so a
 //! `methods`/`computed` body that legitimately calls a member contributed by a
-//! mixin reports `TS2339 Property 'x' does not exist on type '__VizeThis'` on
+//! mixin reports `TS2339 Property 'x' does not exist on type '$This'` on
 //! code `vue-tsc` accepts (#3609).
 //!
-//! Only a *component constructor* contributes. `__VizeInheritedInstance`
+//! Only a *component constructor* contributes. `$InheritedInstance`
 //! yields `any` for anything that is not `abstract new (...args) => I`, and
-//! `__VizeInheritedMembers` maps that `any` back to the empty object through
-//! the `__VizeIsAny` guard. That is what keeps the untyped legacy surface
+//! `$InheritedMembers` maps that `any` back to the empty object through
+//! the `$IsAny` guard. That is what keeps the untyped legacy surface
 //! exactly where it is: a plain-JavaScript mixin is an options *object*
 //! (`{ methods: { … } }`) or degrades to `any` outright, so it contributes no
 //! keys and every diagnostic it used to raise still raises. Intersecting the
-//! raw type instead would collapse `__VizeThis` to `any` for an untyped mixin
+//! raw type instead would collapse `$This` to `any` for an untyped mixin
 //! and silently drop every genuine finding in the file.
 //!
 //! The neutral element is a named empty interface on purpose. TypeScript drops
 //! `{}` / `unknown` while building the intersection and then prints the
 //! expanded own-member object in diagnostics. Keeping a named neutral member
-//! preserves the `__VizeThis` alias and the pinned legacy messages.
+//! preserves the `$This` alias and the pinned legacy messages.
 
 use std::ops::Range;
 
@@ -32,13 +32,13 @@ use vize_carton::{String, append};
 
 /// Type-level helpers backing the inherited-member aliases.
 pub(super) const INHERITED_MEMBER_HELPERS: &str = concat!(
-    "  type __VizeInheritedInstance<T> = T extends abstract new (...args: any[]) => infer __I ? __I : any;\n",
-    "  interface __VizeNoInheritedMembers {}\n",
-    "  type __VizeInheritedMembers<T, __I = __VizeInheritedInstance<T>> = [__VizeIsAny<__I>] extends [true] ? __VizeNoInheritedMembers : __I;\n",
+    "  type $InheritedInstance<T> = T extends abstract new (...args: any[]) => infer __I ? __I : any;\n",
+    "  interface $NoInheritedMembers {}\n",
+    "  type $InheritedMembers<T, __I = $InheritedInstance<T>> = [$IsAny<__I>] extends [true] ? $NoInheritedMembers : __I;\n",
 );
 
 /// One `mixins:` element (or the `extends:` value) whose instance members
-/// `__VizeThis` inherits.
+/// `$This` inherits.
 #[derive(Debug)]
 pub(super) struct InheritedComponent {
     /// The authored reference, reproduced verbatim as a `typeof` operand.
@@ -52,7 +52,7 @@ pub(super) struct InheritedComponent {
 ///
 /// An inline options object (`mixins: [{ methods: { … } }]`) is skipped here:
 /// it has no name to query, and Croquis already merges its local members into
-/// the direct `__VizeThis` shape.
+/// the direct `$This` shape.
 pub(super) fn collect_inherited_components(
     options: &ObjectExpression<'_>,
     inherited: &mut Vec<InheritedComponent>,

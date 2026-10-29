@@ -192,7 +192,11 @@ fn transform_with_diagnostic_ownership(
 
     publish::publish_content_mapper_text(
         &mut code,
-        &mappings,
+        &mut mappings,
+        &mut semantic_links,
+        &mut prop_default_key_links,
+        generic_copies.as_mut(),
+        diagnostic_ownership.as_ref(),
         transform_options.shared_virtual_module(),
     );
 
@@ -213,7 +217,7 @@ fn transform_with_diagnostic_ownership(
     }
     if suppress_typescript_diagnostics {
         let previous_length = code.len();
-        prepend_typescript_nocheck(
+        publish::prepend_typescript_nocheck(
             &mut code,
             &mut mappings,
             &mut semantic_links,
@@ -285,32 +289,6 @@ fn transform_with_diagnostic_ownership(
             .collect(),
         text: code,
     })
-}
-
-const TYPESCRIPT_NOCHECK_DIRECTIVE: &str = "// @ts-nocheck\n";
-
-fn prepend_typescript_nocheck(
-    code: &mut vize_l0::String,
-    mappings: &mut [VizeMapping],
-    semantic_links: &mut [crate::virtual_ts::VizeSemanticLink],
-    prop_default_key_links: &mut [crate::virtual_ts::VizeSemanticLink],
-) {
-    let offset = TYPESCRIPT_NOCHECK_DIRECTIVE.len();
-    let mut prefixed = vize_l0::String::with_capacity(offset + code.len());
-    prefixed.push_str(TYPESCRIPT_NOCHECK_DIRECTIVE);
-    prefixed.push_str(code.as_str());
-    *code = prefixed;
-    for mapping in mappings {
-        mapping.gen_range.start += offset;
-        mapping.gen_range.end += offset;
-        for sub_span in &mut mapping.sub_spans {
-            sub_span.gen_range.start += offset;
-            sub_span.gen_range.end += offset;
-        }
-    }
-    for link in semantic_links.iter_mut().chain(prop_default_key_links) {
-        link.shift_generated_ranges(offset);
-    }
 }
 
 fn sfc_parse_diagnostic(source: &str, error: &SfcError) -> ContentMapperDiagnostic {

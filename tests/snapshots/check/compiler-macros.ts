@@ -11,7 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = compilerMacrosApp;
 const qualifiedEmitProps = 'import("vize:virtual-ts").__EmitProps<';
-const qualifiedWidenTemplateRef = 'import("vize:virtual-ts").__VizeWidenTemplateRef';
+const qualifiedWidenTemplateRef = 'import("vize:virtual-ts").$WidenTemplateRef';
 const currentReceipt = {
   emitHelperFiles: [
     "src/DefineEmitsMethodInterface.vue",
@@ -21,7 +21,7 @@ const currentReceipt = {
   helperHoistProvenance: "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
   slotAliasProvenance: "#11064 / c2ee0878fec5d53edb7c30e10f374e37ab256f02",
   slotCallFiles: ["src/DefineSlotsType.vue"],
-  snapshotSha256: "e91424434bb504be5824f2841873748655f1a88b3cdbef3df3de7b19f75e7fc6",
+  snapshotSha256: "777b523a530649363f1fa423e4417e03c9dfabfbe24cb3013cfcc5927c4e9c75",
   widenHelperFiles: [
     "src/DefineExposeType.vue",
     "src/DefineModelType.vue",
@@ -64,7 +64,7 @@ describe(`${app.name} check (type checker)`, () => {
     );
     for (const { file, virtualTs = "" } of parsed.files) {
       assert.equal(
-        count(virtualTs, "__VizeWidenTemplateRef"),
+        count(virtualTs, "$WidenTemplateRef"),
         count(virtualTs, qualifiedWidenTemplateRef),
         `${file} must not restore a file-local widening helper`,
       );
@@ -74,12 +74,12 @@ describe(`${app.name} check (type checker)`, () => {
         `${file} must not restore a file-local emit helper`,
       );
       assert.equal(
-        count(virtualTs, "type __VizeSlotOutletTarget"),
+        count(virtualTs, "type $SlotOutletTarget"),
         0,
         `${file} must not restore the unused slot target alias`,
       );
       assert.equal(
-        count(virtualTs, "type __VizeSlotOutletArgs"),
+        count(virtualTs, "type $SlotOutletArgs"),
         0,
         `${file} must not restore the unused slot argument alias`,
       );

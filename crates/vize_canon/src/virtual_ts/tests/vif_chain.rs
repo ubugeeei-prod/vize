@@ -193,7 +193,7 @@ fn same_element_v_if_does_not_see_v_for_alias() {
     // template read: declared from the public instance, never from the alias.
     assert!(
         output.code.lines().any(|line| {
-            line == "  var attribute!: __VizeTemplateInstanceMember<\"attribute\">; void (attribute);"
+            line == "  var attribute!: $TemplateInstanceMember<\"attribute\">; void (attribute);"
         }),
         "same-element v-if must be checked before its v-for aliases exist:\n{}",
         output.code

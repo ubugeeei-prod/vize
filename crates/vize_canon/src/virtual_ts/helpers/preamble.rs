@@ -68,7 +68,7 @@ macro_rules! vue_type_helpers_text {
 
 macro_rules! content_mapper_type_helpers_text {
     ($types:expr, $module:expr) => {
-        concat!($types, include_str!("declarations/native-elements.d.ts.txt"), "import type { VizeComponentAttrCamel as __VizeComponentAttrCamel, VizeComponentGlobalHtmlAttrs as __VizeComponentGlobalHtmlAttrs } from \"", $module, "\";\n", v_for_list_decls_text!(), directive_helpers_text!())
+        concat!($types, include_str!("declarations/native-elements.d.ts.txt"), "import type { VizeComponentAttrCamel as $ComponentAttrCamel, VizeComponentGlobalHtmlAttrs as $ComponentGlobalHtmlAttrs } from \"", $module, "\";\n", v_for_list_decls_text!(), directive_helpers_text!())
     };
 }
 
@@ -116,5 +116,5 @@ pub const DECLARATION_HELPERS_DTS: &str = concat!(
     include_str!("declarations/emit-props.d.ts.txt"),
     // Generic component signatures name this; emitted declarations keep it
     // open instead of depending on Vue's `NativeElements` (native_props.rs).
-    "type __VizeComponentGlobalHtmlAttrs = { [key: string]: unknown };\n",
+    "type $ComponentGlobalHtmlAttrs = { [key: string]: unknown };\n",
 );

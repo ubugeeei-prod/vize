@@ -8,6 +8,7 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_carton::{String, append};
 use vize_croquis::script_parser::parse_program_for_analysis;
+use vize_l0::ts;
 
 use super::component_public_types::TemplateSlotsType;
 
@@ -182,14 +183,14 @@ impl SetupImportPlan {
         if self.imports.iter().any(|import| import.slots)
             && let Some(slots) = &self.slots_type
         {
-            ts.push_str("  type __VizeUseSlots = () => ");
+            ts.push_str("  type $UseSlots = () => ");
             slots.emit(ts, mappings, source_offset);
             ts.push_str(";\n");
         }
         if self.imports.iter().any(|import| import.attrs)
             && let Some(attrs) = &self.attrs_type
         {
-            append!(*ts, "  type __VizeUseAttrs = () => {attrs};\n");
+            append!(*ts, "  type $UseAttrs = () => {attrs};\n");
         }
         for (index, import) in self.imports.iter().enumerate() {
             let ImportSpec {
@@ -224,15 +225,15 @@ impl SetupImportPlan {
                 let mut keys = Vec::new();
                 if *css {
                     keys.push("'useCssModule'");
-                    fields.push("useCssModule: __VizeUseCssModule");
+                    fields.push("useCssModule: $UseCssModule");
                 }
                 if *slots {
                     keys.push("'useSlots'");
-                    fields.push("useSlots: __VizeUseSlots");
+                    fields.push("useSlots: $UseSlots");
                 }
                 if *attrs {
                     keys.push("'useAttrs'");
-                    fields.push("useAttrs: __VizeUseAttrs");
+                    fields.push("useAttrs: $UseAttrs");
                 }
                 append!(
                     *ts,
@@ -241,36 +242,52 @@ impl SetupImportPlan {
                     fields.join("; ")
                 );
             } else if *css {
-                ts.push_str("__VizeUseCssModule;\n");
+                ts.push_str("$UseCssModule;\n");
             } else if *attrs {
-                ts.push_str("__VizeUseAttrs;\n");
+                ts.push_str("$UseAttrs;\n");
             } else {
-                ts.push_str("__VizeUseSlots;\n");
+                ts.push_str("$UseSlots;\n");
             }
         }
     }
 }
 
 fn emit_css_module_type(ts: &mut String, options: &VirtualTsOptions) {
-    ts.push_str("  type __VizeStyleModules = {\n");
     let mut has_default = false;
-    for global in options
-        .template_globals
-        .iter()
-        .filter(|global| global.default_value == CSS_MODULE_GLOBAL_MARKER)
-    {
-        let name = serde_json::to_string(global.name.as_str()).unwrap_or_default();
-        append!(*ts, "    {name}: {};\n", global.type_annotation);
-        has_default |= global.name == "$style";
+    ts! { &mut *ts =>
+        #("  type $StyleModules = ")
+        {
+            #("\n")
+            #{
+                for global in options
+                    .template_globals
+                    .iter()
+                    .filter(|global| global.default_value == CSS_MODULE_GLOBAL_MARKER)
+                {
+                    let name = serde_json::to_string(global.name.as_str()).unwrap_or_default();
+                    append!(*__ts, "    {name}: {};\n", global.type_annotation);
+                    has_default |= global.name == "$style";
+                }
+                for name in &options.css_modules {
+                    let quoted = serde_json::to_string(name.as_str()).unwrap_or_default();
+                    append!(*__ts, "    {quoted}: Record<string, string>;\n");
+                    has_default |= name == "$style";
+                }
+            }
+            #("  ")
+        }
+        #(";\n  type $UseCssModule = ")
+        {
+            #("\n")
+            #{
+                if has_default {
+                    __ts.push_str("    (): $StyleModules['$style'];\n");
+                }
+                __ts.push_str(
+                    "    <K extends Exclude<keyof $StyleModules, '$style'>>(name: K): $StyleModules[K];\n  ",
+                );
+            }
+        }
+        ;
     }
-    for name in &options.css_modules {
-        let quoted = serde_json::to_string(name.as_str()).unwrap_or_default();
-        append!(*ts, "    {quoted}: Record<string, string>;\n");
-        has_default |= name == "$style";
-    }
-    ts.push_str("  };\n  type __VizeUseCssModule = {\n");
-    if has_default {
-        ts.push_str("    (): __VizeStyleModules['$style'];\n");
-    }
-    ts.push_str("    <K extends Exclude<keyof __VizeStyleModules, '$style'>>(name: K): __VizeStyleModules[K];\n  };\n");
 }

@@ -1,6 +1,6 @@
 
 // Compiler-macro signatures (aliased inside each module's __setup() scope)
-declare function __vize_defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeBooleanKey<_T>, keyof __LooseRequired<_T>>>;
+declare function __vize_defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<$BooleanKey<_T>, keyof __LooseRequired<_T>>>;
 declare function __vize_defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
 declare function __vize_defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
 declare function __vize_defineEmits<_T = unknown>(): __EmitFn<_T>;

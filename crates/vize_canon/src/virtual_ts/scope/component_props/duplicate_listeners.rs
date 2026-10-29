@@ -2,6 +2,7 @@
 
 use vize_carton::{String, camelize, capitalize, cstr};
 use vize_croquis::croquis::{ComponentUsage, EventListener};
+use vize_l0::ts;
 
 use super::super::context::ComponentPropsContext;
 use super::super::event_handler::event_name_source_range;
@@ -47,26 +48,33 @@ pub(super) fn append_duplicate_listener_checks(
             continue;
         }
         let prop_name = key.split('+').next().unwrap_or(key.as_str());
-        ts.push_str("  void { ");
-        for event in events {
-            let key_start = ts.len();
-            push_ts_string_literal(ts, prop_name);
-            let key_end = ts.len();
-            ts.push_str(": 0, ");
-            if let Some(src_range) = event_name_source_range(
-                ctx.template_source,
-                ctx.template_offset,
-                event.start..event.end,
-                event.name.as_str(),
-            ) {
-                mappings.push(VizeMapping {
-                    gen_range: key_start..key_end,
-                    src_range,
-                    sub_spans: Vec::new(),
-                });
+        ts! { &mut *ts =>
+            #("  void ")
+            {
+                #(" ")
+                #{
+                    for event in events {
+                        let key_start = __ts.len();
+                        push_ts_string_literal(__ts, prop_name);
+                        let key_end = __ts.len();
+                        __ts.push_str(": 0, ");
+                        if let Some(src_range) = event_name_source_range(
+                            ctx.template_source,
+                            ctx.template_offset,
+                            event.start..event.end,
+                            event.name.as_str(),
+                        ) {
+                            mappings.push(VizeMapping {
+                                gen_range: key_start..key_end,
+                                src_range,
+                                sub_spans: Vec::new(),
+                            });
+                        }
+                    }
+                }
             }
+            #(";  // listeners that compile to one prop\n")
         }
-        ts.push_str("};  // listeners that compile to one prop\n");
     }
 }
 

@@ -25,7 +25,7 @@ macro_rules! setup_helpers {
 setup_helpers!(
     (
         "defineProps",
-        r#"  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeBooleanKey<_T>, keyof __LooseRequired<_T>>>;
+        r#"  function defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<$BooleanKey<_T>, keyof __LooseRequired<_T>>>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }

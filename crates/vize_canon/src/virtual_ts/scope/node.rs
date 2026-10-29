@@ -83,76 +83,80 @@ pub(super) fn generate_scope_node(
                 scope,
                 ctx.template_binding_access,
                 capture_slots,
-            );
-            // Recheck positive terms for callback-captured object-property narrowing.
-            let callback_guard = enclosing_guard
-                .filter(|_| capture_slots)
-                .and_then(callback_vif_guard);
-            let callback_indent = if let Some(guard) = callback_guard.as_deref() {
-                let rewritten =
-                    rewrite_reserved_template_binding(guard, ctx.template_binding_access);
-                let guard = rewritten.as_deref().unwrap_or(guard);
-                append_ignored_vif_guard_open(
-                    ts,
-                    vfor_inner_indent.as_str(),
-                    guard,
-                    "Narrowing-only guard",
-                );
-                cstr!("{vfor_inner_indent}  ")
-            } else {
-                vfor_inner_indent.clone()
-            };
+                |ts, mappings| {
+                    // Recheck positive terms for callback-captured object-property narrowing.
+                    let callback_guard = enclosing_guard
+                        .filter(|_| capture_slots)
+                        .and_then(callback_vif_guard);
+                    let callback_indent = if let Some(guard) = callback_guard.as_deref() {
+                        let rewritten =
+                            rewrite_reserved_template_binding(guard, ctx.template_binding_access);
+                        let guard = rewritten.as_deref().unwrap_or(guard);
+                        append_ignored_vif_guard_open(
+                            ts,
+                            vfor_inner_indent.as_str(),
+                            guard,
+                            "Narrowing-only guard",
+                        );
+                        cstr!("{vfor_inner_indent}  ")
+                    } else {
+                        vfor_inner_indent.clone()
+                    };
 
-            // Mark v-for variables as used to avoid TS6133
-            for value in &data.value_bindings {
-                append!(*ts, "{callback_indent}void {value};\n");
-            }
-            if let Some(ref key) = data.key_alias {
-                append!(*ts, "{callback_indent}void {key};\n");
-            }
-            if let Some(ref index) = data.index_alias {
-                append!(*ts, "{callback_indent}void {index};\n");
-            }
+                    // Mark v-for variables as used to avoid TS6133
+                    for value in &data.value_bindings {
+                        append!(*ts, "{callback_indent}void {value};\n");
+                    }
+                    if let Some(ref key) = data.key_alias {
+                        append!(*ts, "{callback_indent}void {key};\n");
+                    }
+                    if let Some(ref index) = data.index_alias {
+                        append!(*ts, "{callback_indent}void {index};\n");
+                    }
 
-            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
-                && ctx.check_options.check_template_bindings
-            {
-                generate_expressions_in_enclosing_guard(
-                    ts,
-                    mappings,
-                    exprs,
-                    ctx.template_binding_access,
-                    &ExpressionListEmitContext::new(
-                        ctx.skipped_expression_ranges,
-                        ctx.template_offset,
+                    if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
+                        && ctx.check_options.check_template_bindings
+                    {
+                        generate_expressions_in_enclosing_guard(
+                            ts,
+                            mappings,
+                            exprs,
+                            ctx.template_binding_access,
+                            &ExpressionListEmitContext::new(
+                                ctx.skipped_expression_ranges,
+                                ctx.template_offset,
+                                &callback_indent,
+                                ctx.checks,
+                            ),
+                            enclosing_guard,
+                        );
+                    }
+                    generate_scope_slot_outlet_checks(
+                        ts,
+                        mappings,
+                        scope_id,
+                        ctx,
                         &callback_indent,
-                        ctx.checks,
-                    ),
-                    enclosing_guard,
-                );
-            }
-            generate_scope_slot_outlet_checks(ts, mappings, scope_id, ctx, &callback_indent);
+                    );
 
-            profile!(
-                "canon.virtual_ts.child_scopes",
-                generate_child_scopes(ts, mappings, ctx, scope_id, &callback_indent)
+                    profile!(
+                        "canon.virtual_ts.child_scopes",
+                        generate_child_scopes(ts, mappings, ctx, scope_id, &callback_indent)
+                    );
+                    if capture_slots {
+                        ctx.slot_outlets.emit_result(
+                            ts,
+                            ctx.summary,
+                            Some(scope.id),
+                            &callback_indent,
+                        );
+                    }
+
+                    if callback_guard.is_some() {
+                        append!(*ts, "{vfor_inner_indent}}}\n");
+                    }
+                },
             );
-            if capture_slots {
-                ctx.slot_outlets
-                    .emit_result(ts, ctx.summary, Some(scope.id), &callback_indent);
-            }
-
-            if callback_guard.is_some() {
-                append!(*ts, "{vfor_inner_indent}}}\n");
-            }
-
-            ts.push_str(&loop_indent);
-            ts.push_str("}\n");
-            if capture_slots {
-                append!(*ts, "{loop_indent}return [];\n{loop_indent}}})();\n");
-            }
-
-            append!(*ts, "{loop_indent}}}\n");
             drop(suspended);
             if enclosing_guard.is_some() {
                 super::append_chained_vif_guard_close(ts, indent);

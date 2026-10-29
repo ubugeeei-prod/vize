@@ -32,42 +32,42 @@ defineExpose({ focus: () => undefined })
 "#;
 
 const POISONED_MODULE_TYPES: &str = r#"<script lang="ts">
-type __VizeComponentNavigationProps = never
-type __VizeEmitListeners = never
-type __VizeIsGeneratedComponent = never
-type __VizeHasFallthroughProps = never
-type __VizeFallthroughProps = never
-type __VizeRequiredFallthroughProps = never
-type __VizeComponentRawProps = never
-type __VizeFallthroughValue = never
-type __VizeComponentEvents = never
-type __VizeEmitOwnedKeys = never
-type __VizeIsLibraryGenericExport = never
-type __VizePropChecker = never
-type __VizePropValue = never
-type __VizeFallthroughSpreadChecker = never
-type __VizeCallableProp = never
-type __VizePropsResolver = never
-type __VizeResolvedContextProps = never
-type __VizePropsSelector = never
-type __VizeResolvedProp = never
-type __VizeComponentRefCallback = never
-type __VizeStructuralSlots = never
-type __VizeNavigationSlots = never
-type __VizeRequiredSlots = never
-type __VizeSlotChildren = never
-type __VizeProvidedSlotChildren = never
-type __VizeSlotHostSlots = never
-type __VizeSlotPayload = never
-type __VizeSlotHostSelector = never
-type __VizeSlotConstructor = never
-type __VizeSlotConstructorArgs = never
-type __VizeSlotConstructoré = never
-type __VizeSlotConstructor\u0041 = never
-type __VizeSlotsFactory = never
-type __VizeEmitPropsFactory = never
-type __VizeWidenTemplateRef = never
-type __VizeNotUndefined = never
+type $ComponentNavigationProps = never
+type $EmitListeners = never
+type $IsGeneratedComponent = never
+type $HasFallthroughProps = never
+type $FallthroughProps = never
+type $RequiredFallthroughProps = never
+type $ComponentRawProps = never
+type $FallthroughValue = never
+type $ComponentEvents = never
+type $EmitOwnedKeys = never
+type $IsLibraryGenericExport = never
+type $PropChecker = never
+type $PropValue = never
+type $FallthroughSpreadChecker = never
+type $CallableProp = never
+type $PropsResolver = never
+type $ResolvedContextProps = never
+type $PropsSelector = never
+type $ResolvedProp = never
+type $ComponentRefCallback = never
+type $StructuralSlots = never
+type $NavigationSlots = never
+type $RequiredSlots = never
+type $SlotChildren = never
+type $ProvidedSlotChildren = never
+type $SlotHostSlots = never
+type $SlotPayload = never
+type $SlotHostSelector = never
+type $SlotConstructor = never
+type $SlotConstructorArgs = never
+type $SlotConstructoré = never
+type $SlotConstructor\u0041 = never
+type $SlotsFactory = never
+type $EmitPropsFactory = never
+type $WidenTemplateRef = never
+type $NotUndefined = never
 type __EmitProps = never
 export const moduleTypePoison = true
 </script>
@@ -172,23 +172,23 @@ fn authored_module_types_cannot_capture_batch_helpers() {
         .expect("parent virtual file should exist")
         .content;
     let members = [
-        "__VizeComponentRawProps",
-        "__VizePropChecker",
-        "__VizePropValue",
-        "__VizePropsResolver",
-        "__VizeResolvedContextProps",
-        "__VizePropsSelector",
-        "__VizeResolvedProp",
-        "__VizeComponentEvents",
-        "__VizeEmitPropsFactory",
-        "__VizeStructuralSlots",
-        "__VizeRequiredSlots",
-        "__VizeSlotHostSelector",
-        "__VizeSlotConstructor",
-        "__VizeSlotConstructorArgs",
-        "__VizeSlotsFactory",
-        "__VizeSlotPayload",
-        "__VizeWidenTemplateRef",
+        "$ComponentRawProps",
+        "$PropChecker",
+        "$PropValue",
+        "$PropsResolver",
+        "$ResolvedContextProps",
+        "$PropsSelector",
+        "$ResolvedProp",
+        "$ComponentEvents",
+        "$EmitPropsFactory",
+        "$StructuralSlots",
+        "$RequiredSlots",
+        "$SlotHostSelector",
+        "$SlotConstructor",
+        "$SlotConstructorArgs",
+        "$SlotsFactory",
+        "$SlotPayload",
+        "$WidenTemplateRef",
         "__EmitProps",
     ];
     let mut activated = Vec::with_capacity(members.len());
@@ -207,9 +207,9 @@ fn authored_module_types_cannot_capture_batch_helpers() {
     }
     assert_eq!(activated, members);
     assert_eq!(
-        exact_identifier_count(generated, "__VizeNotUndefined"),
+        exact_identifier_count(generated, "$NotUndefined"),
         1,
-        "only the authored poison may name __VizeNotUndefined in hoisted mode:\n{generated}"
+        "only the authored poison may name $NotUndefined in hoisted mode:\n{generated}"
     );
     assert_eq!(
         generated

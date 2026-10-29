@@ -3,7 +3,7 @@
 //! `{expr}` is a string or integer hole. `{%expr}` formats with `Display`.
 //! `{{` and `}}` are literal braces. Static text never goes through `format!`.
 
-use proc_macro2::TokenStream;
+use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::{Expr, ExprLit, Lit, LitStr, Token, parse::Parser};
@@ -12,6 +12,14 @@ pub(crate) enum Piece {
     Static(String),
     Hole(Expr),
     Display(Expr),
+    Repeat {
+        binding: Ident,
+        seq: Expr,
+        body: Vec<Piece>,
+    },
+    /// Rust statements pasted into the write pass. They sit between reserved
+    /// segments, so a nested writer can `reserve` for itself. `__ts` is the buffer.
+    Stmt(TokenStream),
 }
 
 struct Input {
@@ -54,29 +62,10 @@ fn expand_input(input: proc_macro::TokenStream) -> syn::Result<TokenStream> {
 }
 
 pub(crate) fn quote_pieces(buffer: Expr, pieces: Vec<Piece>) -> TokenStream {
-    let mut static_len: usize = 0;
-    let mut writes = Vec::new();
-    for piece in pieces {
-        match piece {
-            Piece::Static(text) => {
-                if text.is_empty() {
-                    continue;
-                }
-                static_len += text.len();
-                writes.push(quote! { ::vize_l0::ts_emit::TsBuf::push_ts_str(__ts, #text); });
-            }
-            Piece::Hole(expr) => {
-                writes.push(quote! { ::vize_l0::ts_emit::write_hole(__ts, &(#expr)); });
-            }
-            Piece::Display(expr) => {
-                writes.push(quote! { ::vize_l0::ts_emit::write_display(__ts, &(#expr)); });
-            }
-        }
-    }
+    let body = crate::ts_segments::quote_body(&pieces);
     quote! {{
         let __ts: &mut _ = #buffer;
-        ::vize_l0::ts_emit::TsBuf::reserve_ts(__ts, #static_len);
-        #(#writes)*
+        #body
     }}
 }
 

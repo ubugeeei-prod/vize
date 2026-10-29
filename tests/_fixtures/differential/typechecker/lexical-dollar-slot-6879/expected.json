@@ -48,7 +48,7 @@
         "column": 18,
         "severity": 1,
         "code": 2339,
-        "message": "Property '$before' does not exist on type '__VizeStrictTemplateContext'.",
+        "message": "Property '$before' does not exist on type '$StrictTemplateContext'.",
         "blockType": "template"
       },
       {
@@ -57,7 +57,7 @@
         "column": 34,
         "severity": 1,
         "code": 2339,
-        "message": "Property '$after' does not exist on type '__VizeStrictTemplateContext'.",
+        "message": "Property '$after' does not exist on type '$StrictTemplateContext'.",
         "blockType": "template"
       },
       {
@@ -66,7 +66,7 @@
         "column": 9,
         "severity": 1,
         "code": 2339,
-        "message": "Property '$form' does not exist on type '__VizeStrictTemplateContext'.",
+        "message": "Property '$form' does not exist on type '$StrictTemplateContext'.",
         "blockType": "template"
       },
       {
@@ -75,7 +75,7 @@
         "column": 9,
         "severity": 1,
         "code": 2339,
-        "message": "Property '$absent' does not exist on type '__VizeStrictTemplateContext'.",
+        "message": "Property '$absent' does not exist on type '$StrictTemplateContext'.",
         "blockType": "template"
       }
     ]
@@ -91,7 +91,7 @@
         "column": 17,
         "severity": 1,
         "code": 2339,
-        "message": "Property '$foreign' does not exist on type '__VizeStrictTemplateContext'.",
+        "message": "Property '$foreign' does not exist on type '$StrictTemplateContext'.",
         "blockType": "template"
       }
     ]
@@ -107,7 +107,7 @@
         "column": 30,
         "severity": 1,
         "code": 2339,
-        "message": "Property '$outside' does not exist on type '__VizeStrictTemplateContext'.",
+        "message": "Property '$outside' does not exist on type '$StrictTemplateContext'.",
         "blockType": "template"
       }
     ]
@@ -123,7 +123,7 @@
         "column": 17,
         "severity": 1,
         "code": 2339,
-        "message": "Property '$undeclared' does not exist on type '__VizeStrictTemplateContext'.",
+        "message": "Property '$undeclared' does not exist on type '$StrictTemplateContext'.",
         "blockType": "template"
       }
     ]

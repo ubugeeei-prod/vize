@@ -33,7 +33,7 @@ fn duplicated_template_diagnostic_is_reported_once() {
     // Each authored interpolation is read off the public instance once. A
     // backend can still report the same diagnostic twice; mapping must
     // deduplicate it.
-    let message = "Property 'missingThing' does not exist on type '__VizeTemplateInstance'.";
+    let message = "Property 'missingThing' does not exist on type '$TemplateInstance'.";
     let mut diagnostics: Vec<_> = virtual_source
         .match_indices("void (__vize_public_instance.missingThing)")
         .map(|(at, _)| at + "void (__vize_public_instance.".len())

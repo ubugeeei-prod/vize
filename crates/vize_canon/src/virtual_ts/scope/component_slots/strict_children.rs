@@ -52,7 +52,7 @@ pub(super) fn generate_strict_slot_child_checks(
         } else {
             append!(
                 *ts,
-                "{indent}const {check_name}: __VizeSlotChildren<{contract_name}, "
+                "{indent}const {check_name}: $SlotChildren<{contract_name}, "
             );
         }
         push_ts_string_literal(ts, check.name.as_str());
@@ -67,7 +67,7 @@ pub(super) fn generate_strict_slot_child_checks(
         } else {
             append!(
                 *ts,
-                "> = null as unknown as __VizeProvidedSlotChildren<{}>;\n",
+                "> = null as unknown as $ProvidedSlotChildren<{}>;\n",
                 check.children_type.as_str()
             );
         }

@@ -70,33 +70,33 @@ type __RuntimePropShape<T extends Record<string, any>> = {
     ? __RuntimePropCtor<T[K]>
     : __RuntimePropCtor<T[K]> | undefined;
 };
-type __VizeIsAny<T> = 0 extends 1 & T ? true : false;
+type $IsAny<T> = 0 extends 1 & T ? true : false;
 
 type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
-type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any
+type $BooleanKey<T, K extends keyof T = keyof T> = K extends any
   ? [Exclude<T[K], undefined>] extends [never]
     ? never
     : [Exclude<T[K], undefined>] extends [boolean]
       ? K
       : never
   : never;
-type __DefineProps<T, __BKeys extends keyof T = __VizeBooleanKey<T>> = Readonly<T> & {
+type __DefineProps<T, __BKeys extends keyof T = $BooleanKey<T>> = Readonly<T> & {
   readonly [K in __BKeys]-?: boolean;
 };
-type __VizeIfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
-type __VizeNotUndefined<T> = T extends undefined ? never : T;
-type __VizeMappedOmit<T, K extends keyof any> = { [P in keyof T as P extends K ? never : P]: T[P] };
-type __VizeDefaultNativeType = null | number | string | boolean | symbol | Function;
-type __VizeInferDefault<P, T> =
+type $IfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
+type $NotUndefined<T> = T extends undefined ? never : T;
+type $MappedOmit<T, K extends keyof any> = { [P in keyof T as P extends K ? never : P]: T[P] };
+type $DefaultNativeType = null | number | string | boolean | symbol | Function;
+type $InferDefault<P, T> =
   | ((props: P) => T & {})
-  | (T extends __VizeDefaultNativeType ? T : never);
-type __WithDefaultsArgs<T> = { [K in keyof T]?: __VizeInferDefault<T, T[K]> };
+  | (T extends $DefaultNativeType ? T : never);
+type __WithDefaultsArgs<T> = { [K in keyof T]?: $InferDefault<T, T[K]> };
 type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown
-  ? Readonly<__VizeMappedOmit<T, keyof D>> & {
+  ? Readonly<$MappedOmit<T, keyof D>> & {
       readonly [K in keyof D as K extends keyof T ? K : never]-?: K extends keyof T
         ? D[K] extends undefined
-          ? __VizeIfAny<D[K], __VizeNotUndefined<T[K]>, T[K]>
-          : __VizeNotUndefined<T[K]>
+          ? $IfAny<D[K], $NotUndefined<T[K]>, T[K]>
+          : $NotUndefined<T[K]>
         : never;
     } & {
       readonly [K in __BKeys]-?: K extends keyof D
@@ -109,51 +109,51 @@ type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unk
 type __Ref<T> = import("vue").Ref<T>;
 type __ShallowRef<T> = import("vue").ShallowRef<T>;
 
-type __VizeKebabCase<
+type $KebabCase<
   S extends string,
   Acc extends string = "",
 > = S extends `${infer Head}${infer Tail}`
   ? Head extends Lowercase<Head>
-    ? __VizeKebabCase<Tail, `${Acc}${Head}`>
-    : __VizeKebabCase<Tail, `${Acc}-${Lowercase<Head>}`>
+    ? $KebabCase<Tail, `${Acc}${Head}`>
+    : $KebabCase<Tail, `${Acc}-${Lowercase<Head>}`>
   : `${Acc}${S}`;
-type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
-type __VizeRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
-type __VizeDomListenerProps = {
+type $KebabProps<T> = { [K in keyof T & string as $KebabCase<K>]: T[K] };
+type $RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
+type $DomListenerProps = {
   [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (
     event: GlobalEventHandlersEventMap[K],
   ) => void;
 };
-type __VizeFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & {
+type $FallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & {
   [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown;
 } & { [K in `aria-${string}` | `aria${Capitalize<string>}`]?: unknown } & Omit<
-    __VizeDomListenerProps,
+    $DomListenerProps,
     keyof Owned
   >;
 // Match Vue's public prop contract, including runtime-core module augmentations.
-type __VizePublicComponentInputProps = import("vue").VNodeProps &
+type $PublicComponentInputProps = import("vue").VNodeProps &
   import("vue").AllowedComponentProps &
   import("vue").ComponentCustomProps;
-type __VizeComponentMetadataKeys<T> =
-  __VizeIsAny<T> extends true ? never : T extends unknown ? keyof NonNullable<T> : never;
-type __VizeComponentOwnKeys<P = {}, E = {}> =
-  | keyof __VizePublicComponentInputProps
-  | __VizeComponentMetadataKeys<P>
-  | __VizeComponentMetadataKeys<E>;
-type __VizeUnownedComponentAttrs<F, P = {}, E = {}> =
-  __VizeIsAny<F> extends true
+type $ComponentMetadataKeys<T> =
+  $IsAny<T> extends true ? never : T extends unknown ? keyof NonNullable<T> : never;
+type $ComponentOwnKeys<P = {}, E = {}> =
+  | keyof $PublicComponentInputProps
+  | $ComponentMetadataKeys<P>
+  | $ComponentMetadataKeys<E>;
+type $UnownedComponentAttrs<F, P = {}, E = {}> =
+  $IsAny<F> extends true
     ? F
     : unknown extends F
       ? F
       : F extends unknown
         ? F extends null | undefined
           ? F
-          : { [K in keyof F as K extends __VizeComponentOwnKeys<P, E> ? never : K]: F[K] }
+          : { [K in keyof F as K extends $ComponentOwnKeys<P, E> ? never : K]: F[K] }
         : never;
-type __VizePrettify<T> = (T extends any
+type $Prettify<T> = (T extends any
   ? { [K in keyof T]: T[K] }
   : { [K in keyof T as K]: T[K] }) & {};
-type __VizeComponentFallthroughSurface<C> = (C extends {
+type $ComponentFallthroughSurface<C> = (C extends {
   new (...args: any[]): { $props: infer __P };
 }
   ? __P
@@ -161,41 +161,41 @@ type __VizeComponentFallthroughSurface<C> = (C extends {
     ? __P
     : Record<string, unknown>) &
   (C extends { readonly __vizeFallthroughProps?: infer __F }
-    ? __VizeIsAny<__F> extends true
+    ? $IsAny<__F> extends true
       ? {}
       : NonNullable<__F>
     : {});
-type __VizeComponentFallthroughProps<C> = {
-  [K in keyof __VizeComponentFallthroughSurface<C>]: __VizeComponentFallthroughSurface<C>[K];
+type $ComponentFallthroughProps<C> = {
+  [K in keyof $ComponentFallthroughSurface<C>]: $ComponentFallthroughSurface<C>[K];
 };
-type __VizeComponentInputProps<T, Declared = {}> = T extends unknown
+type $ComponentInputProps<T, Declared = {}> = T extends unknown
   ? Partial<T> &
-      Partial<__VizeKebabProps<T>> &
+      Partial<$KebabProps<T>> &
       Declared &
-      __VizeFallthroughAttrs<T & Declared> &
-      __VizePublicComponentInputProps
+      $FallthroughAttrs<T & Declared> &
+      $PublicComponentInputProps
   : never;
-type __VizeMissingRequiredInputKeys<
+type $MissingRequiredInputKeys<
   T,
   Authored,
-  K extends __VizeRequiredKeys<T> & string = __VizeRequiredKeys<T> & string,
+  K extends $RequiredKeys<T> & string = $RequiredKeys<T> & string,
 > = K extends unknown
   ? K extends keyof Authored
     ? never
-    : __VizeKebabCase<K> extends keyof Authored
+    : $KebabCase<K> extends keyof Authored
       ? never
       : K
   : never;
-type __VizeIsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
-type __VizeIsSinglePropKey<T> = [T] extends [never]
+type $IsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
+type $IsSinglePropKey<T> = [T] extends [never]
   ? false
-  : __VizeIsPropKeyUnion<T> extends true
+  : $IsPropKeyUnion<T> extends true
     ? false
     : true;
-type __VizeRelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [
+type $RelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [
   keyof Declared,
 ] extends [never]
-  ? __VizeIsSinglePropKey<__VizeRequiredKeys<T>> extends true
+  ? $IsSinglePropKey<$RequiredKeys<T>> extends true
     ? K extends string
       ? K extends `on${string}`
         ? false
@@ -205,56 +205,56 @@ type __VizeRelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Autho
       : false
     : false
   : false;
-type __VizeExtraInputKeys<
+type $ExtraInputKeys<
   T,
   Declared,
   Authored,
   Allowed,
   K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>,
 > = K extends unknown
-  ? __VizeRelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true
+  ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true
     ? never
     : K
   : never;
-type __VizeComponentMissingInputGuard<T, Authored> = T extends unknown
-  ? [__VizeMissingRequiredInputKeys<T, Authored>] extends [never]
+type $ComponentMissingInputGuard<T, Authored> = T extends unknown
+  ? [$MissingRequiredInputKeys<T, Authored>] extends [never]
     ? {}
     : {
         readonly __vizeInvalidComponentProps: {
-          readonly missing: __VizeMissingRequiredInputKeys<T, Authored>;
+          readonly missing: $MissingRequiredInputKeys<T, Authored>;
           readonly extra: never;
         };
       }
   : never;
-type __VizeComponentInputGuardFor<T, Declared, Authored, Allowed> = [
-  | __VizeMissingRequiredInputKeys<T, Authored>
-  | __VizeExtraInputKeys<T, Declared, Authored, Allowed>,
+type $ComponentInputGuardFor<T, Declared, Authored, Allowed> = [
+  | $MissingRequiredInputKeys<T, Authored>
+  | $ExtraInputKeys<T, Declared, Authored, Allowed>,
 ] extends [never]
   ? {}
   : {
       readonly __vizeInvalidComponentProps: {
-        readonly missing: __VizeMissingRequiredInputKeys<T, Authored>;
-        readonly extra: __VizeExtraInputKeys<T, Declared, Authored, Allowed>;
+        readonly missing: $MissingRequiredInputKeys<T, Authored>;
+        readonly extra: $ExtraInputKeys<T, Declared, Authored, Allowed>;
       };
     };
-type __VizeComponentInputGuard<T, Declared, Authored> =
-  __VizeUsePublicInstance<Authored> extends true
+type $ComponentInputGuard<T, Declared, Authored> =
+  $UsePublicInstance<Authored> extends true
     ? {}
     : T extends unknown
-      ? __VizeComponentInputGuardFor<T, Declared, Authored, __VizeComponentInputProps<T, Declared>>
+      ? $ComponentInputGuardFor<T, Declared, Authored, $ComponentInputProps<T, Declared>>
       : never;
-type __VizeComponentInputFor<T, Declared, Authored, Allowed> = Allowed &
-  __VizeComponentInputGuardFor<T, Declared, Authored, Allowed>;
-type __VizeComponentInput<T, Declared, Authored> =
-  __VizeUsePublicInstance<Authored> extends true
-    ? __VizeComponentInputProps<T, Declared>
+type $ComponentInputFor<T, Declared, Authored, Allowed> = Allowed &
+  $ComponentInputGuardFor<T, Declared, Authored, Allowed>;
+type $ComponentInput<T, Declared, Authored> =
+  $UsePublicInstance<Authored> extends true
+    ? $ComponentInputProps<T, Declared>
     : T extends unknown
-      ? __VizeComponentInputFor<T, Declared, Authored, __VizeComponentInputProps<T, Declared>>
+      ? $ComponentInputFor<T, Declared, Authored, $ComponentInputProps<T, Declared>>
       : never;
-type __VizeAuthoredKeyWitness<T> = { [K in keyof T]: unknown };
-type __VizeIsUnknown<T> = unknown extends T ? ([keyof T] extends [never] ? true : false) : false;
-type __VizeUsePublicInstance<T> = __VizeIsAny<T> extends true ? true : __VizeIsUnknown<T>;
-type __VizeLiteralKeys<T> = keyof {
+type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
+type $IsUnknown<T> = unknown extends T ? ([keyof T] extends [never] ? true : false) : false;
+type $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;
+type $LiteralKeys<T> = keyof {
   [
     K in keyof T as K extends string
       ? string extends K
@@ -271,9 +271,9 @@ type __VizeLiteralKeys<T> = keyof {
           : K
   ]: unknown;
 };
-type __VizeReplaceComponentProps<T, P> = Omit<T, "$props"> &
-  Pick<T, Exclude<__VizeLiteralKeys<T>, "$props">> & { $props: P };
-type __VizePublicEmit<
+type $ReplaceComponentProps<T, P> = Omit<T, "$props"> &
+  Pick<T, Exclude<$LiteralKeys<T>, "$props">> & { $props: P };
+type $PublicEmit<
   T,
   S = __EmitShape<T>,
   K extends keyof S & string = keyof S & string,
@@ -282,11 +282,11 @@ type __VizePublicEmit<
   : [K] extends [never]
     ? (event: string, ...args: any[]) => void
     : __EmitFn<T>;
-type __VizePublicSlots<T> = [keyof T] extends [never]
+type $PublicSlots<T> = [keyof T] extends [never]
   ? import("vue").ComponentPublicInstance["$slots"]
   : T;
 // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
-type __VizeComponentPublicBase = Omit<
+type $ComponentPublicBase = Omit<
   import("vue").ComponentPublicInstance,
   "$props" | "$emit" | "$slots"
 >;
@@ -301,48 +301,48 @@ export type {
   __RuntimePropHasBoolean,
   __RuntimePropResolved,
   __RuntimePropShape,
-  __VizeIsAny,
+  $IsAny,
   __LooseRequired,
-  __VizeBooleanKey,
+  $BooleanKey,
   __DefineProps,
-  __VizeIfAny,
-  __VizeNotUndefined,
-  __VizeMappedOmit,
-  __VizeDefaultNativeType,
-  __VizeInferDefault,
+  $IfAny,
+  $NotUndefined,
+  $MappedOmit,
+  $DefaultNativeType,
+  $InferDefault,
   __WithDefaultsArgs,
   __WithDefaultsResult,
   __Ref,
   __ShallowRef,
-  __VizeKebabCase,
-  __VizeKebabProps,
-  __VizeRequiredKeys,
-  __VizeDomListenerProps,
-  __VizeFallthroughAttrs,
-  __VizePublicComponentInputProps,
-  __VizeComponentMetadataKeys,
-  __VizeComponentOwnKeys,
-  __VizeUnownedComponentAttrs,
-  __VizePrettify,
-  __VizeComponentFallthroughSurface,
-  __VizeComponentFallthroughProps,
-  __VizeComponentInputProps,
-  __VizeMissingRequiredInputKeys,
-  __VizeIsPropKeyUnion,
-  __VizeIsSinglePropKey,
-  __VizeRelaxedDynamicUnionExtra,
-  __VizeExtraInputKeys,
-  __VizeComponentMissingInputGuard,
-  __VizeComponentInputGuardFor,
-  __VizeComponentInputGuard,
-  __VizeComponentInputFor,
-  __VizeComponentInput,
-  __VizeAuthoredKeyWitness,
-  __VizeIsUnknown,
-  __VizeUsePublicInstance,
-  __VizeLiteralKeys,
-  __VizeReplaceComponentProps,
-  __VizePublicEmit,
-  __VizePublicSlots,
-  __VizeComponentPublicBase,
+  $KebabCase,
+  $KebabProps,
+  $RequiredKeys,
+  $DomListenerProps,
+  $FallthroughAttrs,
+  $PublicComponentInputProps,
+  $ComponentMetadataKeys,
+  $ComponentOwnKeys,
+  $UnownedComponentAttrs,
+  $Prettify,
+  $ComponentFallthroughSurface,
+  $ComponentFallthroughProps,
+  $ComponentInputProps,
+  $MissingRequiredInputKeys,
+  $IsPropKeyUnion,
+  $IsSinglePropKey,
+  $RelaxedDynamicUnionExtra,
+  $ExtraInputKeys,
+  $ComponentMissingInputGuard,
+  $ComponentInputGuardFor,
+  $ComponentInputGuard,
+  $ComponentInputFor,
+  $ComponentInput,
+  $AuthoredKeyWitness,
+  $IsUnknown,
+  $UsePublicInstance,
+  $LiteralKeys,
+  $ReplaceComponentProps,
+  $PublicEmit,
+  $PublicSlots,
+  $ComponentPublicBase,
 };

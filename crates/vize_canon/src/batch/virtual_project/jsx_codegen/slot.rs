@@ -21,7 +21,7 @@
 //! ```
 //!
 //! The parameter's type comes from the host component's declared `$slots` via
-//! `__VizeJsxSlotPayload`, the JSX analogue of the `.vue` template path's
+//! `$JsxSlotPayload`, the JSX analogue of the `.vue` template path's
 //! `slot_props_type`, and falls back to `any` whenever the host or the slot is
 //! untyped so untyped slot hosts never produce a false positive.
 

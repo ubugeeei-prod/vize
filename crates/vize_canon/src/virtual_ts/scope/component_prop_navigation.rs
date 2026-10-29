@@ -101,7 +101,7 @@ fn emit_prop_references(
     } else {
         append!(
             *ts,
-            "}} = undefined as unknown as __VizeComponentNavigationProps<__{component_type_name}_Props_{idx}>;\n"
+            "}} = undefined as unknown as $ComponentNavigationProps<__{component_type_name}_Props_{idx}>;\n"
         );
     }
     semantic_links.push(VizeSemanticLink {
@@ -218,7 +218,7 @@ fn emit_slot_references(
             } else {
                 append!(
                     *ts,
-                    "  const {slots_ref} = undefined as unknown as __VizeNavigationSlots<typeof {component_ref}>;\n"
+                    "  const {slots_ref} = undefined as unknown as $NavigationSlots<typeof {component_ref}>;\n"
                 );
             }
             emitted_slots_ref = true;

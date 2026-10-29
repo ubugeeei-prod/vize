@@ -43,7 +43,7 @@ use {
 /// template's real bindings, which live in the setup scope.
 ///
 /// Every other Vue 3 template reads its unknown names off the template
-/// context's public instance (`__VizeTemplateInstance`, see
+/// context's public instance (`$TemplateInstance`, see
 /// [`PUBLIC_INSTANCE_PRELUDE`]): a `ComponentCustomProperties` member resolves
 /// with its declared type, and a name nothing declares reports once per
 /// authored occurrence with the instance wording. Legacy Vue 2 and the strict
@@ -219,7 +219,7 @@ pub(super) fn generate_undefined_refs(
             if seen_names.insert(String::from(name)) {
                 append!(
                     *ts,
-                    "  var {name}!: __VizeTemplateInstanceMember<\"{name}\">; void ({name});\n"
+                    "  var {name}!: $TemplateInstanceMember<\"{name}\">; void ({name});\n"
                 );
             }
             emit_strict_template_context_ref(
@@ -302,11 +302,11 @@ pub(super) fn generate_undefined_refs(
 /// The value a Vue 3 template without an Options API default export reads its
 /// unknown names off. The mapped alias keeps the public instance's members and
 /// gives the missing-property diagnostic a type name of its own
-/// (`__VizeTemplateInstance`), which the projection rewrites to the component
+/// (`$TemplateInstance`), which the projection rewrites to the component
 /// instance wording the lexical form reports. `__Ctx` is the template context
 /// type, so a `vue` without `ComponentPublicInstance` degrades to an index
 /// signature and reports nothing, as the context itself does.
-const PUBLIC_INSTANCE_PRELUDE: &str = "  type __VizeTemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };\n  type __VizeTemplateInstanceMember<__K extends string> = __K extends keyof __VizeTemplateInstance ? __VizeTemplateInstance[__K] : any;\n  const __vize_public_instance = undefined as unknown as __VizeTemplateInstance;\n  void __vize_public_instance;\n";
+const PUBLIC_INSTANCE_PRELUDE: &str = "  type $TemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };\n  type $TemplateInstanceMember<__K extends string> = __K extends keyof $TemplateInstance ? $TemplateInstance[__K] : any;\n  const __vize_public_instance = undefined as unknown as $TemplateInstance;\n  void __vize_public_instance;\n";
 
 const PUBLIC_INSTANCE_RECEIVER: &str = "__vize_public_instance";
 

@@ -322,19 +322,19 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
     let public_dts = std::fs::read_to_string(out_dir.join("Public.vue.d.ts")).unwrap();
     assert!(
         public_dts.contains(
-            "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[])"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps>, ...args: any[])"
         ) && public_dts.contains(
-            "declare const __vize_component__: {\n    __vizeEmitProps?: __VizeStaticEmitProps;\n    readonly __vizeRawProps?: Props;\n    readonly __vizeSlots?: Partial<Slots>;\n} & __VizeComponentConstructor & __VizeVueComponentOptions;"
+            "declare const __vize_component__: {\n    __vizeEmitProps?: $StaticEmitProps;\n    readonly __vizeRawProps?: Props;\n    readonly __vizeSlots?: Partial<Slots>;\n} & $ComponentConstructor & $VueComponentOptions;"
         )
-            && !public_dts.contains("__VizeComponentInputConstructor")
-            && !public_dts.contains("__VizeComponentPublicConstructor"),
+            && !public_dts.contains("$ComponentInputConstructor")
+            && !public_dts.contains("$ComponentPublicConstructor"),
         "one constructor must own authored, public-instance, and incremental raw-props contracts:\n{public_dts}"
     );
     assert!(
         public_dts.contains("$props: Props & import(\"./__vize_helpers.js\").__EmitProps<Emits>;")
-            && public_dts.contains("$emit: __VizePublicEmit<Emits>;")
-            && public_dts.contains("$slots: __VizePublicSlots<__VizeSlots>;")
-            && public_dts.contains("} & __VizeComponentPublicBase &"),
+            && public_dts.contains("$emit: $PublicEmit<Emits>;")
+            && public_dts.contains("$slots: $PublicSlots<$Slots>;")
+            && public_dts.contains("} & $ComponentPublicBase &"),
         "emitted public instance must own props/emits and adapt the Vue base:\n{public_dts}"
     );
     assert_eq!(

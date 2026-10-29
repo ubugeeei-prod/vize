@@ -42,7 +42,7 @@ pub(super) fn append_prop_check_type(
     } else {
         append!(
             *ts,
-            ": __VizeResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+            ": $ResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
         );
     }
 }
@@ -86,7 +86,7 @@ pub(super) fn generate_callback_props_resolution(
     } else {
         append!(
             *ts,
-            "{expr_indent}const {resolved_props} = (undefined as unknown as __VizeResolvedContextProps)((undefined as unknown as __VizePropsResolver<typeof {component_ref}>)({{\n",
+            "{expr_indent}const {resolved_props} = (undefined as unknown as $ResolvedContextProps)((undefined as unknown as $PropsResolver<typeof {component_ref}>)({{\n",
         );
     }
 
@@ -108,7 +108,7 @@ pub(super) fn generate_callback_props_resolution(
     } else {
         append!(
             *ts,
-            "{expr_indent}const {selected_props} = (undefined as unknown as __VizePropsSelector<typeof {resolved_props}>)({{\n",
+            "{expr_indent}const {selected_props} = (undefined as unknown as $PropsSelector<typeof {resolved_props}>)({{\n",
         );
     }
     append_props_object(

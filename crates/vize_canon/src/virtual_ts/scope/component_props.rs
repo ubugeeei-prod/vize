@@ -290,7 +290,7 @@ fn generate_usage_declarations(
     } else if !ctx.hoist_shared_preamble {
         append!(
             *ts,
-            "typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof {component_ref}> : Record<string, unknown>) : __VizeComponentRawProps<typeof {component_ref}>;\n",
+            "typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof {component_ref}> : Record<string, unknown>) : $ComponentRawProps<typeof {component_ref}>;\n",
         );
     } else {
         let is_any =

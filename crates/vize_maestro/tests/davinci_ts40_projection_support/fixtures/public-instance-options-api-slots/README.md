@@ -21,7 +21,7 @@ packet files across the 12 fixtures are retained in `manifest.json`.
 Exactly four packet files differ: the Maestro template, document summary,
 mappings and authored hits for `options-api-slots`. Canon, the content mapper,
 the Maestro script and all other fixtures are unchanged. The template now
-declares `message` through `__VizeTemplateInstance` and reads the public-instance
+declares `message` through `$TemplateInstance` and reads the public-instance
 member once at each authored occurrence, `147:154` and `167:174`. The predecessor
 retained only the first explicit unresolved read. The second mapped read adds
 one mapping (7 to 8) and one authored hit (6 to 7); all prior authored coverage,

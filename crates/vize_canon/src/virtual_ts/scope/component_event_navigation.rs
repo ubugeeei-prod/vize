@@ -284,7 +284,7 @@ fn emit_event_name_checks(
     // raw emits, listener props and kebab aliases all share the same names.
     append!(
         *ts,
-        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof {component_events}<typeof {component_ref}> & string as `on${{Capitalize<__VizeComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
+        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof {component_events}<typeof {component_ref}> & string as `on${{Capitalize<$ComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
     );
     let mut emitted_names = FxHashSet::default();
     for event in &usage.events {

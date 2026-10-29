@@ -131,7 +131,7 @@ void props;
         .as_str()
         .expect("check JSON should include generated Virtual TS");
     assert!(
-        virtual_ts.contains("type __VizeSetupProps = SomeGenericType<typeof someDefinition>;"),
+        virtual_ts.contains("type $SetupProps = SomeGenericType<typeof someDefinition>;"),
         "{virtual_ts}"
     );
     let module_scope = virtual_ts

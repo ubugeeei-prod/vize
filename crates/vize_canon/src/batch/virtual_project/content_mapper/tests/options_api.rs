@@ -28,14 +28,14 @@ export default {
     assert_eq!(
         enabled
             .text
-            .matches("var count: __VizeOptionsBinding<typeof __default__, \"count\">")
+            .matches("var count: $OptionsBinding<typeof __default__, \"count\">")
             .count(),
         1,
         "enabled Options API must emit one typed lexical binding:\n{}",
         enabled.text
     );
     assert_eq!(
-        disabled.text.matches("__VizeOptionsBinding").count(),
+        disabled.text.matches("$OptionsBinding").count(),
         0,
         "disabled Options API must not emit typed bindings:\n{}",
         disabled.text
@@ -43,7 +43,7 @@ export default {
     assert_eq!(
         disabled
             .text
-            .matches("__VizeTemplateInstanceMember<\"count\">")
+            .matches("$TemplateInstanceMember<\"count\">")
             .count(),
         0,
         "disabled Options API members must remain authored TS2304 reads:\n{}",

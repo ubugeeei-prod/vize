@@ -10,10 +10,10 @@ import { runVizeCheckJson, stringifyDiagnosticSnapshot } from "../../_helpers/vi
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = stylePreprocessorsApp;
-const qualifiedWidenTemplateRef = 'import("vize:virtual-ts").__VizeWidenTemplateRef';
+const qualifiedWidenTemplateRef = 'import("vize:virtual-ts").$WidenTemplateRef';
 const currentReceipt = {
   helperHoistProvenance: "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
-  snapshotSha256: "a3d63aadcbb83656a82de8289396a5fc8978b3e04e5f8270f9da64f9467c7c05",
+  snapshotSha256: "8b116c0f795115e2e0f6648e79194119d61519d86601bc85b5b9fe3d32834450",
   widenHelperFiles: [
     "src/CssModuleScss.vue",
     "src/LessStyle.vue",
@@ -43,7 +43,7 @@ describe(`${app.name} check (type checker)`, () => {
     );
     for (const { file, virtualTs = "" } of parsed.files) {
       assert.equal(
-        count(virtualTs, "__VizeWidenTemplateRef"),
+        count(virtualTs, "$WidenTemplateRef"),
         count(virtualTs, qualifiedWidenTemplateRef),
         `${file} must not restore a file-local widening helper`,
       );

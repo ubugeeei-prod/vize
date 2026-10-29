@@ -46,7 +46,7 @@ export default defineComponent({
     for name in ["aiSupportTitle", "aiSupportType", "aiSupportTagName"] {
         assert!(
             output.code.contains(&format!(
-                "type __R_{name} = __VizeOptionsSetupBinding<\"{name}\">;"
+                "type __R_{name} = $OptionsSetupBinding<\"{name}\">;"
             )),
             "setup spread template reference should be captured from the default instance:\n{}",
             output.code
@@ -94,7 +94,7 @@ export default defineComponent({
     assert!(
         output
             .code
-            .contains(r#"type __R_$fetch = __VizeOptionsSetupBinding<"$fetch">;"#),
+            .contains(r#"type __R_$fetch = $OptionsSetupBinding<"$fetch">;"#),
         "spread fallback should preserve the setup-return binding type:\n{}",
         output.code
     );
@@ -105,7 +105,10 @@ export default defineComponent({
         output.code
     );
     assert!(
-        !output.code.contains("__ctx.$fetch"),
+        !output
+            .code
+            .contains("const $fetch: $InstanceGlobal<'$fetch'>")
+            && !output.code.contains("__ctx.$fetch"),
         "an instance-global declaration must not duplicate the spread setup binding:\n{}",
         output.code
     );

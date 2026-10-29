@@ -136,7 +136,7 @@ test("checker quick fixes apply to the current authored Vue buffer without lint"
         assert.deepEqual(edit.range, { start: expected, end: expected });
         assert.match(edit.newText, /greet\(name: string\): string/);
         assert.match(edit.newText, /throw new Error\(["']Method not implemented\.["']\)/);
-        assert.doesNotMatch(JSON.stringify(actions), /__Vize|__vize|\.vue\.ts|backend\.apply/);
+        assert.doesNotMatch(JSON.stringify(actions), /\$\$|__vize|\.vue\.ts|backend\.apply/);
         const repaired =
           source.slice(0, offset(source, edit.range.start)) +
           edit.newText +

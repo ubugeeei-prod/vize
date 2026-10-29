@@ -98,7 +98,7 @@ const emit = defineEmits<{
                 guarded,
             ),
             (
-                "const __vize_resolved_Foo_props_0 = (undefined as unknown as __VizeResolvedContextProps)((undefined as unknown as __VizePropsResolver<typeof Foo>)({",
+                "const __vize_resolved_Foo_props_0 = (undefined as unknown as $ResolvedContextProps)((undefined as unknown as $PropsResolver<typeof Foo>)({",
                 guarded,
             ),
         ],

@@ -20,7 +20,7 @@ pub(super) fn add_art_target_component_bindings(
 
     if !has_component_binding {
         let import_alias = vize_l0::cstr!(
-            "__VizeArtTarget_{}",
+            "$ArtTarget_{}",
             to_safe_identifier_fragment(target.name.as_str())
         );
         options.auto_import_stubs.push(vize_l0::cstr!(

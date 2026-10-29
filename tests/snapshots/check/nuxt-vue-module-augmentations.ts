@@ -127,7 +127,7 @@ function diagnosticsFor(result: VizeCheckJson, file: string): string[] {
   return result.files.find((entry) => entry.file === file)?.diagnostics ?? [];
 }
 
-const STRICT_TEMPLATE_CONTEXT_TYPE = "__VizeStrictTemplateContext";
+const STRICT_TEMPLATE_CONTEXT_TYPE = "$StrictTemplateContext";
 const WRONG_ARGUMENT = "Argument of type 'number' is not assignable to parameter of type 'string'.";
 
 // Template diagnostics in JSON carry the authored line as `(source: …)` (#10335).

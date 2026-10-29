@@ -19,11 +19,11 @@ fn project_source_alias_rename_edits_work_without_tsconfig_paths() {
     let importer = views.join("docs.vue");
     fs::write(
         &importer,
-        "<script setup>\nimport HighlightMessage from '@/components/__VizeOracleHighlightMessage.vue'\n</script>\n",
+        "<script setup>\nimport HighlightMessage from '@/components/$OracleHighlightMessage.vue'\n</script>\n",
     )
     .unwrap();
-    let copied = components.join("__VizeOracleHighlightMessage.vue");
-    let renamed = components.join("__VizeOracleRenamedHighlightMessage.vue");
+    let copied = components.join("$OracleHighlightMessage.vue");
+    let renamed = components.join("$OracleRenamedHighlightMessage.vue");
     fs::write(&copied, "<template />\n").unwrap();
 
     let state = ServerState::new();
@@ -44,6 +44,6 @@ fn project_source_alias_rename_edits_work_without_tsconfig_paths() {
         normalized
             .pointer("/src~1views~1docs.vue/0/newText")
             .and_then(serde_json::Value::as_str),
-        Some("@/components/__VizeOracleRenamedHighlightMessage.vue")
+        Some("@/components/$OracleRenamedHighlightMessage.vue")
     );
 }

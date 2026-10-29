@@ -321,11 +321,11 @@ pub(super) fn generate_component_event_types(
             cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_legacy_args");
         append!(
             *ts,
-            "{indent}type {event_type} = {args_type} extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __VizeVue2LooseEventArg<__A[0]> : never;\n",
+            "{indent}type {event_type} = {args_type} extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : $Vue2LooseEventArg<__A[0]> : never;\n",
         );
         append!(
             *ts,
-            "{indent}type {legacy_args_type} = {args_type} extends [] ? any[] : unknown[] extends {args_type} ? any[] : __VizeVue2LooseEmitArgs<{args_type}>;\n",
+            "{indent}type {legacy_args_type} = {args_type} extends [] ? any[] : unknown[] extends {args_type} ? any[] : $Vue2LooseEmitArgs<{args_type}>;\n",
         );
         legacy_args_type
     } else {

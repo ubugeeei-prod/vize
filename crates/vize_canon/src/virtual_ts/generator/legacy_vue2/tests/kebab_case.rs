@@ -13,7 +13,7 @@ fn kebab_case_handles_long_keys_without_widening_literals() {
     for (legacy, dialect) in [(false, VueVersion::V3), (true, VueVersion::V2)] {
         let declaration = vue_type_helpers(legacy, dialect)
             .lines()
-            .find(|line| line.starts_with("type __VizeKebabCase<"))
+            .find(|line| line.starts_with("type $KebabCase<"))
             .unwrap();
         let long = "longProperty".repeat(40);
         let expected = "long-property".repeat(40);
@@ -21,16 +21,16 @@ fn kebab_case_handles_long_keys_without_widening_literals() {
             r#"{declaration}
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
 type Assert<T extends true> = T;
-type Empty = Assert<Equal<__VizeKebabCase<"">, "">>;
-type Short = Assert<Equal<__VizeKebabCase<"open">, "open">>;
-type Digits = Assert<Equal<__VizeKebabCase<"test2_ID">, "test2_-i-d">>;
-type Acronym = Assert<Equal<__VizeKebabCase<"HTTPServerURL">, "-h-t-t-p-server-u-r-l">>;
-type Unicode = Assert<Equal<__VizeKebabCase<"ÅngströmValue">, "-ångström-value">>;
-type Union = Assert<Equal<__VizeKebabCase<"someKey" | "OtherKey">, "some-key" | "-other-key">>;
-type Wide = Assert<Equal<__VizeKebabCase<string>, string>>;
-type Template = Assert<Equal<__VizeKebabCase<`some${{string}}`>, `some${{string}}`>>;
-type Never = Assert<Equal<__VizeKebabCase<never>, never>>;
-type Long = Assert<Equal<__VizeKebabCase<"{long}">, "{expected}">>;
+type Empty = Assert<Equal<$KebabCase<"">, "">>;
+type Short = Assert<Equal<$KebabCase<"open">, "open">>;
+type Digits = Assert<Equal<$KebabCase<"test2_ID">, "test2_-i-d">>;
+type Acronym = Assert<Equal<$KebabCase<"HTTPServerURL">, "-h-t-t-p-server-u-r-l">>;
+type Unicode = Assert<Equal<$KebabCase<"ÅngströmValue">, "-ångström-value">>;
+type Union = Assert<Equal<$KebabCase<"someKey" | "OtherKey">, "some-key" | "-other-key">>;
+type Wide = Assert<Equal<$KebabCase<string>, string>>;
+type Template = Assert<Equal<$KebabCase<`some${{string}}`>, `some${{string}}`>>;
+type Never = Assert<Equal<$KebabCase<never>, never>>;
+type Long = Assert<Equal<$KebabCase<"{long}">, "{expected}">>;
 "#
         );
         let path = project.path().join(cstr!("kebab-{legacy}.ts").as_str());

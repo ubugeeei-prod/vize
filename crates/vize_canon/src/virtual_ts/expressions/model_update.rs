@@ -47,7 +47,7 @@ pub(super) fn append_model_update_check(
     } else {
         append!(
             *ts,
-            "{indent}type {payload} = __VizeEmitListeners<__{component_type_name}_Component_{idx}> extends {{ ",
+            "{indent}type {payload} = $EmitListeners<__{component_type_name}_Component_{idx}> extends {{ ",
         );
     }
     push_ts_string_literal(

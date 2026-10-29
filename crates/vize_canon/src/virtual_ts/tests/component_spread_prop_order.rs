@@ -7,7 +7,7 @@
 use super::generate_virtual_ts;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
-const FALLTHROUGH_PROBE_MARKER: &str = "const __VizeFallthroughProps_";
+const FALLTHROUGH_PROBE_MARKER: &str = "const $FallthroughProps_";
 
 fn partition_spread_probes(code: &str) -> (vize_carton::String, vize_carton::String) {
     let mut primary = vize_carton::String::default();

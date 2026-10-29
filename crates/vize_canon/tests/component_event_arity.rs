@@ -149,7 +149,7 @@ defineEmits(['click'])
         "const-generic inference must see the original runtime array:\n{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>"),
+        virtual_ts.contains("type $StaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>"),
         "array methods must not become event names:\n{virtual_ts}"
     );
 }

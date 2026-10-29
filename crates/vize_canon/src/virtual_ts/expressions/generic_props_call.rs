@@ -20,7 +20,7 @@ use vize_croquis::croquis::ComponentUsage;
 /// assembling the dynamic props into one object literal so TypeScript can infer
 /// the child's generic parameter(s) across the boundary. For a non-generic /
 /// built-in / library / `any` component the checker resolves to a
-/// `(props: any) => void` no-op (see `__VizePropChecker` in scope.rs), so this
+/// `(props: any) => void` no-op (see `$PropChecker` in scope.rs), so this
 /// call reports nothing and the well-tested per-prop extraction above is the
 /// sole check. Each property value is mapped back to its source attribute so a
 /// `TS2322` from a wrongly-typed prop points at the offending binding.
@@ -82,7 +82,7 @@ pub(super) fn generate_generic_props_call(
     let fallthrough_argument_range = check_spread_values.then(|| {
         append!(
             *ts,
-            "{expr_indent}const __VizeFallthroughProps_{idx} = ",
+            "{expr_indent}const $FallthroughProps_{idx} = ",
         );
         append_inference_props_literal(
             ts,
@@ -102,11 +102,11 @@ pub(super) fn generate_generic_props_call(
         } else {
             append!(
                 *ts,
-                "{expr_indent}(undefined as unknown as __VizeFallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
+                "{expr_indent}(undefined as unknown as $FallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
             );
         }
         let start = ts.len();
-        append!(*ts, "__VizeFallthroughProps_{idx}");
+        append!(*ts, "$FallthroughProps_{idx}");
         let range = start..ts.len();
         ts.push_str(");\n");
         range
@@ -207,7 +207,7 @@ pub(crate) fn generate_slot_host_binding(
     } else {
         append!(
             *ts,
-            "{indent}const {binding_name} = (undefined as unknown as __VizeSlotHostSelector<typeof {component_ref}>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof {component_ref}>>()(new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof {component_ref}>>)(), new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof {component_ref}>>)(",
+            "{indent}const {binding_name} = (undefined as unknown as $SlotHostSelector<typeof {component_ref}>)(__vizeSlotConstructorInstance<$SlotConstructor<typeof {component_ref}>>()(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof {component_ref}>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof {component_ref}>>)(",
         );
     }
     let isolated_guard = usage
@@ -242,7 +242,7 @@ pub(crate) fn generate_slot_host_binding(
     } else {
         append!(
             *ts,
-            ", ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof {component_ref}>>))), (undefined as unknown as __VizeSlotsFactory<typeof {component_ref}>)({component_ref})(",
+            ", ...([] as unknown as $SlotConstructorArgs<$SlotConstructor<typeof {component_ref}>>))), (undefined as unknown as $SlotsFactory<typeof {component_ref}>)({component_ref})(",
         );
     }
     if let Some(guard) = isolated_guard.as_ref() {

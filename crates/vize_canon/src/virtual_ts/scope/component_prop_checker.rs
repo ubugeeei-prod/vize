@@ -11,7 +11,7 @@ mod check_helpers;
 pub(super) use check_helpers::append_prop_check_helpers;
 
 /// Whether this prop's authored value is an inline function, which is the only
-/// shape that needs the `__VizeCallableProp` fallback.
+/// shape that needs the `$CallableProp` fallback.
 ///
 /// The name filters mirror [`append_per_prop_aliases`] exactly, because the two
 /// must agree: emitting the helper for a prop the alias loop then skips leaves
@@ -77,7 +77,7 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 /// check without constructing every camel/kebab key combination. External
 /// components have no marker and continue to use their public `$props`.
 ///
-/// Only the **non-generic** branch of `__VizePropChecker` uses this type; a
+/// Only the **non-generic** branch of `$PropChecker` uses this type; a
 /// generic child resolves through its own `__vizeCheck` signature and ignores
 /// it, so the generic inference path is untouched.
 ///
@@ -156,25 +156,25 @@ pub(super) fn append_prop_checker_alias(
     if !hoist_shared_preamble {
         append!(
             *ts,
-            "  type __{component_type_name}_CheckProps_{idx} = {own_props} & __VizeEmitListeners<__{component_type_name}_Component_{idx}> & __VizeRequiredFallthroughProps<__{component_type_name}_Component_{idx}>;\n",
+            "  type __{component_type_name}_CheckProps_{idx} = {own_props} & $EmitListeners<__{component_type_name}_Component_{idx}> & $RequiredFallthroughProps<__{component_type_name}_Component_{idx}>;\n",
         );
         append!(
             *ts,
-            "  type __{component_type_name}_CheckTail_{idx} = __VizeComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
+            "  type __{component_type_name}_CheckTail_{idx} = $ComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
         );
         if force_value_props || usage_needs_per_prop_aliases(usage) {
             append!(
                 *ts,
-                "  type __{component_type_name}_ValueProps_{idx} = __VizeIsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & __VizeEmitListeners<__{component_type_name}_Component_{idx}> & __VizePublicComponentAttrs;\n",
+                "  type __{component_type_name}_ValueProps_{idx} = $IsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & $EmitListeners<__{component_type_name}_Component_{idx}> & $PublicComponentAttrs;\n",
             );
             append!(
                 *ts,
-                "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = __VizeFallthroughValue<__{component_type_name}_Component_{idx}, K>;\n",
+                "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = $FallthroughValue<__{component_type_name}_Component_{idx}, K>;\n",
             );
         }
         append!(
             *ts,
-            "  type __{component_type_name}_Check_{idx} = __VizePropChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_CheckProps_{idx}, __{component_type_name}_CheckTail_{idx}>;\n",
+            "  type __{component_type_name}_Check_{idx} = $PropChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_CheckProps_{idx}, __{component_type_name}_CheckTail_{idx}>;\n",
         );
         return;
     }
@@ -190,12 +190,12 @@ pub(super) fn append_prop_checker_alias(
     );
     append!(
         *ts,
-        "  type __{component_type_name}_CheckTail_{idx} = __VizeComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
+        "  type __{component_type_name}_CheckTail_{idx} = $ComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
     );
     if force_value_props || usage_needs_per_prop_aliases(usage) {
         append!(
             *ts,
-            "  type __{component_type_name}_ValueProps_{idx} = {is_library_generic}<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & {emit_listeners}<__{component_type_name}_Component_{idx}> & __VizePublicComponentAttrs;\n",
+            "  type __{component_type_name}_ValueProps_{idx} = {is_library_generic}<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & {emit_listeners}<__{component_type_name}_Component_{idx}> & $PublicComponentAttrs;\n",
         );
         append!(
             *ts,
@@ -216,7 +216,7 @@ pub(super) fn usage_needs_per_prop_aliases(usage: &ComponentUsage) -> bool {
 }
 
 ///
-/// An inline callback prop gets the `__VizeCallableProp` fallback for a child
+/// An inline callback prop gets the `$CallableProp` fallback for a child
 /// without `__vizeResolveProps`. Vize generic children replace it at the value
 /// check with their instantiated resolver result. Every other prop keeps the
 /// statically extracted type.
@@ -230,20 +230,20 @@ pub(super) fn prop_alias_type(
 ) -> String {
     if !hoist_shared_preamble {
         if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {
-            return String::from("__VizeComponentRefCallback");
+            return String::from("$ComponentRefCallback");
         }
         let normalized = cstr!(
-            "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>>"
+            "$PropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>>"
         );
         let resolved = if fallthrough_prop_name == camel_prop_name {
             normalized
         } else {
             cstr!(
-                "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{fallthrough_prop_name}', {normalized}>"
+                "$PropValue<__{component_type_name}_ValueProps_{idx}, '{fallthrough_prop_name}', {normalized}>"
             )
         };
         return if is_inline_callback_prop(prop) {
-            cstr!("__VizeCallableProp<{resolved}>")
+            cstr!("$CallableProp<{resolved}>")
         } else {
             resolved
         };
@@ -266,7 +266,7 @@ pub(super) fn prop_alias_type(
     // Try its authored spelling before the normal camelized alias and root.
     let resolved = if let Some(raw_prop_name) = raw_aria_prop_name {
         cstr!(
-            "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{raw_prop_name}', {normalized}>"
+            "$PropValue<__{component_type_name}_ValueProps_{idx}, '{raw_prop_name}', {normalized}>"
         )
     } else if fallthrough_prop_name == camel_prop_name {
         normalized

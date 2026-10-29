@@ -48,7 +48,7 @@ function __setup() {
   type __R_count = typeof count;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? import("vize:virtual-ts").__VizeWidenTemplateRef<T['value']> : T : T;
+    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? import("vize:virtual-ts").$WidenTemplateRef<T['value']> : T : T;
     var count: __U<__R_count> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
     // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
@@ -81,18 +81,18 @@ function __setup() {
 __setup();
 
 export type Emits = {};
-type __VizeSlots = {};
-export type { __VizeSlots as Slots };
+type $Slots = {};
+export type { $Slots as Slots };
 
 // ========== Default Export ==========
-type __VizeComponentInstance = {
+type $ComponentInstance = {
   $props: Props;
   readonly __vizeRawProps?: Props;
-  $emit: __VizePublicEmit<Emits>;
-  $slots: __VizePublicSlots<__VizeSlots>;
-} & __VizeComponentPublicBase;
-type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : __VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>>;
-type __VizeVueComponentOptions = {
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;
+type $VueComponentOptions = {
   [key: string]: any;
   name?: string;
   __name?: string;
@@ -117,5 +117,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: __VizeUnownedComponentAttrs<Partial<__VizeNativeElement<"div">>, Props, {}>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;
 export default __vize_component__;

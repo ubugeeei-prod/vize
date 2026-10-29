@@ -26,7 +26,7 @@ fn exact_line_count(code: &str, expected: &str) -> usize {
 }
 
 fn slot_factory_owners(code: &str) -> Vec<&str> {
-    code.split("__VizeSlotsFactory<typeof ")
+    code.split("$SlotsFactory<typeof ")
         .skip(1)
         .map(|suffix| {
             suffix
@@ -77,9 +77,9 @@ fn generate(template: &str) -> vize_carton::String {
 fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
     let slot_free = generate(r#"<div v-for="item in items">{{ item }}</div>"#);
     for (declarations, alias) in [
-        (SLOT_RESOLVER_DECLARATIONS, "__VizeSlotHostSlots"),
-        (SLOT_RESOLVER_DECLARATIONS, "__VizeSlotsFactory"),
-        (SLOT_PAYLOAD_DECLARATIONS, "__VizeSlotPayload"),
+        (SLOT_RESOLVER_DECLARATIONS, "$SlotHostSlots"),
+        (SLOT_RESOLVER_DECLARATIONS, "$SlotsFactory"),
+        (SLOT_PAYLOAD_DECLARATIONS, "$SlotPayload"),
     ] {
         let declaration = exact_type_declaration(declarations, alias);
         assert_eq!(
@@ -91,8 +91,8 @@ fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
 
     let static_name = generate(TEMPLATE);
     for (declarations, alias) in [
-        (SLOT_RESOLVER_DECLARATIONS, "__VizeSlotsFactory"),
-        (SLOT_PAYLOAD_DECLARATIONS, "__VizeSlotPayload"),
+        (SLOT_RESOLVER_DECLARATIONS, "$SlotsFactory"),
+        (SLOT_PAYLOAD_DECLARATIONS, "$SlotPayload"),
     ] {
         assert_eq!(
             exact_line_count(&static_name, exact_type_declaration(declarations, alias)),
@@ -105,9 +105,9 @@ fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
         r#"<el-badge><template #[slotName]="{ value }">{{ value }}</template></el-badge>"#,
     );
     for (declarations, alias) in [
-        (SLOT_RESOLVER_DECLARATIONS, "__VizeSlotsFactory"),
-        (SLOT_PAYLOAD_DECLARATIONS, "__VizeSlotPayload"),
-        (SLOT_PAYLOAD_DECLARATIONS, "__VizeNamedSlotPayload"),
+        (SLOT_RESOLVER_DECLARATIONS, "$SlotsFactory"),
+        (SLOT_PAYLOAD_DECLARATIONS, "$SlotPayload"),
+        (SLOT_PAYLOAD_DECLARATIONS, "$NamedSlotPayload"),
     ] {
         assert_eq!(
             exact_line_count(&dynamic_name, exact_type_declaration(declarations, alias)),
@@ -121,10 +121,10 @@ fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
 fn slot_constructor_calls_adapt_the_first_argument_without_replacing_the_signature() {
     let code = generate(TEMPLATE);
     for helper in [
-        "type __VizeSlotConstructorArgumentLists<C> =",
-        "type __VizeSlotConstructorHasArguments<C> =",
-        "type __VizeSlotConstructorWithoutArguments<C> =",
-        "type __VizeSlotConstructorWithArguments<C> =",
+        "type $SlotConstructorArgumentLists<C> =",
+        "type $SlotConstructorHasArguments<C> =",
+        "type $SlotConstructorWithoutArguments<C> =",
+        "type $SlotConstructorWithArguments<C> =",
         "declare function __vizeSlotConstructorInstance<C>():",
     ] {
         assert_eq!(
@@ -134,16 +134,14 @@ fn slot_constructor_calls_adapt_the_first_argument_without_replacing_the_signatu
         );
     }
     assert_eq!(
-        code.matches("__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof el_badge>>()(",)
+        code.matches("__vizeSlotConstructorInstance<$SlotConstructor<typeof el_badge>>()(",)
             .count(),
         1,
         "the slot-host constructor must select the exact direct construction:\n{code}",
     );
     assert_eq!(
-        code.matches(
-            "__VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof el_badge>>)(",
-        )
-        .count(),
+        code.matches("$SlotConstructorWithArguments<$SlotConstructor<typeof el_badge>>)(",)
+            .count(),
         1,
         "the non-empty branch must preserve the direct props construction:\n{code}",
     );
@@ -244,9 +242,9 @@ type BadgeInstance = typeof ElBadge
         generate_virtual_ts_with_offsets(&summary, Some(script), Some(&root), 0, 0, &options);
 
     assert_eq!(
-        declared_const_lines(&output.code, "__VizeComponent_el_badge"),
+        declared_const_lines(&output.code, "$Component_el_badge"),
         [
-            "declare const __VizeComponent_el_badge: __VizeGlobalComponent<\"el-badge\", \"ElBadge\"> & __VizeGlobalComponentFallback;"
+            "declare const $Component_el_badge: $GlobalComponent<\"el-badge\", \"ElBadge\"> & $GlobalComponentFallback;"
         ],
         "{}",
         output.code,
@@ -259,7 +257,7 @@ type BadgeInstance = typeof ElBadge
     );
     assert_eq!(
         slot_factory_owners(&output.code),
-        ["__VizeComponent_el_badge", "__VizeComponent_el_badge"],
+        ["$Component_el_badge", "$Component_el_badge"],
         "{}",
         output.code,
     );
@@ -285,7 +283,7 @@ fn unresolved_slot_host_uses_vue_global_components_fallback() {
     assert_eq!(
         declared_const_lines(&output.code, "el_badge"),
         [
-            "declare const el_badge: __VizeGlobalComponent<\"el-badge\", \"ElBadge\"> & __VizeGlobalComponentFallback;"
+            "declare const el_badge: $GlobalComponent<\"el-badge\", \"ElBadge\"> & $GlobalComponentFallback;"
         ],
         "{}",
         output.code,
@@ -330,7 +328,7 @@ fn editor_reference_paths_are_literal_and_deduplicated() {
 /// An empty `v-slot` expression (`<template #text="">`) is a slot function
 /// without parameters for Vue's compiler. The generated slot function declares
 /// its synthetic parameter for it; an empty authored pattern would leave the
-/// parameter without a name (`_slot_text_7(: __VizeSlotPayload<…>)`), a syntax
+/// parameter without a name (`_slot_text_7(: $SlotPayload<…>)`), a syntax
 /// error that aborts Corsa's semantic pass for every file in the project.
 #[test]
 fn empty_v_slot_expression_keeps_the_slot_function_parseable() {
@@ -368,7 +366,7 @@ fn empty_v_slot_expression_keeps_the_slot_function_parseable() {
             parsed.diagnostics
         );
         let function = vize_carton::cstr!(
-            "  void function _slot_content_{scope}(__vize_slot_props_{scope}: __VizeSlotPayload<typeof __vize_slot_host_{scope}, \"content\">) {{"
+            "  void function _slot_content_{scope}(__vize_slot_props_{scope}: $SlotPayload<typeof __vize_slot_host_{scope}, \"content\">) {{"
         );
         let parameter = vize_carton::cstr!("    void __vize_slot_props_{scope};");
         for expected in [function, parameter] {
@@ -401,10 +399,10 @@ fn hoisted_slot_constructor_branches_keep_the_component_owner() {
     )
     .code;
 
-    let constructor = "import(\"vize:virtual-ts\").__VizeSlotConstructor<typeof el_badge>";
+    let constructor = "import(\"vize:virtual-ts\").$SlotConstructor<typeof el_badge>";
     for helper in [
-        "__VizeSlotConstructorWithoutArguments",
-        "__VizeSlotConstructorWithArguments",
+        "$SlotConstructorWithoutArguments",
+        "$SlotConstructorWithArguments",
     ] {
         let reference = format!("import(\"vize:virtual-ts\").{helper}<{constructor}>");
         assert_eq!(
@@ -422,7 +420,7 @@ fn hoisted_slot_constructor_branches_keep_the_component_owner() {
     }
     assert_eq!(
         code.matches(&format!(
-            "import(\"vize:virtual-ts\").__VizeSlotConstructorInstance<{constructor}, __Z, __P>",
+            "import(\"vize:virtual-ts\").$SlotConstructorInstance<{constructor}, __Z, __P>",
         ))
         .count(),
         1,
@@ -430,7 +428,7 @@ fn hoisted_slot_constructor_branches_keep_the_component_owner() {
     );
     assert_eq!(
         crate::virtual_ts::helpers::SHARED_PREAMBLE_DTS
-            .matches("export type __VizeSlotConstructorInstance<")
+            .matches("export type $SlotConstructorInstance<")
             .count(),
         1,
         "the hoisted helper module must export the branch selector",

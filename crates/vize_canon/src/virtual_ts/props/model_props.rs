@@ -1,5 +1,6 @@
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::{Croquis, macros::ModelDefinition};
+use vize_l0::ts;
 
 use crate::virtual_ts::{helpers::push_ts_string_literal, model_types::model_value_type};
 
@@ -61,12 +62,23 @@ pub(super) fn append_model_props_type_literal(
     models: &[ModelDefinition],
     generic_parameters: Option<&GenericParameters>,
 ) {
-    ts.push_str("{\n");
-    let mut emitted_names: FxHashSet<String> = FxHashSet::default();
-    for model in models {
-        emit_model_prop_members(ts, summary, model, generic_parameters, &mut emitted_names);
+    ts! { &mut *ts =>
+        {
+            #("\n")
+            #{
+                let mut emitted_names: FxHashSet<String> = FxHashSet::default();
+                for model in models {
+                    emit_model_prop_members(
+                        __ts,
+                        summary,
+                        model,
+                        generic_parameters,
+                        &mut emitted_names,
+                    );
+                }
+            }
+        }
     }
-    ts.push('}');
 }
 
 pub(super) fn append_macro_props_type_literal(
@@ -75,16 +87,27 @@ pub(super) fn append_macro_props_type_literal(
     models: &[ModelDefinition],
     generic_parameters: Option<&GenericParameters>,
 ) {
-    ts.push_str("{\n");
-    let mut emitted_names: FxHashSet<String> = FxHashSet::default();
-    for prop in summary.macros.props() {
-        let prop_type = prop.prop_type.as_deref().unwrap_or("unknown");
-        let optional = if prop.required { "" } else { "?" };
-        emit_type_member(ts, prop.name.as_str(), optional, prop_type);
-        emitted_names.insert(prop.name.as_str().into());
+    ts! { &mut *ts =>
+        {
+            #("\n")
+            #{
+                let mut emitted_names: FxHashSet<String> = FxHashSet::default();
+                for prop in summary.macros.props() {
+                    let prop_type = prop.prop_type.as_deref().unwrap_or("unknown");
+                    let optional = if prop.required { "" } else { "?" };
+                    emit_type_member(__ts, prop.name.as_str(), optional, prop_type);
+                    emitted_names.insert(prop.name.as_str().into());
+                }
+                for model in models {
+                    emit_model_prop_members(
+                        __ts,
+                        summary,
+                        model,
+                        generic_parameters,
+                        &mut emitted_names,
+                    );
+                }
+            }
+        }
     }
-    for model in models {
-        emit_model_prop_members(ts, summary, model, generic_parameters, &mut emitted_names);
-    }
-    ts.push('}');
 }

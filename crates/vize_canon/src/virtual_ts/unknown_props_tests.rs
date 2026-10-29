@@ -6,10 +6,7 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 
 fn check_tail_line(code: &str) -> &str {
     code.lines()
-        .find(|line| {
-            line.as_bytes()
-                .starts_with(b"  type __VizeComponentCheckTail")
-        })
+        .find(|line| line.as_bytes().starts_with(b"  type $ComponentCheckTail"))
         .expect("component prop helpers should declare a check tail")
 }
 
@@ -57,7 +54,7 @@ fn generate_usage(script: &str, template: &str, check_unknown_props: bool) -> vi
 fn unknown_props_off_opens_generated_check_tail() {
     assert_eq!(
         check_tail_line(&generate_parent_usage(false)),
-        "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
+        "  type $ComponentCheckTail<C> = $IsGeneratedComponent<C> extends true ? $PublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
     );
 }
 
@@ -66,11 +63,11 @@ fn unknown_props_on_keeps_native_fallthrough_tail() {
     let code = generate_parent_usage(true);
     assert_eq!(
         check_tail_line(&code),
-        "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & __VizeComponentGlobalHtmlAttrs;",
+        "  type $ComponentCheckTail<C> = $IsGeneratedComponent<C> extends true ? $PublicComponentAttrs & $ComponentGlobalHtmlAttrs & $AllowedFallthroughAttrs<C> : $PublicComponentAttrs & $ComponentGlobalHtmlAttrs;",
     );
-    assert_eq!(type_declaration(&code, "__VizeAttrCamel"), None);
-    assert_eq!(type_declaration(&code, "__VizeNativeAttrNames"), None);
-    assert_eq!(type_declaration(&code, "__VizeGlobalHtmlAttrs"), None);
+    assert_eq!(type_declaration(&code, "$AttrCamel"), None);
+    assert_eq!(type_declaration(&code, "$NativeAttrNames"), None);
+    assert_eq!(type_declaration(&code, "$GlobalHtmlAttrs"), None);
 }
 
 #[test]
@@ -245,14 +242,14 @@ fn abstract_component_constructor_extracts_its_actual_instance_props() {
         true,
     );
     assert_eq!(
-        code.matches("type __VizePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? __VizeIsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {}")
+        code.matches("type $PublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {}")
             .count(),
         1,
         "{code}"
     );
     assert_eq!(code.matches("\"foo\": \"x\"").count(), 1, "{code}");
     assert_eq!(
-        code.matches("__VizeComponentRawProps<typeof is>").count(),
+        code.matches("$ComponentRawProps<typeof is>").count(),
         2,
         "{code}"
     );
@@ -264,21 +261,21 @@ fn empty_options_component_does_not_infer_unowned_optional_raw_metadata() {
     // The navigation completion pattern must receive `{}`, not `unknown`,
     // even when this usage has no authored props to check.
     assert_eq!(
-        code.matches("__VizeHasStaticRawProps<C> extends true ? __VizeStaticRawProps<C> : __VizePublicProps<C>")
+        code.matches("$HasStaticRawProps<C> extends true ? $StaticRawProps<C> : $PublicProps<C>")
             .count(),
         1,
         "{code}"
     );
     assert_eq!(
         code.matches(
-            "const { } = undefined as unknown as __VizeComponentNavigationProps<__Div_Props_0>;"
+            "const { } = undefined as unknown as $ComponentNavigationProps<__Div_Props_0>;"
         )
         .count(),
         1,
         "{code}"
     );
     assert_eq!(
-        code.matches("__VizeComponentRawProps<typeof Div>").count(),
+        code.matches("$ComponentRawProps<typeof Div>").count(),
         2,
         "{code}"
     );
@@ -316,7 +313,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     assert_eq!(code.matches("\"dataTest\": label").count(), 1, "{code}");
     assert_eq!(
         code.matches(
-            "type __Child_0_prop_aria_label = __VizePropValue<__Child_ValueProps_0, 'aria-label', __VizePropValue<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'aria-label'>>>;"
+            "type __Child_0_prop_aria_label = $PropValue<__Child_ValueProps_0, 'aria-label', $PropValue<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'aria-label'>>>;"
         )
         .count(),
         1,
@@ -338,7 +335,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     assert_eq!(
         camel
             .matches(
-                "type __Child_0_prop_ariaLabel = __VizePropValue<__Child_ValueProps_0, 'aria-label', __VizePropValue<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'ariaLabel'>>>;"
+                "type __Child_0_prop_ariaLabel = $PropValue<__Child_ValueProps_0, 'aria-label', $PropValue<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'ariaLabel'>>>;"
             )
             .count(),
         1,

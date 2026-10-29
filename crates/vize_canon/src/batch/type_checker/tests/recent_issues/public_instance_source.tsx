@@ -13,12 +13,12 @@ type GenericComponentInstance<T> = T extends new (...args: any[]) => infer R ? R
 declare function usePrimitiveElement<T extends ComponentPublicInstance>(): {
   primitiveElement: T | undefined;
 };
-const unknownUsesPublicInstance: true = null as unknown as __VizeIsUnknown<unknown>;
-const anyIsAuthoredInput: false = null as unknown as __VizeIsUnknown<any>;
-const neverIsAuthoredInput: false = null as unknown as __VizeIsUnknown<never>;
-const objectIsAuthoredInput: false = null as unknown as __VizeIsUnknown<{}>;
+const unknownUsesPublicInstance: true = null as unknown as $IsUnknown<unknown>;
+const anyIsAuthoredInput: false = null as unknown as $IsUnknown<any>;
+const neverIsAuthoredInput: false = null as unknown as $IsUnknown<never>;
+const objectIsAuthoredInput: false = null as unknown as $IsUnknown<{}>;
 const anyInstanceInferenceUsesPublicInstance: true =
-  null as unknown as __VizeUsePublicInstance<any>;
+  null as unknown as $UsePublicInstance<any>;
 type PublicInstance = InstanceType<typeof Public>;
 declare const instance: PublicInstance;
 // @ts-expect-error Vue strict emits/slots are not an unconstrained ComponentPublicInstance
@@ -44,7 +44,7 @@ type PublicEmitParameters = Parameters<PublicEmit>;
 type PublicEmitWithoutThis = OmitThisParameter<PublicEmit>;
 type PublicEmitThis = ThisParameterType<PublicEmit>;
 declare const publicEmitWithoutThis: PublicEmitWithoutThis;
-const publicEmitThisIsUnknown: true = null as unknown as __VizeIsUnknown<PublicEmitThis>;
+const publicEmitThisIsUnknown: true = null as unknown as $IsUnknown<PublicEmitThis>;
 
 // @ts-expect-error record emit payload stays exact
 instance.$emit("select", 1);

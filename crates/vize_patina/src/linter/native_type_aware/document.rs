@@ -154,8 +154,8 @@ fn project<'a>(
     document
 }
 
-const BOOLEAN_KEY_ALIAS: &str = "type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never;";
-const BOOLEAN_KEY_PATCHED: &str = "type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? __VizeIsAny<Exclude<T[K], undefined>> extends true ? never : [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never;";
+const BOOLEAN_KEY_ALIAS: &str = "type $BooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never;";
+const BOOLEAN_KEY_PATCHED: &str = "type $BooleanKey<T, K extends keyof T = keyof T> = K extends any ? $IsAny<Exclude<T[K], undefined>> extends true ? never : [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never;";
 
 fn keep_any_out_of_boolean_keys(document: &mut TypeAwareDocument) {
     let mut text = document.content.clone();
@@ -253,13 +253,13 @@ mod tests {
             "Component.vue",
         );
         let expected_alias = format!(
-            "{BOOLEAN_KEY_PATCHED} type __DefineProps<T, __BKeys extends keyof T = __VizeBooleanKey<T>> = Readonly<T> & {{ readonly [K in __BKeys]-?: boolean }};"
+            "{BOOLEAN_KEY_PATCHED} type __DefineProps<T, __BKeys extends keyof T = $BooleanKey<T>> = Readonly<T> & {{ readonly [K in __BKeys]-?: boolean }};"
         );
         let boolean_aliases: Vec<_> = document
             .content
             .as_str()
             .lines()
-            .filter(|line| line.starts_with("type __VizeBooleanKey<"))
+            .filter(|line| line.starts_with("type $BooleanKey<"))
             .collect();
         assert_eq!(boolean_aliases, vec![expected_alias.as_str()]);
     }

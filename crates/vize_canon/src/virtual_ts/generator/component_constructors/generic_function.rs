@@ -21,7 +21,7 @@ pub(super) fn emit(
     let authored_parameters = generic_suffix(authored_parameters);
     let arguments = generic_suffix(names);
     let emits = alias_ref("Emits", aliases.emits_is_generic, names);
-    let slots = alias_ref("__VizeSlots", aliases.slots_is_generic, names);
+    let slots = alias_ref("$Slots", aliases.slots_is_generic, names);
     let expose = if aliases.has_exposed_type {
         alias_ref("Exposed", aliases.exposed_is_generic, names)
     } else {

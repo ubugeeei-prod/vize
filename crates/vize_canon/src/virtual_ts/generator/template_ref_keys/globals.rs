@@ -9,7 +9,7 @@ impl TemplateRefUsage {
         if self.calls.iter().any(|call| call.imported) {
             append!(
                 *ts,
-                "  const {name} = (undefined as unknown as __VizeUseTemplateRef);\n"
+                "  const {name} = (undefined as unknown as $UseTemplateRef);\n"
             );
         }
         if self.calls.iter().all(|call| call.imported) {

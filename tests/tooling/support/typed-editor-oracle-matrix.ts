@@ -175,7 +175,7 @@ export const matrix: MatrixRow[] = [
         path: "editors/vscode/test/suite/real-scenario.cjs",
         requiredText: [
           "componentContractHovers",
-          "__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor",
+          "__vizeComponentMarker|__vizeRawProps|$ComponentConstructor",
         ],
       },
       {
@@ -201,7 +201,7 @@ export const matrix: MatrixRow[] = [
         requiredText: [
           "script hover describes imported SFC contracts instead of generated markers",
           "const Child: VueComponent",
-          "__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor",
+          "__vizeComponentMarker|__vizeRawProps|$ComponentConstructor",
         ],
       },
       {
@@ -210,7 +210,7 @@ export const matrix: MatrixRow[] = [
         requiredText: [
           "script hover describes re-exported and package SFC component contracts",
           "Vue component: PackageChild.vue",
-          "__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor",
+          "__vizeComponentMarker|__vizeRawProps|$ComponentConstructor",
         ],
       },
       toolingTestCiEvidence,

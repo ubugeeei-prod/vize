@@ -3,14 +3,14 @@ mod union;
 use crate::virtual_ts::generate_virtual_ts;
 
 const STATIC_PAYLOAD_ALIASES: [&str; 3] = [
-    "type __VizeSlotOutletTarget<",
-    "type __VizeSlotOutletArgs<",
-    "type __VizeSlotOutletPayload<",
+    "type $SlotOutletTarget<",
+    "type $SlotOutletArgs<",
+    "type $SlotOutletPayload<",
 ];
 const DYNAMIC_PAYLOAD_ALIASES: [&str; 3] = [
-    "type __VizeAnySlotOutletTarget<",
-    "type __VizeAnySlotOutletArgs<",
-    "type __VizeAnySlotOutletPayload<",
+    "type $AnySlotOutletTarget<",
+    "type $AnySlotOutletArgs<",
+    "type $AnySlotOutletPayload<",
 ];
 
 fn generate(script: &str, template: &str) -> vize_carton::String {
@@ -26,7 +26,7 @@ fn generate(script: &str, template: &str) -> vize_carton::String {
 fn assert_payload_alias_partition(code: &str, needs_static: bool, needs_dynamic: bool) {
     let expected_fn = if needs_static || needs_dynamic { 1 } else { 0 };
     assert_eq!(
-        code.matches("type __VizeSlotOutletFn =").count(),
+        code.matches("type $SlotOutletFn =").count(),
         expected_fn,
         "payload function alias admission differs:\n{code}"
     );
@@ -64,7 +64,7 @@ defineSlots<{ default(props: { label: string }): any }>()
     );
     assert_eq!(
         code.matches(
-            r#"...__vizeSlotOutletSpread<__VizeSlotOutletPayload<__VizeSlots, "default">>()(attrs),"#,
+            r#"...__vizeSlotOutletSpread<$SlotOutletPayload<$Slots, "default">>()(attrs),"#,
         )
         .count(),
         1,
@@ -149,13 +149,13 @@ defineSlots<{
 
 #[test]
 fn authored_payload_alias_names_stay_untouched_without_spreads() {
-    let script = r#"type __VizeSlotOutletFn = { authored: 'fn' }
-type __VizeSlotOutletTarget = { authored: 'static-target' }
-type __VizeSlotOutletArgs = { authored: 'static-args' }
-type __VizeSlotOutletPayload = { authored: 'static-payload' }
-type __VizeAnySlotOutletTarget = { authored: 'dynamic-target' }
-type __VizeAnySlotOutletArgs = { authored: 'dynamic-args' }
-type __VizeAnySlotOutletPayload = { authored: 'dynamic-payload' }
+    let script = r#"type $SlotOutletFn = { authored: 'fn' }
+type $SlotOutletTarget = { authored: 'static-target' }
+type $SlotOutletArgs = { authored: 'static-args' }
+type $SlotOutletPayload = { authored: 'static-payload' }
+type $AnySlotOutletTarget = { authored: 'dynamic-target' }
+type $AnySlotOutletArgs = { authored: 'dynamic-args' }
+type $AnySlotOutletPayload = { authored: 'dynamic-payload' }
 const value = 'ok'
 defineSlots<{ default(props: { value: string }): any }>()
 "#;
@@ -177,13 +177,13 @@ defineSlots<{ default(props: { value: string }): any }>()
         );
     }
     for generated in [
-        "__VizeSlotOutletFn = (...args: any[]) => any",
-        "__VizeSlotOutletTarget<__S, __K extends PropertyKey> = Extract<",
-        "__VizeSlotOutletArgs<__S, __K extends PropertyKey> = [",
-        "__VizeSlotOutletPayload<__S, __K extends PropertyKey> = [",
-        "__VizeAnySlotOutletTarget<__S> = Extract<",
-        "__VizeAnySlotOutletArgs<__S> = [",
-        "__VizeAnySlotOutletPayload<__S> = [",
+        "$SlotOutletFn = (...args: any[]) => any",
+        "$SlotOutletTarget<__S, __K extends PropertyKey> = Extract<",
+        "$SlotOutletArgs<__S, __K extends PropertyKey> = [",
+        "$SlotOutletPayload<__S, __K extends PropertyKey> = [",
+        "$AnySlotOutletTarget<__S> = Extract<",
+        "$AnySlotOutletArgs<__S> = [",
+        "$AnySlotOutletPayload<__S> = [",
     ] {
         assert_eq!(
             code.matches(generated).count(),

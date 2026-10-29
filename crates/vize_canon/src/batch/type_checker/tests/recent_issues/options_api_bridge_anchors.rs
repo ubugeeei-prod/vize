@@ -1,7 +1,7 @@
 //! Options API `this.*` diagnostics anchor on authored bytes, not generated ones.
 //!
 //! The typed-instance bridge re-emits every `methods`/`computed` body inside
-//! setup scope with a `this: __VizeThis` receiver. Those copies used to carry
+//! setup scope with a `this: $This` receiver. Those copies used to carry
 //! no source mapping, so `CompositeSourceMap` fell back to reporting the
 //! *generated* offset as if it were authored: a finding in a script block that
 //! sits below a long template landed hundreds of lines away, inside whatever
@@ -85,7 +85,7 @@ fn options_api_method_diagnostics_anchor_on_the_authored_property() {
         vec![(
             "src/App.vue".into(),
             Some(2339),
-            "33:25:error Property 'missingHelper' does not exist on type '__VizeThis'.".into(),
+            "33:25:error Property 'missingHelper' does not exist on type '$This'.".into(),
         )]
     );
 }

@@ -53,6 +53,8 @@
 mod codegen;
 mod emit_ts;
 mod model;
+mod ts_scan;
+mod ts_segments;
 mod ts_syntax;
 
 use proc_macro::TokenStream;
@@ -82,14 +84,19 @@ pub fn emit_ts(input: TokenStream) -> TokenStream {
     emit_ts::expand(input)
 }
 
-/// Write TypeScript as tokens, not as a string.
+/// Write TypeScript as tokens, not as `push_str("}")`.
 ///
-/// `#expr` splices a string or an integer. `;` ends the line. Braces, generics,
-/// and `$$` keep the shape you type.
+/// Braces come from the token tree, so a missing closer does not compile.
+/// `#expr` splices a string or an integer. `#TsString("text")` is a quoted
+/// TypeScript string, folded to static bytes when the argument is a literal.
+/// `#("  ")` is raw text. `#(item in items => ...)*` repeats a body.
+/// `#{ ... }` pastes Rust into the write pass; `__ts` is the buffer. A brace
+/// group that contains `#{ }` prints `{` and `}` with no added spaces.
+/// `$Name` is one identifier. Each reserved segment is exact.
 ///
 /// ```ignore
 /// ts! { &mut ts =>
-///     type __VizeSlots #declaration = Awaited<ReturnType<typeof __setup #arguments>>;
+///     type $Slots #declaration = Awaited<ReturnType<typeof __setup #arguments>>;
 /// }
 /// ```
 #[proc_macro]

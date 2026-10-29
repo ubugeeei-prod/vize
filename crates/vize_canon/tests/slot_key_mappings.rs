@@ -49,10 +49,10 @@ fn public_slot_type_maps_only_complete_authored_keys_and_keeps_payload_scope() {
             )
             .unwrap();
         }
-        let alias = result.text.find("type __VizeSlots = ").expect("alias");
+        let alias = result.text.find("type $Slots = ").expect("alias");
         let end = result
             .text
-            .find("export type { __VizeSlots as Slots };")
+            .find("export type { $Slots as Slots };")
             .expect("whole alias end");
         let rows: Vec<_> = result
             .mappings

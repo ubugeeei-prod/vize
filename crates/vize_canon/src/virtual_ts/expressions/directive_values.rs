@@ -8,6 +8,7 @@ use super::super::types::VizeMapping;
 use crate::virtual_ts::script_facts::ScriptBindings;
 use vize_carton::{CompactString, String, append, camelize, capitalize};
 use vize_croquis::TemplateExpression;
+use vize_l0::ts;
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
@@ -258,14 +259,21 @@ pub(super) fn generate_directive_value_statement(
     }
     if let (Some(first), Some(last)) = (binding.modifiers.first(), binding.modifiers.last()) {
         push_mapped(ts, "modifiers", (first.1.0, last.1.1));
-        ts.push_str(": { ");
-        for (modifier, range) in &binding.modifiers {
-            let mut key = String::default();
-            crate::virtual_ts::helpers::push_ts_string_literal(&mut key, modifier.as_str());
-            push_mapped(ts, key.as_str(), *range);
-            ts.push_str(": true, ");
+        ts! { &mut *ts =>
+            #(": ")
+            {
+                #(" ")
+                #{
+                    for (modifier, range) in &binding.modifiers {
+                        let mut key = String::default();
+                        crate::virtual_ts::helpers::push_ts_string_literal(&mut key, modifier.as_str());
+                        push_mapped(__ts, key.as_str(), *range);
+                        __ts.push_str(": true, ");
+                    }
+                }
+            }
+            #(", ")
         }
-        ts.push_str("}, ");
     }
     let key_start = ts.len();
     ts.push_str("value");
@@ -323,14 +331,11 @@ fn emit_unknown_directive_presence(
         crate::virtual_ts::helpers::push_ts_string_literal(ts, variable);
     };
     push_key(ts);
-    append!(
-        *ts,
-        " extends keyof __VizeLocalDirectives<{registered}> ? {{ "
-    );
+    append!(*ts, " extends keyof $LocalDirectives<{registered}> ? {{ ");
     push_key(ts);
     append!(*ts, ": unknown }} : ");
     push_key(ts);
-    append!(*ts, " extends keyof __VizeGlobalDirectives ? {{ ");
+    append!(*ts, " extends keyof $GlobalDirectives ? {{ ");
     push_key(ts);
     append!(*ts, ": unknown }} : {{}});\n{indent}void {local};\n");
     mappings.push(VizeMapping {
