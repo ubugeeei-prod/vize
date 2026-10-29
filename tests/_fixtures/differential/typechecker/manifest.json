@@ -12207,6 +12207,59 @@
           "sha256": "789f1dc6f3e9e4412d3fbb9ab1bebdef7eb8ab570b261d759491546fddca24be"
         }
       ]
+    },
+    {
+      "id": "typechecker/protocol/native-beta-diagnostic-dto-10731",
+      "state": "active",
+      "adapter": "native-beta-diagnostic-wire-v1",
+      "targets": [
+        "native-diagnostic-dto"
+      ],
+      "inputs": [
+        {
+          "path": "snapshot-source-text/protocol9-beta.bin",
+          "sha256": "8471ad6dc1a7635dc0a1a5d6298fd8683b16480c26517a9a99c89ee1c8a0cbf8"
+        },
+        {
+          "path": "snapshot-source-text/protocol9-beta.json",
+          "sha256": "40211fca517530cc9421b8e19422c9f0a819e785561f16cb0a0c28f888449f65"
+        },
+        {
+          "path": "native-beta-diagnostic-dto-10731/actual-beta-wire.json",
+          "sha256": "896566d20578fc4a69384b945216b9490d0f04aeecd10753627798a5dada2bbd"
+        },
+        {
+          "path": "native-beta-diagnostic-dto-10731/source-pairs.json",
+          "sha256": "e548be6896b10ae65b5af6f50b61bfe2bce1071399c9fe26a65e1557497e8b85"
+        }
+      ],
+      "tests": [
+        {
+          "selector": "lsp_client::initial_diagnostics::diagnostic_response::beta_tests::actual_pinned_beta_dto_and_source_reproduce_the_complete_semantic_packet",
+          "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response/beta_tests.rs",
+          "sha256": "1786800440e63978507aa78e8c65a1bb16929af383b3354fd4da3c3833c96558"
+        },
+        {
+          "selector": "lsp_client::initial_diagnostics::diagnostic_response::beta_tests::metadata_null_unknown_fields_partial_ranges_and_wrong_source_never_become_clean",
+          "source": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response/beta_tests.rs",
+          "sha256": "1786800440e63978507aa78e8c65a1bb16929af383b3354fd4da3c3833c96558"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::snapshot_source::protocol::protocol9::tests::actual_beta_complete_text_is_independent_of_the_opaque_ast_and_source_id",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/protocol9/tests.rs",
+          "sha256": "7d4f62460e61a609d2d0cf3ec2caad0c5b7bade9d71feb292ae9d5ca73599eda"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
+          "sha256": "26eb21864007e6011c69d0a95e1be173fd586605a87400bdc3aacecb5cb31dc6"
+        },
+        {
+          "selector": "lsp_client::editor_lsp::snapshot_source::tests::completion_comparison_retains_metadata_nested_fields_and_duplicate_counts",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs",
+          "sha256": "7f361282a17865effeb4b497721c8b077edf8232e79ef0600cba87796267fb55"
+        }
+      ]
     }
   ],
   "languageProjectCases": [

@@ -1,0 +1,68 @@
+{
+  "beforeRevision": "13fa41356d075047a229f580014b637d3bbeb57f",
+  "candidateProductionRevision": "ce77ac02d1f611b3dd935cee983662ea63df7cb1",
+  "production": [
+    {
+      "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response.rs",
+      "beforeSha256": "a5382f567c0e453f91bb325a3d855a60b0517ce09b7cee07340fb9d987be08ff",
+      "afterSha256": "a6e466261f9df2c9b79eae3c4558615849a4b06565a4e81c01107eab973fb7f1"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response/location.rs",
+      "beforeSha256": null,
+      "afterSha256": "5980489fa2841b5fd147e3f2a46418bb7f181ec5ad6a70890cba49e316bf67a5"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics.rs",
+      "beforeSha256": "ed8f27d3395713cae0434d7009e69bcc8c8fd9abe989a3a863600caf53b69e41",
+      "afterSha256": "e1fca87600ab65ed61c6726828501795267e5104880c4473b769dd3452a57e20"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol.rs",
+      "beforeSha256": "b916b1ee1448529f42e5fcfeaec0fa200eb80a9b8c1fa389faf4ba8288ae37f1",
+      "afterSha256": "82770f11c1f108a14c4ce13d07035cd3ce1af30bb6666164a437bd85229fe7f5"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/protocol9.rs",
+      "beforeSha256": null,
+      "afterSha256": "b709f334ca25aa503778f7d5fb4bdfb7859d064813599b69314401e3ff546e73"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/session/capabilities.rs",
+      "beforeSha256": "62069a68aa113b6916743ac088019857a8240dd7c8dc4ec58bbb7f7f9927e61d",
+      "afterSha256": "bb3c3b9c16fb8d5f704346d70ac774af9fd50cf588cc2cb11d9fb3fc68cf2225"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs",
+      "beforeSha256": "c1c86934e04476bfb2464934e906498b4ff95f03b68a08527a24a0cbc7c39c13",
+      "afterSha256": "6f06efdc6cd759b462afdd05135abd1938e897097d9aa05377e39b1443660590"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/diagnostics/batch.rs",
+      "beforeSha256": "a811d38e73b75f1c75510bc27df1abe36fc2684efbffb8b3e46375ef798176f4",
+      "afterSha256": "9a9d768b9d8a622b90a831bcba3c3949c480ab450c81c097dc839da4d692fd98"
+    }
+  ],
+  "producerFiles": [
+    {
+      "path": ".github/workflows/native-beta-diagnostic-dto.yml",
+      "sha256": "019557e2777688daa66971e45d43a2b4f3c5d34c9f0fe8e51cff5feb62a93ac7"
+    },
+    {
+      "path": "tests/tooling/support/native-beta-dto/prepare-role.mjs",
+      "sha256": "e168dec0d8f5b7bbf83d5bc2938224473e5909e8513b05627ffbb4f5f6c38e14"
+    },
+    {
+      "path": "tests/tooling/support/native-beta-dto/provider.mjs",
+      "sha256": "cb3c4b64797b47d4473900e1ead922b8597e3dd2504a4fe5d4c119c20029b1fb"
+    },
+    {
+      "path": "tests/tooling/support/native-beta-dto/audit-wire.mjs",
+      "sha256": "d820389b2457f867b139a6faea002a14581b4afa93cc610c4b60fbd48c374ef5"
+    },
+    {
+      "path": "tests/tooling/support/native-beta-dto/run-source.mjs",
+      "sha256": "c3fba7858f0f0bf0737111b8b339e0b8da1e675e0b069bd9f48cd11f5cf7355e"
+    }
+  ]
+}
