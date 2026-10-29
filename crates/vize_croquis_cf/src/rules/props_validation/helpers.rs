@@ -38,6 +38,27 @@ pub(super) fn extract_passed_props_for_component(
     component_name: &str,
     aliases: &[CompactString],
 ) -> Vec<PassedComponentUsage> {
+    let mut usages = extract_authored_passed_props_for_component(analysis, component_name, aliases);
+
+    if usages.is_empty() {
+        usages.push(PassedComponentUsage {
+            component_name: CompactString::new(component_name),
+            props: Vec::new(),
+            has_spread_attrs: false,
+            start: 0,
+            end: 0,
+        });
+    }
+
+    usages
+}
+
+/// Extract only authored usages, without inventing the missing-usage fallback.
+pub(super) fn extract_authored_passed_props_for_component(
+    analysis: &vize_croquis::Croquis,
+    component_name: &str,
+    aliases: &[CompactString],
+) -> Vec<PassedComponentUsage> {
     let mut usages = Vec::new();
 
     for usage in vize_croquis::facts::component_usage_list(analysis) {
@@ -70,17 +91,20 @@ pub(super) fn extract_passed_props_for_component(
         }
     }
 
-    if usages.is_empty() {
-        usages.push(PassedComponentUsage {
-            component_name: CompactString::new(component_name),
-            props: Vec::new(),
-            has_spread_attrs: false,
-            start: 0,
-            end: 0,
-        });
-    }
-
     usages
+}
+
+/// Whether an authored `<NuxtPage>` prop reaches the rendered route component.
+///
+/// Nuxt consumes its declared control props before forwarding the remaining
+/// attrs through `RouterView`. A runtime prop name stays conservative because
+/// it cannot be proven to name one of those controls.
+pub(super) fn nuxt_page_forwards_prop(prop: &PassedPropInfo) -> bool {
+    prop.name_is_dynamic
+        || !matches!(
+            prop.name.as_str(),
+            "name" | "transition" | "keepalive" | "route" | "pageKey" | "page-key"
+        )
 }
 
 pub(super) fn define_props_offset(entry: &ModuleEntry) -> u32 {
@@ -249,11 +273,40 @@ fn to_pascal_case(s: &str) -> String {
 mod tests {
     use super::{
         PassedPropInfo, actual_literal_type, import_targets_path, is_builtin_attr,
-        prop_type_accepts_actual,
+        nuxt_page_forwards_prop, prop_type_accepts_actual,
     };
     use std::path::Path;
     use vize_carton::CompactString;
     use vize_croquis::types::TypeDefinitions;
+
+    #[test]
+    fn nuxt_page_filters_static_controls_but_keeps_forwarded_and_dynamic_names() {
+        let probes = [
+            ("name", false),
+            ("transition", false),
+            ("keepalive", false),
+            ("route", false),
+            ("pageKey", false),
+            ("page-key", false),
+            ("order", false),
+            ("name", true),
+        ];
+        let retained = probes
+            .into_iter()
+            .filter(|(name, dynamic)| {
+                nuxt_page_forwards_prop(&PassedPropInfo {
+                    name: CompactString::new(*name),
+                    name_is_dynamic: *dynamic,
+                    value: None,
+                    start: 0,
+                    end: 0,
+                    is_dynamic: true,
+                })
+            })
+            .collect::<Vec<_>>();
+
+        assert_eq!(retained, vec![("order", false), ("name", true)]);
+    }
 
     #[test]
     fn incomplete_types_cannot_prove_a_static_prop_mismatch() {

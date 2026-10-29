@@ -29,6 +29,11 @@ pub struct CrossFileAnalyzer {
     registry: ModuleRegistry,
     /// Dependency graph.
     graph: DependencyGraph,
+    /// Authored `<NuxtPage>` owner for each synthetic render edge.
+    ///
+    /// The graph parent can be a layout while the outlet lives in `app.vue`,
+    /// so prop validation cannot recover this identity from the edge alone.
+    nuxt_page_outlets: FxHashMap<(FileId, FileId), FileId>,
     /// Parser-built local reactive effect summaries by file.
     effect_graph_summaries: FxHashMap<FileId, EffectGraphSummary>,
     /// Own template complexity facts of each SFC (L2 `template-complexity`).
