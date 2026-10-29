@@ -2185,8 +2185,8 @@
     },
     {
       "path": "before/maestro-document-0/text.ts.txt",
-      "bytes": 19053,
-      "sha256": "435e2e085db9c26b5a436d3624df0c2df7aa05e95dedfe24f414372c8ddd1bcd"
+      "bytes": 18283,
+      "sha256": "6af6319b18c9c675e3d1c7923f6f60130af54717010d29356d57cc992b11d767"
     },
     {
       "path": "before/maestro-document-1/text.ts.txt",
@@ -2220,8 +2220,8 @@
     },
     {
       "path": "after/maestro-document-0/text.ts.txt",
-      "bytes": 19547,
-      "sha256": "92dca647d3a7f23fd7cd62910d73948e23de7eb158b8765424f8c3666d34b715"
+      "bytes": 18747,
+      "sha256": "f2644e24ccc09defd1bef755be5ce172047a1f0a89d0a580f154a3eca26fc458"
     },
     {
       "path": "after/maestro-document-1/text.ts.txt",

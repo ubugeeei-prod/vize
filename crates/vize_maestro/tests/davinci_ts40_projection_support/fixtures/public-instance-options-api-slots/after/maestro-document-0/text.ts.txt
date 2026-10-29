@@ -173,7 +173,7 @@ __setup();
 
 export type Emits = {};
 type $Slots = Awaited<ReturnType<typeof __setup>>['__vize_template_slots'];
-export type { $Slots as Slots };
+export type Slots = $Slots;
 
 // ========== Default Export ==========
 type $ComponentInstance = {

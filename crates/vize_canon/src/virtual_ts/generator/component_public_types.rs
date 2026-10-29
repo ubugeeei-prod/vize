@@ -64,7 +64,16 @@ pub(super) fn emit_slots_type(
         false
     };
     if export_slots {
-        ts! { &mut *ts => export type { $Slots as Slots }; }
+        if is_generic {
+            // Call sites instantiate `$Slots<...>`. The re-export does not bind
+            // `Slots` locally, and nothing in this module names it bare.
+            ts! { &mut *ts => export type { $Slots as Slots }; }
+        } else {
+            // `export type { $Slots as Slots }` does not bind `Slots` in this
+            // module. The component contract writes `Partial<Slots>` so an
+            // unknown slot names the public alias (#10902) without TS2304 (#11137).
+            ts! { &mut *ts => export type Slots = $Slots; }
+        }
     }
     is_generic
 }

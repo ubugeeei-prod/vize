@@ -2342,8 +2342,8 @@
     },
     {
       "path": "before/canon/pre-rewrite-text.ts.txt",
-      "bytes": 11739,
-      "sha256": "95581b31348cd2c45b63fc128e3205ddff980e9596b7a7378fc52320762d5005"
+      "bytes": 11539,
+      "sha256": "5010c8862298cc7302671495971eacb35fca8d3ac70e9c8827e6a0095e228f0c"
     },
     {
       "path": "before/canon/semantic-links.txt",
@@ -2352,8 +2352,8 @@
     },
     {
       "path": "before/canon/text.ts.txt",
-      "bytes": 11739,
-      "sha256": "95581b31348cd2c45b63fc128e3205ddff980e9596b7a7378fc52320762d5005"
+      "bytes": 11539,
+      "sha256": "5010c8862298cc7302671495971eacb35fca8d3ac70e9c8827e6a0095e228f0c"
     },
     {
       "path": "before/content-mapper/authored-hits.txt",
@@ -2377,8 +2377,8 @@
     },
     {
       "path": "before/content-mapper/text.ts.txt",
-      "bytes": 19094,
-      "sha256": "703a5adb706ea174c777c1532e51c982d4ca9fa98b5a8ba3bc3594be3090359a"
+      "bytes": 18304,
+      "sha256": "de966ecde60859335237f8064ff5d21bc434814afa897503e8b95ad36bafd528"
     },
     {
       "path": "before/maestro/authored-hits.txt",
@@ -2397,8 +2397,8 @@
     },
     {
       "path": "before/maestro-document-0/text.ts.txt",
-      "bytes": 18417,
-      "sha256": "e7e7e2773168d55f248ce369f8b611fa18ddfa49049fe7cc5e6883d91158829b"
+      "bytes": 17687,
+      "sha256": "65c617fa0da3dc2177165692c411a385e4b5bd5e208c759ea730dec299efdb57"
     },
     {
       "path": "before/maestro-document-1/text.ts.txt",
@@ -2432,8 +2432,8 @@
     },
     {
       "path": "after/canon/pre-rewrite-text.ts.txt",
-      "bytes": 11739,
-      "sha256": "95581b31348cd2c45b63fc128e3205ddff980e9596b7a7378fc52320762d5005"
+      "bytes": 11539,
+      "sha256": "5010c8862298cc7302671495971eacb35fca8d3ac70e9c8827e6a0095e228f0c"
     },
     {
       "path": "after/canon/semantic-links.txt",
@@ -2442,8 +2442,8 @@
     },
     {
       "path": "after/canon/text.ts.txt",
-      "bytes": 11739,
-      "sha256": "95581b31348cd2c45b63fc128e3205ddff980e9596b7a7378fc52320762d5005"
+      "bytes": 11539,
+      "sha256": "5010c8862298cc7302671495971eacb35fca8d3ac70e9c8827e6a0095e228f0c"
     },
     {
       "path": "after/content-mapper/authored-hits.txt",
@@ -2467,8 +2467,8 @@
     },
     {
       "path": "after/content-mapper/text.ts.txt",
-      "bytes": 19094,
-      "sha256": "703a5adb706ea174c777c1532e51c982d4ca9fa98b5a8ba3bc3594be3090359a"
+      "bytes": 18304,
+      "sha256": "de966ecde60859335237f8064ff5d21bc434814afa897503e8b95ad36bafd528"
     },
     {
       "path": "after/maestro/authored-hits.txt",
@@ -2487,8 +2487,8 @@
     },
     {
       "path": "after/maestro-document-0/text.ts.txt",
-      "bytes": 18911,
-      "sha256": "fe5b7943e6b0542a11f5dcc13b01277b88a315110711f1236e34f4b730fd8612"
+      "bytes": 18151,
+      "sha256": "d7e16c0339a913a0201a2d4761d46504fdf1751869c33fad9f3e69250aa04fad"
     },
     {
       "path": "after/maestro-document-1/text.ts.txt",
