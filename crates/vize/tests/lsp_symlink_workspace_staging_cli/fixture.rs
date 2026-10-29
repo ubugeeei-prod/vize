@@ -4,7 +4,7 @@
     reason = "fixtures retain complete std byte maps"
 )]
 
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::{
     collections::BTreeMap,
     fs,
@@ -93,6 +93,14 @@ impl Fixture {
             )
             .unwrap();
         }
+        let package_path = root.join("package.json");
+        let mut package: Value = serde_json::from_slice(&fs::read(&package_path).unwrap()).unwrap();
+        package["devDependencies"] = json!({});
+        package["devDependencies"].as_object_mut().unwrap().insert(
+            native_manifest["name"].as_str().unwrap().to_owned(),
+            native_manifest["version"].clone(),
+        );
+        fs::write(package_path, serde_json::to_vec_pretty(&package).unwrap()).unwrap();
         let source_dir = if matches!(layout, Layout::SrcInclude) {
             app.join("src")
         } else {

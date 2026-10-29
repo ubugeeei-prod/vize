@@ -1,4 +1,4 @@
-use super::super::{CorsaResolveError, discover_in_walk, platform_suffix};
+use super::super::{discover_in_walk, platform_suffix, CorsaResolveError};
 use super::{resolve, write_file, write_native_preview_packages, write_typescript_manifest};
 use std::fs;
 use tempfile::TempDir;
@@ -50,7 +50,7 @@ fn resolves_declared_preview_exe_before_its_bin_wrapper() {
 fn resolves_declared_preview_through_a_pnpm_link() {
     let temp = TempDir::new().unwrap();
     let root = temp.path().join("project");
-    let store = root.join("node_modules/.pnpm/native-preview@7.0.0/node_modules");
+    let store = root.join("node_modules/.pnpm/native-preview@7.0.0");
     fs::create_dir_all(&root).unwrap();
     fs::write(
         root.join("package.json"),

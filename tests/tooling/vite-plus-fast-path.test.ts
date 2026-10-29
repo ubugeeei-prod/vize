@@ -34,9 +34,16 @@ test("packed defineConfig runs native and Vite+ tools using the consumer's insta
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vp-consumer space-"));
   try {
     fs.mkdirSync(path.join(directory, "node_modules/@vizejs"), { recursive: true });
+    fs.mkdirSync(path.join(directory, "node_modules/@typescript"), { recursive: true });
+    const nativePackageName = `@typescript/typescript-${process.platform}-${process.arch}`;
+    const nativePackage = path.join(root, "node_modules", nativePackageName);
+    const nativeManifest = JSON.parse(
+      fs.readFileSync(path.join(nativePackage, "package.json"), "utf8"),
+    );
     for (const [name, source] of [
       ["vite-plus", path.dirname(vpPackage)],
       ["@vizejs/vite-plugin", plugin],
+      [nativePackageName, nativePackage],
       [
         "vue",
         path.dirname(
@@ -51,7 +58,15 @@ test("packed defineConfig runs native and Vite+ tools using the consumer's insta
       );
     const write = (name: string, value: string) =>
       fs.writeFileSync(path.join(directory, name), value);
-    write("package.json", JSON.stringify({ name: "vize-consumer", type: "module", private: true }));
+    write(
+      "package.json",
+      JSON.stringify({
+        name: "vize-consumer",
+        type: "module",
+        private: true,
+        optionalDependencies: { [nativePackageName]: nativeManifest.version },
+      }),
+    );
     write(
       "vite.config.ts",
       `import { defineConfig } from "@vizejs/vite-plugin/vite-plus";

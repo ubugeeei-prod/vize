@@ -7,6 +7,13 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const nativeRuntime = path.join(
+  root,
+  "node_modules/@typescript",
+  `typescript-${process.platform}-${process.arch}`,
+  "lib",
+  process.platform === "win32" ? "tsc.exe" : "tsc",
+);
 
 /**
  * Resolves how to launch the `vize` CLI for contract tests, mirroring the LSP
@@ -37,6 +44,7 @@ function runCheck(args: string[], cwd: string): CheckResult {
   const result = spawnSync(VIZE.command, [...VIZE.prefix, "check", ...args], {
     cwd,
     encoding: "utf8",
+    env: { ...process.env, CORSA_PATH: nativeRuntime },
   });
   if (result.error) {
     throw result.error;
@@ -69,7 +77,7 @@ test("vize check --help documents the input contract and key flags", () => {
   assert.match(help, /PATTERNS/, "help should describe the positional PATTERNS argument");
 });
 
-test("vize check exits 1 and reports SFC parse errors before type checking", () => {
+test("vize check exits 1 and reports SFC parse errors with an explicit runtime", () => {
   withWorkspace((dir) => {
     fs.writeFileSync(path.join(dir, "Broken.vue"), "<template><div></div>", "utf8");
     const result = runCheck(["Broken.vue"], dir);
@@ -78,9 +86,9 @@ test("vize check exits 1 and reports SFC parse errors before type checking", () 
   });
 });
 
-test("vize check reports parse errors even with config loading disabled", () => {
-  // The parse failure must short-circuit before the Corsa type-check stage, so
-  // this assertion holds without a type-checker present.
+test("vize check reports parse errors with config loading disabled and an explicit runtime", () => {
+  // Parse-error contracts use the same explicit, test-owned runtime as normal
+  // check invocations; provider selection is covered by resolver tests.
   withWorkspace((dir) => {
     fs.writeFileSync(path.join(dir, "Bad.vue"), "<template><div>", "utf8");
     const result = runCheck(["Bad.vue", "--no-config"], dir);
