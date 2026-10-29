@@ -243,11 +243,11 @@ fn find_declared_tsrs(
         let actual = read_manifest(&package_dir)
             .and_then(|manifest| manifest.get("name")?.as_str().map(str::to_owned));
         if actual.as_deref() == Some("tsrs") {
-            return resolve_tsrs_package(&package_dir).map(Some).ok_or_else(|| {
-                InvalidNativePackage {
+            return resolve_tsrs_package(&package_dir)
+                .map(Some)
+                .ok_or(InvalidNativePackage {
                     package: package_dir,
-                }
-            });
+                });
         }
         if declared_runtime {
             return Err(InvalidNativePackage {
@@ -294,12 +294,11 @@ fn declared_dependency_names(project: &serde_json::Value) -> Vec<&str> {
     let mut names = Vec::new();
     for section in ["dependencies", "devDependencies", "optionalDependencies"] {
         if let Some(dependencies) = project.get(section).and_then(serde_json::Value::as_object) {
-            names.extend(
-                dependencies
-                    .keys()
-                    .filter(|name| valid_package_name(name))
-                    .map(String::as_str),
-            );
+            for name in dependencies.keys() {
+                if valid_package_name(name) {
+                    names.push(name.as_str());
+                }
+            }
         }
     }
     names.sort_unstable();
