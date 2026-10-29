@@ -285,8 +285,7 @@ function checkProduct(
           )
         : [];
     const dtoRegistered = dtoProtocols.includes(NATIVE_BETA_DTO_PROTOCOL_ID);
-    const dtoRequired =
-      product === "typechecker" && canonPaths.some(nativeBetaDtoProtocolSource);
+    const dtoRequired = product === "typechecker" && canonPaths.some(nativeBetaDtoProtocolSource);
     const runtime = newNativeRuntimeCases(
       product,
       before?.runtimeCases,

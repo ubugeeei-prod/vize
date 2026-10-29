@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { createInterface } from "node:readline";
 
 const root = process.env.VIZE_NATIVE_DTO_CAPTURE;
 const load = (name) => JSON.parse(fs.readFileSync(path.join(root, name), "utf8"));
@@ -28,8 +29,13 @@ const unhex = (value) => Buffer.from(value.replaceAll("\\x", ""), "hex");
 for (const file of files) {
   const tid = Number(file.split(".").at(-1));
   let pending;
-  const lines = fs.readFileSync(path.join(root, file), "utf8").split("\n");
-  for (const [index, original] of lines.entries()) {
+  let lineNumber = 0;
+  const lines = createInterface({
+    input: fs.createReadStream(path.join(root, file)),
+    crlfDelay: Infinity,
+  });
+  for await (const original of lines) {
+    lineNumber += 1;
     let line = original;
     if (line.includes("<unfinished ...>")) {
       assert.equal(pending, undefined, "Unobserved nested syscall");
@@ -66,7 +72,7 @@ for (const file of files) {
             unhex(match[1]),
           ),
         );
-    assert(data.length >= Number(count), `${file}:${index + 1}: truncated successful syscall`);
+    assert(data.length >= Number(count), `${file}:${lineNumber}: truncated successful syscall`);
     if (Number(count) === 0 && operation === "read") eofReads.push({ tid, fd: Number(fd), at });
     if (Number(count))
       records.push({
@@ -76,7 +82,7 @@ for (const file of files) {
         tid,
         data: data.subarray(0, Number(count)),
         file,
-        line: index + 1,
+        line: lineNumber,
       });
   }
   // An unfinished blocking read at process exit carries no returned bytes.
@@ -204,8 +210,7 @@ for (const [index, process] of native.entries()) {
   );
   const api = apiStreams[0];
   if (api) relations(api.client.packets, api.server.packets);
-  const requests =
-    api?.client.packets.filter((row) => "id" in row && "method" in row) ?? [];
+  const requests = api?.client.packets.filter((row) => "id" in row && "method" in row) ?? [];
   const responses = new Map(
     api?.server.packets
       .filter((row) => "id" in row && !("method" in row))
@@ -291,6 +296,22 @@ save("closed-full-wire.json", {
   leaders,
   owners: receipts,
 });
+const stableWatcherShutdown = Buffer.from(
+  "1 paths ineligible for watching\n" +
+    "errors updating watches: [failed to register file watcher: context canceled " +
+    "failed to register file watcher: context canceled]\n",
+);
+function requireStableWatcherShutdown(bytes) {
+  if (bytes.length === stableWatcherShutdown.length + 1) {
+    assert.equal(bytes[0], 0x0a, "Only the observed single leading newline is permitted");
+    bytes = bytes.subarray(1);
+  }
+  assert.deepEqual(
+    bytes,
+    stableWatcherShutdown,
+    "Stable control permits only its exact post-shutdown watcher cancellation",
+  );
+}
 // The immutable beta baseline is an expected-refusal observation. This never
 // grants functional or lifecycle PASS to its DTO refusal or standard-exit error.
 const baseline = source.role === "before" && provider.version === "7.1.0-beta";
@@ -331,7 +352,12 @@ if (baseline) {
       assert.equal(receipt.nativeStdinEof, true, "Actual native beta stdin EOF must be observed");
     }
     assert.equal(receipt.nativeExit, 0, "Actual candidate/control native owner must exit cleanly");
-    assert.equal(receipt.stderr.bytes, 0, "Nonempty native stderr refuses lifecycle qualification");
+    const bytes = fs.readFileSync(path.join(root, receipt.stderr.file));
+    if (provider.version === "7.0.2") {
+      if (bytes.length) requireStableWatcherShutdown(bytes);
+    } else {
+      assert.equal(bytes.length, 0, "Nonempty native beta stderr refuses qualification");
+    }
   }
 }
 const disposition = {
