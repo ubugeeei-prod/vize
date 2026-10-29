@@ -12230,7 +12230,7 @@
         },
         {
           "path": "native-beta-diagnostic-dto-10731/source-pairs.json",
-          "sha256": "760acceb700f099eec93675563926cb3e57c3cbca1fb17e705246553216bfdb3"
+          "sha256": "5d7edfbc37225e2fb96f9d9b0a66c42400eef8914c51eef3605733d33c785679"
         }
       ],
       "tests": [
@@ -12252,7 +12252,7 @@
         {
           "selector": "lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete",
           "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
-          "sha256": "f860fff9129c2e5cd5ff69c68ae54317038e80ff3cb93074a045b7ccd5fef88b"
+          "sha256": "26eb21864007e6011c69d0a95e1be173fd586605a87400bdc3aacecb5cb31dc6"
         },
         {
           "selector": "lsp_client::editor_lsp::snapshot_source::tests::completion_comparison_retains_metadata_nested_fields_and_duplicate_counts",

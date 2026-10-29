@@ -1,6 +1,6 @@
 {
   "beforeRevision": "13fa41356d075047a229f580014b637d3bbeb57f",
-  "candidateProductionRevision": "ec579d989b1f876c182732c739eaaca03013ac75",
+  "candidateProductionRevision": "ce77ac02d1f611b3dd935cee983662ea63df7cb1",
   "production": [
     {
       "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response.rs",
@@ -58,7 +58,7 @@
     },
     {
       "path": "tests/tooling/support/native-beta-dto/audit-wire.mjs",
-      "sha256": "a678db7bbbf62959e3ab744ad459bc62c6eee61c24014296cae1a5b24631d56c"
+      "sha256": "f6e2b0901dfcaf2379158e0fbc66db0d611376ed0148dede63280b93bd29c469"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/run-source.mjs",

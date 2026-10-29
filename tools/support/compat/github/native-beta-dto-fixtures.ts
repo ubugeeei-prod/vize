@@ -185,7 +185,7 @@ export function newNativeBetaDtoProtocolCases(
     const pairs = JSON.parse(data[3]!.toString("utf8"));
     require(pairs.beforeRevision === before &&
       pairs.candidateProductionRevision ===
-        "ec579d989b1f876c182732c739eaaca03013ac75", "pinned source pair required");
+        "ce77ac02d1f611b3dd935cee983662ea63df7cb1", "pinned source pair required");
     require(Array.isArray(pairs.production) &&
       pairs.production.length === production.length, "all exact production blobs required");
     for (const [index, path] of production.entries()) {

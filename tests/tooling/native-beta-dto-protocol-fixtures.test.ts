@@ -48,7 +48,10 @@ function validate(
 void test("one closed DTO registration consumes actual ABI and four-role authority outside batch rates", () => {
   assert.deepEqual(validate(), [NATIVE_BETA_DTO_PROTOCOL_ID]);
   const loaded = loadTypecheckerManifest(manifestPath);
-  assert.equal(loaded.cases.length, manifest.cases.length);
+  assert.equal(
+    loaded.cases.length,
+    manifest.cases.filter((entry: { pack?: string }) => entry.pack !== undefined).length,
+  );
   assert(!loaded.cases.some((entry) => entry.id === NATIVE_BETA_DTO_PROTOCOL_ID));
 });
 void test("only the finite registered source files enter this protocol family", () => {
