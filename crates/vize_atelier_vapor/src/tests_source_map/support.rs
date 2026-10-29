@@ -4,7 +4,6 @@ use crate::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor_with_experimental_options,
 };
 use std::{
-    io::Write,
     path::Path,
     process::{Command, Stdio},
 };
@@ -175,16 +174,11 @@ pub(super) fn official_vapor_anchors(
         .expect(
             "start official compiler-vapor map oracle (install workspace JS dependencies first)",
         );
-    child
-        .stdin
-        .take()
-        .unwrap()
-        .write_all(
-            serde_json::json!({"source": source, "filename": "Foo.vue"})
-                .to_string()
-                .as_bytes(),
-        )
-        .unwrap();
+    serde_json::to_writer(
+        child.stdin.take().unwrap(),
+        &serde_json::json!({"source": source, "filename": "Foo.vue"}),
+    )
+    .unwrap();
     let output = child.wait_with_output().unwrap();
     assert!(
         output.status.success(),
