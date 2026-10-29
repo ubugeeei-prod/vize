@@ -1,6 +1,9 @@
 //! Exact provenance algebra and map emission for the SFC module map.
 
-use super::{Run, Runs, apply_edits, build_module_map, edit_runs, replace_traced, token_starts};
+use super::{
+    Run, Runs, apply_edits, build_module_map, edit_runs, replace_traced, source_map_points,
+    token_starts,
+};
 
 fn copies(runs: &Runs) -> Vec<(usize, usize, usize)> {
     runs.runs()
@@ -96,5 +99,16 @@ fn module_map_emits_verified_token_segments_and_points() {
     assert_eq!(
         build_module_map(generated, Runs::default(), "A.vue", source),
         None
+    );
+}
+
+#[test]
+fn template_map_decoder_keeps_valid_points_when_one_segment_is_out_of_range() {
+    let raw = r#"{"version":3,"sources":["A.vue"],"sourcesContent":["x"],"names":[],"mappings":"AAAA;AAAA"}"#;
+    let points = source_map_points(raw, "x", "x").expect("the valid segment survives");
+    assert_eq!(
+        points.points(),
+        [(0, 0)],
+        "one invalid token must not discard valid provenance"
     );
 }
