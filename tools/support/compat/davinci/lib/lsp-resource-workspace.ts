@@ -26,7 +26,7 @@ defineExpose({ publicState })
 defineOptions({ inheritAttrs: false })
 const checked: number = 1
 </script>
-<template><span>{{ label }}</span><Peer ${index === 1 ? 'ref="peer" ' : ""}:label="label" /></template>
+<template><span>{{ label }} {{ checked }}</span><Peer ${index === 1 ? 'ref="peer" ' : ""}:label="label" /></template>
 `;
 }
 
