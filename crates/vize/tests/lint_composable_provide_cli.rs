@@ -96,17 +96,11 @@ const plain = inject(PlainKey);
         .filter(|message| message.contains("non-reactive-provide"))
         .collect::<Vec<_>>();
 
-    assert_eq!(messages.len(), 2, "{messages:#?}");
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains("SnapshotKey"))
+    assert_eq!(
+        messages,
+        vec![
+            "[vize:cross-file] vize:croquis/cf/non-reactive-provide: provide('SnapshotKey') value is not reactive - consumers won't see updates",
+            "[vize:cross-file] vize:croquis/cf/non-reactive-provide: provide('PlainKey') value is not reactive - consumers won't see updates",
+        ]
     );
-    assert!(messages.iter().any(|message| message.contains("PlainKey")));
-    for live_key in ["SelectedKey", "ToastKey", "UnknownKey"] {
-        assert!(
-            messages.iter().all(|message| !message.contains(live_key)),
-            "{live_key}: {messages:#?}"
-        );
-    }
 }
