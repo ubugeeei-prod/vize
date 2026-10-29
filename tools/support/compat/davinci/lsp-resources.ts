@@ -13,9 +13,14 @@ import type { JsonRecord } from "../../json-value.ts";
 import { componentSource, documentUri, prepareWorkspace } from "./lib/lsp-resource-workspace.ts";
 import { ResourceCorsaGate, type GateCleanupReceipt } from "./lib/lsp-resource-corsa-gate.ts";
 import {
+  recordCancellationPublications,
+  type CancellationPublicationRecorder,
+} from "./lib/lsp-resource-cancellation.ts";
+import {
   createCancellationPublicationProgress,
   finalizeCancellationProfileLink,
   measureCancellationRetention,
+  updateCancellationPublicationProgress,
   type CancellationPublicationProgress,
 } from "./lib/lsp-resource-cancellation-run.ts";
 import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
@@ -173,6 +178,8 @@ async function measure() {
     });
     measurement.active_run = result;
     save();
+    let cancellationPublications: CancellationPublicationRecorder | undefined;
+    let cancellationRecoveryBoundary = 0;
     try {
       await session.initialize(workspace, measurement.services);
       result.initialized_ms = performance.now() - started;
@@ -192,10 +199,12 @@ async function measure() {
       await metadataCompletion(session, documentUri(workspace, 1), componentSource(1));
       result.controlled_edits_scope =
         "two open files before cancellation, controlled edits and bulk residency";
-      result.body_edit_churn = await bodyEditChurn(session, workspace);
       const cancellationPublicationProgress = createCancellationPublicationProgress();
       result.cancellation_publication_progress = cancellationPublicationProgress;
+      cancellationPublications = recordCancellationPublications(session, workspace);
+      cancellationRecoveryBoundary = cancellationPublications.count();
       save();
+      result.body_edit_churn = await bodyEditChurn(session, workspace);
       const cancellation = await measureCancellationRetention({
         session,
         sampler,
@@ -203,6 +212,8 @@ async function measure() {
         initialVersion: result.body_edit_churn.final_version,
         gate: corsaGate,
         profilePath,
+        publications: cancellationPublications,
+        baselineRecoveryStart: cancellationRecoveryBoundary,
         publicationProgress: cancellationPublicationProgress,
         persistPublicationProgress: save,
       });
@@ -288,10 +299,23 @@ async function measure() {
       result.idle_processes = after.processes;
       result.elapsed_ms = performance.now() - started;
     } catch (error) {
+      if (
+        cancellationPublications &&
+        result.cancellation_publication_progress?.phase === "baseline-recovery"
+      ) {
+        updateCancellationPublicationProgress(
+          result.cancellation_publication_progress,
+          "baseline-recovery",
+          cancellationRecoveryBoundary,
+          null,
+          cancellationPublications.since(0),
+        );
+      }
       result.error = String(error);
       result.server_stderr = session.stderrText;
       throw error;
     } finally {
+      cancellationPublications?.stop();
       await finalizeSampledLspRun({
         sampler,
         measurement,

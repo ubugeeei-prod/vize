@@ -3,9 +3,9 @@ import { setTimeout as sleep } from "node:timers/promises";
 import type { LspSession } from "../../../../../tests/tooling/support/lsp/session.ts";
 import {
   auditCancellationPublications,
-  recordCancellationPublications,
   sourceSha256,
   type CancellationPublication,
+  type CancellationPublicationRecorder,
 } from "./lsp-resource-cancellation.ts";
 import type { ResourceCorsaGate } from "./lsp-resource-corsa-gate.ts";
 import { mib, type ProcessEntry, type Sampler, type TreeSample } from "./lsp-resource-sampler.ts";
@@ -142,9 +142,10 @@ export const rssDeltaMib = (afterBytes: number, beforeBytes: number): number => 
 };
 
 /**
- * Measure only the deterministic cancellation window. Both retained-RSS
- * endpoints run the same diagnostics/completion/hover recovery and 10-second
- * quiet fence; every process identity must survive unchanged.
+ * Measure only the deterministic cancellation window. The recorder and its
+ * boundary must precede body-edit churn so even an already-backlogged final
+ * publication has a positive order. Both retained-RSS endpoints run the same
+ * recovery and 10-second quiet fence; every process identity survives.
  */
 export async function measureCancellationRetention(options: {
   session: LspSession;
@@ -153,12 +154,20 @@ export async function measureCancellationRetention(options: {
   initialVersion: number;
   gate: ResourceCorsaGate;
   profilePath: string | null;
+  publications: CancellationPublicationRecorder;
+  baselineRecoveryStart: number;
   publicationProgress: CancellationPublicationProgress;
   persistPublicationProgress: () => void;
 }) {
-  const publications = recordCancellationPublications(options.session, options.workspace);
+  const publications = options.publications;
+  assert.ok(
+    Number.isSafeInteger(options.baselineRecoveryStart) &&
+      options.baselineRecoveryStart >= 0 &&
+      options.baselineRecoveryStart <= publications.count(),
+    "the diagnostic recovery boundary must precede body-edit churn publications",
+  );
   let progressPhase: CancellationPublicationProgress["phase"] = "baseline-recovery";
-  let progressBoundary = publications.count();
+  let progressBoundary = options.baselineRecoveryStart;
   let progressFence: number | null = null;
   const snapshotPublicationProgress = (persist = false): void => {
     updateCancellationPublicationProgress(
@@ -172,17 +181,16 @@ export async function measureCancellationRetention(options: {
   };
   snapshotPublicationProgress();
   try {
-    const baselineRecoveryStart = publications.count();
     const recoveryBefore = await verifyCancellationRecovery(
       options.session,
       options.workspace,
       options.initialVersion,
       publications,
-      baselineRecoveryStart,
+      options.baselineRecoveryStart,
     );
     const baselinePublicationFence = publications.count();
     progressPhase = "baseline-quiescence";
-    progressBoundary = baselineRecoveryStart;
+    progressBoundary = options.baselineRecoveryStart;
     progressFence = baselinePublicationFence;
     snapshotPublicationProgress(true);
     await sleep(10_000);
