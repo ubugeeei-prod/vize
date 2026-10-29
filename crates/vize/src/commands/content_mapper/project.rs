@@ -154,7 +154,11 @@ pub(super) fn resolve_open_project(
                 .with_preserve_unused_diagnostics(no_unused_locals)
                 .with_check_javascript(check_javascript)
                 .with_external_component_attrs_module(shared_helpers.is_some())
-                .with_external_component_type_helpers(shared_helpers == Some(true)),
+                .with_external_component_type_helpers(shared_helpers == Some(true))
+                .with_shared_virtual_module(
+                    shared_helpers == Some(true)
+                        && installed_virtual_ts_module(Path::new(params.config_file_name.as_str())),
+                ),
         },
         OpenProjectResult {
             config_identity: configuration.config_identity,
@@ -165,6 +169,17 @@ pub(super) fn resolve_open_project(
 }
 
 /// `Some(false)` retains the legacy attribute-only package surface.
+fn installed_virtual_ts_module(config_file_name: &Path) -> bool {
+    let Some(project_directory) = config_file_name.parent() else {
+        return false;
+    };
+    project_directory.ancestors().any(|directory| {
+        directory
+            .join("node_modules/vize/virtual-ts.d.ts")
+            .is_file()
+    })
+}
+
 fn content_mapper_helper_capability(config_file_name: &Path) -> Option<bool> {
     let project_directory = config_file_name.parent()?;
     let helper = project_directory
