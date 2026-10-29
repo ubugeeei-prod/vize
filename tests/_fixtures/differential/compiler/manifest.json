@@ -373,7 +373,7 @@
       },
       "reference": {
         "path": "builtin-computed-props-11073/module.expected.txt",
-        "sha256": "9f57bd8abd8ee18701cf9047e5725f5960bc27b60a3246df3f8064adfd28bdcd",
+        "sha256": "2fc8c9f9577dc722310336f02f8636cfe2df63785e7fe63ee23bbe49b46c9e67",
         "source": "crates/vize_atelier_vapor/src/l3/tests/builtin_prop_names.rs:builtin_computed_prop_names_match_retained_generation; SSR source coverage only"
       },
       "adapters": {
