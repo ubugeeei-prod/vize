@@ -289,6 +289,38 @@ fn formatter_cli_exposes_attribute_order_with_a_disabled_sort_control() {
 
 #[cfg(feature = "glyph")]
 #[test]
+fn formatter_cli_exposes_block_order_independently_of_presets() {
+    let project = project();
+    let root = project.path();
+    let source = "<template>\n  <div>{{ value }}</div>\n</template>\n\n<script setup lang=\"ts\">\nconst value=\"ready\"\n</script>\n";
+    let authored = "<template>\n  <div>{{ value }}</div>\n</template>\n\n<script setup lang=\"ts\">\nconst value = \"ready\";\n</script>\n";
+    let canonical = "<script setup lang=\"ts\">\nconst value = \"ready\";\n</script>\n\n<template>\n  <div>{{ value }}</div>\n</template>\n";
+    let controls: [(&str, &[&str], &str); 2] = [
+        (
+            "AuthoredBlocks.vue",
+            &["--preset", "vize", "--sort-blocks=false"],
+            authored,
+        ),
+        (
+            "CanonicalBlocks.vue",
+            &["--preset", "compact", "--sort-blocks"],
+            canonical,
+        ),
+    ];
+
+    for (file, extra, expected) in controls {
+        write(root, file, source);
+        let mut args = vec!["fmt", "--write", file, "--no-config"];
+        args.extend_from_slice(extra);
+        assert_success(&run(root, &args));
+        assert_eq!(fs::read_to_string(root.join(file)).unwrap(), expected);
+        assert_success(&run(root, &args));
+        assert_eq!(fs::read_to_string(root.join(file)).unwrap(), expected);
+    }
+}
+
+#[cfg(feature = "glyph")]
+#[test]
 fn formatter_cli_exposes_line_ending_policy() {
     let project = project();
     let root = project.path();

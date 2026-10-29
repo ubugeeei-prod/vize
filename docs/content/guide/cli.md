@@ -158,6 +158,7 @@ Default discovery formats Vue, JavaScript/TypeScript and JSON/JSONC files. YAML 
 | `--vue-indent-script-and-style`    | Indent the contents of script and style blocks       |
 | `--max-attributes-per-line`        | Wrap after a given attribute count                   |
 | `--normalize-directive-shorthands` | Normalize `v-bind:` / `v-on:` / `v-slot:` shorthands |
+| `--sort-blocks`                    | Toggle canonical SFC block ordering                  |
 | `--preset`                         | Apply `vize`, `prettier`, `compact` or `documentation` formatter defaults |
 | `--profile`                        | Print timing profile                                 |
 

@@ -121,6 +121,11 @@ Options:
 
           [possible values: true, false]
 
+      --sort-blocks[=<SORT_BLOCKS>]
+          Order SFC blocks canonically instead of preserving their authored order
+
+          [possible values: true, false]
+
       --preset <PRESET>
           Apply a named set of defaults before the flags above
 

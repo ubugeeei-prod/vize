@@ -335,6 +335,7 @@ const value = "ready";
 
   for (const [options, expected] of controls) {
     Object.freeze(options);
+    assert.equal(Object.isFrozen(options), true);
     assert.deepEqual(formatSfc(source, options), { code: expected, changed: true });
     for (let pass = 2; pass <= 3; pass += 1) {
       assert.deepEqual(formatSfc(expected, options), { code: expected, changed: false });

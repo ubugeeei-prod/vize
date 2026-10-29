@@ -97,6 +97,7 @@ pub fn run(args: ReadyArgs) {
             vue_indent_script_and_style: None,
             max_attributes_per_line: None,
             normalize_directive_shorthands: None,
+            sort_blocks: None,
             preset: None,
             profile: false,
             slow_threshold: 100,

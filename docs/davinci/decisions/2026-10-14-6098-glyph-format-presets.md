@@ -206,3 +206,13 @@ priority group, while `sortAttributes: false` preserves the complete authored
 order. Public CLI and Node whole-output controls prove all three states and
 their fixed points; the existing option matrix continues to exercise
 `as-written` over the full in-repo Vue corpus.
+
+## SFC block order option parity
+
+The existing `sortBlocks` boolean now has a direct CLI override in addition to
+Rust, config schema, generated TypeScript, Pkl, editor, WASM and typed Node
+support. The CLI flag is `--sort-blocks[=false]`; Node `formatSfc` uses the same
+camel-case option name. Explicit true or false values are applied after config
+and a selected preset. Public CLI and Node whole-output controls prove authored
+and canonical block order plus fixed points; the existing option matrix
+continues to exercise `sortBlocks: false` over the full in-repo Vue corpus.

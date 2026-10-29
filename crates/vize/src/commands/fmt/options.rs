@@ -5,6 +5,30 @@ use crate::config;
 use clap::ValueEnum;
 use vize_glyph::VueVersion;
 
+/// Named formatter defaults selectable from the CLI.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum FmtPreset {
+    /// The Vize defaults
+    Vize,
+    /// Prettier's Vue layout, as listed in the formatter guide
+    Prettier,
+    /// Dense application layout that preserves authored order
+    Compact,
+    /// Readable documentation examples with one attribute per line
+    Documentation,
+}
+
+impl From<FmtPreset> for vize_glyph::FormatPreset {
+    fn from(preset: FmtPreset) -> Self {
+        match preset {
+            FmtPreset::Vize => Self::Vize,
+            FmtPreset::Prettier => Self::Prettier,
+            FmtPreset::Compact => Self::Compact,
+            FmtPreset::Documentation => Self::Documentation,
+        }
+    }
+}
+
 /// Attribute order modes selectable from the CLI.
 #[derive(Debug, Clone, Copy, ValueEnum)]
 pub(in crate::commands) enum FmtAttributeSortOrder {
@@ -112,6 +136,9 @@ pub(super) fn build_format_options(
     }
     if let Some(v) = args.normalize_directive_shorthands {
         opts.normalize_directive_shorthands = v;
+    }
+    if let Some(v) = args.sort_blocks {
+        opts.sort_blocks = v;
     }
     opts.skip_script_stabilization = !args.write;
     (
