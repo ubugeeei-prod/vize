@@ -1,0 +1,10 @@
+<script setup lang="ts">
+function check(all: number[], current: number[]): true | string { return true }
+const ids: number[] = [1]
+</script>
+<template>
+  <MyInput :rules="[
+    // éééééééééé
+    check(ids, ids.map(id => id + 1))
+  ]" />
+</template>
