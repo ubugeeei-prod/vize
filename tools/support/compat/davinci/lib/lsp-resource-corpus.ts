@@ -13,7 +13,9 @@ export function captureLspResourceCorpus(
   const entries: { path: string; bytes: number; sha256: string }[] = [];
   const walk = (directory: string) => {
     for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-      if (entry.name === "node_modules") continue;
+      // Dependencies and the byte-preserving native gate are harness inputs,
+      // not authored corpus bytes.
+      if (entry.name === "node_modules" || entry.name === ".vize-corsa-gate") continue;
       const file = path.join(directory, entry.name);
       if (entry.isDirectory()) walk(file);
       else {

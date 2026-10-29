@@ -2,6 +2,7 @@
 // A production stdio Maestro session. The isolated resident example remains a
 // separate measurement and does not establish this process-tree acceptance.
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -10,6 +11,18 @@ import { LspSession } from "../../../../tests/tooling/support/lsp/session.ts";
 import { isRecord } from "../../json-value.ts";
 import type { JsonRecord } from "../../json-value.ts";
 import { componentSource, documentUri, prepareWorkspace } from "./lib/lsp-resource-workspace.ts";
+import { ResourceCorsaGate, type GateCleanupReceipt } from "./lib/lsp-resource-corsa-gate.ts";
+import {
+  recordCancellationPublications,
+  type CancellationPublicationRecorder,
+} from "./lib/lsp-resource-cancellation.ts";
+import {
+  createCancellationPublicationProgress,
+  finalizeCancellationProfileLink,
+  measureCancellationRetention,
+  updateCancellationPublicationProgress,
+  type CancellationPublicationProgress,
+} from "./lib/lsp-resource-cancellation-run.ts";
 import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
 import type { ObservedProcess, ProcessEntry } from "./lib/lsp-resource-sampler.ts";
 import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.ts";
@@ -21,7 +34,7 @@ interface RunResult {
   run: number;
   corpus: ReturnType<typeof captureLspResourceCorpus>;
   fixture_preparation_ms: number;
-  dependencies: { corsaPath: string; vuePath: string };
+  dependencies: ReturnType<typeof prepareWorkspace>;
   opened_files: number;
   metadata_requests: number;
   successful_unique_provider_requests: number;
@@ -30,6 +43,9 @@ interface RunResult {
   initialized_ms?: number;
   controlled_edits_scope?: string;
   body_edit_churn?: Awaited<ReturnType<typeof bodyEditChurn>>;
+  cancellation_publication_progress?: CancellationPublicationProgress;
+  cancellation_churn?: Awaited<ReturnType<typeof measureCancellationRetention>>;
+  corsa_gate_cleanup?: GateCleanupReceipt;
   controlled_edits?: JsonRecord[];
   warming_elapsed_ms?: number;
   current_rss_mib?: number;
@@ -103,7 +119,8 @@ async function measure() {
   const profileDirectory = profileDirectoryArgument ? path.resolve(profileDirectoryArgument) : null;
   process.env.VIZE_LSP_BIN = server;
   const measurement: Measurement = {
-    scope: "production Maestro LSP with all descendants, including Corsa; harness excluded",
+    scope:
+      "production Maestro LSP with every descendant, including actual Corsa and its test-only byte-preserving Node gate proxy; outer harness excluded",
     preset,
     workspace_files: files,
     open_files: openFiles,
@@ -125,7 +142,7 @@ async function measure() {
     github_run:
       process.env.GITHUB_RUN_ID &&
       `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
-    revision: process.env.GITHUB_SHA,
+    revision: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
     per_run: [],
   };
   const save = () => fs.writeFileSync(out, `${JSON.stringify(measurement, null, 2)}\n`);
@@ -135,6 +152,7 @@ async function measure() {
     const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-real-lsp-resource-"));
     const setupStarted = performance.now();
     const dependencies = prepareWorkspace(workspace, files);
+    const corsaGate = new ResourceCorsaGate(dependencies.corsaGate);
     const corpus = captureLspResourceCorpus(workspace, dependencies);
     const profilePath = profileDirectory && path.join(profileDirectory, `run-${run + 1}.json`);
     process.env.VIZE_LSP_BIN = profilePath
@@ -160,6 +178,8 @@ async function measure() {
     });
     measurement.active_run = result;
     save();
+    let cancellationPublications: CancellationPublicationRecorder | undefined;
+    let cancellationRecoveryBoundary = 0;
     try {
       await session.initialize(workspace, measurement.services);
       result.initialized_ms = performance.now() - started;
@@ -177,12 +197,32 @@ async function measure() {
       open(0);
       open(1);
       await metadataCompletion(session, documentUri(workspace, 1), componentSource(1));
-      result.controlled_edits_scope = "two open files before the bulk residency workload";
+      result.controlled_edits_scope =
+        "two open files before cancellation, controlled edits and bulk residency";
+      const cancellationPublicationProgress = createCancellationPublicationProgress();
+      result.cancellation_publication_progress = cancellationPublicationProgress;
+      cancellationPublications = recordCancellationPublications(session, workspace);
+      cancellationRecoveryBoundary = cancellationPublications.count();
+      save();
       result.body_edit_churn = await bodyEditChurn(session, workspace);
+      const cancellation = await measureCancellationRetention({
+        session,
+        sampler,
+        workspace,
+        initialVersion: result.body_edit_churn.final_version,
+        gate: corsaGate,
+        profilePath,
+        publications: cancellationPublications,
+        baselineRecoveryStart: cancellationRecoveryBoundary,
+        publicationProgress: cancellationPublicationProgress,
+        persistPublicationProgress: save,
+      });
+      result.cancellation_churn = cancellation;
+      save();
       result.controlled_edits = await controlledEdits(
         session,
         workspace,
-        result.body_edit_churn.final_version,
+        cancellation.final_version,
       );
       save();
       // Bulk notifications avoid repeated full native analysis between batches.
@@ -259,10 +299,23 @@ async function measure() {
       result.idle_processes = after.processes;
       result.elapsed_ms = performance.now() - started;
     } catch (error) {
+      if (
+        cancellationPublications &&
+        result.cancellation_publication_progress?.phase === "baseline-recovery"
+      ) {
+        updateCancellationPublicationProgress(
+          result.cancellation_publication_progress,
+          "baseline-recovery",
+          cancellationRecoveryBoundary,
+          null,
+          cancellationPublications.since(0),
+        );
+      }
       result.error = String(error);
       result.server_stderr = session.stderrText;
       throw error;
     } finally {
+      cancellationPublications?.stop();
       await finalizeSampledLspRun({
         sampler,
         measurement,
@@ -271,20 +324,55 @@ async function measure() {
         profilePath,
         cleanup() {
           process.env.VIZE_LSP_BIN = server;
-          fs.rmSync(workspace, { force: true, recursive: true });
+          try {
+            result.corsa_gate_cleanup = corsaGate.cleanup();
+            assert.ok(result.corsa_gate_cleanup.no_orphans, "Corsa gate cleanup left an orphan");
+          } finally {
+            fs.rmSync(workspace, { force: true, recursive: true });
+          }
         },
         persist: save,
       });
+      if (profilePath && result.cancellation_churn) {
+        const allocation = result.cancellation_churn.allocation_profile;
+        finalizeCancellationProfileLink(
+          allocation,
+          result.profile_json?.path ?? null,
+          result.error !== undefined || result.finalization_error !== undefined,
+          save,
+        );
+      }
     }
     measurement.completed_runs++;
     save();
   }
-  measurement.metrics = Object.fromEntries(
-    (["rss_peak_mib", "rss_idle_mib", "idle_cpu_pct"] as const).map((key) => [
-      key,
-      Math.max(...measurement.per_run.map((run) => run[key] ?? Number.NaN)),
-    ]),
-  );
+  measurement.metrics = {
+    ...Object.fromEntries(
+      (["rss_peak_mib", "rss_idle_mib", "idle_cpu_pct"] as const).map((key) => [
+        key,
+        Math.max(...measurement.per_run.map((run) => run[key] ?? Number.NaN)),
+      ]),
+    ),
+    cancellation_p50_ms: Math.max(
+      ...measurement.per_run.map((run) => run.cancellation_churn?.statistics.p50_ms ?? Number.NaN),
+    ),
+    cancellation_p95_ms: Math.max(
+      ...measurement.per_run.map((run) => run.cancellation_churn?.statistics.p95_ms ?? Number.NaN),
+    ),
+    cancellation_p99_ms: Math.max(
+      ...measurement.per_run.map((run) => run.cancellation_churn?.statistics.p99_ms ?? Number.NaN),
+    ),
+    cancellation_retained_server_mib: Math.max(
+      ...measurement.per_run.map(
+        (run) => run.cancellation_churn?.retention.retained_delta_mib.server ?? Number.NaN,
+      ),
+    ),
+    cancellation_retained_process_tree_mib: Math.max(
+      ...measurement.per_run.map(
+        (run) => run.cancellation_churn?.retention.retained_delta_mib.process_tree ?? Number.NaN,
+      ),
+    ),
+  };
   measurement.complete = true;
   save();
   console.log(JSON.stringify({ out, metrics: measurement.metrics, files, openFiles, runs }));
