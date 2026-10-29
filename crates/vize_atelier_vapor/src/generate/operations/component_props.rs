@@ -1,4 +1,5 @@
-use crate::ir::{CreateComponentIRNode, IRProp, PropValueKind};
+use crate::ir::{ComponentKind, CreateComponentIRNode, IRProp, PropValueKind};
+use vize_atelier_core::codegen::document::EmitDocument;
 use vize_atelier_core::steps::{
     expression::is_typescript_function_expression_node, is_event_handler_reference_node,
 };
@@ -7,13 +8,14 @@ use vize_carton::{String, ToCompactString, cstr};
 use super::{
     super::{context::GenerateContext, escape_js_string_literal},
     events::resolve_inline_handler,
+    keep_alive_map::{dynamic_source, format_sources, plain_source},
 };
 
-/// Generate props object string for a component
-pub(super) fn generate_component_props_str(
+/// Generate props for a component, retaining owned computed KeepAlive links.
+pub(super) fn generate_component_props(
     ctx: &mut GenerateContext,
     component: &CreateComponentIRNode<'_>,
-) -> String {
+) -> EmitDocument {
     for prop in &component.props {
         if let Some(modifiers) = prop.handler_modifiers {
             if !modifiers.non_keys.is_empty() {
@@ -33,7 +35,7 @@ pub(super) fn generate_component_props_str(
     }
 
     if component.props.is_empty() {
-        return "null".to_compact_string();
+        return plain_source("null".to_compact_string());
     }
     if (component.props.iter()).any(|p| p.value_kind == PropValueKind::DisplayString) {
         ctx.use_helper("toDisplayString");
@@ -54,25 +56,29 @@ pub(super) fn generate_component_props_str(
         if (component.props.iter()).any(|p| p.key.content == "$" && p.key.is_handler_key) {
             ctx.use_helper("toHandlers");
         }
-        return generate_component_spread_props_str(ctx, &component.props);
+        return generate_component_spread_props(
+            ctx,
+            component.props.iter(),
+            component.kind == ComponentKind::KeepAlive && ctx.spans.is_some(),
+        );
     }
 
     let prop_refs = component.props.iter().collect::<std::vec::Vec<_>>();
     let prop_strs = generate_component_prop_entries(ctx, prop_refs.as_slice());
-    format_component_props(prop_strs.as_slice())
+    plain_source(format_component_props(prop_strs.as_slice()))
 }
 
 fn generate_component_props_without_forwarded(
     ctx: &mut GenerateContext,
     component: &CreateComponentIRNode<'_>,
-) -> String {
+) -> EmitDocument {
     let props = component
         .props
         .iter()
         .filter(|prop| prop.value_kind != PropValueKind::ForwardedSlots)
         .collect::<std::vec::Vec<_>>();
     if props.is_empty() {
-        return "null".to_compact_string();
+        return plain_source("null".to_compact_string());
     }
     if props
         .iter()
@@ -97,11 +103,15 @@ fn generate_component_props_without_forwarded(
         {
             ctx.use_helper("toHandlers");
         }
-        return generate_component_spread_prop_refs_str(ctx, props.as_slice());
+        return generate_component_spread_props(
+            ctx,
+            props.iter().copied(),
+            component.kind == ComponentKind::KeepAlive && ctx.spans.is_some(),
+        );
     }
 
     let prop_strs = generate_component_prop_entries(ctx, props.as_slice());
-    format_component_props(prop_strs.as_slice())
+    plain_source(format_component_props(prop_strs.as_slice()))
 }
 
 fn format_component_props(prop_strs: &[String]) -> String {
@@ -122,25 +132,19 @@ fn format_component_props(prop_strs: &[String]) -> String {
     }
 }
 
-fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[IRProp<'_>]) -> String {
-    generate_component_spread_props(ctx, props.iter())
-}
-
-fn generate_component_spread_prop_refs_str(ctx: &GenerateContext, props: &[&IRProp<'_>]) -> String {
-    generate_component_spread_props(ctx, props.iter().copied())
-}
-
 fn generate_component_spread_props<'a>(
     ctx: &GenerateContext,
     props: impl IntoIterator<Item = &'a IRProp<'a>>,
-) -> String {
-    let mut sources: std::vec::Vec<String> = std::vec::Vec::new();
+    map_computed: bool,
+) -> EmitDocument {
+    let mut sources: std::vec::Vec<EmitDocument> = std::vec::Vec::new();
     let mut static_group: std::vec::Vec<&IRProp<'_>> = std::vec::Vec::new();
 
     for prop in props {
         if !prop.key.is_static {
             push_component_static_prop_group(ctx, &mut sources, &mut static_group);
-            let key = ctx.resolve_expression_node(&prop.key);
+            let direct_key = ctx.resolve_expression_node(&prop.key);
+            let key = direct_key.clone();
             let key = match prop.value_kind {
                 PropValueKind::ModelUpdate => cstr!("\"update:\" + ({key})"),
                 PropValueKind::ModelModifiers => cstr!("({key}) + \"Modifiers\""),
@@ -161,19 +165,26 @@ fn generate_component_spread_props<'a>(
             } else {
                 cstr!("{key} + \"{suffix}\"")
             };
-            let value = expression_value(ctx, prop);
+            let value = component_prop_expression_value(ctx, prop);
             // Function sources return direct values, unlike static prop
             // groups whose values are getters. Their keys stay reactive.
-            sources.push(cstr!("() => ({{ [({})]: {} }})", key, value));
+            sources.push(dynamic_source(
+                ctx,
+                prop,
+                direct_key,
+                key,
+                value,
+                map_computed,
+            ));
         } else if prop.key.content == "$" {
             push_component_static_prop_group(ctx, &mut sources, &mut static_group);
             if let Some(first) = prop.values.first() {
                 let resolved = ctx.resolve_expression_node(first);
-                sources.push(if prop.key.is_handler_key {
+                sources.push(plain_source(if prop.key.is_handler_key {
                     cstr!("() => (_toHandlers({}))", resolved)
                 } else {
                     cstr!("() => ({})", resolved)
-                });
+                }));
             }
         } else {
             static_group.push(prop);
@@ -181,28 +192,12 @@ fn generate_component_spread_props<'a>(
     }
     push_component_static_prop_group(ctx, &mut sources, &mut static_group);
 
-    let mut result = String::from("{ $: [");
-    if sources.len() >= 2 {
-        result.push('\n');
-        for (i, source) in sources.iter().enumerate() {
-            result.push_str("    ");
-            result.push_str(source);
-            if i < sources.len() - 1 {
-                result.push(',');
-            }
-            result.push('\n');
-        }
-        result.push_str("  ] }");
-    } else {
-        result.push_str(sources.join(", ").as_str());
-        result.push_str("] }");
-    }
-    result
+    format_sources(&sources)
 }
 
 fn push_component_static_prop_group(
     ctx: &GenerateContext,
-    sources: &mut std::vec::Vec<String>,
+    sources: &mut std::vec::Vec<EmitDocument>,
     group: &mut std::vec::Vec<&IRProp<'_>>,
 ) {
     if group.is_empty() {
@@ -225,7 +220,7 @@ fn push_component_static_prop_group(
     } else {
         cstr!("{{ {} }}", entries.join(", "))
     };
-    sources.push(source);
+    sources.push(plain_source(source));
     group.clear();
 }
 
@@ -255,9 +250,10 @@ fn generate_component_prop_entries(
                 .filter(|other| same_component_key(other, prop));
             if let Some(second) = duplicates.next() {
                 let mut handlers = std::vec::Vec::new();
-                handlers.push(expression_value(ctx, prop));
-                handlers.push(expression_value(ctx, second));
-                handlers.extend(duplicates.map(|other| expression_value(ctx, other)));
+                handlers.push(component_prop_expression_value(ctx, prop));
+                handlers.push(component_prop_expression_value(ctx, second));
+                handlers
+                    .extend(duplicates.map(|other| component_prop_expression_value(ctx, other)));
                 entries.push(format_component_prop_entry(
                     prop,
                     cstr!("() => ([{}])", handlers.join(", ")),
@@ -300,7 +296,7 @@ fn collect_component_prop_values(
     props
         .iter()
         .filter(|p| p.key.content == key)
-        .map(|p| expression_value(ctx, p))
+        .map(|p| component_prop_expression_value(ctx, p))
         .collect()
 }
 
@@ -340,10 +336,10 @@ fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> Stri
     {
         return String::from(raw);
     }
-    cstr!("() => ({})", expression_value(ctx, prop))
+    cstr!("() => ({})", component_prop_expression_value(ctx, prop))
 }
 
-pub(super) fn expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> String {
+fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> String {
     let value = if let Some(first) = prop.values.first() {
         match prop.value_kind {
             PropValueKind::ModelUpdate => {

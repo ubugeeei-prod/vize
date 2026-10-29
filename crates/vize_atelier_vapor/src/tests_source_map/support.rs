@@ -83,7 +83,7 @@ fn decode(mappings: &str) -> std::vec::Vec<(usize, i64, i64, i64, Option<i64>)> 
     segments
 }
 
-fn offset(text: &str, line: usize, column: i64) -> usize {
+pub(super) fn offset(text: &str, line: usize, column: i64) -> usize {
     let start: usize = text.split_inclusive('\n').take(line).map(str::len).sum();
     start + column as usize
 }
@@ -93,14 +93,23 @@ fn parsed_map(map: &str) -> serde_json::Value {
 }
 
 fn authored_anchors(map: &str) -> std::vec::Vec<(std::string::String, i64, i64)> {
+    named_segments(map)
+        .into_iter()
+        .map(|(name, _, _, source_line, source_column)| (name, source_line, source_column))
+        .collect()
+}
+
+fn named_segments(map: &str) -> std::vec::Vec<(std::string::String, usize, i64, i64, i64)> {
     let map = parsed_map(map);
     let names = map["names"].as_array().unwrap();
     decode(map["mappings"].as_str().unwrap())
         .into_iter()
-        .filter_map(|(_, _, source_line, source_column, name)| {
+        .filter_map(|(line, column, source_line, source_column, name)| {
             name.map(|index| {
                 (
                     names[index as usize].as_str().unwrap().into(),
+                    line,
+                    column,
                     source_line,
                     source_column,
                 )
@@ -148,6 +157,22 @@ pub(super) fn mapped_with_anchors_on(
     std::vec::Vec<std::string::String>,
     std::vec::Vec<(std::string::String, i64, i64)>,
 ) {
+    let (code, segments, named) = mapped_with_named_segments_on(source, lane);
+    let anchors = named
+        .into_iter()
+        .map(|(name, _, _, source_line, source_column)| (name, source_line, source_column))
+        .collect();
+    (code, segments, anchors)
+}
+
+pub(super) fn mapped_with_named_segments_on(
+    source: &str,
+    lane: Lane,
+) -> (
+    std::string::String,
+    std::vec::Vec<std::string::String>,
+    std::vec::Vec<(std::string::String, usize, i64, i64, i64)>,
+) {
     let without_map = compile_on(source, false, lane);
     let with_map = compile_on(source, true, lane);
     assert_eq!(
@@ -156,8 +181,8 @@ pub(super) fn mapped_with_anchors_on(
     );
     let map = with_map.map.expect("source_map should attach Vapor map");
     let segments = render(&with_map.code, source, &map);
-    let anchors = authored_anchors(&map);
-    (with_map.code.as_str().into(), segments, anchors)
+    let named = named_segments(&map);
+    (with_map.code.as_str().into(), segments, named)
 }
 
 pub(super) fn official_vapor_anchors(

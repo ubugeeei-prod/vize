@@ -23,8 +23,10 @@ mod transition;
 mod support;
 
 use super::{VaporCompilerOptions, compile_vapor};
-use support::{Lane, mapped, mapped_on, mapped_with_anchors_on, official_vapor_anchors};
-use vize_atelier_core::{expr_parse_probe, walk_probe::WalkCounts};
+use support::{
+    Lane, mapped, mapped_on, mapped_with_anchors_on, mapped_with_named_segments_on,
+    official_vapor_anchors, offset,
+};
 use vize_carton::Allocator;
 
 #[test]
@@ -217,19 +219,7 @@ fn keep_alive_props_and_child_keep_authored_mapping_units() {
 #[test]
 fn computed_keep_alive_filter_key_maps_authored_operands() {
     let source = r#"<KeepAlive :[filter]="names"><MyComp /></KeepAlive>"#;
-    let walks = WalkCounts::snapshot();
-    let parses = expr_parse_probe::expr_parse_count();
     let (code, segments, anchors) = mapped_with_anchors_on(source, Lane::Selected);
-    assert_eq!(
-        WalkCounts::snapshot().since(walks).total_walks(),
-        0,
-        "computed KeepAlive map must stay on native L3"
-    );
-    assert_eq!(
-        expr_parse_probe::expr_parse_count() - parses,
-        0,
-        "computed KeepAlive map must retain its expression tree"
-    );
     assert_eq!(
         (code.clone(), segments.clone(), anchors.clone()),
         mapped_with_anchors_on(source, Lane::Legacy),
@@ -247,6 +237,73 @@ fn computed_keep_alive_filter_key_maps_authored_operands() {
         anchors, official,
         "native and retained maps must preserve the official authored filter/name anchors"
     );
+}
+
+#[test]
+fn computed_keep_alive_map_segments_own_their_generated_source() {
+    for (case, source, token, expected_anchors) in [
+        (
+            "literal-collision",
+            r#"<KeepAlive include="[(_ctx.filter)]: _ctx.names" :[filter]="names"><MyComp /></KeepAlive>"#,
+            "[(_ctx.filter)]: _ctx.names",
+            &[("filter", 0, 50), ("names", 0, 60)][..],
+        ),
+        (
+            "compound-whitespace",
+            r#"<KeepAlive
+  include="[(_ctx.filters[_ctx.selected])]: _ctx.groups[_ctx.active]"
+  :[filters[selected]]="groups[active]"
+><MyComp /></KeepAlive>"#,
+            "[(_ctx.filters[_ctx.selected])]: _ctx.groups[_ctx.active]",
+            &[
+                ("filters", 2, 3),
+                ("selected", 2, 11),
+                ("groups", 2, 24),
+                ("active", 2, 31),
+            ][..],
+        ),
+    ] {
+        let (code, segments, named) = mapped_with_named_segments_on(source, Lane::Selected);
+        assert_eq!(
+            (code.clone(), segments, named.clone()),
+            mapped_with_named_segments_on(source, Lane::Legacy),
+            "{case}: native and retained maps"
+        );
+
+        let expected = expected_anchors
+            .iter()
+            .map(|&(name, line, column)| (name.into(), line, column))
+            .collect::<std::vec::Vec<_>>();
+        let anchors = named
+            .iter()
+            .map(|(name, _, _, line, column)| (name.clone(), *line, *column))
+            .collect::<std::vec::Vec<_>>();
+        assert_eq!(
+            official_vapor_anchors(source),
+            expected,
+            "{case}: official map"
+        );
+        assert_eq!(anchors, expected, "{case}: authored anchors");
+
+        let decoy = code.find(token).expect("static collision token");
+        let owned = code.rfind(token).expect("computed prop token");
+        assert!(
+            decoy < owned,
+            "{case}: fixture must put the collision first"
+        );
+        for (name, line, column, _, _) in named {
+            let generated = offset(&code, line, column);
+            assert!(
+                (owned..owned + token.len()).contains(&generated),
+                "{case}: {name} segment must belong to the computed source"
+            );
+            assert!(
+                code.get(generated..)
+                    .is_some_and(|rest| rest.starts_with(&std::format!("_ctx.{name}"))),
+                "{case}: {name} generated coordinate"
+            );
+        }
+    }
 }
 
 #[test]

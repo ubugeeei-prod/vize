@@ -4,10 +4,9 @@ use vize_carton::{FxHashMap, String, ToCompactString, cstr};
 
 use super::{
     super::{context::GenerateContext, setup::escape_js_string_literal},
-    component_props::generate_component_props_str,
+    component_props::generate_component_props,
     component_slots::generate_slot_fn,
     insertion::emit_insertion_state,
-    keep_alive_map::map_computed_props,
     structural_slots::{declare_slot_caches, generate_dynamic_slot},
 };
 
@@ -154,8 +153,7 @@ pub(super) fn generate_create_component(
         }
     };
 
-    let props_text = generate_component_props_str(ctx, component);
-    let props = map_computed_props(ctx, component, props_text);
+    let props = generate_component_props(ctx, component);
     let has_slots = !component.slots.is_empty() || forwarded_slots_source(component).is_some();
     // Keep each computed slot's function stable when only its name getter
     // re-evaluates. A new function would remount content at an unchanged name.

@@ -16,7 +16,10 @@
 
 use davinci_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::{expr_parse_probe, walk_probe::WalkCounts};
-use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
+use vize_atelier_vapor::{
+    VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor,
+    compile_vapor_with_experimental_options,
+};
 use vize_carton::Allocator;
 
 /// fixture name → surviving legacy re-parses per fused Vapor compile.
@@ -160,4 +163,35 @@ fn vapor_legacy_reparse_floor_holds() {
             assert_eq!(expr_parse_probe::expr_parse_count() - parses, 0, "{source}");
         }
     }
+    // Source-map generation must consume the native computed prop spans
+    // without adding a tree walk or reparsing either authored expression.
+    let source = r#"<KeepAlive :[filter]="names"><MyComp /></KeepAlive>"#;
+    let allocator = Allocator::new();
+    let walks = WalkCounts::snapshot();
+    let parses = expr_parse_probe::expr_parse_count();
+    let compiled = compile_vapor_with_experimental_options(
+        &allocator,
+        source,
+        VaporCompilerOptions {
+            prefix_identifiers: true,
+            ..VaporCompilerOptions::default()
+        },
+        VaporCompilerExperimentalOptions {
+            source_map: true,
+            source_map_filename: Some("KeepAlive.vue".into()),
+            ..VaporCompilerExperimentalOptions::default()
+        },
+    );
+    assert_eq!(compiled.error_messages.len(), 0, "{source}");
+    assert!(compiled.map.is_some(), "{source}: source map");
+    assert_eq!(
+        WalkCounts::snapshot().since(walks).total_walks(),
+        0,
+        "{source}: source-map compile added a tree walk"
+    );
+    assert_eq!(
+        expr_parse_probe::expr_parse_count() - parses,
+        0,
+        "{source}: source-map compile reparsed an expression"
+    );
 }
