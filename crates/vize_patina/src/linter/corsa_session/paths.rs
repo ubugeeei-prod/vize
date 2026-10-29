@@ -137,63 +137,6 @@ mod tests {
     }
 
     #[test]
-    fn prefers_native_preview_binary_over_node_modules_bin_wrapper() {
-        const CASE_ROOT: &str = "VIZE_PATINA_LEGACY_RUNTIME_TEST_ROOT";
-        let Some(root) = std::env::var_os(CASE_ROOT).map(PathBuf::from) else {
-            // Discovery also walks cwd and, in debug builds, the compiled
-            // workspace. Isolate all three roots rather than allowing this
-            // legacy-only fixture to inherit the repository's modern runtime.
-            let case = case_dir("native-over-wrapper");
-            let root = std::env::temp_dir().join(case.file_name().unwrap());
-            std::fs::create_dir(&root).unwrap();
-            let mut child = std::process::Command::new(std::env::current_exe().unwrap());
-            child
-                .args([
-                    "--exact",
-                    "linter::corsa_session::paths::tests::prefers_native_preview_binary_over_node_modules_bin_wrapper",
-                    "--nocapture",
-                ])
-                .current_dir(&root)
-                .env(CASE_ROOT, &root)
-                .env(vize_carton::corsa_resolver::CORSA_DEV_PATHS_ENV, "0");
-            for variable in vize_carton::corsa_resolver::CORSA_ENV_VARS {
-                child.env_remove(variable);
-            }
-            let result = child.output();
-            let _ = std::fs::remove_dir_all(&root);
-            let output = result.unwrap();
-            assert!(output.status.success(), "{output:?}");
-            assert!(
-                std::str::from_utf8(&output.stdout)
-                    .unwrap()
-                    .contains("1 passed"),
-                "{output:?}"
-            );
-            return;
-        };
-        let wrapper = root.join("node_modules/.bin/tsgo");
-        let native = root
-            .join("node_modules")
-            .join("@typescript")
-            .join(&*cstr!(
-                "native-preview-{}",
-                vize_carton::corsa_resolver::platform_suffix()
-            ))
-            .join("lib")
-            .join("tsgo");
-
-        write_file(&wrapper);
-        write_file(&native);
-
-        assert_eq!(
-            resolve_corsa_executable(&root, &root, None).unwrap(),
-            native
-        );
-
-        let _ = std::fs::remove_dir_all(&root);
-    }
-
-    #[test]
     fn configured_corsa_path_must_exist() {
         let root = case_dir("configured-missing");
         let missing = root.join("missing-corsa");

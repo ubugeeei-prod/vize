@@ -14,8 +14,12 @@ The npm package also exports shared configuration helpers. See the [command comp
 For apps, install from npm and wire stable commands into project scripts:
 
 ```bash
-vp install -D vize
+vp install -D vize typescript-native@npm:typescript@7.1.0-beta
 ```
+
+The native compiler belongs to the project; Vize does not bundle or download it. The alias keeps
+TypeScript 6 available for other tools. See [Type Checking](./type-checking.md) for canonical and
+explicit-path alternatives before using `vize check` or `vize ready`.
 
 ```json
 {
