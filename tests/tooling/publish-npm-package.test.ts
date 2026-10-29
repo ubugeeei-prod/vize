@@ -182,6 +182,47 @@ test("prepare_npm_publish_manifest pins native binary catalog deps to the releas
   }
 });
 
+test("prepare_npm_publish_manifest adds the Corsa platforms to the vize tarball", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-prepare-vize-corsa-"));
+  const repoDir = path.join(tempDir, "repo");
+  const cliDir = path.join(repoDir, "npm", "cli");
+
+  try {
+    fs.mkdirSync(cliDir, { recursive: true });
+    writeFileSync(
+      path.join(repoDir, "pnpm-workspace.yaml"),
+      [
+        "packages:",
+        '  - "npm/*"',
+        "",
+        "catalogs:",
+        "  corsa-runtime:",
+        '    "@typescript/typescript-darwin-arm64": "7.0.2"',
+        '    "@typescript/typescript-darwin-x64": "7.0.2"',
+        '    "@typescript/typescript-linux-arm64": "7.0.2"',
+        '    "@typescript/typescript-linux-x64": "7.0.2"',
+        '    "@typescript/typescript-win32-arm64": "7.0.2"',
+        '    "@typescript/typescript-win32-x64": "7.0.2"',
+        "",
+      ].join("\n"),
+    );
+    writeFileSync(
+      path.join(cliDir, "package.json"),
+      `${JSON.stringify({ name: "vize", version: "0.607.0", dependencies: { "@vizejs/native": "0.607.0" } }, null, 2)}\n`,
+    );
+
+    const result = runReleaseCommand("prepare_npm_publish_manifest", [cliDir]);
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    const manifest = JSON.parse(fs.readFileSync(path.join(cliDir, "package.json"), "utf8")) as {
+      optionalDependencies: Record<string, string>;
+    };
+    assert.equal(manifest.optionalDependencies["@typescript/typescript-linux-x64"], "7.0.2");
+    assert.equal(Object.keys(manifest.optionalDependencies).length, 6);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
 test("publish_npm_package skips publish when the version is already visible in npm", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-skip-"));
   const packageDir = path.join(tempDir, "pkg");

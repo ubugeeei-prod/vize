@@ -9,6 +9,15 @@ const dependencySections = [
   "devDependencies",
 ] as const;
 
+const publishedCorsaPlatforms = [
+  "@typescript/typescript-darwin-arm64",
+  "@typescript/typescript-darwin-x64",
+  "@typescript/typescript-linux-arm64",
+  "@typescript/typescript-linux-x64",
+  "@typescript/typescript-win32-arm64",
+  "@typescript/typescript-win32-x64",
+] as const;
+
 type PackageJson = Record<string, unknown>;
 
 function readJsonFile(filePath: string): PackageJson {
@@ -168,6 +177,22 @@ function normalizeDependencySections(
         } else {
           dependencies[dependencyName] = version;
         }
+      }
+    }
+  }
+
+  if (packageJson.name === "vize") {
+    const optional = dependencyTable(packageJson, "optionalDependencies") ?? {};
+    packageJson.optionalDependencies = optional;
+    for (const name of publishedCorsaPlatforms) {
+      if (typeof optional[name] === "string") continue;
+      const version = catalogVersions.get(`corsa-runtime\0${name}`);
+      if (version == null) {
+        unresolved.push(
+          `Missing catalog version for ${name} from corsa-runtime in optionalDependencies`,
+        );
+      } else {
+        optional[name] = version;
       }
     }
   }

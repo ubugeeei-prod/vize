@@ -15,8 +15,16 @@ pub(super) fn emit_module_preamble(
     legacy_vue2: bool,
 ) {
     if options.hoist_shared_preamble {
-        // Program helpers and global augmentation are shared once per project.
-        ts.push_str("// Shared preamble hoisted to the program-wide __vize_helpers.d.ts\n");
+        if matches!(
+            options.external_component_attrs_module,
+            Some(ComponentHelperModule::Types)
+        ) {
+            // Pulls `declare global` helpers into the host program once.
+            ts.push_str("import type {} from \"vize/virtual-ts\";\n");
+        } else {
+            // Program helpers and global augmentation are shared once per project.
+            ts.push_str("// Shared preamble hoisted to the program-wide __vize_helpers.d.ts\n");
+        }
     } else {
         emit_import_meta_augmentation(ts, !options.omit_vite_client_reference);
         ts.push('\n');
