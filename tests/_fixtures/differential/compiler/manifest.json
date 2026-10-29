@@ -494,6 +494,52 @@
       }
     },
     {
+      "id": "compiler/sfc/computed-v-once-event-6839",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "computed-v-once-event-6839",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "09809bacc155bd63d88a65055c6ca525bd8c0c6a9a8948b45d4bbf85739ea8fb",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "computed-v-once-event-6839/module.expected.txt",
+        "sha256": "3476d6ad9cd3f18881bcd610a1ddc6372539553859bdb0e74f20da94cb9ce3fd",
+        "source": "crates/vize_atelier_vapor/tests/davinci_vapor_upstream_parity/once_events.rs:computed_event_names_freeze_while_handlers_stay_live; SSR source coverage only"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); mounted Vapor behavior is checked independently in both lowering lanes."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/6839",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/element-v-once-10875",
       "state": "active",
       "targets": ["ssr"],

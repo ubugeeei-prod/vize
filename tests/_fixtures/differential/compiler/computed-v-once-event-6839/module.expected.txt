@@ -1,0 +1,25 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<button${_ssrRenderAttrs(_mergeProps({ title: $setup.label }, _attrs))}>${_ssrInterpolate($setup.label)}</button>`)
+}
+import { ref } from 'vue'
+
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props) {
+
+const eventName = ref('click')
+const label = ref('A')
+function record(value) { console.log(value) }
+
+const __returned__ = { ref, eventName, label, record }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}
