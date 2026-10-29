@@ -44,6 +44,10 @@ fn chain(depth: usize, sources_per_package: usize) -> PackageRoute {
 fn bench_collectors(criterion: &mut Criterion) {
     for depth in [16usize, 64, 130] {
         let route = chain(depth, 8);
+        criterion.bench_function(
+            &format!("package_route/unambiguous_source_path/{depth}"),
+            |b| b.iter(|| black_box(black_box(&route).unambiguous_source_path())),
+        );
         criterion.bench_function(&format!("package_route/all_source_paths/{depth}"), |b| {
             b.iter(|| black_box(black_box(&route).all_source_paths().len()));
         });
