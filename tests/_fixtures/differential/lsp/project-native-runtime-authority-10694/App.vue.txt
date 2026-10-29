@@ -1,0 +1,4 @@
+<!-- Project-owned TypeScript provider -->
+<template>
+<input id="sample">
+</template>
