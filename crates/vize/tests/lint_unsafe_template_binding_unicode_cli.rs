@@ -25,6 +25,7 @@ fn unicode_comments_before_arrows_stay_safe_through_the_public_cli() {
     let Some(runtime) = corsa_requirement::required_or_skip(corsa_path::resolve(root)) else {
         return;
     };
+    let runtime = fs::canonicalize(runtime).unwrap();
     let project = tempfile::tempdir().unwrap();
     let files = [
         (
