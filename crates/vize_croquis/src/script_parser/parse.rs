@@ -117,10 +117,6 @@ fn parse_script_setup_with_exports_capture<const BUILTIN_TYPES: bool>(
 }
 
 #[cfg(test)]
-#[expect(
-    clippy::too_many_arguments,
-    reason = "tests explicitly force the otherwise demand-driven provenance store"
-)]
 pub(crate) fn parse_script_setup_for_value_origins<const BUILTIN_TYPES: bool>(
     source: &str,
     generic: Option<&str>,
