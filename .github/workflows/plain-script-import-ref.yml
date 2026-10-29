@@ -4,6 +4,7 @@ on:
     paths:
       - .github/workflows/plain-script-import-ref.yml
       - tools/support/compat/plain-script-import-ref.ts
+      - tests/tooling/support/setup-component-bracket-reference.ts
       - tests/_fixtures/differential/compiler/plain-script-import-10903/**
       - crates/vize_atelier_sfc/src/**
       - crates/vize_atelier_core/src/codegen/**
