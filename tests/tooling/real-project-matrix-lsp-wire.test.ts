@@ -66,10 +66,27 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   const rustCommand = "rust-script tools/commands/fixtures/lint-divergence-report.rs";
   const nodeCommand = "node tools/commands/fixtures/lint-divergence-report.ts";
   assert.equal(oldLint.run.split(rustCommand).length, 2);
-  const nodeRun = oldLint.run.replace(rustCommand, nodeCommand);
+  const nodeRun = [
+    `${nodeCommand} \\`,
+    '  --shard-index "$FIXTURE_SHARD_INDEX" --shard-count "$FIXTURE_SHARD_COUNT" \\',
+    '  --measure-coverage-gap --budget-mode "$LINT_DIVERGENCE_MODE" \\',
+    "  --vize-bin target/ci/vize --timeout-ms 600000 \\",
+    '  --output-dir "$FIXTURE_REPORT_DIR"',
+    'test -s "$FIXTURE_REPORT_DIR/lint-divergence-summary.json"',
+    "",
+  ].join("\n");
   assert.ok([oldLint.run, nodeRun].includes(lint.run));
   assert.deepEqual(lint, { ...oldLint, run: lint.run });
   lint.run = oldLint.run;
+  const linterReadiness = steps.findIndex(
+    (step) => step.name === "Record linter deletion-readiness evidence",
+  );
+  assert.equal(linterReadiness, steps.findIndex((step) => step.id === "lint_divergence") + 1);
+  assert.deepEqual(steps.splice(linterReadiness, 1)[0], {
+    name: "Record linter deletion-readiness evidence",
+    if: "${{ !cancelled() }}",
+    run: 'node tests/differential/linter-deletion-recorder.ts "$FIXTURE_REPORT_DIR" && test -s "$FIXTURE_REPORT_DIR/linter-deletion-readiness.json"',
+  });
 
   const lsp = steps.find((step) => step.id === "lsp");
   const oldLsp = oldSteps.find((step) => step.id === "lsp");
