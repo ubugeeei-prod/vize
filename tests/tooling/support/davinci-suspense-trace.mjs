@@ -55,6 +55,7 @@ const state = vue.reactive({
   label: "A",
   waiting: "waiting",
   limit: 0,
+  propKey: "timeout",
   record: (event) => events.push(event),
 });
 let release;
