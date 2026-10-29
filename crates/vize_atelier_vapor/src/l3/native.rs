@@ -73,6 +73,9 @@ struct Prop<'a> {
     key: &'a str,
     dynamic_name: Option<Expr<'a>>,
     value: Option<Expr<'a>>,
+    /// Authored spans of a computed ordinary prop's name and value. The
+    /// shared generator reads these only when source maps are requested.
+    spans: Option<[AuthoredSpan; 2]>,
     value_kind: crate::ir::PropValueKind,
     dynamic: bool,
     handler: bool,
