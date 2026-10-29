@@ -419,6 +419,11 @@ fn attached_overlay_packets(
         assert_eq!(std::fs::read(&main_path).unwrap(), MAIN.as_bytes());
         assert_eq!(std::fs::read(&support_path).unwrap(), SUPPORT.as_bytes());
     }
+    // The dependency-close row above proves the original on-disk fallback.
+    // Reopen those exact bytes before switching to a materialized project: that
+    // project deliberately replays current editor buffers, so this independent
+    // virtual-file probe must carry its relative dependency with it.
+    client.did_open(&support_uri, SUPPORT).unwrap();
     // No original disk file: the batch must exercise a mapped identity.
     let virtual_path = root.join("Virtual.vue.ts");
     let virtual_uri = path_to_file_uri(&virtual_path);
@@ -460,10 +465,11 @@ fn attached_overlay_packets(
     }
     assert!(!virtual_path.exists());
     client.did_close(&virtual_uri).unwrap();
+    client.did_close(&support_uri).unwrap();
     client.did_close(&main_uri).unwrap();
     assert!(client.hover_raw(&main_uri, 2, 31).unwrap().is_none());
     client.shutdown().unwrap();
-    let result = json!({"scope":"attached editor; main unchanged, dependency unsaved, original disk retained",
+    let result = json!({"scope":"attached editor; dependency close verified before a self-contained materialized virtual batch",
         "root":root,"mainUri":main_uri,"supportUri":support_uri,"config":std::str::from_utf8(config).unwrap(),"rows":rows,
         "materializedBatch":{"virtualUri":virtual_uri,"mappedUri":mapped_virtual,"source":VIRTUAL,"nativePull":virtual_pull,"selected":whole_batch}});
     std::fs::write(

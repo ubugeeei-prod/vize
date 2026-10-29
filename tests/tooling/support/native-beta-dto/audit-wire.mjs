@@ -198,14 +198,18 @@ for (const [index, process] of native.entries()) {
   assert(byFd.get(0)?.client && byFd.get(1)?.server);
   relations(byFd.get(0).client.packets, byFd.get(1).server.packets);
   const apiStreams = observations.filter((entry) => entry.fd >= 3 && entry.client && entry.server);
-  assert.equal(apiStreams.length, 1, "One retained API attachment per native LSP owner");
+  assert(
+    apiStreams.length <= 1,
+    "At most one retained API attachment may belong to one native LSP owner",
+  );
   const api = apiStreams[0];
-  relations(api.client.packets, api.server.packets);
-  const requests = api.client.packets.filter((row) => "id" in row && "method" in row);
+  if (api) relations(api.client.packets, api.server.packets);
+  const requests =
+    api?.client.packets.filter((row) => "id" in row && "method" in row) ?? [];
   const responses = new Map(
-    api.server.packets
+    api?.server.packets
       .filter((row) => "id" in row && !("method" in row))
-      .map((row) => [key(row.id), row]),
+      .map((row) => [key(row.id), row]) ?? [],
   );
   const kindRows = [];
   for (const request of requests) {
@@ -221,6 +225,7 @@ for (const [index, process] of native.entries()) {
     kindRows.push({ request, response: responses.get(key(request.id)) });
   }
   if (index === 0) {
+    assert(api, "The API-owned explicit FileChanges scope must retain its attachment");
     assert(kindRows.length >= 9);
     const updates = requests.filter((row) =>
       ["updateSnapshot", "deriveSnapshot"].includes(row.method),
@@ -262,12 +267,20 @@ for (const [index, process] of native.entries()) {
     nativeExit: exits.get(leader),
     nativeStdinEof: eofReads.some((row) => owner(row.tid) === leader && row.fd === 0),
     exitNotifications: lspClient.filter((row) => row.method === "exit").length,
+    apiAttached: api !== undefined,
     stderr: { file: stderrFile, bytes: stderr.length, sha256: hash(stderr) },
     streams: observations,
     compilerKindPackets: kindRows,
   });
 }
 assert.equal(source.attached.rows.length, 4);
+assert.equal(receipts[0].apiAttached, true, "The explicit owned scope must retain its API wire");
+if (provider.version === "7.1.0-beta") {
+  assert(
+    receipts.slice(1).some((receipt) => !receipt.apiAttached),
+    "The beta attached-editor route must retain an LSP-only native owner",
+  );
+}
 save("closed-full-wire.json", {
   source: source.source,
   role: source.role,
