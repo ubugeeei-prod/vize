@@ -52,7 +52,7 @@ fn declared_tsrs_rejects_mismatched_hoisted_platform_metadata() {
         let hoisted = hoist_platform(&project, &workspace);
         fs::write(
             hoisted.join("package.json"),
-            format!(r#"{{"name":"{name}","version":"{version}"}}"#),
+            &*crate::cstr!(r#"{{"name":"{name}","version":"{version}"}}"#),
         )
         .unwrap();
 
