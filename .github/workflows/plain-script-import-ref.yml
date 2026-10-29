@@ -4,6 +4,7 @@ on:
     paths:
       - .github/workflows/plain-script-import-ref.yml
       - tools/support/compat/plain-script-import-ref.ts
+      - tests/tooling/support/setup-component-bracket-reference.ts
       - tests/_fixtures/differential/compiler/plain-script-import-10903/**
       - crates/vize_atelier_sfc/src/**
       - crates/vize_atelier_core/src/codegen/**
@@ -162,19 +163,32 @@ jobs:
           node --input-type=module -e '
           import assert from "node:assert/strict";
           import { readFileSync, writeFileSync } from "node:fs";
+          import { setupComponentBracketReference } from "./tests/tooling/support/setup-component-bracket-reference.ts";
           const priorPackets = JSON.parse(readFileSync(process.env.BEFORE.replace("performance.json", "full-module-packets.json")));
           const nextPackets = JSON.parse(readFileSync(process.env.VIZE10903_PROOF + "/full-module-packets.json"));
+          const setupComponents = { original: "Child", "named-alias": "Child", "default-unknown": "Child", "constant-controls": "DefaultAlias" };
           assert.equal(priorPackets.length, nextPackets.length);
           for (let i = 0; i < priorPackets.length; i++) {
             const prior = priorPackets[i], next = nextPackets[i];
             for (const key of ["case", "filename", "source", "sourceSha256", "options", "official"]) assert.deepEqual(prior[key], next[key]);
-            if (!prior.options.inlineTemplate || prior.filename === "src/Child.vue" || prior.case === "constant-controls") assert.deepEqual(prior.native, next.native);
+            if (!prior.options.inlineTemplate && prior.filename === "src/App.vue") {
+              const component = setupComponents[prior.case];
+              assert.equal(typeof component, "string", `missing setup component reference for ${prior.case}`);
+              assert.deepEqual(setupComponentBracketReference(prior.native, component), next.native);
+            } else if (prior.filename === "src/Child.vue" || prior.case === "constant-controls") assert.deepEqual(prior.native, next.native);
           }
           const before = JSON.parse(readFileSync(process.env.BEFORE));
           const after = JSON.parse(readFileSync(process.env.VIZE10903_PROOF + "/performance.json"));
+          const beforeIdentity = JSON.parse(readFileSync(process.env.BEFORE.replace("performance.json", "native-identity.json")));
+          const afterIdentity = JSON.parse(readFileSync(process.env.VIZE10903_PROOF + "/native-identity.json"));
           for (const key of ["inputSha256", "options", "warmup", "iterations"]) assert.deepEqual(before[key], after[key]);
           assert.notEqual(before.source, after.source);
-          writeFileSync(process.env.VIZE10903_PROOF + "/same-work-comparison.json", JSON.stringify({ before, after, policy: "observation only" }, null, 2) + "\n");
+          assert.equal(afterIdentity.source, process.env.SOURCE_SHA);
+          assert.equal(afterIdentity.receipt.source, process.env.SOURCE_SHA);
+          assert.equal(afterIdentity.receipt.identity.token, afterIdentity.token);
+          assert.equal(afterIdentity.receipt.binary.sha256, afterIdentity.imageSha256);
+          assert.notEqual(beforeIdentity.imageSha256, afterIdentity.imageSha256);
+          writeFileSync(process.env.VIZE10903_PROOF + "/same-work-comparison.json", JSON.stringify({ before, after, beforeIdentity, afterIdentity, policy: "exact specified packet advance; performance observation only" }, null, 2) + "\n");
           '
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()

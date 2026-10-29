@@ -45,10 +45,16 @@ impl CodegenContext {
             self.push(self.helper(RuntimeHelper::Unref));
             self.push("(");
         }
-        if !self.options.inline {
-            self.push("$setup.");
+        // Non-inline setup components are bracket reads (`$setup["MyButton"]`).
+        // Expression identifiers stay `$setup.msg`.
+        if self.options.inline {
+            self.push(binding.name.as_str());
+        } else {
+            self.push("$setup[\"");
+            let escaped = super::helpers::escape_js_string(binding.name.as_str());
+            self.push(escaped.as_str());
+            self.push("\"]");
         }
-        self.push(binding.name.as_str());
         if needs_unref {
             self.push(")");
         }
