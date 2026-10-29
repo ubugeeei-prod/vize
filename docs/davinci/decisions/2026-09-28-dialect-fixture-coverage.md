@@ -54,10 +54,21 @@ emitted SSR module byte. The result verifies both `vue0-template` coordinates,
 not their semantic equivalence: native handling remains unsupported and earns
 no readiness credit.
 
-Remaining #6892 work is to promote the three grammar-generated Vue 1 inputs
-into product manifests with actual adapter results, and make #6854 aggregate
-each dialect and unknown bucket. Keep these as unfinished until actual case
-execution and provenance are recorded.
+The three Vue 1 inputs now join the same compiler manifest by their inventory
+IDs, source hashes, generated Vue 1 config and `legacy-v1` parser selector. The
+adapter contract requires the exact `cargo build --profile ci -p vize
+--features legacy` receipt. An ordinary Vue 3 source build records three failed
+rows without spawning them, so it cannot accidentally grant adapter credit.
+The scheduled/manual Vue parity lane executes all three with the legacy source
+build, compares every SSR module byte and retains the complete report together
+with its build receipt. The raw-HTML row additionally proves triple-mustache
+emits `_ctx.html` directly without `_ssrInterpolate`; that behavior remains
+compiled out of the ordinary Vue 3 binary.
+
+The product-manifest promotion requested by #6892 is therefore complete for all
+seven rare-dialect inventory rows. Remaining work is #6854's aggregation of
+each verified dialect and the unknown bucket; until that lands, these rows do
+not claim native handling or replacement readiness.
 
 The first shared case-ledger slice makes coverage a common manifest contract.
 Every planned case in compiler, formatter, linter, typechecker and LSP now
@@ -67,14 +78,14 @@ reports verified and provisional dialect rows separately while retaining every
 nonverified case in the unknown readiness denominator. Verified labels are
 restricted to the canonical #6854 vocabulary.
 
-Fifteen of the seventeen ordinary compiler SSR cases have bounded
+Twenty-six of the twenty-eight ordinary compiler SSR cases have bounded
 `source-inspected` evidence for the default Vue 3 SFC and HTML-template
-selection; three typed-script cases also record `ts`. Their input bytes were
+selection; five typed-script cases also record `ts`. Their input bytes were
 already pinned by SHA-256, and the compiler loader binds these labels to its
 `--no-config` Vue 3 adapter. This is provisional measurement only. Together
-with the two verified Vue 0 and two verified quirks rows, the compiler manifest
-has twenty-one cases; whole-product native compiler execution remains
-unsupported for all twenty-one.
+with the two verified Vue 0, three verified Vue 1 and two verified quirks rows,
+the compiler manifest has thirty-five cases; whole-product native compiler
+execution remains unsupported for all thirty-five.
 
 The typechecker registry also derives bounded `source-inspected` labels from
 each immutable authored input after its SHA-256 check. Sixty of 61 cases
@@ -93,7 +104,7 @@ files. The LSP loader does the same for all 42 planned cases from each fixture's
 immutable runtime files. The manifests cover Vue 2 and Vue 3 SFCs, HTML and Pug
 templates, JS, TS, JSX and TSX where those bytes exist; generic JSX is not
 promoted to the distinct Babel JSX dialect. Loader checks reject stale labels.
-All 121 linter and LSP cases remain in the unknown readiness denominator because
-source inspection is not native acceptance. The three Vue 1 input-only rows
-remain outside the executed denominator; the two Vue 0 and two quirks rows are
-now registered compiler coordinates whose native result is still unsupported.
+All linter and LSP cases remain in the unknown readiness denominator because
+source inspection is not native acceptance. All seven rare Vue dialect rows
+are now registered compiler coordinates whose native result is still
+unsupported.
