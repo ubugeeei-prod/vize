@@ -281,10 +281,14 @@ fn probe_directory(dir: &Path) -> Result<Option<Candidate>, packages::InvalidNat
     // `node_modules/vize`, so a project that did not install one itself still
     // runs. A compiler declared by the project is found above and wins.
     let bundled_cli = dir.join("node_modules").join("vize");
-    if bundled_cli.join("package.json").is_file()
-        && let Some(path) = find_node_modules_native(&bundled_cli)?
-    {
-        return Ok(Some(path));
+    if bundled_cli.join("package.json").is_file() {
+        // pnpm links `node_modules/vize` into `.pnpm/.../node_modules/vize`.
+        // The platform package sits next to that real directory, not next to
+        // the link.
+        let bundled_cli = bundled_cli.canonicalize().unwrap_or(bundled_cli);
+        if let Some(path) = find_node_modules_native(&bundled_cli)? {
+            return Ok(Some(path));
+        }
     }
     Ok(find_node_modules_wrapper(dir).map(Candidate::Wrapper))
 }
