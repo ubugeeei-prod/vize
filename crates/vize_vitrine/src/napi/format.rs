@@ -8,8 +8,8 @@
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use vize_glyph::{
-    Allocator, ArrowParens, FormatOptions, FormatPreset, GlyphFormatter, QuoteProps, TrailingComma,
-    VueVersion, resolve_sort_imports,
+    Allocator, ArrowParens, AttributeSortOrder, FormatOptions, FormatPreset, GlyphFormatter,
+    QuoteProps, TrailingComma, VueVersion, resolve_sort_imports,
 };
 
 /// Existing formatter line-ending modes, validated at the Node boundary.
@@ -58,7 +58,12 @@ pub struct FormatOptionsNapi {
     /// Layout line endings; auto follows the first source terminator.
     pub end_of_line: Option<EndOfLineNapi>,
     pub sort_attributes: Option<bool>,
+    /// Choose the order of attributes within each Vue priority group.
+    #[napi(ts_type = "'alphabetical' | 'as-written'")]
+    pub attribute_sort_order: Option<String>,
     pub single_attribute_per_line: Option<bool>,
+    /// Indent the contents of `<script>` and `<style>` blocks.
+    pub vue_indent_script_and_style: Option<bool>,
     pub max_attributes_per_line: Option<u32>,
     pub normalize_directive_shorthands: Option<bool>,
     /// Order SFC blocks canonically; false preserves their authored order.
@@ -172,8 +177,23 @@ fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
     if let Some(value) = opts.sort_attributes {
         options.sort_attributes = value;
     }
+    if let Some(value) = opts.attribute_sort_order.as_deref() {
+        options.attribute_sort_order = match value {
+            "alphabetical" => AttributeSortOrder::Alphabetical,
+            "as-written" => AttributeSortOrder::AsWritten,
+            _ => {
+                return Err(Error::new(
+                    Status::InvalidArg,
+                    "Unknown attributeSortOrder; expected 'alphabetical' or 'as-written'",
+                ));
+            }
+        };
+    }
     if let Some(value) = opts.single_attribute_per_line {
         options.single_attribute_per_line = value;
+    }
+    if let Some(value) = opts.vue_indent_script_and_style {
+        options.vue_indent_script_and_style = value;
     }
     if let Some(value) = opts.max_attributes_per_line {
         options.max_attributes_per_line = Some(value);
@@ -243,7 +263,7 @@ pub fn format_sfc_napi(
 #[cfg(test)]
 mod tests {
     use super::{FormatOptionsNapi, apply_options, format_sfc_napi};
-    use vize_glyph::{ArrowParens, QuoteProps, TrailingComma};
+    use vize_glyph::{ArrowParens, AttributeSortOrder, QuoteProps, TrailingComma};
 
     #[test]
     fn native_sfc_sorting_uses_the_authored_full_reference() {
@@ -294,6 +314,42 @@ mod tests {
         assert!(!disabled.normalize_v_for_parens);
         assert!(!disabled.self_close_void_elements);
         assert!(!disabled.reindent_preprocessor_styles);
+    }
+
+    #[test]
+    fn native_sfc_body_indentation_is_an_explicit_opt_in() {
+        let defaults = apply_options(FormatOptionsNapi::default()).expect("native defaults");
+        assert!(!defaults.vue_indent_script_and_style);
+
+        let indented = apply_options(FormatOptionsNapi {
+            preset: Some("vize".into()),
+            vue_indent_script_and_style: Some(true),
+            ..Default::default()
+        })
+        .expect("native indentation option");
+        assert!(indented.vue_indent_script_and_style);
+    }
+
+    #[test]
+    fn native_attribute_order_is_typed_and_overrides_presets() {
+        let options = apply_options(FormatOptionsNapi {
+            preset: Some("vize".into()),
+            attribute_sort_order: Some("as-written".into()),
+            ..Default::default()
+        })
+        .expect("native attribute order option");
+        assert_eq!(options.attribute_sort_order, AttributeSortOrder::AsWritten);
+
+        let error = apply_options(FormatOptionsNapi {
+            attribute_sort_order: Some("source".into()),
+            ..Default::default()
+        })
+        .expect_err("unknown attribute order policy");
+        assert_eq!(error.status, napi::Status::InvalidArg);
+        assert_eq!(
+            error.reason,
+            "Unknown attributeSortOrder; expected 'alphabetical' or 'as-written'"
+        );
     }
 
     #[test]

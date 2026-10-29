@@ -3,6 +3,10 @@
 use crate::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor_with_experimental_options,
 };
+use std::{
+    path::Path,
+    process::{Command, Stdio},
+};
 use vize_carton::Allocator;
 
 const BASE64: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -16,6 +20,13 @@ pub(super) enum Lane {
     /// The legacy lowering lane: binding metadata keeps the L3 bridge out.
     Legacy,
 }
+
+type NamedSegment = (std::string::String, usize, i64, i64, i64);
+type MappedNamedSegments = (
+    std::string::String,
+    std::vec::Vec<std::string::String>,
+    std::vec::Vec<NamedSegment>,
+);
 
 fn compile_on(source: &str, source_map: bool, lane: Lane) -> crate::VaporCompileResult {
     let allocator = Allocator::new();
@@ -79,13 +90,43 @@ fn decode(mappings: &str) -> std::vec::Vec<(usize, i64, i64, i64, Option<i64>)> 
     segments
 }
 
-fn offset(text: &str, line: usize, column: i64) -> usize {
+pub(super) fn offset(text: &str, line: usize, column: i64) -> usize {
     let start: usize = text.split_inclusive('\n').take(line).map(str::len).sum();
     start + column as usize
 }
 
+fn parsed_map(map: &str) -> serde_json::Value {
+    serde_json::from_str(map).unwrap()
+}
+
+fn authored_anchors(map: &str) -> std::vec::Vec<(std::string::String, i64, i64)> {
+    named_segments(map)
+        .into_iter()
+        .map(|(name, _, _, source_line, source_column)| (name, source_line, source_column))
+        .collect()
+}
+
+fn named_segments(map: &str) -> std::vec::Vec<NamedSegment> {
+    let map = parsed_map(map);
+    let names = map["names"].as_array().unwrap();
+    decode(map["mappings"].as_str().unwrap())
+        .into_iter()
+        .filter_map(|(line, column, source_line, source_column, name)| {
+            name.map(|index| {
+                (
+                    names[index as usize].as_str().unwrap().into(),
+                    line,
+                    column,
+                    source_line,
+                    source_column,
+                )
+            })
+        })
+        .collect()
+}
+
 fn render(code: &str, source: &str, map: &str) -> std::vec::Vec<std::string::String> {
-    let map: serde_json::Value = serde_json::from_str(map).unwrap();
+    let map = parsed_map(map);
     let names = map["names"].as_array().unwrap();
     let window = |text: &str, at: usize| text[at..(at + 8).min(text.len())].replace('\n', "⏎");
     decode(map["mappings"].as_str().unwrap())
@@ -111,6 +152,27 @@ pub(super) fn mapped_on(
     source: &str,
     lane: Lane,
 ) -> (std::string::String, std::vec::Vec<std::string::String>) {
+    let (code, segments, _) = mapped_with_anchors_on(source, lane);
+    (code, segments)
+}
+
+pub(super) fn mapped_with_anchors_on(
+    source: &str,
+    lane: Lane,
+) -> (
+    std::string::String,
+    std::vec::Vec<std::string::String>,
+    std::vec::Vec<(std::string::String, i64, i64)>,
+) {
+    let (code, segments, named) = mapped_with_named_segments_on(source, lane);
+    let anchors = named
+        .into_iter()
+        .map(|(name, _, _, source_line, source_column)| (name, source_line, source_column))
+        .collect();
+    (code, segments, anchors)
+}
+
+pub(super) fn mapped_with_named_segments_on(source: &str, lane: Lane) -> MappedNamedSegments {
     let without_map = compile_on(source, false, lane);
     let with_map = compile_on(source, true, lane);
     assert_eq!(
@@ -119,5 +181,35 @@ pub(super) fn mapped_on(
     );
     let map = with_map.map.expect("source_map should attach Vapor map");
     let segments = render(&with_map.code, source, &map);
-    (with_map.code.as_str().into(), segments)
+    let named = named_segments(&map);
+    (with_map.code.as_str().into(), segments, named)
+}
+
+pub(super) fn official_vapor_anchors(
+    source: &str,
+) -> std::vec::Vec<(std::string::String, i64, i64)> {
+    let runner = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/tooling/support/davinci-upstream-vapor-map.ts");
+    let mut child = Command::new("node")
+        .arg(runner)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect(
+            "start official compiler-vapor map oracle (install workspace JS dependencies first)",
+        );
+    serde_json::to_writer(
+        child.stdin.take().unwrap(),
+        &serde_json::json!({"source": source, "filename": "Foo.vue"}),
+    )
+    .unwrap();
+    let output = child.wait_with_output().unwrap();
+    assert!(
+        output.status.success(),
+        "official compiler-vapor map oracle failed with {}:\n{}",
+        output.status,
+        std::string::String::from_utf8_lossy(&output.stderr)
+    );
+    authored_anchors(&std::string::String::from_utf8(output.stdout).unwrap())
 }

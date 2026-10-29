@@ -19,6 +19,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
 
     // Check for provide/inject calls
     detect_provide_inject_call(result, call, source);
+    record_imported_composable_call(result, call);
     if !result.skip_diagnostics {
         detect_race_condition_call(result, call, source);
     }
@@ -166,6 +167,48 @@ pub(in crate::script_parser) fn walk_call_arguments(
         );
         result.scopes.exit_scope();
     }
+}
+
+fn record_imported_composable_call(result: &mut ScriptParseResult, call: &CallExpression<'_>) {
+    let Expression::Identifier(identifier) = &call.callee else {
+        return;
+    };
+    let local_name = identifier.name.as_str();
+    if !super::super::super::result::is_composable_name(local_name)
+        && (result.imported_composable_aliases.is_empty()
+            || !result.imported_composable_aliases.contains(local_name))
+    {
+        return;
+    }
+    if !result.records_setup_composable_call() {
+        return;
+    }
+    let Some(source) = result.import_sources.get(local_name) else {
+        return;
+    };
+    if !super::super::super::result::is_local_module_specifier(source.as_str()) {
+        return;
+    }
+    let source = source.clone();
+    let Some(exported_name) = result
+        .types
+        .definitions()
+        .imported_type_export(local_name)
+        .filter(|name| super::super::super::result::is_composable_name(name))
+        .map(CompactString::new)
+    else {
+        return;
+    };
+    result.provide_inject.add_composable(
+        exported_name,
+        source,
+        None,
+        false,
+        false,
+        false,
+        call.span.start,
+        call.span.end,
+    );
 }
 
 fn client_only_data(name: &str, source: &str, start: u32, end: u32) -> ClientOnlyScopeData {

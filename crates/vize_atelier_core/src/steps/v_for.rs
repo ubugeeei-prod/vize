@@ -4,7 +4,11 @@
 
 use vize_l0::{Allocator, Box};
 
+mod alias_rewrite;
 mod bindings;
+
+pub(crate) use alias_rewrite::process_for_alias;
+pub(crate) use bindings::alias_needs_expression_rewrite;
 
 use crate::lane::TransformContext;
 use crate::{

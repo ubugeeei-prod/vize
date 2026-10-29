@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "user-supplied-v0.603.0-screenshot",
+  "diagnostics": [
+    {
+      "file": "src/components/Song/SongEditor.vue",
+      "line": 595,
+      "column": 174,
+      "code": 2554,
+      "message": "Expected 0 arguments, but got 1.",
+      "location": "virtual-only"
+    },
+    {
+      "file": "src/components/Song/ToolBar/ToolBar.vue",
+      "line": 685,
+      "column": 162,
+      "code": 2554,
+      "message": "Expected 0 arguments, but got 1.",
+      "location": "virtual-only"
+    }
+  ],
+  "generatedShape": "__VizeSlotHostSelector<typeof QSplitter>(new (undefined as unknown as __VizeSlotConstructor<typeof QSplitter>)({ ...props }, ...args), ...)(QSplitter)(...)"
+}

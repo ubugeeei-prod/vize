@@ -134,7 +134,11 @@ impl CrossFileAnalyzer {
         }
 
         if self.options.props_validation {
-            let (issues, diags) = rules::analyze_props_validation(&self.registry, &self.graph);
+            let (issues, diags) = rules::analyze_props_validation_with_nuxt_outlets(
+                &self.registry,
+                &self.graph,
+                &self.nuxt_page_outlets,
+            );
             result.props_validation_issues = issues;
             result.diagnostics.extend(diags);
         }

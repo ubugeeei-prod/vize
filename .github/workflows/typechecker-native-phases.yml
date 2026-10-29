@@ -6,6 +6,11 @@ on:
         description: "Immutable main ancestor; production/dependency/corpus bytes must equal this main driver"
         required: true
         type: string
+      historical_projection_receipt:
+        description: "Run the schedule-only template projection history qualification at the exact driver"
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: "37 18 * * *"
 permissions: { contents: read }
@@ -18,6 +23,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.source_sha || github.sha }}
   DRIVER_SHA: ${{ github.workflow_sha }}
+  HISTORICAL_PROJECTION_RECEIPT: ${{ inputs.historical_projection_receipt || false }}
   CARGO_TARGET_DIR: ${{ github.workspace }}/target
 jobs:
   native-phases:
@@ -43,6 +49,10 @@ jobs:
             [[ "$SOURCE_SHA" == "$DRIVER_SHA" && "$SOURCE_SHA" == "$GITHUB_SHA" ]]
           else
             [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]
+          fi
+          if [[ "$HISTORICAL_PROJECTION_RECEIPT" == true ]]; then
+            [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]
+            [[ "$SOURCE_SHA" == "$DRIVER_SHA" && "$SOURCE_SHA" == "$GITHUB_SHA" ]]
           fi
           source_base_sha="$SOURCE_SHA"
           echo "MAIN_SOURCE_SHA=$source_base_sha" >> "$GITHUB_ENV"
@@ -80,12 +90,17 @@ jobs:
         run: |
           set -euo pipefail; vp install --frozen-lockfile --prefer-offline; bash tools/support/compat/github/native-syntax-semantics.sh
           if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
-            [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/node_modules" ]]
-            ln -s "$GITHUB_WORKSPACE/node_modules" "$NATIVE_PHASE_SOURCE_ROOT/node_modules"
+            for dependency_root in node_modules tests/node_modules playground/node_modules npm/cli/node_modules crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/node_modules; do
+              [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/$dependency_root" ]]
+              ln -s "$GITHUB_WORKSPACE/$dependency_root" "$NATIVE_PHASE_SOURCE_ROOT/$dependency_root"
+            done
+            for package_json in node_modules/oxfmt/package.json tests/node_modules/vue/package.json tests/node_modules/vue-component-type-helpers/package.json tests/node_modules/vue-ssr-css-vars-oracle/package.json playground/node_modules/vue/package.json npm/cli/node_modules/vue/package.json crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/node_modules/vue/package.json crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/node_modules/vue-router/package.json; do
+              test -f "$NATIVE_PHASE_SOURCE_ROOT/$package_json"
+            done
           fi
           bash tools/support/compat/github/native-syntax-semantics.sh; bash tools/support/compat/github/native-javascript-sfc-membership.sh; bash tools/support/compat/github/native-empty-vue-star-exports.sh
       - name: Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.historical_projection_receipt)
         env:
           VIZE_TEST_REQUIRE_TSGO: "1"
           VIZE_TEMPLATE_EMIT_CAPTURE: ${{ runner.temp }}/template-dollar-emit
@@ -98,7 +113,12 @@ jobs:
           set -euo pipefail
           [[ "$GITHUB_WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags origin "$GITHUB_WORKFLOW_SHA"
           for helper in typechecker-native-source-recipe.mjs typechecker-native-release-metadata.mjs; do git show "$GITHUB_WORKFLOW_SHA:tools/benchmarks/scripts/$helper" > "$RUNNER_TEMP/$helper"; done
-          recipe="$(node "$RUNNER_TEMP/typechecker-native-source-recipe.mjs")"
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            [[ "$HISTORICAL_PROJECTION_RECEIPT" == true && "$SOURCE_SHA" == "$DRIVER_SHA" ]]
+            recipe=""
+          else
+            recipe="$(node "$RUNNER_TEMP/typechecker-native-source-recipe.mjs")"
+          fi
           if [[ -n "$recipe" ]]; then
             if [[ "$(node -p 'Boolean(JSON.parse(require("node:fs").readFileSync(process.env.RUNNER_TEMP+"/native-source-recipe.json")).originalEnvironment.VIZE_TSCONFIG_TYPES_CAPTURE)')" != true ]]; then unset VIZE_TSCONFIG_TYPES_CAPTURE; fi; unset GH_TOKEN; bash --noprofile --norc -e -o pipefail "$recipe"
           else

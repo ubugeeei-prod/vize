@@ -247,7 +247,83 @@ fn generated_offset_for_content(
             }
         }
     }
-    actual_expression.or_else(|| virtual_ts.generated_offset(probe_offset))
+    actual_expression
+        .or_else(|| comment_stripped_probe(virtual_ts, source_start, source_text, probe_offset))
+        .or_else(|| virtual_ts.generated_offset(probe_offset))
+}
+
+/// Map the expression caret through comments Canon already stripped.
+///
+/// A non-ASCII comment is wider in UTF-8 than the newline or space left
+/// behind. Affine lookup then walks off the initializer and can land on an
+/// untyped byte, which the binding rule reads as `any`. The strip witness
+/// puts the caret back on the same authored byte inside the stripped text.
+fn comment_stripped_probe(
+    virtual_ts: &TypeAwareDocument,
+    source_start: u32,
+    source_text: &str,
+    probe_offset: u32,
+) -> Option<u32> {
+    let (stripped, witness) = vize_croquis::drawer::strip_js_comments_with_offsets(source_text);
+    let witness = witness?;
+    let relative = usize::try_from(probe_offset.checked_sub(source_start)?).ok()?;
+    let stripped_at = witness
+        .iter()
+        .position(|authored| *authored == relative as u32)?;
+    let stripped = stripped.as_ref();
+    let prefix = stripped.len() - stripped.trim_start().len();
+    let needle = stripped.trim();
+    if needle.is_empty() || stripped_at < prefix {
+        return None;
+    }
+    let local = stripped_at - prefix;
+    if needle.as_bytes().get(local) != stripped.as_bytes().get(stripped_at) {
+        return None;
+    }
+    let authored = source_start as usize..source_start as usize + source_text.len();
+    let mut exact = None;
+    let mut narrowest: Option<(usize, u32)> = None;
+    for row in virtual_ts.mapping.rows() {
+        let spans = std::iter::once((&row.span.src_range, &row.span.gen_range)).chain(
+            row.span
+                .sub_spans
+                .iter()
+                .map(|span| (&span.src_range, &span.gen_range)),
+        );
+        for (source, generated) in spans {
+            if source.start > authored.start || source.end < authored.end {
+                continue;
+            }
+            let Some(text) = virtual_ts.content.get(generated.clone()) else {
+                continue;
+            };
+            let Some(inner) = text.find(needle) else {
+                continue;
+            };
+            let at = generated.start.checked_add(inner)?.checked_add(local)?;
+            if virtual_ts.content.as_bytes().get(at) != needle.as_bytes().get(local) {
+                continue;
+            }
+            let Some(offset) = u32::try_from(at).ok() else {
+                continue;
+            };
+            if source == &authored {
+                if super::expression_bindings::binding_offset(&virtual_ts.content, offset).is_some()
+                {
+                    return Some(offset);
+                }
+                exact.get_or_insert(offset);
+                continue;
+            }
+            if narrowest
+                .as_ref()
+                .is_none_or(|(len, _)| generated.len() < *len)
+            {
+                narrowest = Some((generated.len(), offset));
+            }
+        }
+    }
+    exact.or_else(|| narrowest.map(|(_, offset)| offset))
 }
 
 /// Probe the inferred iterable from a `v-for` source instead of the last byte

@@ -7,7 +7,8 @@
 use vize_atelier_core::lane::transform_with_source_text;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_ssr::{
-    SsrCodegenContext, SsrCodegenResult, SsrCompilerOptions, compile_l2_to_ssr,
+    SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions,
+    SsrSfcContext, compile_l2_to_ssr, compile_l2_to_ssr_with_host_context,
 };
 use vize_croquis::Croquis;
 use vize_l0::{Allocator, String};
@@ -116,7 +117,7 @@ pub(crate) fn compile_lowered_root_to_ssr(
 /// Which emitter owns a JSX SSR compile: the L4 string plan (falling back to
 /// the legacy walker for shapes it does not own), or the walker pinned.
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum SsrLane {
+pub(crate) enum SsrLane {
     Plan,
     #[cfg_attr(
         not(test),
@@ -134,6 +135,38 @@ fn compile_root_on_lane(
     lane: SsrLane,
     diagnostics: &mut Vec<JsxDiagnostic>,
 ) -> SsrComponent {
+    let mut options = SsrCompilerOptions::default();
+    compile_root_with_origins(
+        allocator,
+        lowered,
+        analysis,
+        default_mode,
+        source,
+        lane,
+        diagnostics,
+        &mut options,
+        false,
+        false,
+    )
+    .0
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "shared root codegen and private map/context sidecars"
+)]
+pub(crate) fn compile_root_with_origins(
+    allocator: &Allocator,
+    lowered: LoweredRoot,
+    analysis: &Croquis,
+    default_mode: JsxOutputMode,
+    source: &str,
+    lane: SsrLane,
+    diagnostics: &mut Vec<JsxDiagnostic>,
+    ssr_options: &mut SsrCompilerOptions,
+    source_map: bool,
+    jsx_closure: bool,
+) -> (SsrComponent, crate::emission::RootSourceMap) {
     let LoweredRoot {
         mut root,
         l2,
@@ -147,21 +180,54 @@ fn compile_root_on_lane(
     let scoped_style =
         scoped_css.map(|css| build_scoped_style(component_name.as_deref(), css.as_str()));
 
-    let ssr_options = SsrCompilerOptions {
-        component_name: component_name.clone(),
-        scope_id: scoped_style.as_ref().map(|style| style.scope_id.clone()),
-        ..SsrCompilerOptions::default()
+    ssr_options.component_name = component_name.clone();
+    if jsx_closure {
+        ssr_options.vapor = mode.unwrap_or(default_mode) == JsxOutputMode::Vapor;
+    }
+    ssr_options.scope_id = scoped_style.as_ref().map(|style| style.scope_id.clone());
+    let experimental = SsrCompilerExperimentalOptions {
+        source_map,
+        source_map_filename: Some("module.tsx".into()),
+        ..Default::default()
+    };
+    let context = if jsx_closure {
+        SsrSfcContext::new(true).with_jsx_closure()
+    } else {
+        SsrSfcContext::new(true)
     };
     let planned = match (&l2, lane) {
-        (Ok(l2), SsrLane::Plan) => compile_l2_to_ssr(allocator, l2.source, &l2.root, &ssr_options),
+        (Ok(l2), SsrLane::Plan) if jsx_closure || source_map => {
+            compile_l2_to_ssr_with_host_context(
+                allocator,
+                l2.source,
+                &l2.root,
+                root.loc.span,
+                ssr_options,
+                &experimental,
+                context,
+            )
+        }
+        (Ok(l2), SsrLane::Plan) => compile_l2_to_ssr(allocator, l2.source, &l2.root, ssr_options),
         _ => None,
     };
     let generated = planned.unwrap_or_else(|| {
-        // Legacy emission cannot represent runtime slots. Keep the original
-        // error whenever any unsupported shape prevents complete L4 admission.
         reject_forwarded_slots(&root, SlotsForwardingBackend::Ssr, diagnostics);
-        legacy_ssr(allocator, &mut root, analysis, source, &ssr_options)
+        legacy_ssr(
+            allocator,
+            &mut root,
+            analysis,
+            source,
+            ssr_options,
+            experimental,
+            context,
+        )
     });
+    let code_start = generated.preamble.len()
+        + usize::from(!generated.preamble.is_empty() && !generated.code.is_empty());
+    let origins = crate::emission::RootSourceMap {
+        json: generated.map,
+        code_start,
+    };
 
     let mut code = generated.preamble;
     if !code.is_empty() && !generated.code.is_empty() {
@@ -169,13 +235,16 @@ fn compile_root_on_lane(
     }
     code.push_str(&generated.code);
 
-    SsrComponent {
-        component_name,
-        component_setup,
-        mode: mode.unwrap_or(default_mode),
-        code,
-        scoped_style,
-    }
+    (
+        SsrComponent {
+            component_name,
+            component_setup,
+            mode: mode.unwrap_or(default_mode),
+            code,
+            scoped_style,
+        },
+        origins,
+    )
 }
 
 /// The legacy walker: the shipped transform, then the SSR AST codegen.
@@ -185,6 +254,8 @@ fn legacy_ssr<'a>(
     analysis: &'a Croquis,
     source: &'a str,
     ssr_options: &SsrCompilerOptions,
+    experimental: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
 ) -> SsrCodegenResult {
     let transform_opts = TransformOptions {
         prefix_identifiers: false,
@@ -195,7 +266,9 @@ fn legacy_ssr<'a>(
         ..Default::default()
     };
     transform_with_source_text(allocator, root, transform_opts, Some(analysis), source);
-    SsrCodegenContext::new(allocator, ssr_options, source).generate(root)
+    SsrCodegenContext::new_with_experimental_options(allocator, ssr_options, source, experimental)
+        .with_host_context(context)
+        .generate(root)
 }
 
 #[cfg(test)]

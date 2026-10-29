@@ -23,9 +23,9 @@ impl ServerState {
         .await
         .into_iter()
         .collect::<FxHashMap<_, _>>();
-        for uri in self.documents.uris().into_iter().filter(is_vue_uri) {
-            if let Some(source) = self.documents.text(&uri) {
-                sources.insert(uri, source);
+        for uri in self.documents.uris().iter().filter(|uri| is_vue_uri(uri)) {
+            if let Some(source) = self.documents.text(uri) {
+                sources.insert(uri.clone(), source);
             }
         }
         let mut sources = sources.into_iter().collect::<Vec<_>>();

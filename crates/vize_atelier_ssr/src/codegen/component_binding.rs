@@ -11,7 +11,8 @@ struct ComponentBinding {
 impl<'a> SsrCodegenContext<'a> {
     pub(crate) fn resolve_component_binding_expr(&mut self, component: &str) -> Option<String> {
         let binding = self.resolve_component_binding(component)?;
-        let needs_unref = self.options.inline
+        let needs_unref = !self.jsx_closure
+            && self.options.inline
             && matches!(
                 binding.binding_type,
                 BindingType::SetupLet | BindingType::SetupMaybeRef | BindingType::SetupRef
@@ -21,7 +22,7 @@ impl<'a> SsrCodegenContext<'a> {
         if needs_unref {
             self.use_core_helper(RuntimeHelper::Unref);
             resolved.push_str("_unref(");
-        } else if !self.options.inline {
+        } else if !self.options.inline && !self.jsx_closure {
             resolved.push_str("$setup.");
         }
         resolved.push_str(binding.name.as_str());

@@ -123,6 +123,20 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
     phaseFiles.includes("snapshots/check/zz-intentional-errors-fixtures.ts"),
     "typecheck parity must run the batch broken-to-repaired oracle",
   );
+  assert.ok(
+    phaseFiles.includes("differential/compiler-legacy-cli.test.ts"),
+    "Vue parity must execute the compiler dialect corpus with the legacy source build",
+  );
+  const compilerArtifact = steps.find(
+    (step) => step.name === "Retain source-built Vue compiler dialect observation",
+  );
+  assert.equal(compilerArtifact?.if, "${{ always() }}");
+  assert.match(compilerArtifact?.uses ?? "", /^actions\/upload-artifact@/);
+  assert.equal(compilerArtifact?.with?.name, "vue-parity-compiler-dialects");
+  const compilerArtifactPath = String(compilerArtifact?.with?.path ?? "");
+  assert.match(compilerArtifactPath, /target\/differential\/compiler\.json/);
+  assert.match(compilerArtifactPath, /target\/ci\/vize\.differential-build\.json/);
+  assert.equal(compilerArtifact?.with?.["if-no-files-found"], "error");
 
   const cycles = steps.find(
     (step) => step.name === "Bound fixture process topology under a constrained PID budget",

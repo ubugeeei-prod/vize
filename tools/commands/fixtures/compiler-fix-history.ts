@@ -4,6 +4,10 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  assertCompilerSuccessors,
+  type CompilerSuccessorReference,
+} from "./compiler-successors.ts";
 
 // This is an audit index, never a denominator or an execution certificate.
 export const HISTORY_REVISION = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -54,7 +58,8 @@ type DifferentialFixture = {
   inputs: { files: PinnedArtifact[] };
   options: PinnedArtifact;
   reference: PinnedArtifact;
-  currentReference?: PinnedArtifact & { supersedesSha256: string; issue: string };
+  referenceHistory?: CompilerSuccessorReference[];
+  currentReference?: CompilerSuccessorReference;
   historicalObservation: PinnedArtifact;
   provenance: {
     commits: { sha: string; role: string }[];
@@ -181,14 +186,7 @@ function reviewedScopes(root: string, links: Map<string, CaseReference[]>) {
       fixture.historicalObservation,
     ])
       assertPinnedArtifact(root, artifact);
-    if (fixture.currentReference) {
-      assert.equal(fixture.currentReference.supersedesSha256, fixture.reference.sha256);
-      assert.match(
-        fixture.currentReference.issue,
-        /^https:\/\/github\.com\/ubugeeei-prod\/vize\/issues\/[1-9]\d*$/u,
-      );
-      assertPinnedArtifact(root, fixture.currentReference);
-    }
+    assertCompilerSuccessors(root, fixture);
     reviews.set(review.fixCommit, review);
   }
 

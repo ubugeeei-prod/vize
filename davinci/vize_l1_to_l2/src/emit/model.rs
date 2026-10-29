@@ -65,6 +65,7 @@ pub(super) fn expand<'a>(
 pub(super) fn patch(
     model: &ModelOp<'_>,
     is_component: bool,
+    value_is_static_patchless: bool,
     flag: &mut i32,
     dynamic_props: &mut StdVec<String>,
     caches_handlers: bool,
@@ -73,18 +74,25 @@ pub(super) fn patch(
         *flag |= 16;
         return;
     }
-    // The synthesized `onUpdate:` closure is cached like any other
-    // handler, so it stops being a patch target; a component's value
-    // prop still is.
-    if is_component || !caches_handlers {
+    // The synthesized `onUpdate:` closure is cached like any other handler.
+    // A component value is independently patchless when its model read is a
+    // script-setup literal const; the update closure remains a patch target.
+    if (is_component && !value_is_static_patchless) || !caches_handlers {
         *flag |= 8;
     }
-    patch_keys(model, is_component, dynamic_props, caches_handlers);
+    patch_keys(
+        model,
+        is_component,
+        value_is_static_patchless,
+        dynamic_props,
+        caches_handlers,
+    );
 }
 
 pub(super) fn patch_keys(
     model: &ModelOp<'_>,
     is_component: bool,
+    value_is_static_patchless: bool,
     dynamic_props: &mut StdVec<String>,
     caches_handlers: bool,
 ) {
@@ -93,7 +101,9 @@ pub(super) fn patch_keys(
     }
     if is_component {
         let prop = static_argument(model).unwrap_or("modelValue");
-        push_dynamic(dynamic_props, prop);
+        if !value_is_static_patchless {
+            push_dynamic(dynamic_props, prop);
+        }
         if !caches_handlers {
             push_dynamic(dynamic_props, model_key::static_update_key(prop).as_str());
         }

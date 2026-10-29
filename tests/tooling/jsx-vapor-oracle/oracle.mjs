@@ -1,13 +1,18 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import process from "node:process";
-import { compileFunction } from "node:vm";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { transformSync } from "@babel/core";
 import babelJsx from "@vue/babel-plugin-jsx";
-import { Window } from "happy-dom";
+import {
+  Vue,
+  window,
+  installed,
+  componentFixtures,
+  linkedFunction,
+  transformVueJsxVapor,
+} from "./runtime.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, "..", "..", "..");
@@ -43,172 +48,6 @@ const babelVerdicts = readFileSync(
   join(repoRoot, "crates", "vize_atelier_jsx", "tests", "babel_compat", "verdicts.rs"),
   "utf8",
 );
-
-const window = new Window();
-for (const key of [
-  "window",
-  "document",
-  "Document",
-  "Node",
-  "Text",
-  "Comment",
-  "Element",
-  "HTMLElement",
-  "HTMLInputElement",
-  "SVGElement",
-  "Event",
-  "ShadowRoot",
-]) {
-  globalThis[key] = key === "window" ? window : window[key];
-}
-
-const require = createRequire(import.meta.url);
-// The development browser build prints a banner to stdout during module
-// evaluation, which would corrupt the machine-readable receipt consumed by
-// the Rust oracle. Production and reference output must share this exact
-// runtime entry so stdout remains a single JSON document.
-const vueVaporEntry = require.resolve("vue/dist/vue.runtime-with-vapor.esm-browser.prod.js");
-const Vue = await import(pathToFileURL(vueVaporEntry));
-const { transformVueJsxVapor } = await import("vue-jsx-vapor/api");
-
-// Execute the published vue-jsx-vapor runtime source against the same Vue
-// module as Vize output. Node's `vue` condition omits Vapor helpers, while the
-// package is normally linked by a bundler to Vue's with-vapor entry.
-const fromJsxVapor = createRequire(require.resolve("vue-jsx-vapor"));
-const runtimeEntry = fromJsxVapor.resolve("@vue-jsx-vapor/runtime");
-const runtimeSource = readFileSync(join(dirname(runtimeEntry), "vapor.js"), "utf8");
-const linkedRuntime = transformSync(runtimeSource, {
-  configFile: false,
-  babelrc: false,
-  plugins: [
-    ({ types: t }) => ({
-      visitor: {
-        ImportDeclaration(path) {
-          assert.equal(path.node.source.value, "vue");
-          const declarations = path.node.specifiers.map((specifier) => {
-            if (specifier.type === "ImportNamespaceSpecifier") {
-              return t.variableDeclaration("const", [
-                t.variableDeclarator(specifier.local, t.identifier("__Vue")),
-              ]);
-            }
-            assert.equal(specifier.type, "ImportSpecifier");
-            return t.variableDeclaration("const", [
-              t.variableDeclarator(
-                specifier.local,
-                t.memberExpression(t.identifier("__Vue"), specifier.imported),
-              ),
-            ]);
-          });
-          path.replaceWithMultiple(declarations);
-        },
-        ExportNamedDeclaration(path) {
-          if (path.node.declaration) path.replaceWith(path.node.declaration);
-          else path.remove();
-        },
-      },
-    }),
-  ],
-}).code;
-// Component and slot cohorts import helpers beyond `setNodes`, so expose the
-// pinned runtime's complete public surface to the linked generated modules.
-const JsxVapor = compileFunction(
-  `${linkedRuntime}\nreturn {
-    VaporFor,
-    createComponent,
-    createNodes,
-    createProxyComponent,
-    defineVaporComponent,
-    defineVaporHmrComponent,
-    defineVaporSSRComponent,
-    isBlock,
-    normalizeNode,
-    normalizeVaporSlots,
-    setNodes,
-  };`,
-  ["__Vue"],
-  { filename: "vue-jsx-vapor.runtime.mjs" },
-)(Vue);
-const installed = {
-  packageVersion: require("vue-jsx-vapor/package.json").version,
-  vueVersion: require("vue/package.json").version,
-};
-
-const componentFixtures = {
-  FixtureCard: Vue.defineComponent({
-    props: {
-      title: { type: String, required: true },
-    },
-    setup(props, { slots }) {
-      return () => {
-        const header = slots.header
-          ? [Vue.h("header", { class: "header" }, slots.header({ suffix: "header" })), "|"]
-          : [];
-        return Vue.h("article", { "data-fixture": "card" }, [
-          ...header,
-          Vue.h("h2", null, ["Title:", props.title]),
-          "|",
-          Vue.h("div", { class: "slot" }, slots.default?.({ suffix: "slot" })),
-        ]);
-      };
-    },
-  }),
-};
-
-function linkedFunction(code, functionName, state, reads, observations) {
-  const linked = transformSync(code, {
-    configFile: false,
-    babelrc: false,
-    plugins: [
-      ({ types: t }) => ({
-        visitor: {
-          ImportDeclaration(path) {
-            const source = path.node.source.value;
-            const runtime =
-              source === "vue" ? "Vue" : source.includes("vue-jsx-vapor") ? "JsxVapor" : null;
-            assert.notEqual(runtime, null, `unexpected runtime import: ${source}`);
-            const properties = path.node.specifiers.map((specifier) => {
-              assert.equal(specifier.type, "ImportSpecifier", source);
-              return t.objectProperty(specifier.imported, specifier.local);
-            });
-            path.replaceWith(
-              t.variableDeclaration("const", [
-                t.variableDeclarator(t.objectPattern(properties), t.identifier(runtime)),
-              ]),
-            );
-          },
-          ExportNamedDeclaration(path) {
-            assert.notEqual(
-              path.node.declaration,
-              null,
-              "only declaration exports are executable fixtures",
-            );
-            path.replaceWith(path.node.declaration);
-          },
-        },
-      }),
-    ],
-  }).code;
-  return compileFunction(
-    `${linked}\nreturn ${functionName};`,
-    ["Vue", "JsxVapor", "state", "FixtureCard", "read"],
-    { filename: `${functionName}.generated.mjs` },
-  )(
-    {
-      ...Vue,
-      setDynamicProps(...args) {
-        observations.propPublications += 1;
-        return Vue.setDynamicProps(...args);
-      },
-    },
-    JsxVapor,
-    state,
-    componentFixtures.FixtureCard,
-    (name) => {
-      reads.push(name);
-      return state[name];
-    },
-  );
-}
 
 function observeChildren(parent) {
   const children = [];
@@ -269,14 +108,22 @@ function materialize(value) {
   return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, materialize(item)]));
 }
 
-async function trace(code, functionName, spec, runtime = "vapor") {
+async function trace(code, functionName, spec, runtime = "vapor", authoredModule = false) {
   const initial = materialize(structuredClone(spec.initial));
   const state = spec.valueMatrix ? Vue.shallowReactive(initial) : Vue.reactive(initial);
   const reads = [];
   const observations = { propPublications: 0 };
   const render = linkedFunction(code, functionName, state, reads, observations);
-  const component =
-    runtime === "vapor"
+  if (authoredModule) {
+    assert.equal(runtime, "vapor");
+    assert.equal(functionName, "App");
+    assert.equal(typeof render, "object", `${spec.id}: actual authored component object`);
+    assert.equal(render.__vapor, true, `${spec.id}: actual Vapor component role`);
+    assert.equal(typeof render.setup, "function", `${spec.id}: authored setup closure`);
+  }
+  const component = authoredModule
+    ? render
+    : runtime === "vapor"
       ? Vue.defineVaporComponent({ setup: () => render({}) })
       : { setup: () => () => render({}, []) };
   const app = runtime === "vapor" ? Vue.createVaporApp(component) : Vue.createApp(component);
@@ -468,6 +315,22 @@ function semanticTrace(phases) {
 
 assertInventory(recordedCorpus);
 
+// Keep the unmodified emitted references and every runtime phase, including a
+// partial failure, beside the separately captured complete compiler payload.
+const evidence = { installed, cases: {}, failures: 0 };
+process.on("uncaughtExceptionMonitor", (error) => {
+  evidence.failures += 1;
+  evidence.exception = { message: error.message, stack: error.stack };
+});
+if (process.env.VIZE_JSX_VAPOR_COMPAT_TRACE_CAPTURE) {
+  process.on("exit", () => {
+    writeFileSync(
+      process.env.VIZE_JSX_VAPOR_COMPAT_TRACE_CAPTURE,
+      `${JSON.stringify(evidence, null, 2)}\n`,
+    );
+  });
+}
+
 if (process.argv.includes("--reference")) {
   const reference = {};
   for (const spec of recordedCorpus.cases) {
@@ -499,8 +362,16 @@ if (process.argv.includes("--reference")) {
   };
   for (const [index, spec] of recordedCorpus.cases.entries()) {
     const compiled = input.compiled[index];
-    const reference = await trace(vaporReferenceCode(spec), "App", spec);
-    const actual = await trace(compiled.code, compiled.functionName, spec);
+    const row = (evidence.cases[spec.id] = {});
+    row.referenceCode = vaporReferenceCode(spec);
+    const reference = (row.reference = await trace(row.referenceCode, "App", spec));
+    const actual = (row.actual = await trace(
+      compiled.code,
+      compiled.functionName,
+      spec,
+      "vapor",
+      true,
+    ));
     if (verdicts.cases[spec.id].verdict === "equivalent") {
       assert.deepEqual(actual, reference, spec.id);
       assertBehavior(spec, actual);
@@ -514,8 +385,14 @@ if (process.argv.includes("--reference")) {
     }
     if (spec.babelCorpusId) {
       assert.deepEqual(Object.keys(compiled.vdom), ["code", "functionName"]);
-      const babel = await trace(babelReferenceCode(spec), "App", spec, "vdom");
-      const vdom = await trace(compiled.vdom.code, compiled.vdom.functionName, spec, "vdom");
+      row.babelCode = babelReferenceCode(spec);
+      const babel = (row.babel = await trace(row.babelCode, "App", spec, "vdom"));
+      const vdom = (row.vdom = await trace(
+        compiled.vdom.code,
+        compiled.vdom.functionName,
+        spec,
+        "vdom",
+      ));
       assert.deepEqual(vdom, babel, `${spec.id}: VDOM/Babel`);
       assert.deepEqual(vdom, actual, `${spec.id}: VDOM/Vapor`);
       assertBehavior(spec, vdom);

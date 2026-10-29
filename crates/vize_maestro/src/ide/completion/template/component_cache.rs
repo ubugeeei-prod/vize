@@ -121,12 +121,7 @@ fn open_component(ctx: &IdeContext<'_>, resolved: &Path) -> Option<(String, u64,
 fn open_stamp(document: &crate::document::Document) -> (String, u64, i32, u64) {
     let content = document.text();
     let hash = vize_l0::hash::hash_str(&content);
-    (
-        content,
-        document.content.len_bytes() as u64,
-        document.version,
-        hash,
-    )
+    (content, document.byte_len() as u64, document.version, hash)
 }
 
 #[cfg(test)]

@@ -142,6 +142,8 @@ export const TYPECHECKER_TESTS = {
   "workspace-alias-cache-10063": "workspace_package_alias_cache_preserves_sequential_scopes",
   "workspace-package-import-alias-10175":
     "workspace_package_import_aliases_preserve_clean_diagnostics",
+  "zero-argument-slot-constructor-11013":
+    "zero_argument_slot_constructors_preserve_mapper_and_authored_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -247,4 +249,5 @@ export const sourceRevisions = {
   "valueless-directive-import-3140": "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",
   "workspace-alias-cache-10063": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
   "workspace-package-import-alias-10175": "c935e00211b3d6ca271e53658f88156921a639a7",
+  "zero-argument-slot-constructor-11013": "a95d0aad73c8403767a507f8f0768dd0ffb265c7",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;

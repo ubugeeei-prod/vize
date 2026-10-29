@@ -74,6 +74,11 @@ jobs:
             merge_group) printf 'VIZE_TEST_REQUIRE_TSGO=1\n' >> "$GITHUB_ENV" ;;
             *) exit 1 ;;
           esac
+          if [[ "$COHORT" == "typechecker" ]]; then
+            runtime="$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+            test -x "$runtime"
+            printf 'CORSA_PATH=%s\n' "$runtime" >> "$GITHUB_ENV"
+          fi
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Hydrate the required ElementPlus projection fixture

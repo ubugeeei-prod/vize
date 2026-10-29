@@ -10,7 +10,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Span, String};
 use vize_l2::expr::ExprRef;
-use vize_l2::op::{Attribute, BindOp, BindingOp, OnOp};
+use vize_l2::op::{Attribute, BindOp, BindingOp, ModelOp, OnOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -60,6 +60,8 @@ pub(super) fn object_patch<'a>(
     if_key: Option<&str>,
     for_item: bool,
     is_ts: bool,
+    bind_is_literal_const: &dyn Fn(&BindOp<'a>) -> bool,
+    model_is_literal_const: &dyn Fn(&ModelOp<'a>) -> bool,
     handler_is_constant: &dyn Fn(&OnOp<'a>) -> bool,
     handler_is_cached: &dyn Fn(&OnOp<'a>) -> bool,
     caches_handlers: bool,
@@ -85,6 +87,12 @@ pub(super) fn object_patch<'a>(
                         || (!is_component && matches!(raw_name, "class" | "style"))
                         || bind_value_is_static_patchless(bind, is_ts)
                     {
+                        continue;
+                    }
+                    if !raw_name.ends_with("Modifiers") && bind_is_literal_const(bind) {
+                        if has_prop_modifier(bind) {
+                            flag |= 32;
+                        }
                         continue;
                     }
                     let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
@@ -123,7 +131,13 @@ pub(super) fn object_patch<'a>(
                 }
             }
             BindingOp::Model(model) => {
-                super::model::patch_keys(model, is_component, &mut dynamic_props, caches_handlers);
+                super::model::patch_keys(
+                    model,
+                    is_component,
+                    model_is_literal_const(model),
+                    &mut dynamic_props,
+                    caches_handlers,
+                );
             }
             BindingOp::VueHtml(_) => {
                 let key = String::from("innerHTML");

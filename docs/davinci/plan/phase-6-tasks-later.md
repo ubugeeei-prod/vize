@@ -1,5 +1,12 @@
 # Phase 6 — Task contracts, P6-7 through P6-13
 
+> [!IMPORTANT]
+> Frozen historical contracts. The 2026-10-17
+> [scope decision](../decisions/2026-10-17-vue-toolchain-scope.md) retired the
+> component ABI work described here. Incomplete steps below are not current
+> backlog or release gates; supported JavaScript plugin work is tracked by its
+> product plan instead.
+
 > [!NOTE]
 > Continuation of [phase-6-tasks.md](./phase-6-tasks.md) under the 350-line source budget. Same authority, same format; the TODO index in [phase-6.md](./phase-6.md) links each task to whichever file holds its contract.
 

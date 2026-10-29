@@ -157,10 +157,10 @@ impl ServerState {
         let mut transitions = self
             .documents
             .uris()
-            .into_iter()
+            .iter()
             .filter_map(|uri| {
-                let previous = self.project_contexts.routes.get(&uri)?.value().clone();
-                let target = self.document_configuration_root(&uri)?;
+                let previous = self.project_contexts.routes.get(uri)?.value().clone();
+                let target = self.document_configuration_root(uri)?;
                 (target != previous.root && roots.contains(&target)).then_some((previous, target))
             })
             .collect::<Vec<_>>();
@@ -197,14 +197,16 @@ impl ServerState {
         let moved = self
             .documents
             .uris()
-            .into_iter()
+            .iter()
             .filter(|document| {
+                let document = *document;
                 self.project_contexts
                     .routes
                     .get(document)
                     .is_some_and(|route| route.value() == previous)
                     && self.document_configuration_root(document).as_deref() == Some(target)
             })
+            .cloned()
             .collect::<Vec<_>>();
         let mut admitted = Vec::new();
         for document in moved {

@@ -9,6 +9,13 @@ import { fileURLToPath } from "node:url";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const nativeRuntime = path.join(
+  root,
+  "node_modules/@typescript",
+  `typescript-${process.platform}-${process.arch}`,
+  "lib",
+  process.platform === "win32" ? "tsc.exe" : "tsc",
+);
 
 function position(source: string, needle: string) {
   const offset = source.indexOf(needle);
@@ -79,6 +86,7 @@ export const widgetValue = 1;
           cwd: project,
           encoding: "utf8",
           timeout: 60_000,
+          env: { ...process.env, CORSA_PATH: nativeRuntime },
         },
       );
       assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);

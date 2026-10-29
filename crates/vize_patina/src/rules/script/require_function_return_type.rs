@@ -32,14 +32,20 @@
 //! ```
 //!
 //! ### Exceptions
-//! - Callback functions passed as arguments (inferred from context)
-//! - Arrow functions without block body (e.g., `x => x + 1`)
+//! - Function expressions in a typed expression position, including call/new
+//!   arguments and their nested object properties
+//! - Immediately invoked function expressions
+//! - Arrow functions without parenthesized parameters (e.g., `x => x + 1`)
 
-use oxc_ast::ast::{ArrowFunctionExpression, Function, Program};
+use oxc_ast::{
+    AstKind,
+    ast::{ArrowFunctionExpression, Function, Program},
+};
 use oxc_ast_visit::{
     Visit,
     walk::{walk_arrow_function_expression, walk_function},
 };
+use oxc_span::{GetSpan, Span};
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::cstr;
 
@@ -75,20 +81,102 @@ impl ScriptRule for RequireFunctionReturnType {
             source,
             offset,
             result,
+            ancestors: Vec::new(),
         }
         .visit_program(program);
     }
 }
 
-struct ReturnTypeVisitor<'source, 'result> {
+struct ReturnTypeVisitor<'ast, 'source, 'result> {
     source: &'source str,
     offset: usize,
     result: &'result mut ScriptLintResult,
+    ancestors: Vec<AstKind<'ast>>,
 }
 
-impl<'a> Visit<'a> for ReturnTypeVisitor<'_, '_> {
+impl ReturnTypeVisitor<'_, '_, '_> {
+    /// Keep this syntactic policy deliberately narrower than whole-program type
+    /// inference. Call/new arguments are contextual expression positions, and
+    /// that context propagates through object/array literals. Explicit type
+    /// annotations and assertions provide the other local proof. A function
+    /// boundary stops propagation so declarations inside a callback body still
+    /// need their own return type.
+    fn is_contextually_typed_or_iife(&self, span: Span) -> bool {
+        for ancestor in self.ancestors.iter().rev() {
+            match ancestor {
+                AstKind::Function(_) | AstKind::ArrowFunctionExpression(_) => return false,
+                AstKind::ParenthesizedExpression(_)
+                | AstKind::ObjectExpression(_)
+                | AstKind::ArrayExpression(_) => {}
+                AstKind::ObjectProperty(property) => {
+                    if !property.value.span().contains_inclusive(span) {
+                        return false;
+                    }
+                }
+                AstKind::CallExpression(call) => {
+                    return call.callee.span().contains_inclusive(span)
+                        || call
+                            .arguments
+                            .iter()
+                            .any(|argument| argument.span().contains_inclusive(span));
+                }
+                AstKind::NewExpression(expression) => {
+                    return expression
+                        .arguments
+                        .iter()
+                        .any(|argument| argument.span().contains_inclusive(span));
+                }
+                AstKind::VariableDeclarator(declaration) => {
+                    return declaration.type_annotation.is_some()
+                        && declaration
+                            .init
+                            .as_ref()
+                            .is_some_and(|value| value.span().contains_inclusive(span));
+                }
+                AstKind::PropertyDefinition(definition) => {
+                    return definition.type_annotation.is_some()
+                        && definition
+                            .value
+                            .as_ref()
+                            .is_some_and(|value| value.span().contains_inclusive(span));
+                }
+                AstKind::FormalParameter(parameter) => {
+                    return parameter.type_annotation.is_some()
+                        && parameter
+                            .initializer
+                            .as_ref()
+                            .is_some_and(|value| value.span().contains_inclusive(span));
+                }
+                AstKind::TSAsExpression(expression) => {
+                    return expression.expression.span().contains_inclusive(span);
+                }
+                AstKind::TSTypeAssertion(expression) => {
+                    return expression.expression.span().contains_inclusive(span);
+                }
+                AstKind::TSSatisfiesExpression(expression) => {
+                    return expression.expression.span().contains_inclusive(span);
+                }
+                _ => return false,
+            }
+        }
+        false
+    }
+}
+
+impl<'a> Visit<'a> for ReturnTypeVisitor<'a, '_, '_> {
+    fn enter_node(&mut self, kind: AstKind<'a>) {
+        self.ancestors.push(kind);
+    }
+
+    fn leave_node(&mut self, _: AstKind<'a>) {
+        debug_assert!(self.ancestors.pop().is_some());
+    }
+
     fn visit_function(&mut self, function: &Function<'a>, flags: ScopeFlags) {
-        if function.body.is_some() && function.return_type.is_none() {
+        if function.body.is_some()
+            && function.return_type.is_none()
+            && !(function.is_expression() && self.is_contextually_typed_or_iife(function.span))
+        {
             // Keep the established function-keyword span and message. Method
             // signatures and ambient declarations are not runtime functions.
             let header = self
@@ -122,11 +210,13 @@ impl<'a> Visit<'a> for ReturnTypeVisitor<'_, '_> {
         let start = arrow.params.span.start as usize;
         let end = arrow.params.span.end as usize;
         let params = self.source.get(start..end).unwrap_or_default();
-        let before = self.source.get(..start).unwrap_or_default();
-        // Retain the current parenthesized-arrow and callback policy while
-        // selecting real ArrowFunctionExpression nodes, never TSFunctionType.
-        let callback = matches!(before.trim_end().chars().last(), Some(',' | '('));
-        if arrow.return_type.is_none() && params.starts_with('(') && !callback {
+        // Retain the parenthesized-arrow policy while selecting genuine runtime
+        // expressions, never TSFunctionType. Context is derived from AST
+        // ownership instead of the byte immediately before the parameter list.
+        if arrow.return_type.is_none()
+            && params.starts_with('(')
+            && !self.is_contextually_typed_or_iife(arrow.span)
+        {
             let tail = self
                 .source
                 .get(end..arrow.body.span.start as usize)

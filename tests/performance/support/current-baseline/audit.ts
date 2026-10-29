@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { validateBuildReceipt } from "../../../differential/build-receipt.ts";
+import { type BuildIdentity, validateBuildReceipt } from "../../../differential/build-receipt.ts";
 import { auditRss } from "./rss.ts";
 import { completionLabels } from "../../../tooling/support/lsp/assertions.ts";
 import { loadLspChurnBudget } from "../churn-metrics.ts";
+import { churnCycleSamplePolicy } from "../churn-percentiles.ts";
 import { positionInsideTemplateSymbol } from "../lsp-oracle.ts";
 import { loadLspIncrementalBudget } from "../incremental-metrics.ts";
 import {
@@ -28,6 +29,31 @@ export function readLines(directory: string, file: string): Record<string, unkno
     .split("\n")
     .filter(Boolean)
     .map((line) => object(JSON.parse(line)));
+}
+
+export function auditChurnCycleStats(
+  rawTimings: unknown,
+  rawStats: unknown,
+  expectedCycles: number,
+): void {
+  assert.ok(Array.isArray(rawTimings), "cycle timings must retain their raw population");
+  assert.equal(rawTimings.length, expectedCycles);
+  assert.ok(
+    rawTimings.every(
+      (duration): duration is number =>
+        typeof duration === "number" && Number.isFinite(duration) && duration >= 0,
+    ),
+    "cycle timings must be finite non-negative milliseconds",
+  );
+  const sortedCycles = [...rawTimings].sort((a, b) => a - b);
+  const nearestRank = (quantile: number) =>
+    sortedCycles[Math.ceil(quantile * sortedCycles.length) - 1];
+  const cycleStats = object(rawStats);
+  assert.equal(cycleStats.cycles, expectedCycles);
+  assert.equal(cycleStats.p50Ms, nearestRank(0.5), "p50Ms must match the raw cycle population");
+  assert.equal(cycleStats.p95Ms, nearestRank(0.95), "p95Ms must match the raw cycle population");
+  assert.equal(cycleStats.p99Ms, nearestRank(0.99), "p99Ms must match the raw cycle population");
+  assert.deepEqual(cycleStats.samplePolicy, churnCycleSamplePolicy);
 }
 
 export function cycleObservations(
@@ -176,7 +202,7 @@ export function cycleObservations(
 
 export function auditSession(
   directory: string,
-  expected: Record<string, unknown>,
+  expected: BuildIdentity,
   custody: Record<string, unknown>,
 ) {
   const launch = readJson(directory, "launch.json");
@@ -216,7 +242,8 @@ export function auditSession(
   assert.equal(metrics.commit, expected.sourceRevision);
   const { budget } = loadLspChurnBudget("misskey-lsp-churn");
   assert.deepEqual(metrics.budget, { scale: 1, ...budget });
-  assert.equal(object(metrics.cycleStats).cycles, 40);
+  const timings = object(metrics.timingsMs);
+  auditChurnCycleStats(timings.cycle, metrics.cycleStats, budget.cyclesPerPhase * 2);
   const fixture = readJson(directory, "fixture.json");
   assert.equal(object(fixture.entry).fixturePath, object(custody.fixture).path);
   assert.equal(object(fixture.entry).revision, object(custody.fixture).revision);

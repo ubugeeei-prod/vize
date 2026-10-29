@@ -8,7 +8,13 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use vize_carton::CompactString;
+mod site;
+mod vue_authority;
+pub(crate) use site::template_usage_is_shadowed;
+use vue_authority::vue_specifier_is_redirected;
+
+use vize_carton::{CompactString, FxHashMap, FxHashSet};
+use vize_croquis::facts::components::{LocalComponentBinding, local_component_binding};
 use vize_croquis::facts::{FactGroup, component_identity};
 use vize_l0::fact::{Demand, FactProducer, FactTable, FactTableBuilder, FactView};
 use vize_l0::pass::AnalysisId;
@@ -74,86 +80,114 @@ pub fn component_usage_targets(registry: &ModuleRegistry, caller: FileId) -> Vec
     // The same resolution `RenderTree` stores. Walking one file does not
     // rebuild the project table: a lint rebuilds every file, and a fresh
     // table per file was quadratic.
+    let usages = vize_croquis::facts::component_usage_list(&entry.analysis);
+    let covered = concrete_coverage(&usages);
     let mut targets = Vec::new();
-    for tag in source_tags(entry) {
-        let Some((target, _)) = resolve_tag(registry, entry, tag.as_str()) else {
+    let mut seen = FxHashSet::default();
+    let mut resolutions = FxHashMap::default();
+    for usage in &usages {
+        if template_usage_is_shadowed(&entry.analysis, usage) {
             continue;
-        };
-        if !targets.contains(&target) {
+        }
+        if let Some((target, _)) =
+            cached_tag(registry, entry, usage.name.as_str(), &mut resolutions)
+            && seen.insert(target)
+        {
+            targets.push(target);
+        }
+    }
+    for name in vize_croquis::facts::used_component_name_list(&entry.analysis) {
+        // Concrete-but-shadowed is complete evidence of zero root usages.
+        // Only genuinely unavailable site records retain the legacy fallback.
+        if covered.contains(&normalized_tag(name.as_str())) {
+            continue;
+        }
+        if let Some((target, _)) = cached_tag(registry, entry, name.as_str(), &mut resolutions)
+            && seen.insert(target)
+        {
             targets.push(target);
         }
     }
     targets
 }
 
-fn source_tags(entry: &ModuleEntry) -> Vec<CompactString> {
-    let mut tags = Vec::new();
-    for usage in vize_croquis::facts::component_usage_list(&entry.analysis) {
-        if !tags
-            .iter()
-            .any(|tag: &CompactString| names_match(tag.as_str(), usage.name.as_str()))
-        {
-            tags.push(usage.name);
-        }
+fn normalized_tag(tag: &str) -> CompactString {
+    CompactString::new(vize_croquis::naming::to_pascal_case(tag))
+}
+
+fn concrete_coverage(
+    usages: &[vize_croquis::analysis::ComponentUsage],
+) -> FxHashSet<CompactString> {
+    usages
+        .iter()
+        .map(|usage| normalized_tag(usage.name.as_str()))
+        .collect()
+}
+
+fn cached_tag(
+    registry: &ModuleRegistry,
+    entry: &ModuleEntry,
+    tag: &str,
+    resolutions: &mut FxHashMap<CompactString, Option<(FileId, CompactString)>>,
+) -> Option<(FileId, CompactString)> {
+    if let Some(resolved) = resolutions.get(tag) {
+        return resolved.clone();
     }
-    for name in vize_croquis::facts::used_component_name_list(&entry.analysis) {
-        if !tags
-            .iter()
-            .any(|tag: &CompactString| names_match(tag.as_str(), name.as_str()))
-        {
-            tags.push(name);
-        }
-    }
-    tags
+    let resolved = resolve_tag(registry, entry, tag);
+    resolutions.insert(CompactString::new(tag), resolved.clone());
+    resolved
 }
 
 fn edges_of(
     registry: &ModuleRegistry,
     entry: &ModuleEntry,
 ) -> BTreeMap<RenderEdgeKey, Vec<RenderSite>> {
-    let mut grouped = BTreeMap::new();
-    for usage in vize_croquis::facts::component_usage_list(&entry.analysis) {
-        push_edge(
-            registry,
-            entry,
-            usage.name.as_str(),
-            Some(RenderSite {
+    let usages = vize_croquis::facts::component_usage_list(&entry.analysis);
+    let covered = concrete_coverage(&usages);
+    let mut grouped: BTreeMap<RenderEdgeKey, Vec<RenderSite>> = BTreeMap::new();
+    let mut resolutions = FxHashMap::default();
+    for usage in &usages {
+        if template_usage_is_shadowed(&entry.analysis, usage) {
+            continue;
+        }
+        let Some((target, export_name)) =
+            cached_tag(registry, entry, usage.name.as_str(), &mut resolutions)
+        else {
+            continue;
+        };
+        grouped
+            .entry(RenderEdgeKey {
+                caller: entry.id,
+                target,
+                export_name,
+            })
+            .or_default()
+            .push(RenderSite {
                 start: usage.start,
                 end: usage.end,
-            }),
-            &mut grouped,
-        );
+            });
     }
     for name in vize_croquis::facts::used_component_name_list(&entry.analysis) {
-        let covered = vize_croquis::facts::component_usage_list(&entry.analysis)
-            .iter()
-            .any(|usage| names_match(usage.name.as_str(), name.as_str()));
-        if !covered {
-            push_edge(registry, entry, name.as_str(), None, &mut grouped);
+        if covered.contains(&normalized_tag(name.as_str())) {
+            continue;
         }
+        let Some((target, export_name)) =
+            cached_tag(registry, entry, name.as_str(), &mut resolutions)
+        else {
+            continue;
+        };
+        grouped
+            .entry(RenderEdgeKey {
+                caller: entry.id,
+                target,
+                export_name,
+            })
+            .or_default();
     }
     for sites in grouped.values_mut() {
         sites.sort_by_key(|site| (site.start, site.end));
     }
     grouped
-}
-
-fn push_edge(
-    registry: &ModuleRegistry,
-    entry: &ModuleEntry,
-    tag: &str,
-    site: Option<RenderSite>,
-    grouped: &mut BTreeMap<RenderEdgeKey, Vec<RenderSite>>,
-) {
-    let Some((target, export_name)) = resolve_tag(registry, entry, tag) else {
-        return;
-    };
-    let key = RenderEdgeKey {
-        caller: entry.id,
-        target,
-        export_name,
-    };
-    grouped.entry(key).or_default().extend(site);
 }
 
 /// The file a tag renders through this file's imports, with re-exports
@@ -164,7 +198,20 @@ pub fn imported_render_target(
     tag: &str,
 ) -> Option<FileId> {
     let entry = registry.get(caller)?;
-    resolve_imported(registry, entry, tag).map(|(file, _)| file)
+    resolve_bound(registry, entry, tag).map(|(file, _)| file)
+}
+
+/// Site-owned import resolution for consumers which retain a ComponentUsage.
+pub(crate) fn imported_render_target_at(
+    registry: &ModuleRegistry,
+    caller: FileId,
+    usage: &vize_croquis::analysis::ComponentUsage,
+) -> Option<FileId> {
+    let entry = registry.get(caller)?;
+    if template_usage_is_shadowed(&entry.analysis, usage) {
+        return None;
+    }
+    resolve_bound(registry, entry, usage.name.as_str()).map(|(file, _)| file)
 }
 
 fn resolve_tag(
@@ -172,8 +219,76 @@ fn resolve_tag(
     entry: &ModuleEntry,
     tag: &str,
 ) -> Option<(FileId, CompactString)> {
-    resolve_imported(registry, entry, tag).or_else(|| {
-        unique_component(registry, tag).map(|target| (target, CompactString::new("default")))
+    let binding = local_component_binding(&entry.analysis, tag);
+    match binding {
+        LocalComponentBinding::Absent | LocalComponentBinding::StaticImport => {
+            resolve_imported(registry, entry, tag).or_else(|| {
+                unique_component(registry, tag)
+                    .map(|target| (target, CompactString::new("default")))
+            })
+        }
+        binding => resolve_binding(registry, entry, binding),
+    }
+}
+
+/// Resolve an actual local binding, preserving the distinction between a
+/// missing binding and one whose value is opaque.
+fn resolve_bound(
+    registry: &ModuleRegistry,
+    entry: &ModuleEntry,
+    tag: &str,
+) -> Option<(FileId, CompactString)> {
+    let binding = local_component_binding(&entry.analysis, tag);
+    if matches!(
+        binding,
+        LocalComponentBinding::StaticImport | LocalComponentBinding::Absent
+    ) {
+        return resolve_imported(registry, entry, tag);
+    }
+    resolve_binding(registry, entry, binding)
+}
+
+fn resolve_binding(
+    registry: &ModuleRegistry,
+    entry: &ModuleEntry,
+    binding: LocalComponentBinding<'_>,
+) -> Option<(FileId, CompactString)> {
+    match binding {
+        LocalComponentBinding::Async(module) => {
+            // Literal relative .vue imports have one runtime file identity.
+            // Reuse the logical resolver candidates, requiring convergence;
+            // package/alias/type-view candidates cannot certify this fact.
+            // A project path or Vite alias that rewrites `vue` is not that package.
+            if registry.project_config_redirects_vue(vue_specifier_is_redirected) {
+                return None;
+            }
+            if !(module.starts_with("./") || module.starts_with("../")) || !module.ends_with(".vue")
+            {
+                return None;
+            }
+            let mut targets = import_candidates(module, entry.path.parent())
+                .into_iter()
+                .filter_map(|candidate| registry.get_by_path(&candidate).map(|target| target.id));
+            let target = targets.next()?;
+            if targets.any(|other| other != target) {
+                return None;
+            }
+            Some((target, CompactString::new("default")))
+        }
+        LocalComponentBinding::StaticImport
+        | LocalComponentBinding::Absent
+        | LocalComponentBinding::Opaque => None,
+    }
+}
+
+/// Whether the template tag is owned by a local binding, even when its value
+/// cannot establish render ancestry.
+pub fn has_local_render_binding(registry: &ModuleRegistry, caller: FileId, tag: &str) -> bool {
+    registry.get(caller).is_some_and(|entry| {
+        matches!(
+            local_component_binding(&entry.analysis, tag),
+            LocalComponentBinding::Opaque | LocalComponentBinding::Async(_)
+        )
     })
 }
 

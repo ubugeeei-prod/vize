@@ -14,12 +14,12 @@ const require = createRequire(path.join(plugin, "package.json"));
 const vpPackage = require.resolve("vite-plus/package.json");
 const vp = path.join(path.dirname(vpPackage), "bin/vp");
 
-function run(cwd: string, args: string[], expected = 0) {
+function run(cwd: string, args: string[], expected = 0, environment: NodeJS.ProcessEnv = {}) {
   const result = spawnSync(process.execPath, [vp, ...args], {
     cwd,
     encoding: "utf8",
     timeout: 120_000,
-    env: { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" },
+    env: { ...process.env, ...environment, NO_COLOR: "1", FORCE_COLOR: "0" },
   });
   assert.equal(result.error, undefined);
   const output = result.stdout + result.stderr;
@@ -34,9 +34,16 @@ test("packed defineConfig runs native and Vite+ tools using the consumer's insta
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vp-consumer space-"));
   try {
     fs.mkdirSync(path.join(directory, "node_modules/@vizejs"), { recursive: true });
+    fs.mkdirSync(path.join(directory, "node_modules/@typescript"), { recursive: true });
+    const nativePackageName = `@typescript/typescript-${process.platform}-${process.arch}`;
+    const nativePackage = path.join(root, "node_modules", nativePackageName);
+    const nativeManifest = JSON.parse(
+      fs.readFileSync(path.join(nativePackage, "package.json"), "utf8"),
+    );
     for (const [name, source] of [
       ["vite-plus", path.dirname(vpPackage)],
       ["@vizejs/vite-plugin", plugin],
+      [nativePackageName, nativePackage],
       [
         "vue",
         path.dirname(
@@ -49,9 +56,26 @@ test("packed defineConfig runs native and Vite+ tools using the consumer's insta
         path.join(directory, "node_modules", name),
         process.platform === "win32" ? "junction" : "dir",
       );
+    const corsaPath = path.join(
+      directory,
+      "node_modules",
+      nativePackageName,
+      "lib",
+      process.platform === "win32" ? "tsc.exe" : "tsc",
+    );
+    assert.ok(fs.statSync(corsaPath).isFile());
+    const providerEnvironment = { CORSA_PATH: corsaPath };
     const write = (name: string, value: string) =>
       fs.writeFileSync(path.join(directory, name), value);
-    write("package.json", JSON.stringify({ name: "vize-consumer", type: "module", private: true }));
+    write(
+      "package.json",
+      JSON.stringify({
+        name: "vize-consumer",
+        type: "module",
+        private: true,
+        optionalDependencies: { [nativePackageName]: nativeManifest.version },
+      }),
+    );
     write(
       "vite.config.ts",
       `import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -116,7 +140,7 @@ export default defineConfig({
     const generated = "export const generated=1;\n";
     write(".vize/canon/generated.ts", generated);
     run(directory, ["run", "fmt"]);
-    run(directory, ["run", "check"]);
+    run(directory, ["run", "check"], 0, providerEnvironment);
     assert.equal(
       fs.readFileSync(path.join(directory, ".vize/canon/generated.ts"), "utf8"),
       generated,
@@ -133,7 +157,7 @@ export default defineConfig({
       pack: { entry: ["entry.ts"], outDir: "library", format: ["esm"], vue: { dts: true, declarationMap: true, sourcemap: true } },`,
       ),
     );
-    run(directory, ["run", "pack"]);
+    run(directory, ["run", "pack"], 0, providerEnvironment);
     const outputs = fs
       .readdirSync(path.join(directory, "library"), { recursive: true })
       .map(String);

@@ -175,6 +175,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("script/one-component-per-file", Exact, OPTIONS, Warning),
     row!("script/order-in-components", Exact, OPTIONS, Warning),
     row!("script/prefer-computed", Heuristic, SCRIPT, Warning),
+    row!("script/prefer-define-emits-binding", Complete, MACROS, Warning),
     row!("script/prefer-define-options", Exact, MACROS, Warning),
     row!("script/prefer-import-from-vue", Exact, SCRIPT, Warning),
     row!("script/prefer-ref-over-reactive", Heuristic, SCRIPT, Warning),

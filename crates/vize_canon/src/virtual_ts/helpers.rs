@@ -12,6 +12,7 @@ use std::ops::Range;
 mod dom_events;
 mod preamble;
 pub(crate) mod setup_macros;
+pub(crate) mod shared_types;
 mod vue2_members;
 
 pub(crate) use dom_events::{get_dom_event_type, is_known_dom_event_name};

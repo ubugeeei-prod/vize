@@ -253,8 +253,15 @@ fn preserves_only_leading_typescript_suppression_comments() {
         expression_source_for_typecheck("// @ts-ignore\nvalue").as_ref(),
         "// @ts-ignore\nvalue"
     );
+    assert_eq!(
+        expression_source_for_typecheck("/* @ts-expect-error */\nvalue").as_ref(),
+        "/* @ts-expect-error */\nvalue"
+    );
     assert!(!contains_typescript_suppression_comment(
         r#""// @ts-ignore" + value"#
+    ));
+    assert!(!contains_typescript_suppression_comment(
+        r#"`/* @ts-expect-error */` + value"#
     ));
     let object = "{ name: 'route',\n// @ts-expect-error upstream note\nparams }";
     assert!(!contains_typescript_suppression_comment(object));

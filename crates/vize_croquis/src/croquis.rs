@@ -66,7 +66,7 @@ pub use snapshot::{
 pub use summary::CroquisSemanticSummary;
 pub use template::{
     ComponentRegistration, ComponentUsage, ElementIdInfo, ElementIdKind, EventListener,
-    NuxtTemplateRenderFacts, PassedProp, SlotUsage, SpreadProp, TemplateExpression,
+    NuxtPageLayout, NuxtTemplateRenderFacts, PassedProp, SlotUsage, SpreadProp, TemplateExpression,
     TemplateExpressionKind, TemplateInfo,
 };
 pub use template_components::TemplateComponentRegistrations;
@@ -87,6 +87,14 @@ use vize_carton::{CompactString, FxHashMap, FxHashSet};
 /// interface for downstream consumers (linter, transformer).
 #[derive(Default)]
 pub struct Croquis {
+    /// Original script Program domains: 0 absent, 1 single, 2 multiple/refused.
+    /// Counts actual source inputs even when private capture is not demanded.
+    #[doc(hidden)]
+    pub(crate) source_program_count: u8,
+    /// Private cross-file provenance from one original script Program; not a DTO field.
+    #[doc(hidden)]
+    pub(crate) value_binding_origins: Option<Box<crate::script_parser::ValueBindingOrigins>>,
+
     /// Scope chain for template expressions
     pub scopes: ScopeChain,
 
@@ -126,6 +134,11 @@ pub struct Croquis {
     /// Closed original-script proof for Nuxt render exclusivity.
     /// `None` and `Some(false)` are unknown; this fact is not projected in DTOs.
     pub nuxt_static_render_script: Option<bool>,
+
+    /// Literal `definePageMeta({ layout })` selection from the setup AST walk.
+    /// `None` preserves the existing default-layout fallback. This private
+    /// render fact is not projected in DTOs or semantic fingerprints.
+    pub nuxt_page_layout: Option<NuxtPageLayout>,
 
     /// Nuxt invocation evidence; absent or non-admitted facts remain unknown.
     /// Excluded from DTOs, semantic summaries, and cache fingerprints.

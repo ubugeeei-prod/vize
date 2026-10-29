@@ -4834,6 +4834,7 @@ version = "0.474.0"
 dependencies = [
  "async-trait",
  "dashmap 6.2.1",
+ "davinci_harness",
  "davinci_test_support",
  "futures",
  "htmlize",

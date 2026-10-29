@@ -148,6 +148,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "script/order-in-components": "コンポーネントオプションのプロパティ順を既定の並びに揃えます。",
   "script/prefer-computed":
     "他の状態から導ける値を watcher で同期する代わりに computed で表現します。",
+  "script/prefer-define-emits-binding":
+    "template の $emit ではなく defineEmits から受け取った型付き関数を呼び出します。",
   "script/prefer-define-options":
     "name / inheritAttrs だけの通常 script を defineOptions() にまとめます。",
   "script/prefer-import-from-vue": "内部パッケージではなく vue から import します。",

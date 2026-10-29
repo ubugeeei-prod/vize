@@ -110,6 +110,7 @@ pub(crate) fn compile_template_block_vapor(
     }));
     Ok(TemplateBlockCompileResult {
         code,
+        map: None,
         warnings,
         sections: None,
     })

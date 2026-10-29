@@ -3,8 +3,10 @@ source: crates/vize_atelier_jsx/src/compile/tests.rs
 expression: packet
 ---
 (
-    "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<span> </span>\")\nconst t1 = _template(\"<b> </b>\")\n\nexport function View(_ctx) {\n  const _component_Host = _resolveComponent(\"Host\")\n  const n4 = _createComponentWithFallback(_component_Host, null, {\n    \"named\": (props) => {\n      const n0 = t0()\n      const x0 = _txt(n0)\n      _renderEffect(() => _setText(x0, _toDisplayString(props.value)))\n      return n0\n    },\n    \"other\": (_slotProps0) => {\n      const n2 = t1()\n      const x2 = _txt(n2)\n      _renderEffect(() => _setText(x2, _toDisplayString(_slotProps0.value)))\n      return n2\n    }\n  }, true)\n  return n4\n}\nimport { template as _template } from 'vue';\nconst t0 = _template(\"<div data-v-46cced53><p class=\\\"view\\\">ok</p></div>\", true)\n\nexport function Styled(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
-    None,
+    "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from \"vue\"\n\n// 日本語 😀\r\nconst View = ({\n__vapor: true,\nname: \"View\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<span> </span>\")\nconst t1 = _template(\"<b> </b>\")\n\nreturn ((_ctx) => {\n  const _component_Host = _resolveComponent(\"Host\")\n  const n4 = _createComponentWithFallback(_component_Host, null, {\n    \"named\": (props) => {\n      const n0 = t0()\n      const x0 = _txt(n0)\n      _renderEffect(() => _setText(x0, _toDisplayString(props.value)))\n      return n0\n    },\n    \"other\": (_slotProps0) => {\n      const n2 = t1()\n      const x2 = _txt(n2)\n      _renderEffect(() => _setText(x2, _toDisplayString(_slotProps0.value)))\n      return n2\n    }\n  }, true)\n  return n4\n})(undefined, [])\n})()\n}\n});\r\nconst Styled = ({\n__vapor: true,\nname: \"Styled\",\nsetup() {\nreturn (() => {\n\nconst t0 = _template(\"<div data-v-46cced53><p data-v-46cced53 class=\\\"view\\\">ok</p></div>\", true)\n\nreturn ((_ctx) => {\n  const n0 = t0()\n  return n0\n})(undefined, [])\n})()\n}\n});",
+    Some(
+        "{\"file\":\"module.tsx\",\"mappings\":\";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC;AACV,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAsD;uBAAoF;;;6CAAlI;;KAAQ,QAAO;;;wDAAqC;;;KAAqB,QAAO;;;wDAAqD;;;;;;;;EAAuB,CAAC,CAAC;AAClL,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;uBAAQ,qBAAoD,kBAAE,QAAM,OAAO;;;;;;;;EAAY\",\"names\":[],\"sources\":[\"module.tsx\"],\"sourcesContent\":[\"// 日本語 😀\\r\\nconst View = () => <Host>{{ named: (props: { value: string }) => <span>{props.value}</span>, other: function ({ value }: { value: number }) { return <b>{value}</b>; } }}</Host>;\\r\\nconst Styled = () => <div><style scoped>{`.view { color: red; }`}</style><p class=\\\"view\\\">ok</p></div>;\"],\"version\":3}",
+    ),
     [
         (
             Some(
@@ -27,7 +29,7 @@ expression: packet
             ),
             None,
             Vapor,
-            "import { template as _template } from 'vue';\nconst t0 = _template(\"<div data-v-46cced53><p class=\\\"view\\\">ok</p></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+            "import { template as _template } from 'vue';\nconst t0 = _template(\"<div data-v-46cced53><p data-v-46cced53 class=\\\"view\\\">ok</p></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
             "",
             None,
             Some(
@@ -37,7 +39,7 @@ expression: packet
                 },
             ),
             [
-                "<div data-v-46cced53><p class=\"view\">ok</p></div>",
+                "<div data-v-46cced53><p data-v-46cced53 class=\"view\">ok</p></div>",
             ],
         ),
     ],

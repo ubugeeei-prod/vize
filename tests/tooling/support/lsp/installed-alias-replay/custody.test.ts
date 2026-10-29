@@ -4,7 +4,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { VizePublicRegistryInstallAuthority } from "./authority-schema.ts";
-import { digest, verifyNativeJournal } from "./custody.ts";
+import { explicitProviderMode } from "./authority.ts";
+import {
+  digest,
+  publicEnvironment,
+  sourceOverrideKeys,
+  verifyNativeJournal,
+  verifySourceOverrideReceipt,
+} from "./custody.ts";
 
 /** Plain file/journal falsification only; these controls never load a native/provider. */
 function control() {
@@ -110,7 +117,7 @@ test("rejection or an incomplete journal invalidates any other recorded successf
   }
 });
 
-test("a successful return must witness its attempt and automatically selected bundled Corsa", () => {
+test("a successful return must witness its attempt and authenticated checker authority", () => {
   const c = control();
   try {
     c.write([c.initialized, c.attempt, c.returned]);
@@ -123,9 +130,70 @@ test("a successful return must witness its attempt and automatically selected bu
     c.write([c.initialized, c.attempt, { ...c.returned, corsaPath: "/unowned/source/tsc" }]);
     assert.throws(
       () => verifyNativeJournal(c.journalPath, c.authority, 123),
-      /public bundled Corsa/,
+      /reviewed checker authority mode/,
     );
   } finally {
     fs.rmSync(c.installRoot, { recursive: true });
   }
+});
+
+test("explicit replay can bind the authenticated provider without changing receipt semantics", () => {
+  const c = control();
+  try {
+    c.authority.resolutionMode = "explicit-user-provider";
+    c.write([c.initialized, c.attempt, c.returned]);
+    assert.throws(() => verifyNativeJournal(c.journalPath, c.authority, 123));
+    assert.doesNotThrow(() =>
+      verifyNativeJournal(c.journalPath, c.authority, 123, c.authority.bundledCorsa.path),
+    );
+  } finally {
+    fs.rmSync(c.installRoot, { recursive: true });
+  }
+});
+
+test("explicit replay environment names only the authenticated installed provider", () => {
+  const c = control();
+  const keys = [...sourceOverrideKeys, "VIZE_PUBLIC_NATIVE_CUSTODY"] as const;
+  const prior = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  try {
+    c.authority.resolutionMode = "explicit-user-provider";
+    for (const key of keys) delete process.env[key];
+    const env = publicEnvironment(c.authority, path.join(c.installRoot, "fresh-journal.ndjson"));
+    assert.equal(env.CORSA_PATH, c.authority.bundledCorsa.path);
+    assert.deepEqual(JSON.parse(env.VIZE_PUBLIC_NATIVE_CUSTODY ?? "null"), {
+      schema: "vize-public-native-custody-v1",
+      installRoot: c.authority.installRoot,
+      nativePath: c.authority.native.path,
+      nativeSha256: c.authority.native.sha256,
+      journalPath: path.join(c.installRoot, "fresh-journal.ndjson"),
+      checkerPath: c.authority.bundledCorsa.path,
+      checkerSha256: c.authority.bundledCorsa.sha256,
+    });
+    for (const key of sourceOverrideKeys) {
+      if (key !== "CORSA_PATH") assert.equal(env[key], "");
+    }
+  } finally {
+    for (const key of keys) {
+      const value = prior[key];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    fs.rmSync(c.installRoot, { recursive: true });
+  }
+});
+
+test("legacy receipts may omit only the later TSRS override fields", () => {
+  const complete = Object.fromEntries(sourceOverrideKeys.map((key) => [key, ""]));
+  const legacy: Record<string, string> = { ...complete };
+  delete legacy.TSRS_PATH;
+  delete legacy.TSRS_EXECUTABLE;
+  assert.doesNotThrow(() => verifySourceOverrideReceipt(legacy, false));
+  assert.throws(() => verifySourceOverrideReceipt(legacy, true));
+  assert.throws(() => verifySourceOverrideReceipt({ ...complete, TSRS_PATH: "/ambient" }, false));
+});
+
+test("receipt resolution modes are closed to legacy or explicit user authority", () => {
+  assert.equal(explicitProviderMode(undefined), false);
+  assert.equal(explicitProviderMode("explicit-user-provider"), true);
+  assert.throws(() => explicitProviderMode("future-provider"), /unsupported runtime resolution/u);
 });

@@ -16,7 +16,24 @@ export const sourceOverrideKeys = [
   "CORSA_EXECUTABLE",
   "TSGO_PATH",
   "TSGO_EXECUTABLE",
+  "TSRS_PATH",
+  "TSRS_EXECUTABLE",
 ] as const;
+
+export function verifySourceOverrideReceipt(
+  sourceOverrides: object,
+  explicitUserProvider: boolean,
+): void {
+  const values = sourceOverrides as Record<string, unknown>;
+  for (const key of sourceOverrideKeys) {
+    const missingLegacyTsrs =
+      !explicitUserProvider &&
+      (key === "TSRS_PATH" || key === "TSRS_EXECUTABLE") &&
+      !Object.hasOwn(values, key);
+    if (!missingLegacyTsrs) assert.ok(Object.hasOwn(values, key));
+    assert.equal(values[key] ?? "", "");
+  }
+}
 
 export function exactFile(file: string, sha256: string, owner?: string): string {
   assert.ok(path.isAbsolute(file), "authority paths must be absolute");
@@ -34,6 +51,9 @@ export function verifyNativeJournal(
   journalPath: string,
   authority: VizePublicRegistryInstallAuthority,
   expectedPid?: number,
+  expectedCorsaPath = authority.resolutionMode === "explicit-user-provider"
+    ? ""
+    : authority.bundledCorsa.path,
 ) {
   const bytes = fs.readFileSync(journalPath);
   assert.ok(
@@ -75,8 +95,8 @@ export function verifyNativeJournal(
         assert.ok(attempted > returned, "a native return must follow its actual load attempt");
         assert.equal(
           event.corsaPath,
-          authority.bundledCorsa.path,
-          "the CLI must automatically select its public bundled Corsa before loading native",
+          expectedCorsaPath,
+          "native custody must preserve the reviewed checker authority mode",
         );
         returned++;
       }
@@ -104,6 +124,11 @@ export function publicEnvironment(
     assert.equal(process.env[key] ?? "", "", `source override ${key} must be empty`);
     env[key] = "";
   }
+  if (authority.resolutionMode === "explicit-user-provider") {
+    // The authenticated public provider is outside the replay project's
+    // ancestry, so the replay supplies it as explicit user authority.
+    env.CORSA_PATH = authority.bundledCorsa.path;
+  }
   assert.equal(
     process.env.VIZE_PUBLIC_NATIVE_CUSTODY ?? "",
     "",
@@ -115,6 +140,12 @@ export function publicEnvironment(
     nativePath: authority.native.path,
     nativeSha256: authority.native.sha256,
     journalPath,
+    ...(authority.resolutionMode === "explicit-user-provider"
+      ? {
+          checkerPath: authority.bundledCorsa.path,
+          checkerSha256: authority.bundledCorsa.sha256,
+        }
+      : {}),
   });
   return env;
 }

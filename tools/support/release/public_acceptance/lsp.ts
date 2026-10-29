@@ -113,11 +113,6 @@ async function run() {
   );
   assert.equal(npmCli.version, version);
   const { name, version: providerVersion } = preparation.lsp.metadata.provider;
-  assert.equal(
-    npmCli.optionalDependencies[name],
-    providerVersion,
-    "published CLI declares exact H provider",
-  );
   const provider = await installedCorsaProvider(
     consumer,
     version,

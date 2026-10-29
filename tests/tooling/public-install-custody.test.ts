@@ -20,6 +20,8 @@ const overrideKeys = [
   "CORSA_EXECUTABLE",
   "TSGO_PATH",
   "TSGO_EXECUTABLE",
+  "TSRS_PATH",
+  "TSRS_EXECUTABLE",
   "VIZE_PUBLIC_NATIVE_CUSTODY",
   "VIZE_OXLINT_NATIVE_CUSTODY",
 ];
@@ -94,7 +96,7 @@ function inertHookFixture() {
   fs.mkdirSync(path.dirname(native), { recursive: true });
   fs.writeFileSync(native, "Inert text, never a functioning native library.\n");
   const journal = path.join(temporary, "native-journal.jsonl");
-  const config = {
+  const config: Record<string, string> = {
     schema: "vize-public-native-custody-v1",
     installRoot: install,
     nativePath: native,
@@ -167,6 +169,37 @@ test("another Vize native provider is rejected instead of granting load credit",
     fixture.events().map((event) => event.event),
     ["initialized", "attempt", "rejected", "exit"],
   );
+});
+
+test("explicit checker authority must match its custody-bound path and digest", (t) => {
+  const fixture = inertHookFixture();
+  t.after(() => fs.rmSync(fixture.temporary, { recursive: true, force: true }));
+  const checker = path.join(fixture.config.installRoot, "node_modules/checker/lib/tsc");
+  fs.mkdirSync(path.dirname(checker), { recursive: true });
+  fs.writeFileSync(checker, "authenticated checker");
+  fixture.config.checkerPath = checker;
+  fixture.config.checkerSha256 = digest(fs.readFileSync(checker));
+
+  const accepted = fixture.run("void 0", { CORSA_PATH: checker });
+  assert.equal(accepted.status, 0, accepted.stderr);
+  assert.deepEqual(
+    fixture.events().map((event) => event.event),
+    ["initialized", "exit"],
+  );
+  fs.unlinkSync(fixture.journal);
+
+  const alternate = path.join(path.dirname(checker), "alternate-tsc");
+  fs.writeFileSync(alternate, "other checker");
+  const mismatchedPath = fixture.run("void 0", { CORSA_PATH: alternate });
+  assert.equal(mismatchedPath.status, 1);
+  assert.match(mismatchedPath.stderr, /differs from custody/u);
+  assert.equal(fs.existsSync(fixture.journal), false);
+
+  fixture.config.checkerSha256 = "0".repeat(64);
+  const mismatchedDigest = fixture.run("void 0", { CORSA_PATH: checker });
+  assert.equal(mismatchedDigest.status, 1);
+  assert.match(mismatchedDigest.stderr, /escaped the registry installation/u);
+  assert.equal(fs.existsSync(fixture.journal), false);
 });
 
 test("native hook refuses existing journals, wrong digest, escaped paths and overrides", (t) => {

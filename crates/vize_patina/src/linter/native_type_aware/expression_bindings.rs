@@ -115,7 +115,22 @@ pub(super) fn template_binding_is_unsafe(
     })
 }
 
+#[cfg(test)]
 pub(super) fn bind_template_expressions(document: &mut TypeAwareDocument) {
+    bind_template_expressions_with_source(document, None);
+}
+
+pub(super) fn bind_template_expressions_from_source(
+    document: &mut TypeAwareDocument,
+    authored_source: &str,
+) {
+    bind_template_expressions_with_source(document, Some(authored_source));
+}
+
+fn bind_template_expressions_with_source(
+    document: &mut TypeAwareDocument,
+    authored_source: Option<&str>,
+) {
     let mut text = document.content.clone();
     let props_object = super::options_prop_shape::options_props_object(&text).map(VizeString::from);
     let mut edits = Vec::new();
@@ -163,7 +178,7 @@ pub(super) fn bind_template_expressions(document: &mut TypeAwareDocument) {
         text.replace_range(start..end, &new_stmt);
     }
     document.content = text;
-    mapped::bind_checked_expressions(document, &mut index);
+    mapped::bind_checked_expressions(document, authored_source, &mut index);
 }
 
 fn mapped_expression_ranges(

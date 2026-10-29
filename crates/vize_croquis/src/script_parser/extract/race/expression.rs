@@ -14,25 +14,27 @@ pub(super) fn scan_expression_for_race(
 ) {
     match expr {
         Expression::AwaitExpression(await_expr) => {
+            // The argument is evaluated synchronously. The boundary starts
+            // only after its value has been produced and awaited.
+            scan_expression_for_race(result, &await_expr.argument, scan);
             scan.add_async_operation("await");
             scan.async_generation = scan.async_generation.saturating_add(1);
             // A guard only covers writes after the await it follows.
             scan.guarded = false;
-            scan_expression_for_race(result, &await_expr.argument, scan);
         }
         Expression::CallExpression(call) => {
             scan_call_expression_for_race(result, call, scan);
         }
         Expression::AssignmentExpression(assign) => {
-            if !scan.guarded
+            scan_expression_for_race(result, &assign.right, scan);
+            if scan.should_record_assignment(result, &assign.right)
                 && let Some(target) = assignment_target_root(result, &assign.left)
             {
                 scan.mutated_targets.insert(target);
             }
-            scan_expression_for_race(result, &assign.right, scan);
         }
         Expression::UpdateExpression(update) => {
-            if !scan.guarded
+            if scan.should_record_mutation()
                 && let Some(target) = simple_assignment_target_root(result, &update.argument)
             {
                 scan.mutated_targets.insert(target);
@@ -124,11 +126,33 @@ fn scan_call_expression_for_race(
     call: &CallExpression<'_>,
     scan: &mut RaceScan,
 ) {
-    if let Some(name) = super::super::common::resolved_call_name(result, call) {
+    let resolved_name = super::super::common::resolved_call_name(result, call);
+    if let Some(name) = &resolved_name {
         if name == "fetch" {
             scan.add_async_operation("fetch");
         } else if matches!(name.as_str(), "then" | "catch" | "finally") {
             scan.add_async_operation("promise callback");
+
+            let mut safe = true;
+            for argument in &call.arguments {
+                let Some(callback) = argument.as_expression() else {
+                    continue;
+                };
+                if !matches!(
+                    callback,
+                    Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)
+                ) {
+                    continue;
+                }
+                let nested = super::scan::scan_nested_promise_callback(result, callback, scan);
+                safe &= nested.mutated_targets.is_empty();
+                scan.safe_nested_call_spans
+                    .extend(nested.safe_nested_call_spans);
+            }
+            if safe {
+                scan.safe_nested_call_spans
+                    .insert((call.span.start, call.span.end));
+            }
         }
         // `setTimeout(...)` is synchronous bookkeeping. Its callback is a
         // separate scheduled-mutation risk; it is not an async boundary of
@@ -139,17 +163,17 @@ fn scan_call_expression_for_race(
         }
     }
 
-    if !scan.guarded
-        && let Some(target) = mutation_call_target(result, call)
-    {
-        scan.mutated_targets.insert(target);
-    }
-
     scan_expression_for_race(result, &call.callee, scan);
     for arg in call.arguments.iter() {
         if let Some(expr) = arg.as_expression() {
             scan_expression_for_race(result, expr, scan);
         }
+    }
+
+    if scan.should_record_mutation()
+        && let Some(target) = mutation_call_target(result, call)
+    {
+        scan.mutated_targets.insert(target);
     }
 }
 
