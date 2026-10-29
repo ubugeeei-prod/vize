@@ -112,9 +112,9 @@ const revision = (stat, fields) =>
   Object.fromEntries(fields.map((field) => [field, stat[field].toString()]));
 const LINK_REVISION = ["dev", "ino", "mode", "size", "mtimeNs", "ctimeNs"];
 const DIRECTORY_IDENTITY = ["dev", "ino", "mode"];
-function dependencyLink(sourceRoot, driverRoot) {
-  const path = join(sourceRoot, "node_modules");
-  const target = join(driverRoot, "node_modules");
+function dependencyLink(sourceRoot, driverRoot, relativePath) {
+  const path = join(sourceRoot, relativePath);
+  const target = join(driverRoot, relativePath);
   let targetBefore;
   try {
     targetBefore = lstatSync(target, { bigint: true });
@@ -237,15 +237,24 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
       assert.equal(sourceHash, driverHash, "driver/source dependency or corpus drift: " + file);
     bridgeFiles[file] = { sourceSha256: sourceHash, driverSha256: driverHash };
   }
-  const sourceDependencyLink = manual ? dependencyLink(sourceRoot, driverRoot) : null;
+  const sourceDependencyLink = manual
+    ? dependencyLink(sourceRoot, driverRoot, "node_modules")
+    : null;
+  const sourceTestDependencyLink = manual
+    ? dependencyLink(sourceRoot, driverRoot, "tests/node_modules")
+    : null;
+  const permittedDependencyLinks = new Map(
+    [
+      ["node_modules", sourceDependencyLink],
+      ["tests/node_modules", sourceTestDependencyLink],
+    ].filter(([, link]) => link),
+  );
   for (const root of new Set([driverRoot, sourceRoot])) {
     const untracked = git(["ls-files", "--others", "--exclude-standard", "-z"], root);
     const paths = untracked ? untracked.split("\0") : [];
     if (paths.length) assert.equal(paths.pop(), "", "invalid untracked-input framing");
     assert.deepEqual(
-      paths.filter(
-        (path) => !(root === sourceRoot && sourceDependencyLink && path === "node_modules"),
-      ),
+      paths.filter((path) => !(root === sourceRoot && permittedDependencyLinks.has(path))),
       [],
       "untracked source inputs",
     );
@@ -278,6 +287,7 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
     changedEntries: protectedMain ? driverDelta : sourceDelta,
     bridgeFiles,
     sourceDependencyLink,
+    sourceTestDependencyLink,
     nativeProfile: manual ? "pprof-untimed-duplicate-corpus" : "none",
     originalInfrastructurePaths: ORIGINAL_INFRASTRUCTURE,
     allowedInfrastructurePaths: [...INFRASTRUCTURE_PATHS],
