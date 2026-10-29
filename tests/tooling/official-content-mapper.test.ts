@@ -10,6 +10,7 @@ import {
   assertOfficialRuntimeCustody,
   loadOfficialFixture,
   officialCases,
+  officialDiagnostics,
   officialRuntimeAuthority,
   officialRunOptions,
   resolveOfficialNativeImage,
@@ -177,6 +178,29 @@ test("all TypeScript error headers require authored mappings even without a whol
       () => assertOfficialDiagnostics(legacy, original, false, result(output)),
       /every TypeScript error must map to authored source/u,
     );
+});
+
+test("diagnostic terms include only attached indented continuation lines", () => {
+  const term = "Property '$emit' is missing";
+  const multiline = `${stdout.trimEnd()}\n  ${term} in the component instance.\n`;
+  const baseline = {
+    ...original,
+    baselineCodes: [2322],
+    baselineTerms: [term],
+    baselineStdout: undefined,
+    baselineStderr: undefined,
+  };
+  assertOfficialDiagnostics(row, baseline, true, result(multiline));
+  assert.throws(
+    () => assertOfficialDiagnostics(row, baseline, true, result(`  ${term}\n${stdout}`)),
+    /must retain the original diagnostic term/u,
+  );
+  const separate = officialDiagnostics(
+    `${stdout}Other.vue(1,1): error TS2344: Separate diagnostic.\n  ${term}.\n`,
+  );
+  assert.equal(separate.length, 2);
+  assert.equal(separate[0].message.includes(term), false);
+  assert.equal(separate[1].message.includes(term), true);
 });
 
 test("public identity resolves an inert native archive without evaluating its wrapper or image", () => {

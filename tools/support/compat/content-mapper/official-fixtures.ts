@@ -243,12 +243,16 @@ export function officialCases(fixture: Fixture): Case[] {
 }
 
 export const officialDiagnostics = (stdout: string) =>
-  [...stdout.matchAll(/^([^\r\n]+)\((\d+),(\d+)\): error TS(\d+): (.*)$/gmu)].map((match) => ({
+  [
+    ...stdout.matchAll(
+      /^([^\r\n]+)\((\d+),(\d+)\): error TS(\d+): (.*)((?:\r?\n[\t ]+[^\r\n]*)*)/gmu,
+    ),
+  ].map((match) => ({
     file: match[1],
     line: Number(match[2]),
     column: Number(match[3]),
     code: Number(match[4]),
-    message: match[5],
+    message: match[5] + match[6],
   }));
 
 interface Result {
