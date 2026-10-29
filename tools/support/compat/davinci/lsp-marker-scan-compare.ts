@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import {
+  type LspMarkerSourceReceipt,
+  verifyLspMarkerProductionReceipt,
+} from "./lsp-marker-scan-source.ts";
 
 interface Run {
   corpus: {
@@ -69,6 +73,11 @@ export function compareLspMarkerScans(directory: string) {
     JSON.parse(fs.readFileSync(path.join(directory, name), "utf8")) as T;
   const baseIdentity = load<Identity>("base-normal-identity.json");
   const headIdentity = load<Identity>("head-normal-identity.json");
+  const production = verifyLspMarkerProductionReceipt(
+    load<LspMarkerSourceReceipt>("source-selection.json"),
+    baseIdentity.source.revision,
+    headIdentity.source.revision,
+  );
   assert.notEqual(baseIdentity.source.revision, headIdentity.source.revision);
   assert.notEqual(
     baseIdentity.binary.sha256,
@@ -206,29 +215,54 @@ export function compareLspMarkerScans(directory: string) {
       },
     };
   }
-  assert.ok(
-    profiles.head.root_allocation.total.self_calls < profiles.base.root_allocation.total.self_calls,
-    "the measured total allocation hotspot calls must decrease",
-  );
-  assert.ok(
-    profiles.head.root_allocation.total.self_bytes < profiles.base.root_allocation.total.self_bytes,
-    "the measured total allocation hotspot bytes must decrease",
-  );
-  assert.ok(
-    profiles.head.root_allocation.per_invocation.self_calls <
-      profiles.base.root_allocation.per_invocation.self_calls,
-    "the measured per-invocation allocation hotspot calls must decrease",
-  );
-  assert.ok(
-    profiles.head.root_allocation.per_invocation.self_bytes <
-      profiles.base.root_allocation.per_invocation.self_bytes,
-    "the measured per-invocation allocation hotspot bytes must decrease",
-  );
+  if (production.productionChanged) {
+    assert.ok(
+      profiles.head.root_allocation.total.self_calls <
+        profiles.base.root_allocation.total.self_calls,
+      "the measured total allocation hotspot calls must decrease",
+    );
+    assert.ok(
+      profiles.head.root_allocation.total.self_bytes <
+        profiles.base.root_allocation.total.self_bytes,
+      "the measured total allocation hotspot bytes must decrease",
+    );
+    assert.ok(
+      profiles.head.root_allocation.per_invocation.self_calls <
+        profiles.base.root_allocation.per_invocation.self_calls,
+      "the measured per-invocation allocation hotspot calls must decrease",
+    );
+    assert.ok(
+      profiles.head.root_allocation.per_invocation.self_bytes <
+        profiles.base.root_allocation.per_invocation.self_bytes,
+      "the measured per-invocation allocation hotspot bytes must decrease",
+    );
+  } else {
+    assert.deepEqual(
+      profiles.head.root_allocation.per_invocation,
+      profiles.base.root_allocation.per_invocation,
+      "unchanged marker sources must preserve exact per-invocation allocation",
+    );
+    assert.ok(
+      profiles.base.operations.getdents64Calls > 0 &&
+        profiles.base.operations.standardReadDirCalls === 0,
+      "the unchanged baseline must scan through the native Linux path",
+    );
+  }
   assert.ok(
     profiles.head.operations.getdents64Calls > 0 &&
       profiles.head.operations.standardReadDirCalls === 0,
     "the candidate must scan through the native Linux path",
   );
+  const totalDrift = {
+    invocations:
+      profiles.head.root_allocation.invocations - profiles.base.root_allocation.invocations,
+    self_calls:
+      profiles.head.root_allocation.total.self_calls -
+      profiles.base.root_allocation.total.self_calls,
+    self_bytes:
+      profiles.head.root_allocation.total.self_bytes -
+      profiles.base.root_allocation.total.self_bytes,
+  };
   return {
     scope:
       "full production LSP residency plus controlled edits; fixture generation/hashing excluded; fresh process per sample",
@@ -241,7 +275,17 @@ export function compareLspMarkerScans(directory: string) {
       warmingChangePct: 100 * (median(normal.head) / median(normal.base) - 1),
     },
     profiles,
-    note: "profiling counts/cumulative requested bytes are separate from normal timing and process-tree RSS; no canonical 500ms qualification",
+    production: {
+      productionChanged: production.productionChanged,
+      productionFiles: production.productionFiles,
+      comparisonMode: production.productionChanged
+        ? "strict hotspot improvement"
+        : "unchanged native per-invocation parity",
+      totalDrift,
+    },
+    note: production.productionChanged
+      ? "strict hotspot improvement; profiling counts/cumulative requested bytes are separate from normal timing and process-tree RSS; no canonical 500ms qualification"
+      : "unchanged production sources; total drift is recorded without claiming improvement; profiling counts/cumulative requested bytes are separate from normal timing and process-tree RSS",
   };
 }
 

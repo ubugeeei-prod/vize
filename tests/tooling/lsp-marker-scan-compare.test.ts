@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { compareLspMarkerScans } from "../../tools/support/compat/davinci/lsp-marker-scan-compare.ts";
+import { lspMarkerProductionPaths } from "../../tools/support/compat/davinci/lsp-marker-scan-source.ts";
 
 test("paired marker evidence rejects wrong binaries, missing files and changed diagnostics", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lsp-marker-compare-"));
@@ -59,7 +60,24 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
       },
     ],
   });
+  const productionReceipt = (changed: boolean) => ({
+    head: "b".repeat(40),
+    parents: ["a".repeat(40), "d".repeat(40)],
+    requestedBase: "a".repeat(40),
+    expectedPrHead: "d".repeat(40),
+    selectedBase: "a".repeat(40),
+    eventBaseMatchesActualParent: true,
+    policy: "actual checked-out merge first parent",
+    productionChanged: changed,
+    productionFiles: changed ? [lspMarkerProductionPaths[0]] : [],
+    productionDiff: {
+      selectedBase: "a".repeat(40),
+      head: "b".repeat(40),
+      paths: lspMarkerProductionPaths,
+    },
+  });
   try {
+    write("source-selection.json", productionReceipt(true));
     for (const role of ["base", "head"] as const) {
       write(`${role}-normal-identity.json`, identity(role, false));
       write(`${role}-profile-identity.json`, identity(role, true));
@@ -95,6 +113,7 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
       });
     }
     const report = compareLspMarkerScans(directory);
+    assert.equal(report.production.comparisonMode, "strict hotspot improvement");
     assert.equal(report.normal.headMedianMs, 70);
     assert.equal(report.profiles.head.calls, 2);
     assert.deepEqual(report.profiles.head.operations, {
@@ -124,6 +143,14 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
     moreTotalWork.spans[0].alloc.self_calls = 120;
     moreTotalWork.spans[0].alloc.self_bytes = 1200;
     write("profile-head/run-1.json", moreTotalWork);
+    assert.throws(
+      () => compareLspMarkerScans(directory),
+      /total allocation hotspot calls must decrease/u,
+    );
+    const equalTotalWork = structuredClone(originalProfile);
+    equalTotalWork.spans[0].alloc.self_calls = 100;
+    equalTotalWork.spans[0].alloc.self_bytes = 1000;
+    write("profile-head/run-1.json", equalTotalWork);
     assert.throws(
       () => compareLspMarkerScans(directory),
       /total allocation hotspot calls must decrease/u,
@@ -186,6 +213,40 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
       assert.throws(() => compareLspMarkerScans(directory), { code: "ERR_ASSERTION" });
       write("head-normal-2.json", capture("head", false, 70));
     }
+
+    const baseProfilePath = path.join(directory, "profile-base/run-1.json");
+    const unchangedBase = JSON.parse(
+      fs.readFileSync(baseProfilePath, "utf8"),
+    ) as typeof originalProfile;
+    unchangedBase.spans[0].alloc.self_calls = 50;
+    unchangedBase.spans[0].alloc.self_bytes = 500;
+    unchangedBase.micro = structuredClone(originalProfile.micro);
+    write("profile-base/run-1.json", unchangedBase);
+    write("profile-head/run-1.json", originalProfile);
+    write("source-selection.json", productionReceipt(false));
+    const unchanged = compareLspMarkerScans(directory);
+    assert.equal(unchanged.production.comparisonMode, "unchanged native per-invocation parity");
+    assert.deepEqual(unchanged.production.totalDrift, {
+      invocations: 0,
+      self_calls: 0,
+      self_bytes: 0,
+    });
+
+    const driftedHead = structuredClone(originalProfile);
+    driftedHead.spans[0].count = 3;
+    driftedHead.spans[0].alloc.self_calls = 75;
+    driftedHead.spans[0].alloc.self_bytes = 750;
+    write("profile-head/run-1.json", driftedHead);
+    assert.deepEqual(compareLspMarkerScans(directory).production.totalDrift, {
+      invocations: 1,
+      self_calls: 25,
+      self_bytes: 250,
+    });
+
+    const tampered = productionReceipt(false);
+    tampered.productionFiles = [lspMarkerProductionPaths[0]];
+    write("source-selection.json", tampered);
+    assert.throws(() => compareLspMarkerScans(directory), /production change flag disagrees/u);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }

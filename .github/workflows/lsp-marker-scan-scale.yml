@@ -72,6 +72,7 @@ jobs:
           test "$BASE_SHA" != "$(git rev-parse HEAD)"
           git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA"
           git worktree add --detach "$RUNNER_TEMP/lsp-marker-base" "$BASE_SHA"
+          node tools/support/compat/davinci/lsp-marker-scan-source.ts "$RUNNER_TEMP/lsp-marker-evidence/source-selection.json" --record-production-diff
           mkdir -p "$RUNNER_TEMP/lsp-marker-evidence"
           git rev-parse HEAD > "$RUNNER_TEMP/lsp-marker-evidence/head.sha"
           git -C "$RUNNER_TEMP/lsp-marker-base" rev-parse HEAD > "$RUNNER_TEMP/lsp-marker-evidence/base.sha"
