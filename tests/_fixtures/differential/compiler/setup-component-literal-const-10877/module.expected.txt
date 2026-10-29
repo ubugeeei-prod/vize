@@ -1,0 +1,24 @@
+import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(_ssrRenderComponent($setup.MyButton, _mergeProps({ label: $setup.msg }, _attrs), null, _parent))
+}
+import MyButton from './MyButton.vue'
+
+const msg = "hi"
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+
+const __returned__ = { MyButton, msg }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

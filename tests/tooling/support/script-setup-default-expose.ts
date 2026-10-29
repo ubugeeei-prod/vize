@@ -3,9 +3,46 @@ import assert from "node:assert/strict";
 export type ExposurePacket = {
   code: string;
   map?: string | { mappings: string; [key: string]: unknown } | null;
-  moduleShape?: { defaultExportEnd: number; [key: string]: unknown };
+  moduleShape?: {
+    defaultExportStart?: number;
+    defaultExportKeywordEnd?: number;
+    defaultExportEnd: number;
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 };
+
+// Advance one preserved non-inline setup component read by the independently
+// specified #10877 edit. The reference owns the complete packet: code and each
+// affected byte offset are reconstructed, while maps and all other fields must
+// remain byte-for-byte equal to the preserved producer.
+export function setupComponentBracketReference(
+  packet: ExposurePacket,
+  component: string,
+): ExposurePacket {
+  assert.match(component, /^[$A-Z_a-z][$\w]*$/, "the setup component must be an identifier");
+  const out = structuredClone(packet);
+  const before = `$setup.${component}`;
+  const start = packet.code.indexOf(before);
+  if (start === -1) return out;
+  assert.equal(
+    packet.code.indexOf(before, start + before.length),
+    -1,
+    `the preserved packet must contain one ${before} read`,
+  );
+  const after = `$setup[${JSON.stringify(component)}]`;
+  out.code = packet.code.slice(0, start) + after + packet.code.slice(start + before.length);
+  const byteDelta = Buffer.byteLength(after) - Buffer.byteLength(before);
+  for (const key of [
+    "defaultExportStart",
+    "defaultExportKeywordEnd",
+    "defaultExportEnd",
+  ] as const) {
+    const offset = out.moduleShape?.[key];
+    if (typeof offset === "number" && offset > start) out.moduleShape![key] = offset + byteDelta;
+  }
+  return out;
+}
 
 // Advance the preserved before-source packet by the independently specified
 // #10891 edit. The candidate packet is never rewritten: every code byte, map

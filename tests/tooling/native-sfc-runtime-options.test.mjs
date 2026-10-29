@@ -15,7 +15,10 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
 import vm from "node:vm";
-import { closedSetupReference } from "./support/script-setup-default-expose.ts";
+import {
+  closedSetupReference,
+  setupComponentBracketReference,
+} from "./support/script-setup-default-expose.ts";
 
 const proof = process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF
   ? resolve(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF)
@@ -570,7 +573,7 @@ await test("standalone single, files and statistics preserve code and maps", ski
 });
 
 await test(
-  "whole default packets equal the before-source native plus closed setup exposure",
+  "whole default packets equal the before-source native plus specified setup advances",
   skip,
   () => {
     assert.ok(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE);
@@ -608,6 +611,15 @@ await test(
         out.batch.results = out.batch.results.map((packet, index) =>
           closedSetupReference(packet, sourceFiles[index]),
         );
+      if (
+        row.target === "dom" &&
+        row.options.inlineTemplate === undefined &&
+        out.single &&
+        out.batch
+      ) {
+        out.single[7] = setupComponentBracketReference(out.single[7], "Lazy");
+        out.batch.results[7] = setupComponentBracketReference(out.batch.results[7], "Lazy");
+      }
       if (out.stats) {
         out.stats.outputBytes += out.single.reduce(
           (bytes, packet, index) =>
