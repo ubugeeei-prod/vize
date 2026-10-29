@@ -15,6 +15,9 @@ use super::vue_runtime_api::is_vue_runtime_api;
 /// Record one import: its scope, its local bindings, and — for each value
 /// import of a single export — the name the module actually exports.
 pub(super) fn process_import(result: &mut ScriptParseResult, import: &ImportDeclaration<'_>) {
+    if let Some(origins) = result.value_binding_origins.as_mut() {
+        origins.note_import(result.scopes.current_id(), import);
+    }
     result.import_statements.push(ImportStatementInfo {
         start: import.span.start,
         end: import.span.end,

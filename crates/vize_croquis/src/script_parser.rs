@@ -17,6 +17,7 @@
 //! - [`extract`] - Props/emits extraction and reactivity detection
 //! - [`walk`] - Scope walking functions
 
+mod async_components;
 mod define_art;
 mod execution_facts;
 mod expose;
@@ -36,14 +37,17 @@ mod ssr_guards;
 mod type_definitions;
 mod typeof_refs;
 mod unused;
+mod value_binding_origins;
 mod walk;
+
+#[doc(hidden)]
+pub use value_binding_origins::ValueBindingOrigins;
+pub(crate) use value_binding_origins::component_binding_reference;
 
 pub use define_art::parse_define_art;
 pub use module_exports::AuthoredModuleExport;
 pub(crate) use module_exports::ModuleExportCapture;
 pub(crate) use module_reads::ModuleReadFacts;
-#[cfg(test)]
-pub(crate) use parse::parse_script_setup_for_unused;
 pub use parse::{
     analyze_script_setup_program, parse_script, parse_script_setup,
     parse_script_setup_with_generic, parse_script_setup_with_generic_and_jsx,
@@ -53,6 +57,8 @@ pub(crate) use parse::{
     analyze_script_setup_program_demand, parse_script_plain_with_exports,
     parse_script_setup_with_exports,
 };
+#[cfg(test)]
+pub(crate) use parse::{parse_script_setup_for_unused, parse_script_setup_for_value_origins};
 pub use process::{collect_options_descriptor, collect_options_object, process_statement};
 pub use recovery::parse_program_for_analysis;
 pub(crate) use result::{ReactiveGetterContext, ReactiveValueOrigin, RuntimeObjectLiteral};
@@ -111,3 +117,6 @@ mod with_defaults_tests;
 
 #[cfg(test)]
 mod reexecuted_map_tests;
+
+#[cfg(test)]
+mod value_binding_origins_tests;

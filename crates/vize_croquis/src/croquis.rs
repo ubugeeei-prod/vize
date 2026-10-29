@@ -87,6 +87,14 @@ use vize_carton::{CompactString, FxHashMap, FxHashSet};
 /// interface for downstream consumers (linter, transformer).
 #[derive(Default)]
 pub struct Croquis {
+    /// Original script Program domains: 0 absent, 1 single, 2 multiple/refused.
+    /// Counts actual source inputs even when private capture is not demanded.
+    #[doc(hidden)]
+    pub(crate) source_program_count: u8,
+    /// Private cross-file provenance from one original script Program; not a DTO field.
+    #[doc(hidden)]
+    pub(crate) value_binding_origins: Option<Box<crate::script_parser::ValueBindingOrigins>>,
+
     /// Scope chain for template expressions
     pub scopes: ScopeChain,
 

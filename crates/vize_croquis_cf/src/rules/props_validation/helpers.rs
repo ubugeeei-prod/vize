@@ -1,5 +1,5 @@
 use super::PropInfo;
-use crate::facts::imported_render_target;
+use crate::facts::{imported_render_target_at, template_usage_is_shadowed};
 use crate::module_paths::{import_candidates, normalize_logical_path};
 use crate::registry::{ModuleEntry, ModuleRegistry};
 use std::path::Path;
@@ -38,9 +38,10 @@ pub(super) fn extract_passed_props_for_component(
     component_name: &str,
     aliases: &[CompactString],
 ) -> Vec<PassedComponentUsage> {
-    let mut usages = extract_authored_passed_props_for_component(analysis, component_name, aliases);
+    let (mut usages, concrete_matches) =
+        extract_authored_passed_props_with_match(analysis, component_name, aliases);
 
-    if usages.is_empty() {
+    if usages.is_empty() && !concrete_matches {
         usages.push(PassedComponentUsage {
             component_name: CompactString::new(component_name),
             props: Vec::new(),
@@ -59,7 +60,16 @@ pub(super) fn extract_authored_passed_props_for_component(
     component_name: &str,
     aliases: &[CompactString],
 ) -> Vec<PassedComponentUsage> {
+    extract_authored_passed_props_with_match(analysis, component_name, aliases).0
+}
+
+fn extract_authored_passed_props_with_match(
+    analysis: &vize_croquis::Croquis,
+    component_name: &str,
+    aliases: &[CompactString],
+) -> (Vec<PassedComponentUsage>, bool) {
     let mut usages = Vec::new();
+    let mut concrete_matches = false;
 
     for usage in vize_croquis::facts::component_usage_list(analysis) {
         // Match component name (case-insensitive for kebab-case vs PascalCase)
@@ -68,6 +78,10 @@ pub(super) fn extract_authored_passed_props_for_component(
                 .iter()
                 .any(|alias| component_names_match(usage.name.as_str(), alias.as_str()))
         {
+            concrete_matches = true;
+            if template_usage_is_shadowed(analysis, &usage) {
+                continue;
+            }
             let props = usage
                 .props
                 .iter()
@@ -91,7 +105,7 @@ pub(super) fn extract_authored_passed_props_for_component(
         }
     }
 
-    usages
+    (usages, concrete_matches)
 }
 
 /// Whether an authored `<NuxtPage>` prop reaches the rendered route component.
@@ -215,8 +229,7 @@ pub(super) fn imported_aliases_for_child(
     // chains. Attribute matching must use that same resolved identity rather
     // than comparing the barrel path with the final SFC path.
     for usage in vize_croquis::facts::component_usage_list(&parent_entry.analysis) {
-        if imported_render_target(registry, parent_entry.id, usage.name.as_str())
-            == Some(child_entry.id)
+        if imported_render_target_at(registry, parent_entry.id, &usage) == Some(child_entry.id)
             && !aliases.contains(&usage.name)
         {
             aliases.push(usage.name);
