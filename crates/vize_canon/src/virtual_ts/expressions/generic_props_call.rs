@@ -150,10 +150,13 @@ pub(super) fn generate_generic_props_call(
 /// erases every parameter to its constraint even when the props determine it.
 /// Higher-order inference preserves native functional generics, but an
 /// intersection of generic and non-generic construct signatures fixes its type
-/// parameters too early (#10416). A direct `new C(props, ...args)` preserves
-/// overload selection and inference until the props are available. The selector
-/// returns that instance's slots only for native constructors; Vize components
-/// retain their authored resolver signature directly.
+/// parameters too early (#10416). A direct `new C(...args)` preserves overload
+/// selection and inference until the props are available. The first-argument
+/// instance selector preserves a direct zero-argument construction for an
+/// all-zero-argument signature and the exact legacy props construction for
+/// every other signature. The selector returns that instance's slots only for
+/// native constructors; Vize components retain their authored resolver
+/// signature directly.
 /// Select one factory signature before inference: overloading the factory
 /// erases generics in library declarations whose parameters reference their
 /// own setup context (for example vue-virtual-scroller).
@@ -190,14 +193,21 @@ pub(crate) fn generate_slot_host_binding(
             crate::virtual_ts::helpers::shared_types::SLOT_HOST_SELECTOR.select(true);
         let slot_constructor =
             crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR.select(true);
+        let slot_constructor_without_arguments =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITHOUT_ARGUMENTS
+                .select(true);
+        let slot_constructor_with_arguments =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITH_ARGUMENTS.select(true);
+        let slot_constructor_instance =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_INSTANCE.select(true);
         append!(
             *ts,
-            "{indent}const {binding_name} = (undefined as unknown as {slot_host_selector}<typeof {component_ref}>)(new (undefined as unknown as {slot_constructor}<typeof {component_ref}>)(",
+            "{indent}const {binding_name} = (undefined as unknown as {slot_host_selector}<typeof {component_ref}>)((undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => {slot_constructor_instance}<{slot_constructor}<typeof {component_ref}>, __Z, __P>)(new (undefined as unknown as {slot_constructor_without_arguments}<{slot_constructor}<typeof {component_ref}>>)(), new (undefined as unknown as {slot_constructor_with_arguments}<{slot_constructor}<typeof {component_ref}>>)(",
         );
     } else {
         append!(
             *ts,
-            "{indent}const {binding_name} = (undefined as unknown as __VizeSlotHostSelector<typeof {component_ref}>)(new (undefined as unknown as __VizeSlotConstructor<typeof {component_ref}>)(",
+            "{indent}const {binding_name} = (undefined as unknown as __VizeSlotHostSelector<typeof {component_ref}>)(__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof {component_ref}>>()(new (undefined as unknown as __VizeSlotConstructorWithoutArguments<__VizeSlotConstructor<typeof {component_ref}>>)(), new (undefined as unknown as __VizeSlotConstructorWithArguments<__VizeSlotConstructor<typeof {component_ref}>>)(",
         );
     }
     let isolated_guard = usage
@@ -227,12 +237,12 @@ pub(crate) fn generate_slot_host_binding(
         let slots_factory = crate::virtual_ts::helpers::shared_types::SLOTS_FACTORY.select(true);
         append!(
             *ts,
-            ", ...([] as unknown as {slot_constructor_args}<{slot_constructor}<typeof {component_ref}>>)), (undefined as unknown as {slots_factory}<typeof {component_ref}>)({component_ref})(",
+            ", ...([] as unknown as {slot_constructor_args}<{slot_constructor}<typeof {component_ref}>>))), (undefined as unknown as {slots_factory}<typeof {component_ref}>)({component_ref})(",
         );
     } else {
         append!(
             *ts,
-            ", ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof {component_ref}>>)), (undefined as unknown as __VizeSlotsFactory<typeof {component_ref}>)({component_ref})(",
+            ", ...([] as unknown as __VizeSlotConstructorArgs<__VizeSlotConstructor<typeof {component_ref}>>))), (undefined as unknown as __VizeSlotsFactory<typeof {component_ref}>)({component_ref})(",
         );
     }
     if let Some(guard) = isolated_guard.as_ref() {
