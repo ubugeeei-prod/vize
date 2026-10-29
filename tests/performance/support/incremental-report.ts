@@ -5,12 +5,15 @@ import type { LspIncrementalBudget } from "./incremental-metrics.ts";
 import type { PeakProcessTreeRssSample } from "./process-metrics.ts";
 
 export type IncrementalReportData = {
+  schemaVersion: 3;
   status: string;
   fixture: string;
   fixtureRevision: string;
   corpus: { vueFiles: number; vueAndTypeScriptFiles: number; baselineDiagnostics: number };
   budget: LspIncrementalBudget & { scale: number };
   timingsMs: Record<string, number>;
+  processTreeAttributionSetupMs: number;
+  processTreeAttributionMs: Record<string, number>;
   sampledPeakRssKiB: number;
   sampledPeakProcessTreeRssKiB: number;
   sampledPeakProcessTreeSize: number;
@@ -31,9 +34,10 @@ function renderMarkdown(title: string, data: IncrementalReportData): string {
   const scale = data.budget.scale;
   const asMiB = (kib: number) => (kib > 0 ? `${(kib / 1024).toFixed(1)} MiB` : "unavailable");
   const lines = [
-    `## ${title}`,
+    `## ${markdownCell(title)}`,
     "",
-    `Status: **${data.status}**. Fixture: \`${data.fixture}@${data.fixtureRevision}\`.`,
+    `Status: **${markdownCell(data.status)}**. Fixture: ` +
+      `${markdownCell(data.fixture)}@${markdownCell(data.fixtureRevision)}.`,
     "",
     `Corpus: ${data.corpus.vueFiles} Vue files; ${data.corpus.vueAndTypeScriptFiles} Vue/TS files; ${data.corpus.baselineDiagnostics} baseline diagnostics.`,
     "",
@@ -43,9 +47,15 @@ function renderMarkdown(title: string, data: IncrementalReportData): string {
   for (const [stage, milliseconds] of Object.entries(data.timingsMs)) {
     const budgetMs = data.budget.laneBudgetsMs[stage];
     const budgetCell = budgetMs == null ? "-" : `${budgetMs * scale} ms`;
-    lines.push(`| ${stage} | ${milliseconds.toFixed(1)} ms | ${budgetCell} |`);
+    lines.push(`| ${markdownCell(stage)} | ${milliseconds.toFixed(1)} ms | ${budgetCell} |`);
   }
   lines.push(
+    "",
+    `Stable process attribution ran outside lane timings: setup ` +
+      `${data.processTreeAttributionSetupMs.toFixed(1)} ms; max sample ${Math.max(
+        0,
+        ...Object.values(data.processTreeAttributionMs),
+      ).toFixed(1)} ms; each ambiguous snapshot is bounded to three immediate attempts.`,
     "",
     `Sampled peak LSP RSS: ${asMiB(data.sampledPeakRssKiB)} ` +
       `(budget ${data.budget.maxPeakRssMiB * scale} MiB).`,
@@ -73,25 +83,29 @@ function renderPeakAttribution(
   if (peak == null) return;
   lines.push(
     "",
-    `Peak attribution: \`${markdownCell(peak.label)}\`; ${peak.processes} members; exact member ` +
+    `Peak attribution: ${markdownCell(peak.label)}; ${peak.processes} members; exact member ` +
       `sum ${asMiB(peak.memberRssSumKiB)}.`,
     "",
-    "| Role | PID | PPID | RSS | Birth ticks | Resolved executable | Executable SHA-256 | argv SHA-256 | argv |",
-    "| --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- |",
+    "| Tree role | Runtime role | PID | PPID | RSS | Birth ticks | Executable kind | Executable SHA-256 | argc | argv SHA-256 |",
+    "| --- | --- | ---: | ---: | ---: | ---: | --- | --- | ---: | --- |",
   );
   for (const member of peak.members) {
     const identity = member.identity;
     lines.push(
-      `| ${member.role} | ${member.pid} | ${member.parentPid} | ${asMiB(member.rssKiB)} | ` +
+      `| ${member.role} | ${identity?.runtimeRole ?? "unavailable"} | ${member.pid} | ` +
+        `${member.parentPid} | ${asMiB(member.rssKiB)} | ` +
         `${identity?.birthTicks ?? "unavailable"} | ` +
-        `${markdownCell(identity?.resolvedExecutable ?? member.executable)} | ` +
+        `${identity?.executableKind ?? "unavailable"} | ` +
         `${identity?.executableSha256 ?? "unavailable"} | ` +
-        `${identity?.argvSha256 ?? "unavailable"} | ` +
-        `${markdownCell(identity == null ? "unavailable" : JSON.stringify(identity.argv))} |`,
+        `${identity?.argvCount ?? "unavailable"} | ` +
+        `${identity?.argvSha256 ?? "unavailable"} |`,
     );
   }
 }
 
 function markdownCell(value: string): string {
-  return value.replaceAll("|", "\\|").replaceAll("\n", " ").replaceAll("\r", " ");
+  return value
+    .replaceAll("\n", " ")
+    .replaceAll("\r", " ")
+    .replace(/[\\|`*_[\]{}()#+!<>]/gu, "\\$&");
 }

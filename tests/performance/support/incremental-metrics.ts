@@ -9,6 +9,7 @@ import { writeIncrementalArtifacts } from "./incremental-report.ts";
 import {
   assertStableProcessTreeSample,
   gitHead,
+  linuxProcessBirthTicks,
   processRssKiB,
   processTreeRss,
   type AttributedProcessTreeRssSample,
@@ -130,7 +131,10 @@ export class IncrementalMetrics {
   private readonly timingsMs: Record<string, number> = {};
   private readonly rssSamplesKiB: Record<string, number> = {};
   private readonly processTreeSamples: Record<string, AttributedProcessTreeRssSample> = {};
+  private readonly processTreeAttributionMs: Record<string, number> = {};
+  private readonly processTreeAttributionSetupMs: number;
   private readonly observedProcessBirthTicks = new Map<number, string>();
+  private readonly expectedRootBirthTicks: string | null;
   private readonly processId: number;
   private readonly suite: IncrementalSuite;
   private readonly fixtureId: string;
@@ -140,6 +144,9 @@ export class IncrementalMetrics {
   constructor(processId: number, suite: IncrementalSuite) {
     this.processId = processId;
     this.suite = suite;
+    const attributionSetupStartedAt = performance.now();
+    this.expectedRootBirthTicks = linuxProcessBirthTicks(processId);
+    this.processTreeAttributionSetupMs = performance.now() - attributionSetupStartedAt;
     const { fixtureId, budget } = loadLspIncrementalBudget(suite.id);
     this.fixtureId = fixtureId;
     this.budget = budget;
@@ -155,13 +162,25 @@ export class IncrementalMetrics {
       );
     }
     const startedAt = performance.now();
-    let result: T;
+    let result: T | undefined;
+    let operationFailed = false;
+    let operationError: unknown;
     try {
       result = await this.raceLaneHardTimeout(name, operation());
-    } finally {
-      this.timingsMs[name] = performance.now() - startedAt;
-      this.sampleRss(name);
+    } catch (error) {
+      operationFailed = true;
+      operationError = error;
     }
+    this.timingsMs[name] = performance.now() - startedAt;
+    let samplingFailed = false;
+    let samplingError: unknown;
+    try {
+      this.sampleRss(name);
+    } catch (error) {
+      samplingFailed = true;
+      samplingError = error;
+    }
+    if (operationFailed) throw operationError;
     const elapsedMs = this.timingsMs[name];
     if (elapsedMs > budgetMs * this.scale) {
       throw this.budgetViolation(
@@ -170,22 +189,36 @@ export class IncrementalMetrics {
         `laneBudgetsMs.${name}`,
       );
     }
-    return result;
+    if (samplingFailed) throw samplingError;
+    return result as T;
   }
 
   sampleRss(name: string): void {
-    const rss = processRssKiB(this.processId);
-    if (rss != null) this.rssSamplesKiB[name] = rss;
-    const tree = processTreeRss(this.processId, { stableIdentity: true });
-    if (tree == null && rss != null && process.platform === "linux") {
-      throw new Error(
-        `${this.suite.title}: stable process-tree identity sampling failed for live LSP server ` +
-          `${this.processId}; refusing ambiguous RSS attribution.`,
-      );
-    }
-    if (tree != null) {
-      assertStableProcessTreeSample(this.processId, tree, this.observedProcessBirthTicks);
-      this.processTreeSamples[name] = tree;
+    const attributionStartedAt = performance.now();
+    try {
+      const tree = processTreeRss(this.processId, {
+        stableIdentity: true,
+        expectedRootBirthTicks: this.expectedRootBirthTicks,
+      });
+      const rss =
+        process.platform === "linux"
+          ? (tree?.members.find((member) => member.role === "root")?.rssKiB ?? null)
+          : processRssKiB(this.processId);
+      if (rss != null) this.rssSamplesKiB[name] = rss;
+      if (tree == null && this.expectedRootBirthTicks != null && process.platform === "linux") {
+        throw new Error(
+          `${this.suite.title}: stable process-tree identity sampling failed for live LSP server ` +
+            `${this.processId}; refusing ambiguous RSS attribution.`,
+        );
+      }
+      if (tree != null) {
+        assertStableProcessTreeSample(this.processId, tree, this.observedProcessBirthTicks);
+        this.processTreeSamples[name] = tree;
+      }
+    } finally {
+      // Stable identity hashing and bounded retries happen after the measured
+      // lane. Retain their cost separately so they cannot inflate lane latency.
+      this.processTreeAttributionMs[name] = performance.now() - attributionStartedAt;
     }
   }
 
@@ -237,7 +270,7 @@ export class IncrementalMetrics {
     fs.mkdirSync(outputDir, { recursive: true });
     const peaks = this.peakSamples();
     const data = {
-      schemaVersion: 3,
+      schemaVersion: 3 as const,
       status: failure == null ? "passed" : "failed",
       failure:
         failure instanceof Error ? failure.message : failure == null ? null : inspect(failure),
@@ -258,6 +291,8 @@ export class IncrementalMetrics {
       },
       budget: { scale: this.scale, ...this.budget },
       timingsMs: this.timingsMs,
+      processTreeAttributionSetupMs: this.processTreeAttributionSetupMs,
+      processTreeAttributionMs: this.processTreeAttributionMs,
       rssSamplesKiB: this.rssSamplesKiB,
       processTreeSamples: this.processTreeSamples,
       sampledPeakRssKiB: this.sampledPeakRssKiB(),
