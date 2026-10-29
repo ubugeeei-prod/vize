@@ -105,9 +105,7 @@ export default defineComponent({
         output.code
     );
     assert!(
-        !output
-            .code
-            .contains("const $fetch: __VizeInstanceGlobal<'$fetch'>"),
+        !output.code.contains("__ctx.$fetch"),
         "an instance-global declaration must not duplicate the spread setup binding:\n{}",
         output.code
     );

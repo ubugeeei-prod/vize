@@ -21,9 +21,9 @@ mod dynamic_component_names_tests;
 #[cfg(test)]
 mod event_handler_tests;
 mod expressions;
+pub(crate) use expressions::NAMED_PROP_DIAGNOSTIC_MARKER;
 #[cfg(feature = "native")]
 pub(crate) use expressions::key_sub_spans;
-pub(crate) use expressions::NAMED_PROP_DIAGNOSTIC_MARKER;
 mod generator;
 mod reference_paths;
 #[cfg(feature = "native")]

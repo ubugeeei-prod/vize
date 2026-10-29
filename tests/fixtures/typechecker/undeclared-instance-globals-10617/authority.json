@@ -1,0 +1,103 @@
+{
+  "schema": "vize.undeclared-instance-globals",
+  "version": 1,
+  "issue": 10617,
+  "sourceBase": "51dc5bec56387eeaa802938c09fd57a228d8d217",
+  "publicVersion": "0.566.0",
+  "publicIntegrity": "sha512-nMlGBk8JkBoa75NVh9s/xVrRZ8VawhbvuCRKurxN9dUupLhEDrJT0cBBOOqmmjy9Sja3/ZSKLvRqSByiqGP+DA==",
+  "hostVersion": "7.1.0-beta",
+  "hostIntegrity": "sha512-cjWjZAJDsmZzsNC5GwHNlW0YPM65jZa5oR0KyQcYX3KSVIfTvtBq//vewISyatKk4OLi5grZjHhIVE9fdrw1UQ==",
+  "vueVersion": "3.5.35",
+  "files": [
+    {
+      "path": "cases.json",
+      "bytes": 28026,
+      "sha256": "8ef17da9a4fc788c9ab2237067961426adb566cfc56103f28626d3d9a5c8eee6"
+    },
+    {
+      "path": "project/package-lock.json.txt",
+      "bytes": 44146,
+      "sha256": "b76a9e585ff2fe42903f96acd334d102f7b882ff3c79b027e117171627fa5428"
+    },
+    {
+      "path": "project/package.json.txt",
+      "bytes": 201,
+      "sha256": "d9222e46dc0b8ac6ec6fa7a7646c1ffd6998f4475316e2d55ea115d456cd2053"
+    },
+    {
+      "path": "project/src/Globals.vue.txt",
+      "bytes": 166,
+      "sha256": "622c1d1a109b47a74717cbb749ed5b886503861a29fe8d0c397183ff17af64be"
+    },
+    {
+      "path": "project/src/globals.d.ts.txt",
+      "bytes": 114,
+      "sha256": "ec4ba2c3b3401dd3c90bc268146de2e613a818b794446fca6bf45ac84985ae92"
+    },
+    {
+      "path": "project/tsconfig.json.txt",
+      "bytes": 388,
+      "sha256": "bb91d63fbb3a450e766893efc826e4d40ea3588fd9277fb6120b4fa51c36ea49"
+    },
+    {
+      "path": "reference/package-lock.json.txt",
+      "bytes": 19976,
+      "sha256": "be65900d74508223567b03b021af6c47c67638a0bf60fc87688527020cc9d99e"
+    },
+    {
+      "path": "reference/package.json.txt",
+      "bytes": 200,
+      "sha256": "c6dc02275332ea46b7748ebc83757f069a1bee6d93383dea31f86c64ae3c6906"
+    },
+    {
+      "path": "source-packets.json",
+      "bytes": 386286,
+      "sha256": "bb2434fbf6d0f73165b5da6fc5674495c64727a4a0c19dcf09c01635d94d2cb9"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4216,
+      "sha256": "e1a40997ebd55d7784bf159d9cdd13d874127f4202a65f04ec97fe2234e76ccd"
+    },
+    {
+      "path": "official-host/package.json.txt",
+      "bytes": 158,
+      "sha256": "faad13aafcce63a0298c69751c3de1f22c058f750224ee5bb1e786ca41c680b4"
+    },
+    {
+      "path": "official-host/package-lock.json.txt",
+      "bytes": 5055,
+      "sha256": "1d60694e2701cae0c5de17315f16ac0ffe5ca2d72c0dcfc4dac09899d48a07c6"
+    },
+    {
+      "path": "host-authority.json",
+      "bytes": 1016,
+      "sha256": "71a251bcf3fc7724daae4e350fad11e103b33e5fcb09e1563858f6053f41e682"
+    },
+    {
+      "path": "profile-controls.json",
+      "bytes": 4044,
+      "sha256": "0c571eeff8826a1aca4c1fb1e13d98f744b6c83aaec9e3c320cea9f6f9d771f7"
+    },
+    {
+      "path": "copy-controls.json",
+      "bytes": 14177,
+      "sha256": "5288ad2b6df42c53f2f5d645282f8fda14470a16db269729054f199a7038a328"
+    },
+    {
+      "path": "collision-controls.json",
+      "bytes": 2791,
+      "sha256": "7064d54c006f6f1abf9b2209fa60dc8781a2d69142c652ea34266070c0a7c787"
+    },
+    {
+      "path": "receiver-plan-controls.json",
+      "bytes": 4126,
+      "sha256": "54e936aadfaea932e695225f95d4186c7d13d9d17f8ac2a29486681d6c186b1f"
+    },
+    {
+      "path": "receiver-plan-independent-packets.json",
+      "bytes": 4129,
+      "sha256": "f82f962f4c744e6f5f46e1e2358040db74d55d15eee320ac5ab683da8997c952"
+    }
+  ]
+}

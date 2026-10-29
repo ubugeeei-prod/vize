@@ -969,13 +969,18 @@ fn jsx_prop_tokens_preserve_complete_batch_diagnostics() {
 }
 
 #[test]
-fn undeclared_instance_globals_report_at_every_read() {
+fn undeclared_instance_globals_preserve_complete_authored_diagnostics() {
     check_pack(
         "undeclared-instance-globals-10617",
-        "undeclared_instance_globals_report_at_every_read",
-        "42ca747027a86da7f94b473cff737cb330134d8c",
+        "undeclared_instance_globals_preserve_complete_authored_diagnostics",
+        "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
         Some(10617),
-        &["undeclared-dollar-globals"],
+        &[
+            "original",
+            "repaired",
+            "undeclared-dollar-globals",
+            "undeclared-only",
+        ],
     );
 }
 

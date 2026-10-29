@@ -67,31 +67,36 @@ fn authored_offsets() -> Vec<usize> {
 
 /// `vue-tsc` reports `TS2339` (`TS2551` with a spelling suggestion) at every
 /// read of a `$` name the public instance does not declare (#10617).
+/// Ordinary Vue 3 reads are rewritten at each authored occurrence (#10617).
+/// The prelude must not also declare `const $missing`.
+#[test]
+fn the_default_vue3_form_checks_every_occurrence_on_the_public_instance() {
+    let output = generate(false);
+    assert_eq!(
+        [
+            "__ctx.$missing('c')",
+            "__ctx.$missing('a')",
+            "__ctx.$missing('b')"
+        ]
+        .map(|access| output.code.matches(access).count()),
+        [1, 1, 1],
+        "{}",
+        output.code
+    );
+    assert_eq!(output.code.matches("const $missing =").count(), 0);
+    let context_helpers = output
+        .code
+        .lines()
+        .filter(|line| {
+            line.contains("__VizeInstanceGlobal") || line.contains("__vize_strict_template_context")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(context_helpers, Vec::<&str>::new());
+}
+
 #[test]
 fn vue3_reads_every_occurrence_off_the_public_instance() {
-    let output = generate(false);
-
-    assert_eq!(
-        output.code.matches("__VizeInstanceGlobal").count(),
-        0,
-        "{}",
-        output.code
-    );
-    assert_eq!(
-        output
-            .code
-            .matches("const $missing = __ctx.$missing;")
-            .count(),
-        1,
-        "{}",
-        output.code
-    );
-    assert_eq!(
-        output.code.matches("void (__ctx.$missing);").count(),
-        2,
-        "{}",
-        output.code
-    );
+    the_default_vue3_form_checks_every_occurrence_on_the_public_instance();
 }
 
 #[test]

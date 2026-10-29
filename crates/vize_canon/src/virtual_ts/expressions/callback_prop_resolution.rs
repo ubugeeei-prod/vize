@@ -65,6 +65,8 @@ pub(super) fn generate_callback_props_resolution(
     indent: &str,
     (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
 ) -> Option<CallbackPropsResolution> {
+    let scoped_access = template_binding_access.for_scope(usage.scope_id);
+    let template_binding_access = &scoped_access;
     if !usage.props.iter().any(is_inline_callback_prop) {
         return None;
     }

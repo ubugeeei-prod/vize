@@ -1,13 +1,14 @@
 //! Template references to `$`-prefixed component instance globals.
 //!
-//! A Vue 3 template reads each name off its typed public instance, once per
-//! authored occurrence, so a global nothing declares reports the `TS2339`
-//! `vue-tsc` reports at each use. The receiver is the authored Options API
-//! instance when templates resolve on it (its mixins and `$`-named members are
-//! real there), the strict context when the project publishes an authoritative
-//! surface (currently Nuxt's generated `.nuxt` types), and `__ctx` otherwise.
-//! A `vue` that cannot be resolved types `__ctx` as `any`, so nothing is
-//! invented there.
+//! A Vue 3 template reads each authored occurrence off its typed public
+//! instance, so an undeclared global reports the TypeScript property error
+//! `vue-tsc` reports instead of acquiring an `any` fallback. Ordinary reads
+//! are rewritten at the authored expression. Strict mode, Vue 2, `$props`,
+//! `$el`, and the authored Options API instance still use the prelude: that
+//! Options API receiver is the component instance, where mixins and
+//! `$`-named members exist, strict mode uses the template context, and every
+//! other Vue 3 read uses `__ctx`. A `vue` that cannot be resolved types
+//! `__ctx` as `any`, so nothing is invented there.
 //!
 //! Vue 2's context is structural and its plugin globals come from
 //! `vue/types/vue` augmentations the Vue 3 instance never sees, so it keeps the
@@ -77,6 +78,18 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
         if !expr.content.as_str().contains('$') {
             continue;
         }
+        // Ordinary Vue 3 instance references are rewritten at their authored
+        // expressions. Only the special own-props/root-element aliases still
+        // require this prelude; do not parse every dollar expression twice.
+        if !scope_options.legacy_vue2
+            && !scope_options.virtual_ts_options.strict_instance_globals
+            && !resolves_on_authored_instance(summary, scope_options)
+            && !expr.content.as_str().contains("$props")
+            && !(scope_options.check_options.infer_template_dollar_el
+                && expr.content.as_str().contains("$el"))
+        {
+            continue;
+        }
         // The identifier's own span, not `content.find(name)`: the first
         // occurrence of `$props` in `$propsList && $props` is the `$propsList`
         // prefix, and mapping to it would point diagnostics at the wrong
@@ -100,7 +113,14 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
         let Some(offset) = summary.scopes.v_for_source_offset(scope.id) else {
             continue;
         };
-        if !data.source.contains('$') {
+        if !data.source.contains('$')
+            || (!scope_options.legacy_vue2
+                && !scope_options.virtual_ts_options.strict_instance_globals
+                && !resolves_on_authored_instance(summary, scope_options)
+                && !data.source.contains("$props")
+                && !(scope_options.check_options.infer_template_dollar_el
+                    && data.source.contains("$el")))
+        {
             continue;
         }
         for reference in extract_identifier_refs_oxc(data.source.as_str()) {
@@ -287,6 +307,18 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         } else {
             None
         };
+
+        // Ordinary Vue 3 reads are rewritten at the authored expression. The
+        // prelude still owns strict context, Vue 2, `$props` / `$el`, and the
+        // authored Options API instance (its mixins are not on `__ctx`).
+        if !self.scope_options.legacy_vue2
+            && !self.options.strict_instance_globals
+            && declared_type.is_none()
+            && name != "$props"
+            && !resolves_on_authored_instance(self.summary, self.scope_options)
+        {
+            return;
+        }
 
         let receiver = declared_type
             .is_none()

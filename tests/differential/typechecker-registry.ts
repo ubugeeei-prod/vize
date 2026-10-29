@@ -130,7 +130,8 @@ export const TYPECHECKER_TESTS = {
   "template-suppression-original": "template_suppression_preserves_complete_original_diagnostics",
   "tsconfig-literal-brackets-10819": "literal_bracket_pages_keep_their_project_options",
   "typed-import-meta": "typed_import_meta_preserves_exact_authored_diagnostics",
-  "undeclared-instance-globals-10617": "undeclared_instance_globals_report_at_every_read",
+  "undeclared-instance-globals-10617":
+    "undeclared_instance_globals_preserve_complete_authored_diagnostics",
   "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
   "unicode-reserved-props": "unicode_reserved_props_preserve_value_diagnostics",
   "unknown-component-slot-payload-11027":
@@ -242,7 +243,7 @@ export const sourceRevisions = {
   "template-suppression-original": "e199979dfb32dfd8eb9ad32a2928fb010768f239",
   "tsconfig-literal-brackets-10819": "26b8fa31c7933d800c8bf4c2f37057864caaae9d",
   "typed-import-meta": "6e0f763bd0f5e986036244c2c17c9b658b0596bd",
-  "undeclared-instance-globals-10617": "42ca747027a86da7f94b473cff737cb330134d8c",
+  "undeclared-instance-globals-10617": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
   "unicode-prop-bindings-10573": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
   "unicode-reserved-props": originalFixtureRevision,
   "unknown-component-slot-payload-11027": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",

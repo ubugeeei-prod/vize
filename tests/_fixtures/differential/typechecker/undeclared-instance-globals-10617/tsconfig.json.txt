@@ -1,12 +1,26 @@
 {
   "compilerOptions": {
-    "strict": true,
-    "target": "ESNext",
     "module": "preserve",
     "moduleResolution": "bundler",
+    "strict": true,
     "noEmit": true,
-    "skipLibCheck": true,
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "types": []
   },
-  "include": ["src/**/*.vue", "src/**/*.d.ts"]
+  "contentMappers": [
+    {
+      "package": "vize",
+      "extensions": [
+        ".vue"
+      ]
+    }
+  ],
+  "include": [
+    "src"
+  ]
 }
