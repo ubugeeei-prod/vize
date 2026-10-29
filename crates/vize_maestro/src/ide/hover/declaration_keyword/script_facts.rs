@@ -63,6 +63,17 @@ struct Cache {
     parses: FxHashMap<CompactString, u64>,
 }
 
+impl Cache {
+    #[cfg(test)]
+    fn record_parse(&mut self, uri: CompactString) {
+        *self.parses.entry(uri).or_default() += 1;
+    }
+
+    #[cfg(not(test))]
+    #[inline(always)]
+    fn record_parse(&mut self, _: CompactString) {}
+}
+
 fn cache() -> &'static Mutex<Cache> {
     static CACHE: OnceLock<Mutex<Cache>> = OnceLock::new();
     CACHE.get_or_init(|| Mutex::new(Cache::default()))
@@ -131,8 +142,7 @@ fn facts(ctx: &IdeContext<'_>) -> Option<Arc<Facts>> {
                 },
             );
         }
-        #[cfg(test)]
-        *guard.parses.entry(uri_key).or_default() += 1;
+        guard.record_parse(uri_key);
     }
     Some(built)
 }
