@@ -82,7 +82,7 @@ const plain = inject(PlainKey);
         .expect("run source-built vize lint");
     assert_eq!(
         output.status.code(),
-        Some(0),
+        Some(1),
         "{}",
         String::from_utf8_lossy(&output.stderr)
     );
