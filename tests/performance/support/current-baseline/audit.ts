@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { validateBuildReceipt } from "../../../differential/build-receipt.ts";
+import { type BuildIdentity, validateBuildReceipt } from "../../../differential/build-receipt.ts";
 import { auditRss } from "./rss.ts";
 import { completionLabels } from "../../../tooling/support/lsp/assertions.ts";
 import { loadLspChurnBudget } from "../churn-metrics.ts";
@@ -202,7 +202,7 @@ export function cycleObservations(
 
 export function auditSession(
   directory: string,
-  expected: Record<string, unknown>,
+  expected: BuildIdentity,
   custody: Record<string, unknown>,
 ) {
   const launch = readJson(directory, "launch.json");
