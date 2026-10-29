@@ -112,8 +112,8 @@ full-workspace capture suite.
 
 This moves exactly one typechecker row from `source-inspected` to `verified`:
 typechecker verified `0 → 1`, provisional and unknown readiness `216 → 215`;
-across all 472 registered rows, verified `7 → 8` and unknown readiness
-`465 → 464`. Measurement-unknown stays zero. The native adapter remains
+across all 473 registered rows, verified `7 → 8` and unknown readiness
+`466 → 465`. Measurement-unknown stays zero. The native adapter remains
 unsupported, so `nativeHandled`, equivalence, the formatter-only deletion
 verifier count (`1/5`), T1/T2 evidence, thresholds, production routing, and
 release scope are unchanged. #6853 and #6854 remain open.
