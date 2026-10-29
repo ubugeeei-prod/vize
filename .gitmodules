@@ -721,3 +721,18 @@
 	path = tests/_fixtures/_git/n8n
 	url = https://github.com/n8n-io/n8n
 	shallow = true
+
+[submodule "upstream/oxc"]
+	path = upstream/oxc
+	url = https://github.com/oxc-project/oxc.git
+	shallow = true
+
+[submodule "upstream/tsrs"]
+	path = upstream/tsrs
+	url = https://github.com/oxc-project/tsrs.git
+	shallow = true
+
+[submodule "upstream/typescript"]
+	path = upstream/typescript
+	url = https://github.com/microsoft/TypeScript.git
+	shallow = true
