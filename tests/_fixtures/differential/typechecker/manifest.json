@@ -3182,6 +3182,110 @@
       ]
     },
     {
+      "id": "typechecker/content-mapper-template-callback-listener-11023/reporter-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-template-callback-listener-11023",
+      "case": "reporter-valid",
+      "test": "content_mapper_template_callback_listener_11023::content_mapper_template_callback_listener_preserves_contextual_parameters",
+      "regressionCommit": "407e7cf15219405110efdd0c977bb30cb1db1644",
+      "sourceRevision": "407e7cf15219405110efdd0c977bb30cb1db1644",
+      "packReference": {
+        "path": "content-mapper-template-callback-listener-11023/cases.json",
+        "sha256": "7a931253dba4adb86b34daf15e67072ce5bde61ca5c11adbe026262648319e21"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-template-callback-listener-11023/tsconfig.json.txt",
+          "sha256": "191b4d1cef62fd82fc9e16078e08a7b8572518eb00e440fd65c74ebb257b0e87"
+        },
+        {
+          "file": "Foo.vue",
+          "path": "content-mapper-template-callback-listener-11023/Foo.vue.txt",
+          "sha256": "ec6b61d1c8ddd46ec78bcdea54f7999c2d34d1a0a0f2d81cb44d3cc56b67e996"
+        },
+        {
+          "file": "parent.vue",
+          "path": "content-mapper-template-callback-listener-11023/parent.vue.txt",
+          "sha256": "fecfcdaa3367da645d7fd6d037a83fca1be72f862436833a1a6790742c776595"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/content-mapper-template-callback-listener-11023/authored-invalid-control",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "content-mapper-template-callback-listener-11023",
+      "case": "authored-invalid-control",
+      "test": "content_mapper_template_callback_listener_11023::content_mapper_template_callback_listener_preserves_contextual_parameters",
+      "regressionCommit": "407e7cf15219405110efdd0c977bb30cb1db1644",
+      "sourceRevision": "407e7cf15219405110efdd0c977bb30cb1db1644",
+      "packReference": {
+        "path": "content-mapper-template-callback-listener-11023/cases.json",
+        "sha256": "7a931253dba4adb86b34daf15e67072ce5bde61ca5c11adbe026262648319e21"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "content-mapper-template-callback-listener-11023/tsconfig.json.txt",
+          "sha256": "191b4d1cef62fd82fc9e16078e08a7b8572518eb00e440fd65c74ebb257b0e87"
+        },
+        {
+          "file": "Foo.vue",
+          "path": "content-mapper-template-callback-listener-11023/Foo.vue.txt",
+          "sha256": "ec6b61d1c8ddd46ec78bcdea54f7999c2d34d1a0a0f2d81cb44d3cc56b67e996"
+        },
+        {
+          "file": "parent.vue",
+          "path": "content-mapper-template-callback-listener-11023/parent.invalid.vue.txt",
+          "sha256": "ceaad4da8ac8b5744405045f870b19a52793a54ebf43333ef18da9f3cdad599e"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/content-mapper-template-expression-syntax/authored-errors",
       "state": "active",
       "targets": [

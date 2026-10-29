@@ -10,7 +10,7 @@
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 use crate::virtual_ts::generate_virtual_ts;
-use crate::virtual_ts::helpers::to_camel_case;
+use crate::virtual_ts::helpers::{component_aria_prop_keys, to_camel_case};
 
 fn virtual_ts(script: &str, template: &str) -> std::string::String {
     let allocator = vize_carton::Allocator::new();
@@ -48,6 +48,20 @@ fn camelize_matches_vue_and_never_lowercases_the_leading_character() {
     assert_eq!(to_camel_case("a"), "a");
     assert_eq!(to_camel_case("A"), "A");
     assert_eq!(to_camel_case(""), "");
+}
+
+#[test]
+fn aria_prop_spellings_preserve_the_raw_key_and_generated_camel_key() {
+    assert_eq!(
+        component_aria_prop_keys("aria-label"),
+        Some(("aria-label".into(), "ariaLabel".into()))
+    );
+    assert_eq!(
+        component_aria_prop_keys("ariaLabel"),
+        Some(("aria-label".into(), "ariaLabel".into()))
+    );
+    assert_eq!(component_aria_prop_keys("data-label"), None);
+    assert_eq!(component_aria_prop_keys("arialabel"), None);
 }
 
 #[test]

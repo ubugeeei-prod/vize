@@ -13,6 +13,7 @@ mod support {
     pub(crate) mod fix_history_runner;
 }
 mod aria_kebab_prop_11048;
+mod content_mapper_template_callback_listener_11023;
 mod content_mapper_vue_generic_11051;
 mod fix_history_cases;
 use support::fix_history_normalization::assert_generated_check_ordinal_normalization_preserves_markers_without_digits;
@@ -1240,7 +1241,6 @@ fn public_instance_ts_directives_preserve_owned_native_diagnostics() {
         ],
     );
 }
-
 #[test]
 fn imported_component_tag_aliases_preserve_batch_prop_diagnostics() {
     if native_fixture_runtime_disabled() {
