@@ -321,6 +321,37 @@ fn formatter_cli_exposes_block_order_independently_of_presets() {
 
 #[cfg(feature = "glyph")]
 #[test]
+fn formatter_cli_exposes_void_element_closure_independently_of_presets() {
+    let project = project();
+    let root = project.path();
+    let authored = "<template>\n  <section><img src=\"cover.png\"><br><Input></Input></section>\n</template>\n";
+    let closed = "<template>\n  <section><img src=\"cover.png\" /><br /><Input></Input></section>\n</template>\n";
+    let controls: [(&str, &[&str], &str); 2] = [
+        (
+            "ClosedVoidElements.vue",
+            &["--preset", "vize", "--self-close-void-elements"],
+            closed,
+        ),
+        (
+            "AuthoredVoidElements.vue",
+            &["--preset", "prettier", "--self-close-void-elements=false"],
+            authored,
+        ),
+    ];
+
+    for (file, extra, expected) in controls {
+        write(root, file, authored);
+        let mut args = vec!["fmt", "--write", file, "--no-config"];
+        args.extend_from_slice(extra);
+        assert_success(&run(root, &args));
+        assert_eq!(fs::read_to_string(root.join(file)).unwrap(), expected);
+        assert_success(&run(root, &args));
+        assert_eq!(fs::read_to_string(root.join(file)).unwrap(), expected);
+    }
+}
+
+#[cfg(feature = "glyph")]
+#[test]
 fn formatter_cli_exposes_line_ending_policy() {
     let project = project();
     let root = project.path();

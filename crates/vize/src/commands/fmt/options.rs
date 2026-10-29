@@ -140,6 +140,9 @@ pub(super) fn build_format_options(
     if let Some(v) = args.sort_blocks {
         opts.sort_blocks = v;
     }
+    if let Some(v) = args.self_close_void_elements {
+        opts.self_close_void_elements = v;
+    }
     opts.skip_script_stabilization = !args.write;
     (
         opts,

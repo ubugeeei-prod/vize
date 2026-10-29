@@ -159,6 +159,7 @@ Default discovery formats Vue, JavaScript/TypeScript and JSON/JSONC files. YAML 
 | `--max-attributes-per-line`        | Wrap after a given attribute count                   |
 | `--normalize-directive-shorthands` | Normalize `v-bind:` / `v-on:` / `v-slot:` shorthands |
 | `--sort-blocks`                    | Toggle canonical SFC block ordering                  |
+| `--self-close-void-elements`       | Toggle `/>` on HTML void elements                    |
 | `--preset`                         | Apply `vize`, `prettier`, `compact` or `documentation` formatter defaults |
 | `--profile`                        | Print timing profile                                 |
 

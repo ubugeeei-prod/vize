@@ -216,3 +216,15 @@ camel-case option name. Explicit true or false values are applied after config
 and a selected preset. Public CLI and Node whole-output controls prove authored
 and canonical block order plus fixed points; the existing option matrix
 continues to exercise `sortBlocks: false` over the full in-repo Vue corpus.
+
+## Void-element closure option parity
+
+The existing `selfCloseVoidElements` boolean now has a direct CLI override in
+addition to Rust, config schema, generated TypeScript, Pkl, editor, WASM and
+typed Node support. The CLI flag is
+`--self-close-void-elements[=false]`; Node `formatSfc` uses the same camel-case
+option name. Explicit true or false values are applied after config and a
+selected preset. Public CLI whole-output controls prove enabled and authored
+void-element forms plus fixed points, while the existing Node regression pins
+both directions through a third pass with immutable options and the option
+matrix exercises the enabled value over the full in-repo Vue corpus.

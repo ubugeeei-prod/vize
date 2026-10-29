@@ -120,15 +120,15 @@ pub struct FmtArgs {
     /// Maximum number of attributes per line before wrapping
     #[arg(long)]
     pub max_attributes_per_line: Option<u32>,
-
     /// Normalize directive shorthands (v-bind: → :, v-on: → @, v-slot: → #)
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub normalize_directive_shorthands: Option<bool>,
-
     /// Order SFC blocks canonically instead of preserving their authored order
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub sort_blocks: Option<bool>,
-
+    /// Close HTML void elements such as `<img>` with `/>`
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
+    pub self_close_void_elements: Option<bool>,
     /// Apply a named set of defaults before the flags above
     #[arg(long, value_enum)]
     pub preset: Option<FmtPreset>,
