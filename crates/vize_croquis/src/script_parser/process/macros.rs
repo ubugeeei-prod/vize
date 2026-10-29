@@ -17,7 +17,7 @@ use super::super::extract::{
     get_binding_type_from_kind, process_call_expression, record_getter_context_from_call,
     record_static_runtime_object_literal,
 };
-use super::super::walk::{walk_call_arguments, walk_expression};
+use super::super::walk::{walk_call_arguments, walk_expression_with_closure_name};
 use super::super::{ReactiveValueOrigin, ScriptParseResult};
 use super::bindings::{
     add_binding_pattern_names, classify_const_initializer, get_binding_pattern_name,
@@ -96,12 +96,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     return;
                 }
 
-                // Check for inject() call - track with local_name for indirect destructure detection
-                // Also handles inject aliases (e.g., const a = inject; const state = a('key'))
+                // Track direct and aliased inject() calls with their local binding.
                 if is_inject_call(call, result)
                     && let Some(key_argument) = call.arguments.first()
                 {
-                    // Detect setup context violation for inject
                     detect_setup_context_violation(result, call);
 
                     if let Some(key) = extract_provide_key(key_argument, source) {
@@ -111,18 +109,18 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             .map(|arg| CompactString::new(extract_argument_source(arg, source)));
                         let local_name = CompactString::new(name);
                         result.inject_var_names.insert(local_name.clone());
+                        let from_composable = result.current_composable_name();
                         result.provide_inject.add_inject(
                             key,
                             local_name, // local_name is the binding name
                             default_value,
                             inject_type(declarator.init.as_ref(), call, source),
                             InjectPattern::Simple,
-                            None, // from_composable
+                            from_composable,
                             call.span.start,
                             call.span.end,
                         );
                         injection::record_default_spread(result, call);
-                        // Walk into the call's callback arguments to track nested scopes
                         walk_call_arguments(result, call, source);
                         // `inject()` can return either a plain value or a ref.
                         // Vue marks const inject bindings as maybe-ref so
@@ -155,12 +153,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 record_static_runtime_object_literal(result, name, init, kind, source);
             }
 
-            // Walk other expression types for nested scopes
-            // Skip if we already extracted and processed a call expression to avoid double processing
+            // Walk expressions not already processed as calls, including nested scopes.
             if !call_extracted && let Some(init) = &declarator.init {
-                walk_expression(result, init, source);
+                walk_expression_with_closure_name(result, init, source, name);
 
-                // Check for ref.value extraction: const x = someRef.value
                 check_ref_value_extraction(
                     result,
                     &declarator.id,
@@ -325,6 +321,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     .first()
                     .and_then(|arg| extract_provide_key(arg, source))
                 {
+                    let from_composable = result.current_composable_name();
                     result.provide_inject.add_inject(
                         key,
                         CompactString::new("(destructured)"),
@@ -333,7 +330,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
                         inject_type(declarator.init.as_ref(), call, source),
                         InjectPattern::ObjectDestructure(destructured_props.clone()),
-                        None,
+                        from_composable,
                         call.span.start,
                         call.span.end,
                     );
@@ -345,6 +342,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     .first()
                     .and_then(|arg| extract_provide_key(arg, source))
                 {
+                    let from_composable = result.current_composable_name();
                     result.provide_inject.add_inject(
                         key,
                         CompactString::new("(toRefs)"),
@@ -353,7 +351,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
                         inject_type(None, call, source),
                         InjectPattern::Simple,
-                        None,
+                        from_composable,
                         call.span.start,
                         call.span.end,
                     );
@@ -569,6 +567,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     .first()
                     .and_then(|arg| extract_provide_key(arg, source))
                 {
+                    let from_composable = result.current_composable_name();
                     result.provide_inject.add_inject(
                         key,
                         CompactString::new("(destructured)"),
@@ -577,7 +576,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
                         inject_type(declarator.init.as_ref(), call, source),
                         InjectPattern::ArrayDestructure(destructured_items),
-                        None,
+                        from_composable,
                         call.span.start,
                         call.span.end,
                     );
@@ -589,6 +588,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     .first()
                     .and_then(|arg| extract_provide_key(arg, source))
                 {
+                    let from_composable = result.current_composable_name();
                     result.provide_inject.add_inject(
                         key,
                         CompactString::new("(toRefs)"),
@@ -597,7 +597,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
                         inject_type(None, call, source),
                         InjectPattern::Simple,
-                        None,
+                        from_composable,
                         call.span.start,
                         call.span.end,
                     );

@@ -4,6 +4,11 @@ export const portugueseRules3: Record<string, readonly [string, string, string]>
     "O observador apenas copia uma derivação de `count` para um segundo ref, `doubled`, então o estado derivado é mantido por sincronização manual.",
     "`computed(() => count.value * 2)` expressa a derivação diretamente e remove tanto o ref gravável adicional quanto seu observador de sincronização.",
   ],
+  "script/prefer-define-emits-binding": [
+    "Preferir a função capturada de defineEmits ao $emit do template",
+    "O template chama o auxiliar `$emit` do componente embora `<script setup>` já capture a função tipada retornada por `defineEmits`.",
+    "O template chama a ligação `emit` capturada, fazendo nomes de eventos e payloads passarem pelo contrato `defineEmits` do componente.",
+  ],
   "script/prefer-define-options": [
     "Preferir defineOptions() a um &lt;script&gt; comum que só define name/inheritAttrs",
     "A única instrução significativa do script comum exporta um objeto contendo apenas `name` e `inheritAttrs`; essas opções podem ser expressas por `defineOptions`.",

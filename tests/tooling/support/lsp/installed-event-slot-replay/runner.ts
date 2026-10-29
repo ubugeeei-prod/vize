@@ -62,7 +62,9 @@ export async function replayInstalledEventSlotScopes(options: ReplayOptions) {
     scope:
       "The additional14 source-native ownership/refusal sessions remain pending separately; successful60 does not close #8010 or #8011.",
     adaptations: [
-      "The original explicit workspace Corsa path is absent; the authentic npm CLI selects its public bundled Corsa.",
+      options.authority.resolutionMode === "explicit-user-provider"
+        ? "The original workspace provider is absent; the authenticated installed user provider is supplied as explicit CORSA_PATH authority."
+        : "The original explicit workspace Corsa path is absent; the historical npm CLI selects its public bundled Corsa.",
       "Original18 retain their complete flat transaction and request IDs; a separate authored TS2322 invalid/repair witness uses notifications only.",
       "All original tsconfig, source/golden bytes, lint settings, whole packets and twenty-second message/five-second stdin-open exit deadlines remain explicit.",
     ],
@@ -212,6 +214,7 @@ export async function replayInstalledEventSlotScopes(options: ReplayOptions) {
               journalPath,
               options.authority,
               session?.receipt().pid ?? undefined,
+              options.authority.bundledCorsa.path,
             );
           },
         ],

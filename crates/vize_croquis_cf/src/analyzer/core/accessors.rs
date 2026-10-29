@@ -53,6 +53,7 @@ impl CrossFileAnalyzer {
         self.nuxt_scope_once = false;
         self.registry.clear();
         self.graph = DependencyGraph::new();
+        self.nuxt_page_outlets.clear();
         self.effect_graph_summaries.clear();
         self.template_complexity.clear();
     }

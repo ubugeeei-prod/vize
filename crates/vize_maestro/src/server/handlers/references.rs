@@ -3,7 +3,7 @@ use tower_lsp::{
     lsp_types::{Location, ReferenceParams},
 };
 
-use crate::ide::{IdeContext, ReferencesService, position_to_offset};
+use crate::ide::{IdeContext, ReferencesService};
 use crate::server::MaestroServer;
 
 pub(super) async fn references(
@@ -16,13 +16,7 @@ pub(super) async fn references(
     let uri = &params.text_document_position.text_document.uri;
     let position = params.text_document_position.position;
     let include_declaration = params.context.include_declaration;
-    let Some(content) = server.state.documents.text(uri) else {
-        return Ok(None);
-    };
-    let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-        return Ok(None);
-    };
-    let Some(ctx) = IdeContext::new(&server.state, uri, offset) else {
+    let Some(ctx) = IdeContext::at_position(&server.state, uri, position) else {
         return Ok(None);
     };
 

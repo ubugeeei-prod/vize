@@ -1,0 +1,34 @@
+---
+source: crates/vize_atelier_jsx/tests/compile.rs
+assertion_line: 195
+expression: out.module_code()
+---
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+const A = ({
+__ssrInlineRender: true,
+name: "A",
+setup() {
+ return (() => {
+
+
+return ((_ctx, _push, _parent, _attrs) => {
+  _push(`<a${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(msg)}</a>`)
+})
+})()
+}
+});
+const B = ({
+__ssrInlineRender: true,
+__vapor: true,
+name: "B",
+setup() {
+ "use vue:vapor"; return (() => {
+
+
+return ((_ctx, _push, _parent, _attrs) => {
+  _push(`<b${_ssrRenderAttrs(_attrs)}></b>`)
+})
+})()
+}
+});

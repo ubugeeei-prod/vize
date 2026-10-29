@@ -35,7 +35,8 @@ The official entry is the non-Node
 rejects nonempty `NODE_OPTIONS`, `VIZE_PREFER_WORKSPACE_BINDING`,
 `NAPI_RS_NATIVE_LIBRARY_PATH`, `NAPI_RS_FORCE_WASI`,
 `VIZE_ALLOW_NATIVE_VERSION_MISMATCH`, `CORSA_PATH`, `CORSA_EXECUTABLE`,
-`TSGO_PATH` and `TSGO_EXECUTABLE` before launching any Node process.
+`TSGO_PATH`, `TSGO_EXECUTABLE`, `TSRS_PATH` and `TSRS_EXECUTABLE` before
+launching any Node process.
 Existing custody configurations are also rejected. The TypeScript producer runs
 from its reviewed source bytes, which are hashed before and after collection;
 Node's compile cache is keyed by source content. The producer and
@@ -50,9 +51,12 @@ must declare the requested public CLI, plugin and native versions. Since
 platform npm manifests are generated during release, the frozen H native
 catalog's Darwin ARM64 version and native target declaration bind that platform
 source authority. The CLI's real `@vizejs/native` workspace edge resolves to
-the requested H native version; the public CLI native dependency and exact
-Corsa optional dependency must equal H's real native and Corsa catalog
-declarations. These source files are hashed separately in the receipt.
+the requested H native version. Current H must leave checker dependencies out
+of the public CLI, while retaining the exact private comparison version in the
+workspace catalog; the fresh consumer declares that version as its own provider.
+A historical H with a bundled CLI provider remains admissible only when its
+exact optional dependency matches its catalog. These source files are hashed
+separately in the receipt.
 
 The caller must separately authenticate the actual public annotated tag,
 GitHub release, Release run and publication channels. The collector does not
@@ -91,18 +95,21 @@ rust-script tools/commands/release/npm/collect-public-install.rs \
 The fresh consumer must be private, outside the source workspace, and declare
 exact versions of `vize`, `oxlint-plugin-vize`, `@vizejs/native` and
 `@vizejs/native-darwin-arm64`. Its npm lock must be v3 and repeat those exact
-dependencies. The CLI must declare an exact public optional
-`@typescript/typescript-darwin-arm64` version of TypeScript 7 or newer. That
-package's `lib/tsc` must be the executable public launcher. There is no source
-executable, workspace binding, external Corsa or fallback route.
+dependencies. For current H, the private consumer must also declare the exact
+`@typescript/typescript-darwin-arm64` TypeScript 7 provider in
+`devDependencies`, and its lock must repeat that declaration; the public CLI
+must declare no checker package. For a historical bundled H, the CLI's exact
+optional provider declaration is used instead. In either lineage the provider's
+`lib/tsc` must be the executable public launcher. There is no source executable,
+workspace binding, ambient override or fallback route.
 
 ## What the receipt establishes
 
-For all four Vize packages and the declared Corsa package, the producer checks
+For all four Vize packages and the declared checker provider, the producer checks
 exact manifest/lock/public registry name and version, resolved URL and SHA512
 SRI. It downloads the public archives, verifies SRI and compares every installed
 file byte and the entire file set. This includes JavaScript routing,
-`native-targets.js`, native bytes and the Corsa launcher. Wrong archive roots,
+`native-targets.js`, native bytes and the checker launcher. Wrong archive roots,
 traversal, links, duplicate files, missing files and extra installed files fail.
 The complete file digest manifest is retained and rechecked after the probe.
 
@@ -131,9 +138,12 @@ and CLI wrapper are checked, and the wrapper must equal frozen H. The Node hook
 observes the original `.node` loader with the same `this` and arguments, and
 preserves its loaded exports, thrown exception and return value. Resolution or
 an attempted load earns no success credit. Exactly one successful genuine
-expected loader return with matching path/digest and the CLI-selected public
-bundled Corsa route is required. The process PID, complete journal, zero exit,
-exact version stdout and empty stderr are checked. Node, lock, producer and all
+expected loader return with matching path/digest is required. Current receipts
+record the consumer-owned provider as `explicit-user-provider` and
+`installation-only`; the version probe receives no checker override and does
+not claim selection. Historical receipts retain the `bundled-cli` and
+`cli-selected` route. The process PID, complete journal, zero exit, exact
+version stdout and empty stderr are checked. Node, lock, producer and all
 installed package bytes are rechecked before the final receipt is written.
 
 Receipt, payload manifest and native journal names must all be new, canonical
@@ -154,7 +164,7 @@ node tools/benchmarks/scripts/test-inventory.ts --json /tmp/public-install-test-
 The tests use inert archive files and parser packets, synthetic failed journal
 controls and text pretending only to be a `.node` filename. The real original
 Node loader rejects that text, and its journal must contain `failed` with no
-`returned` event. Additional controls reject tampered JS/native/Corsa, archive
+`returned` event. Additional controls reject tampered JS/native/checker-provider, archive
 file-set changes, genuine committed H manifest shapes, wrong H versions/edges/catalogs,
 replacement/graft substitution, wrong source/run/workflow/subject,
 ambient overrides before startup, path escapes and overwrites. Network

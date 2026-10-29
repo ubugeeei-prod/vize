@@ -10,7 +10,7 @@ export const policyFiles = [
   ".github/workflows/release-consumer-recovery.yml",
   ".github/workflows/release-operator.yml",
   ".github/workflows/release-public-acceptance.yml",
-  "npm/cli/src/corsa-runtime.ts",
+  "tests/_fixtures/release/public-corsa-resolver.json",
   "tests/performance/support/warm-type-backed-public-archives.ts",
   "tools/support/release/consumer_recovery/archive.ts",
   "tools/support/release/consumer_recovery/consumer.ts",
@@ -72,20 +72,29 @@ export const policyFiles = [
   "tools/support/release/public_acceptance/vrt_tunnel_setup.ts",
   "tools/support/release/windows_hover_acceptance.ts",
 ] as const;
+const legacyPolicyFiles = policyFiles.map((file) =>
+  file === "tests/_fixtures/release/public-corsa-resolver.json"
+    ? "npm/cli/src/corsa-runtime.ts"
+    : file,
+);
+const declarationFor = (files: readonly string[]) =>
+  `export const policyFiles = [\n${files.map((file) => `  ${JSON.stringify(file)},`).join("\n")}\n] as const;`;
 
 /** Read an authenticated historical policy as data, never as an imported module. */
 export function sourceAuthority(sha: string, read: (sha: string, file: string) => string) {
   assert.match(sha, /^[0-9a-f]{40}$/);
-  const declaration = `export const policyFiles = [\n${policyFiles
-    .map((file) => `  ${JSON.stringify(file)},`)
-    .join("\n")}\n] as const;`;
   const inventory = read(sha, "tools/support/release/consumer_recovery/oracles.ts");
-  same(
-    inventory.match(/^export const policyFiles = \[\n(?: {2}"[^"\r\n]*",\n)*\] as const;$/gm),
-    [declaration],
-    "unsupported historical recovery source inventory",
-  );
-  return policyFiles.map((file) => ({ file, sha256: sha256(read(sha, file)) }));
+  const declarations =
+    inventory.match(/^export const policyFiles = \[\n(?: {2}"[^"\r\n]*",\n)*\] as const;$/gm) ?? [];
+  assert.equal(declarations.length, 1, "one historical recovery source inventory required");
+  const selected =
+    declarations[0] === declarationFor(policyFiles)
+      ? policyFiles
+      : declarations[0] === declarationFor(legacyPolicyFiles)
+        ? legacyPolicyFiles
+        : undefined;
+  assert.ok(selected, "unsupported historical recovery source inventory");
+  return selected.map((file) => ({ file, sha256: sha256(read(sha, file)) }));
 }
 
 /** New collections must still execute exactly their own reviewed source bytes. */

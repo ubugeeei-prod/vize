@@ -12,6 +12,57 @@ use super::{
 };
 use crate::batch::ContentMapperTransform;
 
+/// #10920: `:aria-labelledby` / `:error-message` map the camelized binding onto
+/// the whole attribute. An alias would name the attribute, and a prefix range
+/// drops the instance read into unmapped virtual code.
+#[test]
+fn same_name_shorthand_maps_the_binding_onto_the_attribute() {
+    let source = include_str!(
+        "../../../../../../../tests/_fixtures/differential/typechecker/shorthand-binding-diagnostic-10920/src/App.vue.txt"
+    );
+    let mut options = super::super::ContentMapperTransformOptions::default();
+    options.vue_compiler_target = Some(vize_l0::config::VueVersion::V3);
+    let result = super::super::generate_vue_content_mapper_transform_with_options(
+        Path::new("App.vue"),
+        source,
+        options,
+    )
+    .unwrap();
+    let text = result.text.as_str();
+    let atom = ContentMapperSpanKind::Atom as usize;
+    let verbatim = ContentMapperSpanKind::Verbatim as usize;
+    for (binding, attribute) in [
+        ("ariaLabelledby", "aria-labelledby"),
+        ("errorMessage", "error-message"),
+    ] {
+        let shorthand = source.find(&format!(":{attribute} />")).unwrap() + 1;
+        let explicit = source.find(&format!("\"{binding}\"")).unwrap() + 1;
+        let marker = format!("__vize_public_instance.{binding}");
+        let reads = text
+            .match_indices(&marker)
+            .map(|(at, _)| at + "__vize_public_instance.".len())
+            .collect::<Vec<_>>();
+        assert_eq!(reads.len(), 2, "{text}");
+        assert!(
+            result.mappings.iter().any(|span| {
+                span.0[0] == reads[0]
+                    && span.0[1] == binding.len()
+                    && span.0[2] == shorthand
+                    && span.0[3] == attribute.len()
+                    && span.0[4] == atom
+            }),
+            "shorthand {binding} -> {attribute}: {:?}",
+            result.mappings
+        );
+        assert!(result.mappings.iter().any(|span| {
+            span.0[0] == reads[1]
+                && span.0[2] == explicit
+                && span.0[3] == binding.len()
+                && span.0[4] == verbatim
+        }));
+    }
+}
+
 #[test]
 fn keeps_diagnostic_handler_anchors_out_of_editor_features() {
     let generated = "  const __vize_handler_1_2: unknown = handler;";

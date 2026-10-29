@@ -182,9 +182,15 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         )
     });
     let codegen_result = match l2_emit {
-        Some(result) => {
-            source_map::attach_compat_map(&root, &codegen_opts, result).finish(&mut NoCapture)
-        }
+        Some(result) => source_map::attach_compat_map(
+            &root,
+            &codegen_opts,
+            codegen_experimental_options,
+            no_slotted,
+            development,
+            result,
+        )
+        .finish(&mut NoCapture),
         None => {
             if use_l2_emit && codegen_opts.source_map {
                 selection::record(Err(DomLegacyReason::EmitRefused));

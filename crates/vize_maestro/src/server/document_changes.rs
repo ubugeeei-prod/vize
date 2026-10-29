@@ -54,7 +54,7 @@ impl MaestroServer {
         ))]
         self.notify_retained_navigation(uri);
 
-        let Some(content) = self.state.documents.text(uri) else {
+        let Some(content) = self.state.documents.text_snapshot(uri) else {
             return;
         };
         self.state.update_virtual_docs(uri, &content);

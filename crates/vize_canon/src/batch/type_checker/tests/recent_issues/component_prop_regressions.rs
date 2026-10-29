@@ -1,5 +1,6 @@
 mod attribute_only_required_props;
 mod attribute_only_required_props_edges;
+mod declared_aria_prop;
 mod fallthrough_unknown_attrs;
 mod generic_emit_guard;
 mod global_html_fallthrough_attrs;

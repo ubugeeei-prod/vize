@@ -37,6 +37,7 @@ pub(super) struct ForwardedRootContext<'a> {
     pub(super) options: &'a VirtualTsOptions,
     pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(super) template_binding_access: &'a TemplateBindingAccess,
+    pub(super) hoist_shared_preamble: bool,
 }
 
 /// Emit one probe pair per forwarded root and return the type of everything
@@ -65,9 +66,11 @@ pub(super) fn emit_forwarded_root_probes(
                 "\n  // Forwarded root props, instantiated by the props the template binds\n",
             );
         }
+        let emit_props_factory = crate::virtual_ts::helpers::shared_types::EMIT_PROPS_FACTORY
+            .select(ctx.hoist_shared_preamble);
         for (kind, factory) in [
             ("props", "__VizeForwardedPropsFactory"),
-            ("emits", "__VizeEmitPropsFactory"),
+            ("emits", emit_props_factory),
         ] {
             let name = cstr!("__vize_forwarded_{kind}_{index}");
             emit_probe(ts, ctx, usage, component.as_str(), factory, name.as_str());

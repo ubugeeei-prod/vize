@@ -34,7 +34,7 @@ pub(super) async fn classify(
     let result = classify_inner(ctx, analysis, bridge, prefix, &mut stage).await;
     if capture_enabled() {
         tracing::warn!(target: "vize_component_types", evidence = %json!({
-            "uri":ctx.uri.as_str(),"source":ctx.content,"stage":stage,"result":result
+            "uri":ctx.uri.as_str(),"source":ctx.content.as_str(),"stage":stage,"result":result
         }), "component classification guard custody");
     }
     result.unwrap_or_default()

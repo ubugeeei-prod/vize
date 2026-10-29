@@ -245,6 +245,25 @@
       "referenceCss": ".a,#never{&[data-v-nesting] .target{background:rgb(0,0,255)}}"
     },
     {
+      "id": "nested-list-sibling-bare-deep",
+      "source": "<template><div class=\"a\"><span class=\"target\"/></div></template><style scoped>.a{&.b,&.c{.d{color:red}}:deep(.target){background:rgb(0,0,255)}}</style>",
+      "css": ".a{&.b,&.c{.d{color:red}}:deep(.target){background:rgb(0,0,255)}}",
+      "html": "<div class=\"a\" data-v-nesting><i class=\"target guard\"></i></div>",
+      "competitor": ".a[data-v-nesting] .target{background:rgb(255,0,0)}",
+      "hover": false,
+      "pseudo": null,
+      "expected": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "beforeCss": ".a.b .d[data-v-nesting],.a.c .d[data-v-nesting]{color:red}.a[data-v-nesting] .target{background:rgb(0,0,255)}",
+      "referenceCss": ".a{&.b,&.c{.d[data-v-nesting]{color:red}}&[data-v-nesting] .target{background:rgb(0,0,255)}}",
+      "upstreamReferenceCss": ".a{&.b,&.c{.d[data-v-nesting]{color:red}}[data-v-nesting] .target{background:rgb(0,0,255)}}",
+      "upstreamDefect": "https://github.com/ubugeeei-prod/vize/issues/11109"
+    },
+    {
       "id": "slotted-child",
       "source": "<template><div class=\"a\"/></template><style scoped>.a,#never{:slotted(.target){background:rgb(0,0,255)}}</style>",
       "css": ".a,#never{:slotted(.target){background:rgb(0,0,255)}}",

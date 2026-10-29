@@ -59,6 +59,12 @@ export default defineNuxtConfig({
 
 Nuxt compiles components on demand, so the log prints `[vize] load: on-demand compiling ...` only for the files a request actually reaches. Remove `debug` once you have confirmed the setup.
 
+## Type checking Vue files
+
+On Nuxt 3 and 4, the module adds `{ "package": "vize", "extensions": [".vue"] }` to the generated `.nuxt/tsconfig.app.json` during `prepare:types`. This is independent of the `compiler` option because the TypeScript host, not the SFC build compiler, owns type checking. If `contentMappers` already contains a mapper for `.vue`, the module keeps that explicit choice and does not add a duplicate. Other mapper entries keep their original order and values. Nuxt 2 output is unchanged.
+
+The TypeScript host still controls whether external mapper code may run. Use TypeScript 7.1 or later with `--runExternalCode` for CLI checks, and enable Content Mapper support only in a trusted editor workspace. See [TypeScript Content Mapper](../guide/content-mapper.md) for the complete host and editor setup.
+
 ## Options
 
 All options live under `vize` in `nuxt.config.ts`. Most projects only need the first four.

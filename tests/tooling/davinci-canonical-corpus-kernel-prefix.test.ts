@@ -228,6 +228,11 @@ await test("logical traversal preserves complete finite remainders beyond an aut
   add(cycleOwner.path, "120000", cycleOwner.target);
   add("jellyfin-vue/a-chain", "120000", "b-chain");
   add("jellyfin-vue/b-chain", "120000", "src");
+  // Leaves one owned follow below the witness. The physical walk retains
+  // them; a uniform cutoff at firstRejected used to drop them.
+  add("jellyfin-vue/packages/ui-toolkit/README.md", "100644");
+  add("jellyfin-vue/packaging/deb/debian/gbp.conf", "100644");
+  add("jellyfin-vue/packaging/tauri/Cargo.toml", "100644");
   const at = (depth: number, suffix: string) =>
     `jellyfin-vue/${"packaging/deb/root/".repeat(depth)}${suffix}`;
   const boundary = {
@@ -237,7 +242,10 @@ await test("logical traversal preserves complete finite remainders beyond an aut
       { path: at(2, "a-chain"), code: "ELOOP", followed: 4 },
       { path: at(3, "a-chain"), code: "ELOOP", followed: 5 },
       { path: at(3, "b-chain"), code: "ELOOP", followed: 4 },
+      { path: at(3, "packages/ui-toolkit/README.md"), code: "ELOOP", followed: 3 },
+      { path: at(3, "packaging/deb/debian/gbp.conf"), code: "ELOOP", followed: 3 },
       { path: at(3, "packaging/deb/root"), code: "ELOOP", followed: 4 },
+      { path: at(3, "packaging/tauri/Cargo.toml"), code: "ELOOP", followed: 3 },
     ],
   };
   const observed = walkCommittedGraph(nodes, children, boundary);
@@ -257,6 +265,8 @@ await test("logical traversal preserves complete finite remainders beyond an aut
     ].map((path) => [path, gitBlob(sources[0][1])]),
   );
   const omittedRemainder = structuredClone(boundary);
-  omittedRemainder.rejected[1].followed = 4;
+  const remainder = omittedRemainder.rejected.find((row) => row.followed === 5);
+  assert.ok(remainder);
+  remainder.followed = 4;
   assert.throws(() => walkCommittedGraph(nodes, children, omittedRemainder), /boundary paths/);
 });

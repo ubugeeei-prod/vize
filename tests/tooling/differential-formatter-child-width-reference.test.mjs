@@ -170,6 +170,11 @@ void test("sole-child Vue references retain old whole bytes and reject altered i
       manifest.cases.find((row) => row.id === first.id).witnesses = [];
     },
     (manifest) => {
+      manifest.cases.find(
+        (row) => row.id === "formatter/sfc/split-v-pre-indentation",
+      ).dialectCoverage.evidence[0].selector = "foreign selector";
+    },
+    (manifest) => {
       manifest.cases = manifest.cases.filter((row) => row.id !== first.id);
     },
     (manifest) => {

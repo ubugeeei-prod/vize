@@ -24,6 +24,8 @@ export const chineseShared: Record<string, string> = {
     "检测为 petite-vue 的 HTML 文档；普通 Vue SFC 不在此规则范围内。",
   "JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form":
     "Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式",
+  "Vue SFCs with `<script setup>` and a compiler-provided `defineEmits` call; checks template `$emit` calls":
+    "包含 `<script setup>` 和编译器提供的 `defineEmits` 调用的 Vue SFC；检查模板中的 `$emit` 调用",
   "Musea .art.vue art, variant, and style blocks": "Musea .art.vue 的 art、variant 和 style 块",
   "Nuxt configuration files (nuxt.config.ts)": "Nuxt 配置文件（nuxt.config.ts）",
   "Reachable project declarations and imported components": "可达的项目声明及导入组件",

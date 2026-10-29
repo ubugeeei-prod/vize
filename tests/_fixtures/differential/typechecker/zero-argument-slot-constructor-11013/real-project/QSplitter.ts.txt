@@ -1,0 +1,16 @@
+import { defineComponent, type SlotsType, type VNode } from 'vue';
+
+const VueSplitter = defineComponent({
+  props: {
+    modelValue: { type: Number, required: true },
+    horizontal: Boolean,
+    label: String,
+  },
+  slots: Object as SlotsType<{
+    before(props: { size: number }): VNode[];
+  }>,
+});
+
+type QSplitterInstance = InstanceType<typeof VueSplitter>;
+export declare const QSplitter: { new(): QSplitterInstance };
+export default QSplitter;

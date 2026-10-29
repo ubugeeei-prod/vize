@@ -144,10 +144,6 @@ function __setup() {
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   function __vizeSlotOutlet<S>(slot: S): S extends () => infer R ? (props: {}) => R : NonNullable<S> { return slot as any; }
-  type __VizeSlotOutletFn = (...args: any[]) => any;
-  type __VizeSlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, __VizeSlotOutletFn>;
-  type __VizeSlotOutletArgs<__S, __K extends PropertyKey> = [__VizeSlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<__VizeSlotOutletTarget<__S, __K>>;
-  type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = [__VizeSlotOutletArgs<__S, __K>] extends [[]] ? unknown : __VizeSlotOutletArgs<__S, __K>[0];
   var __vize_slot_payload_63 = {
   };
   var __vize_slot_payload_81 = {

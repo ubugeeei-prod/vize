@@ -68,7 +68,7 @@ export function verifyJournal(
     if (item.event === "attempt") attempts += 1;
     if (item.event === "returned") {
       if (attempts <= returned.length || item.corsaPath !== corsaPath)
-        throw new CustodyError("native return lacks its attempt or bundled Corsa route");
+        throw new CustodyError("native return lacks its attempt or expected checker route");
       returned.push(item);
     }
   }

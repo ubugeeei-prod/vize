@@ -42,6 +42,7 @@ pub(super) struct ComponentEventTypeContext<'a, 'template> {
     pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) source_context: ComponentPropSource<'a>,
     pub(super) legacy_vue2: bool,
+    pub(super) hoist_shared_preamble: bool,
     pub(super) needs_typed_handler_assignment: bool,
     /// `fallthroughAttributes`: a listener the child neither declares nor
     /// emits may still be typed from its root's forwarded props.
@@ -69,6 +70,7 @@ pub(super) fn generate_component_event_types(
         template_ast,
         source_context,
         legacy_vue2,
+        hoist_shared_preamble,
         needs_typed_handler_assignment,
         fallthrough_listeners,
         explicit_generic,
@@ -92,6 +94,9 @@ pub(super) fn generate_component_event_types(
         String::from,
     );
     let component_type_name = to_safe_identifier_fragment(component_name.as_str());
+    let is_any = crate::virtual_ts::helpers::shared_types::IS_ANY.select(hoist_shared_preamble);
+    let emit_owned_keys =
+        crate::virtual_ts::helpers::shared_types::EMIT_OWNED_KEYS.select(hoist_shared_preamble);
     let pascal_event = to_pascal_case(data.event_name.as_str());
     let on_handler = cstr!("on{pascal_event}");
     let mut owned_listener_key = String::default();
@@ -176,7 +181,7 @@ pub(super) fn generate_component_event_types(
             );
             append!(
                 *ts,
-                "{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends __VizeEmitOwnedKeys<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? NonNullable<__F> : {public_props} : {public_props};\n",
+                "{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends {emit_owned_keys}<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? NonNullable<__F> : {public_props} : {public_props};\n",
             );
         }
         resolved_props
@@ -228,12 +233,12 @@ pub(super) fn generate_component_event_types(
             if legacy_vue2 {
                 append!(
                     *ts,
-                    "{indent}  ? __VizeIsAny<__F> extends true ? unknown[] : NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[]\n",
+                    "{indent}  ? {is_any}<__F> extends true ? unknown[] : NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[]\n",
                 );
             } else {
                 append!(
                     *ts,
-                    "{indent}  ? __VizeIsAny<__F> extends true ? unknown[] : NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[]\n",
+                    "{indent}  ? {is_any}<__F> extends true ? unknown[] : NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[]\n",
                 );
             }
             append!(*ts, "{indent}  : unknown[];\n");
@@ -261,6 +266,7 @@ pub(super) fn generate_component_event_types(
             enclosing_vif_guard,
             event_inference_usages,
             indent,
+            hoist_shared_preamble,
         },
     );
 

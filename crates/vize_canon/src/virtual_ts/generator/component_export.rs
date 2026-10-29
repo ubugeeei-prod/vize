@@ -1,5 +1,8 @@
-use crate::virtual_ts::types::{AuthoredDefaultKind, VirtualTsCheckOptions};
+use crate::virtual_ts::types::{
+    AuthoredDefaultKind, VirtualTsCheckOptions, VirtualTsGenerationOptions,
+};
 use vize_carton::{String, append};
+use vize_croquis::Croquis;
 
 use super::emits::EmitsInfo;
 mod generic;
@@ -122,7 +125,11 @@ pub(super) fn emit_default_export_declaration(
     authored_default: AuthoredDefaultKind,
     static_raw_props_ref: Option<&str>,
     static_slots_ref: Option<&str>,
-    (fallthrough_props_ref, checks): (Option<&str>, VirtualTsCheckOptions),
+    (fallthrough_props_ref, checks, hoist_shared_preamble): (
+        Option<&str>,
+        VirtualTsCheckOptions,
+        bool,
+    ),
 ) {
     emit_vue_component_options_type(ts, generic_component_params.is_some(), static_raw_props_ref);
     let emit_props_static = emits_info.static_emit_props_field();
@@ -221,8 +228,12 @@ pub(super) fn emit_default_export_declaration(
         ref_resolver_type,
     }) = generic_component_params
     {
-        let emit_resolvers =
-            emits_info.generic_emit_resolver_fields(generic_decl, generic_names, props_type);
+        let emit_resolvers = emits_info.generic_emit_resolver_fields(
+            generic_decl,
+            generic_names,
+            props_type,
+            hoist_shared_preamble,
+        );
         let event_map_separator = if emit_props_static.is_empty() || event_map_static.is_empty() {
             ""
         } else {
@@ -268,7 +279,24 @@ pub(super) fn emit_default_export_declaration(
     ts.push_str(";\n");
 }
 
-pub(super) fn emit_component_default_export(
+pub(super) fn emit_component_default_export_for_generation(
+    ts: &mut String,
+    summary: &Croquis,
+    generation: VirtualTsGenerationOptions<'_>,
+    authored_script: Option<&str>,
+) {
+    let component_name_is_setup_binding = generation
+        .component_name
+        .is_some_and(|name| crate::virtual_ts::script_facts::contains_binding(summary, name));
+    emit_component_default_export(
+        ts,
+        generation.component_name,
+        component_name_is_setup_binding,
+        authored_script,
+    );
+}
+
+fn emit_component_default_export(
     ts: &mut String,
     component_name: Option<&str>,
     component_name_is_setup_binding: bool,

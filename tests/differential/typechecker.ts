@@ -8,8 +8,14 @@ import {
   validateResultEnvelope,
 } from "./harness.mjs";
 
-import { TYPECHECKER_TESTS, sourceRevisions } from "./typechecker-registry.ts";
+import { packCases, TYPECHECKER_TESTS, sourceRevisions } from "./typechecker-registry.ts";
+import {
+  typecheckerDialectCoverage,
+  verifiedTypecheckerDialectCoverage,
+  type DialectCoverage,
+} from "./typechecker-dialect.ts";
 export { TYPECHECKER_TESTS } from "./typechecker-registry.ts";
+export { assertVerifiedTypecheckerDialectExecutions } from "./typechecker-dialect.ts";
 
 export type Artifact = { path: string; sha256: string };
 export type Diagnostic = {
@@ -19,15 +25,6 @@ export type Diagnostic = {
   severity: number;
   code: number | null;
   message: string;
-};
-type DialectCoverage = {
-  state: "unknown" | "source-inspected";
-  registryRef: null;
-  evidence: Array<{
-    kind: "source-inspection";
-    dialects: string[];
-    selector: string;
-  }>;
 };
 export type TypecheckerCase = {
   id: string;
@@ -158,52 +155,6 @@ const contract = {
 };
 const matchedContract = "batch-start-diagnostics-v1";
 const unbaselinedFields = ["diagnostics[].blockType", "exitCode", "success"];
-const dialectOrder = ["vue3-sfc", "pug-template", "html-template", "js", "ts", "jsx", "tsx"];
-
-function typecheckerDialectCoverage(
-  root: string,
-  inputs: TypecheckerCase["inputs"],
-): DialectCoverage {
-  const dialects = new Set<string>();
-  for (const input of inputs) {
-    const source = readPinnedArtifact(root, input).toString("utf8");
-    const file = input.file.toLowerCase();
-    if (file.endsWith(".vue")) {
-      dialects.add("vue3-sfc");
-      if (
-        /<template\b[^>]*\blang\s*=\s*(?:"(?:pug|jade)"|'(?:pug|jade)'|(?:pug|jade)(?:\s|>))/i.test(
-          source,
-        )
-      ) {
-        dialects.add("pug-template");
-      } else if (/<template(?:\s|>)/i.test(source)) dialects.add("html-template");
-      for (const match of source.matchAll(/<script\b([^>]*)>/gi)) {
-        const attributes = match[1];
-        if (/\blang\s*=\s*["']tsx["']/i.test(attributes)) dialects.add("tsx");
-        else if (/\blang\s*=\s*["']ts["']/i.test(attributes)) dialects.add("ts");
-        else if (/\blang\s*=\s*["']jsx["']/i.test(attributes)) dialects.add("jsx");
-        else dialects.add("js");
-      }
-    } else if (file.endsWith(".tsx")) dialects.add("tsx");
-    else if (file.endsWith(".jsx")) dialects.add("jsx");
-    else if (file.endsWith(".d.ts") || file.endsWith(".ts")) dialects.add("ts");
-    else if (file.endsWith(".js")) dialects.add("js");
-  }
-  const ordered = dialectOrder.filter((dialect) => dialects.has(dialect));
-  if (ordered.length === 0) return { state: "unknown", registryRef: null, evidence: [] };
-  return {
-    state: "source-inspected",
-    registryRef: null,
-    evidence: [
-      {
-        kind: "source-inspection",
-        dialects: ordered,
-        selector: "batch-typechecker-fixture-v1 pinned authored sources",
-      },
-    ],
-  };
-}
-
 // Each pack remains an independently authored oracle. Registration adds source
 // identities and shared accounting; it never recaptures the expected values.
 export function loadTypecheckerManifest(manifestPath: string) {
@@ -212,10 +163,7 @@ export function loadTypecheckerManifest(manifestPath: string) {
   assert.equal(loaded.manifest.issue, 6879);
   const root = path.dirname(manifestPath);
   const packs = new Map<string, Pack>();
-  // #6852 pins are active inputs without a batch pack, so they stay out of the oracle.
-  const cases = (loaded.cases as TypecheckerCase[])
-    .filter((fixture) => fixture.pack !== undefined)
-    .map((fixture) => {
+  const cases = packCases(loaded.cases as TypecheckerCase[]).map((fixture) => {
     assert.deepEqual(fixture.targets, ["batch"]);
     assert.equal(fixture.adapters.legacy, "batch-typechecker-fixture-v1");
     assert.equal(fixture.adapters.native, null);
@@ -256,10 +204,13 @@ export function loadTypecheckerManifest(manifestPath: string) {
       fixture.inputs.map((input) => [input.file, input.path]),
       original.inputs.map((input) => [input.file, `${fixture.pack}/${input.source}`]),
     );
+    const inspectedCoverage = typecheckerDialectCoverage(root, fixture.inputs);
     assert.deepEqual(
       fixture.dialectCoverage,
-      typecheckerDialectCoverage(root, fixture.inputs),
-      "dialect coverage must match the pinned authored sources",
+      fixture.dialectCoverage.state === "verified"
+        ? verifiedTypecheckerDialectCoverage(inspectedCoverage, fixture.test)
+        : inspectedCoverage,
+      "dialect coverage must match the pinned authored sources and registered execution",
     );
     packs.set(fixture.pack, pack);
     return { ...fixture, diagnostics: original.diagnostics };

@@ -576,7 +576,11 @@ export interface FormatOptionsNapi {
   /** Layout line endings; auto follows the first source terminator. */
   endOfLine?: EndOfLineNapi;
   sortAttributes?: boolean;
+  /** Choose the order of attributes within each Vue priority group. */
+  attributeSortOrder?: "alphabetical" | "as-written";
   singleAttributePerLine?: boolean;
+  /** Indent the contents of `<script>` and `<style>` blocks. */
+  vueIndentScriptAndStyle?: boolean;
   maxAttributesPerLine?: number;
   normalizeDirectiveShorthands?: boolean;
   /** Order SFC blocks canonically; false preserves their authored order. */

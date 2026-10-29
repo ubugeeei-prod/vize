@@ -1,4 +1,5 @@
 import type { buildProductObserver } from "./observer-build.ts";
+import type { CompilerSuccessorReference } from "../../tools/commands/fixtures/compiler-successors.ts";
 
 export type CompilerTarget = "dom" | "ssr" | "vapor";
 export type JsonValue = null | boolean | number | string | JsonValue[] | JsonObject;
@@ -14,7 +15,8 @@ export type CompilerFixture = {
   adapters: { legacy: string; native: null; reasons: { native: string } };
   inputs: { files: Artifact[] };
   reference: Artifact;
-  currentReference?: Artifact & { supersedesSha256: string; issue: string };
+  referenceHistory?: CompilerSuccessorReference[];
+  currentReference?: CompilerSuccessorReference;
   historicalObservation: Artifact;
   options: Artifact;
 };

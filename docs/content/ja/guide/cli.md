@@ -150,9 +150,13 @@ vize fmt --write src
 | `--use-tabs`                       | タブとスペースを切り替える                             |
 | `--no-semi`                        | セミコロンを省略する                                   |
 | `--sort-attributes`                | テンプレートの属性を並べ替える                         |
+| `--attribute-sort-order`           | グループ内で `alphabetical` または `as-written` を選ぶ |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ配置する                         |
+| `--vue-indent-script-and-style`    | script と style ブロックの内容をインデントする         |
 | `--max-attributes-per-line`        | 指定した属性数で改行する                               |
 | `--normalize-directive-shorthands` | `v-bind:` / `v-on:` / `v-slot:` の省略記法を正規化する |
+| `--sort-blocks`                    | SFC ブロックの標準順序を切り替える                     |
+| `--self-close-void-elements`       | HTML の空要素に `/>` を付けるか切り替える              |
 | `--preset`                         | `vize`、`prettier`、`compact`、`documentation` のフォーマッタ既定値を適用する |
 | `--profile`                        | 処理時間のプロファイルを表示する                       |
 

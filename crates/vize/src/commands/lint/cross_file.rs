@@ -16,7 +16,7 @@ use sfc::{CrossFileSfcAnalysis, CrossFileSourceOffsets, analyze_sfc_for_cross_fi
 use std::path::{Path, PathBuf};
 use vize_croquis_cf::{
     CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,
-    DiagnosticSeverity, DiagnosticSource, FileId,
+    DiagnosticSeverity, DiagnosticSource, FileId, logical_import_candidates,
 };
 use vize_curator::complexity::render_cross_file_complexity;
 use vize_l0::{CompactString, FxHashMap, String, ToCompactString, cstr};
@@ -41,7 +41,7 @@ pub(super) fn apply_sfc_cross_file_lint(
     let targets: Vec<_> = results
         .iter()
         .enumerate()
-        .filter(|(_, (path, _, _, _))| is_sfc_cross_file_target(path))
+        .filter(|(_, (path, _, _, _))| is_cross_file_target(path))
         .map(|(index, _)| index)
         .collect();
     let inputs: Vec<_> = targets
@@ -112,24 +112,39 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
 
     for (index, (path, source)) in files.iter().enumerate() {
         let source = source.as_ref();
-        let Some(CrossFileSfcAnalysis {
-            analysis,
-            offsets,
-            effects,
-        }) = analyze_sfc_for_cross_file(source, path)
-        else {
-            continue;
-        };
-        let file_id =
-            analyzer.add_file_with_analysis_and_effect_summary(path, source, analysis, effects);
-        file_indexes.insert(file_id, index);
-        source_offsets.insert(file_id, offsets);
+        if is_sfc_cross_file_target(path) {
+            let Some(CrossFileSfcAnalysis {
+                analysis,
+                offsets,
+                effects,
+            }) = analyze_sfc_for_cross_file(source, path)
+            else {
+                continue;
+            };
+            let file_id =
+                analyzer.add_file_with_analysis_and_effect_summary(path, source, analysis, effects);
+            file_indexes.insert(file_id, index);
+            source_offsets.insert(file_id, offsets);
+        } else if is_script_cross_file_target(path) {
+            let file_id = analyzer.add_file(path, source);
+            file_indexes.insert(file_id, index);
+            source_offsets.insert(file_id, CrossFileSourceOffsets::default());
+        }
     }
+
+    admit_called_local_composables(&mut analyzer, &root);
 
     let directive_states: Vec<_> = files
         .iter()
         .map(|(path, source)| {
-            ProjectLintDirectives::from_sfc(source.as_ref(), path.to_string_lossy().as_ref())
+            is_sfc_cross_file_target(path)
+                .then(|| {
+                    ProjectLintDirectives::from_sfc(
+                        source.as_ref(),
+                        path.to_string_lossy().as_ref(),
+                    )
+                })
+                .flatten()
         })
         .collect();
 
@@ -276,6 +291,81 @@ fn is_sfc_cross_file_target(path: &Path) -> bool {
         path.extension().and_then(|extension| extension.to_str()),
         Some("vue")
     )
+}
+
+fn is_script_cross_file_target(path: &Path) -> bool {
+    matches!(
+        path.extension().and_then(|extension| extension.to_str()),
+        Some("js" | "mjs" | "cjs" | "ts" | "mts" | "cts" | "jsx" | "tsx")
+    )
+}
+
+fn is_cross_file_target(path: &Path) -> bool {
+    is_sfc_cross_file_target(path) || is_script_cross_file_target(path)
+}
+
+/// Admit only source modules reached by an actual top-level setup composable
+/// call. Explicit `lint src/**/*.vue` remains closed over the runtime effect it
+/// asks us to analyze without turning cross-file lint into a project-wide walk.
+fn admit_called_local_composables(analyzer: &mut CrossFileAnalyzer, root: &Path) {
+    let physical_root = root.canonicalize().unwrap_or_else(|_| root.to_path_buf());
+    let mut attempted = vize_l0::FxHashSet::default();
+
+    loop {
+        let requests: Vec<_> = analyzer
+            .registry()
+            .iter()
+            .flat_map(|entry| {
+                let importer = entry.path.clone();
+                vize_croquis::facts::composable_calls(&entry.analysis)
+                    .into_iter()
+                    .map(move |call| (importer.clone(), call.source))
+            })
+            .collect();
+        let mut added = false;
+
+        for (importer, specifier) in requests {
+            if !is_local_module_specifier(specifier.as_str()) {
+                continue;
+            }
+            for candidate in logical_import_candidates(specifier.as_str(), importer.parent()) {
+                let candidate = if candidate.is_absolute() {
+                    candidate
+                } else {
+                    root.join(candidate)
+                };
+                if !is_script_cross_file_target(&candidate) {
+                    continue;
+                }
+                if analyzer.registry().get_by_path(&candidate).is_some() {
+                    break;
+                }
+                if !attempted.insert(candidate.clone()) {
+                    continue;
+                }
+                let Ok(physical) = candidate.canonicalize() else {
+                    continue;
+                };
+                if !physical.starts_with(&physical_root) || !physical.is_file() {
+                    continue;
+                }
+                let Ok(source) = vize_carton::source_io::read_to_string(&candidate) else {
+                    continue;
+                };
+                analyzer.add_file(&candidate, source.as_str());
+                added = true;
+                break;
+            }
+        }
+
+        if !added {
+            break;
+        }
+    }
+}
+
+fn is_local_module_specifier(specifier: &str) -> bool {
+    specifier.starts_with('.') || specifier.starts_with("@/") || specifier.starts_with('/')
 }
 
 fn cross_file_diagnostic_to_lint(

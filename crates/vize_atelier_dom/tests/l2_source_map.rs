@@ -12,11 +12,15 @@
 use vize_atelier_core::{
     CodegenSections,
     codegen::CodegenResultWithSections,
-    options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
+    options::{
+        CodegenExperimentalOptions, CodegenMode, CodegenOptions, CustomElementMatcher,
+        TemplateSyntaxMode,
+    },
 };
 use vize_atelier_dom::{
     DomCompilerOptions,
     compile_sfc_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
+    compile_sfc_template_with_preflight_and_environment,
     compile_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
     compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
 };
@@ -102,6 +106,63 @@ fn in_tag_comment_source_map_compile_uses_l2_with_the_compatibility_map() {
     let (selected, counters) = compile_template_selected_with_profile(source, options, codegen);
 
     assert_selected_source_map_matches_compat(selected, compat, counters);
+}
+
+#[test]
+fn production_source_map_preserves_conditional_comment_bytes() {
+    let _guard = lock_profiler();
+    reset_profiler();
+    let source = r#"<div><p v-if="open">open</p><span>always</span></div>"#;
+    let compile = |source_map| {
+        compile_sfc_selected_in_environment(
+            source,
+            DomCompilerOptions {
+                mode: CodegenMode::Module,
+                prefix_identifiers: true,
+                source_map,
+                ..Default::default()
+            },
+            CodegenOptions {
+                filename: "ProductionConditional.vue".into(),
+                ..Default::default()
+            },
+            false,
+        )
+    };
+    let plain = compile(false);
+    let profile = ProfileScope::enable();
+    let mapped = compile(true);
+    let counters = profile.counter_summary();
+    let expected = r#"import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (_ctx.open)
+      ? (_openBlock(), _createElementBlock("p", { key: 0 }, "open"))
+      : _createCommentVNode("", true),
+    _createElementVNode("span", null, "always")
+  ]))
+}"#;
+    let whole_module = |compiled: &Compiled| {
+        let mut module = compiled.preamble.clone();
+        module.push('\n');
+        module.push_str(&compiled.code);
+        module
+    };
+
+    assert!(mapped.map.is_some(), "the requested map must be attached");
+    assert_eq!(whole_module(&plain), expected);
+    assert_eq!(whole_module(&mapped), expected, "maps must remain additive");
+    assert_eq!(plain.sections, mapped.sections);
+    assert_eq!(
+        (
+            counter_total(&counters, "l2.dom.accepted"),
+            counter_total(&counters, "l2.dom.legacy.emit_refused"),
+            counter_total(&counters, "l2.dom.legacy.source_map_mismatch"),
+        ),
+        (Some(1), None, None),
+        "the mapped production compile must retain the accepted L2 module without fallback"
+    );
 }
 
 fn assert_selected_source_map_matches_compat(
@@ -217,6 +278,31 @@ fn compile_sfc_selected(
             CustomElementMatcher::default(),
             codegen,
         );
+    assert!(errors.is_empty(), "compile errors: {errors:?}");
+    compiled(result)
+}
+
+fn compile_sfc_selected_in_environment(
+    source: &str,
+    options: DomCompilerOptions,
+    codegen: CodegenOptions,
+    development: bool,
+) -> Compiled {
+    let allocator = Allocator::new();
+    let (errors, result) = compile_sfc_template_with_preflight_and_environment(
+        &allocator,
+        source,
+        options,
+        TemplateSyntaxMode::Standard,
+        None,
+        CustomElementMatcher::default(),
+        codegen,
+        CodegenExperimentalOptions::default(),
+        false,
+        None,
+        None,
+        development,
+    );
     assert!(errors.is_empty(), "compile errors: {errors:?}");
     compiled(result)
 }

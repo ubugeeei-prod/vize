@@ -2,7 +2,7 @@
 
 use super::registry::FactRegistry;
 use super::view::{Declared, Tables, count_production};
-use super::{Demand, FactConsumer, FactError, FactView};
+use super::{Demand, FactConsumer, FactError, FactGroup, FactTable, FactView};
 
 /// Computes and owns the facts of one artifact.
 ///
@@ -54,6 +54,40 @@ impl<'r, A: ?Sized + 'static> FactManager<'r, A> {
     pub fn prepare<C: FactConsumer>(&mut self, artifact: &A) -> Result<FactView<'_>, FactError> {
         self.compute(artifact, C::DEMAND)?;
         Ok(self.view::<C>())
+    }
+
+    /// Compute `C`'s demand and transfer ownership of one declared table.
+    ///
+    /// This is the owning counterpart of [`FactManager::prepare`]. It is for
+    /// a caller that outlives the manager but still wants every read to pass
+    /// through the same declared-demand and runtime type checks as a borrowed
+    /// [`FactView`]. The manager is consumed so no dependent table can retain
+    /// a stale view of the extracted group.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same errors as preparing `C` and reading `G` from the
+    /// resulting view.
+    pub fn prepare_owned<C: FactConsumer, G: FactGroup>(
+        mut self,
+        artifact: &A,
+    ) -> Result<FactTable<G>, FactError> {
+        self.prepare::<C>(artifact)?.get::<G>()?;
+        let Some(table) = self
+            .tables
+            .slots
+            .get_mut(G::ID.index() as usize)
+            .and_then(Option::take)
+        else {
+            return Err(FactError::NotComputed { group: G::ID });
+        };
+        table
+            .downcast::<FactTable<G>>()
+            .map(|table| *table)
+            .map_err(|_| FactError::TypeMismatch {
+                group: G::ID,
+                expected: core::any::type_name::<G>(),
+            })
     }
 
     /// `C`'s view of what is computed now, declared with `C`'s demand.

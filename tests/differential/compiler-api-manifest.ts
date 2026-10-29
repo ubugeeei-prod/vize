@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { assertCompilerSuccessors } from "../../tools/commands/fixtures/compiler-successors.ts";
 import { loadProductManifest, readPinnedArtifact, sha256 } from "./harness.mjs";
 import type { ObserverSpec } from "./observer-build.ts";
 import type {
@@ -183,6 +184,7 @@ export function loadCompilerApiManifest(manifestPath: string, repoRoot: string) 
       const historical: HistoricalCompilerPacket = JSON.parse(
         readPinnedArtifact(repoRoot, fixture.historicalObservation).toString(),
       );
+      const successors = assertCompilerSuccessors(repoRoot, fixture);
       let originalOptions: JsonValue, expected: JsonObject, entrypoint: string;
       if (target === "dom") {
         if (COMBINED_SFC_CAPTURE_NAMES.has(name)) {
@@ -220,6 +222,7 @@ export function loadCompilerApiManifest(manifestPath: string, repoRoot: string) 
           };
           expected = combined.compileResult;
           entrypoint = combined.entrypoint;
+          assert.equal(successors.length, 0, "combined captures cannot bypass their packet");
           validateCompilerOutput(expected, target);
           return { ...fixture, input, originalOptions, expected, entrypoint };
         }
@@ -243,14 +246,9 @@ export function loadCompilerApiManifest(manifestPath: string, repoRoot: string) 
         originalOptions = originalSfcOptions(options);
         expected = reference;
         entrypoint = options.entrypoint;
-        if (fixture.currentReference) {
-          assert.equal(fixture.currentReference.supersedesSha256, fixture.reference.sha256);
-          assert.match(
-            fixture.currentReference.issue,
-            /^https:\/\/github\.com\/ubugeeei-prod\/vize\/issues\/[1-9]\d*$/u,
-          );
+        for (const successor of successors) {
           const current: JsonObject = JSON.parse(
-            readPinnedArtifact(repoRoot, fixture.currentReference).toString(),
+            readPinnedArtifact(repoRoot, successor).toString(),
           );
           validateCompilerOutput(current, target);
           expected = current;
@@ -278,14 +276,9 @@ export function loadCompilerApiManifest(manifestPath: string, repoRoot: string) 
         originalOptions = targetReference.options;
         expected = targetReference.output;
         entrypoint = targetReference.options.entrypoint as string;
-        if (fixture.currentReference) {
-          assert.equal(fixture.currentReference.supersedesSha256, fixture.reference.sha256);
-          assert.match(
-            fixture.currentReference.issue,
-            /^https:\/\/github\.com\/ubugeeei-prod\/vize\/issues\/[1-9]\d*$/u,
-          );
+        for (const successor of successors) {
           const current: CompilerReference = JSON.parse(
-            readPinnedArtifact(repoRoot, fixture.currentReference).toString(),
+            readPinnedArtifact(repoRoot, successor).toString(),
           );
           assert.deepEqual(current.options, targetReference.options);
           validateCompilerOutput(current.output, target);

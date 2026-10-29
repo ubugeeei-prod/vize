@@ -23,6 +23,7 @@ pub(in crate::script_parser) fn process_statement_with_builtin(
     super::template_components::collect(result, stmt);
     super::super::extract::invalidate_default_objects(result, stmt);
     for declarator in decl.declarations.iter() {
+        result.note_value_declaration(declarator, decl.kind);
         result.refuse_declarator_type_reads(declarator);
         super::super::extract::invalidate_default_expression(result, declarator.init.as_ref());
         record(result, declarator, decl.kind);

@@ -13,7 +13,10 @@ use std::{
     path::Path,
     process::{Command, Stdio},
 };
-use vize_atelier_jsx::{JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx, lower_source};
+use vize_atelier_jsx::{
+    JsxCompileConfig, JsxLang, JsxOutputMode, SsrCompileOptions, VaporCompileOptions, compile_jsx,
+    compile_to_ssr, compile_to_vapor, lower_source,
+};
 use vize_l0::Allocator;
 use vize_relief::{ExpressionNode, TemplateChildNode};
 
@@ -36,7 +39,8 @@ const FIXTURES: [(&str, &str); 4] = [
     ),
 ];
 
-fn compile_fixtures() -> Value {
+// The fixed packet owns standalone renderer producers, not today's module host.
+fn compile_fixtures(renderer_producers: bool) -> Value {
     let mut fixtures = serde_json::Map::new();
     for (id, source) in FIXTURES {
         let mut outputs = serde_json::Map::new();
@@ -46,12 +50,70 @@ fn compile_fixtures() -> Value {
             ("ssr", JsxOutputMode::Vdom, true),
         ] {
             let allocator = Allocator::new();
+            if renderer_producers && backend != "vdom" {
+                let (code, diagnostics) = if ssr {
+                    let output = compile_to_ssr(
+                        &allocator,
+                        source,
+                        JsxLang::Jsx,
+                        SsrCompileOptions::default(),
+                    );
+                    assert!(
+                        !output.has_errors(),
+                        "{id}/{backend}: {:?}",
+                        output.diagnostics
+                    );
+                    assert_eq!(output.components.len(), 1);
+                    (
+                        output
+                            .components
+                            .into_iter()
+                            .next()
+                            .expect("one producer")
+                            .code,
+                        output.diagnostics,
+                    )
+                } else {
+                    let output = compile_to_vapor(
+                        &allocator,
+                        source,
+                        JsxLang::Jsx,
+                        VaporCompileOptions::default(),
+                    );
+                    assert!(
+                        !output.has_errors(),
+                        "{id}/{backend}: {:?}",
+                        output.diagnostics
+                    );
+                    assert_eq!(output.components.len(), 1);
+                    (
+                        output
+                            .components
+                            .into_iter()
+                            .next()
+                            .expect("one producer")
+                            .code,
+                        output.diagnostics,
+                    )
+                };
+                assert!(diagnostics.is_empty(), "{id}/{backend}: {diagnostics:?}");
+                outputs.insert(
+                    backend.into(),
+                    json!({
+                        "code": code, "componentCode": format!("\n{code}"),
+                        "functionName": if ssr { "ssrRender" } else { "render" },
+                        "diagnostics": [], "map": null,
+                    }),
+                );
+                continue;
+            }
             let output = compile_jsx(
                 &allocator,
                 source,
                 JsxLang::Jsx,
                 &JsxCompileConfig {
-                    default_mode: mode,
+                    // Same authored source, with the supported SSR Vapor object role.
+                    default_mode: if ssr { JsxOutputMode::Vapor } else { mode },
                     ssr,
                     ..Default::default()
                 },
@@ -68,7 +130,7 @@ fn compile_fixtures() -> Value {
                 json!({
                     "code": output.module_code(),
                     "componentCode": format!("{}\n{}", component.preamble(), component.code()),
-                    "functionName": match backend { "vdom" => "App", "ssr" => "ssrRender", _ => "render" },
+                    "functionName": "App",
                     "diagnostics": output.diagnostics.iter().map(|diagnostic| json!({
                         "message": diagnostic.message.as_str(),
                         "severity": format!("{:?}", diagnostic.severity),
@@ -117,14 +179,14 @@ fn compile_value_sensitive_ternary() -> Value {
 }
 
 #[test]
-fn fixed_legacy_output_matches_complete_frozen_bytes_and_metadata() {
+fn renderer_producers_match_complete_frozen_legacy_bytes_and_metadata() {
     let golden: Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/differential/jsx/falsy-and.fixed-legacy.json"
     ))
     .expect("authenticated source-built compiler fixture");
-    let actual = compile_fixtures();
-    // `VIZE_FALSY_AND_CAPTURE=<path>` writes the current outputs, from which
-    // the fixed packet is regenerated after an intended output change.
+    let actual = compile_fixtures(true);
+    // Capture the explicit producer contract; the historical module packet
+    // remains immutable and is never regenerated from current module output.
     if let Some(path) = std::env::var_os("VIZE_FALSY_AND_CAPTURE") {
         std::fs::write(path, actual.to_string()).expect("capture writes");
     }
@@ -182,8 +244,57 @@ fn fixed_legacy_output_matches_complete_frozen_bytes_and_metadata() {
 }
 
 #[test]
+fn original_functional_vdom_ssr_sources_refuse_the_complete_module() {
+    let cases = FIXTURES.iter().map(|(id, source)| {
+        let allocator = Allocator::new();
+        let output = compile_jsx(&allocator, source, JsxLang::Jsx, &JsxCompileConfig {
+            ssr: true, ..Default::default()
+        });
+        json!({
+            "id": id, "source": source, "module": output.module_code(), "moduleMap": output.source_map(),
+            "components": output.components.iter().map(|component| json!({
+                "name": component.component_name(), "setup": format!("{:?}", component.component_setup()),
+                "mode": format!("{:?}", component.mode()), "code": component.code(),
+                "preamble": component.preamble(), "map": component.map(), "style": format!("{:?}", component.scoped_style()),
+            })).collect::<Vec<_>>(),
+            "diagnostics": output.diagnostics.iter().map(|diagnostic| json!({
+                "message": diagnostic.message.as_str(), "severity": format!("{:?}", diagnostic.severity),
+                "start": diagnostic.start, "end": diagnostic.end,
+            })).collect::<Vec<_>>(),
+        })
+    }).collect::<Vec<_>>();
+    if let Some(path) = std::env::var_os("VIZE_JSX_FALSY_REFUSAL_CAPTURE") {
+        std::fs::write(
+            path,
+            serde_json::to_vec(&cases).expect("whole refusal packets"),
+        )
+        .expect("capture refusals");
+    }
+    for (case, (id, source)) in cases.iter().zip(FIXTURES) {
+        assert_eq!(case["module"], "", "{id}: no partial executable module");
+        assert_eq!(case["moduleMap"], Value::Null);
+        assert_eq!(
+            case["components"]
+                .as_array()
+                .expect("producer packet")
+                .len(),
+            1
+        );
+        assert_eq!(
+            case["diagnostics"],
+            json!([{
+                "message": "SSR expression-bodied VDOM components require an explicit functional props and attribute fallthrough projection; use a stateful block-body component or the Vapor component role",
+                "severity": "Error", "start": source.find('<').expect("root start"),
+                "end": source.rfind('>').expect("root end") + 1,
+            }]),
+            "{id}"
+        );
+    }
+}
+
+#[test]
 fn actual_values_updates_and_hydration_match_jsx_child_semantics() {
-    let mut fixtures = compile_fixtures();
+    let mut fixtures = compile_fixtures(false);
     fixtures
         .as_object_mut()
         .expect("fixture table")

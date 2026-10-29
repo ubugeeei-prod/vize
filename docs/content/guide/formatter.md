@@ -119,9 +119,12 @@ The same options are available as CLI flags:
 | `--end-of-line`                    | Chooses `lf`, `crlf`, `cr` or source-detected `auto`.          |
 | `--no-semi`                        | Omits semicolons at the ends of statements.                   |
 | `--sort-attributes`                | Sorts attributes in the template and on block tags.           |
+| `--attribute-sort-order`           | Chooses `alphabetical` or `as-written` within priority groups. |
 | `--single-attribute-per-line`      | Puts each attribute on its own line.                          |
+| `--vue-indent-script-and-style`    | Indents the contents of `<script>` and `<style>`.              |
 | `--max-attributes-per-line`        | Wraps after the given number of attributes.                   |
 | `--normalize-directive-shorthands` | Turns `v-bind:`, `v-on:` and `v-slot:` into `:`, `@` and `#`. |
+| `--sort-blocks`                    | Toggles canonical SFC block ordering.                         |
 
 Each of these guides covers one setting in detail:
 
@@ -171,6 +174,12 @@ The native Node `formatSfc` API accepts the five Prettier migration booleans
 `selfCloseVoidElements` and `reindentPreprocessorStyles` under the same names.
 Explicit values override `preset`, including `false`.
 
+Void-element closure is also available as the direct CLI override
+`--self-close-void-elements[=false]`. An explicit value applies after config
+and a selected preset. `true` closes HTML void elements such as `<img />`;
+`false` preserves their authored opening tag while leaving non-void and Vue
+components unchanged.
+
 Script quote policies are also shared across config, direct CLI overrides and
 Node: `--jsx-single-quote[=false]` maps to `jsxSingleQuote`, while
 `--quote-props <as-needed|consistent|preserve>` maps to `quoteProps`.
@@ -191,6 +200,22 @@ or false values override a selected preset.
 Line endings are projected consistently too:
 `--end-of-line <lf|crlf|cr|auto>` maps to the typed Node and config option
 `endOfLine`. The explicit CLI value overrides config and a selected preset.
+
+SFC body indentation is also an explicit opt-in on every direct formatter
+surface. `--vue-indent-script-and-style[=false]` maps to the typed Node and
+config option `vueIndentScriptAndStyle`. The default and every preset remain
+unchanged unless this option is set explicitly.
+
+Attribute order is projected consistently too:
+`--attribute-sort-order <alphabetical|as-written>` maps to the typed Node and
+config option `attributeSortOrder`. The formatter still applies Vue priority
+groups; `as-written` only preserves authored order inside each group. Use
+`--sort-attributes=false` to preserve the complete authored order instead.
+
+SFC block order is projected consistently too: `--sort-blocks[=false]` maps
+to the typed Node and config option `sortBlocks`. An explicit CLI value
+overrides config and a selected preset. `false` preserves authored root-block
+order; `true` uses script, script setup, template, styles, then custom blocks.
 
 ## Compact application code
 

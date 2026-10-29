@@ -26,6 +26,8 @@ use crate::{
 };
 
 pub(crate) use normalize::normalize_expression;
+pub(crate) use reparse::rewrite_for_alias;
+pub(crate) use rewrite::report_invalid_expression;
 
 pub use function_shape::is_typescript_function_expression;
 pub use inline_handler::process_inline_handler;

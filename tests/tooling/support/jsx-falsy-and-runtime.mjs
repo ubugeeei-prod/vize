@@ -124,11 +124,15 @@ function host() {
   window.document.body.append(node);
   return node;
 }
-function mount(backend, render, node, warnings) {
-  const component =
-    backend === "vapor"
-      ? Vue.defineVaporComponent({ setup: () => render({}) })
-      : { setup: () => () => render({}, []) };
+function mount(backend, compiled, node, warnings) {
+  // Native modules already own their setup closure and component role.
+  // The functional VDOM host is shared with the unchanged Babel reference.
+  if (backend === "vapor") {
+    assert.equal(typeof compiled, "object", "authored App is a component object");
+    assert.equal(compiled.__vapor, true);
+    assert.equal(typeof compiled.setup, "function");
+  }
+  const component = backend === "vapor" ? compiled : { setup: () => () => compiled({}, []) };
   const app = (backend === "vapor" ? Vue.createVaporApp : Vue.createApp)(component);
   app.config.warnHandler = (message) => warnings.push(message);
   app.config.errorHandler = (error) => warnings.push(String(error));
@@ -213,9 +217,16 @@ for (const [id, fixture] of Object.entries(fixtures).filter(
       return value;
     };
     const server = executable(fixture.outputs.ssr.code, fixture.outputs.ssr.functionName, read);
-    const pushes = [];
-    server({}, (html) => pushes.push(html), null, {});
-    const html = pushes.join("");
+    assert.equal(typeof server, "object", "the same source uses its SSR Vapor object role");
+    assert.equal(server.__ssrInlineRender, true);
+    assert.equal(server.__vapor, true);
+    assert.equal(typeof server.setup, "function");
+    const serverWarnings = [];
+    const serverApp = Vue.createSSRApp(server);
+    serverApp.config.warnHandler = (message) => serverWarnings.push(message);
+    serverApp.config.errorHandler = (error) => serverWarnings.push(String(error));
+    const html = await SSR.renderToString(serverApp);
+    assert.deepEqual(serverWarnings, [], `${id}/${label}: actual server component diagnostics`);
     assert.equal(calls, 1, "one server evaluation");
     const node = host();
     node.innerHTML = html;
@@ -232,6 +243,8 @@ for (const [id, fixture] of Object.entries(fixtures).filter(
       backend: "hydrate",
       label,
       serverHtml: html,
+      serverWarnings,
+      serverRole: "authored-vapor-object",
       hydratedHtml: node.innerHTML,
       tree: observeChildren(node),
       calls,

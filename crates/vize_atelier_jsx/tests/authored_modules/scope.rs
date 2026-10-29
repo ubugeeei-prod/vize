@@ -74,7 +74,7 @@ fn authored_runtime_helper_bindings_are_diagnosed_without_emitting_broken_module
 }
 
 #[test]
-fn standalone_vapor_and_ssr_reject_authored_bindings_and_exports_they_would_drop() {
+fn vapor_and_ssr_preserve_authored_bindings_and_exports() {
     for source in [
         "import { ref } from 'vue'; const App = () => <p/>;",
         "export default () => <p/>;",
@@ -83,43 +83,19 @@ fn standalone_vapor_and_ssr_reject_authored_bindings_and_exports_they_would_drop
     ] {
         for ssr in [false, true] {
             let arena = Allocator::new();
-            let config = JsxCompileConfig {
-                ssr,
-                default_mode: vize_atelier_jsx::JsxOutputMode::Vapor,
-                ..Default::default()
-            };
-            let out = compile_jsx(&arena, source, JsxLang::Tsx, &config);
-            assert!(out.has_errors(), "{source} (ssr={ssr})");
-            assert_eq!(
-                out.diagnostics
-                    .iter()
-                    .map(|d| d.message.as_str())
-                    .collect::<Vec<_>>(),
-                [
-                    "Vapor/SSR authored module preservation is not supported for imports, exports or captured setup bindings; use VDOM output or consume the per-component renderer"
-                ]
+            let out = compile_jsx(
+                &arena,
+                source,
+                JsxLang::Tsx,
+                &JsxCompileConfig {
+                    ssr,
+                    default_mode: vize_atelier_jsx::JsxOutputMode::Vapor,
+                    ..Default::default()
+                },
             );
-            assert!(out.module_code().is_empty());
-            assert!(
-                !out.components[0].code().is_empty(),
-                "per-component backend remains available"
-            );
+            assert!(!out.has_errors(), "{source}: {:?}", out.diagnostics);
+            assert!(!out.module_code().is_empty());
         }
-    }
-    for ssr in [false, true] {
-        let arena = Allocator::new();
-        let out = compile_jsx(
-            &arena,
-            "const App = () => <p>static</p>;",
-            JsxLang::Tsx,
-            &JsxCompileConfig {
-                ssr,
-                default_mode: vize_atelier_jsx::JsxOutputMode::Vapor,
-                ..Default::default()
-            },
-        );
-        assert!(!out.has_errors(), "{:?}", out.diagnostics);
-        assert!(!out.module_code().is_empty());
     }
 }
 
