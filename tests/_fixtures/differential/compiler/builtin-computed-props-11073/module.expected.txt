@@ -1,0 +1,38 @@
+import { ssrRenderComponent as _ssrRenderComponent, ssrRenderTeleport as _ssrRenderTeleport, ssrRenderSuspense as _ssrRenderSuspense } from "@vue/server-renderer"
+import { resolveComponent as _resolveComponent } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<!--[-->`)
+  _ssrRenderTeleport(_push, (_push) => {
+    _push(`<span>content</span>`)
+  }, "body", false, _parent)
+  _push(_ssrRenderComponent(_resolveComponent("Panel"), null, null, _parent))
+  _ssrRenderSuspense(_push, {
+    default: () => {
+      _push(_ssrRenderComponent(_resolveComponent("AsyncPanel"), null, null, _parent))
+    },
+    _: 1
+  })
+  _push(`<!--]-->`)
+}
+
+const disabled = 'disabled'
+const include = 'include'
+const timeout = 'timeout'
+const value = true
+const limit = 0
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props) {
+
+const names = ['Panel']
+
+const __returned__ = { timeout, value, disabled, include, names, limit }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

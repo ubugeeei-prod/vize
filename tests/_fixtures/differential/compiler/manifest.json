@@ -358,6 +358,48 @@
       }
     },
     {
+      "id": "compiler/sfc/builtin-computed-props-11073",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "builtin-computed-props-11073",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "9b3751c51d5e3df40e946d225b4debdd6e8bf68c61e84624cbcbccdd11de3d9a",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "builtin-computed-props-11073/module.expected.txt",
+        "sha256": "9f57bd8abd8ee18701cf9047e5725f5960bc27b60a3246df3f8064adfd28bdcd",
+        "source": "crates/vize_atelier_vapor/src/l3/tests/builtin_prop_names.rs:builtin_computed_prop_names_match_retained_generation; SSR source coverage only"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); native and retained Vapor output parity is checked independently."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/compact-scoped-at-rules-10639",
       "state": "active",
       "targets": ["ssr"],
