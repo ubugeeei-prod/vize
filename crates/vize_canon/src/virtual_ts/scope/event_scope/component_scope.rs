@@ -3,7 +3,7 @@
 //! against the child's listener prop type so its return value is checked.
 
 use crate::virtual_ts::scope::ScopeMappings;
-use vize_carton::{String, append, config::VueVersion, profile};
+use vize_carton::{String, append, profile};
 use vize_croquis::{EventHandlerScopeData, Scope};
 
 use crate::virtual_ts::expressions::ComponentPropSource;
@@ -14,26 +14,12 @@ use super::super::context::{EventHandlerExprContext, ScopeGenContext};
 use super::super::event_handler::{event_name_source_range, generate_event_handler_expressions};
 use super::event_targets::needs_typed_handler_assignment;
 
-/// An omitted option admits only a recorded Vue 3 native-root payload. This
-/// does not enable required attrs or unknown-prop checks.
-fn infers_omitted_native_listener_payload(
-    check_options: VirtualTsCheckOptions,
-    legacy_vue2: bool,
-) -> bool {
-    !legacy_vue2
-        && !matches!(
-            check_options.vue_compiler_target,
-            Some(VueVersion::V2 | VueVersion::V2_7)
-        )
-        && !check_options.fallthrough_attributes_specified
-}
-
 fn uses_fallthrough_listener_payload(
     check_options: VirtualTsCheckOptions,
     legacy_vue2: bool,
 ) -> bool {
     check_options.fallthrough_attributes
-        || infers_omitted_native_listener_payload(check_options, legacy_vue2)
+        || check_options.infers_omitted_native_fallthrough_listeners(legacy_vue2)
 }
 
 pub(super) fn generate_component_handler_scope(
@@ -76,10 +62,9 @@ pub(super) fn generate_component_handler_scope(
                         ctx.check_options,
                         ctx.legacy_vue2,
                     ),
-                    native_fallthrough_only: infers_omitted_native_listener_payload(
-                        ctx.check_options,
-                        ctx.legacy_vue2,
-                    ),
+                    native_fallthrough_only: ctx
+                        .check_options
+                        .infers_omitted_native_fallthrough_listeners(ctx.legacy_vue2),
                     explicit_generic: data.target_component.as_ref().and_then(|component| {
                         ctx.explicit_generics.alias_at(
                             ctx.summary,
@@ -225,6 +210,7 @@ pub(super) fn generate_component_handler_scope(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use vize_carton::config::VueVersion;
 
     #[test]
     fn omitted_fallthrough_listener_payloads_are_vue3_only() {

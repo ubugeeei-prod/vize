@@ -1,4 +1,4 @@
-use super::support::fix_history_runner::check_pack;
+use crate::support::fix_history_runner::check_pack;
 
 #[test]
 fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {

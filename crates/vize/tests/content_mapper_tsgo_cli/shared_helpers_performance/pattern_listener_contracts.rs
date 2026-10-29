@@ -81,9 +81,27 @@ fn standard_tsgo_preserves_pattern_listener_and_open_root_contracts() {
         .tempdir_in(&cases_root)
         .unwrap();
     for shared_helpers in [false, true] {
-        for (owner, declared_listener, root, fallthrough_attributes, vue_target, invalid_status) in [
+        for (
+            owner,
+            kebab_usage,
+            declared_listener,
+            root,
+            fallthrough_attributes,
+            vue_target,
+            invalid_status,
+        ) in [
             (
                 "fallthrough-omitted",
+                false,
+                false,
+                ListenerRoot::Native,
+                None,
+                None,
+                2,
+            ),
+            (
+                "fallthrough-omitted-kebab",
+                true,
                 false,
                 ListenerRoot::Native,
                 None,
@@ -93,6 +111,7 @@ fn standard_tsgo_preserves_pattern_listener_and_open_root_contracts() {
             (
                 "fallthrough-true",
                 false,
+                false,
                 ListenerRoot::Native,
                 Some(true),
                 None,
@@ -101,14 +120,24 @@ fn standard_tsgo_preserves_pattern_listener_and_open_root_contracts() {
             (
                 "fallthrough-false",
                 false,
+                false,
                 ListenerRoot::Native,
                 Some(false),
                 None,
                 0,
             ),
-            ("declared", true, ListenerRoot::Native, Some(false), None, 2),
+            (
+                "declared",
+                false,
+                true,
+                ListenerRoot::Native,
+                Some(false),
+                None,
+                2,
+            ),
             (
                 "no-root-open",
+                false,
                 false,
                 ListenerRoot::NoTemplate,
                 None,
@@ -118,6 +147,7 @@ fn standard_tsgo_preserves_pattern_listener_and_open_root_contracts() {
             (
                 "unresolved-root-open",
                 false,
+                false,
                 ListenerRoot::Unresolved,
                 None,
                 None,
@@ -125,6 +155,7 @@ fn standard_tsgo_preserves_pattern_listener_and_open_root_contracts() {
             ),
             (
                 "component-root-open",
+                false,
                 false,
                 ListenerRoot::Resolved,
                 None,
@@ -134,6 +165,7 @@ fn standard_tsgo_preserves_pattern_listener_and_open_root_contracts() {
             (
                 "target-v2-open",
                 false,
+                false,
                 ListenerRoot::Native,
                 None,
                 Some(json!(2)),
@@ -141,6 +173,7 @@ fn standard_tsgo_preserves_pattern_listener_and_open_root_contracts() {
             ),
             (
                 "target-v2-7-open",
+                false,
                 false,
                 ListenerRoot::Native,
                 None,
@@ -155,6 +188,7 @@ fn standard_tsgo_preserves_pattern_listener_and_open_root_contracts() {
                 prepare_pattern_listener_project(
                     &project,
                     shared_helpers,
+                    kebab_usage,
                     declared_listener,
                     root,
                     valid_listener,
@@ -179,7 +213,12 @@ fn standard_tsgo_preserves_pattern_listener_and_open_root_contracts() {
                 let (identity, _) = diagnostics[0]
                     .split_once(": error TS2322: ")
                     .expect("one TS2322 listener diagnostic");
-                assert_eq!(identity, "src/App.vue(6,26)");
+                let expected_identity = if kebab_usage {
+                    "src/App.vue(6,27)"
+                } else {
+                    "src/App.vue(6,26)"
+                };
+                assert_eq!(identity, expected_identity);
             }
         }
     }
@@ -196,6 +235,7 @@ enum ListenerRoot {
 fn prepare_pattern_listener_project(
     project: &Path,
     shared_helpers: bool,
+    kebab_usage: bool,
     declared_listener: bool,
     root: ListenerRoot,
     valid_listener: bool,
@@ -255,6 +295,7 @@ declare module "vue" {
     } else {
         ("string", "event.length")
     };
+    let component_tag = if kebab_usage { "my-item" } else { "MyItem" };
     std::fs::write(
         source_root.join("App.vue"),
         cstr!(
@@ -263,7 +304,7 @@ import MyItem from "./MyItem.vue";
 const onClick = (event: {listener}) => {body};
 </script>
 <template>
-  <MyItem role="button" @click="onClick" />
+  <{component_tag} role="button" @click="onClick" />
 </template>
 "#
         ),
