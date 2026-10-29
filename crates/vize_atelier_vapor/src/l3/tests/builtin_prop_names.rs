@@ -102,6 +102,15 @@ fn checked_builtin_prop_name_payload_owns_the_key() {
         crate::l3::admit(s3, &crate::l3::retained::Retained::new(&allocator)),
         &allocator,
     );
-    assert!(code.contains("otherFlag"), "{code}");
-    assert!(!code.contains("disabled"), "{code}");
+    let expected = super::generated(
+        crate::l3::admit(
+            super::lowered_source(
+                &allocator,
+                r#"<Teleport to="body" :[otherFlag]="value"><span>content</span></Teleport>"#,
+            ),
+            &crate::l3::retained::Retained::new(&allocator),
+        ),
+        &allocator,
+    );
+    assert_eq!(code, expected);
 }
