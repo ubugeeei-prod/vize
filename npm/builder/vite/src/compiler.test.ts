@@ -672,15 +672,33 @@ const antDesignDomCompiled = compileFile(
   antDesignSource,
 );
 
-assert.match(
+assert.equal(
   antDesignDomCompiled.code,
-  /(?=[\s\S]*_create(?:Block|VNode)\(\$setup\.Form\.Item)(?=[\s\S]*_create(?:Block|VNode)\(\$setup\.Input\))/,
-  "DOM module builds should read setup component tags while preserving member access",
-);
-assert.doesNotMatch(
-  antDesignDomCompiled.code,
-  /_resolveComponent\("Form\.Item"\)/,
-  "DOM builds must not fall back to runtime resolution for dotted imported components",
+  `import { createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue";
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _openBlock(), _createBlock($setup["Form"].Item, { label: "Teacher" }, {
+    default: _withCtx(() => [_createVNode($setup["Input"])]),
+    _: 1
+  });
+}
+import { Form, Input } from "ant-design-vue";
+export default {
+  __name: "AntDesignTeacher",
+  render: _sfc_render,
+  setup(__props, { expose: __expose }) {
+    __expose();
+    const __returned__ = {
+      Form,
+      Input
+    };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};`,
+  "DOM module setup component tags and member access should match exactly",
 );
 
 const antDesignSsrCompiled = compileFile(
