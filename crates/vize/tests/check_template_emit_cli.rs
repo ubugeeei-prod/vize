@@ -17,6 +17,8 @@ const ORIGINAL: &str = include_str!(
 const CONFIG: &str = include_str!(
     "../../../tests/_fixtures/differential/typechecker/template-dollar-emit/tsconfig.json.txt"
 );
+// Receipt case names predate the consolidated integration test binary.
+const INTEGRATION_MODULE_PREFIX: &str = "check_template_emit_cli::";
 
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -125,7 +127,7 @@ fn capture(root: &Path, corsa: &Path, phase: &str, output: &Output) {
         return;
     };
     let thread = std::thread::current();
-    let capture = PathBuf::from(capture).join(thread.name().unwrap_or("unknown").replace(':', "_"));
+    let capture = PathBuf::from(capture).join(capture_case_name(thread.name()));
     std::fs::create_dir_all(&capture).unwrap();
     std::fs::write(capture.join(format!("{phase}.stdout.txt")), &output.stdout).unwrap();
     std::fs::write(capture.join(format!("{phase}.stderr.txt")), &output.stderr).unwrap();
@@ -148,6 +150,37 @@ fn capture(root: &Path, corsa: &Path, phase: &str, output: &Output) {
             std::fs::copy(source, target).unwrap();
         }
     }
+}
+
+fn capture_case_name(thread_name: Option<&str>) -> String {
+    let thread_name = thread_name.unwrap_or("unknown");
+    thread_name
+        .strip_prefix(INTEGRATION_MODULE_PREFIX)
+        .unwrap_or(thread_name)
+        .replace(':', "_")
+}
+
+#[test]
+fn capture_case_names_keep_the_original_receipt_contract() {
+    assert_eq!(
+        capture_case_name(Some(
+            "check_template_emit_cli::original_unassigned_macro_rejects_complete_event_and_payload_vector"
+        )),
+        "original_unassigned_macro_rejects_complete_event_and_payload_vector"
+    );
+    assert_eq!(
+        capture_case_name(Some(
+            "check_template_emit_cli::controls::declared_emit_and_model_update_keep_both_typed_event_contracts"
+        )),
+        "controls__declared_emit_and_model_update_keep_both_typed_event_contracts"
+    );
+    assert_eq!(
+        capture_case_name(Some(
+            "absent_macro_retains_the_public_instance_emit_contract"
+        )),
+        "absent_macro_retains_the_public_instance_emit_contract"
+    );
+    assert_eq!(capture_case_name(None), "unknown");
 }
 
 #[test]
