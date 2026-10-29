@@ -205,6 +205,8 @@ jobs:
           node-version-file: "package.json"
           cache: true
           run-install: false
+      - name: Install locked config dependencies
+        run: vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts
       # A vize binary with the legacy Vue feature OFF (the shipped Vue 3 build)
       # and one with it ON. Distinct target dirs keep the two feature sets from
       # invalidating each other's incremental cache.

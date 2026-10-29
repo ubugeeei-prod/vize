@@ -308,6 +308,10 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
   // Dialect guard: build vize with legacy OFF and ON, then assert byte-identical
   // Vue 3 codegen plus a small A/B timing budget.
   assert.match(guardJob, new RegExp(`runs-on:\\s*${hostedOrBlacksmith("ubuntu-24.04")}`));
+  assert.match(
+    workflowStepBody(guardJob, "Install locked config dependencies"),
+    /vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts/,
+  );
   assert.match(guardJob, /cargo build --profile ci-opt -p vize --target-dir target\/off/);
   assert.match(
     guardJob,
