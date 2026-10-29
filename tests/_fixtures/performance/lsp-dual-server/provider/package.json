@@ -1,0 +1,12 @@
+{
+  "name": "vize-lsp-dual-server-provider",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vue/language-server": "3.3.13",
+    "@vue/typescript-plugin": "3.3.13",
+    "typescript": "6.0.3",
+    "typescript-language-server": "6.0.2",
+    "vue": "3.6.0-rc.11"
+  }
+}
