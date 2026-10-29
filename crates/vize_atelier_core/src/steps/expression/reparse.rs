@@ -53,6 +53,59 @@ pub(super) fn rewrite_from_wrapped_expr(
     }
 }
 
+/// Rewrite expressions owned by a `v-for` callback parameter without
+/// rewriting the parameter declarations themselves. The synthesized arrow
+/// gives the existing collector the real parameter scope before it visits
+/// default initializers and computed keys.
+pub(crate) fn rewrite_for_alias(alias: &str, ctx: &TransformContext<'_>) -> RewriteResult {
+    let overflows = super::expression_exceeds_max_depth(alias);
+    if overflows || !super::expression_has_balanced_delimiters(alias) {
+        return RewriteResult {
+            code: String::new(alias),
+            used_unref: false,
+            used_is_ref: false,
+            has_identifiers: false,
+            parse_error: (!overflows).then(|| String::new("mismatched expression delimiters")),
+        };
+    }
+
+    let allocator = crate::expr_parse_probe::parse_arena();
+    let mut wrapped = String::with_capacity(alias.len() + 10);
+    wrapped.push('(');
+    wrapped.push_str(alias);
+    wrapped.push_str(") => null");
+    let source_type = if ctx.options.is_ts {
+        SourceType::ts().with_module(true)
+    } else {
+        SourceType::default().with_module(true)
+    };
+    match Parser::new(&allocator, &wrapped, source_type).parse_expression() {
+        Ok(Expression::ArrowFunctionExpression(arrow)) => {
+            let expression = Expression::ArrowFunctionExpression(arrow);
+            rewrite_from_wrapped_expr(&expression, &wrapped, alias, ctx, false)
+        }
+        Ok(_) => RewriteResult {
+            code: String::new(alias),
+            used_unref: false,
+            used_is_ref: false,
+            has_identifiers: false,
+            parse_error: Some(String::new("invalid parameters")),
+        },
+        Err(errors) => RewriteResult {
+            code: String::new(alias),
+            used_unref: false,
+            used_is_ref: false,
+            has_identifiers: false,
+            parse_error: Some(
+                errors
+                    .first()
+                    .map(|error| String::new(error.message.as_ref()))
+                    .unwrap_or_else(|| String::new("invalid parameters")),
+            ),
+        },
+    }
+}
+
 /// The legacy re-parse chain over already-TS-stripped text: wrapped
 /// expression parse, program-parse fallback, simple-identifier fallback.
 /// `content` is the original (pre-strip) text, consulted only for the

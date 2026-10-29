@@ -117,7 +117,7 @@ pub(crate) struct RewriteResult {
 /// Emit an `InvalidExpression` compile diagnostic for an expression that
 /// failed to parse, matching `@vue/compiler-core`'s
 /// `Error parsing JavaScript expression: <detail>` message format.
-pub(super) fn report_invalid_expression(
+pub(crate) fn report_invalid_expression(
     ctx: &mut TransformContext<'_>,
     detail: &str,
     loc: &SourceLocation,

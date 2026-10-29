@@ -1,0 +1,2 @@
+<script>export default {}</script>
+<template><!-- @vize:todo x --><div v-for="outer in rows"><p v-for="{ label = fallback, [key]: tag } in outer.items">{{ label + tag + outside }}</p></div></template>
