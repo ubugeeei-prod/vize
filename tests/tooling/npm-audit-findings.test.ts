@@ -26,6 +26,11 @@ test("the source-remediated finding retains visible below-threshold entries", ()
     before = structuredClone(report);
   assert.deepEqual(assertSourceRemediatedReport(report, 1), [advisoryId]);
   assert.deepEqual(report, before);
+  const publishedRepair = fixture();
+  publishedRepair.advisories.forge.patched_versions = ">=1.4.1";
+  const publishedBefore = structuredClone(publishedRepair);
+  assert.deepEqual(assertSourceRemediatedReport(publishedRepair, 1), [advisoryId]);
+  assert.deepEqual(publishedRepair, publishedBefore);
   const clean = fixture();
   delete clean.advisories.forge;
   clean.metadata.vulnerabilities.high = 0;
@@ -59,7 +64,7 @@ test("unknown severe findings, missing entries, changed identity/path and proces
       r.advisories.forge.findings[0].paths = ["new>node-forge"];
     },
     (r: any) => {
-      r.advisories.forge.patched_versions = ">=1.4.1";
+      r.advisories.forge.patched_versions = ">=1.4.2";
     },
     (r: any) => {
       r.advisories.forge.findings[0].dev = true;

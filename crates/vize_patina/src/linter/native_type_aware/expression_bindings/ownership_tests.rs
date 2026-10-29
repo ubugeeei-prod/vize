@@ -5,7 +5,10 @@ use std::ops::Range;
 use vize_canon::virtual_ts::{ProjectionMapping, VizeMapping, VizeSubSpan};
 use vize_l0::String;
 
-use super::{TypeAwareDocument, bind_template_expressions, inferred_binding_offset};
+use super::{
+    TypeAwareDocument, bind_template_expressions, bind_template_expressions_from_source,
+    inferred_binding_offset,
+};
 
 fn mapped_document(text: &str, expressions: &[(&str, usize)]) -> TypeAwareDocument {
     TypeAwareDocument {
@@ -31,6 +34,58 @@ fn assert_owner(document: &TypeAwareDocument, authored: Range<usize>, identifier
     assert_eq!(
         document.content.get(start..offset as usize + 1),
         Some(identifier)
+    );
+}
+
+fn checked_document(expression: &str, authored: Range<usize>) -> TypeAwareDocument {
+    let text = format!("const __vize_prop_check_0: unknown = ({expression});\n");
+    let generated = text.find(expression).expect("checked expression");
+    TypeAwareDocument {
+        content: String::from(text.as_str()),
+        mapping: ProjectionMapping::from_spans(vec![VizeMapping::new(
+            generated..generated + expression.len(),
+            authored,
+        )]),
+    }
+}
+
+#[test]
+fn only_exact_comment_stripping_authenticates_a_non_affine_owner() {
+    let generated = "[\n  \n  check(ids)\n]";
+    let authored_expression = "[\n  // 中中\n  check(ids)\n]";
+    let source = format!("prefix:{authored_expression}:suffix");
+    let authored_start = "prefix:".len();
+    let authored = authored_start..authored_start + authored_expression.len();
+
+    let mut without_source = checked_document(generated, authored.clone());
+    bind_template_expressions(&mut without_source);
+    assert_eq!(inferred_binding_offset(&without_source, &authored), None);
+
+    let mut authenticated = checked_document(generated, authored.clone());
+    bind_template_expressions_from_source(&mut authenticated, &source);
+    assert_owner(&authenticated, authored.clone(), "__expr_0");
+    assert_eq!(
+        authenticated
+            .mapping
+            .rows()
+            .filter(|row| row.span.src_range == authored)
+            .filter(|row| {
+                authenticated.content.get(row.span.gen_range.clone()) == Some(generated)
+            })
+            .count(),
+        1,
+        "the stripped probe copy must not gain an affine diagnostic row"
+    );
+
+    let rewritten = "[ check(ids) ]";
+    let rewritten_source = format!("prefix:{rewritten}:suffix");
+    let rewritten_authored = authored_start..authored_start + rewritten.len();
+    let mut refusal = checked_document("[check(ids)]", rewritten_authored.clone());
+    bind_template_expressions_from_source(&mut refusal, &rewritten_source);
+    assert_eq!(
+        inferred_binding_offset(&refusal, &rewritten_authored),
+        None,
+        "a non-comment rewrite must remain fail-closed"
     );
 }
 

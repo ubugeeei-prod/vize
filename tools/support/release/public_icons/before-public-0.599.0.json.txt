@@ -1,0 +1,127 @@
+{
+  "version": "0.599.0",
+  "source": "<template>\n  <div>\n    <i class=\"mdi mdi-close\" />\n    <i class=\"fa fa-user\" />\n    <i class=\"fa-solid fa-user\" />\n    <i class=\"bi bi-alarm\" />\n    <i class=\"material-icons\">home</i>\n    <i class=\"ri-home-line\" />\n    <i class=\"mdi mdi-pencil edit-icon\" />\n    <i class=\"icon-close\" />\n    <i class=\"arrow\" />\n    <i>emphasis</i>\n  </div>\n</template>\n",
+  "options": {
+    "filename": "Icons.vue",
+    "preset": "all",
+    "enabledRules": [
+      "a11y/no-i-for-icon"
+    ],
+    "helpLevel": "full"
+  },
+  "result": {
+    "diagnostics": [
+      {
+        "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues — screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+        "location": {
+          "end": {
+            "column": 29,
+            "line": 4,
+            "offset": 79
+          },
+          "start": {
+            "column": 5,
+            "line": 4,
+            "offset": 55
+          }
+        },
+        "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+        "rule": "a11y/no-i-for-icon",
+        "severity": "warning"
+      },
+      {
+        "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues — screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+        "location": {
+          "end": {
+            "column": 35,
+            "line": 5,
+            "offset": 114
+          },
+          "start": {
+            "column": 5,
+            "line": 5,
+            "offset": 84
+          }
+        },
+        "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+        "rule": "a11y/no-i-for-icon",
+        "severity": "warning"
+      },
+      {
+        "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues — screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+        "location": {
+          "end": {
+            "column": 30,
+            "line": 6,
+            "offset": 144
+          },
+          "start": {
+            "column": 5,
+            "line": 6,
+            "offset": 119
+          }
+        },
+        "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+        "rule": "a11y/no-i-for-icon",
+        "severity": "warning"
+      },
+      {
+        "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues — screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+        "location": {
+          "end": {
+            "column": 31,
+            "line": 7,
+            "offset": 175
+          },
+          "start": {
+            "column": 5,
+            "line": 7,
+            "offset": 149
+          }
+        },
+        "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+        "rule": "a11y/no-i-for-icon",
+        "severity": "warning"
+      },
+      {
+        "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues — screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+        "location": {
+          "end": {
+            "column": 43,
+            "line": 9,
+            "offset": 257
+          },
+          "start": {
+            "column": 5,
+            "line": 9,
+            "offset": 219
+          }
+        },
+        "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+        "rule": "a11y/no-i-for-icon",
+        "severity": "warning"
+      },
+      {
+        "help": "**Why:** The `<i>` element semantically represents *italic text*, not icons. Using it for icon fonts creates accessibility issues — screen readers may announce meaningless content.\n\n**Fix:** Use `<span>` with `aria-hidden=\"true\"` instead:\n```vue\n<span class=\"fas fa-home\" aria-hidden=\"true\"></span>\n<span class=\"sr-only\">Home</span>\n```\n\nOr use an SVG icon component for best accessibility.",
+        "location": {
+          "end": {
+            "column": 29,
+            "line": 10,
+            "offset": 286
+          },
+          "start": {
+            "column": 5,
+            "line": 10,
+            "offset": 262
+          }
+        },
+        "message": "<i> element with icon CSS class should not be used for icons. Use a semantic element instead",
+        "rule": "a11y/no-i-for-icon",
+        "severity": "warning"
+      }
+    ],
+    "errorCount": 0,
+    "filename": "Icons.vue",
+    "warningCount": 6
+  }
+}

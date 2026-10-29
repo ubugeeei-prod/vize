@@ -37,6 +37,8 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             && self.is_bound_jsx_identifier(&opening.name);
         let expression_tag = name::expression_tag_span(&opening.name)
             .or_else(|| (bound_custom_element || bound_component).then(|| opening.name.span()));
+        let stable_component =
+            bound_component && self.is_stable_component_identifier(&opening.name);
         let tag = match expression_tag {
             Some(_) => String::from(DYNAMIC_COMPONENT_TAG),
             None => name::element_tag(&opening.name),
@@ -68,7 +70,8 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             // First, so the emitted props object reads `<component :is="…" …>`
             // like the template spelling it stands for. Codegen filters `is`
             // out of the props object for a dynamic component.
-            node.props.insert(0, self.is_binding(span));
+            node.props
+                .insert(0, self.is_binding(span, stable_component));
         }
         // Components route through slot synthesis (object/render-prop children
         // become `<template v-slot>`s); intrinsic elements lower children
@@ -107,11 +110,16 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
 
     /// `:is="<source text of span>"`, the dynamic-component binding standing in
     /// for a member-expression tag.
-    fn is_binding(&self, span: Span) -> PropNode<'a> {
+    fn is_binding(&self, span: Span, stable_component: bool) -> PropNode<'a> {
         let loc = self.mapper().location(span);
         let mut directive = DirectiveNode::new(self.bump(), "bind", loc);
         directive.arg = Some(self.static_expr("is", span));
         directive.exp = Some(self.dyn_expr(span));
+        if stable_component
+            && let Some(vize_relief::ExpressionNode::Simple(expression)) = &mut directive.exp
+        {
+            expression.const_type = vize_relief::ConstantType::CanSkipPatch;
+        }
         PropNode::Directive(self.boxed(directive))
     }
 

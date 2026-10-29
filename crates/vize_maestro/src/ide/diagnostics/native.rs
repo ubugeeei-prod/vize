@@ -114,7 +114,7 @@ pub(super) fn native_script_syntax(
         && diagnostics
             .iter()
             .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SCRIPT_PARSER))
-        && state.documents.text(uri).is_some_and(|source| {
+        && state.documents.text_snapshot(uri).is_some_and(|source| {
             DiagnosticService::descriptor_for_collect(state, uri, &source)
                 .is_ok_and(|descriptor| vize_canon::supports_native_script_syntax(&descriptor))
         })

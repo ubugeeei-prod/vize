@@ -2,7 +2,9 @@
 
 mod absent_props;
 mod component;
+mod directives;
 mod fallthrough;
+mod nuxt_scope;
 mod sfc;
 
 use super::routes::config::{CrossFileRuleSettings, RuleSetting, setting};
@@ -14,14 +16,15 @@ use sfc::{CrossFileSfcAnalysis, CrossFileSourceOffsets, analyze_sfc_for_cross_fi
 use std::path::{Path, PathBuf};
 use vize_croquis_cf::{
     CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,
-    DiagnosticSeverity, DiagnosticSource, FileId,
+    DiagnosticSeverity, DiagnosticSource, FileId, logical_import_candidates,
 };
 use vize_curator::complexity::render_cross_file_complexity;
 use vize_l0::{CompactString, FxHashMap, String, ToCompactString, cstr};
-use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
+use vize_patina::{HelpLevel, LintDiagnostic, LintResult, ProjectLintDirectives};
 
 pub(super) struct CrossFileLintOutput {
     pub(super) results: Vec<LintResult>,
+    directive_states: Vec<Option<ProjectLintDirectives>>,
     pub(super) provide_inject_tree: Option<String>,
     pub(super) complexity_report: Option<String>,
 }
@@ -38,7 +41,7 @@ pub(super) fn apply_sfc_cross_file_lint(
     let targets: Vec<_> = results
         .iter()
         .enumerate()
-        .filter(|(_, (path, _, _, _))| is_sfc_cross_file_target(path))
+        .filter(|(_, (path, _, _, _))| is_cross_file_target(path))
         .map(|(index, _)| index)
         .collect();
     let inputs: Vec<_> = targets
@@ -60,8 +63,13 @@ pub(super) fn apply_sfc_cross_file_lint(
         output.complexity_report.as_deref(),
     );
 
-    for (target_index, cross_result) in targets.into_iter().zip(output.results) {
+    for ((target_index, cross_result), state) in targets
+        .into_iter()
+        .zip(output.results)
+        .zip(output.directive_states)
+    {
         if let Some((_, _, _, result)) = results.get_mut(target_index) {
+            directives::reconcile(state.as_ref(), result);
             merge_lint_result(result, cross_result);
         }
     }
@@ -88,7 +96,8 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
     let root = std::env::current_dir().unwrap_or_default();
     let mut analyzer = CrossFileAnalyzer::with_project_root(patina_cross_file_options(), &root);
     analyzer.set_ssr_enabled(super::super::project_ssr::ssr_enabled(&root));
-    analyzer.set_nuxt_render_dirs(super::super::project_nuxt::render_dirs(&root));
+    let nuxt_render_dirs = super::super::project_nuxt::render_dirs(&root);
+    analyzer.set_nuxt_render_dirs(nuxt_render_dirs.clone());
     let mut file_indexes: FxHashMap<FileId, usize> = FxHashMap::default();
     let mut source_offsets: FxHashMap<FileId, CrossFileSourceOffsets> = FxHashMap::default();
     let mut results: Vec<_> = files
@@ -103,21 +112,47 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
 
     for (index, (path, source)) in files.iter().enumerate() {
         let source = source.as_ref();
-        let Some(CrossFileSfcAnalysis {
-            analysis,
-            offsets,
-            effects,
-        }) = analyze_sfc_for_cross_file(source, path)
-        else {
-            continue;
-        };
-        let file_id =
-            analyzer.add_file_with_analysis_and_effect_summary(path, source, analysis, effects);
-        file_indexes.insert(file_id, index);
-        source_offsets.insert(file_id, offsets);
+        if is_sfc_cross_file_target(path) {
+            let Some(CrossFileSfcAnalysis {
+                analysis,
+                offsets,
+                effects,
+            }) = analyze_sfc_for_cross_file(source, path)
+            else {
+                continue;
+            };
+            let file_id =
+                analyzer.add_file_with_analysis_and_effect_summary(path, source, analysis, effects);
+            file_indexes.insert(file_id, index);
+            source_offsets.insert(file_id, offsets);
+        } else if is_script_cross_file_target(path) {
+            let file_id = analyzer.add_file(path, source);
+            file_indexes.insert(file_id, index);
+            source_offsets.insert(file_id, CrossFileSourceOffsets::default());
+        }
     }
 
+    admit_called_local_composables(&mut analyzer, &root);
+
+    let directive_states: Vec<_> = files
+        .iter()
+        .map(|(path, source)| {
+            is_sfc_cross_file_target(path)
+                .then(|| {
+                    ProjectLintDirectives::from_sfc(
+                        source.as_ref(),
+                        path.to_string_lossy().as_ref(),
+                    )
+                })
+                .flatten()
+        })
+        .collect();
+
     analyzer.rebuild_import_edges();
+    let proven = nuxt_render_dirs
+        .as_ref()
+        .is_some_and(|dirs| nuxt_scope::admitted(&root, dirs, &analyzer));
+    analyzer.admit_nuxt_render_scope_once(proven);
     let cross_file_result = analyzer.analyze();
 
     for diagnostic in &cross_file_result.diagnostics {
@@ -160,9 +195,10 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
                 &configured
             }
         };
-        result.diagnostics.push(cross_file_diagnostic_to_lint(
-            diagnostic, offsets, source_len, help_level,
-        ));
+        let mut lint = cross_file_diagnostic_to_lint(diagnostic, offsets, source_len, help_level);
+        if directives::admit(&directive_states, index, rule, &mut lint) {
+            result.diagnostics.push(lint);
+        }
     }
 
     component::apply(
@@ -183,7 +219,19 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
         (help_level, settings),
     );
 
-    for result in &mut results {
+    for (index, result) in results.iter_mut().enumerate() {
+        result.diagnostics.retain_mut(|diagnostic| {
+            !matches!(diagnostic.rule_name, component::RULE | fallthrough::RULE)
+                || directives::admit(&directive_states, index, diagnostic.rule_name, diagnostic)
+        });
+        if let Some((path, _)) = files.get(index) {
+            directives::finalize(
+                directive_states.get(index).and_then(Option::as_ref),
+                path,
+                result,
+                settings,
+            );
+        }
         result.error_count = result
             .diagnostics
             .iter()
@@ -208,6 +256,7 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
 
     CrossFileLintOutput {
         results,
+        directive_states,
         provide_inject_tree,
         complexity_report,
     }
@@ -244,6 +293,81 @@ fn is_sfc_cross_file_target(path: &Path) -> bool {
     )
 }
 
+fn is_script_cross_file_target(path: &Path) -> bool {
+    matches!(
+        path.extension().and_then(|extension| extension.to_str()),
+        Some("js" | "mjs" | "cjs" | "ts" | "mts" | "cts" | "jsx" | "tsx")
+    )
+}
+
+fn is_cross_file_target(path: &Path) -> bool {
+    is_sfc_cross_file_target(path) || is_script_cross_file_target(path)
+}
+
+/// Admit only source modules reached by an actual top-level setup composable
+/// call. Explicit `lint src/**/*.vue` remains closed over the runtime effect it
+/// asks us to analyze without turning cross-file lint into a project-wide walk.
+fn admit_called_local_composables(analyzer: &mut CrossFileAnalyzer, root: &Path) {
+    let physical_root = root.canonicalize().unwrap_or_else(|_| root.to_path_buf());
+    let mut attempted = vize_l0::FxHashSet::default();
+
+    loop {
+        let requests: Vec<_> = analyzer
+            .registry()
+            .iter()
+            .flat_map(|entry| {
+                let importer = entry.path.clone();
+                vize_croquis::facts::composable_calls(&entry.analysis)
+                    .into_iter()
+                    .map(move |call| (importer.clone(), call.source))
+            })
+            .collect();
+        let mut added = false;
+
+        for (importer, specifier) in requests {
+            if !is_local_module_specifier(specifier.as_str()) {
+                continue;
+            }
+            for candidate in logical_import_candidates(specifier.as_str(), importer.parent()) {
+                let candidate = if candidate.is_absolute() {
+                    candidate
+                } else {
+                    root.join(candidate)
+                };
+                if !is_script_cross_file_target(&candidate) {
+                    continue;
+                }
+                if analyzer.registry().get_by_path(&candidate).is_some() {
+                    break;
+                }
+                if !attempted.insert(candidate.clone()) {
+                    continue;
+                }
+                let Ok(physical) = candidate.canonicalize() else {
+                    continue;
+                };
+                if !physical.starts_with(&physical_root) || !physical.is_file() {
+                    continue;
+                }
+                let Ok(source) = vize_carton::source_io::read_to_string(&candidate) else {
+                    continue;
+                };
+                analyzer.add_file(&candidate, source.as_str());
+                added = true;
+                break;
+            }
+        }
+
+        if !added {
+            break;
+        }
+    }
+}
+
+fn is_local_module_specifier(specifier: &str) -> bool {
+    specifier.starts_with('.') || specifier.starts_with("@/") || specifier.starts_with('/')
+}
+
 fn cross_file_diagnostic_to_lint(
     diagnostic: &CrossFileDiagnostic,
     offsets: CrossFileSourceOffsets,
@@ -251,10 +375,15 @@ fn cross_file_diagnostic_to_lint(
     help_level: HelpLevel,
 ) -> LintDiagnostic {
     let source_len = source_len as u32;
-    let offset = cross_file_diagnostic_offset(diagnostic, offsets);
-    let map = |position| match diagnostic.primary_source {
-        DiagnosticSource::Script => offsets.map_script(position),
-        _ => position + offset,
+    // Legacy diagnostics leave their coordinate space unspecified. Resolve
+    // their kind before mapping, so split-script offsets use both blocks.
+    let script_source = cross_file_diagnostic_is_script(diagnostic);
+    let map = |position| {
+        if script_source {
+            offsets.map_script(position)
+        } else {
+            position + offsets.template
+        }
     };
     let start = map(diagnostic.primary_offset).min(source_len);
     let raw_end = map(diagnostic.primary_end_offset);
@@ -276,20 +405,16 @@ fn cross_file_diagnostic_to_lint(
     lint
 }
 
-fn cross_file_diagnostic_offset(
-    diagnostic: &CrossFileDiagnostic,
-    offsets: CrossFileSourceOffsets,
-) -> u32 {
+fn cross_file_diagnostic_is_script(diagnostic: &CrossFileDiagnostic) -> bool {
     match diagnostic.primary_source {
-        DiagnosticSource::Script => return offsets.script,
-        DiagnosticSource::Template => return offsets.template,
-        DiagnosticSource::Unspecified => {}
-    }
-    match diagnostic.kind {
-        CrossFileDiagnosticKind::DuplicateElementId { .. }
-        | CrossFileDiagnosticKind::NonUniqueIdInLoop { .. }
-        | CrossFileDiagnosticKind::BrowserApiInSsr { .. } => offsets.template,
-        _ => offsets.script,
+        DiagnosticSource::Script => true,
+        DiagnosticSource::Template => false,
+        DiagnosticSource::Unspecified => !matches!(
+            diagnostic.kind,
+            CrossFileDiagnosticKind::DuplicateElementId { .. }
+                | CrossFileDiagnosticKind::NonUniqueIdInLoop { .. }
+                | CrossFileDiagnosticKind::BrowserApiInSsr { .. }
+        ),
     }
 }
 
@@ -311,3 +436,6 @@ mod tests;
 
 #[cfg(test)]
 mod effect_summary_tests;
+
+#[cfg(test)]
+mod directive_tests;

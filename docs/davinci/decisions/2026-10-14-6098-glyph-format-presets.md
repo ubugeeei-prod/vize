@@ -182,3 +182,49 @@ support. The CLI flag is `--end-of-line <lf|crlf|cr|auto>`. An explicit CLI
 value applies after config and a selected preset. A public CLI whole-output
 regression proves exact CRLF bytes and a second-pass fixed point; the existing
 line-ending fixtures continue to cover all four modes independently.
+
+## SFC body indentation option parity
+
+The existing `vueIndentScriptAndStyle` boolean now has direct CLI and native
+Node projections in addition to Rust, config schema, generated TypeScript,
+Pkl, editor, WASM and the Prettier plugin. The CLI flag is
+`--vue-indent-script-and-style[=false]`; Node `formatSfc` uses the camel-case
+option name. It remains opt-in: the default and all four named presets keep
+their existing assignments. Public CLI and Node whole-output regressions prove
+second/third-pass fixed points, while the existing option matrix continues to
+exercise the enabled value over the full in-repo Vue corpus.
+
+## Attribute order option parity
+
+The existing `attributeSortOrder` enum now has direct CLI and native Node
+projections in addition to Rust, config schema, generated TypeScript, Pkl,
+editor and WASM support. The CLI flag is
+`--attribute-sort-order <alphabetical|as-written>` and Node `formatSfc` uses
+the same camel-case option name. The policy remains distinct from disabling
+attribute sorting: `as-written` preserves authored order inside each Vue
+priority group, while `sortAttributes: false` preserves the complete authored
+order. Public CLI and Node whole-output controls prove all three states and
+their fixed points; the existing option matrix continues to exercise
+`as-written` over the full in-repo Vue corpus.
+
+## SFC block order option parity
+
+The existing `sortBlocks` boolean now has a direct CLI override in addition to
+Rust, config schema, generated TypeScript, Pkl, editor, WASM and typed Node
+support. The CLI flag is `--sort-blocks[=false]`; Node `formatSfc` uses the same
+camel-case option name. Explicit true or false values are applied after config
+and a selected preset. Public CLI and Node whole-output controls prove authored
+and canonical block order plus fixed points; the existing option matrix
+continues to exercise `sortBlocks: false` over the full in-repo Vue corpus.
+
+## Void-element closure option parity
+
+The existing `selfCloseVoidElements` boolean now has a direct CLI override in
+addition to Rust, config schema, generated TypeScript, Pkl, editor, WASM and
+typed Node support. The CLI flag is
+`--self-close-void-elements[=false]`; Node `formatSfc` uses the same camel-case
+option name. Explicit true or false values are applied after config and a
+selected preset. Public CLI whole-output controls prove enabled and authored
+void-element forms plus fixed points, while the existing Node regression pins
+both directions through a third pass with immutable options and the option
+matrix exercises the enabled value over the full in-repo Vue corpus.

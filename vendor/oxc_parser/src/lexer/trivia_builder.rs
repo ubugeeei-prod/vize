@@ -7,6 +7,7 @@ use super::{Kind, Token};
 
 #[derive(Debug)]
 pub struct TriviaBuilder<'a> {
+    pub(crate) speculation_effects_revision: u64,
     // This is a set of unique comments. Duplicated
     // comments could be generated in case of rewind; they are
     // filtered out at insertion time.
@@ -41,6 +42,7 @@ pub struct TriviaBuilder<'a> {
 impl<'a> TriviaBuilder<'a> {
     pub fn new_in(allocator: &'a Allocator) -> Self {
         Self {
+            speculation_effects_revision: 0,
             comments: ArenaVec::new_in(&allocator),
             irregular_whitespaces: vec![],
             processed: 0,
@@ -69,7 +71,10 @@ impl<'a> TriviaBuilder<'a> {
                 comment.content,
                 CommentContent::Pure | CommentContent::PureNotApplied
             ));
-            comment.content = CommentContent::PureNotApplied;
+            if comment.content != CommentContent::PureNotApplied {
+                self.speculation_effects_revision += 1;
+                comment.content = CommentContent::PureNotApplied;
+            }
         }
     }
 
@@ -89,6 +94,7 @@ impl<'a> TriviaBuilder<'a> {
         {
             return;
         }
+        self.speculation_effects_revision += 1;
         self.irregular_whitespaces.push(Span::new(start, end));
     }
 
@@ -112,6 +118,7 @@ impl<'a> TriviaBuilder<'a> {
         // The last unprocessed comment is on a newline.
         let len = self.comments.len();
         if self.processed < len {
+            self.speculation_effects_revision += 1;
             let comment = &mut self.comments[len - 1];
             comment.set_followed_by_newline(true);
             if !self.saw_newline && !Self::should_stay_leading(comment) {
@@ -138,6 +145,7 @@ impl<'a> TriviaBuilder<'a> {
 
     #[cold]
     fn attach_pending_leading_comments(&mut self, attached_to: u32, len: usize) {
+        self.speculation_effects_revision += 1;
         for comment in &mut self.comments[self.processed..] {
             comment.position = CommentPosition::Leading;
             comment.attached_to = attached_to;
@@ -250,6 +258,7 @@ impl<'a> TriviaBuilder<'a> {
         // Set annotation flags here (not in `parse_annotation`) so the index is correct
         // even when the dedup check above skips a duplicate from parser lookahead/rewind.
         self.set_annotation_flags(&comment, self.comments.len());
+        self.speculation_effects_revision += 1;
         self.comments.push(comment);
     }
 
@@ -836,5 +845,39 @@ function bar() {}";
             assert_eq!(comments.len(), 1, "{source_text}");
             assert_eq!(comments[0].content, expected, "{source_text}");
         }
+    }
+}
+
+/// Trivia fields which move while lexing but are not restored by LexerCheckpoint.
+/// A shared failed subproblem must replay these even though its AST is discarded.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub(crate) struct SpeculativeTrivia {
+    processed: usize,
+    saw_newline: bool,
+    saw_newline_for_comment: bool,
+    previous_kind: Kind,
+    pure_comment: Option<usize>,
+    has_no_side_effects_comment: bool,
+}
+
+impl TriviaBuilder<'_> {
+    pub(crate) fn speculative_state(&self) -> SpeculativeTrivia {
+        SpeculativeTrivia {
+            processed: self.processed,
+            saw_newline: self.saw_newline,
+            saw_newline_for_comment: self.saw_newline_for_comment,
+            previous_kind: self.previous_kind,
+            pure_comment: self.pure_comment,
+            has_no_side_effects_comment: self.has_no_side_effects_comment,
+        }
+    }
+
+    pub(crate) fn restore_speculative_state(&mut self, state: SpeculativeTrivia) {
+        self.processed = state.processed;
+        self.saw_newline = state.saw_newline;
+        self.saw_newline_for_comment = state.saw_newline_for_comment;
+        self.previous_kind = state.previous_kind;
+        self.pure_comment = state.pure_comment;
+        self.has_no_side_effects_comment = state.has_no_side_effects_comment;
     }
 }

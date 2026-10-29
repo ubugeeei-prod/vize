@@ -159,6 +159,7 @@ Le CLI public expose la même passe avec `vize lint --cross-file`. Les codes aff
 | [`script/one-component-per-file`](#script-one-component-per-file) | [Mauvais](#script-one-component-per-file-bad) · [Bon](#script-one-component-per-file-good) | Interdire plus d’une définition de composant dans un fichier |
 | [`script/order-in-components`](#script-order-in-components) | [Mauvais](#script-order-in-components-bad) · [Bon](#script-order-in-components-good) | Imposer l’ordre par défaut des propriétés des options de composant |
 | [`script/prefer-computed`](#script-prefer-computed) | [Mauvais](#script-prefer-computed-bad) · [Bon](#script-prefer-computed-good) | Préférer computed() pour l’état réactif dérivé |
+| [`script/prefer-define-emits-binding`](#script-prefer-define-emits-binding) | [Mauvais](#script-prefer-define-emits-binding-bad) · [Bon](#script-prefer-define-emits-binding-good) | Préférer la fonction capturée de defineEmits au $emit du template |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [Mauvais](#script-prefer-define-options-bad) · [Bon](#script-prefer-define-options-good) | Préférer defineOptions() à un &lt;script&gt; ordinaire qui ne définit que name/inheritAttrs |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [Mauvais](#script-prefer-import-from-vue-bad) · [Bon](#script-prefer-import-from-vue-good) | Préférer les imports depuis 'vue' plutôt que depuis les packages internes |
 | [`script/prefer-ref-over-reactive`](#script-prefer-ref-over-reactive) | [Mauvais](#script-prefer-ref-over-reactive-bad) · [Bon](#script-prefer-ref-over-reactive-good) | Recommander ref() plutôt que reactive() pour gérer l’état |
@@ -2131,6 +2132,20 @@ Préférer computed() pour l’état réactif dérivé
 [Bon](./type-and-script.md#script-prefer-computed-good)
 
 [Exemples du groupe](./type-and-script.md#script-prefer-computed) · [Fiche de la règle](/rules/reference/script-prefer-computed.md)
+
+### `script/prefer-define-emits-binding`
+
+Préférer la fonction capturée de defineEmits au $emit du template
+
+<span id="script-prefer-define-emits-binding-bad"></span>
+
+[Mauvais](./type-and-script.md#script-prefer-define-emits-binding-bad)
+
+<span id="script-prefer-define-emits-binding-good"></span>
+
+[Bon](./type-and-script.md#script-prefer-define-emits-binding-good)
+
+[Exemples du groupe](./type-and-script.md#script-prefer-define-emits-binding) · [Fiche de la règle](/rules/reference/script-prefer-define-emits-binding.md)
 
 ### `script/prefer-define-options`
 

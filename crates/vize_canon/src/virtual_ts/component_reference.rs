@@ -2,7 +2,8 @@ use vize_carton::{CompactString, FxHashSet, String, camelize, capitalize, cstr};
 use vize_croquis::{BindingType, Croquis};
 
 use super::{
-    helpers::{to_safe_identifier, to_safe_identifier_fragment},
+    helpers::{is_reserved_identifier, to_safe_identifier, to_safe_identifier_fragment},
+    script_facts::ScriptBindings,
     types::VirtualTsOptions,
 };
 
@@ -28,8 +29,43 @@ pub(crate) fn component_binding_reference(
     .unwrap_or_else(|| to_safe_identifier(template_name))
 }
 
+pub(super) fn component_binding_reference_with_bindings(
+    summary: &Croquis,
+    bindings: ScriptBindings<'_>,
+    options: &VirtualTsOptions,
+    syntactic_type_only_imported_names: &FxHashSet<CompactString>,
+    template_name: &str,
+) -> String {
+    resolved_component_binding_reference_with_bindings(
+        summary,
+        bindings,
+        options,
+        syntactic_type_only_imported_names,
+        template_name,
+    )
+    .unwrap_or_else(|| to_safe_identifier(template_name))
+}
+
 pub(crate) fn resolved_component_binding_reference(
     summary: &Croquis,
+    options: &VirtualTsOptions,
+    syntactic_type_only_imported_names: &FxHashSet<CompactString>,
+    template_name: &str,
+) -> Option<String> {
+    super::script_facts::with_bindings(summary, |bindings| {
+        resolved_component_binding_reference_with_bindings(
+            summary,
+            bindings,
+            options,
+            syntactic_type_only_imported_names,
+            template_name,
+        )
+    })
+}
+
+fn resolved_component_binding_reference_with_bindings(
+    summary: &Croquis,
+    bindings: ScriptBindings<'_>,
     options: &VirtualTsOptions,
     syntactic_type_only_imported_names: &FxHashSet<CompactString>,
     template_name: &str,
@@ -42,13 +78,15 @@ pub(crate) fn resolved_component_binding_reference(
     // Ambient `external_template_bindings` must not beat a type-only import of
     // the same name: `import type { ElBadge }` still uses `__VizeComponent_*`.
     for candidate in [pascal_name.as_str(), camel_name.as_str(), template_name] {
-        if let Some(binding_type) = super::script_facts::binding_type(summary, candidate)
+        if let Some(binding_type) = bindings.binding_type(candidate)
             && !contains_compact_name(syntactic_type_only_imported_names, candidate)
         {
             return Some(component_binding_reference_for_summary_binding(
                 summary,
+                bindings,
                 candidate,
                 binding_type,
+                options,
             ));
         }
     }
@@ -77,25 +115,34 @@ pub(crate) fn resolved_exact_component_binding_reference(
     if contains_compact_name(syntactic_type_only_imported_names, name) {
         return None;
     }
-    if let Some(binding_type) = super::script_facts::binding_type(summary, name) {
-        return Some(component_binding_reference_for_summary_binding(
-            summary,
-            name,
-            binding_type,
-        ));
-    }
-    options
-        .external_template_bindings
-        .iter()
-        .any(|binding| binding.as_str() == name)
-        .then(|| String::from(name))
+    super::script_facts::with_bindings(summary, |bindings| {
+        if let Some(binding_type) = bindings.binding_type(name) {
+            return Some(component_binding_reference_for_summary_binding(
+                summary,
+                bindings,
+                name,
+                binding_type,
+                options,
+            ));
+        }
+        options
+            .external_template_bindings
+            .iter()
+            .any(|binding| binding.as_str() == name)
+            .then(|| String::from(name))
+    })
 }
 
 fn component_binding_reference_for_summary_binding(
     summary: &Croquis,
+    bindings: ScriptBindings<'_>,
     candidate: &str,
     binding_type: BindingType,
+    options: &VirtualTsOptions,
 ) -> String {
+    if is_reserved_identifier(candidate) && !bindings.is_script_setup() {
+        return options_api_reserved_binding_local_with_bindings(bindings, options, candidate);
+    }
     if matches!(binding_type, BindingType::Props | BindingType::PropsAliased)
         && !is_props_destructure_local(summary, candidate)
     {
@@ -133,4 +180,37 @@ pub(crate) fn has_type_only_component_candidate(
 
 pub(crate) fn contains_compact_name(names: &FxHashSet<CompactString>, name: &str) -> bool {
     names.iter().any(|candidate| candidate.as_str() == name)
+}
+
+// Both declarations and component references must choose the same local without
+// shadowing an authored binding or a configured template binding.
+pub(crate) fn options_api_reserved_binding_local(
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+    name: &str,
+) -> String {
+    super::script_facts::with_bindings(summary, |bindings| {
+        options_api_reserved_binding_local_with_bindings(bindings, options, name)
+    })
+}
+
+fn options_api_reserved_binding_local_with_bindings(
+    bindings: ScriptBindings<'_>,
+    options: &VirtualTsOptions,
+    name: &str,
+) -> String {
+    let mut local = to_safe_identifier(name);
+    while bindings.contains_binding(local.as_str())
+        || options
+            .template_globals
+            .iter()
+            .any(|global| global.name == local)
+        || options
+            .external_template_bindings
+            .iter()
+            .any(|binding| binding.as_str() == local.as_str())
+    {
+        local.push('_');
+    }
+    local
 }

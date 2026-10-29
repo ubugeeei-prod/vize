@@ -127,34 +127,42 @@ fn emit_setup_binding_anchors(
         template_referenced_names,
         template_value_names,
     );
+    if binding_names.is_empty() {
+        return;
+    }
     let value_import_names = script_content
         .map(|script| collect_value_import_binding_names(summary, script))
         .unwrap_or_default();
-    let mut first = true;
-    for name in binding_names {
-        let value_import = value_import_names.contains(name.as_str());
-        let name = crate::virtual_ts::props::setup_anchor_identifier(summary, name);
-        if is_reserved_anchor_name(&name) {
-            continue;
+    // One immutable fact table serves every anchor; preparing it per name
+    // rebuilds the full binding union and makes emission quadratic.
+    crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+        let mut first = true;
+        for name in binding_names {
+            let value_import = value_import_names.contains(name.as_str());
+            let kind = bindings.binding_type(name.as_str());
+            let name = crate::virtual_ts::props::setup_anchor_identifier(summary, name, kind);
+            if is_reserved_anchor_name(&name) {
+                continue;
+            }
+            if first {
+                append!(*ts, "\n  // {comment}\n  ");
+            } else {
+                ts.push(' ');
+            }
+            if value_import {
+                // A direct value read is illegal for imported `const enum`s (TS2475).
+                // `keyof typeof` consumes the permitted type query without asserting
+                // directly to the enum object type, which TypeScript also rejects.
+                append!(*ts, "void (null as unknown as keyof typeof {name});");
+            } else {
+                append!(*ts, "void {name};");
+            }
+            first = false;
         }
-        if first {
-            append!(*ts, "\n  // {comment}\n  ");
-        } else {
-            ts.push(' ');
+        if !first {
+            ts.push('\n');
         }
-        if value_import {
-            // A direct value read is illegal for imported `const enum`s (TS2475).
-            // `keyof typeof` consumes the permitted type query without asserting
-            // directly to the enum object type, which TypeScript also rejects.
-            append!(*ts, "void (null as unknown as keyof typeof {name});");
-        } else {
-            append!(*ts, "void {name};");
-        }
-        first = false;
-    }
-    if !first {
-        ts.push('\n');
-    }
+    });
 }
 
 fn is_reserved_anchor_name(name: &str) -> bool {

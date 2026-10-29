@@ -1,0 +1,5 @@
+An imported component declared as unknown must retain the authored NoAny/Exact slot witness. Public Vize 0.602.0 misses TS2345 at 13:51; Vue 3.5.42 with vue-tsc 3.3.13/TypeScript 6.0.3 reports it. The same unchanged returned VTS was checked with stock TS6 and native TS7.0.2/7.1.0-beta in run 40612314261; recovery run 40612886855 preserves every packet (artifact 12783443299, SHA256 3936772ac2376ba427cb1c3ce9260e2a3592ca3531ac0d5986eb6eb084a6320b).
+
+The unknown fallback restores that witness and its union variant. A known number slot repairs it. Unresolved tags retain the framework silent-error behavior; explicit any/unknown/never/string slot payloads retain their existing authored errors. Unicode/CRLF positions are UTF16.
+
+The separate declared-any component false negative remains open under #11027. This pack does not treat its zero diagnostics as correct. The earlier constructor arity/never-host/overload issues are separate. Native 7.0.2 checks returned TypeScript but rejects --runExternalCode, so it is not a hosted content-mapper row. These observations are correctness evidence without timing claims.

@@ -332,3 +332,116 @@ fn test_vif_guard_in_template() {
 
     insta::assert_debug_snapshot!(expressions);
 }
+
+/// A same-element `v-for` source is read in the enclosing scope before the
+/// loop's aliases exist. A name nothing binds there is an unresolved read of
+/// the template wherever the loop sits, including a slot template, so the
+/// checker resolves it on the instance like any binding expression.
+#[test]
+fn v_for_sources_report_unresolved_reads() {
+    for template in [
+        r#"<div><i v-for="i in list" :key="i">x</i></div>"#,
+        r#"<Box><template #text><i v-for="i in (isSP ? list : [])" :key="i">x</i></template></Box>"#,
+        r#"<Box><template #text="{ row }"><i v-for="(i, index) in list" :key="index">{{ row }}</i></template></Box>"#,
+    ] {
+        let undefined = undefined_refs_with_empty_script(template);
+        assert!(
+            undefined.iter().any(|name| name == "list"),
+            "the source must be an unresolved read: {template} => {undefined:?}"
+        );
+        for alias in ["i", "index", "row"] {
+            assert!(
+                !undefined.iter().any(|name| name == alias),
+                "a loop or slot alias is bound: {template} => {undefined:?}"
+            );
+        }
+    }
+    let undefined = undefined_refs_with_empty_script(
+        r#"<Box><template #text><i v-for="i in (isSP ? list : [])" :key="i">x</i></template></Box>"#,
+    );
+    assert_eq!(undefined, ["isSP", "list"]);
+}
+
+#[test]
+fn nuxt_slot_counts_never_admit_caller_owned_or_repeated_template_operations() {
+    use vize_armature::parse;
+    use vize_carton::Allocator;
+
+    for (template, slots, opaque) in [
+        ("<main><slot /></main>", 1, false),
+        ("<slot /><slot />", 2, false),
+        ("<main><NuxtPage /></main>", 0, false),
+        (r#"<template v-for="n in 2"><slot /></template>"#, 1, true),
+        (r#"<slot v-if="visible" />"#, 1, true),
+        (r#"<slot :name="name" />"#, 1, true),
+        (
+            r#"<NuxtLayout v-slot="scope"><NuxtPage /></NuxtLayout>"#,
+            0,
+            true,
+        ),
+    ] {
+        let allocator = Allocator::new();
+        let (root, errors) = parse(&allocator, template);
+        assert!(errors.is_empty(), "{template}: {errors:?}");
+        let mut drawer = Drawer::with_options(DrawerOptions::full());
+        drawer.draw_template(&root);
+        let facts = drawer
+            .croquis()
+            .nuxt_render_template
+            .expect("visited elements");
+        assert_eq!(facts.slot_outlets, slots, "{template}");
+        assert_eq!(facts.opaque_structure, opaque, "{template}");
+        assert!(
+            !facts.admitted,
+            "raw counts cannot establish full-source ownership"
+        );
+    }
+
+    let allocator = Allocator::new();
+    let (first, errors) = parse(&allocator, "<slot />");
+    assert!(errors.is_empty());
+    let (empty, errors) = parse(&allocator, "");
+    assert!(errors.is_empty());
+    let mut drawer = Drawer::with_options(DrawerOptions::full());
+    drawer.draw_template(&first);
+    drawer
+        .croquis
+        .nuxt_render_template
+        .as_mut()
+        .unwrap()
+        .admitted = true;
+    drawer.draw_template(&empty);
+    assert!(drawer.croquis().nuxt_render_template.is_none());
+}
+
+#[test]
+fn nuxt_render_admission_does_not_change_semantic_projections() {
+    use crate::croquis::{Croquis, NuxtPageLayout, NuxtTemplateRenderFacts};
+
+    let mut croquis = Croquis::new();
+    let snapshot = croquis.semantic_snapshot();
+    let summary = croquis.semantic_summary();
+    for page_layout in [
+        None,
+        Some(NuxtPageLayout::Disabled),
+        Some(NuxtPageLayout::Named("bare".into())),
+    ] {
+        croquis.nuxt_page_layout = page_layout;
+        for script in [None, Some(false), Some(true)] {
+            croquis.nuxt_static_render_script = script;
+            for template in [
+                None,
+                Some(NuxtTemplateRenderFacts::default()),
+                Some(NuxtTemplateRenderFacts {
+                    slot_outlets: 2,
+                    opaque_structure: true,
+                    admitted: true,
+                }),
+            ] {
+                croquis.nuxt_render_template = template;
+                assert_eq!(croquis.semantic_summary(), summary);
+                assert_eq!(croquis.semantic_snapshot(), snapshot);
+            }
+        }
+    }
+}

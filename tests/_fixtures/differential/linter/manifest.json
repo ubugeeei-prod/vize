@@ -58,11 +58,86 @@
   },
   "cases": [
     {
+      "id": "linter/a11y-dynamic-role-10926",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "a11y-dynamic-role-10926",
+        "files": [
+          {
+            "path": "ClickableTag.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "7c650bdbb4d3ac5fcdb11890e60924b1eab0a46f737a14e5adb47f8379fe3c3f"
+          },
+          {
+            "path": "StaticControl.vue.txt",
+            "role": "negative-control",
+            "sha256": "1ce4a66e926e5b0038e909e9dc3d5a5270c80c09907c55e06f4417ed5f3f867c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/a11y-listbox-focus-10925",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "a11y-listbox-focus-10925",
+        "files": [
+          {
+            "path": "originalCompositeWidgets.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "9f61c927374f84a706d50699f073ed7f552e5ccc57e4ca5fe8dfb90df4f244d7"
+          },
+          {
+            "path": "cases.json",
+            "role": "whole-packet-host-controls",
+            "sha256": "32d2271b3a748f1eeb06adc3755c791bf625a2b10202fde6bad9ae4528d20e73"
+          },
+          {
+            "path": "empty-listbox.vue.txt",
+            "role": "negative-control",
+            "sha256": "3a0012cff6d95b586550eed28d8fbc1692bb8cb9e4c26cf0b9aeeecc75ecbe08"
+          },
+          {
+            "path": "option-zero.jsx.txt",
+            "role": "jsx-native-control",
+            "sha256": "6c8817a6b037e1a3fed20ea459eef485975d7d65e592960eace09d571a6b9961"
+          },
+          {
+            "path": "option-zero.tsx.txt",
+            "role": "tsx-native-control",
+            "sha256": "6c8817a6b037e1a3fed20ea459eef485975d7d65e592960eace09d571a6b9961"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts", "jsx", "tsx"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/ambient-macro-declarations-10656",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "ambient-macro-declarations-10656",
         "files": [
@@ -89,12 +164,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "js",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -103,9 +173,7 @@
     {
       "id": "linter/attribute-hyphenation-range",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "attribute-hyphenation-range",
         "files": [
@@ -132,12 +200,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "js",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -395,11 +458,35 @@
       }
     },
     {
+      "id": "linter/contextual-function-return-type-11103",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "contextual-function-return-type-11103",
+        "files": [
+          {
+            "path": "ContextualCallbacks.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "f288f482cf0eb335cbdd3e65775801a0c50f69dc66abe76b0317f7f1d38886f8"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/corsa-session-waiters-10393",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "corsa-session-waiters-10393",
         "files": [
@@ -421,10 +508,43 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/cross-file-directives-10912",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "cross-file-directives-10912",
+        "files": [
+          {
+            "path": "original/src/Editor.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "240acdb1362ed71863cce0d4aad9800a55ffdfe9e19413433aa183a93a113a01"
+          },
+          {
+            "path": "original/src/PageA.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "9daff2c17a056a03f85325b83ba04fcf4af33d22e62d8e42a7633e3c9969c6b2"
+          },
+          {
+            "path": "original/src/PageB.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "96b829042c822870854281d11e3438786fbb715f452a1d5d5f7a2451f5fc71a1"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -522,9 +642,7 @@
     {
       "id": "linter/current-api/conditional-plain-types-10517",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "conditional-plain-types-10517",
         "files": [
@@ -601,11 +719,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "ts",
-              "jsx",
-              "tsx"
-            ],
+            "dialects": ["ts", "jsx", "tsx"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1003,6 +1117,47 @@
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template"],
             "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/optional-inject-default-10918",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "optional-inject-default-10918",
+        "files": [
+          {
+            "path": "src/App.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "85da5589433daa18f75162f7a8ae6deb345a4680b6ab977aaf47d9b4c4e9e947"
+          },
+          {
+            "path": "src/components/MyDivider.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "b46c27724a2d8a19452794694df95935389fcac76d8178149dea0cfc4e060da7"
+          },
+          {
+            "path": "src/components/MyList.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "5386c1e6f49c8474b7d66a1e2c35db8423cafe4fc463a129b3c1352fdc231a5e"
+          },
+          {
+            "path": "src/components/keys.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "c578dfc4611930eb39305f4db69dce2f8953b1482e31b04323a142dc77bcd573"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }
@@ -1798,9 +1953,7 @@
     {
       "id": "linter/explicit-type-rule-preset-10717",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "explicit-type-rule-preset-10717",
         "files": [
@@ -1827,10 +1980,33 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/mdi-remix-icons-10928",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "mdi-remix-icons-10928",
+        "files": [
+          {
+            "path": "Icons.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "ce74b4a5ed9332f091a1669c20748705f43739a5c507f8cc3a9a1a71a463d4a7"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1839,9 +2015,7 @@
     {
       "id": "linter/native-canonical-image-alt-10563",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "native-canonical-image-alt-10563",
         "files": [
@@ -1873,12 +2047,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "jsx",
-              "tsx"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "jsx", "tsx"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -1887,9 +2056,7 @@
     {
       "id": "linter/next-tick-vapor-gating-10784",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "next-tick-vapor-gating-10784",
         "files": [
@@ -1916,12 +2083,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "js",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2260,6 +2422,52 @@
       }
     },
     {
+      "id": "linter/require-explicit-emits-parity-10822",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "require-explicit-emits-parity-10822",
+        "files": [
+          {
+            "path": "NegativeControls.vue.txt",
+            "role": "negative-control",
+            "sha256": "4a4e3652f8e1829f91efd090cbebdb984a4fd1a5e136c4bc5f09d341036c6bb5"
+          },
+          {
+            "path": "OptionsWithoutEmits.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "f185c29f3aa29fe1673891f48af9ab284635b24c8d396719218c3e226bc6ed6b"
+          },
+          {
+            "path": "SetupWithoutMacro.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "ae7c5725762055e9d017da717ae12aa60c99fb43963e1a9d8e4c2d812663347f"
+          },
+          {
+            "path": "SiblingBlockTypes.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "181c38a625ee7bff8fe8df42b6c454ecc5c3d65c863b1936b43f820d19c1062a"
+          },
+          {
+            "path": "eslint-plugin-vue.json",
+            "role": "eslint-plugin-vue-oracle",
+            "sha256": "649fe26cc74cc57035f32dbe3bdbd9fe4d2ffbe507521df06a7e224e9e34c080"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/retained-projection-10440",
       "state": "active",
       "targets": ["lint"],
@@ -2320,6 +2528,37 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "pug-template", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/runtime/project-native-runtime-authority-10694",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "project-native-runtime-authority-10694",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "2242be3767180506e0b9be4d9aeda69169a853d2705896e79aca53287ccacbaa"
+          },
+          {
+            "path": "package.json.txt",
+            "role": "project-provider-declaration",
+            "sha256": "28bf6be8d60c345b957740ae97f0daa5dc9cdd953a290dfc3f1ecf7a5d6d9f3f"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]
@@ -2511,11 +2750,35 @@
       }
     },
     {
+      "id": "linter/unsafe-template-binding-unicode-comment-10898",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "unsafe-template-binding-unicode-comment-10898",
+        "files": [
+          {
+            "path": "UnicodeCommentBinding.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "0d3bfc5e544c5e619a9a8fc7e80b51305f053d0570d7e68f7063b045dced2d7d"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/v-on-hyphenation-custom-tags-10822",
       "state": "active",
-      "targets": [
-        "lint"
-      ],
+      "targets": ["lint"],
       "inputs": {
         "root": "v-on-hyphenation-custom-tags-10822",
         "files": [
@@ -2532,11 +2795,38 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/v-on-hyphenation-suggestion-10822",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "v-on-hyphenation-suggestion-10822",
+        "files": [
+          {
+            "path": "LocaleMenu.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "431cdc5f87aa51a64da55275db5fe94fbb8d623190855469d8dd2a94100ae78a"
+          },
+          {
+            "path": "eslint-plugin-vue.json",
+            "role": "eslint-plugin-vue-oracle",
+            "sha256": "c5c63e106b4d044432a777a6538b8c96dcad0974e8db22aca988f697aa3e2708"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]

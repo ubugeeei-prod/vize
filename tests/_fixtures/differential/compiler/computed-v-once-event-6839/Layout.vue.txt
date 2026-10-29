@@ -1,0 +1,9 @@
+<script setup>
+import { ref } from 'vue'
+const eventName = ref('click')
+const label = ref('A')
+function record(value) { console.log(value) }
+</script>
+<template>
+  <button v-once :title="label" @[eventName]="record(label)">{{ label }}</button>
+</template>

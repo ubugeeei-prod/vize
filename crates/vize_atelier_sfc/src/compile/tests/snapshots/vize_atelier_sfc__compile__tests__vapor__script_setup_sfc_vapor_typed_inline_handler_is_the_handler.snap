@@ -23,7 +23,8 @@ export default /*@__PURE__*/_defineVaporComponent({
   __name: 'anonymous',
   emits: ["key"],
   render: __vaporRender,
-  setup(__props, { emit: __emit }) {
+  setup(__props, { expose: __expose, emit: __emit }) {
+  __expose();
 
 const emit = __emit
 

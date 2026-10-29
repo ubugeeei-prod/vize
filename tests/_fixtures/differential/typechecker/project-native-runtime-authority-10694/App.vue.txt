@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const message = "project-owned provider";
+</script>
+
+<template>
+  <p>{{ message }}</p>
+</template>

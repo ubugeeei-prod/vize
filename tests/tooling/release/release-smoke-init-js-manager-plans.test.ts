@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { CONFIG_FREE_PROJECT_SHAPES } from "../../../tools/support/compat/npm/smoke-release-init-config-free.mjs";
-import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.mjs";
-import { expectedInitOutput } from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
+import { CONFIG_FREE_PROJECT_SHAPES } from "../../../tools/support/compat/npm/smoke-release-init-config-free.ts";
+import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.ts";
+import { expectedInitOutput } from "../../../tools/support/compat/npm/smoke-release-init-project.ts";
 
 // Authored complete plans for the ordinary Vite JavaScript project. Running
 // its package manager through vp does not make the project a Vite+ scaffold.

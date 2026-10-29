@@ -190,4 +190,86 @@ mod element_transform_tests {
         // three competing update mechanisms never fire.
         assert_v_model_arg_on_element_rejected(r#"<input v-model:[dynKey]="value" />"#);
     }
+
+    /// Each prop after the element transform, as `attr name=value` or
+    /// `bind name=value`.
+    fn vapor_props(source: &str, prefix_identifiers: bool) -> std::vec::Vec<std::string::String> {
+        let allocator = Allocator::new();
+        let (mut root, errors) = parse(&allocator, source);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+        let options = TransformOptions {
+            vapor: true,
+            prefix_identifiers,
+            ..TransformOptions::default()
+        };
+        let mut ctx = TransformContext::new(&allocator, root.source, options);
+        let TemplateChildNode::Element(el) = &mut root.children[0] else {
+            panic!("expected an element in {source}");
+        };
+        transform_element(&mut ctx, el);
+        let text = |exp: &Option<crate::ExpressionNode<'_>>| match exp {
+            Some(crate::ExpressionNode::Simple(simple)) => simple.content.to_string(),
+            _ => std::string::String::new(),
+        };
+        el.props
+            .iter()
+            .map(|prop| match prop {
+                PropNode::Attribute(attr) => format!(
+                    "attr {}={}",
+                    attr.name,
+                    attr.value.as_ref().map_or("", |value| value.content)
+                ),
+                PropNode::Directive(dir) => {
+                    format!("{} {}={}", dir.name, text(&dir.arg), text(&dir.exp))
+                }
+            })
+            .collect()
+    }
+
+    #[test]
+    fn vapor_literal_styles_fold_the_same_with_and_without_prefixing() {
+        for prefix in [false, true] {
+            let id = if prefix { "_ctx.x" } else { "x" };
+            assert_eq!(
+                vapor_props(r#"<div :id="x" :style="{color:'red'}"></div>"#, prefix),
+                [format!("bind id={id}"), "attr style=color:red;".to_string()],
+                "prefix {prefix}"
+            );
+            // Another style source keeps the binding, and a deferred value is
+            // still prefixed.
+            let color = if prefix {
+                "{color:_ctx.c}"
+            } else {
+                "{color:c}"
+            };
+            assert_eq!(
+                vapor_props(r#"<div :style="{color:c}"></div>"#, prefix),
+                [format!("bind style={color}")],
+                "prefix {prefix}"
+            );
+            for (source, kept) in [
+                (
+                    r#"<div style="top:0" :style="{color:'red'}"></div>"#,
+                    ["attr style=top:0", "bind style={color:'red'}"],
+                ),
+                (
+                    r#"<div :style="{color:'red'}" v-bind="x"></div>"#,
+                    [
+                        "bind style={color:'red'}",
+                        if prefix { "bind =_ctx.x" } else { "bind =x" },
+                    ],
+                ),
+                (
+                    r#"<div :style="{color:'red'}" :STYLE="{top:'0'}"></div>"#,
+                    ["bind style={color:'red'}", "bind STYLE={top:'0'}"],
+                ),
+            ] {
+                assert_eq!(
+                    vapor_props(source, prefix),
+                    kept,
+                    "{source} prefix {prefix}"
+                );
+            }
+        }
+    }
 }

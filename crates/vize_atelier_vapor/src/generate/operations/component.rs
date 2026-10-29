@@ -4,7 +4,7 @@ use vize_carton::{FxHashMap, String, ToCompactString, cstr};
 
 use super::{
     super::{context::GenerateContext, setup::escape_js_string_literal},
-    component_props::generate_component_props_str,
+    component_props::generate_component_props,
     component_slots::generate_slot_fn,
     insertion::emit_insertion_state,
     structural_slots::{declare_slot_caches, generate_dynamic_slot},
@@ -70,6 +70,7 @@ pub(super) fn generate_create_component(
             for op in slot.block.operation.iter() {
                 if let OperationNode::CreateComponent(inner_comp) = op
                     && inner_comp.kind == ComponentKind::Regular
+                    && static_component_value(ctx, inner_comp).is_none()
                     && !ctx.is_component_resolved(inner_comp.tag)
                 {
                     emit_component_resolution(
@@ -144,16 +145,23 @@ pub(super) fn generate_create_component(
         }
         ComponentKind::Regular => {
             ctx.use_helper("createComponentWithFallback");
-            let comp_var = component_resolution_var(tag);
-            if !ctx.is_component_resolved(tag) {
-                emit_component_resolution(ctx, comp_var.as_str(), tag);
-                ctx.mark_component_resolved(tag);
+            if let Some(value) = static_component_value(ctx, component) {
+                (
+                    ctx.resolve_expression_node(value),
+                    "createComponentWithFallback",
+                )
+            } else {
+                let comp_var = component_resolution_var(tag);
+                if !ctx.is_component_resolved(tag) {
+                    emit_component_resolution(ctx, comp_var.as_str(), tag);
+                    ctx.mark_component_resolved(tag);
+                }
+                (comp_var, "createComponentWithFallback")
             }
-            (comp_var, "createComponentWithFallback")
         }
     };
 
-    let props = generate_component_props_str(ctx, component);
+    let props = generate_component_props(ctx, component);
     let has_slots = !component.slots.is_empty() || forwarded_slots_source(component).is_some();
     // Keep each computed slot's function stable when only its name getter
     // re-evaluates. A new function would remount content at an unchanged name.
@@ -166,7 +174,7 @@ pub(super) fn generate_create_component(
     let is_pre_resolved = was_already_resolved;
     if is_pre_resolved
         && !has_slots
-        && props == "null"
+        && props.as_str() == "null"
         && creation_flags(ctx, component) == "false"
         && once_flag(component, create_fn).is_empty()
     {
@@ -206,20 +214,21 @@ fn generate_component_call(
     element_template_map: &FxHashMap<usize, usize>,
     component_var: &str,
     create_fn: &str,
-    props: &str,
+    props: &EmitDocument,
 ) {
     let kind = component.kind;
     let raw_slots = forwarded_slots_source(component);
     let has_authored_slots = !component.slots.is_empty();
     let has_slots = has_authored_slots || raw_slots.is_some();
     ctx.push_indent();
-    ctx.push(&cstr!(
-        "const n{} = _{}({}, {}",
-        component.id,
-        create_fn,
-        component_var,
-        props
-    ));
+    ctx.push(&cstr!("const n{} = _{}(", component.id, create_fn));
+    if let Some(value) = static_component_value(ctx, component) {
+        ctx.push_spanned(&ctx.spanned_expression_node(value));
+    } else {
+        ctx.push(component_var);
+    }
+    ctx.push(", ");
+    ctx.push_spanned(props);
 
     if !has_authored_slots && let Some(raw_slots) = raw_slots {
         let raw_slots = ctx.resolve_expression_node(raw_slots);
@@ -290,6 +299,15 @@ fn generate_component_call(
             once_flag(component, create_fn)
         ));
     }
+}
+
+fn static_component_value<'a, 'node>(
+    ctx: &GenerateContext<'_>,
+    component: &'node CreateComponentIRNode<'a>,
+) -> Option<&'node vize_atelier_core::SimpleExpressionNode<'a>> {
+    (ctx.jsx_closure && component.kind == ComponentKind::Regular && !component.asset)
+        .then_some(component.is_expr.as_deref())
+        .flatten()
 }
 
 fn forwarded_slots_source<'a>(

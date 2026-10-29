@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -27,6 +28,67 @@ function canonical(value: unknown): string {
   }
   return JSON.stringify(value);
 }
+
+test("successor reviews retain historical hashes and all 395 sources at unchanged fixture pins", () => {
+  let changedPackets = 0;
+  let successors = 0;
+  for (const [snapshot, alignment] of alignments) {
+    if (!alignment.successor) continue;
+    const { successor } = alignment;
+    assert.equal(sha256(successor.previousRaw), alignment.currentSha256);
+    assert.equal(successor.review.previousSha256, alignment.currentSha256);
+    assert.equal(
+      sha256(fs.readFileSync(path.join(root, snapshot))),
+      successor.review.currentSha256,
+    );
+    const project = path.basename(snapshot, "-lint.snap");
+    const gitlink = execFileSync("git", ["ls-tree", "HEAD", `tests/_fixtures/_git/${project}`], {
+      cwd: root,
+      encoding: "utf8",
+    });
+    assert.equal(gitlink.trim().split(/\s+/)[2], successor.fixturePin);
+    changedPackets += successor.review.changedPackets;
+    successors++;
+  }
+  assert.equal(successors, 6);
+  assert.equal(changedPackets, 395);
+  assert.equal(
+    alignments.get("tests/snapshots/lint/__snapshots__/misskey-lint.snap")?.currentSha256,
+    "f3b1001b1198613da2088667619b13f5f32d1f7c858046ad702a1f6c3eaf88a1",
+    "the successor must not rewrite the original current hash",
+  );
+});
+
+test("successor admission rejects unreviewed changes on either side of the historical chain", () => {
+  const alignment = alignments.get("tests/snapshots/lint/__snapshots__/misskey-lint.snap")!;
+  assert.ok(alignment.successor);
+  const current = fs.readFileSync(path.join(root, alignment.path), "utf8");
+  const corrected = JSON.parse(
+    gunzipSync(
+      fs.readFileSync(
+        path.join(
+          root,
+          "tests/_fixtures/_projects/lint-review/2026-10-11-direct-client-correction/original-provider-packets.json.gz",
+        ),
+      ),
+    ).toString(),
+  ).find((entry: { path: string }) => entry.path === alignment.path);
+  const historical = reviewLocalizedRequireScopedStyle(corrected.raw).raw;
+  verifyLintSnapshotAlignment(historical, current, alignment);
+  const badPredecessor = structuredClone(alignment);
+  badPredecessor.successor!.previousRaw += "\n";
+  assert.throws(() => verifyLintSnapshotAlignment(historical, current, badPredecessor));
+  assert.throws(() => verifyLintSnapshotAlignment(`${historical}\n`, current, alignment));
+  const { successor, ...original } = alignment;
+  // Verify the successor boundary independently of the older provider packet.
+  assert.throws(() =>
+    verifyLintSnapshotAlignment(successor.previousRaw, `${current}\n`, successor.review),
+  );
+  assert.throws(() =>
+    verifyLintSnapshotAlignment(`${successor.previousRaw}\n`, current, successor.review),
+  );
+  assert.equal(original.currentSha256, successor.review.previousSha256);
+});
 
 test("reviewed snapshots retain every whole provider packet and all 1977 ordered source identities", () => {
   const original = compressed("original-provider-packets.json.gz");

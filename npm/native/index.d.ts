@@ -189,6 +189,8 @@ export interface BatchFileResultNapi {
   customBlocks: Array<CustomBlockNapi>;
   macroArtifacts: Array<MacroArtifactNapi>;
   moduleShape?: ModuleShapeNapi;
+  /** Files the compile read besides the SFC (pug `include`s). */
+  dependencies?: Array<string>;
 }
 
 /** Batch type check result for NAPI */
@@ -574,7 +576,11 @@ export interface FormatOptionsNapi {
   /** Layout line endings; auto follows the first source terminator. */
   endOfLine?: EndOfLineNapi;
   sortAttributes?: boolean;
+  /** Choose the order of attributes within each Vue priority group. */
+  attributeSortOrder?: "alphabetical" | "as-written";
   singleAttributePerLine?: boolean;
+  /** Indent the contents of `<script>` and `<style>` blocks. */
+  vueIndentScriptAndStyle?: boolean;
   maxAttributesPerLine?: number;
   normalizeDirectiveShorthands?: boolean;
   /** Order SFC blocks canonically; false preserves their authored order. */
@@ -1378,6 +1384,8 @@ export interface SfcCompileResultNapi {
   customBlocks: Array<CustomBlockNapi>;
   macroArtifacts: Array<MacroArtifactNapi>;
   moduleShape?: ModuleShapeNapi;
+  /** Files the compile read besides the SFC (pug `include`s). */
+  dependencies?: Array<string>;
 }
 
 /** SFC element order options for NAPI */

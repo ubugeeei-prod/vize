@@ -38,21 +38,39 @@ pub(super) fn generate_strict_slot_child_checks(
     } else {
         String::from(ctx.indent)
     };
-
     for check in checks {
         let safe_slot_name = to_safe_identifier_fragment(check.name.as_str());
         let check_name = cstr!("__vize_slot_children_{idx}_{safe_slot_name}");
         let gen_start = ts.len();
-        append!(
-            *ts,
-            "{indent}const {check_name}: __VizeSlotChildren<{contract_name}, "
-        );
+        if ctx.hoist_shared_preamble {
+            let slot_children =
+                crate::virtual_ts::helpers::shared_types::SLOT_CHILDREN.select(true);
+            append!(
+                *ts,
+                "{indent}const {check_name}: {slot_children}<{contract_name}, "
+            );
+        } else {
+            append!(
+                *ts,
+                "{indent}const {check_name}: __VizeSlotChildren<{contract_name}, "
+            );
+        }
         push_ts_string_literal(ts, check.name.as_str());
-        append!(
-            *ts,
-            "> = null as unknown as __VizeProvidedSlotChildren<{}>;\n",
-            check.children_type.as_str()
-        );
+        if ctx.hoist_shared_preamble {
+            let provided_slot_children =
+                crate::virtual_ts::helpers::shared_types::PROVIDED_SLOT_CHILDREN.select(true);
+            append!(
+                *ts,
+                "> = null as unknown as {provided_slot_children}<{}>;\n",
+                check.children_type.as_str()
+            );
+        } else {
+            append!(
+                *ts,
+                "> = null as unknown as __VizeProvidedSlotChildren<{}>;\n",
+                check.children_type.as_str()
+            );
+        }
         append!(*ts, "{indent}void {check_name};\n");
         let gen_end = ts.len();
         let src_offset = ctx.source_context.offset as usize;

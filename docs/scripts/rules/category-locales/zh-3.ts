@@ -19,6 +19,11 @@ export const chineseRules3: Record<string, readonly [string, string, string]> = 
     "侦听器仅将 `count` 的派生值复制到第二个 ref `doubled`，通过手动同步维护派生状态。",
     "`computed(() => count.value * 2)` 直接表达派生关系，移除额外可写 ref 及其同步侦听器。",
   ],
+  "script/prefer-define-emits-binding": [
+    "优先使用从 defineEmits 捕获的函数而不是模板 $emit",
+    "模板调用组件的 `$emit` 辅助函数，但 `<script setup>` 已捕获 `defineEmits` 返回的类型化函数。",
+    "模板改为调用捕获的 `emit` 绑定，使事件名和 payload 经过组件的 `defineEmits` 约定。",
+  ],
   "script/prefer-define-options": [
     "优先使用 defineOptions()，而不是仅设置 name/inheritAttrs 的普通 &lt;script&gt;",
     "普通脚本唯一有实质作用的语句导出只含 `name` 和 `inheritAttrs` 的对象；这些选项可通过 `defineOptions` 表达。",

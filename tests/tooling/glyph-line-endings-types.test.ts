@@ -121,6 +121,112 @@ test("config schema and shipped Node types share the Prettier normalizer boolean
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
 
+test("config schema and shipped Node types share SFC layout booleans", (t) => {
+  const schema = JSON.parse(
+    fs.readFileSync(path.join(root, "npm/cli/schemas/vize.config.schema.json"), "utf8"),
+  );
+  assert.equal(
+    schema.definitions.FormatterConfig.properties.vueIndentScriptAndStyle.type,
+    "boolean",
+  );
+  assert.equal(schema.definitions.FormatterConfig.properties.sortBlocks.type, "boolean");
+
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "glyph-sfc-layout-types-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  fs.writeFileSync(
+    path.join(directory, "consumer.mts"),
+    [
+      `import { formatSfc, type FormatOptionsNapi } from ${JSON.stringify(path.join(root, "npm/native/index.js"))};`,
+      `import type { FormatterConfig } from ${JSON.stringify(path.join(root, "npm/cli/src/types/generated.js"))};`,
+      "const config: FormatterConfig = { vueIndentScriptAndStyle: true, sortBlocks: false };",
+      "const native: FormatOptionsNapi = {",
+      "  vueIndentScriptAndStyle: config.vueIndentScriptAndStyle,",
+      "  sortBlocks: config.sortBlocks,",
+      "};",
+      "formatSfc('', native);",
+      "// @ts-expect-error SFC body indentation remains boolean-only.",
+      "formatSfc('', { vueIndentScriptAndStyle: 'yes' });",
+      "// @ts-expect-error SFC block ordering remains boolean-only.",
+      "formatSfc('', { sortBlocks: 'authored' });",
+      "",
+    ].join("\n"),
+  );
+  fs.writeFileSync(
+    path.join(directory, "tsconfig.json"),
+    JSON.stringify({
+      compilerOptions: {
+        module: "NodeNext",
+        moduleResolution: "NodeNext",
+        noEmit: true,
+        skipLibCheck: true,
+        strict: true,
+        target: "ES2022",
+        types: [],
+      },
+      files: ["consumer.mts"],
+    }),
+  );
+  const result = spawnSync(
+    process.execPath,
+    [require.resolve("typescript/bin/tsc"), "-p", directory, "--pretty", "false"],
+    { encoding: "utf8", timeout: 30_000 },
+  );
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+});
+
+test("config schema and shipped Node types share attribute order modes", (t) => {
+  const schema = JSON.parse(
+    fs.readFileSync(path.join(root, "npm/cli/schemas/vize.config.schema.json"), "utf8"),
+  );
+  assert.deepEqual(schema.definitions.FormatterConfig.properties.attributeSortOrder.enum, [
+    "alphabetical",
+    "as-written",
+  ]);
+
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "glyph-attribute-order-types-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  fs.writeFileSync(
+    path.join(directory, "consumer.mts"),
+    [
+      `import { formatSfc, type FormatOptionsNapi } from ${JSON.stringify(path.join(root, "npm/native/index.js"))};`,
+      `import type { FormatterConfig } from ${JSON.stringify(path.join(root, "npm/cli/src/types/generated.js"))};`,
+      'for (const attributeSortOrder of ["alphabetical", "as-written"] as const) {',
+      "  const config: FormatterConfig = { attributeSortOrder };",
+      "  const native: FormatOptionsNapi = { attributeSortOrder: config.attributeSortOrder };",
+      "  formatSfc('', native);",
+      "}",
+      "// @ts-expect-error unknown attribute order modes must remain rejected.",
+      "formatSfc('', { attributeSortOrder: 'source' });",
+      "// @ts-expect-error attribute order modes remain string-only.",
+      "formatSfc('', { attributeSortOrder: false });",
+      "",
+    ].join("\n"),
+  );
+  fs.writeFileSync(
+    path.join(directory, "tsconfig.json"),
+    JSON.stringify({
+      compilerOptions: {
+        module: "NodeNext",
+        moduleResolution: "NodeNext",
+        noEmit: true,
+        skipLibCheck: true,
+        strict: true,
+        target: "ES2022",
+        types: [],
+      },
+      files: ["consumer.mts"],
+    }),
+  );
+  const result = spawnSync(
+    process.execPath,
+    [require.resolve("typescript/bin/tsc"), "-p", directory, "--pretty", "false"],
+    { encoding: "utf8", timeout: 30_000 },
+  );
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+});
+
 test("config schema and shipped Node types share script quote policies", (t) => {
   const schema = JSON.parse(
     fs.readFileSync(path.join(root, "npm/cli/schemas/vize.config.schema.json"), "utf8"),

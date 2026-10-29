@@ -75,7 +75,12 @@ test("platform providers publish after their packages without gating the release
     assert.match(release.jobs[key].steps.at(-1).run, /editors\/vscode\/dist\/vize\.vsix$/);
   for (const key of ["publish-vscode-platforms", "publish-open-vsx-platforms"]) {
     const publisher = release.jobs[key];
-    assert.deepEqual(publisher.needs, ["version", "tag", "build-editor-platforms"]);
+    assert.deepEqual(publisher.needs, [
+      "version",
+      "tag",
+      "build-editor-platforms",
+      "publication-quota",
+    ]);
     assert.equal(publisher.strategy["fail-fast"], false);
     assert.equal(
       publisher.strategy.matrix.settings,
@@ -85,6 +90,7 @@ test("platform providers publish after their packages without gating the release
     assert.equal(publisher.env.VSIX_SOURCE_PATH, "${{ matrix.settings.sourcePath }}");
     assert.match(publisher.steps.at(-1).run, /"editor-extensions\/\$VSIX_SOURCE_PATH"/);
   }
+  assert.deepEqual(release.jobs["publication-quota"].needs, ["version", "tag"]);
   const githubRelease = release.jobs["github-release"];
   assert.ok(githubRelease.needs.includes("build-editor-platforms"));
   assert.match(githubRelease.if, /always\(\)/);
@@ -134,4 +140,21 @@ test("platform providers install the extension's packager like the universal VSI
       `${installVscodeExtensionDependencies} && `,
     ),
   );
+});
+
+test("editor publishers outwait registry validation and Open VSX maintenance", () => {
+  const release = parse(readRepoFile(".github", "workflows", "release.yml"));
+  const waitSeconds = (job: { env: Record<string, string> }) =>
+    Number(job.env.PUBLISH_RESOLUTION_RETRY_LIMIT) * 10;
+  // The Marketplace listed the 0.584.0 platform uploads 6.5-9 min after vsce exited.
+  const vscode = release.jobs["publish-vscode-platforms"];
+  assert.equal(waitSeconds(vscode), 20 * 60);
+  assert.ok(vscode["timeout-minutes"] * 60 >= waitSeconds(vscode) + 5 * 60);
+  // Read-only retries wait 30 + 60 + 120 + 240 s before the scan wait starts.
+  for (const key of ["publish-open-vsx", "publish-open-vsx-platforms"]) {
+    const job = release.jobs[key];
+    // Release 0.598.0 still had missing targets over twelve minutes after upload.
+    assert.equal(waitSeconds(job), 20 * 60, key);
+    assert.ok(job["timeout-minutes"] * 60 >= 450 + waitSeconds(job) + 5 * 60, key);
+  }
 });

@@ -1,0 +1,34 @@
+{
+  "schema": "vize.router-editor-artifact-provider",
+  "version": 1,
+  "issue": 10578,
+  "provider": {
+    "name": "vue-router",
+    "version": "5.4.0",
+    "archiveSha256": "0c3a6d93f5236da11d0d2496fa4244e56a2518d8a2c5cb93a81e6956e117dbab"
+  },
+  "parentProvider": "tests/fixtures/typechecker/experimental-router-5.4/provider.json",
+  "parentProviderSha256": "e6712b311544c2de98ae3af225b15de3cc41c0269ddefa826f07ea9a33753e77",
+  "files": [
+    {
+      "path": "src/pages/products/[id=int].vue",
+      "bytes": 724,
+      "sha256": "f87a1a6fb1028c87b9627ff63b6e915f2439b15f6dcc925754dcdb3e8e265293"
+    },
+    {
+      "path": "src/pages/art-products/[id=int].art.vue",
+      "bytes": 732,
+      "sha256": "b307b0bfcc9be1945d2515dfc9b0520a67e6a76eb94203aa2615ddf1205940ab"
+    },
+    {
+      "path": "src/pages/art-variants/[id=int].art.vue",
+      "bytes": 771,
+      "sha256": "667e8597d581ad31f409d19211181e10113541aee9c8d9364cf1fcfd7c669978"
+    },
+    {
+      "path": "typed-router.d.ts",
+      "bytes": 4012,
+      "sha256": "a9be1d569bba0a4b0fb7937861731aad8660ca44f861238d71e22a6b116a4e21"
+    }
+  ]
+}

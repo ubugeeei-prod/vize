@@ -6,6 +6,7 @@ import { performance } from "node:perf_hooks";
 
 import { repoRoot } from "../../_helpers/realworld-patch.ts";
 import { writeChurnArtifacts } from "./churn-report.ts";
+import { summarizeChurnCycles } from "./churn-percentiles.ts";
 import type { PublishRecord } from "./churn-oracle.ts";
 import {
   budgetRegistryPath,
@@ -235,15 +236,7 @@ export class ChurnMetrics {
       budget: { scale: this.scale, ...this.budget },
       publishes: context.publishes,
       publishStream: context.publishStream,
-      cycleStats:
-        cycles.length === 0
-          ? null
-          : {
-              cycles: cycles.length,
-              minMs: Math.min(...cycles),
-              medianMs: median(cycles),
-              maxMs: Math.max(...cycles),
-            },
+      cycleStats: cycles.length === 0 ? null : summarizeChurnCycles(cycles),
       timingsMs: this.timingsMs,
       rssSamples: this.rssSamples,
       peakRssKiB: this.peakSamples().serverKiB,

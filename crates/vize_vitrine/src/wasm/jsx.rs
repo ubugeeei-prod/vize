@@ -44,8 +44,8 @@ struct JsxWasmResult {
     /// code in source order — a self-contained module, matching the NAPI binding
     /// and `compileSfc` (the helper imports are no longer dropped, #1533).
     code: String,
-    /// v3 source map (JSON) for `code`, present only when `sourceMap` was
-    /// requested and the module is a single component. `null` otherwise (#1533).
+    /// v3 source map (JSON) for the complete authored module when `sourceMap`
+    /// is requested. Each backend supplies its genuine per-root origins.
     map: Option<String>,
     /// Error-severity diagnostic messages.
     errors: Vec<String>,
@@ -157,7 +157,7 @@ fn build_jsx_wasm_result(
         ..Default::default()
     };
     config.ssr = ssr;
-    // Source maps are emitted by client VDOM codegen; a no-op for Vapor/SSR.
+    // Every backend carries genuine per-root origins into the authored module.
     config.vdom.source_map = source_map;
 
     let allocator = Allocator::new();
@@ -313,7 +313,9 @@ mod tests {
     }
 
     #[test]
-    fn wasm_jsx_result_supports_ssr_output() {
+    fn wasm_jsx_result_preserves_the_functional_ssr_refusal() {
+        // Retain the original WASM test input: this role cannot be published as
+        // an executable component without a functional props/fallthrough model.
         let result = build_jsx_wasm_result(
             "const App = () => <div>{message}</div>;",
             JsxLang::Jsx,
@@ -322,18 +324,44 @@ mod tests {
             true,
             true,
         );
+        assert_eq!(
+            serde_json::to_value(result).expect("complete WASM refusal DTO"),
+            serde_json::json!({
+                "code": "",
+                "map": null,
+                "errors": ["SSR expression-bodied VDOM components require an explicit functional props and attribute fallthrough projection; use a stateful block-body component or the Vapor component role"],
+                "warnings": [],
+                "scopedStyles": [],
+            })
+        );
+    }
 
-        assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
-        assert!(
-            result.code.contains("function ssrRender"),
-            "{}",
-            result.code
+    #[test]
+    fn wasm_jsx_result_supports_ssr_output() {
+        let source = "const App = () => { return <div>{message}</div>; };";
+        let result = build_jsx_wasm_result(
+            source,
+            JsxLang::Jsx,
+            JsxOutputMode::Vdom,
+            JsxCompatMode::Native,
+            true,
+            true,
         );
-        assert!(
-            result.code.contains("@vue/server-renderer"),
-            "{}",
-            result.code
+        // The two public adapters expose the same complete DTO. Preserve the
+        // qualified NAPI fixture as an independent whole-packet contract; this
+        // host test does not claim wasm-bindgen/Node ABI execution.
+        let snapshot = include_str!(
+            "../napi/snapshots/vize_vitrine__napi__jsx__tests__jsx_authored_ssr_dto_10701.snap"
         );
-        assert!(result.map.is_none(), "SSR output has no source map yet");
+        let (_, body) = snapshot.split_once("\n---\n").expect("snapshot metadata");
+        let expected: serde_json::Value = serde_json::from_str(body).expect("complete NAPI DTO");
+        assert_eq!(
+            serde_json::to_value(&result).expect("complete WASM result"),
+            expected
+        );
+        let map: serde_json::Value =
+            serde_json::from_str(result.map.as_ref().expect("SSR module source map"))
+                .expect("valid v3 map");
+        assert_eq!(map["sourcesContent"], serde_json::json!([source]));
     }
 }

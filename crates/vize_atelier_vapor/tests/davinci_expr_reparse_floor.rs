@@ -16,7 +16,10 @@
 
 use davinci_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::{expr_parse_probe, walk_probe::WalkCounts};
-use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
+use vize_atelier_vapor::{
+    VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor,
+    compile_vapor_with_experimental_options,
+};
 use vize_carton::Allocator;
 
 /// fixture name → surviving legacy re-parses per fused Vapor compile.
@@ -78,6 +81,8 @@ fn vapor_legacy_reparse_floor_holds() {
         r#"<button v-once :title="label" @click="save">{{ label }}</button>"#,
         r#"<main v-once><button @click.stop.prevent="record(label)">{{ label }}</button></main>"#,
         r#"<main v-once><button @focus.capture="save" @keydown.enter="record(label)">{{ label }}</button></main>"#,
+        r#"<button v-once @[eventName]="save">go</button>"#,
+        r#"<main v-once><button @[eventName].once.capture="save">go</button></main>"#,
         r#"<Transition :css="false"><p>{{ label }}</p></Transition>"#,
         r#"<Transition :css="false"><div v-if="show"><span>{{ label }}</span></div></Transition>"#,
         r#"<TransitionGroup tag="ul" :css="false"><li v-for="item in items" :key="item.id"><span>{{ item.text }}</span></li></TransitionGroup>"#,
@@ -121,6 +126,12 @@ fn vapor_legacy_reparse_floor_holds() {
         r#"<Teleport :to="target" :disabled="disabled" defer><button @click="save">{{ label }}</button></Teleport>"#,
         r#"<Teleport :to="targets[selected]" :defer="deferred"><span v-if="visible">{{ value }}</span><span v-else>fallback</span></Teleport>"#,
         r#"<Teleport to="body"><ul><li v-for="item in items" :key="item.id">{{ item.label }}</li></ul></Teleport>"#,
+        r#"<Teleport to="body" :[disabled]="value"><span>content</span></Teleport>"#,
+        r#"<Teleport :to="targets[selected]" :[flags[index]]="on" defer><span>content</span></Teleport>"#,
+        r#"<KeepAlive :[include]="names"><MyComp /></KeepAlive>"#,
+        r#"<KeepAlive include="First" :[include]="names" :[filters[index]]="limit"><MyComp :label="label" /></KeepAlive>"#,
+        r#"<Suspense :[timeout]="limit"><AsyncChild /></Suspense>"#,
+        r#"<Suspense timeout="0" :[timeout]="limit" @resolve="record"><template #default><AsyncChild /></template><template #fallback><p>{{ waiting }}</p></template></Suspense>"#,
         r#"<select v-model="selected"><option value="a">A</option><option value="b">B</option></select>"#,
         r#"<select multiple v-model="selected"><option :value="first">{{ label }}</option><option :value="second">B</option></select>"#,
         r#"<select v-model.number="form.selected"><option value="1">One</option><option value="2">Two</option></select>"#,
@@ -152,4 +163,35 @@ fn vapor_legacy_reparse_floor_holds() {
             assert_eq!(expr_parse_probe::expr_parse_count() - parses, 0, "{source}");
         }
     }
+    // Source-map generation must consume the native computed prop spans
+    // without adding a tree walk or reparsing either authored expression.
+    let source = r#"<KeepAlive :[filter]="names"><MyComp /></KeepAlive>"#;
+    let allocator = Allocator::new();
+    let walks = WalkCounts::snapshot();
+    let parses = expr_parse_probe::expr_parse_count();
+    let compiled = compile_vapor_with_experimental_options(
+        &allocator,
+        source,
+        VaporCompilerOptions {
+            prefix_identifiers: true,
+            ..VaporCompilerOptions::default()
+        },
+        VaporCompilerExperimentalOptions {
+            source_map: true,
+            source_map_filename: Some("KeepAlive.vue".into()),
+            ..VaporCompilerExperimentalOptions::default()
+        },
+    );
+    assert_eq!(compiled.error_messages.len(), 0, "{source}");
+    assert!(compiled.map.is_some(), "{source}: source map");
+    assert_eq!(
+        WalkCounts::snapshot().since(walks).total_walks(),
+        0,
+        "{source}: source-map compile added a tree walk"
+    );
+    assert_eq!(
+        expr_parse_probe::expr_parse_count() - parses,
+        0,
+        "{source}: source-map compile reparsed an expression"
+    );
 }

@@ -1,11 +1,5 @@
 //! Reporter regression #7570: implicit default content beside named slots.
 
-#![expect(
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    reason = "regression assertions use std strings and format"
-)]
-
 use super::{compile_vapor, ir::OperationNode, lower::transform_to_ir};
 use vize_atelier_core::parser::parse;
 

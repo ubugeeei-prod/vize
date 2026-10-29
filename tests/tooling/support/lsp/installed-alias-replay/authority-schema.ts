@@ -1,6 +1,7 @@
 /** Schema only. No publication/install identity is assigned by this file. */
 export interface VizePublicRegistryInstallAuthority {
   schema: "vize-public-registry-install-v1";
+  resolutionMode?: "explicit-user-provider";
   version: string;
   checkedAt: string;
   success: true;
@@ -39,6 +40,9 @@ export interface VizePublicRegistryInstallAuthority {
     successfulReturnObserved: true;
   };
   bundledCorsa: {
+    authority?: "bundled-cli" | "explicit-user-provider";
+    declaration?: "devDependencies";
+    selection?: "cli-selected" | "installation-only";
     packageName: string;
     version: string;
     declaredVersion: string;
@@ -63,5 +67,7 @@ export interface VizePublicRegistryInstallAuthority {
     CORSA_EXECUTABLE: "";
     TSGO_PATH: "";
     TSGO_EXECUTABLE: "";
+    TSRS_PATH?: "";
+    TSRS_EXECUTABLE?: "";
   };
 }

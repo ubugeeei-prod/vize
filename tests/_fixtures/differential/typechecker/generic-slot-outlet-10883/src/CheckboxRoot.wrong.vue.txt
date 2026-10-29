@@ -1,0 +1,14 @@
+<script setup lang="ts" generic="T = boolean">
+import type { Ref } from 'vue'
+import { ref } from 'vue'
+
+defineSlots<{
+  default?: (props: { modelValue: typeof modelValue.value }) => any
+}>()
+
+const modelValue = ref() as Ref<T | 'indeterminate'>
+</script>
+
+<template>
+  <button><slot :model-value="1" /></button>
+</template>

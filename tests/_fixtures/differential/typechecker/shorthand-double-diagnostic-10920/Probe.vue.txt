@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+defineProps<{ somethingElse?: string }>();
+</script>
+<template>
+  <span :aria-labelledby />
+  <Child :error-message />
+  <span :aria-labelledby="ariaLabelledby" />
+  <Child :error-message="errorMessage" />
+</template>

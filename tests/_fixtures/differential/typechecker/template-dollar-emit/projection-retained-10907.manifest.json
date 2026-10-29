@@ -1,0 +1,3934 @@
+{
+  "schema": 1,
+  "kind": "vize.template-emit-projection-history",
+  "families": [
+    "dual-scripts-emits",
+    "define-model"
+  ],
+  "artifacts": {
+    "baseline": {
+      "sourceSha": "c62d96e4b2267987105f9d9d2698a000bf73aad9",
+      "driverSha": "c62d96e4b2267987105f9d9d2698a000bf73aad9",
+      "runId": 38236803949,
+      "jobId": 114769365483,
+      "artifactId": 11741738141,
+      "artifactBytes": 96630181,
+      "createdAt": "2026-10-12T10:45:14Z",
+      "expiresAt": "2026-11-11T10:45:13Z",
+      "archiveBytes": 96628392,
+      "archiveSha256": "3cdce277d4b2bccb725c95135b0c54fa7085ea2af2c1e9d9966ba4659917af48",
+      "manifestSha256": "92fd955ff55e3e68ac4f74264874eb4a2ae454f9a12088db4fc4142cf8f33361",
+      "receiptVerifierSha256": "ab51a5f0b704c31eece8af5614ff58fb027f97d325d66b401014f4ece37732c5",
+      "qualification": "success"
+    },
+    "incident": {
+      "sourceSha": "b09ac660cd0684396c21d24249c4b1e2193e965a",
+      "driverSha": "b09ac660cd0684396c21d24249c4b1e2193e965a",
+      "runId": 40415562052,
+      "jobId": 121896883497,
+      "artifactId": 12694328570,
+      "artifactBytes": 101632777,
+      "createdAt": "2026-10-26T22:58:12Z",
+      "expiresAt": "2026-11-25T22:58:08Z",
+      "archiveBytes": 101630987,
+      "archiveSha256": "f14356db34626150e0f8056f16dff2ffc2beb36ebfa1652ada79074cbadb80f5",
+      "manifestSha256": "6592c2a4b0be8caeb2f6bbac8f7d6bf353fc1f577cdea42fc02fd142c1ef705f",
+      "qualification": "failed-before-receipt"
+    }
+  },
+  "packets": {
+    "baseline": {
+      "files": [
+        {
+          "path": "child-local-import/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/canon/import-probes.txt",
+          "bytes": 402474,
+          "mode": 420,
+          "sha256": "129e0936510baef5561782c22f257eea3d55b896dfa1b319151324703565fadc",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "child-local-import/canon/mappings.txt",
+          "bytes": 79,
+          "mode": 420,
+          "sha256": "8a251877d5ed2a258d1610eef8f9c6298cff66d4f90845cdc04bb8c7b03166e5",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/canon/pre-rewrite-text.ts",
+          "bytes": 17188,
+          "mode": 420,
+          "sha256": "f8e9807c7a6a2a00fb1006f7d10e8608445f4bb42df11a590554c152815e61cd",
+          "representation": "same-as",
+          "source": "child-local-import/canon/text.ts"
+        },
+        {
+          "path": "child-local-import/canon/semantic-links.txt",
+          "bytes": 46,
+          "mode": 420,
+          "sha256": "08d4eea411072e50fc3a20c2300281b272923f7c31cde1a6d16a434143838a8d",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/canon/text.ts",
+          "bytes": 17188,
+          "mode": 420,
+          "sha256": "f8e9807c7a6a2a00fb1006f7d10e8608445f4bb42df11a590554c152815e61cd",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/content-mapper/authored-hits.txt",
+          "bytes": 135,
+          "mode": 420,
+          "sha256": "39ded6e830c5764a54ff82e6acc93134b66758c37e1b11fb8eb0258fbc9872c0",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "child-local-import/content-mapper/mappings.txt",
+          "bytes": 305,
+          "mode": 420,
+          "sha256": "0ebe2700d1d52778a1020a6d4b15a2e5096a264fae6c3f37e43ffa5436b4f8bd",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "child-local-import/content-mapper/text.ts",
+          "bytes": 17207,
+          "mode": 420,
+          "sha256": "1eb5edf309551da87a5276a8a4c8b2bd42d6c38fd6ad6c2844b540a3b74cbf1c",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/maestro-document-0/text.ts",
+          "bytes": 17188,
+          "mode": 420,
+          "sha256": "f8e9807c7a6a2a00fb1006f7d10e8608445f4bb42df11a590554c152815e61cd",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/maestro-document-1/text.ts",
+          "bytes": 165,
+          "mode": 420,
+          "sha256": "7fd76ab1c7130871448fbb23607b54fd6faa1e94d3999996d51e696f21ff6325",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/maestro/authored-hits.txt",
+          "bytes": 1348,
+          "mode": 420,
+          "sha256": "ef64a9a197115f06f8e7b11399f3b809fea22c12d30d83a9d39f06ee5caee20a",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/maestro/mappings.txt",
+          "bytes": 1358,
+          "mode": 420,
+          "sha256": "e30364e1bd84733a64eee1285dc6b1ac2270e513425e06ab60fad5ed311c48ba",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/maestro/text.txt",
+          "bytes": 318,
+          "mode": 420,
+          "sha256": "09093ed061af51924b3b35619594e3eceee644a8a055d640841a1fe19f0d6ff0",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/original.vue",
+          "bytes": 118,
+          "mode": 420,
+          "sha256": "17fb7e4439333901135179799c5ef0f1a9c9ebc6a79d2e84b2dc389ddab413fe",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/canon/import-probes.txt",
+          "bytes": 854536,
+          "mode": 420,
+          "sha256": "65da1c1ef8b61895dce896300e162ec298dcf4607fc4948fba266498ca2e74e0",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "define-model/canon/mappings.txt",
+          "bytes": 876,
+          "mode": 420,
+          "sha256": "f4a34d9dcde18961a83b12ec6df8c9f3af3063cbbbde84e4df17675323faeef5",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/canon/pre-rewrite-text.ts",
+          "bytes": 34575,
+          "mode": 420,
+          "sha256": "36dd880ced990d3b099de648907717e2774ee2c105fb4be6907ca4e6c95cb875",
+          "representation": "same-as",
+          "source": "define-model/canon/text.ts"
+        },
+        {
+          "path": "define-model/canon/semantic-links.txt",
+          "bytes": 252,
+          "mode": 420,
+          "sha256": "9670e3f40f2e636b7bbdcdd5544187a8d08deee7f6cf8e48ea7d86bc9489ac7c",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/canon/text.ts",
+          "bytes": 34575,
+          "mode": 420,
+          "sha256": "36dd880ced990d3b099de648907717e2774ee2c105fb4be6907ca4e6c95cb875",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/content-mapper/authored-hits.txt",
+          "bytes": 1267,
+          "mode": 420,
+          "sha256": "b944ac63cb5cba04485800ce61d56f7184512934c4b6d46a6e10e58052fa12f3",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "define-model/content-mapper/mappings.txt",
+          "bytes": 1029,
+          "mode": 420,
+          "sha256": "dc7cd3b5a9549ef07f6f2167135f8f1d0b75cbbacfd88778e0756a8603b944aa",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/content-mapper/semantic-links.txt",
+          "bytes": 85,
+          "mode": 420,
+          "sha256": "eca625d182aeb272b4f7f07fb8d53fa4c73bdf3fb2bf712c2bc655ed8fe0ea44",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/content-mapper/text.ts",
+          "bytes": 34584,
+          "mode": 420,
+          "sha256": "05f22a3d0869223f04dec4790a86571f3c3a5acbc336b70509ee7415e7a7b1fb",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/maestro-document-0/text.ts",
+          "bytes": 33481,
+          "mode": 420,
+          "sha256": "d3b3d9113120bf700007682827f1e8f52c2764ea0b204254470f749314389bcc",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/maestro-document-1/text.ts",
+          "bytes": 258,
+          "mode": 420,
+          "sha256": "b1a35161af6f134736585d731658f368264861c73a8c0f7cc6b9d9411d9df509",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/maestro/authored-hits.txt",
+          "bytes": 7192,
+          "mode": 420,
+          "sha256": "e9245f5f7909cd68a45b70216b2e5cbddc6a58646006792c90a901d969c87cd6",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/maestro/mappings.txt",
+          "bytes": 6154,
+          "mode": 420,
+          "sha256": "ada1719fb07437a31d3eae68b5b340960abff7203f3b3fca4b1439e18378934d",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/maestro/text.txt",
+          "bytes": 306,
+          "mode": 420,
+          "sha256": "8d8acd6ad654eb8b46f01410367396cd278769ee431d3084b1d137b1b9196fe1",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/original.vue",
+          "bytes": 366,
+          "mode": 420,
+          "sha256": "6bf785e53e6b55fac7a458337633535b9dd6ad3e94272ce1e6e0af6a4ae6d528",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/canon/import-probes.txt",
+          "bytes": 464900,
+          "mode": 420,
+          "sha256": "5d32d77dfdb58aa29f5700798ff3d8932e680ddfdb0462a6263f7df76fc17ccd",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "dual-scripts-emits/canon/mappings.txt",
+          "bytes": 126,
+          "mode": 420,
+          "sha256": "a1d631292679697a2d45b26fa6dc25055d75ce4960c679d25c91ebec6af5a55d",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/canon/pre-rewrite-text.ts",
+          "bytes": 19589,
+          "mode": 420,
+          "sha256": "25185fe88ce25d265bc3125fbc7e6492378c2a0b9054f8283bdb5b3a5e78952a",
+          "representation": "same-as",
+          "source": "dual-scripts-emits/canon/text.ts"
+        },
+        {
+          "path": "dual-scripts-emits/canon/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "dual-scripts-emits/canon/text.ts",
+          "bytes": 19589,
+          "mode": 420,
+          "sha256": "25185fe88ce25d265bc3125fbc7e6492378c2a0b9054f8283bdb5b3a5e78952a",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/content-mapper/authored-hits.txt",
+          "bytes": 210,
+          "mode": 420,
+          "sha256": "b65f64a630ebe4f7406c985f9b7663f1469dffc272cb30b9b3da0cfe3d6bcb93",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "dual-scripts-emits/content-mapper/mappings.txt",
+          "bytes": 248,
+          "mode": 420,
+          "sha256": "27c317208f78d5e7f646366f25e62dc51ed1222420dce4b4edda58e36e18466c",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "dual-scripts-emits/content-mapper/text.ts",
+          "bytes": 19785,
+          "mode": 420,
+          "sha256": "5e2060612552088af2cadf834e38913529ab5ded64dcd846053fa0797dd69c8e",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/maestro-document-0/text.ts",
+          "bytes": 19359,
+          "mode": 420,
+          "sha256": "77b29550e757bcc679fa19d186c5c31132bde8e35df69094bed116c1c224abba",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/maestro-document-1/text.ts",
+          "bytes": 84,
+          "mode": 420,
+          "sha256": "c4ca2a1a6c5fc4ca7f38f54a75ad7af5137951e48901078b677c85f25a10a925",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/maestro-document-2/text.ts",
+          "bytes": 211,
+          "mode": 420,
+          "sha256": "8cfa3ba0020d6bf9c96b9bba913afad05faa03b2165d4b78bf2156e3dbfdaf1b",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/maestro/authored-hits.txt",
+          "bytes": 1890,
+          "mode": 420,
+          "sha256": "a9878bf07c99ab54c0eb43e1d71136e859fcb8a10173231fc2b85acd13478d50",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/maestro/mappings.txt",
+          "bytes": 1899,
+          "mode": 420,
+          "sha256": "3470d402ede5fa9afb9129b2fb1b40640a15f260885844e54e713675c07cde39",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/maestro/text.txt",
+          "bytes": 468,
+          "mode": 420,
+          "sha256": "1df24fca7dec0513203e9999a9e19916b5c0642fb1103f17ced59036cfbdbedc",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/original.vue",
+          "bytes": 240,
+          "mode": 420,
+          "sha256": "bfc8dfc8a4c474de728523794e7340927f25f96fbc3bcdf5d487d7a3990b90d0",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/canon/import-probes.txt",
+          "bytes": 420440,
+          "mode": 420,
+          "sha256": "3c14791e8ceb842284bdc3e7134bfffdda4e7f80f6636394a1a2e629067067fa",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "generic-sfc/canon/mappings.txt",
+          "bytes": 61,
+          "mode": 420,
+          "sha256": "9e04b8cca43a8c8408696b35bc8f56224d2a2819a4057af435b95e9f1c1fbced",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/canon/pre-rewrite-text.ts",
+          "bytes": 17879,
+          "mode": 420,
+          "sha256": "9a5b9c14b6c84c981aee81bc78b1bc08bca6d8415ce66e468f5a06abcdef28c7",
+          "representation": "same-as",
+          "source": "generic-sfc/canon/text.ts"
+        },
+        {
+          "path": "generic-sfc/canon/semantic-links.txt",
+          "bytes": 46,
+          "mode": 420,
+          "sha256": "2a5395987d0db6343481f8a1cbfb43bc626a2d54572a29659cb12eabb498991c",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/canon/text.ts",
+          "bytes": 17879,
+          "mode": 420,
+          "sha256": "9a5b9c14b6c84c981aee81bc78b1bc08bca6d8415ce66e468f5a06abcdef28c7",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/content-mapper/authored-hits.txt",
+          "bytes": 132,
+          "mode": 420,
+          "sha256": "aa3e87d9c0a14555072156cb2690f0617d7fbfa3d2d2fe345a6be0eb4b559cb4",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "generic-sfc/content-mapper/mappings.txt",
+          "bytes": 154,
+          "mode": 420,
+          "sha256": "b5a5abf5f19d4c93443ac82ef590e12d1323c257fee7f4244de425607b3688cd",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "generic-sfc/content-mapper/text.ts",
+          "bytes": 17886,
+          "mode": 420,
+          "sha256": "fbb9134e66f755b9fda29dc568faa5633ea9173abd7d250cf27d308b7a9a48f6",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/maestro-document-0/text.ts",
+          "bytes": 17879,
+          "mode": 420,
+          "sha256": "9a5b9c14b6c84c981aee81bc78b1bc08bca6d8415ce66e468f5a06abcdef28c7",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/maestro-document-1/text.ts",
+          "bytes": 154,
+          "mode": 420,
+          "sha256": "8902c522727d4b48422ec441fcc24d5c7a38846764cfa84cb8a42d809e613cde",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/maestro/authored-hits.txt",
+          "bytes": 1305,
+          "mode": 420,
+          "sha256": "b3c7e88f36ce2163a62e5ad86a521fd547adb9dd878a479b4730e0f2f22b28bb",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/maestro/mappings.txt",
+          "bytes": 1060,
+          "mode": 420,
+          "sha256": "1e4c49b95b42f23a416e3e630560ab4c4d4a41b56ca9c49960b8ac0af74cb995",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/maestro/text.txt",
+          "bytes": 304,
+          "mode": 420,
+          "sha256": "d99f143c608469c03c4881c54d275535fb1d6317b656280adf924385b33a48d2",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/original.vue",
+          "bytes": 155,
+          "mode": 420,
+          "sha256": "cdbc283fb677e3361a6356d8464f5b6ee8bb413acecca70324745c87b7e74fcd",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/canon/import-probes.txt",
+          "bytes": 413576,
+          "mode": 420,
+          "sha256": "65f409668e99e6891f53fa6dcd5e404083e36520872dbd2bbafed072407944e0",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "jsx-script/canon/mappings.txt",
+          "bytes": 39,
+          "mode": 420,
+          "sha256": "de7f416e0511f176ec001f243196026140ded4105ccbbdad4d686c470e78fe47",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/canon/pre-rewrite-text.ts",
+          "bytes": 17615,
+          "mode": 420,
+          "sha256": "0f96f27a9b017c11641ea2d70156c6d1d100f5485c7ac5e0a0a3f8fe74760121",
+          "representation": "same-as",
+          "source": "jsx-script/canon/text.ts"
+        },
+        {
+          "path": "jsx-script/canon/semantic-links.txt",
+          "bytes": 49,
+          "mode": 420,
+          "sha256": "5184e5f16bbf0424b4728d272ae7be4c37a57e0ede42c5c2f9938b1d3ceaff3e",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/canon/text.ts",
+          "bytes": 17615,
+          "mode": 420,
+          "sha256": "0f96f27a9b017c11641ea2d70156c6d1d100f5485c7ac5e0a0a3f8fe74760121",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/content-mapper/authored-hits.txt",
+          "bytes": 99,
+          "mode": 420,
+          "sha256": "cc475a226699adff9c1cbce2bb384fda48bff37576b37157e82b12ec97d5873c",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "jsx-script/content-mapper/mappings.txt",
+          "bytes": 61,
+          "mode": 420,
+          "sha256": "571f4f1f1007fbab505cc7bb6919f65c5dc3fad191186053bf392769e9f68bc0",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/content-mapper/semantic-links.txt",
+          "bytes": 41,
+          "mode": 420,
+          "sha256": "28d04a35fd36e31c0934dd4e66b880a2be5ea5357103564226082399bdbcb569",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/content-mapper/text.ts",
+          "bytes": 17620,
+          "mode": 420,
+          "sha256": "8ce3ab75ec2a7431cc30addfc015ba11eff86ebd233de62dddcb1b45b3bec21b",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/maestro-document-0/text.ts",
+          "bytes": 17581,
+          "mode": 420,
+          "sha256": "71fb7b8c1892689a9113c2d959fc35cf6019e136ea147b70976bcc10b05c4698",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/maestro-document-1/text.ts",
+          "bytes": 118,
+          "mode": 420,
+          "sha256": "3436d83d6a4c0dc155cda59c72348b2ad5d9693a2376f5bf15db96247e0a92db",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/maestro/authored-hits.txt",
+          "bytes": 1297,
+          "mode": 420,
+          "sha256": "ff9c8ec1f549f191de946331bbcb1ff53bdb3419a67c1b9136297c6ef2daad60",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/maestro/mappings.txt",
+          "bytes": 790,
+          "mode": 420,
+          "sha256": "373e953fbd44ceb5f2b865bbb941edb7f93b5a7235f0d10d577070eaffcbc02a",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/maestro/text.txt",
+          "bytes": 302,
+          "mode": 420,
+          "sha256": "b8d6e0b0766c1bc060d45a7ab4f7847def4f8f70e13ce23fa6d3f3dfea67592e",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/original.vue",
+          "bytes": 113,
+          "mode": 420,
+          "sha256": "a7f66250c123b7c5654f12aca6d66f4f319dee5ddac4974e8e64b187f746d407",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/canon/import-probes.txt",
+          "bytes": 444906,
+          "mode": 420,
+          "sha256": "7de3ffb9faf1158868903951d83f5316645a2b209dc17a5828eadbf8d40ffd97",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "options-api-slots/canon/mappings.txt",
+          "bytes": 162,
+          "mode": 420,
+          "sha256": "08369fe5a1dd394bb3be695ff05a16ee6bd49c3de177753a372687d3ea9dfaf9",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/canon/pre-rewrite-text.ts",
+          "bytes": 18820,
+          "mode": 420,
+          "sha256": "cfb0985e287120ecd5bf7d50156146bdd2eeaeacba34e500cfa05bb3b2136fb4",
+          "representation": "same-as",
+          "source": "options-api-slots/canon/text.ts"
+        },
+        {
+          "path": "options-api-slots/canon/semantic-links.txt",
+          "bytes": 44,
+          "mode": 420,
+          "sha256": "abe058c70f4224503d2a3db5773b37460af0d0aea4ea792906236a42aded8cef",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/canon/text.ts",
+          "bytes": 18820,
+          "mode": 420,
+          "sha256": "cfb0985e287120ecd5bf7d50156146bdd2eeaeacba34e500cfa05bb3b2136fb4",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/content-mapper/authored-hits.txt",
+          "bytes": 175,
+          "mode": 420,
+          "sha256": "b79e917c6e8ca028a308afb60b2c63ef4a764fbf24f41b0f9c11fae9c7f46adf",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "options-api-slots/content-mapper/mappings.txt",
+          "bytes": 272,
+          "mode": 420,
+          "sha256": "56a6d8475442a4c19ebe0a462fd99b0b74cad7ac7c95185f996d1909f5e96960",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "options-api-slots/content-mapper/text.ts",
+          "bytes": 19206,
+          "mode": 420,
+          "sha256": "d4b794d1dfb215ea798bfa35ce7013de7318d07cf34630a7f46b55837a49d9df",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/maestro-document-0/text.ts",
+          "bytes": 17927,
+          "mode": 420,
+          "sha256": "d12437f3acc56a98fcd9cb853927801e2665878bd71b4cf8e0b4d37764ce5324",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/maestro-document-1/text.ts",
+          "bytes": 141,
+          "mode": 420,
+          "sha256": "a7dbca1d6c4c937743cfacd2ea86407d7253aabe040ac292c63db8461d2bd374",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/maestro/authored-hits.txt",
+          "bytes": 1618,
+          "mode": 420,
+          "sha256": "7968df5d20251be84412e9aa1697bdc1d647e7b6d59c7819d1c8cd28499aa0c1",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/maestro/mappings.txt",
+          "bytes": 1895,
+          "mode": 420,
+          "sha256": "6e33c3b14a1312ded23346c9ca9ad9971e14049856558fba9ebbf57ec798c929",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/maestro/text.txt",
+          "bytes": 305,
+          "mode": 420,
+          "sha256": "377a4476d0868d96162df1c88e546eaa6aaaaae52695568b9cae7b7addc3c32f",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/original.vue",
+          "bytes": 194,
+          "mode": 420,
+          "sha256": "08df2a1aca7aa1ad55cd90ad599f9ee7a69d8c16693b3cb4c79f0946744b90b0",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/canon/import-map.txt",
+          "bytes": 94,
+          "mode": 420,
+          "sha256": "01556cfd87cde4924f749bcb777a7b997ad56edebf2e204772694289cecc16fc",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/canon/import-probes.txt",
+          "bytes": 570096,
+          "mode": 420,
+          "sha256": "cf3853e9ef1f5a9b303a3f05050111f20698ac833bd98aac3959ab654e42e5d1",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/canon/mappings.txt",
+          "bytes": 292,
+          "mode": 420,
+          "sha256": "9328942cce586d99707df0884c5a227bd96370397afb88ce8f9259c4e002cd39",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/canon/pre-rewrite-text.ts",
+          "bytes": 23618,
+          "mode": 420,
+          "sha256": "76b7ae242e75a036611d781af6909a8692ffcebbdae38e669fa8a440bf21397c",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/canon/semantic-links.txt",
+          "bytes": 101,
+          "mode": 420,
+          "sha256": "7769eef97f20ce7cb2fad89a9d6fae5e0983e660a3500875b29279613ee9b52f",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/canon/text.ts",
+          "bytes": 23652,
+          "mode": 420,
+          "sha256": "623c1c7b60474fd7f845417ba5e0311df2756d3cf3822cc988373d486eac6a42",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/content-mapper/authored-hits.txt",
+          "bytes": 281,
+          "mode": 420,
+          "sha256": "094ab6070987284a050fa1a03248e10f522b74bcb1b485858a771aace6cce481",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parent-local-import/content-mapper/mappings.txt",
+          "bytes": 313,
+          "mode": 420,
+          "sha256": "267c574bd0bf9f7455b24b58c16417a452581c41cd29127c495557a4f4447e36",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parent-local-import/content-mapper/text.ts",
+          "bytes": 23639,
+          "mode": 420,
+          "sha256": "05d132e2c8f6a3a54219c992fd3df5645b16dc73899683d2af1f94e31c1abb50",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/maestro-document-0/text.ts",
+          "bytes": 23618,
+          "mode": 420,
+          "sha256": "76b7ae242e75a036611d781af6909a8692ffcebbdae38e669fa8a440bf21397c",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/maestro-document-1/text.ts",
+          "bytes": 214,
+          "mode": 420,
+          "sha256": "9595bc59a11d56c4a7a529588961f565f43e1bb8cdc2f03153cffb4cbbb75416",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/maestro/authored-hits.txt",
+          "bytes": 2763,
+          "mode": 420,
+          "sha256": "0cdd40691a5bf648cf85a7a4e8a532b9e332f2106d0cc3369f3223b9ca7961b8",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/maestro/mappings.txt",
+          "bytes": 2743,
+          "mode": 420,
+          "sha256": "e8032aae998d392eac8e89bc3985ba2689dc3d27a26a244a750892eab45e87c3",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/maestro/text.txt",
+          "bytes": 320,
+          "mode": 420,
+          "sha256": "e9640675208d5baf3d06b8da08e621f96075422d0ba19aa4a887bbe7c4ee07a0",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/original.vue",
+          "bytes": 174,
+          "mode": 420,
+          "sha256": "46e0ea11c363d348bc0f2455d8c20fab6a2a3aece1f0160ea2711ff7b94a47a9",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/canon/import-probes.txt",
+          "bytes": 954,
+          "mode": 420,
+          "sha256": "7bf1666ff3614bcc41210190df7fb3daa1d22f9a305a54d618164a58b1f845c3",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "parse-recovery/canon/mappings.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parse-recovery/canon/pre-rewrite-text.ts",
+          "bytes": 70,
+          "mode": 420,
+          "sha256": "73b7c50c4b075c2339df5bc3c22be8247c9c72e175b655d1233f96d6228c4240",
+          "representation": "same-as",
+          "source": "parse-recovery/canon/text.ts"
+        },
+        {
+          "path": "parse-recovery/canon/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parse-recovery/canon/text.ts",
+          "bytes": 70,
+          "mode": 420,
+          "sha256": "73b7c50c4b075c2339df5bc3c22be8247c9c72e175b655d1233f96d6228c4240",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/content-mapper/authored-hits.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parse-recovery/content-mapper/diagnostics.txt",
+          "bytes": 61,
+          "mode": 420,
+          "sha256": "2b9261f56c3558af49163e91b4d6cd77dbdf6fd608aa9b3cb6e1b16adf65b83f",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/content-mapper/mappings.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parse-recovery/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parse-recovery/content-mapper/text.ts",
+          "bytes": 70,
+          "mode": 420,
+          "sha256": "73b7c50c4b075c2339df5bc3c22be8247c9c72e175b655d1233f96d6228c4240",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/maestro-document-0/text.ts",
+          "bytes": 16895,
+          "mode": 420,
+          "sha256": "6c50697674d1afb84a3a42c0e778580d502a1a5ed8bd8375de4c2439cda365a5",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/maestro-document-1/text.ts",
+          "bytes": 149,
+          "mode": 420,
+          "sha256": "076272289753980a8726905d5eae3c9149da85c692d4f97a52b8a01289c573ec",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/maestro/authored-hits.txt",
+          "bytes": 793,
+          "mode": 420,
+          "sha256": "50eda0c3ee40fd24e932fee9a19d1d6ffcecf1a7ba2c8a8e978140b54e21679b",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/maestro/mappings.txt",
+          "bytes": 802,
+          "mode": 420,
+          "sha256": "752542623511227a39a9dcc89372bd7ef58328e1f02177ab698eb7d54ec1b27d",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/maestro/text.txt",
+          "bytes": 310,
+          "mode": 420,
+          "sha256": "eeb3ee1bc7a867e601e1b556c25600d5ff8a89b796c0e6029fdfacdb926ebeb1",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/original.vue",
+          "bytes": 98,
+          "mode": 420,
+          "sha256": "091e1660e95fb4c42682b2f9dcedf9011540fc6842a0f2b83b889ca114768709",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/canon/import-probes.txt",
+          "bytes": 638320,
+          "mode": 420,
+          "sha256": "d852278ca6b883b011d3a877bad5fdf500dfc7977bdb69e971066f8df2a0de91",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "static-slot-name/canon/mappings.txt",
+          "bytes": 379,
+          "mode": 420,
+          "sha256": "dc20a011280c2a7c48470858c13ed666bb51bb8e033341fb9f9b1b56233d8aaf",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/canon/pre-rewrite-text.ts",
+          "bytes": 26259,
+          "mode": 420,
+          "sha256": "785f719fef6d76e336ee8129328ff16c90fc14f1cd829d708ad336e373fc8859",
+          "representation": "same-as",
+          "source": "static-slot-name/canon/text.ts"
+        },
+        {
+          "path": "static-slot-name/canon/semantic-links.txt",
+          "bytes": 50,
+          "mode": 420,
+          "sha256": "9091b8af1ff10f8f016fa5e36ef1373dc0d1b5dc379e9f29ec26f5dca9309a8b",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/canon/text.ts",
+          "bytes": 26259,
+          "mode": 420,
+          "sha256": "785f719fef6d76e336ee8129328ff16c90fc14f1cd829d708ad336e373fc8859",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/content-mapper/authored-hits.txt",
+          "bytes": 391,
+          "mode": 420,
+          "sha256": "46956ae015071fa0c4b6fa627cdb1e3663efd3e28149a7019bd1a73e84c879d6",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "static-slot-name/content-mapper/mappings.txt",
+          "bytes": 364,
+          "mode": 420,
+          "sha256": "64a0f6530d303c0acb894c3a6747284f4e664d07dbe9d247364b869addd5a3a2",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "static-slot-name/content-mapper/text.ts",
+          "bytes": 26274,
+          "mode": 420,
+          "sha256": "e8767537770dc63b2f50796d1fa4d7b443a8f53155b94384bcd1bd60e48e30ee",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/maestro-document-0/text.ts",
+          "bytes": 26259,
+          "mode": 420,
+          "sha256": "785f719fef6d76e336ee8129328ff16c90fc14f1cd829d708ad336e373fc8859",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/maestro-document-1/text.ts",
+          "bytes": 150,
+          "mode": 420,
+          "sha256": "9bc67c331434ac1116c199370118b510da7608ffad5c6931240b73d2b0f9bd2a",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/maestro/authored-hits.txt",
+          "bytes": 3758,
+          "mode": 420,
+          "sha256": "b686037fc86d3fbb19c82e5cc65bfa23cc347bf60ad6a2704018ca6603d60e76",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/maestro/mappings.txt",
+          "bytes": 4611,
+          "mode": 420,
+          "sha256": "8628b4d122f534571ca1d1921cbb6b3a90160c180e4d6ddac13fbc0b2332096d",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/maestro/text.txt",
+          "bytes": 314,
+          "mode": 420,
+          "sha256": "c1a8f74c1e651a74991ab77b8968d8c1c843539c44898723f0a25bfa03b81b6b",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/original.vue",
+          "bytes": 272,
+          "mode": 420,
+          "sha256": "fcd5dde4e7f467046e06f62702b5cb6c423a831725c6023b3162f4faca129f6f",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/canon/import-probes.txt",
+          "bytes": 419088,
+          "mode": 420,
+          "sha256": "305eed271d62e2c4b0f11fa0e9a481ff9ed44de19f2642d4559d997d62dd3119",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "tsx-script/canon/mappings.txt",
+          "bytes": 142,
+          "mode": 420,
+          "sha256": "95e2b769bfd6dfca38db5bcdc622e4a1cc66be80531ae83f71ddd0f9ffd06f66",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/canon/pre-rewrite-text.ts",
+          "bytes": 17827,
+          "mode": 420,
+          "sha256": "0abb5b687bd4756c31fc24d86c3f705b573251ccc7501ffb41a96400ae691a6d",
+          "representation": "same-as",
+          "source": "tsx-script/canon/text.ts"
+        },
+        {
+          "path": "tsx-script/canon/semantic-links.txt",
+          "bytes": 49,
+          "mode": 420,
+          "sha256": "a9760d2117ccb82b1bfae4b12cce7320adbd3ce588b4e2e46e983c105a541d80",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/canon/text.ts",
+          "bytes": 17827,
+          "mode": 420,
+          "sha256": "0abb5b687bd4756c31fc24d86c3f705b573251ccc7501ffb41a96400ae691a6d",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/content-mapper/authored-hits.txt",
+          "bytes": 196,
+          "mode": 420,
+          "sha256": "4054f08c41d54431622a97cc20ba623892f0810f6b1c0816951a9dd71e9c2e19",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "tsx-script/content-mapper/mappings.txt",
+          "bytes": 178,
+          "mode": 420,
+          "sha256": "5093d64d850abfdd8b7a7db2123c309ec0398da6813a6f48800bd7be65bf7af2",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/content-mapper/semantic-links.txt",
+          "bytes": 41,
+          "mode": 420,
+          "sha256": "fca8f6a16d56f28ef54e9e98a8e3d1b6768247140a2001563dc2ef0f332d7633",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/content-mapper/text.ts",
+          "bytes": 17832,
+          "mode": 420,
+          "sha256": "aca1bb0b019578d0400a0b2cdcd043aae149077d87f17b973bb3f4318232d8b3",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/maestro-document-0/text.ts",
+          "bytes": 17793,
+          "mode": 420,
+          "sha256": "01fa8905ec04fdca38afbc7b470fe668f89b326a8a65e903c935486987656947",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/maestro-document-1/text.ts",
+          "bytes": 155,
+          "mode": 420,
+          "sha256": "334953eb778d017628ceca47dbdd68723a2c2ffe14b14d3034c34f253cdf7a07",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/maestro/authored-hits.txt",
+          "bytes": 1823,
+          "mode": 420,
+          "sha256": "af18c3d6c96b2adcc1e19ccb96bb2e589a670888945990525167d5e430e4af98",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/maestro/mappings.txt",
+          "bytes": 1322,
+          "mode": 420,
+          "sha256": "3f3660f32347d16178c9b4669631a5ec058a6acca2c74262410f19bd35978e9a",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/maestro/text.txt",
+          "bytes": 302,
+          "mode": 420,
+          "sha256": "70d208d18bfbf7c32c3b9a3d808ed04bf7b701f06a2fc472b8f8a60f80637939",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/original.vue",
+          "bytes": 170,
+          "mode": 420,
+          "sha256": "fd0987db2fdf0a45a3ce930aef9032bbbfd16c4f636ada3a94bae0093ea44070",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/canon/import-probes.txt",
+          "bytes": 432868,
+          "mode": 420,
+          "sha256": "3a0796a40808e2c357866da66fe780546e1f350ae7c7b7abd0b0cf84eed36c17",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "utf8-crlf-props/canon/mappings.txt",
+          "bytes": 227,
+          "mode": 420,
+          "sha256": "a30da021c9ee4d8cbfc4bfe8e84c5cfd8db3f34126d9dfd62c08a8c5ead137e0",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/canon/pre-rewrite-text.ts",
+          "bytes": 18357,
+          "mode": 420,
+          "sha256": "b799b9f4202686a4bf6f134ec4368e7b75309ba246969d8c41e599efb1514185",
+          "representation": "same-as",
+          "source": "utf8-crlf-props/canon/text.ts"
+        },
+        {
+          "path": "utf8-crlf-props/canon/semantic-links.txt",
+          "bytes": 96,
+          "mode": 420,
+          "sha256": "d7e48a9cad3e7af18b8df085499d6e72b812e6d23969bf3ac2bbe3b1489ed615",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/canon/text.ts",
+          "bytes": 18357,
+          "mode": 420,
+          "sha256": "b799b9f4202686a4bf6f134ec4368e7b75309ba246969d8c41e599efb1514185",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/content-mapper/authored-hits.txt",
+          "bytes": 283,
+          "mode": 420,
+          "sha256": "59955c370a5a44b059a7f6ca2785844107708d13963a58590041c7c35b0ff19f",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "utf8-crlf-props/content-mapper/mappings.txt",
+          "bytes": 481,
+          "mode": 420,
+          "sha256": "2dca50b7cb74b226eef52f41577c6ebb027be25deae88b03ba4c0fc5688029d9",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/content-mapper/semantic-links.txt",
+          "bytes": 41,
+          "mode": 420,
+          "sha256": "582ac3975b200986ec727200815c3ef878c9e7ce33fea896407f17ec4cdcb8c1",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/content-mapper/text.ts",
+          "bytes": 18370,
+          "mode": 420,
+          "sha256": "34e8cb22633bae80db702ec599642118d904b5f641ecd81a3cb32a5ff3b7836c",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/maestro-document-0/text.ts",
+          "bytes": 18357,
+          "mode": 420,
+          "sha256": "b799b9f4202686a4bf6f134ec4368e7b75309ba246969d8c41e599efb1514185",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/maestro-document-1/text.ts",
+          "bytes": 225,
+          "mode": 420,
+          "sha256": "5828df259fa08e20f43d8739ba08e21717c13ce8b738f6647caf5d17be14ddc9",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/maestro/authored-hits.txt",
+          "bytes": 2396,
+          "mode": 420,
+          "sha256": "8c3672b2fe4247c9c406ed695732a1106f691b84f4aed73d58003ab5bc0c59df",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/maestro/mappings.txt",
+          "bytes": 2428,
+          "mode": 420,
+          "sha256": "c681c9918c913ef5c01746b3cba7aafe139be3b17041378c2865184f940947df",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/maestro/text.txt",
+          "bytes": 312,
+          "mode": 420,
+          "sha256": "ba5d13f318928754459faf575ef82ccbfb055e4bdd0d9e47ea13cd73878f17c0",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/original.vue",
+          "bytes": 184,
+          "mode": 420,
+          "sha256": "1a62fd3d3a38023a7517737dd2c167ccfb5c009f1abb37dbb3cf37a405acc967",
+          "representation": "inline"
+        },
+        {
+          "path": "vue2-native-event/content-mapper/authored-hits.txt",
+          "bytes": 177,
+          "mode": 420,
+          "sha256": "467149ce22e0ef36a0d626b174f460a11e4f048a95a03e82acadd9d954dd4b9d",
+          "representation": "inline"
+        },
+        {
+          "path": "vue2-native-event/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "vue2-native-event/content-mapper/mappings.txt",
+          "bytes": 275,
+          "mode": 420,
+          "sha256": "28b392b445d85d635eb459d45050075ffa856f23c3745ff90efd5d5e898e5f32",
+          "representation": "inline"
+        },
+        {
+          "path": "vue2-native-event/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "vue2-native-event/content-mapper/text.ts",
+          "bytes": 17895,
+          "mode": 420,
+          "sha256": "8b9c94e45a6b8e82abe7c319d67c74fe52696062846c813e79f65e3f95d7db35",
+          "representation": "inline"
+        },
+        {
+          "path": "vue2-native-event/original.vue",
+          "bytes": 204,
+          "mode": 420,
+          "sha256": "2b2f3214a7683c004e02b705721aa82bfb50a333a21cbf74e35443d1c9d3a47f",
+          "representation": "inline"
+        }
+      ]
+    },
+    "incident": {
+      "files": [
+        {
+          "path": "child-local-import/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/canon/import-probes.txt",
+          "bytes": 432790,
+          "mode": 420,
+          "sha256": "9cfa378a28b5d8c6be30bb342a8aee723717dd7c60b742e7f53f87f131bda86f",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "child-local-import/canon/mappings.txt",
+          "bytes": 79,
+          "mode": 420,
+          "sha256": "0813ee12572379589560481f4486deabb41ab331001c06c1f28bad106794cc8a",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/canon/pre-rewrite-text.ts",
+          "bytes": 18354,
+          "mode": 420,
+          "sha256": "a56b33ddaa26cfd9453834848e7a3db1e68f027887afcbb69d54dc0b43a5beba",
+          "representation": "same-as",
+          "source": "child-local-import/canon/text.ts"
+        },
+        {
+          "path": "child-local-import/canon/semantic-links.txt",
+          "bytes": 46,
+          "mode": 420,
+          "sha256": "c60d352555d921f7e1e5ecd7469c896281939224dc3bb77cfafde0d9119a9f8b",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/canon/text.ts",
+          "bytes": 18354,
+          "mode": 420,
+          "sha256": "a56b33ddaa26cfd9453834848e7a3db1e68f027887afcbb69d54dc0b43a5beba",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/content-mapper/authored-hits.txt",
+          "bytes": 135,
+          "mode": 420,
+          "sha256": "25d47b4e719fd77dfb8a25d440cab5f3709d70a81922d052d2946b977f108c98",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "child-local-import/content-mapper/mappings.txt",
+          "bytes": 305,
+          "mode": 420,
+          "sha256": "80c27a87b698662965cbc09611e92f6b3ff4399aef828f47922034b74268598a",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "child-local-import/content-mapper/text.ts",
+          "bytes": 18373,
+          "mode": 420,
+          "sha256": "b616dc9634c342487a430f5aea9e8ab29534be366f9caa4e16968644be662d85",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/maestro-document-0/text.ts",
+          "bytes": 18354,
+          "mode": 420,
+          "sha256": "a56b33ddaa26cfd9453834848e7a3db1e68f027887afcbb69d54dc0b43a5beba",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/maestro-document-1/text.ts",
+          "bytes": 165,
+          "mode": 420,
+          "sha256": "7fd76ab1c7130871448fbb23607b54fd6faa1e94d3999996d51e696f21ff6325",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/maestro/authored-hits.txt",
+          "bytes": 1348,
+          "mode": 420,
+          "sha256": "817d17422a8dcf6edc073c65afc827041a071a527f473041a6e9e9069af0999b",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/maestro/mappings.txt",
+          "bytes": 1358,
+          "mode": 420,
+          "sha256": "9d52eba422cc2b46fea54ed1f80c4668fc1aac3672ec62ac114f5b7902bbb231",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/maestro/text.txt",
+          "bytes": 318,
+          "mode": 420,
+          "sha256": "0e2ce002b0108055081f893cc87e263f2809ab002e483812ffb913986f89566b",
+          "representation": "inline"
+        },
+        {
+          "path": "child-local-import/original.vue",
+          "bytes": 118,
+          "mode": 420,
+          "sha256": "17fb7e4439333901135179799c5ef0f1a9c9ebc6a79d2e84b2dc389ddab413fe",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/canon/import-probes.txt",
+          "bytes": 1049224,
+          "mode": 420,
+          "sha256": "551c2ea260756ee3a3fc8f9c643a4a9f01cb9ae5dfc4f4a694e6374309056e6a",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "define-model/canon/mappings.txt",
+          "bytes": 1038,
+          "mode": 420,
+          "sha256": "2f693caa52770d9feaf6197b3d7c3e22578d6d2050341fbd82b8162a1b9c8559",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/canon/pre-rewrite-text.ts",
+          "bytes": 42063,
+          "mode": 420,
+          "sha256": "5445a034b6883cab54decec184fa692f6138471bc1915612e8915a7516317650",
+          "representation": "same-as",
+          "source": "define-model/canon/text.ts"
+        },
+        {
+          "path": "define-model/canon/semantic-links.txt",
+          "bytes": 252,
+          "mode": 420,
+          "sha256": "352296a86a923c023976916f15ffde36a5368b3e4c612698d3b6a9c604691f69",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/canon/text.ts",
+          "bytes": 42063,
+          "mode": 420,
+          "sha256": "5445a034b6883cab54decec184fa692f6138471bc1915612e8915a7516317650",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/content-mapper/authored-hits.txt",
+          "bytes": 2181,
+          "mode": 420,
+          "sha256": "8d2b4002814e1a78927b3800459451f7661af552be40cd4c4ae508f82012a8b3",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "define-model/content-mapper/mappings.txt",
+          "bytes": 1565,
+          "mode": 420,
+          "sha256": "44f0d15c322fce15af65e20e368a0f700c2ef55953c88e7e3ead4d3b3db0f80b",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/content-mapper/semantic-links.txt",
+          "bytes": 85,
+          "mode": 420,
+          "sha256": "aeebbe861f8dff4ca022d797e0e5f537d74076e076001c8ab3d05824404fcfac",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/content-mapper/text.ts",
+          "bytes": 42072,
+          "mode": 420,
+          "sha256": "901fbf125607378e3f20efda5396a0e36ea5557bfb127f53c8a2497568174ed3",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/maestro-document-0/text.ts",
+          "bytes": 40969,
+          "mode": 420,
+          "sha256": "5c9b67c5843971560352e1a0b159ed96a3fc022447db4620088391182c2295d8",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/maestro-document-1/text.ts",
+          "bytes": 258,
+          "mode": 420,
+          "sha256": "b1a35161af6f134736585d731658f368264861c73a8c0f7cc6b9d9411d9df509",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/maestro/authored-hits.txt",
+          "bytes": 8013,
+          "mode": 420,
+          "sha256": "1cfa51eb3884d2e5581839fea91924de21269b4b0e051304f64b86b9fd397562",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/maestro/mappings.txt",
+          "bytes": 6704,
+          "mode": 420,
+          "sha256": "4c1c00d8dd87b41dbdc4c675707250b4228dbf0212947c245d780939c49bc87a",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/maestro/text.txt",
+          "bytes": 306,
+          "mode": 420,
+          "sha256": "d81ed4c03ef37b2854d69e457b2f43d1fd9d57f6a9b153c2e0e576b2aaa21982",
+          "representation": "inline"
+        },
+        {
+          "path": "define-model/original.vue",
+          "bytes": 366,
+          "mode": 420,
+          "sha256": "6bf785e53e6b55fac7a458337633535b9dd6ad3e94272ce1e6e0af6a4ae6d528",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/canon/import-probes.txt",
+          "bytes": 496282,
+          "mode": 420,
+          "sha256": "56b38d9297c2024242d9e03c78de8b9709600ef4ab655a8b06029d405799d22e",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "dual-scripts-emits/canon/mappings.txt",
+          "bytes": 126,
+          "mode": 420,
+          "sha256": "3e676e22a2e64f7b4fc9b163e730e3fd44d01d7e5f967ab4be67b58958499d5d",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/canon/pre-rewrite-text.ts",
+          "bytes": 20796,
+          "mode": 420,
+          "sha256": "881ddb8bd79b80de1aa13e6c855f2280fab78ff6ce871c277e699db233dfea94",
+          "representation": "same-as",
+          "source": "dual-scripts-emits/canon/text.ts"
+        },
+        {
+          "path": "dual-scripts-emits/canon/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "dual-scripts-emits/canon/text.ts",
+          "bytes": 20796,
+          "mode": 420,
+          "sha256": "881ddb8bd79b80de1aa13e6c855f2280fab78ff6ce871c277e699db233dfea94",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/content-mapper/authored-hits.txt",
+          "bytes": 210,
+          "mode": 420,
+          "sha256": "9811d8268e1cffed12e0f966b2150899e5114e4a03ea4373c4724d56d257b58f",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "dual-scripts-emits/content-mapper/mappings.txt",
+          "bytes": 248,
+          "mode": 420,
+          "sha256": "4c9cc56b82f3ae8f82257e34ffcb5e0604a2b03c00ad8862d35881701e8731b3",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "dual-scripts-emits/content-mapper/text.ts",
+          "bytes": 20992,
+          "mode": 420,
+          "sha256": "44d8df36c5fcdf087ceed21ddc9607c01b67a61bf23abb0c9f097d550eb7ff28",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/maestro-document-0/text.ts",
+          "bytes": 20566,
+          "mode": 420,
+          "sha256": "a87e5394d17cc95a7a9b9267b5e409a746c19bde671243fbc951c8edc1585ae3",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/maestro-document-1/text.ts",
+          "bytes": 84,
+          "mode": 420,
+          "sha256": "c4ca2a1a6c5fc4ca7f38f54a75ad7af5137951e48901078b677c85f25a10a925",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/maestro-document-2/text.ts",
+          "bytes": 211,
+          "mode": 420,
+          "sha256": "8cfa3ba0020d6bf9c96b9bba913afad05faa03b2165d4b78bf2156e3dbfdaf1b",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/maestro/authored-hits.txt",
+          "bytes": 1890,
+          "mode": 420,
+          "sha256": "c387c6bca28e3c46146b66ebfd609307f980017d3eb29df6c16b8dbc7e522c63",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/maestro/mappings.txt",
+          "bytes": 1899,
+          "mode": 420,
+          "sha256": "238c7234bb3891c8a29f45b00d1cbec716d38211c98df90acce79563db957e4f",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/maestro/text.txt",
+          "bytes": 468,
+          "mode": 420,
+          "sha256": "63afd74dd9fab02ae27a1aa207e3926183f735dcd6324d4143bbee799b50eff1",
+          "representation": "inline"
+        },
+        {
+          "path": "dual-scripts-emits/original.vue",
+          "bytes": 240,
+          "mode": 420,
+          "sha256": "bfc8dfc8a4c474de728523794e7340927f25f96fbc3bcdf5d487d7a3990b90d0",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/canon/import-probes.txt",
+          "bytes": 457100,
+          "mode": 420,
+          "sha256": "a9232ad48b268843e18328b279b84ff03da66e535b2f7d7526a7a9405e6602da",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "generic-sfc/canon/mappings.txt",
+          "bytes": 81,
+          "mode": 420,
+          "sha256": "fc6548439bf5be20976200f10af3ae7db2d9879826b01efab707066a5d673b3f",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/canon/pre-rewrite-text.ts",
+          "bytes": 19289,
+          "mode": 420,
+          "sha256": "146d0dc21eef818caceef7ac47c97036be5ee677acd24dca10dc7ec293ff13d8",
+          "representation": "same-as",
+          "source": "generic-sfc/canon/text.ts"
+        },
+        {
+          "path": "generic-sfc/canon/semantic-links.txt",
+          "bytes": 46,
+          "mode": 420,
+          "sha256": "94bb3e368b8d948d405f11fae1b67610a0867d3ad60b1357d1c7787490e8fc2b",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/canon/text.ts",
+          "bytes": 19289,
+          "mode": 420,
+          "sha256": "146d0dc21eef818caceef7ac47c97036be5ee677acd24dca10dc7ec293ff13d8",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/content-mapper/authored-hits.txt",
+          "bytes": 160,
+          "mode": 420,
+          "sha256": "0a2ea8321e9e9f6f7d132d1415cf45972a540174ec3b3ef7daa69dd8bd944135",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "generic-sfc/content-mapper/mappings.txt",
+          "bytes": 180,
+          "mode": 420,
+          "sha256": "b9e6de500ae46d1bfc04be58f2a2b609cb1c3151397c58dba77b61912ebd9ba2",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "generic-sfc/content-mapper/text.ts",
+          "bytes": 19296,
+          "mode": 420,
+          "sha256": "cd9ab1663294d98b960dbde4e8713699853c5669720aeb9509373d906ed84282",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/maestro-document-0/text.ts",
+          "bytes": 19289,
+          "mode": 420,
+          "sha256": "146d0dc21eef818caceef7ac47c97036be5ee677acd24dca10dc7ec293ff13d8",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/maestro-document-1/text.ts",
+          "bytes": 154,
+          "mode": 420,
+          "sha256": "8902c522727d4b48422ec441fcc24d5c7a38846764cfa84cb8a42d809e613cde",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/maestro/authored-hits.txt",
+          "bytes": 1305,
+          "mode": 420,
+          "sha256": "207eee8841c62ad23b090d81ce85e9c1da756d8d2e1d0d6c803831a1b5802c3f",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/maestro/mappings.txt",
+          "bytes": 1060,
+          "mode": 420,
+          "sha256": "29e42e6eb7dd2cc42de5641aae68f0805e11086a2c6c1bdcc0eabf505a81d7fe",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/maestro/text.txt",
+          "bytes": 304,
+          "mode": 420,
+          "sha256": "ff362a2d20a2a621da4570719b47eebd549df9a3362c12ff068958063d7a0055",
+          "representation": "inline"
+        },
+        {
+          "path": "generic-sfc/original.vue",
+          "bytes": 155,
+          "mode": 420,
+          "sha256": "cdbc283fb677e3361a6356d8464f5b6ee8bb413acecca70324745c87b7e74fcd",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/canon/import-probes.txt",
+          "bytes": 443866,
+          "mode": 420,
+          "sha256": "877c30c85f64e66509638f301d45c855774b4842ec983fbec72791809ca93a96",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "jsx-script/canon/mappings.txt",
+          "bytes": 39,
+          "mode": 420,
+          "sha256": "e0c53a100f65ca53e580254cdb67bdf708afc2512689a0a23a28695e013b2c24",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/canon/pre-rewrite-text.ts",
+          "bytes": 18780,
+          "mode": 420,
+          "sha256": "6bd08cbad3b0ff4f118ec09dabe838bd9d0b367e888aaa3f371285fbf0d2b452",
+          "representation": "same-as",
+          "source": "jsx-script/canon/text.ts"
+        },
+        {
+          "path": "jsx-script/canon/semantic-links.txt",
+          "bytes": 49,
+          "mode": 420,
+          "sha256": "ff2fb231228b423f614e78bf12434ffd5ed62a0159fa2a0be10ba20eb03500b5",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/canon/text.ts",
+          "bytes": 18780,
+          "mode": 420,
+          "sha256": "6bd08cbad3b0ff4f118ec09dabe838bd9d0b367e888aaa3f371285fbf0d2b452",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/content-mapper/authored-hits.txt",
+          "bytes": 99,
+          "mode": 420,
+          "sha256": "16e9b74577d7f7e0c4679e6177c5b14373561890e02f21d4587b1e0bb91fd448",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "jsx-script/content-mapper/mappings.txt",
+          "bytes": 61,
+          "mode": 420,
+          "sha256": "4f7e4c6cd2cd5e41a5d4f903f622fc7c4093e3ae2d3572a4182e6e1dac126019",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/content-mapper/semantic-links.txt",
+          "bytes": 41,
+          "mode": 420,
+          "sha256": "a0a65657d19fd459f35727a42eeb2573cff33aba50efc036e726dcb90a8fc054",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/content-mapper/text.ts",
+          "bytes": 18800,
+          "mode": 420,
+          "sha256": "00ef452a98611aee47ecdd72c436483338d5c4e2c4571e9e756de0845e0908b1",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/maestro-document-0/text.ts",
+          "bytes": 18746,
+          "mode": 420,
+          "sha256": "8d104ed325f17901a7ce879552731f808c09de5293f6c576fa00b5f0dcbeabcb",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/maestro-document-1/text.ts",
+          "bytes": 118,
+          "mode": 420,
+          "sha256": "3436d83d6a4c0dc155cda59c72348b2ad5d9693a2376f5bf15db96247e0a92db",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/maestro/authored-hits.txt",
+          "bytes": 1297,
+          "mode": 420,
+          "sha256": "b75b4442fac7231d320e29c9f23ecff56d52522018eb534fe4406b85b013a24c",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/maestro/mappings.txt",
+          "bytes": 790,
+          "mode": 420,
+          "sha256": "6d03e0fea3af7501aa97e866fbb703126e0a758a7c8b4e4a6955ad7a307fc637",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/maestro/text.txt",
+          "bytes": 302,
+          "mode": 420,
+          "sha256": "cdbda3f97bcee8941abb07ef77d453b9c90250c2525a9ed2a38f4cb921618cc8",
+          "representation": "inline"
+        },
+        {
+          "path": "jsx-script/original.vue",
+          "bytes": 113,
+          "mode": 420,
+          "sha256": "a7f66250c123b7c5654f12aca6d66f4f319dee5ddac4974e8e64b187f746d407",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/canon/import-probes.txt",
+          "bytes": 474156,
+          "mode": 420,
+          "sha256": "0aa9644aa61f0cec16e691b00fbfad6b8fd60d7ae1c62d399b9f1f6857d2c2f4",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "options-api-slots/canon/mappings.txt",
+          "bytes": 162,
+          "mode": 420,
+          "sha256": "c8dc8a26661ffb922a2be3a37203b57aa1f7c26a825f7b9a7d81bea692068166",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/canon/pre-rewrite-text.ts",
+          "bytes": 19945,
+          "mode": 420,
+          "sha256": "ad395924f7947610656ec5827eb1533267f94ef88ce0c410b8dffc44b55f669f",
+          "representation": "same-as",
+          "source": "options-api-slots/canon/text.ts"
+        },
+        {
+          "path": "options-api-slots/canon/semantic-links.txt",
+          "bytes": 44,
+          "mode": 420,
+          "sha256": "9be0ded17e8c721555c4bc3daae647ef89f67ed31d0b4e3f2bc8d9435d2dada4",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/canon/text.ts",
+          "bytes": 19945,
+          "mode": 420,
+          "sha256": "ad395924f7947610656ec5827eb1533267f94ef88ce0c410b8dffc44b55f669f",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/content-mapper/authored-hits.txt",
+          "bytes": 235,
+          "mode": 420,
+          "sha256": "4b00bccfc1a19df9f01b63fc2c4484aef8c7ee73a1e0a39ba30d05f156cdde17",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "options-api-slots/content-mapper/mappings.txt",
+          "bytes": 322,
+          "mode": 420,
+          "sha256": "0fabadf15b634816912deeed5f8180a4b98b1fbfeb1bacd29e11e5f8b2de63b5",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "options-api-slots/content-mapper/text.ts",
+          "bytes": 20331,
+          "mode": 420,
+          "sha256": "34745ff216b75af91b580da83e60dda9b9eab99285f3c69f09bb2bcbc1a4ef8d",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/maestro-document-0/text.ts",
+          "bytes": 19053,
+          "mode": 420,
+          "sha256": "435e2e085db9c26b5a436d3624df0c2df7aa05e95dedfe24f414372c8ddd1bcd",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/maestro-document-1/text.ts",
+          "bytes": 141,
+          "mode": 420,
+          "sha256": "a7dbca1d6c4c937743cfacd2ea86407d7253aabe040ac292c63db8461d2bd374",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/maestro/authored-hits.txt",
+          "bytes": 1618,
+          "mode": 420,
+          "sha256": "84b9d690dab0837f3d3370d3392538292c25087ceb1733a088d32873316cf171",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/maestro/mappings.txt",
+          "bytes": 1895,
+          "mode": 420,
+          "sha256": "20e2452ddab1b03294c1cf4b5b804966063895191dea491108c3b90937be0669",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/maestro/text.txt",
+          "bytes": 305,
+          "mode": 420,
+          "sha256": "ebf89754f5531e37ff16e4fc4ccd10930af1de52feb69cef9e514fbe1caffc43",
+          "representation": "inline"
+        },
+        {
+          "path": "options-api-slots/original.vue",
+          "bytes": 194,
+          "mode": 420,
+          "sha256": "08df2a1aca7aa1ad55cd90ad599f9ee7a69d8c16693b3cb4c79f0946744b90b0",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/canon/import-map.txt",
+          "bytes": 164,
+          "mode": 420,
+          "sha256": "25b705112e2e2311c54c91dc06bfd276a1ac7d5a0eefd7ff04d82313fb8a8091",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/canon/import-probes.txt",
+          "bytes": 643364,
+          "mode": 420,
+          "sha256": "9122d63c7e1d9ebdafd710434d68a1f64e69545f7fb935b8aeba7ba0b562ae1e",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/canon/mappings.txt",
+          "bytes": 292,
+          "mode": 420,
+          "sha256": "d909361189556cf97db2bc82f7d586d1ef804a081588b6c09b6e4d0f21789771",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/canon/pre-rewrite-text.ts",
+          "bytes": 26436,
+          "mode": 420,
+          "sha256": "a0383d86b5c31a851d816c004a6e1300cd5a6805ed234a7aeabd149f661ebd9d",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/canon/semantic-links.txt",
+          "bytes": 101,
+          "mode": 420,
+          "sha256": "be6d7c6e2825c0fd2bcdf0395b22452b9c8344cbf3bef6e5711bcabab9301f92",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/canon/text.ts",
+          "bytes": 26470,
+          "mode": 420,
+          "sha256": "0a6781f4b08a1ca6239c5eae2fff2e6328394c4a4db0d5f33d66dc6a2bcb6aab",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/content-mapper/authored-hits.txt",
+          "bytes": 315,
+          "mode": 420,
+          "sha256": "9e5c55fe750bf54a30d962ced84d863bab2b7676ad89c2399cdd1a0e298dcb65",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parent-local-import/content-mapper/mappings.txt",
+          "bytes": 389,
+          "mode": 420,
+          "sha256": "d865a8b6baf551b273e186ca4dd342076d117a9de1cc035472bf879f0df7fa74",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parent-local-import/content-mapper/text.ts",
+          "bytes": 26457,
+          "mode": 420,
+          "sha256": "99e1b40e8e22d77067f3c80c2acf96f787e7a5a87b29b8079c44fe47af6b4344",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/maestro-document-0/text.ts",
+          "bytes": 26436,
+          "mode": 420,
+          "sha256": "a0383d86b5c31a851d816c004a6e1300cd5a6805ed234a7aeabd149f661ebd9d",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/maestro-document-1/text.ts",
+          "bytes": 214,
+          "mode": 420,
+          "sha256": "9595bc59a11d56c4a7a529588961f565f43e1bb8cdc2f03153cffb4cbbb75416",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/maestro/authored-hits.txt",
+          "bytes": 2763,
+          "mode": 420,
+          "sha256": "b1d0a5cfecbdc60541b3a69ebf28cc7fe5e3524820d6041e23f27cd6b8f7b4e6",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/maestro/mappings.txt",
+          "bytes": 2743,
+          "mode": 420,
+          "sha256": "0897d121aa940509cf94fb6dc093c0b573d617467588bb19b7a9f9d5e2da258d",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/maestro/text.txt",
+          "bytes": 320,
+          "mode": 420,
+          "sha256": "36cccb95bc2c76b62060526d4804af5ddf64c8543709227d1b0d58af640dcec8",
+          "representation": "inline"
+        },
+        {
+          "path": "parent-local-import/original.vue",
+          "bytes": 174,
+          "mode": 420,
+          "sha256": "46e0ea11c363d348bc0f2455d8c20fab6a2a3aece1f0160ea2711ff7b94a47a9",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/canon/import-probes.txt",
+          "bytes": 954,
+          "mode": 420,
+          "sha256": "7bf1666ff3614bcc41210190df7fb3daa1d22f9a305a54d618164a58b1f845c3",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "parse-recovery/canon/mappings.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parse-recovery/canon/pre-rewrite-text.ts",
+          "bytes": 70,
+          "mode": 420,
+          "sha256": "73b7c50c4b075c2339df5bc3c22be8247c9c72e175b655d1233f96d6228c4240",
+          "representation": "same-as",
+          "source": "parse-recovery/canon/text.ts"
+        },
+        {
+          "path": "parse-recovery/canon/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parse-recovery/canon/text.ts",
+          "bytes": 70,
+          "mode": 420,
+          "sha256": "73b7c50c4b075c2339df5bc3c22be8247c9c72e175b655d1233f96d6228c4240",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/content-mapper/authored-hits.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parse-recovery/content-mapper/diagnostics.txt",
+          "bytes": 61,
+          "mode": 420,
+          "sha256": "2b9261f56c3558af49163e91b4d6cd77dbdf6fd608aa9b3cb6e1b16adf65b83f",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/content-mapper/mappings.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parse-recovery/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "parse-recovery/content-mapper/text.ts",
+          "bytes": 70,
+          "mode": 420,
+          "sha256": "73b7c50c4b075c2339df5bc3c22be8247c9c72e175b655d1233f96d6228c4240",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/maestro-document-0/text.ts",
+          "bytes": 18061,
+          "mode": 420,
+          "sha256": "cb5a9636803cd4bcd8c787f2d1b1bb5808b7f51925cd3c74c1216f4bd113a568",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/maestro-document-1/text.ts",
+          "bytes": 149,
+          "mode": 420,
+          "sha256": "076272289753980a8726905d5eae3c9149da85c692d4f97a52b8a01289c573ec",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/maestro/authored-hits.txt",
+          "bytes": 793,
+          "mode": 420,
+          "sha256": "a2ca6315709e6e13e8ff3db20bfbc021f045eb323f4dd2437d39ac68a804479a",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/maestro/mappings.txt",
+          "bytes": 802,
+          "mode": 420,
+          "sha256": "503b1cb4e74a671c93e473b0c5ccea25100a932ae4f3f4418587ae57a4329386",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/maestro/text.txt",
+          "bytes": 310,
+          "mode": 420,
+          "sha256": "9b21f83607ea91b05b88b98cca2b841c53e266668860171e74680c53b7ff2bd5",
+          "representation": "inline"
+        },
+        {
+          "path": "parse-recovery/original.vue",
+          "bytes": 98,
+          "mode": 420,
+          "sha256": "091e1660e95fb4c42682b2f9dcedf9011540fc6842a0f2b83b889ca114768709",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/canon/import-probes.txt",
+          "bytes": 767514,
+          "mode": 420,
+          "sha256": "1b171d9db2799e248fc86673e7080483c8d6a9f0d11ed2afa458ffbfd984e772",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "static-slot-name/canon/mappings.txt",
+          "bytes": 379,
+          "mode": 420,
+          "sha256": "40f39c2c3a695d3be41ad61ce8a8e3a9fe239264a33368bdd4514111532bf40f",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/canon/pre-rewrite-text.ts",
+          "bytes": 31228,
+          "mode": 420,
+          "sha256": "08a161c82c45c507df23af94ca5d646b717f1041b2e5e477301d3ff2485f34be",
+          "representation": "same-as",
+          "source": "static-slot-name/canon/text.ts"
+        },
+        {
+          "path": "static-slot-name/canon/semantic-links.txt",
+          "bytes": 50,
+          "mode": 420,
+          "sha256": "b5e95b976388cef0a05baa3baac4acfd5c283003151b03c2455eed370f164460",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/canon/text.ts",
+          "bytes": 31228,
+          "mode": 420,
+          "sha256": "08a161c82c45c507df23af94ca5d646b717f1041b2e5e477301d3ff2485f34be",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/content-mapper/authored-hits.txt",
+          "bytes": 465,
+          "mode": 420,
+          "sha256": "ea883bbdb165ab84be8e2939c454a1e470482bd3a23a29aacb5aee4a40a837a2",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "static-slot-name/content-mapper/mappings.txt",
+          "bytes": 416,
+          "mode": 420,
+          "sha256": "d756c9a6d5fc507c7de829331013aba830feaff319a2138d107ec0e38dacfa72",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "static-slot-name/content-mapper/text.ts",
+          "bytes": 31243,
+          "mode": 420,
+          "sha256": "179f41edefae3afd5341fc66fec42a2c2d5a895b32561e95149440e5c5085b55",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/maestro-document-0/text.ts",
+          "bytes": 31228,
+          "mode": 420,
+          "sha256": "08a161c82c45c507df23af94ca5d646b717f1041b2e5e477301d3ff2485f34be",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/maestro-document-1/text.ts",
+          "bytes": 150,
+          "mode": 420,
+          "sha256": "9bc67c331434ac1116c199370118b510da7608ffad5c6931240b73d2b0f9bd2a",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/maestro/authored-hits.txt",
+          "bytes": 3758,
+          "mode": 420,
+          "sha256": "347f63d937375ef38a5a5f46f5df83fd3ba85b8f9937f200d84694110bd44119",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/maestro/mappings.txt",
+          "bytes": 4611,
+          "mode": 420,
+          "sha256": "55095aec1f53d26c35eddd21e4f1d9361f8806b7ad90854af00dab00389f7ec7",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/maestro/text.txt",
+          "bytes": 314,
+          "mode": 420,
+          "sha256": "9be1f79c007cccae9d723ecbead48174f9d7c1dcbb60f3fb1e76f68f713237e3",
+          "representation": "inline"
+        },
+        {
+          "path": "static-slot-name/original.vue",
+          "bytes": 272,
+          "mode": 420,
+          "sha256": "fcd5dde4e7f467046e06f62702b5cb6c423a831725c6023b3162f4faca129f6f",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/canon/import-probes.txt",
+          "bytes": 449378,
+          "mode": 420,
+          "sha256": "3f518bf2c1b267cae110c6f4fd223f4cef31f8f9cd693a832dafc2fc8835e53e",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "tsx-script/canon/mappings.txt",
+          "bytes": 142,
+          "mode": 420,
+          "sha256": "53be448b555faf81603ac00597bfb783bb859995088a1e117a140e49256d4721",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/canon/pre-rewrite-text.ts",
+          "bytes": 18992,
+          "mode": 420,
+          "sha256": "ed644e29de8176a495da81f7e686baf7527199d32696245ac0de3532e6df1bcc",
+          "representation": "same-as",
+          "source": "tsx-script/canon/text.ts"
+        },
+        {
+          "path": "tsx-script/canon/semantic-links.txt",
+          "bytes": 49,
+          "mode": 420,
+          "sha256": "deb8709adbc8275363adde731880109c552c1133c3ef22cc78c180dd860d803b",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/canon/text.ts",
+          "bytes": 18992,
+          "mode": 420,
+          "sha256": "ed644e29de8176a495da81f7e686baf7527199d32696245ac0de3532e6df1bcc",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/content-mapper/authored-hits.txt",
+          "bytes": 196,
+          "mode": 420,
+          "sha256": "904a285241310d728722a39a2f03f6039db2dc1dc32951ad85b73eae964db515",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "tsx-script/content-mapper/mappings.txt",
+          "bytes": 178,
+          "mode": 420,
+          "sha256": "822ae92aea141f9e5cee85000636b3b4bdfcdf7f2dd6d1f26bca82ace6005ff3",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/content-mapper/semantic-links.txt",
+          "bytes": 41,
+          "mode": 420,
+          "sha256": "cb1d7f8a93643057db044d1f352d37cb824f658f1dc7d47c27640fa9c3272120",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/content-mapper/text.ts",
+          "bytes": 18997,
+          "mode": 420,
+          "sha256": "5054b11d6e465f2b7ab1683ccbff7b21f5f1275694fd8fdd66139a4c30345bd3",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/maestro-document-0/text.ts",
+          "bytes": 18958,
+          "mode": 420,
+          "sha256": "5b9fd09dea41677565d2b3b3f02ab33eb7a39963fceaeb581276f1aaa2176c57",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/maestro-document-1/text.ts",
+          "bytes": 155,
+          "mode": 420,
+          "sha256": "334953eb778d017628ceca47dbdd68723a2c2ffe14b14d3034c34f253cdf7a07",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/maestro/authored-hits.txt",
+          "bytes": 1823,
+          "mode": 420,
+          "sha256": "05429f6bad325fb98de009e4e30e4cc8474fc97265145a35f2d3a2e3dcba3cc5",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/maestro/mappings.txt",
+          "bytes": 1322,
+          "mode": 420,
+          "sha256": "e7bb23ccb8470f604d8afa1b1bf15ec4f2ccaf0802ff0106929ef80064a603f3",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/maestro/text.txt",
+          "bytes": 302,
+          "mode": 420,
+          "sha256": "6a336c02e33b4ac75fd11b93bed1eabf90be06606dcf8efcfeaae6587faa03dc",
+          "representation": "inline"
+        },
+        {
+          "path": "tsx-script/original.vue",
+          "bytes": 170,
+          "mode": 420,
+          "sha256": "fd0987db2fdf0a45a3ce930aef9032bbbfd16c4f636ada3a94bae0093ea44070",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/canon/import-map.txt",
+          "bytes": 35,
+          "mode": 420,
+          "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/canon/import-probes.txt",
+          "bytes": 460220,
+          "mode": 420,
+          "sha256": "835f64fe666f4057e98171fe405e582c7d8ebecd690543ae09956b94d5a6d456",
+          "representation": "derived-import-probes"
+        },
+        {
+          "path": "utf8-crlf-props/canon/mappings.txt",
+          "bytes": 227,
+          "mode": 420,
+          "sha256": "5b3c9207169a4557d7de517aaa19042af8b2cec6ae8c8ae3933e0352c431c48c",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/canon/pre-rewrite-text.ts",
+          "bytes": 19409,
+          "mode": 420,
+          "sha256": "8c7f4298f63ab2114fa16bab08172191664efeac390a92d0316281bced65eae5",
+          "representation": "same-as",
+          "source": "utf8-crlf-props/canon/text.ts"
+        },
+        {
+          "path": "utf8-crlf-props/canon/semantic-links.txt",
+          "bytes": 96,
+          "mode": 420,
+          "sha256": "99f5ccc4500794d28aa218277363e26df23cee2d9527a4e83eefc0eec79df779",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/canon/text.ts",
+          "bytes": 19409,
+          "mode": 420,
+          "sha256": "8c7f4298f63ab2114fa16bab08172191664efeac390a92d0316281bced65eae5",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/content-mapper/authored-hits.txt",
+          "bytes": 344,
+          "mode": 420,
+          "sha256": "ac0fd4c19b06a2c3884e9ab048c3f41ca82dee28f8a3565ce891f7b9df501714",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "utf8-crlf-props/content-mapper/mappings.txt",
+          "bytes": 536,
+          "mode": 420,
+          "sha256": "206ec4b5ffbd2315097d5a6019efe041791a26c8313a8c6bc1f9b3d37c8f1440",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/content-mapper/semantic-links.txt",
+          "bytes": 41,
+          "mode": 420,
+          "sha256": "064fc164183ba6d703728c288344446ae7fec92543c3c4387aa04e48ca559159",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/content-mapper/text.ts",
+          "bytes": 19422,
+          "mode": 420,
+          "sha256": "9fdf03a6e0f578a2dacfd17af4c9d30b860b368b7e42b0a7ebaf471fc006d7fd",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/maestro-document-0/text.ts",
+          "bytes": 19409,
+          "mode": 420,
+          "sha256": "8c7f4298f63ab2114fa16bab08172191664efeac390a92d0316281bced65eae5",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/maestro-document-1/text.ts",
+          "bytes": 225,
+          "mode": 420,
+          "sha256": "5828df259fa08e20f43d8739ba08e21717c13ce8b738f6647caf5d17be14ddc9",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/maestro/authored-hits.txt",
+          "bytes": 2396,
+          "mode": 420,
+          "sha256": "0497c1aefa6850efca0d52208da8bac121867eba77a897758c8c6a5a060a9f5a",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/maestro/mappings.txt",
+          "bytes": 2428,
+          "mode": 420,
+          "sha256": "1cc8eabcb141fae254ff82ceaabff24d9ddb7c71e3e546960a3a2fd9469a058e",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/maestro/text.txt",
+          "bytes": 312,
+          "mode": 420,
+          "sha256": "617590c5abbdd5c7ff76418f79bf51627eab3d8864d9bc11de9c484649bf1ab4",
+          "representation": "inline"
+        },
+        {
+          "path": "utf8-crlf-props/original.vue",
+          "bytes": 184,
+          "mode": 420,
+          "sha256": "1a62fd3d3a38023a7517737dd2c167ccfb5c009f1abb37dbb3cf37a405acc967",
+          "representation": "inline"
+        },
+        {
+          "path": "vue2-native-event/content-mapper/authored-hits.txt",
+          "bytes": 177,
+          "mode": 420,
+          "sha256": "69dbd158c9fd02133805c228f6a35fbca54e89fa04c2c8c2993a8afbe141a7df",
+          "representation": "inline"
+        },
+        {
+          "path": "vue2-native-event/content-mapper/diagnostics.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "vue2-native-event/content-mapper/mappings.txt",
+          "bytes": 275,
+          "mode": 420,
+          "sha256": "1c15e8a5c8dea3ef04116679a3d38cb8e6947de7d1b045d196cdfd117df0447b",
+          "representation": "inline"
+        },
+        {
+          "path": "vue2-native-event/content-mapper/semantic-links.txt",
+          "bytes": 0,
+          "mode": 420,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "representation": "empty"
+        },
+        {
+          "path": "vue2-native-event/content-mapper/text.ts",
+          "bytes": 19094,
+          "mode": 420,
+          "sha256": "703a5adb706ea174c777c1532e51c982d4ca9fa98b5a8ba3bc3594be3090359a",
+          "representation": "inline"
+        },
+        {
+          "path": "vue2-native-event/original.vue",
+          "bytes": 204,
+          "mode": 420,
+          "sha256": "2b2f3214a7683c004e02b705721aa82bfb50a333a21cbf74e35443d1c9d3a47f",
+          "representation": "inline"
+        }
+      ]
+    }
+  },
+  "editScripts": [
+    {
+      "id": "dual-scripts-emits/canon",
+      "family": "dual-scripts-emits",
+      "surface": "canon",
+      "path": "dual-scripts-emits/canon/text.ts",
+      "beforeBytes": 19589,
+      "beforeSha256": "25185fe88ce25d265bc3125fbc7e6492378c2a0b9054f8283bdb5b3a5e78952a",
+      "afterBytes": 20796,
+      "afterSha256": "881ddb8bd79b80de1aa13e6c855f2280fab78ff6ce871c277e699db233dfea94",
+      "edits": [
+        {
+          "beforeStart": 4095,
+          "beforeEnd": 4256,
+          "afterStart": 4095,
+          "afterEnd": 4302
+        },
+        {
+          "beforeStart": 4719,
+          "beforeEnd": 4891,
+          "afterStart": 4765,
+          "afterEnd": 5674
+        },
+        {
+          "beforeStart": 5628,
+          "beforeEnd": 5636,
+          "afterStart": 6411,
+          "afterEnd": 6417
+        },
+        {
+          "beforeStart": 8191,
+          "beforeEnd": 8191,
+          "afterStart": 8972,
+          "afterEnd": 9328
+        },
+        {
+          "beforeStart": 9730,
+          "beforeEnd": 10016,
+          "afterStart": 10867,
+          "afterEnd": 11095
+        },
+        {
+          "beforeStart": 13727,
+          "beforeEnd": 13736,
+          "afterStart": 14806,
+          "afterEnd": 14814
+        },
+        {
+          "beforeStart": 14643,
+          "beforeEnd": 14653,
+          "afterStart": 15721,
+          "afterEnd": 15731
+        },
+        {
+          "beforeStart": 15035,
+          "beforeEnd": 15044,
+          "afterStart": 16113,
+          "afterEnd": 16121
+        },
+        {
+          "beforeStart": 15181,
+          "beforeEnd": 15190,
+          "afterStart": 16258,
+          "afterEnd": 16266
+        },
+        {
+          "beforeStart": 17713,
+          "beforeEnd": 17713,
+          "afterStart": 18789,
+          "afterEnd": 18812
+        },
+        {
+          "beforeStart": 18369,
+          "beforeEnd": 18600,
+          "afterStart": 19468,
+          "afterEnd": 19698
+        },
+        {
+          "beforeStart": 18788,
+          "beforeEnd": 18788,
+          "afterStart": 19886,
+          "afterEnd": 19936
+        },
+        {
+          "beforeStart": 19454,
+          "beforeEnd": 19491,
+          "afterStart": 20602,
+          "afterEnd": 20698
+        }
+      ]
+    },
+    {
+      "id": "dual-scripts-emits/content-mapper",
+      "family": "dual-scripts-emits",
+      "surface": "content-mapper",
+      "path": "dual-scripts-emits/content-mapper/text.ts",
+      "beforeBytes": 19785,
+      "beforeSha256": "5e2060612552088af2cadf834e38913529ab5ded64dcd846053fa0797dd69c8e",
+      "afterBytes": 20992,
+      "afterSha256": "44d8df36c5fcdf087ceed21ddc9607c01b67a61bf23abb0c9f097d550eb7ff28",
+      "edits": [
+        {
+          "beforeStart": 4057,
+          "beforeEnd": 4218,
+          "afterStart": 4057,
+          "afterEnd": 4264
+        },
+        {
+          "beforeStart": 4681,
+          "beforeEnd": 4853,
+          "afterStart": 4727,
+          "afterEnd": 5636
+        },
+        {
+          "beforeStart": 5590,
+          "beforeEnd": 5598,
+          "afterStart": 6373,
+          "afterEnd": 6379
+        },
+        {
+          "beforeStart": 8153,
+          "beforeEnd": 8153,
+          "afterStart": 8934,
+          "afterEnd": 9290
+        },
+        {
+          "beforeStart": 9692,
+          "beforeEnd": 9978,
+          "afterStart": 10829,
+          "afterEnd": 11057
+        },
+        {
+          "beforeStart": 13689,
+          "beforeEnd": 13698,
+          "afterStart": 14768,
+          "afterEnd": 14776
+        },
+        {
+          "beforeStart": 14605,
+          "beforeEnd": 14615,
+          "afterStart": 15683,
+          "afterEnd": 15693
+        },
+        {
+          "beforeStart": 14997,
+          "beforeEnd": 15006,
+          "afterStart": 16075,
+          "afterEnd": 16083
+        },
+        {
+          "beforeStart": 15143,
+          "beforeEnd": 15152,
+          "afterStart": 16220,
+          "afterEnd": 16228
+        },
+        {
+          "beforeStart": 17785,
+          "beforeEnd": 17785,
+          "afterStart": 18861,
+          "afterEnd": 18884
+        },
+        {
+          "beforeStart": 18441,
+          "beforeEnd": 18672,
+          "afterStart": 19540,
+          "afterEnd": 19770
+        },
+        {
+          "beforeStart": 18860,
+          "beforeEnd": 18860,
+          "afterStart": 19958,
+          "afterEnd": 20008
+        },
+        {
+          "beforeStart": 19567,
+          "beforeEnd": 19604,
+          "afterStart": 20715,
+          "afterEnd": 20811
+        }
+      ]
+    },
+    {
+      "id": "dual-scripts-emits/maestro",
+      "family": "dual-scripts-emits",
+      "surface": "maestro",
+      "path": "dual-scripts-emits/maestro-document-0/text.ts",
+      "beforeBytes": 19359,
+      "beforeSha256": "77b29550e757bcc679fa19d186c5c31132bde8e35df69094bed116c1c224abba",
+      "afterBytes": 20566,
+      "afterSha256": "a87e5394d17cc95a7a9b9267b5e409a746c19bde671243fbc951c8edc1585ae3",
+      "edits": [
+        {
+          "beforeStart": 4095,
+          "beforeEnd": 4256,
+          "afterStart": 4095,
+          "afterEnd": 4302
+        },
+        {
+          "beforeStart": 4719,
+          "beforeEnd": 4891,
+          "afterStart": 4765,
+          "afterEnd": 5674
+        },
+        {
+          "beforeStart": 5628,
+          "beforeEnd": 5636,
+          "afterStart": 6411,
+          "afterEnd": 6417
+        },
+        {
+          "beforeStart": 8191,
+          "beforeEnd": 8191,
+          "afterStart": 8972,
+          "afterEnd": 9328
+        },
+        {
+          "beforeStart": 9730,
+          "beforeEnd": 10016,
+          "afterStart": 10867,
+          "afterEnd": 11095
+        },
+        {
+          "beforeStart": 13727,
+          "beforeEnd": 13736,
+          "afterStart": 14806,
+          "afterEnd": 14814
+        },
+        {
+          "beforeStart": 14643,
+          "beforeEnd": 14653,
+          "afterStart": 15721,
+          "afterEnd": 15731
+        },
+        {
+          "beforeStart": 15035,
+          "beforeEnd": 15044,
+          "afterStart": 16113,
+          "afterEnd": 16121
+        },
+        {
+          "beforeStart": 15181,
+          "beforeEnd": 15190,
+          "afterStart": 16258,
+          "afterEnd": 16266
+        },
+        {
+          "beforeStart": 17613,
+          "beforeEnd": 17613,
+          "afterStart": 18689,
+          "afterEnd": 18712
+        },
+        {
+          "beforeStart": 18219,
+          "beforeEnd": 18450,
+          "afterStart": 19318,
+          "afterEnd": 19548
+        },
+        {
+          "beforeStart": 18638,
+          "beforeEnd": 18638,
+          "afterStart": 19736,
+          "afterEnd": 19786
+        },
+        {
+          "beforeStart": 19224,
+          "beforeEnd": 19261,
+          "afterStart": 20372,
+          "afterEnd": 20468
+        }
+      ]
+    },
+    {
+      "id": "define-model/canon",
+      "family": "define-model",
+      "surface": "canon",
+      "path": "define-model/canon/text.ts",
+      "beforeBytes": 34575,
+      "beforeSha256": "36dd880ced990d3b099de648907717e2774ee2c105fb4be6907ca4e6c95cb875",
+      "afterBytes": 42063,
+      "afterSha256": "5445a034b6883cab54decec184fa692f6138471bc1915612e8915a7516317650",
+      "edits": [
+        {
+          "beforeStart": 4095,
+          "beforeEnd": 4256,
+          "afterStart": 4095,
+          "afterEnd": 4302
+        },
+        {
+          "beforeStart": 4719,
+          "beforeEnd": 4891,
+          "afterStart": 4765,
+          "afterEnd": 5674
+        },
+        {
+          "beforeStart": 5628,
+          "beforeEnd": 5636,
+          "afterStart": 6411,
+          "afterEnd": 6417
+        },
+        {
+          "beforeStart": 8191,
+          "beforeEnd": 8191,
+          "afterStart": 8972,
+          "afterEnd": 9328
+        },
+        {
+          "beforeStart": 9730,
+          "beforeEnd": 10016,
+          "afterStart": 10867,
+          "afterEnd": 11095
+        },
+        {
+          "beforeStart": 12600,
+          "beforeEnd": 12694,
+          "afterStart": 13679,
+          "afterEnd": 14093
+        },
+        {
+          "beforeStart": 13885,
+          "beforeEnd": 13894,
+          "afterStart": 15284,
+          "afterEnd": 15292
+        },
+        {
+          "beforeStart": 14836,
+          "beforeEnd": 14846,
+          "afterStart": 16234,
+          "afterEnd": 16244
+        },
+        {
+          "beforeStart": 15663,
+          "beforeEnd": 15722,
+          "afterStart": 17061,
+          "afterEnd": 17118
+        },
+        {
+          "beforeStart": 16011,
+          "beforeEnd": 16020,
+          "afterStart": 17407,
+          "afterEnd": 17415
+        },
+        {
+          "beforeStart": 16157,
+          "beforeEnd": 16166,
+          "afterStart": 17552,
+          "afterEnd": 17560
+        },
+        {
+          "beforeStart": 16486,
+          "beforeEnd": 16561,
+          "afterStart": 17880,
+          "afterEnd": 17999
+        },
+        {
+          "beforeStart": 17879,
+          "beforeEnd": 18025,
+          "afterStart": 19317,
+          "afterEnd": 20042
+        },
+        {
+          "beforeStart": 18186,
+          "beforeEnd": 18186,
+          "afterStart": 20203,
+          "afterEnd": 20436
+        },
+        {
+          "beforeStart": 18230,
+          "beforeEnd": 18244,
+          "afterStart": 20480,
+          "afterEnd": 21057
+        },
+        {
+          "beforeStart": 18446,
+          "beforeEnd": 18811,
+          "afterStart": 21259,
+          "afterEnd": 21927
+        },
+        {
+          "beforeStart": 19526,
+          "beforeEnd": 19537,
+          "afterStart": 22642,
+          "afterEnd": 22668
+        },
+        {
+          "beforeStart": 19905,
+          "beforeEnd": 20056,
+          "afterStart": 23036,
+          "afterEnd": 23781
+        },
+        {
+          "beforeStart": 20222,
+          "beforeEnd": 20222,
+          "afterStart": 23947,
+          "afterEnd": 24185
+        },
+        {
+          "beforeStart": 20286,
+          "beforeEnd": 20286,
+          "afterStart": 24249,
+          "afterEnd": 24422
+        },
+        {
+          "beforeStart": 20497,
+          "beforeEnd": 20902,
+          "afterStart": 24633,
+          "afterEnd": 25361
+        },
+        {
+          "beforeStart": 21662,
+          "beforeEnd": 21673,
+          "afterStart": 26121,
+          "afterEnd": 26147
+        },
+        {
+          "beforeStart": 22075,
+          "beforeEnd": 22075,
+          "afterStart": 26549,
+          "afterEnd": 26676
+        },
+        {
+          "beforeStart": 23347,
+          "beforeEnd": 24021,
+          "afterStart": 27948,
+          "afterEnd": 28158
+        },
+        {
+          "beforeStart": 24158,
+          "beforeEnd": 24211,
+          "afterStart": 28295,
+          "afterEnd": 28442
+        },
+        {
+          "beforeStart": 25064,
+          "beforeEnd": 25163,
+          "afterStart": 29295,
+          "afterEnd": 29518
+        },
+        {
+          "beforeStart": 26365,
+          "beforeEnd": 26741,
+          "afterStart": 30720,
+          "afterEnd": 31467
+        },
+        {
+          "beforeStart": 27068,
+          "beforeEnd": 27068,
+          "afterStart": 31794,
+          "afterEnd": 33036
+        },
+        {
+          "beforeStart": 28101,
+          "beforeEnd": 28101,
+          "afterStart": 34069,
+          "afterEnd": 34156
+        },
+        {
+          "beforeStart": 28749,
+          "beforeEnd": 28762,
+          "afterStart": 34804,
+          "afterEnd": 34849
+        },
+        {
+          "beforeStart": 30323,
+          "beforeEnd": 30323,
+          "afterStart": 36410,
+          "afterEnd": 37342
+        },
+        {
+          "beforeStart": 30474,
+          "beforeEnd": 30552,
+          "afterStart": 37493,
+          "afterEnd": 37968
+        },
+        {
+          "beforeStart": 32815,
+          "beforeEnd": 32815,
+          "afterStart": 40231,
+          "afterEnd": 40254
+        },
+        {
+          "beforeStart": 33471,
+          "beforeEnd": 33702,
+          "afterStart": 40910,
+          "afterEnd": 41140
+        },
+        {
+          "beforeStart": 33890,
+          "beforeEnd": 33890,
+          "afterStart": 41328,
+          "afterEnd": 41378
+        }
+      ]
+    },
+    {
+      "id": "define-model/content-mapper",
+      "family": "define-model",
+      "surface": "content-mapper",
+      "path": "define-model/content-mapper/text.ts",
+      "beforeBytes": 34584,
+      "beforeSha256": "05f22a3d0869223f04dec4790a86571f3c3a5acbc336b70509ee7415e7a7b1fb",
+      "afterBytes": 42072,
+      "afterSha256": "901fbf125607378e3f20efda5396a0e36ea5557bfb127f53c8a2497568174ed3",
+      "edits": [
+        {
+          "beforeStart": 4057,
+          "beforeEnd": 4218,
+          "afterStart": 4057,
+          "afterEnd": 4264
+        },
+        {
+          "beforeStart": 4681,
+          "beforeEnd": 4853,
+          "afterStart": 4727,
+          "afterEnd": 5636
+        },
+        {
+          "beforeStart": 5590,
+          "beforeEnd": 5598,
+          "afterStart": 6373,
+          "afterEnd": 6379
+        },
+        {
+          "beforeStart": 8153,
+          "beforeEnd": 8153,
+          "afterStart": 8934,
+          "afterEnd": 9290
+        },
+        {
+          "beforeStart": 9692,
+          "beforeEnd": 9978,
+          "afterStart": 10829,
+          "afterEnd": 11057
+        },
+        {
+          "beforeStart": 12562,
+          "beforeEnd": 12656,
+          "afterStart": 13641,
+          "afterEnd": 14055
+        },
+        {
+          "beforeStart": 13847,
+          "beforeEnd": 13856,
+          "afterStart": 15246,
+          "afterEnd": 15254
+        },
+        {
+          "beforeStart": 14798,
+          "beforeEnd": 14808,
+          "afterStart": 16196,
+          "afterEnd": 16206
+        },
+        {
+          "beforeStart": 15625,
+          "beforeEnd": 15684,
+          "afterStart": 17023,
+          "afterEnd": 17080
+        },
+        {
+          "beforeStart": 15973,
+          "beforeEnd": 15982,
+          "afterStart": 17369,
+          "afterEnd": 17377
+        },
+        {
+          "beforeStart": 16119,
+          "beforeEnd": 16128,
+          "afterStart": 17514,
+          "afterEnd": 17522
+        },
+        {
+          "beforeStart": 16448,
+          "beforeEnd": 16523,
+          "afterStart": 17842,
+          "afterEnd": 17961
+        },
+        {
+          "beforeStart": 17841,
+          "beforeEnd": 17987,
+          "afterStart": 19279,
+          "afterEnd": 20004
+        },
+        {
+          "beforeStart": 18148,
+          "beforeEnd": 18148,
+          "afterStart": 20165,
+          "afterEnd": 20398
+        },
+        {
+          "beforeStart": 18192,
+          "beforeEnd": 18206,
+          "afterStart": 20442,
+          "afterEnd": 21019
+        },
+        {
+          "beforeStart": 18408,
+          "beforeEnd": 18773,
+          "afterStart": 21221,
+          "afterEnd": 21889
+        },
+        {
+          "beforeStart": 19488,
+          "beforeEnd": 19499,
+          "afterStart": 22604,
+          "afterEnd": 22630
+        },
+        {
+          "beforeStart": 19867,
+          "beforeEnd": 20018,
+          "afterStart": 22998,
+          "afterEnd": 23743
+        },
+        {
+          "beforeStart": 20184,
+          "beforeEnd": 20184,
+          "afterStart": 23909,
+          "afterEnd": 24147
+        },
+        {
+          "beforeStart": 20248,
+          "beforeEnd": 20248,
+          "afterStart": 24211,
+          "afterEnd": 24384
+        },
+        {
+          "beforeStart": 20459,
+          "beforeEnd": 20864,
+          "afterStart": 24595,
+          "afterEnd": 25323
+        },
+        {
+          "beforeStart": 21624,
+          "beforeEnd": 21635,
+          "afterStart": 26083,
+          "afterEnd": 26109
+        },
+        {
+          "beforeStart": 22037,
+          "beforeEnd": 22037,
+          "afterStart": 26511,
+          "afterEnd": 26638
+        },
+        {
+          "beforeStart": 23059,
+          "beforeEnd": 23085,
+          "afterStart": 27660,
+          "afterEnd": 27686
+        },
+        {
+          "beforeStart": 23309,
+          "beforeEnd": 24173,
+          "afterStart": 27910,
+          "afterEnd": 28404
+        },
+        {
+          "beforeStart": 25026,
+          "beforeEnd": 25125,
+          "afterStart": 29257,
+          "afterEnd": 29480
+        },
+        {
+          "beforeStart": 26327,
+          "beforeEnd": 26739,
+          "afterStart": 30682,
+          "afterEnd": 31465
+        },
+        {
+          "beforeStart": 27030,
+          "beforeEnd": 27030,
+          "afterStart": 31756,
+          "afterEnd": 32998
+        },
+        {
+          "beforeStart": 28063,
+          "beforeEnd": 28148,
+          "afterStart": 34031,
+          "afterEnd": 34203
+        },
+        {
+          "beforeStart": 28711,
+          "beforeEnd": 28724,
+          "afterStart": 34766,
+          "afterEnd": 34811
+        },
+        {
+          "beforeStart": 30285,
+          "beforeEnd": 30285,
+          "afterStart": 36372,
+          "afterEnd": 37304
+        },
+        {
+          "beforeStart": 30436,
+          "beforeEnd": 30514,
+          "afterStart": 37455,
+          "afterEnd": 37930
+        },
+        {
+          "beforeStart": 32777,
+          "beforeEnd": 32777,
+          "afterStart": 40193,
+          "afterEnd": 40216
+        },
+        {
+          "beforeStart": 33433,
+          "beforeEnd": 33664,
+          "afterStart": 40872,
+          "afterEnd": 41102
+        },
+        {
+          "beforeStart": 33852,
+          "beforeEnd": 33852,
+          "afterStart": 41290,
+          "afterEnd": 41340
+        }
+      ]
+    },
+    {
+      "id": "define-model/maestro",
+      "family": "define-model",
+      "surface": "maestro",
+      "path": "define-model/maestro-document-0/text.ts",
+      "beforeBytes": 33481,
+      "beforeSha256": "d3b3d9113120bf700007682827f1e8f52c2764ea0b204254470f749314389bcc",
+      "afterBytes": 40969,
+      "afterSha256": "5c9b67c5843971560352e1a0b159ed96a3fc022447db4620088391182c2295d8",
+      "edits": [
+        {
+          "beforeStart": 4095,
+          "beforeEnd": 4256,
+          "afterStart": 4095,
+          "afterEnd": 4302
+        },
+        {
+          "beforeStart": 4719,
+          "beforeEnd": 4891,
+          "afterStart": 4765,
+          "afterEnd": 5674
+        },
+        {
+          "beforeStart": 5628,
+          "beforeEnd": 5636,
+          "afterStart": 6411,
+          "afterEnd": 6417
+        },
+        {
+          "beforeStart": 8191,
+          "beforeEnd": 8191,
+          "afterStart": 8972,
+          "afterEnd": 9328
+        },
+        {
+          "beforeStart": 9730,
+          "beforeEnd": 10016,
+          "afterStart": 10867,
+          "afterEnd": 11095
+        },
+        {
+          "beforeStart": 12600,
+          "beforeEnd": 12694,
+          "afterStart": 13679,
+          "afterEnd": 14093
+        },
+        {
+          "beforeStart": 13885,
+          "beforeEnd": 13894,
+          "afterStart": 15284,
+          "afterEnd": 15292
+        },
+        {
+          "beforeStart": 14836,
+          "beforeEnd": 14846,
+          "afterStart": 16234,
+          "afterEnd": 16244
+        },
+        {
+          "beforeStart": 15663,
+          "beforeEnd": 15722,
+          "afterStart": 17061,
+          "afterEnd": 17118
+        },
+        {
+          "beforeStart": 16011,
+          "beforeEnd": 16020,
+          "afterStart": 17407,
+          "afterEnd": 17415
+        },
+        {
+          "beforeStart": 16157,
+          "beforeEnd": 16166,
+          "afterStart": 17552,
+          "afterEnd": 17560
+        },
+        {
+          "beforeStart": 16486,
+          "beforeEnd": 16561,
+          "afterStart": 17880,
+          "afterEnd": 17999
+        },
+        {
+          "beforeStart": 17145,
+          "beforeEnd": 17291,
+          "afterStart": 18583,
+          "afterEnd": 19308
+        },
+        {
+          "beforeStart": 17452,
+          "beforeEnd": 17452,
+          "afterStart": 19469,
+          "afterEnd": 19702
+        },
+        {
+          "beforeStart": 17496,
+          "beforeEnd": 17510,
+          "afterStart": 19746,
+          "afterEnd": 20323
+        },
+        {
+          "beforeStart": 17712,
+          "beforeEnd": 18077,
+          "afterStart": 20525,
+          "afterEnd": 21193
+        },
+        {
+          "beforeStart": 18792,
+          "beforeEnd": 18803,
+          "afterStart": 21908,
+          "afterEnd": 21934
+        },
+        {
+          "beforeStart": 19171,
+          "beforeEnd": 19322,
+          "afterStart": 22302,
+          "afterEnd": 23047
+        },
+        {
+          "beforeStart": 19488,
+          "beforeEnd": 19488,
+          "afterStart": 23213,
+          "afterEnd": 23451
+        },
+        {
+          "beforeStart": 19552,
+          "beforeEnd": 19552,
+          "afterStart": 23515,
+          "afterEnd": 23688
+        },
+        {
+          "beforeStart": 19763,
+          "beforeEnd": 20168,
+          "afterStart": 23899,
+          "afterEnd": 24627
+        },
+        {
+          "beforeStart": 20928,
+          "beforeEnd": 20939,
+          "afterStart": 25387,
+          "afterEnd": 25413
+        },
+        {
+          "beforeStart": 21341,
+          "beforeEnd": 21341,
+          "afterStart": 25815,
+          "afterEnd": 25942
+        },
+        {
+          "beforeStart": 22613,
+          "beforeEnd": 23287,
+          "afterStart": 27214,
+          "afterEnd": 27424
+        },
+        {
+          "beforeStart": 23424,
+          "beforeEnd": 23477,
+          "afterStart": 27561,
+          "afterEnd": 27708
+        },
+        {
+          "beforeStart": 24330,
+          "beforeEnd": 24429,
+          "afterStart": 28561,
+          "afterEnd": 28784
+        },
+        {
+          "beforeStart": 25631,
+          "beforeEnd": 26007,
+          "afterStart": 29986,
+          "afterEnd": 30733
+        },
+        {
+          "beforeStart": 26334,
+          "beforeEnd": 26334,
+          "afterStart": 31060,
+          "afterEnd": 32302
+        },
+        {
+          "beforeStart": 27367,
+          "beforeEnd": 27367,
+          "afterStart": 33335,
+          "afterEnd": 33422
+        },
+        {
+          "beforeStart": 28015,
+          "beforeEnd": 28028,
+          "afterStart": 34070,
+          "afterEnd": 34115
+        },
+        {
+          "beforeStart": 29359,
+          "beforeEnd": 29359,
+          "afterStart": 35446,
+          "afterEnd": 36378
+        },
+        {
+          "beforeStart": 29510,
+          "beforeEnd": 29588,
+          "afterStart": 36529,
+          "afterEnd": 37004
+        },
+        {
+          "beforeStart": 31851,
+          "beforeEnd": 31851,
+          "afterStart": 39267,
+          "afterEnd": 39290
+        },
+        {
+          "beforeStart": 32457,
+          "beforeEnd": 32688,
+          "afterStart": 39896,
+          "afterEnd": 40126
+        },
+        {
+          "beforeStart": 32876,
+          "beforeEnd": 32876,
+          "afterStart": 40314,
+          "afterEnd": 40364
+        }
+      ]
+    }
+  ],
+  "coordinateProof": {
+    "schema": 1,
+    "surfaces": [
+      {
+        "path": "dual-scripts-emits/canon/mappings.txt",
+        "baselineRows": 6,
+        "incidentRows": 6,
+        "matchedRows": 6,
+        "addedRows": 0,
+        "rejectedRows": 0,
+        "missingRows": 0,
+        "matchedSha256": "e3610d6336dee82c6cfaea2c7ad894364ea35f13e029fd64f9efbb55caea2c2e",
+        "addedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "rejectedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "missingSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      {
+        "path": "dual-scripts-emits/canon/semantic-links.txt",
+        "baselineRows": 0,
+        "incidentRows": 0,
+        "matchedRows": 0,
+        "addedRows": 0,
+        "rejectedRows": 0,
+        "missingRows": 0,
+        "matchedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "addedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "rejectedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "missingSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      {
+        "path": "dual-scripts-emits/content-mapper/mappings.txt",
+        "baselineRows": 8,
+        "incidentRows": 8,
+        "matchedRows": 8,
+        "addedRows": 0,
+        "rejectedRows": 0,
+        "missingRows": 0,
+        "matchedSha256": "84ee20258fb23e3314d486c74c72ce72018bf186474510a8162554bd2bdd4a1e",
+        "addedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "rejectedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "missingSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      {
+        "path": "dual-scripts-emits/content-mapper/semantic-links.txt",
+        "baselineRows": 0,
+        "incidentRows": 0,
+        "matchedRows": 0,
+        "addedRows": 0,
+        "rejectedRows": 0,
+        "missingRows": 0,
+        "matchedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "addedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "rejectedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "missingSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      {
+        "path": "dual-scripts-emits/content-mapper/authored-hits.txt",
+        "baselineRows": 6,
+        "incidentRows": 6,
+        "matchedRows": 6,
+        "addedRows": 0,
+        "rejectedRows": 0,
+        "missingRows": 0,
+        "matchedSha256": "d624cd3021013ca6befa0de6422f8a1cd9f1174100ea931340cf066ea55e846c",
+        "addedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "rejectedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "missingSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      {
+        "path": "dual-scripts-emits/maestro/mappings.txt",
+        "baselineRows": 7,
+        "incidentRows": 7,
+        "matchedRows": 7,
+        "addedRows": 0,
+        "rejectedRows": 0,
+        "missingRows": 0,
+        "matchedSha256": "066464e4caf54f75148537b2ffcfc18e6edde39519776f8ab956aca081f55067",
+        "addedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "rejectedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "missingSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      {
+        "path": "dual-scripts-emits/maestro/authored-hits.txt",
+        "baselineRows": 7,
+        "incidentRows": 7,
+        "matchedRows": 7,
+        "addedRows": 0,
+        "rejectedRows": 0,
+        "missingRows": 0,
+        "matchedSha256": "33ac9de7c46cc87938068def19c47988ca3aeeb4fbfa0f7c4eb0b58d92b1ea15",
+        "addedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "rejectedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "missingSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      {
+        "path": "define-model/canon/mappings.txt",
+        "baselineRows": 36,
+        "incidentRows": 42,
+        "matchedRows": 35,
+        "addedRows": 1,
+        "rejectedRows": 6,
+        "missingRows": 1,
+        "matchedSha256": "91cd17d6e113d482d77afcc41e2166a3dea41a182cc534ffca013c929bcedf25",
+        "addedSha256": "a84e9420ef0b53ca567dbb9bab9ea10c4b47a86a774b2eff15920dc727790010",
+        "rejectedSha256": "7ef1ad7fb9c69016cc9a1f143d73e5c04d87d0cf0e836635e169a260c6374a0c",
+        "missingSha256": "7c33fec37d58e25e4f0a2a01d6904374a9f06e0269784b120a20bd3d4203503a"
+      },
+      {
+        "path": "define-model/canon/semantic-links.txt",
+        "baselineRows": 5,
+        "incidentRows": 5,
+        "matchedRows": 4,
+        "addedRows": 0,
+        "rejectedRows": 1,
+        "missingRows": 1,
+        "matchedSha256": "a0f295a5c5c7741c0b3e35ede80645fa24d76368a327e8bb5a992755c65711df",
+        "addedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "rejectedSha256": "6a94d3aa020ddcb25eb7272a72249a50c959f0c768ba911c45cb933b8e3f053b",
+        "missingSha256": "08a87bfcc635d56ae479e4fbfce0e579e3cc898f516de92b6afeae7f6da0d2a1"
+      },
+      {
+        "path": "define-model/content-mapper/mappings.txt",
+        "baselineRows": 34,
+        "incidentRows": 55,
+        "matchedRows": 34,
+        "addedRows": 13,
+        "rejectedRows": 8,
+        "missingRows": 0,
+        "matchedSha256": "dd3d9620f626f484ba03efc053ee0c3df3e591a1d168828c6cfb3f297ee3981d",
+        "addedSha256": "f460bb156e7e1712172061e6d1c158244cdcb372b80c81ec6081a1796628863c",
+        "rejectedSha256": "eaec7f10fedbc2d728d4a7022341e9a0518ce429cd80f438304013ab41303032",
+        "missingSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      {
+        "path": "define-model/content-mapper/semantic-links.txt",
+        "baselineRows": 2,
+        "incidentRows": 2,
+        "matchedRows": 1,
+        "addedRows": 0,
+        "rejectedRows": 1,
+        "missingRows": 1,
+        "matchedSha256": "14ca26fbe37ca11cdb2c80cebc14d30a517138e0fb559cf7540715c32837231f",
+        "addedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "rejectedSha256": "6d9da8152cf59a01a11a6d345223f280eb43e489e2f2426bc538d1819bdbdf89",
+        "missingSha256": "a3cc67fdb7c691cf5b692051c883666ba2397b721e8f4fee2ff5b6806c82a5ac"
+      },
+      {
+        "path": "define-model/content-mapper/authored-hits.txt",
+        "baselineRows": 35,
+        "incidentRows": 63,
+        "matchedRows": 35,
+        "addedRows": 20,
+        "rejectedRows": 8,
+        "missingRows": 0,
+        "matchedSha256": "88b6a49322b86698fd1fe13e892245755543ed7d533c4dcd53b3b48369a67185",
+        "addedSha256": "3fb50857c6572a6df8a958726fc6890ecf20a3e987246134764b8bfbbc159087",
+        "rejectedSha256": "0e51d989216e642b19d672fff8c018eeeae5ed1052b7de0dc2fa73ba6adac158",
+        "missingSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      {
+        "path": "define-model/maestro/mappings.txt",
+        "baselineRows": 23,
+        "incidentRows": 25,
+        "matchedRows": 22,
+        "addedRows": 1,
+        "rejectedRows": 2,
+        "missingRows": 1,
+        "matchedSha256": "401a4cef39e4aea2526b63de6646d2c98269da3b45f98a133bfa8eaddc498279",
+        "addedSha256": "e30d149bb8e1eb0c9d1c5c52010cc597ecc1e08064702990d3a798668d78a233",
+        "rejectedSha256": "ad5e7440850d0dc2537bb863fc9f43b195e06544e0536200e91228d4205719f4",
+        "missingSha256": "4868be14da7f1f196a02bdfab26876224820b6151c0597baf13a13352014fdd2"
+      },
+      {
+        "path": "define-model/maestro/authored-hits.txt",
+        "baselineRows": 27,
+        "incidentRows": 30,
+        "matchedRows": 27,
+        "addedRows": 0,
+        "rejectedRows": 3,
+        "missingRows": 0,
+        "matchedSha256": "42212eadd541e436d2656e98647c0b65002e440c605c055d1a254b6bc48de9c7",
+        "addedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "rejectedSha256": "24a1b9086e3ce562322fb9e17762bede06c601598b23a2849a3157833db60c0f",
+        "missingSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      }
+    ],
+    "documents": [
+      {
+        "family": "dual-scripts-emits",
+        "templateUri": "tests/_fixtures/davinci-ts40-projection/dual-scripts-emits.vue.__template.ts",
+        "documents": 3,
+        "normalizedManifestSha256": "eb2a9504f728d97f7fcbee5f5045aa190176b57ad3f813d4aaf078130bd31bff"
+      },
+      {
+        "family": "define-model",
+        "templateUri": "tests/_fixtures/davinci-ts40-projection/define-model.vue.__template.ts",
+        "documents": 2,
+        "normalizedManifestSha256": "5e10f101d9bcceb0ce6c93c56f76c59f9a9f5456c087fddee6df1545d312e14f"
+      }
+    ],
+    "sha256": "612f87e159a42c96c895a440365a8fc6c312b096a37c6f926fb1b2e5f8e0a91e"
+  },
+  "payload": {
+    "file": "projection-retained-10907.payload.json.gz",
+    "compression": "gzip",
+    "bytes": 890121,
+    "sha256": "56c56747610d5c7f8620d57d6f4cf71667d8b2668dbda4490943b1270be19211",
+    "uncompressedBytes": 3475941,
+    "uncompressedSha256": "694cdddc299bb11c84249551e4ffea04b7da8b4eba44d45094fbd977c0f458ed",
+    "blobCount": 243
+  }
+}

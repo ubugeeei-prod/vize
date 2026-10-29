@@ -16,7 +16,9 @@ const TYPESCRIPT_PLATFORM_PACKAGES = [
 ];
 
 const USER_GUIDANCE_FILES = [
+  "docs/content/guide/cli.md",
   "docs/content/guide/content-mapper.md",
+  "docs/content/guide/type-checking.md",
   "docs/content/fr/guide/content-mapper.md",
   "docs/content/ja/guide/content-mapper.md",
   "docs/content/pt-BR/guide/content-mapper.md",
@@ -24,28 +26,37 @@ const USER_GUIDANCE_FILES = [
   "npm/cli/README.md",
 ];
 
-test("Corsa runtime is declared for vize check users", () => {
-  const packageJson = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/cli/package.json"), "utf-8"),
-  ) as {
-    dependencies?: Record<string, string>;
-    optionalDependencies?: Record<string, string>;
-    peerDependencies?: Record<string, string>;
-    peerDependenciesMeta?: Record<string, { optional?: boolean }>;
-  };
+const checkerDeclaration = (name: string, value: unknown): boolean =>
+  name === "typescript" ||
+  name === "tsrs" ||
+  name.startsWith("@typescript/typescript-") ||
+  name.startsWith("@typescript/native-preview") ||
+  name.startsWith("@tsrs/") ||
+  (typeof value === "string" &&
+    /^npm:(?:typescript|tsrs|@typescript\/(?:typescript-[^@]+|native-preview)|@tsrs\/[^@]+)(?:@|$)/u.test(
+      value,
+    ));
 
-  for (const name of ["@typescript/native-preview", "typescript"]) {
-    for (const section of [
-      "dependencies",
-      "optionalDependencies",
-      "peerDependencies",
-      "peerDependenciesMeta",
-    ] as const) {
-      assert.equal(packageJson[section]?.[name], undefined);
+test("published CLI and editor do not install or constrain a user's compiler", () => {
+  for (const relative of ["npm/cli/package.json", "editors/vscode/package.json"]) {
+    const packageJson = JSON.parse(fs.readFileSync(path.join(root, relative), "utf-8")) as Record<
+      string,
+      Record<string, unknown> | undefined
+    >;
+    for (const section of ["dependencies", "optionalDependencies", "peerDependencies"]) {
+      for (const [name, value] of Object.entries(packageJson[section] ?? {})) {
+        assert.equal(checkerDeclaration(name, value), false, `${relative}: ${section}.${name}`);
+      }
     }
-  }
-  for (const name of TYPESCRIPT_PLATFORM_PACKAGES) {
-    assert.equal(packageJson.optionalDependencies?.[name], "catalog:corsa-runtime");
+    for (const name of [
+      "@typescript/native-preview",
+      "typescript",
+      ...TYPESCRIPT_PLATFORM_PACKAGES,
+    ]) {
+      for (const section of ["dependencies", "optionalDependencies", "peerDependenciesMeta"]) {
+        assert.equal(packageJson[section]?.[name], undefined, `${relative}: ${section}.${name}`);
+      }
+    }
   }
 });
 
@@ -82,18 +93,33 @@ test("workspace tooling does not depend on the retired native preview package", 
   );
 });
 
-test("workspace tooling installs the stable TypeScript 7 native runtime", () => {
-  for (const [relative, version] of [
-    ["package.json", "catalog:corsa-runtime"],
-    ["editors/vscode/package.json", "7.0.2"],
-  ] as const) {
-    const packageJson = JSON.parse(fs.readFileSync(path.join(root, relative), "utf-8")) as {
-      optionalDependencies?: Record<string, string>;
-    };
+test("the private workspace retains its immutable comparison runtime", () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf-8")) as {
+    private?: boolean;
+    optionalDependencies?: Record<string, string>;
+  };
+  assert.equal(packageJson.private, true);
+  for (const name of TYPESCRIPT_PLATFORM_PACKAGES) {
+    assert.equal(packageJson.optionalDependencies?.[name], "catalog:corsa-runtime");
+  }
+});
 
-    for (const name of TYPESCRIPT_PLATFORM_PACKAGES) {
-      assert.equal(packageJson.optionalDependencies?.[name], version, relative);
-    }
+test("the lockfile keeps comparison runtimes only in the private root importer", () => {
+  const lock = fs.readFileSync(path.join(root, "pnpm-lock.yaml"), "utf-8");
+  const importer = (name: string, last = false) => {
+    const marker = `\n  ${name}:\n`;
+    const start = last ? lock.lastIndexOf(marker) : lock.indexOf(marker);
+    assert.notEqual(start, -1, `missing ${name} lockfile importer`);
+    const bodyStart = start + marker.length;
+    const relativeEnd = lock.slice(bodyStart).search(/\n {2}\S/gu);
+    return lock.slice(bodyStart, relativeEnd === -1 ? undefined : bodyStart + relativeEnd);
+  };
+  const workspace = importer(".", true);
+  const cli = importer("npm/cli");
+  for (const name of TYPESCRIPT_PLATFORM_PACKAGES) {
+    const declaration = `      '${name}':\n        specifier: catalog:corsa-runtime\n`;
+    assert.ok(workspace.includes(declaration), `private root lock missing ${name}`);
+    assert.ok(!cli.includes(declaration), `published CLI lock still declares ${name}`);
   }
 });
 
@@ -102,5 +128,10 @@ test("published user guidance does not mention the retired native preview runtim
     const contents = fs.readFileSync(path.join(root, relative), "utf-8");
     assert.doesNotMatch(contents, /@typescript\/native-preview/u, relative);
     assert.doesNotMatch(contents, /\bnative[- ]preview\b/iu, relative);
+  }
+  for (const relative of ["docs/content/guide/cli.md", "docs/content/guide/type-checking.md"]) {
+    const contents = fs.readFileSync(path.join(root, relative), "utf-8");
+    assert.match(contents, /typescript-native@npm:typescript@7\.1\.0-beta/u, relative);
+    assert.match(contents, /does not bundle or download/u, relative);
   }
 });

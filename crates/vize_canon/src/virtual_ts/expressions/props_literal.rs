@@ -7,10 +7,10 @@
 //! authored ordering and spread semantics identical.
 
 use super::super::types::{VizeMapping, VizeSubSpan};
-use super::component_props::{
-    ComponentPropSource, collect_generated_class_bindings, collect_generated_named_bindings,
-    is_checkable_prop,
+use super::component_prop_bindings::{
+    collect_generated_class_bindings, collect_generated_named_bindings,
 };
+use super::component_props::{ComponentPropSource, is_checkable_prop};
 use super::prop_sources::append_prop_value;
 use super::spread_reserved_props::rewrite_reserved_spread_references;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;

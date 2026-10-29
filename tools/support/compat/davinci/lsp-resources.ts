@@ -2,20 +2,39 @@
 // A production stdio Maestro session. The isolated resident example remains a
 // separate measurement and does not establish this process-tree acceptance.
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { LspSession } from "../../../../tests/tooling/support/lsp/session.ts";
 import { isRecord } from "../../json-value.ts";
 import type { JsonRecord } from "../../json-value.ts";
 import { componentSource, documentUri, prepareWorkspace } from "./lib/lsp-resource-workspace.ts";
+import { ResourceCorsaGate, type GateCleanupReceipt } from "./lib/lsp-resource-corsa-gate.ts";
+import {
+  recordCancellationPublications,
+  type CancellationPublicationRecorder,
+} from "./lib/lsp-resource-cancellation.ts";
+import {
+  createCancellationPublicationProgress,
+  finalizeCancellationProfileLink,
+  measureCancellationRetention,
+  updateCancellationPublicationProgress,
+  type CancellationPublicationProgress,
+} from "./lib/lsp-resource-cancellation-run.ts";
 import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
-import type { ProcessEntry } from "./lib/lsp-resource-sampler.ts";
+import type { ObservedProcess, ProcessEntry } from "./lib/lsp-resource-sampler.ts";
 import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.ts";
+import { profiledLauncher } from "./lib/lsp-profile-launch.ts";
+import { captureLspResourceCorpus } from "./lib/lsp-resource-corpus.ts";
+import { finalizeSampledLspRun } from "./lib/lsp-resource-finalize.ts";
 
 interface RunResult {
   run: number;
-  dependencies: { corsaPath: string; vuePath: string };
+  corpus: ReturnType<typeof captureLspResourceCorpus>;
+  fixture_preparation_ms: number;
+  dependencies: ReturnType<typeof prepareWorkspace>;
   opened_files: number;
   metadata_requests: number;
   successful_unique_provider_requests: number;
@@ -24,6 +43,9 @@ interface RunResult {
   initialized_ms?: number;
   controlled_edits_scope?: string;
   body_edit_churn?: Awaited<ReturnType<typeof bodyEditChurn>>;
+  cancellation_publication_progress?: CancellationPublicationProgress;
+  cancellation_churn?: Awaited<ReturnType<typeof measureCancellationRetention>>;
+  corsa_gate_cleanup?: GateCleanupReceipt;
   controlled_edits?: JsonRecord[];
   warming_elapsed_ms?: number;
   current_rss_mib?: number;
@@ -36,7 +58,10 @@ interface RunResult {
   server_stderr?: string;
   rss_peak_mib?: number;
   peak_processes?: ProcessEntry[];
+  observed_processes?: ObservedProcess[];
   resource_samples?: number;
+  profile_json?: { path: string; bytes: number; sha256: string };
+  finalization_error?: string;
 }
 
 interface Measurement {
@@ -52,6 +77,7 @@ interface Measurement {
   services: { editor: boolean; ecosystem: boolean; lint: boolean; typecheck: boolean };
   server: string;
   server_binary_mib: number;
+  server_sha256: string;
   build: string;
   sampler: string;
   idle_seconds: number;
@@ -89,9 +115,12 @@ async function measure() {
       warmProviders % 2 === 0,
   );
   const server = fs.realpathSync(flag("--server", "target/ci-opt/vize"));
+  const profileDirectoryArgument = flag("--profile-json-dir", "");
+  const profileDirectory = profileDirectoryArgument ? path.resolve(profileDirectoryArgument) : null;
   process.env.VIZE_LSP_BIN = server;
   const measurement: Measurement = {
-    scope: "production Maestro LSP with all descendants, including Corsa; harness excluded",
+    scope:
+      "production Maestro LSP with every descendant, including actual Corsa and its test-only byte-preserving Node gate proxy; outer harness excluded",
     preset,
     workspace_files: files,
     open_files: openFiles,
@@ -103,7 +132,8 @@ async function measure() {
     services: { editor: true, ecosystem: true, lint: true, typecheck: true },
     server,
     server_binary_mib: mib(fs.statSync(server).size),
-    build: "ci-opt: release, thin LTO, 16 codegen units",
+    server_sha256: createHash("sha256").update(fs.readFileSync(server)).digest("hex"),
+    build: flag("--build", "unspecified: pass --build to record the actual server recipe"),
     sampler: "Linux /proc process-tree summed RSS every 50 ms, from spawn through idle",
     idle_seconds: idleSeconds,
     acceptance:
@@ -112,7 +142,7 @@ async function measure() {
     github_run:
       process.env.GITHUB_RUN_ID &&
       `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
-    revision: process.env.GITHUB_SHA,
+    revision: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
     per_run: [],
   };
   const save = () => fs.writeFileSync(out, `${JSON.stringify(measurement, null, 2)}\n`);
@@ -120,12 +150,22 @@ async function measure() {
   save();
   for (let run = 0; run < runs; run++) {
     const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-real-lsp-resource-"));
-    const started = performance.now();
+    const setupStarted = performance.now();
     const dependencies = prepareWorkspace(workspace, files);
+    const corsaGate = new ResourceCorsaGate(dependencies.corsaGate);
+    const corpus = captureLspResourceCorpus(workspace, dependencies);
+    const profilePath = profileDirectory && path.join(profileDirectory, `run-${run + 1}.json`);
+    process.env.VIZE_LSP_BIN = profilePath
+      ? profiledLauncher(server, workspace, profilePath)
+      : server;
+    const fixturePreparationMs = performance.now() - setupStarted;
+    const started = performance.now();
     const session = new LspSession();
     const sampler = createSampler(session.processId);
     const result: RunResult = {
       run: run + 1,
+      corpus,
+      fixture_preparation_ms: fixturePreparationMs,
       dependencies,
       opened_files: 0,
       metadata_requests: 0,
@@ -138,6 +178,8 @@ async function measure() {
     });
     measurement.active_run = result;
     save();
+    let cancellationPublications: CancellationPublicationRecorder | undefined;
+    let cancellationRecoveryBoundary = 0;
     try {
       await session.initialize(workspace, measurement.services);
       result.initialized_ms = performance.now() - started;
@@ -155,12 +197,32 @@ async function measure() {
       open(0);
       open(1);
       await metadataCompletion(session, documentUri(workspace, 1), componentSource(1));
-      result.controlled_edits_scope = "two open files before the bulk residency workload";
+      result.controlled_edits_scope =
+        "two open files before cancellation, controlled edits and bulk residency";
+      const cancellationPublicationProgress = createCancellationPublicationProgress();
+      result.cancellation_publication_progress = cancellationPublicationProgress;
+      cancellationPublications = recordCancellationPublications(session, workspace);
+      cancellationRecoveryBoundary = cancellationPublications.count();
+      save();
       result.body_edit_churn = await bodyEditChurn(session, workspace);
+      const cancellation = await measureCancellationRetention({
+        session,
+        sampler,
+        workspace,
+        initialVersion: result.body_edit_churn.final_version,
+        gate: corsaGate,
+        profilePath,
+        publications: cancellationPublications,
+        baselineRecoveryStart: cancellationRecoveryBoundary,
+        publicationProgress: cancellationPublicationProgress,
+        persistPublicationProgress: save,
+      });
+      result.cancellation_churn = cancellation;
+      save();
       result.controlled_edits = await controlledEdits(
         session,
         workspace,
-        result.body_edit_churn.final_version,
+        cancellation.final_version,
       );
       save();
       // Bulk notifications avoid repeated full native analysis between batches.
@@ -218,39 +280,99 @@ async function measure() {
       const before = sampler.sample();
       await new Promise((resolve) => setTimeout(resolve, idleSeconds * 1000));
       const after = sampler.sample();
+      const corsaExecutable = fs.realpathSync(dependencies.corsaPath);
+      const corsaCommand = path.basename(corsaExecutable);
+      const observedProcesses = sampler.observedProcesses();
       assert.ok(
-        after.processes.some((entry) => entry.pid !== session.processId),
-        "typecheck acceptance requires the live Corsa descendant to be measured",
+        observedProcesses.some(
+          (entry) =>
+            entry.pid !== session.processId &&
+            entry.commands.includes(corsaCommand) &&
+            entry.executables.includes(corsaExecutable),
+        ),
+        "typecheck acceptance requires the Corsa executable to be sampled as a descendant",
       );
+      result.observed_processes = observedProcesses;
       result.rss_idle_mib = mib(after.rss_bytes);
       result.idle_cpu_pct =
         ((after.cpu_seconds - before.cpu_seconds) / ((performance.now() - idleStart) / 1000)) * 100;
       result.idle_processes = after.processes;
       result.elapsed_ms = performance.now() - started;
     } catch (error) {
+      if (
+        cancellationPublications &&
+        result.cancellation_publication_progress?.phase === "baseline-recovery"
+      ) {
+        updateCancellationPublicationProgress(
+          result.cancellation_publication_progress,
+          "baseline-recovery",
+          cancellationRecoveryBoundary,
+          null,
+          cancellationPublications.since(0),
+        );
+      }
       result.error = String(error);
       result.server_stderr = session.stderrText;
       throw error;
     } finally {
-      const { peak, samples } = sampler.stop();
-      result.rss_peak_mib = mib(peak.rss_bytes);
-      result.peak_processes = peak.processes;
-      result.resource_samples = samples;
-      measurement.per_run.push(result);
-      delete measurement.active_run;
-      save();
-      await session.shutdown().catch(async () => session.kill());
-      fs.rmSync(workspace, { force: true, recursive: true });
+      cancellationPublications?.stop();
+      await finalizeSampledLspRun({
+        sampler,
+        measurement,
+        result,
+        session,
+        profilePath,
+        cleanup() {
+          process.env.VIZE_LSP_BIN = server;
+          try {
+            result.corsa_gate_cleanup = corsaGate.cleanup();
+            assert.ok(result.corsa_gate_cleanup.no_orphans, "Corsa gate cleanup left an orphan");
+          } finally {
+            fs.rmSync(workspace, { force: true, recursive: true });
+          }
+        },
+        persist: save,
+      });
+      if (profilePath && result.cancellation_churn) {
+        const allocation = result.cancellation_churn.allocation_profile;
+        finalizeCancellationProfileLink(
+          allocation,
+          result.profile_json?.path ?? null,
+          result.error !== undefined || result.finalization_error !== undefined,
+          save,
+        );
+      }
     }
     measurement.completed_runs++;
     save();
   }
-  measurement.metrics = Object.fromEntries(
-    (["rss_peak_mib", "rss_idle_mib", "idle_cpu_pct"] as const).map((key) => [
-      key,
-      Math.max(...measurement.per_run.map((run) => run[key] ?? Number.NaN)),
-    ]),
-  );
+  measurement.metrics = {
+    ...Object.fromEntries(
+      (["rss_peak_mib", "rss_idle_mib", "idle_cpu_pct"] as const).map((key) => [
+        key,
+        Math.max(...measurement.per_run.map((run) => run[key] ?? Number.NaN)),
+      ]),
+    ),
+    cancellation_p50_ms: Math.max(
+      ...measurement.per_run.map((run) => run.cancellation_churn?.statistics.p50_ms ?? Number.NaN),
+    ),
+    cancellation_p95_ms: Math.max(
+      ...measurement.per_run.map((run) => run.cancellation_churn?.statistics.p95_ms ?? Number.NaN),
+    ),
+    cancellation_p99_ms: Math.max(
+      ...measurement.per_run.map((run) => run.cancellation_churn?.statistics.p99_ms ?? Number.NaN),
+    ),
+    cancellation_retained_server_mib: Math.max(
+      ...measurement.per_run.map(
+        (run) => run.cancellation_churn?.retention.retained_delta_mib.server ?? Number.NaN,
+      ),
+    ),
+    cancellation_retained_process_tree_mib: Math.max(
+      ...measurement.per_run.map(
+        (run) => run.cancellation_churn?.retention.retained_delta_mib.process_tree ?? Number.NaN,
+      ),
+    ),
+  };
   measurement.complete = true;
   save();
   console.log(JSON.stringify({ out, metrics: measurement.metrics, files, openFiles, runs }));

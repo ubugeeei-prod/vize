@@ -1,0 +1,316 @@
+//! Source-owned sites cannot resolve through an outer binding they shadow.
+
+use super::{ProjectFacts, RenderTree, RenderTreeReader, component_usage_targets};
+use crate::{CrossFileAnalyzer, CrossFileDiagnosticKind, CrossFileOptions};
+use std::path::Path;
+use vize_carton::{Allocator, CompactString, String};
+use vize_croquis::{Analyzer, AnalyzerOptions};
+
+#[derive(Debug, PartialEq, Eq)]
+struct Edge {
+    caller: u32,
+    target: u32,
+    export: CompactString,
+    sites: Vec<(u32, u32)>,
+}
+
+fn analysis(script: &str, template: &str) -> vize_croquis::Croquis {
+    let allocator = Allocator::default();
+    let (root, errors) = vize_armature::Parser::new(&allocator, template).parse();
+    assert!(errors.is_empty(), "{template}: {errors:?}");
+    let mut drawer = Analyzer::with_options(AnalyzerOptions::full());
+    drawer.analyze_script_setup(script);
+    drawer.analyze_template(&root);
+    drawer.finish()
+}
+
+fn project(
+    script: &str,
+    template: &str,
+    child_script: &str,
+    child_name: &str,
+) -> CrossFileAnalyzer {
+    let mut project = CrossFileAnalyzer::new(
+        CrossFileOptions::default()
+            .with_props_validation(true)
+            .with_provide_inject(true),
+    );
+    project.add_file_with_analysis(
+        Path::new(child_name),
+        child_script,
+        analysis(child_script, "<p></p>"),
+    );
+    let mut source = String::from("<script setup>");
+    source.push_str(script);
+    source.push_str("</script><template>");
+    source.push_str(template);
+    source.push_str("</template>");
+    project.add_file_with_analysis(
+        Path::new("Page.vue"),
+        source.as_str(),
+        analysis(script, template),
+    );
+    project.rebuild_component_edges();
+    project
+}
+
+fn edge_packet(project: &CrossFileAnalyzer) -> Vec<Edge> {
+    let mut facts = ProjectFacts::new(project.registry());
+    let table = facts
+        .prepare::<RenderTreeReader>()
+        .get::<RenderTree>()
+        .expect("render table");
+    table
+        .iter()
+        .map(|(edge, sites)| Edge {
+            caller: edge.caller.as_u32(),
+            target: edge.target.as_u32(),
+            export: edge.export_name.clone(),
+            sites: sites.iter().map(|site| (site.start, site.end)).collect(),
+        })
+        .collect()
+}
+
+#[test]
+fn template_shadowed_async_and_static_sites_do_not_revive_name_fallbacks() {
+    for script in [
+        "import { defineAsyncComponent as dac } from 'vue'; const Lazy = dac(() => import('./NoticeLink.vue')); const items = [];",
+        "import Lazy from './NoticeLink.vue'; const items = [];",
+    ] {
+        for template in [
+            "<Lazy v-for=\"Lazy in items\"/>",
+            "<template v-for=\"Lazy in items\"><Lazy/></template>",
+            "<Provider v-slot=\"{ Lazy }\"><Lazy/></Provider>",
+            "<component :is=\"Lazy\" v-for=\"Lazy in items\"></component>",
+            "<lazy v-for=\"Lazy in items\"></lazy>",
+        ] {
+            let project = project(script, template, "", "NoticeLink.vue");
+            if template.starts_with("<lazy ") {
+                let entry = project
+                    .registry()
+                    .get(crate::FileId::new(1))
+                    .expect("parent");
+                let usages = vize_croquis::facts::component_usage_list(&entry.analysis);
+                assert_eq!(
+                    usages.len(),
+                    1,
+                    "the lowercase component site must be captured"
+                );
+                assert!(super::template_usage_is_shadowed(
+                    &entry.analysis,
+                    &usages[0]
+                ));
+            }
+            assert_eq!(edge_packet(&project), vec![], "{script} {template}");
+            assert_eq!(
+                component_usage_targets(project.registry(), crate::FileId::new(1)),
+                vec![],
+                "{script} {template}"
+            );
+        }
+    }
+    for script in [
+        "import LazyLink from './NoticeLink.vue'; const items = [];",
+        "import { defineAsyncComponent as dac } from 'vue'; const LazyLink = dac(() => import('./NoticeLink.vue')); const items = [];",
+    ] {
+        let template = "<lazy-link v-for=\"LazyLink in items\"></lazy-link>";
+        let project = project(script, template, "", "NoticeLink.vue");
+        let entry = project
+            .registry()
+            .get(crate::FileId::new(1))
+            .expect("parent");
+        let usages = vize_croquis::facts::component_usage_list(&entry.analysis);
+        assert_eq!(usages.len(), 1, "the hyphenated site must be captured");
+        assert!(super::template_usage_is_shadowed(
+            &entry.analysis,
+            &usages[0]
+        ));
+        assert_eq!(edge_packet(&project), vec![]);
+        assert_eq!(
+            component_usage_targets(project.registry(), crate::FileId::new(1)),
+            vec![]
+        );
+    }
+}
+
+#[test]
+fn mixed_template_sites_keep_only_the_unshadowed_root_site() {
+    for script in [
+        "import { defineAsyncComponent as dac } from 'vue'; const Lazy = dac(() => import('./NoticeLink.vue')); const items = [];",
+        "import Lazy from './NoticeLink.vue'; const items = [];",
+    ] {
+        let project = project(
+            script,
+            "<Lazy/><template v-for=\"Lazy in items\"><Lazy/></template>",
+            "",
+            "NoticeLink.vue",
+        );
+        assert_eq!(
+            edge_packet(&project),
+            vec![Edge {
+                caller: 1,
+                target: 0,
+                export: "default".into(),
+                sites: vec![(0, 7)]
+            }]
+        );
+        assert_eq!(
+            component_usage_targets(project.registry(), crate::FileId::new(1)),
+            vec![crate::FileId::new(0)]
+        );
+    }
+}
+
+#[test]
+fn shadowed_prop_sites_do_not_reuse_the_root_component_contract() {
+    let mut project = project(
+        "import Lazy from './NoticeLink.vue'; const items = [];",
+        "<Lazy title=\"ok\"/><template v-for=\"Lazy in items\"><Lazy :title=\"123\"/></template>",
+        "defineProps<{ title: string }>()",
+        "NoticeLink.vue",
+    );
+    assert!(project.analyze().props_validation_issues.is_empty());
+}
+
+#[test]
+fn shadowed_global_component_sites_do_not_create_provide_ancestry() {
+    for (template, expected_matches, expected_unmatched) in [
+        ("<Lazy/>", vec![(1, 0, "token")], vec![]),
+        (
+            "<Lazy v-for=\"Lazy in items\"/>",
+            vec![],
+            vec![(0, "token")],
+        ),
+        (
+            "<Provider v-slot=\"{ Lazy }\"><Lazy/></Provider>",
+            vec![],
+            vec![(0, "token")],
+        ),
+    ] {
+        let mut project = project(
+            "import { provide } from 'vue'; provide('token', 1); const items = [];",
+            template,
+            "import { inject } from 'vue'; const value = inject('token');",
+            "Lazy.vue",
+        );
+        let result = project.analyze();
+        let matches: Vec<_> = result
+            .provide_inject_matches
+            .iter()
+            .map(|row| {
+                (
+                    row.provider.as_u32(),
+                    row.consumer.as_u32(),
+                    row.key.as_str(),
+                )
+            })
+            .collect();
+        assert_eq!(matches, expected_matches, "{template}");
+        let missing: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter_map(|diagnostic| match &diagnostic.kind {
+                CrossFileDiagnosticKind::UnmatchedInject { key } => {
+                    Some((diagnostic.primary_file.as_u32(), key.as_str()))
+                }
+                _ => None,
+            })
+            .collect();
+        assert_eq!(missing, expected_unmatched, "{template}");
+    }
+}
+
+#[test]
+fn own_slot_scope_does_not_shadow_its_host_component() {
+    let template = "<Lazy v-slot=\"{ Lazy }\"><Lazy/></Lazy>";
+    for script in [
+        "import Lazy from './NoticeLink.vue';",
+        "import { defineAsyncComponent as dac } from 'vue'; const Lazy = dac(() => import('./NoticeLink.vue'));",
+    ] {
+        let project = project(script, template, "", "NoticeLink.vue");
+        assert_eq!(
+            edge_packet(&project),
+            vec![Edge {
+                caller: 1,
+                target: 0,
+                export: "default".into(),
+                // Existing ComponentUsage ranges cover the opening tag; subtree bounds are separate.
+                sites: vec![(0, 24)],
+            }],
+            "{script}"
+        );
+        assert_eq!(
+            component_usage_targets(project.registry(), crate::FileId::new(1)),
+            vec![crate::FileId::new(0)]
+        );
+    }
+}
+
+#[test]
+fn missing_template_site_scope_cannot_create_root_ancestry() {
+    for (invalid_scope, expected_edges, expected_targets, expected_matches, expected_unmatched) in [
+        (
+            false,
+            vec![Edge {
+                caller: 1,
+                target: 0,
+                export: "default".into(),
+                sites: vec![(0, 7)],
+            }],
+            vec![crate::FileId::new(0)],
+            vec![(1, 0, "token")],
+            vec![],
+        ),
+        (true, vec![], vec![], vec![], vec![(0, "token")]),
+    ] {
+        let script = "import Lazy from './NoticeLink.vue'; import { provide } from 'vue'; provide('token', 1);";
+        let child = "import { inject } from 'vue'; const value = inject('token');";
+        let mut parent = analysis(script, "<Lazy/>");
+        assert_eq!(parent.component_usages.len(), 1);
+        if invalid_scope {
+            parent.component_usages[0].scope_id = vize_croquis::ScopeId::new(u32::MAX);
+        }
+        let mut project =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+        project.add_file_with_analysis(
+            Path::new("NoticeLink.vue"),
+            child,
+            analysis(child, "<p></p>"),
+        );
+        project.add_file_with_analysis(
+            Path::new("Page.vue"),
+            "<script setup>import Lazy from './NoticeLink.vue'; import { provide } from 'vue'; provide('token', 1);</script><template><Lazy/></template>",
+            parent,
+        );
+        project.rebuild_component_edges();
+        assert_eq!(edge_packet(&project), expected_edges);
+        assert_eq!(
+            component_usage_targets(project.registry(), crate::FileId::new(1)),
+            expected_targets,
+        );
+        let result = project.analyze();
+        let matches: Vec<_> = result
+            .provide_inject_matches
+            .iter()
+            .map(|row| {
+                (
+                    row.provider.as_u32(),
+                    row.consumer.as_u32(),
+                    row.key.as_str(),
+                )
+            })
+            .collect();
+        assert_eq!(matches, expected_matches);
+        let missing: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter_map(|diagnostic| match &diagnostic.kind {
+                CrossFileDiagnosticKind::UnmatchedInject { key } => {
+                    Some((diagnostic.primary_file.as_u32(), key.as_str()))
+                }
+                _ => None,
+            })
+            .collect();
+        assert_eq!(missing, expected_unmatched);
+    }
+}

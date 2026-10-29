@@ -47,16 +47,24 @@ pub(super) fn import_for(declaration: &str, depth: usize) -> String {
     let names = helpers()
         .0
         .iter()
+        // `__EmitProps` is referenced through a relative import type so an
+        // authored declaration with the same lexical name cannot capture it.
+        .filter(|name| name.as_str() != "__EmitProps")
         .filter(|name| identifiers.contains(name.as_str()))
         .map(|name| name.as_str())
         .collect::<Vec<_>>()
         .join(", ");
+    let specifier = module_specifier(depth);
+    vize_carton::cstr!("import type {{ {names} }} from \"{specifier}\";\n")
+}
+
+pub(super) fn module_specifier(depth: usize) -> String {
     let directory = if depth == 0 {
         "./".into()
     } else {
         "../".repeat(depth)
     };
-    vize_carton::cstr!("import type {{ {names} }} from \"{directory}__vize_helpers.js\";\n")
+    vize_carton::cstr!("{directory}__vize_helpers.js")
 }
 
 #[cfg(test)]
@@ -79,6 +87,21 @@ mod tests {
         assert_eq!(
             import_for("export const value: number;", 0),
             "import type {  } from \"./__vize_helpers.js\";\n"
+        );
+        assert_eq!(
+            import_for(
+                "type __EmitProps = 'authored'; type Public = import('./__vize_helpers.js').__EmitProps<{}>;",
+                0
+            ),
+            "import type {  } from \"./__vize_helpers.js\";\n"
+        );
+        assert_eq!(
+            helpers()
+                .0
+                .iter()
+                .filter(|name| name.as_str() == "__EmitProps")
+                .count(),
+            1
         );
     }
 }

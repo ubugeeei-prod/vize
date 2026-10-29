@@ -6,6 +6,7 @@ use crate::batch::import_rewriter::ModuleSpecifierFactsCache;
 
 use super::{VirtualProject, VueDocumentVirtualTs, VueDocumentVirtualTsOptions};
 use std::path::{Path, PathBuf};
+use vize_carton::{String, cstr};
 
 impl VirtualProject {
     /// Keep reachable implementation files in one stable configured project.
@@ -144,14 +145,11 @@ impl VirtualProject {
                     )?;
                     let target = self
                         .find_by_original(&vize_carton::path::canonicalize_non_verbatim(&path))?;
-                    let path = if crate::batch::declaration_path::is_declaration_file(
-                        &target.virtual_path,
-                    ) {
-                        crate::batch::declaration_module_path(&target.virtual_path)
-                    } else {
-                        target.virtual_path.clone()
-                    };
-                    Some(path.to_string_lossy().replace('\\', "/"))
+                    if crate::batch::declaration_path::is_declaration_file(&target.virtual_path) {
+                        let path = crate::batch::declaration_module_path(&target.virtual_path);
+                        return Some(path.to_string_lossy().replace('\\', "/"));
+                    }
+                    Some(self.editor_module_specifier(specifier, target).into())
                 };
                 let source_type = super::build::source_type_for_path(&file.virtual_path)?;
                 let rewritten = match facts.as_deref_mut() {
@@ -183,6 +181,48 @@ impl VirtualProject {
                 file.content = rewritten.code;
                 file.source_map.import_map = rewritten.source_map;
             }
+        }
+    }
+
+    /// Spell a mirrored module with the authored edge's extension style. An
+    /// extensionless or `.js` import must not gain a `.ts` suffix that adds
+    /// TS5097 (#10753); an authored `.ts` import keeps its configured policy.
+    /// Canon-owned routes such as `.vue.ts` keep their generated spelling.
+    fn editor_module_specifier(&self, authored: &str, target: &super::VirtualFile) -> String {
+        let spelled: String = target
+            .virtual_path
+            .to_string_lossy()
+            .replace('\\', "/")
+            .into();
+        if target.original_path.file_name() != target.virtual_path.file_name() {
+            return spelled;
+        }
+        let Some((ts, js, stem)) = [
+            (".ts", ".js"),
+            (".tsx", ".jsx"),
+            (".mts", ".mjs"),
+            (".cts", ".cjs"),
+        ]
+        .into_iter()
+        .find_map(|(ts, js)| Some((ts, js, spelled.strip_suffix(ts)?))) else {
+            return spelled;
+        };
+        match Path::new(authored)
+            .extension()
+            .and_then(|extension| extension.to_str())
+        {
+            Some("ts" | "tsx" | "mts" | "cts") => spelled,
+            Some("js" | "jsx" | "mjs" | "cjs") => cstr!("{stem}{js}"),
+            // Extensionless probing reaches only `.ts`, then `.tsx`.
+            _ if ts == ".ts"
+                || (ts == ".tsx"
+                    && !self
+                        .virtual_files
+                        .contains_key(&target.virtual_path.with_extension("ts"))) =>
+            {
+                stem.into()
+            }
+            _ => spelled,
         }
     }
 

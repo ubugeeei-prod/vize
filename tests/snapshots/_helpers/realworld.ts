@@ -95,6 +95,7 @@ function buildVizeCheckCommand(
     "--corsa-path",
     shellQuote(CORSA_BIN),
     tsconfig,
+    checkConfig.noConfig ? "--no-config" : "",
   ]
     .filter(Boolean)
     .join(" ");

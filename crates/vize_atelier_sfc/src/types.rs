@@ -226,6 +226,11 @@ pub struct SfcCompileResult {
     /// Compile-time macro artifacts extracted from script blocks.
     #[serde(default)]
     pub macro_artifacts: Vec<SfcMacroArtifact>,
+
+    /// Files the compile read besides the SFC (pug `include`s), for
+    /// watchers.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub dependencies: Vec<String>,
 }
 
 /// Compile-time macro artifact extracted from an SFC.

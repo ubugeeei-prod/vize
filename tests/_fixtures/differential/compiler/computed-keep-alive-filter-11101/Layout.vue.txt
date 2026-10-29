@@ -1,0 +1,7 @@
+<script setup>
+const filter = 'include'
+const names = ['Panel']
+</script>
+<template>
+  <KeepAlive :[filter]="names"><Panel /></KeepAlive>
+</template>

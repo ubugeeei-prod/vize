@@ -1,8 +1,7 @@
 //! Deferred checks for root owners with no mutable template dependencies.
 //!
-//! Reuse actual Croquis usage indices and event scope spans. These are emission
-//! buffers, not another template/scope graph. Dynamic expressions deliberately
-//! keep the old order: moving a closure past an assignment changes TS narrowing.
+//! Reuse Croquis usage indices and event spans; these buffers are not another template/scope graph.
+//! Dynamic expressions keep the old order because moving a closure changes TS narrowing.
 
 use vize_carton::{FxHashMap, FxHashSet, String};
 use vize_croquis::{BindingType, Scope, ScopeData, analysis::ComponentUsage};
@@ -13,6 +12,10 @@ use crate::template_diagnostic_directives::{DirectivePolicy, TemplateDiagnosticD
 use crate::virtual_ts::{VizeSemanticLink, types::VizeMapping};
 
 mod safety;
+
+pub(super) fn callback_input_facts(element: &vize_relief::ElementNode<'_>) -> Option<bool> {
+    safety::callback_input_facts(element)
+}
 
 #[derive(Default)]
 pub(crate) struct RootOwnerBuffer {
@@ -267,6 +270,7 @@ mod tests {
                         ..Default::default()
                     },
                     virtual_ts_options: &options,
+                    hoist_shared_preamble: false,
                     setup_spread_bindings: &[],
                     keyed_prop_bindings: &FxHashSet::default(),
                     syntactic_type_only_imported_names: &names,

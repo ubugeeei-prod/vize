@@ -6,6 +6,7 @@
 mod callback_prop_resolution;
 #[cfg(test)]
 mod callback_prop_resolution_tests;
+mod component_prop_bindings;
 mod component_props;
 #[cfg(test)]
 mod component_props_tests;
@@ -62,4 +63,5 @@ pub(crate) use reserved_props::{
 pub(crate) use statements::{
     ExpressionListEmitContext, generate_expressions, generate_expressions_in_enclosing_guard,
 };
+pub(crate) use ts_suppression_comments::callback_parameters_on_ignored_line;
 pub(crate) use value_checks::{TemplateValueCheckTables, TemplateValueChecks};

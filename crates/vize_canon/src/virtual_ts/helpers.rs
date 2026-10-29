@@ -12,10 +12,11 @@ use std::ops::Range;
 mod dom_events;
 mod preamble;
 pub(crate) mod setup_macros;
+pub(crate) mod shared_types;
 mod vue2_members;
 
 pub(crate) use dom_events::{get_dom_event_type, is_known_dom_event_name};
-pub(crate) use preamble::{CONTENT_MAPPER_HELPERS_MODULE, CONTENT_MAPPER_TYPE_HELPERS};
+pub(crate) use preamble::{CONTENT_MAPPER_TYPE_HELPERS, LEGACY_CONTENT_MAPPER_TYPE_HELPERS};
 pub use preamble::{
     DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_TYPE_HELPERS,
 };
@@ -188,16 +189,14 @@ pub(crate) fn generated_text_range(
 /// leading character keeps its case and `_` is not a separator; renaming either
 /// way looks up a key no declared prop matches, so a bound prop reads as missing
 /// (#3863). `"my-prop"` -> `"myProp"`, `"MyProp"` -> `"MyProp"`, `"my_prop"` -> `"my_prop"`.
-/// Key of an authored component attribute in a checked props object. Like
-/// `vue-tsc` (default `htmlAttributes: ['aria-*']`), an `aria-*` name keeps its
-/// HTML spelling and is checked as an attribute; other kebab names camelize
-/// like Vue props.
+/// Key of an authored component attribute in a checked props object.
+///
+/// Vue camelizes every declared prop candidate, including `aria-*`. The
+/// whole-props emitter separately preserves vue-tsc's HTML-attribute treatment
+/// of an `undefined` value; leaving the key itself authored would make a
+/// required `ariaLabel` look absent (#11048).
 pub(crate) fn component_prop_key(name: &str) -> String {
-    if name.starts_with("aria-") {
-        String::from(name)
-    } else {
-        to_camel_case(name)
-    }
+    to_camel_case(name)
 }
 
 pub(crate) fn to_camel_case(s: &str) -> String {

@@ -437,9 +437,20 @@ impl<'a> TransformContext<'a> {
         );
     }
 
-    /// Check if identifier is in scope
+    /// Whether a lexical template binding is visible here. Seeded host globals
+    /// use the compiler's Vue allow-list rather than becoming template locals.
     pub fn is_in_scope(&self, id: &str) -> bool {
-        self.scope_chain.is_defined(id)
+        self.scope_chain.lookup(id).is_some_and(|(_, binding)| {
+            !matches!(
+                binding.binding_type,
+                BindingType::JsGlobalUniversal
+                    | BindingType::JsGlobalBrowser
+                    | BindingType::JsGlobalNode
+                    | BindingType::JsGlobalDeno
+                    | BindingType::JsGlobalBun
+                    | BindingType::VueGlobal
+            )
+        })
     }
 
     /// Hoist an expression

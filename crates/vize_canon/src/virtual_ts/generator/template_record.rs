@@ -27,15 +27,16 @@ pub(super) struct TemplateRecord {
 
 impl TemplateRecord {
     /// `template_ast` is the template when its scope is checked, `generic`
-    /// whether the props are read back from a generic setup scope, and `script`
-    /// the script that may name `useTemplateRef`.
+    /// whether the props are read back from a generic setup scope, and
+    /// whether owned script calls infer `useTemplateRef` targets.
     pub(super) fn plan(
         scope: &FallthroughComponentScope<'_>,
         template_ast: Option<&RootNode<'_>>,
         generic: bool,
-        script: Option<&str>,
+        infer_template_refs: bool,
     ) -> Self {
-        let registers_refs = super::setup_helpers::registers_template_refs(script, scope.checks);
+        let registers_refs =
+            super::setup_helpers::registers_template_refs(infer_template_refs, scope.checks);
         Self {
             forwarded: ForwardedRoots::plan(scope, template_ast, generic),
             ref_starts: if registers_refs && template_ast.is_some() && scope.checks.check_props {

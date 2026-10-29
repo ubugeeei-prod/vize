@@ -12,8 +12,11 @@ mod support {
     pub(crate) mod fix_history_router_provider;
     pub(crate) mod fix_history_runner;
 }
+mod aria_kebab_prop_11048;
+mod content_mapper_vue_generic_11051;
 use support::fix_history_normalization::assert_generated_check_ordinal_normalization_preserves_markers_without_digits;
 use support::fix_history_runner::check_pack;
+use support::fix_history_runner::native_fixture_runtime_disabled;
 
 #[test]
 fn contextual_prop_anchors_preserve_authored_diagnostics() {
@@ -718,10 +721,6 @@ fn pins_incomplete_setup_import_corpus() {
     );
 }
 
-fn native_fixture_runtime_disabled() -> bool {
-    std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
-}
-
 #[test]
 fn dynamic_directive_expressions_preserve_typed_slot_payloads() {
     check_pack(
@@ -820,6 +819,24 @@ fn content_mapper_nested_vfor_reuses_branch_guards() {
 }
 
 #[test]
+fn generic_slot_outlets_check_against_the_setup_parameters() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "generic-slot-outlet-10883",
+        "generic_slot_outlets_check_against_the_setup_parameters",
+        "42ca747027a86da7f94b473cff737cb330134d8c",
+        Some(10883),
+        &[
+            "defaulted-parameter",
+            "constrained-parameter",
+            "wrong-payload",
+        ],
+    );
+}
+
+#[test]
 fn slot_host_guards_preserve_authored_impossible_comparisons() {
     if native_fixture_runtime_disabled() {
         return;
@@ -855,6 +872,28 @@ fn global_scope_build_info_keeps_complete_diagnostics() {
         "61d756842bb44a72c84982f01dc40d3423c96503",
         Some(10819),
         &["imported-global-declaration", "edited-global-declaration"],
+    );
+}
+
+#[test]
+fn literal_bracket_pages_keep_their_project_options() {
+    check_pack(
+        "tsconfig-literal-brackets-10819",
+        "literal_bracket_pages_keep_their_project_options",
+        "26b8fa31c7933d800c8bf4c2f37057864caaae9d",
+        Some(10819),
+        &["literal-page-include", "bracket-directory-exclude"],
+    );
+}
+
+#[test]
+fn relative_sibling_imports_preserve_complete_package_diagnostics() {
+    check_pack(
+        "relative-sibling-storage-10934",
+        "relative_sibling_imports_preserve_complete_package_diagnostics",
+        "cb9c06d2b879da6b47a0a2f783d9a5f324776585",
+        Some(10934),
+        &["typed-sibling-error", "repaired-sibling-import"],
     );
 }
 
@@ -939,6 +978,17 @@ fn jsx_prop_tokens_preserve_complete_batch_diagnostics() {
 }
 
 #[test]
+fn undeclared_instance_globals_report_at_every_read() {
+    check_pack(
+        "undeclared-instance-globals-10617",
+        "undeclared_instance_globals_report_at_every_read",
+        "42ca747027a86da7f94b473cff737cb330134d8c",
+        Some(10617),
+        &["undeclared-dollar-globals"],
+    );
+}
+
+#[test]
 fn unicode_prop_bindings_preserve_complete_authored_diagnostics() {
     check_pack(
         "unicode-prop-bindings-10573",
@@ -1006,6 +1056,28 @@ fn repaired_dependency_buffer_keeps_its_own_diagnostics() {
 }
 
 #[test]
+fn editor_alias_import_extension_styles_keep_native_diagnostics() {
+    check_pack(
+        "editor-alias-import-extension-10753",
+        "editor_alias_import_extension_styles_keep_native_diagnostics",
+        "377e5df97c4effa786a6426a62f61296ce16c750",
+        Some(10753),
+        &["authored-extension-styles"],
+    );
+}
+
+#[test]
+fn callback_render_position_preserves_complete_authored_diagnostics() {
+    check_pack(
+        "callback-render-position-10738",
+        "callback_render_position_preserves_complete_authored_diagnostics",
+        "78719553cf550bcffbf1d0fb891fda642f42de3a",
+        Some(10738),
+        &["type-query-before-delete"],
+    );
+}
+
+#[test]
 fn event_inference_callbacks_keep_contextual_native_diagnostics() {
     check_pack(
         "event-inference-callback-10739",
@@ -1024,6 +1096,17 @@ fn experimental_page_import_preserves_published_path_diagnostics() {
         "a29d9c0b1961ada51037db402c3b74436a56d623",
         Some(10520),
         &["imported-define-page-unknown-path"],
+    );
+}
+
+#[test]
+fn experimental_route_props_follow_the_admitted_project_types() {
+    check_pack(
+        "experimental-router-props-10579",
+        "experimental_route_props_follow_the_admitted_project_types",
+        "5b5ca8272070fffb67152c1ccb20644abe11c62d",
+        Some(10579),
+        &["required-component-prop", "route-params-as-props"],
     );
 }
 
@@ -1076,5 +1159,144 @@ fn undefined_context_keeps_complete_authored_diagnostics() {
         "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
         Some(10667),
         &["prop-used"],
+    );
+}
+
+#[test]
+fn options_api_reserved_props_resolve_dynamic_component_references() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "options-api-reserved-component-reference",
+        "options_api_reserved_props_resolve_dynamic_component_references",
+        "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+        None,
+        &[
+            "reserved-prop-dynamic-component",
+            "reserved-prop-dynamic-component-wrong-member",
+            "reserved-prop-authored-local-collision",
+        ],
+    );
+}
+
+#[test]
+fn empty_v_slot_expressions_keep_slot_scopes_checked() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "empty-v-slot-expression",
+        "empty_v_slot_expressions_keep_slot_scopes_checked",
+        "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+        None,
+        &[
+            "empty-expression",
+            "blank-expression",
+            "empty-expression-unknown-slot",
+        ],
+    );
+}
+
+#[test]
+fn template_ref_signatures_preserve_readonly_unknown_and_repairs() {
+    check_pack(
+        "template-ref-signatures-10948",
+        "template_ref_signatures_preserve_readonly_unknown_and_repairs",
+        "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+        Some(10948),
+        &[
+            "valid-imported-signatures",
+            "invalid-original-operations",
+            "repaired-imported-signatures",
+        ],
+    );
+}
+
+#[test]
+fn custom_properties_resolve_on_the_template_instance() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "setup-custom-properties",
+        "custom_properties_resolve_on_the_template_instance",
+        "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
+        None,
+        &[
+            "script-setup-custom-properties",
+            "script-setup-wrong-use-and-unknown-name",
+            "options-api-slot-loop-source",
+            "options-api-slot-loop-unknown-name",
+        ],
+    );
+}
+
+#[test]
+fn dependency_probe_histories_preserve_complete_diagnostics() {
+    check_pack(
+        "dependency-probe-history-10936",
+        "dependency_probe_histories_preserve_complete_diagnostics",
+        "1266cd3a014654bbdcf3378500b93447411b26d9",
+        Some(10936),
+        &[
+            "valid-precedence-and-alias",
+            "invalid-authored-model",
+            "repaired-authored-model",
+        ],
+    );
+}
+
+#[test]
+fn public_instance_ts_directives_preserve_owned_native_diagnostics() {
+    check_pack(
+        "public-instance-ts-directives-10984",
+        "public_instance_ts_directives_preserve_owned_native_diagnostics",
+        "c001dc27973a316351d1d45739ad84a7db544f11",
+        Some(10984),
+        &[
+            "original-expectation",
+            "no-directive-missing-member",
+            "valid-local-unused-expectation",
+        ],
+    );
+}
+
+#[test]
+fn imported_component_tag_aliases_preserve_batch_prop_diagnostics() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "component-tag-aliases-11020",
+        "imported_component_tag_aliases_preserve_batch_prop_diagnostics",
+        "d653e04143051768a96ba51a35fe64c055caf0c5",
+        Some(11020),
+        &["valid", "invalid", "repaired"],
+    );
+}
+
+#[test]
+fn unknown_component_slots_preserve_authored_type_diagnostics() {
+    if native_fixture_runtime_disabled() {
+        return;
+    }
+    check_pack(
+        "unknown-component-slot-payload-11027",
+        "unknown_component_slots_preserve_authored_type_diagnostics",
+        "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
+        Some(11027),
+        &[
+            "valid",
+            "unknown",
+            "unknown-union",
+            "repaired",
+            "unresolved-tag",
+            "slot-any",
+            "slot-unknown",
+            "slot-never",
+            "slot-string",
+            "unicode-crlf-unknown",
+        ],
     );
 }

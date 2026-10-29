@@ -6,11 +6,13 @@
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_carton::{String, profile};
 use vize_l0::dump::capture::StageCapture;
+use vize_l1_to_l2::lower::pug::PugSourceMap;
 use vize_l4::module::RenderFunctionName;
 
 use crate::compile_template::{
     TemplateBlockCompileContext, compile_template_block_vapor, compile_template_block_with_capture,
 };
+use crate::module_map::{Runs, module_map_value};
 use crate::types::{
     SfcCompileOptions, SfcCompileResult, SfcError, SfcMacroArtifact, SfcTemplateBlock,
 };
@@ -22,6 +24,9 @@ use super::styles::CompiledStyles;
 /// Everything the template-only path reads from the shared prelude.
 pub(super) struct TemplateOnlyInput<'a, 'c> {
     pub(super) template: &'a SfcTemplateBlock<'a>,
+    pub(super) source: &'a str,
+    pub(super) filename: &'a str,
+    pub(super) pug_source_map: Option<&'a PugSourceMap>,
     pub(super) options: &'a SfcCompileOptions,
     pub(super) custom_elements: &'a CustomElementMatcher,
     pub(super) template_syntax: TemplateSyntaxMode,
@@ -66,6 +71,9 @@ pub(super) fn compile_template_only(
                     experimental_self_component: input.experimental_self_component,
                     bindings: None,
                     croquis: None,
+                    collect_map: input.pug_source_map.is_some(),
+                    authored_source: Some(input.source),
+                    pug_source_map: input.pug_source_map,
                 },
                 input.template_syntax,
                 input.codegen_options,
@@ -95,6 +103,9 @@ pub(super) fn compile_template_only(
                     experimental_self_component: input.experimental_self_component,
                     bindings: None,
                     croquis: None,
+                    collect_map: input.pug_source_map.is_some(),
+                    authored_source: Some(input.source),
+                    pug_source_map: input.pug_source_map,
                 },
                 input.template_syntax,
                 input.codegen_options,
@@ -108,6 +119,7 @@ pub(super) fn compile_template_only(
     // wrote a 0-byte module and exited 0 (#958). Propagate the
     // template error up so the build/CLI surfaces it.
     let template_output = template_result?;
+    let template_map = template_output.map;
     warnings.extend(template_output.warnings);
     let mut code = {
         let mut code = template_output.code;
@@ -139,7 +151,7 @@ pub(super) fn compile_template_only(
         code
     };
 
-    finalize_output_mode(
+    let rewrite = finalize_output_mode(
         &mut code,
         &mut warnings,
         input.options,
@@ -147,13 +159,36 @@ pub(super) fn compile_template_only(
     );
     trim_trailing_newlines(&mut code);
 
+    let map = template_map.and_then(|map| {
+        let authored = authored_template_points(&map, template.loc.start, input.pug_source_map);
+        let authored = match &rewrite {
+            Some(rewrite) => rewrite.compose(&authored),
+            None => authored,
+        };
+        module_map_value(&code, authored, input.filename, input.source)
+    });
+
     Ok(SfcCompileResult {
         code,
         css,
-        map: None,
+        map,
         errors,
         warnings,
         bindings: None,
         macro_artifacts,
+        dependencies: Vec::new(),
     })
+}
+
+fn authored_template_points(
+    generated: &Runs,
+    template_start: usize,
+    pug_source_map: Option<&PugSourceMap>,
+) -> Runs {
+    let mut authored = Runs::default();
+    for &(output, source) in generated.points() {
+        let source = pug_source_map.map_or(source, |map| map.offset_to_pug(source as u32) as usize);
+        authored.point(output, template_start + source);
+    }
+    authored
 }

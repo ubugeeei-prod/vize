@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+import Optional from './Optional.vue'
+
+const maybe = undefined as string | undefined
+</script>
+
+<template>
+  <Child aria-label="kebab aria" item-label="kebab item" />
+  <Child ariaLabel="camel aria" itemLabel="camel item" />
+  <Optional :aria-label="maybe" />
+  <Optional aria-hidden="true" />
+  <Child :aria-label="123" item-label="wrong aria value" />
+</template>

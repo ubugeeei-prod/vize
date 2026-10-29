@@ -112,9 +112,11 @@ pub(super) fn bindings<'a>(
                     key: "$",
                     dynamic_name: None,
                     value: Some(binding.value),
+                    spans: None,
                     value_kind: crate::ir::PropValueKind::Expression,
                     dynamic: true,
                     handler: binding.kind == BindingKind::Handlers,
+                    handler_modifiers: None,
                     position,
                 });
                 continue;
@@ -136,7 +138,7 @@ pub(super) fn bindings<'a>(
                 continue;
             }
             Content::Component { props, .. } => {
-                prop(props, binding, position, fresh, true)?;
+                prop(props, binding, position, fresh, true, alloc)?;
                 continue;
             }
             Content::Outlet { .. }
@@ -147,7 +149,7 @@ pub(super) fn bindings<'a>(
                 return Err(LegacyReason::Component.into());
             }
             Content::Outlet { props, .. } => {
-                prop(props, binding, position, fresh, false)?;
+                prop(props, binding, position, fresh, false, alloc)?;
                 continue;
             }
             _ => {
@@ -232,24 +234,47 @@ fn prop<'a>(
     position: u32,
     fresh: bool,
     component: bool,
+    alloc: &'a Allocator,
 ) -> Result<()> {
     let handler = match binding.kind {
         BindingKind::Prop if binding.modifiers.is_empty() => false,
-        BindingKind::Event if component && binding.modifiers.is_empty() => true,
+        BindingKind::Event if component => true,
         _ => return Err(LegacyReason::Component.into()),
     };
     if !handler && binding.dynamic_name.is_none() && !component_prop(binding.name)
-        || !fresh && (binding.dynamic_name.is_some() || !matches!(binding.name, "class" | "style"))
+        || !fresh
+            && !handler
+            && (binding.dynamic_name.is_some() || !matches!(binding.name, "class" | "style"))
     {
         return Err(LegacyReason::Component.into());
     }
+    // Explicit listeners beside a model update retain their existing fallback
+    // until the model's assignment/handler merge has its own native contract.
+    if handler
+        && !fresh
+        && props.iter().any(|prop| {
+            prop.key == binding.name && prop.value_kind == crate::ir::PropValueKind::ModelUpdate
+        })
+    {
+        return Err(LegacyReason::Component.into());
+    }
+    let handler_modifiers = (handler && !binding.modifiers.is_empty()).then(|| {
+        let modifiers = crate::ir::EventModifiers::from_names(
+            alloc,
+            binding.dynamic_name.is_none().then_some(binding.name),
+            binding.modifiers.iter().copied(),
+        );
+        &*alloc.as_oxc().alloc(modifiers)
+    });
     props.push(Prop {
         key: binding.name,
         dynamic_name: binding.dynamic_name,
         value: Some(binding.value),
+        spans: (!handler && binding.dynamic_name.is_some()).then_some(binding.spans),
         value_kind: crate::ir::PropValueKind::Expression,
         dynamic: true,
         handler,
+        handler_modifiers,
         position,
     });
     Ok(())

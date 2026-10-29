@@ -7,6 +7,7 @@ import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { resolveOfficialNativeImage } from "./official-fixtures.ts";
+import { callbackOwnerProjects, callbackSetupReference } from "./callback-owner-projects.ts";
 import {
   directiveControls,
   formDirectiveControls,
@@ -44,6 +45,7 @@ const args = process.argv.slice(2),
   options = new Map<string, string>();
 let baselineOnly = false;
 let relocationOnly = false;
+let callbackOnly = false;
 for (let index = 0; index < args.length; index++) {
   const key = args.at(index);
   assert.ok(key);
@@ -55,6 +57,11 @@ for (let index = 0; index < args.length; index++) {
   if (key === "--relocation-controls") {
     assert.equal(relocationOnly, false);
     relocationOnly = true;
+    continue;
+  }
+  if (key === "--callback-cfa-controls") {
+    assert.equal(callbackOnly, false);
+    callbackOnly = true;
     continue;
   }
   assert.ok(
@@ -88,13 +95,30 @@ const sourceSha = options.get("--source-sha");
 if (!baselineOnly) assert.match(sourceSha ?? "", /^[0-9a-f]{40}$/u);
 assert.equal(options.has("--comparison-cli"), options.has("--comparison-source-sha"));
 if (options.has("--comparison-cli")) {
-  assert.ok(relocationOnly && !baselineOnly);
-  assert.equal(required("--comparison-source-sha"), "5597001751a477402537a1cc61cae487feefef9c");
+  assert.ok((relocationOnly || callbackOnly) && !baselineOnly);
+  assert.equal(
+    required("--comparison-source-sha"),
+    callbackOnly
+      ? "78719553cf550bcffbf1d0fb891fda642f42de3a"
+      : "5597001751a477402537a1cc61cae487feefef9c",
+  );
 }
 const comparisonCli = options.has("--comparison-cli")
   ? fs.realpathSync(required("--comparison-cli"))
   : undefined;
-const projects = relocationOnly ? relocationControls() : ownershipProjects;
+assert.ok(!(relocationOnly && callbackOnly));
+if (callbackOnly) assert.ok(comparisonCli && !baselineOnly);
+const callbackProjects = callbackOnly ? callbackOwnerProjects() : [];
+const projects: Project[] = callbackOnly
+  ? callbackProjects.map((project) => ({
+      id: project.id,
+      inputs: [],
+      inlineInputs: project.inlineInputs,
+      diagnostics: [],
+    }))
+  : relocationOnly
+    ? relocationControls()
+    : ownershipProjects;
 const environment = Object.fromEntries(
   Object.entries(process.env).filter(
     ([key]) =>
@@ -192,11 +216,13 @@ for (const [id, file, expected] of versions) {
 write(path.join(output, "providers.json"), {
   sourceSha,
   comparisonSourceSha: options.get("--comparison-source-sha"),
-  mode: relocationOnly
-    ? "relocation-control-observations-not-qualified"
-    : baselineOnly
-      ? "registry-baseline-only"
-      : "source-cli-qualification",
+  mode: callbackOnly
+    ? "callback-cfa-control-observations-not-qualified"
+    : relocationOnly
+      ? "relocation-control-observations-not-qualified"
+      : baselineOnly
+        ? "registry-baseline-only"
+        : "source-cli-qualification",
   notPublicationAcceptance: true,
   explicitMapperHost: options.has("--mapper-host"),
   mapperVersion: officialVersion,
@@ -247,7 +273,7 @@ for (const project of projects)
           text = text
             .replaceAll("  <GenericForm", `  ${prefix}<GenericForm`)
             .replaceAll("  <Child3", `  ${prefix}<Child3`);
-        if (relocationOnly && entry.file === "src/Min.vue")
+        if ((relocationOnly || callbackOnly) && entry.file === "src/Min.vue")
           text = text.replaceAll("  <Comp", `  ${prefix}<Comp`);
         const file =
           project.ordinaryForm && entry.file === "src/Form.art.vue" ? "src/Form.vue" : entry.file;
@@ -266,6 +292,44 @@ for (const project of projects)
         return { ...row, column: row.column + (line.includes(header) ? prefix.length : 0) };
       });
       const observations: Record<string, Observation> = {};
+      if (callbackOnly) {
+        const control = callbackProjects.find((control) => control.id === project.id);
+        assert.ok(control);
+        const directory = path.join(output, "projects", id, "independent-reference");
+        fs.mkdirSync(directory, { recursive: true });
+        const source =
+          `${prefix ? "// 日本 🧭\n" : ""}${callbackSetupReference(control.reference.source)}`.replaceAll(
+            "\n",
+            newline,
+          );
+        fs.writeFileSync(path.join(directory, control.reference.file), source);
+        write(path.join(directory, "tsconfig.json"), {
+          compilerOptions: config.compilerOptions,
+          files: [control.reference.file],
+        });
+        write(path.join(directory, "control.json"), {
+          control,
+          source,
+          sourceSha256: digest(source),
+          originalModuleSource: control.reference.source,
+          originalModuleSourceSha256: digest(control.reference.source),
+          lexicalContext: "handwritten setup function, preserving original module input",
+          newline,
+          prefix,
+          qualification:
+            "independent same-physical-SDK TypeScript; complete source observations still require audit",
+        });
+        observations.reference = run(
+          [official, "--noEmit", "--pretty", "false", "-p", "tsconfig.json"],
+          directory,
+          path.join(directory, "compiler"),
+        );
+        observations["native-reference"] = run(
+          [bundled, "--noEmit", "--pretty", "false", "-p", "tsconfig.json"],
+          directory,
+          path.join(directory, "native-compiler"),
+        );
+      }
       for (const side of candidate ? ["baseline", "candidate"] : ["baseline"]) {
         const directory = path.join(output, "projects", id, side);
         fs.mkdirSync(directory, { recursive: true });
@@ -398,8 +462,8 @@ for (const project of projects)
     }
 write(path.join(output, "inventory.json"), {
   cases: rows.length,
-  originalCases: relocationOnly ? 0 : 60,
-  additionalEdgeCases: relocationOnly ? rows.length : 8,
+  originalCases: relocationOnly || callbackOnly ? 0 : 60,
+  additionalEdgeCases: relocationOnly || callbackOnly ? rows.length : 8,
   executedProcesses: rows.reduce((total, row) => total + Object.keys(row.observations).length, 0),
   ids: rows.map((row) => row.id),
   mode: baselineOnly ? "baseline-only" : "candidate-and-baseline",
@@ -431,13 +495,14 @@ if (relocationOnly) {
     });
   }
 }
-assert.equal(rows.length, relocationOnly ? 56 : 68);
+assert.equal(rows.length, callbackOnly ? 92 : relocationOnly ? 56 : 68);
 assert.equal(
   rows.reduce((total, row) => total + Object.keys(row.observations).length, 0),
-  rows.length * (baselineOnly ? 3 : 6),
+  rows.length * (callbackOnly ? 8 : baselineOnly ? 3 : 6),
 );
+if (callbackOnly) write(path.join(output, "callback-cfa-observations.json"), rows);
 // Every full protocol/check/official-host observation is durable before comparisons.
-for (const row of relocationOnly ? [] : rows) {
+for (const row of relocationOnly || callbackOnly ? [] : rows) {
   const config = JSON.parse(row.files["tsconfig.json"]);
   const projectFiles = Object.keys(row.files)
     .filter((file) => file !== "tsconfig.json")
@@ -509,8 +574,9 @@ for (const row of relocationOnly ? [] : rows) {
 write(path.join(output, "result.json"), {
   sourceSha,
   cases: rows.length,
-  sourceQualified: !baselineOnly && !relocationOnly,
+  sourceQualified: !baselineOnly && !relocationOnly && !callbackOnly,
   relocationDiscovery: relocationOnly,
+  callbackControlDiscovery: callbackOnly,
   registryBaselineOnly: baselineOnly,
   fullNativeVectors: true,
   fullCandidateMapperVectors: !baselineOnly,

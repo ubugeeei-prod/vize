@@ -1,0 +1,9 @@
+{
+  "filename": "Layout.vue",
+  "code": "import { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\";\nimport { mergeProps as _mergeProps } from \"vue\";\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(_ssrRenderComponent($setup.Child, _mergeProps({\n    text: $setup.label,\n    onPing: $setup.onPing\n  }, _attrs), null, _parent));\n}\nimport { label, onPing } from \"./store\";\nimport Child from \"./Child.vue\";\n// imported in the plain <script> block, used by the <script setup> template\nexport default {\n  __name: \"Layout\",\n  ssrRender,\n  setup(__props, { expose: __expose }) {\n    __expose();\n    const __returned__ = {\n      Child,\n      label,\n      onPing\n    };\n    Object.defineProperty(__returned__, \"__isScriptSetup\", {\n      enumerable: false,\n      value: true\n    });\n    return __returned__;\n  }\n};",
+  "css": null,
+  "errors": [],
+  "warnings": [],
+  "script_lang": "ts",
+  "macro_artifacts": []
+}

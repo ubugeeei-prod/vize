@@ -38,6 +38,58 @@ export interface Fixture {
   controls: Case[];
 }
 
+export interface OfficialRuntimeAuthority {
+  typescript: string;
+  vue: string;
+}
+
+export function officialRuntimeAuthority(
+  value: Pick<Fixture, "typescript" | "vue">,
+): OfficialRuntimeAuthority {
+  assert.equal(value.typescript, "7.1.0-dev.20261017.1");
+  assert.equal(typeof value.vue, "string");
+  assert.match(value.vue, /^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$/u);
+  return { typescript: value.typescript, vue: value.vue };
+}
+
+export function assertOfficialRuntimeCustody(
+  expected: OfficialRuntimeAuthority,
+  sources: Record<string, Pick<Fixture, "typescript" | "vue">>,
+) {
+  for (const [name, source] of Object.entries(sources))
+    assert.deepEqual(
+      officialRuntimeAuthority(source),
+      expected,
+      `${name} must preserve the fixture runtime authority`,
+    );
+}
+
+export function assertOfficialRuntimeInstallation(
+  directory: string,
+  expected: OfficialRuntimeAuthority,
+  installed: OfficialRuntimeAuthority,
+) {
+  const request = JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8"));
+  const lock = JSON.parse(fs.readFileSync(path.join(directory, "package-lock.json"), "utf8"));
+  assertOfficialRuntimeCustody(expected, {
+    request: request.dependencies,
+    lock: lock.packages?.[""]?.dependencies,
+    installed,
+  });
+}
+
+export function officialFailure(name: string, error: unknown) {
+  return {
+    name,
+    error:
+      error instanceof Error
+        ? Object.fromEntries(
+            Object.getOwnPropertyNames(error).map((key) => [key, Reflect.get(error, key)]),
+          )
+        : String(error),
+  };
+}
+
 /** Parse selectors without starting a package install or compiler process. */
 export function officialRunOptions(args: string[], root: string, defaultFixture: string) {
   const values = new Map<string, string>();
@@ -158,8 +210,7 @@ export function loadOfficialFixture(file: string, publishedSource?: string): Fix
       ? surplusDefaultsPublicFixture(value)
       : value
   ) as Fixture;
-  assert.equal(fixture.typescript, "7.1.0-dev.20261017.1");
-  assert.equal(fixture.vue, "3.5.20");
+  officialRuntimeAuthority(fixture);
   assert.match(fixture.baselineVize, /^\d+\.\d+\.\d+$/u);
   assert.ok(Array.isArray(fixture.originals) && fixture.originals.length > 0);
   assert.ok(Array.isArray(fixture.controls));
@@ -201,6 +252,11 @@ export function loadOfficialFixture(file: string, publishedSource?: string): Fix
   return fixture;
 }
 
+export function loadOfficialFixtureSuite(file: string, publishedSource?: string) {
+  const fixture = loadOfficialFixture(file, publishedSource);
+  return { file, fixture, runtime: officialRuntimeAuthority(fixture) };
+}
+
 export function officialCases(fixture: Fixture): Case[] {
   return [
     ...fixture.originals.map((row) => ({
@@ -218,12 +274,16 @@ export function officialCases(fixture: Fixture): Case[] {
 }
 
 export const officialDiagnostics = (stdout: string) =>
-  [...stdout.matchAll(/^([^\r\n]+)\((\d+),(\d+)\): error TS(\d+): (.*)$/gmu)].map((match) => ({
+  [
+    ...stdout.matchAll(
+      /^([^\r\n]+)\((\d+),(\d+)\): error TS(\d+): (.*)((?:\r?\n[\t ]+[^\r\n]*)*)/gmu,
+    ),
+  ].map((match) => ({
     file: match[1],
     line: Number(match[2]),
     column: Number(match[3]),
     code: Number(match[4]),
-    message: match[5],
+    message: match[5] + match[6],
   }));
 
 interface Result {

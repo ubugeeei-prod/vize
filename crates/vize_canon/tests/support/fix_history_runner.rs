@@ -10,7 +10,12 @@ use std::path::Path;
 use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, PackageResolutionMode,
     PackageRouteBinding, PackageRouteResolver, PackageSourceOptions,
+    batch::{TsconfigOwnershipCache, TsconfigSourceKind},
 };
+
+pub(crate) fn native_fixture_runtime_disabled() -> bool {
+    std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
+}
 
 pub(crate) fn check_pack(
     name: &str,
@@ -39,6 +44,9 @@ pub(crate) fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
+            "aria-kebab-prop-11048" | "component-tag-aliases-11020" => regression,
+            "content-mapper-vue-generic-11051" => regression,
+            "unknown-component-slot-payload-11027" => regression,
             "import-literal-geometry-10762" | "escaped-import-literals-10763" => {
                 "62652a4d4029fa11016dfa1ac8c24669b42c8d7a"
             }
@@ -54,6 +62,7 @@ pub(crate) fn check_pack(
             | "v-for-component-source-original"
             | "declared-prop-names-original"
             | "template-suppression-original"
+            | "template-ref-signatures-10948"
             | "native-pointer-events-original"
             | "cache-maintenance-9860"
             | "workspace-alias-cache-10063"
@@ -69,6 +78,7 @@ pub(crate) fn check_pack(
             | "allow-importing-ts-extensions-9890"
             | "nuxt-plugin-injection-types"
             | "listener-attribute-parity-9852"
+            | "dependency-probe-history-10936"
             | "dynamic-component-union-listener-10026"
             | "native-inline-event-handler-9835"
             | "art-variant-implicit-component-9854"
@@ -104,17 +114,29 @@ pub(crate) fn check_pack(
             | "quoted-generic-parameters-10540"
             | "planned-generic-syntax-route-10598"
             | "unicode-prop-bindings-10573"
+            | "undeclared-instance-globals-10617"
             | "experimental-router-import-10520"
+            | "experimental-router-props-10579"
             | "literal-reference-paths-10551"
             | "content-mapper-experimental-router-10526"
             | "narrowed-slot-host-guard-10660"
+            | "callback-render-position-10738"
+            | "generic-slot-outlet-10883"
             | "empty-generic-public-contract-10540"
             | "component-input-diagnostic-owners-10607"
             | "content-mapper-merged-class-10788"
             | "content-mapper-slot-host-callbacks-10774"
             | "native-completion-order-10747"
             | "global-scope-build-info-10819"
+            | "relative-sibling-storage-10934"
             | "reopen-repaired-diagnostics-10730"
+            | "editor-alias-import-extension-10753"
+            | "tsconfig-literal-brackets-10819"
+            | "options-api-reserved-component-reference"
+            | "setup-custom-properties"
+            | "empty-v-slot-expression"
+            | "public-instance-ts-directives-10984"
+            | "zero-argument-slot-constructor-11013"
             | "event-inference-callback-10739" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
@@ -140,9 +162,17 @@ pub(crate) fn check_pack(
             .map(|options| options.options_api),
         matches!(
             name,
-            "options-api-any-instance" | "jsx-prop-token-ranges-10494"
+            "options-api-any-instance"
+                | "options-api-reserved-component-reference"
+                | "setup-custom-properties"
+                | "jsx-prop-token-ranges-10494"
         )
-        .then_some(name == "options-api-any-instance"),
+        .then_some(matches!(
+            name,
+            "options-api-any-instance"
+                | "options-api-reserved-component-reference"
+                | "setup-custom-properties"
+        )),
         "the original explicit checker options must be retained"
     );
     assert_eq!(
@@ -151,7 +181,10 @@ pub(crate) fn check_pack(
             .map(|options| options.jsx_typecheck),
         matches!(
             name,
-            "options-api-any-instance" | "jsx-prop-token-ranges-10494"
+            "options-api-any-instance"
+                | "options-api-reserved-component-reference"
+                | "setup-custom-properties"
+                | "jsx-prop-token-ranges-10494"
         )
         .then_some(name == "jsx-prop-token-ranges-10494"),
         "the authored JSX lowering option must be retained"
@@ -210,6 +243,9 @@ pub(crate) fn check_pack(
         }
         if pack.project_options.is_some() {
             assert!(!project_root.join("node_modules").exists());
+        }
+        if name == "experimental-router-props-10579" {
+            super::fix_history_router_provider::install_source_build(&root, &project_root);
         }
         if name == "workspace-alias-cache-10063" {
             for (source, destination) in [
@@ -281,15 +317,45 @@ pub(crate) fn check_pack(
                 Default::default()
             },
             tsconfig_path: match name {
+                "public-instance-ts-directives-10984" => {
+                    Some(project_root.join("test-workspace/tsc/#3488/tsconfig.json"))
+                }
                 "workspace-alias-cache-10063" => Some(project_root.join("tsconfig.a.json")),
                 "import-literal-geometry-10762" => {
                     Some(project_root.join("packages/web/tsconfig.app.json"))
+                }
+                // `vize check` and the editor check a page with its owning
+                // referenced project.
+                "tsconfig-literal-brackets-10819" => {
+                    let page = case
+                        .inputs
+                        .iter()
+                        .find(|input| input.file.ends_with(".vue"))
+                        .expect("the case must name its page");
+                    Some(
+                        TsconfigOwnershipCache::default().effective_config_for_source(
+                            &project_root.join("tsconfig.json"),
+                            &project_root.join(safe_relative(&page.file)),
+                            TsconfigSourceKind::Typed,
+                        ),
+                    )
+                }
+                "relative-sibling-storage-10934" => {
+                    Some(project_root.join("apps/app/tsconfig.json"))
                 }
                 _ => None,
             },
         };
         let mut checker =
             BatchTypeChecker::with_options(&project_root, options).expect("the checker must start");
+        if name == "relative-sibling-storage-10934" {
+            checker
+                .set_persistent_storage_owner(
+                    &project_root.join("apps/app"),
+                    Some(&project_root.join("apps/app/tsconfig.json")),
+                )
+                .expect("the package must select its private persistent storage owner");
+        }
         if name == "workspace-package-import-alias-10175" {
             let mut resolver = PackageRouteResolver::default();
             let bindings = [

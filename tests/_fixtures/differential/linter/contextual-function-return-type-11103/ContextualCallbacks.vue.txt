@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import { computed } from "vue";
+
+function useField(options: { value: () => number; clear: () => void }): void {
+  void options;
+}
+
+const count = computed(() => 1);
+
+useField({ value: () => count.value, clear: () => {} });
+
+function declared(): number {
+  return 1;
+}
+</script>
+
+<template>
+  <p>{{ declared() }}</p>
+</template>

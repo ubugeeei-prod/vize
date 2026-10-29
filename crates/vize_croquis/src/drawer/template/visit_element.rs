@@ -17,7 +17,7 @@ use crate::croquis::ComponentUsage;
 use crate::drawer::Drawer;
 use crate::drawer::helpers::{ConditionalKind, is_component_tag};
 use vize_carton::{CompactString, SmallVec, profile};
-use vize_relief::ElementNode;
+use vize_relief::{ElementNode, PropNode};
 
 impl Drawer {
     /// Visit element node.
@@ -38,6 +38,29 @@ impl Drawer {
         recover_pattern_arm: bool,
     ) {
         let tag = el.tag;
+        // Fold invocation evidence into the existing element visit. A private
+        // count is never an admission of a partial or caller-owned AST.
+        let render = self.croquis.nuxt_render_template.get_or_insert_default();
+        render.admitted = false;
+        render.slot_outlets = render.slot_outlets.saturating_add(u32::from(tag == "slot"));
+        if !render.opaque_structure {
+            render.opaque_structure = recover_pattern_arm
+                || matches!(
+                    tag,
+                    "script" | "iframe" | "object" | "embed" | "link" | "meta" | "base"
+                )
+                || el.props.iter().any(|prop| match prop {
+                    PropNode::Directive(_) => true,
+                    PropNode::Attribute(attribute) => {
+                        // Only inert static attributes participate in this closed
+                        // source proof. Inline events and resource/code carriers
+                        // cannot establish an invocation bound.
+                        !matches!(attribute.name, "id" | "class" | "role" | "name" | "slot")
+                            && !attribute.name.starts_with("aria-")
+                            && !attribute.name.starts_with("data-")
+                    }
+                });
+        }
         self.check_orphan_pattern_arm(el, recover_pattern_arm);
         let is_component = is_component_tag(tag);
         if is_component || crate::builtins::is_runtime_builtin_component(tag) {

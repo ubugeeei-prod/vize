@@ -80,16 +80,20 @@ fn component_listener_inference_accepts_camelized_data_and_aria_attrs() {
         r#"<Child data-test="x" :aria-hidden="true" @close="() => {}" />"#,
         true,
     );
-    assert!(code.contains("\"dataTest\": \"x\""), "{code}");
-    assert!(code.contains("\"ariaHidden\": true"), "{code}");
+    assert_eq!(code.matches("\"dataTest\": \"x\"").count(), 2, "{code}");
+    assert_eq!(code.matches("\"ariaHidden\": true").count(), 1, "{code}");
     // Listener inference instantiates the child's public constructor, not just
     // the usage's separate checker. Both spellings must inhabit that contract.
-    assert!(
-        code.contains("[K in `data-${string}` | `data${Capitalize<string>}`]"),
+    assert_eq!(
+        code.matches("[K in `data-${string}` | `data${Capitalize<string>}`]")
+            .count(),
+        2,
         "{code}"
     );
-    assert!(
-        code.contains("[K in `aria-${string}` | `aria${Capitalize<string>}`]"),
+    assert_eq!(
+        code.matches("[K in `aria-${string}` | `aria${Capitalize<string>}`]")
+            .count(),
+        1,
         "{code}"
     );
 }
@@ -154,7 +158,7 @@ fn listener_inference_maps_its_own_prop_keys_values_and_spreads() {
                 .to_generated_for(source_key, feature)
                 .expect("the primary prop owner remains navigable");
             assert!(
-                !row.gen_range.contains(&target),
+                target < row.gen_range.start || target >= row.gen_range.end,
                 "inference witnesses must not claim editor operations"
             );
         }
@@ -212,7 +216,7 @@ fn listener_inference_maps_its_own_prop_keys_values_and_spreads() {
                 super::ProjectionFeatures::DEFINITION,
             ] {
                 let target = output.mapping.to_generated_for(tag_start, feature).unwrap();
-                assert!(!row.span.gen_range.contains(&target));
+                assert!(target < row.span.gen_range.start || target >= row.span.gen_range.end);
             }
             let generated = inference
                 + output
@@ -240,13 +244,16 @@ fn abstract_component_constructor_extracts_its_actual_instance_props() {
         r#"<component :is="is" foo="x" />"#,
         true,
     );
-    assert!(
-        code.contains("type __VizePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? __VizeIsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {}"),
+    assert_eq!(
+        code.matches("type __VizePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? __VizeIsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {}")
+            .count(),
+        1,
         "{code}"
     );
-    assert!(code.contains("\"foo\": \"x\""), "{code}");
-    assert!(
-        code.contains("__VizeComponentRawProps<typeof is>"),
+    assert_eq!(code.matches("\"foo\": \"x\"").count(), 1, "{code}");
+    assert_eq!(
+        code.matches("__VizeComponentRawProps<typeof is>").count(),
+        2,
         "{code}"
     );
 }
@@ -256,32 +263,66 @@ fn empty_options_component_does_not_infer_unowned_optional_raw_metadata() {
     let code = generate_usage("const Div = {}", "<Div />", false);
     // The navigation completion pattern must receive `{}`, not `unknown`,
     // even when this usage has no authored props to check.
-    assert!(
-        code.contains("__VizeHasStaticRawProps<C> extends true ? __VizeStaticRawProps<C> : __VizePublicProps<C>"),
+    assert_eq!(
+        code.matches("__VizeHasStaticRawProps<C> extends true ? __VizeStaticRawProps<C> : __VizePublicProps<C>")
+            .count(),
+        1,
         "{code}"
     );
-    assert!(
-        code.contains(
+    assert_eq!(
+        code.matches(
             "const { } = undefined as unknown as __VizeComponentNavigationProps<__Div_Props_0>;"
-        ),
+        )
+        .count(),
+        1,
         "{code}"
     );
-    assert!(
-        code.contains("__VizeComponentRawProps<typeof Div>"),
+    assert_eq!(
+        code.matches("__VizeComponentRawProps<typeof Div>").count(),
+        2,
         "{code}"
     );
 }
 
-/// `vue-tsc` keeps `aria-*` component attributes as HTML attributes
-/// (`htmlAttributes: ['aria-*']`), so the checked props object must not
-/// camelize them onto a declared `ariaLabel` prop.
+/// `aria-*` is both a Vue-camelized declared prop candidate and an HTML
+/// attribute. The whole-props value removes `undefined` so it retains
+/// vue-tsc's `htmlAttributes: ['aria-*']` exact-optional behavior, while the
+/// separately emitted per-prop check still validates the actual value.
 #[test]
-fn checked_component_props_keep_aria_attributes_as_authored() {
+fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     let code = generate_usage(
         "import Child from './Child.vue'; const label: string | undefined = undefined;",
         r#"<Child :aria-label="label" :data-test="label" />"#,
         true,
     );
-    assert!(code.contains("\"aria-label\": label"), "{code}");
-    assert!(code.contains("\"dataTest\": label"), "{code}");
+    assert_eq!(
+        code.matches("\"ariaLabel\": __vizeComponentAriaPropValue(label)")
+            .count(),
+        1,
+        "{code}"
+    );
+    assert_eq!(
+        code.matches("function __vizeComponentAriaPropValue")
+            .count(),
+        1,
+        "the value witness must be emitted once per relevant SFC: {code}"
+    );
+    assert_eq!(
+        code.matches("// @ts-ignore Named prop diagnostics are owned by the per-prop check.")
+            .count(),
+        1,
+        "the whole-object ARIA witness must defer diagnostics once: {code}"
+    );
+    assert_eq!(code.matches("\"dataTest\": label").count(), 1, "{code}");
+
+    let non_aria = generate_usage(
+        "import Child from './Child.vue'; const label = 'ok';",
+        r#"<Child :data-test="label" />"#,
+        true,
+    );
+    assert_eq!(
+        non_aria.matches("__vizeComponentAriaPropValue").count(),
+        0,
+        "unrelated SFCs must not pay for the aria witness: {non_aria}"
+    );
 }

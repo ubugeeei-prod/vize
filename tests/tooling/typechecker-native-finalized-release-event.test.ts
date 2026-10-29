@@ -41,13 +41,15 @@ const lifecycle = JSON.parse(
   finalized: { action: string; body: string };
 };
 const workflow = parse(currentBytes);
+const historicalProjectionCondition =
+  "github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.historical_projection_receipt)";
 test("the active native phase workflow receives scheduled and explicit source runs only", () => {
   assert.deepEqual(Object.keys(workflow.on).sort(), ["schedule", "workflow_dispatch"]);
   assert.equal(workflow.on.workflow_dispatch.inputs.source_sha.required, true);
   const sourceStep = workflow.jobs["native-phases"].steps.find(
     (candidate: { name: string }) => candidate.name === STEP,
   );
-  assert.equal(sourceStep.if, "github.event_name == 'schedule'");
+  assert.equal(sourceStep.if, historicalProjectionCondition);
   assert.equal(sourceStep["continue-on-error"], undefined);
   assert.deepEqual([lifecycle.opened.action, lifecycle.finalized.action], ["opened", "edited"]);
 });

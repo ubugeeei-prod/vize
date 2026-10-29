@@ -1,0 +1,44 @@
+[
+  {
+    "file": "src/Editor.vue",
+    "messages": [
+      {
+        "ruleId": "cross-file",
+        "ruleDocsPath": "docs/content/rules/cross-file.md",
+        "severity": 2,
+        "message": "[vize:cross-file] vize:croquis/cf/spread-breaks-reactivity: Spreading 'initial' creates a non-reactive copy",
+        "line": 7,
+        "column": 26,
+        "endLine": 7,
+        "endColumn": 36,
+        "help": "ERROR vize:croquis/cf/spread-breaks-reactivity\nSpreading 'initial' creates a non-reactive copy\nProblem: Spreading initial (a reactive) creates a non-reactive shallow copy.\nWhat happens:\n\n  const copy = { ...initial } // copy is NOT reactive\n  initial.foo = 'bar' // copy.foo is still the old value\nFix: Keep the reference, or use toRefs():\n\n  const { foo, bar } = toRefs(initial) // foo, bar are refs\nSuggestion: Use toRefs(initial) to maintain reactivity, or toRaw(initial) for intentional copy"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 0
+  },
+  {
+    "file": "src/PageA.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/PageB.vue",
+    "messages": [
+      {
+        "ruleId": "cross-file",
+        "ruleDocsPath": "docs/content/rules/cross-file.md",
+        "severity": 1,
+        "message": "[vize:cross-file] vize:croquis/cf/duplicate-id: Element ID 'panel' is used in 2 different locations across files",
+        "line": 3,
+        "column": 8,
+        "endLine": 3,
+        "endColumn": 18,
+        "help": "WARNING vize:croquis/cf/duplicate-id\nElement ID 'panel' is used in 2 different locations across files\nSuggestion: Use useId() to generate unique IDs for each component instance"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  }
+]

@@ -79,6 +79,7 @@ mod error_handler;
 mod modifiers;
 mod module_record;
 mod observation;
+mod speculation;
 mod state;
 
 mod js;

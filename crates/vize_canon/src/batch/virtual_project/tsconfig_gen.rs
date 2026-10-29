@@ -9,12 +9,15 @@ pub use compiler_snapshot::{
     CompilerConfigurationAttempt, CompilerConfigurationSnapshot, ConfigurationObservations,
 };
 mod config_anchor;
-pub use compiler_options_snapshot::snapshot_tsconfig_compiler_options;
+pub use compiler_options_snapshot::{CompilerOptionsSnapshot, snapshot_tsconfig_compiler_options};
 mod control_alias;
 mod native_options;
 mod path_rebase;
 pub(super) mod references;
-pub use references::{TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind};
+pub use references::{
+    TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind, TsconfigWildcard,
+    TsconfigWildcardUsage,
+};
 mod jsx_files;
 mod remap;
 mod vue_alias;

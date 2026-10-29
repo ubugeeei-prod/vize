@@ -206,7 +206,8 @@ export function compileFile(
     scriptHash: result.scriptHash,
     macroArtifacts: result.macroArtifacts ?? [],
     styles: normalizeStyleBlocks(result.styles),
-    dependencies: resolved.dependencies,
+    // `src` blocks, then what the compile itself read (pug includes).
+    dependencies: [...resolved.dependencies, ...(result.dependencies ?? [])],
   };
 
   cache.set(filePath, compiled);
@@ -359,7 +360,10 @@ export function compileBatch(
         scriptHash: fileResult.scriptHash,
         macroArtifacts: fileResult.macroArtifacts ?? [],
         styles: normalizeStyleBlocks(fileResult.styles),
-        dependencies: dependenciesByPath.get(fileResult.path) ?? [],
+        dependencies: [
+          ...(dependenciesByPath.get(fileResult.path) ?? []),
+          ...(fileResult.dependencies ?? []),
+        ],
       });
     }
 

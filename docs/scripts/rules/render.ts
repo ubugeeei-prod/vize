@@ -93,13 +93,14 @@ export function generateRulePages({
       const label = categoryLabels[category] ?? category;
       for (const rule of group) {
         const path = `${slug(rule.name)}.md`;
+        const referencePath = resolve(directory, "reference", path);
         const example = ruleExamples(workspaceRoot, rule);
         if (!purposeJa[rule.name]) throw new Error(`Missing Japanese purpose for ${rule.name}`);
         lines.push(
           `| [\`${rule.name}\`](#${slug(rule.name)}) | ${exampleLinks("", ja, slug(rule.name))} | \`${rule.defaultSeverity}\` | ${presets(rule.presets)} | ${rule.fixable ? (ja ? "あり" : "Yes") : ja ? "なし" : "No"} | ${configurableRules.has(rule.name) ? "[`ruleOptions`](./options.md)" : ja ? "なし" : "No"} | ${implementation(rule)} | ${cell(ja ? purposeJa[rule.name] : rule.description)} | ${cell(label)} |`,
         );
-        const reference = detail(rule, example, ja);
-        output(resolve(directory, "reference", path), reference, checking);
+        const reference = detail(rule, example, ja, cleanMetadataLayout(referencePath));
+        output(referencePath, reference, checking);
         examples.push(ruleOverview(reference, rule.name, ja ? "ja" : "en"));
       }
     }
@@ -128,7 +129,7 @@ export function generateRulePages({
   generateCategoryPages(workspaceRoot, rules, checking);
 }
 
-function detail(rule: RuleMetadata, example: RuleExample, ja: boolean) {
+function detail(rule: RuleMetadata, example: RuleExample, ja: boolean, cleanMetadata: boolean) {
   const label = (en: string, japanese: string) => (ja ? japanese : en);
   const config = {
     preset: "incremental",
@@ -146,6 +147,16 @@ function detail(rule: RuleMetadata, example: RuleExample, ja: boolean) {
         "No rule-specific options. Severity and preset selection are configurable.",
         "ルール固有のオプションはありません。重大度とプリセットは設定できます。",
       );
+  const metadata = [
+    `${label("Default severity", "既定の重大度")}: \`${rule.defaultSeverity}\``,
+    `${label("Presets", "プリセット")}: ${presets(rule.presets)}`,
+    `${label("Automatic fix", "自動修正")}: ${example.availability ? label("Not implemented for SFC lint", "SFC lint では未対応") : rule.fixable ? label("Available for supported findings", "対応している診断で利用できます") : label("None; review the suggested change", "なし。修正内容を確認してください")}`,
+    `${label("Applies to", "適用範囲")}: ${scope}`,
+    `${label("Options", "オプション")}: ${options}`,
+  ];
+  const metadataLines = cleanMetadata
+    ? metadata.flatMap((line) => [line, ""])
+    : [...metadata.slice(0, -1).map((line) => `${line}  `), metadata.at(-1)!, ""];
   const lines = [
     "---",
     `title: "${rule.name}"`,
@@ -157,12 +168,7 @@ function detail(rule: RuleMetadata, example: RuleExample, ja: boolean) {
     "",
     exampleLinks("", ja),
     "",
-    `${label("Default severity", "既定の重大度")}: \`${rule.defaultSeverity}\`  `,
-    `${label("Presets", "プリセット")}: ${presets(rule.presets)}  `,
-    `${label("Automatic fix", "自動修正")}: ${example.availability ? label("Not implemented for SFC lint", "SFC lint では未対応") : rule.fixable ? label("Available for supported findings", "対応している診断で利用できます") : label("None; review the suggested change", "なし。修正内容を確認してください")}  `,
-    `${label("Applies to", "適用範囲")}: ${scope}  `,
-    `${label("Options", "オプション")}: ${options}`,
-    "",
+    ...metadataLines,
   ];
   if (example.availability)
     lines.push(`${label("Current support", "現在の対応")}: \`${example.availability}\``, "");
@@ -237,6 +243,21 @@ function detail(rule: RuleMetadata, example: RuleExample, ja: boolean) {
   return lines.join("\n");
 }
 
+/**
+ * Preserve already-published references byte-for-byte, but keep newly added
+ * references free of Markdown's two-space hard breaks. Once a reference uses
+ * the blank-line layout, later generator runs retain it.
+ */
+function cleanMetadataLayout(path: string) {
+  try {
+    return /(?:Default severity|既定の重大度):[^\n]*\n\n(?:Presets|プリセット):/.test(
+      readFileSync(path, "utf8"),
+    );
+  } catch {
+    return true;
+  }
+}
+
 function scopeLabel(rule: RuleMetadata, example: RuleExample, ja: boolean) {
   if (example.standaloneScript)
     return ja ? "Nuxt 設定ファイル（nuxt.config.ts）" : "Nuxt configuration files (nuxt.config.ts)";
@@ -264,6 +285,10 @@ function scopeLabel(rule: RuleMetadata, example: RuleExample, ja: boolean) {
     return ja
       ? "Vapor を想定した script 検査。明示的に有効にすると通常の script でも同じ禁止を適用します。"
       : "Vapor-oriented script checks; explicit enablement also applies the restriction to ordinary scripts";
+  if (rule.name === "script/prefer-define-emits-binding")
+    return ja
+      ? "Vue SFC の `<script setup>` と、コンパイラーが提供する `defineEmits` の呼び出し。テンプレートの `$emit` 呼び出しを検査します。"
+      : "Vue SFCs with `<script setup>` and a compiler-provided `defineEmits` call; checks template `$emit` calls";
   if (rule.metaType === "ScriptRuleMeta")
     return ja
       ? "Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。"

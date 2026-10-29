@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "scope": "Only SFC SSR rows 1 and 3 admit the released main default script-setup expose transition. The source archive includes an unmerged JSX branch; it supplies immutable reference bytes, no JSX feature dependency or runtime/native parity credit. Fresh baseline/head outputs must match the whole frozen SSR packets.",
+  "sourcePullRequest": 10923,
+  "sourceMerge": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
+  "indices": [
+    1,
+    3
+  ],
+  "changedFacets": [
+    "code"
+  ],
+  "codeEdit": {
+    "previous": "setup(__props) {",
+    "current": "setup(__props, { expose: __expose }) {\n    __expose();",
+    "occurrences": 1
+  },
+  "archive": {
+    "sourceHead": "6fc192271eafbccaac463104ca27af61b205f58f",
+    "sourceTree": "afe2befecf8c9375dd4edfd3fca300608646cfec",
+    "runId": 40494324373,
+    "artifactId": 12729352671,
+    "artifactDigest": "sha256:973096b09f9d3fb0f589c4258127a381498a44d41d1f441bba3d802950647c00"
+  },
+  "rawFiles": {
+    "base-sfc.json": "20994c4313510adca6da6dcdde30e2cee352dba2bc96632c2a3c1721ea1ff846",
+    "head-sfc.json": "ef34fdaa2b41bfb1252ce06fb25fdec77f5527758463a3c72db21f15ecb59277",
+    "producer-capture.json": "ee5fda65e3359c185a5cfe6587f575e07666775a81bb048e954d2d7acf0bad88"
+  }
+}

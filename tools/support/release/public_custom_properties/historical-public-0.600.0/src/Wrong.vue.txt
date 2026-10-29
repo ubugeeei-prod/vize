@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const label = 'x'
+</script>
+<template>
+  <b>{{ isSP.toFixed() }}</b>
+  <b>{{ appName.missingStringMember() }}</b>
+  <i>{{ opaque.member }}</i>
+  <u>{{ dynamic.deep.call() }}</u>
+  <p>{{ $service.ping(123) }}</p>
+  <u>{{ missing }} {{ missing }}</u>
+</template>

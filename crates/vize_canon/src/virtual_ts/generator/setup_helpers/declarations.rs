@@ -1,10 +1,10 @@
 //! Emit helpers by lexical ownership; never rewrite a generated block afterward.
 
+use super::super::template_ref_keys::TemplateRefUsage;
 use crate::virtual_ts::helpers::setup_macros::{
     SETUP_MACRO_HELPERS, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED,
 };
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{ImportDeclarationSpecifier, ImportOrExportKind, Statement};
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
@@ -13,9 +13,10 @@ use vize_croquis::Croquis;
 
 pub(crate) struct SetupHelperPlan {
     shadowed: FxHashSet<CompactString>,
-    vue_template_ref_import: bool,
     pub(crate) macro_results: Vec<CompactString>,
     pub(super) emit_calls: Vec<super::emit_navigation::OwnedEmitCall>,
+    pub(in crate::virtual_ts::generator) template_refs: TemplateRefUsage,
+    active_template_ref: bool,
 }
 
 impl SetupHelperPlan {
@@ -37,9 +38,7 @@ impl SetupHelperPlan {
     }
 
     pub(crate) fn emit_import_anchors(&self, ts: &mut String) {
-        if self.vue_template_ref_import {
-            ts.push_str("// Keep the authored Vue helper import used by its specialized setup signature\nvoid useTemplateRef;\n");
-        }
+        self.template_refs.emit_import_anchors(ts);
     }
 
     pub(crate) fn template_emit_initializer(
@@ -86,7 +85,7 @@ pub(super) fn emit(
     typed_refs: bool,
 ) {
     let shadowed = &plan.shadowed;
-    if shadowed.is_empty() && !generic_props && !typed_refs {
+    if shadowed.is_empty() && !generic_props && !typed_refs && !plan.active_template_ref {
         ts.push_str(if hoisted {
             VUE_SETUP_HELPERS_HOISTED
         } else {
@@ -99,6 +98,9 @@ pub(super) fn emit(
     } else {
         "  // Compiler macros (only valid in setup scope, not global)\n"
     });
+    if typed_refs {
+        plan.template_refs.emit_inference_helpers(ts);
+    }
     for helper in SETUP_MACRO_HELPERS {
         if shadowed.contains(helper.name) {
             continue;
@@ -108,12 +110,6 @@ pub(super) fn emit(
                 GENERIC_PROPS_HOISTED
             } else {
                 GENERIC_PROPS_EMBEDDED
-            });
-        } else if helper.name == "useTemplateRef" && typed_refs {
-            ts.push_str(if hoisted {
-                "  const useTemplateRef = __vize_useTemplateRef as unknown as __VizeUseTemplateRef;\n"
-            } else {
-                "  const useTemplateRef = (undefined as unknown as __VizeUseTemplateRef); void ((_key: string) => useTemplateRef(_key));\n"
             });
         } else {
             ts.push_str(if hoisted {
@@ -144,21 +140,33 @@ fn shadowed_helpers(
 ) -> SetupHelperPlan {
     let mut plan = SetupHelperPlan {
         shadowed: FxHashSet::default(),
-        vue_template_ref_import: false,
         macro_results: Vec::new(),
         emit_calls: Vec::new(),
+        template_refs: TemplateRefUsage::default(),
+        // Escapes may spell the identifier or imported name without its literal
+        // bytes. Keep this conservative even when recovery cannot build an AST.
+        active_template_ref: source.is_some_and(|source| {
+            source.contains("useTemplateRef") || source.as_bytes().contains(&b'\\')
+        }),
     };
     if !SETUP_MACRO_HELPERS
         .iter()
         .any(|helper| crate::virtual_ts::script_facts::contains_binding(summary, helper.name))
         && summary.macros.define_props().is_none()
         && summary.macros.define_emits().is_none()
+        && !plan.active_template_ref
     {
         return plan;
     }
     let Some(source) = source else {
         return plan;
     };
+    // This is a runtime composable, not a compiler macro. Never invent or
+    // replace its ambient contract: custom globals and missing imports must
+    // keep their authored types and diagnostics, including parser recovery.
+    if plan.active_template_ref {
+        plan.shadowed.insert(CompactString::from("useTemplateRef"));
+    }
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
     let parsed = if parsed.panicked || !parsed.diagnostics.is_empty() {
@@ -182,26 +190,8 @@ fn shadowed_helpers(
                 .insert(CompactString::from(scoping.symbol_name(symbol)));
         }
     }
-    // Vue's runtime helper is intentionally specialized from the template ref
-    // registry. Other authored values (including imports from other modules)
-    // retain their actual declarations and signatures.
-    for statement in &parsed.program.body {
-        if let Statement::ImportDeclaration(import) = statement
-            && import.source.value == "vue"
-            && import.import_kind != ImportOrExportKind::Type
-            && let Some(specifiers) = &import.specifiers
-        {
-            for specifier in specifiers {
-                if let ImportDeclarationSpecifier::ImportSpecifier(named) = specifier
-                    && named.import_kind != ImportOrExportKind::Type
-                    && named.local.name == "useTemplateRef"
-                    && named.imported.name() == "useTemplateRef"
-                {
-                    plan.shadowed.remove("useTemplateRef");
-                    plan.vue_template_ref_import = true;
-                }
-            }
-        }
+    if plan.active_template_ref {
+        plan.template_refs = TemplateRefUsage::collect(&parsed.program, scoping, source);
     }
     plan.macro_results = super::macro_results::collect(&parsed.program, &plan.shadowed, summary);
     if preserve_event_navigation && parsed.diagnostics.is_empty() && built.diagnostics.is_empty() {
@@ -227,3 +217,59 @@ const GENERIC_PROPS_EMBEDDED: &str = r#"  function defineProps<_T = unknown>(): 
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
   function defineProps(_props?: any) { void _props; return undefined as any; }
 "#;
+
+#[cfg(test)]
+mod template_ref_fallback_tests {
+    use super::{
+        SETUP_MACRO_HELPERS, SetupHelperPlan, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED, emit,
+    };
+    use vize_carton::String;
+
+    #[test]
+    fn possible_global_ref_calls_never_receive_an_invented_runtime_contract() {
+        for source in [
+            "function nested() { useTemplateRef<unknown>('missing'); }",
+            "function nested() { useTemplateRef<never>('missing'); }",
+            "function nested() { useTemplateRe\\u0066<unknown>('missing'); }",
+            "const target = useTemplateRef<unknown>(",
+        ] {
+            let plan =
+                SetupHelperPlan::collect(&vize_croquis::Croquis::default(), Some(source), false);
+            for hoisted in [false, true] {
+                let mut generated = String::default();
+                emit(&mut generated, &plan, hoisted, false, false);
+                let helper = SETUP_MACRO_HELPERS
+                    .iter()
+                    .find(|helper| helper.name == "useTemplateRef")
+                    .unwrap();
+                let expected = if hoisted {
+                    VUE_SETUP_HELPERS_HOISTED
+                } else {
+                    VUE_SETUP_HELPERS
+                }
+                .replace(
+                    if hoisted {
+                        helper.hoisted
+                    } else {
+                        helper.embedded
+                    },
+                    "",
+                )
+                .replace(" void useTemplateRef;", "");
+                assert_eq!(generated, expected);
+            }
+        }
+    }
+
+    #[test]
+    fn unrelated_document_helper_packets_remain_byte_identical() {
+        let plan = SetupHelperPlan::collect(
+            &vize_croquis::Croquis::default(),
+            Some("const count = 1;"),
+            false,
+        );
+        let mut generated = String::default();
+        emit(&mut generated, &plan, false, false, false);
+        assert_eq!(generated, VUE_SETUP_HELPERS);
+    }
+}

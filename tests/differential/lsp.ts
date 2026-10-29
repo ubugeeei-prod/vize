@@ -41,7 +41,7 @@ async function runLspCase(
     comparison: { state: "not-compared", reason: NATIVE_REASON },
   };
   if (fixture.data.sourceSession) {
-    row.legacy = sourceSessionUnsupportedLegacy();
+    row.legacy = sourceSessionUnsupportedLegacy(fixture.data.sourceSession);
     return row;
   }
   let workspace;

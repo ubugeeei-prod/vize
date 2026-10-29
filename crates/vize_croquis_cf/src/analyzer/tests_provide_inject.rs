@@ -92,8 +92,11 @@ fn an_aliased_import_pairs_through_the_imported_file() {
 }
 
 mod basic;
+mod composables;
+mod defaulted;
 mod nuxt_dirs;
 mod nuxt_layout;
+mod nuxt_nested_routes;
 mod patterns;
 mod playground;
 mod provider_context;

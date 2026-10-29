@@ -101,8 +101,6 @@ declare const __vizeDirectiveBindingRest: { instance: null; oldValue: null; modi
 declare function __vizeDirectiveTail<F extends (...args: any[]) => any>(hook: F): 4 extends Parameters<F>['length'] ? [never, never] : 3 extends Parameters<F>['length'] ? [never] : [];
 
 import { ref, useTemplateRef } from 'vue'
-// Keep the authored Vue helper import used by its specialized setup signature
-void useTemplateRef;
 
 // ========== Exported Types ==========
 export type Props = {};
@@ -122,15 +120,14 @@ function __setup() {
   const defineModel = (void 0) as unknown as typeof import('vue') extends { defineModel: infer __Macro } ? __Macro : never;
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
   function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
-  function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
   // Mark compiler macros as used
-  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
+  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults;
 
   // User setup code
   const users = ref([{ id: 1 }])
   const inputRef = useTemplateRef<HTMLInputElement>('input')
   
-  // @vize-map: 15612:15709 -> 0:132
+  // @vize-map: 15345:15442 -> 0:132
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

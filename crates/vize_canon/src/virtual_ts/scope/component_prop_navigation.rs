@@ -91,10 +91,19 @@ fn emit_prop_references(
     // even while the Vue attribute name is empty or only `:` has been typed.
     ts.push_str("  const { ");
     let completion_offset = ts.len();
-    append!(
-        *ts,
-        "}} = undefined as unknown as __VizeComponentNavigationProps<__{component_type_name}_Props_{idx}>;\n"
-    );
+    if ctx.hoist_shared_preamble {
+        let component_navigation_props =
+            crate::virtual_ts::helpers::shared_types::COMPONENT_NAVIGATION_PROPS.select(true);
+        append!(
+            *ts,
+            "}} = undefined as unknown as {component_navigation_props}<__{component_type_name}_Props_{idx}>;\n"
+        );
+    } else {
+        append!(
+            *ts,
+            "}} = undefined as unknown as __VizeComponentNavigationProps<__{component_type_name}_Props_{idx}>;\n"
+        );
+    }
     semantic_links.push(VizeSemanticLink {
         source_range: component_gen_range.clone(),
         target_range: completion_offset..completion_offset,
@@ -199,10 +208,19 @@ fn emit_slot_references(
                 ctx.syntactic_type_only_imported_names,
                 usage.name.as_str(),
             );
-            append!(
-                *ts,
-                "  const {slots_ref} = undefined as unknown as __VizeNavigationSlots<typeof {component_ref}>;\n"
-            );
+            if ctx.hoist_shared_preamble {
+                let navigation_slots =
+                    crate::virtual_ts::helpers::shared_types::NAVIGATION_SLOTS.select(true);
+                append!(
+                    *ts,
+                    "  const {slots_ref} = undefined as unknown as {navigation_slots}<typeof {component_ref}>;\n"
+                );
+            } else {
+                append!(
+                    *ts,
+                    "  const {slots_ref} = undefined as unknown as __VizeNavigationSlots<typeof {component_ref}>;\n"
+                );
+            }
             emitted_slots_ref = true;
         }
 

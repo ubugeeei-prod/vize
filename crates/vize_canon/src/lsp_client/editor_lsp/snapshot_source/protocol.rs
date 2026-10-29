@@ -6,6 +6,8 @@
 
 use super::SourceTextRefusal;
 
+mod protocol9;
+
 const HEADER: usize = 44;
 const NODE: usize = 28;
 const SOURCE_FILE_KIND: u32 = 307;
@@ -16,6 +18,9 @@ pub(super) fn source_text<'a>(
     expected_name: &str,
 ) -> Result<(&'a str, &'a str, &'a str), SourceTextRefusal> {
     use SourceTextRefusal as Refuse;
+    if bytes.get(..4) == Some(&(9_u32 << 24).to_le_bytes()) {
+        return protocol9::source_text(bytes, expected_name);
+    }
     if bytes.len() < HEADER || u32::try_from(bytes.len()).is_err() {
         return Err(Refuse::Header);
     }

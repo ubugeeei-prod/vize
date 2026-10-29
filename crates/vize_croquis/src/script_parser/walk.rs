@@ -26,7 +26,9 @@ use super::extract::{
     detect_call_argument_reactivity_loss, detect_provide_inject_call, detect_race_condition_call,
 };
 
-pub(in crate::script_parser) use expressions::{walk_call_arguments, walk_expression};
+pub(in crate::script_parser) use expressions::{
+    walk_call_arguments, walk_expression, walk_expression_with_closure_name,
+};
 pub(in crate::script_parser) use statements::walk_statement;
 
 /// Check if a function name is a client-only lifecycle hook

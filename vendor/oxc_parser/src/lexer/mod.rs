@@ -33,7 +33,7 @@ mod source;
 mod string;
 mod template;
 mod token;
-mod trivia_builder;
+pub(crate) mod trivia_builder;
 mod typescript;
 mod unicode;
 mod whitespace;
@@ -184,6 +184,14 @@ impl<'a, C: Config> Lexer<'a, C> {
     #[cfg(feature = "benchmarking")]
     pub fn errors(&self) -> &[ParserDiagnostic<'a>] {
         &self.errors
+    }
+
+    pub(crate) fn speculative_position(&self) -> (u32, Token) {
+        (self.source.offset(), self.token)
+    }
+
+    pub(crate) fn restore_failed_speculative_token(&mut self, token: Token) {
+        self.token = token;
     }
 
     /// Remaining string from `Source`

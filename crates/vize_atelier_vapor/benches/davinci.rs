@@ -32,7 +32,7 @@ use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_core::parser::Parser;
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor, generate_vapor, transform_to_ir};
-use vize_carton::{Allocator, cstr};
+use vize_carton::{Allocator, String, cstr};
 
 fn vapor_transform_options() -> TransformOptions {
     TransformOptions {

@@ -142,7 +142,7 @@ fn converts_lsp_diagnostics_to_legacy_shape() {
 }
 
 #[test]
-fn normalizes_explicit_wrapper_path_to_native_binary() {
+fn keeps_explicit_opaque_wrapper_instead_of_unrelated_native_binary() {
     let temp_dir = TempDir::new().unwrap();
     let workspace_root = temp_dir.path().join("workspace");
     let wrapper = workspace_root
@@ -169,7 +169,7 @@ fn normalizes_explicit_wrapper_path_to_native_binary() {
 
     assert_eq!(
         resolved,
-        native_preview
+        wrapper
             .canonicalize()
             .unwrap()
             .to_string_lossy()

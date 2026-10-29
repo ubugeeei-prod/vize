@@ -157,7 +157,7 @@ impl<'a> Emitter<'a, '_> {
         let mut out = Vec::new_in(&self.allocator);
         for prop in props {
             let key = if let Some(name) = prop.dynamic_name {
-                let mut node = self.expression(name, false);
+                let mut node = self.spanned(name, false, prop.spans.map(|spans| spans[0]));
                 node.is_handler_key = prop.handler;
                 node
             } else if prop.key == "$" {
@@ -176,7 +176,10 @@ impl<'a> Emitter<'a, '_> {
                     }
                     key
                 } else {
-                    vize_atelier_core::steps::create_on_name(prop.key)
+                    vize_atelier_core::steps::create_on_name(
+                        prop.handler_modifiers
+                            .map_or(prop.key, |modifiers| modifiers.event_name(prop.key)),
+                    )
                 };
                 let mut node = SimpleExpressionNode::new(
                     self.allocator.alloc_str(&key),
@@ -190,9 +193,11 @@ impl<'a> Emitter<'a, '_> {
             };
             let mut values = Vec::new_in(&self.allocator);
             if let Some(value) = prop.value {
-                values.push(self.expression(value, !prop.dynamic));
+                values.push(self.spanned(value, !prop.dynamic, prop.spans.map(|spans| spans[1])));
             }
-            out.push(IRProp::new(key, values, component).with_value_kind(prop.value_kind));
+            let mut prop_ir = IRProp::new(key, values, component).with_value_kind(prop.value_kind);
+            prop_ir.handler_modifiers = prop.handler_modifiers;
+            out.push(prop_ir);
         }
         out
     }

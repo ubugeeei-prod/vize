@@ -59,6 +59,7 @@ title: "型と script のルール"
 | [`script/one-component-per-file`](#script-one-component-per-file) | [悪い](#script-one-component-per-file-bad) · [良い](#script-one-component-per-file-good) | 1 ファイルにコンポーネント定義が複数あることを検出します。 |
 | [`script/order-in-components`](#script-order-in-components) | [悪い](#script-order-in-components-bad) · [良い](#script-order-in-components-good) | コンポーネントオプションのプロパティ順を既定の並びに揃えます。 |
 | [`script/prefer-computed`](#script-prefer-computed) | [悪い](#script-prefer-computed-bad) · [良い](#script-prefer-computed-good) | 他の状態から導ける値を watcher で同期する代わりに computed で表現します。 |
+| [`script/prefer-define-emits-binding`](#script-prefer-define-emits-binding) | [悪い](#script-prefer-define-emits-binding-bad) · [良い](#script-prefer-define-emits-binding-good) | template の $emit ではなく defineEmits から受け取った型付き関数を呼び出します。 |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [悪い](#script-prefer-define-options-bad) · [良い](#script-prefer-define-options-good) | name / inheritAttrs だけの通常 script を defineOptions() にまとめます。 |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [悪い](#script-prefer-import-from-vue-bad) · [良い](#script-prefer-import-from-vue-good) | 内部パッケージではなく vue から import します。 |
 | [`script/prefer-ref-over-reactive`](#script-prefer-ref-over-reactive) | [悪い](#script-prefer-ref-over-reactive-bad) · [良い](#script-prefer-ref-over-reactive-good) | 状態管理に reactive() より ref() を使う方針を適用します。 |
@@ -3501,6 +3502,73 @@ const doubled = computed(() => count.value * 2);
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) · [全ルール](all.md)
 
+### `script/prefer-define-emits-binding`
+
+template の $emit ではなく defineEmits から受け取った型付き関数を呼び出します。
+
+[悪い例](#script-prefer-define-emits-binding-bad) · [良い例](#script-prefer-define-emits-binding-good)
+
+既定の重大度: `warning`
+
+プリセット: _none_
+
+自動修正: 対応している診断で利用できます
+
+適用範囲: Vue SFC の `<script setup>` と、コンパイラーが提供する `defineEmits` の呼び出し。テンプレートの `$emit` 呼び出しを検査します。
+
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+**設定（Vite+）**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/prefer-define-emits-binding": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-prefer-define-emits-binding-bad"></span>
+
+**悪い**
+
+template がコンポーネント専用の `$emit` ヘルパーを呼び出していますが、`<script setup>` では `defineEmits` が返す型付き関数をすでに受け取っています。
+
+```vue annotate="remove:4"
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>();
+</script>
+<template><button @click="$emit('save', 1)">Save</button></template>
+```
+
+<span id="script-prefer-define-emits-binding-good"></span>
+
+**良い**
+
+template から受け取った `emit` を呼び出し、イベント名と payload をコンポーネントの `defineEmits` 契約に通します。
+
+```vue annotate="add:4"
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>();
+</script>
+<template><button @click="emit('save', 1)">Save</button></template>
+```
+
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/prefer_define_emits_binding.rs#L16) · [全ルール](all.md)
+
 ### `script/prefer-define-options`
 
 name / inheritAttrs だけの通常 script を defineOptions() にまとめます。
@@ -4106,7 +4174,7 @@ emit("save");
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L65) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L60) · [全ルール](all.md)
 
 ### `script/require-explicit-slots`
 
@@ -4242,7 +4310,7 @@ function greet(name: string): string {
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L49) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L55) · [全ルール](all.md)
 
 ### `script/require-prop-type-constructor`
 

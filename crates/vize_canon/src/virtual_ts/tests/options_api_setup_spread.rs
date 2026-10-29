@@ -139,11 +139,13 @@ export default defineComponent({
         &Default::default(),
     );
 
-    assert!(
+    assert_eq!(
         output
             .code
-            .contains("const $fetch: __VizeInstanceGlobal<'$fetch'>"),
-        "instance globals should remain available without a spread setup return:\n{}",
+            .matches("const $fetch = __vize_instance_globals.$fetch;")
+            .count(),
+        1,
+        "instance globals should read the authored instance without a spread setup return:\n{}",
         output.code
     );
     assert!(

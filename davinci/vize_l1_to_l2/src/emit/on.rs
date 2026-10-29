@@ -8,7 +8,9 @@ mod wrapped;
 #[cfg(test)]
 mod tests;
 
-pub(super) use cache::needs_handler_cache as caches_handler;
+pub(super) use cache::{
+    bypasses_component_cache, caches_owned_handler, needs_handler_cache as caches_handler,
+};
 use vize_l0::{SmallVec, String, camelize, capitalize};
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{DynamicName, OnOp};
@@ -159,23 +161,6 @@ pub(super) fn emit_on_value(
     }
     let classified = classify(on)?;
     emit_wrapped_handler(cx, on, &classified, is_plain_element)
-}
-
-pub(super) fn reserve_skipped_once_helpers(
-    cx: &mut EmitCx<'_>,
-    on: &OnOp<'_>,
-) -> Result<(), EmitError> {
-    if super::on_dynamic::is_dynamic_on_name(on) {
-        return Ok(());
-    }
-    let classified = classify(on)?;
-    if !classified.keys.is_empty() {
-        cx.buf.use_with_keys();
-    }
-    if !classified.event.is_empty() {
-        cx.buf.use_with_modifiers();
-    }
-    Ok(())
 }
 
 fn classify<'a>(on: &'a OnOp<'a>) -> Result<Classified<'a>, EmitError> {

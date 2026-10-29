@@ -8,6 +8,8 @@ use crate::batch::error::CorsaResult;
 
 use super::super::VirtualProject;
 
+mod identity;
+
 /// Canonical paths memoized across one `replace_package_route_bindings`;
 /// importers of a package repeat its roots and sources.
 #[derive(Default)]
@@ -395,25 +397,6 @@ impl VirtualProject {
         let mut bindings = self.package_routes.values().cloned().collect::<Vec<_>>();
         bindings.sort_by_key(crate::PackageRouteBinding::key);
         bindings
-    }
-
-    pub(crate) fn workspace_package_route_identity(
-        &self,
-        importer: &Path,
-        specifier: &str,
-    ) -> Option<&Path> {
-        self.package_routes
-            .values()
-            .find(|binding| {
-                binding.importer_path == importer
-                    && binding.specifier == specifier
-                    && binding
-                        .route
-                        .as_ref()
-                        .is_some_and(|route| route.workspace_source)
-            })
-            .and_then(|binding| binding.route.as_ref())
-            .map(|route| route.package_root.as_path())
     }
 
     pub(crate) fn finalize_package_routes(&mut self) -> CorsaResult<()> {

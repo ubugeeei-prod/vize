@@ -131,6 +131,20 @@ export default defineConfig({}, { tasks: { check: "verify", preview: false } });
 
 `tasks: false` ですべての生成タスクを無効化できます。
 
+生成タスクはデフォルトではキャッシュしません。読み取り専用の `lint`、`fmt:check`、`check`、`typecheck` は
+第2引数の `taskCache: true` で Vite+ のキャッシュを有効にできます。
+
+```ts
+export default defineConfig({}, { taskCache: true });
+```
+
+Vite+ がソース、設定の import、依存関係、ディレクトリ内のファイルを自動追跡します。
+生成される `node_modules/.vize/**` と `**/.vize/**` は入力から除外し、出力ファイルの復元は行いません。
+`fmt` や `lint:fix` などソースを書き換えるタスクはキャッシュしません。チェックに `--fix` を渡した場合も、
+入力が変われば実行し、以前と同じ未整形のソースに戻した場合も修正を再適用します。
+既存の `run.tasks` のキャッシュ設定を保持し、生成タスクの名前を変えても方針は変わりません。
+Vite+ 0.x と 1.x の両方のキャッシュ API に対応しています。
+
 <span id="lint-and-formatter-ownership"></span>
 
 ## lint とフォーマットの担当範囲

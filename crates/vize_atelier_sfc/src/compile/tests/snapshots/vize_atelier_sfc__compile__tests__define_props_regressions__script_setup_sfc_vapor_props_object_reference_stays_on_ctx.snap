@@ -22,7 +22,8 @@ export default /*@__PURE__*/_defineVaporComponent({
     itemKey: { type: Function, required: true }
   },
   render: __vaporRender,
-  setup(__props: any) {
+  setup(__props: any, { expose: __expose }) {
+  __expose();
 
 const props = __props;
 

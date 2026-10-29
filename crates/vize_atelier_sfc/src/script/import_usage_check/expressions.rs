@@ -5,9 +5,9 @@ use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{Visit, walk::walk_arrow_function_expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use vize_atelier_core::steps::expression::is_template_global as is_global_allowed;
 use vize_atelier_core::{ExpressionNode, SimpleExpressionNode};
 use vize_carton::{FxHashSet, String, ToCompactString, cstr, is_simple_identifier};
-use vize_croquis::builtins::is_global_allowed;
 
 pub(super) fn extract_slot_pattern_identifiers(node: &ExpressionNode, ids: &mut FxHashSet<String>) {
     if let ExpressionNode::Simple(simple) = node {
