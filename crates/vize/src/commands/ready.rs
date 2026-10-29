@@ -92,6 +92,7 @@ pub fn run(args: ReadyArgs) {
             use_tabs: None,
             no_semi: false,
             sort_attributes: None,
+            attribute_sort_order: None,
             single_attribute_per_line: None,
             vue_indent_script_and_style: None,
             max_attributes_per_line: None,

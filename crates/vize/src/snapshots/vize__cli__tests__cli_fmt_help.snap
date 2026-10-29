@@ -96,6 +96,13 @@ Options:
 
           [possible values: true, false]
 
+      --attribute-sort-order <ATTRIBUTE_SORT_ORDER>
+          Choose the order of attributes within each Vue priority group
+
+          Possible values:
+          - alphabetical: Sort alphabetically within each priority group
+          - as-written:   Preserve the authored order within each priority group
+
       --single-attribute-per-line[=<SINGLE_ATTRIBUTE_PER_LINE>]
           Put each HTML attribute on its own line
 

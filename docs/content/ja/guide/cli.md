@@ -150,6 +150,7 @@ vize fmt --write src
 | `--use-tabs`                       | タブとスペースを切り替える                             |
 | `--no-semi`                        | セミコロンを省略する                                   |
 | `--sort-attributes`                | テンプレートの属性を並べ替える                         |
+| `--attribute-sort-order`           | グループ内で `alphabetical` または `as-written` を選ぶ |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ配置する                         |
 | `--vue-indent-script-and-style`    | script と style ブロックの内容をインデントする         |
 | `--max-attributes-per-line`        | 指定した属性数で改行する                               |

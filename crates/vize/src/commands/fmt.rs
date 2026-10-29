@@ -27,7 +27,7 @@ use format_source::format_file_source;
 mod patterns;
 pub(crate) use files::collect_files;
 use ignores::load_fmt_ignore_set;
-use options::build_format_options;
+use options::{FmtAttributeSortOrder, build_format_options};
 use patterns::{FORMAT_EXTENSIONS_DISPLAY, FORMAT_PATTERN_HELP};
 #[derive(Args)]
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
@@ -103,6 +103,10 @@ pub struct FmtArgs {
     /// Sort HTML attributes in template
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub sort_attributes: Option<bool>,
+
+    /// Choose the order of attributes within each Vue priority group
+    #[arg(long, value_enum)]
+    pub(in crate::commands) attribute_sort_order: Option<FmtAttributeSortOrder>,
 
     /// Put each HTML attribute on its own line
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
@@ -215,17 +219,6 @@ impl From<FmtArrowParens> for vize_glyph::ArrowParens {
         match value {
             FmtArrowParens::Always => Self::Always,
             FmtArrowParens::Avoid => Self::Avoid,
-        }
-    }
-}
-
-impl From<FmtEndOfLine> for vize_glyph::EndOfLine {
-    fn from(value: FmtEndOfLine) -> Self {
-        match value {
-            FmtEndOfLine::Lf => Self::Lf,
-            FmtEndOfLine::Crlf => Self::Crlf,
-            FmtEndOfLine::Cr => Self::Cr,
-            FmtEndOfLine::Auto => Self::Auto,
         }
     }
 }

@@ -246,6 +246,49 @@ fn formatter_cli_exposes_sfc_body_indentation_policy() {
 
 #[cfg(feature = "glyph")]
 #[test]
+fn formatter_cli_exposes_attribute_order_with_a_disabled_sort_control() {
+    let project = project();
+    let root = project.path();
+    let source = "<template>\n  <div data-z=\"z\" id=\"root\" data-a=\"a\"></div>\n</template>\n";
+    let alphabetical =
+        "<template>\n  <div id=\"root\" data-a=\"a\" data-z=\"z\"></div>\n</template>\n";
+    let as_written =
+        "<template>\n  <div id=\"root\" data-z=\"z\" data-a=\"a\"></div>\n</template>\n";
+    let controls: [(&str, &[&str], &str); 3] = [
+        (
+            "Alphabetical.vue",
+            &["--attribute-sort-order", "alphabetical"],
+            alphabetical,
+        ),
+        (
+            "AsWritten.vue",
+            &["--attribute-sort-order", "as-written"],
+            as_written,
+        ),
+        (
+            "SortingDisabled.vue",
+            &[
+                "--sort-attributes=false",
+                "--attribute-sort-order",
+                "as-written",
+            ],
+            source,
+        ),
+    ];
+
+    for (file, extra, expected) in controls {
+        write(root, file, source);
+        let mut args = vec!["fmt", "--write", file, "--no-config", "--preset", "vize"];
+        args.extend_from_slice(extra);
+        assert_success(&run(root, &args));
+        assert_eq!(fs::read_to_string(root.join(file)).unwrap(), expected);
+        assert_success(&run(root, &args));
+        assert_eq!(fs::read_to_string(root.join(file)).unwrap(), expected);
+    }
+}
+
+#[cfg(feature = "glyph")]
+#[test]
 fn formatter_cli_exposes_line_ending_policy() {
     let project = project();
     let root = project.path();
