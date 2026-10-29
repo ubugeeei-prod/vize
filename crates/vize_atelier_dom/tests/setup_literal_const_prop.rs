@@ -32,13 +32,13 @@ fn non_inline_setup_component_and_literal_const_prop_match_vue() {
         options,
     );
     assert!(errors.is_empty(), "errors: {errors:?}");
-    let code = result.code.as_str();
-    assert!(
-        code.contains(r#"_createVNode($setup["MyButton"], { label: $setup.msg })"#),
-        "component tag and literal-const prop should match Vue, got:\n{code}"
-    );
-    assert!(
-        !code.contains("PROPS") && !code.contains(r#"["label"]"#),
-        "literal-const prop must not keep a PROPS patch, got:\n{code}"
+    assert_eq!(
+        result.code,
+        r#"export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    _createVNode($setup["MyButton"], { label: $setup.msg })
+  ]))
+}"#,
+        "component tag and literal-const prop should match Vue exactly"
     );
 }

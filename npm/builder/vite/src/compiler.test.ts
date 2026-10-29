@@ -210,15 +210,45 @@ const channel = ref({});
 </style>`,
 );
 
-assert.match(
+assert.equal(
   componentClassCompiled.code,
-  /_createBlock\(\$setup\.Child, \{\s*channel: \$setup\.channel,\s*full: true,\s*class: _normalizeClass\(\$setup\.\$style\.subscribe\)\s*\}, null, 8[\s\S]*\["channel", "class"\]/,
-  "dynamic component class bindings should be tracked as component props so fallthrough classes apply",
-);
-assert.doesNotMatch(
-  componentClassCompiled.code,
-  /\["channel", "full", "class"\]/,
-  "static bound component props should not be listed as dynamic props",
+  `import { useCssModule as _useCssModule } from 'vue'
+import { normalizeClass as _normalizeClass, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createBlock($setup["Child"], {
+    channel: $setup.channel,
+    full: true,
+    class: _normalizeClass($setup.$style.subscribe)
+  }, null, 8 /* PROPS */, ["channel", "class"]))
+}
+import { ref } from 'vue'
+import Child from './Child.vue'
+
+
+export default {
+  __name: 'ComponentClass',
+  __cssModules: {
+    "$style": {
+      "subscribe": "JA83LG_subscribe"
+    }
+  },
+  render: _sfc_render,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+const $style = _useCssModule()
+
+const channel = ref({});
+
+const __returned__ = { Child, ref, $style, channel }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}`,
+  "setup component lowering, class fallthrough, and dynamic prop classification should match exactly",
 );
 
 const dynamicArgForCompiled = compileFile(
