@@ -1,11 +1,13 @@
 //! Keyword alignment for marker-less imported component tags (#3937).
 
+#[cfg(test)]
 use super::import_binds_word;
 
 /// Rewrite a quick-info block opening with `var {word}` to `(property) {word}`
 /// when the hover sits on a component tag (`<Word`) and an import binds the
 /// word — the Volar 2.2.10 oracle shape for tags backed by non-.vue modules
 /// (#3937). The type body is left untouched; it already matches.
+#[cfg(test)]
 pub(super) fn imported_tag_property_keyword(
     markdown: &str,
     content: &str,

@@ -3,7 +3,7 @@
 //! Keyword alignment and import checks walk the same script. The walk is pure
 //! in the script text and its `lang`, so one document version reuses it.
 
-use std::sync::OnceLock;
+use std::sync::{Arc, OnceLock};
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -11,7 +11,7 @@ use oxc_ast::ast::{
 };
 use oxc_parser::Parser;
 use parking_lot::Mutex;
-use vize_carton::{CompactString, FxHashMap, FxHashSet};
+use vize_l0::{CompactString, FxHashMap, FxHashSet};
 
 use super::script_source_type;
 use crate::ide::IdeContext;
@@ -33,7 +33,7 @@ impl DeclKind {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Default)]
 pub(super) struct Facts {
     keywords: FxHashMap<CompactString, DeclKind>,
     imports: FxHashSet<CompactString>,
@@ -52,12 +52,14 @@ impl Facts {
 struct Slot {
     version: i32,
     lang: u8,
-    facts: Facts,
+    script: Box<str>,
+    facts: Arc<Facts>,
 }
 
 #[derive(Default)]
 struct Cache {
     slots: FxHashMap<CompactString, Slot>,
+    #[cfg(test)]
     parses: FxHashMap<CompactString, u64>,
 }
 
@@ -66,6 +68,7 @@ fn cache() -> &'static Mutex<Cache> {
     CACHE.get_or_init(|| Mutex::new(Cache::default()))
 }
 
+#[cfg(test)]
 /// Parses counted for `uri`. A repeat hover at the same version does not move it.
 pub(super) fn script_fact_parses(uri: &tower_lsp::lsp_types::Url) -> u64 {
     cache()
@@ -92,7 +95,7 @@ pub(super) fn imports_value(ctx: &IdeContext<'_>, word: &str) -> bool {
     facts(ctx).is_some_and(|facts| facts.imports_word(word))
 }
 
-fn facts(ctx: &IdeContext<'_>) -> Option<Facts> {
+fn facts(ctx: &IdeContext<'_>) -> Option<Arc<Facts>> {
     let block = ctx.descriptor()?.script_setup.as_ref()?;
     let script: &str = &block.content;
     let lang = block.lang.as_deref();
@@ -105,12 +108,13 @@ fn facts(ctx: &IdeContext<'_>) -> Option<Facts> {
         if let Some(slot) = guard.slots.get(&uri_key)
             && slot.version == version
             && slot.lang == lang_id
+            && &*slot.script == script
         {
-            return Some(slot.facts.clone());
+            return Some(Arc::clone(&slot.facts));
         }
     }
 
-    let built = parse_facts(script, lang);
+    let built = Arc::new(parse_facts(script, lang));
     if let Some(version) = version {
         let mut guard = cache().lock();
         if ctx.state.documents.version(ctx.uri) == Some(version) {
@@ -122,10 +126,12 @@ fn facts(ctx: &IdeContext<'_>) -> Option<Facts> {
                 Slot {
                     version,
                     lang: lang_id,
-                    facts: built.clone(),
+                    script: script.into(),
+                    facts: Arc::clone(&built),
                 },
             );
         }
+        #[cfg(test)]
         *guard.parses.entry(uri_key).or_default() += 1;
     }
     Some(built)
@@ -291,6 +297,38 @@ mod tests {
         assert_eq!(markdown(&revised), text);
         assert_eq!(script_fact_parses(&uri), 2);
         super::super::align_hover(&ctx, "message", &mut revised);
+        assert_eq!(script_fact_parses(&uri), 2);
+    }
+
+    #[test]
+    fn reopened_document_with_reused_version_reparses_changed_script() {
+        let uri = Url::parse("file:///workspace/hover-script-facts-reopen-6872.vue").unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), SOURCE.to_owned(), 3, "vue".to_owned());
+        let raw = "```typescript\nvar message: string\n```";
+        let mut first = hover(raw);
+        let ctx = IdeContext::new(&state, &uri, 0).unwrap();
+        super::super::align_hover(&ctx, "message", &mut first);
+        assert_eq!(
+            markdown(&first),
+            "```typescript\nconst message: string\n```"
+        );
+        assert_eq!(script_fact_parses(&uri), 1);
+
+        state.documents.close(&uri);
+        let changed = SOURCE.replace("const message", "let message");
+        state
+            .documents
+            .open(uri.clone(), changed, 3, "vue".to_owned());
+        let mut reopened = hover(raw);
+        let ctx = IdeContext::new(&state, &uri, 0).unwrap();
+        super::super::align_hover(&ctx, "message", &mut reopened);
+        assert_eq!(
+            markdown(&reopened),
+            "```typescript\nlet message: string\n```"
+        );
         assert_eq!(script_fact_parses(&uri), 2);
     }
 }

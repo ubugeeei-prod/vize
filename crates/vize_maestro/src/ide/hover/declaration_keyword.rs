@@ -87,6 +87,7 @@ fn import_quick_info(word: &str) -> String {
     format!("```typescript\nimport {word}\n```")
 }
 
+#[cfg(test)]
 fn imported_component_quick_info(
     script_setup: &str,
     lang: Option<&str>,
@@ -97,6 +98,7 @@ fn imported_component_quick_info(
 
 /// Whether a value import declaration in `script_setup` binds `word`
 /// (default, named, aliased, or namespace).
+#[cfg(test)]
 fn import_binds_word(script_setup: &str, lang: Option<&str>, word: &str) -> bool {
     if word.is_empty() {
         return false;
@@ -190,6 +192,7 @@ fn script_lang_id(lang: Option<&str>) -> u8 {
 /// The authored declaration keyword for `word`, when its top-level
 /// `<script setup>` declaration is a `const` or `let` binding (including
 /// destructuring patterns and default values).
+#[cfg(test)]
 pub(super) fn authored_keyword(
     script_setup: &str,
     lang: Option<&str>,
@@ -200,6 +203,7 @@ pub(super) fn authored_keyword(
 
 /// Rewrite a quick-info markdown block whose code fence opens with
 /// `var {word}` to the authored keyword. Returns `None` when nothing applies.
+#[cfg(test)]
 pub(super) fn align_leading_var(
     markdown: &str,
     script_setup: &str,
