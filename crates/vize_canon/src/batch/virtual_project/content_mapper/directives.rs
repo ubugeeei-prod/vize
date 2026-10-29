@@ -17,7 +17,7 @@ use super::protocol::{
     ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives, ContentMapperSpan,
     ContentMapperUnusedExpectDiagnostic, DIRECTIVE_POLICY_EXPECT, DIRECTIVE_POLICY_IGNORE,
 };
-use crate::virtual_ts::{NAMED_PROP_DIAGNOSTIC_MARKER, VizeMapping};
+use crate::virtual_ts::VizeMapping;
 
 /// Mapper diagnostic code for an unused `@vue-expect-error` directive.
 const UNUSED_EXPECT_CODE: i32 = 4;
@@ -134,8 +134,9 @@ pub(super) fn with_generic_echoes(
 /// virtual diagnostic independently, so the earlier assignment is an echo.
 ///
 /// Keep the assignment when the literal deliberately carries `never` for an
-/// inline callback, or when the literal entry is itself `@ts-ignore`d before a
-/// spread: in both cases the assignment is the only diagnostic owner.
+/// inline callback, or when the literal entry is itself `@ts-ignore`d (before
+/// a spread, or as an inference-only callback copy whose context may be `any`):
+/// in each case the assignment is the only diagnostic owner (#10739).
 pub(super) fn with_component_prop_echoes(
     directives: Option<ContentMapperDiagnosticDirectives>,
     generated: &str,
@@ -155,6 +156,7 @@ pub(super) fn with_component_prop_echoes(
                     entry.starts_with('"')
                         && entry.contains("\": ")
                         && !entry.contains("undefined as never")
+                        && !preceded_by_ts_ignore(generated, candidate.gen_range.start)
                         && !preceded_by_named_prop_ignore(generated, candidate.gen_range.start)
                 })
         })
@@ -281,8 +283,16 @@ pub(super) fn with_owned_input_echoes(
     Some(directives)
 }
 
-/// One interval. A later sibling `void (...)` must not sit inside it: event
-/// navigation is emitted with the element and prop navigation is emitted later.
+fn preceded_by_ts_ignore(generated: &str, start: usize) -> bool {
+    let Some(line_start) = generated.get(..start).and_then(|prefix| prefix.rfind('\n')) else {
+        return false;
+    };
+    generated
+        .get(..line_start)
+        .and_then(|prefix| prefix.rsplit_once('\n').map(|(_, line)| line))
+        .is_some_and(|line| line.trim_start().starts_with("// @ts-ignore"))
+}
+
 fn expect_interval(
     generated: &str,
     spans: &[ContentMapperSpan],

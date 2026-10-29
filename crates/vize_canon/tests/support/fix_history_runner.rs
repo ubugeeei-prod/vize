@@ -137,7 +137,8 @@ pub(crate) fn check_pack(
             | "setup-custom-properties"
             | "empty-v-slot-expression"
             | "public-instance-ts-directives-10984"
-            | "zero-argument-slot-constructor-11013" => regression,
+            | "zero-argument-slot-constructor-11013"
+            | "event-inference-callback-10739" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }

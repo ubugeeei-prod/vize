@@ -278,6 +278,47 @@ fn contextual_callback_errors_do_not_acquire_synthetic_ignore_rows() {
 }
 
 #[test]
+fn inline_callback_copies_stay_ignored_and_never_hide_the_canonical_check() {
+    // #10739: the event-navigation copy had an `any` context and no ignore, while
+    // an ignored inference copy authorized hiding the contextual assignment.
+    for newline in ["\n", "\r\n"] {
+        for prefix in ["", "<!-- 日本 🧭 -->"] {
+            for callback in ["(field) => !!field", "(field) => field.missing"] {
+                let source = format!("{prefix}<script setup lang=\"ts\">\nimport Comp from './Comp.vue'\nconst noop = () => {{}}\n</script>\n<template>\n  <Comp :pick=\"{callback}\" @save=\"noop\" />\n</template>\n")
+                    .replace('\n', newline);
+                let packet = packet("src/Min.vue", &source, true);
+                assert_eq!(packet.get("diagnosticDirectives"), None);
+                let text = packet["text"].as_str().expect("complete generated source");
+                let copies = text
+                    .match_indices(callback)
+                    .map(|(at, _)| {
+                        let line_start = text[..at].rfind('\n').map_or(0, |end| end + 1);
+                        let previous = text[..line_start.saturating_sub(1)]
+                            .rsplit('\n')
+                            .next()
+                            .unwrap_or_default();
+                        if previous.trim_start().starts_with("// @ts-ignore") {
+                            "ignored"
+                        } else {
+                            text[line_start..at].trim_start()
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                assert_eq!(
+                    copies,
+                    [
+                        "ignored",
+                        "ignored",
+                        "const __vize_prop_check_0_pick: __VizeResolvedProp<typeof __vize_resolved_Comp_props_0, typeof __vize_selected_Comp_props_0, 'pick', __Comp_0_prop_pick> = ",
+                    ],
+                    "{text}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
 fn contextual_object_methods_keep_every_preexisting_diagnostic_surface() {
     for value in [
         "{ pick(item: number) { return item.missing } }",

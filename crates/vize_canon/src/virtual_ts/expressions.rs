@@ -31,8 +31,7 @@ mod props_literal;
 #[cfg(feature = "native")]
 pub(crate) use props_literal::key_sub_spans;
 pub(crate) use props_literal::{
-    NAMED_PROP_DIAGNOSTIC_MARKER, append_inference_props_literal, append_props_literal,
-    append_spread_value, prop_entry_sub_spans,
+    append_inference_props_literal, append_props_literal, append_spread_value, prop_entry_sub_spans,
 };
 mod reserved_props;
 #[cfg(test)]
