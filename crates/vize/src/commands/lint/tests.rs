@@ -3,6 +3,7 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 mod fix_regressions;
 mod format_output;
+mod nuxt_layout;
 
 use super::cross_file::build_cross_file_lint_output;
 use std::{fs, path::Path};

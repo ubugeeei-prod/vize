@@ -5,6 +5,7 @@ use crate::NuxtRenderDirs;
 use crate::graph::DependencyEdge;
 use crate::registry::{FileId, ModuleEntry};
 use std::path::Path;
+use vize_croquis::croquis::NuxtPageLayout;
 
 fn uses(entry: &ModuleEntry, names: [&str; 2]) -> bool {
     vize_croquis::facts::used_component_name_list(&entry.analysis)
@@ -94,16 +95,31 @@ impl CrossFileAnalyzer {
         layouts: &Path,
         edges: &mut Vec<(FileId, FileId)>,
     ) {
-        let layout = has_layout
+        let default_layout = has_layout
             .then(|| self.registry.get_by_path(layouts.join("default.vue")))
             .flatten()
             .map(|entry| entry.id);
-        if let (Some(app), Some(layout)) = (app, layout) {
+        if let (Some(app), Some(layout)) = (app, default_layout) {
             edges.push((app, layout));
         }
         for page in self.registry.vue_components() {
             if !page.path.starts_with(pages) {
                 continue;
+            }
+            let layout = match &page.analysis.nuxt_page_layout {
+                Some(NuxtPageLayout::Named(name)) if has_layout => {
+                    let filename = vize_carton::cstr!("{name}.vue");
+                    self.registry
+                        .get_by_path(layouts.join(filename.as_str()))
+                        .map(|entry| entry.id)
+                }
+                Some(NuxtPageLayout::Disabled) => None,
+                _ => default_layout,
+            };
+            if let (Some(app), Some(layout)) = (app, layout) {
+                // The app remains above whichever layout the page selected.
+                // This is distinct from layout -> page ownership below.
+                edges.push((app, layout));
             }
             if let Some(parent) = layout.or(app) {
                 edges.push((parent, page.id));

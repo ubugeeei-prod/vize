@@ -66,7 +66,7 @@ pub use snapshot::{
 pub use summary::CroquisSemanticSummary;
 pub use template::{
     ComponentRegistration, ComponentUsage, ElementIdInfo, ElementIdKind, EventListener,
-    NuxtTemplateRenderFacts, PassedProp, SlotUsage, SpreadProp, TemplateExpression,
+    NuxtPageLayout, NuxtTemplateRenderFacts, PassedProp, SlotUsage, SpreadProp, TemplateExpression,
     TemplateExpressionKind, TemplateInfo,
 };
 pub use template_components::TemplateComponentRegistrations;
@@ -126,6 +126,11 @@ pub struct Croquis {
     /// Closed original-script proof for Nuxt render exclusivity.
     /// `None` and `Some(false)` are unknown; this fact is not projected in DTOs.
     pub nuxt_static_render_script: Option<bool>,
+
+    /// Literal `definePageMeta({ layout })` selection from the setup AST walk.
+    /// `None` preserves the existing default-layout fallback. This private
+    /// render fact is not projected in DTOs or semantic fingerprints.
+    pub nuxt_page_layout: Option<NuxtPageLayout>,
 
     /// Nuxt invocation evidence; absent or non-admitted facts remain unknown.
     /// Excluded from DTOs, semantic summaries, and cache fingerprints.
