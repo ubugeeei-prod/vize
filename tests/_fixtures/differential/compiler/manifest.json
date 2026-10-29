@@ -536,6 +536,48 @@
       }
     },
     {
+      "id": "compiler/sfc/computed-keep-alive-filter-11101",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "computed-keep-alive-filter-11101",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "ca771c031b1abf3cee8ba11fc1be80bed2cefad8bd585aef7ba33cfb43c88b06",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "computed-keep-alive-filter-11101/module.expected.txt",
+        "sha256": "bd83865766fb6ff65fcb5be9cf333186db34c87580dd41bf3e8dcdcd3a89ede4",
+        "source": "crates/vize_atelier_vapor/src/tests_source_map.rs:computed_keep_alive_filter_key_maps_authored_operands; SSR source coverage only"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); native and retained Vapor source-map parity is checked independently."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/computed-v-once-event-6839",
       "state": "active",
       "targets": ["ssr"],
