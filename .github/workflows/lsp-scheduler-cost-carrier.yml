@@ -4,14 +4,16 @@ on:
   pull_request:
     paths:
       - ".github/workflows/lsp-scheduler-cost-carrier.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
       - "crates/vize_maestro/Cargo.toml"
-      - "crates/vize_maestro/src/server/initial_diagnostics.rs"
-      - "crates/vize_maestro/src/server/initial_diagnostics/indexed_cost_carrier.rs"
-      - "crates/vize_maestro/src/server/initial_diagnostics/pending.rs"
-      - "crates/vize_maestro/src/server/initial_diagnostics/queue.rs"
-      - "crates/vize_maestro/src/server/initial_diagnostics/queue/heap.rs"
-      - "davinci/vize_l0/src/profiler/allocation.rs"
-      - "tools/benchmarks/crates/davinci_harness/src/alloc.rs"
+      - "crates/vize_maestro/src/server.rs"
+      - "crates/vize_maestro/src/server/**"
+      - "davinci/vize_l0/Cargo.toml"
+      - "davinci/vize_l0/src/profiler.rs"
+      - "davinci/vize_l0/src/profiler/**"
+      - "tools/benchmarks/crates/davinci_harness/**"
+      - "tests/tooling/lsp-scheduler-cost-carrier.test.ts"
 permissions:
   contents: read
 concurrency:
