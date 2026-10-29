@@ -9,6 +9,8 @@ import {
   auditCancellationPublications,
   cancellationBatch,
   cancellationCycles,
+  diagnosticRecoveryLifecycle,
+  recordCancellationPublications,
   sourceSha256,
   summarizeCancellationDurations,
 } from "../../tools/support/compat/davinci/lib/lsp-resource-cancellation.ts";
@@ -18,8 +20,10 @@ import {
   resourceCorsaGateScript,
 } from "../../tools/support/compat/davinci/lib/lsp-resource-corsa-gate.ts";
 import {
+  createCancellationPublicationProgress,
   finalizeCancellationProfileLink,
   rssDeltaMib,
+  updateCancellationPublicationProgress,
   type AllocationProfileLink,
 } from "../../tools/support/compat/davinci/lib/lsp-resource-cancellation-run.ts";
 
@@ -227,6 +231,91 @@ test("diagnostic audit rejects a missing opened parent publication", () => {
       ),
     /every known opened document must publish diagnostics/,
   );
+});
+
+test("diagnostic recovery requires a fresh child then its importer publication", () => {
+  const child = {
+    received_order: 8,
+    uri: "file:///workspace/src/Component00000.vue",
+    version: 33,
+    diagnostics: [],
+  };
+  const parent = {
+    received_order: 9,
+    uri: "file:///workspace/src/Component00001.vue",
+    version: 1,
+    diagnostics: [],
+  };
+  assert.deepEqual(diagnosticRecoveryLifecycle(7, child, parent), {
+    after_received_order: 7,
+    child,
+    parent,
+    child_before_importer: true,
+  });
+  assert.throws(
+    () => diagnosticRecoveryLifecycle(8, child, parent),
+    /child diagnostics must publish after the recovery boundary/,
+  );
+  assert.throws(
+    () => diagnosticRecoveryLifecycle(7, child, { ...parent, received_order: 8 }),
+    /importer diagnostics must publish after the clean child diagnostics/,
+  );
+  assert.throws(
+    () => diagnosticRecoveryLifecycle(7, { ...child, diagnostics: [{ code: 2322 }] }, parent),
+    /recovery child diagnostics must be clean/,
+  );
+
+  const notificationObservers: Array<(method: string, value: unknown) => void> = [];
+  const recorder = recordCancellationPublications(
+    { notificationObservers } as unknown as Parameters<typeof recordCancellationPublications>[0],
+    "/workspace",
+  );
+  const historical = { uri: child.uri, version: child.version, diagnostics: [] };
+  assert.equal(recorder.orderOf(historical), 0);
+  notificationObservers[0]("textDocument/publishDiagnostics", historical);
+  const importer = { uri: parent.uri, version: parent.version, diagnostics: [] };
+  notificationObservers[0]("textDocument/publishDiagnostics", importer);
+  assert.equal(recorder.orderOf(historical), 1);
+  assert.equal(recorder.orderOf(importer), 2);
+  assert.deepEqual(
+    recorder.since(0).map(({ received_order, uri, version }) => ({
+      received_order,
+      uri,
+      version,
+    })),
+    [
+      { received_order: 1, uri: child.uri, version: child.version },
+      { received_order: 2, uri: parent.uri, version: parent.version },
+    ],
+  );
+  recorder.stop();
+  assert.deepEqual(notificationObservers, []);
+});
+
+test("diagnostic progress distinguishes partial evidence from a complete measurement", () => {
+  const progress = createCancellationPublicationProgress();
+  assert.deepEqual(progress, {
+    phase: "baseline-recovery",
+    complete: false,
+    recovery_boundary_received_order: 0,
+    clean_fence_received_order: null,
+    observed_count: 0,
+    rows: [],
+  });
+  const row = {
+    received_order: 1,
+    received_ns: "10",
+    uri: "file:///workspace/src/Component00000.vue",
+    version: 33,
+    diagnostics: [],
+    diagnostics_sha256: sourceSha256("[]"),
+  };
+  updateCancellationPublicationProgress(progress, "baseline-quiescence", 0, 1, [row]);
+  assert.equal(progress.complete, false);
+  assert.equal(progress.observed_count, 1);
+  assert.deepEqual(progress.rows, [row]);
+  updateCancellationPublicationProgress(progress, "complete", 0, 1, [row]);
+  assert.equal(progress.complete, true);
 });
 
 test("cleanup receipts distinguish graceful exit from forced completion", () => {

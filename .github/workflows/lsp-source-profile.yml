@@ -37,10 +37,14 @@ jobs:
       CARGO_TERM_COLOR: always
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Authenticate the exact source revision
+        run: test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: "package.json"
@@ -84,7 +88,7 @@ jobs:
               --out "${RUNNER_TEMP}/source-${files}.json"
           done
       - name: Summarize the scope of these observations
-        if: ${{ !cancelled() }}
+        if: ${{ success() }}
         run: |
           {
             echo '### LSP source operations and Rust allocation requests'

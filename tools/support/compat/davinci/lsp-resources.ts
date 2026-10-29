@@ -2,6 +2,7 @@
 // A production stdio Maestro session. The isolated resident example remains a
 // separate measurement and does not establish this process-tree acceptance.
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -12,8 +13,10 @@ import type { JsonRecord } from "../../json-value.ts";
 import { componentSource, documentUri, prepareWorkspace } from "./lib/lsp-resource-workspace.ts";
 import { ResourceCorsaGate, type GateCleanupReceipt } from "./lib/lsp-resource-corsa-gate.ts";
 import {
+  createCancellationPublicationProgress,
   finalizeCancellationProfileLink,
   measureCancellationRetention,
+  type CancellationPublicationProgress,
 } from "./lib/lsp-resource-cancellation-run.ts";
 import { createSampler, mib } from "./lib/lsp-resource-sampler.ts";
 import type { ObservedProcess, ProcessEntry } from "./lib/lsp-resource-sampler.ts";
@@ -35,6 +38,7 @@ interface RunResult {
   initialized_ms?: number;
   controlled_edits_scope?: string;
   body_edit_churn?: Awaited<ReturnType<typeof bodyEditChurn>>;
+  cancellation_publication_progress?: CancellationPublicationProgress;
   cancellation_churn?: Awaited<ReturnType<typeof measureCancellationRetention>>;
   corsa_gate_cleanup?: GateCleanupReceipt;
   controlled_edits?: JsonRecord[];
@@ -133,7 +137,7 @@ async function measure() {
     github_run:
       process.env.GITHUB_RUN_ID &&
       `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
-    revision: process.env.GITHUB_SHA,
+    revision: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
     per_run: [],
   };
   const save = () => fs.writeFileSync(out, `${JSON.stringify(measurement, null, 2)}\n`);
@@ -189,6 +193,9 @@ async function measure() {
       result.controlled_edits_scope =
         "two open files before cancellation, controlled edits and bulk residency";
       result.body_edit_churn = await bodyEditChurn(session, workspace);
+      const cancellationPublicationProgress = createCancellationPublicationProgress();
+      result.cancellation_publication_progress = cancellationPublicationProgress;
+      save();
       const cancellation = await measureCancellationRetention({
         session,
         sampler,
@@ -196,6 +203,8 @@ async function measure() {
         initialVersion: result.body_edit_churn.final_version,
         gate: corsaGate,
         profilePath,
+        publicationProgress: cancellationPublicationProgress,
+        persistPublicationProgress: save,
       });
       result.cancellation_churn = cancellation;
       save();

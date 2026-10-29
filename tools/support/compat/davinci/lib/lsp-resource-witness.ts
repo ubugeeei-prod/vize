@@ -16,17 +16,15 @@ import type { JsonRecord } from "../../../json-value.ts";
 import {
   cancellationCycles,
   cancellationBatch,
+  diagnosticRecoveryLifecycle,
+  isCancellationPublication as isPublication,
   sourceSha256,
   summarizeCancellationDurations,
   type CancellationFrameReceipt,
-  type CancellationPublication,
+  type CancellationPublicationRecorder,
 } from "./lsp-resource-cancellation.ts";
 import type { NativeAdmissionReceipt, ResourceCorsaGate } from "./lsp-resource-corsa-gate.ts";
 import { componentSource, documentUri } from "./lsp-resource-workspace.ts";
-
-function isPublication(value: unknown): value is PublishDiagnosticsParams & object {
-  return isRecord(value) && Array.isArray(value.diagnostics) && value.diagnostics.every(isRecord);
-}
 
 export async function metadataCompletion(
   session: LspSession,
@@ -109,37 +107,6 @@ const peerHoverParams = (workspace: string) => {
     position: offsetToPosition(source, source.indexOf("\nPeer\n") + 2),
   };
 };
-
-/** Retain every opened child/importer diagnostics payload in the measured window. */
-export function recordCancellationPublications(session: LspSession, workspace: string) {
-  const trackedUris = new Set([documentUri(workspace, 0), documentUri(workspace, 1)]);
-  const rows: CancellationPublication[] = [];
-  let stopped = false;
-  const observer = (method: string, value: unknown): void => {
-    if (method !== "textDocument/publishDiagnostics" || !isPublication(value)) return;
-    if (!trackedUris.has(value.uri)) return;
-    const diagnostics = JSON.parse(JSON.stringify(value.diagnostics)) as unknown[];
-    rows.push({
-      received_order: rows.length + 1,
-      received_ns: process.hrtime.bigint().toString(),
-      uri: value.uri,
-      version: Number.isSafeInteger(value.version) ? Number(value.version) : null,
-      diagnostics,
-      diagnostics_sha256: sourceSha256(JSON.stringify(diagnostics)),
-    });
-  };
-  session.notificationObservers.push(observer);
-  return {
-    count: () => rows.length,
-    since: (index: number): CancellationPublication[] => rows.slice(index),
-    stop() {
-      if (stopped) return;
-      stopped = true;
-      const index = session.notificationObservers.indexOf(observer);
-      if (index >= 0) session.notificationObservers.splice(index, 1);
-    },
-  };
-}
 
 /**
  * Admit one real hover into Corsa, hold its already-produced native response,
@@ -327,6 +294,8 @@ export async function verifyCancellationRecovery(
   session: LspSession,
   workspace: string,
   finalVersion: number,
+  publications: CancellationPublicationRecorder,
+  afterPublicationOrder: number,
 ) {
   const childUri = documentUri(workspace, 0);
   const parentUri = documentUri(workspace, 1);
@@ -335,12 +304,40 @@ export async function verifyCancellationRecovery(
     "textDocument/publishDiagnostics",
     (value) =>
       isPublication(value) &&
+      publications.orderOf(value) > afterPublicationOrder &&
       value.uri === childUri &&
       value.version === finalVersion &&
       value.diagnostics.length === 0,
     180_000,
   );
   assert.ok(isPublication(publish));
+  const childReceivedOrder = publications.orderOf(publish);
+  const parentPublish = await session.waitForNotification(
+    "textDocument/publishDiagnostics",
+    (value) =>
+      isPublication(value) &&
+      publications.orderOf(value) > childReceivedOrder &&
+      value.uri === parentUri &&
+      value.version === 1 &&
+      value.diagnostics.length === 0,
+    180_000,
+  );
+  assert.ok(isPublication(parentPublish));
+  const diagnosticRecovery = diagnosticRecoveryLifecycle(
+    afterPublicationOrder,
+    {
+      received_order: childReceivedOrder,
+      uri: childUri,
+      version: finalVersion,
+      diagnostics: publish.diagnostics,
+    },
+    {
+      received_order: publications.orderOf(parentPublish),
+      uri: parentUri,
+      version: 1,
+      diagnostics: parentPublish.diagnostics,
+    },
+  );
 
   const completion = await metadataCompletion(session, parentUri, parent);
   const hover = await session.request("textDocument/hover", peerHoverParams(workspace), 120_000);
@@ -350,6 +347,8 @@ export async function verifyCancellationRecovery(
   return {
     final_version: finalVersion,
     final_diagnostics: publish.diagnostics,
+    final_importer_diagnostics: parentPublish.diagnostics,
+    diagnostic_recovery: diagnosticRecovery,
     completion: {
       label: asString(completion.label, "completion label"),
       detail: asString(completion.detail, "completion detail"),

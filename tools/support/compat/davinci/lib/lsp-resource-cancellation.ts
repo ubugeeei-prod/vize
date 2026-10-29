@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import type { JsonRpcMessage } from "../../../../../tests/tooling/support/lsp/protocol.ts";
+import type {
+  JsonRpcMessage,
+  PublishDiagnosticsParams,
+} from "../../../../../tests/tooling/support/lsp/protocol.ts";
+import type { LspSession } from "../../../../../tests/tooling/support/lsp/session.ts";
+import { isRecord } from "../../../json-value.ts";
+import { documentUri } from "./lsp-resource-workspace.ts";
 
 export const cancellationCycles = 40;
 
@@ -41,6 +47,84 @@ export type CancellationDurationStats = {
 
 export const sourceSha256 = (source: string): string =>
   createHash("sha256").update(source).digest("hex");
+
+export function isCancellationPublication(
+  value: unknown,
+): value is PublishDiagnosticsParams & object {
+  return isRecord(value) && Array.isArray(value.diagnostics) && value.diagnostics.every(isRecord);
+}
+
+/** Retain every opened child/importer diagnostics payload in the measured window. */
+export function recordCancellationPublications(session: LspSession, workspace: string) {
+  const trackedUris = new Set([documentUri(workspace, 0), documentUri(workspace, 1)]);
+  const rows: CancellationPublication[] = [];
+  const receivedOrders = new WeakMap<object, number>();
+  let stopped = false;
+  const observer = (method: string, value: unknown): void => {
+    if (method !== "textDocument/publishDiagnostics" || !isCancellationPublication(value)) return;
+    if (!trackedUris.has(value.uri)) return;
+    const receivedOrder = rows.length + 1;
+    receivedOrders.set(value, receivedOrder);
+    const diagnostics = JSON.parse(JSON.stringify(value.diagnostics)) as unknown[];
+    rows.push({
+      received_order: receivedOrder,
+      received_ns: process.hrtime.bigint().toString(),
+      uri: value.uri,
+      version: Number.isSafeInteger(value.version) ? Number(value.version) : null,
+      diagnostics,
+      diagnostics_sha256: sourceSha256(JSON.stringify(diagnostics)),
+    });
+  };
+  session.notificationObservers.push(observer);
+  return {
+    count: () => rows.length,
+    orderOf: (value: object): number => receivedOrders.get(value) ?? 0,
+    since: (index: number): CancellationPublication[] => rows.slice(index),
+    stop() {
+      if (stopped) return;
+      stopped = true;
+      const index = session.notificationObservers.indexOf(observer);
+      if (index >= 0) session.notificationObservers.splice(index, 1);
+    },
+  };
+}
+
+export type CancellationPublicationRecorder = ReturnType<typeof recordCancellationPublications>;
+
+type RecoveryPublication = {
+  received_order: number;
+  uri: string;
+  version: number;
+  diagnostics: unknown[];
+};
+
+/** Prove that recovery crossed a fresh child publication and its later importer publication. */
+export function diagnosticRecoveryLifecycle(
+  afterReceivedOrder: number,
+  child: RecoveryPublication,
+  parent: RecoveryPublication,
+) {
+  assert.ok(
+    Number.isSafeInteger(afterReceivedOrder) && afterReceivedOrder >= 0,
+    "a valid recovery publication boundary is required",
+  );
+  assert.ok(
+    Number.isSafeInteger(child.received_order) && child.received_order > afterReceivedOrder,
+    "the clean child diagnostics must publish after the recovery boundary",
+  );
+  assert.ok(
+    Number.isSafeInteger(parent.received_order) && parent.received_order > child.received_order,
+    "the clean importer diagnostics must publish after the clean child diagnostics",
+  );
+  assert.deepEqual(child.diagnostics, [], "the recovery child diagnostics must be clean");
+  assert.deepEqual(parent.diagnostics, [], "the recovery importer diagnostics must be clean");
+  return {
+    after_received_order: afterReceivedOrder,
+    child,
+    parent,
+    child_before_importer: true as const,
+  };
+}
 
 /** Build the exact cancellation/edit notification pair for one stdio write. */
 export function cancellationBatch(

@@ -1,14 +1,15 @@
 import assert from "node:assert/strict";
 import { setTimeout as sleep } from "node:timers/promises";
 import type { LspSession } from "../../../../../tests/tooling/support/lsp/session.ts";
-import { auditCancellationPublications, sourceSha256 } from "./lsp-resource-cancellation.ts";
+import {
+  auditCancellationPublications,
+  recordCancellationPublications,
+  sourceSha256,
+  type CancellationPublication,
+} from "./lsp-resource-cancellation.ts";
 import type { ResourceCorsaGate } from "./lsp-resource-corsa-gate.ts";
 import { mib, type ProcessEntry, type Sampler, type TreeSample } from "./lsp-resource-sampler.ts";
-import {
-  cancelledConcurrentEdits,
-  recordCancellationPublications,
-  verifyCancellationRecovery,
-} from "./lsp-resource-witness.ts";
+import { cancelledConcurrentEdits, verifyCancellationRecovery } from "./lsp-resource-witness.ts";
 import { componentSource, documentUri } from "./lsp-resource-workspace.ts";
 
 interface ResourceCheckpoint {
@@ -29,6 +30,49 @@ export interface AllocationProfileLink {
   persistence_error?: string;
   receipt_field: "profile_json";
   scope: string;
+}
+
+export interface CancellationPublicationProgress {
+  phase:
+    | "baseline-recovery"
+    | "baseline-quiescence"
+    | "cancellation"
+    | "final-recovery"
+    | "final-quiescence"
+    | "complete";
+  complete: boolean;
+  recovery_boundary_received_order: number;
+  clean_fence_received_order: number | null;
+  observed_count: number;
+  rows: CancellationPublication[];
+}
+
+export const createCancellationPublicationProgress = (): CancellationPublicationProgress => ({
+  phase: "baseline-recovery",
+  complete: false,
+  recovery_boundary_received_order: 0,
+  clean_fence_received_order: null,
+  observed_count: 0,
+  rows: [],
+});
+
+export function updateCancellationPublicationProgress(
+  progress: CancellationPublicationProgress,
+  phase: CancellationPublicationProgress["phase"],
+  recoveryBoundary: number,
+  cleanFence: number | null,
+  rows: readonly CancellationPublication[],
+): void {
+  assert.ok(Number.isSafeInteger(recoveryBoundary) && recoveryBoundary >= 0);
+  assert.ok(cleanFence === null || (Number.isSafeInteger(cleanFence) && cleanFence >= 0));
+  Object.assign(progress, {
+    phase,
+    complete: phase === "complete",
+    recovery_boundary_received_order: recoveryBoundary,
+    clean_fence_received_order: cleanFence,
+    observed_count: rows.length,
+    rows: [...rows],
+  });
 }
 
 /** Fold profile linkage into evidence without replacing an earlier failure. */
@@ -109,16 +153,40 @@ export async function measureCancellationRetention(options: {
   initialVersion: number;
   gate: ResourceCorsaGate;
   profilePath: string | null;
+  publicationProgress: CancellationPublicationProgress;
+  persistPublicationProgress: () => void;
 }) {
   const publications = recordCancellationPublications(options.session, options.workspace);
+  let progressPhase: CancellationPublicationProgress["phase"] = "baseline-recovery";
+  let progressBoundary = publications.count();
+  let progressFence: number | null = null;
+  const snapshotPublicationProgress = (persist = false): void => {
+    updateCancellationPublicationProgress(
+      options.publicationProgress,
+      progressPhase,
+      progressBoundary,
+      progressFence,
+      publications.since(0),
+    );
+    if (persist) options.persistPublicationProgress();
+  };
+  snapshotPublicationProgress();
   try {
+    const baselineRecoveryStart = publications.count();
     const recoveryBefore = await verifyCancellationRecovery(
       options.session,
       options.workspace,
       options.initialVersion,
+      publications,
+      baselineRecoveryStart,
     );
     const baselinePublicationFence = publications.count();
+    progressPhase = "baseline-quiescence";
+    progressBoundary = baselineRecoveryStart;
+    progressFence = baselinePublicationFence;
+    snapshotPublicationProgress(true);
     await sleep(10_000);
+    snapshotPublicationProgress(true);
     assert.equal(
       publications.count(),
       baselinePublicationFence,
@@ -126,6 +194,10 @@ export async function measureCancellationRetention(options: {
     );
     const baseline = checkpoint(options.sampler.sample(), options.session.processId);
     const publicationWindowStart = publications.count();
+    progressPhase = "cancellation";
+    progressBoundary = publicationWindowStart;
+    progressFence = null;
+    snapshotPublicationProgress();
     const cancellation = await cancelledConcurrentEdits(
       options.session,
       options.workspace,
@@ -133,13 +205,21 @@ export async function measureCancellationRetention(options: {
       options.gate,
     );
     const immediate = checkpoint(options.sampler.sample(), options.session.processId);
+    progressPhase = "final-recovery";
+    snapshotPublicationProgress();
     const recoveryAfter = await verifyCancellationRecovery(
       options.session,
       options.workspace,
       cancellation.final_version,
+      publications,
+      publicationWindowStart,
     );
     const finalPublicationFence = publications.count() - publicationWindowStart;
+    progressPhase = "final-quiescence";
+    progressFence = publications.count();
+    snapshotPublicationProgress(true);
     await sleep(10_000);
+    snapshotPublicationProgress(true);
     const windowPublications = publications.since(publicationWindowStart);
     const finalAfterQuiescence = publications.count() - publicationWindowStart;
     const childUri = documentUri(options.workspace, 0);
@@ -185,6 +265,8 @@ export async function measureCancellationRetention(options: {
         ? "the sibling profile_json receipt is exported after graceful shutdown by this exact gated server session; cumulative requested/released Rust allocation traffic and not cancellation-window-only live allocation"
         : "no allocation profile requested for this ordinary-process run",
     };
+    progressPhase = "complete";
+    snapshotPublicationProgress();
     return {
       ...cancellation,
       recovery: { before: recoveryBefore, after: recoveryAfter },
@@ -211,6 +293,7 @@ export async function measureCancellationRetention(options: {
       allocation_profile: allocationProfile,
     };
   } finally {
+    snapshotPublicationProgress();
     publications.stop();
   }
 }
