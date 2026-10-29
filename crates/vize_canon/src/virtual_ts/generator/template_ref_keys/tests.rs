@@ -182,8 +182,23 @@ fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
 }
 
 #[test]
+fn ambient_signature_is_not_vue_ownership() {
+    let mut helpers = vize_carton::String::default();
+    usage("const target = useTemplateRef('target');\n").emit_inference_helpers(&mut helpers);
+    assert!(
+        helpers.contains("type __vizeInferRefIsVue = false;"),
+        "{helpers}"
+    );
+    assert!(!helpers.contains("Equal<"), "{helpers}");
+    let imported = generate(
+        "import { useTemplateRef } from 'vue';\nconst target = useTemplateRef('target');\n",
+    );
+    assert!(imported.contains("__vizeInferRef('target')"), "{imported}");
+}
+
+#[test]
 fn generated_global_type_names_cannot_capture_authored_names() {
-    for suffix in ["Source", "Equal", "Result", "IsVue", "Global"] {
+    for suffix in ["Source", "IsVue", "Global"] {
         let script = format!("type __vizeInferRef{suffix} = string;\nuseTemplateRef('target');");
         assert_ne!(usage(&script).helper_name(), "__vizeInferRef");
     }
