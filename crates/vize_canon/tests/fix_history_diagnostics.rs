@@ -692,7 +692,10 @@ fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
         "content_mapper_preserves_emit_with_nuxt_pattern_injections",
         "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
         Some(10195),
-        &["nuxt-pattern-injection-attribute-listener"],
+        &[
+            "nuxt-pattern-injection-attribute-listener",
+            "pattern-injections-keep-listener-errors",
+        ],
     );
 }
 
