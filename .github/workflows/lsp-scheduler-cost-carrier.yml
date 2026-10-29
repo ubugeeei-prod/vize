@@ -1,6 +1,17 @@
 name: LSP indexed scheduler source cost carrier
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/lsp-scheduler-cost-carrier.yml"
+      - "crates/vize_maestro/Cargo.toml"
+      - "crates/vize_maestro/src/server/initial_diagnostics.rs"
+      - "crates/vize_maestro/src/server/initial_diagnostics/indexed_cost_carrier.rs"
+      - "crates/vize_maestro/src/server/initial_diagnostics/pending.rs"
+      - "crates/vize_maestro/src/server/initial_diagnostics/queue.rs"
+      - "crates/vize_maestro/src/server/initial_diagnostics/queue/heap.rs"
+      - "davinci/vize_l0/src/profiler/allocation.rs"
+      - "tools/benchmarks/crates/davinci_harness/src/alloc.rs"
 permissions:
   contents: read
 concurrency:

@@ -113,7 +113,7 @@ struct PayloadRetentionEvidence {
 impl PayloadRetentionEvidence {
     fn json(self) -> Value {
         json!({
-            "scope": "real captured open continuation and nonempty edit SyncDiagnostics; deterministic old-taken/new-edit scheduler overlap",
+            "scope": "production-captured open continuation; production SyncDiagnostics type/current stamp with representative nonempty editor diagnostics; deterministic old-taken/new-edit scheduler overlap",
             "diagnostic_payload": {
                 "items": self.diagnostics,
                 "json_bytes": self.diagnostic_json_bytes,
