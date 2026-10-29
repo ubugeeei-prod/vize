@@ -1,10 +1,12 @@
 use rayon::prelude::*;
 
+use super::reachability::scan_route_reachability;
+
 use super::super::session::{AliasScope, LocalImportSession};
 use super::{
     CanonicalPathCache, ImportFileOptions, Path, PathAliasResolver, RegistrationFrontier,
     extract_module_specifier_occurrences, is_declaration_file, is_relative_specifier,
-    resolve_import_base, resolve_import_base_with_inputs, resolve_relative_import,
+    resolve_import_base, resolve_relative_import,
 };
 
 pub(super) fn source_needs_virtual_registration(
@@ -208,7 +210,9 @@ pub(super) fn source_needs_virtual_registration(
                                     .registration_cache
                                     .reachability_sources(alias_scope.edges());
                                 sources.set_alias_scope(alias_scope.token());
-                                let scanned = scan_route_reachability(
+                                // These scoped CLI sources discard path histories, but retain
+                                // bare alias answers for cross-program agreement.
+                                let scanned = scan_route_reachability::<false>(
                                     &route,
                                     sources,
                                     canonical_paths,
@@ -280,72 +284,4 @@ pub(super) fn source_needs_virtual_registration(
     }
 
     needs_registration
-}
-
-/// Bounded Vue reachability for one package route, using the same local and
-/// package resolution the check import walk uses for authored sources.
-fn scan_route_reachability(
-    route: &vize_canon::PackageRoute,
-    sources: &mut vize_canon::batch::ReachabilitySources,
-    canonical_paths: &mut CanonicalPathCache,
-    options: ImportFileOptions,
-    aliases: Option<&PathAliasResolver>,
-    packages: &mut vize_canon::PackageRouteResolver,
-) -> vize_canon::batch::PackageRouteReachability {
-    vize_canon::batch::scan_package_route_reachability(
-        route,
-        sources,
-        |importer, nested_specifier| {
-            let nested_dir = importer.parent().unwrap_or(importer);
-            if is_relative_specifier(nested_specifier) {
-                resolve_import_base_with_inputs(
-                    &nested_dir.join(nested_specifier),
-                    canonical_paths,
-                    options,
-                )
-            } else {
-                let candidate = Path::new(nested_specifier);
-                if candidate.is_absolute() {
-                    resolve_import_base_with_inputs(candidate, canonical_paths, options)
-                } else {
-                    aliases.map_or_else(
-                        || (None, Vec::new()),
-                        |aliases| {
-                            aliases.resolve_with_inputs(
-                                nested_specifier,
-                                canonical_paths,
-                                options,
-                                resolve_import_base_with_inputs,
-                            )
-                        },
-                    )
-                }
-            }
-        },
-        |importer, nested_specifier, nested_mode| {
-            let nested_dir = importer.parent().unwrap_or(importer);
-            let (nested_context, mut nested_inputs) = match aliases {
-                Some(aliases) => {
-                    aliases.package_resolution_context(packages, importer, nested_mode)
-                }
-                None => packages.resolution_context(
-                    importer,
-                    nested_mode,
-                    None,
-                    None,
-                    std::iter::empty::<vize_l0::String>(),
-                ),
-            };
-            let (nested, consulted) = packages
-                .lookup_with_context(
-                    nested_dir,
-                    nested_specifier,
-                    vize_canon::PackageSourceOptions::new(options.include_js, options.include_jsx),
-                    nested_context,
-                )
-                .into_parts();
-            nested_inputs.extend(consulted);
-            (nested, nested_inputs)
-        },
-    )
 }

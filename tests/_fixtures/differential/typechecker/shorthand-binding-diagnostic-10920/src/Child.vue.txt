@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineProps<{ errorMessage?: string }>();
+</script>
+<template>
+  <div />
+</template>

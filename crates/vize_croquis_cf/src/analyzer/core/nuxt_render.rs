@@ -5,6 +5,14 @@ use crate::NuxtRenderDirs;
 use crate::graph::DependencyEdge;
 use crate::registry::{FileId, ModuleEntry};
 use std::path::Path;
+use vize_croquis::croquis::NuxtPageLayout;
+
+#[derive(Clone, Copy)]
+struct NuxtRenderEdge {
+    parent: FileId,
+    child: FileId,
+    outlet: Option<FileId>,
+}
 
 fn uses(entry: &ModuleEntry, names: [&str; 2]) -> bool {
     vize_croquis::facts::used_component_name_list(&entry.analysis)
@@ -39,6 +47,7 @@ impl CrossFileAnalyzer {
             pages_enabled: dirs.pages_enabled,
             static_render_config: dirs.static_render_config,
         });
+        self.nuxt_page_outlets.clear();
         let mut edges = Vec::new();
         let mut configured_app = false;
         for app in self.registry.vue_components() {
@@ -80,9 +89,13 @@ impl CrossFileAnalyzer {
             "croquis_cf.dependencies.nuxt_render.edge_attempts",
             edges.len() as u64,
         );
-        for (parent, child) in edges {
+        for edge in edges {
             self.graph
-                .add_edge(parent, child, DependencyEdge::ComponentUsage);
+                .add_edge(edge.parent, edge.child, DependencyEdge::ComponentUsage);
+            if let Some(outlet) = edge.outlet {
+                self.nuxt_page_outlets
+                    .insert((edge.parent, edge.child), outlet);
+            }
         }
     }
 
@@ -92,32 +105,83 @@ impl CrossFileAnalyzer {
         has_layout: bool,
         pages: &Path,
         layouts: &Path,
-        edges: &mut Vec<(FileId, FileId)>,
+        edges: &mut Vec<NuxtRenderEdge>,
     ) {
-        let layout = has_layout
+        let default_layout = has_layout
             .then(|| self.registry.get_by_path(layouts.join("default.vue")))
             .flatten()
             .map(|entry| entry.id);
-        if let (Some(app), Some(layout)) = (app, layout) {
-            edges.push((app, layout));
+        if let (Some(app), Some(layout)) = (app, default_layout) {
+            edges.push(NuxtRenderEdge {
+                parent: app,
+                child: layout,
+                outlet: None,
+            });
         }
         for page in self.registry.vue_components() {
             if !page.path.starts_with(pages) {
                 continue;
             }
-            if let Some(parent) = layout.or(app) {
-                edges.push((parent, page.id));
-            }
-            if !uses(page, ["NuxtPage", "nuxt-page"]) {
+            if let Some(parent_page) = self.nearest_parent_page(page, pages) {
+                // A nested route is rendered only by its closest route parent's
+                // outlet. It is never also a direct child of the layout/app or
+                // of every more distant route ancestor.
+                if uses(parent_page, ["NuxtPage", "nuxt-page"]) {
+                    edges.push(NuxtRenderEdge {
+                        parent: parent_page.id,
+                        child: page.id,
+                        outlet: Some(parent_page.id),
+                    });
+                }
                 continue;
             }
-            // A parent page's `<NuxtPage>` renders the routes in its same-named directory.
-            let children = page.path.with_extension("");
-            for child in self.registry.vue_components() {
-                if child.path.starts_with(&children) {
-                    edges.push((page.id, child.id));
+            let layout = match &page.analysis.nuxt_page_layout {
+                Some(NuxtPageLayout::Named(name)) if has_layout => {
+                    let filename = vize_carton::cstr!("{name}.vue");
+                    self.registry
+                        .get_by_path(layouts.join(filename.as_str()))
+                        .map(|entry| entry.id)
                 }
+                Some(NuxtPageLayout::Disabled) => None,
+                _ => default_layout,
+            };
+            if let (Some(app), Some(layout)) = (app, layout) {
+                // The app remains above whichever layout the page selected.
+                // This is distinct from layout -> page ownership below.
+                edges.push(NuxtRenderEdge {
+                    parent: app,
+                    child: layout,
+                    outlet: None,
+                });
+            }
+            if let Some(parent) = layout.or(app) {
+                edges.push(NuxtRenderEdge {
+                    parent,
+                    child: page.id,
+                    outlet: app,
+                });
             }
         }
+    }
+
+    fn nearest_parent_page<'a>(
+        &'a self,
+        page: &ModuleEntry,
+        pages: &Path,
+    ) -> Option<&'a ModuleEntry> {
+        let mut directory = page.path.parent()?;
+        while directory != pages {
+            if !directory.starts_with(pages) {
+                return None;
+            }
+            let mut filename = directory.file_name()?.to_os_string();
+            filename.push(".vue");
+            let candidate = directory.with_file_name(filename);
+            if let Some(parent) = self.registry.get_by_path(candidate) {
+                return Some(parent);
+            }
+            directory = directory.parent()?;
+        }
+        None
     }
 }

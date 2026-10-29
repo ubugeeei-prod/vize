@@ -5,7 +5,9 @@
     clippy::expect_used,
     reason = "complete source-built CSS observations and immutable fixture contracts"
 )]
-use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
+use vize_atelier_sfc::{
+    CssCompileOptions, SfcCompileOptions, SfcParseOptions, compile_css, compile_sfc, parse_sfc,
+};
 
 #[test]
 fn selector_list_nesting_keeps_full_scoped_modules_and_cascade() {
@@ -13,7 +15,7 @@ fn selector_list_nesting_keeps_full_scoped_modules_and_cascade() {
         serde_json::from_str(include_str!("fixtures/scoped_nesting_specificity.json"))
             .expect("pinned full source and reference CSS");
     let cases = pack["cases"].as_array().expect("all cases");
-    assert_eq!(cases.len(), 31);
+    assert_eq!(cases.len(), 32);
     let mut captures = Vec::new();
     for case in cases {
         let source = case["source"].as_str().expect("whole SFC");
@@ -22,6 +24,35 @@ fn selector_list_nesting_keeps_full_scoped_modules_and_cascade() {
             case["css"].as_str().expect("authored CSS"),
             "data-v-nesting",
         );
+        if case["id"].as_str() == Some("nested-list-sibling-bare-deep") {
+            let reference_css = case["referenceCss"].as_str().expect("semantic CSS");
+            assert_eq!(pipeline.as_str(), reference_css, "{}", case["id"]);
+            for minify in [false, true] {
+                let reference = compile_css(
+                    reference_css,
+                    &CssCompileOptions {
+                        minify,
+                        ..Default::default()
+                    },
+                );
+                assert!(reference.errors.is_empty(), "{:?}", reference.errors);
+                let actual = compile_css(
+                    case["css"].as_str().expect("authored CSS"),
+                    &CssCompileOptions {
+                        scope_id: Some("data-v-nesting".into()),
+                        scoped: true,
+                        minify,
+                        ..Default::default()
+                    },
+                );
+                assert_eq!(
+                    serde_json::to_value(actual).expect("complete public CSS result"),
+                    serde_json::to_value(reference).expect("complete reference CSS result"),
+                    "{} / public compileCss minify={minify}",
+                    case["id"]
+                );
+            }
+        }
         for backend in ["dom", "ssr", "vapor"] {
             let mut options = SfcCompileOptions {
                 scope_id: Some("nesting".into()),

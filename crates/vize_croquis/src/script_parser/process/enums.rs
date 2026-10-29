@@ -15,6 +15,9 @@ pub(super) fn process_enum_declaration(
     if enumeration.declare {
         return;
     }
+    if let Some(origins) = result.value_binding_origins.as_mut() {
+        origins.refuse();
+    }
     // This existing processor records a declaration but never visits initializers.
     result.refuse_occurrences();
 

@@ -336,6 +336,14 @@ const unsafeCheck: any = check;
     /* checked against the other rows */
     check(selected, [2])
   ]" />
+  <MyInput :rules="[
+    // éééééééééééééééééééééééééééééé
+    check(selected, selected.map(id => id + 1))
+  ]" />
+  <MyInput :rules="[
+    /* éééééééééééééééééééééééééééééé */
+    check(selected, selected.map(id => id + 1))
+  ]" />
   <MyInput :rules="[/* unsafe control */ unsafeCheck(selected, [2])]" />
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "CommentedBinding.vue");

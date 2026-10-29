@@ -15,6 +15,7 @@ mod events;
 mod for_loop;
 mod if_block;
 mod insertion;
+mod keep_alive_map;
 mod key;
 mod match_scope;
 mod merged_props;

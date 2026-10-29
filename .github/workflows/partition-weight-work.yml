@@ -5,13 +5,14 @@ on:
     paths:
       - .github/workflows/partition-weight-work.yml
       - crates/vize_canon/Cargo.toml
-      - crates/vize_canon/benches/partition_weight.rs
+      - crates/vize_canon/benches/partition_weight/main.rs
       - crates/vize_canon/benches/partition_weight/**
       - crates/vize_canon/src/batch/executor/cli/partition.rs
       - crates/vize_canon/src/batch/executor/cli/partition/weight_work/**
       - crates/vize_canon/src/batch/executor/cli/partition/weight_work.rs
       - tools/benchmarks/scripts/partition-weight-*.ts
       - tests/tooling/partition-weight-cli.test.ts
+      - tests/tooling/partition-weight-layout.test.ts
 permissions: { contents: read }
 concurrency:
   group: partition-weight-work-${{ github.event.pull_request.number }}

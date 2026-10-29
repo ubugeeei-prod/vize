@@ -1,4 +1,5 @@
 //! Single-root default/fallback slots with the published renderer primitive.
+//! Static props stay in the known set; computed names are props, not listeners.
 
 use super::super::{BindingKind, Content, Node};
 use super::{Result, at};
@@ -19,9 +20,11 @@ pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
         if is.is_some()
             || !node.bindings.is_empty()
             || props.iter().any(|prop| {
-                prop.dynamic_name.is_some()
-                    || prop.value_kind != PropValueKind::Expression
-                    || if prop.handler {
+                prop.value_kind != PropValueKind::Expression
+                    || if prop.dynamic_name.is_some() {
+                        // Listener names stay static; a computed key is a prop.
+                        prop.handler
+                    } else if prop.handler {
                         !matches!(prop.key, "pending" | "fallback" | "resolve")
                     } else {
                         prop.key != "timeout"

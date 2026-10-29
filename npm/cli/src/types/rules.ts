@@ -125,6 +125,7 @@ export const LINT_RULE_NAMES = [
   "script/one-component-per-file",
   "script/order-in-components",
   "script/prefer-computed",
+  "script/prefer-define-emits-binding",
   "script/prefer-define-options",
   "script/prefer-import-from-vue",
   "script/prefer-ref-over-reactive",

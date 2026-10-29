@@ -14,7 +14,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 
 [ESLint からのルール移行対応表](./migration.md)で対応名と未実装の範囲を確認できます。
 
-## 単一ファイルのルール (266)
+## 単一ファイルのルール (267)
 
 | ルール | 例 | 重大度 | プリセット | 自動修正 | オプション | 実装 | 目的 | カテゴリ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -255,6 +255,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 | [`script/one-component-per-file`](#script-one-component-per-file) | [悪い例](#script-one-component-per-file-bad) · [良い例](#script-one-component-per-file-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L30) | 1 ファイルにコンポーネント定義が複数あることを検出します。 | Script |
 | [`script/order-in-components`](#script-order-in-components) | [悪い例](#script-order-in-components-bad) · [良い例](#script-order-in-components-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/order_in_components.rs#L35) | コンポーネントオプションのプロパティ順を既定の並びに揃えます。 | Script |
 | [`script/prefer-computed`](#script-prefer-computed) | [悪い例](#script-prefer-computed-bad) · [良い例](#script-prefer-computed-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) | 他の状態から導ける値を watcher で同期する代わりに computed で表現します。 | Script |
+| [`script/prefer-define-emits-binding`](#script-prefer-define-emits-binding) | [悪い例](#script-prefer-define-emits-binding-bad) · [良い例](#script-prefer-define-emits-binding-good) | `warning` | _none_ | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/prefer_define_emits_binding.rs#L16) | template の $emit ではなく defineEmits から受け取った型付き関数を呼び出します。 | Script |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [悪い例](#script-prefer-define-options-bad) · [良い例](#script-prefer-define-options-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) | name / inheritAttrs だけの通常 script を defineOptions() にまとめます。 | Script |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [悪い例](#script-prefer-import-from-vue-bad) · [良い例](#script-prefer-import-from-vue-good) | `warning` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L36) | 内部パッケージではなく vue から import します。 | Script |
 | [`script/prefer-ref-over-reactive`](#script-prefer-ref-over-reactive) | [悪い例](#script-prefer-ref-over-reactive-bad) · [良い例](#script-prefer-ref-over-reactive-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_ref_over_reactive.rs#L44) | 状態管理に reactive() より ref() を使う方針を適用します。 | Script |
@@ -265,7 +266,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 | [`script/require-default-prop`](#script-require-default-prop) | [悪い例](#script-require-default-prop-bad) · [良い例](#script-require-default-prop-good) | `error` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_default_prop.rs#L58) | 省略可能な、Boolean 以外の prop に default を用意します。 | Script |
 | [`script/require-explicit-emits`](#script-require-explicit-emits) | [悪い例](#script-require-explicit-emits-bad) · [良い例](#script-require-explicit-emits-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L60) | emit するイベントを defineEmits または emits に宣言します。 | Script |
 | [`script/require-explicit-slots`](#script-require-explicit-slots) | [悪い例](#script-require-explicit-slots-bad) · [良い例](#script-require-explicit-slots-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L92) | useSlots() で使う slot を defineSlots の型で宣言します。 | Script |
-| [`script/require-function-return-type`](#script-require-function-return-type) | [悪い例](#script-require-function-return-type-bad) · [良い例](#script-require-function-return-type-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L49) | 関数に戻り値の型注釈を指定します。 | Script |
+| [`script/require-function-return-type`](#script-require-function-return-type) | [悪い例](#script-require-function-return-type-bad) · [良い例](#script-require-function-return-type-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L55) | 関数に戻り値の型注釈を指定します。 | Script |
 | [`script/require-prop-type-constructor`](#script-require-prop-type-constructor) | [悪い例](#script-require-prop-type-constructor-bad) · [良い例](#script-require-prop-type-constructor-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L65) | prop の type に文字列ではなくコンストラクターを指定します。 | Script |
 | [`script/require-prop-types`](#script-require-prop-types) | [悪い例](#script-require-prop-types-bad) · [良い例](#script-require-prop-types-good) | `error` | `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) | 各 prop の型を宣言します。 | Script |
 | [`script/require-render-return`](#script-require-render-return) | [悪い例](#script-require-render-return-bad) · [良い例](#script-require-render-return-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_render_return.rs#L35) | render 関数が値を返すことを必須にします。 | Script |
@@ -289,7 +290,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 
 ## プロジェクトのルールと解析器の診断契約 (66)
 
-以下の項目は、上の 266 件の単一ファイルのルールを補足します。それぞれの例には、コンポーネントやプロジェクトの構成、または参照を追跡するグラフの具体的な条件が含まれます。CLI の検査、実験的なライブラリーの生成元、生成元のない診断契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。
+以下の項目は、上の 267 件の単一ファイルのルールを補足します。それぞれの例には、コンポーネントやプロジェクトの構成、または参照を追跡するグラフの具体的な条件が含まれます。CLI の検査、実験的なライブラリーの生成元、生成元のない診断契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。
 
 | ルール / コード | 例 | 現在の対応 |
 | --- | --- | --- |
@@ -3679,6 +3680,20 @@ Vue 3.5 以降の props 分割代入の既定値を勧めます。
 [良い](./type-and-script.md#script-prefer-computed-good)
 
 [カテゴリの例](./type-and-script.md#script-prefer-computed) · [ルール参照](./reference/script-prefer-computed.md)
+
+### `script/prefer-define-emits-binding`
+
+template の $emit ではなく defineEmits から受け取った型付き関数を呼び出します。
+
+<span id="script-prefer-define-emits-binding-bad"></span>
+
+[悪い](./type-and-script.md#script-prefer-define-emits-binding-bad)
+
+<span id="script-prefer-define-emits-binding-good"></span>
+
+[良い](./type-and-script.md#script-prefer-define-emits-binding-good)
+
+[カテゴリの例](./type-and-script.md#script-prefer-define-emits-binding) · [ルール参照](./reference/script-prefer-define-emits-binding.md)
 
 ### `script/prefer-define-options`
 

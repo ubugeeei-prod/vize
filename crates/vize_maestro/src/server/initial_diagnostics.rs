@@ -21,6 +21,7 @@ mod api_read;
 mod importers;
 use importers::refresh_initial_importers;
 mod pending;
+mod queue;
 use super::state::{CorsaRequestStamp, ServerState};
 use pending::{DiagnosticsJobCause, PendingInitialDiagnostics};
 mod preparation;
@@ -212,11 +213,9 @@ impl InitialDiagnosticsScheduler {
                 .is_some_and(|job| job.version >= version)
             {
                 pending.insert(uri.clone(), version, Instant::now() + INTERACTIVE_GRACE);
-                if let Some(job) = pending.jobs.get_mut(&uri) {
-                    // This retry needs a complete pass; its initial feedback
-                    // was already attempted. Keep existing initial jobs intact.
-                    job.sync_pending = false;
-                }
+                // This retry needs a complete pass; its initial feedback
+                // was already attempted. Keep existing initial jobs intact.
+                pending.jobs.skip_sync(&uri);
             }
         }
         match self.sender.as_ref().map(|sender| sender.try_send(())) {
@@ -300,3 +299,6 @@ mod tests;
 
 #[cfg(test)]
 mod open_importer_tests;
+
+#[cfg(all(test, feature = "micro-profiling"))]
+mod indexed_cost_carrier;

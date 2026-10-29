@@ -164,7 +164,7 @@ fn conditional_plain_type_packets_are_complete() {
                         "Configured Corsa executable does not exist: {} (from configuration)",
                         missing.display()
                     ),
-                    "Type-aware lint rules were skipped because the Corsa runtime could not be started. Configure `typeChecker.corsaPath` or install `typescript@^7`.",
+                    "Type-aware lint rules were skipped because the native compiler could not be started. Install a native TypeScript runtime in this project or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.",
                     0,
                     0,
                 )]

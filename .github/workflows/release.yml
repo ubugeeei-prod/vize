@@ -443,7 +443,8 @@ jobs:
   publish-crates:
     name: Publish crates
     needs: [version, tag, publication-quota]
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ !cancelled() && needs.publication-quota.result == 'success' && needs.version.result == 'success' && (needs.tag.result == 'success' || (inputs.npm_resume_run != '' && needs.tag.result == 'skipped')) }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: crates-io
     permissions: { contents: read, actions: read, id-token: write }

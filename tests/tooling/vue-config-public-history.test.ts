@@ -8,6 +8,11 @@ const read = (name: string) => readFileSync(new URL(name, root), "utf8");
 const hash = (source: string) => createHash("sha256").update(source).digest("hex");
 const archive = "tests/_fixtures/differential/config/vue-namespace/source-custody/";
 
+function replaceOnce(source: string, current: string, historical: string): string {
+  assert.equal(source.split(current).length, 2);
+  return source.replace(current, historical);
+}
+
 void test("the original archives remain pinned while active package cases follow the fluent API", () => {
   const config = read(archive + "original-vite-plus-config.test.ts.fixture");
   assert.equal(hash(config), "82570d354aa7cfb9300bca05be49e7bd451694beea019b635cac1ccb7c8056a4");
@@ -32,10 +37,61 @@ void test("the original archives remain pinned while active package cases follow
     '      path.dirname(require.resolve("vite/package.json")),\n' +
     "    );\n";
   const current = read("tests/tooling/vite-plus-fast-path.test.ts");
-  assert.equal(current.split(addedImport).length, 2);
-  assert.equal(current.split(addedCall).length, 2);
+  const nativeSetup =
+    '    fs.mkdirSync(path.join(directory, "node_modules/@typescript"), { recursive: true });\n' +
+    "    const nativePackageName = `@typescript/typescript-${process.platform}-${process.arch}`;\n" +
+    '    const nativePackage = path.join(root, "node_modules", nativePackageName);\n' +
+    "    const nativeManifest = JSON.parse(\n" +
+    '      fs.readFileSync(path.join(nativePackage, "package.json"), "utf8"),\n' +
+    "    );\n";
+  const nativeSymlink = "      [nativePackageName, nativePackage],\n";
+  const nativeManifest =
+    "    write(\n" +
+    '      "package.json",\n' +
+    "      JSON.stringify({\n" +
+    '        name: "vize-consumer",\n' +
+    '        type: "module",\n' +
+    "        private: true,\n" +
+    "        optionalDependencies: { [nativePackageName]: nativeManifest.version },\n" +
+    "      }),\n" +
+    "    );\n";
+  const historicalManifest =
+    '    write("package.json", JSON.stringify({ name: "vize-consumer", type: "module", private: true }));\n';
+  const providerRunSignature =
+    "function run(cwd: string, args: string[], expected = 0, environment: NodeJS.ProcessEnv = {}) {\n";
+  const historicalRunSignature = "function run(cwd: string, args: string[], expected = 0) {\n";
+  const providerRunEnvironment =
+    '    env: { ...process.env, ...environment, NO_COLOR: "1", FORCE_COLOR: "0" },\n';
+  const historicalRunEnvironment =
+    '    env: { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" },\n';
+  const providerSetup =
+    "    const corsaPath = path.join(\n" +
+    "      directory,\n" +
+    '      "node_modules",\n' +
+    "      nativePackageName,\n" +
+    '      "lib",\n' +
+    '      process.platform === "win32" ? "tsc.exe" : "tsc",\n' +
+    "    );\n" +
+    "    assert.ok(fs.statSync(corsaPath).isFile());\n" +
+    "    const providerEnvironment = { CORSA_PATH: corsaPath };\n";
+  const providerCheck = '    run(directory, ["run", "check"], 0, providerEnvironment);\n';
+  const historicalCheck = '    run(directory, ["run", "check"]);\n';
+  const providerPack = '    run(directory, ["run", "pack"], 0, providerEnvironment);\n';
+  const historicalPack = '    run(directory, ["run", "pack"]);\n';
   const migratedPacked = packed.replaceAll("vize: {", "vue: {");
-  assert.equal(current.replace(addedImport, "").replace(addedCall, ""), migratedPacked);
+  const historical = [
+    [addedImport, ""],
+    [addedCall, ""],
+    [nativeSetup, ""],
+    [nativeSymlink, ""],
+    [nativeManifest, historicalManifest],
+    [providerRunSignature, historicalRunSignature],
+    [providerRunEnvironment, historicalRunEnvironment],
+    [providerSetup, ""],
+    [providerCheck, historicalCheck],
+    [providerPack, historicalPack],
+  ].reduce((source, [successor, original]) => replaceOnce(source, successor, original), current);
+  assert.equal(historical, migratedPacked);
 
   const dialect = read(archive + "original-vue-version-index.test.ts.fixture");
   assert.equal(hash(dialect), "6e97eb6a6af314856b7cd16395544c34a839eb7eac9bd651d110fafe5580aeaf");

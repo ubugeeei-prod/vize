@@ -154,6 +154,23 @@ publicRef.value?.close('yes')
 
 const DOWNSTREAM: &str = include_str!("public_instance_downstream.tsx");
 
+const NESTED_COMPONENT: &str = r#"<script setup lang="ts">
+defineProps<{
+  label: string
+}>()
+defineEmits<{
+  save: [value: string]
+}>()
+</script>
+"#;
+
+const WIDEN_TRIGGER: &str = r#"import { runtimeValue } from '../shared/runtime'
+export const buildFlag: boolean = runtimeValue
+"#;
+
+const OUTSIDE_RUNTIME: &str = r#"export const runtimeValue = true
+"#;
+
 fn write_tsconfig(project_root: &Path) {
     std::fs::write(
         project_root.join("tsconfig.json"),
@@ -267,6 +284,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
                     ("src/Union.vue", UNION),
                     ("src/NativeListenerProp.vue", NATIVE_LISTENER_PROP),
                     ("src/NoEmits.vue", NO_EMITS),
+                    ("src/nested/Nested.vue", NESTED_COMPONENT),
                     ("src/vue.d.ts", AUGMENTATION),
                     ("src/Consumer.tsx", SOURCE_CONSUMER),
                     ("src/Parent.vue", TEMPLATE_REF_CONSUMER),
@@ -284,16 +302,27 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
         "source contract drifted: {diagnostics:#?}"
     );
 
+    std::fs::create_dir_all(project_root.join("shared")).unwrap();
+    std::fs::write(project_root.join("src/widen-trigger.ts"), WIDEN_TRIGGER).unwrap();
+    std::fs::write(project_root.join("shared/runtime.ts"), OUTSIDE_RUNTIME).unwrap();
+
     let mut checker = BatchTypeChecker::new(&project_root).unwrap();
-    checker.scan_project().unwrap();
+    let mut declaration_roots = walkdir::WalkDir::new(project_root.join("src"))
+        .into_iter()
+        .map(Result::unwrap)
+        .filter(|entry| entry.file_type().is_file())
+        .map(walkdir::DirEntry::into_path)
+        .collect::<Vec<_>>();
+    declaration_roots.sort();
+    checker.scan_paths(&declaration_roots).unwrap();
     let out_dir = project_root.join("types");
     let emitted = checker
-        .emit_declarations(&DeclarationEmitOptions::new(out_dir.clone()))
+        .emit_declarations(&DeclarationEmitOptions::new(out_dir.clone()).with_declaration_map(true))
         .expect("public-instance declarations should emit");
     let public_dts = std::fs::read_to_string(out_dir.join("Public.vue.d.ts")).unwrap();
     assert!(
         public_dts.contains(
-            "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, __EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[])"
+            "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[])"
         ) && public_dts.contains(
             "declare const __vize_component__: {\n    __vizeEmitProps?: __VizeStaticEmitProps;\n    readonly __vizeRawProps?: Props;\n    readonly __vizeSlots?: Partial<__VizeSlots>;\n} & __VizeComponentConstructor & __VizeVueComponentOptions;"
         )
@@ -302,11 +331,55 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
         "one constructor must own authored, public-instance, and incremental raw-props contracts:\n{public_dts}"
     );
     assert!(
-        public_dts.contains("$props: Props & __EmitProps<Emits>;")
+        public_dts.contains("$props: Props & import(\"./__vize_helpers.js\").__EmitProps<Emits>;")
             && public_dts.contains("$emit: __VizePublicEmit<Emits>;")
             && public_dts.contains("$slots: __VizePublicSlots<__VizeSlots>;")
             && public_dts.contains("} & __VizeComponentPublicBase &"),
         "emitted public instance must own props/emits and adapt the Vue base:\n{public_dts}"
+    );
+    assert_eq!(
+        public_dts.matches("../__vize_helpers.js").count(),
+        0,
+        "a rootDir relocation must resolve helpers from the final root output:\n{public_dts}"
+    );
+    assert_eq!(
+        public_dts.matches("vize:virtual-ts").count(),
+        0,
+        "published declarations cannot retain the private checker module:\n{public_dts}"
+    );
+
+    let nested_dts_path = out_dir.join("nested/Nested.vue.d.ts");
+    let nested_dts = std::fs::read_to_string(&nested_dts_path).unwrap();
+    assert_eq!(
+        nested_dts
+            .matches("import(\"../__vize_helpers.js\").__EmitProps")
+            .count(),
+        5,
+        "a nested retained SFC must resolve the helper from its final published depth:\n{nested_dts}"
+    );
+    assert_eq!(nested_dts.matches("vize:virtual-ts").count(), 0);
+    assert!(
+        !out_dir.join("shared/runtime.d.ts").exists(),
+        "an inferred dependency outside rootDir must not become public output"
+    );
+    assert_eq!(
+        std::fs::read_to_string(out_dir.join("widen-trigger.d.ts")).unwrap(),
+        "export declare const buildFlag: boolean;\n//# sourceMappingURL=widen-trigger.d.ts.map",
+        "the widening trigger must not retain a path to the pruned dependency"
+    );
+
+    let nested_map_path = out_dir.join("nested/Nested.vue.d.ts.map");
+    let nested_map: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&nested_map_path).unwrap()).unwrap();
+    assert_eq!(nested_map["file"], "Nested.vue.d.ts");
+    assert_eq!(nested_map["sourceRoot"], "");
+    let nested_sources = nested_map["sources"].as_array().unwrap();
+    assert_eq!(nested_sources.len(), 1);
+    let nested_source = nested_sources[0].as_str().unwrap();
+    assert_eq!(
+        std::fs::canonicalize(nested_map_path.parent().unwrap().join(nested_source)).unwrap(),
+        std::fs::canonicalize(project_root.join("src/nested/Nested.vue")).unwrap(),
+        "the relocated declaration map must still resolve to the authored SFC"
     );
 
     let downstream_dir = project_root.join("downstream");

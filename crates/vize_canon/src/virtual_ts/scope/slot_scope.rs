@@ -50,6 +50,7 @@ struct SlotPayloadContext<'a> {
     /// scope, so each needs its own or the second would redeclare the first.
     binding_prefix: &'a str,
     indent: &'a str,
+    hoist_shared_preamble: bool,
     explicit_generics: &'a ExplicitGenerics,
 }
 
@@ -85,20 +86,25 @@ fn slot_payload_type(
             binding.as_str(),
             component_ref.as_str(),
             ctx.template_binding_access,
-            ctx.source_context,
             ctx.indent,
+            (ctx.source_context, ctx.hoist_shared_preamble),
         );
     } else {
+        let slot_host_slots = crate::virtual_ts::helpers::shared_types::SLOT_HOST_SLOTS
+            .select(ctx.hoist_shared_preamble);
         append!(
             *ts,
-            "{}const {binding} = undefined as unknown as __VizeSlotHostSlots<typeof {component_ref}>;\n",
+            "{}const {binding} = undefined as unknown as {slot_host_slots}<typeof {component_ref}>;\n",
             ctx.indent
         );
     }
 
+    let slot_payload =
+        crate::virtual_ts::helpers::shared_types::SLOT_PAYLOAD.select(ctx.hoist_shared_preamble);
+
     if name_is_static {
         cstr!(
-            "__VizeSlotPayload<typeof {binding}, \"{}\">",
+            "{slot_payload}<typeof {binding}, \"{}\">",
             data.name.as_str()
         )
     } else {
@@ -111,7 +117,7 @@ fn slot_payload_type(
         ts.push_str(
             dynamic_slot_name_binding(ctx.indent, name_binding.as_str(), name.as_str()).as_str(),
         );
-        cstr!("__VizeSlotPayload<typeof {binding}, typeof {name_binding}.name>")
+        cstr!("{slot_payload}<typeof {binding}, typeof {name_binding}.name>")
     }
 }
 
@@ -152,6 +158,7 @@ pub(super) fn generate_v_slot_scope(
             .with_diagnostic_ownership(ctx.checks.diagnostic_ownership),
             binding_prefix: "__vize_slot_host_",
             indent,
+            hoist_shared_preamble: ctx.hoist_shared_preamble,
             explicit_generics: ctx.explicit_generics,
         },
         scope,
@@ -251,6 +258,7 @@ pub(super) fn generate_v_slot_props_scope(
             source_context: ctx.source_context,
             binding_prefix: "__vize_slot_props_host_",
             indent,
+            hoist_shared_preamble: ctx.hoist_shared_preamble,
             explicit_generics: ctx.explicit_generics,
         },
         scope,

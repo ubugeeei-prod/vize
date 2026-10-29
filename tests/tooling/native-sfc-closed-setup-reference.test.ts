@@ -6,6 +6,7 @@ import {
   historicalSetupCode,
   type ExposurePacket,
 } from "./support/script-setup-default-expose.ts";
+import { setupComponentBracketReference } from "./support/setup-component-bracket-reference.ts";
 
 const fixture = JSON.parse(
   readFileSync(
@@ -62,6 +63,38 @@ test("ordinary sources and explicit exposure are not advanced again", () => {
   assert.deepEqual(closedSetupReference(before, "<script>export default {}</script>"), before);
   const after = fixture.packets[1].after;
   assert.deepEqual(closedSetupReference(after, fixture.packets[1].source), after);
+});
+
+test("setup component references reconstruct the complete bracket-read packet", () => {
+  const before: ExposurePacket = {
+    code: "function render() { return $setup.Lazy }\nexport default { render }",
+    map: '{"mappings":"AAAA"}',
+    moduleShape: {
+      defaultExportStart: 41,
+      defaultExportKeywordEnd: 55,
+      defaultExportEnd: 66,
+    },
+    errors: [],
+    warnings: [],
+  };
+  const preserved = structuredClone(before);
+  assert.deepEqual(setupComponentBracketReference(before, "Lazy"), {
+    ...before,
+    code: 'function render() { return $setup["Lazy"] }\nexport default { render }',
+    moduleShape: {
+      defaultExportStart: 44,
+      defaultExportKeywordEnd: 58,
+      defaultExportEnd: 69,
+    },
+  });
+  assert.deepEqual(before, preserved, "historical packets remain immutable");
+  assert.deepEqual(setupComponentBracketReference({ code: "export default {}" }, "Lazy"), {
+    code: "export default {}",
+  });
+  assert.throws(
+    () => setupComponentBracketReference({ code: "$setup.Lazy + $setup.Lazy" }, "Lazy"),
+    { code: "ERR_ASSERTION" },
+  );
 });
 
 test("historical checksum receipts reverse only the exact initial exposure edit", () => {

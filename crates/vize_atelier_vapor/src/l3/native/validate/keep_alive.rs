@@ -1,4 +1,5 @@
-//! One cached regular/dynamic component with the known KeepAlive props.
+//! One cached regular/dynamic component with known static KeepAlive props
+//! or computed prop names.
 
 use super::super::{Content, Node};
 use super::{Result, at};
@@ -19,10 +20,10 @@ pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
         if is.is_some()
             || !node.bindings.is_empty()
             || props.iter().any(|prop| {
-                !matches!(prop.key, "include" | "exclude" | "max")
-                    || prop.dynamic_name.is_some()
-                    || prop.handler
+                prop.handler
                     || prop.value_kind != PropValueKind::Expression
+                    || prop.dynamic_name.is_none()
+                        && !matches!(prop.key, "include" | "exclude" | "max")
             })
             || node.children.len() != 1
         {

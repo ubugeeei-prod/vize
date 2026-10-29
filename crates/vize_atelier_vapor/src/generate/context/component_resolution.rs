@@ -47,10 +47,13 @@ impl<'a> GenerateContext<'a> {
             return None;
         }
         let name = cstr!("v{}", capitalize(&camelize(directive)));
-        bindings
-            .bindings
-            .contains_key(name.as_str())
-            .then(|| cstr!("_ctx.{name}"))
+        bindings.bindings.contains_key(name.as_str()).then(|| {
+            if self.jsx_closure {
+                name
+            } else {
+                cstr!("_ctx.{name}")
+            }
+        })
     }
 
     pub(crate) fn is_self_component_reference(&self, component: &str) -> bool {

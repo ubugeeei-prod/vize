@@ -164,7 +164,15 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         )
     });
     let codegen_result = match l2_emit {
-        Some(result) => source_map::attach_compat_map(&root, &codegen_opts, result).finish(capture),
+        Some(result) => source_map::attach_compat_map(
+            &root,
+            &codegen_opts,
+            codegen_experimental_options,
+            no_slotted,
+            development,
+            result,
+        )
+        .finish(capture),
         None => {
             if use_l2_emit && codegen_opts.source_map {
                 selection::record(Err(DomLegacyReason::EmitRefused));

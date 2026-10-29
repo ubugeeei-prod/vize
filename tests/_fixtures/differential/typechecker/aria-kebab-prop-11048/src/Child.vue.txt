@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ ariaLabel: string; itemLabel: string }>()
+</script>
+
+<template><span>{{ ariaLabel }} {{ itemLabel }}</span></template>

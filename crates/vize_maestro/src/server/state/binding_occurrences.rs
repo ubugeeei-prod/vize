@@ -47,7 +47,7 @@ impl ServerState {
 
     pub(super) fn occurrence_source_revision(&self, uri: &Url, source: &str) -> Option<u64> {
         let document = self.documents.get(uri)?;
-        (document.content == source).then_some(document.revision())
+        document.has_text(source).then_some(document.revision())
     }
 
     pub(super) fn publish_occurrences(

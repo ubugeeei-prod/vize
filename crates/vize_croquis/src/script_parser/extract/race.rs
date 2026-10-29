@@ -1,13 +1,19 @@
 mod expression;
+mod prepass;
 mod scan;
+mod value;
 
-use oxc_ast::ast::{Argument, CallExpression, Expression};
+use oxc_ast::ast::{Argument, CallExpression, Expression, Program};
 
 use crate::race::RaceConditionRiskKind;
 use vize_carton::CompactString;
 
 use super::super::ScriptParseResult;
-use scan::scan_callback_for_race;
+use scan::{scan_callback_for_race, scan_deferred_callback_for_race};
+
+pub fn prepare_race_analysis(result: &mut ScriptParseResult, program: &Program<'_>) {
+    prepass::prepare_race_analysis(result, program);
+}
 
 pub fn detect_race_condition_call(
     result: &mut ScriptParseResult,
@@ -59,6 +65,7 @@ fn record_watcher_risk(
     watcher_name: &str,
 ) {
     let scan = scan_callback_for_race(result, callback);
+    retain_safe_nested_calls(result, &scan);
     if !scan.has_async_boundary() || scan.mutated_targets.is_empty() || scan.has_cleanup_call {
         return;
     }
@@ -94,6 +101,7 @@ fn record_lifecycle_risk(
     hook_name: &str,
 ) {
     let scan = scan_callback_for_race(result, callback);
+    retain_safe_nested_calls(result, &scan);
     if !scan.has_async_boundary() || scan.mutated_targets.is_empty() || scan.has_cleanup_call {
         return;
     }
@@ -115,7 +123,18 @@ fn record_scheduler_risk(
     callback: &Expression<'_>,
     scheduler_name: &str,
 ) {
-    let scan = scan_callback_for_race(result, callback);
+    if result
+        .race_safe_call_spans
+        .contains(&(call.span.start, call.span.end))
+    {
+        return;
+    }
+    let scan = scan_deferred_callback_for_race(
+        result,
+        callback,
+        scheduler_name == "requestAnimationFrame",
+    );
+    retain_safe_nested_calls(result, &scan);
     if scan.mutated_targets.is_empty() || scan.has_cleanup_call {
         return;
     }
@@ -136,7 +155,14 @@ fn record_promise_risk(
     callback: &Expression<'_>,
     operation_name: &str,
 ) {
-    let scan = scan_callback_for_race(result, callback);
+    if result
+        .race_safe_call_spans
+        .contains(&(call.span.start, call.span.end))
+    {
+        return;
+    }
+    let scan = scan_deferred_callback_for_race(result, callback, false);
+    retain_safe_nested_calls(result, &scan);
     if scan.mutated_targets.is_empty() || scan.has_cleanup_call {
         return;
     }
@@ -149,6 +175,12 @@ fn record_promise_risk(
         call.span.start,
         call.span.end,
     );
+}
+
+fn retain_safe_nested_calls(result: &mut ScriptParseResult, scan: &scan::RaceScan) {
+    result
+        .race_safe_call_spans
+        .extend(scan.safe_nested_call_spans.iter().copied());
 }
 
 fn argument_expression<'a>(arg: &'a Argument<'a>) -> Option<&'a Expression<'a>> {

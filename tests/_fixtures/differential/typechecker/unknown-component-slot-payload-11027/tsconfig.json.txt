@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2024",
+    "lib": [
+      "ES2024",
+      "DOM"
+    ],
+    "types": [],
+    "incremental": false
+  },
+  "vueCompilerOptions": {
+    "strictTemplates": true,
+    "checkUnknownProps": true,
+    "checkUnknownComponents": false
+  },
+  "include": [
+    "src/**/*.vue",
+    "component.ts"
+  ]
+}

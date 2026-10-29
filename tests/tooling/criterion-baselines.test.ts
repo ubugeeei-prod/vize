@@ -203,7 +203,7 @@ test("Criterion driver reports a useful summary when no suite is affected", () =
 
   assert.match(summary, /Selection: CLI-only change\./);
   assert.match(summary, /Ran: none/);
-  assert.match(summary, /Skipped: vize_atelier_sfc, vize_atelier_jsx/);
+  assert.match(summary, /Skipped: vize_canon, vize_atelier_sfc, vize_atelier_jsx/);
   assert.match(summary, /timing execution was skipped/);
 });
 

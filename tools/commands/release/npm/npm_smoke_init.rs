@@ -36,6 +36,8 @@ pub fn run(install_dir: &Path, context: &Value) -> Result<(), String> {
         .env_remove("CORSA_EXECUTABLE")
         .env_remove("TSGO_PATH")
         .env_remove("TSGO_EXECUTABLE")
+        .env_remove("TSRS_PATH")
+        .env_remove("TSRS_EXECUTABLE")
         .output()
         .map_err(|error| format!("cannot run installed init oracles: {error}"))?;
     print!("{}", String::from_utf8_lossy(&output.stdout));

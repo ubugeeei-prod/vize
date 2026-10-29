@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 11048,
+  "regressionCommit": "65b38273c8713a724f42f0bb63a2aef7cc6daae4",
+  "sourceRevision": "65b38273c8713a724f42f0bb63a2aef7cc6daae4",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "declared-kebab-and-optional-valid-with-wrong-control",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "src/Child.vue.txt"
+        },
+        {
+          "file": "src/Optional.vue",
+          "source": "src/Optional.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "src/Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 13,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

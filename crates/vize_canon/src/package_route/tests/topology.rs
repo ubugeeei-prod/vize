@@ -1,4 +1,64 @@
-use super::super::{PackageRouteResolver, PackageSourceOptions};
+use std::path::PathBuf;
+
+use super::super::{PackageRoute, PackageRouteResolver, PackageSourceOptions};
+
+fn synthetic_route(source_paths: Vec<PathBuf>, nested_routes: Vec<PackageRoute>) -> PackageRoute {
+    let package_root = PathBuf::from("workspace/package");
+    PackageRoute {
+        source_paths,
+        dependency_paths: Vec::new(),
+        source_targets: Vec::new(),
+        package_root: package_root.clone(),
+        package_link_root: package_root.clone(),
+        manifest_path: package_root.join("package.json"),
+        package_name: None,
+        workspace_source: true,
+        nested_routes,
+    }
+}
+
+#[test]
+fn empty_nested_routes_have_no_source_identity() {
+    let route = synthetic_route(
+        Vec::new(),
+        vec![synthetic_route(
+            Vec::new(),
+            vec![synthetic_route(Vec::new(), Vec::new())],
+        )],
+    );
+
+    assert_eq!(route.unambiguous_source_path(), None);
+}
+
+#[test]
+fn duplicate_nested_paths_retain_one_source_identity() {
+    let shared = PathBuf::from("workspace/shared.ts");
+    let route = synthetic_route(
+        vec![shared.clone(), shared.clone()],
+        vec![synthetic_route(
+            vec![shared.clone()],
+            vec![synthetic_route(vec![shared], Vec::new())],
+        )],
+    );
+
+    assert_eq!(route.unambiguous_source_path(), route.source_paths.first());
+}
+
+#[test]
+fn a_deep_distinct_path_makes_the_source_identity_ambiguous() {
+    let route = synthetic_route(
+        vec![PathBuf::from("workspace/shared.ts")],
+        vec![synthetic_route(
+            Vec::new(),
+            vec![synthetic_route(
+                vec![PathBuf::from("workspace/distinct.ts")],
+                Vec::new(),
+            )],
+        )],
+    );
+
+    assert_eq!(route.unambiguous_source_path(), None);
+}
 
 #[test]
 fn self_reference_and_private_imports_share_manifest_routing() {

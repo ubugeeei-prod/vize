@@ -458,6 +458,32 @@
       }
     },
     {
+      "id": "linter/contextual-function-return-type-11103",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "contextual-function-return-type-11103",
+        "files": [
+          {
+            "path": "ContextualCallbacks.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "f288f482cf0eb335cbdd3e65775801a0c50f69dc66abe76b0317f7f1d38886f8"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/corsa-session-waiters-10393",
       "state": "active",
       "targets": ["lint"],
@@ -2508,6 +2534,37 @@
       }
     },
     {
+      "id": "linter/runtime/project-native-runtime-authority-10694",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "project-native-runtime-authority-10694",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "2242be3767180506e0b9be4d9aeda69169a853d2705896e79aca53287ccacbaa"
+          },
+          {
+            "path": "package.json.txt",
+            "role": "project-provider-declaration",
+            "sha256": "28bf6be8d60c345b957740ae97f0daa5dc9cdd953a290dfc3f1ecf7a5d6d9f3f"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/sibling-script-import-reads-10616",
       "state": "active",
       "targets": ["lint"],
@@ -2688,6 +2745,32 @@
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template"],
             "selector": "static-class pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/unsafe-template-binding-unicode-comment-10898",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "unsafe-template-binding-unicode-comment-10898",
+        "files": [
+          {
+            "path": "UnicodeCommentBinding.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "0d3bfc5e544c5e619a9a8fc7e80b51305f053d0570d7e68f7063b045dced2d7d"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

@@ -96,8 +96,20 @@ Options:
 
           [possible values: true, false]
 
+      --attribute-sort-order <ATTRIBUTE_SORT_ORDER>
+          Choose the order of attributes within each Vue priority group
+
+          Possible values:
+          - alphabetical: Sort alphabetically within each priority group
+          - as-written:   Preserve the authored order within each priority group
+
       --single-attribute-per-line[=<SINGLE_ATTRIBUTE_PER_LINE>]
           Put each HTML attribute on its own line
+
+          [possible values: true, false]
+
+      --vue-indent-script-and-style[=<VUE_INDENT_SCRIPT_AND_STYLE>]
+          Indent script and style block contents
 
           [possible values: true, false]
 
@@ -106,6 +118,16 @@ Options:
 
       --normalize-directive-shorthands[=<NORMALIZE_DIRECTIVE_SHORTHANDS>]
           Normalize directive shorthands (v-bind: → :, v-on: → @, v-slot: → #)
+
+          [possible values: true, false]
+
+      --sort-blocks[=<SORT_BLOCKS>]
+          Order SFC blocks canonically instead of preserving their authored order
+
+          [possible values: true, false]
+
+      --self-close-void-elements[=<SELF_CLOSE_VOID_ELEMENTS>]
+          Close HTML void elements such as `<img>` with `/>`
 
           [possible values: true, false]
 

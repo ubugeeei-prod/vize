@@ -55,7 +55,7 @@ void test("complete provider pair protocol custody remains outside batch and dia
   assert.deepEqual(analyze()?.cases, [row.id]);
   assert.equal(
     loadTypecheckerManifest(new URL(manifestPath, root).pathname).cases.length,
-    manifest.cases.length,
+    manifest.cases.filter((entry: { pack?: string }) => entry.pack !== undefined).length,
   );
   assert.equal(analyze({ previous: [row] })?.state, "new-input-missing");
   assert.equal(

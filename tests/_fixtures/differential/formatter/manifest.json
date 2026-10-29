@@ -1685,16 +1685,17 @@
         }
       ],
       "dialectCoverage": {
-        "state": "unknown",
+        "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
             "dialects": [
-              "vue-sfc",
+              "vue3-sfc",
               "html-template",
               "css-scoped"
-            ]
+            ],
+            "selector": "default Vue version with --no-config"
           }
         ]
       },
@@ -2484,16 +2485,17 @@
         }
       ],
       "dialectCoverage": {
-        "state": "unknown",
+        "state": "source-inspected",
         "registryRef": null,
         "evidence": [
           {
             "kind": "source-inspection",
             "dialects": [
-              "vue-sfc",
+              "vue3-sfc",
               "html-template",
               "v-pre"
-            ]
+            ],
+            "selector": "default Vue version with --no-config"
           }
         ]
       },

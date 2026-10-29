@@ -35,7 +35,10 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             ctx.spanned_expression_node(value)
         } else {
             let body = resolve_inline_handler(ctx, value);
-            if ctx.structural_slot_spans {
+            if ctx.structural_slot_spans || (!set_event.key.is_static && !set_event.effect) {
+                // Retained `v-once` uses a structural slot, while the native
+                // lane projects it directly. Preserve the same authored
+                // wrapper anchor for the native one-time computed listener.
                 ctx.spanned_at(
                     &body,
                     (value.loc.span.start < value.loc.span.end).then_some(value.loc.span.start),
@@ -85,32 +88,20 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
         // A dynamic event name rebinds inside a render effect. Vue 3.6's
         // `onBinding` wraps the handler and removes the previous listener
         // through `onEffectCleanup`, so a renamed event never stays bound.
-        ctx.use_helper("onBinding");
         ctx.use_helper("renderEffect");
         let event_expr = ctx.spanned_expression_node(&set_event.key);
-        let options = event_listener_options(set_event);
         ctx.push_line("_renderEffect(() => {");
         ctx.indent();
-        let mut line = EmitDocument::plain(&cstr!("_onBinding({}, ", element));
-        line.push_spanned(&event_expr);
-        line.push_str(", ");
-        line.push_spanned(&wrapped_handler);
-        if options.is_empty() {
-            line.push_str(")");
-            ctx.push_line_spanned(&line);
-        } else {
-            line.push_str(", {");
-            ctx.push_line_spanned(&line);
-            ctx.indent();
-            for (index, opt) in options.iter().enumerate() {
-                let comma = if index + 1 < options.len() { "," } else { "" };
-                ctx.push_line_fmt(format_args!("{opt}{comma}"));
-            }
-            ctx.deindent();
-            ctx.push_line("})");
-        }
+        emit_on_binding(ctx, set_event, &element, &event_expr, &wrapped_handler);
         ctx.deindent();
         ctx.push_line("})");
+    } else if !set_event.key.is_static {
+        // `v-once` evaluates a computed event name at mount without creating
+        // a render effect. It still needs `onBinding`: quoting the expression
+        // would attach a listener for its source spelling instead of its
+        // evaluated value.
+        let event_expr = ctx.spanned_expression_node(&set_event.key);
+        emit_on_binding(ctx, set_event, &element, &event_expr, &wrapped_handler);
     } else {
         // A listener that is not delegated attaches directly.
         ctx.use_helper("on");
@@ -149,6 +140,38 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             ctx.push_line_spanned(&line);
         }
     }
+}
+
+/// Emit one dynamic listener attachment, either directly for `v-once` or as
+/// the body of a render effect for an ordinary computed event name.
+fn emit_on_binding(
+    ctx: &mut GenerateContext<'_>,
+    set_event: &SetEventIRNode<'_>,
+    element: &str,
+    event_expr: &EmitDocument,
+    wrapped_handler: &EmitDocument,
+) {
+    ctx.use_helper("onBinding");
+    let options = event_listener_options(set_event);
+    let mut line = EmitDocument::plain(&cstr!("_onBinding({}, ", element));
+    line.push_spanned(event_expr);
+    line.push_str(", ");
+    line.push_spanned(wrapped_handler);
+    if options.is_empty() {
+        line.push_str(")");
+        ctx.push_line_spanned(&line);
+        return;
+    }
+
+    line.push_str(", {");
+    ctx.push_line_spanned(&line);
+    ctx.indent();
+    for (index, opt) in options.iter().enumerate() {
+        let comma = if index + 1 < options.len() { "," } else { "" };
+        ctx.push_line_fmt(format_args!("{opt}{comma}"));
+    }
+    ctx.deindent();
+    ctx.push_line("})");
 }
 
 /// `callee` + handler + `, [` + list + `])`, keeping the handler's anchors.

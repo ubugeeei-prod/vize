@@ -14,7 +14,7 @@ pub(in crate::emit) fn collect_names<'a>(root: &Region<'a>, source: &str) -> Std
 }
 
 /// `generate_assets` over the components: tags that resolve to a script
-/// binding are skipped (they are pushed as `$setup.Name` at the call).
+/// binding are skipped (they are pushed as `$setup["Name"]` at the call).
 /// Returns whether any `resolveComponent` line was written.
 pub(in crate::emit) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) -> bool {
     let mut resolved = false;

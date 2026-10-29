@@ -6,6 +6,8 @@
     clippy::disallowed_types,
     reason = "integration assertions retain complete JSON packets"
 )]
+use oxc_ast::ast::{Expression, VariableDeclarator};
+use oxc_ast_visit::{Visit, walk};
 use oxc_sourcemap::SourceMap;
 use serde_json::json;
 use vize_atelier_jsx::{JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx, parse_module};
@@ -207,6 +209,82 @@ fn native_module_admission_is_owned_by_ast_not_enclosing_name_spelling() {
     ))
     .expect("frozen admission packet");
     assert_eq!(actual, expected);
+}
+
+#[test]
+fn plan_ineligible_native_roots_keep_the_legacy_renderer_fallback() {
+    for ssr in [false, true] {
+        for source in [
+            "function App(props) { return <div/>; }",
+            "const App = props => <div/>;",
+            "[1].map(() => <i/>);",
+        ] {
+            let allocator = Allocator::new();
+            let out = compile_jsx(
+                &allocator,
+                source,
+                JsxLang::Jsx,
+                &JsxCompileConfig {
+                    ssr,
+                    default_mode: JsxOutputMode::Vapor,
+                    ..Default::default()
+                },
+            );
+            assert!(!out.has_errors(), "{source}: {:?}", out.diagnostics);
+            assert_eq!(out.components.len(), 1, "{source}");
+            let renderer = out.components[0].code();
+            assert!(!renderer.is_empty(), "{source}");
+            assert_eq!(out.module_code(), renderer, "{source}");
+        }
+    }
+}
+
+#[derive(Default)]
+struct DirectiveBindings(Vec<(String, Option<String>)>);
+
+impl<'a> Visit<'a> for DirectiveBindings {
+    fn visit_variable_declarator(&mut self, declaration: &VariableDeclarator<'a>) {
+        if declaration
+            .id
+            .get_identifier_name()
+            .is_some_and(|name| name == "_directive_focus")
+        {
+            let value = declaration.init.as_ref().and_then(|expression| {
+                match expression.get_inner_expression() {
+                    Expression::Identifier(identifier) => Some(identifier.name.to_string()),
+                    _ => None,
+                }
+            });
+            self.0.push(("_directive_focus".to_owned(), value));
+        }
+        walk::walk_variable_declarator(self, declaration);
+    }
+}
+
+#[test]
+fn authored_vapor_directives_keep_script_setup_bindings_bare() {
+    let allocator = Allocator::new();
+    let source = "const vFocus = {}; export const App = () => <div v-focus/>;";
+    let out = compile_jsx(
+        &allocator,
+        source,
+        JsxLang::Jsx,
+        &JsxCompileConfig {
+            default_mode: JsxOutputMode::Vapor,
+            ..Default::default()
+        },
+    );
+    assert!(!out.has_errors(), "{:?}", out.diagnostics);
+    let module = out.module_code();
+    let parsed = parse_module(allocator.as_oxc(), &module, JsxLang::Jsx);
+    assert!(!parsed.has_errors(), "{module}");
+    let mut bindings = DirectiveBindings::default();
+    bindings.visit_program(&parsed.program);
+    assert_eq!(
+        bindings.0,
+        [("_directive_focus".to_owned(), Some("vFocus".to_owned()))],
+        "{module}"
+    );
 }
 
 #[test]

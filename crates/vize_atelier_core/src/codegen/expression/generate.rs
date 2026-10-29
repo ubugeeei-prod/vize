@@ -76,8 +76,10 @@ pub fn generate_event_handler(
             } else {
                 let content = &simple.content;
 
-                // Step 1: Strip TypeScript if needed
-                let ts_stripped: String = if ctx.options.is_ts && content.contains(" as ") {
+                // Step 1: Strip TypeScript if needed. Parameter annotations
+                // (`event: MouseEvent`) are types too; limiting the strip to
+                // ` as ` left the JS parse failing and host globals bare.
+                let ts_stripped: String = if ctx.options.is_ts {
                     crate::steps::strip_typescript_from_expression(content)
                 } else {
                     (*content).into()

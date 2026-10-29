@@ -13,7 +13,7 @@ impl MaestroServer {
 
         self.state
             .documents
-            .open(uri.clone(), content.clone(), version, language_id);
+            .open(uri.clone(), content, version, language_id);
         let project = self.for_document(&uri).await;
         project.finish_open_document(uri, version).await;
     }
@@ -22,7 +22,7 @@ impl MaestroServer {
         if self.state.documents.version(&uri) != Some(version) {
             return;
         }
-        let Some(content) = self.state.documents.text(&uri) else {
+        let Some(content) = self.state.documents.text_snapshot(&uri) else {
             return;
         };
         #[cfg(feature = "experimental-source-navigation")]

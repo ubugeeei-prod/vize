@@ -1,0 +1,17 @@
+<script setup lang="ts">
+const emit = defineEmits<{ press: [] }>();
+</script>
+
+<template>
+  <button
+    type="button"
+    @click="
+      (event: MouseEvent) => {
+        if (document.activeElement !== event.currentTarget) return;
+        emit('press');
+      }
+    "
+  >
+    press
+  </button>
+</template>

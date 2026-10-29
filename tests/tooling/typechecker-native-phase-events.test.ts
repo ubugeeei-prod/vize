@@ -11,6 +11,8 @@ const workflow = parse(
   ),
 );
 const job = workflow.jobs["native-phases"];
+const historicalProjectionCondition =
+  "github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.historical_projection_receipt)";
 
 function evaluate(value: string, github: object, inputs: object = {}) {
   const expression = /^\$\{\{\s*(.*?)\s*\}\}$/.exec(value)?.[1];
@@ -22,9 +24,23 @@ void test("historical native phase campaigns run only on schedule or explicit im
   assert.deepEqual(Object.keys(workflow.on).sort(), ["schedule", "workflow_dispatch"]);
   assert.equal(workflow.on.schedule.length, 1);
   assert.equal(workflow.on.workflow_dispatch.inputs.source_sha.required, true);
+  assert.deepEqual(workflow.on.workflow_dispatch.inputs.historical_projection_receipt, {
+    description:
+      "Run the schedule-only template projection history qualification at the exact driver",
+    required: false,
+    default: false,
+    type: "boolean",
+  });
   assert.equal(job.if, undefined);
+  assert.equal(
+    job.steps.find(
+      (step: { name?: string }) =>
+        step.name ===
+        "Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor",
+    )?.if,
+    historicalProjectionCondition,
+  );
   for (const name of [
-    "Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor",
     "Qualify original outside-import types with the source CLI and official native oracle",
     "Verify the original reference-path project through native, batch and actual CLI checks",
     "Qualify optional callable defaults in the source CLI and editor",
@@ -57,6 +73,21 @@ void test("scheduled source identity follows the immutable event and manual sour
   assert.match(custody, /git merge-base --is-ancestor "\$DRIVER_SHA" "\$main_head_sha"/);
   assert.match(custody, /git merge-base --is-ancestor "\$SOURCE_SHA" "\$main_head_sha"/);
   assert.match(custody, /"\$SOURCE_SHA" == "\$DRIVER_SHA" && "\$SOURCE_SHA" == "\$GITHUB_SHA"/);
+  assert.match(custody, /"\$HISTORICAL_PROJECTION_RECEIPT" == true/);
+  assert.equal(
+    runInNewContext(historicalProjectionCondition, {
+      github: { event_name: "workflow_dispatch" },
+      inputs: { historical_projection_receipt: true },
+    }),
+    true,
+  );
+  assert.equal(
+    runInNewContext(historicalProjectionCondition, {
+      github: { event_name: "workflow_dispatch" },
+      inputs: { historical_projection_receipt: false },
+    }),
+    false,
+  );
   const source = job.steps.find(
     (step: { with?: { path?: string } }) => step.with?.path === ".native-phase-source",
   );

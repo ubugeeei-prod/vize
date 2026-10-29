@@ -61,85 +61,92 @@ pub(super) fn collect_component_prop_expression_ranges(
         .iter()
         .map(|name| name.as_str())
         .collect();
-    for usage in vize_croquis::facts::component_usage_list(summary) {
-        let has_checkable_binding = component_usage_has_checkable_binding(
-            summary,
-            &usage,
-            &external_template_bindings,
-            options.component_binding_check,
-            options.legacy_vue2,
-        );
-        if !has_checkable_binding && !options.legacy_vue2 {
-            continue;
-        }
-        if let Some(collector) = options.diagnostic_ownership {
-            refuse_ambiguous_prop_spans(collector, &usage);
-        }
-        for spread in &usage.spread_props {
-            // The generic props call checks the entire bag and owns its precise
-            // rewrite mapping. A duplicate bare statement would route the same
-            // spread through the older token scanner.
-            for expr in &summary.template_expressions {
-                if expr.kind == TemplateExpressionKind::VBind
-                    && expr.scope_id == usage.scope_id
-                    && expr.start >= spread.start
-                    && expr.end <= spread.end
-                    && expr.content.as_str().trim() == spread.expression.as_str().trim()
-                {
-                    plan.skipped.insert((expr.start, expr.end));
-                }
-            }
-        }
-        for prop in &usage.props {
-            if unproven.contains(&(prop.start, prop.end))
-                && let Some(collector) = options.diagnostic_ownership
-                && let Some(owner) = InputOwner::for_expected_projection(&usage, prop)
-            {
-                collector.borrow_mut().refuse_owner(owner);
-            }
-            if options.diagnostic_ownership.is_some()
-                && let Some(owner) = InputOwner::for_prop(&usage, prop)
-                && let Some(value) = source.value_source_range(prop)
-                && positions.contains(&(usage.scope_id.as_u32(), value.start, value.end))
-            {
-                plan.owners.insert(
-                    (
-                        usage.scope_id.as_u32(),
-                        value.start as u32,
-                        value.end as u32,
-                    ),
-                    owner,
-                );
-            }
-            if prop.name_is_dynamic {
-                continue;
-            }
-            let Some(value) = prop.value.as_ref() else {
-                continue;
-            };
-            if !prop.is_dynamic {
-                continue;
-            }
-            let value = value.as_str().trim();
-            if !contains_inline_function_prop_value(value) {
-                continue;
-            }
-            // Checkable components validate inline function props through the
-            // prop checker. Legacy Vue 2 library globals are intentionally not
-            // prop-checked, so emitting those callbacks standalone would leave
-            // parameters uncontextualized and report TS7006 false positives.
-            for expr in &summary.template_expressions {
-                if expr.kind == TemplateExpressionKind::VBind
-                    && expr.scope_id == usage.scope_id
-                    && expr.start >= prop.start
-                    && expr.end <= prop.end
-                    && expr.content.as_str().trim() == value
-                {
-                    plan.skipped.insert((expr.start, expr.end));
-                }
-            }
-        }
+    let usages = vize_croquis::facts::component_usage_list(summary);
+    if usages.is_empty() {
+        return plan;
     }
+    crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+        for usage in usages {
+            let has_checkable_binding = component_usage_has_checkable_binding(
+                bindings,
+                &usage,
+                &external_template_bindings,
+                options.component_binding_check,
+                options.legacy_vue2,
+            );
+            if !has_checkable_binding && !options.legacy_vue2 {
+                continue;
+            }
+            if let Some(collector) = options.diagnostic_ownership {
+                refuse_ambiguous_prop_spans(collector, &usage);
+            }
+            for spread in &usage.spread_props {
+                // The generic props call checks the entire bag and owns its precise
+                // rewrite mapping. A duplicate bare statement would route the same
+                // spread through the older token scanner.
+                for expr in &summary.template_expressions {
+                    if expr.kind == TemplateExpressionKind::VBind
+                        && expr.scope_id == usage.scope_id
+                        && expr.start >= spread.start
+                        && expr.end <= spread.end
+                        && expr.content.as_str().trim() == spread.expression.as_str().trim()
+                    {
+                        plan.skipped.insert((expr.start, expr.end));
+                    }
+                }
+            }
+            for prop in &usage.props {
+                if unproven.contains(&(prop.start, prop.end))
+                    && let Some(collector) = options.diagnostic_ownership
+                    && let Some(owner) = InputOwner::for_expected_projection(&usage, prop)
+                {
+                    collector.borrow_mut().refuse_owner(owner);
+                }
+                if options.diagnostic_ownership.is_some()
+                    && let Some(owner) = InputOwner::for_prop(&usage, prop)
+                    && let Some(value) = source.value_source_range(prop)
+                    && positions.contains(&(usage.scope_id.as_u32(), value.start, value.end))
+                {
+                    plan.owners.insert(
+                        (
+                            usage.scope_id.as_u32(),
+                            value.start as u32,
+                            value.end as u32,
+                        ),
+                        owner,
+                    );
+                }
+                if prop.name_is_dynamic {
+                    continue;
+                }
+                let Some(value) = prop.value.as_ref() else {
+                    continue;
+                };
+                if !prop.is_dynamic {
+                    continue;
+                }
+                let value = value.as_str().trim();
+                if !contains_inline_function_prop_value(value) {
+                    continue;
+                }
+                // Checkable components validate inline function props through the
+                // prop checker. Legacy Vue 2 library globals are intentionally not
+                // prop-checked, so emitting those callbacks standalone would leave
+                // parameters uncontextualized and report TS7006 false positives.
+                for expr in &summary.template_expressions {
+                    if expr.kind == TemplateExpressionKind::VBind
+                        && expr.scope_id == usage.scope_id
+                        && expr.start >= prop.start
+                        && expr.end <= prop.end
+                        && expr.content.as_str().trim() == value
+                    {
+                        plan.skipped.insert((expr.start, expr.end));
+                    }
+                }
+            }
+        }
+    });
+
     plan
 }
 

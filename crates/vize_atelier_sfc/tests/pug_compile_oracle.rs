@@ -14,7 +14,12 @@
 
 use std::path::PathBuf;
 
-use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
+use oxc_sourcemap::SourceMap;
+use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode};
+use vize_atelier_sfc::{
+    SfcCompileOptions, SfcParseOptions, compile_sfc,
+    compile_sfc_with_template_syntax_and_codegen_options, parse_sfc,
+};
 
 const SHELLS: [&str; 2] = [
     "",
@@ -172,6 +177,141 @@ fn refused_jade_fails_like_refused_pug() {
             "{lane}"
         );
     }
+}
+
+fn offset(text: &str, line: u32, column: u32) -> Option<usize> {
+    let start = if line == 0 {
+        0
+    } else {
+        text.match_indices('\n').nth(line as usize - 1)?.0 + 1
+    };
+    let mut units = 0;
+    for (at, ch) in text.get(start..)?.char_indices() {
+        if units == column {
+            return Some(start + at);
+        }
+        if ch == '\n' {
+            return None;
+        }
+        units += ch.len_utf16() as u32;
+        if units > column {
+            return None;
+        }
+    }
+    (units == column).then_some(text.len())
+}
+
+#[test]
+fn template_only_map_navigates_generated_tokens_to_authored_pug() {
+    let source = concat!(
+        "<template lang=\"pug\">\n",
+        "main\n",
+        "  h1 Café 😀\n",
+        "  p {{ account.name }}\n",
+        "</template>\n",
+    );
+    let filename = "/src/PugMap.vue";
+    let parse = SfcParseOptions {
+        filename: filename.into(),
+        ..Default::default()
+    };
+    let descriptor = parse_sfc(source, parse.clone()).expect("pug fixture parses");
+    let compile = |source_map| {
+        compile_sfc_with_template_syntax_and_codegen_options(
+            &descriptor,
+            SfcCompileOptions {
+                parse: parse.clone(),
+                ..Default::default()
+            },
+            TemplateSyntaxMode::Standard,
+            CodegenOptions {
+                source_map,
+                filename: filename.into(),
+                ..Default::default()
+            },
+        )
+        .expect("pug fixture compiles")
+    };
+
+    let without = compile(false);
+    let with = compile(true);
+    assert_eq!(with.code, without.code, "source maps must be additive");
+    assert!(without.map.is_none());
+    let map = with.map.expect("mapped template-only module");
+    assert_eq!(map["sources"], serde_json::json!([filename]));
+    assert_eq!(map["sourcesContent"], serde_json::json!([source]));
+
+    let raw = serde_json::to_string(&map).expect("map JSON");
+    let map = SourceMap::from_json_string(&raw).expect("valid source map");
+    let generated = with
+        .code
+        .find("_ctx.account.name")
+        .expect("generated expression");
+    let authored = source.find("account.name").expect("authored expression");
+    let token = map
+        .get_tokens()
+        .find(|token| {
+            offset(&with.code, token.get_dst_line(), token.get_dst_col()) == Some(generated)
+        })
+        .expect("generated expression has a navigation anchor");
+    assert_eq!(
+        offset(source, token.get_src_line(), token.get_src_col()),
+        Some(authored),
+        "the runtime token must navigate to the Pug expression, not derived HTML",
+    );
+}
+
+#[test]
+fn plain_template_only_map_request_preserves_unmapped_default_packet() {
+    let source = "<template><slot v-pre></slot></template>\n";
+    let filename = "/src/PlainMapBoundary.vue";
+    let parse = SfcParseOptions {
+        filename: filename.into(),
+        ..Default::default()
+    };
+    let descriptor = parse_sfc(source, parse.clone()).expect("plain fixture parses");
+    let compile = |source_map| {
+        compile_sfc_with_template_syntax_and_codegen_options(
+            &descriptor,
+            SfcCompileOptions {
+                parse: parse.clone(),
+                ..Default::default()
+            },
+            TemplateSyntaxMode::Standard,
+            CodegenOptions {
+                source_map,
+                filename: filename.into(),
+                ..Default::default()
+            },
+        )
+        .expect("plain fixture compiles")
+    };
+    let plain = serde_json::to_value(compile(false)).expect("plain whole packet");
+    let requested = serde_json::to_value(compile(true)).expect("requested whole packet");
+    assert_eq!(
+        serde_json::json!({ "plainMap": &plain["map"], "requested": requested }),
+        serde_json::json!({ "plainMap": null, "requested": plain }),
+        "a source-map request must not change an unmapped plain template packet"
+    );
+}
+
+#[test]
+fn template_error_location_points_at_authored_pug() {
+    let source = "<template lang=\"pug\">\ndiv\n  p(title=\"😀\" v-else) orphan\n</template>\n";
+    let descriptor = parse_sfc(
+        source,
+        SfcParseOptions {
+            filename: "/src/PugError.vue".into(),
+            ..Default::default()
+        },
+    )
+    .expect("pug fixture parses");
+    let error = compile_sfc(&descriptor, SfcCompileOptions::default())
+        .expect_err("an orphan v-else is rejected");
+    let loc = error.loc.expect("exact diagnostic location");
+    assert_eq!(source.get(loc.start..loc.end), Some("v-else"));
+    assert_eq!((loc.start_line, loc.start_column), (3, 18));
+    assert_eq!((loc.end_line, loc.end_column), (3, 24));
 }
 
 #[test]

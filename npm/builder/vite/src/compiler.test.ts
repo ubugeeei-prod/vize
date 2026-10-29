@@ -4,6 +4,10 @@ import os from "node:os";
 import path from "node:path";
 
 import { compileBatch, compileFile } from "./compiler.ts";
+import {
+  antDesignDomExpected,
+  componentClassExpected,
+} from "./compiler-setup-component-expectations.ts";
 
 const renderBindingCompiled = compileFile(
   "/src/Foo.vue",
@@ -210,15 +214,10 @@ const channel = ref({});
 </style>`,
 );
 
-assert.match(
+assert.equal(
   componentClassCompiled.code,
-  /_createBlock\(\$setup\.Child, \{\s*channel: \$setup\.channel,\s*full: true,\s*class: _normalizeClass\(\$setup\.\$style\.subscribe\)\s*\}, null, 8[\s\S]*\["channel", "class"\]/,
-  "dynamic component class bindings should be tracked as component props so fallthrough classes apply",
-);
-assert.doesNotMatch(
-  componentClassCompiled.code,
-  /\["channel", "full", "class"\]/,
-  "static bound component props should not be listed as dynamic props",
+  componentClassExpected,
+  "setup component lowering, class fallthrough, and dynamic prop classification should match exactly",
 );
 
 const dynamicArgForCompiled = compileFile(
@@ -642,15 +641,10 @@ const antDesignDomCompiled = compileFile(
   antDesignSource,
 );
 
-assert.match(
+assert.equal(
   antDesignDomCompiled.code,
-  /(?=[\s\S]*_create(?:Block|VNode)\(\$setup\.Form\.Item)(?=[\s\S]*_create(?:Block|VNode)\(\$setup\.Input\))/,
-  "DOM module builds should read setup component tags while preserving member access",
-);
-assert.doesNotMatch(
-  antDesignDomCompiled.code,
-  /_resolveComponent\("Form\.Item"\)/,
-  "DOM builds must not fall back to runtime resolution for dotted imported components",
+  antDesignDomExpected,
+  "DOM module setup component tags and member access should match exactly",
 );
 
 const antDesignSsrCompiled = compileFile(

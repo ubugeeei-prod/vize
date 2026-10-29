@@ -142,3 +142,71 @@ fn default_nuxt_dirs_leave_the_custom_layout_outside_the_render_tree() {
         ]
     );
 }
+
+#[test]
+fn nested_routes_replace_layout_parents_and_forward_nuxt_page_spreads() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path();
+    write(root, "package.json", r#"{"private":true}"#);
+    write(
+        root,
+        "nuxt.config.ts",
+        "export default defineNuxtConfig({ ssr: false, srcDir: \"src\" });\n",
+    );
+    write(
+        root,
+        "src/composables/keys.ts",
+        r#"import type { InjectionKey, Ref } from "vue";
+export const NoticeKey: InjectionKey<{ show(text: string): void }> = Symbol("notice");
+export const OrderKey: InjectionKey<Ref<string>> = Symbol("order");
+"#,
+    );
+    write(
+        root,
+        "src/app.vue",
+        "<template><NuxtLayout><NuxtPage /></NuxtLayout></template>\n",
+    );
+    write(
+        root,
+        "src/layouts/default.vue",
+        r#"<script setup lang="ts">
+import { provide, reactive } from "vue";
+import { NoticeKey } from "../composables/keys";
+provide(NoticeKey, reactive({ show: text => console.warn(text) }));
+</script>
+<template><main><slot /></main></template>
+"#,
+    );
+    write(
+        root,
+        "src/pages/shop.vue",
+        "<template><section><NuxtPage /></section></template>\n",
+    );
+    write(
+        root,
+        "src/pages/shop/orders.vue",
+        r#"<script setup lang="ts">
+import { provide, ref } from "vue";
+import { OrderKey } from "../../composables/keys";
+const order = ref("A-1");
+provide(OrderKey, order);
+</script>
+<template><section><NuxtPage v-bind="{ order }" /></section></template>
+"#,
+    );
+    write(
+        root,
+        "src/pages/shop/orders/detail.vue",
+        r#"<script setup lang="ts">
+import { inject } from "vue";
+import { NoticeKey, OrderKey } from "../../../composables/keys";
+defineProps<{ order: string }>();
+const notice = inject(NoticeKey)!;
+const current = inject(OrderKey)!;
+</script>
+<template><button type="button" @click="notice.show(current)">{{ order }}</button></template>
+"#,
+    );
+
+    assert_eq!(cross_file_messages(root), Vec::<Value>::new());
+}

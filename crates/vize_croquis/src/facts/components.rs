@@ -136,11 +136,31 @@ fn exact_registration<'a>(
 }
 
 fn imported_export<'a>(croquis: &'a Croquis, local: &str) -> Option<(&'a str, &'a str)> {
+    imported_export_with_owner(croquis, local, false)
+}
+
+fn setup_imported_export<'a>(croquis: &'a Croquis, local: &str) -> Option<(&'a str, &'a str)> {
+    imported_export_with_owner(croquis, local, true)
+}
+
+fn imported_export_with_owner<'a>(
+    croquis: &'a Croquis,
+    local: &str,
+    setup_only: bool,
+) -> Option<(&'a str, &'a str)> {
     let mut fallback = None;
     for scope in croquis.scopes.iter() {
         let ScopeData::ExternalModule(data) = scope.data() else {
             continue;
         };
+        if setup_only
+            && !scope
+                .parent()
+                .and_then(|parent| croquis.scopes.get_scope(parent))
+                .is_some_and(|parent| parent.kind == crate::scope::ScopeKind::ScriptSetup)
+        {
+            continue;
+        }
         if data.is_type_only {
             continue;
         }
@@ -159,6 +179,100 @@ fn imported_export<'a>(croquis: &'a Croquis, local: &str) -> Option<(&'a str, &'
 /// Vue matches a template tag to a binding in either spelling.
 fn names_match(left: &str, right: &str) -> bool {
     left == right || to_pascal_case(left) == to_pascal_case(right)
+}
+
+/// Source-owned local component binding. This is private CF authority, not a
+/// synthetic static import and not part of the serialized component DTO.
+pub enum LocalComponentBinding<'a> {
+    Absent,
+    StaticImport,
+    Opaque,
+    Async(&'a str),
+}
+
+/// A known opaque local must not acquire a project component by filename.
+pub fn local_component_binding<'a>(
+    croquis: &'a crate::Croquis,
+    tag: &str,
+) -> LocalComponentBinding<'a> {
+    if !croquis.bindings.is_script_setup {
+        return LocalComponentBinding::Absent;
+    }
+    let Some(origins) = croquis
+        .value_binding_origins
+        .as_deref()
+        .filter(|origins| origins.owns_setup_program())
+    else {
+        return unavailable_binding(croquis, tag);
+    };
+    let Some(name) = origins.component_binding_name(tag) else {
+        return unavailable_binding(croquis, tag);
+    };
+    let Some(name) = name else {
+        return LocalComponentBinding::Opaque;
+    };
+    if origins.is_syntactic_value_import(name) {
+        return LocalComponentBinding::StaticImport;
+    }
+    if croquis.source_program_count != 1 {
+        return LocalComponentBinding::Opaque;
+    }
+    let Some(reference) = origins.root_reference(name) else {
+        return LocalComponentBinding::Opaque;
+    };
+    let Some(resolved) = origins.resolve(&reference) else {
+        return LocalComponentBinding::Opaque;
+    };
+    if resolved.canonical.is_none() {
+        return LocalComponentBinding::Opaque;
+    }
+    if resolved.import.is_some() {
+        // A const alias is not the authored static-import declaration which
+        // the legacy component-identity resolver can read. Keep it opaque.
+        return LocalComponentBinding::Opaque;
+    }
+    match origins.async_components.module_for(origins, name) {
+        Some(module) => LocalComponentBinding::Async(module),
+        None => LocalComponentBinding::Opaque,
+    }
+}
+
+// Missing capture or another Program's root is not proof that a setup name
+// is absent. Reuse the existing declared inventory with bounded hash lookups.
+fn metadata_binding_name<'a>(croquis: &'a Croquis, tag: &str) -> Option<&'a str> {
+    crate::script_parser::component_binding_reference(tag, |candidate| {
+        croquis
+            .bindings
+            .bindings
+            .get_key_value(candidate)
+            .map(|(name, _)| name.as_str())
+    })
+}
+
+fn unavailable_binding<'a>(croquis: &'a Croquis, tag: &str) -> LocalComponentBinding<'a> {
+    let binding = metadata_binding_name(croquis, tag);
+    if binding.is_some_and(|name| setup_imported_export(croquis, name).is_some()) {
+        // The existing authored static-import route does not depend on Vue
+        // factory authority or alias/value provenance from the private store.
+        return LocalComponentBinding::StaticImport;
+    }
+    match binding {
+        Some(_) => LocalComponentBinding::Opaque,
+        None => LocalComponentBinding::Absent,
+    }
+}
+
+/// The authored local name used when a template spelling selects a setup binding.
+/// Scope readers use this identity rather than comparing script/template offsets.
+#[doc(hidden)]
+pub fn component_reference_name<'a>(croquis: &'a crate::Croquis, tag: &str) -> Option<&'a str> {
+    croquis
+        .value_binding_origins
+        .as_deref()
+        .filter(|origins| origins.owns_setup_program())
+        .and_then(|origins| origins.component_binding_name(tag))
+        .flatten()
+        .or_else(|| metadata_binding_name(croquis, tag))
 }
 
 #[cfg(test)]
@@ -205,5 +319,133 @@ mod tests {
                 .iter()
                 .all(|(identity, _)| identity.export_name.as_str() != "Bar")
         );
+    }
+    fn uncaptured_setup(source: &str) -> crate::Croquis {
+        crate::script_parser::parse_script_setup_with_exports::<false>(
+            source, None, false, false, true, false, None,
+        )
+        .into_croquis()
+    }
+
+    #[test]
+    fn missing_setup_capture_cannot_reuse_plain_program_names() {
+        use super::{LocalComponentBinding, local_component_binding};
+        for (source, tag) in [
+            ("const Child = () => null;", "Child"),
+            ("const Child = () => null;", "child"),
+            ("const childWidget = () => null;", "child-widget"),
+            ("function Child() { return null; }", "Child"),
+        ] {
+            for plain in [
+                "import { defineAsyncComponent } from 'vue'; const Plain = defineAsyncComponent(() => import('./Plain.vue'));",
+                "import Child from './Child.vue';",
+            ] {
+                let mut setup = uncaptured_setup(source);
+                assert!(setup.value_binding_origins.is_none());
+                assert_eq!(setup.source_program_count, 1);
+                assert!(matches!(
+                    local_component_binding(&setup, tag),
+                    LocalComponentBinding::Opaque
+                ));
+                setup.merge_plain_script(crate::script_parser::parse_script(plain).into_croquis());
+                assert_eq!(setup.source_program_count, 2);
+                assert!(
+                    matches!(
+                        local_component_binding(&setup, tag),
+                        LocalComponentBinding::Opaque
+                    ),
+                    "{source} {plain} {tag}"
+                );
+
+                let mut reversed = crate::script_parser::parse_script(plain).into_croquis();
+                reversed.merge_plain_script(uncaptured_setup(source));
+                assert_eq!(reversed.source_program_count, 2);
+                assert!(
+                    matches!(
+                        local_component_binding(&reversed, tag),
+                        LocalComponentBinding::Opaque
+                    ),
+                    "reverse {source} {plain} {tag}"
+                );
+            }
+            let mut sole = uncaptured_setup(source);
+            sole.merge_plain_script(crate::Croquis::new());
+            assert_eq!(sole.source_program_count, 1);
+            assert!(matches!(
+                local_component_binding(&sole, tag),
+                LocalComponentBinding::Opaque
+            ));
+            assert!(matches!(
+                local_component_binding(&sole, "Absent"),
+                LocalComponentBinding::Absent
+            ));
+        }
+    }
+
+    #[test]
+    fn original_static_import_route_remains_separate_from_capture() {
+        use super::{LocalComponentBinding, local_component_binding};
+        let source = "import Child from './Child.vue';";
+        let uncaptured = uncaptured_setup(source);
+        assert!(matches!(
+            local_component_binding(&uncaptured, "Child"),
+            LocalComponentBinding::StaticImport
+        ));
+        let mut captured = crate::script_parser::parse_script_setup(source).into_croquis();
+        captured.merge_plain_script(
+            crate::script_parser::parse_script("const plain = 1;").into_croquis(),
+        );
+        assert_eq!(captured.source_program_count, 2);
+        assert!(matches!(
+            local_component_binding(&captured, "Child"),
+            LocalComponentBinding::StaticImport
+        ));
+    }
+    #[test]
+    fn component_binding_spelling_follows_vue_lookup_order() {
+        use super::{LocalComponentBinding, local_component_binding};
+        let both = "import { defineAsyncComponent as dac } from 'vue'; const childWidget = dac(() => import('./Camel.vue')); const ChildWidget = dac(() => import('./Pascal.vue'));";
+        for (source, tag, expected) in [
+            (both, "child-widget", Some("./Camel.vue")),
+            (both, "ChildWidget", Some("./Pascal.vue")),
+            (both, "childWidget", Some("./Camel.vue")),
+            (
+                "import { defineAsyncComponent as dac } from 'vue'; const Child_Widget = dac(() => import('./Local.vue'));",
+                "ChildWidget",
+                None,
+            ),
+            (
+                "import { defineAsyncComponent as dac } from 'vue'; const lower = dac(() => import('./Local.vue'));",
+                "Lower",
+                None,
+            ),
+            (
+                "import { defineAsyncComponent as dac } from 'vue'; const ChildWidget = dac(() => import('./Pascal.vue'));",
+                "child-widget",
+                Some("./Pascal.vue"),
+            ),
+            (
+                "import { defineAsyncComponent as dac } from 'vue'; const CaféWidget = dac(() => import('./Pascal.vue'));",
+                "café-widget",
+                Some("./Pascal.vue"),
+            ),
+            (
+                "import { defineAsyncComponent as dac } from 'vue'; const CafeÉclair = dac(() => import('./Local.vue'));",
+                "cafe-éclair",
+                None,
+            ),
+            (
+                "import { defineAsyncComponent as dac } from 'vue'; const SSbox = dac(() => import('./Local.vue'));",
+                "ßbox",
+                None,
+            ),
+        ] {
+            let analysis = crate::script_parser::parse_script_setup(source).into_croquis();
+            let actual = match local_component_binding(&analysis, tag) {
+                LocalComponentBinding::Async(module) => Some(module),
+                _ => None,
+            };
+            assert_eq!(actual, expected, "{source} {tag}");
+        }
     }
 }

@@ -20,10 +20,10 @@ impl AuthoredUriResolver {
             .state
             .documents
             .uris()
-            .into_iter()
+            .iter()
             .filter_map(|uri| {
                 let path = uri.to_file_path().ok()?;
-                Some((ctx.state.canonical_editor_path(&path), uri))
+                Some((ctx.state.canonical_editor_path(&path), uri.clone()))
             })
             .collect();
         let workspace = ctx.state.get_workspace_root().map(|root| {

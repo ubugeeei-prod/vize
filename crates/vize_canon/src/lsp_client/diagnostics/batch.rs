@@ -14,6 +14,7 @@ impl CorsaProjectClient {
         )?;
 
         if self.has_materialized_documents(uris)
+            && self.can_use_attached_semantic_api()
             && let Some(results) = self.request_diagnostics_batch_via_materialized_files(uris)?
         {
             #[cfg(test)]

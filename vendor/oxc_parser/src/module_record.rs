@@ -9,6 +9,7 @@ use crate::diagnostics;
 
 pub struct ModuleRecordBuilder<'a> {
     allocator: &'a Allocator,
+    pub(crate) speculation_effects_revision: u64,
     source_type: SourceType,
     module_record: ModuleRecord<'a>,
     export_entries: ArenaVec<'a, ExportEntry<'a>>,
@@ -19,6 +20,7 @@ impl<'a> ModuleRecordBuilder<'a> {
     pub fn new(allocator: &'a Allocator, source_type: SourceType) -> Self {
         Self {
             allocator,
+            speculation_effects_revision: 0,
             source_type,
             module_record: ModuleRecord::new(allocator),
             export_entries: ArenaVec::new_in(&allocator),
@@ -189,17 +191,20 @@ impl<'a> ModuleRecordBuilder<'a> {
     }
 
     pub fn visit_import_expression(&mut self, e: &ImportExpression<'a>) {
+        self.speculation_effects_revision += 1;
         self.module_record
             .dynamic_imports
             .push(DynamicImport { span: e.span, module_request: e.source.span() });
     }
 
     pub fn visit_import_meta(&mut self, span: Span) {
+        self.speculation_effects_revision += 1;
         self.module_record.has_module_syntax = true;
         self.module_record.import_metas.push(span);
     }
 
     pub fn visit_import_declaration(&mut self, decl: &ImportDeclaration<'a>) {
+        self.speculation_effects_revision += 1;
         let module_request = NameSpan::new(decl.source.value, decl.source.span);
 
         if let Some(specifiers) = &decl.specifiers {
@@ -246,6 +251,7 @@ impl<'a> ModuleRecordBuilder<'a> {
     }
 
     pub fn visit_export_all_declaration(&mut self, decl: &ExportAllDeclaration<'a>) {
+        self.speculation_effects_revision += 1;
         let module_request = NameSpan::new(decl.source.value, decl.source.span);
         let export_entry = ExportEntry {
             statement_span: decl.span,
@@ -282,6 +288,7 @@ impl<'a> ModuleRecordBuilder<'a> {
         decl: &ExportDefaultDeclaration<'a>,
         default_keyword_span: Span,
     ) {
+        self.speculation_effects_revision += 1;
         let local_name = match &decl.declaration {
             ExportDefaultDeclarationKind::Identifier(ident) => {
                 ExportLocalName::Default(NameSpan::new(ident.name.into(), ident.span))
@@ -315,6 +322,7 @@ impl<'a> ModuleRecordBuilder<'a> {
     }
 
     pub fn visit_export_named_declaration(&mut self, decl: &ExportNamedDeclaration<'a>) {
+        self.speculation_effects_revision += 1;
         let module_request =
             decl.source.as_ref().map(|source| NameSpan::new(source.value, source.span));
 
@@ -385,6 +393,7 @@ impl<'a> ModuleRecordBuilder<'a> {
     }
 
     pub fn set_module_syntax(&mut self) {
+        self.speculation_effects_revision += 1;
         self.module_record.has_module_syntax = true;
     }
 }

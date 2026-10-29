@@ -6,7 +6,9 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
+  assertOfficialRuntimeInstallation,
   loadOfficialFixture,
+  loadOfficialFixtureSuite,
   officialCases,
   officialDiagnostics,
   assertOfficialDiagnostics,
@@ -14,8 +16,10 @@ import {
   verifyPublicInstallation,
   resolveOfficialNativeImage,
   officialActorInputs,
+  officialFailure,
   type Case,
   type Fixture,
+  type OfficialRuntimeAuthority,
 } from "./official-fixtures.ts";
 import { preparePublishManifest } from "../../release/smoke_release_install/prepare.ts";
 import { derivePublicationPlan, readRawBlob } from "../../release/public_acceptance/plan.ts";
@@ -157,7 +161,12 @@ function install(directory: string, dependencies: Record<string, string>, eviden
   );
   return directory;
 }
-export async function installedIdentity(directory: string, output: string, probeNative = true) {
+export async function installedIdentity(
+  directory: string,
+  output: string,
+  probeNative = true,
+  authority?: OfficialRuntimeAuthority,
+) {
   const require = createRequire(path.join(directory, "package.json"));
   const records = ["typescript", "vue", "vize", "@vizejs/native"].map((name) => {
     const file = path.join(directory, "node_modules", name, "package.json");
@@ -173,8 +182,6 @@ export async function installedIdentity(directory: string, output: string, probe
     fs.copyFileSync(file, path.join(output, "manifests", name.replaceAll("/", "-") + ".json"));
     return { name, version: manifest.version as string, manifest: identity(file) };
   });
-  assert.equal(records[0].version, fixture.typescript);
-  assert.equal(records[1].version, fixture.vue);
   const cliManifest = JSON.parse(
     fs.readFileSync(path.join(directory, "node_modules/vize/package.json"), "utf8"),
   );
@@ -188,12 +195,17 @@ export async function installedIdentity(directory: string, output: string, probe
     nativeEntry,
     "official mapper CLI must resolve the candidate native wrapper",
   );
+  assert.ok(authority, "installed identity requires explicit fixture runtime authority");
+  assertOfficialRuntimeInstallation(directory, authority, {
+    typescript: records[0].version,
+    vue: records[1].version,
+  });
   const typescript = path.dirname(require.resolve("typescript/package.json"));
   const getExePath = (await import(pathToFileURL(path.join(typescript, "lib/getExePath.js")).href))
     .default as () => string;
   const compiler = getExePath();
   const compilerManifest = path.join(path.dirname(compiler), "../package.json");
-  assert.equal(JSON.parse(fs.readFileSync(compilerManifest, "utf8")).version, fixture.typescript);
+  assert.equal(JSON.parse(fs.readFileSync(compilerManifest, "utf8")).version, authority.typescript);
   fs.copyFileSync(compilerManifest, path.join(output, "manifests", "official-platform.json"));
   const version = run(
     process.execPath,
@@ -202,7 +214,7 @@ export async function installedIdentity(directory: string, output: string, probe
     path.join(output, "compiler-version"),
   );
   successful(version);
-  assert.equal(version.stdoutText, `Version ${fixture.typescript}\n`);
+  assert.equal(version.stdoutText, `Version ${authority.typescript}\n`);
   let nativeImage: string;
   if (probeNative) {
     const probe = run(
@@ -256,6 +268,8 @@ export async function installedIdentity(directory: string, output: string, probe
     },
     compiler: identity(compiler),
     nativeImage: identity(nativeImage),
+    runtimeAuthority: authority,
+    request: identity(path.join(directory, "package.json")),
     lock: identity(path.join(directory, "package-lock.json")),
     qualification: probeNative
       ? "Actual installed module resolution and loaded image; no OS child PID or loader instrumentation claim"
@@ -296,18 +310,6 @@ function packCurrentPackages(output: string) {
   return dependencies;
 }
 
-function failure(name: string, error: unknown) {
-  return {
-    name,
-    error:
-      error instanceof Error
-        ? Object.fromEntries(
-            Object.getOwnPropertyNames(error).map((key) => [key, Reflect.get(error, key)]),
-          )
-        : String(error),
-  };
-}
-
 export async function main(args = process.argv.slice(2)) {
   const options = officialRunOptions(args, root, fixturePath);
   const output = path.resolve(
@@ -318,14 +320,13 @@ export async function main(args = process.argv.slice(2)) {
     "refuse overwriting previous campaign evidence",
   );
   fs.mkdirSync(output, { recursive: true });
-  const pins = { typescript: fixture.typescript, vue: fixture.vue };
   const { fixturePaths, publicVersion } = options;
   const authority = options.candidateOnly
     ? officialActorInputs(JSON.parse(fs.readFileSync(options.publicInputs!, "utf8")))
     : undefined;
   const subjectFixtures: { path: string; sha256: string; head: string }[] = [];
   const suites = fixturePaths.map((file) => {
-    if (!authority) return { file, fixture: loadOfficialFixture(file) };
+    if (!authority) return loadOfficialFixtureSuite(file);
     const relative = path.relative(root, file).split(path.sep).join("/");
     const bytes = readRawBlob(root, authority.subject.head, relative);
     assert.equal(
@@ -334,7 +335,7 @@ export async function main(args = process.argv.slice(2)) {
       "F fixture must equal selected H raw source",
     );
     subjectFixtures.push({ path: relative, sha256: digest(bytes), head: authority.subject.head });
-    return { file, fixture: loadOfficialFixture(file, bytes.toString("utf8")) };
+    return loadOfficialFixtureSuite(file, bytes.toString("utf8"));
   });
   const allCases = suites.flatMap((suite) => officialCases(suite.fixture));
   assert.equal(new Set(allCases.map((row) => row.name)).size, allCases.length);
@@ -380,24 +381,25 @@ export async function main(args = process.argv.slice(2)) {
   const baselineResults = [],
     baselineFailures = [];
   for (const suite of suites) {
-    assert.equal(suite.fixture.typescript, pins.typescript);
-    assert.equal(suite.fixture.vue, pins.vue);
     if (options.candidateOnly) continue;
     const version = suite.fixture.baselineVize;
-    let baseline = baselineVersions.get(version);
+    const baselineKey = JSON.stringify({ version, ...suite.runtime });
+    let baseline = baselineVersions.get(baselineKey);
     if (!baseline) {
-      const suffix = baselineVersions.size ? "-" + version : "";
+      const suffix = baselineVersions.size ? `-${version}-vue-${suite.runtime.vue}` : "";
       baseline = install(
         path.join(output, "baseline-install" + suffix),
-        { ...pins, vize: version },
+        { ...suite.runtime, vize: version },
         path.join(output, "baseline-install-process" + suffix),
       );
       const observed = await installedIdentity(
         baseline,
         path.join(output, "baseline-identity" + suffix),
+        true,
+        suite.runtime,
       );
       assert.equal(observed.packages.find((pkg) => pkg.name === "vize")!.version, version);
-      baselineVersions.set(version, baseline);
+      baselineVersions.set(baselineKey, baseline);
     }
     for (const original of suite.fixture.originals) {
       const row = officialCases(suite.fixture).find(
@@ -408,7 +410,7 @@ export async function main(args = process.argv.slice(2)) {
           check(baseline, row, path.join(output, "baseline"), suite.fixture, true),
         );
       } catch (error) {
-        baselineFailures.push(failure(row.name, error));
+        baselineFailures.push(officialFailure(row.name, error));
       }
     }
   }
@@ -425,38 +427,56 @@ export async function main(args = process.argv.slice(2)) {
       "packed candidate requires its exact reviewed source",
     );
   else assert.match(publicVersion, /^\d+\.\d+\.\d+$/u);
-  const candidate = install(
-    path.join(output, "candidate-install"),
-    { ...pins, ...(publicVersion ? { vize: publicVersion } : packCurrentPackages(output)) },
-    path.join(output, "candidate-install-process"),
-  );
-  const candidateIdentity = await installedIdentity(
-    candidate,
-    path.join(output, "candidate-identity"),
-    !options.candidateOnly,
-  );
-  if (options.candidateOnly) await verifyPublicInstallation(candidate, output, candidateIdentity);
-  if (publicVersion)
-    assert.equal(
-      candidateIdentity.packages.find((pkg) => pkg.name === "vize")!.version,
-      publicVersion,
+  const candidatePackage = publicVersion ? { vize: publicVersion } : packCurrentPackages(output);
+  const candidates = new Map<
+    string,
+    { directory: string; identity: Awaited<ReturnType<typeof installedIdentity>> }
+  >();
+  for (const suite of suites) {
+    const candidateKey = JSON.stringify(suite.runtime);
+    if (candidates.has(candidateKey)) continue;
+    const suffix = candidates.size ? `-vue-${suite.runtime.vue}` : "";
+    const candidate = install(
+      path.join(output, "candidate-install" + suffix),
+      { ...suite.runtime, ...candidatePackage },
+      path.join(output, "candidate-install-process" + suffix),
     );
-  else
-    assert.equal(
-      candidateIdentity.nativeImage.sha256,
-      identity(path.join(root, "npm/native/vize-vitrine.linux-x64-gnu.node")).sha256,
-      "fresh packed mapper must load the source-built image",
+    const candidateIdentity = await installedIdentity(
+      candidate,
+      path.join(output, "candidate-identity" + suffix),
+      !options.candidateOnly,
+      suite.runtime,
     );
+    if (publicVersion)
+      assert.equal(
+        candidateIdentity.packages.find((pkg) => pkg.name === "vize")!.version,
+        publicVersion,
+      );
+    else
+      assert.equal(
+        candidateIdentity.nativeImage.sha256,
+        identity(path.join(root, "npm/native/vize-vitrine.linux-x64-gnu.node")).sha256,
+        "fresh packed mapper must load the source-built image",
+      );
+    candidates.set(candidateKey, { directory: candidate, identity: candidateIdentity });
+  }
+  if (options.candidateOnly) {
+    assert.equal(candidates.size, 1, "public validation requires one exact runtime cohort");
+    const candidate = [...candidates.values()][0];
+    await verifyPublicInstallation(candidate.directory, output, candidate.identity);
+  }
   const results = [],
     failures = [];
-  for (const suite of suites)
+  for (const suite of suites) {
+    const candidate = candidates.get(JSON.stringify(suite.runtime))!.directory;
     for (const row of officialCases(suite.fixture)) {
       try {
         results.push(check(candidate, row, path.join(output, "candidate"), suite.fixture));
       } catch (error) {
-        failures.push(failure(row.name, error));
+        failures.push(officialFailure(row.name, error));
       }
     }
+  }
   writeJson(path.join(output, "results.json"), {
     source: source.stdoutText.trim(),
     ...(authority ? { actor: authority.actor, subject: authority.subject, subjectFixtures } : {}),

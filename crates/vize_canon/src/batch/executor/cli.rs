@@ -10,6 +10,8 @@ use crate::batch::executor::diagnostics::DiagnosticMapper;
 use vize_carton::{FxHashMap, profile};
 use vize_carton::{String, cstr};
 
+#[cfg(feature = "cache-custody")]
+mod cache_custody_receipt;
 mod checkers;
 mod diagnostic_paths;
 mod file_diagnostics;
@@ -182,9 +184,13 @@ fn run_cli_command(
             .arg(config_path);
         #[cfg(test)]
         let receipt = lexical_dollar_receipt::requested(&command, project, config_path);
+        #[cfg(feature = "cache-custody")]
+        let cache_receipt = cache_custody_receipt::requested(&command, project, config_path);
         let output = command.output();
         #[cfg(test)]
         lexical_dollar_receipt::completed(receipt, &output);
+        #[cfg(feature = "cache-custody")]
+        cache_custody_receipt::completed(cache_receipt, &output);
         output
     })
 }

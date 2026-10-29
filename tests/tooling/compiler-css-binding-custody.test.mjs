@@ -48,6 +48,31 @@ const side = (side, file) =>
       : cssBindingProducerPaths.includes(file)
         ? from(fixed, file)
         : read(file);
+const compilerDialectCoverage = {
+  state: "source-inspected",
+  registryRef: null,
+  evidence: [
+    {
+      kind: "source-inspection",
+      dialects: ["vue3-sfc", "html-template"],
+      selector: "compiler-cli-ssr-v1 default Vue 3 dialect",
+    },
+  ],
+};
+const compilerDialectPromotionIds = new Set([
+  "compiler/sfc/jsx-vapor-runtime-slots-6889",
+  "compiler/sfc/scoped-checkout-stability-10067",
+]);
+
+function assertPreservedCompilerCase(currentRow, originalRow) {
+  if (!compilerDialectPromotionIds.has(originalRow.id)) {
+    assert.deepEqual(currentRow, originalRow);
+    return;
+  }
+  const { dialectCoverage, ...currentCustody } = currentRow;
+  assert.deepEqual(currentCustody, originalRow);
+  assert.deepEqual(dialectCoverage, compilerDialectCoverage);
+}
 
 await test("binding registration preserves every previous compiler row and pins its real source-before packet without changing source roles", () => {
   const oldCss = before.cssApiCases,
@@ -55,10 +80,20 @@ await test("binding registration preserves every previous compiler row and pins 
   // Preserve actual existing rows while allowing independent compiler campaigns
   // to append their own genuine cases and runtime packs.
   for (const row of before.cases)
-    assert.deepEqual(
+    assertPreservedCompilerCase(
       current.cases.find((candidate) => candidate.id === row.id),
       row,
     );
+  const scoped = structuredClone(
+    current.cases.find((row) => row.id === "compiler/sfc/scoped-checkout-stability-10067"),
+  );
+  scoped.dialectCoverage.evidence[0].selector = "foreign selector";
+  assert.throws(() =>
+    assertPreservedCompilerCase(
+      scoped,
+      before.cases.find((row) => row.id === scoped.id),
+    ),
+  );
   for (const pack of before.runtimePacks)
     assert.deepEqual(
       current.runtimePacks.find((candidate) => candidate.path === pack.path),

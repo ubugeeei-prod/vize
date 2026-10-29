@@ -44,4 +44,23 @@ mod structural_transform_tests {
 
         assert!(errors.is_empty(), "Unexpected errors: {:?}", errors);
     }
+
+    #[test]
+    fn orphan_v_else_reports_its_directive_location() {
+        let source = r#"<div><p v-else>orphan</p></div>"#;
+        let errors = transform_errors(source);
+
+        assert_eq!(errors.len(), 1, "one adjacency error");
+        assert_eq!(
+            errors[0].code,
+            ErrorCode::VElseNoAdjacentIf,
+            "the orphan keeps its diagnostic identity"
+        );
+        let span = errors[0].loc.as_ref().expect("directive location").span;
+        assert_eq!(
+            source.get(span.start as usize..span.end as usize),
+            Some("v-else"),
+            "the diagnostic selects the authored directive"
+        );
+    }
 }

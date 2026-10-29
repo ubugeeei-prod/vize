@@ -9,7 +9,7 @@ fieldless_enum! {
     /// Lexer token kind
     ///
     /// Exported for other oxc crates to use. You generally don't need to use this directly.
-    #[derive(Debug, Default, Clone, Copy, Eq, PartialEq)]
+    #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
     #[repr(u8)]
     #[non_exhaustive]
     pub enum Kind {

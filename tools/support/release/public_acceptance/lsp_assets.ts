@@ -4,10 +4,9 @@ import fs from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { resolveBundledCorsaRuntime } from "../../../../npm/cli/src/corsa-runtime.ts";
 import { unpackPublicArchive } from "../../../../tests/performance/support/warm-type-backed-public-archives.ts";
 import { publicReader } from "./http.ts";
-import { rejectOverrides } from "./installed.ts";
+import { hasCheckerDependency, rejectOverrides } from "./installed.ts";
 import { sha256 } from "./lsp_source.ts";
 import { readRawBlob } from "./plan.ts";
 
@@ -66,7 +65,7 @@ export function packageProvider(consumer: string, name: string, version: string)
     manifestSha256: sha256(manifest),
   };
 }
-/** Use the shipped CLI's version-bound launcher contract, never a guessed or host binary. */
+/** Use historical bundled authority or a current explicit private provider. */
 export async function installedCorsaProvider(
   consumer: string,
   cliVersion: string,
@@ -78,6 +77,37 @@ export async function installedCorsaProvider(
   const cli = packageProvider(consumer, "vize", cliVersion);
   const provider = packageProvider(consumer, name, version);
   const manifest = JSON.parse(fs.readFileSync(path.join(cli.directory, "package.json"), "utf8"));
+  const frozenCli = JSON.parse(readRawBlob(root, head, "npm/cli/package.json").toString());
+  if (frozenCli.optionalDependencies?.[name] === undefined) {
+    assert(!hasCheckerDependency(frozenCli), "CLI has an incomplete bundled checker declaration");
+    assert(!hasCheckerDependency(manifest), "installed CLI must not bundle a checker");
+    rejectOverrides();
+    const request = JSON.parse(fs.readFileSync(path.join(consumer, "package.json"), "utf8"));
+    const lock = JSON.parse(fs.readFileSync(path.join(consumer, "package-lock.json"), "utf8"));
+    const sections = ["dependencies", "devDependencies"].filter(
+      (section) => request[section]?.[name] === version,
+    );
+    assert.equal(sections.length, 1, "one explicit user provider declaration required");
+    const [section] = sections;
+    assert.ok(section, "explicit user provider required");
+    assert.equal(lock.packages[""][section]?.[name], version, "explicit locked provider required");
+    const executable = contained(
+      path.join(provider.directory, process.platform === "win32" ? "lib/tsc.exe" : "lib/tsc"),
+      provider.directory,
+    );
+    assert.ok(fs.lstatSync(executable).isFile(), "user provider must be a regular file");
+    return {
+      ...provider,
+      executable,
+      executableSha256: sha256(fs.readFileSync(executable)),
+      resolver: {
+        cli,
+        head,
+        resolutionMode: "explicit-user-provider",
+        request: { name, version, section },
+      },
+    };
+  }
   assert.equal(
     manifest.optionalDependencies?.[name],
     version,
@@ -93,20 +123,34 @@ export async function installedCorsaProvider(
     sha256(readRawBlob(root, head, sourceFile)),
     "installed launcher resolver must match frozen H source",
   );
-  // Both actors may inspect these bytes. Only the reviewed checkout implementation
-  // executes: installed code must never run inside the credentialed finalizer.
-  const trusted = fs.readFileSync(
-    fileURLToPath(new URL("../../../../npm/cli/src/corsa-runtime.ts", import.meta.url)),
+  // Legacy replay is intentionally bounded to the retired resolver carried by
+  // this exact fixture. Both actors may inspect these bytes. Only the reviewed
+  // checkout implementation executes: installed code must never run inside the
+  // credentialed finalizer.
+  const fixturePath = fileURLToPath(
+    new URL("../../../../tests/_fixtures/release/public-corsa-resolver.json", import.meta.url),
   );
+  const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
+  const trusted = Buffer.from(String(fixture.content));
+  assert.equal(sha256(trusted), fixture.sha256, "legacy resolver fixture digest differs");
   assert.equal(
     moduleSha256,
     sha256(trusted),
     "frozen installed resolver must match the reviewed trusted resolver contract",
   );
   const javascript = Buffer.from(
-    stripTypeScriptTypes(source.toString(), { sourceUrl: pathToFileURL(module).href }),
+    stripTypeScriptTypes(trusted.toString(), { sourceUrl: pathToFileURL(fixturePath).href }),
   );
-  const selected: unknown = resolveBundledCorsaRuntime({
+  const trustedModule = (await import(
+    `data:text/javascript;base64,${javascript.toString("base64")}`
+  )) as {
+    resolveBundledCorsaRuntime(options: {
+      packageRoot: string;
+      platform: NodeJS.Platform;
+      arch: string;
+    }): string | null;
+  };
+  const selected: unknown = trustedModule.resolveBundledCorsaRuntime({
     packageRoot: cli.directory,
     platform: process.platform,
     arch: process.arch,

@@ -162,6 +162,7 @@ title: "全部规则"
 | [`script/one-component-per-file`](#script-one-component-per-file) | [错误示例](#script-one-component-per-file-bad) · [正确示例](#script-one-component-per-file-good) | 禁止在一个文件中定义多个组件 |
 | [`script/order-in-components`](#script-order-in-components) | [错误示例](#script-order-in-components-bad) · [正确示例](#script-order-in-components-good) | 强制组件选项的属性遵循默认顺序 |
 | [`script/prefer-computed`](#script-prefer-computed) | [错误示例](#script-prefer-computed-bad) · [正确示例](#script-prefer-computed-good) | 响应式派生状态优先使用 computed() |
+| [`script/prefer-define-emits-binding`](#script-prefer-define-emits-binding) | [错误示例](#script-prefer-define-emits-binding-bad) · [正确示例](#script-prefer-define-emits-binding-good) | 优先使用从 defineEmits 捕获的函数而不是模板 $emit |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [错误示例](#script-prefer-define-options-bad) · [正确示例](#script-prefer-define-options-good) | 优先使用 defineOptions()，而不是仅设置 name/inheritAttrs 的普通 &lt;script&gt; |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [错误示例](#script-prefer-import-from-vue-bad) · [正确示例](#script-prefer-import-from-vue-good) | 优先从 'vue' 导入，而不是内部包 |
 | [`script/prefer-ref-over-reactive`](#script-prefer-ref-over-reactive) | [错误示例](#script-prefer-ref-over-reactive-bad) · [正确示例](#script-prefer-ref-over-reactive-good) | 建议使用 ref() 而不是 reactive() 管理状态 |
@@ -2134,6 +2135,20 @@ Vue Router 编程式导航优先使用具名路由对象
 [正确示例](./type-and-script.md#script-prefer-computed-good)
 
 [分组示例](./type-and-script.md#script-prefer-computed) · [规则参考](/rules/reference/script-prefer-computed.md)
+
+### `script/prefer-define-emits-binding`
+
+优先使用从 defineEmits 捕获的函数而不是模板 $emit
+
+<span id="script-prefer-define-emits-binding-bad"></span>
+
+[错误示例](./type-and-script.md#script-prefer-define-emits-binding-bad)
+
+<span id="script-prefer-define-emits-binding-good"></span>
+
+[正确示例](./type-and-script.md#script-prefer-define-emits-binding-good)
+
+[分组示例](./type-and-script.md#script-prefer-define-emits-binding) · [规则参考](/rules/reference/script-prefer-define-emits-binding.md)
 
 ### `script/prefer-define-options`
 

@@ -36,7 +36,7 @@ pub(in crate::emit) fn resolves(cx: &EmitCx<'_>, component: &str) -> bool {
         .is_some_and(|table| resolve(table, component).is_some())
 }
 
-/// Push the `$setup.Name` (`.suffix`) tag; `false` when the tag is not a
+/// Push the `$setup["Name"]` (`.suffix`) tag; `false` when the tag is not a
 /// binding and the caller falls back to the resolved asset.
 pub(in crate::emit) fn push_tag(cx: &mut EmitCx<'_>, component: &str) -> bool {
     let Some(binding) = cx
@@ -60,10 +60,17 @@ pub(in crate::emit) fn push_tag(cx: &mut EmitCx<'_>, component: &str) -> bool {
         cx.buf.push(Helper::Unref.alias());
         cx.buf.push("(");
     }
-    if !inline {
-        cx.buf.push("$setup.");
+    // Non-inline setup components are bracket reads (`$setup["MyButton"]`).
+    // Expression identifiers stay `$setup.msg`. A dotted tag keeps the
+    // suffix outside the brackets (`$setup["Ns"].Item`).
+    if inline {
+        cx.buf.push(binding.name.as_str());
+    } else {
+        cx.buf.push("$setup[\"");
+        cx.buf
+            .push(super::super::js::escape_js_string(binding.name.as_str()).as_str());
+        cx.buf.push("\"]");
     }
-    cx.buf.push(binding.name.as_str());
     if needs_unref {
         cx.buf.push(")");
     }

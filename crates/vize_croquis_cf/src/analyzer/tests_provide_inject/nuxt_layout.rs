@@ -64,6 +64,126 @@ fn nuxt_default_layout_is_an_ancestor_of_pages_and_their_children() {
 }
 
 #[test]
+fn nuxt_literal_named_layout_replaces_the_default_page_ancestor() {
+    let mut analyzer = CrossFileAnalyzer::new(
+        CrossFileOptions::minimal()
+            .with_provide_inject(true)
+            .with_reactivity_tracking(true),
+    );
+    let page = analyzer.add_file_with_analysis(
+        Path::new("app/pages/login.vue"),
+        "",
+        script_analysis(
+            "import { inject } from 'vue'; import { ThemeKey, GlobalKey } from '../composables/keys'; definePageMeta({ layout: 'bare' }); const theme = inject(ThemeKey); const global = inject(GlobalKey)",
+            &[],
+        ),
+    );
+    let default_layout = analyzer.add_file_with_analysis(
+        Path::new("app/layouts/default.vue"),
+        "<template><slot /></template>",
+        script_analysis(
+            "import { provide, ref } from 'vue'; import { ThemeKey } from '../composables/keys'; provide(ThemeKey, ref('default'))",
+            &[],
+        ),
+    );
+    let bare_layout = analyzer.add_file_with_analysis(
+        Path::new("app/layouts/bare.vue"),
+        "<template><slot /></template>",
+        script_analysis(
+            "import { provide, ref } from 'vue'; import { ThemeKey } from '../composables/keys'; provide(ThemeKey, ref('bare'))",
+            &[],
+        ),
+    );
+    let app = analyzer.add_file_with_analysis(
+        Path::new("app/app.vue"),
+        "<template><NuxtLayout><NuxtPage /></NuxtLayout></template>",
+        script_analysis(
+            "import { provide, ref } from 'vue'; import { GlobalKey } from './composables/keys'; provide(GlobalKey, ref('app'))",
+            &["NuxtLayout", "NuxtPage"],
+        ),
+    );
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    assert!(result.provide_inject_matches.iter().any(|matched| {
+        matched.provider == bare_layout && matched.consumer == page && matched.key == "ThemeKey"
+    }));
+    assert!(!result.provide_inject_matches.iter().any(|matched| {
+        matched.provider == default_layout && matched.consumer == page && matched.key == "ThemeKey"
+    }));
+    assert!(result.provide_inject_matches.iter().any(|matched| {
+        matched.provider == app && matched.consumer == page && matched.key == "GlobalKey"
+    }));
+    assert_eq!(result.diagnostics.len(), 1, "{:#?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(diagnostic.primary_file, default_layout);
+    assert!(matches!(
+        &diagnostic.kind,
+        CrossFileDiagnosticKind::UnusedProvide { key } if key == "ThemeKey"
+    ));
+}
+
+#[test]
+fn nuxt_disabled_and_unknown_layouts_do_not_invent_named_ancestry() {
+    for (page_script, expects_default) in [
+        (
+            "import { inject } from 'vue'; definePageMeta({ layout: false }); const theme = inject('theme')",
+            false,
+        ),
+        (
+            "import { inject } from 'vue'; definePageMeta({ layout }); const theme = inject('theme')",
+            true,
+        ),
+        (
+            "import { inject } from 'vue'; const theme = inject('theme')",
+            true,
+        ),
+    ] {
+        let mut analyzer =
+            CrossFileAnalyzer::new(CrossFileOptions::minimal().with_provide_inject(true));
+        let page = analyzer.add_file_with_analysis(
+            Path::new("app/pages/login.vue"),
+            "",
+            script_analysis(page_script, &[]),
+        );
+        let default_layout = analyzer.add_file_with_analysis(
+            Path::new("app/layouts/default.vue"),
+            "<template><slot /></template>",
+            script_analysis(
+                "import { provide } from 'vue'; provide('theme', 'default')",
+                &[],
+            ),
+        );
+        analyzer.add_file_with_analysis(
+            Path::new("app/layouts/bare.vue"),
+            "<template><slot /></template>",
+            script_analysis(
+                "import { provide } from 'vue'; provide('theme', 'bare')",
+                &[],
+            ),
+        );
+        analyzer.add_file_with_analysis(
+            Path::new("app/app.vue"),
+            "<template><NuxtLayout><NuxtPage /></NuxtLayout></template>",
+            script_analysis("", &["NuxtLayout", "NuxtPage"]),
+        );
+        analyzer.rebuild_component_edges();
+
+        let result = analyzer.analyze();
+        assert_eq!(
+            result.provide_inject_matches.iter().any(|matched| {
+                matched.provider == default_layout
+                    && matched.consumer == page
+                    && matched.key == "theme"
+            }),
+            expects_default,
+            "{page_script}: {:#?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
 fn nuxt_layout_keeps_page_ancestry_when_it_renders_its_own_component() {
     let mut analyzer = CrossFileAnalyzer::new(
         CrossFileOptions::minimal()

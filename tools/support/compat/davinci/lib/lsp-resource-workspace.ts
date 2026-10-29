@@ -2,6 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { resolveCorsaPath, resolveVuePackagePath } from "../../editor-e2e/real-vue-workspace.ts";
+import {
+  installResourceCorsaGate,
+  type ResourceCorsaGatePaths,
+} from "./lsp-resource-corsa-gate.ts";
 
 export const fileName = (index: number): string => `Component${String(index).padStart(5, "0")}.vue`;
 
@@ -22,24 +26,25 @@ defineExpose({ publicState })
 defineOptions({ inheritAttrs: false })
 const checked: number = 1
 </script>
-<template><span>{{ label }}</span><Peer ${index === 1 ? 'ref="peer" ' : ""}:label="label" /></template>
+<template><span>{{ label }} {{ checked }} {{ file${index} }}</span><Peer ${index === 1 ? 'ref="peer" ' : ""}:label="label" /></template>
 `;
 }
 
 export function prepareWorkspace(
   workspace: string,
   files: number,
-): { corsaPath: string; vuePath: string } {
+): { corsaPath: string; corsaGate: ResourceCorsaGatePaths; vuePath: string } {
   fs.mkdirSync(path.join(workspace, "src"), { recursive: true });
   fs.mkdirSync(path.join(workspace, "node_modules"), { recursive: true });
   fs.symlinkSync(resolveVuePackagePath(), path.join(workspace, "node_modules/vue"), "junction");
-  const corsaPath = resolveCorsaPath();
+  const corsaPath = fs.realpathSync(resolveCorsaPath());
+  const corsaGate = installResourceCorsaGate(workspace, corsaPath);
   fs.writeFileSync(
     path.join(workspace, "vite.config.mjs"),
     `export default ${JSON.stringify({
       vue: {
         languageServer: { editor: true, ecosystem: true, lint: true, typecheck: true },
-        typeChecker: { corsaPath, jsxTypecheck: false },
+        typeChecker: { corsaPath: "./.vize-corsa-gate/corsa-gate.cjs", jsxTypecheck: false },
       },
     })};\n`,
   );
@@ -61,7 +66,7 @@ export function prepareWorkspace(
   for (let index = 0; index < files; index++) {
     fs.writeFileSync(path.join(workspace, "src", fileName(index)), componentSource(index));
   }
-  return { corsaPath, vuePath: resolveVuePackagePath() };
+  return { corsaPath, corsaGate, vuePath: resolveVuePackagePath() };
 }
 
 export const documentUri = (workspace: string, index: number): string =>

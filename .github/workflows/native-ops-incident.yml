@@ -1,0 +1,155 @@
+name: Native operational incident trace
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/scripts/native-ops-driver.ts
+      - .github/scripts/native-ops-data.ts
+      - .github/workflows/native-ops-incident.yml
+      - tests/tooling/native-ops-workflow.test.ts
+  workflow_dispatch:
+    inputs:
+      authorization:
+        description: Root-reviewed one replay only; never product qualification.
+        type: choice
+        required: true
+        default: not-authorized
+        options: [not-authorized, reviewed-one-replay]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-ops-710-original-once
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  observer-control:
+    if: ${{ github.event_name == 'pull_request' }}
+    name: Short-lived native observer control only
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: "24.14.0"
+      - name: Install debugger for synthetic-only hosted controls
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --no-upgrade gdb
+      - name: Require and record synthetic diagnostic tools
+        run: |
+          command -v gdb
+          command -v cc
+          mkdir -p "$RUNNER_TEMP/native-ops-pr-private"
+          gdb --version > "$RUNNER_TEMP/native-ops-pr-private/gdb-version.txt"
+          cc --version > "$RUNNER_TEMP/native-ops-pr-private/cc-version.txt"
+          dpkg-query --show gdb libc6 > "$RUNNER_TEMP/native-ops-pr-private/package-versions.txt"
+      - name: Validate actual fork, exec, thread and signal propagation
+        run: node .github/scripts/native-ops-driver.ts control "$RUNNER_TEMP/native-ops-pr-private"
+      - name: Seal public control projection independently
+        id: public-control
+        if: always()
+        run: node .github/scripts/native-ops-driver.ts publish "$RUNNER_TEMP/native-ops-pr-private" "$RUNNER_TEMP/native-ops-pr-public"
+      - name: Preserve sealed control-only observations
+        if: ${{ always() && steps.public-control.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-ops-control-only-${{ github.run_id }}
+          path: ${{ runner.temp }}/native-ops-pr-public/
+          if-no-files-found: error
+
+  forensic-only:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.authorization == 'reviewed-one-replay' && github.run_attempt == 1 }}
+    name: Unchanged 710 builders with event-stop observation
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      CARGO_BUILD_JOBS: "12"
+      VIZE_JS_PACKAGE_GROUP: builders
+    steps:
+      - name: Check out the reviewed observer orchestration
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - name: Preserve reviewed helpers outside the tested source checkout
+        run: |
+          mkdir "$RUNNER_TEMP/native-ops-harness"
+          cp .github/scripts/native-ops-driver.ts .github/scripts/native-ops-data.ts "$RUNNER_TEMP/native-ops-harness/"
+          sha256sum "$RUNNER_TEMP/native-ops-harness/"*.ts
+      - name: Check out the exact original failing source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: 710dfca619c82d76078a72ee64629632c798dea5
+          persist-credentials: false
+      - name: Verify source and record read-only runner context
+        run: |
+          test "$(git rev-parse HEAD)" = 710dfca619c82d76078a72ee64629632c798dea5
+          mkdir "$RUNNER_TEMP/native-ops-private"
+          uname -a > "$RUNNER_TEMP/native-ops-private/uname.txt"
+          cat /proc/self/limits > "$RUNNER_TEMP/native-ops-private/initial-limits.txt"
+          cat /proc/cpuinfo > "$RUNNER_TEMP/native-ops-private/cpuinfo.txt"
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
+        with:
+          # Matches the actual old VP image, not a product dependency change.
+          version: 1.4.0
+          node-version-file: package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: test-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install the unchanged original JS package group dependencies
+        run: node tools/support/compat/github/install-js-checks.ts "$VIZE_JS_PACKAGE_GROUP"
+      - name: Require existing diagnostic tools without changing runtime packages
+        run: |
+          command -v gdb
+          command -v cc
+          gdb --version > "$RUNNER_TEMP/native-ops-private/gdb-version.txt"
+          cc --version > "$RUNNER_TEMP/native-ops-private/control-cc-version.txt"
+      - name: Prove short fork, exec, thread and original signal propagation
+        run: node "$RUNNER_TEMP/native-ops-harness/native-ops-driver.ts" control "$RUNNER_TEMP/native-ops-private/control"
+      - name: Run the original source command once
+        run: |
+          node "$RUNNER_TEMP/native-ops-harness/native-ops-driver.ts" original \
+            "$RUNNER_TEMP/native-ops-private/original" \
+            "$RUNNER_TEMP/native-ops-private/control/control-complete.json"
+      - name: Seal a public projection independently of the tracing process
+        id: public-forensic
+        if: always()
+        run: |
+          node "$RUNNER_TEMP/native-ops-harness/native-ops-driver.ts" publish \
+            "$RUNNER_TEMP/native-ops-private" "$RUNNER_TEMP/native-ops-public" \
+            "$RUNNER_TEMP/js-native-fault-evidence-*" \
+            "npm/native/.artifacts/native/formatter-history" \
+            "target/template-style-fixes-7905.json" \
+            "target/oxlint-original-locations-7904.json" \
+            "target/oxlint-original-project-checks-7903.json" \
+            "target/oxlint-script-safe-carrier-7903.json" \
+            "target/oxlint-original-html-binding-7903" \
+            "target/vize-tests/original-sfc-host-7004-7005-*"
+      - name: Preserve only sealed public forensic projections
+        if: ${{ always() && steps.public-forensic.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-ops-forensic-only-710-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/native-ops-public/
+          if-no-files-found: error
+          retention-days: 14

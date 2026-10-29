@@ -27,6 +27,7 @@ import { createNuxtModuleResolver } from "./resolver";
 import { mergePlainRecords } from "./module-records";
 import { setupNuxtViteCompiler } from "./vite-compiler";
 import { setupVizeLibraries } from "./libraries";
+import { registerNuxtContentMapper } from "./content-mapper";
 import {
   buildNuxtDevAssetBase,
   isVizeGeneratedVueModuleId,
@@ -79,7 +80,6 @@ type NuxtWithBuilderOptions = {
   };
 };
 type VizeNuxtModuleContext = { nuxt?: NuxtWithBuilderOptions };
-
 const moduleMeta = { name: "@vizejs/nuxt", configKey: "vize" } as const;
 
 const moduleDefaults = {
@@ -240,6 +240,7 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
   const lintGeneration = await setupNuxtLint(options, nuxt, raw);
   const resolver = createNuxtModuleResolver(nuxt.options.rootDir);
   const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
+  registerNuxtContentMapper(nuxt, detectedNuxtMajor);
   const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
   const nuxtWithBuilderOptions = nuxt as NuxtWithBuilderOptions;
   const supportsViteCompiler = hasNuxtViteCompilerSupport(nuxtWithBuilderOptions);
@@ -249,7 +250,6 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
   const devOptions = resolveNuxtDevOptions(options.dev);
   const museaOptions = detectedNuxtMajor === 2 ? false : resolveNuxtMuseaOptions(options.musea);
   const unocssOptions = resolveNuxtUnoCssOptions(options.unocss);
-
   if (museaOptions !== false) nuxt.hook("components:dirs", appendMuseaArtComponentIgnore);
 
   await setupVizeLibraries(
