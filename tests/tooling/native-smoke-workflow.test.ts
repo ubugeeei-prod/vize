@@ -9,6 +9,7 @@ import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 import { parse as parseToml } from "@iarna/toml";
 import { runCiBuild } from "../../npm/native/scripts/build-ci.mjs";
+import { admitBabelSmokeInventory } from "./support/native-smoke-babel-inventory.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -117,6 +118,7 @@ const originalSetup =
   "        if: matrix.target != 'darwin-x64'\n";
 
 function authenticateWorkflow(source: string) {
+  source = admitBabelSmokeInventory(source);
   for (const anchor of [nodeLaws, msvcArch]) assert.equal(source.split(anchor).length, 2);
   assert.doesNotMatch(source, /setup-moonbit|moon (?:run|test)/u);
   const reversed = source.replace(nodeLaws, moonLaws).replace(msvcArch, msvcArch + originalSetup);
