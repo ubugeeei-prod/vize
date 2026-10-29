@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
+import { assertPreservedFormatterCase } from "./formatter-dialect-promotion.ts";
 
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const DIRECTORY = "tests/_fixtures/differential/formatter-regressions/sole-child-width-7876";
@@ -35,9 +36,8 @@ export function assertClosedFormatterManifest(root) {
   // New issue fixtures join the sorted active registry without rebasing history.
   assert.deepEqual(liveBytes, Buffer.from(`${JSON.stringify(liveManifest, null, 2)}\n`));
   const live = new Map(liveManifest.cases.map((row) => [row.id, row]));
-  for (const original of originalManifest.cases) {
-    assert.deepEqual(live.get(original.id), original, "original formatter cases changed");
-  }
+  for (const original of originalManifest.cases)
+    assertPreservedFormatterCase(live.get(original.id), original);
   assert.deepEqual(
     { ...liveManifest, cases: [] },
     { ...originalManifest, cases: [] },

@@ -6774,9 +6774,17 @@
         }
       ],
       "dialectCoverage": {
-        "state": "unknown",
+        "state": "source-inspected",
         "registryRef": null,
-        "evidence": []
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
       }
     },
     {
