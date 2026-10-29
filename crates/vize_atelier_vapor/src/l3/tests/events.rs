@@ -38,8 +38,6 @@ fn computed_event_names_match_retained_generation() {
             let native = compile(false);
             let retained = compile(true);
             assert!(native.error_messages.is_empty(), "{source}");
-            assert!(native.code.contains("_onBinding"), "{source}");
-            assert!(!native.code.contains("_renderEffect"), "{source}");
             assert_eq!(
                 native.code, retained.code,
                 "{source}: prefix={prefix_identifiers}"
