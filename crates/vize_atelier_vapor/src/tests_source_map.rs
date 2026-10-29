@@ -256,4 +256,12 @@ fn once_event_handlers_keep_authored_mapping_units() {
         insta::assert_snapshot!(format!("once_event_{case}_code"), code);
         insta::assert_debug_snapshot!(format!("once_event_{case}_map"), segments);
     }
+
+    let source = r#"<button v-once @[eventName]="record(label)">{{ label }}</button>"#;
+    let selected = mapped_on(source, Lane::Selected);
+    assert_eq!(
+        selected,
+        mapped_on(source, Lane::Legacy),
+        "computed once event: code and every decoded segment"
+    );
 }

@@ -38,6 +38,8 @@ fn computed_event_names_match_retained_generation() {
             let native = compile(false);
             let retained = compile(true);
             assert!(native.error_messages.is_empty(), "{source}");
+            assert!(native.code.contains("_onBinding"), "{source}");
+            assert!(!native.code.contains("_renderEffect"), "{source}");
             assert_eq!(
                 native.code, retained.code,
                 "{source}: prefix={prefix_identifiers}"
@@ -83,11 +85,37 @@ fn computed_component_modifiers_are_admitted() {
 }
 
 #[test]
-fn computed_once_element_events_remain_explicitly_unsupported() {
-    let source = r#"<button v-once @[name]="save">go</button>"#;
-    let allocator = Allocator::new();
-    assert!(matches!(
-        lower_source_for_vapor(&allocator, source, options()),
-        VaporL3BridgeStatus::Legacy(_)
-    ));
+fn computed_once_element_events_are_admitted() {
+    for source in [
+        r#"<button v-once @[name]="save">go</button>"#,
+        r#"<main v-once><button @[name].once.capture="save">go</button></main>"#,
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporL3BridgeStatus::Accepted(_)),
+            "{source}: {status:?}"
+        );
+        for prefix_identifiers in [false, true] {
+            let compile = |davinci_retained_lane| {
+                compile_vapor(
+                    &allocator,
+                    source,
+                    VaporCompilerOptions {
+                        prefix_identifiers,
+                        davinci_retained_lane,
+                        ..Default::default()
+                    },
+                )
+            };
+            let native = compile(false);
+            let retained = compile(true);
+            assert!(native.error_messages.is_empty(), "{source}");
+            assert_eq!(
+                native.code, retained.code,
+                "{source}: prefix={prefix_identifiers}"
+            );
+            assert_eq!(native.templates, retained.templates, "{source}");
+        }
+    }
 }
