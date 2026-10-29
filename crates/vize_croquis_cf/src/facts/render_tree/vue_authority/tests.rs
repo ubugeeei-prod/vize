@@ -20,6 +20,23 @@ fn literal_vue_alias_to_a_local_file_is_not_package_authority() {
 }
 
 #[test]
+fn alias_array_keeps_find_and_replacement_in_the_same_entry() {
+    for vite in [
+        r#"export default { resolve: { alias: [{ find: "@", replacement: "/src" }, { "find": "vue", "replacement": "vue" }] } };"#,
+        r#"export default { resolve: { alias: [{ 'find': 'vue', 'replacement': 'vue' }, { find: "@", replacement: "/src" }] } };"#,
+    ] {
+        assert!(!alias_config_redirects_vue(vite));
+    }
+
+    for vite in [
+        r#"export default { resolve: { alias: [{ find: "x", replacement: "node_modules/vue" }, { find: "vue", replacement: "./fake-vue.ts" }] } };"#,
+        r#"export default { resolve: { alias: [{ find: "vue", replacement: "./fake-vue.ts" }, { find: "x", replacement: "node_modules/vue" }] } };"#,
+    ] {
+        assert!(alias_config_redirects_vue(vite));
+    }
+}
+
+#[test]
 fn tsconfig_and_vite_files_redirect_only_the_vue_specifier() {
     let root = std::env::temp_dir().join(vize_carton::cstr!(
         "vize-vue-authority-{}",

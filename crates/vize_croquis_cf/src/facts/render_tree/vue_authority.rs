@@ -224,40 +224,113 @@ fn array_redirects_vue(array: &str) -> bool {
     let Some(body) = balanced_body(array, '[', ']') else {
         return false;
     };
-    for key in ["find", "\"find\"", "'find'"] {
-        let mut rest = body;
-        while let Some(found) = rest.find(key) {
-            let end = found + key.len();
-            if !ident_boundary(rest, found, end) && !key.starts_with(['"', '\'']) {
-                rest = tail(rest, end);
-                continue;
-            }
-            let after = tail(rest, end).trim_start();
-            let Some(value) = after.strip_prefix(':').map(str::trim_start) else {
-                rest = tail(rest, end);
-                continue;
-            };
-            if value.starts_with("\"vue\"")
-                || value.starts_with("'vue'")
-                || value.starts_with("`vue`")
-            {
-                return replacement_is_redirect(rest);
-            }
-            rest = tail(rest, end);
+    let mut rest = body;
+    while let Some(start) = top_level_object_start(rest) {
+        let entry_source = tail(rest, start);
+        let Some(entry) = balanced_body(entry_source, '{', '}') else {
+            return false;
+        };
+        if entry_finds_vue(entry) && replacement_is_redirect(entry) {
+            return true;
         }
+        rest = tail(entry_source, entry.len() + 2);
     }
     false
 }
 
+fn top_level_object_start(text: &str) -> Option<usize> {
+    let mut depth = 0u32;
+    let mut index = 0;
+    while index < text.len() {
+        let current = tail(text, index);
+        if let Some(comment) = comment_len(current) {
+            index += comment;
+            continue;
+        }
+        let ch = current.chars().next().unwrap_or('\0');
+        if ch == '"' || ch == '\'' || ch == '`' {
+            index += skip_string(current)?;
+            continue;
+        }
+        if ch == '{' && depth == 0 {
+            return Some(index);
+        }
+        if ch == '[' || ch == '(' {
+            depth += 1;
+        } else if ch == ']' || ch == ')' {
+            depth = depth.saturating_sub(1);
+        }
+        index += ch.len_utf8();
+    }
+    None
+}
+
+fn entry_finds_vue(entry: &str) -> bool {
+    entry_property_value(entry, "find")
+        .and_then(quoted_literal)
+        .is_some_and(|value| value == "vue")
+}
+
 fn replacement_is_redirect(entry: &str) -> bool {
-    let Some(found) = entry.find("replacement") else {
-        return true;
-    };
-    let after = tail(entry, found + "replacement".len()).trim_start();
-    let Some(value) = after.strip_prefix(':').map(str::trim_start) else {
+    let Some(value) = entry_property_value(entry, "replacement") else {
         return true;
     };
     !value_text_is_vue_package(value)
+}
+
+fn entry_property_value<'a>(entry: &'a str, property: &str) -> Option<&'a str> {
+    let mut depth = 0u32;
+    let mut index = 0;
+    let mut found = None;
+    while index < entry.len() {
+        let current = tail(entry, index);
+        if let Some(comment) = comment_len(current) {
+            index += comment;
+            continue;
+        }
+        let ch = current.chars().next().unwrap_or('\0');
+        if ch == '"' || ch == '\'' || ch == '`' {
+            let literal = skip_string(current)?;
+            if depth == 0
+                && middle(current, 1, literal - 1) == property
+                && let Some(value) = tail(current, literal)
+                    .trim_start()
+                    .strip_prefix(':')
+                    .map(str::trim_start)
+            {
+                found = Some(value);
+            }
+            index += literal;
+            continue;
+        }
+        if ch == '{' || ch == '[' || ch == '(' {
+            depth += 1;
+        } else if ch == '}' || ch == ']' || ch == ')' {
+            depth = depth.saturating_sub(1);
+        } else if depth == 0 && is_ident_char(ch) {
+            let ident = ident_at(current);
+            if ident == property
+                && let Some(value) = tail(current, ident.len())
+                    .trim_start()
+                    .strip_prefix(':')
+                    .map(str::trim_start)
+            {
+                found = Some(value);
+            }
+            index += ident.len();
+            continue;
+        }
+        index += ch.len_utf8();
+    }
+    found
+}
+
+fn comment_len(text: &str) -> Option<usize> {
+    if text.starts_with("//") {
+        return Some(text.find(['\r', '\n']).unwrap_or(text.len()));
+    }
+    text.strip_prefix("/*")
+        .map(|body| body.find("*/").map_or(text.len(), |end| end + 4))
 }
 
 fn value_text_is_vue_package(value: &str) -> bool {
