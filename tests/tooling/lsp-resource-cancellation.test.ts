@@ -10,13 +10,16 @@ import {
   auditCancellationPublications,
   cancellationBatch,
   cancellationCycles,
+  corsaHoverParams,
   diagnosticRecoveryLifecycle,
   recordCancellationPublications,
   sourceSha256,
   summarizeCancellationDurations,
 } from "../../tools/support/compat/davinci/lib/lsp-resource-cancellation.ts";
 import {
+  canonicalPublicStatePosition,
   gateCleanupStatus,
+  identifierAtLspPosition,
   nativeFrameEvidence,
   resourceCorsaGateScript,
 } from "../../tools/support/compat/davinci/lib/lsp-resource-corsa-gate.ts";
@@ -27,7 +30,6 @@ import {
   updateCancellationPublicationProgress,
   type AllocationProfileLink,
 } from "../../tools/support/compat/davinci/lib/lsp-resource-cancellation-run.ts";
-import { corsaHoverParams } from "../../tools/support/compat/davinci/lib/lsp-resource-witness.ts";
 import {
   componentSource,
   documentUri,
@@ -83,6 +85,22 @@ test("native gate evidence preserves the complete response frame", () => {
     message,
   });
   assert.throws(() => nativeFrameEvidence(frame.subarray(0, -1)), /body must be complete/);
+});
+
+test("native gate maps canonical UTF-16 coordinates to the selected identifier", () => {
+  const source = "const before = 1\r\nconst exposed = peer.value?.publicState\r\n";
+  const character = source.split("\r\n")[1].indexOf("publicState") + 3;
+  assert.equal(identifierAtLspPosition(source, 1, character), "publicState");
+  assert.deepEqual(canonicalPublicStatePosition(source), {
+    line: 1,
+    character: source.split("\r\n")[1].indexOf("publicState") + 2,
+  });
+  assert.throws(
+    () => canonicalPublicStatePosition(`${source}peer.value?.publicState`),
+    /one unique publicState access/,
+  );
+  assert.throws(() => identifierAtLspPosition(source, 3, 0), /line must exist/);
+  assert.throws(() => identifierAtLspPosition(source, 1, 999), /character must fit/);
 });
 
 test("generated repeatable Corsa gate is valid CommonJS", () => {

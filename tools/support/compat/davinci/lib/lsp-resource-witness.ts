@@ -16,6 +16,7 @@ import type { JsonRecord } from "../../../json-value.ts";
 import {
   cancellationCycles,
   cancellationBatch,
+  corsaHoverParams,
   diagnosticRecoveryLifecycle,
   isCancellationPublication as isPublication,
   sourceSha256,
@@ -86,6 +87,7 @@ type CancellationSample = CancellationFrameReceipt & {
   admission: NativeAdmissionReceipt;
   gate_release: Awaited<ReturnType<ResourceCorsaGate["waitReleased"]>>;
   outer_method: "textDocument/hover";
+  outer_params: ReturnType<typeof corsaHoverParams>;
   outer_request_started_ns: string;
   outer_request_write_returned_ns: string;
   batch_write_started_ns: string;
@@ -105,18 +107,6 @@ const peerHoverParams = (workspace: string) => {
   return {
     textDocument: { uri },
     position: offsetToPosition(source, source.indexOf("\nPeer\n") + 2),
-  };
-};
-
-/** Select a script property whose type answer is owned by the live Corsa backend. */
-export const corsaHoverParams = (workspace: string) => {
-  const uri = documentUri(workspace, 1);
-  const source = componentSource(1);
-  const access = source.indexOf("peer.value?.publicState");
-  assert.ok(access >= 0, "the Corsa hover fixture must retain its exposed property access");
-  return {
-    textDocument: { uri },
-    position: offsetToPosition(source, access + "peer.value?.".length + 2),
   };
 };
 
@@ -196,11 +186,7 @@ export async function cancelledConcurrentEdits(
         assert.ok(rawRequestId > 0 && rawResponse, "outer hover metadata must precede its write");
         admission = await gate.waitEntered(cycle);
         assert.equal(admission.request.method, "textDocument/hover");
-        assert.deepEqual(
-          admission.request.message.params,
-          hoverParams,
-          "the held native request must be the backend-owned authored property hover",
-        );
+        assert.equal(admission.canonical_document.identifier, "publicState");
         assert.equal(admission.response.id, admission.request.id);
 
         const source = cycle % 2 === 0 ? cleanSource : brokenSource;
@@ -235,6 +221,7 @@ export async function cancelledConcurrentEdits(
           ...batch.receipt,
           admission,
           outer_method: "textDocument/hover",
+          outer_params: hoverParams,
           outer_request_started_ns: attempt.request_started_ns,
           outer_request_write_returned_ns: attempt.request_write_returned_ns,
           batch_write_started_ns: batchWriteStarted.toString(),
@@ -294,7 +281,7 @@ export async function cancelledConcurrentEdits(
 
   return {
     transport:
-      "each backend-owned publicState outer hover is admitted through an actual held Corsa response before $/cancelRequest and full-document didChange share one LspSession stdin.write",
+      "each authored publicState hover is admitted through an actual held Corsa response whose raw canonical URI/position maps to publicState in the retained virtual source clone before $/cancelRequest and full-document didChange share one LspSession stdin.write",
     initial_version: initialVersion,
     final_version: version,
     final_source_sha256: sourceSha256(cleanSource),

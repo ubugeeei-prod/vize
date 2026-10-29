@@ -12,6 +12,7 @@ on:
       - "tools/support/compat/davinci/lib/lsp-resource-cancellation.ts"
       - "tools/support/compat/davinci/lib/lsp-resource-cancellation-run.ts"
       - "tools/support/compat/davinci/lib/lsp-resource-corsa-gate.ts"
+      - "tools/support/compat/davinci/lib/lsp-resource-corsa-proxy.ts"
       - "tools/support/compat/davinci/lib/lsp-resource-corpus.ts"
       - "tools/support/compat/davinci/lib/lsp-resource-finalize.ts"
       - "tools/support/compat/davinci/lib/lsp-resource-witness.ts"

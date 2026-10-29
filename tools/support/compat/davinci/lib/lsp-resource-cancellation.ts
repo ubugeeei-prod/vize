@@ -5,8 +5,9 @@ import type {
   PublishDiagnosticsParams,
 } from "../../../../../tests/tooling/support/lsp/protocol.ts";
 import type { LspSession } from "../../../../../tests/tooling/support/lsp/session.ts";
+import { offsetToPosition } from "../../../../../tests/tooling/support/lsp/assertions.ts";
 import { isRecord } from "../../../json-value.ts";
-import { documentUri } from "./lsp-resource-workspace.ts";
+import { componentSource, documentUri } from "./lsp-resource-workspace.ts";
 
 export const cancellationCycles = 40;
 
@@ -47,6 +48,18 @@ export type CancellationDurationStats = {
 
 export const sourceSha256 = (source: string): string =>
   createHash("sha256").update(source).digest("hex");
+
+/** Select a script property whose type answer is owned by the live Corsa backend. */
+export const corsaHoverParams = (workspace: string) => {
+  const uri = documentUri(workspace, 1);
+  const source = componentSource(1);
+  const access = source.indexOf("peer.value?.publicState");
+  assert.ok(access >= 0, "the Corsa hover fixture must retain its exposed property access");
+  return {
+    textDocument: { uri },
+    position: offsetToPosition(source, access + "peer.value?.".length + 2),
+  };
+};
 
 export function isCancellationPublication(
   value: unknown,

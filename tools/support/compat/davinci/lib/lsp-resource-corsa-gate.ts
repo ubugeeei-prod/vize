@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import type { JsonRpcMessage } from "../../../../../tests/tooling/support/lsp/protocol.ts";
+import { resourceCorsaProxySource } from "./lsp-resource-corsa-proxy.ts";
 
 export type ResourceCorsaGatePaths = {
   root: string;
@@ -26,6 +27,21 @@ export type NativeFrameEvidence = {
   message: JsonRpcMessage;
 };
 
+export type CanonicalHoverDocumentEvidence = {
+  uri: string;
+  version: number | null;
+  position: { line: number; character: number };
+  identifier: "publicState";
+  mapping: {
+    unique_access: "peer.value?.publicState";
+    identifier_utf16_offset: 2;
+    exact_position_match: true;
+  };
+  source_bytes: number;
+  source_sha256: string;
+  source_utf8_base64: string;
+};
+
 export type NativeAdmissionReceipt = {
   token: number;
   proxy_entered_ns: string;
@@ -34,6 +50,7 @@ export type NativeAdmissionReceipt = {
   proxy_path: string;
   proxy_process: GateProcessIdentity;
   native_process: GateProcessIdentity;
+  canonical_document: CanonicalHoverDocumentEvidence;
   request: NativeFrameEvidence & { method: "textDocument/hover"; id: number };
   response: NativeFrameEvidence & { id: number };
 };
@@ -68,155 +85,39 @@ export function gateCleanupStatus(
   };
 }
 
-const proxySource = String.raw`
-const fs = require("node:fs");
-const path = require("node:path");
-const { spawn } = require("node:child_process");
-const gate = JSON.parse(fs.readFileSync(path.join(__dirname, "gate.json"), "utf8"));
-const args = process.argv.slice(2);
-const framed = args.includes("--lsp");
-
-function procIdentity(role, pid) {
-  const stat = fs.readFileSync("/proc/" + pid + "/stat", "utf8");
-  const fields = stat.slice(stat.lastIndexOf(") ") + 2).trim().split(/\s+/);
-  return {
-    role,
-    transport: framed ? "lsp" : "other",
-    pid,
-    birth_ticks: Number(fields[19]),
-    executable: fs.realpathSync("/proc/" + pid + "/exe"),
-  };
+/** Resolve a UTF-16 LSP position against the exact mirrored source clone. */
+export function identifierAtLspPosition(source: string, line: number, character: number): string {
+  assert.ok(Number.isSafeInteger(line) && line >= 0, "a valid LSP line is required");
+  assert.ok(Number.isSafeInteger(character) && character >= 0, "a valid LSP character is required");
+  const lines = source.split(/\r\n|\n|\r/);
+  const selected = lines[line];
+  assert.ok(selected !== undefined, "the LSP line must exist in the mirrored source");
+  assert.ok(character <= selected.length, "the LSP character must fit the mirrored source line");
+  let start = character;
+  let end = character;
+  while (start > 0 && /[$\w]/u.test(selected[start - 1])) start--;
+  while (end < selected.length && /[$\w]/u.test(selected[end])) end++;
+  return selected.slice(start, end);
 }
 
-function recordProcess(identity) {
-  fs.appendFileSync(path.join(gate.root, "processes.jsonl"), JSON.stringify(identity) + "\n");
+/** Compute the one canonical coordinate corresponding to the authored hover offset. */
+export function canonicalPublicStatePosition(source: string): { line: number; character: number } {
+  const access = "peer.value?.publicState";
+  const first = source.indexOf(access);
+  assert.ok(first >= 0, "the canonical source must retain the publicState access");
+  assert.equal(
+    source.indexOf(access, first + 1),
+    -1,
+    "the canonical source must retain one unique publicState access",
+  );
+  const selected = first + "peer.value?.".length + 2;
+  const prefixLines = source.slice(0, selected).split(/\r\n|\n|\r/);
+  return { line: prefixLines.length - 1, character: prefixLines.at(-1)?.length ?? 0 };
 }
-
-recordProcess(procIdentity("proxy", process.pid));
-const child = spawn(gate.runtime, args, { stdio: framed ? ["pipe", "pipe", "inherit"] : "inherit" });
-child.once("spawn", () => recordProcess(procIdentity("native", child.pid)));
-child.on("error", (error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
-child.on("exit", (code, signal) => {
-  fs.appendFileSync(path.join(gate.root, "native-exits.jsonl"), JSON.stringify({ code, signal }) + "\n");
-  if (signal) {
-    process.removeAllListeners(signal);
-    process.kill(process.pid, signal);
-  }
-  else process.exitCode = code;
-});
-for (const signal of ["SIGTERM", "SIGINT"]) {
-  process.on(signal, () => {
-    child.kill(signal);
-    process.exitCode = 1;
-  });
-}
-
-function parseFrames(consume) {
-  let buffered = Buffer.alloc(0);
-  return (chunk) => {
-    buffered = Buffer.concat([buffered, chunk]);
-    while (true) {
-      const boundary = buffered.indexOf("\r\n\r\n");
-      if (boundary < 0) return;
-      const match = /^Content-Length:\s*(\d+)$/im.exec(buffered.subarray(0, boundary).toString());
-      if (!match) throw new Error("native frame has no Content-Length");
-      const end = boundary + 4 + Number(match[1]);
-      if (buffered.length < end) return;
-      const frame = buffered.subarray(0, end);
-      const message = JSON.parse(buffered.subarray(boundary + 4, end).toString("utf8"));
-      buffered = buffered.subarray(end);
-      consume(frame, message);
-    }
-  };
-}
-
-function tokenDirectory(token) {
-  return path.join(gate.root, "tokens", String(token).padStart(2, "0"));
-}
-
-function armedToken() {
-  try {
-    const value = JSON.parse(fs.readFileSync(path.join(gate.root, "armed.json"), "utf8"));
-    if (!Number.isSafeInteger(value.token) || value.token <= 0) throw new Error("invalid gate token");
-    return value.token;
-  } catch (error) {
-    if (error && error.code === "ENOENT") return undefined;
-    throw error;
-  }
-}
-
-function writeFrame(frame) {
-  return new Promise((resolve, reject) => {
-    process.stdout.write(frame, (error) => error ? reject(error) : resolve());
-  });
-}
-
-async function awaitRelease(directory) {
-  const deadline = Date.now() + 120000;
-  while (!fs.existsSync(path.join(directory, "release"))) {
-    if (Date.now() >= deadline) throw new Error("resource native response gate was never released");
-    await new Promise((resolve) => setTimeout(resolve, 2));
-  }
-}
-
-if (framed) {
-  let selected;
-  let lastToken = 0;
-  process.stdin.on("data", parseFrames((frame, message) => {
-    if (message.method === "textDocument/hover" && selected === undefined) {
-      const token = armedToken();
-      if (token !== undefined && token > lastToken) {
-        const directory = tokenDirectory(token);
-        try {
-          fs.writeFileSync(path.join(directory, "claimed"), "", { flag: "wx" });
-          selected = { token, id: message.id, directory };
-          fs.writeFileSync(path.join(directory, "request.bin"), frame);
-          fs.writeFileSync(path.join(directory, "request.json"), JSON.stringify(message));
-        } catch (error) {
-          if (!error || error.code !== "EEXIST") throw error;
-        }
-      }
-    }
-    child.stdin.write(frame);
-  }));
-  process.stdin.on("end", () => child.stdin.end());
-  let output = Promise.resolve();
-  child.stdout.on("data", parseFrames((frame, message) => {
-    output = output.then(async () => {
-      if (selected !== undefined && message.id === selected.id) {
-        const held = selected;
-        fs.writeFileSync(path.join(held.directory, "response.bin"), frame);
-        fs.writeFileSync(path.join(held.directory, "response.json"), JSON.stringify(message));
-        fs.writeFileSync(
-          path.join(held.directory, "entered.json"),
-          JSON.stringify({ token: held.token, entered_ns: process.hrtime.bigint().toString() }),
-        );
-        await awaitRelease(held.directory);
-        await writeFrame(frame);
-        fs.writeFileSync(
-          path.join(held.directory, "released.json"),
-          JSON.stringify({ token: held.token, released_ns: process.hrtime.bigint().toString() }),
-        );
-        lastToken = held.token;
-        selected = undefined;
-        return;
-      }
-      await writeFrame(frame);
-    }).catch((error) => {
-      console.error(error);
-      child.kill("SIGTERM");
-      process.exitCode = 1;
-    });
-  }));
-}
-`;
 
 export const resourceCorsaGateScript = (nodePath = process.execPath): string => {
   assert.ok(nodePath.length > 0 && !nodePath.includes("\n"), "gate Node path must fit one shebang");
-  return `#!${nodePath}\n${proxySource}`;
+  return `#!${nodePath}\n${resourceCorsaProxySource}`;
 };
 
 const sha256 = (bytes: Buffer | string): string => createHash("sha256").update(bytes).digest("hex");
@@ -224,6 +125,72 @@ const sha256 = (bytes: Buffer | string): string => createHash("sha256").update(b
 const assertRecord = (value: unknown, message: string): Record<string, unknown> => {
   assert.ok(typeof value === "object" && value !== null && !Array.isArray(value), message);
   return value as Record<string, unknown>;
+};
+
+const canonicalHoverDocument = (
+  directory: string,
+  request: NativeFrameEvidence,
+): CanonicalHoverDocumentEvidence => {
+  const params = assertRecord(request.message.params, "native hover params must be an object");
+  const textDocument = assertRecord(params.textDocument, "native hover document is required");
+  const position = assertRecord(params.position, "native hover position is required");
+  if (typeof textDocument.uri !== "string") throw new TypeError("native hover URI is required");
+  const uri = textDocument.uri;
+  const line = Number(position.line);
+  const character = Number(position.character);
+  assert.ok(Number.isSafeInteger(line) && line >= 0, "native hover line must be valid");
+  assert.ok(
+    Number.isSafeInteger(character) && character >= 0,
+    "native hover character must be valid",
+  );
+  const metadata = assertRecord(
+    readJson(path.join(directory, "canonical.json")),
+    "canonical document receipt",
+  );
+  assert.equal(
+    metadata.opened_uri,
+    uri,
+    "native hover URI must exactly equal the independently observed canonical didOpen URI",
+  );
+  const version = metadata.version === null ? null : Number(metadata.version);
+  assert.ok(
+    version === null || (Number.isSafeInteger(version) && version >= 0),
+    "canonical document version must be null or non-negative",
+  );
+  const source = fs.readFileSync(path.join(directory, "canonical-source.bin"));
+  const sourceText = source.toString("utf8");
+  const expectedPosition = canonicalPublicStatePosition(sourceText);
+  assert.deepEqual(
+    { line, character },
+    expectedPosition,
+    "native hover must use the exact generated coordinate of the authored publicState offset",
+  );
+  const identifier = identifierAtLspPosition(sourceText, line, character);
+  assert.equal(
+    identifier,
+    "publicState",
+    "canonical native coordinates must map to the selected authored property",
+  );
+  const virtualPath = decodeURIComponent(new URL(uri).pathname);
+  assert.match(
+    virtualPath,
+    /\/src\/Component00001\.vue\.tsx?$/,
+    "native hover must use the expected canonical mirror identity",
+  );
+  return {
+    uri,
+    version,
+    position: { line, character },
+    identifier,
+    mapping: {
+      unique_access: "peer.value?.publicState",
+      identifier_utf16_offset: 2,
+      exact_position_match: true,
+    },
+    source_bytes: source.byteLength,
+    source_sha256: sha256(source),
+    source_utf8_base64: source.toString("base64"),
+  };
 };
 
 /** Decode one complete Content-Length frame without normalizing its bytes. */
@@ -402,6 +369,7 @@ export class ResourceCorsaGate {
       Object.hasOwn(response.message, "result") && response.message.error === undefined,
       "native hover must produce an actual successful response",
     );
+    const canonicalDocument = canonicalHoverDocument(directory, request);
     const identities = processRecords(this.paths.root);
     const live = identities.filter((identity) => sameIdentity(identity, currentIdentity(identity)));
     const proxies = live.filter(
@@ -423,6 +391,7 @@ export class ResourceCorsaGate {
       proxy_path: this.paths.proxyPath,
       proxy_process: proxy,
       native_process: native,
+      canonical_document: canonicalDocument,
       request: {
         ...request,
         method: "textDocument/hover",
