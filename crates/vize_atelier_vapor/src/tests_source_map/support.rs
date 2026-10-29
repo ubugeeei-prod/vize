@@ -189,7 +189,7 @@ pub(super) fn official_vapor_anchors(
     source: &str,
 ) -> std::vec::Vec<(std::string::String, i64, i64)> {
     let runner = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/tooling/support/davinci-upstream-vapor-map.mjs");
+        .join("../../tests/tooling/support/davinci-upstream-vapor-map.ts");
     let mut child = Command::new("node")
         .arg(runner)
         .stdin(Stdio::piped())
