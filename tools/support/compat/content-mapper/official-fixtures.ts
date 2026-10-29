@@ -38,6 +38,32 @@ export interface Fixture {
   controls: Case[];
 }
 
+export interface OfficialRuntimeAuthority {
+  typescript: string;
+  vue: string;
+}
+
+export function officialRuntimeAuthority(
+  value: Pick<Fixture, "typescript" | "vue">,
+): OfficialRuntimeAuthority {
+  assert.equal(value.typescript, "7.1.0-dev.20261017.1");
+  assert.equal(typeof value.vue, "string");
+  assert.match(value.vue, /^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$/u);
+  return { typescript: value.typescript, vue: value.vue };
+}
+
+export function assertOfficialRuntimeCustody(
+  expected: OfficialRuntimeAuthority,
+  sources: Record<string, Pick<Fixture, "typescript" | "vue">>,
+) {
+  for (const [name, source] of Object.entries(sources))
+    assert.deepEqual(
+      officialRuntimeAuthority(source),
+      expected,
+      `${name} must preserve the fixture runtime authority`,
+    );
+}
+
 /** Parse selectors without starting a package install or compiler process. */
 export function officialRunOptions(args: string[], root: string, defaultFixture: string) {
   const values = new Map<string, string>();
@@ -158,8 +184,7 @@ export function loadOfficialFixture(file: string, publishedSource?: string): Fix
       ? surplusDefaultsPublicFixture(value)
       : value
   ) as Fixture;
-  assert.equal(fixture.typescript, "7.1.0-dev.20261017.1");
-  assert.equal(fixture.vue, "3.5.20");
+  officialRuntimeAuthority(fixture);
   assert.match(fixture.baselineVize, /^\d+\.\d+\.\d+$/u);
   assert.ok(Array.isArray(fixture.originals) && fixture.originals.length > 0);
   assert.ok(Array.isArray(fixture.controls));

@@ -468,7 +468,7 @@ test("official TypeScript acceptance keeps the reported host and complete instal
     "official-css-options.ts",
   );
   assert.match(source, /"--runExternalCode"/u);
-  assert.match(source, /candidateIdentity\.nativeImage\.sha256/u);
+  assert.match(source, /observed\.nativeImage\.sha256/u);
   assert.match(source, /"--ignore-scripts"/u);
   assert.match(source, /refuse overwriting previous campaign evidence/u);
   assert.doesNotMatch(source, /CORSA_PATH\s*=|VIZE_LSP_BIN\s*=|\|\| true/u);
@@ -480,7 +480,15 @@ test("official mapper admission refuses an alternate executable or a nested nati
     for (const scenario of ["exec", "nested-native"]) {
       const directory = path.join(temporary, scenario);
       fs.mkdirSync(directory);
-      fs.writeFileSync(path.join(directory, "package.json"), "{}");
+      const runtime = { typescript: "7.1.0-dev.20261017.1", vue: "3.5.20" };
+      fs.writeFileSync(
+        path.join(directory, "package.json"),
+        JSON.stringify({ dependencies: runtime }),
+      );
+      fs.writeFileSync(
+        path.join(directory, "package-lock.json"),
+        JSON.stringify({ packages: { "": { dependencies: runtime } } }),
+      );
       const manifests = {
         typescript: { version: "7.1.0-dev.20261017.1" },
         vue: { version: "3.5.20" },
@@ -509,7 +517,7 @@ test("official mapper admission refuses an alternate executable or a nested nati
         fs.writeFileSync(path.join(nested, "index.js"), "");
       }
       await assert.rejects(
-        installedIdentity(directory, path.join(directory, "evidence")),
+        installedIdentity(directory, path.join(directory, "evidence"), runtime),
         scenario === "exec" ? /deep-equal/u : /CLI must resolve the candidate native wrapper/u,
       );
       assert.equal(fs.existsSync(path.join(directory, "evidence/native-load")), false);

@@ -7,8 +7,10 @@ import { test } from "node:test";
 import { gzipSync } from "node:zlib";
 import {
   assertOfficialDiagnostics,
+  assertOfficialRuntimeCustody,
   loadOfficialFixture,
   officialCases,
+  officialRuntimeAuthority,
   officialRunOptions,
   resolveOfficialNativeImage,
   officialActorInputs,
@@ -414,6 +416,7 @@ test("fixture admission rejects malformed exact fields, status downgrades and es
       return loadOfficialFixture(file);
     };
     assert.equal(load(fixture).originals.length, 1);
+    assert.equal(load({ ...fixture, vue: "3.5.43" }).vue, "3.5.43");
     for (const value of [
       { ...fixture, originals: [{ ...original, expectedStdout: null }] },
       { ...fixture, originals: [{ ...original, baselineStderr: [] }] },
@@ -424,9 +427,38 @@ test("fixture admission rejects malformed exact fields, status downgrades and es
       { ...fixture, controls: [{ ...row, status: 0 }] },
       { ...fixture, controls: [{ ...row, files: { ...files, "../escape.vue": "" } }] },
       { ...fixture, typescript: "7.1.0-dev.other" },
+      { ...fixture, vue: "^3.5.43" },
+      { ...fixture, vue: "3.5.43-beta.1" },
+      { ...fixture, vue: "03.5.43" },
     ])
       assert.throws(() => load(value));
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
+});
+
+test("runtime custody rejects request, lock and installed-version drift", () => {
+  const expected = officialRuntimeAuthority({
+    typescript: "7.1.0-dev.20261017.1",
+    vue: "3.5.43",
+  });
+  const exact = { ...expected };
+  assert.doesNotThrow(() =>
+    assertOfficialRuntimeCustody(expected, {
+      request: exact,
+      lock: exact,
+      installed: exact,
+    }),
+  );
+  for (const name of ["request", "lock", "installed"])
+    assert.throws(
+      () =>
+        assertOfficialRuntimeCustody(expected, {
+          request: exact,
+          lock: exact,
+          installed: exact,
+          [name]: { ...exact, vue: "3.5.20" },
+        }),
+      new RegExp(`${name} must preserve the fixture runtime authority`, "u"),
+    );
 });
