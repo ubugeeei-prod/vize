@@ -273,8 +273,8 @@ fn binding_metadata_in_module_mode_matches_the_shipped_dom_lane() {
 
 /// Exact spellings the dual-run above would also accept from a lane that
 /// ignored the table entirely if the shipped side regressed alongside it:
-/// the six-argument module signature, the `$setup.` read, the `$setup`
-/// component tag, the `$setup["vFocus"]` directive and the guarded
+/// the six-argument module signature, the `$setup.` read, the
+/// `$setup["Name"]` component tag, the `$setup["vFocus"]` directive and the guarded
 /// Options API handler.
 #[test]
 fn binding_metadata_spellings_are_pinned() {
@@ -303,6 +303,6 @@ fn binding_metadata_spellings_are_pinned() {
     );
     assert_eq!(
         emit(r#"<MyComp v-focus @click="method" />"#),
-        "import { withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _directive_focus = $setup[\"vFocus\"]\n  \n  return _withDirectives((_openBlock(), _createBlock($setup.MyComp, { onClick: (...args) => (_ctx.method && _ctx.method(...args)) }, null, 8 /* PROPS */, [\"onClick\"])), [\n    [_directive_focus]\n  ])\n}"
+        "import { withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _directive_focus = $setup[\"vFocus\"]\n  \n  return _withDirectives((_openBlock(), _createBlock($setup[\"MyComp\"], { onClick: (...args) => (_ctx.method && _ctx.method(...args)) }, null, 8 /* PROPS */, [\"onClick\"])), [\n    [_directive_focus]\n  ])\n}"
     );
 }

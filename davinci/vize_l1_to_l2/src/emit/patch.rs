@@ -14,7 +14,7 @@ mod tests;
 use alloc::vec::Vec as StdVec;
 use vize_l0::id::NodeId;
 use vize_l0::{Span, String};
-use vize_l2::op::{Attribute, BindingOp, OnOp};
+use vize_l2::op::{Attribute, BindOp, BindingOp, OnOp};
 use vize_l3::lattice::{
     BindingFact, BindingId, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind,
     ReactivityClass, Verdict, evaluate_binding,
@@ -43,7 +43,7 @@ impl super::EmitCx<'_> {
         if_key: Option<&str>,
         for_item: bool,
     ) -> PatchFacts {
-        let facts = binding_patch_facts(
+        let mut facts = binding_patch_facts(
             bindings,
             is_component,
             if_key,
@@ -64,7 +64,69 @@ impl super::EmitCx<'_> {
             &|on| super::on::caches_owned_handler(self, on, is_component),
             self.caches_handlers(),
         );
+        self.strip_non_inline_literal_const_props(bindings, &mut facts);
         self.patch_facts.materialize(owner, facts)
+    }
+
+    /// Drop patch work for a non-inline `literal-const` identifier prop.
+    ///
+    /// The value is still the authored name here (`msg`, later `$setup.msg`).
+    /// Inline mode and slot / `v-for` shadows stay dynamic so this lane
+    /// matches codegen, which only sees `$setup.<ident>` after rewriting.
+    /// `:ref` keeps `NEED_PATCH`. `.prop` keeps `NEED_HYDRATION`.
+    fn strip_non_inline_literal_const_props(
+        &self,
+        bindings: &[BindingOp<'_>],
+        facts: &mut PatchFacts,
+    ) {
+        if self.scope.inline() {
+            return;
+        }
+        let mut removed_prop = false;
+        for binding in bindings {
+            let BindingOp::Bind(bind) = binding else {
+                continue;
+            };
+            if !self.literal_const_identifier(bind) {
+                continue;
+            }
+            let Ok(BindName::Static(raw_name)) = bind_name(bind) else {
+                continue;
+            };
+            match raw_name {
+                "key" | "ref" => {}
+                name if name.ends_with("Modifiers") => {}
+                "class" => {
+                    facts.flag &= !2;
+                    removed_prop |= drop_static_dynamic_prop(bind, facts);
+                }
+                "style" => {
+                    facts.flag &= !4;
+                    removed_prop |= drop_static_dynamic_prop(bind, facts);
+                }
+                _ => removed_prop |= drop_static_dynamic_prop(bind, facts),
+            }
+        }
+        if removed_prop && facts.dynamic_props.is_empty() {
+            facts.flag &= !8;
+        }
+    }
+
+    fn literal_const_identifier(&self, bind: &BindOp<'_>) -> bool {
+        let Ok(value) = super::props::bind_value(bind) else {
+            return false;
+        };
+        let Some(js) = value.js() else {
+            return false;
+        };
+        let name = js.source.trim();
+        if !vize_l0::is_simple_identifier(name)
+            || self.scope.is_slot_param(name)
+            || self.scope.binds_in_pattern(name)
+        {
+            return false;
+        }
+        self.scope.bindings().and_then(|table| table.kind(name)) == Some(BindingKind::LiteralConst)
     }
 
     fn reads_lattice_static_patch_binding_name(&self, name: &str) -> bool {
@@ -73,6 +135,17 @@ impl super::EmitCx<'_> {
             .and_then(|table| table.kind(name))
             .is_some_and(handler_static_patch_binding)
     }
+}
+
+fn drop_static_dynamic_prop(bind: &BindOp<'_>, facts: &mut PatchFacts) -> bool {
+    let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
+        return false;
+    };
+    let before = facts.dynamic_props.len();
+    facts
+        .dynamic_props
+        .retain(|name| name.as_str() != key.as_str());
+    facts.dynamic_props.len() != before
 }
 
 #[expect(clippy::too_many_arguments, reason = "independent patch-flag inputs")]
