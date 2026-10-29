@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { loadProductManifest, sha256 } from "./harness.mjs";
 import { assessDeletionReadiness, deletionProducts, deletionTiers } from "./deletion-readiness.mjs";
-import { deletionReadinessAdapters } from "./deletion-readiness-adapters.mjs";
+import { deletionReadinessAdapters } from "./deletion-readiness-adapters.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const policyPath = path.join(root, "docs/davinci/plan/deletion-readiness-policy.json");

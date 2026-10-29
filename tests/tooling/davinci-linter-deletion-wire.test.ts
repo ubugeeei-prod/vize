@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { deletionReadinessAdapters } from "../differential/deletion-readiness-adapters.mjs";
+import { deletionReadinessAdapters } from "../differential/deletion-readiness-adapters.ts";
 
 void test("Matrix records the blocked preflight without registering linter deletion credit", () => {
   const workflow = parse(
