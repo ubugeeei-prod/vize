@@ -26,11 +26,19 @@
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/imported-component-before-prop.expected.json",
         "sha256": "600994e6a994599c266d81c8536343a16d1de82c5b6a773636bfd9ebc16a879a"
       },
+      "referenceHistory": [
+        {
+          "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/imported-component-before-prop.closed-setup-10923.expected.json",
+          "sha256": "0cb1a8fe8c462c494a2f60795d911809ce374098c70376f8a795a3475915f6ab",
+          "supersedesSha256": "600994e6a994599c266d81c8536343a16d1de82c5b6a773636bfd9ebc16a879a",
+          "issue": "https://github.com/ubugeeei-prod/vize/issues/10891"
+        }
+      ],
       "currentReference": {
-        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/imported-component-before-prop.closed-setup-10923.expected.json",
-        "sha256": "0cb1a8fe8c462c494a2f60795d911809ce374098c70376f8a795a3475915f6ab",
-        "supersedesSha256": "600994e6a994599c266d81c8536343a16d1de82c5b6a773636bfd9ebc16a879a",
-        "issue": "https://github.com/ubugeeei-prod/vize/issues/10891"
+        "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/imported-component-before-prop.setup-component-bracket-10877.expected.json",
+        "sha256": "1d9d5d6ce4d04e394efdf1e423d05b20157cce84f55113d25df5818bf46e00e1",
+        "supersedesSha256": "0cb1a8fe8c462c494a2f60795d911809ce374098c70376f8a795a3475915f6ab",
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/10877"
       },
       "historicalObservation": {
         "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/imported-component-before-prop.observation.json",
