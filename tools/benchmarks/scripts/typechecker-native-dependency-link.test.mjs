@@ -1,4 +1,4 @@
-/** Real checkout controls for the sole manual source dependency-link exception. */
+/** Real checkout controls for the manual source dependency-link exceptions. */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -20,6 +20,7 @@ import test from "node:test";
 import { captureSourceCustody } from "./typechecker-native-source-custody.mjs";
 
 const WORKFLOW = ".github/workflows/typechecker-native-phases.yml";
+const TEST_DEPENDENCIES = ["vue", "vue-component-type-helpers", "vue-ssr-css-vars-oracle"];
 const BRIDGES = [
   "Cargo.toml",
   "Cargo.lock",
@@ -85,6 +86,8 @@ function fixture(run) {
       options,
       modules: join(root, "node_modules"),
       link: join(sourceRoot, "node_modules"),
+      testModules: join(root, "tests/node_modules"),
+      testLink: join(sourceRoot, "tests/node_modules"),
     });
   } finally {
     rmSync(temporary, { recursive: true, force: true });
@@ -92,22 +95,52 @@ function fixture(run) {
 }
 function install(f) {
   put(f.modules, "locked-fixture.txt");
+  put(f.testModules, "locked-fixture.txt");
   symlinkSync(f.modules, f.link);
+  mkdirSync(dirname(f.testLink), { recursive: true });
+  symlinkSync(f.testModules, f.testLink);
 }
 function hide(f) {
   writeFileSync(join(f.root, ".git/info/exclude"), "node_modules\n");
 }
 
+await test("manual workflow links workspace-local test dependencies before qualification", () => {
+  const workflow = readFileSync(WORKFLOW, "utf8");
+  const rootLink = workflow.indexOf(
+    'ln -s "$GITHUB_WORKSPACE/node_modules" "$NATIVE_PHASE_SOURCE_ROOT/node_modules"',
+  );
+  const testLink = workflow.indexOf(
+    'ln -s "$GITHUB_WORKSPACE/tests/node_modules" "$NATIVE_PHASE_SOURCE_ROOT/tests/node_modules"',
+  );
+  const qualification = workflow.indexOf(
+    "Qualify declared template emits and config-scoped Vue helpers",
+  );
+  assert(rootLink > 0);
+  assert(testLink > rootLink);
+  assert(qualification > testLink);
+  assert(workflow.includes(`for dependency in ${TEST_DEPENDENCIES.join(" ")}; do`));
+  assert(workflow.includes("tests/node_modules/$dependency/package.json"));
+});
+
 await test("actual directory ignore exposes the link; valid installation changes only its custody", () => {
   fixture((f) => {
     const before = captureSourceCustody(f.options);
     assert.equal(before.sourceDependencyLink, null);
+    assert.equal(before.sourceTestDependencyLink, null);
     install(f);
-    assert.equal(untracked(f.sourceRoot), "node_modules\0");
+    assert.equal(untracked(f.sourceRoot), "node_modules\0tests/node_modules\0");
     const after = captureSourceCustody(f.options);
     assert.deepEqual(captureSourceCustody(f.options), after);
-    const { sourceDependencyLink: _beforeLink, ...beforeAuthority } = before;
-    const { sourceDependencyLink: link, ...afterAuthority } = after;
+    const {
+      sourceDependencyLink: _beforeLink,
+      sourceTestDependencyLink: _beforeTestLink,
+      ...beforeAuthority
+    } = before;
+    const {
+      sourceDependencyLink: link,
+      sourceTestDependencyLink: testLink,
+      ...afterAuthority
+    } = after;
     assert.deepEqual(beforeAuthority, afterAuthority);
     assert.equal(link.path, f.link);
     assert.equal(link.target, f.modules);
@@ -119,11 +152,16 @@ await test("actual directory ignore exposes the link; valid installation changes
     assert.equal(link.driverDirectory.ino, lstatSync(f.modules, { bigint: true }).ino.toString());
     assert.equal(lstatSync(f.modules).isDirectory(), true);
     assert.equal(lstatSync(f.modules).isSymbolicLink(), false);
+    assert.equal(testLink.path, f.testLink);
+    assert.equal(testLink.target, f.testModules);
+    assert.equal(testLink.canonicalTarget, realpathSync(f.testLink));
+    assert.equal(lstatSync(f.testModules).isDirectory(), true);
+    assert.equal(lstatSync(f.testModules).isSymbolicLink(), false);
     assert.equal(
       readFileSync(join(f.sourceRoot, ".gitignore"), "utf8"),
       "node_modules/\ntarget/\n",
     );
-    assert.equal(untracked(f.sourceRoot), "node_modules\0");
+    assert.equal(untracked(f.sourceRoot), "node_modules\0tests/node_modules\0");
   });
 });
 
@@ -133,6 +171,7 @@ await test("ignored valid link still receives a nonnull custody record", () => {
     hide(f);
     assert.equal(untracked(f.sourceRoot), "");
     assert.equal(captureSourceCustody(f.options).sourceDependencyLink.target, f.modules);
+    assert.equal(captureSourceCustody(f.options).sourceTestDependencyLink.target, f.testModules);
   });
 });
 
