@@ -437,7 +437,7 @@ fn indexed_scheduler_cost_carrier() {
     drop(pending);
     let payload_retention = payload_retention_evidence();
     let report = json!({
-        "source_base": "c9b5765af21160460b251bf9e42df42ff9b053d4",
+        "source_base": "b34edc288fda5f596eea16183b225cd894fd2c3a",
         "baseline_carrier": "e29fd1527bd0a9b1ded78f7d61985fde1dda9e45",
         "instrumented_source": option_env!("VIZE_SCHEDULER_COST_SOURCE"),
         "kind": "actual untimed Rust indexed selector/heap operations; not a full LSP or cold-latency benchmark",

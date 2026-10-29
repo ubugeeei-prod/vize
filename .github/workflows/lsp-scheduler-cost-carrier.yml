@@ -41,7 +41,7 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           mkdir scheduler-evidence
-          base=c9b5765af21160460b251bf9e42df42ff9b053d4
+          base=b34edc288fda5f596eea16183b225cd894fd2c3a
           git merge-base --is-ancestor "$base" HEAD
           test "$(git show "$base:crates/vize_maestro/src/server/initial_diagnostics/pending.rs" | git hash-object --stdin)" = 06f98a9c70c884c0b19ed032560573f78e23a1eb
           if git grep -n '#\[global_allocator\]' "$base" -- crates/vize_maestro/src; then
