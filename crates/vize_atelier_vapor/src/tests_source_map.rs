@@ -241,12 +241,12 @@ fn computed_keep_alive_filter_key_maps_authored_operands() {
 
 #[test]
 fn computed_keep_alive_map_segments_own_their_generated_source() {
-    for (case, source, token, expected_anchors) in [
+    for (case, source, token, expected_segments) in [
         (
             "literal-collision",
             r#"<KeepAlive include="[(_ctx.filter)]: _ctx.names" :[filter]="names"><MyComp /></KeepAlive>"#,
             "[(_ctx.filter)]: _ctx.names",
-            &[("filter", 0, 50), ("names", 0, 60)][..],
+            &[("filter", 0, 50, 2), ("names", 0, 60, 17)][..],
         ),
         (
             "compound-whitespace",
@@ -256,10 +256,10 @@ fn computed_keep_alive_map_segments_own_their_generated_source() {
 ><MyComp /></KeepAlive>"#,
             "[(_ctx.filters[_ctx.selected])]: _ctx.groups[_ctx.active]",
             &[
-                ("filters", 2, 3),
-                ("selected", 2, 11),
-                ("groups", 2, 24),
-                ("active", 2, 31),
+                ("filters", 2, 3, 2),
+                ("selected", 2, 11, 15),
+                ("groups", 2, 24, 33),
+                ("active", 2, 31, 45),
             ][..],
         ),
     ] {
@@ -270,20 +270,15 @@ fn computed_keep_alive_map_segments_own_their_generated_source() {
             "{case}: native and retained maps"
         );
 
-        let expected = expected_anchors
+        let expected = expected_segments
             .iter()
-            .map(|&(name, line, column)| (name.into(), line, column))
-            .collect::<std::vec::Vec<_>>();
-        let anchors = named
-            .iter()
-            .map(|(name, _, _, line, column)| (name.clone(), *line, *column))
+            .map(|&(name, line, column, _)| (name.into(), line, column))
             .collect::<std::vec::Vec<_>>();
         assert_eq!(
             official_vapor_anchors(source),
             expected,
             "{case}: official map"
         );
-        assert_eq!(anchors, expected, "{case}: authored anchors");
 
         let decoy = code.find(token).expect("static collision token");
         let owned = code.rfind(token).expect("computed prop token");
@@ -291,16 +286,22 @@ fn computed_keep_alive_map_segments_own_their_generated_source() {
             decoy < owned,
             "{case}: fixture must put the collision first"
         );
-        for (name, line, column, _, _) in named {
-            let generated = offset(&code, line, column);
-            assert!(
-                (owned..owned + token.len()).contains(&generated),
-                "{case}: {name} segment must belong to the computed source"
+        assert_eq!(named.len(), expected_segments.len(), "{case}: named links");
+        for (
+            (name, line, column, source_line, source_column),
+            &(expected_name, expected_line, expected_column, relative),
+        ) in named.into_iter().zip(expected_segments)
+        {
+            assert_eq!(
+                (name.as_str(), source_line, source_column),
+                (expected_name, expected_line, expected_column),
+                "{case}: authored anchor"
             );
-            assert!(
-                code.get(generated..)
-                    .is_some_and(|rest| rest.starts_with(&std::format!("_ctx.{name}"))),
-                "{case}: {name} generated coordinate"
+            let generated = offset(&code, line, column);
+            assert_eq!(
+                generated,
+                owned + relative,
+                "{case}: {name} generated offset"
             );
         }
     }

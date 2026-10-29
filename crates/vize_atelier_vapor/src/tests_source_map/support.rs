@@ -21,6 +21,13 @@ pub(super) enum Lane {
     Legacy,
 }
 
+type NamedSegment = (std::string::String, usize, i64, i64, i64);
+type MappedNamedSegments = (
+    std::string::String,
+    std::vec::Vec<std::string::String>,
+    std::vec::Vec<NamedSegment>,
+);
+
 fn compile_on(source: &str, source_map: bool, lane: Lane) -> crate::VaporCompileResult {
     let allocator = Allocator::new();
     let result = compile_vapor_with_experimental_options(
@@ -99,7 +106,7 @@ fn authored_anchors(map: &str) -> std::vec::Vec<(std::string::String, i64, i64)>
         .collect()
 }
 
-fn named_segments(map: &str) -> std::vec::Vec<(std::string::String, usize, i64, i64, i64)> {
+fn named_segments(map: &str) -> std::vec::Vec<NamedSegment> {
     let map = parsed_map(map);
     let names = map["names"].as_array().unwrap();
     decode(map["mappings"].as_str().unwrap())
@@ -165,14 +172,7 @@ pub(super) fn mapped_with_anchors_on(
     (code, segments, anchors)
 }
 
-pub(super) fn mapped_with_named_segments_on(
-    source: &str,
-    lane: Lane,
-) -> (
-    std::string::String,
-    std::vec::Vec<std::string::String>,
-    std::vec::Vec<(std::string::String, usize, i64, i64, i64)>,
-) {
+pub(super) fn mapped_with_named_segments_on(source: &str, lane: Lane) -> MappedNamedSegments {
     let without_map = compile_on(source, false, lane);
     let with_map = compile_on(source, true, lane);
     assert_eq!(
