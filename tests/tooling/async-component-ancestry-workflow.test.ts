@@ -41,23 +41,56 @@ test("historical proof selects only the bounded feature delta after a main rebas
   git(cwd, "checkout", "-q", "feature");
   git(cwd, "rebase", "-q", "current-main");
   writeFileSync(path.join(cwd, "src/later.txt"), "later repair\n");
-  const head = commit(cwd, "fix(test): add a later repair");
+  const landedFeature = commit(cwd, "fix(test): add a later repair");
+
+  git(cwd, "checkout", "-q", "current-main");
+  git(cwd, "merge", "--squash", "feature");
+  const landedMerge = commit(cwd, "fix(test): land the complete feature");
+  git(cwd, "checkout", "-q", "-b", "current-head");
+  writeFileSync(path.join(cwd, "src/future.txt"), "later main advance\n");
+  const head = commit(cwd, "fix(test): advance after the squash landing");
 
   const selected = selectFeatureDelta({
     cwd,
     historicalParent,
     historicalFeature,
+    landedFeature,
+    landedMerge,
     head,
     paths: ["src"],
   });
   assert.notEqual(selected.selectedParent, historicalParent);
   assert.notEqual(selected.selectedFeature, historicalFeature);
+  assert.equal(selected.landedFeature, landedFeature);
+  assert.equal(selected.landedMerge, landedMerge);
   assert.deepEqual(selected.changed, ["src/feature.txt"]);
 
   const contaminated = git(cwd, "diff", "--name-only", historicalParent, head, "--", "src")
     .split("\n")
     .filter(Boolean);
-  assert.deepEqual(contaminated, ["src/feature.txt", "src/later.txt", "src/main.txt"]);
+  assert.deepEqual(contaminated, [
+    "src/feature.txt",
+    "src/future.txt",
+    "src/later.txt",
+    "src/main.txt",
+  ]);
+
+  git(cwd, "checkout", "-q", "-b", "tampered-landing", landedMerge);
+  writeFileSync(path.join(cwd, "src/feature.txt"), "tampered after review\n");
+  const tamperedMerge = commit(cwd, "fix(test): tamper with the selected feature path");
+  assert.throws(
+    () =>
+      selectFeatureDelta({
+        cwd,
+        historicalParent,
+        historicalFeature,
+        landedFeature,
+        landedMerge: tamperedMerge,
+        head: tamperedMerge,
+        paths: ["src"],
+      }),
+    /landed squash must preserve every selected feature path byte-for-byte/,
+  );
 });
 
 test("async ancestry workflow wires the bounded selector into its historical proof", () => {

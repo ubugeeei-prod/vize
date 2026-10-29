@@ -151,7 +151,7 @@ crates/vize_canon/src/batch/type_checker/tests/scan/incremental/config_hmr.rs	2
 crates/vize_canon/src/batch/type_checker/tests/tsgo_project_session.rs	1
 crates/vize_canon/src/batch/type_checker/tests/tsx_sfc.rs	2
 crates/vize_canon/src/batch/virtual_project/content_mapper/directive_tests.rs	1
-crates/vize_canon/src/batch/virtual_project/content_mapper/tests.rs	12
+crates/vize_canon/src/batch/virtual_project/content_mapper/tests.rs	10
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/models.rs	7
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/navigation.rs	6
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs	3

@@ -67,6 +67,8 @@ jobs:
           set -euo pipefail
           node --test qualification/tests/tooling/async-component-ancestry-workflow.test.ts
           git fetch --no-tags --depth=16 origin 748876d5d580aa5c6d0fb0bf32108b8bb0429951
+          git fetch --no-tags --depth=64 origin refs/pull/11011/head
+          test "$(git rev-parse FETCH_HEAD)" = "8a089d97ea3c95a23c588085f47502fa7d288bdf"
           python3 - <<'PY'
           import hashlib, json, os, pathlib, subprocess
           paths = [
@@ -76,6 +78,8 @@ jobs:
               "crates/vize_croquis/src/script_parser/value_binding_origins/resolution.rs",
               "crates/vize_croquis/src/facts/components.rs",
           ]
+          landed_feature = "8a089d97ea3c95a23c588085f47502fa7d288bdf"
+          landed_merge = "deda174ca6da0fc54a4f7483acbd3f71c382095c"
           specs = [
               {
                   "id": "mixed-demand", "parent": "4c7211a42ef27ba8fc3bae4c220fc95cd6ac8278",
