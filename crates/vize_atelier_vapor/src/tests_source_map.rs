@@ -23,7 +23,8 @@ mod transition;
 mod support;
 
 use super::{VaporCompilerOptions, compile_vapor};
-use support::{Lane, mapped, mapped_on};
+use support::{Lane, mapped, mapped_on, mapped_with_anchors_on, official_vapor_anchors};
+use vize_atelier_core::{expr_parse_probe, walk_probe::WalkCounts};
 use vize_carton::Allocator;
 
 #[test]
@@ -211,6 +212,41 @@ fn keep_alive_props_and_child_keep_authored_mapping_units() {
         insta::assert_snapshot!(format!("keep_alive_{case}_code"), code);
         insta::assert_debug_snapshot!(format!("keep_alive_{case}_map"), segments);
     }
+}
+
+#[test]
+fn computed_keep_alive_filter_key_maps_authored_operands() {
+    let source = r#"<KeepAlive :[filter]="names"><MyComp /></KeepAlive>"#;
+    let walks = WalkCounts::snapshot();
+    let parses = expr_parse_probe::expr_parse_count();
+    let (code, segments, anchors) = mapped_with_anchors_on(source, Lane::Selected);
+    assert_eq!(
+        WalkCounts::snapshot().since(walks).total_walks(),
+        0,
+        "computed KeepAlive map must stay on native L3"
+    );
+    assert_eq!(
+        expr_parse_probe::expr_parse_count() - parses,
+        0,
+        "computed KeepAlive map must retain its expression tree"
+    );
+    assert_eq!(
+        (code.clone(), segments.clone(), anchors.clone()),
+        mapped_with_anchors_on(source, Lane::Legacy),
+        "generated code, every decoded segment and authored anchor"
+    );
+    insta::assert_snapshot!("keep_alive_computed_key_code", code);
+    insta::assert_debug_snapshot!("keep_alive_computed_key_map", segments);
+    let official = official_vapor_anchors(source);
+    assert_eq!(
+        official,
+        [("filter".into(), 0, 12), ("names".into(), 0, 22)],
+        "pinned official authored anchors"
+    );
+    assert_eq!(
+        anchors, official,
+        "native and retained maps must preserve the official authored filter/name anchors"
+    );
 }
 
 #[test]
