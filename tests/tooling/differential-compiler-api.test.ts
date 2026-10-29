@@ -117,6 +117,39 @@ void test("compiler successor chain preserves the five stale-baseline drifts exa
   assert.equal(rows.filter((row) => row.legacy.verdict === "matched-reference").length, 5);
 });
 
+void test("imported component custody advances only the authenticated setup bracket read", () => {
+  const fixture = loaded.cases.find(
+    (candidate) => candidate.id === "compiler/sfc/imported-component-before-prop",
+  );
+  assert(fixture);
+  const history = fixture.referenceHistory;
+  assert(history);
+  assert.equal(history.length, 1);
+  const predecessor = history[0];
+  assert(predecessor);
+  const current = fixture.currentReference;
+  assert(current);
+  assert.equal(predecessor.issue, "https://github.com/ubugeeei-prod/vize/issues/10891");
+  assert.equal(current.issue, "https://github.com/ubugeeei-prod/vize/issues/10877");
+  assert.equal(current.supersedesSha256, predecessor.sha256);
+
+  const before = JSON.parse(
+    fs.readFileSync(path.join(root, predecessor.path), "utf8"),
+  ) as JsonObject;
+  const after = JSON.parse(fs.readFileSync(path.join(root, current.path), "utf8")) as JsonObject;
+  const beforeResult = object(before.Ok);
+  const afterResult = object(after.Ok);
+  const beforeCode = beforeResult.code;
+  const afterCode = afterResult.code;
+  assert(typeof beforeCode === "string");
+  assert(typeof afterCode === "string");
+  assert.equal(beforeCode.split("$setup.Predefine").length, 2);
+  assert.equal(afterCode, beforeCode.replace("$setup.Predefine", '$setup["Predefine"]'));
+  beforeResult.code = "";
+  afterResult.code = "";
+  assert.deepEqual(after, before, "the successor must preserve every non-code result facet");
+});
+
 void test("compiler successor custody rejects duplicate, missing, corrupt and unauthenticated entries", () => {
   const chainedId = "compiler/sfc/separate-template-authored-render-binding";
   assertManifestRejected((manifest) => {
