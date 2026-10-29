@@ -16,7 +16,6 @@ import {
 } from "./typechecker-dialect.ts";
 export { TYPECHECKER_TESTS } from "./typechecker-registry.ts";
 export { assertVerifiedTypecheckerDialectExecutions } from "./typechecker-dialect.ts";
-
 export type Artifact = { path: string; sha256: string };
 export type Diagnostic = {
   file: string;

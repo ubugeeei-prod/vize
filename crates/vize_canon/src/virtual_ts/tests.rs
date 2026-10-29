@@ -708,13 +708,12 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
         &VirtualTsOptions::default(),
     );
 
-    assert_eq!(
-        output.code.matches("const $t = __ctx.$t;").count(),
-        1,
+    assert!(
+        output.code.contains("= (__ctx.$t('hello'));"),
         "{}",
         output.code
     );
-    assert!(output.code.contains("= ($t('hello'));")); // native prop check initializer
+    assert_eq!(output.code.matches("const $t =").count(), 0);
     assert!(output.code.contains("void (missing);"));
     assert!(!output.code.contains("void ($t);"));
 
@@ -734,6 +733,7 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
         },
     );
 
+    assert!(!configured_output.code.contains("__ctx.$t"));
     assert!(!configured_output.code.contains("$InstanceGlobal<'$t'>"));
     assert!(
         configured_output
@@ -764,7 +764,8 @@ const $q = functionCall()
     assert!(
         !output
             .code
-            .contains("const $q: $InstanceGlobal<'$q'> = undefined as any;"),
+            .contains("const $q: $InstanceGlobal<'$q'> = undefined as any;")
+            && !output.code.contains("__ctx.$q"),
         "setup binding named like an instance global must not be redeclared:\n{}",
         output.code
     );

@@ -24,6 +24,7 @@ import {
   writeStringToFile,
 } from "../command_runtime.ts";
 import {
+  JsonObject,
   isJsonObject,
   parseJson,
   stringMember,
@@ -36,6 +37,15 @@ const DEPENDENCY_SECTIONS = [
   "peerDependencies",
   "optionalDependencies",
   "devDependencies",
+] as const;
+
+const PUBLISHED_CORSA_PLATFORMS = [
+  "@typescript/typescript-darwin-arm64",
+  "@typescript/typescript-darwin-x64",
+  "@typescript/typescript-linux-arm64",
+  "@typescript/typescript-linux-x64",
+  "@typescript/typescript-win32-arm64",
+  "@typescript/typescript-win32-x64",
 ] as const;
 
 function readPackageJson(target: string): JsonValue | undefined {
@@ -162,6 +172,22 @@ export function normalizeDependencySections(
         );
       } else {
         dependencies.set(dependencyName, version);
+      }
+    }
+  }
+  if (stringMember(packageJson, "name") === "vize") {
+    let optional = packageJson.get("optionalDependencies");
+    if (!isJsonObject(optional)) {
+      optional = new JsonObject();
+      packageJson.set("optionalDependencies", optional);
+    }
+    for (const name of PUBLISHED_CORSA_PLATFORMS) {
+      if (typeof optional.get(name) === "string") continue;
+      const version = catalogVersions.get(`corsa-runtime\u0000${name}`);
+      if (version === undefined) {
+        unresolved.push(`Missing catalog version for ${name} from corsa-runtime in optionalDependencies`);
+      } else {
+        optional.set(name, version);
       }
     }
   }

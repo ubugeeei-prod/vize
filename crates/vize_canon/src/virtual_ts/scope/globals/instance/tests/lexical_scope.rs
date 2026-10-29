@@ -77,22 +77,71 @@ const REAL_INSTANCE_READS: [(&str, std::ops::Range<usize>); 6] = [
 
 #[test]
 fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges() {
-    let output = output(true);
+    let strict = output(true);
     assert_eq!(
-        instance_reads(&output, "__vize_strict_template_context."),
+        instance_reads(&strict, "__vize_strict_template_context."),
         REAL_INSTANCE_READS,
         "{}",
-        output.code
+        strict.code
+    );
+    let loose = output(false);
+    let mut expected = REAL_INSTANCE_READS.to_vec();
+    // Bare binding navigation, the canonical initializer and the mapped
+    // props literal are separate emissions of each parent-scope prop read.
+    // The loop body also has its own generated position. Relative-cache
+    // reuse never shares those positions or invents navigation on an
+    // unmapped inference copy.
+    expected.extend([
+        ("$before", 1293..1300),
+        ("$before", 1293..1300),
+        ("$after", 1384..1390),
+        ("$after", 1384..1390),
+        ("$self", 1500..1505),
+    ]);
+    expected.sort_by_key(|(_, range)| range.start);
+    assert_eq!(instance_reads(&loose, "__ctx."), expected, "{}", loose.code);
+    let generated: Vec<_> = loose
+        .mapping
+        .spans()
+        .iter()
+        .filter(|mapping| {
+            loose
+                .code
+                .get(..mapping.gen_range.start)
+                .is_some_and(|head| head.ends_with("__ctx."))
+        })
+        .map(|mapping| mapping.gen_range.clone())
+        .collect();
+    let mut unique_generated = generated.clone();
+    unique_generated.sort_by_key(|range| (range.start, range.end));
+    unique_generated.dedup();
+    assert_eq!(
+        generated.len(),
+        unique_generated.len(),
+        "one mapping per actual emitted property read"
     );
 }
 
 #[test]
 fn public_instance_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names() {
     let output = output(false);
+    let declarations: Vec<_> = output
+        .code
+        .lines()
+        .filter(|line| line.trim_start().starts_with("const $") && line.contains(" = __ctx.$"))
+        .collect();
     assert_eq!(
-        instance_reads(&output, "__ctx."),
-        REAL_INSTANCE_READS,
-        "{}",
-        output.code
+        declarations,
+        vec![
+            "    const $attrs = __ctx.$attrs;",
+            "    const $slots = __ctx.$slots;",
+            "    const $refs = __ctx.$refs;",
+            "    const $emit = __ctx.$emit;",
+        ]
     );
+}
+
+#[test]
+fn default_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names() {
+    public_instance_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names();
 }

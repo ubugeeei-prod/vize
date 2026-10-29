@@ -11,7 +11,7 @@ use vize_croquis::TemplateExpression;
 
 struct BranchContext<'a, 'b> {
     exprs: &'a [&'b TemplateExpression],
-    bindings: &'a TemplateBindingAccess,
+    bindings: &'a TemplateBindingAccess<'a>,
     context: &'a ExpressionListEmitContext<'b>,
 }
 

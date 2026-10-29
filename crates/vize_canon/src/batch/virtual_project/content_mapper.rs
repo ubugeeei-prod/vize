@@ -5,7 +5,7 @@ use std::path::Path;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{SfcError, SfcParseOptions, parse_sfc};
-use vize_l0::{String as CompactString, ToCompactString, config::VueVersion};
+use vize_l0::{ToCompactString, config::VueVersion};
 
 use crate::batch::Diagnostic;
 use crate::batch::error::CorsaResult;
@@ -54,6 +54,7 @@ enum ContentMapperSpanKind {
 }
 
 mod options;
+mod publish;
 pub use options::ContentMapperTransformOptions;
 
 /// Generate self-contained TypeScript and protocol-v1 mappings for one Vue SFC.
@@ -182,14 +183,22 @@ fn transform_with_diagnostic_ownership(
             experimental_in_tag_comments: false,
             experimental_patterned_template: false,
             experimental_strict_slot_children: false,
-            hoist_shared_preamble: false,
+            hoist_shared_preamble: transform_options.shared_virtual_module(),
             inline_auto_import_stubs: true,
             omit_vite_client_reference: true,
             runtime_prop_resolve_cache: None,
         },
     )?;
 
-    publicize_generated_diagnostic_helpers(&mut code, &mappings);
+    publish::publish_content_mapper_text(
+        &mut code,
+        &mut mappings,
+        &mut semantic_links,
+        &mut prop_default_key_links,
+        generic_copies.as_mut(),
+        diagnostic_ownership.as_ref(),
+        transform_options.shared_virtual_module(),
+    );
 
     let unprefixed_len = code.len();
     if use_tsx {
@@ -208,7 +217,7 @@ fn transform_with_diagnostic_ownership(
     }
     if suppress_typescript_diagnostics {
         let previous_length = code.len();
-        prepend_typescript_nocheck(
+        publish::prepend_typescript_nocheck(
             &mut code,
             &mut mappings,
             &mut semantic_links,
@@ -280,93 +289,6 @@ fn transform_with_diagnostic_ownership(
             .collect(),
         text: code,
     })
-}
-
-/// Give generated component-input helpers public display names before the
-/// upstream host parses the virtual module. The replacements are byte-identical
-/// so every projection offset stays stable.
-///
-/// Script `/// <reference types>` values are copied into the generated prefix
-/// without mappings. Treat those complete lines as authored ranges as well, so
-/// a package that happens to use an internal helper name is never rewritten.
-fn publicize_generated_diagnostic_helpers(code: &mut CompactString, mappings: &[VizeMapping]) {
-    let mut ranges = mappings
-        .iter()
-        .map(|mapping| mapping.gen_range.clone())
-        .collect::<Vec<_>>();
-    ranges.extend(reference_type_directive_ranges(code));
-    ranges.sort_unstable_by_key(|range| range.start);
-    let mut authored_ranges: Vec<Range<usize>> = Vec::new();
-    for range in ranges {
-        if let Some(last) = authored_ranges.last_mut()
-            && range.start <= last.end
-        {
-            last.end = last.end.max(range.end);
-        } else {
-            authored_ranges.push(range);
-        }
-    }
-
-    for (internal, display) in [
-        ("$ComponentCheckProps", "ComponentPropsForTemplate"),
-        ("$PublicComponentAttrs", "VueTemplatePublicAttrsType"),
-    ] {
-        debug_assert_eq!(internal.len(), display.len());
-        let occurrences = code
-            .match_indices(internal)
-            .map(|(start, _)| start)
-            .collect::<Vec<_>>();
-        for start in occurrences {
-            let end = start + internal.len();
-            let candidate = start..end;
-            let next = authored_ranges.partition_point(|range| range.end <= candidate.start);
-            let authored = authored_ranges
-                .get(next)
-                .is_some_and(|range| candidate.start < range.end && range.start < candidate.end);
-            if !authored {
-                code.replace_range(candidate, display);
-            }
-        }
-    }
-}
-
-fn reference_type_directive_ranges(code: &str) -> Vec<Range<usize>> {
-    let mut start = 0;
-    code.split_inclusive('\n')
-        .filter_map(|line| {
-            let range = start..start + line.len();
-            start = range.end;
-            line.trim_start()
-                .starts_with("/// <reference types=")
-                .then_some(range)
-        })
-        .collect()
-}
-
-const TYPESCRIPT_NOCHECK_DIRECTIVE: &str = "// @ts-nocheck\n";
-
-fn prepend_typescript_nocheck(
-    code: &mut vize_l0::String,
-    mappings: &mut [VizeMapping],
-    semantic_links: &mut [crate::virtual_ts::VizeSemanticLink],
-    prop_default_key_links: &mut [crate::virtual_ts::VizeSemanticLink],
-) {
-    let offset = TYPESCRIPT_NOCHECK_DIRECTIVE.len();
-    let mut prefixed = vize_l0::String::with_capacity(offset + code.len());
-    prefixed.push_str(TYPESCRIPT_NOCHECK_DIRECTIVE);
-    prefixed.push_str(code.as_str());
-    *code = prefixed;
-    for mapping in mappings {
-        mapping.gen_range.start += offset;
-        mapping.gen_range.end += offset;
-        for sub_span in &mut mapping.sub_spans {
-            sub_span.gen_range.start += offset;
-            sub_span.gen_range.end += offset;
-        }
-    }
-    for link in semantic_links.iter_mut().chain(prop_default_key_links) {
-        link.shift_generated_ranges(offset);
-    }
 }
 
 fn sfc_parse_diagnostic(source: &str, error: &SfcError) -> ContentMapperDiagnostic {

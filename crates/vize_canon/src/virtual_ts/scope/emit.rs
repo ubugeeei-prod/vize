@@ -181,6 +181,10 @@ pub(super) fn emit_v_for_loop_open<M>(
                     let source_name = cstr!("__vize_v_for_source_{scope_id}");
                     append!(*ts, "{indent}const {source_name} = __vForList(");
                     let source_gen_start = ts.len();
+                    // A loop source runs before that loop's own aliases are introduced.
+                    let parent_access =
+                        template_binding_access.for_scope(scope.parent().unwrap_or(scope.id));
+                    let template_binding_access = &parent_access;
                     let rewritten_source = rewrite_reserved_template_binding(
                         data.source.as_str(),
                         template_binding_access,
@@ -264,12 +268,6 @@ pub(super) fn emit_v_for_loop_open<M>(
     }
 }
 
-/// The byte offset at which `name` is declared inside the authored alias
-/// pattern (`it`, `{ id, name }`, `[first, second]`).
-///
-/// Mirrors croquis' `find_identifier_token`, which derives the source-side
-/// declaration offsets this maps to: both sides must pick the same token, or
-/// the generated and authored ranges would name different identifiers.
 pub(super) fn pattern_identifier_offset(pattern: &str, name: &str) -> Option<usize> {
     pattern
         .match_indices(name)

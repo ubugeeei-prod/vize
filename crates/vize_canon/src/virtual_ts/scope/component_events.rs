@@ -40,7 +40,7 @@ pub(super) struct ComponentEventTypeContext<'a, 'template> {
     pub(super) data: &'a EventHandlerScopeData,
     pub(super) scope: &'a Scope,
     pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
-    pub(super) template_binding_access: &'a TemplateBindingAccess,
+    pub(super) template_binding_access: &'a TemplateBindingAccess<'a>,
     pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) source_context: ComponentPropSource<'a>,
     pub(super) legacy_vue2: bool,

@@ -119,6 +119,34 @@ impl GenericCopies {
             }
         }
     }
+
+    /// The generated text `[start, start + old_len)` grew to `new_len` bytes.
+    pub(in crate::batch::virtual_project) fn note_generated_replacement(
+        &mut self,
+        start: usize,
+        old_len: usize,
+        new_len: usize,
+    ) {
+        let Some(extra) = new_len.checked_sub(old_len).filter(|extra| *extra > 0) else {
+            return;
+        };
+        let old_end = start + old_len;
+        for copy in &mut self.copies {
+            shift_generated_range(&mut copy.range, start, old_end, extra);
+            for (generated, _) in copy.rows.iter_mut().flatten() {
+                shift_generated_range(generated, start, old_end, extra);
+            }
+        }
+    }
+}
+
+fn shift_generated_range(range: &mut Range<usize>, start: usize, old_end: usize, extra: usize) {
+    if range.start >= old_end {
+        range.start += extra;
+        range.end += extra;
+    } else if range.end > start && range.end >= old_end {
+        range.end += extra;
+    }
 }
 
 fn exact_lists<'a>(code: &'a str, rendered: &'a str) -> impl Iterator<Item = Range<usize>> + 'a {

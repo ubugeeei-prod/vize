@@ -14,6 +14,15 @@ const DEPENDENCY_SECTIONS: &[&str] = &[
     "devDependencies",
 ];
 
+const PUBLISHED_CORSA_PLATFORMS: &[&str] = &[
+    "@typescript/typescript-darwin-arm64",
+    "@typescript/typescript-darwin-x64",
+    "@typescript/typescript-linux-arm64",
+    "@typescript/typescript-linux-x64",
+    "@typescript/typescript-win32-arm64",
+    "@typescript/typescript-win32-x64",
+];
+
 pub fn prepare_publish_manifest(package_dir: &Path) -> Result<(), String> {
     let package_json_path = package_dir.join("package.json");
     let mut package_json = read_json(&package_json_path)?;
@@ -222,6 +231,26 @@ fn normalize_dependency_sections(
             native_binary_version,
             &mut unresolved,
         );
+    }
+    if package_object.get("name").and_then(Value::as_str) == Some("vize") {
+        let optional = package_object
+            .entry("optionalDependencies".to_string())
+            .or_insert_with(|| Value::Object(Map::new()));
+        if let Some(dependencies) = optional.as_object_mut() {
+            for name in PUBLISHED_CORSA_PLATFORMS {
+                if dependencies.get(*name).and_then(Value::as_str).is_some() {
+                    continue;
+                }
+                let key = format!("corsa-runtime\0{name}");
+                if let Some(version) = catalog_versions.get(&key) {
+                    dependencies.insert((*name).to_string(), Value::String(version.clone()));
+                } else {
+                    unresolved.push(format!(
+                        "Missing catalog version for {name} from corsa-runtime in optionalDependencies"
+                    ));
+                }
+            }
+        }
     }
     unresolved
 }

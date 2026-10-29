@@ -1,0 +1,224 @@
+{
+  "schema": "vize.instance-global-copy-controls",
+  "version": 1,
+  "credit": "discovery only until actual source ownership is qualified",
+  "inventory": {
+    "families": 6,
+    "uniqueAuthoredPrograms": 10,
+    "stages": 14
+  },
+  "programs": [
+    {
+      "id": "named-invalid",
+      "source": "<script setup lang=\"ts\">\nimport { defineComponent, type SlotsType } from \"vue\";\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\n</script>\n<template>\n  <Child :value=\"$ghost.value\" />\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\ntype Input = InstanceType<typeof Child>[\"$props\"];\nconst input: Input = { value: __ctx.$ghost.value };\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.value",
+          "token": "$ghost",
+          "kind": "undeclared"
+        }
+      ],
+      "binding": "'value'"
+    },
+    {
+      "id": "named-valid",
+      "source": "<script setup lang=\"ts\">\nimport { defineComponent, type SlotsType } from \"vue\";\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\n</script>\n<template>\n  <Child :value=\"$declared.known\" />\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\ntype Input = InstanceType<typeof Child>[\"$props\"];\nconst input: Input = { value: __ctx.$declared.known };\n}\n",
+      "errors": [],
+      "binding": "'value'"
+    },
+    {
+      "id": "spread-invalid",
+      "source": "<script setup lang=\"ts\">\nimport { defineComponent, type SlotsType } from \"vue\";\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\n</script>\n<template>\n  <Child v-bind=\"{ value: $ghost.value }\" />\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\ntype Input = InstanceType<typeof Child>[\"$props\"];\nconst input: Input = { ...{ value: __ctx.$ghost.value } };\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.value",
+          "token": "$ghost",
+          "kind": "undeclared"
+        }
+      ],
+      "binding": "v-bind"
+    },
+    {
+      "id": "spread-valid",
+      "source": "<script setup lang=\"ts\">\nimport { defineComponent, type SlotsType } from \"vue\";\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\n</script>\n<template>\n  <Child v-bind=\"{ value: $declared.known }\" />\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\ntype Input = InstanceType<typeof Child>[\"$props\"];\nconst input: Input = { ...{ value: __ctx.$declared.known } };\n}\n",
+      "errors": [],
+      "binding": "v-bind"
+    },
+    {
+      "id": "slot-expect-invalid",
+      "source": "<script setup lang=\"ts\">\nimport { defineComponent, type SlotsType } from \"vue\";\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\n</script>\n<template>\n  <!-- @vue-expect-error -->\n  <Child :value=\"$ghost.value\"><template #default=\"{ known }\">{{ known.toFixed() }}</template></Child>\n  <div>{{ $other.value }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\ntype Input = InstanceType<typeof Child>[\"$props\"];\nconst input: Input = { value: __ctx.$ghost.value };\ntype Slot = Parameters<NonNullable<InstanceType<typeof Child>[\"$slots\"][\"default\"]>>[0];\nconst renderSlot = ({ known }: Slot) => known.toFixed();\n__ctx.$other.value;\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.value",
+          "token": "$ghost",
+          "kind": "undeclared",
+          "suppressed": true
+        },
+        {
+          "anchor": "$other.value",
+          "token": "$other",
+          "kind": "undeclared"
+        }
+      ]
+    },
+    {
+      "id": "slot-expect-valid",
+      "source": "<script setup lang=\"ts\">\nimport { defineComponent, type SlotsType } from \"vue\";\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\n</script>\n<template>\n  <Child :value=\"$declared.known\"><template #default=\"{ known }\">{{ known.toFixed() }}</template></Child>\n  <div>{{ $declared.known }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\ntype Input = InstanceType<typeof Child>[\"$props\"];\nconst input: Input = { value: __ctx.$declared.known };\ntype Slot = Parameters<NonNullable<InstanceType<typeof Child>[\"$slots\"][\"default\"]>>[0];\nconst renderSlot = ({ known }: Slot) => known.toFixed();\n__ctx.$declared.known;\n}\n",
+      "errors": []
+    },
+    {
+      "id": "slot-expect-unused",
+      "source": "<script setup lang=\"ts\">\nimport { defineComponent, type SlotsType } from \"vue\";\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\n</script>\n<template>\n  <!-- @vue-expect-error -->\n  <Child :value=\"$declared.known\"><template #default=\"{ known }\">{{ known.toFixed() }}</template></Child>\n  <div>{{ $other.value }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst Child = defineComponent({ props: { value: Number }, slots: Object as SlotsType<{ default: { known: number } }> });\ntype Input = InstanceType<typeof Child>[\"$props\"];\nconst input: Input = { value: __ctx.$declared.known };\ntype Slot = Parameters<NonNullable<InstanceType<typeof Child>[\"$slots\"][\"default\"]>>[0];\nconst renderSlot = ({ known }: Slot) => known.toFixed();\n__ctx.$other.value;\n}\n",
+      "errors": [
+        {
+          "anchor": "$other.value",
+          "token": "$other",
+          "kind": "undeclared"
+        }
+      ],
+      "unusedDirective": true
+    },
+    {
+      "id": "callback-expect-invalid",
+      "source": "<script setup lang=\"ts\">\nimport { defineComponent, type PropType } from \"vue\";\nconst Child = defineComponent({ props: { renderValue: Function as PropType<(item: { known: number }) => number> } });\n</script>\n<template>\n  <!-- @vue-expect-error -->\n  <Child :render-value=\"item => item.known + $ghost.value\" />\n  <div>{{ $other.value }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst Child = defineComponent({ props: { renderValue: Function as PropType<(item: { known: number }) => number> } });\ntype Input = InstanceType<typeof Child>[\"$props\"];\nconst input: Input = { renderValue: item => item.known + __ctx.$ghost.value };\n__ctx.$other.value;\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.value",
+          "token": "$ghost",
+          "kind": "undeclared",
+          "suppressed": true
+        },
+        {
+          "anchor": "$other.value",
+          "token": "$other",
+          "kind": "undeclared"
+        }
+      ]
+    },
+    {
+      "id": "callback-expect-valid",
+      "source": "<script setup lang=\"ts\">\nimport { defineComponent, type PropType } from \"vue\";\nconst Child = defineComponent({ props: { renderValue: Function as PropType<(item: { known: number }) => number> } });\n</script>\n<template>\n  <Child :render-value=\"item => item.known + $declared.known\" />\n  <div>{{ $declared.known }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst Child = defineComponent({ props: { renderValue: Function as PropType<(item: { known: number }) => number> } });\ntype Input = InstanceType<typeof Child>[\"$props\"];\nconst input: Input = { renderValue: item => item.known + __ctx.$declared.known };\n__ctx.$declared.known;\n}\n",
+      "errors": []
+    },
+    {
+      "id": "callback-expect-unused",
+      "source": "<script setup lang=\"ts\">\nimport { defineComponent, type PropType } from \"vue\";\nconst Child = defineComponent({ props: { renderValue: Function as PropType<(item: { known: number }) => number> } });\n</script>\n<template>\n  <!-- @vue-expect-error -->\n  <Child :render-value=\"item => item.known + $declared.known\" />\n  <div>{{ $other.value }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst Child = defineComponent({ props: { renderValue: Function as PropType<(item: { known: number }) => number> } });\ntype Input = InstanceType<typeof Child>[\"$props\"];\nconst input: Input = { renderValue: item => item.known + __ctx.$declared.known };\n__ctx.$other.value;\n}\n",
+      "errors": [
+        {
+          "anchor": "$other.value",
+          "token": "$other",
+          "kind": "undeclared"
+        }
+      ],
+      "unusedDirective": true
+    }
+  ],
+  "families": [
+    {
+      "id": "named",
+      "stages": [
+        {
+          "id": "valid",
+          "program": "named-valid"
+        },
+        {
+          "id": "invalid",
+          "program": "named-invalid"
+        },
+        {
+          "id": "repaired",
+          "program": "named-valid"
+        }
+      ]
+    },
+    {
+      "id": "spread",
+      "stages": [
+        {
+          "id": "valid",
+          "program": "spread-valid"
+        },
+        {
+          "id": "invalid",
+          "program": "spread-invalid"
+        },
+        {
+          "id": "repaired",
+          "program": "spread-valid"
+        }
+      ]
+    },
+    {
+      "id": "slot-expect",
+      "stages": [
+        {
+          "id": "valid",
+          "program": "slot-expect-valid"
+        },
+        {
+          "id": "invalid",
+          "program": "slot-expect-invalid"
+        },
+        {
+          "id": "repaired",
+          "program": "slot-expect-valid"
+        }
+      ]
+    },
+    {
+      "id": "callback-expect",
+      "stages": [
+        {
+          "id": "valid",
+          "program": "callback-expect-valid"
+        },
+        {
+          "id": "invalid",
+          "program": "callback-expect-invalid"
+        },
+        {
+          "id": "repaired",
+          "program": "callback-expect-valid"
+        }
+      ]
+    },
+    {
+      "id": "slot-expect-strict-unused",
+      "stages": [
+        {
+          "id": "unused",
+          "program": "slot-expect-unused"
+        }
+      ]
+    },
+    {
+      "id": "callback-expect-strict-unused",
+      "stages": [
+        {
+          "id": "unused",
+          "program": "callback-expect-unused"
+        }
+      ]
+    }
+  ]
+}

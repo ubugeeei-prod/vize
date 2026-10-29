@@ -9,6 +9,7 @@ use super::vif_guard::{
 };
 use crate::virtual_ts::expressions::{
     ExpressionListEmitContext, generate_expressions, generate_expressions_in_enclosing_guard,
+    rewrite_reserved_template_binding,
 };
 use crate::virtual_ts::scope::ScopeMappings;
 use crate::virtual_ts::types::VizeMapping;
@@ -22,6 +23,12 @@ pub(super) fn generate_scope_node(
     scope: &Scope,
     indent: &str,
 ) {
+    let scoped_access = ctx.template_binding_access.for_scope(scope.id);
+    let scoped_context = ScopeGenContext {
+        template_binding_access: &scoped_access,
+        ..*ctx
+    };
+    let ctx = &scoped_context;
     let scope_id = scope.id.as_u32();
     let inner_indent = cstr!("{indent}  ");
 
@@ -44,7 +51,16 @@ pub(super) fn generate_scope_node(
                 (String::from(indent), inner_indent.clone())
             };
             if let Some(guard) = enclosing_guard {
-                super::append_chained_vif_guard_open(ts, indent, guard, "Narrowing-only guard");
+                let parent = ctx
+                    .template_binding_access
+                    .for_scope(scope.parent().unwrap_or(scope.id));
+                let rewritten = rewrite_reserved_template_binding(guard, &parent);
+                super::append_chained_vif_guard_open(
+                    ts,
+                    indent,
+                    rewritten.as_deref().unwrap_or(guard),
+                    "Narrowing-only guard",
+                );
             }
             // Inner checks fold their own chain. Keep this wrapper open so the
             // next sibling v-for continues it instead of repeating the guard.
@@ -73,6 +89,9 @@ pub(super) fn generate_scope_node(
                         .filter(|_| capture_slots)
                         .and_then(callback_vif_guard);
                     let callback_indent = if let Some(guard) = callback_guard.as_deref() {
+                        let rewritten =
+                            rewrite_reserved_template_binding(guard, ctx.template_binding_access);
+                        let guard = rewritten.as_deref().unwrap_or(guard);
                         append_ignored_vif_guard_open(
                             ts,
                             vfor_inner_indent.as_str(),
@@ -155,6 +174,13 @@ pub(super) fn generate_scope_node(
                 ctx.expressions_by_scope
                     .get(&scope_id)
                     .and_then(|exprs| super::vif_guard::common_vif_guard_prefix(exprs))
+                    .map(|guard| {
+                        rewrite_reserved_template_binding(
+                            guard.as_str(),
+                            ctx.template_binding_access,
+                        )
+                        .unwrap_or(guard)
+                    })
             });
             let handler_indent = if let Some(guard) = enclosing_guard.as_deref() {
                 super::append_chained_vif_guard_open(ts, indent, guard, "Listener branch guard");

@@ -10,6 +10,8 @@ pub struct ContentMapperTransformOptions {
     pub(super) check_javascript: bool,
     pub(super) external_component_attrs_module: bool,
     pub(super) external_component_type_helpers: bool,
+    /// Hoist repeated helpers into the installed `vize/virtual-ts` module.
+    pub(super) shared_virtual_module: bool,
     pub(in crate::batch::virtual_project) check_unknown_components: bool,
     pub(in crate::batch::virtual_project) check_unknown_props: bool,
     pub(in crate::batch::virtual_project) check_unknown_fallthrough_props: bool,
@@ -29,6 +31,7 @@ impl Default for ContentMapperTransformOptions {
             check_javascript: false,
             external_component_attrs_module: false,
             external_component_type_helpers: false,
+            shared_virtual_module: false,
             check_unknown_components: false,
             check_unknown_props: true,
             check_unknown_fallthrough_props: false,
@@ -83,5 +86,17 @@ impl ContentMapperTransformOptions {
     pub const fn with_external_component_type_helpers(mut self, enabled: bool) -> Self {
         self.external_component_type_helpers = enabled;
         self
+    }
+
+    /// Resolve hoisted helpers from the installed `vize/virtual-ts` module.
+    #[must_use]
+    pub const fn with_shared_virtual_module(mut self, enabled: bool) -> Self {
+        self.shared_virtual_module = enabled;
+        self
+    }
+
+    #[must_use]
+    pub const fn shared_virtual_module(self) -> bool {
+        self.shared_virtual_module
     }
 }

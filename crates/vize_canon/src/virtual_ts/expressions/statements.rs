@@ -139,6 +139,8 @@ pub(crate) fn generate_expression(
     indent: &str,
     checks: TemplateValueChecks<'_>,
 ) {
+    let scoped_access = template_binding_access.for_scope(expr.scope_id);
+    let template_binding_access = &scoped_access;
     if let Some(ref guard) = expr.vif_guard {
         if expr.kind == TemplateExpressionKind::VIf {
             generate_vif_guard_expression(
@@ -195,6 +197,8 @@ pub(super) fn generate_expression_statement(
     indent: &str,
     checks: TemplateValueChecks<'_>,
 ) {
+    let scoped_access = template_binding_access.for_scope(expr.scope_id);
+    let template_binding_access = &scoped_access;
     let first_mapping = mappings.len();
     let generated_start = ts.len();
     emit_expression_statement(

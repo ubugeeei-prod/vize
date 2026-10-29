@@ -455,6 +455,7 @@ fn ignores_vize_owned_runtime_and_an_undeclared_preview() {
     assert_eq!(resolved, None);
 }
 
+mod bundled_vize;
 mod package_runtime;
 mod project_packages;
 mod provider_authority;

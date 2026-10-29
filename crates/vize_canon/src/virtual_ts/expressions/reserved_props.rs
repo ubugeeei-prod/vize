@@ -16,7 +16,36 @@ pub(crate) fn rewrite_reserved_template_binding(
     expression: &str,
     template_binding_access: &TemplateBindingAccess,
 ) -> Option<String> {
+    if template_binding_access.has_instance_globals() && expression.contains('$') {
+        return super::instance_rewrite::rewrite(expression, template_binding_access).map(
+            |rewrite| {
+                vize_carton::profiler::global_profiler()
+                    .record_counter("canon.instance_global_rewrite.output_buffers", 1);
+                String::from(rewrite.code.as_str())
+            },
+        );
+    }
     rewrite_binding(expression, template_binding_access, &mut None)
+}
+
+pub(super) fn rewrite_reserved_with_segments(
+    expression: &str,
+    bindings: &TemplateBindingAccess,
+) -> Option<super::spread_reserved_props::BindingRewrite> {
+    let mut spans = Some(Vec::new());
+    let code = rewrite_binding(expression, bindings, &mut spans)?;
+    Some(super::spread_reserved_props::BindingRewrite {
+        code,
+        diagnostic_prefixes: Vec::new(),
+        segments: spans
+            .unwrap_or_default()
+            .into_iter()
+            .map(|span| super::spread_reserved_props::SpreadRewriteSegment {
+                generated: span.gen_range,
+                source: span.src_range,
+            })
+            .collect(),
+    })
 }
 
 /// Compose the same rewrite with authored offsets. Synthetic receivers have no
@@ -29,23 +58,34 @@ pub(crate) fn map_rewritten_template_binding(
     expression: &str,
     bindings: &TemplateBindingAccess,
 ) {
-    let mut spans = Some(Vec::new());
-    let Some(rewritten) = rewrite_binding(expression, bindings, &mut spans) else {
-        return;
-    };
-    for (relative, _) in ts
-        .get(generated_start..)
-        .unwrap_or_default()
-        .match_indices(rewritten.as_str())
-    {
-        let base = generated_start + relative;
-        for span in spans.as_deref().unwrap_or_default() {
-            mappings.push(VizeMapping {
-                gen_range: base + span.gen_range.start..base + span.gen_range.end,
-                src_range: source_start + span.src_range.start..source_start + span.src_range.end,
-                sub_spans: Vec::new(),
-            });
+    map_rewritten_binding_source(
+        ts,
+        mappings,
+        generated_start..ts.len(),
+        super::binding_mapping::BindingSource {
+            expression,
+            start: source_start,
+            offsets: None,
+        },
+        bindings,
+    );
+}
+
+pub(super) fn map_rewritten_binding_source(
+    ts: &str,
+    mappings: &mut Vec<VizeMapping>,
+    generated: std::ops::Range<usize>,
+    source: super::binding_mapping::BindingSource<'_>,
+    bindings: &TemplateBindingAccess,
+) {
+    if bindings.has_instance_globals() && source.expression.contains('$') {
+        if let Some(rewrite) = super::instance_rewrite::rewrite(source.expression, bindings) {
+            super::binding_mapping::map_rewrite(
+                ts, mappings, generated, &source, &rewrite, bindings,
+            );
         }
+    } else if let Some(rewrite) = rewrite_reserved_with_segments(source.expression, bindings) {
+        super::binding_mapping::map_rewrite(ts, mappings, generated, &source, &rewrite, bindings);
     }
 }
 
@@ -54,7 +94,7 @@ fn rewrite_binding(
     template_binding_access: &TemplateBindingAccess,
     spans: &mut Option<Vec<VizeSubSpan>>,
 ) -> Option<String> {
-    if template_binding_access.is_empty() {
+    if !template_binding_access.has_reserved_bindings() {
         return None;
     }
 

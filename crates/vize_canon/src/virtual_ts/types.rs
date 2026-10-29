@@ -78,15 +78,13 @@ pub struct VirtualTsOptions {
     /// Ambient declaration files that editor virtual documents must load.
     /// Paths are emitted as triple-slash references before generated code.
     pub reference_paths: Vec<String>,
-    /// Resolve `$`-prefixed template instance globals by reading them off the
-    /// component public instance instead of declaring them with a permissive
-    /// `any` fallback.
+    /// Resolve template references through the narrower framework context.
     ///
     /// Set only when the project publishes an authoritative ambient declaration
-    /// graph for those names — Nuxt's generated `.nuxt` types. A name that graph
-    /// does not declare then reports the `TS2339` `vue-tsc` reports for it,
-    /// instead of silently resolving to `any`, and a name it does declare
-    /// resolves to its real declared type rather than a widened stand-in.
+    /// graph, such as Nuxt's generated `.nuxt` types. This context keeps literal
+    /// public-instance dollar keys and excludes broad index signatures. Ordinary
+    /// Vue 3 dollar references already read the typed public instance when this
+    /// is false; legacy Vue 2 keeps its structural compatibility fallback.
     pub strict_instance_globals: bool,
 }
 

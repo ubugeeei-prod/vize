@@ -107,7 +107,8 @@ export default defineComponent({
     assert!(
         !output
             .code
-            .contains("const $fetch: $InstanceGlobal<'$fetch'>"),
+            .contains("const $fetch: $InstanceGlobal<'$fetch'>")
+            && !output.code.contains("__ctx.$fetch"),
         "an instance-global declaration must not duplicate the spread setup binding:\n{}",
         output.code
     );

@@ -1,0 +1,53 @@
+{
+  "schema": "vize.instance-global-collision-controls",
+  "version": 1,
+  "credit": "discovery-only actual SDK probe before any fresh-receiver production design",
+  "programs": [
+    {
+      "id": "loop-receiver-collision",
+      "source": "<script setup lang=\"ts\">\nconst rows = [{ $ghost: { value: 1 } }];\n</script>\n<template>\n  <div v-for=\"__ctx in rows\">{{ $ghost.value }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst publicInstance = undefined as unknown as __Ctx;\n\nconst rows = [{ $ghost: { value: 1 } }];\nfor (const __ctx of rows) { publicInstance.$ghost.value; }\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.value",
+          "token": "$ghost",
+          "kind": "undeclared"
+        }
+      ]
+    },
+    {
+      "id": "callback-receiver-collision",
+      "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <div>{{ [1].map((__ctx: any) => $ghost.value) }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst publicInstance = undefined as unknown as __Ctx;\n\n[1].map((__ctx: any) => publicInstance.$ghost.value);\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.value",
+          "token": "$ghost",
+          "kind": "undeclared"
+        }
+      ]
+    },
+    {
+      "id": "escaped-callback-receiver-collision",
+      "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <div>{{ [1].map((__\\u0063tx: any) => $ghost.value) }}</div>\n</template>\n",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n",
+      "oracle": "import { defineComponent, type PropType, type SlotsType } from \"vue\";\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst publicInstance = undefined as unknown as __Ctx;\n\n[1].map((__\\u0063tx: any) => publicInstance.$ghost.value);\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.value",
+          "token": "$ghost",
+          "kind": "undeclared"
+        }
+      ],
+      "binder": {
+        "source": "__\\u0063tx",
+        "normalized": "__ctx"
+      }
+    }
+  ],
+  "inventory": {
+    "probes": 3
+  }
+}

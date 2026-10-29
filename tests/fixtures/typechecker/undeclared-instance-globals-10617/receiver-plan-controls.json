@@ -1,0 +1,84 @@
+{
+  "schema": "vize.instance-global-receiver-plan-controls",
+  "version": 1,
+  "inventory": {
+    "programs": 4
+  },
+  "authority": "Independent programs model the existing immutable receiver alias before any candidate execution. Actual diagnostic codes and complete messages are observed from the real pinned compilers, including generated-alias spelling suggestions.",
+  "programs": [
+    {
+      "id": "unresolved-value",
+      "source": "<template>\n  <div v-for=\"__ctx in [1]\">{{ $ghost.value }} {{ __vize_template_instance }}</div>\n</template>\n",
+      "oracle": "export {};\n\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst __vize_template_instance_ = __ctx;\nfor (const __ctx of [1]) { __vize_template_instance_.$ghost.value; __vize_template_instance; }\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.value",
+          "token": "$ghost",
+          "kind": "undeclared"
+        },
+        {
+          "anchor": "{{ __vize_template_instance }}",
+          "token": "__vize_template_instance",
+          "kind": "unresolved"
+        }
+      ],
+      "receiver": "fresh",
+      "candidate": {
+        "name": "__vize_template_instance",
+        "role": "value"
+      },
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n"
+    },
+    {
+      "id": "unresolved-type-query",
+      "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <div>{{ ((__ctx: any) => { type T = typeof __vize_template_instance; return $ghost.value; })(0) }}</div>\n</template>\n",
+      "oracle": "export {};\n\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\nconst __vize_template_instance_ = __ctx;\n((__ctx: any) => { type T = typeof __vize_template_instance; return __vize_template_instance_.$ghost.value; })(0);\n}\n",
+      "errors": [
+        {
+          "anchor": "typeof __vize_template_instance",
+          "token": "__vize_template_instance",
+          "kind": "unresolved"
+        },
+        {
+          "anchor": "$ghost.value",
+          "token": "$ghost",
+          "kind": "undeclared"
+        }
+      ],
+      "receiver": "fresh",
+      "candidate": {
+        "name": "__vize_template_instance",
+        "role": "type-query"
+      },
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n"
+    },
+    {
+      "id": "unrelated-function-name",
+      "source": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n<template>\n  <div>{{ ({ f: function __ctx() { return 1; }, value: $ghost.value }) }}</div>\n</template>\n",
+      "oracle": "export {};\n\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\n({ f: function __ctx() { return 1; }, value: __ctx.$ghost.value });\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.value",
+          "token": "$ghost",
+          "kind": "undeclared"
+        }
+      ],
+      "receiver": "direct",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n"
+    },
+    {
+      "id": "outer-script-binding",
+      "source": "<script setup lang=\"ts\">\nconst __ctx = { different: 1 };\n</script>\n<template>\n  <div>{{ $ghost.value }}</div>\n</template>\n",
+      "oracle": "export {};\nconst __ctx = { different: 1 };\nfunction independentVueContext() {\ntype __Ctx = import(\"vue\").ComponentPublicInstance;\nconst __ctx = undefined as unknown as __Ctx;\n__ctx.$ghost.value;\n}\n",
+      "errors": [
+        {
+          "anchor": "$ghost.value",
+          "token": "$ghost",
+          "kind": "undeclared"
+        }
+      ],
+      "receiver": "direct",
+      "globals": "export {};\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $declared: { known: number };\n  }\n}\n"
+    }
+  ]
+}

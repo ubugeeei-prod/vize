@@ -12,7 +12,7 @@ use super::literal::append_slot_outlet_literal;
 
 struct SlotOutletCheckContext<'a> {
     slot_outlets_by_scope: &'a FxHashMap<u32, Vec<SlotOutlet>>,
-    template_binding_access: &'a TemplateBindingAccess,
+    template_binding_access: &'a TemplateBindingAccess<'a>,
     source_context: ComponentPropSource<'a>,
     slots_type_ref: &'a str,
     indent: &'a str,

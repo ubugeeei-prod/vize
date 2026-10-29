@@ -313,11 +313,8 @@ fn vue2_instance_members_are_declared_once() {
     }
 
     let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
-    assert_eq!(
-        standard
-            .matches("const $listeners = __ctx.$listeners;")
-            .count(),
-        1,
-        "Vue 3 should read $listeners off the public instance:\n{standard}"
+    assert!(
+        standard.contains("void (__ctx.$listeners);"),
+        "Vue 3 should still resolve $listeners through the instance-global form:\n{standard}"
     );
 }

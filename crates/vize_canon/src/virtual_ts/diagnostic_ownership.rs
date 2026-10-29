@@ -180,6 +180,38 @@ impl DiagnosticOwnership {
         }
     }
 
+    /// A generated replacement grew `[start, start + old_len)` to `new_len`.
+    /// Rows that merely follow the edit keep their proof. An edit inside a
+    /// row removes its proof, never its diagnostic.
+    pub(crate) fn note_generated_replacement(
+        &mut self,
+        start: usize,
+        old_len: usize,
+        new_len: usize,
+    ) {
+        let Some(extra) = new_len.checked_sub(old_len).filter(|extra| *extra > 0) else {
+            return;
+        };
+        let old_end = start + old_len;
+        for range in &mut self.callback_primaries {
+            if range.start >= old_end {
+                range.start += extra;
+                range.end += extra;
+            } else if range.end > start && range.end >= old_end {
+                range.end += extra;
+            }
+        }
+        for row in &mut self.rows {
+            if row.generated.start >= old_end {
+                row.generated.start += extra;
+                row.generated.end += extra;
+            } else if row.generated.end > start && row.generated.end >= old_end {
+                row.generated.end += extra;
+                row.valid = false;
+            }
+        }
+    }
+
     /// Consume the very same accepted insertion coordinates as the mapping
     /// authority. An edit inside a row removes its proof, never its diagnostic.
     pub(crate) fn note_generated_insertion(&mut self, at: usize, length: usize) {

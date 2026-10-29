@@ -61,6 +61,8 @@ pub(crate) fn append_props_literal(
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
 ) -> std::ops::Range<usize> {
+    let scoped_access = template_binding_access.for_scope(usage.scope_id);
+    let template_binding_access = &scoped_access;
     let literal_gen_start = ts.len();
     ts! { &mut *ts =>
         {
