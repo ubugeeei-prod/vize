@@ -6,12 +6,9 @@ on:
       - .github/workflows/lsp-marker-scan-scale.yml
       - crates/vize_maestro/src/server/state/project_contexts/root_discovery/**
       - crates/vize_maestro/src/server/state/project_contexts/root_discovery.rs
-      - tools/support/compat/davinci/lsp-marker-scan-compare.ts
-      - tools/support/compat/davinci/lsp-marker-scan-source.ts
-      - tools/support/compat/davinci/lib/lsp-resource-corpus.ts
-      - tools/support/compat/davinci/lib/lsp-resource-finalize.ts
-      - tools/support/compat/davinci/lib/lsp-resource-sampler.ts
-      - tools/support/compat/davinci/lsp-resources.ts
+      - tools/support/compat/davinci/lsp-*.ts
+      - tools/support/compat/davinci/lib/lsp-*.ts
+      - tests/tooling/support/lsp/**
       - tests/tooling/lsp-marker-scan-compare.test.ts
       - tests/tooling/lsp-marker-scan-source.test.ts
       - tests/tooling/lsp-resource-corpus.test.ts

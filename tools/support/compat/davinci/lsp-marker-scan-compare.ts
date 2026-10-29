@@ -144,6 +144,12 @@ export function compareLspMarkerScans(directory: string) {
       allocation: unknown;
       calls: number;
       entries: number;
+      operations: {
+        directoryScanCounter: string;
+        standardReadDirCalls: number;
+        getdents64Calls: number;
+        getdents64Bytes: number;
+      };
     }
   >;
   let profileBuild: Identity["build"] | undefined;
@@ -172,9 +178,18 @@ export function compareLspMarkerScans(directory: string) {
     );
     assert.ok(root && root.count > 0 && root.alloc.self_calls > 0 && root.alloc.self_bytes > 0);
     const entryCounter = profile.micro.filter((counter) => counter.name === "fs.read_dir.entries");
-    const calls = profile.micro
-      .filter((counter) => counter.name === "fs.read_dir.calls")
-      .reduce((sum, counter) => sum + counter.units, 0);
+    const sum = (name: string) =>
+      profile.micro
+        .filter((counter) => counter.name === name)
+        .reduce((total, counter) => total + counter.units, 0);
+    // Earlier sources always called std::fs::read_dir for every scan. New
+    // sources distinguish that real API call from a native scan attempt.
+    const directoryScanCounter = profile.micro.some(
+      (counter) => counter.name === "fs.directory_scan.calls",
+    )
+      ? "fs.directory_scan.calls"
+      : "fs.read_dir.calls";
+    const calls = sum(directoryScanCounter);
     const entries = entryCounter.reduce((sum, counter) => sum + counter.units, 0);
     assert.ok(calls > 0 && entries > baseline.workspace_files);
     profiles[role] = {
@@ -183,6 +198,12 @@ export function compareLspMarkerScans(directory: string) {
       allocation: profile.allocation,
       calls,
       entries,
+      operations: {
+        directoryScanCounter,
+        standardReadDirCalls: sum("fs.read_dir.calls"),
+        getdents64Calls: sum("fs.getdents64.calls"),
+        getdents64Bytes: sum("fs.getdents64.bytes"),
+      },
     };
   }
   assert.ok(
@@ -202,6 +223,11 @@ export function compareLspMarkerScans(directory: string) {
     profiles.head.root_allocation.per_invocation.self_bytes <
       profiles.base.root_allocation.per_invocation.self_bytes,
     "the measured per-invocation allocation hotspot bytes must decrease",
+  );
+  assert.ok(
+    profiles.head.operations.getdents64Calls > 0 &&
+      profiles.head.operations.standardReadDirCalls === 0,
+    "the candidate must scan through the native Linux path",
   );
   return {
     scope:

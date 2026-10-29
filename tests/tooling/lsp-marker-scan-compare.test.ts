@@ -82,7 +82,13 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
           },
         ],
         micro: [
-          { name: "fs.read_dir.calls", calls: 2, units: 2 },
+          ...(role === "base"
+            ? [{ name: "fs.read_dir.calls", calls: 2, units: 2 }]
+            : [
+                { name: "fs.directory_scan.calls", calls: 2, units: 2 },
+                { name: "fs.getdents64.calls", calls: 4, units: 4 },
+                { name: "fs.getdents64.bytes", calls: 2, units: 4096 },
+              ]),
           { name: "fs.read_dir.entries", calls: 100, units: 100 },
         ],
         allocation: { calls: 1000, requested_bytes: 10000 },
@@ -90,6 +96,14 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
     }
     const report = compareLspMarkerScans(directory);
     assert.equal(report.normal.headMedianMs, 70);
+    assert.equal(report.profiles.head.calls, 2);
+    assert.deepEqual(report.profiles.head.operations, {
+      directoryScanCounter: "fs.directory_scan.calls",
+      standardReadDirCalls: 0,
+      getdents64Calls: 4,
+      getdents64Bytes: 4096,
+    });
+    assert.equal(report.profiles.base.operations.standardReadDirCalls, 2);
     assert.deepEqual(report.profiles.base.root_allocation, {
       invocations: 2,
       total: { self_calls: 100, self_bytes: 1000 },
@@ -103,6 +117,7 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
     const profilePath = path.join(directory, "profile-head/run-1.json");
     const originalProfile = JSON.parse(fs.readFileSync(profilePath, "utf8")) as {
       spans: { count: number; alloc: { self_calls: number; self_bytes: number } }[];
+      micro: { name: string; calls: number; units: number }[];
     };
     const moreTotalWork = structuredClone(originalProfile);
     moreTotalWork.spans[0].count = 4;
@@ -122,6 +137,14 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
       () => compareLspMarkerScans(directory),
       /per-invocation allocation hotspot calls must decrease/u,
     );
+    write("profile-head/run-1.json", originalProfile);
+    const standardReader = structuredClone(originalProfile);
+    standardReader.micro = [
+      { name: "fs.read_dir.calls", calls: 2, units: 2 },
+      { name: "fs.read_dir.entries", calls: 100, units: 100 },
+    ];
+    write("profile-head/run-1.json", standardReader);
+    assert.throws(() => compareLspMarkerScans(directory), /native Linux path/u);
     write("profile-head/run-1.json", originalProfile);
     const badBinary = identity("head", false);
     badBinary.binary.sha256 = identity("base", false).binary.sha256;

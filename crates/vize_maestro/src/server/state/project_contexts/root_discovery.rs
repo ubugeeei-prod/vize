@@ -12,25 +12,9 @@ pub(super) fn document_root(path: &Path, workspace: &Path) -> PathBuf {
         let mut package_root = None;
         let mut vite_root: Option<PathBuf> = None;
         while directory.starts_with(workspace) {
-            let mut has_package = false;
-            let mut has_vite = false;
-            let mut has_project_config = false;
-            vize_l0::micro_count!("fs.read_dir.calls", 1);
-            if let Ok(entries) = std::fs::read_dir(directory) {
-                for entry in entries.flatten() {
-                    vize_l0::micro_count!("fs.read_dir.entries", 1);
-                    match config_marker_name(&entry.file_name()) {
-                        Some(ConfigMarker::Package) => has_package = true,
-                        Some(ConfigMarker::Vite) => has_vite = true,
-                        Some(ConfigMarker::TypeScript) => {
-                            has_project_config = true;
-                            break;
-                        }
-                        None => {}
-                    }
-                }
-            }
-            if has_project_config {
+            vize_l0::micro_count!("fs.directory_scan.calls", 1);
+            let markers = directory_markers(directory);
+            if markers.typescript {
                 if package_root.is_some()
                     && let Some(vite_root) = vite_root.as_ref()
                 {
@@ -38,10 +22,10 @@ pub(super) fn document_root(path: &Path, workspace: &Path) -> PathBuf {
                 }
                 return directory.to_path_buf();
             }
-            if vite_root.is_none() && package_root.is_none() && has_vite {
+            if vite_root.is_none() && package_root.is_none() && markers.vite {
                 vite_root = Some(directory.to_path_buf());
             }
-            if package_root.is_none() && has_package {
+            if package_root.is_none() && markers.package {
                 package_root = Some(directory.to_path_buf());
             }
             if directory == workspace {
@@ -57,6 +41,58 @@ pub(super) fn document_root(path: &Path, workspace: &Path) -> PathBuf {
             .unwrap_or_else(|| workspace.to_path_buf())
     })
 }
+
+#[derive(Debug, Default, Eq, PartialEq)]
+struct DirectoryMarkers {
+    package: bool,
+    vite: bool,
+    typescript: bool,
+}
+
+impl DirectoryMarkers {
+    // A TypeScript marker decides this directory's ownership independently of
+    // its other markers. Normalize those irrelevant flags for either reader.
+    fn observe(&mut self, name: &OsStr) -> bool {
+        match config_marker_name(name) {
+            Some(ConfigMarker::Package) => self.package = true,
+            Some(ConfigMarker::Vite) => self.vite = true,
+            Some(ConfigMarker::TypeScript) => {
+                *self = Self {
+                    typescript: true,
+                    ..Self::default()
+                };
+                return true;
+            }
+            None => {}
+        }
+        false
+    }
+}
+
+fn directory_markers(directory: &Path) -> DirectoryMarkers {
+    #[cfg(target_os = "linux")]
+    if let Ok(markers) = linux::directory_markers(directory) {
+        return markers;
+    }
+    standard_directory_markers(directory)
+}
+
+fn standard_directory_markers(directory: &Path) -> DirectoryMarkers {
+    vize_l0::micro_count!("fs.read_dir.calls", 1);
+    let mut markers = DirectoryMarkers::default();
+    if let Ok(entries) = std::fs::read_dir(directory) {
+        for entry in entries.flatten() {
+            vize_l0::micro_count!("fs.read_dir.entries", 1);
+            if markers.observe(&entry.file_name()) {
+                break;
+            }
+        }
+    }
+    markers
+}
+
+#[cfg(target_os = "linux")]
+mod linux;
 
 #[derive(Debug, Eq, PartialEq)]
 enum ConfigMarker {
