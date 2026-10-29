@@ -407,14 +407,8 @@ export function reportedDiagnostics(
 }
 
 /**
- * The first-run failure contract: a missing Corsa runtime must name the package
- * and the exact command that installs it, and must fail rather than report a
- * clean project.
- *
- * SGR sequences are stripped and path separators normalised before comparing, so
- * the assertion stays a full-equality one on the message a user reads: the CLI
- * colours this path unconditionally today, and neither honouring `NO_COLOR`
- * later nor Windows' separator may red-light the release smoke.
+ * A `CORSA_PATH` that does not exist must fail closed and name that path.
+ * SGR sequences are stripped and path separators normalised before comparing.
  */
 export function assertMissingCorsaGuidance(projectRoot: string, manager: PackageManager): void {
   const missing = path.join(projectRoot, "no-such-corsa-runtime");
@@ -424,13 +418,11 @@ export function assertMissingCorsaGuidance(projectRoot: string, manager: Package
   assert.equal(
     message,
     [
-      "Error: error: corsa not found",
+      "Error: error: native TypeScript runtime not found",
       "",
       `Configured Corsa executable does not exist: ${missing.replaceAll("\\", "/")}`,
       "",
-      "To install, run:",
-      "",
-      `  ${manager.corsaInstallCommand} ${manager.installArgs.join(" ")} typescript@^7`,
+      "Correct the configured path, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to an existing native executable.",
     ].join("\n"),
   );
   const scripted = runGeneratedCheck(projectRoot, manager, [], { CORSA_PATH: missing });
