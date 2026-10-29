@@ -7,12 +7,23 @@ use vize_carton::{String, append, profile};
 use vize_croquis::{EventHandlerScopeData, Scope};
 
 use crate::virtual_ts::expressions::ComponentPropSource;
-use crate::virtual_ts::types::VizeMapping;
+use crate::virtual_ts::types::{VirtualTsCheckOptions, VizeMapping};
 
 use super::super::component_events::{ComponentEventTypeContext, generate_component_event_types};
 use super::super::context::{EventHandlerExprContext, ScopeGenContext};
 use super::super::event_handler::{event_name_source_range, generate_event_handler_expressions};
 use super::event_targets::needs_typed_handler_assignment;
+
+/// Select only the recorded listener payload. This does not enable required
+/// attrs or unknown-prop checks: explicit false opts out, and Vue 2 keeps its
+/// existing omitted-option behavior.
+fn uses_fallthrough_listener_payload(
+    check_options: VirtualTsCheckOptions,
+    legacy_vue2: bool,
+) -> bool {
+    check_options.fallthrough_attributes
+        || (!legacy_vue2 && !check_options.fallthrough_attributes_specified)
+}
 
 pub(super) fn generate_component_handler_scope(
     ts: &mut String,
@@ -50,7 +61,10 @@ pub(super) fn generate_component_handler_scope(
                     legacy_vue2: ctx.legacy_vue2,
                     hoist_shared_preamble: ctx.hoist_shared_preamble,
                     needs_typed_handler_assignment,
-                    fallthrough_listeners: ctx.check_options.fallthrough_attributes,
+                    fallthrough_listeners: uses_fallthrough_listener_payload(
+                        ctx.check_options,
+                        ctx.legacy_vue2,
+                    ),
                     explicit_generic: data.target_component.as_ref().and_then(|component| {
                         ctx.explicit_generics.alias_at(
                             ctx.summary,
@@ -190,5 +204,32 @@ pub(super) fn generate_component_handler_scope(
         });
     } else {
         append!(*ts, "{indent}}});\n");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn omitted_fallthrough_listener_payloads_are_vue3_only() {
+        for (legacy_vue2, enabled, specified, expected) in [
+            (false, false, false, true),
+            (true, false, false, false),
+            (false, true, true, true),
+            (true, true, true, true),
+            (false, false, true, false),
+        ] {
+            let options = VirtualTsCheckOptions {
+                fallthrough_attributes: enabled,
+                fallthrough_attributes_specified: specified,
+                ..Default::default()
+            };
+            assert_eq!(
+                uses_fallthrough_listener_payload(options, legacy_vue2),
+                expected,
+                "legacy_vue2={legacy_vue2}, enabled={enabled}, specified={specified}"
+            );
+        }
     }
 }

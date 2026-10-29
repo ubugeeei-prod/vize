@@ -114,7 +114,7 @@ fn official_pattern_listener_control_matches_pinned_reporter_inputs() {
 }
 
 #[test]
-fn standard_tsgo_reports_each_component_prop_problem_once_with_pattern_injected_listeners() {
+fn standard_tsgo_preserves_pattern_listener_and_open_root_contracts() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
         eprintln!("skipping shared-helper listener receipt: {TSGO_ENV} is not set");
         return;
@@ -133,10 +133,20 @@ fn standard_tsgo_reports_each_component_prop_problem_once_with_pattern_injected_
         .tempdir_in(&cases_root)
         .unwrap();
     for shared_helpers in [false, true] {
-        for (owner, declared_listener, native_root, invalid_status) in [
-            ("fallthrough", false, true, 2),
-            ("emit", true, true, 2),
-            ("unknown", false, false, 0),
+        for (
+            owner,
+            declared_listener,
+            native_root,
+            unresolved_root,
+            fallthrough_attributes,
+            invalid_status,
+        ) in [
+            ("fallthrough-omitted", false, true, false, None, 2),
+            ("fallthrough-true", false, true, false, Some(true), 2),
+            ("fallthrough-false", false, true, false, Some(false), 0),
+            ("declared", true, true, false, Some(false), 2),
+            ("no-root-open", false, false, false, None, 0),
+            ("unresolved-root-open", false, false, true, None, 0),
         ] {
             for valid_listener in [false, true] {
                 let mode = if shared_helpers { "shared" } else { "embedded" };
@@ -147,7 +157,9 @@ fn standard_tsgo_reports_each_component_prop_problem_once_with_pattern_injected_
                     shared_helpers,
                     declared_listener,
                     native_root,
+                    unresolved_root,
                     valid_listener,
+                    fallthrough_attributes,
                 );
                 let output = check_project(&tsgo, &project, "tsconfig.json");
                 assert_eq!(output.stderr, b"", "{}", output_text(&output));
@@ -262,7 +274,9 @@ fn prepare_pattern_listener_project(
     shared_helpers: bool,
     declared_listener: bool,
     native_root: bool,
+    unresolved_root: bool,
     valid_listener: bool,
+    fallthrough_attributes: Option<bool>,
 ) {
     prepare_mapper_project(project, shared_helpers);
     let source_root = project.join("src");
@@ -286,10 +300,13 @@ declare module "vue" {
     } else {
         "change: []"
     };
-    let template = if native_root {
-        "\n<template>\n  <div class=\"my-item\"><slot></slot></div>\n</template>\n"
-    } else {
-        ""
+    let template = match (native_root, unresolved_root) {
+        (true, false) => {
+            "\n<template>\n  <div class=\"my-item\"><slot></slot></div>\n</template>\n"
+        }
+        (false, true) => "\n<template>\n  <UnresolvedRoot />\n</template>\n",
+        (false, false) => "",
+        (true, true) => unreachable!("a fixture has exactly one root contract"),
     };
     std::fs::write(
         source_root.join("MyItem.vue"),
@@ -315,21 +332,24 @@ const onClick = (event: {listener}) => {body};
         ),
     )
     .unwrap();
+    let mut config = json!({
+        "compilerOptions": {
+            "target": "ESNext",
+            "module": "preserve",
+            "moduleResolution": "bundler",
+            "strict": true,
+            "noEmit": true,
+            "skipLibCheck": true,
+        },
+        "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
+        "include": ["src"],
+    });
+    if let Some(enabled) = fallthrough_attributes {
+        config["vueCompilerOptions"] = json!({ "fallthroughAttributes": enabled });
+    }
     std::fs::write(
         project.join("tsconfig.json"),
-        serde_json::to_vec_pretty(&json!({
-            "compilerOptions": {
-                "target": "ESNext",
-                "module": "preserve",
-                "moduleResolution": "bundler",
-                "strict": true,
-                "noEmit": true,
-                "skipLibCheck": true,
-            },
-            "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
-            "include": ["src"],
-        }))
-        .unwrap(),
+        serde_json::to_vec_pretty(&config).unwrap(),
     )
     .unwrap();
 }
