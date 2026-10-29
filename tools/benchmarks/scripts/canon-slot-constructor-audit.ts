@@ -29,6 +29,27 @@ function text(result: Record<string, unknown>): string {
   return value;
 }
 
+function directConstructorOwners(source: string, helper: string): string[] {
+  const marker = "new (undefined as unknown as ",
+    owners: string[] = [];
+  let offset = 0;
+  while (offset < source.length) {
+    const start = source.indexOf(marker, offset);
+    if (start < 0) break;
+    const fragment = source.slice(start, start + 768),
+      helperOffset = fragment.indexOf(helper),
+      typeEnd = fragment.indexOf("<", marker.length),
+      typeHead = typeEnd < 0 ? "" : fragment.slice(marker.length, typeEnd);
+    if (helperOffset >= marker.length && typeHead.endsWith(helper)) {
+      const owner = fragment.slice(helperOffset).match(/typeof\s+([A-Za-z_$][\w$]*)/u)?.[1];
+      assert.ok(owner, `${helper} must name the constructor expression it owns`);
+      owners.push(owner);
+    }
+    offset = start + marker.length;
+  }
+  return owners;
+}
+
 function bytes(source: string, start: number, end: number): string {
   return Buffer.from(source).subarray(start, end).toString("utf8");
 }
@@ -97,13 +118,19 @@ export function auditPackets(
 ) {
   const baseText = text(before),
     headText = text(after),
-    call = `__vizeSlotConstructorInstance<__VizeSlotConstructor<typeof ${component}>>>()(`,
     legacy = `__VizeSlotConstructor<typeof ${component}>)({`,
+    directConstructorBranches = {
+      withoutArguments: directConstructorOwners(headText, "__VizeSlotConstructorWithoutArguments"),
+      withArguments: directConstructorOwners(headText, "__VizeSlotConstructorWithArguments"),
+    },
     headSemanticLinks = semanticLinkContract(after);
-  assert.equal(
-    headText.split(call).length - 1,
-    2,
-    "both inference phases select the exact direct constructor branch",
+  assert.deepEqual(
+    directConstructorBranches,
+    {
+      withoutArguments: [component, component],
+      withArguments: [component, component],
+    },
+    "both inference phases must retain both direct branches under the exact component owner",
   );
   assert.ok(!headText.includes(legacy), "the unconditional first argument must be gone");
   assert.ok(
@@ -143,6 +170,7 @@ export function auditPackets(
     mappings: tuples(after.mappings).length,
     directives: directiveContract(after)?.directives.length ?? 0,
     semanticLinks: headSemanticLinks?.length ?? 0,
+    directConstructorBranches,
   };
 }
 

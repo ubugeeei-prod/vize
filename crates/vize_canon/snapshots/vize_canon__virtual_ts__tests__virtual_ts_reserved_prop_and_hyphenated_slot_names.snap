@@ -120,7 +120,8 @@ type __VizeSlotConstructorHasArguments<C> = __VizeSlotConstructorArgumentLists<C
 type __VizeSlotConstructorWithoutArguments<C> = [__VizeSlotConstructorHasArguments<C>] extends [never] ? C : new () => { $slots: never };
 type __VizeSlotConstructorWithArguments<C> = [__VizeSlotConstructorHasArguments<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : C;
 type __VizeSlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any ? { [K in keyof A]: any } : [];
-declare function __vizeSlotConstructorInstance<C>(): <Z, P>(withoutArguments: Z, withArguments: P) => [__VizeSlotConstructorHasArguments<C>] extends [never] ? Z : P;
+type __VizeSlotConstructorInstance<C, Z, P> = [__VizeSlotConstructorHasArguments<C>] extends [never] ? Z : P;
+declare function __vizeSlotConstructorInstance<C>(): <Z, P>(withoutArguments: Z, withArguments: P) => __VizeSlotConstructorInstance<C, Z, P>;
 type __VizeSlotHostSelector<C> = [__VizeDirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
 // @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
 type __VizeSilentAny = {}["__vizeSilentAny"];
@@ -157,7 +158,7 @@ function __setup() {
     class?: string
   }>()
   
-  // @vize-map: 19752:19797 -> 0:78
+  // @vize-map: 19838:19883 -> 0:78
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

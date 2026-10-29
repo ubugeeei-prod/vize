@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - crates/vize_canon/src/virtual_ts/expressions/generic_props_call.rs
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-resolver.d.ts.txt
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/slot-resolver.d.ts.txt
+      - crates/vize_canon/src/virtual_ts/helpers/preamble.rs
+      - crates/vize_canon/src/virtual_ts/helpers/shared_types.rs
       - crates/vize_canon/src/virtual_ts/scope/slot_scope/payload.rs
       - crates/vize_canon/src/virtual_ts/tests/slot_component_bindings.rs
       - crates/vize_canon/src/snapshots/vize_canon__tests__virtual_ts_tests__virtual_ts_scoped_slots.snap
@@ -69,11 +73,19 @@ jobs:
           set -euo pipefail
           export CARGO_TARGET_DIR="$RUNNER_TEMP/slot-head-target"
           evidence="$RUNNER_TEMP/slot-evidence"
-          cargo test --locked --profile ci-opt -p vize_canon --lib slot_constructor_calls_adapt_the_first_argument_without_replacing_the_signature -- --nocapture > "$evidence/tuple-tests.stdout" 2> "$evidence/tuple-tests.stderr"
-          cargo test --locked --profile ci-opt -p vize_canon --lib tests::virtual_ts_tests::snapshot_virtual_ts_scoped_slots -- --exact --nocapture > "$evidence/scoped-slots-snapshot.stdout" 2> "$evidence/scoped-slots-snapshot.stderr"
-          cargo test --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::test_scoped_slot_expressions -- --exact --nocapture > "$evidence/scoped-slot-expressions.stdout" 2> "$evidence/scoped-slot-expressions.stderr"
-          cargo test --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::test_reserved_prop_and_hyphenated_slot_names -- --exact --nocapture > "$evidence/reserved-props-snapshot.stdout" 2> "$evidence/reserved-props-snapshot.stderr"
-          cargo test --locked --profile ci-opt -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$evidence/constructor-packets.stdout" 2> "$evidence/constructor-packets.stderr"
+          run_exact_test() {
+            local label="$1"
+            shift
+            cargo test "$@" -- --exact --nocapture > "$evidence/$label.stdout" 2> "$evidence/$label.stderr"
+            grep -Fxq "running 1 test" "$evidence/$label.stdout"
+            grep -Fq "test result: ok. 1 passed; 0 failed; 0 ignored;" "$evidence/$label.stdout"
+          }
+          run_exact_test tuple-tests --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::slot_component_bindings::slot_constructor_calls_adapt_the_first_argument_without_replacing_the_signature
+          run_exact_test hoisted-owner --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::slot_component_bindings::hoisted_slot_constructor_branches_keep_the_component_owner
+          run_exact_test scoped-slots-snapshot --locked --profile ci-opt -p vize_canon --lib tests::virtual_ts_tests::snapshot_virtual_ts_scoped_slots
+          run_exact_test scoped-slot-expressions --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::test_scoped_slot_expressions
+          run_exact_test reserved-props-snapshot --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::test_reserved_prop_and_hyphenated_slot_names
+          run_exact_test constructor-packets --locked --profile ci-opt -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets
       - name: Install the pinned public release baseline and provider
         run: |
           set -euo pipefail

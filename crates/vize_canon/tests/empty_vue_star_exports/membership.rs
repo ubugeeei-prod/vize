@@ -106,6 +106,41 @@ fn expected() -> (Value, Value) {
     );
     *helper = helper_hoist["after"].clone();
     manifest["provenance"]["currentHelperHoistUpdate"] = helper_hoist;
+    let slot_constructor_update =
+        fs::read(support::corpus().join("malformed-membership/helper-update-11018.json")).unwrap();
+    assert_eq!(
+        support::hash(&slot_constructor_update),
+        "008b5dcaa4853e9da944da65d425635bc1caa33e2924ab6b9015a693e4222f15"
+    );
+    let slot_constructor_update: Value = serde_json::from_slice(&slot_constructor_update).unwrap();
+    assert_eq!(slot_constructor_update["version"], 1);
+    assert_eq!(slot_constructor_update["pullRequest"], 11018);
+    assert_eq!(
+        slot_constructor_update["sourceRevision"],
+        "f48dc9052ecb5637ee37c4372115630e447610ef"
+    );
+    assert_eq!(
+        slot_constructor_update["testedMerge"],
+        "ddc69005128d6cedf972d35d1a3b3d7d684088a7"
+    );
+    assert_eq!(slot_constructor_update["observedRun"], 40878804863_i64);
+    assert_eq!(slot_constructor_update["observedJob"], 123464771332_i64);
+    assert_eq!(slot_constructor_update["artifact"], 12899293199_i64);
+    assert_eq!(slot_constructor_update["entry"], 82);
+    assert_eq!(slot_constructor_update["deltaBytes"], 978);
+    let helper = members.get_mut(82).unwrap();
+    assert_eq!(*helper, slot_constructor_update["before"]);
+    assert_eq!(
+        slot_constructor_update["before"][0],
+        slot_constructor_update["after"][0]
+    );
+    assert_eq!(
+        slot_constructor_update["after"][1].as_u64().unwrap()
+            - slot_constructor_update["before"][1].as_u64().unwrap(),
+        978
+    );
+    *helper = slot_constructor_update["after"].clone();
+    manifest["provenance"]["currentSlotConstructorUpdate"] = slot_constructor_update;
     let context =
         fs::read(support::corpus().join("malformed-membership/context-update-10667.json")).unwrap();
     assert_eq!(

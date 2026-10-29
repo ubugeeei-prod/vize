@@ -193,15 +193,13 @@ pub(crate) fn generate_slot_host_binding(
             crate::virtual_ts::helpers::shared_types::SLOT_HOST_SELECTOR.select(true);
         let slot_constructor =
             crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR.select(true);
-        let slot_constructor_without_arguments = crate::virtual_ts::helpers::shared_types::
-            SLOT_CONSTRUCTOR_WITHOUT_ARGUMENTS
-            .select(true);
-        let slot_constructor_with_arguments = crate::virtual_ts::helpers::shared_types::
-            SLOT_CONSTRUCTOR_WITH_ARGUMENTS
-            .select(true);
-        let slot_constructor_instance = crate::virtual_ts::helpers::shared_types::
-            SLOT_CONSTRUCTOR_INSTANCE
-            .select(true);
+        let slot_constructor_without_arguments =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITHOUT_ARGUMENTS
+                .select(true);
+        let slot_constructor_with_arguments =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITH_ARGUMENTS.select(true);
+        let slot_constructor_instance =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_INSTANCE.select(true);
         append!(
             *ts,
             "{indent}const {binding_name} = (undefined as unknown as {slot_host_selector}<typeof {component_ref}>)((undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => {slot_constructor_instance}<{slot_constructor}<typeof {component_ref}>, __Z, __P>)(new (undefined as unknown as {slot_constructor_without_arguments}<{slot_constructor}<typeof {component_ref}>>)(), new (undefined as unknown as {slot_constructor_with_arguments}<{slot_constructor}<typeof {component_ref}>>)(",
