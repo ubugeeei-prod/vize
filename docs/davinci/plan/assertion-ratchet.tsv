@@ -355,7 +355,6 @@ crates/vize_maestro/src/ide/diagnostics/editor_typecheck_tests.rs	9
 crates/vize_maestro/src/ide/diagnostics/native/tests.rs	2
 crates/vize_maestro/src/ide/diagnostics/tests.rs	3
 crates/vize_maestro/src/ide/diagnostics/tests/self_closing_compatibility.rs	1
-crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs	3
 crates/vize_maestro/src/ide/diagnostics/vize_sfc_type_tests.rs	1
 crates/vize_maestro/src/ide/document_link/resident_tests.rs	4
 crates/vize_maestro/src/ide/ecosystem/resident_tests.rs	2
