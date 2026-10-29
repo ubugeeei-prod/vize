@@ -90,12 +90,12 @@ jobs:
         run: |
           set -euo pipefail; vp install --frozen-lockfile --prefer-offline; bash tools/support/compat/github/native-syntax-semantics.sh
           if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
-            [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/node_modules" ]]
-            [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/tests/node_modules" ]]
-            ln -s "$GITHUB_WORKSPACE/node_modules" "$NATIVE_PHASE_SOURCE_ROOT/node_modules"
-            ln -s "$GITHUB_WORKSPACE/tests/node_modules" "$NATIVE_PHASE_SOURCE_ROOT/tests/node_modules"
-            for dependency in vue vue-component-type-helpers vue-ssr-css-vars-oracle; do
-              test -f "$NATIVE_PHASE_SOURCE_ROOT/tests/node_modules/$dependency/package.json"
+            for dependency_root in node_modules tests/node_modules playground/node_modules npm/cli/node_modules; do
+              [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/$dependency_root" ]]
+              ln -s "$GITHUB_WORKSPACE/$dependency_root" "$NATIVE_PHASE_SOURCE_ROOT/$dependency_root"
+            done
+            for package_json in node_modules/oxfmt/package.json tests/node_modules/vue/package.json tests/node_modules/vue-component-type-helpers/package.json tests/node_modules/vue-ssr-css-vars-oracle/package.json playground/node_modules/vue/package.json npm/cli/node_modules/vue/package.json; do
+              test -f "$NATIVE_PHASE_SOURCE_ROOT/$package_json"
             done
           fi
           bash tools/support/compat/github/native-syntax-semantics.sh; bash tools/support/compat/github/native-javascript-sfc-membership.sh; bash tools/support/compat/github/native-empty-vue-star-exports.sh

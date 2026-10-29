@@ -112,6 +112,14 @@ const revision = (stat, fields) =>
   Object.fromEntries(fields.map((field) => [field, stat[field].toString()]));
 const LINK_REVISION = ["dev", "ino", "mode", "size", "mtimeNs", "ctimeNs"];
 const DIRECTORY_IDENTITY = ["dev", "ino", "mode"];
+// The selected integration tests resolve packages from exactly these pnpm
+// workspace roots. No other untracked path receives the manual-run exception.
+export const SOURCE_DEPENDENCY_LINKS = Object.freeze([
+  "node_modules",
+  "tests/node_modules",
+  "playground/node_modules",
+  "npm/cli/node_modules",
+]);
 function dependencyLink(sourceRoot, driverRoot, relativePath) {
   const path = join(sourceRoot, relativePath);
   const target = join(driverRoot, relativePath);
@@ -237,17 +245,16 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
       assert.equal(sourceHash, driverHash, "driver/source dependency or corpus drift: " + file);
     bridgeFiles[file] = { sourceSha256: sourceHash, driverSha256: driverHash };
   }
-  const sourceDependencyLink = manual
-    ? dependencyLink(sourceRoot, driverRoot, "node_modules")
-    : null;
-  const sourceTestDependencyLink = manual
-    ? dependencyLink(sourceRoot, driverRoot, "tests/node_modules")
-    : null;
-  const permittedDependencyLinks = new Map(
-    [
-      ["node_modules", sourceDependencyLink],
-      ["tests/node_modules", sourceTestDependencyLink],
-    ].filter(([, link]) => link),
+  const sourceDependencyLinks = Object.fromEntries(
+    SOURCE_DEPENDENCY_LINKS.map((relativePath) => [
+      relativePath,
+      manual ? dependencyLink(sourceRoot, driverRoot, relativePath) : null,
+    ]),
+  );
+  const permittedDependencyLinks = new Set(
+    Object.entries(sourceDependencyLinks)
+      .filter(([, link]) => link)
+      .map(([relativePath]) => relativePath),
   );
   for (const root of new Set([driverRoot, sourceRoot])) {
     const untracked = git(["ls-files", "--others", "--exclude-standard", "-z"], root);
@@ -260,7 +267,7 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
     );
   }
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     repository: env.GITHUB_REPOSITORY ?? null,
     event,
     runId: env.GITHUB_RUN_ID ?? null,
@@ -286,8 +293,7 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
     changedPaths: (protectedMain ? driverDelta : sourceDelta).map((entry) => entry.path),
     changedEntries: protectedMain ? driverDelta : sourceDelta,
     bridgeFiles,
-    sourceDependencyLink,
-    sourceTestDependencyLink,
+    sourceDependencyLinks,
     nativeProfile: manual ? "pprof-untimed-duplicate-corpus" : "none",
     originalInfrastructurePaths: ORIGINAL_INFRASTRUCTURE,
     allowedInfrastructurePaths: [...INFRASTRUCTURE_PATHS],
