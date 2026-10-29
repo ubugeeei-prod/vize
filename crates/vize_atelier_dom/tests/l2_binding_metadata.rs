@@ -85,6 +85,14 @@ const BATTERY: &[(&str, &str)] = &[
     ("model_component", r#"<MyComp v-model="msg" />"#),
     ("model_component_arg", r#"<MyComp v-model:title="title" />"#),
     (
+        "model_component_literal_const",
+        r#"<MyComp v-model="LIMIT" />"#,
+    ),
+    (
+        "model_component_arg_literal_const",
+        r#"<MyComp v-model:foo="LIMIT" />"#,
+    ),
+    (
         "vfor_alias_shadows",
         r#"<li v-for="count in items">{{ count }} {{ other }}</li>"#,
     ),
@@ -337,6 +345,16 @@ fn literal_const_patch_facts_preserve_independent_dynamic_sources() {
             "object spread",
             r#"<div v-bind="attrs" :id="LIMIT"></div>"#,
             vec![String::from("16 /* FULL_PROPS */")],
+        ),
+        (
+            "component model",
+            r#"<MyComp v-model="LIMIT" />"#,
+            vec![String::from("8 /* PROPS */, [\"onUpdate:modelValue\"]")],
+        ),
+        (
+            "named component model",
+            r#"<MyComp v-model:foo="LIMIT" />"#,
+            vec![String::from("8 /* PROPS */, [\"onUpdate:foo\"]")],
         ),
     ] {
         let observed = vize_l1_to_l2::emit_dom_source_sfc_observed_with_options(

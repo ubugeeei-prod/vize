@@ -10,7 +10,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Span, String};
 use vize_l2::expr::ExprRef;
-use vize_l2::op::{Attribute, BindOp, BindingOp, OnOp};
+use vize_l2::op::{Attribute, BindOp, BindingOp, ModelOp, OnOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -61,6 +61,7 @@ pub(super) fn object_patch<'a>(
     for_item: bool,
     is_ts: bool,
     bind_is_literal_const: &dyn Fn(&BindOp<'a>) -> bool,
+    model_is_literal_const: &dyn Fn(&ModelOp<'a>) -> bool,
     handler_is_constant: &dyn Fn(&OnOp<'a>) -> bool,
     handler_is_cached: &dyn Fn(&OnOp<'a>) -> bool,
     caches_handlers: bool,
@@ -130,7 +131,13 @@ pub(super) fn object_patch<'a>(
                 }
             }
             BindingOp::Model(model) => {
-                super::model::patch_keys(model, is_component, &mut dynamic_props, caches_handlers);
+                super::model::patch_keys(
+                    model,
+                    is_component,
+                    model_is_literal_const(model),
+                    &mut dynamic_props,
+                    caches_handlers,
+                );
             }
             BindingOp::VueHtml(_) => {
                 let key = String::from("innerHTML");
