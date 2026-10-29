@@ -163,7 +163,7 @@ test("Linux process-tree attribution retains stable executable and argv identity
   ];
   const child = spawn(
     process.execPath,
-    ["-e", "setInterval(() => {}, 1000)", ...privateArguments],
+    ["-e", "setInterval(() => {}, 1000)", "--", ...privateArguments],
     { stdio: "ignore" },
   );
   try {
@@ -183,7 +183,7 @@ test("Linux process-tree attribution retains stable executable and argv identity
     assert.equal(root.identity.executableKind, "node");
     assert.match(root.identity.executableSha256, /^[0-9a-f]{64}$/);
     assert.match(root.identity.argvSha256, /^[0-9a-f]{64}$/);
-    assert.equal(root.identity.argvCount, 6);
+    assert.equal(root.identity.argvCount, 7);
     assert.equal(root.identity.runtimeRole, "other");
     const secondSample = processTreeRss(child.pid, {
       stableIdentity: true,
