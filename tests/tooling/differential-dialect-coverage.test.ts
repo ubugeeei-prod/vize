@@ -5,12 +5,14 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { sourceInspectedDialectCoverage } from "../differential/source-dialect-coverage.ts";
+import { loadTypecheckerManifest } from "../differential/typechecker.ts";
 import {
   assertSortedCases,
   canonicalDialects,
   classifyDialectCoverage,
   loadProductManifest,
   normalizeDialectCoverage,
+  sha256,
   summarizeDialectCoverage,
 } from "../differential/harness.mjs";
 
@@ -24,7 +26,56 @@ type Coverage = {
   extra?: boolean;
 };
 
-type Fixture = { id: string; dialectCoverage: Coverage };
+type Fixture = {
+  id: string;
+  dialectCoverage: Coverage;
+  inputs:
+    | Array<{ file: string; path: string; sha256: string }>
+    | { root: string; files: Array<{ path: string; sha256: string }> };
+};
+
+const promotedEvidence = [
+  {
+    product: "compiler",
+    id: "compiler/sfc/jsx-vapor-runtime-slots-6889",
+    input: "jsx-vapor-runtime-slots-6889/Layout.vue.txt",
+    sha256: "d0efd072e39bb5c7979ccf95061f62811d565883764dce352e07e2a2cb3aebf2",
+    dialects: ["vue3-sfc", "html-template"],
+    selector: "compiler-cli-ssr-v1 default Vue 3 dialect",
+  },
+  {
+    product: "compiler",
+    id: "compiler/sfc/scoped-checkout-stability-10067",
+    input: "scoped-checkout-stability-10067/Layout.vue.txt",
+    sha256: "1a3f415e27c6a2a541da2b717ddd5b1b3e4bf8b9b3770e7975a6e39990f47526",
+    dialects: ["vue3-sfc", "html-template"],
+    selector: "compiler-cli-ssr-v1 default Vue 3 dialect",
+  },
+  {
+    product: "formatter",
+    id: "formatter/sfc/plain-style-nested-comments",
+    input: "sfc-plain-style-nested-comments/App.vue",
+    sha256: "3bb6591e44487de32067d123b9dfdf303a4381c53f0c8bcebf3026c23b4021ed",
+    dialects: ["vue3-sfc", "html-template", "css-scoped"],
+    selector: "default Vue version with --no-config",
+  },
+  {
+    product: "formatter",
+    id: "formatter/sfc/split-v-pre-indentation",
+    input: "sfc-split-v-pre-indentation/App.vue",
+    sha256: "7ee5086667bb92cab2e96bbf0e19507182fd8643cd9c9194efd9a6d391b45660",
+    dialects: ["vue3-sfc", "html-template", "v-pre"],
+    selector: "default Vue version with --no-config",
+  },
+  {
+    product: "typechecker",
+    id: "typechecker/nuxt-plugin-injection-types/authored-dependency-identity",
+    input: "nuxt-plugin-injection-types/project.json",
+    sha256: "2ad499a9665600b7ce468b7568641491f1262c3010dc40d5d4c53b2b5b775412",
+    dialects: ["ts"],
+    selector: "batch-typechecker-fixture-v1 pinned authored sources",
+  },
+] as const;
 
 function load(product: string): { cases: Fixture[] } {
   return loadProductManifest(
@@ -108,6 +159,71 @@ void test("every product manifest contributes to the case-level dialect denomina
       assert.deepEqual(summaries[product][measurement], dialects, `${product} ${measurement}`);
     }
   }
+});
+
+void test("five source-inspected rows exhaust manifest measurement unknowns", () => {
+  assert.equal(promotedEvidence.length, 5);
+  for (const expected of promotedEvidence) {
+    const fixture = load(expected.product).cases.find((item) => item.id === expected.id);
+    assert(fixture, `${expected.id}: fixture is required`);
+    assert.deepEqual(fixture.dialectCoverage, {
+      state: "source-inspected",
+      registryRef: null,
+      evidence: [
+        {
+          kind: "source-inspection",
+          dialects: expected.dialects,
+          selector: expected.selector,
+        },
+      ],
+    });
+    assert.deepEqual(classifyDialectCoverage(fixture.dialectCoverage), {
+      state: "source-inspected",
+      dialects: [...expected.dialects].sort((a, b) => a.localeCompare(b)),
+      readiness: "unknown",
+      measurement: "provisional",
+    });
+
+    const input = Array.isArray(fixture.inputs)
+      ? fixture.inputs.find((candidate) => candidate.path === expected.input)
+      : fixture.inputs.files.find(
+          (candidate) => path.posix.join(fixture.inputs.root, candidate.path) === expected.input,
+        );
+    assert(input, `${expected.id}: pinned input is required`);
+    assert.equal(input.sha256, expected.sha256);
+    assert.equal(
+      sha256(
+        fs.readFileSync(
+          path.join(root, `tests/_fixtures/differential/${expected.product}`, expected.input),
+        ),
+      ),
+      expected.sha256,
+    );
+  }
+
+  loadTypecheckerManifest(
+    path.join(root, "tests/_fixtures/differential/typechecker/manifest.json"),
+  );
+  const summaries = Object.fromEntries(
+    products.map((product) => [product, summarizeDialectCoverage(load(product).cases)]),
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      products.map((product) => [
+        product,
+        load(product).cases.filter(
+          (fixture) => classifyDialectCoverage(fixture.dialectCoverage).measurement === "unknown",
+        ).length,
+      ]),
+    ),
+    { compiler: 0, formatter: 0, linter: 0, lsp: 0, typechecker: 0 },
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      products.map((product) => [product, summaries[product].unknownReadinessCases]),
+    ),
+    { compiler: 39, formatter: 25, linter: 110, lsp: 69, typechecker: 215 },
+  );
 });
 
 void test("product manifests keep cases sorted so registrations merge cleanly", () => {
@@ -243,7 +359,7 @@ void test("typechecker coverage records every pinned authored source dialect", (
   assertCoverageFloor(summarizeDialectCoverage(source.cases), {
     plannedCases: 164,
     verifiedCases: 0,
-    provisionalCases: 163,
+    provisionalCases: 164,
     unknownReadinessCases: 164,
     verified: {},
     provisional: {
@@ -251,7 +367,7 @@ void test("typechecker coverage records every pinned authored source dialect", (
       js: 1,
       jsx: 1,
       "pug-template": 2,
-      ts: 162,
+      ts: 163,
       tsx: 4,
       "vue3-sfc": 160,
     },
@@ -260,6 +376,6 @@ void test("typechecker coverage records every pinned authored source dialect", (
     source.cases
       .filter((fixture) => fixture.dialectCoverage.state === "unknown")
       .map((fixture) => fixture.id),
-    ["typechecker/nuxt-plugin-injection-types/authored-dependency-identity"],
+    [],
   );
 });

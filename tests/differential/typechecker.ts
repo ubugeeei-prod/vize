@@ -165,9 +165,8 @@ function typecheckerDialectCoverage(
   inputs: TypecheckerCase["inputs"],
 ): DialectCoverage {
   const dialects = new Set<string>();
-  for (const input of inputs) {
-    const source = readPinnedArtifact(root, input).toString("utf8");
-    const file = input.file.toLowerCase();
+  const inspect = (authoredFile: string, source: string) => {
+    const file = authoredFile.toLowerCase();
     if (file.endsWith(".vue")) {
       dialects.add("vue3-sfc");
       if (
@@ -188,6 +187,28 @@ function typecheckerDialectCoverage(
     else if (file.endsWith(".jsx")) dialects.add("jsx");
     else if (file.endsWith(".d.ts") || file.endsWith(".ts")) dialects.add("ts");
     else if (file.endsWith(".js")) dialects.add("js");
+  };
+  for (const input of inputs) {
+    const source = readPinnedArtifact(root, input).toString("utf8");
+    if (input.file.toLowerCase() !== "project.json") {
+      inspect(input.file, source);
+      continue;
+    }
+
+    const project = JSON.parse(source) as Record<string, unknown>;
+    assert.equal(project.schema, "vize.typechecker.nuxt-plugin-injection-types");
+    assert.equal(project.version, 1);
+    assert(
+      project.files && typeof project.files === "object" && !Array.isArray(project.files),
+      "authored project files are required",
+    );
+    const files = Object.entries(project.files as Record<string, unknown>);
+    assert(files.length > 0, "authored project files cannot be empty");
+    for (const [file, virtualSource] of files) {
+      relativePath(file);
+      assert.equal(typeof virtualSource, "string", `${file}: authored source is required`);
+      inspect(file, virtualSource as string);
+    }
   }
   const ordered = dialectOrder.filter((dialect) => dialects.has(dialect));
   if (ordered.length === 0) return { state: "unknown", registryRef: null, evidence: [] };
