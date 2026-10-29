@@ -94,6 +94,11 @@ jobs:
           ]
           head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
           assert head == os.environ["SOURCE_SHA"]
+          merged_squash = "deda174ca6da0fc54a4f7483acbd3f71c382095c"
+          assert subprocess.run(
+              ["git", "merge-base", "--is-ancestor", merged_squash, head],
+              check=False,
+          ).returncode == 0
           root = pathlib.Path.cwd()
           component = paths[-1]
           new = pathlib.Path(component).read_bytes()
@@ -102,8 +107,10 @@ jobs:
               parent = spec["parent"]
               delta = json.loads(subprocess.check_output([
                   "node", "qualification/tools/support/cross_file/async_component/feature-delta.ts",
-                  parent, spec["feature"], head, "--", "crates", "davinci", "Cargo.toml", "Cargo.lock",
+                  parent, spec["feature"], spec["feature"], "--", "crates", "davinci", "Cargo.toml", "Cargo.lock",
               ], text=True))
+              assert delta["selectedParent"] == parent
+              assert delta["selectedFeature"] == spec["feature"]
               changed = delta["changed"]
               assert sorted(changed) == sorted(spec["changed"]), changed
               previous = {p: subprocess.check_output(["git", "show", parent + ":" + p]) for p in paths}
@@ -113,6 +120,7 @@ jobs:
               receipt = {
                   "schema": "vize.asyncComponentPrecisionBefore.v1",
                   "productionSource": parent, "observer": head, "test": spec["test"],
+                  "mergedSquash": merged_squash,
                   "productionTree": subprocess.check_output(["git", "rev-parse", parent + "^{tree}"], text=True).strip(),
                   "featureDelta": delta,
                   "newTestTailSha256": hashlib.sha256(tail).hexdigest(),
