@@ -18,6 +18,7 @@ use super::protocol::{
     ContentMapperUnusedExpectDiagnostic, DIRECTIVE_POLICY_EXPECT, DIRECTIVE_POLICY_IGNORE,
 };
 use crate::virtual_ts::VizeMapping;
+use crate::virtual_ts::NAMED_PROP_DIAGNOSTIC_MARKER;
 
 /// Mapper diagnostic code for an unused `@vue-expect-error` directive.
 const UNUSED_EXPECT_CODE: i32 = 4;

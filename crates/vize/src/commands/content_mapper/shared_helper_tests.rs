@@ -124,3 +124,43 @@ fn core_sharing_requires_the_installed_package_export_and_declaration() {
         );
     }
 }
+
+#[test]
+fn installed_virtual_module_points_helpers_at_the_package() {
+    let directory = tempfile::tempdir().unwrap();
+    let project = directory.path().join("app");
+    std::fs::create_dir_all(&project).unwrap();
+    let config = project.join("tsconfig.json");
+    std::fs::write(&config, "{}").unwrap();
+    let package = directory.path().join("node_modules/vize");
+    std::fs::create_dir_all(package.join("generated")).unwrap();
+    let vue = directory.path().join("node_modules/vue");
+    std::fs::create_dir_all(&vue).unwrap();
+    std::fs::write(vue.join("package.json"), "{}").unwrap();
+    let package_source = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../npm/cli");
+    for (source, target) in [
+        ("content-mapper-helpers.d.ts", "content-mapper-helpers.d.ts"),
+        (
+            "generated/content-mapper-types.d.ts",
+            "generated/content-mapper-types.d.ts",
+        ),
+        ("virtual-ts.d.ts", "virtual-ts.d.ts"),
+    ] {
+        std::fs::copy(package_source.join(source), package.join(target)).unwrap();
+    }
+
+    let mut open = open_project_request(2, Value::Null, json!({}));
+    open["params"]["configFileName"] = json!(config);
+    let responses = exchange(&frames(&[
+        initialize_request(),
+        open,
+        transform_request(3, "<template><main /></template>"),
+    ]));
+    let text = responses[2]["result"]["text"].as_str().unwrap();
+    assert!(
+        text.contains("import type {} from \"vize/virtual-ts\";"),
+        "{text}"
+    );
+    assert_eq!(text.matches("vize:virtual-ts").count(), 0, "{text}");
+    assert_eq!(text.matches("type __EmitFn<").count(), 0, "{text}");
+}
