@@ -6,9 +6,9 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
-  assertOfficialRuntimeCustody,
+  assertOfficialRuntimeInstallation,
   loadOfficialFixture,
-  officialRuntimeAuthority,
+  loadOfficialFixtureSuite,
   officialCases,
   officialDiagnostics,
   assertOfficialDiagnostics,
@@ -16,6 +16,7 @@ import {
   verifyPublicInstallation,
   resolveOfficialNativeImage,
   officialActorInputs,
+  officialFailure,
   type Case,
   type Fixture,
   type OfficialRuntimeAuthority,
@@ -164,7 +165,7 @@ export async function installedIdentity(
   directory: string,
   output: string,
   probeNative = true,
-  authority: OfficialRuntimeAuthority = officialRuntimeAuthority(fixture),
+  authority?: OfficialRuntimeAuthority,
 ) {
   const require = createRequire(path.join(directory, "package.json"));
   const records = ["typescript", "vue", "vize", "@vizejs/native"].map((name) => {
@@ -194,15 +195,10 @@ export async function installedIdentity(
     nativeEntry,
     "official mapper CLI must resolve the candidate native wrapper",
   );
-  const request = JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8"));
-  const lock = JSON.parse(fs.readFileSync(path.join(directory, "package-lock.json"), "utf8"));
-  assertOfficialRuntimeCustody(authority, {
-    request: request.dependencies,
-    lock: lock.packages?.[""]?.dependencies,
-    installed: {
-      typescript: records[0].version,
-      vue: records[1].version,
-    },
+  assert.ok(authority, "installed identity requires explicit fixture runtime authority");
+  assertOfficialRuntimeInstallation(directory, authority, {
+    typescript: records[0].version,
+    vue: records[1].version,
   });
   const typescript = path.dirname(require.resolve("typescript/package.json"));
   const getExePath = (await import(pathToFileURL(path.join(typescript, "lib/getExePath.js")).href))
@@ -314,18 +310,6 @@ function packCurrentPackages(output: string) {
   return dependencies;
 }
 
-function failure(name: string, error: unknown) {
-  return {
-    name,
-    error:
-      error instanceof Error
-        ? Object.fromEntries(
-            Object.getOwnPropertyNames(error).map((key) => [key, Reflect.get(error, key)]),
-          )
-        : String(error),
-  };
-}
-
 export async function main(args = process.argv.slice(2)) {
   const options = officialRunOptions(args, root, fixturePath);
   const output = path.resolve(
@@ -342,10 +326,7 @@ export async function main(args = process.argv.slice(2)) {
     : undefined;
   const subjectFixtures: { path: string; sha256: string; head: string }[] = [];
   const suites = fixturePaths.map((file) => {
-    if (!authority) {
-      const loaded = loadOfficialFixture(file);
-      return { file, fixture: loaded, runtime: officialRuntimeAuthority(loaded) };
-    }
+    if (!authority) return loadOfficialFixtureSuite(file);
     const relative = path.relative(root, file).split(path.sep).join("/");
     const bytes = readRawBlob(root, authority.subject.head, relative);
     assert.equal(
@@ -354,8 +335,7 @@ export async function main(args = process.argv.slice(2)) {
       "F fixture must equal selected H raw source",
     );
     subjectFixtures.push({ path: relative, sha256: digest(bytes), head: authority.subject.head });
-    const loaded = loadOfficialFixture(file, bytes.toString("utf8"));
-    return { file, fixture: loaded, runtime: officialRuntimeAuthority(loaded) };
+    return loadOfficialFixtureSuite(file, bytes.toString("utf8"));
   });
   const allCases = suites.flatMap((suite) => officialCases(suite.fixture));
   assert.equal(new Set(allCases.map((row) => row.name)).size, allCases.length);
@@ -430,7 +410,7 @@ export async function main(args = process.argv.slice(2)) {
           check(baseline, row, path.join(output, "baseline"), suite.fixture, true),
         );
       } catch (error) {
-        baselineFailures.push(failure(row.name, error));
+        baselineFailures.push(officialFailure(row.name, error));
       }
     }
   }
@@ -493,7 +473,7 @@ export async function main(args = process.argv.slice(2)) {
       try {
         results.push(check(candidate, row, path.join(output, "candidate"), suite.fixture));
       } catch (error) {
-        failures.push(failure(row.name, error));
+        failures.push(officialFailure(row.name, error));
       }
     }
   }

@@ -64,6 +64,32 @@ export function assertOfficialRuntimeCustody(
     );
 }
 
+export function assertOfficialRuntimeInstallation(
+  directory: string,
+  expected: OfficialRuntimeAuthority,
+  installed: OfficialRuntimeAuthority,
+) {
+  const request = JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8"));
+  const lock = JSON.parse(fs.readFileSync(path.join(directory, "package-lock.json"), "utf8"));
+  assertOfficialRuntimeCustody(expected, {
+    request: request.dependencies,
+    lock: lock.packages?.[""]?.dependencies,
+    installed,
+  });
+}
+
+export function officialFailure(name: string, error: unknown) {
+  return {
+    name,
+    error:
+      error instanceof Error
+        ? Object.fromEntries(
+            Object.getOwnPropertyNames(error).map((key) => [key, Reflect.get(error, key)]),
+          )
+        : String(error),
+  };
+}
+
 /** Parse selectors without starting a package install or compiler process. */
 export function officialRunOptions(args: string[], root: string, defaultFixture: string) {
   const values = new Map<string, string>();
@@ -224,6 +250,11 @@ export function loadOfficialFixture(file: string, publishedSource?: string): Fix
     if (row.status !== undefined) assert.equal(row.status, row.codes.length ? 2 : 0);
   }
   return fixture;
+}
+
+export function loadOfficialFixtureSuite(file: string, publishedSource?: string) {
+  const fixture = loadOfficialFixture(file, publishedSource);
+  return { file, fixture, runtime: officialRuntimeAuthority(fixture) };
 }
 
 export function officialCases(fixture: Fixture): Case[] {
