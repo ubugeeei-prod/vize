@@ -2,6 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 import type { LspChurnBudget } from "./churn-metrics.ts";
+import type { ChurnCycleStats } from "./churn-percentiles.ts";
+
+type LegacyChurnCycleStats = Pick<ChurnCycleStats, "cycles" | "minMs" | "medianMs" | "maxMs">;
 
 /** The report fields `summary.md` renders; `metrics.json` serialises the whole payload. */
 export type ChurnReportData = {
@@ -12,7 +15,7 @@ export type ChurnReportData = {
   peakRssKiB: number;
   peakProcessTreeRssKiB: number;
   budget: LspChurnBudget & { scale: number };
-  cycleStats: { cycles: number; minMs: number; medianMs: number; maxMs: number } | null;
+  cycleStats: (LegacyChurnCycleStats & Partial<ChurnCycleStats>) | null;
 };
 
 /**
@@ -34,11 +37,7 @@ function renderMarkdown(title: string, data: ChurnReportData): string {
     "",
     `Status: **${data.status}**. Fixture: \`${data.fixture}@${data.fixtureRevision}\`.`,
     "",
-    stats == null
-      ? "No churn cycles were measured."
-      : `Churn cycles: ${stats.cycles} (broken -> repaired leaf and shared edits); min ` +
-        `${stats.minMs.toFixed(1)} ms, median ${stats.medianMs.toFixed(1)} ms, max ` +
-        `${stats.maxMs.toFixed(1)} ms (budget ${budget.budgetsMs.cycle * budget.scale} ms/cycle).`,
+    stats == null ? "No churn cycles were measured." : renderCycleStats(stats, budget),
     "",
     `Diagnostics publishes observed: ${data.publishes}.`,
     "",
@@ -53,4 +52,20 @@ function renderMarkdown(title: string, data: ChurnReportData): string {
       "convergence are hard assertions.",
     "",
   ].join("\n");
+}
+
+function renderCycleStats(
+  stats: LegacyChurnCycleStats & Partial<ChurnCycleStats>,
+  budget: ChurnReportData["budget"],
+): string {
+  const distribution =
+    stats.p50Ms == null || stats.p95Ms == null || stats.p99Ms == null
+      ? `median ${stats.medianMs.toFixed(1)} ms`
+      : `p50 ${stats.p50Ms.toFixed(1)} ms, p95 ${stats.p95Ms.toFixed(1)} ms, ` +
+        `p99 ${stats.p99Ms.toFixed(1)} ms`;
+  return (
+    `Churn cycles: ${stats.cycles} (broken -> repaired leaf and shared edits); min ` +
+    `${stats.minMs.toFixed(1)} ms, ${distribution}, max ${stats.maxMs.toFixed(1)} ms ` +
+    `(budget ${budget.budgetsMs.cycle * budget.scale} ms/cycle).`
+  );
 }

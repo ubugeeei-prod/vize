@@ -5,6 +5,7 @@ import { validateBuildReceipt } from "../../../differential/build-receipt.ts";
 import { auditRss } from "./rss.ts";
 import { completionLabels } from "../../../tooling/support/lsp/assertions.ts";
 import { loadLspChurnBudget } from "../churn-metrics.ts";
+import { churnCycleSamplePolicy } from "../churn-percentiles.ts";
 import { positionInsideTemplateSymbol } from "../lsp-oracle.ts";
 import { loadLspIncrementalBudget } from "../incremental-metrics.ts";
 import {
@@ -216,7 +217,17 @@ export function auditSession(
   assert.equal(metrics.commit, expected.sourceRevision);
   const { budget } = loadLspChurnBudget("misskey-lsp-churn");
   assert.deepEqual(metrics.budget, { scale: 1, ...budget });
-  assert.equal(object(metrics.cycleStats).cycles, 40);
+  const cycleStats = object(metrics.cycleStats);
+  assert.equal(cycleStats.cycles, 40);
+  for (const percentile of ["p50Ms", "p95Ms", "p99Ms"] as const) {
+    assert.ok(
+      typeof cycleStats[percentile] === "number" && Number.isFinite(cycleStats[percentile]),
+      `${percentile} must be a finite latency observation`,
+    );
+  }
+  assert.ok(Number(cycleStats.p50Ms) <= Number(cycleStats.p95Ms));
+  assert.ok(Number(cycleStats.p95Ms) <= Number(cycleStats.p99Ms));
+  assert.deepEqual(cycleStats.samplePolicy, churnCycleSamplePolicy);
   const fixture = readJson(directory, "fixture.json");
   assert.equal(object(fixture.entry).fixturePath, object(custody.fixture).path);
   assert.equal(object(fixture.entry).revision, object(custody.fixture).revision);
