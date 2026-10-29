@@ -110,19 +110,19 @@ const peerHoverParams = (workspace: string) => {
   };
 };
 
-/** Retain every child diagnostics payload observed during the measured window. */
+/** Retain every opened child/importer diagnostics payload in the measured window. */
 export function recordCancellationPublications(session: LspSession, workspace: string) {
-  const uri = documentUri(workspace, 0);
+  const trackedUris = new Set([documentUri(workspace, 0), documentUri(workspace, 1)]);
   const rows: CancellationPublication[] = [];
   let stopped = false;
   const observer = (method: string, value: unknown): void => {
     if (method !== "textDocument/publishDiagnostics" || !isPublication(value)) return;
-    if (value.uri !== uri) return;
+    if (!trackedUris.has(value.uri)) return;
     const diagnostics = JSON.parse(JSON.stringify(value.diagnostics)) as unknown[];
     rows.push({
       received_order: rows.length + 1,
       received_ns: process.hrtime.bigint().toString(),
-      uri,
+      uri: value.uri,
       version: Number.isSafeInteger(value.version) ? Number(value.version) : null,
       diagnostics,
       diagnostics_sha256: sourceSha256(JSON.stringify(diagnostics)),

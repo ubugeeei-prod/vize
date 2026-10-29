@@ -77,48 +77,72 @@ export function cancellationBatch(
 }
 
 /**
- * Prove that every child publication observed after the baseline belongs to a
- * sent source revision, never goes backwards, and stops at the recovered clean
- * revision. `finalFenceCount` is captured when recovery sees that clean reply;
- * equality below rejects every late publication during the following quiet
+ * Prove that every tracked opened-document publication belongs to a sent
+ * source revision, never goes backwards within its URI, and stops clean.
+ * `finalFenceCount` is captured when recovery sees the final child reply;
+ * equality below rejects every late tracked publication during the quiet
  * window.
  */
 export function auditCancellationPublications(
   publications: readonly CancellationPublication[],
-  knownVersions: ReadonlyMap<number, string>,
-  finalVersion: number,
+  knownDocuments: ReadonlyMap<string, ReadonlyMap<number, string>>,
+  finalChild: { uri: string; version: number },
   finalFenceCount: number,
 ) {
-  assert.ok(publications.length > 0, "the cancellation window must publish final diagnostics");
+  assert.ok(publications.length > 0, "the cancellation window must publish tracked diagnostics");
   assert.equal(
     publications.length,
     finalFenceCount,
-    "no child diagnostics may publish after the final clean recovery fence",
+    "no tracked diagnostics may publish after the final clean recovery fence",
   );
-  let previousVersion = -1;
+  const previousVersions = new Map<string, number>();
+  const tails = new Map<string, CancellationPublication & { version: number }>();
   const rows = publications.map((publication) => {
     assert.ok(
       Number.isSafeInteger(publication.version) && Number(publication.version) > 0,
       "cancellation-window diagnostics must carry a positive version",
     );
     const version = Number(publication.version);
-    const sourceHash = knownVersions.get(version);
-    assert.ok(sourceHash, `diagnostics version ${version} must name a sent source clone`);
-    assert.ok(version >= previousVersion, "diagnostic versions must be nondecreasing");
-    previousVersion = version;
-    return { ...publication, version, source_sha256: sourceHash };
+    const sourceHash = knownDocuments.get(publication.uri)?.get(version);
+    assert.ok(
+      sourceHash,
+      `diagnostics ${publication.uri}@${version} must name a sent source clone`,
+    );
+    const previous = previousVersions.get(publication.uri) ?? -1;
+    assert.ok(
+      version >= previous,
+      `diagnostic versions for ${publication.uri} must be nondecreasing`,
+    );
+    previousVersions.set(publication.uri, version);
+    const row = { ...publication, version, source_sha256: sourceHash };
+    tails.set(publication.uri, row);
+    return row;
   });
-  const tail = rows.at(-1);
-  assert.ok(tail, "final diagnostics receipt is required");
-  assert.equal(tail.version, finalVersion, "the final diagnostics must name the clean revision");
-  assert.deepEqual(tail.diagnostics, [], "the final diagnostics tail must be clean");
+  const tailRows = [...tails.values()].sort((left, right) => left.uri.localeCompare(right.uri));
+  for (const tail of tailRows) {
+    assert.deepEqual(tail.diagnostics, [], `final diagnostics for ${tail.uri} must be clean`);
+  }
+  const childTail = tails.get(finalChild.uri);
+  assert.ok(childTail, "the final child diagnostics receipt is required");
+  assert.equal(
+    childTail.version,
+    finalChild.version,
+    "the final child diagnostics must name the clean revision",
+  );
   return {
     observed: rows.length,
-    versions: rows.map((row) => row.version),
-    nondecreasing_versions: true,
-    known_source_versions: true,
-    final_clean_tail: true,
+    tracked_uris: [...tails.keys()].sort(),
+    versions_by_uri: Object.fromEntries(
+      [...previousVersions.keys()]
+        .sort()
+        .map((uri) => [uri, rows.filter((row) => row.uri === uri).map((row) => row.version)]),
+    ),
+    nondecreasing_versions_per_uri: true,
+    known_document_source_versions: true,
+    all_observed_uri_tails_clean: true,
+    final_child_revision_clean: true,
     publications_after_final_fence: publications.length - finalFenceCount,
+    tails: tailRows,
     rows,
   };
 }

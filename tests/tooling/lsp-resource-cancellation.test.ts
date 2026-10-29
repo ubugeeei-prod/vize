@@ -13,11 +13,13 @@ import {
   summarizeCancellationDurations,
 } from "../../tools/support/compat/davinci/lib/lsp-resource-cancellation.ts";
 import {
+  gateCleanupStatus,
   nativeFrameEvidence,
   resourceCorsaGateScript,
 } from "../../tools/support/compat/davinci/lib/lsp-resource-corsa-gate.ts";
 import {
   finalizeCancellationProfileLink,
+  rssDeltaMib,
   type AllocationProfileLink,
 } from "../../tools/support/compat/davinci/lib/lsp-resource-cancellation-run.ts";
 
@@ -97,72 +99,130 @@ test("resource cancellation statistics use every nearest-rank sample", () => {
   );
 });
 
-test("diagnostic audit admits only known nondecreasing revisions with no late tail", () => {
+test("diagnostic audit checks known nondecreasing revisions per opened URI", () => {
+  const childUri = "file:///workspace/Component00000.vue";
+  const parentUri = "file:///workspace/Component00001.vue";
   const clean = sourceSha256("clean");
   const broken = sourceSha256("broken");
+  const parent = sourceSha256("parent");
   const publications = [
     {
       received_order: 1,
       received_ns: "10",
-      uri: "file:///workspace/Component.vue",
-      version: 2,
+      uri: parentUri,
+      version: 1,
       diagnostics: [{ code: 2322 }],
       diagnostics_sha256: sourceSha256('[{"code":2322}]'),
     },
     {
       received_order: 2,
       received_ns: "20",
-      uri: "file:///workspace/Component.vue",
+      uri: childUri,
+      version: 2,
+      diagnostics: [{ code: 2322 }],
+      diagnostics_sha256: sourceSha256('[{"code":2322}]'),
+    },
+    {
+      received_order: 3,
+      received_ns: "30",
+      uri: parentUri,
+      version: 1,
+      diagnostics: [],
+      diagnostics_sha256: sourceSha256("[]"),
+    },
+    {
+      received_order: 4,
+      received_ns: "40",
+      uri: childUri,
       version: 3,
       diagnostics: [],
       diagnostics_sha256: sourceSha256("[]"),
     },
   ];
+  const knownDocuments = new Map([
+    [
+      childUri,
+      new Map([
+        [2, broken],
+        [3, clean],
+      ]),
+    ],
+    [parentUri, new Map([[1, parent]])],
+  ]);
   const audit = auditCancellationPublications(
     publications,
-    new Map([
-      [2, broken],
-      [3, clean],
-    ]),
-    3,
+    knownDocuments,
+    { uri: childUri, version: 3 },
     publications.length,
   );
-  assert.deepEqual(audit.versions, [2, 3]);
+  assert.deepEqual(audit.tracked_uris, [childUri, parentUri].sort());
+  assert.deepEqual(audit.versions_by_uri[childUri], [2, 3]);
+  assert.deepEqual(audit.versions_by_uri[parentUri], [1, 1]);
   assert.equal(audit.publications_after_final_fence, 0);
-  assert.equal(audit.rows[1].source_sha256, clean);
-  assert.throws(
-    () => auditCancellationPublications(publications, new Map([[3, clean]]), 3, 2),
-    /must name a sent source clone/,
-  );
+  assert.equal(audit.rows[3].source_sha256, clean);
   assert.throws(
     () =>
       auditCancellationPublications(
         publications,
         new Map([
-          [2, broken],
-          [3, clean],
+          [childUri, new Map([[3, clean]])],
+          [parentUri, new Map([[1, parent]])],
         ]),
-        3,
-        1,
+        { uri: childUri, version: 3 },
+        publications.length,
       ),
+    /must name a sent source clone/,
+  );
+  assert.throws(
+    () =>
+      auditCancellationPublications(publications, knownDocuments, { uri: childUri, version: 3 }, 1),
     /after the final clean recovery fence/,
   );
   assert.throws(
     () =>
       auditCancellationPublications(
-        [publications[1], publications[0]],
-        new Map([
-          [2, broken],
-          [3, clean],
-        ]),
-        2,
-        2,
+        [publications[3], publications[0], publications[1], publications[2]],
+        knownDocuments,
+        { uri: childUri, version: 2 },
+        publications.length,
       ),
     /nondecreasing/,
   );
+  assert.throws(
+    () =>
+      auditCancellationPublications(
+        [publications[0], publications[1], publications[3]],
+        knownDocuments,
+        { uri: childUri, version: 3 },
+        3,
+      ),
+    /final diagnostics.*must be clean/,
+  );
 });
 
-test("profile linkage records mismatch without replacing a primary failure", () => {
+test("cleanup receipts distinguish graceful exit from forced completion", () => {
+  assert.deepEqual(gateCleanupStatus(0, 0, 0), {
+    no_orphans: true,
+    forced_cleanup_complete: true,
+  });
+  assert.deepEqual(gateCleanupStatus(1, 1, 0), {
+    no_orphans: false,
+    forced_cleanup_complete: true,
+  });
+  assert.deepEqual(gateCleanupStatus(1, 2, 1), {
+    no_orphans: false,
+    forced_cleanup_complete: false,
+  });
+});
+
+test("retained RSS rounds the raw-byte delta rather than displayed endpoints", () => {
+  const oneMiB = 1024 * 1024;
+  const before = Math.round(1.04 * oneMiB);
+  const after = Math.round(1.06 * oneMiB);
+  assert.equal(rssDeltaMib(after, before), 0);
+});
+
+test("profile linkage preserves primary failures when evidence persistence fails", () => {
   const link: AllocationProfileLink = {
     same_session: true,
     expected_path: "/profile/expected.json",
@@ -172,6 +232,23 @@ test("profile linkage records mismatch without replacing a primary failure", () 
   finalizeCancellationProfileLink(link, null, true);
   assert.equal(link.actual_path, null);
   assert.equal(link.path_matches, false);
+
+  const failedPersistence: AllocationProfileLink = { ...link };
+  assert.doesNotThrow(() =>
+    finalizeCancellationProfileLink(failedPersistence, null, true, () => {
+      throw new Error("persist failed");
+    }),
+  );
+  assert.equal(failedPersistence.persistence_error, "Error: persist failed");
+
+  assert.throws(
+    () =>
+      finalizeCancellationProfileLink({ ...link }, null, false, () => {
+        throw new Error("persist failed");
+      }),
+    /persist failed/,
+  );
+
   let persisted = false;
   assert.throws(
     () =>

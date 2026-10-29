@@ -9,11 +9,13 @@ import {
   recordCancellationPublications,
   verifyCancellationRecovery,
 } from "./lsp-resource-witness.ts";
-import { componentSource } from "./lsp-resource-workspace.ts";
+import { componentSource, documentUri } from "./lsp-resource-workspace.ts";
 
 interface ResourceCheckpoint {
   monotonic_ns: string;
+  server_rss_bytes: number;
   server_rss_mib: number;
+  process_tree_rss_bytes: number;
   process_tree_rss_mib: number;
   processes: ProcessEntry[];
   cohort: Array<{ pid: number; birth_ticks: number; executable: string }>;
@@ -24,6 +26,7 @@ export interface AllocationProfileLink {
   expected_path: string | null;
   actual_path?: string | null;
   path_matches?: boolean;
+  persistence_error?: string;
   receipt_field: "profile_json";
   scope: string;
 }
@@ -37,7 +40,12 @@ export function finalizeCancellationProfileLink(
 ): void {
   link.actual_path = actualPath;
   link.path_matches = actualPath === link.expected_path;
-  persist();
+  try {
+    persist();
+  } catch (error) {
+    link.persistence_error = String(error);
+    if (!primaryFailure) throw error;
+  }
   if (!primaryFailure) {
     assert.ok(link.path_matches, "the allocation profile must belong to this exact session");
   }
@@ -52,7 +60,9 @@ const checkpoint = (sample: TreeSample, serverPid: number): ResourceCheckpoint =
   );
   return {
     monotonic_ns: process.hrtime.bigint().toString(),
+    server_rss_bytes: server.rss_bytes,
     server_rss_mib: mib(server.rss_bytes),
+    process_tree_rss_bytes: sample.rss_bytes,
     process_tree_rss_mib: mib(sample.rss_bytes),
     processes: sample.processes,
     cohort: sample.processes
@@ -77,7 +87,15 @@ const assertSameCohort = (
   );
 };
 
-const deltaMib = (after: number, before: number): number => Math.round((after - before) * 10) / 10;
+/** Round only the raw-byte delta, never the independently displayed endpoints. */
+export const rssDeltaMib = (afterBytes: number, beforeBytes: number): number => {
+  assert.ok(Number.isSafeInteger(afterBytes) && afterBytes >= 0, "valid after RSS bytes required");
+  assert.ok(
+    Number.isSafeInteger(beforeBytes) && beforeBytes >= 0,
+    "valid before RSS bytes required",
+  );
+  return Math.round(((afterBytes - beforeBytes) / 1024 / 1024) * 10) / 10;
+};
 
 /**
  * Measure only the deterministic cancellation window. Both retained-RSS
@@ -104,7 +122,7 @@ export async function measureCancellationRetention(options: {
     assert.equal(
       publications.count(),
       baselinePublicationFence,
-      "no child diagnostics may publish after the baseline clean recovery fence",
+      "no opened-document diagnostics may publish after the baseline clean recovery fence",
     );
     const baseline = checkpoint(options.sampler.sample(), options.session.processId);
     const publicationWindowStart = publications.count();
@@ -124,14 +142,22 @@ export async function measureCancellationRetention(options: {
     await sleep(10_000);
     const windowPublications = publications.since(publicationWindowStart);
     const finalAfterQuiescence = publications.count() - publicationWindowStart;
-    const knownVersions = new Map<number, string>([
-      [options.initialVersion, sourceSha256(componentSource(0))],
-      ...cancellation.samples.map((sample) => [sample.version, sample.source_sha256] as const),
+    const childUri = documentUri(options.workspace, 0);
+    const parentUri = documentUri(options.workspace, 1);
+    const knownDocuments = new Map<string, ReadonlyMap<number, string>>([
+      [
+        childUri,
+        new Map<number, string>([
+          [options.initialVersion, sourceSha256(componentSource(0))],
+          ...cancellation.samples.map((sample) => [sample.version, sample.source_sha256] as const),
+        ]),
+      ],
+      [parentUri, new Map([[1, sourceSha256(componentSource(1))]])],
     ]);
     const publicationAudit = auditCancellationPublications(
       windowPublications,
-      knownVersions,
-      cancellation.final_version,
+      knownDocuments,
+      { uri: childUri, version: cancellation.final_version },
       finalPublicationFence,
     );
     const after = checkpoint(options.sampler.sample(), options.session.processId);
@@ -178,8 +204,8 @@ export async function measureCancellationRetention(options: {
         after_recovery_10s: after,
         cohort_identical: true as const,
         retained_delta_mib: {
-          server: deltaMib(after.server_rss_mib, baseline.server_rss_mib),
-          process_tree: deltaMib(after.process_tree_rss_mib, baseline.process_tree_rss_mib),
+          server: rssDeltaMib(after.server_rss_bytes, baseline.server_rss_bytes),
+          process_tree: rssDeltaMib(after.process_tree_rss_bytes, baseline.process_tree_rss_bytes),
         },
       },
       allocation_profile: allocationProfile,

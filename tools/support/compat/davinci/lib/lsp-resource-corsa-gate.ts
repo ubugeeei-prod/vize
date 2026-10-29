@@ -50,7 +50,23 @@ export type GateCleanupReceipt = {
   signalled: Array<GateProcessIdentity & { signal: "SIGTERM" | "SIGKILL" }>;
   remaining_processes: GateProcessIdentity[];
   no_orphans: boolean;
+  forced_cleanup_complete: boolean;
 };
+
+/** Distinguish graceful exit from a completed TERM/KILL fallback. */
+export function gateCleanupStatus(
+  aliveAfterGracePeriod: number,
+  signalsSent: number,
+  remainingProcesses: number,
+) {
+  for (const value of [aliveAfterGracePeriod, signalsSent, remainingProcesses]) {
+    assert.ok(Number.isSafeInteger(value) && value >= 0, "cleanup counts must be non-negative");
+  }
+  return {
+    no_orphans: aliveAfterGracePeriod === 0 && signalsSent === 0 && remainingProcesses === 0,
+    forced_cleanup_complete: remainingProcesses === 0,
+  };
+}
 
 const proxySource = String.raw`
 const fs = require("node:fs");
@@ -446,12 +462,13 @@ export class ResourceCorsaGate {
         signalled.push({ ...identity, signal: "SIGKILL" });
     }
     const remaining = waitUntilGone(afterTerm, 1_000);
+    const status = gateCleanupStatus(aliveAfterGrace.length, signalled.length, remaining.length);
     return {
       recorded_processes: recorded,
       alive_after_grace_period: aliveAfterGrace,
       signalled,
       remaining_processes: remaining,
-      no_orphans: remaining.length === 0,
+      ...status,
     };
   }
 
