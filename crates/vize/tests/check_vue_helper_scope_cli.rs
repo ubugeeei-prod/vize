@@ -48,12 +48,19 @@ fn check(
     if mode == "sharded" {
         command.args(["--servers", "2"]);
     }
+    // The CLI owns the materialized mirror only while its process is alive.
+    // Keep a second owner across the process/capture boundary so parallel
+    // fixture runs cannot evict this mirror under the bounded cache policy.
+    let capture_project = std::env::var_os("VIZE_VUE_HELPER_CAPTURE")
+        .map(|_| vize_canon::VirtualProject::new(root).unwrap());
     let output = command.output().unwrap();
     if let Some(target) = fixture::capture(root, vue, corsa, case).unwrap() {
         std::fs::write(target.join(format!("{mode}.stdout.txt")), &output.stdout).unwrap();
         std::fs::write(target.join(format!("{mode}.stderr.txt")), &output.stderr).unwrap();
         std::fs::write(target.join(format!("{mode}.runtime.json")), json!({"cliBinary":env!("CARGO_BIN_EXE_vize"),"exitCode":output.status.code(),"arguments":command.get_args().map(|arg|arg.to_string_lossy()).collect::<Vec<_>>()}).to_string()).unwrap();
-        let project = vize_canon::VirtualProject::new(root).unwrap();
+        let project = capture_project
+            .as_ref()
+            .expect("capture project must accompany the capture environment");
         let mirror = project.virtual_root();
         assert!(!mirror.join("__vize_helpers.d.ts").exists());
         for name in [
