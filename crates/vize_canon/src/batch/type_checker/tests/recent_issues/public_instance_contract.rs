@@ -307,7 +307,14 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
     std::fs::write(project_root.join("shared/runtime.ts"), OUTSIDE_RUNTIME).unwrap();
 
     let mut checker = BatchTypeChecker::new(&project_root).unwrap();
-    checker.scan_project().unwrap();
+    let mut declaration_roots = walkdir::WalkDir::new(project_root.join("src"))
+        .into_iter()
+        .map(Result::unwrap)
+        .filter(|entry| entry.file_type().is_file())
+        .map(walkdir::DirEntry::into_path)
+        .collect::<Vec<_>>();
+    declaration_roots.sort();
+    checker.scan_paths(&declaration_roots).unwrap();
     let out_dir = project_root.join("types");
     let emitted = checker
         .emit_declarations(&DeclarationEmitOptions::new(out_dir.clone()).with_declaration_map(true))
