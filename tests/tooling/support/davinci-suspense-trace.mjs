@@ -9,6 +9,7 @@ const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
 const input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
 assert.ok(["resolve", "remove-pending", "unmount-pending"].includes(input.scenario));
+assert.equal(typeof input.computedProp, "boolean");
 assert.equal(vueVaporVersion, "3.6.0-rc.9", "review Suspense contract on runtime upgrades");
 const compile = (source) =>
   officialCompilerVapor.compile(source, { mode: "module", prefixIdentifiers: true }).code;
@@ -29,7 +30,20 @@ for (const key of [
   globalThis[key] = key === "window" ? window : window[key];
 const vue = await loadRuntime();
 assert.equal(vue.version, vueVaporVersion);
-const render = await evaluateCompiledRender(input.code ?? compile(input.source), vue);
+const computedSources = [];
+const runtime = {
+  ...vue,
+  createComponent(component, props, ...rest) {
+    if (input.computedProp && component === vue.Suspense) {
+      assert.ok(Array.isArray(props?.$), "computed Suspense props require dynamic sources");
+      const observed = props.$[0]();
+      assert.deepEqual(observed, { timeout: 0 });
+      computedSources.push(observed);
+    }
+    return vue.createComponent(component, props, ...rest);
+  },
+};
+const render = await evaluateCompiledRender(input.code ?? compile(input.source), runtime);
 const childRender = await evaluateCompiledRender(
   input.childCode ?? compile(input.childSource),
   vue,
@@ -156,6 +170,7 @@ try {
     await vue.nextTick();
     snapshot();
   }
+  assert.deepEqual(computedSources, input.computedProp ? [{ timeout: 0 }] : []);
   assert.equal(host.childNodes.length, 0, "Suspense unmount left nodes behind");
   assert.ok(
     announcements.every(
