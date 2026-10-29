@@ -304,6 +304,9 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
   const selectionPath = runStep.match(/--selection "([^"]+)"/)?.[1];
   assert.equal(impactPath, "$GITHUB_WORKSPACE/criterion-impact.json");
   assert.equal(selectionPath, impactPath);
+  const uploadStep = workflowStepBody(abJob, "Upload criterion A/B summary");
+  assert.match(uploadStep, /head\/target\/criterion-ab-base\.json/);
+  assert.match(uploadStep, /head\/target\/criterion-ab-head\.json/);
 
   // Dialect guard: build vize with legacy OFF and ON, then assert byte-identical
   // Vue 3 codegen plus a small A/B timing budget.
