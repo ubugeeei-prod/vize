@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use super::{existing_executable, platform_suffix, Candidate, CORSA_EXECUTABLE_NAMES};
+use super::{CORSA_EXECUTABLE_NAMES, Candidate, existing_executable, platform_suffix};
 
 mod manifest;
 use manifest::{declaration_targets, declared_dependency_names, read_manifest};

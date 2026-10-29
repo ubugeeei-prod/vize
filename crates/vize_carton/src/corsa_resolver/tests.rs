@@ -1,6 +1,6 @@
 use super::{
-    discover_in_walk, normalize_corsa_path, platform_suffix, resolve_with_env, CorsaResolveError,
-    CorsaResolveRequest, CORSA_ENV_VARS,
+    CORSA_ENV_VARS, CorsaResolveError, CorsaResolveRequest, discover_in_walk, normalize_corsa_path,
+    platform_suffix, resolve_with_env,
 };
 use std::ffi::OsString;
 use std::fs;

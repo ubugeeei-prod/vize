@@ -1,4 +1,4 @@
-use super::super::{discover_in_walk, platform_suffix, CorsaResolveError};
+use super::super::{CorsaResolveError, discover_in_walk, platform_suffix};
 use super::{resolve, write_file, write_native_preview_packages, write_typescript_manifest};
 use std::fs;
 use tempfile::TempDir;
