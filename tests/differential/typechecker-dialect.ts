@@ -3,14 +3,16 @@ import path from "node:path";
 import { readPinnedArtifact } from "./harness.mjs";
 
 export type DialectCoverage = {
-  state: "unknown" | "source-inspected";
-  registryRef: null;
+  state: "unknown" | "source-inspected" | "verified";
+  registryRef: string | null;
   evidence: Array<{
-    kind: "source-inspection";
+    kind: "source-inspection" | "adapter-execution";
     dialects: string[];
     selector: string;
   }>;
 };
+
+export const typecheckerDialectRegistry = "tests/differential/typechecker-registry.ts";
 
 type Input = { file: string; path: string; sha256: string };
 
@@ -79,6 +81,32 @@ export function typecheckerDialectCoverage(root: string, inputs: Input[]): Diale
         kind: "source-inspection",
         dialects: ordered,
         selector: "batch-typechecker-fixture-v1 pinned authored sources",
+      },
+    ],
+  };
+}
+
+export function verifiedTypecheckerDialectCoverage(
+  inspected: DialectCoverage,
+  test: string,
+): DialectCoverage {
+  assert.equal(inspected.state, "source-inspected");
+  assert.equal(inspected.registryRef, null);
+  assert.equal(inspected.evidence.length, 1);
+  assert.equal(inspected.evidence[0].kind, "source-inspection");
+  assert.equal(
+    inspected.evidence[0].selector,
+    "batch-typechecker-fixture-v1 pinned authored sources",
+  );
+  assert(test.length > 0);
+  return {
+    state: "verified",
+    registryRef: typecheckerDialectRegistry,
+    evidence: [
+      {
+        kind: "adapter-execution",
+        dialects: inspected.evidence[0].dialects,
+        selector: `batch-typechecker-fixture-v1 full-workspace ${test}`,
       },
     ],
   };

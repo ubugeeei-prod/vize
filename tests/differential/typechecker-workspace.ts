@@ -161,6 +161,29 @@ function requiredCases(inventory: Inventory) {
     );
   }
 }
+
+function verifiedDialectExecutions(
+  loaded: ReturnType<typeof loadTypecheckerManifest>,
+  tests: string[],
+  captures: WorkspaceCapture[],
+) {
+  const passed = new Set(tests);
+  for (const fixture of loaded.cases.filter(
+    (candidate) => candidate.dialectCoverage.state === "verified",
+  )) {
+    assert(passed.has(fixture.test), `${fixture.id}: registered execution did not pass`);
+    const capture = captures.find((candidate) => candidate.pack === fixture.pack);
+    assert(capture, `${fixture.id}: registered capture is missing`);
+    assert.equal(capture.test, fixture.test);
+    const observed = capture.cases.find((candidate) => candidate.id === fixture.case);
+    assert(observed, `${fixture.id}: registered case observation is missing`);
+    assert.deepEqual(
+      observed.inputs,
+      fixture.inputs.map((input) => ({ file: input.file, sha256: input.sha256 })),
+    );
+    assert.deepEqual(observed.diagnostics, fixture.diagnostics);
+  }
+}
 export function prepareTypecheckerWorkspace({
   repoRoot,
   resultDir,
@@ -408,6 +431,7 @@ function validate({ repoRoot, resultDir, expectedExecution }: WorkspaceOptions, 
       binarySha256: receipt.binary.sha256,
     });
   });
+  verifiedDialectExecutions(loaded, tests, captures);
   const projection = ts40Captures(repoRoot, locations_.ts40);
   return {
     loaded,

@@ -24,6 +24,8 @@ import { normalizeWorkspaceInventory } from "../../tools/support/compat/github/r
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const execution = { runId: 53, runAttempt: 2 };
 const names = Object.values(TYPECHECKER_TESTS);
+const verifiedDialectPack = "nuxt-plugin-injection-types";
+const verifiedDialectTest = TYPECHECKER_TESTS[verifiedDialectPack];
 const ts40Names = [
   "current_projection_matrix_is_exact_and_non_empty",
   "davinci_ts40_projection_support::evidence::public_instance_mixed_vue2_packets_remain_authenticated",
@@ -305,6 +307,20 @@ function controlled(t: { after: (callback: () => void) => void }) {
 }
 type Fixture = ReturnType<typeof controlled>;
 const artifact = (f: Fixture, name: string) => path.join(f.resultDir, name);
+function changeVerifiedDialectClaim(
+  f: Fixture,
+  change: (coverage: Record<string, unknown>) => void,
+) {
+  const file = path.join(f.repoRoot, "tests/_fixtures/differential/typechecker/manifest.json");
+  const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+  const fixture = manifest.cases.find(
+    (candidate: { id: string }) =>
+      candidate.id === "typechecker/nuxt-plugin-injection-types/authored-dependency-identity",
+  );
+  assert(fixture);
+  change(fixture.dialectCoverage);
+  fs.writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+}
 void test("workspace producer/consumer bind physical bytes, all registered bodies, complete JUnit and raw TS40 without native credit", (t) => {
   const f = controlled(t);
   const prepared = f.prepare({}, "target/nextest/full");
@@ -375,8 +391,24 @@ void test("pre-run attestation refuses stale capture state, changed provenance, 
       delete f.raw["rust-suites"]["vize_canon::fix_history_diagnostics"].testcases[names[0]];
     },
     (f: Fixture) => {
+      delete f.raw["rust-suites"]["vize_canon::fix_history_diagnostics"].testcases[
+        verifiedDialectTest
+      ];
+    },
+    (f: Fixture) => {
       f.raw["rust-suites"]["vize_canon::fix_history_diagnostics"].testcases[names[0]].ignored =
         true;
+    },
+    (f: Fixture) => {
+      changeVerifiedDialectClaim(f, (coverage) => {
+        coverage.registryRef = null;
+      });
+    },
+    (f: Fixture) => {
+      changeVerifiedDialectClaim(f, (coverage) => {
+        const evidence = coverage.evidence as Array<Record<string, unknown>>;
+        evidence[0].selector = "batch-typechecker-fixture-v1 full-workspace wrong_test";
+      });
     },
     (f: Fixture) => {
       f.raw["rust-suites"]["vize_canon::fix_history_diagnostics"]["binary-path"] = f.inventoryPath;
@@ -419,6 +451,11 @@ void test("no missing, forged, failed, stale or modified workspace chain can pro
       "0".repeat(64),
     ],
     [
+      `typechecker-workspace/${verifiedDialectPack}.json`,
+      "cases.0.inputs.0.sha256",
+      "0".repeat(64),
+    ],
+    [
       "typechecker-workspace/event-handler-narrowing.json",
       "cases.0.publicResult.exitCode",
       undefined,
@@ -444,6 +481,18 @@ void test("no missing, forged, failed, stale or modified workspace chain can pro
       fs.appendFileSync(
         artifact(f, "workspace-junit-ci.xml"),
         `<testcase classname="vize_canon::fix_history_diagnostics" name="${names[0]}"/>`,
+      );
+    },
+    (f) => {
+      const file = artifact(f, "workspace-junit-ci.xml");
+      fs.writeFileSync(
+        file,
+        fs
+          .readFileSync(file, "utf8")
+          .replace(
+            `<testcase classname="vize_canon::fix_history_diagnostics" name="${verifiedDialectTest}"/>`,
+            "",
+          ),
       );
     },
     (f) => {

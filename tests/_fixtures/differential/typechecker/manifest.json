@@ -6774,15 +6774,15 @@
         }
       ],
       "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
+        "state": "verified",
+        "registryRef": "tests/differential/typechecker-registry.ts",
         "evidence": [
           {
-            "kind": "source-inspection",
+            "kind": "adapter-execution",
             "dialects": [
               "ts"
             ],
-            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+            "selector": "batch-typechecker-fixture-v1 full-workspace nuxt_reference_graph_preserves_plugin_injection_import_types"
           }
         ]
       }

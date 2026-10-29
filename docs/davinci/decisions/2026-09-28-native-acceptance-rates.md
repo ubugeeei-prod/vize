@@ -90,3 +90,30 @@ current source bytes.
 `nativeHandled`, native-equivalence, production-lane, threshold, release-scope,
 or published acceptance-rate claim. #6853 remains open for those independent
 execution and whole-product acceptance gates.
+
+## First typechecker dialect execution receipt (2026-10-29)
+
+The `typechecker/nuxt-plugin-injection-types/authored-dependency-identity`
+coordinate now binds its provisional `ts` label to the existing source-built
+full-workspace execution chain. The manifest points at
+`tests/differential/typechecker-registry.ts`; the verifier requires the exact
+registered test, passed JUnit entry, complete `nuxt-plugin-injection-types`
+capture, pinned `project.json` SHA-256, and full ordered diagnostic reference.
+Missing or changed registry, selector, test result, input capture, or diagnostic
+keeps the claim from validating.
+
+The immutable supporting observation is source head
+`986712207ac167e6d992329f7d1024218afeb32b`, Actions run
+[`40837273960`](https://github.com/ubugeeei-prod/vize/actions/runs/40837273960),
+job `123325113322`. It passed
+`nuxt_reference_graph_preserves_plugin_injection_import_types` in both the
+normal typechecker suite and the `vize_canon::fix_history_diagnostics`
+full-workspace capture suite.
+
+This moves exactly one typechecker row from `source-inspected` to `verified`:
+typechecker verified `0 → 1`, provisional and unknown readiness `216 → 215`;
+across all 472 registered rows, verified `7 → 8` and unknown readiness
+`465 → 464`. Measurement-unknown stays zero. The native adapter remains
+unsupported, so `nativeHandled`, equivalence, the formatter-only deletion
+verifier count (`1/5`), T1/T2 evidence, thresholds, production routing, and
+release scope are unchanged. #6853 and #6854 remain open.
