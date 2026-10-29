@@ -74,12 +74,15 @@ fn write_tsrs_install(root: &Path) -> (PathBuf, PathBuf) {
     let platform_package = super::packages::tsrs_platform_package().unwrap();
     let wrapper = root.join("node_modules").join(".bin").join("tsrs");
     let package = root.join("node_modules").join("tsrs").join("package.json");
-    let native = root
-        .join("node_modules")
-        .join(platform_package)
-        .join("tsrs");
+    let platform = root.join("node_modules").join(platform_package);
+    let native = platform.join("tsrs");
     fs::create_dir_all(wrapper.parent().unwrap()).unwrap();
     write_file(&native);
+    fs::write(
+        platform.join("package.json"),
+        &*crate::cstr!(r#"{{"name":"{platform_package}","version":"0.18.0"}}"#),
+    )
+    .unwrap();
     fs::create_dir_all(package.parent().unwrap()).unwrap();
     fs::write(
         package,
@@ -455,4 +458,5 @@ fn ignores_vize_owned_runtime_and_an_undeclared_preview() {
 mod package_runtime;
 mod project_packages;
 mod provider_authority;
+mod tsrs_authority;
 mod wrapper_selection;

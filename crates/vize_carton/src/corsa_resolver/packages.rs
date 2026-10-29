@@ -42,32 +42,30 @@ pub(super) fn find_node_modules_native(
 /// the JavaScript launcher. `tsrs` is kept behind the TypeScript/Corsa runtime
 /// tiers unless it is explicitly selected through `TSRS_PATH` or
 /// `typeChecker.tsrsPath`.
-fn resolve_tsrs_package(package_dir: &Path) -> Option<PathBuf> {
-    let manifest = std::fs::read_to_string(package_dir.join("package.json")).ok()?;
-    let manifest: serde_json::Value = serde_json::from_str(&manifest).ok()?;
+fn resolve_tsrs_package(package_dir: &Path) -> Result<PathBuf, InvalidNativePackage> {
+    let invalid = || InvalidNativePackage {
+        package: package_dir.to_path_buf(),
+    };
+    let manifest = read_manifest(package_dir).ok_or_else(invalid)?;
     if manifest.get("name").and_then(serde_json::Value::as_str) != Some("tsrs") {
-        return None;
+        return Err(invalid());
     }
-    let platform_package = tsrs_platform_package()?;
-    if !manifest
+    let platform_package = tsrs_platform_package().ok_or_else(invalid)?;
+    let version = manifest
         .get("optionalDependencies")
-        .and_then(serde_json::Value::as_object)
-        .is_some_and(|dependencies| dependencies.contains_key(platform_package))
+        .and_then(|dependencies| dependencies.get(platform_package))
+        .and_then(serde_json::Value::as_str)
+        .ok_or_else(invalid)?;
+    let real_package_dir = package_dir.canonicalize().map_err(|_| invalid())?;
+    let platform_dir = nearest_package(&real_package_dir, platform_package).ok_or_else(invalid)?;
+    let installed = read_manifest(&platform_dir).ok_or_else(invalid)?;
+    if installed.get("name").and_then(serde_json::Value::as_str) != Some(platform_package)
+        || installed.get("version").and_then(serde_json::Value::as_str) != Some(version)
     {
-        return None;
+        return Err(invalid());
     }
-
-    let real_package_dir = package_dir.canonicalize().ok()?;
-    for ancestor in real_package_dir.ancestors() {
-        let candidate = ancestor
-            .join("node_modules")
-            .join(platform_package)
-            .join("tsrs");
-        if candidate.is_file() {
-            return Some(candidate);
-        }
-    }
-    None
+    let binary = platform_dir.join("tsrs");
+    binary.is_file().then_some(binary).ok_or_else(invalid)
 }
 
 pub(super) fn tsrs_platform_package() -> Option<&'static str> {
@@ -246,11 +244,7 @@ fn find_declared_tsrs(
         let actual = read_manifest(&package_dir)
             .and_then(|manifest| manifest.get("name")?.as_str().map(str::to_owned));
         if actual.as_deref() == Some("tsrs") {
-            return resolve_tsrs_package(&package_dir)
-                .map(Some)
-                .ok_or(InvalidNativePackage {
-                    package: package_dir,
-                });
+            return resolve_tsrs_package(&package_dir).map(Some);
         }
         if declared_runtime {
             return Err(InvalidNativePackage {
@@ -367,7 +361,7 @@ pub(super) fn resolve_owned_launcher(target: &Path) -> Option<PathBuf> {
         )
         .ok()
         .flatten(),
-        "tsrs" => resolve_tsrs_package(package),
+        "tsrs" => resolve_tsrs_package(package).ok(),
         _ => None,
     }
 }
