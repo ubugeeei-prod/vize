@@ -46,6 +46,7 @@ pub(super) fn internal_field_ranges(program: &Program<'_>) -> Vec<Range<usize>> 
                     && matches!(
                         key.name.as_str(),
                         "__vizeComponentMarker"
+                            | "__vizeNativeFallthroughRoot"
                             | "__vizeHasFallthroughProps"
                             | "__vizeFallthroughProps"
                     )

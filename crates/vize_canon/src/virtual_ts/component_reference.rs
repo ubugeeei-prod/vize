@@ -20,13 +20,32 @@ pub(crate) fn component_binding_reference(
     syntactic_type_only_imported_names: &FxHashSet<CompactString>,
     template_name: &str,
 ) -> String {
-    resolved_component_binding_reference(
+    component_binding_reference_with_resolution(
         summary,
         options,
         syntactic_type_only_imported_names,
         template_name,
     )
-    .unwrap_or_else(|| to_safe_identifier(template_name))
+    .0
+}
+
+pub(crate) fn component_binding_reference_with_resolution(
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+    syntactic_type_only_imported_names: &FxHashSet<CompactString>,
+    template_name: &str,
+) -> (String, bool) {
+    let resolved = resolved_component_binding_reference(
+        summary,
+        options,
+        syntactic_type_only_imported_names,
+        template_name,
+    );
+    let is_resolved = resolved.is_some();
+    (
+        resolved.unwrap_or_else(|| to_safe_identifier(template_name)),
+        is_resolved,
+    )
 }
 
 pub(super) fn component_binding_reference_with_bindings(

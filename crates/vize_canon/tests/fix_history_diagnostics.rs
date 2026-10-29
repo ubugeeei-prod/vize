@@ -14,6 +14,7 @@ mod support {
 }
 mod aria_kebab_prop_11048;
 mod content_mapper_vue_generic_11051;
+mod fix_history_cases;
 use support::fix_history_normalization::assert_generated_check_ordinal_normalization_preserves_markers_without_digits;
 use support::fix_history_runner::check_pack;
 use support::fix_history_runner::native_fixture_runtime_disabled;
@@ -682,17 +683,6 @@ fn content_mapper_musea_art_project_preserves_bound_component_diagnostics() {
         "d295b324299c549063fab385b7f308c71ac014e0",
         Some(10186),
         &["bound-component-props"],
-    );
-}
-
-#[test]
-fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
-    check_pack(
-        "content-mapper-nuxt-emit-10195",
-        "content_mapper_preserves_emit_with_nuxt_pattern_injections",
-        "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
-        Some(10195),
-        &["nuxt-pattern-injection-attribute-listener"],
     );
 }
 

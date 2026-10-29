@@ -16,17 +16,48 @@ use std::ops::{Deref, DerefMut};
 use super::explicit_generics::ExplicitGenerics;
 use super::slot_outlet_props::SlotOutletChecks;
 
-pub(crate) type EventContractKey = (
-    String,
-    String,
-    String,
-    bool,
-    bool,
-    bool,
-    Option<String>,
-    Option<u32>,
-    Option<u64>,
-);
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub(crate) struct EventContractKey {
+    pub(super) component_type_name: String,
+    pub(super) component_ref: String,
+    pub(super) event_name: String,
+    pub(super) legacy_vue2: bool,
+    pub(super) fallthrough_listeners: bool,
+    pub(super) native_fallthrough_only: bool,
+    pub(super) needs_typed_handler_assignment: bool,
+    pub(super) enclosing_vif_guard: Option<String>,
+    pub(super) parent_scope: Option<u32>,
+    pub(super) chained_guard_block: Option<u64>,
+}
+
+#[cfg(test)]
+mod event_contract_key_tests {
+    use super::*;
+
+    fn key(native_fallthrough_only: bool) -> EventContractKey {
+        EventContractKey {
+            component_type_name: String::from("Child"),
+            component_ref: String::from("Child"),
+            event_name: String::from("click"),
+            legacy_vue2: false,
+            fallthrough_listeners: true,
+            native_fallthrough_only,
+            needs_typed_handler_assignment: true,
+            enclosing_vif_guard: None,
+            parent_scope: None,
+            chained_guard_block: None,
+        }
+    }
+
+    #[test]
+    fn native_fallthrough_mode_partitions_contract_deduplication() {
+        let mut contracts = FxHashMap::default();
+        assert_eq!(contracts.insert(key(false), 1), None);
+        assert_eq!(contracts.insert(key(false), 2), Some(1));
+        assert_eq!(contracts.insert(key(true), 3), None);
+        assert_eq!(contracts.len(), 2);
+    }
+}
 
 #[derive(Clone, Copy)]
 pub(crate) enum GlobalComponentCheck {
