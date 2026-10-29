@@ -107,9 +107,9 @@ test("async ancestry workflow wires the bounded selector into its historical pro
     workflow,
     /qualification\/tools\/support\/cross_file\/async_component\/feature-delta\.ts/,
   );
-  assert.match(workflow, /refs\/pull\/11011\/head/);
-  assert.match(workflow, /8a089d97ea3c95a23c588085f47502fa7d288bdf/);
-  assert.match(workflow, /deda174ca6da0fc54a4f7483acbd3f71c382095c/);
+  assert.match(workflow, /merged_squash = "deda174ca6da0fc54a4f7483acbd3f71c382095c"/);
+  assert.match(workflow, /\["git", "merge-base", "--is-ancestor", merged_squash, head\]/);
+  assert.match(workflow, /parent, spec\["feature"\], spec\["feature"\], "--", "crates", "davinci"/);
   assert.match(workflow, /"featureDelta": delta/);
   assert.match(workflow, /\["git", "worktree", "add", "--detach"/);
   assert.match(workflow, /cwd=worktree/);

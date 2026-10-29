@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "pullRequest": "https://github.com/ubugeeei-prod/vize/pull/10701",
+  "historical": {
+    "packet": "falsy-and.fixed-legacy.json",
+    "sha256": "6407caced54e618f9a17081770e9144cfe3a1b88b6bfc991863d3106f9f81e74",
+    "fixedProducer": {
+      "product": "vize_atelier_jsx",
+      "entry": "compile_jsx -> module_code",
+      "sourceHead": "225b436e9f5d0ca6f7e28988ce28b27007386615",
+      "features": [
+        "default"
+      ],
+      "profile": "test/unoptimized/debuginfo2",
+      "compiler": "rustc 1.98.0",
+      "artifactSha256": "2218a20d60c68f52fd82a700a1615eb676dd8bd04d076aa00cf29a350e1668c7"
+    },
+    "native": {
+      "handled": 0,
+      "equivalent": 0,
+      "pair": "pending"
+    }
+  },
+  "capture": {
+    "runId": 40221673116,
+    "artifactId": 12609354973,
+    "artifactName": "jsx-authored-native-40221673116-1",
+    "headSha": "664c7dc3846c068a756b7562e11eab35a9497d9d",
+    "checkoutSha": "664c7dc3846c068a756b7562e11eab35a9497d9d",
+    "checkoutTree": "3e1d3d673c142beb6653ad8ef47109f81850e99d",
+    "packets": [
+      {
+        "packet": "falsy-producers.json",
+        "sha256": "b281db0ab3f09675e61dd69fdefcf3e4c8bb982fc5ba3b07ea52d96142be7489"
+      },
+      {
+        "packet": "falsy-original-refusals.json",
+        "sha256": "a96434b7ef4c2f263b805b880700439f96e9b722c4327d8f099dc2880d3f3d30"
+      },
+      {
+        "packet": "falsy-modules.json",
+        "sha256": "a8a48d0ab0af5fded0b73739bcb04aa1f071fd33b9d2fc2f8494308e060a1710"
+      },
+      {
+        "packet": "falsy-runtime.json",
+        "sha256": "f9d07c5fc3d863550e5af0724eccf8b415b6ddb773f710c691f96b90acbf1cce"
+      }
+    ]
+  },
+  "producerControl": {
+    "scope": "complete historical fixture byte regression; no native authored-module credit",
+    "backends": [
+      {
+        "backend": "vdom",
+        "entry": "compile_jsx -> module_code",
+        "role": "existing authored functional VDOM module"
+      },
+      {
+        "backend": "vapor",
+        "entry": "compile_to_vapor -> components[0].code",
+        "role": "standalone Vapor renderer producer"
+      },
+      {
+        "backend": "ssr",
+        "entry": "compile_to_ssr -> components[0].code",
+        "role": "standalone SSR renderer producer"
+      }
+    ],
+    "historicalFixedProducerAttributionChanged": false
+  },
+  "runtimeControl": {
+    "entry": "App",
+    "sources": "unchanged original fixture sources",
+    "clientVapor": {
+      "defaultMode": "vapor",
+      "ssr": false,
+      "role": "authored Vapor component object",
+      "marker": "__vapor",
+      "api": "Vue.createVaporApp"
+    },
+    "server": {
+      "defaultMode": "vapor",
+      "ssr": true,
+      "role": "authored SSR Vapor component object",
+      "markers": [
+        "__ssrInlineRender",
+        "__vapor"
+      ],
+      "api": "vue/server-renderer.renderToString"
+    },
+    "hydration": {
+      "clientMode": "vdom",
+      "role": "same-source VDOM client hydrates SSR Vapor-object HTML",
+      "fixtures": [
+        "boolean",
+        "nested",
+        "values"
+      ],
+      "observations": 42
+    },
+    "originalFunctionalVdomSsr": {
+      "defaultMode": "vdom",
+      "ssr": true,
+      "role": "complete module explicitly refused; producer remains inspectable",
+      "fixtures": 4
+    },
+    "runtimeFailures": 0,
+    "nativeBytePair": "pending",
+    "versions": {
+      "vue": "3.6.0-rc.9",
+      "babel": "7.29.0",
+      "babelJsx": "2.0.1"
+    },
+    "physicalProviderHashes": "not recorded in this receipt",
+    "releaseQualification": false,
+    "publicConsumerQualification": false
+  }
+}

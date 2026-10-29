@@ -15,8 +15,11 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = ecosystemProductsApp;
+const qualifiedEmitProps = 'import("vize:virtual-ts").__EmitProps<';
+const qualifiedWidenTemplateRef = 'import("vize:virtual-ts").__VizeWidenTemplateRef';
 const currentReceipt = {
   diagnosticSha256: "a9f9ae0f2bbee8294ebd92d300895cf772c49b7f62c20d9018a3d3435d2125dc",
+  emitHelperFiles: [],
   errorCount: 2,
   fileCount: 9,
   files: [
@@ -30,22 +33,36 @@ const currentReceipt = {
     "src/vendors/nuxt-ui-component.ts",
     "src/vendors/vue-select.ts",
   ],
+  helperHoistProvenance: "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
   provenance:
-    "#11034 / 1ba0c04fbcc3df3b4b561b6c2fa95dbf49f17c55 and " +
-    "#11050 / 3ecd00704e57fdc3bddb06aeb627eda2058aa8ac",
-  slotFallbackProvenance: "#11034 / 1ba0c04fbcc3df3b4b561b6c2fa95dbf49f17c55",
-  slotFallbackFiles: [
+    "#11034 / 1ba0c04fbcc3df3b4b561b6c2fa95dbf49f17c55, " +
+    "#11050 / 3ecd00704e57fdc3bddb06aeb627eda2058aa8ac, " +
+    "#11064 / c2ee0878fec5d53edb7c30e10f374e37ab256f02, and " +
+    "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
+  slotFallbackProvenance: "#11064 / c2ee0878fec5d53edb7c30e10f374e37ab256f02",
+  slotFallbackFiles: [],
+  snapshotSha256: "9e976ba0d254292747b524b7f84360751aa1b81715b8f9917158270fba32d7ce",
+  warningCount: 0,
+  widenHelperFiles: [
     "src/ComposablesAndRouting.vue",
+    "src/GraphAnd3D.vue",
     "src/MediaAndDataViz.vue",
+    "src/NaiveUiOptionsApi.vue",
     "src/UiLibraries.vue",
   ],
-  snapshotSha256: "d9f554ddad89c5e88c22b7baebb2152ef964668930af0700a0a8844eb5b97e69",
-  warningCount: 0,
 } as const;
 const unknownSlotFallback =
   "C extends (props: any, context: infer __Ctx, ...args: any[]) => any ? " +
   "NonNullable<__Ctx> extends { slots: infer __S } ? __S : any : unknown;";
+const retiredSlotFallbackFiles = [
+  "src/ComposablesAndRouting.vue",
+  "src/MediaAndDataViz.vue",
+  "src/UiLibraries.vue",
+] as const;
 const componentAriaHelper =
+  "function __vizeComponentAriaPropValue<const T>(value: T): " +
+  "T extends undefined ? never : T { return value as (T extends undefined ? never : T); }";
+const retiredComponentAriaHelper =
   "function __vizeComponentAriaPropValue<const T>(value: T): " +
   "__VizeNotUndefined<T> { return value as __VizeNotUndefined<T>; }";
 const ariaPropReceipts = [
@@ -125,14 +142,58 @@ describe(`${app.name} check (type checker)`, () => {
         .filter(({ virtualTs }) => virtualTs?.includes(unknownSlotFallback) === true)
         .map(({ file }) => file),
       currentReceipt.slotFallbackFiles,
-      `the exact three any-to-unknown slot fallbacks from ${currentReceipt.slotFallbackProvenance} changed`,
+      `slot fallbacks changed after ${currentReceipt.slotFallbackProvenance}`,
     );
-    for (const file of currentReceipt.slotFallbackFiles) {
+    for (const file of retiredSlotFallbackFiles) {
       const virtualTs = parsed.files.find((candidate) => candidate.file === file)?.virtualTs ?? "";
       assert.equal(
         count(virtualTs, unknownSlotFallback),
+        0,
+        `${file} must not restore its retired unknown fallback`,
+      );
+    }
+    assert.deepEqual(
+      parsed.files
+        .filter(({ virtualTs }) => virtualTs?.includes(qualifiedWidenTemplateRef) === true)
+        .map(({ file }) => file),
+      currentReceipt.widenHelperFiles,
+      `qualified widening helpers changed after ${currentReceipt.helperHoistProvenance}`,
+    );
+    assert.deepEqual(
+      parsed.files
+        .filter(({ virtualTs }) => virtualTs?.includes(qualifiedEmitProps) === true)
+        .map(({ file }) => file),
+      currentReceipt.emitHelperFiles,
+      `qualified emit helpers changed after ${currentReceipt.helperHoistProvenance}`,
+    );
+    for (const { file, virtualTs = "" } of parsed.files) {
+      assert.equal(
+        count(virtualTs, "__VizeWidenTemplateRef"),
+        count(virtualTs, qualifiedWidenTemplateRef),
+        `${file} must not restore a file-local widening helper`,
+      );
+      assert.equal(
+        count(virtualTs, "__EmitProps<"),
+        count(virtualTs, qualifiedEmitProps),
+        `${file} must not restore a file-local emit helper`,
+      );
+      assert.equal(
+        count(virtualTs, "type __VizeSlotOutletTarget"),
+        0,
+        `${file} must not restore the unused slot target alias`,
+      );
+      assert.equal(
+        count(virtualTs, "type __VizeSlotOutletArgs"),
+        0,
+        `${file} must not restore the unused slot argument alias`,
+      );
+    }
+    for (const file of currentReceipt.widenHelperFiles) {
+      const virtualTs = parsed.files.find((candidate) => candidate.file === file)?.virtualTs ?? "";
+      assert.equal(
+        count(virtualTs, qualifiedWidenTemplateRef),
         1,
-        `${file} must own one unknown fallback`,
+        `${file} must use one shared widening helper`,
       );
     }
     assert.deepEqual(
@@ -147,6 +208,16 @@ describe(`${app.name} check (type checker)`, () => {
         parsed.files.find((candidate) => candidate.file === receipt.file)?.virtualTs ?? "";
       assert.equal(count(virtualTs, componentAriaHelper), 1, `${receipt.file} must own one helper`);
       assert.equal(
+        count(virtualTs, retiredComponentAriaHelper),
+        0,
+        `${receipt.file} must not restore the capturable helper signature`,
+      );
+      assert.equal(
+        count(virtualTs, "T extends undefined ? never : T"),
+        2,
+        `${receipt.file} must retain the collision-proof narrowing contract`,
+      );
+      assert.equal(
         count(virtualTs, receipt.property),
         1,
         `${receipt.file} must use the camel prop`,
@@ -159,12 +230,12 @@ describe(`${app.name} check (type checker)`, () => {
     }
 
     const prettyOutput = stringifyDiagnosticSnapshot(parsed, checkConfig.cwd);
+    assertSnapshot(SNAPSHOT_DIR, `${app.name}-check`, prettyOutput);
     assert.equal(
       sha256(prettyOutput),
       currentReceipt.snapshotSha256,
       `current snapshot needs an intentional successor after ${currentReceipt.provenance}`,
     );
-    assertSnapshot(SNAPSHOT_DIR, `${app.name}-check`, prettyOutput);
   });
 });
 

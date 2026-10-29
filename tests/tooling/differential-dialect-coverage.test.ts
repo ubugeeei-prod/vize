@@ -261,7 +261,7 @@ void test("four source-inspected and one adapter-verified row exhaust measuremen
     Object.fromEntries(
       products.map((product) => [product, summaries[product].unknownReadinessCases]),
     ),
-    { compiler: 43, formatter: 25, linter: 112, lsp: 70, typechecker: 216 },
+    { compiler: 43, formatter: 25, linter: 112, lsp: 70, typechecker: 219 },
   );
 });
 

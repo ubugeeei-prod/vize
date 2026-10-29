@@ -34,8 +34,7 @@ pub fn parse_program_for_analysis<'a>(
         return original;
     }
 
-    let mut analysis = String::from(source);
-    let attempts = if original.panicked {
+    let (range, replacement, attempts) = if original.panicked {
         // The old first retry parsed these identical bytes only to recover the
         // same operator diagnostic. Reuse it, keeping the other three attempts.
         let Some(range) = missing_member_operator(&original, source)
@@ -44,17 +43,18 @@ pub fn parse_program_for_analysis<'a>(
         else {
             return original;
         };
-        analysis.replace_range(range.clone(), if range.len() == 2 { "  " } else { " " });
-        3
+        let replacement = if range.len() == 2 { "  " } else { " " };
+        (range, replacement, 3)
     } else {
         let Some(range) = incomplete_call_operator(&original, source)
             .or_else(|| incomplete_call_before_declaration(source))
         else {
             return original;
         };
-        analysis.replace_range(range, " ");
-        4
+        (range, " ", 4)
     };
+    let mut analysis = String::from(source);
+    analysis.replace_range(range, replacement);
     for _ in 0..attempts {
         let view = allocator.alloc_str(&analysis);
         vize_carton::micro_count!("croquis.oxc.recovery.bytes", view.len());

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 11013,
+  "regressionCommit": "a95d0aad73c8403767a507f8f0768dd0ffb265c7",
+  "sourceRevision": "a95d0aad73c8403767a507f8f0768dd0ffb265c7",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "zero-argument-valid",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "component.ts", "source": "component-zero.ts.txt" },
+        { "file": "src/Tiny.vue", "source": "source.vue.txt" }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-default-zero-valid",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "component.ts", "source": "component-generic-default.ts.txt" },
+        { "file": "src/Tiny.vue", "source": "source.vue.txt" }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "slot-string-invalid",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "component.ts", "source": "component-slot-string.ts.txt" },
+        { "file": "src/Tiny.vue", "source": "source.vue.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"other\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    }
+  ]
+}

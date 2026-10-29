@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "issue": 10700,
+  "pullRequest": 10701,
+  "capture": {
+    "runId": 40224832845,
+    "artifactId": 12610971331,
+    "head": "a4e223413856dd05826474a70e0acb248732003a",
+    "entry": "unchanged adversarial source -> compile_jsx/compile_to_vapor; complete summary/module captured before assertion",
+    "qualification": "structural source observation only; undefined capture fixture is not runtime evidence"
+  },
+  "cases": [
+    {
+      "observation": "mode_aware_multi_component.json",
+      "observationSha256": "b49a2c82712629cb0f3a4e9a19a56727babbc8d3daaabe9e972d1b7b1a174870",
+      "sourceSha256": "e0c92eebc595e3f9be95a1a2a8daa8714d828f6e88bb24c27708ed7ca47ca3ed",
+      "facet": "summary",
+      "historical": "adversarial_snapshots__mode_aware_multi_component_summary.snap",
+      "historicalSha256": "e2ff65fa0335523d61f319b3d4bb98145593ec87c0a1dfb8fdc31575bd89deac",
+      "successor": "adversarial_snapshots__mode_aware_multi_component_summary_authored_native_10701.snap",
+      "successorSha256": "0f24139f60d333840d7c0e8850e2229b699b6f07b544de2cee343038d8bfbfa6",
+      "runtime": false
+    },
+    {
+      "observation": "mode_aware_multi_component.json",
+      "observationSha256": "b49a2c82712629cb0f3a4e9a19a56727babbc8d3daaabe9e972d1b7b1a174870",
+      "sourceSha256": "e0c92eebc595e3f9be95a1a2a8daa8714d828f6e88bb24c27708ed7ca47ca3ed",
+      "facet": "module",
+      "historical": "adversarial_snapshots__mode_aware_multi_component_module.snap",
+      "historicalSha256": "ab8f8989c666fcde8e2e3cdf36c84f399f52cf4f818b7a32690dbe8cec4fe24e",
+      "successor": "adversarial_snapshots__mode_aware_multi_component_module_authored_native_10701.snap",
+      "successorSha256": "267d44d76083393ace89ba2a267c0255428b1bbb5bbb3509e4eb771158d174a9",
+      "runtime": false
+    },
+    {
+      "observation": "scoped_style_extraction.json",
+      "observationSha256": "e4b189b249e65eb917aafeb7a867b318c2b2f5ddc43b2a87a216963c1bdd5a08",
+      "sourceSha256": "a29ce6884de5398e846fcf1b28e4f37d38e460a3c759e762b8509ff226fbbf44",
+      "facet": "summary",
+      "historical": "adversarial_snapshots__scoped_style_extraction_vapor.snap",
+      "historicalSha256": "6afd8d0687bb236533ea32ebe570b4ff9497eb427c2d53f8f22e26e629cc2ae9",
+      "successor": "adversarial_snapshots__scoped_style_extraction_shared_scope_10701_vapor.snap",
+      "successorSha256": "a92f0e8e1ce49fe658da744d2b97242f08557d7cbe7596ce25d3208ef10bf578",
+      "runtime": false
+    }
+  ]
+}

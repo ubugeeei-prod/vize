@@ -1,0 +1,73 @@
+{
+  "file": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-native-beta-dto-abi-ZLpHOV/main.ts",
+  "text": "/*🧭é日本語*/\r\nexport const label: string = \"ok\";\r\nexport const length: number = label; export const x = 1; ",
+  "textSha256": "023cf911fe4504407c75885821a6a02e06b3e62977a8c196e6680807393cbd88",
+  "diagnostics": [
+    {
+      "fileName": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-native-beta-dto-abi-ZLpHOV/main.ts",
+      "pos": 61,
+      "end": 67,
+      "startPosition": {
+        "line": 2,
+        "character": 13
+      },
+      "endPosition": {
+        "line": 2,
+        "character": 19
+      },
+      "sourceLines": [
+        {
+          "line": 2,
+          "text": "export const length: number = label; "
+        }
+      ],
+      "code": 2322,
+      "category": 1,
+      "text": "Type 'string' is not assignable to type 'number'."
+    }
+  ],
+  "binarySha256": "8471ad6dc1a7635dc0a1a5d6298fd8683b16480c26517a9a99c89ee1c8a0cbf8",
+  "binaryBytes": 1362,
+  "headerWords": [
+    150994944,
+    2352818429,
+    3264568070,
+    414647003,
+    2850038204,
+    0,
+    64,
+    136,
+    430,
+    522,
+    522,
+    146,
+    0,
+    0,
+    0,
+    0
+  ],
+  "snapshot": 1,
+  "project": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-native-beta-dto-abi-ZLpHOV/tsconfig.json",
+  "provider": {
+    "path": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-typescript-beta-wire-_mk8ufjd/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+    "sha256": "29f5eb8daa5c8cf6ef1c0cb79fbcf47c0cfdf26edabdf148bb779d0b2d56cebc",
+    "version": "7.1.0-beta",
+    "gitHead": "3e9236361fa97a9e6c685f4833ac457ae2d8c50a"
+  },
+  "scope": "Actual official beta protocol9 plain SourceFile text-root fixture. Full text is independently authored, raw API response belongs to snapshot1; no AST interpretation or Vize source execution credit.",
+  "primarySource": "https://github.com/microsoft/TypeScript/blob/3e9236361fa97a9e6c685f4833ac457ae2d8c50a/tsc/internal/api/encoder/encoder.go",
+  "rawStreams": {
+    "stdin.bin": {
+      "sha256": "24ecb44a1d328144ea878c39e13de9470320aff59fa6ed1dd13d4e77e691ea02",
+      "bytes": 974
+    },
+    "stdout.bin": {
+      "sha256": "3d475b7747179ee0960a2f4284be41e3a5e89c7f7edefc69e4f6e85e872bbcc5",
+      "bytes": 3547
+    },
+    "stderr.bin": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  }
+}
