@@ -519,26 +519,6 @@ importers:
       zigpty:
         specifier: catalog:repo-tooling
         version: 0.2.1
-    optionalDependencies:
-      '@typescript/typescript-darwin-arm64':
-        specifier: catalog:corsa-runtime
-        version: 7.0.2
-      '@typescript/typescript-darwin-x64':
-        specifier: catalog:corsa-runtime
-        version: 7.0.2
-      '@typescript/typescript-linux-arm64':
-        specifier: catalog:corsa-runtime
-        version: 7.0.2
-      '@typescript/typescript-linux-x64':
-        specifier: catalog:corsa-runtime
-        version: 7.0.2
-      '@typescript/typescript-win32-arm64':
-        specifier: catalog:corsa-runtime
-        version: 7.0.2
-      '@typescript/typescript-win32-x64':
-        specifier: catalog:corsa-runtime
-        version: 7.0.2
-
   crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755:
     dependencies:
       vue:
@@ -1036,26 +1016,6 @@ importers:
       vue:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
-    optionalDependencies:
-      '@typescript/typescript-darwin-arm64':
-        specifier: catalog:corsa-runtime
-        version: 7.0.2
-      '@typescript/typescript-darwin-x64':
-        specifier: catalog:corsa-runtime
-        version: 7.0.2
-      '@typescript/typescript-linux-arm64':
-        specifier: catalog:corsa-runtime
-        version: 7.0.2
-      '@typescript/typescript-linux-x64':
-        specifier: catalog:corsa-runtime
-        version: 7.0.2
-      '@typescript/typescript-win32-arm64':
-        specifier: catalog:corsa-runtime
-        version: 7.0.2
-      '@typescript/typescript-win32-x64':
-        specifier: catalog:corsa-runtime
-        version: 7.0.2
-
   npm/compose/core:
     dependencies:
       temporal-polyfill-lite:

@@ -2,13 +2,16 @@
 source: crates/vize_canon/src/batch/error.rs
 expression: msg.as_str()
 ---
-error: corsa not found
+error: native TypeScript runtime not found
 
-vize check requires 'typescript@^7' to be installed.
+vize check requires a user-installed native TypeScript/tsgo executable.
+Keep your existing 'typescript' package. Install a native compiler under a separate alias, or configure typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH.
 
-To install, run one of the following:
+The example below selects native TypeScript 7.1.0-beta; choose the native version you want to run.
 
-  npm install -D typescript@^7  # npm
-  pnpm add -D typescript@^7  # pnpm
-  yarn add -D typescript@^7  # yarn
-  bun add -D typescript@^7  # bun
+Example install commands (choose your package manager):
+
+  npm install -D typescript-native@npm:typescript@7.1.0-beta  # npm
+  pnpm add -D typescript-native@npm:typescript@7.1.0-beta  # pnpm
+  yarn add -D typescript-native@npm:typescript@7.1.0-beta  # yarn
+  bun add -D typescript-native@npm:typescript@7.1.0-beta  # bun

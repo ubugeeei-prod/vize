@@ -252,7 +252,9 @@ Key options:
 | `--declaration`     | Emit `.d.ts` output                                |
 | `--declaration-dir` | Output directory for emitted declarations          |
 
-Use `--corsa-path` to pin a local Corsa build. The shared config key is `typeChecker.corsaPath`;
+Vize uses a native TypeScript executable installed by the selected project; it does not bundle
+or download a compiler. Use `--corsa-path` to select an explicit executable. The shared config key
+is `typeChecker.corsaPath`;
 `typeChecker.tsgoPath` remains only as a compatibility alias. `--tsrs-path` and
 `typeChecker.tsrsPath` select tsrs as the runtime for this packaged checker. To type-check with
 tsrs itself, use the content mapper command in [Type Checking](./type-checking.md).

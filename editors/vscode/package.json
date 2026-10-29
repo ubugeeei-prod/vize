@@ -40,14 +40,6 @@
     "typescript": "6.0.3",
     "vite-plus": "0.2.8"
   },
-  "optionalDependencies": {
-    "@typescript/typescript-darwin-arm64": "7.0.2",
-    "@typescript/typescript-darwin-x64": "7.0.2",
-    "@typescript/typescript-linux-arm64": "7.0.2",
-    "@typescript/typescript-linux-x64": "7.0.2",
-    "@typescript/typescript-win32-arm64": "7.0.2",
-    "@typescript/typescript-win32-x64": "7.0.2"
-  },
   "contributes": {
     "typescriptServerPlugins": [
       {
