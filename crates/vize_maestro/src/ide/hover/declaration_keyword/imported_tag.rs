@@ -14,6 +14,18 @@ pub(super) fn imported_tag_property_keyword(
     lang: Option<&str>,
     word: &str,
 ) -> Option<String> {
+    imported_tag_with(markdown, content, offset, word, || {
+        import_binds_word(script_setup, lang, word)
+    })
+}
+
+pub(super) fn imported_tag_with(
+    markdown: &str,
+    content: &str,
+    offset: usize,
+    word: &str,
+    imports_word: impl FnOnce() -> bool,
+) -> Option<String> {
     if word.is_empty() {
         return None;
     }
@@ -32,7 +44,7 @@ pub(super) fn imported_tag_property_keyword(
     if !hover_is_on_tag(content, offset, word) {
         return None;
     }
-    if !import_binds_word(script_setup, lang, word) {
+    if !imports_word() {
         return None;
     }
     let mut rewritten = String::with_capacity(markdown.len() + "(property)".len());
