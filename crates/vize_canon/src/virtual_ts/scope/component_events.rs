@@ -47,6 +47,8 @@ pub(super) struct ComponentEventTypeContext<'a, 'template> {
     /// `fallthroughAttributes`: a listener the child neither declares nor
     /// emits may still be typed from its root's forwarded props.
     pub(super) fallthrough_listeners: bool,
+    /// An omitted Vue 3 option accepts only an immediate native-root payload.
+    pub(super) native_fallthrough_only: bool,
     /// The `@vue-generic` binding this listener's component resolves through.
     pub(super) explicit_generic: Option<&'a str>,
     pub(super) enclosing_vif_guard: Option<&'a str>,
@@ -73,6 +75,7 @@ pub(super) fn generate_component_event_types(
         hoist_shared_preamble,
         needs_typed_handler_assignment,
         fallthrough_listeners,
+        native_fallthrough_only,
         explicit_generic,
         enclosing_vif_guard,
         event_inference_usages,
@@ -116,6 +119,7 @@ pub(super) fn generate_component_event_types(
         String::from(data.event_name.as_str()),
         legacy_vue2,
         fallthrough_listeners,
+        native_fallthrough_only,
         needs_typed_handler_assignment && has_script_component_binding,
         enclosing_vif_guard.map(String::from),
         scope.parent().map(|parent| parent.as_u32()),
@@ -159,6 +163,11 @@ pub(super) fn generate_component_event_types(
     let return_type = cstr!("__{component_type_name}_{contract_scope_id}_{safe_event_name}_return");
     let event_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
     let listener_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_listener");
+    let fallthrough_contract = if native_fallthrough_only {
+        "{ readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F }"
+    } else {
+        "{ readonly __vizeFallthroughProps?: infer __F }"
+    };
 
     // A vue-tsc generic library export instantiates its generics with their
     // constraints here; its listener stays untyped rather than wrong.
@@ -181,7 +190,7 @@ pub(super) fn generate_component_event_types(
             );
             append!(
                 *ts,
-                "{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends {emit_owned_keys}<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? NonNullable<__F> : {public_props} : {public_props};\n",
+                "{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends {emit_owned_keys}<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {fallthrough_contract} ? NonNullable<__F> : {public_props} : {public_props};\n",
             );
         }
         resolved_props
@@ -212,19 +221,15 @@ pub(super) fn generate_component_event_types(
             append!(*ts, "{indent}    : unknown[];\n");
         }
     }
-    // Under `fallthroughAttributes`, a listener the child neither declares
-    // nor emits can still be a fallthrough attribute of its root: `<child
-    // @input>` over a `<input />` root receives the `InputEvent` that
-    // `NativeElements['input']` declares for `onInput`, and a component root
-    // contributes the listener props of the component it renders. The open
-    // `Record<string, unknown>` surface resolves to `unknown[]`, so an
-    // unresolved root keeps the untyped listener it has today. Without the
-    // option the listener stays untyped, as it does under `vue-tsc`.
+    // Explicit `fallthroughAttributes` admits a forwarded listener contract.
+    // When Vue 3 omits the option, only an immediate native-root marker admits
+    // that payload. Explicit false, Vue 2, component roots and open no-root or
+    // unresolved surfaces retain their untyped listener contract.
     let unresolved_args: &str = if fallthrough_listeners {
         if first_contract {
             append!(
                 *ts,
-                "{indent}type {fallthrough_args} = typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }}\n",
+                "{indent}type {fallthrough_args} = typeof {component_ref} extends {fallthrough_contract}\n",
             );
             // A forwarded listener with no parameters is left untyped rather than
             // imposed: the root's own declaration may be looser than the child's

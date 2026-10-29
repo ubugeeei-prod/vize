@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use super::load;
+use vize_carton::config::VueVersion;
 
 fn load_source(source: &str) -> super::ContentMapperProjectConfiguration {
     let directory = tempfile::tempdir().unwrap();
@@ -98,4 +99,18 @@ fn inferred_project_retains_omitted_presence() {
             .transform_options
             .fallthrough_attributes_specified
     );
+}
+
+#[test]
+fn vue2_targets_reach_virtual_ts_with_omitted_presence() {
+    for (source, expected) in [
+        (r#"{"vueCompilerOptions":{"target":2}}"#, VueVersion::V2),
+        (r#"{"vueCompilerOptions":{"target":2.7}}"#, VueVersion::V2_7),
+    ] {
+        let configuration = load_source(source);
+        let checks = configuration.transform_options.virtual_ts_check_options();
+        assert_eq!(checks.vue_compiler_target, Some(expected));
+        assert!(!checks.fallthrough_attributes);
+        assert!(!checks.fallthrough_attributes_specified);
+    }
 }

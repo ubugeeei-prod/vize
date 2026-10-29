@@ -49,6 +49,7 @@ pub use self::entry::{
     generate_virtual_ts_with_offsets_options_api,
 };
 pub(crate) use self::fallthrough::fallthrough_component_root_starts;
+use self::fallthrough::has_only_native_fallthrough_targets as native_roots;
 use self::generics::HoistedGenericAliases;
 use self::global_components::{GlobalComponentDiagnostics, GlobalComponentPlan};
 pub(crate) use self::imports::extract_declared_name;
@@ -748,9 +749,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 &global_components,
                 &syntactic_type_only_imported_names,
             );
-
             binding_anchors.emit(&mut ts, "canon.virtual_ts.emit_setup_binding_anchors");
-
             ts.push_str("  })();\n");
         });
     }
@@ -875,6 +874,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 legacy_vue2,
             )
             .as_deref(),
+            generation_options.component_name.is_some() && native_roots(summary, template_ast),
             check_options,
             hoist_shared_preamble,
         ),
