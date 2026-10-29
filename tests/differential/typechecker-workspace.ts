@@ -7,6 +7,7 @@ import { renderNativeAcceptanceMarkdown, summarizeNativeAcceptance } from "./acc
 import { passedFixtureTests, typecheckerSourceIdentity } from "./typechecker-shards.ts";
 import {
   TYPECHECKER_TESTS,
+  assertVerifiedTypecheckerDialectExecutions,
   loadTypecheckerManifest,
   validateWorkspaceTypecheckerCapture,
   workspaceTypecheckerReport,
@@ -29,6 +30,13 @@ type WorkspaceOptions = {
   expectedExecution: WorkspaceExecution;
 };
 
+export const TYPECHECKER_TS40_TESTS = [
+  "current_projection_matrix_is_exact_and_non_empty",
+  "davinci_ts40_projection_support::evidence::public_instance_mixed_vue2_packets_remain_authenticated",
+  "davinci_ts40_projection_support::evidence::public_instance_slot_packets_remain_authenticated",
+  "mapping_drift_fails_closed",
+  "diagnostic_drift_fails_closed",
+] as const;
 const files = {
   receipt: "typechecker-workspace-receipt.json",
   captures: "typechecker-workspace",
@@ -142,16 +150,7 @@ function physicalBinary(binary: Receipt["binary"], source: Source) {
 function requiredCases(inventory: Inventory) {
   for (const [id, names] of [
     ["vize_canon::fix_history_diagnostics", Object.values(TYPECHECKER_TESTS)],
-    [
-      "vize_maestro::davinci_ts40_projection",
-      [
-        "current_projection_matrix_is_exact_and_non_empty",
-        "davinci_ts40_projection_support::evidence::public_instance_mixed_vue2_packets_remain_authenticated",
-        "davinci_ts40_projection_support::evidence::public_instance_slot_packets_remain_authenticated",
-        "mapping_drift_fails_closed",
-        "diagnostic_drift_fails_closed",
-      ],
-    ],
+    ["vize_maestro::davinci_ts40_projection", TYPECHECKER_TS40_TESTS],
   ] as const) {
     const suites = inventory.binaries.filter((item) => item.id === id);
     assert.equal(suites.length, 1);
@@ -162,28 +161,6 @@ function requiredCases(inventory: Inventory) {
   }
 }
 
-function verifiedDialectExecutions(
-  loaded: ReturnType<typeof loadTypecheckerManifest>,
-  tests: string[],
-  captures: WorkspaceCapture[],
-) {
-  const passed = new Set(tests);
-  for (const fixture of loaded.cases.filter(
-    (candidate) => candidate.dialectCoverage.state === "verified",
-  )) {
-    assert(passed.has(fixture.test), `${fixture.id}: registered execution did not pass`);
-    const capture = captures.find((candidate) => candidate.pack === fixture.pack);
-    assert(capture, `${fixture.id}: registered capture is missing`);
-    assert.equal(capture.test, fixture.test);
-    const observed = capture.cases.find((candidate) => candidate.id === fixture.case);
-    assert(observed, `${fixture.id}: registered case observation is missing`);
-    assert.deepEqual(
-      observed.inputs,
-      fixture.inputs.map((input) => ({ file: input.file, sha256: input.sha256 })),
-    );
-    assert.deepEqual(observed.diagnostics, fixture.diagnostics);
-  }
-}
 export function prepareTypecheckerWorkspace({
   repoRoot,
   resultDir,
@@ -431,7 +408,7 @@ function validate({ repoRoot, resultDir, expectedExecution }: WorkspaceOptions, 
       binarySha256: receipt.binary.sha256,
     });
   });
-  verifiedDialectExecutions(loaded, tests, captures);
+  assertVerifiedTypecheckerDialectExecutions(loaded.cases, tests, captures);
   const projection = ts40Captures(repoRoot, locations_.ts40);
   return {
     loaded,
