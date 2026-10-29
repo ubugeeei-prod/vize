@@ -7,6 +7,7 @@ use super::{
     component_props::generate_component_props_str,
     component_slots::generate_slot_fn,
     insertion::emit_insertion_state,
+    keep_alive_map::map_computed_props,
     structural_slots::{declare_slot_caches, generate_dynamic_slot},
 };
 
@@ -153,7 +154,8 @@ pub(super) fn generate_create_component(
         }
     };
 
-    let props = generate_component_props_str(ctx, component);
+    let props_text = generate_component_props_str(ctx, component);
+    let props = map_computed_props(ctx, component, props_text);
     let has_slots = !component.slots.is_empty() || forwarded_slots_source(component).is_some();
     // Keep each computed slot's function stable when only its name getter
     // re-evaluates. A new function would remount content at an unchanged name.
@@ -166,7 +168,7 @@ pub(super) fn generate_create_component(
     let is_pre_resolved = was_already_resolved;
     if is_pre_resolved
         && !has_slots
-        && props == "null"
+        && props.as_str() == "null"
         && creation_flags(ctx, component) == "false"
         && once_flag(component, create_fn).is_empty()
     {
@@ -206,7 +208,7 @@ fn generate_component_call(
     element_template_map: &FxHashMap<usize, usize>,
     component_var: &str,
     create_fn: &str,
-    props: &str,
+    props: &EmitDocument,
 ) {
     let kind = component.kind;
     let raw_slots = forwarded_slots_source(component);
@@ -214,12 +216,12 @@ fn generate_component_call(
     let has_slots = has_authored_slots || raw_slots.is_some();
     ctx.push_indent();
     ctx.push(&cstr!(
-        "const n{} = _{}({}, {}",
+        "const n{} = _{}({}, ",
         component.id,
         create_fn,
-        component_var,
-        props
+        component_var
     ));
+    ctx.push_spanned(props);
 
     if !has_authored_slots && let Some(raw_slots) = raw_slots {
         let raw_slots = ctx.resolve_expression_node(raw_slots);

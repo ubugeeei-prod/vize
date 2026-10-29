@@ -101,6 +101,7 @@ fn static_props<'a>(
                     key: name,
                     dynamic_name: None,
                     value: literal,
+                    spans: None,
                     value_kind: crate::ir::PropValueKind::Expression,
                     dynamic: false,
                     handler: false,

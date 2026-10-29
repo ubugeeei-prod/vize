@@ -161,7 +161,7 @@ fn generate_component_spread_props<'a>(
             } else {
                 cstr!("{key} + \"{suffix}\"")
             };
-            let value = component_prop_expression_value(ctx, prop);
+            let value = expression_value(ctx, prop);
             // Function sources return direct values, unlike static prop
             // groups whose values are getters. Their keys stay reactive.
             sources.push(cstr!("() => ({{ [({})]: {} }})", key, value));
@@ -255,10 +255,9 @@ fn generate_component_prop_entries(
                 .filter(|other| same_component_key(other, prop));
             if let Some(second) = duplicates.next() {
                 let mut handlers = std::vec::Vec::new();
-                handlers.push(component_prop_expression_value(ctx, prop));
-                handlers.push(component_prop_expression_value(ctx, second));
-                handlers
-                    .extend(duplicates.map(|other| component_prop_expression_value(ctx, other)));
+                handlers.push(expression_value(ctx, prop));
+                handlers.push(expression_value(ctx, second));
+                handlers.extend(duplicates.map(|other| expression_value(ctx, other)));
                 entries.push(format_component_prop_entry(
                     prop,
                     cstr!("() => ([{}])", handlers.join(", ")),
@@ -301,7 +300,7 @@ fn collect_component_prop_values(
     props
         .iter()
         .filter(|p| p.key.content == key)
-        .map(|p| component_prop_expression_value(ctx, p))
+        .map(|p| expression_value(ctx, p))
         .collect()
 }
 
@@ -341,10 +340,10 @@ fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> Stri
     {
         return String::from(raw);
     }
-    cstr!("() => ({})", component_prop_expression_value(ctx, prop))
+    cstr!("() => ({})", expression_value(ctx, prop))
 }
 
-fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> String {
+pub(super) fn expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> String {
     let value = if let Some(first) = prop.values.first() {
         match prop.value_kind {
             PropValueKind::ModelUpdate => {
