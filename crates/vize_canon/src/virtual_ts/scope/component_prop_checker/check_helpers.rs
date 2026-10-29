@@ -6,6 +6,52 @@ use vize_croquis::croquis::ComponentUsage;
 use super::super::component_ref_props::append_ref_callback_helper;
 use super::is_inline_callback_prop;
 
+/// Emit only the policy aliases whose shape depends on project options. Every
+/// other component-check helper is ambient in batch projects, so TypeScript can
+/// reuse one declaration identity and its instantiation cache across all SFCs.
+fn append_hoisted_component_check_policy(
+    ts: &mut String,
+    check_unknown_props: bool,
+    check_unknown_fallthrough_props: bool,
+    strict_component_attrs: bool,
+) {
+    if check_unknown_props {
+        if strict_component_attrs {
+            ts.push_str(
+                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof import(\"vize:virtual-ts\").__VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n",
+            );
+            ts.push_str(
+                "  type __VizeComponentCheckTail<C> = import(\"vize:virtual-ts\").__VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs;\n",
+            );
+        } else {
+            ts.push_str(if check_unknown_fallthrough_props {
+                "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof import(\"vize:virtual-ts\").__VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof import(\"vize:virtual-ts\").ComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n"
+            } else {
+                "  type __VizeAllowedFallthroughAttrs<C> = import(\"vize:virtual-ts\").__VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n"
+            });
+            ts.push_str(
+                "  type __VizeComponentCheckTail<C> = import(\"vize:virtual-ts\").__VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & import(\"vize:virtual-ts\").ComponentGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : __VizePublicComponentAttrs & import(\"vize:virtual-ts\").ComponentGlobalHtmlAttrs;\n",
+            );
+        }
+    } else {
+        ts.push_str(
+            "  type __VizeComponentCheckTail<C> = import(\"vize:virtual-ts\").__VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;\n",
+        );
+    }
+}
+
+/// Vue public props are package-relative types. Keep these aliases in each
+/// generated module so workspace packages resolve their own Vue installation
+/// and `ComponentCustomProps` augmentation instead of the batch helper's.
+fn append_vue_public_component_attrs(ts: &mut String) {
+    ts.push_str("  type __VizeVueVNodeProps = import('vue').VNodeProps;\n");
+    ts.push_str("  type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;\n");
+    ts.push_str("  type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;\n");
+    ts.push_str(
+        "  interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}\n",
+    );
+}
+
 /// The shared type helpers every per-usage prop check resolves through, emitted
 /// once per template scope that has at least one checkable component usage.
 /// Keep this set small; the child's own props type carries the contract.
@@ -16,14 +62,38 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     check_unknown_fallthrough_props: bool,
     strict_component_attrs: bool,
     typed_fallthrough_values: bool,
+    hoist_shared_preamble: bool,
 ) {
-    ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
-    if usages.iter().any(|(_, usage)| {
+    let needs_aria_prop_value = usages.iter().any(|(_, usage)| {
         usage
             .props
             .iter()
             .any(|prop| !prop.name_is_dynamic && prop.name.starts_with("aria-"))
-    }) {
+    });
+    if needs_aria_prop_value && hoist_shared_preamble {
+        // Vue camelizes `aria-label` onto a declared `ariaLabel` prop, while
+        // vue-tsc's default `htmlAttributes: ['aria-*']` lets an optional
+        // `string | undefined` value pass under exactOptionalPropertyTypes.
+        // The dedicated per-prop assignment owns the real value check. Keep
+        // the narrowing conditional inline: in hoisted batch programs an
+        // authored module alias named `__VizeNotUndefined` is otherwise the
+        // nearest lexical declaration and can capture this generated helper.
+        ts.push_str(
+            "  function __vizeComponentAriaPropValue<const T>(value: T): T extends undefined ? never : T { return value as (T extends undefined ? never : T); }\n",
+        );
+    }
+    if hoist_shared_preamble {
+        append_vue_public_component_attrs(ts);
+        append_hoisted_component_check_policy(
+            ts,
+            check_unknown_props,
+            check_unknown_fallthrough_props,
+            strict_component_attrs,
+        );
+        return;
+    }
+    ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
+    if needs_aria_prop_value {
         // Vue camelizes `aria-label` onto a declared `ariaLabel` prop, while
         // vue-tsc's default `htmlAttributes: ['aria-*']` lets an optional
         // `string | undefined` value pass under exactOptionalPropertyTypes.
@@ -63,12 +133,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     ts.push_str(
         "  type __VizeRequiredFallthroughProps<C, __F = __VizeFallthroughProps<C>, __K = __VizeRequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };\n",
     );
-    ts.push_str("  type __VizeVueVNodeProps = import('vue').VNodeProps;\n");
-    ts.push_str("  type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;\n");
-    ts.push_str("  type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;\n");
-    ts.push_str(
-        "  interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}\n",
-    );
+    append_vue_public_component_attrs(ts);
     if check_unknown_props {
         if strict_component_attrs {
             // Standard strict attrs accept Vue public attrs and only keys the

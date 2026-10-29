@@ -232,11 +232,16 @@ impl CorsaExecutor {
         }
 
         declaration_maps::rewrite_declaration_map_outputs(options.out_dir.as_path(), project)?;
+        // TypeScript can widen the emit root when a retained SFC reaches an
+        // inferred dependency outside the authored `rootDir`. Restore the
+        // caller's final layout before spelling package-local helper imports;
+        // their relative depth must describe the published path, not the
+        // temporary widened path.
+        project.finalize_declaration_outputs(options.out_dir.as_path(), &config_path)?;
         profile!(
             "canon.dts.rewrite_outputs",
             rewrite_declaration_outputs(options.out_dir.as_path())
         )?;
-        project.finalize_declaration_outputs(options.out_dir.as_path(), &config_path)?;
 
         Ok(DeclarationEmitResult {
             files: profile!(

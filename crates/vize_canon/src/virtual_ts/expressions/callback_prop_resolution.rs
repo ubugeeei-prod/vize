@@ -1,9 +1,9 @@
 //! Resolve a generic child's instantiated props before checking inline callbacks.
 
-use super::component_props::{
-    ComponentPropSource, collect_generated_class_bindings, is_checkable_prop,
-    merged_class_binding_value,
+use super::component_prop_bindings::{
+    collect_generated_class_bindings, merged_class_binding_value,
 };
+use super::component_props::{ComponentPropSource, is_checkable_prop};
 use super::prop_sources::{append_prop_value, generated_prop_value};
 use super::spread_reserved_props::rewrite_reserved_spread_references;
 use super::ts_suppression_comments::callback_parameters_on_ignored_line;
@@ -16,6 +16,35 @@ use vize_croquis::croquis::ComponentUsage;
 pub(super) struct CallbackPropsResolution {
     pub(super) resolved_props: String,
     pub(super) selected_props: String,
+}
+
+pub(super) fn append_prop_check_type(
+    ts: &mut String,
+    (resolution, hoist_shared_preamble): (Option<&CallbackPropsResolution>, bool),
+    (component_type_name, idx, safe_prop_name, prop_name): (&str, usize, &str, &str),
+) {
+    let Some(resolution) = resolution else {
+        append!(
+            *ts,
+            ": __{component_type_name}_{idx}_prop_{safe_prop_name} = ",
+        );
+        return;
+    };
+    let camel_prop_name = super::super::helpers::to_camel_case(prop_name);
+    let resolved_props = resolution.resolved_props.as_str();
+    let selected_props = resolution.selected_props.as_str();
+    if hoist_shared_preamble {
+        let resolved_prop = crate::virtual_ts::helpers::shared_types::RESOLVED_PROP.select(true);
+        append!(
+            *ts,
+            ": {resolved_prop}<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+        );
+    } else {
+        append!(
+            *ts,
+            ": __VizeResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+        );
+    }
 }
 
 /// Invoke the child's props resolver solely to capture its instantiated return
@@ -33,8 +62,8 @@ pub(super) fn generate_callback_props_resolution(
     idx: usize,
     component_ref: &str,
     template_binding_access: &TemplateBindingAccess,
-    source_context: ComponentPropSource<'_>,
     indent: &str,
+    (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
 ) -> Option<CallbackPropsResolution> {
     if !usage.props.iter().any(is_inline_callback_prop) {
         return None;
@@ -44,11 +73,20 @@ pub(super) fn generate_callback_props_resolution(
     let resolved_props = cstr!("__vize_resolved_{component_type_name}_props_{idx}");
     let selected_props = cstr!("__vize_selected_{component_type_name}_props_{idx}");
     let expr_indent = String::from(indent);
-
-    append!(
-        *ts,
-        "{expr_indent}const {resolved_props} = (undefined as unknown as __VizeResolvedContextProps)((undefined as unknown as __VizePropsResolver<typeof {component_ref}>)({{\n",
-    );
+    if hoist_shared_preamble {
+        let resolved_context_props =
+            crate::virtual_ts::helpers::shared_types::RESOLVED_CONTEXT_PROPS.select(true);
+        let props_resolver = crate::virtual_ts::helpers::shared_types::PROPS_RESOLVER.select(true);
+        append!(
+            *ts,
+            "{expr_indent}const {resolved_props} = (undefined as unknown as {resolved_context_props})((undefined as unknown as {props_resolver}<typeof {component_ref}>)({{\n",
+        );
+    } else {
+        append!(
+            *ts,
+            "{expr_indent}const {resolved_props} = (undefined as unknown as __VizeResolvedContextProps)((undefined as unknown as __VizePropsResolver<typeof {component_ref}>)({{\n",
+        );
+    }
 
     append_props_object(
         ts,
@@ -59,10 +97,18 @@ pub(super) fn generate_callback_props_resolution(
         false,
     );
     append!(*ts, "{expr_indent}}}));\n");
-    append!(
-        *ts,
-        "{expr_indent}const {selected_props} = (undefined as unknown as __VizePropsSelector<typeof {resolved_props}>)({{\n",
-    );
+    if hoist_shared_preamble {
+        let props_selector = crate::virtual_ts::helpers::shared_types::PROPS_SELECTOR.select(true);
+        append!(
+            *ts,
+            "{expr_indent}const {selected_props} = (undefined as unknown as {props_selector}<typeof {resolved_props}>)({{\n",
+        );
+    } else {
+        append!(
+            *ts,
+            "{expr_indent}const {selected_props} = (undefined as unknown as __VizePropsSelector<typeof {resolved_props}>)({{\n",
+        );
+    }
     append_props_object(
         ts,
         usage,
