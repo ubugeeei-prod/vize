@@ -1,10 +1,11 @@
 use oxc_ast::ast::{Argument, CallExpression, Expression, TSType};
 use oxc_span::GetSpan;
 
-use crate::provide::ProvideKey;
+use crate::provide::{InjectPattern, ProvideKey};
 use vize_carton::{CompactString, String};
 
 use super::super::ScriptParseResult;
+use super::super::result::SetupEffectContext;
 
 pub fn detect_provide_inject_call(
     result: &mut ScriptParseResult,
@@ -47,22 +48,60 @@ pub fn detect_provide_inject_call(
                 .and_then(|arg| extract_argument_type_annotation(arg, source));
 
             if let Some(key) = key {
+                let from_composable = match result.setup_effect_context() {
+                    SetupEffectContext::TopLevel => None,
+                    SetupEffectContext::Composable(name) => Some(name),
+                    SetupEffectContext::Deferred => return,
+                };
                 result.provide_inject.add_provide(
                     key,
                     CompactString::new(&value),
                     value_type,
-                    None, // from_composable
+                    from_composable,
                     call.span.start,
                     call.span.end,
                 );
             }
         }
     } else if is_inject {
-        // inject() called through an alias (e.g., const a = inject; a('key'))
-        // We need to track this as an inject call
-        // Note: When inject is assigned to a variable (const state = inject('key')),
-        // it's handled in process_variable_declarator. This handles bare inject calls
-        // like `a('key')` that appear in expression statements.
+        // The binding-aware top-level declarator pass records richer local and
+        // destructuring metadata first. The generic walker owns calls in a
+        // function body, including composable modules.
+        if result
+            .provide_inject
+            .has_inject_span(call.span.start, call.span.end)
+        {
+            return;
+        }
+        let Some(key) = call
+            .arguments
+            .first()
+            .and_then(|argument| extract_provide_key(argument, source))
+        else {
+            return;
+        };
+        let default_value = call
+            .arguments
+            .get(1)
+            .map(|argument| CompactString::new(extract_argument_source(argument, source)));
+        let from_composable = match result.setup_effect_context() {
+            SetupEffectContext::TopLevel => None,
+            SetupEffectContext::Composable(name) => Some(name),
+            SetupEffectContext::Deferred => return,
+        };
+        result.provide_inject.add_inject(
+            key,
+            CompactString::new("(unbound)"),
+            default_value,
+            extract_inject_expected_type(call, source),
+            InjectPattern::Simple,
+            from_composable,
+            call.span.start,
+            call.span.end,
+        );
+        if matches!(call.arguments.get(1), Some(Argument::SpreadElement(_))) {
+            result.provide_inject.mark_last_inject_default_spread();
+        }
     }
 }
 
@@ -226,5 +265,55 @@ provide('angle', <Ref<string>>state);
             crate::facts::provide_entries(&croquis).as_slice(),
             expected.as_slice()
         );
+    }
+
+    #[test]
+    fn composables_own_injects_without_counting_deferred_helpers() {
+        const SOURCE: &str = r#"import { inject } from 'vue'
+export function useFormField() {
+  const form = inject(FormKey, null)
+}
+export const useArrowField = () => {
+  const form = inject(ArrowKey)
+}
+export const ordinaryArrow = () => {
+  const form = inject(ArrowHelperKey)
+}
+export function ordinaryHelper() {
+  const form = inject(HelperKey)
+}
+export function useDeferredField() {
+  return () => inject(DeferredKey)
+}
+"#;
+        let mut analyzer = crate::Analyzer::with_options(crate::AnalyzerOptions::full());
+        analyzer.analyze_script_plain(SOURCE);
+        let croquis = analyzer.finish();
+        let injects = crate::facts::inject_entries(&croquis);
+
+        assert_eq!(injects.len(), 2);
+        assert_eq!(injects[0].from_composable.as_deref(), Some("useFormField"));
+        assert_eq!(injects[1].from_composable.as_deref(), Some("useArrowField"));
+    }
+
+    #[test]
+    fn setup_calls_keep_export_identity_and_ignore_deferred_calls() {
+        const SOURCE: &str = r#"import { useFormField as bindField } from '../composables/form'
+bindField(() => true)
+function deferred() {
+  bindField(() => false)
+}
+"#;
+        let mut analyzer = crate::Analyzer::with_options(crate::AnalyzerOptions::full());
+        analyzer.analyze_script_setup(SOURCE);
+        let croquis = analyzer.finish();
+        let calls = crate::facts::composable_calls(&croquis);
+        let start = SOURCE.find("bindField(() => true)").unwrap() as u32;
+
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].name, "useFormField");
+        assert_eq!(calls[0].source, "../composables/form");
+        assert_eq!(calls[0].start, start);
+        assert_eq!(calls[0].end, start + "bindField(() => true)".len() as u32);
     }
 }
