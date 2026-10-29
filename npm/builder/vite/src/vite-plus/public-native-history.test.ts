@@ -373,6 +373,50 @@ const value=1
   assert.deepEqual(options, { preset: "vize", vueIndentScriptAndStyle: true });
 });
 
+void test("public formatter exposes attribute order independently from sorting", () => {
+  const source = `<template>
+  <div data-z="z" id="root" data-a="a"></div>
+</template>
+`;
+  const alphabetical = `<template>
+  <div id="root" data-a="a" data-z="z"></div>
+</template>
+`;
+  const asWritten = `<template>
+  <div id="root" data-z="z" data-a="a"></div>
+</template>
+`;
+  const controls = [
+    [{ preset: "vize", attributeSortOrder: "alphabetical" }, alphabetical],
+    [{ preset: "vize", attributeSortOrder: "as-written" }, asWritten],
+    [{ preset: "vize", sortAttributes: false, attributeSortOrder: "as-written" }, source],
+  ] satisfies Array<[FormatOptionsNapi, string]>;
+
+  for (const [options, expected] of controls) {
+    Object.freeze(options);
+    assert.deepEqual(formatSfc(source, options), {
+      code: expected,
+      changed: expected !== source,
+    });
+    for (let pass = 2; pass <= 3; pass += 1) {
+      assert.deepEqual(formatSfc(expected, options), { code: expected, changed: false });
+    }
+  }
+  assert.deepEqual(controls[0]?.[0], {
+    preset: "vize",
+    attributeSortOrder: "alphabetical",
+  });
+  assert.deepEqual(controls[1]?.[0], {
+    preset: "vize",
+    attributeSortOrder: "as-written",
+  });
+  assert.deepEqual(controls[2]?.[0], {
+    preset: "vize",
+    sortAttributes: false,
+    attributeSortOrder: "as-written",
+  });
+});
+
 void test("public formatter rejects unknown presets and wrong JavaScript types", () => {
   for (const preset of ["", "docs", "PRETTIER", 1, true, {}, []]) {
     assert.throws(
@@ -422,6 +466,18 @@ void test("public formatter rejects unknown presets and wrong JavaScript types",
       assert.ok(error instanceof Error);
       assert.equal((error as Error & { code: string }).code, "InvalidArg");
       assert.equal(error.message, "Unknown arrowParens; expected 'always' or 'avoid'");
+      return true;
+    },
+  );
+  assert.throws(
+    () => formatSfc("<template />", { attributeSortOrder: "source" } as FormatOptionsNapi),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.equal((error as Error & { code: string }).code, "InvalidArg");
+      assert.equal(
+        error.message,
+        "Unknown attributeSortOrder; expected 'alphabetical' or 'as-written'",
+      );
       return true;
     },
   );

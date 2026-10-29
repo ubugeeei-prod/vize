@@ -193,3 +193,16 @@ option name. It remains opt-in: the default and all four named presets keep
 their existing assignments. Public CLI and Node whole-output regressions prove
 second/third-pass fixed points, while the existing option matrix continues to
 exercise the enabled value over the full in-repo Vue corpus.
+
+## Attribute order option parity
+
+The existing `attributeSortOrder` enum now has direct CLI and native Node
+projections in addition to Rust, config schema, generated TypeScript, Pkl,
+editor and WASM support. The CLI flag is
+`--attribute-sort-order <alphabetical|as-written>` and Node `formatSfc` uses
+the same camel-case option name. The policy remains distinct from disabling
+attribute sorting: `as-written` preserves authored order inside each Vue
+priority group, while `sortAttributes: false` preserves the complete authored
+order. Public CLI and Node whole-output controls prove all three states and
+their fixed points; the existing option matrix continues to exercise
+`as-written` over the full in-repo Vue corpus.

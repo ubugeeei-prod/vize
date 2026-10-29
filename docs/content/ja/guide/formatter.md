@@ -121,6 +121,7 @@ export default defineConfig({}).withVue({
 | `--end-of-line`                    | 改行を `lf`、`crlf`、`cr`、自動検出の `auto` から選びます。       |
 | `--no-semi`                        | 文末のセミコロンを省略します。                                  |
 | `--sort-attributes`                | テンプレートとブロックタグの属性を並べ替えます。                |
+| `--attribute-sort-order`           | 優先グループ内で `alphabetical` または `as-written` を選びます。 |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ書きます。                                |
 | `--vue-indent-script-and-style`    | `<script>` と `<style>` の内容をインデントします。               |
 | `--max-attributes-per-line`        | 指定した数を超えると、属性を折り返します。                      |
@@ -199,6 +200,12 @@ SFC 本体のインデントも、すべての直接フォーマッタ境界で�
 `--vue-indent-script-and-style[=false]` は、型付きの Node・設定オプション
 `vueIndentScriptAndStyle` に対応します。このオプションを明示しない限り、既定値と
 すべてのプリセットは変わりません。
+
+属性の順序も、各公開境界で同じように指定できます。
+`--attribute-sort-order <alphabetical|as-written>` は、型付きの Node・設定オプション
+`attributeSortOrder` に対応します。`as-written` でも Vue の優先グループは適用され、
+同じグループ内だけ記述順を保ちます。属性全体の記述順を保つ場合は
+`--sort-attributes=false` を使います。
 
 ## コンパクトなアプリケーションコード
 

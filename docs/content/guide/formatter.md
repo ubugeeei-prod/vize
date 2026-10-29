@@ -119,6 +119,7 @@ The same options are available as CLI flags:
 | `--end-of-line`                    | Chooses `lf`, `crlf`, `cr` or source-detected `auto`.          |
 | `--no-semi`                        | Omits semicolons at the ends of statements.                   |
 | `--sort-attributes`                | Sorts attributes in the template and on block tags.           |
+| `--attribute-sort-order`           | Chooses `alphabetical` or `as-written` within priority groups. |
 | `--single-attribute-per-line`      | Puts each attribute on its own line.                          |
 | `--vue-indent-script-and-style`    | Indents the contents of `<script>` and `<style>`.              |
 | `--max-attributes-per-line`        | Wraps after the given number of attributes.                   |
@@ -197,6 +198,12 @@ SFC body indentation is also an explicit opt-in on every direct formatter
 surface. `--vue-indent-script-and-style[=false]` maps to the typed Node and
 config option `vueIndentScriptAndStyle`. The default and every preset remain
 unchanged unless this option is set explicitly.
+
+Attribute order is projected consistently too:
+`--attribute-sort-order <alphabetical|as-written>` maps to the typed Node and
+config option `attributeSortOrder`. The formatter still applies Vue priority
+groups; `as-written` only preserves authored order inside each group. Use
+`--sort-attributes=false` to preserve the complete authored order instead.
 
 ## Compact application code
 
