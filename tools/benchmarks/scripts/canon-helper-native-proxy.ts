@@ -52,6 +52,8 @@ export function classifyNativeInvocation(args: string[], config: unknown, config
     )
   )
     return { classification: "probe", actualProgram: false };
+  if (args.some((arg) => /^--(?:api|lsp|stdio|server)(?:=|$)/iu.test(arg)))
+    return { classification: "server", actualProgram: false };
   if (configReadable && config && typeof config === "object" && !Array.isArray(config)) {
     const value = config as { files?: unknown; include?: unknown; references?: unknown };
     if (
@@ -179,7 +181,7 @@ async function nativeStatistics(path: string) {
     if (
       label !== undefined &&
       value !== undefined &&
-      (countLabels.has(label) || label === "Memory used" || / time$/u.test(label))
+      (countLabels.has(label) || label === "Memory used" || label.endsWith(" time"))
     )
       values[label] = {
         raw: value,

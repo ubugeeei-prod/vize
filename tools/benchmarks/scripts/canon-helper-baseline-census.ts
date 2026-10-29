@@ -64,8 +64,12 @@ export async function helperCensus(
         typeof value.name.text === "string" &&
         value.name.text.startsWith("__Vize")
       ) {
-        assert.ok(typeof value.pos === "number" && typeof value.end === "number");
-        const declaration = source.slice(value.pos, value.end);
+        assert.ok(typeof value.end === "number");
+        const getStart = value.getStart;
+        assert.ok(typeof getStart === "function");
+        const start = Reflect.apply(getStart, value, [root]);
+        assert.ok(typeof start === "number");
+        const declaration = source.slice(start, value.end);
         row.aliases.push({
           name: value.name.text,
           bytes: Buffer.byteLength(declaration),

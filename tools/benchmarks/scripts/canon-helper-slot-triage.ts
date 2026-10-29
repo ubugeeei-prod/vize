@@ -51,13 +51,14 @@ const config = {
   include: ["src/**/*.vue", "component.ts"],
 };
 async function main() {
-  const [providerArg, binaryArg, driverArg, outputArg] = process.argv.slice(2);
-  assert.ok(providerArg && binaryArg && driverArg && outputArg);
+  const [providerArg, binaryArg, regenerationArg, driverArg, outputArg] = process.argv.slice(2);
+  assert.ok(providerArg && binaryArg && regenerationArg && driverArg && outputArg);
   const provider = path.resolve(providerArg),
     binary = path.resolve(binaryArg),
+    regeneration = path.resolve(regenerationArg),
     output = path.resolve(outputArg);
   fs.mkdirSync(output);
-  const { checker } = await prepareHelperProvider(provider, binary, output);
+  const { checker } = await prepareHelperProvider(provider, binary, regeneration, output);
   const { api } = await loadAdmissionAPI(path.resolve(driverArg));
   const frozen = path.join(output, "frozen");
   const corpus = prepareHelperArchitectureCarrier(
@@ -134,6 +135,7 @@ async function main() {
     });
     fs.writeFileSync(path.join(src, "Tiny.vue"), tiny);
     fs.writeFileSync(path.join(project, "component.ts"), realComponent);
+    let numberDiagnostics: unknown[] | null = null;
     if (route === "source-mapper")
       save(
         path.join(project, "source-sdk.json"),
@@ -194,6 +196,15 @@ async function main() {
       const diagnostics = isCli
         ? packet(result.stdout, result.status, project).diagnostics
         : nativeDiagnostics(result.stdout, result.status, project);
+      if (item === "number") numberDiagnostics = diagnostics;
+      if (item === "repaired") {
+        assert.ok(numberDiagnostics, route + " must retain its number-stage diagnostics");
+        assert.deepEqual(
+          diagnostics,
+          numberDiagnostics,
+          route + " repaired diagnostics must exactly restore the number-stage baseline",
+        );
+      }
       const precisionProbe = diagnostics.filter(
         (row) =>
           row.file === "src/Tiny.vue" &&

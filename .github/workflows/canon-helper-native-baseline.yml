@@ -14,14 +14,13 @@ on:
         default: "1"
 permissions:
   contents: read
-  actions: read
 concurrency:
   group: canon-helper-native-baseline-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 jobs:
   baseline:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -30,9 +29,93 @@ jobs:
       NODE_DISABLE_COMPILE_CACHE: "1"
       GOMAXPROCS: "2"
       RAYON_NUM_THREADS: "2"
-      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: fb550c424e4256860647dbf96ce32c31cea3774b
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: "24.14.0"
+          package-manager-cache: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Regenerate and verify the fixed normal source image
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/helper-baseline-custody"
+          test "$(git rev-parse HEAD)" = fb550c424e4256860647dbf96ce32c31cea3774b
+          test "$(git rev-parse 'HEAD^{tree}')" = 066589f286ccaf1e271dc9b2e3c87c81d6db9013
+          node tools/benchmarks/scripts/typechecker-cache-source.ts \
+            --source-root "$GITHUB_WORKSPACE" \
+            --target-dir "$RUNNER_TEMP/helper-source-target" \
+            --receipt "$RUNNER_TEMP/helper-baseline-custody/source-build.json"
+          mkdir -p "$RUNNER_TEMP/helper-image/target/ci"
+          cp target/ci/vize target/ci/vize.differential-build.json \
+            "$RUNNER_TEMP/helper-image/target/ci/"
+          test "$(stat -c %s "$RUNNER_TEMP/helper-image/target/ci/vize")" = 55080984
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, re, subprocess
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])
+          custody=root/'helper-baseline-custody'
+          build=json.loads((custody/'source-build.json').read_text())
+          binary=root/'helper-image/target/ci/vize'
+          sidecar=root/'helper-image/target/ci/vize.differential-build.json'
+          linker=root/'wild-install/wild'
+          recipe=['build','--locked','--release','-p','vize','--message-format=json-render-diagnostics','--config','profile.release.opt-level=3','--config','profile.release.lto="fat"','--config','profile.release.codegen-units=1','--config','profile.release.debug=0','--config','profile.release.package.vize.strip="symbols"','--config','profile.release.debug-assertions=false','--config','profile.release.overflow-checks=false','--config','profile.release.incremental=false','--config','profile.release.panic="unwind"']
+          assert build['sourceSha']=='fb550c424e4256860647dbf96ce32c31cea3774b'
+          assert build['sourceTree']=='066589f286ccaf1e271dc9b2e3c87c81d6db9013'
+          assert build['schema']=='vize.cold-source-build' and build['version']==1
+          assert build['targetStartedAbsent'] is True and build['profile']=='release'
+          assert build['binaryBytes']==55080984
+          assert build['cargo']['args']==recipe
+          assert '\nrelease: 1.99.1\n' in build['cargo']['version']
+          assert '\nrelease: 1.99.1\n' in build['rustc']
+          binary_sha=hashlib.sha256(binary.read_bytes()).hexdigest()
+          sidecar_sha=hashlib.sha256(sidecar.read_bytes()).hexdigest()
+          sidecar_json=json.loads(sidecar.read_text())
+          assert build['binarySha256']==binary_sha
+          assert build['differentialReceiptSha256']==sidecar_sha
+          assert sidecar_json['sourceRevision']==build['sourceSha']
+          assert sidecar_json['binarySha256']==binary_sha
+          linker_version=subprocess.check_output([linker,'--version'],text=True).strip()
+          assert re.search(r'\b0\.9\.0\b',linker_version)
+          receipt={
+            'schema':'vize.canon-helper-source-regeneration','version':1,
+            'sourceRevision':build['sourceSha'],'sourceTree':build['sourceTree'],
+            'binaryBytes':binary.stat().st_size,
+            'binarySha256':binary_sha,
+            'differentialReceiptSha256':sidecar_sha,
+            'sourceBuildReceipt':{
+              'file':'source-build.json',
+              'sha256':hashlib.sha256((custody/'source-build.json').read_bytes()).hexdigest(),
+            },
+            'buildRecipe':recipe,
+            'toolchain':{
+              'rust':'1.99.1','cargoVersion':build['cargo']['version'],'rustcVersion':build['rustc'],
+              'linker':{
+                'name':'wild','version':'0.9.0',
+                'actionRevision':'0bbbfa5df4380cab8e63cb8505a1ce65e1d10203',
+                'path':str(linker),'bytes':linker.stat().st_size,
+                'sha256':hashlib.sha256(linker.read_bytes()).hexdigest(),
+                'versionOutput':linker_version,
+              },
+            },
+            'historicalBinarySha256':'cdf44149ddfe160339887a256c1bd0253fb34f1f7c774759e6c5382b42ed0cb9',
+            'historicalArchiveDigests':{
+              'sourceImage':'85be25beb129752cebab4c5e96bba80505e82b14f43115b526beee8dc6dd853b',
+              'metadata':'c6010fed95cfd24975b941b54011715a887d731678faf44acfde54e1702a1107',
+            },
+          }
+          (custody/'regeneration.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          PY
+          uname -a > "$RUNNER_TEMP/helper-baseline-custody/kernel.txt"
+          lscpu > "$RUNNER_TEMP/helper-baseline-custody/cpu.txt"
+          node --version > "$RUNNER_TEMP/helper-baseline-custody/node.txt"
+      - name: Check out the reviewed helper harness
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -49,42 +132,6 @@ jobs:
             /tools/benchmarks/scripts/type-admission-scale-graph.ts
             /tests/tooling/support/type-admission-fixtures.ts
             /tests/tooling/support/type-admission-mutation.ts
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
-        with:
-          node-version: "24.14.0"
-          package-manager-cache: false
-      - name: Fetch the existing normal source image without rebuilding
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/helper-baseline-custody"
-          gh api repos/ubugeeei-prod/vize/actions/artifacts/12765860439 > "$RUNNER_TEMP/helper-baseline-custody/image-api.json"
-          gh api repos/ubugeeei-prod/vize/actions/artifacts/12764104945 > "$RUNNER_TEMP/helper-baseline-custody/metadata-api.json"
-          gh api repos/ubugeeei-prod/vize/actions/artifacts/12765860439/zip > "$RUNNER_TEMP/helper-image.zip"
-          gh api repos/ubugeeei-prod/vize/actions/artifacts/12764104945/zip > "$RUNNER_TEMP/helper-metadata.zip"
-          python3 - <<'PY'
-          import hashlib, io, json, os, pathlib, tarfile, zipfile
-          root=pathlib.Path(os.environ['RUNNER_TEMP']); custody=root/'helper-baseline-custody'
-          records=[]
-          for kind,expected in [('image','85be25beb129752cebab4c5e96bba80505e82b14f43115b526beee8dc6dd853b'),('metadata','c6010fed95cfd24975b941b54011715a887d731678faf44acfde54e1702a1107')]:
-            archive=root/('helper-'+kind+'.zip'); data=archive.read_bytes()
-            assert hashlib.sha256(data).hexdigest()==expected
-            members=zipfile.ZipFile(io.BytesIO(data))
-            names=members.namelist(); assert len(names)==1 and names[0].endswith('.tgz')
-            payload=members.read(names[0]); destination=root/('helper-'+kind); destination.mkdir()
-            tar=tarfile.open(fileobj=io.BytesIO(payload))
-            if kind=='image':
-              assert set(m.name for m in tar.getmembers() if m.isfile())=={'target/ci/vize','target/ci/vize.differential-build.json'}
-            tar.extractall(destination,filter='data')
-            records.append({'kind':kind,'archiveBytes':len(data),'archiveSha256':expected,'payloadSha256':hashlib.sha256(payload).hexdigest(),'members':tar.getnames()})
-          binary=root/'helper-image/target/ci/vize'
-          assert binary.stat().st_size==55080984
-          assert hashlib.sha256(binary.read_bytes()).hexdigest()=='cdf44149ddfe160339887a256c1bd0253fb34f1f7c774759e6c5382b42ed0cb9'
-          (custody/'archives.json').write_text(json.dumps(records,indent=2))
-          PY
-          cp -R "$RUNNER_TEMP/helper-metadata/." "$RUNNER_TEMP/helper-baseline-custody/"
-          uname -a > "$RUNNER_TEMP/helper-baseline-custody/kernel.txt"
-          lscpu > "$RUNNER_TEMP/helper-baseline-custody/cpu.txt"
-          node --version > "$RUNNER_TEMP/helper-baseline-custody/node.txt"
       - name: Install one pinned public helper provider and the integrated native backend
         run: |
           set -euo pipefail
@@ -100,11 +147,11 @@ jobs:
       - name: Preserve the frozen public repro and independently poison inferred slot payloads
         run: |
           set -euo pipefail
-          node tools/benchmarks/scripts/canon-helper-slot-triage.ts "$RUNNER_TEMP/helper-provider" "$RUNNER_TEMP/helper-image/target/ci/vize" "$GITHUB_WORKSPACE/.admission-driver" "$RUNNER_TEMP/helper-slot-triage"
+          node tools/benchmarks/scripts/canon-helper-slot-triage.ts "$RUNNER_TEMP/helper-provider" "$RUNNER_TEMP/helper-image/target/ci/vize" "$RUNNER_TEMP/helper-baseline-custody/regeneration.json" "$GITHUB_WORKSPACE/.admission-driver" "$RUNNER_TEMP/helper-slot-triage"
       - name: Capture actual CLI and source mapper packets with mutation and repair oracles
         run: |
           set -euo pipefail
-          node tools/benchmarks/scripts/canon-helper-baseline.ts "$RUNNER_TEMP/helper-provider" "$RUNNER_TEMP/helper-image/target/ci/vize" "$GITHUB_WORKSPACE/.admission-driver" "$RUNNER_TEMP/helper-baseline" "${{ matrix.sfcs }}"
+          node tools/benchmarks/scripts/canon-helper-baseline.ts "$RUNNER_TEMP/helper-provider" "$RUNNER_TEMP/helper-image/target/ci/vize" "$RUNNER_TEMP/helper-baseline-custody/regeneration.json" "$GITHUB_WORKSPACE/.admission-driver" "$RUNNER_TEMP/helper-baseline" "${{ matrix.sfcs }}"
       - name: Package only bounded authored inputs and raw evidence
         if: always()
         run: |

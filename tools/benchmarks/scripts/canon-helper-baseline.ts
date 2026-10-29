@@ -20,10 +20,12 @@ import { hash, identify, run, save } from "./canon-instance-directives-io.ts";
 import { isRecord, jsonValue } from "./canon-instance-directives-model.ts";
 
 async function main() {
-  const [providerArg, binaryArg, driverArg, outputArg, countArg] = process.argv.slice(2);
-  assert.ok(providerArg && binaryArg && driverArg && outputArg && countArg);
+  const [providerArg, binaryArg, regenerationArg, driverArg, outputArg, countArg] =
+    process.argv.slice(2);
+  assert.ok(providerArg && binaryArg && regenerationArg && driverArg && outputArg && countArg);
   const provider = path.resolve(providerArg),
-    binary = path.resolve(binaryArg);
+    binary = path.resolve(binaryArg),
+    regeneration = path.resolve(regenerationArg);
   const driver = path.resolve(driverArg),
     output = path.resolve(outputArg),
     count = Number(countArg);
@@ -32,6 +34,7 @@ async function main() {
   const { checker, receipt: providerReceipt } = await prepareHelperProvider(
     provider,
     binary,
+    regeneration,
     output,
   );
   const { api, identities } = await loadAdmissionAPI(driver);
