@@ -9,7 +9,9 @@ mod origins;
 mod ref_value_declaration;
 mod ref_values;
 
-use crate::croquis::{BindingMetadata, ComponentRegistration, ComponentShape, Croquis};
+use crate::croquis::{
+    BindingMetadata, ComponentRegistration, ComponentShape, Croquis, NuxtPageLayout,
+};
 use crate::croquis::{
     ImportStatementInfo, InvalidExport, OptionsDescriptor, ReExportInfo, TypeExport,
 };
@@ -83,6 +85,10 @@ pub struct ScriptParseResult {
     pub macros: MacroTracker,
     /// Render certainty folded by the existing statement visit; not serialized.
     pub(crate) nuxt_static_render_script: Option<bool>,
+    /// Statically selected page layout from a single top-level Nuxt macro call.
+    pub(crate) nuxt_page_layout: Option<NuxtPageLayout>,
+    /// More than one page-meta call makes ownership ambiguous.
+    pub(crate) nuxt_page_meta_calls: u8,
     pub reactivity: ReactivityTracker,
     pub race_conditions: RaceConditionTracker,
     /// Local `interface` / `type` definitions registered by name, so
@@ -331,12 +337,18 @@ impl ScriptParseResult {
     /// This keeps script parsing as the single owner of script-scoped data while
     /// allowing callers to add template analysis before or after the script pass.
     pub fn apply_to_croquis(self, summary: &mut Croquis) {
+        let nuxt_page_layout = if self.bindings.contains("definePageMeta") {
+            None
+        } else {
+            self.nuxt_page_layout
+        };
         summary.bindings = self.bindings;
         summary.unused_bindings = self.unused_bindings;
         summary.macros = self.macros;
         let incoming = self.nuxt_static_render_script == Some(true);
         summary.nuxt_static_render_script =
             Some(incoming && summary.nuxt_static_render_script != Some(false));
+        summary.nuxt_page_layout = nuxt_page_layout;
         summary.reactivity = self.reactivity;
         summary.race_conditions = self.race_conditions;
         summary.types = self.types;

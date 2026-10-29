@@ -167,6 +167,10 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
             }
         }
     });
+    if result.bindings.contains("definePageMeta") {
+        // A lexical binding owns the call instead of Nuxt's compile-time macro.
+        result.nuxt_page_layout = None;
+    }
 
     // After every binding is known, demote any `type` / `interface` that
     // references a setup-scope value via `typeof` so the virtual TS keeps
