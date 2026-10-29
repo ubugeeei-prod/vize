@@ -32,7 +32,7 @@ pub(super) fn selection_ranges(
     params: &SelectionRangeParams,
 ) -> Option<Vec<SelectionRange>> {
     let uri = &params.text_document.uri;
-    let content = state.documents.text(uri)?;
+    let content = state.documents.text_snapshot(uri)?;
     let filename = uri.path().to_string();
 
     let mut ranges = Vec::with_capacity(params.positions.len());

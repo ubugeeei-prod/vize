@@ -12,6 +12,12 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
 
             // Check for composable calls
             for composable in vize_croquis::facts::composable_calls(analysis) {
+                // A call fact proves invocation, not the shape of the returned
+                // value. Only a composable whose analysis established reactive
+                // output can support a destructuring-loss diagnostic.
+                if !composable.uses_reactivity {
+                    continue;
+                }
                 // Find the source file for this composable
                 let source_file = self.find_composable_source(&composable.source);
 

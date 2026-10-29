@@ -15,12 +15,23 @@ fn unavailable_typecheck_diagnostic_points_to_typescript_7() {
         Some(NumberOrString::String("typecheck-unavailable".to_string()))
     );
     assert_eq!(hint.message, TYPECHECK_UNAVAILABLE_HINT_MESSAGE);
-    assert_ts7_guidance(&hint.message);
+    assert_eq!(
+        hint.message,
+        "Type checking is unavailable in this workspace. Make sure `tsconfig.json` exists. \
+         Provide a native TypeScript compiler, for example `typescript-native@npm:typescript@7.1.0-beta`, \
+         or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH`; \
+         see https://vizejs.dev/guide/static-analysis."
+    );
 }
 
 #[test]
 fn unavailable_typecheck_notice_points_to_typescript_7() {
-    assert_ts7_guidance(TYPECHECK_UNAVAILABLE_NOTICE_MESSAGE);
+    assert_eq!(
+        TYPECHECK_UNAVAILABLE_NOTICE_MESSAGE,
+        "Vize: type checking is unavailable in this workspace. Make sure tsconfig.json exists. \
+         Provide a native TypeScript compiler, for example `typescript-native@npm:typescript@7.1.0-beta`, \
+         or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH`."
+    );
 }
 
 #[test]
@@ -56,10 +67,4 @@ fn a_failed_native_backend_preserves_the_script_parser_fallback() {
         diagnostics[0].range.start,
         tower_lsp::lsp_types::Position::new(1, 14)
     );
-}
-
-fn assert_ts7_guidance(message: &str) {
-    assert!(message.contains("typescript@^7"));
-    assert!(message.contains("typeChecker.corsaPath"));
-    assert!(!message.contains("@typescript/native-preview"));
 }

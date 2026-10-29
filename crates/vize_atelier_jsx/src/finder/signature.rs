@@ -19,7 +19,7 @@ use vize_l0::String;
 /// element when present) so the original text — type annotations, defaults, and
 /// any interleaved comments — is preserved verbatim. An empty parameter list
 /// collapses to an empty range.
-pub(super) fn formal_parameters_range(params: &FormalParameters<'_>) -> (u32, u32) {
+pub(crate) fn formal_parameters_range(params: &FormalParameters<'_>) -> (u32, u32) {
     let start = params
         .items
         .first()
@@ -42,7 +42,7 @@ pub(super) fn formal_parameters_range(params: &FormalParameters<'_>) -> (u32, u3
 /// its parameters with type names that are only bound by this declaration, so the
 /// range is re-emitted on the generated `setup<T>()` method. A non-generic
 /// component collapses to an empty range.
-pub(super) fn type_parameters_range(
+pub(crate) fn type_parameters_range(
     type_parameters: Option<&TSTypeParameterDeclaration<'_>>,
 ) -> (u32, u32) {
     let Some(declaration) = type_parameters else {
@@ -64,7 +64,7 @@ pub(super) fn type_parameters_range(
 /// the remaining props to `attrs` while looking authoritative. A rest element or
 /// a computed key therefore yields no names at all rather than a subset, and a
 /// plain untyped `props` parameter carries no names to begin with.
-pub(super) fn destructured_prop_names(params: &FormalParameters<'_>) -> std::vec::Vec<String> {
+pub(crate) fn destructured_prop_names(params: &FormalParameters<'_>) -> std::vec::Vec<String> {
     let mut names = std::vec::Vec::new();
     if let Some(parameter) = params.items.first()
         && matches!(parameter.pattern, BindingPattern::BindingIdentifier(_))

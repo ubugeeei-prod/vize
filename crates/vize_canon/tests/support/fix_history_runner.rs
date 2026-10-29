@@ -13,6 +13,10 @@ use vize_canon::{
     batch::{TsconfigOwnershipCache, TsconfigSourceKind},
 };
 
+pub(crate) fn native_fixture_runtime_disabled() -> bool {
+    std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
+}
+
 pub(crate) fn check_pack(
     name: &str,
     test: &str,
@@ -40,7 +44,9 @@ pub(crate) fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
-            "component-tag-aliases-11020" => regression,
+            "aria-kebab-prop-11048" | "component-tag-aliases-11020" => regression,
+            "content-mapper-vue-generic-11051" => regression,
+            "unknown-component-slot-payload-11027" => regression,
             "import-literal-geometry-10762" | "escaped-import-literals-10763" => {
                 "62652a4d4029fa11016dfa1ac8c24669b42c8d7a"
             }
@@ -129,7 +135,8 @@ pub(crate) fn check_pack(
             | "options-api-reserved-component-reference"
             | "setup-custom-properties"
             | "empty-v-slot-expression"
-            | "public-instance-ts-directives-10984" => regression,
+            | "public-instance-ts-directives-10984"
+            | "zero-argument-slot-constructor-11013" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }

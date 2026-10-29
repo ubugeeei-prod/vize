@@ -83,7 +83,7 @@ fn transform_css_block_with_parents(
             }
             output.push('}');
         } else if parent_selectors.is_none() && nesting::requires_preservation(statement, body) {
-            output.push_str(nesting::scope_rule(statement, body, scope_id, false).as_str());
+            output.push_str(nesting::scope_rule(statement, body, scope_id, false, false).as_str());
         } else if parent_selectors.is_none()
             && has_nested_style_rule(body)
             && contains_where_selector(statement)

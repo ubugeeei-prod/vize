@@ -1,0 +1,178 @@
+name: Generated VTS source census
+run-name: Exact 1/10/100 SFC source census at ${{ inputs.source_sha }}
+
+# This exact-campaign workflow requires an immutable one-commit source/parent
+# pair and a complete instrumentation allowlist, so arbitrary PRs must not run it.
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Immutable source commit to check out and measure
+        type: string
+        required: true
+      source_parent:
+        description: Immutable immediate production parent
+        type: string
+        required: true
+
+permissions: { contents: read }
+
+concurrency:
+  group: vts-source-census-${{ inputs.source_sha }}
+  cancel-in-progress: false
+
+jobs:
+  census:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    env:
+      CARGO_BUILD_JOBS: "4"
+      CARGO_INCREMENTAL: "0"
+      GOMAXPROCS: "4"
+      RAYON_NUM_THREADS: "4"
+      SOURCE_SHA: ${{ inputs.source_sha }}
+      SOURCE_PARENT: ${{ inputs.source_parent }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Install only the pinned workflow parser
+        shell: bash
+        run: |
+          set -euo pipefail
+          parser_link="$GITHUB_WORKSPACE/node_modules/yaml"
+          parser_target="$RUNNER_TEMP/census-test-runtime/node_modules/yaml"
+          parser_marker="$RUNNER_TEMP/census-test-runtime/workspace-yaml-link-owned"
+          mkdir "$RUNNER_TEMP/census-test-runtime"
+          cd "$RUNNER_TEMP/census-test-runtime"
+          node -e 'require("node:fs").writeFileSync("package.json",JSON.stringify({private:true,dependencies:{yaml:"2.9.0"}}))'
+          npm install --ignore-scripts --no-audit --no-fund
+          test ! -e "$parser_marker"
+          test ! -L "$parser_marker"
+          printf 'none\n' > "$parser_marker"
+          test "$(cat "$parser_marker")" = "none"
+          mkdir "$GITHUB_WORKSPACE/node_modules"
+          printf 'root\n' > "$parser_marker"
+          test "$(cat "$parser_marker")" = "root"
+          test ! -e "$parser_link"
+          test ! -L "$parser_link"
+          ln -s "$parser_target" "$parser_link"
+          test -L "$parser_link"
+          test "$(readlink "$parser_link")" = "$parser_target"
+      - name: Verify exact source, observer laws and production projection
+        shell: bash
+        run: |
+          set -euo pipefail
+          driver_sha=$GITHUB_WORKFLOW_SHA
+          if ! [[ "$driver_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error title=VTS census driver drift::workflow_sha=$driver_sha"
+            exit 1
+          fi
+          if ! git cat-file -e "$driver_sha^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$driver_sha"
+          fi
+          git cat-file -e "$driver_sha:.github/workflows/vts-source-census.yml"
+          actual_source=$(git rev-parse HEAD)
+          actual_parent=$(git rev-parse HEAD^)
+          if test "$actual_source" != "$SOURCE_SHA"; then
+            echo "::error title=VTS census source drift::checkout=$actual_source requested=$SOURCE_SHA"
+            exit 1
+          fi
+          if test "$actual_parent" != "$SOURCE_PARENT"; then
+            echo "::error title=VTS census source parent mismatch::head_parent=$actual_parent requested_parent=$SOURCE_PARENT"
+            exit 1
+          fi
+          node --test tests/tooling/vts-source-census.test.ts
+          node tools/benchmarks/scripts/vts-source-census-preflight.ts "$SOURCE_PARENT" "$SOURCE_SHA" "$driver_sha"
+      - name: Remove the workflow parser link
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          parser_link="$GITHUB_WORKSPACE/node_modules/yaml"
+          parser_target="$RUNNER_TEMP/census-test-runtime/node_modules/yaml"
+          parser_marker="$RUNNER_TEMP/census-test-runtime/workspace-yaml-link-owned"
+          test -f "$parser_marker"
+          test ! -L "$parser_marker"
+          parser_state=$(cat "$parser_marker")
+          case "$parser_state" in
+            none) ;;
+            root)
+              if test ! -e "$parser_link" && test ! -L "$parser_link"; then
+                :
+              else
+                test -L "$parser_link"
+                test "$(readlink "$parser_link")" = "$parser_target"
+                unlink "$parser_link"
+              fi
+              rmdir "$GITHUB_WORKSPACE/node_modules"
+              test ! -e "$GITHUB_WORKSPACE/node_modules"
+              test ! -L "$GITHUB_WORKSPACE/node_modules"
+              test ! -e "$parser_link"
+              test ! -L "$parser_link"
+              printf 'none\n' > "$parser_marker"
+              ;;
+            *) exit 1 ;;
+          esac
+      - name: Install only the pinned public Vue checker and schema provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/census-provider"
+          cd "$RUNNER_TEMP/census-provider"
+          node -e 'require("node:fs").writeFileSync("package.json",JSON.stringify({private:true,dependencies:{vue:"3.5.44",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta",ajv:"8.17.1"}}))'
+          npm install --ignore-scripts --no-audit --no-fund
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Build one fresh profiling CLI and measure three paired repetitions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/vts-source-census.ts \
+            --out "$RUNNER_TEMP/census-evidence" \
+            --target "$RUNNER_TEMP/census-target" \
+            --provider "$RUNNER_TEMP/census-provider" \
+            --runtime "/tmp/vize-vts-source-census-${{ github.run_id }}-${{ github.run_attempt }}" \
+            --source-sha "$SOURCE_SHA" \
+            --source-parent "$SOURCE_PARENT" \
+            --driver-sha "$GITHUB_WORKFLOW_SHA"
+      - name: Run profiling-only identity and custody laws in the built target
+        shell: bash
+        run: |
+          set -euo pipefail
+          CARGO_TARGET_DIR="$RUNNER_TEMP/census-target" \
+            cargo test --locked -p vize_canon --features profiling --lib profiling::tests
+          CARGO_TARGET_DIR="$RUNNER_TEMP/census-target" \
+            cargo test --locked -p vize --features profiling --lib \
+              commands::profile_export::tests::aliased_receipt_creation_fails_after_profile_write -- --exact
+      - name: Package bounded receipts apart from complete public evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/census-evidence"
+          cp "$RUNNER_TEMP/census-provider/package.json" "$RUNNER_TEMP/census-provider/package-lock.json" "$RUNNER_TEMP/census-evidence/" 2>/dev/null || true
+          tar --exclude='*/node_modules' --exclude='*/binary' -czf "$RUNNER_TEMP/census-raw.tgz" -C "$RUNNER_TEMP" census-evidence
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: vts-source-census-small-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/census-evidence/summary.json
+            ${{ runner.temp }}/census-evidence/build.json
+            ${{ runner.temp }}/census-evidence/packets/*/source-identity.json
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: vts-source-census-raw-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/census-raw.tgz
+          if-no-files-found: error
+          retention-days: 14

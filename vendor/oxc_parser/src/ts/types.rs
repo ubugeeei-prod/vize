@@ -7,6 +7,7 @@ use crate::{
     Context, ParserConfig as Config, ParserImpl, diagnostics,
     lexer::Kind,
     modifiers::{ModifierKind, ModifierKinds, Modifiers},
+    speculation::SpeculativeProduction,
     state::FailedSpeculation,
 };
 
@@ -14,6 +15,13 @@ use super::{super::js::FunctionKind, statement::CallOrConstructorSignature};
 
 impl<'a, C: Config> ParserImpl<'a, C> {
     pub(crate) fn parse_ts_type(&mut self) -> TSType<'a> {
+        self.memoize_failed_speculative_subproblem(
+            SpeculativeProduction::Type,
+            Self::parse_ts_type_uncached,
+        )
+    }
+
+    fn parse_ts_type_uncached(&mut self) -> TSType<'a> {
         if self.is_start_of_function_type_or_constructor_type() {
             return self.parse_function_or_constructor_type();
         }
@@ -967,12 +975,15 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         }
         let opening_span = self.cur_token().span();
         self.expect(Kind::LAngle);
+        self.state.type_argument_speculation_depth += 1;
         let (params, _) =
             self.parse_delimited_list(Kind::RAngle, Kind::Comma, opening_span, Self::parse_ts_type);
+        self.state.type_argument_speculation_depth -= 1;
         // `a < b> = c` is valid but `a < b >= c` is BinaryExpression
         if matches!(self.re_lex_right_angle(), Kind::GtEq) {
             self.rewind(checkpoint);
             self.state.failed_speculations.insert(probe);
+            self.state.reuse_failed_type_argument_subproblems = true;
             return None;
         }
         self.re_lex_ts_r_angle();
@@ -980,6 +991,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         if self.fatal_error.is_some() || !self.can_follow_type_arguments_in_expr() {
             self.rewind(checkpoint);
             self.state.failed_speculations.insert(probe);
+            self.state.reuse_failed_type_argument_subproblems = true;
             return None;
         }
         let span = self.end_span(span);

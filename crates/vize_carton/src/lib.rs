@@ -36,10 +36,6 @@ pub mod source_io;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod corsa_api_mode;
 #[cfg(not(target_arch = "wasm32"))]
-#[expect(
-    clippy::disallowed_types,
-    reason = "legacy host discovery retains its environment and path collections"
-)]
 pub mod corsa_resolver;
 
 #[expect(

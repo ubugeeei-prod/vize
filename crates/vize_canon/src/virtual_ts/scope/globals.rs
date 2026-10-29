@@ -136,7 +136,8 @@ pub(super) fn generate_undefined_refs(
         }
 
         let src_start = (template_offset + undef.offset) as usize;
-        let src_end = src_start + undef.name.len();
+        let template = options.template_ast.map(|root| root.source);
+        let src_end = src_start + authored_binding_len(template, undef.offset, name);
         // A name a configured `globalTypes` entry or a CSS module already
         // declares in this scope keeps the free-name emission too: the `var` the
         // instance form hoists would redeclare it (`TS2451`).
@@ -308,6 +309,27 @@ pub(super) fn generate_undefined_refs(
 const PUBLIC_INSTANCE_PRELUDE: &str = "  type __VizeTemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };\n  type __VizeTemplateInstanceMember<__K extends string> = __K extends keyof __VizeTemplateInstance ? __VizeTemplateInstance[__K] : any;\n  const __vize_public_instance = undefined as unknown as __VizeTemplateInstance;\n  void __vize_public_instance;\n";
 
 const PUBLIC_INSTANCE_RECEIVER: &str = "__vize_public_instance";
+
+/// Same-name shorthand (`:aria-labelledby`) stores the camelized binding while
+/// the authored token is longer. A prefix range overlaps the attribute and is
+/// dropped, so the instance read is reported in unmapped virtual code.
+fn authored_binding_len(template: Option<&str>, offset: u32, name: &str) -> usize {
+    let Some(rest) = template.and_then(|source| source.get(offset as usize..)) else {
+        return name.len();
+    };
+    if rest.starts_with(name) {
+        return name.len();
+    }
+    let token_len = rest
+        .find(|ch: char| !ch.is_ascii_alphanumeric() && ch != '-' && ch != '_')
+        .unwrap_or(rest.len());
+    let token = rest.get(..token_len).unwrap_or("");
+    if crate::virtual_ts::helpers::to_camel_case(token).as_str() == name {
+        token_len
+    } else {
+        name.len()
+    }
+}
 
 pub(super) fn emit_header(ts: &mut String, emitted_header: &mut bool) {
     if !*emitted_header {

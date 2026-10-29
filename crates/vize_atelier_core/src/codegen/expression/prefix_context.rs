@@ -52,6 +52,24 @@ pub(super) fn prefix_identifiers_in_scope(
     ctx: &CodegenContext,
     implicit_event: bool,
 ) -> String {
+    if let Some(prefixed) = prefix_parsed_js(content, ctx, implicit_event) {
+        return prefixed;
+    }
+    // A TypeScript annotation (`event: MouseEvent`) is not a JS expression.
+    // The JS parse used to return the original text, so `document` stayed a
+    // real global. Strip the types, then prefix that JavaScript.
+    let stripped = crate::steps::strip_typescript_from_expression(content);
+    if stripped.as_str() != content
+        && let Some(prefixed) = prefix_parsed_js(&stripped, ctx, implicit_event)
+    {
+        return prefixed;
+    }
+    content.to_compact_string()
+}
+
+/// Wrapped JS expression parse, then a program parse. `None` when neither
+/// accepts `content` (the caller may retry on TypeScript-stripped text).
+fn prefix_parsed_js(content: &str, ctx: &CodegenContext, implicit_event: bool) -> Option<String> {
     let allocator = crate::expr_parse_probe::parse_arena();
     let source_type = SourceType::default().with_module(true);
 
@@ -64,7 +82,7 @@ pub(super) fn prefix_identifiers_in_scope(
     let parse_result = parser.parse_expression();
 
     match parse_result {
-        Ok(expr) => prefix_via_expr(&expr, 1, content, ctx, implicit_event),
+        Ok(expr) => Some(prefix_via_expr(&expr, 1, content, ctx, implicit_event)),
         Err(_) => {
             // Expression parsing failed -- try parsing as a program
             let allocator2 = crate::expr_parse_probe::parse_arena();
@@ -86,9 +104,12 @@ pub(super) fn prefix_identifiers_in_scope(
                 }
                 visitor.visit_program(&parse_result2.program);
 
-                rewrite_props_aliases(apply_rewrites(content, rewrites), ctx)
+                Some(rewrite_props_aliases(
+                    apply_rewrites(content, rewrites),
+                    ctx,
+                ))
             } else {
-                content.to_compact_string()
+                None
             }
         }
     }
@@ -320,6 +341,79 @@ mod tests {
                 assert_eq!(result.content, expected, "retained={retained}: {source}");
             }
         }
+    }
+
+    #[test]
+    fn focus_probe_click_prefixes_document_not_allowed_globals_or_bindings() {
+        let source = "(event: MouseEvent) => { if (document.activeElement !== event.currentTarget) return; emit('press'); }";
+        let allowed = "(event) => Math.max(Number(undefined), NaN, Infinity)";
+        let mut bindings = vize_l0::FxHashMap::default();
+        bindings.insert("emit".into(), crate::options::BindingType::SetupConst);
+        let metadata = crate::options::BindingMetadata {
+            bindings,
+            props_aliases: vize_l0::FxHashMap::default(),
+            is_script_setup: true,
+        };
+        let allocator = Allocator::new();
+        let (mut root, errors) = crate::parser::parse(
+            &allocator,
+            r#"<button type="button" @click="(event: MouseEvent) => { if (document.activeElement !== event.currentTarget) return; emit('press'); }">press</button>"#,
+        );
+        assert!(errors.is_empty(), "{errors:?}");
+        crate::lane::transform(
+            &allocator,
+            &mut root,
+            crate::options::TransformOptions {
+                prefix_identifiers: true,
+                inline: true,
+                is_ts: true,
+                cache_handlers: true,
+                binding_metadata: Some(metadata.clone()),
+                ..Default::default()
+            },
+            None,
+        );
+        let code = crate::codegen::generate(
+            &root,
+            CodegenOptions {
+                prefix_identifiers: true,
+                inline: true,
+                is_ts: true,
+                cache_handlers: true,
+                binding_metadata: Some(metadata.clone()),
+                ..Default::default()
+            },
+        )
+        .code;
+        insta::assert_snapshot!("typed_handler_component_proxy", code);
+        let ctx = CodegenContext::new(CodegenOptions {
+            prefix_identifiers: true,
+            inline: true,
+            is_ts: true,
+            binding_metadata: Some(metadata),
+            ..Default::default()
+        });
+        let prefixed =
+            prefix_identifiers_with_context_node(&expression_node(source, &allocator, false), &ctx);
+        assert_eq!(
+            prefixed,
+            "(event) => {\n\tif (_ctx.document.activeElement !== event.currentTarget) return;\n\temit(\"press\");\n}"
+        );
+        assert_eq!(
+            prefix_identifiers_with_context_node(
+                &expression_node(allowed, &allocator, false),
+                &ctx
+            ),
+            allowed
+        );
+        let parameter = "(document) => document.activeElement";
+        assert_eq!(
+            prefix_identifiers_with_context_node(
+                &expression_node(parameter, &allocator, false),
+                &ctx
+            ),
+            parameter
+        );
     }
 
     #[test]

@@ -8,6 +8,7 @@ on:
       - crates/vize_atelier_core/src/steps/expression/**
       - crates/vize_atelier_core/src/lane/context.rs
       - crates/vize_atelier_core/src/codegen/helpers/constant_expression.rs
+      - crates/vize_atelier_core/src/codegen/expression/**
       - crates/vize_atelier_core/src/codegen/slots/params.rs
       - crates/vize_atelier_sfc/src/script/import_usage_check/**
       - crates/vize_atelier_sfc/tests/template_global_policy.rs

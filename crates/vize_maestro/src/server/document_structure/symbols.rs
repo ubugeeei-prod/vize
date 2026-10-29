@@ -49,7 +49,7 @@ pub(crate) fn document_symbols(
 ) -> Option<DocumentSymbolResponse> {
     let uri = &params.text_document.uri;
 
-    let content = state.documents.text(uri)?;
+    let content = state.documents.text_snapshot(uri)?;
 
     // `.jsx`/`.tsx` documents have no SFC blocks; list their component
     // functions instead. Structural (parse-based), so it is not gated on

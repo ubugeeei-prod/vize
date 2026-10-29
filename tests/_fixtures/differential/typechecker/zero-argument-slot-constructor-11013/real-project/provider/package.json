@@ -1,0 +1,12 @@
+{
+  "name": "vize-slot-constructor-public-provider",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vizejs/native": "0.603.0",
+    "typescript": "6.0.3",
+    "typescript-native": "npm:typescript@7.1.0-beta",
+    "vize": "0.603.0",
+    "vue": "3.5.42"
+  }
+}

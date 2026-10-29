@@ -72,7 +72,7 @@ await test("source CLI reruns current ref reads and retains real snapshot/deferr
     evidence.corsa = { package: nativePackage, binarySha256: digest(fs.readFileSync(native)) };
     save();
     assert.equal(nativePackage.version, "7.0.2");
-    const env = { ...process.env, NO_COLOR: "1", CORSA_BIN: native };
+    const env = { ...process.env, NO_COLOR: "1", CORSA_PATH: native };
     delete env.VIZE_TEST_DISABLE_TSGO;
     const probe = spawnSync(native, ["--version"], { cwd: directory, env, timeout: 30_000 });
     evidence.corsa.probe = {

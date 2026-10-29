@@ -48,7 +48,7 @@ impl TypeService {
         uri: &Url,
         lsp_options: &LspTypeCheckOptions,
     ) -> Vec<Diagnostic> {
-        let Some(content) = state.documents.text(uri) else {
+        let Some(content) = state.documents.text_snapshot(uri) else {
             return vec![];
         };
 
@@ -181,7 +181,7 @@ impl TypeService {
     /// This is kept for backwards compatibility and can be removed later.
     #[deprecated(note = "Use collect_diagnostics which uses the stricter vize_canon type checker")]
     pub fn collect_diagnostics_legacy(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
-        let Some(content) = state.documents.text(uri) else {
+        let Some(content) = state.documents.text_snapshot(uri) else {
             return vec![];
         };
 

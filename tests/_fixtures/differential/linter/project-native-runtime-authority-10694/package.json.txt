@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "devDependencies": {
+    "@typescript/typescript-linux-x64": "7.0.2"
+  }
+}

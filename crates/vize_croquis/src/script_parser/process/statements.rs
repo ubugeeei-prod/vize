@@ -184,6 +184,9 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
         }
 
         _ => {
+            if let Some(origins) = result.value_binding_origins.as_mut() {
+                origins.refuse();
+            }
             if let Some(capture) = result.occurrence_capture.as_mut() {
                 capture.refuse();
             }
@@ -197,6 +200,7 @@ fn process_variable_declaration(
     source: &str,
 ) {
     for declarator in decl.declarations.iter() {
+        result.note_value_declaration(declarator, decl.kind);
         super::super::ssr_functions::note_initializer(
             result,
             &declarator.id,
@@ -210,6 +214,7 @@ fn process_variable_declaration(
 }
 
 fn process_function_declaration(result: &mut ScriptParseResult, func: &Function<'_>, source: &str) {
+    result.note_value_function(func);
     super::super::ssr_functions::note_function(result, func);
     result.refuse_function_type_reads(func);
     if let Some(id) = &func.id {
@@ -251,6 +256,7 @@ fn process_function_declaration(result: &mut ScriptParseResult, func: &Function<
 }
 
 fn process_class_declaration(result: &mut ScriptParseResult, class: &Class<'_>) {
+    result.note_value_class(class);
     if let Some(capture) = result.occurrence_capture.as_mut() {
         capture.refuse();
     }

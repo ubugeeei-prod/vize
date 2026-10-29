@@ -972,6 +972,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-slots-as-functions",
     "script/one-component-per-file",
     "script/order-in-components",
+    "script/prefer-define-emits-binding",
     "musea/require-title",
     "musea/require-component",
     "musea/valid-variant",

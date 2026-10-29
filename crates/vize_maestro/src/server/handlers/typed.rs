@@ -1,7 +1,7 @@
 //! Owned-source type-aware hover, completion and rename handlers.
 
 use super::{MaestroServer, Result};
-use crate::ide::{CompletionService, HoverService, IdeContext, RenameService, position_to_offset};
+use crate::ide::{CompletionService, HoverService, IdeContext, RenameService};
 use tower_lsp::lsp_types::{
     CompletionParams, CompletionResponse, Hover, HoverParams, PrepareRenameResponse, RenameParams,
     TextDocumentPositionParams, WorkspaceEdit,
@@ -21,14 +21,9 @@ impl MaestroServer {
                 return Ok(None);
             }
             let position = params.text_document_position_params.position;
-            let Some(content) = self.state.documents.text(uri) else {
+            let Some(ctx) = IdeContext::at_position(&self.state, uri, position) else {
                 return Ok(Some(None));
             };
-            let Some(offset) = position_to_offset(&content, position.line, position.character)
-            else {
-                return Ok(Some(None));
-            };
-            let ctx = IdeContext::with_content(&self.state, uri, offset, content);
             if !ctx.is_in_style() {
                 return Ok(None);
             }
@@ -54,15 +49,10 @@ impl MaestroServer {
             if crate::utils::is_jsx_path(uri.path()) {
                 return Ok(None);
             }
-            let Some(content) = self.state.documents.text(uri) else {
-                return Ok(Some(None));
-            };
             let position = request.position;
-            let Some(offset) = position_to_offset(&content, position.line, position.character)
-            else {
+            let Some(ctx) = IdeContext::at_completion_position(&self.state, uri, position) else {
                 return Ok(Some(None));
             };
-            let ctx = IdeContext::completion_with_content(&self.state, uri, offset, content);
             if ctx.is_in_style() {
                 return Ok(Some(CompletionService::complete(&ctx)));
             }
@@ -82,13 +72,9 @@ impl MaestroServer {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(content) = self.state.documents.text(uri) else {
+        let Some(ctx) = IdeContext::at_position(&self.state, uri, position) else {
             return Ok(None);
         };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-            return Ok(None);
-        };
-        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
 
         // Type-aware hover for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
         // Routed before the SFC path since JSX documents never produce an SFC
@@ -136,13 +122,9 @@ impl MaestroServer {
         let uri = &params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
 
-        let Some(content) = self.state.documents.text(uri) else {
+        let Some(ctx) = IdeContext::at_completion_position(&self.state, uri, position) else {
             return Ok(None);
         };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-            return Ok(None);
-        };
-        let ctx = IdeContext::completion_with_content(&self.state, uri, offset, content);
         // JSX completion is opt-in so React remains untouched.
         #[cfg(feature = "native")]
         if crate::utils::is_jsx_path(uri.path()) {
@@ -201,12 +183,7 @@ impl MaestroServer {
         let uri = &params.text_document.uri;
         let position = params.position;
 
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(ctx) = position_to_offset(&content, position.line, position.character)
-            .and_then(|offset| IdeContext::new(&self.state, uri, offset))
-        else {
+        let Some(ctx) = IdeContext::at_position(&self.state, uri, position) else {
             return Ok(None);
         };
 
@@ -244,12 +221,7 @@ impl MaestroServer {
         let position = params.text_document_position.position;
         let new_name = &params.new_name;
 
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(ctx) = position_to_offset(&content, position.line, position.character)
-            .and_then(|offset| IdeContext::new(&self.state, uri, offset))
-        else {
+        let Some(ctx) = IdeContext::at_position(&self.state, uri, position) else {
             return Ok(None);
         };
 

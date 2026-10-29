@@ -17,11 +17,35 @@ pub(super) struct RaceScan {
     pub(super) async_generation: u32,
     /// A compare-after-await guard dominates the statements being scanned.
     pub(super) guarded: bool,
+    /// Values declared in this callback, with the boundary generation that
+    /// produced them.
+    pub(super) locals: FxHashMap<CompactString, LocalValue>,
+    /// Deferred nested calls proven safe while their enclosing callback still
+    /// provides the captured request-token provenance.
+    pub(super) safe_nested_call_spans: FxHashSet<(u32, u32)>,
+    /// Whether a post-boundary write may use a value read from live reactive
+    /// state at the point of the write.
+    allow_current_live_write: bool,
 }
 
+#[derive(Clone)]
 pub(super) struct Snapshot {
     pub(super) live: CompactString,
     pub(super) generation: u32,
+    pub(super) kind: SnapshotKind,
+}
+
+#[derive(Clone, Copy)]
+pub(super) enum SnapshotKind {
+    Reactive,
+    Counter,
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct LocalValue {
+    pub(super) generation: u32,
+    pub(super) async_derived: bool,
+    pub(super) current_live: bool,
 }
 
 impl RaceScan {
@@ -53,15 +77,85 @@ impl RaceScan {
         targets.sort();
         targets
     }
+
+    pub(super) fn should_record_mutation(&self) -> bool {
+        !self.guarded && self.async_generation > 0
+    }
+
+    pub(super) fn should_record_assignment(
+        &self,
+        result: &ScriptParseResult,
+        value: &Expression<'_>,
+    ) -> bool {
+        self.should_record_mutation()
+            && (!self.allow_current_live_write
+                || !super::value::expression_is_current_live(result, value, self))
+    }
 }
 
 pub(super) fn scan_callback_for_race(
     result: &ScriptParseResult,
     callback: &Expression<'_>,
 ) -> RaceScan {
-    let mut scan = RaceScan::default();
+    scan_callback(result, callback, None, false, true, true)
+}
+
+pub(super) fn scan_deferred_callback_for_race(
+    result: &ScriptParseResult,
+    callback: &Expression<'_>,
+    allow_current_live_write: bool,
+) -> RaceScan {
+    scan_callback(
+        result,
+        callback,
+        None,
+        true,
+        false,
+        allow_current_live_write,
+    )
+}
+
+pub(super) fn scan_nested_promise_callback(
+    result: &ScriptParseResult,
+    callback: &Expression<'_>,
+    parent: &RaceScan,
+) -> RaceScan {
+    scan_callback(result, callback, Some(parent), true, false, false)
+}
+
+fn scan_callback(
+    result: &ScriptParseResult,
+    callback: &Expression<'_>,
+    parent: Option<&RaceScan>,
+    deferred: bool,
+    cleanup_parameters: bool,
+    allow_current_live_write: bool,
+) -> RaceScan {
+    let mut scan = RaceScan {
+        snapshots: parent
+            .map(|parent| parent.snapshots.clone())
+            .unwrap_or_default(),
+        locals: parent
+            .map(|parent| parent.locals.clone())
+            .unwrap_or_default(),
+        async_generation: parent.map_or(u32::from(deferred), |parent| {
+            parent.async_generation.saturating_add(u32::from(deferred))
+        }),
+        allow_current_live_write,
+        ..RaceScan::default()
+    };
     for name in callback_param_names(callback) {
-        scan.cleanup_names.insert(name);
+        if cleanup_parameters {
+            scan.cleanup_names.insert(name.clone());
+        }
+        scan.locals.insert(
+            name,
+            LocalValue {
+                generation: scan.async_generation,
+                async_derived: deferred,
+                current_live: false,
+            },
+        );
     }
 
     match callback {
@@ -109,13 +203,33 @@ fn scan_statement_for_race(result: &ScriptParseResult, stmt: &Statement<'_>, sca
         Statement::VariableDeclaration(var_decl) => {
             for decl in var_decl.declarations.iter() {
                 if let Some(init) = &decl.init {
-                    if let Some(name) = binding_identifier(&decl.id)
-                        && let Some(live) = reactive_read_label(result, init)
-                    {
-                        let generation = scan.async_generation;
-                        scan.snapshots.insert(name, Snapshot { live, generation });
-                    }
+                    let name = binding_identifier(&decl.id);
+                    let generation_before = scan.async_generation;
+                    let snapshot = snapshot_source(result, init);
                     super::expression::scan_expression_for_race(result, init, scan);
+                    if let Some(name) = name {
+                        if let Some((live, kind)) = snapshot {
+                            scan.snapshots.insert(
+                                name.clone(),
+                                Snapshot {
+                                    live,
+                                    generation: generation_before,
+                                    kind,
+                                },
+                            );
+                        }
+                        let async_derived = scan.async_generation > generation_before;
+                        let current_live = !async_derived
+                            && super::value::expression_is_current_live(result, init, scan);
+                        scan.locals.insert(
+                            name,
+                            LocalValue {
+                                generation: scan.async_generation,
+                                async_derived,
+                                current_live,
+                            },
+                        );
+                    }
                 }
             }
         }
@@ -252,7 +366,13 @@ fn freshness_guard(
     if snapshot.generation >= scan.async_generation {
         return None;
     }
-    let live = reactive_read_label(result, live_expr)?;
+    let live = match snapshot.kind {
+        SnapshotKind::Reactive => reactive_read_label(result, live_expr)?,
+        SnapshotKind::Counter => {
+            let name = identifier_name(live_expr)?;
+            CompactString::new(name)
+        }
+    };
     (live == snapshot.live).then_some(if equal {
         FreshnessGuard::AcceptFresh
     } else {
@@ -307,7 +427,32 @@ fn reactive_read_label(result: &ScriptParseResult, expr: &Expression<'_>) -> Opt
     }
 }
 
-fn is_live_source(result: &ScriptParseResult, name: &str) -> bool {
+fn snapshot_source(
+    result: &ScriptParseResult,
+    expression: &Expression<'_>,
+) -> Option<(CompactString, SnapshotKind)> {
+    if let Some(live) = reactive_read_label(result, expression) {
+        return Some((live, SnapshotKind::Reactive));
+    }
+
+    let Expression::UpdateExpression(update) = peel_expression(expression) else {
+        return None;
+    };
+    if !update.prefix || update.operator != oxc_ast::ast::UpdateOperator::Increment {
+        return None;
+    }
+    let oxc_ast::ast::SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) =
+        &update.argument
+    else {
+        return None;
+    };
+    Some((
+        CompactString::new(identifier.name.as_str()),
+        SnapshotKind::Counter,
+    ))
+}
+
+pub(super) fn is_live_source(result: &ScriptParseResult, name: &str) -> bool {
     result.reactivity.is_reactive(name)
         || matches!(
             result.bindings.get(name),

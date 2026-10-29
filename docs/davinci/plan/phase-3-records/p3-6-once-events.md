@@ -1,10 +1,11 @@
-# P3-6 - Static events in once subtrees (2026-09-26)
+# P3-6 - Events in once subtrees (2026-09-26)
 
-The checked native plain-element once subtree now admits static-name DOM
-listeners beside its mount-only props and text. Handler closures still read
-the current render context; once freezes DOM updates, not handler reads.
-Computed names, components, control flow, and other directives remain explicit
-legacy selections until their independent once contracts are proved.
+The checked native plain-element once subtree now admits static and computed
+DOM listeners beside its mount-only props and text. A computed name is fixed
+at mount rather than rebound by a render effect. Handler closures still read
+the current render context; once freezes DOM updates and the listener name,
+not handler reads. Components, control flow, and other directives remain
+explicit legacy selections until their independent once contracts are proved.
 
 ## Evidence
 
@@ -22,7 +23,10 @@ legacy selections until their independent once contracts are proved.
   The same contract holds under an inherited once parent. A `.once` listener
   fires once and is never reinstalled by later state changes. Identities remain
   stable until unmount removes the subtree.
-- Three new sources under both prefix settings keep zero legacy walks and
+- A computed-name trace changes both its name and handler input: the mounted
+  listener remains on the initial event, ignores the new event, and records
+  the current handler input when the initial event fires again.
+- Five sources under both prefix settings keep zero legacy walks and
   expression reparses. Existing allocation ceilings are unchanged.
 
 P3-6's full semantic and performance exits remain open.

@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "head_sha": "44f1aff002c56b932c9be27f225f7b844ab16290",
+  "manifest_sha256": "2074f89546701138e83585db2274be9ecbd535f4cc01fef30c1ec60201699011",
+  "repetition": 1,
+  "raw_artifact": "davinci-production-perf-1",
+  "artifact": {
+    "id": 12887639614,
+    "size_in_bytes": 347901,
+    "archive_sha256": "565467ce0bc12012fed84c8b5e502d0d48646f6d922d47dc6004ec907812c976"
+  },
+  "raw_report": {
+    "sha256": "2f9dff63565cfafb72c012be672c74541710c65f2757aa23504b78ae9a4e7a9c",
+    "size_in_bytes": 2809820
+  },
+  "runner_provenance": {
+    "sha256": "22bfbfe366cde6446eae8bfc706bb068b6a50293f1ebae4a7f4b50088b7b182a",
+    "text": "44f1aff002c56b932c9be27f225f7b844ab16290\nrustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.1\nLLVM version: 23.1.1\nLinux ip-172-31-73-130 6.6.141 #1 SMP PREEMPT_DYNAMIC Wed Sep 23 20:32:41 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux\nArchitecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           48 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  32\nOn-line CPU(s) list:                     0-31\nVendor ID:                               AuthenticAMD\nModel name:                              AMD EPYC\nCPU family:                              26\nModel:                                   68\nThread(s) per core:                      1\nCore(s) per socket:                      32\nSocket(s):                               1\nStepping:                                0\nBogoMIPS:                                8583.86\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid tsc_known_freq pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext perfctr_core ssbd perfmon_v2 ibrs ibpb stibp ibrs_enhanced vmmcall fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx_vnni avx512_bf16 clzero xsaveerptr wbnoinvd arat npt lbrv nrip_save tsc_scale vmcb_clean flushbyasid pausefilter pfthreshold v_vmsave_vmload vgif vnmi avx512vbmi umip pku avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid movdiri movdir64b fsrm avx512_vp2intersect flush_l1d\nVirtualization:                          AMD-V\nHypervisor vendor:                       KVM\nVirtualization type:                     full\nL1d cache:                               1.5 MiB (32 instances)\nL1i cache:                               1 MiB (32 instances)\nL2 cache:                                32 MiB (32 instances)\nL3 cache:                                32 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-31\nVulnerability Gather data sampling:      Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Vulnerable\nVulnerability Spectre v1:                Vulnerable: __user pointer sanitization and usercopy barriers only; no swapgs barriers\nVulnerability Spectre v2:                Vulnerable; IBPB: disabled; STIBP: disabled; PBRSB-eIBRS: Not affected; BHI: Not affected\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected\n"
+  },
+  "shapes": [
+    {
+      "shape": "dom_inline",
+      "cohorts": {
+        "accepted": {
+          "files": 462,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            96724002, 97067958, 96697613, 97218901, 95827049, 95573554, 96000474, 96317499, 96715597
+          ],
+          "retained_median_batch_ns": 96697613,
+          "selected_batch_ns": [
+            104068947, 103366789, 103804881, 103408427, 102526071, 102689849, 102871178, 102452372,
+            105194189
+          ],
+          "selected_median_batch_ns": 103366789,
+          "selected_over_retained": 1.0689693963800326
+        },
+        "all": {
+          "files": 561,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            113543328, 113389598, 113964247, 112667263, 113216013, 112958720, 112694845, 113057877,
+            113465120
+          ],
+          "retained_median_batch_ns": 113216013,
+          "selected_batch_ns": [
+            125656340, 124953932, 123950669, 123555968, 123003711, 124736413, 123179652, 123722752,
+            123647159
+          ],
+          "selected_median_batch_ns": 123722752,
+          "selected_over_retained": 1.092802587916605
+        },
+        "diagnostic": {
+          "files": 6,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            5946560, 5891537, 5981616, 5879193, 5935459, 5892278, 5968771, 5912545, 5994480
+          ],
+          "retained_median_batch_ns": 5935459,
+          "selected_batch_ns": [
+            9477416, 9480281, 9475593, 9440788, 9453901, 9423695, 9424849, 9501953, 9491181
+          ],
+          "selected_median_batch_ns": 9475593,
+          "selected_over_retained": 1.5964381187705956
+        },
+        "fallback": {
+          "files": 0
+        },
+        "no_template": {
+          "files": 93,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            7364801, 7378607, 7433551, 7414444, 7359491, 7382516, 7379660, 7341758, 7327130
+          ],
+          "retained_median_batch_ns": 7378607,
+          "selected_batch_ns": [
+            7385431, 7373588, 7384669, 7370022, 7369961, 7344363, 7342359, 7300972, 7308887
+          ],
+          "selected_median_batch_ns": 7369961,
+          "selected_over_retained": 0.9988282341097716
+        },
+        "parse_error": {
+          "files": 0
+        },
+        "routed_vapor": {
+          "files": 0
+        }
+      }
+    },
+    {
+      "shape": "dom_module",
+      "cohorts": {
+        "accepted": {
+          "files": 462,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            110189173, 110340277, 110329156, 110426107, 109847871, 109876326, 110005859, 110415518,
+            108993268
+          ],
+          "retained_median_batch_ns": 110189173,
+          "selected_batch_ns": [
+            117756995, 117941602, 118248177, 117106053, 116935123, 117651177, 117677436, 116379530,
+            116525184
+          ],
+          "selected_median_batch_ns": 117651177,
+          "selected_over_retained": 1.067719938328242
+        },
+        "all": {
+          "files": 561,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            136125367, 128441267, 128048580, 127881546, 128157745, 129603798, 128229098, 128051274,
+            127500079
+          ],
+          "retained_median_batch_ns": 128157745,
+          "selected_batch_ns": [
+            152645130, 139581152, 139873161, 138923277, 139837944, 140737825, 139171433, 139358906,
+            138727982
+          ],
+          "selected_median_batch_ns": 139581152,
+          "selected_over_retained": 1.0891355181070017
+        },
+        "diagnostic": {
+          "files": 6,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            5884914, 5844518, 5899943, 5804043, 5915551, 5901755, 5897168, 5836814, 5921963
+          ],
+          "retained_median_batch_ns": 5897168,
+          "selected_batch_ns": [
+            9269116, 9253657, 9229491, 9240341, 9261662, 9345900, 9301015, 9294002, 9290706
+          ],
+          "selected_median_batch_ns": 9269116,
+          "selected_over_retained": 1.5717910698830353
+        },
+        "fallback": {
+          "files": 0
+        },
+        "no_template": {
+          "files": 93,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            7258032, 7253803, 7249215, 7248885, 7215111, 7306241, 7233544, 7226192, 7240539
+          ],
+          "retained_median_batch_ns": 7248885,
+          "selected_batch_ns": [
+            7276956, 7248253, 7232053, 7319246, 7240608, 7279422, 7235118, 7220050, 7253082
+          ],
+          "selected_median_batch_ns": 7248253,
+          "selected_over_retained": 0.9999128141776287
+        },
+        "parse_error": {
+          "files": 0
+        },
+        "routed_vapor": {
+          "files": 0
+        }
+      }
+    },
+    {
+      "shape": "ssr",
+      "cohorts": {
+        "accepted": {
+          "files": 462,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            98869268, 98856514, 99001366, 99023849, 98962784, 101380501, 99394594, 99384135,
+            99254431
+          ],
+          "retained_median_batch_ns": 99023849,
+          "selected_batch_ns": [
+            132166718, 132439751, 132005886, 133152458, 132450481, 132679250, 132293466, 133126550,
+            132388254
+          ],
+          "selected_median_batch_ns": 132439751,
+          "selected_over_retained": 1.3374530715322932
+        },
+        "all": {
+          "files": 561,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            114320576, 114240667, 113770534, 113644627, 113948368, 113919503, 116508141, 115081574,
+            114892409
+          ],
+          "retained_median_batch_ns": 114240667,
+          "selected_batch_ns": [
+            151200579, 152878427, 150419493, 149932279, 150582669, 150862584, 151003980, 152144461,
+            151735413
+          ],
+          "selected_median_batch_ns": 151003980,
+          "selected_over_retained": 1.321805832943885
+        },
+        "diagnostic": {
+          "files": 6,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            5016605, 4942796, 5019810, 4945060, 5032364, 4989414, 5030110, 4935693, 5019339
+          ],
+          "retained_median_batch_ns": 5016605,
+          "selected_batch_ns": [
+            8065587, 8057131, 8030171, 8042103, 8066919, 8068072, 8028577, 8011064, 8027435
+          ],
+          "selected_median_batch_ns": 8042103,
+          "selected_over_retained": 1.6030967158068057
+        },
+        "fallback": {
+          "files": 0
+        },
+        "no_template": {
+          "files": 93,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            7314867, 7279281, 7281555, 7266126, 7283709, 7276505, 7268921, 7319907, 7280985
+          ],
+          "retained_median_batch_ns": 7280985,
+          "selected_batch_ns": [
+            7304267, 7284671, 7292356, 7284121, 7266477, 7283067, 7288368, 7275094, 7270595
+          ],
+          "selected_median_batch_ns": 7284121,
+          "selected_over_retained": 1.0004307109546304
+        },
+        "parse_error": {
+          "files": 0
+        },
+        "routed_vapor": {
+          "files": 0
+        }
+      }
+    },
+    {
+      "shape": "vapor",
+      "cohorts": {
+        "accepted": {
+          "files": 276,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            49153335, 49279694, 49545582, 49486663, 49398016, 49551183, 49409456, 49515847, 49554409
+          ],
+          "retained_median_batch_ns": 49486663,
+          "selected_batch_ns": [
+            52781585, 52828444, 52674564, 52782797, 52691998, 52698590, 52727955, 52791584, 52701735
+          ],
+          "selected_median_batch_ns": 52727955,
+          "selected_over_retained": 1.0654982939544742
+        },
+        "all": {
+          "files": 561,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            126086177, 125688821, 126518990, 124137199, 124676420, 124189968, 123909170, 124498207,
+            124316777
+          ],
+          "retained_median_batch_ns": 124498207,
+          "selected_batch_ns": [
+            143880761, 145045939, 144264532, 142641467, 142368363, 142552268, 142667375, 142567797,
+            142707810
+          ],
+          "selected_median_batch_ns": 142667375,
+          "selected_over_retained": 1.145939194128314
+        },
+        "diagnostic": {
+          "files": 5,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            345408, 345058, 350338, 336101, 339777, 341050, 354676, 337974, 336452
+          ],
+          "retained_median_batch_ns": 341050,
+          "selected_batch_ns": [
+            455685, 456837, 431079, 439425, 422352, 427963, 428294, 437171, 419006
+          ],
+          "selected_median_batch_ns": 431079,
+          "selected_over_retained": 1.2639759566046034
+        },
+        "fallback": {
+          "files": 187,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            65417600, 64060001, 64040596, 63908448, 63935117, 63999067, 63871097, 64080850, 64632486
+          ],
+          "retained_median_batch_ns": 64040596,
+          "selected_batch_ns": [
+            78266343, 76499648, 76453170, 76616757, 76445225, 82167184, 77320778, 76652485, 77002160
+          ],
+          "selected_median_batch_ns": 76652485,
+          "selected_over_retained": 1.1969358467557047
+        },
+        "no_template": {
+          "files": 93,
+          "passes_per_sample": 5,
+          "retained_batch_ns": [
+            7465290, 7488343, 7422900, 7424092, 7426888, 7421197, 7430364, 7437769, 7439172
+          ],
+          "retained_median_batch_ns": 7430364,
+          "selected_batch_ns": [
+            7437337, 7463396, 7433000, 7408995, 7406519, 7778959, 7473406, 7423491, 7387033
+          ],
+          "selected_median_batch_ns": 7433000,
+          "selected_over_retained": 1.0003547605473972
+        },
+        "parse_error": {
+          "files": 0
+        },
+        "routed_vapor": {
+          "files": 0
+        }
+      }
+    }
+  ]
+}

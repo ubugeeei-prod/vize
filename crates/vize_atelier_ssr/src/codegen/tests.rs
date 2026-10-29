@@ -6,6 +6,32 @@ mod ssr_codegen_tests {
     use super::super::SsrCodegenResult;
     use super::super::helpers::{escape_html, escape_html_attr};
 
+    #[cfg(feature = "legacy")]
+    #[test]
+    fn vue1_triple_mustache_emits_raw_html_without_the_escape_helper() {
+        use crate::{SsrCompilerOptions, compile_ssr_with_options};
+        use vize_l0::{Allocator, config::VueVersion};
+
+        let allocator = Allocator::new();
+        let (_, errors, result) = compile_ssr_with_options(
+            &allocator,
+            "<div>{{{ html }}}</div>",
+            SsrCompilerOptions {
+                dialect: VueVersion::V1,
+                ..SsrCompilerOptions::default()
+            },
+        );
+
+        assert!(
+            errors.is_empty(),
+            "Vue 1 raw interpolation errors: {errors:?}"
+        );
+        assert_eq!(
+            result.code.as_str(),
+            "function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ctx.html}</div>`)\n}"
+        );
+    }
+
     #[test]
     fn test_escape_html() {
         assert_eq!(escape_html("<div>"), "&lt;div&gt;");

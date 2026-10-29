@@ -65,12 +65,18 @@ function syntheticReport(code = fixture.expected) {
         observation.cssReferenceComparison.state === "equal")
         ? "matched-reference"
         : "baseline-drift";
-    return {
+    const recipeFailure =
+      current.requiredBuildRecipe && current.requiredBuildRecipe !== BUILD_RECIPE
+        ? `${current.id} requires source-build recipe ${current.requiredBuildRecipe}; observed ${BUILD_RECIPE}`
+        : null;
+    const row = {
       id: current.id,
       target: "ssr",
       legacy: {
-        state: "completed",
-        verdict,
+        state: recipeFailure ? "failed" : "completed",
+        verdict: recipeFailure ? "failed" : verdict,
+        adapter: current.adapters.legacy,
+        requiredBuildRecipe: current.requiredBuildRecipe,
         argv: current.argv,
         inputSha256: sha256(current.input),
         ...(current.dialectInput
@@ -90,7 +96,8 @@ function syntheticReport(code = fixture.expected) {
               },
             }
           : {}),
-        observation,
+        observation: recipeFailure ? null : observation,
+        ...(recipeFailure ? { error: recipeFailure } : {}),
       },
       native: { state: "unsupported", reason: current.adapters.reasons.native },
       comparison: {
@@ -98,8 +105,10 @@ function syntheticReport(code = fixture.expected) {
         reason: "whole-product native compiler path unavailable",
       },
     };
+    return row;
   });
   const baselineDrift = rows.filter((row) => row.legacy.verdict === "baseline-drift").length;
+  const legacyFailures = rows.filter((row) => row.legacy.verdict === "failed").length;
   return {
     schema: "vize.differential.result",
     version: 1,
@@ -107,14 +116,20 @@ function syntheticReport(code = fixture.expected) {
     manifestSha256: loaded.manifestSha256,
     sourceRevision,
     argv: COMPILER_ARGV,
-    buildReceipt: { schema: "vize.differential.build", version: 1, recipe: BUILD_RECIPE, ...build },
+    buildRecipe: BUILD_RECIPE,
+    buildReceipt: {
+      schema: "vize.differential.build",
+      version: 1,
+      recipe: BUILD_RECIPE,
+      ...build,
+    },
     binary: { path: build.binaryPath, sha256: build.binarySha256, version: build.cliVersion },
     rows,
     cssApi: compilerCssApiReport(loaded.cssApiCases),
     summary: {
       plannedCases: rows.length,
-      legacyMatches: rows.length - baselineDrift,
-      legacyFailures: 0,
+      legacyMatches: rows.length - baselineDrift - legacyFailures,
+      legacyFailures,
       baselineDrift,
       nativeUnsupported: rows.length,
       pairedComparisons: 0,
@@ -133,6 +148,9 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/dialect/quirks-void-close",
       "compiler/dialect/vue0-10-repeat",
       "compiler/dialect/vue0-11-repeat",
+      "compiler/dialect/vue1-attribute-interpolation",
+      "compiler/dialect/vue1-list",
+      "compiler/dialect/vue1-raw-html",
       "compiler/sfc/asset-import-binding-collision-10710",
       "compiler/sfc/compact-scoped-at-rules-10639",
       "compiler/sfc/escaped-for-bindings-10714",
@@ -191,6 +209,14 @@ void test("compiler fixture pins a real full-module reference without native cre
     legacyBacked: 0,
     unverified: 0,
   });
+  assert.deepEqual(acceptance.dialectCoverage.verified["vue1-template"], {
+    planned: 3,
+    nativeHandled: 0,
+    nativeEquivalent: 0,
+    unsupported: 3,
+    legacyBacked: 0,
+    unverified: 0,
+  });
   assert.equal(
     acceptance.dialectCoverage.unknown.planned,
     loaded.cases.filter((current) => !current.dialectInput).length,
@@ -206,7 +232,7 @@ void test("compiler fixture pins a real full-module reference without native cre
       .every((current) => Buffer.isBuffer(current.expectedCss)),
   );
   const dialects = loaded.cases.filter((current) => current.dialectInput);
-  assert.equal(dialects.length, 4);
+  assert.equal(dialects.length, 7);
   const quirks = dialects.filter((current) => current.dialectInputId.includes("quirks"));
   assert.equal(quirks.length, 2);
   for (const current of quirks) {
@@ -420,8 +446,8 @@ void test("malformed compiler output retains raw evidence and cannot complete", 
   };
   report.summary = {
     ...report.summary,
-    legacyMatches: loaded.cases.length - 1,
-    legacyFailures: 1,
+    legacyMatches: report.summary.legacyMatches - 1,
+    legacyFailures: report.summary.legacyFailures + 1,
   };
   assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
   const forged = structuredClone(report);

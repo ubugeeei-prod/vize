@@ -8,7 +8,7 @@ import { openBlock as _openBlock, createBlock as _createBlock, createCommentVNod
 
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return ($props.predefine)
-    ? (_openBlock(), _createBlock($setup.Predefine, {
+    ? (_openBlock(), _createBlock($setup["Predefine"], {
       key: 0,
       ref: "predefine"
     }, null, 512 /* NEED_PATCH */))

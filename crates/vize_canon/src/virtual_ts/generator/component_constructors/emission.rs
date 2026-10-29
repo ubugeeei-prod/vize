@@ -44,6 +44,7 @@ pub(super) struct GenericContext<'a> {
     pub(super) slots: AliasReference<'a>,
     pub(super) exposed: AliasReference<'a>,
     pub(super) emit_props: bool,
+    pub(super) emit_props_type: &'a str,
     pub(super) jsx_slots: bool,
     pub(super) root_element: bool,
     pub(super) template_refs: bool,
@@ -58,6 +59,7 @@ impl fmt::Display for GenericContext<'_> {
             emits,
             slots,
             exposed,
+            emit_props_type,
             ..
         } = self;
         write!(
@@ -65,7 +67,7 @@ impl fmt::Display for GenericContext<'_> {
             "type __VizeGenericContext{parameters} = {{\n  props: {props_type}{arguments}"
         )?;
         if self.emit_props {
-            write!(formatter, " & __EmitProps<{emits}>")?;
+            write!(formatter, " & {emit_props_type}<{emits}>")?;
         }
         if self.jsx_slots {
             write!(formatter, " & __VizeJsxSlotProps<{slots}>")?;

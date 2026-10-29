@@ -1,0 +1,229 @@
+name: Async component render ancestry
+on:
+  pull_request:
+    paths:
+      - .github/workflows/async-component-ancestry.yml
+      - crates/vize_croquis/**
+      - crates/vize_croquis_cf/**
+      - tests/tooling/async-component-ancestry-workflow.test.ts
+      - tools/support/cross_file/async_component/**
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: async-component-ancestry-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  whole-project:
+    name: Whole project and lexical controls (${{ matrix.role }})
+    strategy:
+      fail-fast: false
+      matrix: { role: [before, candidate] }
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "8"
+      CARGO_TERM_COLOR: always
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      SOURCE_SHA: ${{ matrix.role == 'before' && 'b6127a994f7e2a75eb2c89de44d54cf8a0f17fcd' || github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: ${{ matrix.role == 'candidate' && '0' || '1' }}
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: qualification
+          persist-credentials: false
+          sparse-checkout: |
+            tests/tooling/async-component-ancestry-workflow.test.ts
+            tools/support/cross_file/async_component
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.6.0" }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.99.1 }
+      - name: Record the exact producer before execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p target/vize-tests/async-component
+          git rev-parse HEAD > target/vize-tests/async-component/producer.sha
+          node --version > target/vize-tests/async-component/node.version
+      - name: Install the independent pinned actual Vue runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix "$RUNNER_TEMP/async-component-runtime" --registry=https://registry.npmjs.org --no-audit --no-fund --save-exact vue@3.5.43 @vue/compiler-sfc@3.5.43
+          echo "VIZE_ASYNC_RUNTIME_PACKAGE=$RUNNER_TEMP/async-component-runtime/package.json" >> "$GITHUB_ENV"
+      - name: Require each new precision control to fail at its pinned parent production
+        if: matrix.role == 'candidate'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test qualification/tests/tooling/async-component-ancestry-workflow.test.ts
+          git fetch --no-tags --depth=16 origin 748876d5d580aa5c6d0fb0bf32108b8bb0429951
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess
+          paths = [
+              "crates/vize_croquis/src/script_parser.rs",
+              "crates/vize_croquis/src/script_parser/value_binding_origins.rs",
+              "crates/vize_croquis/src/script_parser/parse.rs",
+              "crates/vize_croquis/src/script_parser/value_binding_origins/resolution.rs",
+              "crates/vize_croquis/src/facts/components.rs",
+          ]
+          specs = [
+              {
+                  "id": "mixed-demand", "parent": "4c7211a42ef27ba8fc3bae4c220fc95cd6ac8278",
+                  "feature": "748876d5d580aa5c6d0fb0bf32108b8bb0429951",
+                  "test": "facts::components::tests::missing_setup_capture_cannot_reuse_plain_program_names",
+                  "marker": b"    fn uncaptured_setup(", "failure": b"LocalComponentBinding::Opaque",
+                  "changed": paths,
+              },
+              {
+                  "id": "component-spelling", "parent": "a15d99e984886cd7b13e706cc755290d4fc98d8c",
+                  "feature": "748876d5d580aa5c6d0fb0bf32108b8bb0429951",
+                  "test": "facts::components::tests::component_binding_spelling_follows_vue_lookup_order",
+                  "marker": b"    #[test]\n    fn component_binding_spelling_follows_vue_lookup_order",
+                  "failure": b"./Camel.vue", "changed": [paths[0], paths[1], paths[3], paths[4]],
+              },
+          ]
+          head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          assert head == os.environ["SOURCE_SHA"]
+          merged_squash = "deda174ca6da0fc54a4f7483acbd3f71c382095c"
+          assert subprocess.run(
+              ["git", "merge-base", "--is-ancestor", merged_squash, head],
+              check=False,
+          ).returncode == 0
+          root = pathlib.Path.cwd()
+          component = paths[-1]
+          new = pathlib.Path(component).read_bytes()
+          proof = pathlib.Path("target/vize-tests/async-component")
+          for spec in specs:
+              parent = spec["parent"]
+              delta = json.loads(subprocess.check_output([
+                  "node", "qualification/tools/support/cross_file/async_component/feature-delta.ts",
+                  parent, spec["feature"], spec["feature"], "--", "crates", "davinci", "Cargo.toml", "Cargo.lock",
+              ], text=True))
+              assert delta["selectedParent"] == parent
+              assert delta["selectedFeature"] == spec["feature"]
+              changed = delta["changed"]
+              assert sorted(changed) == sorted(spec["changed"]), changed
+              previous = {p: subprocess.check_output(["git", "show", parent + ":" + p]) for p in paths}
+              marker = spec["marker"]
+              assert marker in new and marker not in previous[component]
+              tail = new[new.index(marker):new.rindex(b"\n}")]
+              receipt = {
+                  "schema": "vize.asyncComponentPrecisionBefore.v1",
+                  "productionSource": parent, "observer": head, "test": spec["test"],
+                  "mergedSquash": merged_squash,
+                  "productionTree": subprocess.check_output(["git", "rev-parse", parent + "^{tree}"], text=True).strip(),
+                  "featureDelta": delta,
+                  "newTestTailSha256": hashlib.sha256(tail).hexdigest(),
+                  "productionFiles": [{"path": p, "sha256": hashlib.sha256(b).hexdigest()} for p, b in previous.items()],
+                  "claim": "full pinned parent production with only new regression tests; not source SDK or public acceptance",
+              }
+              prefix = proof / (spec["id"] + "-parent")
+              prefix.with_suffix(".json").write_text(json.dumps(receipt, indent=2) + "\n")
+              worktree = pathlib.Path(os.environ["RUNNER_TEMP"]) / ("async-component-" + spec["id"] + "-parent")
+              subprocess.run(["git", "worktree", "add", "--detach", str(worktree), parent], check=True)
+              try:
+                  old_path = worktree / component
+                  old = old_path.read_bytes()
+                  rewritten = old[:old.rindex(b"\n}")] + b"\n" + tail + old[old.rindex(b"\n}"):]
+                  old_path.write_bytes(rewritten)
+                  assert subprocess.check_output(["git", "diff", "--name-only"], cwd=worktree, text=True).splitlines() == [component]
+                  run = subprocess.run(
+                      ["cargo", "test", "--locked", "-p", "vize_croquis", receipt["test"], "--", "--exact", "--nocapture"],
+                      cwd=worktree,
+                      env={**os.environ, "CARGO_TARGET_DIR": str(root / "target")},
+                      capture_output=True,
+                  )
+                  prefix.with_suffix(".stdout").write_bytes(run.stdout)
+                  prefix.with_suffix(".stderr").write_bytes(run.stderr)
+                  receipt.update(status=run.returncode, stdoutSha256=hashlib.sha256(run.stdout).hexdigest(), stderrSha256=hashlib.sha256(run.stderr).hexdigest())
+                  prefix.with_suffix(".json").write_text(json.dumps(receipt, indent=2) + "\n")
+                  assert run.returncode == 101, run.returncode
+                  assert b"running 1 test" in run.stdout
+                  assert b"test result: FAILED. 0 passed; 1 failed;" in run.stdout
+                  assert b"assertion" in run.stderr and b"failed" in run.stderr and spec["failure"] in run.stderr
+              finally:
+                  subprocess.run(["git", "worktree", "remove", "--force", str(worktree)], check=True)
+              subprocess.run(["git", "diff", "--exit-code"], check=True)
+          PY
+      - name: Require complete Croquis and cross-file unit suites
+        if: matrix.role == 'candidate'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p target/vize-tests/async-component
+          cargo test --locked --profile ci -p vize_croquis -p vize_croquis_cf --lib -- --nocapture >target/vize-tests/async-component/units.stdout 2>target/vize-tests/async-component/units.stderr
+          cat target/vize-tests/async-component/units.stdout
+          cat target/vize-tests/async-component/units.stderr >&2
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          text = Path('target/vize-tests/async-component/units.stdout').read_text()
+          names = [
+            'own_slot_scope_does_not_shadow_its_host_component',
+            'template_shadowed_async_and_static_sites_do_not_revive_name_fallbacks',
+            'mixed_template_sites_keep_only_the_unshadowed_root_site',
+            'shadowed_prop_sites_do_not_reuse_the_root_component_contract',
+            'shadowed_global_component_sites_do_not_create_provide_ancestry',
+            'opaque_loader_reads_preserve_an_independent_proven_component',
+            'actual_uncaptured_refused_and_empty_programs_never_alias_absence',
+            'unsupported_top_level_try_refuses_the_original_domain',
+            'demanded_builtin_walk_retains_the_same_lexical_bindings',
+            'loop_lvalues_and_var_hoisting_cannot_keep_stale_loader_identity',
+            'cached_identity_keeps_each_use_tdz_independent',
+            'long_aliases_and_many_functions_use_indexed_iterative_identity',
+            'stable_opaque_functions_and_const_leaves_keep_identity',
+            'reassignment_tdz_and_mutable_bindings_refuse_value_authority',
+            'closure_parameters_and_hoisted_function_shadow_imports',
+            'incomplete_and_two_program_domains_refuse_but_absent_script_preserves',
+            'async_component_ancestry_accepts_alias_namespace_and_exact_loader_forms',
+            'async_component_ancestry_rejects_fake_opaque_nonliteral_and_uncalled_nested_loaders',
+            'async_component_ancestry_keeps_static_import_and_kebab_alias_controls',
+          ]
+          for name in names:
+              assert any(line.endswith('::' + name + ' ... ok') for line in text.splitlines()), name
+          assert '0 failed;' in text
+          PYTHON
+      - name: Build the exact source CLI and source NAPI image
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          token="$(openssl rand -hex 16)"
+          set +e
+          VIZE_NATIVE_BUILD_TOKEN="$token" cargo build --locked --profile ci -p vize_vitrine --features napi >target/vize-tests/async-component/napi-build.stdout 2>target/vize-tests/async-component/napi-build.stderr
+          napi_status=$?
+          printf '%s\n' "$napi_status" >target/vize-tests/async-component/napi-build.status
+          set -e
+          cat target/vize-tests/async-component/napi-build.stderr >&2
+          test "$napi_status" = 0
+          set +e
+          cargo build --locked --profile ci -p vize --bin vize >target/vize-tests/async-component/cli-build.stdout 2>target/vize-tests/async-component/cli-build.stderr
+          cli_status=$?
+          printf '%s\n' "$cli_status" >target/vize-tests/async-component/cli-build.status
+          set -e
+          cat target/vize-tests/async-component/cli-build.stderr >&2
+          test "$cli_status" = 0
+          cp target/ci/libvize_vitrine.so npm/native/vize-vitrine.linux-x64-gnu.node
+          echo "EXPECTED_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Preserve every original file and full process, graph, Doctor and inspector packet
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset NAPI_RS_NATIVE_LIBRARY_PATH
+          node qualification/tools/support/cross_file/async_component/verify.ts target/ci/vize npm/native/index.js target/vize-tests/async-component ${{ matrix.role }} "$SOURCE_SHA" "$EXPECTED_TOKEN"
+      - name: Preserve complete evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: async-component-ancestry-${{ matrix.role }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: target/vize-tests/async-component
+          if-no-files-found: error

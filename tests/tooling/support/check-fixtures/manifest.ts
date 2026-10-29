@@ -39,7 +39,7 @@ export const CHECK_FIXTURE_ENV: Readonly<Record<string, string>> = {
 };
 
 function phase(file: string): CheckFixturePhase {
-  const id = file.replace(/^.*\//, "").replace(/\.(test\.)?ts$/, "");
+  const id = file.replace(/^.*\//, "").replace(/\.(test\.)?(ts|mjs)$/, "");
   return { file, id };
 }
 
@@ -82,5 +82,6 @@ export const checkFixturePhases: readonly CheckFixturePhase[] = [
   "snapshots/check/vue2-elm.ts",
   "snapshots/check/vue2-class-component-oracle.ts",
   "snapshots/check/zz-intentional-errors-fixtures.ts",
+  "differential/compiler-legacy-cli.test.ts",
   "tooling/compat-ratchet.test.ts",
 ].map(phase);

@@ -249,7 +249,7 @@ pub(super) fn push_type_aware_failure(result: &mut LintResult, failure: TypeAwar
         TypeAwareFailure::Runtime(error) => push_warning(
             result,
             LintDiagnostic::warn("type/corsa-runtime", error, 0, 0).with_help(
-                "Type-aware lint rules were skipped because the Corsa runtime could not be started. Configure `typeChecker.corsaPath` or install `typescript@^7`.",
+                "Type-aware lint rules were skipped because the native compiler could not be started. Install a native TypeScript runtime in this project or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.",
             ),
         ),
     }

@@ -42,7 +42,7 @@
     "differentialManifests": [
       {
         "path": "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
-        "sha256": "314d4c4a3eabbecf03ec894a3e91b0f29a812dda8f99d3f21da7ca9835a32403"
+        "sha256": "d17eb42baf2c73a0beedf3d226a1197fc7c37ab711a27a68221bb1db021ec3d9"
       },
       {
         "path": "tests/_fixtures/differential/compiler/ssr-fix-history.manifest.json",

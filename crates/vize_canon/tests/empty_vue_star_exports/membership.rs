@@ -64,8 +64,8 @@ fn expected() -> (Value, Value) {
         members.extend(entries);
     }
     assert_eq!(members.len(), 86);
-    // Authenticate the original ordered reference unchanged, then retain the
-    // declared current source-owned helper postimage as separate provenance.
+    // Authenticate the original ordered reference unchanged, then retain each
+    // declared source-owned helper postimage as separate provenance.
     let update =
         fs::read(support::corpus().join("malformed-membership/helper-update-10423.json")).unwrap();
     assert_eq!(
@@ -86,6 +86,61 @@ fn expected() -> (Value, Value) {
     );
     *helper = update["after"].clone();
     manifest["provenance"]["currentHelperUpdate"] = update;
+    let helper_hoist =
+        fs::read(support::corpus().join("malformed-membership/helper-update-11049.json")).unwrap();
+    assert_eq!(
+        support::hash(&helper_hoist),
+        "970e4ae93b460c3761a5548305f3346ac451d86beb7ba7bda12763fb172740ba"
+    );
+    let helper_hoist: Value = serde_json::from_slice(&helper_hoist).unwrap();
+    assert_eq!(helper_hoist["version"], 1);
+    assert_eq!(helper_hoist["pullRequest"], 11049);
+    assert_eq!(helper_hoist["entry"], 82);
+    assert_eq!(helper_hoist["deltaBytes"], 13_924);
+    let helper = members.get_mut(82).unwrap();
+    assert_eq!(*helper, helper_hoist["before"]);
+    assert_eq!(helper_hoist["before"][0], helper_hoist["after"][0]);
+    assert_eq!(
+        helper_hoist["after"][1].as_u64().unwrap() - helper_hoist["before"][1].as_u64().unwrap(),
+        13_924
+    );
+    *helper = helper_hoist["after"].clone();
+    manifest["provenance"]["currentHelperHoistUpdate"] = helper_hoist;
+    let slot_constructor_update =
+        fs::read(support::corpus().join("malformed-membership/helper-update-11018.json")).unwrap();
+    assert_eq!(
+        support::hash(&slot_constructor_update),
+        "008b5dcaa4853e9da944da65d425635bc1caa33e2924ab6b9015a693e4222f15"
+    );
+    let slot_constructor_update: Value = serde_json::from_slice(&slot_constructor_update).unwrap();
+    assert_eq!(slot_constructor_update["version"], 1);
+    assert_eq!(slot_constructor_update["pullRequest"], 11018);
+    assert_eq!(
+        slot_constructor_update["sourceRevision"],
+        "f48dc9052ecb5637ee37c4372115630e447610ef"
+    );
+    assert_eq!(
+        slot_constructor_update["testedMerge"],
+        "ddc69005128d6cedf972d35d1a3b3d7d684088a7"
+    );
+    assert_eq!(slot_constructor_update["observedRun"], 40878804863_i64);
+    assert_eq!(slot_constructor_update["observedJob"], 123464771332_i64);
+    assert_eq!(slot_constructor_update["artifact"], 12899293199_i64);
+    assert_eq!(slot_constructor_update["entry"], 82);
+    assert_eq!(slot_constructor_update["deltaBytes"], 978);
+    let helper = members.get_mut(82).unwrap();
+    assert_eq!(*helper, slot_constructor_update["before"]);
+    assert_eq!(
+        slot_constructor_update["before"][0],
+        slot_constructor_update["after"][0]
+    );
+    assert_eq!(
+        slot_constructor_update["after"][1].as_u64().unwrap()
+            - slot_constructor_update["before"][1].as_u64().unwrap(),
+        978
+    );
+    *helper = slot_constructor_update["after"].clone();
+    manifest["provenance"]["currentSlotConstructorUpdate"] = slot_constructor_update;
     let context =
         fs::read(support::corpus().join("malformed-membership/context-update-10667.json")).unwrap();
     assert_eq!(
@@ -110,6 +165,73 @@ fn expected() -> (Value, Value) {
         *member = update["after"].clone();
     }
     manifest["provenance"]["currentContextUpdate"] = context;
+    let slot_update = fs::read(
+        support::corpus().join("malformed-membership/slot-outlet-alias-update-11064.json"),
+    )
+    .unwrap();
+    assert_eq!(
+        support::hash(&slot_update),
+        "7407e9bd9567959e9a713b1fb308465cc8d3237c0195e3d836bd7d8ee9e07eda"
+    );
+    let slot_update: Value = serde_json::from_slice(&slot_update).unwrap();
+    assert_eq!(slot_update["version"], 1);
+    assert_eq!(slot_update["pullRequest"], 11064);
+    assert_eq!(
+        slot_update["rawProductRevision"],
+        "5128bc7a70a1d14eafded753d9c691b403f4537e"
+    );
+    assert_eq!(
+        slot_update["testedMerge"],
+        "e1336dc82afb00d75d7e236429e1e0c58a9ec5b8"
+    );
+    assert_eq!(slot_update["observedRun"], 40697523928_i64);
+    assert_eq!(slot_update["observedJob"], 122849073259_i64);
+    assert_eq!(slot_update["artifact"], 12820356605_i64);
+    assert_eq!(
+        slot_update["artifactArchiveSha256"],
+        "3e9cce6e08ac23a89b81853b860a48bcecd34cfb7559009e97263a68b9e48229"
+    );
+    assert_eq!(
+        slot_update["extractedPacketSha256"],
+        "c2ebbf4bf04c46e270d134dbc4a4b969b8b0768a39ceb6640da3eeab02572e4c"
+    );
+    let complete_observation = &slot_update["completeObservation"];
+    assert_eq!(
+        complete_observation["rawEvidenceRevision"],
+        "773d1fbaba11efc41b8eb80399a95827da23c75f"
+    );
+    assert_eq!(
+        complete_observation["testedMerge"],
+        "978b44c494324bf3035238811cfaebbff92ec291"
+    );
+    assert_eq!(complete_observation["observedRun"], 40699448621_i64);
+    assert_eq!(complete_observation["observedJob"], 122856474080_i64);
+    assert_eq!(complete_observation["artifact"], 12821192217_i64);
+    assert_eq!(
+        complete_observation["artifactArchiveSha256"],
+        "021aa5226b11901134969a6e15102b281315fb7d818a6830356011e8182dc0f0"
+    );
+    assert_eq!(
+        complete_observation["extractedPacketSha256"],
+        "6ceeac95522aebdcddc3add8f4ef786938c8ea8ab7f05e92999315910b639509"
+    );
+    assert_eq!(slot_update["deltaBytes"], -998);
+    assert_eq!(slot_update["deltaBytesPerEntry"], -499);
+    assert_eq!(slot_update["omittedStaticNoSpreadAliasesPerEntry"], 4);
+    let slot_updates = slot_update["entries"].as_array().unwrap();
+    assert_eq!(slot_updates.len(), 2);
+    for (index, update) in [74usize, 75].into_iter().zip(slot_updates) {
+        assert_eq!(update["entry"], index);
+        let slot_member = members.get_mut(index).unwrap();
+        assert_eq!(*slot_member, update["before"]);
+        assert_eq!(update["before"][0], update["after"][0]);
+        assert_eq!(
+            update["before"][1].as_u64().unwrap() - update["after"][1].as_u64().unwrap(),
+            499
+        );
+        *slot_member = update["after"].clone();
+    }
+    manifest["provenance"]["currentSlotOutletAliasUpdate"] = slot_update;
     (manifest, json!(members))
 }
 

@@ -117,14 +117,15 @@ impl ComponentPropNavigationMatches {
             } else {
                 document
                     .authored_source(&definition.uri)
-                    .map(str::to_owned)
-                    .or_else(|| ctx.state.documents.text(&definition.uri))
+                    .map(|source| std::sync::Arc::new(source.to_owned()))
+                    .or_else(|| ctx.state.documents.text_snapshot(&definition.uri))
                     .or_else(|| {
                         definition
                             .uri
                             .to_file_path()
                             .ok()
                             .and_then(|path| std::fs::read_to_string(path).ok())
+                            .map(std::sync::Arc::new)
                     })
             };
             let Some(offset) = source.as_deref().and_then(|source| {

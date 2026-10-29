@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "issue": 10700,
+  "pullRequest": 10701,
+  "capture": {
+    "runId": 40227011294,
+    "artifactId": 12610814614,
+    "head": "b7bded1352dda0628ff1de0c94f7c6533a82db47",
+    "tree": "dafee01d7901f73ad2b7eec36bcb9eff63c46b99",
+    "rawPacket": "nested-packets.json",
+    "rawSha256": "1693d8b069e66fe44b51d4de0c00f339974b834b6a8b9d6e303760aaeea217fd"
+  },
+  "source": "AfsStepperDialog.stories.tsx.txt",
+  "sourceSha256": "8b46599f16d4ac31ed91677a729c9058087ebf2978fd5e62490d512db9e04b8f",
+  "historical": "AfsStepperDialog.stories.vapor.authored-module-refusal-10701.runtime.json.txt",
+  "historicalSha256": "b0d3349e49fd3fe220ccf12febbc5627a878e78bde8159e93f0377c09a3d321e",
+  "successor": "AfsStepperDialog.stories.vapor.static-values-10701.runtime.json.txt",
+  "successorSha256": "d5c61bcc24ae548c59b1dca8aa2bb40c18f9193e0586e50ca16a4c9976553032",
+  "allowedChangedPointers": [
+    "/components/3/code",
+    "/components/4/code"
+  ],
+  "qualification": {
+    "module": "refused",
+    "components": "inspectable-producer-only",
+    "nativeHandled": 0,
+    "runtime": false
+  }
+}

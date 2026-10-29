@@ -9,6 +9,68 @@ use oxc_ast::ast::{
 use oxc_ast_visit::Visit;
 use oxc_syntax::scope::ScopeFlags;
 
+/// The usable capture of the sole compiler-owned top-level `defineEmits` call.
+pub(super) enum DefineEmitsCapture<'a> {
+    /// No compiler-owned top-level call exists.
+    Missing,
+    /// A call exists, but no single immutable plain binding is safe to insert.
+    Unbound,
+    /// Exactly one call is captured by this top-level `const` identifier.
+    Bound(&'a str),
+}
+
+/// Resolve the only top-level `defineEmits` call into a safe template-visible
+/// replacement binding.
+///
+/// Bare, destructured, mutable, or multiple calls still prove that the macro
+/// exists, but cannot authorize an automatic rewrite. A same-program value
+/// binding for `defineEmits` means the call is not the Vue compiler macro.
+pub(super) fn define_emits_capture<'a>(program: &Program<'a>) -> DefineEmitsCapture<'a> {
+    if shadowed(program, "defineEmits") {
+        return DefineEmitsCapture::Missing;
+    }
+
+    let mut calls = 0_u8;
+    let mut binding = None;
+    for statement in &program.body {
+        match statement {
+            Statement::VariableDeclaration(declaration) => {
+                for declarator in &declaration.declarations {
+                    if !declarator.init.as_ref().is_some_and(is_define_emits_call) {
+                        continue;
+                    }
+                    calls = calls.saturating_add(1);
+                    if declaration.kind == VariableDeclarationKind::Const
+                        && let BindingPattern::BindingIdentifier(identifier) = &declarator.id
+                    {
+                        binding = Some(identifier.name.as_str());
+                    }
+                }
+            }
+            Statement::ExpressionStatement(statement)
+                if is_define_emits_call(&statement.expression) =>
+            {
+                calls = calls.saturating_add(1);
+            }
+            _ => {}
+        }
+    }
+
+    match (calls, binding) {
+        (0, _) => DefineEmitsCapture::Missing,
+        (1, Some(binding)) => DefineEmitsCapture::Bound(binding),
+        _ => DefineEmitsCapture::Unbound,
+    }
+}
+
+fn is_define_emits_call(expression: &Expression<'_>) -> bool {
+    matches!(
+        expression.without_parentheses(),
+        Expression::CallExpression(call)
+            if matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == "defineEmits")
+    )
+}
+
 pub(super) fn shadowed(program: &Program<'_>, name: &str) -> bool {
     program.body.iter().any(|statement| {
         declaration(statement).is_some_and(|d| declaration_binds(d, name))
