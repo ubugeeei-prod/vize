@@ -1,4 +1,5 @@
-//! The Vapor Teleport contract: known props and ordinary default slot content.
+//! The Vapor Teleport contract: a static `to`, known static props or computed
+//! prop names, and ordinary default slot content.
 
 use super::super::{Content, Node};
 use super::{Result, at};
@@ -18,12 +19,14 @@ pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
         };
         if is.is_some()
             || !node.bindings.is_empty()
-            || !props.iter().any(|prop| prop.key == "to")
+            || !props
+                .iter()
+                .any(|prop| prop.dynamic_name.is_none() && prop.key == "to")
             || props.iter().any(|prop| {
-                !matches!(prop.key, "to" | "disabled" | "defer")
-                    || prop.dynamic_name.is_some()
-                    || prop.handler
+                prop.handler
                     || prop.value_kind != PropValueKind::Expression
+                    || prop.dynamic_name.is_none()
+                        && !matches!(prop.key, "to" | "disabled" | "defer")
             })
         {
             return Err(LegacyReason::Component.into());
