@@ -6,6 +6,8 @@
     clippy::disallowed_types,
     reason = "integration assertions retain complete JSON packets"
 )]
+use oxc_ast::ast::{Expression, VariableDeclarator};
+use oxc_ast_visit::{Visit, walk};
 use oxc_sourcemap::SourceMap;
 use serde_json::json;
 use vize_atelier_jsx::{JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx, parse_module};
@@ -232,8 +234,30 @@ fn plan_ineligible_native_roots_keep_the_legacy_renderer_fallback() {
             assert_eq!(out.components.len(), 1, "{source}");
             let renderer = out.components[0].code();
             assert!(!renderer.is_empty(), "{source}");
-            assert!(out.module_code().ends_with(renderer), "{source}");
+            assert_eq!(out.module_code(), renderer, "{source}");
         }
+    }
+}
+
+#[derive(Default)]
+struct DirectiveBindings(Vec<(String, Option<String>)>);
+
+impl<'a> Visit<'a> for DirectiveBindings {
+    fn visit_variable_declarator(&mut self, declaration: &VariableDeclarator<'a>) {
+        if declaration
+            .id
+            .get_identifier_name()
+            .is_some_and(|name| name == "_directive_focus")
+        {
+            let value = declaration.init.as_ref().and_then(|expression| {
+                match expression.get_inner_expression() {
+                    Expression::Identifier(identifier) => Some(identifier.name.to_string()),
+                    _ => None,
+                }
+            });
+            self.0.push(("_directive_focus".to_owned(), value));
+        }
+        walk::walk_variable_declarator(self, declaration);
     }
 }
 
@@ -252,11 +276,15 @@ fn authored_vapor_directives_keep_script_setup_bindings_bare() {
     );
     assert!(!out.has_errors(), "{:?}", out.diagnostics);
     let module = out.module_code();
-    assert!(
-        module.contains("const _directive_focus = vFocus"),
+    let parsed = parse_module(allocator.as_oxc(), &module, JsxLang::Jsx);
+    assert!(!parsed.has_errors(), "{module}");
+    let mut bindings = DirectiveBindings::default();
+    bindings.visit_program(&parsed.program);
+    assert_eq!(
+        bindings.0,
+        [("_directive_focus".to_owned(), Some("vFocus".to_owned()))],
         "{module}"
     );
-    assert!(!module.contains("_ctx.vFocus"), "{module}");
 }
 
 #[test]

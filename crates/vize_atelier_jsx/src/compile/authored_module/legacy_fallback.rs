@@ -1,9 +1,9 @@
 //! Preserve the standalone native renderer admission that predates authored modules.
 
-use oxc_ast::ast::{IdentifierReference, Statement};
+use oxc_ast::ast::{ArrowFunctionExpression, Function, IdentifierReference, Statement};
 use oxc_ast_visit::Visit;
 use oxc_semantic::{Scoping, SemanticBuilder};
-use oxc_span::GetSpan;
+use oxc_span::{GetSpan, Span};
 
 use super::JsxComponent;
 use crate::JsxLang;
@@ -27,6 +27,16 @@ pub(super) fn admitted(
     }) {
         return false;
     }
+    let mut functions = FunctionOwners(Vec::new());
+    functions.visit_program(&parsed.program);
+    if spans.iter().any(|&(start, end)| {
+        !functions
+            .0
+            .iter()
+            .any(|owner| owner.start <= start && end <= owner.end)
+    }) {
+        return false;
+    }
     let scoping = SemanticBuilder::new()
         .build(&parsed.program)
         .semantic
@@ -39,6 +49,20 @@ pub(super) fn admitted(
     };
     captures.visit_program(&parsed.program);
     !captures.missing
+}
+
+struct FunctionOwners(Vec<Span>);
+
+impl<'a> Visit<'a> for FunctionOwners {
+    fn visit_function(&mut self, function: &Function<'a>, flags: oxc_syntax::scope::ScopeFlags) {
+        self.0.push(function.span);
+        oxc_ast_visit::walk::walk_function(self, function, flags);
+    }
+
+    fn visit_arrow_function_expression(&mut self, arrow: &ArrowFunctionExpression<'a>) {
+        self.0.push(arrow.span);
+        oxc_ast_visit::walk::walk_arrow_function_expression(self, arrow);
+    }
 }
 
 struct Captures<'a> {
