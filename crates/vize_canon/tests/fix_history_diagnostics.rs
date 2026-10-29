@@ -14,6 +14,7 @@ mod support {
 }
 mod aria_kebab_prop_11048;
 mod content_mapper_vue_generic_11051;
+#[path = "fix_history_cases/nuxt_pattern_emit_10195.rs"]
 mod nuxt_pattern_emit_10195;
 use support::fix_history_normalization::assert_generated_check_ordinal_normalization_preserves_markers_without_digits;
 use support::fix_history_runner::check_pack;

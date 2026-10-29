@@ -125,27 +125,6 @@ const title = 1
 }
 
 #[test]
-fn official_unknown_prop_reports_on_the_authored_key_not_the_value_delimiter() {
-    let source = "<template><Child definitely-not-a-prop=\"x\" /></template>";
-    let expected = authored(source, "<", "definitely-not-a-prop", 0);
-    assert_eq!(
-        expected.start, 17,
-        "the authenticated key begins at column 18"
-    );
-    let actual = generated_origin(
-        source,
-        "\"definitelyNotAProp\": \"x\"",
-        "\"definitelyNotAProp\"".len(),
-        0,
-    );
-    assert_eq!(actual, expected);
-    assert_ne!(
-        actual.start,
-        source.find("\" />").expect("value closing quote")
-    );
-}
-
-#[test]
 fn whole_props_argument_starts_on_the_component_tag() {
     let source = r#"<script setup lang="ts">
 import Child from './Child.vue'

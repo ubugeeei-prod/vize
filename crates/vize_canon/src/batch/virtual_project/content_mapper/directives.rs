@@ -128,17 +128,16 @@ pub(super) fn with_generic_echoes(
     Some(directives)
 }
 
-/// Suppress one of the two generated owners for an authored component input.
-/// Ordinary props keep the whole-props literal as their diagnostic owner. An
-/// event listener instead keeps its per-prop assignment because the generic
-/// literal cannot prove the component's emitted event signature.
+/// Suppress the per-prop assignment when the canonical whole-props literal
+/// contains the same authored binding. Native Vize collapses those two mapped
+/// diagnostics after checking; the upstream content-mapper host reports every
+/// virtual diagnostic independently, so the earlier assignment is an echo.
 ///
 /// Keep the assignment when the literal deliberately carries `never` for an
 /// inline callback, or when the literal entry is itself `@ts-ignore`d before a
 /// spread: in both cases the assignment is the only diagnostic owner.
 pub(super) fn with_component_prop_echoes(
     directives: Option<ContentMapperDiagnosticDirectives>,
-    source: &str,
     generated: &str,
     mappings: &[VizeMapping],
     callback_primaries: &[Range<usize>],
@@ -159,7 +158,7 @@ pub(super) fn with_component_prop_echoes(
                         && !preceded_by_named_prop_ignore(generated, candidate.gen_range.start)
                 })
         })
-        .map(|candidate| (candidate.src_range.clone(), candidate.gen_range.clone()))
+        .map(|candidate| &candidate.src_range)
         .collect::<Vec<_>>();
     let mut echoes = Vec::new();
     for mapping in mappings {
@@ -172,34 +171,20 @@ pub(super) fn with_component_prop_echoes(
         if !text.trim_start().starts_with("const __vize_prop_check_") {
             continue;
         }
-        let owners = literal_owners
+        let has_literal_owner = literal_owners
             .iter()
-            .filter(|(authored, _)| *authored == mapping.src_range)
-            .collect::<Vec<_>>();
-        if owners.is_empty() {
-            continue;
-        }
-        let ignored = if authored_component_listener(source, &mapping.src_range) {
-            owners
-                .into_iter()
-                .map(|(_, generated)| generated.clone())
-                .collect::<Vec<_>>()
-        } else {
-            vec![mapping.gen_range.clone()]
-        };
-        echoes.extend(ignored.into_iter().map(|generated| {
-            ContentMapperDiagnosticDirective([
+            .any(|source| **source == mapping.src_range);
+        if has_literal_owner {
+            echoes.push(ContentMapperDiagnosticDirective([
                 mapping.src_range.start,
                 mapping.src_range.len(),
-                generated.start,
-                generated.end,
+                mapping.gen_range.start,
+                mapping.gen_range.end,
                 DIRECTIVE_POLICY_IGNORE,
                 0,
-            ])
-        }));
+            ]));
+        }
     }
-    echoes.sort_unstable_by_key(|echo| echo.0[2]);
-    echoes.dedup_by_key(|echo| (echo.0[2], echo.0[3]));
     if echoes.is_empty() {
         return directives;
     }
@@ -221,85 +206,6 @@ pub(super) fn with_component_prop_echoes(
         .directives
         .sort_unstable_by_key(|directive| directive.0[2]);
     Some(directives)
-}
-
-/// A mapping may own the full attribute or only its expression. Scan bytes
-/// back to the current attribute boundary so UTF-8 prefixes and CRLF newlines
-/// cannot turn an explicit `:on-click` prop into an event listener.
-fn authored_component_listener(source: &str, range: &Range<usize>) -> bool {
-    let bytes = source.as_bytes();
-    if range.start > bytes.len() || range.end > bytes.len() {
-        return false;
-    }
-    if let Some(key) = attribute_key_at(bytes, range.start) {
-        return is_listener_key(key);
-    }
-    let mut cursor = range.start;
-    while cursor > 0
-        && byte_before(bytes, cursor)
-            .is_some_and(|byte| matches!(byte, b' ' | b'\t' | b'\r' | b'\n' | b'\'' | b'"'))
-    {
-        cursor -= 1;
-    }
-    if byte_before(bytes, cursor) != Some(b'=') {
-        return false;
-    }
-    cursor -= 1;
-    while byte_before(bytes, cursor).is_some_and(|byte| byte.is_ascii_whitespace()) {
-        cursor -= 1;
-    }
-    let key_end = cursor;
-    while byte_before(bytes, cursor).is_some_and(is_attribute_key_byte) {
-        cursor -= 1;
-    }
-    exact_attribute_boundary(bytes, cursor)
-        && bytes.get(cursor..key_end).is_some_and(is_listener_key)
-}
-
-fn attribute_key_at(source: &[u8], at: usize) -> Option<&[u8]> {
-    let mut start = at;
-    while byte_before(source, start).is_some_and(is_attribute_key_byte) {
-        start -= 1;
-    }
-    if !exact_attribute_boundary(source, start) {
-        return None;
-    }
-    let mut end = at;
-    while source.get(end).copied().is_some_and(is_attribute_key_byte) {
-        end += 1;
-    }
-    let mut equals = end;
-    while source
-        .get(equals)
-        .is_some_and(|byte| byte.is_ascii_whitespace())
-    {
-        equals += 1;
-    }
-    if source.get(equals) != Some(&b'=') {
-        return None;
-    }
-    source.get(start..end)
-}
-
-fn exact_attribute_boundary(source: &[u8], start: usize) -> bool {
-    start == 0
-        || byte_before(source, start)
-            .is_some_and(|byte| matches!(byte, b'<' | b'>' | b'/' | b' ' | b'\t' | b'\r' | b'\n'))
-}
-
-fn byte_before(source: &[u8], at: usize) -> Option<u8> {
-    at.checked_sub(1)
-        .and_then(|index| source.get(index))
-        .copied()
-}
-
-fn is_attribute_key_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || matches!(byte, b'@' | b':' | b'-' | b'_' | b'.')
-}
-
-fn is_listener_key(key: &[u8]) -> bool {
-    (key.starts_with(b"@") && key.len() > 1)
-        || (key.starts_with(b"v-on:") && key.len() > b"v-on:".len())
 }
 
 /// Only an emitter-proven repeated expression is excluded. Put synthetic
@@ -420,6 +326,3 @@ fn mapped_virtual_ranges(
     }
     merged
 }
-
-#[cfg(test)]
-mod listener_owner_tests;
