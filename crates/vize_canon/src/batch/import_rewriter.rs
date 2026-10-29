@@ -253,10 +253,18 @@ impl ImportRewriter {
         F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
     {
         let allocator = Allocator::default();
-        let result = vize_croquis::script_parser::parse_program_for_analysis(
-            &allocator,
-            source,
-            source_type,
+        vize_carton::micro_count!("canon.import_rewriter.rewrite_parse.calls", 1);
+        vize_carton::micro_count!(
+            "canon.import_rewriter.rewrite_parse.source_bytes",
+            source.len()
+        );
+        let result = vize_carton::micro_span!(
+            "canon.import_rewriter.rewrite_parse",
+            vize_croquis::script_parser::parse_program_for_analysis(
+                &allocator,
+                source,
+                source_type
+            )
         );
 
         if result.panicked {

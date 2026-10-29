@@ -12,6 +12,7 @@ metadata.vize.stability = "compatibility-preview"
 default = ["native"]
 # Explicit untimed observer; excluded from default/shipping artifacts.
 cache-custody = ["native"]
+profiling = ["native", "vize_l0/micro-profiling", "vize_carton/micro-profiling"]
 native = [
   "dep:oxc_sourcemap",
   "dep:walkdir",
