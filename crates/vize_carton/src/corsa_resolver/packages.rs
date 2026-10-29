@@ -2,7 +2,10 @@
 
 use std::path::{Path, PathBuf};
 
-use super::{CORSA_EXECUTABLE_NAMES, Candidate, existing_executable, platform_suffix};
+use super::{existing_executable, platform_suffix, Candidate, CORSA_EXECUTABLE_NAMES};
+
+mod manifest;
+use manifest::{declaration_targets, declared_dependency_names, read_manifest};
 
 /// A declared runtime package that is installed but incomplete or mismatched.
 #[derive(Debug)]
@@ -284,46 +287,6 @@ pub(super) fn valid_package_name(name: &str) -> bool {
             .strip_prefix('@')
             .is_some_and(|scope| segment(scope) && segment(package) && !package.contains('/')),
     }
-}
-
-fn read_manifest(package: &Path) -> Option<serde_json::Value> {
-    serde_json::from_str(&std::fs::read_to_string(package.join("package.json")).ok()?).ok()
-}
-
-fn declared_dependency_names(project: &serde_json::Value) -> Vec<&str> {
-    let mut names = Vec::new();
-    for section in ["dependencies", "devDependencies", "optionalDependencies"] {
-        if let Some(dependencies) = project.get(section).and_then(serde_json::Value::as_object) {
-            for name in dependencies.keys() {
-                if valid_package_name(name) {
-                    names.push(name.as_str());
-                }
-            }
-        }
-    }
-    names.sort_unstable();
-    names.dedup();
-    names
-}
-
-fn dependency_spec<'a>(project: &'a serde_json::Value, name: &str) -> Option<&'a str> {
-    ["dependencies", "devDependencies", "optionalDependencies"]
-        .iter()
-        .find_map(|section| project.get(section)?.get(name)?.as_str())
-}
-
-fn declaration_targets(project: &serde_json::Value, name: &str, target: &str) -> bool {
-    if name == target {
-        return true;
-    }
-    dependency_spec(project, name).is_some_and(|spec| {
-        spec.strip_prefix("npm:").is_some_and(|aliased| {
-            aliased == target
-                || aliased
-                    .strip_prefix(target)
-                    .is_some_and(|version| version.starts_with('@'))
-        })
-    })
 }
 
 /// Follow the installed meta package, including aliases and pnpm symlinks.
