@@ -57,6 +57,27 @@ void test("the original archives remain pinned while active package cases follow
     "    );\n";
   const historicalManifest =
     '    write("package.json", JSON.stringify({ name: "vize-consumer", type: "module", private: true }));\n';
+  const providerRunSignature =
+    "function run(cwd: string, args: string[], expected = 0, environment: NodeJS.ProcessEnv = {}) {\n";
+  const historicalRunSignature = "function run(cwd: string, args: string[], expected = 0) {\n";
+  const providerRunEnvironment =
+    '    env: { ...process.env, ...environment, NO_COLOR: "1", FORCE_COLOR: "0" },\n';
+  const historicalRunEnvironment =
+    '    env: { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" },\n';
+  const providerSetup =
+    "    const corsaPath = path.join(\n" +
+    "      directory,\n" +
+    '      "node_modules",\n' +
+    "      nativePackageName,\n" +
+    '      "lib",\n' +
+    '      process.platform === "win32" ? "tsc.exe" : "tsc",\n' +
+    "    );\n" +
+    "    assert.ok(fs.statSync(corsaPath).isFile());\n" +
+    "    const providerEnvironment = { CORSA_PATH: corsaPath };\n";
+  const providerCheck = '    run(directory, ["run", "check"], 0, providerEnvironment);\n';
+  const historicalCheck = '    run(directory, ["run", "check"]);\n';
+  const providerPack = '    run(directory, ["run", "pack"], 0, providerEnvironment);\n';
+  const historicalPack = '    run(directory, ["run", "pack"]);\n';
   const migratedPacked = packed.replaceAll("vize: {", "vue: {");
   const historical = [
     [addedImport, ""],
@@ -64,6 +85,11 @@ void test("the original archives remain pinned while active package cases follow
     [nativeSetup, ""],
     [nativeSymlink, ""],
     [nativeManifest, historicalManifest],
+    [providerRunSignature, historicalRunSignature],
+    [providerRunEnvironment, historicalRunEnvironment],
+    [providerSetup, ""],
+    [providerCheck, historicalCheck],
+    [providerPack, historicalPack],
   ].reduce((source, [successor, original]) => replaceOnce(source, successor, original), current);
   assert.equal(historical, migratedPacked);
 
