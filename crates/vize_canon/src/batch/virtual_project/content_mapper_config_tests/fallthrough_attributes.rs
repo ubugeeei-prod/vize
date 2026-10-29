@@ -1,7 +1,6 @@
 use std::path::Path;
 
-use super::load;
-use vize_carton::config::VueVersion;
+use super::{VueVersion, load};
 
 fn load_source(source: &str) -> super::ContentMapperProjectConfiguration {
     let directory = tempfile::tempdir().unwrap();
