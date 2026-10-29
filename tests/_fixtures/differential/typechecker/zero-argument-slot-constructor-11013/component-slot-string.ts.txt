@@ -1,0 +1,8 @@
+import { defineComponent, type SlotsType, type VNode } from 'vue';
+const VueChild = defineComponent({
+  props: { value: { type: Number, required: true } },
+  slots: Object as SlotsType<{ default(props: { item: string }): VNode[] }>,
+});
+type Instance = InstanceType<typeof VueChild>;
+export declare const WitnessChild: { new(): Instance };
+export default WitnessChild;

@@ -1,9 +1,11 @@
-//! Wire-to-pull-diagnostic conversion for native 7.0.2, without an AST/disk view.
+//! Strict wire-to-pull conversion for native 7.0.2 and 7.1.0-beta.
 //!
 //! Primary contract: microsoft/typescript-go@2bd066d87f5bafd315be9f40889d0a60b9e58e0b
 //! internal/api/proto.go, internal/ls/lsconv/{converters,linemap}.go and
 //! internal/diagnosticwriter/diagnosticwriter.go (MIT, Copyright Microsoft).
 //! This mirrors Vize's private PULL client, not the different push converter.
+//! Beta's known additive fields: microsoft/TypeScript@3e9236361fa97a9e6c685f4833ac457ae2d8c50a,
+//! tsc/internal/api/proto.go. Its ECMA positions are validated, never copied as LSP positions.
 
 use corsa::CorsaError;
 use std::{path::Path, str::FromStr};
@@ -17,6 +19,8 @@ use vize_l0::{String, cstr};
 
 use crate::file_uri::path_to_file_uri;
 
+mod location;
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(super) struct NativeDiagnostic {
@@ -24,6 +28,14 @@ pub(super) struct NativeDiagnostic {
     file_name: Option<String>,
     pos: i64,
     end: i64,
+    #[serde(default, deserialize_with = "location::present")]
+    start_position: Option<location::NativePosition>,
+    #[serde(default, deserialize_with = "location::present")]
+    end_position: Option<location::NativePosition>,
+    #[serde(default, deserialize_with = "location::present")]
+    source_lines: Option<Vec<location::NativeSourceLine>>,
+    #[serde(default, deserialize_with = "location::present")]
+    source: Option<String>,
     code: i32,
     category: u8,
     text: String,
@@ -40,6 +52,19 @@ pub(super) struct NativeDiagnostic {
 }
 
 impl NativeDiagnostic {
+    pub(super) fn matches_dialect(&self, derived_snapshots: bool) -> bool {
+        derived_snapshots
+            || (self.start_position.is_none()
+                && self.end_position.is_none()
+                && self.source_lines.is_none()
+                && self.source.is_none()
+                && self
+                    .message_chain
+                    .iter()
+                    .chain(&self.related_information)
+                    .all(|child| child.matches_dialect(false)))
+    }
+
     pub(super) fn belongs_to(&self, expected_file: &str) -> bool {
         self.file_name
             .as_deref()
@@ -47,11 +72,44 @@ impl NativeDiagnostic {
     }
 
     pub(super) fn source_names(&self) -> impl Iterator<Item = &str> {
-        self.file_name.as_deref().into_iter().chain(
-            self.related_information
-                .iter()
-                .filter_map(|related| related.file_name.as_deref()),
-        )
+        let mut names = Vec::new();
+        self.collect_source_names(&mut names);
+        names.into_iter()
+    }
+
+    fn collect_source_names<'a>(&'a self, names: &mut Vec<&'a str>) {
+        names.extend(self.file_name.as_deref());
+        for child in self.message_chain.iter().chain(&self.related_information) {
+            child.collect_source_names(names);
+        }
+    }
+
+    fn validate_metadata<'a>(
+        &self,
+        text: &mut impl FnMut(&str) -> Result<&'a SnapshotText, String>,
+    ) -> Result<(), String> {
+        if self.start_position.is_some()
+            || self.end_position.is_some()
+            || self.source_lines.is_some()
+        {
+            let file = self
+                .file_name
+                .as_deref()
+                .ok_or_else(|| cstr!("Native diagnostic metadata has no source"))?;
+            let source = text(file)?;
+            source.ecma_lines.validate(
+                &source._text,
+                self.pos,
+                self.end,
+                self.start_position.as_ref(),
+                self.end_position.as_ref(),
+                self.source_lines.as_deref(),
+            )?;
+        }
+        for child in self.message_chain.iter().chain(&self.related_information) {
+            child.validate_metadata(text)?;
+        }
+        Ok(())
     }
 
     pub(super) fn into_lsp<'a>(
@@ -62,6 +120,7 @@ impl NativeDiagnostic {
         if !self.belongs_to(expected_file) {
             return Err(cstr!("Native file diagnostic belongs to another source"));
         }
+        self.validate_metadata(&mut text)?;
         let range = self.range(&mut text)?;
         let mut related_information = Vec::with_capacity(self.related_information.len());
         for related in &self.related_information {
@@ -104,7 +163,13 @@ impl NativeDiagnostic {
             severity: Some(severity),
             code: Some(NumberOrString::Number(self.code)),
             code_description: None,
-            source: Some("ts".into()),
+            source: Some(
+                self.source
+                    .as_deref()
+                    .filter(|source| !source.is_empty())
+                    .unwrap_or("ts")
+                    .into(),
+            ),
             message: message.as_str().into(),
             related_information: (!related_information.is_empty()).then_some(related_information),
             tags: None,
@@ -147,6 +212,7 @@ pub(super) struct SnapshotText {
     _text: String,
     line_starts: Vec<u32>,
     len: u32,
+    ecma_lines: location::EcmaLines,
 }
 
 impl SnapshotText {
@@ -174,6 +240,7 @@ impl SnapshotText {
             _text: text.into(),
             line_starts,
             len,
+            ecma_lines: location::EcmaLines::new(text)?,
         })
     }
 
@@ -385,3 +452,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod beta_tests;

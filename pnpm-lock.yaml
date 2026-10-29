@@ -1036,6 +1036,7 @@ importers:
       vue:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
+
   npm/compose/core:
     dependencies:
       temporal-polyfill-lite:
@@ -1751,6 +1752,9 @@ importers:
       '@babel/core':
         specifier: catalog:babel-jsx-oracle
         version: 7.29.0(supports-color@10.2.2)
+      '@types/babel__core':
+        specifier: catalog:babel-jsx-oracle
+        version: 7.20.5
       '@vue/babel-plugin-jsx':
         specifier: catalog:babel-jsx-oracle
         version: 2.0.1(@babel/core@7.29.0(supports-color@10.2.2))(supports-color@10.2.2)

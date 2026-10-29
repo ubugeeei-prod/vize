@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "pullRequest": 11018,
+  "sourceRevision": "f48dc9052ecb5637ee37c4372115630e447610ef",
+  "testedMerge": "ddc69005128d6cedf972d35d1a3b3d7d684088a7",
+  "observedRun": 40878804863,
+  "observedJob": 123464771332,
+  "artifact": 12899293199,
+  "artifactArchiveSha256": "8907d21fb42f1c496b8d419f476adfde072667ca849057513b9936a40bee4de3",
+  "extractedPacketSha256": "938e8b647ad495277bc431160e36d8ff0cf94848de66bee2bfde5ab3dc266487",
+  "entry": 82,
+  "before": [
+    "project/__vize_helpers.d.ts",
+    43405,
+    "106e93fb67a73da18ca6e944d912bc484efe5a63f38b51e6b7455a64fca81827"
+  ],
+  "after": [
+    "project/__vize_helpers.d.ts",
+    44383,
+    "ffa4105b1ea5c8276bb34d5e90f61447212bd7a88afcd31abbaa7dc38417a2c4"
+  ],
+  "deltaBytes": 978,
+  "scope": "Exact current generated shared-helper body captured from the configured native malformed-membership run; the prior authenticated helper remains separate provenance.",
+  "proof": "The actual native run retained all 86 rooted members in order and reported only helper entry 82. The artifact packet contains the complete 44383-byte body whose SHA256 matches the captured roster; the other 85 member bodies and their order remain unchanged."
+}
