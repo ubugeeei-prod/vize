@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import type { LspIncrementalBudget } from "./incremental-metrics.ts";
+import type { PeakProcessTreeRssSample } from "./process-metrics.ts";
 
 export type IncrementalReportData = {
   status: string;
@@ -13,6 +14,7 @@ export type IncrementalReportData = {
   sampledPeakRssKiB: number;
   sampledPeakProcessTreeRssKiB: number;
   sampledPeakProcessTreeSize: number;
+  sampledPeakProcessTree: PeakProcessTreeRssSample | null;
 };
 
 export function writeIncrementalArtifacts(
@@ -49,7 +51,11 @@ function renderMarkdown(title: string, data: IncrementalReportData): string {
       `(budget ${data.budget.maxPeakRssMiB * scale} MiB).`,
     `Sampled peak process-tree RSS: ${asMiB(data.sampledPeakProcessTreeRssKiB)} ` +
       `(budget ${data.budget.maxPeakProcessTreeRssMiB * scale} MiB, max ` +
-      `${data.budget.maxProcessTreeSize} processes; observed ${data.sampledPeakProcessTreeSize}).`,
+      `${data.budget.maxProcessTreeSize} processes; max observed ` +
+      `${data.sampledPeakProcessTreeSize}).`,
+  );
+  renderPeakAttribution(lines, data.sampledPeakProcessTree, asMiB);
+  lines.push(
     "",
     `Latency, RSS, process-tree, and hang ceilings are enforced at scale ${scale} from the registry ` +
       "lspIncrementalBudget block. The clean/broken/repaired diagnostics, completion, hover, " +
@@ -57,4 +63,35 @@ function renderMarkdown(title: string, data: IncrementalReportData): string {
     "",
   );
   return lines.join("\n");
+}
+
+function renderPeakAttribution(
+  lines: string[],
+  peak: PeakProcessTreeRssSample | null,
+  asMiB: (kib: number) => string,
+): void {
+  if (peak == null) return;
+  lines.push(
+    "",
+    `Peak attribution: \`${markdownCell(peak.label)}\`; ${peak.processes} members; exact member ` +
+      `sum ${asMiB(peak.memberRssSumKiB)}.`,
+    "",
+    "| Role | PID | PPID | RSS | Birth ticks | Resolved executable | Executable SHA-256 | argv SHA-256 | argv |",
+    "| --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- |",
+  );
+  for (const member of peak.members) {
+    const identity = member.identity;
+    lines.push(
+      `| ${member.role} | ${member.pid} | ${member.parentPid} | ${asMiB(member.rssKiB)} | ` +
+        `${identity?.birthTicks ?? "unavailable"} | ` +
+        `${markdownCell(identity?.resolvedExecutable ?? member.executable)} | ` +
+        `${identity?.executableSha256 ?? "unavailable"} | ` +
+        `${identity?.argvSha256 ?? "unavailable"} | ` +
+        `${markdownCell(identity == null ? "unavailable" : JSON.stringify(identity.argv))} |`,
+    );
+  }
+}
+
+function markdownCell(value: string): string {
+  return value.replaceAll("|", "\\|").replaceAll("\n", " ").replaceAll("\r", " ");
 }

@@ -8,9 +8,14 @@ import type { LspChurnBudget } from "../performance/support/churn-metrics.ts";
 import {
   budgetRegistryPath,
   IncrementalMetrics,
+  selectPeakProcessTreeSample,
 } from "../performance/support/incremental-metrics.ts";
 import type { LspIncrementalBudget } from "../performance/support/incremental-metrics.ts";
-import { processTreeRss } from "../performance/support/process-metrics.ts";
+import {
+  assertStableProcessTreeSample,
+  processTreeRss,
+  type AttributedProcessTreeRssSample,
+} from "../performance/support/process-metrics.ts";
 
 const suite = { id: "misskey-lsp-incremental", title: "Misskey LSP Incremental Oracle" };
 const churnSuite = { id: "misskey-lsp-churn", title: "Misskey LSP Churn Stress Oracle" };
@@ -24,6 +29,33 @@ function mutableBudget(metrics: IncrementalMetrics): LspIncrementalBudget {
 
 function mutableChurnBudget(metrics: ChurnMetrics): LspChurnBudget {
   return (metrics as unknown as { budget: LspChurnBudget }).budget;
+}
+
+function attributedSample(
+  pid: number,
+  rssKiB: number,
+  birthTicks = "100",
+): AttributedProcessTreeRssSample {
+  return {
+    totalKiB: rssKiB,
+    processes: 1,
+    members: [
+      {
+        role: "root",
+        pid,
+        parentPid: 1,
+        rssKiB,
+        executable: "node",
+        identity: {
+          birthTicks,
+          resolvedExecutable: "/usr/bin/node",
+          executableSha256: "a".repeat(64),
+          argv: ["/usr/bin/node", "server.mjs"],
+          argvSha256: "b".repeat(64),
+        },
+      },
+    ],
+  };
 }
 
 test("process-tree RSS accounting sees the probing process and a child", async () => {
@@ -59,6 +91,69 @@ test("process-tree RSS accounting returns null when the root process is absent",
     return;
   }
   assert.equal(tree, null);
+});
+
+test("Linux process-tree attribution retains stable executable and argv identity", async (t) => {
+  if (process.platform !== "linux") {
+    t.skip("stable process identity custody uses Linux /proc");
+    return;
+  }
+  const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], {
+    stdio: "ignore",
+  });
+  try {
+    await once(child, "spawn");
+    assert.ok(child.pid != null);
+    const sample = processTreeRss(child.pid, { stableIdentity: true });
+    assert.ok(sample != null, "a live Linux process must have a stable attributed sample");
+    assertStableProcessTreeSample(child.pid, sample, new Map());
+    assert.equal(sample.members.length, sample.processes);
+    assert.equal(
+      sample.members.reduce((sum, member) => sum + member.rssKiB, 0),
+      sample.totalKiB,
+    );
+    const root = sample.members.find((member) => member.role === "root");
+    assert.ok(root?.identity != null);
+    assert.match(root.identity.birthTicks, /^\d+$/);
+    assert.match(root.identity.resolvedExecutable, /^\//);
+    assert.match(root.identity.executableSha256, /^[0-9a-f]{64}$/);
+    assert.match(root.identity.argvSha256, /^[0-9a-f]{64}$/);
+    assert.ok(root.identity.argv.includes("-e"));
+  } finally {
+    child.kill();
+    await Promise.race([once(child, "exit"), delay(1_000)]);
+  }
+});
+
+test("peak attribution keeps the winning member sum and rejects aggregate drift", () => {
+  const samples = {
+    baseline: attributedSample(41, 400),
+    peak: attributedSample(41, 528),
+    settled: attributedSample(41, 480),
+  };
+  const peak = selectPeakProcessTreeSample(samples);
+  assert.ok(peak != null);
+  assert.equal(peak.label, "peak");
+  assert.equal(peak.totalKiB, 528);
+  assert.equal(peak.memberRssSumKiB, 528);
+  assert.deepEqual(peak.members, samples.peak.members);
+
+  const corrupt = attributedSample(41, 528);
+  corrupt.totalKiB += 1;
+  assert.throws(
+    () => selectPeakProcessTreeSample({ corrupt }),
+    /reports 529 KiB but its members sum to 528 KiB/,
+  );
+});
+
+test("stable process attribution rejects PID reuse across samples", () => {
+  const observedBirthTicks = new Map<number, string>();
+  assertStableProcessTreeSample(41, attributedSample(41, 400, "100"), observedBirthTicks);
+  assert.throws(
+    () => assertStableProcessTreeSample(41, attributedSample(41, 420, "101"), observedBirthTicks),
+    /PID 41 was reused: birth ticks changed from 100 to 101/,
+  );
+  assert.equal(observedBirthTicks.get(41), "100", "a rejected sample must not rewrite custody");
 });
 
 test("incremental process-tree RSS failures point at the registry ceiling", (t) => {

@@ -6,7 +6,14 @@ import { performance } from "node:perf_hooks";
 
 import { repoRoot } from "../../_helpers/realworld-patch.ts";
 import { writeIncrementalArtifacts } from "./incremental-report.ts";
-import { gitHead, processRssKiB, processTreeRss } from "./process-metrics.ts";
+import {
+  assertStableProcessTreeSample,
+  gitHead,
+  processRssKiB,
+  processTreeRss,
+  type AttributedProcessTreeRssSample,
+  type PeakProcessTreeRssSample,
+} from "./process-metrics.ts";
 
 export type IncrementalSuite = {
   /** Metrics directory name under `target/vize-tests/metrics/`. */
@@ -91,6 +98,26 @@ export function resolveBudgetScale(env: NodeJS.ProcessEnv = process.env): number
   return scale;
 }
 
+/** Selects the RSS peak without separating its total from the member receipt. */
+export function selectPeakProcessTreeSample(
+  samples: Readonly<Record<string, AttributedProcessTreeRssSample>>,
+): PeakProcessTreeRssSample | null {
+  let peak: PeakProcessTreeRssSample | null = null;
+  for (const [label, sample] of Object.entries(samples)) {
+    const memberRssSumKiB = sample.members.reduce((sum, member) => sum + member.rssKiB, 0);
+    if (memberRssSumKiB !== sample.totalKiB) {
+      throw new Error(
+        `process-tree sample "${label}" reports ${sample.totalKiB} KiB but its members sum to ` +
+          `${memberRssSumKiB} KiB`,
+      );
+    }
+    if (peak == null || sample.totalKiB > peak.totalKiB) {
+      peak = { label, ...sample, memberRssSumKiB };
+    }
+  }
+  return peak;
+}
+
 type MetricContext = {
   fixture: string;
   revision: string;
@@ -102,7 +129,8 @@ type MetricContext = {
 export class IncrementalMetrics {
   private readonly timingsMs: Record<string, number> = {};
   private readonly rssSamplesKiB: Record<string, number> = {};
-  private readonly processTreeSamples: Record<string, { totalKiB: number; processes: number }> = {};
+  private readonly processTreeSamples: Record<string, AttributedProcessTreeRssSample> = {};
+  private readonly observedProcessBirthTicks = new Map<number, string>();
   private readonly processId: number;
   private readonly suite: IncrementalSuite;
   private readonly fixtureId: string;
@@ -148,8 +176,17 @@ export class IncrementalMetrics {
   sampleRss(name: string): void {
     const rss = processRssKiB(this.processId);
     if (rss != null) this.rssSamplesKiB[name] = rss;
-    const tree = processTreeRss(this.processId);
-    if (tree != null) this.processTreeSamples[name] = tree;
+    const tree = processTreeRss(this.processId, { stableIdentity: true });
+    if (tree == null && rss != null && process.platform === "linux") {
+      throw new Error(
+        `${this.suite.title}: stable process-tree identity sampling failed for live LSP server ` +
+          `${this.processId}; refusing ambiguous RSS attribution.`,
+      );
+    }
+    if (tree != null) {
+      assertStableProcessTreeSample(this.processId, tree, this.observedProcessBirthTicks);
+      this.processTreeSamples[name] = tree;
+    }
   }
 
   /**
@@ -198,8 +235,9 @@ export class IncrementalMetrics {
     }
     const outputDir = incrementalMetricsDir(this.suite.id);
     fs.mkdirSync(outputDir, { recursive: true });
+    const peaks = this.peakSamples();
     const data = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       status: failure == null ? "passed" : "failed",
       failure:
         failure instanceof Error ? failure.message : failure == null ? null : inspect(failure),
@@ -223,8 +261,9 @@ export class IncrementalMetrics {
       rssSamplesKiB: this.rssSamplesKiB,
       processTreeSamples: this.processTreeSamples,
       sampledPeakRssKiB: this.sampledPeakRssKiB(),
-      sampledPeakProcessTreeRssKiB: this.peakSamples().treeKiB,
-      sampledPeakProcessTreeSize: this.peakSamples().processes,
+      sampledPeakProcessTreeRssKiB: peaks.treeKiB,
+      sampledPeakProcessTreeSize: peaks.processes,
+      sampledPeakProcessTree: peaks.tree,
       note:
         "Latency, RSS, process-tree, and hang ceilings are enforced from the registry " +
         "lspIncrementalBudget " +
@@ -240,17 +279,21 @@ export class IncrementalMetrics {
     return Math.max(0, ...Object.values(this.rssSamplesKiB));
   }
 
-  private peakSamples(): { serverKiB: number; treeKiB: number; processes: number } {
+  private peakSamples(): {
+    serverKiB: number;
+    treeKiB: number;
+    processes: number;
+    tree: PeakProcessTreeRssSample | null;
+  } {
+    const tree = selectPeakProcessTreeSample(this.processTreeSamples);
     return {
       serverKiB: this.sampledPeakRssKiB(),
-      treeKiB: Math.max(
-        0,
-        ...Object.values(this.processTreeSamples).map((sample) => sample.totalKiB),
-      ),
+      treeKiB: tree?.totalKiB ?? 0,
       processes: Math.max(
         0,
         ...Object.values(this.processTreeSamples).map((sample) => sample.processes),
       ),
+      tree,
     };
   }
 
