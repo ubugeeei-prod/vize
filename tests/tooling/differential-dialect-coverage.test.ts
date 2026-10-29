@@ -226,7 +226,7 @@ void test("five source-inspected rows exhaust manifest measurement unknowns", ()
     Object.fromEntries(
       products.map((product) => [product, summaries[product].unknownReadinessCases]),
     ),
-    { compiler: 42, formatter: 25, linter: 110, lsp: 69, typechecker: 215 },
+    { compiler: 42, formatter: 25, linter: 111, lsp: 69, typechecker: 215 },
   );
 });
 
