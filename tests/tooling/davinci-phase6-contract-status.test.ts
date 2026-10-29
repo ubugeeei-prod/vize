@@ -21,7 +21,10 @@ test("Phase 6: retired contracts remain historical rather than completion gates"
   const index = readPlan("README.md");
 
   assert.match(phase, /This entire phase is a frozen historical plan/u);
-  assert.match(phase, /unchecked entries are not current\n> backlog, completion blockers, or release gates/u);
+  assert.match(
+    phase,
+    /unchecked entries are not current\n> backlog, completion blockers, or release gates/u,
+  );
   assert.match(phase, /They\nare non-normative after the 2026-10-17 scope decision/u);
   assert.doesNotMatch(phase, /provisional lines are normative/u);
   assert.match(tasks, /Frozen historical contracts/u);
