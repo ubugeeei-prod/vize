@@ -63,4 +63,5 @@ pub(crate) use reserved_props::{
 pub(crate) use statements::{
     ExpressionListEmitContext, generate_expressions, generate_expressions_in_enclosing_guard,
 };
+pub(crate) use ts_suppression_comments::callback_parameters_on_ignored_line;
 pub(crate) use value_checks::{TemplateValueCheckTables, TemplateValueChecks};
