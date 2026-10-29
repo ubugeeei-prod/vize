@@ -118,6 +118,13 @@ export function auditCancellationPublications(
     tails.set(publication.uri, row);
     return row;
   });
+  const expectedUris = [...knownDocuments.keys()].sort();
+  const observedUris = [...tails.keys()].sort();
+  assert.deepEqual(
+    observedUris,
+    expectedUris,
+    "every known opened document must publish diagnostics in the cancellation window",
+  );
   const tailRows = [...tails.values()].sort((left, right) => left.uri.localeCompare(right.uri));
   for (const tail of tailRows) {
     assert.deepEqual(tail.diagnostics, [], `final diagnostics for ${tail.uri} must be clean`);
@@ -131,7 +138,7 @@ export function auditCancellationPublications(
   );
   return {
     observed: rows.length,
-    tracked_uris: [...tails.keys()].sort(),
+    tracked_uris: observedUris,
     versions_by_uri: Object.fromEntries(
       [...previousVersions.keys()]
         .sort()

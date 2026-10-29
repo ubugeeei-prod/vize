@@ -200,6 +200,35 @@ test("diagnostic audit checks known nondecreasing revisions per opened URI", () 
   );
 });
 
+test("diagnostic audit rejects a missing opened parent publication", () => {
+  const childUri = "file:///workspace/Component00000.vue";
+  const parentUri = "file:///workspace/Component00001.vue";
+  const childHash = sourceSha256("child");
+  const publications = [
+    {
+      received_order: 1,
+      received_ns: "10",
+      uri: childUri,
+      version: 3,
+      diagnostics: [],
+      diagnostics_sha256: sourceSha256("[]"),
+    },
+  ];
+  assert.throws(
+    () =>
+      auditCancellationPublications(
+        publications,
+        new Map([
+          [childUri, new Map([[3, childHash]])],
+          [parentUri, new Map([[1, sourceSha256("parent")]])],
+        ]),
+        { uri: childUri, version: 3 },
+        publications.length,
+      ),
+    /every known opened document must publish diagnostics/,
+  );
+});
+
 test("cleanup receipts distinguish graceful exit from forced completion", () => {
   assert.deepEqual(gateCleanupStatus(0, 0, 0), {
     no_orphans: true,
