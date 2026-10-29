@@ -205,6 +205,7 @@ mod lint_entry_css_scope_cli;
 mod lint_entry_rule_options_cli;
 mod lint_execution_config_cli;
 mod lint_fix_cli;
+mod lint_function_return_type_cli;
 mod lint_generic_type_reads_cli;
 mod lint_global_components_cli;
 mod lint_html_script_cli;

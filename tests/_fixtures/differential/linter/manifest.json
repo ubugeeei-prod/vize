@@ -458,6 +458,32 @@
       }
     },
     {
+      "id": "linter/contextual-function-return-type-11103",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "contextual-function-return-type-11103",
+        "files": [
+          {
+            "path": "ContextualCallbacks.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "f288f482cf0eb335cbdd3e65775801a0c50f69dc66abe76b0317f7f1d38886f8"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/corsa-session-waiters-10393",
       "state": "active",
       "targets": ["lint"],
