@@ -8,8 +8,10 @@ use vize_carton::{FxHashMap, FxHashSet};
 use vize_croquis::provide::{InjectEntry, ProvideEntry, ProvideKey};
 
 mod calls;
+mod composables;
 mod frames;
 use calls::{extract_provide_inject, matching_provider};
+use composables::ComposableProjection;
 mod parents;
 use frames::{frame_contains, path_from_frame};
 use parents::{SlotScopes, runtime_component_parents, stable_file_order, stable_rank};
@@ -74,14 +76,26 @@ impl ProvideInjectIndex {
         let mut provides = FxHashMap::default();
         let mut injects = FxHashMap::default();
         let mut reactive_provides = FxHashSet::default();
+        let mut composable_projection = ComposableProjection::new(registry);
 
         for entry in registry.vue_components() {
-            let (entry_provides, entry_injects) = extract_provide_inject(&entry.analysis);
+            let (mut entry_provides, mut entry_injects) = extract_provide_inject(&entry.analysis);
+            // Declarations are not setup effects until their composable is
+            // actually called. Imported calls below project only the selected
+            // function's effects into the calling component.
+            entry_provides.retain(|provide| provide.from_composable.is_none());
+            entry_injects.retain(|inject| inject.from_composable.is_none());
             for provide in &entry_provides {
                 if provided_value_reactive_kind(&entry.analysis, provide.value.as_str()).is_some() {
                     reactive_provides.insert((entry.id, provide.id.as_u32()));
                 }
             }
+            composable_projection.project(
+                entry,
+                &mut entry_provides,
+                &mut entry_injects,
+                &mut reactive_provides,
+            );
             if !entry_provides.is_empty() {
                 provides.insert(entry.id, entry_provides);
             }

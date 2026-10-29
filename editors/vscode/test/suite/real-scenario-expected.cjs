@@ -84,7 +84,7 @@ const refSurfaceHovers = {
   scriptButton: [
     {
       contents: [
-        "```typescript\nconst button: Readonly<ShallowRef<HTMLButtonElement | null, HTMLButtonElement | null>>\n```",
+        "```typescript\nconst button: Readonly<ShallowRef<HTMLButtonElement | null>>\n```",
       ],
       range: [5, 6, 5, 12],
     },

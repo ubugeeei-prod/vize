@@ -1,0 +1,1 @@
+<template><div class="a"/></template><style scoped>.a{&.b,&.c{.d{color:red}}:deep(.e){color:blue}}</style>

@@ -133,6 +133,14 @@ impl<'c> CroquisFacts<'c> {
         let _ = self.manager.prepare::<C>(self.croquis);
         self.manager.view::<C>()
     }
+
+    /// Compute `C`'s demand and transfer one declared table to the caller.
+    ///
+    /// Consuming the manager makes the table suitable for a longer-lived,
+    /// read-only query scope without cloning its keys and values.
+    pub fn prepare_owned<C: FactConsumer, G: FactGroup>(self) -> Result<FactTable<G>, FactError> {
+        self.manager.prepare_owned::<C, G>(self.croquis)
+    }
 }
 
 #[cfg(test)]

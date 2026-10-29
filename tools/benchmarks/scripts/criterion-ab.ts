@@ -62,6 +62,7 @@ import type { CliArgs } from "./script-types.ts";
 // cargo package to the `[[bench]]` targets it owns; the `bench filter` narrows
 // Criterion to the specific group so a full sweep stays inside the job timeout.
 export const CRITERION_SUITES: CriterionSuite[] = [
+  { package: "vize_canon", benches: ["package_route"], label: "Canon package routes" },
   {
     package: "vize_atelier_sfc",
     benches: ["sfc_parse", "sfc_compile"],

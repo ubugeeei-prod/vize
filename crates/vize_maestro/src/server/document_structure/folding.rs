@@ -24,7 +24,7 @@ pub(crate) fn folding_ranges(
     params: &FoldingRangeParams,
 ) -> Option<Vec<FoldingRange>> {
     let uri = &params.text_document.uri;
-    let content = state.documents.text(uri)?;
+    let content = state.documents.text_snapshot(uri)?;
 
     let descriptor = state.sfc_descriptor(uri, &content)?;
     let authored_lines = AuthoredLineMap::new(&content);

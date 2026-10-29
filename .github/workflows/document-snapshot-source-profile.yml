@@ -4,6 +4,7 @@ on:
     paths:
       - .github/workflows/document-snapshot-source-profile.yml
       - crates/vize_maestro/src/document/store.rs
+      - crates/vize_maestro/src/document/store/**
       - crates/vize_maestro/Cargo.toml
       - crates/vize_maestro/tests/source_snapshot_profile.rs
   workflow_dispatch: {}
@@ -41,6 +42,8 @@ jobs:
           cargo +1.99.1 test --locked --profile ci -p vize_maestro --test source_snapshot_profile --features micro-profiling -- --nocapture 2>&1 | tee evidence/instrumented.log
           cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile 2>&1 | tee evidence/disabled-operands.log
           python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.split("document_store_micro=",1)[1]) for line in Path("evidence/instrumented.log").read_text().splitlines() if "document_store_micro=" in line]; assert len(rows)==3; Path("evidence/counts.json").write_text(json.dumps(rows,indent=2)+"\n")'
+          python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.split("document_text_snapshot_allocation=",1)[1]) for line in Path("evidence/instrumented.log").read_text().splitlines() if "document_text_snapshot_allocation=" in line]; assert len(rows)==1; Path("evidence/text-snapshot-allocation.json").write_text(json.dumps(rows[0],indent=2)+"\n")'
+          python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.split("document_uri_snapshot_allocation=",1)[1]) for line in Path("evidence/instrumented.log").read_text().splitlines() if "document_uri_snapshot_allocation=" in line]; assert len(rows)==1; Path("evidence/uri-snapshot-allocation.json").write_text(json.dumps(rows[0],indent=2)+"\n")'
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

@@ -31,13 +31,27 @@ pub(super) fn rewrite_declaration_outputs(out_dir: &Path) -> CorsaResult<()> {
             continue;
         }
 
+        let is_vue_declaration = name.ends_with(".vue.d.ts");
         let content = std::fs::read_to_string(path)?;
-        let (imports, captured) = if name.ends_with(".vue.d.ts") {
-            rewriter.rewrite_declaration_with_capture(&content, internal_field_ranges)
+        let (imports, captured, depth) = if is_vue_declaration {
+            let depth = path
+                .strip_prefix(out_dir)
+                .ok()
+                .and_then(|relative| relative.parent())
+                .map(|parent| parent.components().count())
+                .unwrap_or(0);
+            let helper = declaration_helpers::module_specifier(depth);
+            let (imports, captured) = rewriter.rewrite_vue_declaration_with_capture(
+                &content,
+                helper.as_str(),
+                internal_field_ranges,
+            );
+            (imports, captured, depth)
         } else {
             (
                 rewriter.rewrite_declaration_specifiers(&content, SourceType::ts()),
                 Vec::new(),
+                0,
             )
         };
         let mut rewritten = imports.code;
@@ -47,7 +61,7 @@ pub(super) fn rewrite_declaration_outputs(out_dir: &Path) -> CorsaResult<()> {
         // aliases (`__EmitFn`, `__RuntimePropShape`, ...). Wire each one to
         // the helpers declaration shipped alongside the outputs so consumer
         // programs resolve them without including the virtual mirror.
-        if name.ends_with(".vue.d.ts") {
+        if is_vue_declaration {
             wrote_vue_declaration = true;
             removed = captured
                 .into_iter()
@@ -58,12 +72,6 @@ pub(super) fn rewrite_declaration_outputs(out_dir: &Path) -> CorsaResult<()> {
                 })
                 .collect();
             rewritten = remove_ranges(&rewritten, &removed);
-            let depth = path
-                .strip_prefix(out_dir)
-                .ok()
-                .and_then(|relative| relative.parent())
-                .map(|parent| parent.components().count())
-                .unwrap_or(0);
             let mut reference = declaration_helpers::import_for(&rewritten, depth);
             prefix_len = reference.len();
             reference.push_str(&rewritten);

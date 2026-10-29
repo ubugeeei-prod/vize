@@ -22,7 +22,7 @@ pub(super) async fn formatting(
         return Ok(None);
     }
 
-    let Some(_content) = server.state.documents.text(uri) else {
+    let Some(_content) = server.state.documents.text_snapshot(uri) else {
         return Ok(None);
     };
     #[cfg(feature = "glyph")]
@@ -60,7 +60,7 @@ pub(super) async fn range_formatting(
         return Ok(None);
     }
 
-    let Some(_content) = server.state.documents.text(uri) else {
+    let Some(_content) = server.state.documents.text_snapshot(uri) else {
         return Ok(None);
     };
     #[cfg(feature = "glyph")]
@@ -98,7 +98,7 @@ pub(super) async fn on_type_formatting(
         return Ok(None);
     }
 
-    let Some(_content) = server.state.documents.text(uri) else {
+    let Some(_content) = server.state.documents.text_snapshot(uri) else {
         return Ok(None);
     };
     #[cfg(feature = "glyph")]

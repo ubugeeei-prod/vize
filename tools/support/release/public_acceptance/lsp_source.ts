@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { parse as parseToml } from "@iarna/toml";
+import { hasCheckerDependency } from "./installed.ts";
 import { readRawBlob } from "./plan.ts";
 
 export const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
@@ -80,7 +81,10 @@ export function sourceMetadata(root: string, head: string) {
   assert.match(metadata.toolchain, /^\d+\.\d+\.\d+$/u);
   const cli = JSON.parse(read("npm/cli/package.json").toString());
   const name = "@typescript/typescript-linux-x64";
-  assert.equal(cli.optionalDependencies[name], "catalog:corsa-runtime");
+  const declaration = cli.optionalDependencies?.[name];
+  if (declaration === undefined)
+    assert(!hasCheckerDependency(cli), "CLI has an incomplete bundled checker declaration");
+  else assert.equal(declaration, "catalog:corsa-runtime");
   const catalog = read("pnpm-workspace.yaml").toString();
   const section = /^  corsa-runtime:\n([\s\S]*?)(?=^  [a-z]|$(?![\s\S]))/mu.exec(catalog)?.[1];
   const entries = [
@@ -88,7 +92,14 @@ export function sourceMetadata(root: string, head: string) {
   ];
   assert.equal(entries.length, 1);
   assert.match(entries[0][1], /^7\.\d+\.\d+$/u);
-  return { ...metadata, provider: { name, version: entries[0][1] } };
+  return {
+    ...metadata,
+    provider: {
+      name,
+      version: entries[0][1],
+      ...(declaration === undefined ? { resolutionMode: "explicit-user-provider" as const } : {}),
+    },
+  };
 }
 
 type SourceIsolation = {

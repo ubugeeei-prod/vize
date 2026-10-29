@@ -1,9 +1,11 @@
 //! Patch flag calculation and naming functions.
 
 mod dynamic_props;
+mod literal_const;
 mod static_literal;
 
 use self::dynamic_props::dedupe_dynamic_props;
+use self::literal_const::is_setup_literal_const_access;
 use self::static_literal::{is_static_literal, is_static_object_or_array_literal_node};
 use super::helpers::camelize;
 use crate::options::{BindingMetadata, BindingType};
@@ -133,7 +135,8 @@ fn calculate_element_patch_info_inner(
                                 }
                             } else {
                                 let key = exp.content;
-                                let bound_is_static = is_static_bound_expression(dir);
+                                let bound_is_static = is_static_bound_expression(dir)
+                                    || is_setup_literal_const_access(dir, bindings);
                                 match key {
                                     "class" => {
                                         // Component class is a fallthrough prop, not an element-class

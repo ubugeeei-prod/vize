@@ -9,7 +9,7 @@ pub(super) fn editor_namespace_identity(
     tsconfig_path: Option<&Path>,
 ) -> u64 {
     use std::hash::{Hash, Hasher};
-    let mut generation_options = std::hash::DefaultHasher::new();
+    let mut generation_options = vize_l0::micro_default_hasher!("canon.context.namespace");
     options.options_api.hash(&mut generation_options);
     options.legacy_vue2.hash(&mut generation_options);
     options.jsx_typecheck.hash(&mut generation_options);

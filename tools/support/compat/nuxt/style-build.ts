@@ -22,6 +22,8 @@ for (const [name, version] of [
   ["@vizejs/nuxt", "0.428.1"],
   ["@vizejs/native", "0.428.1"],
   ["@vizejs/vite-plugin", "0.428.1"],
+  ["typescript", "7.0.2"],
+  ["vize", "0.428.1"],
 ] as const) {
   const actual = readJsonRecord(path.join(fixture, "node_modules", name, "package.json"));
   assert.equal(actual.version, version, `fixture must use the exact ${name} version`);
@@ -72,6 +74,11 @@ try {
   fs.cpSync(candidateNuxt, path.join(nuxtPackageRoot, "dist"), { recursive: true });
   const fixed = build("candidate");
   assert.equal(fixed.status, 0, `candidate Nuxt build failed; see ${artifacts}/candidate.log`);
+  const generatedTsConfigPath = path.join(fixture, ".nuxt/tsconfig.app.json");
+  const generatedTsConfig = readJsonRecord(generatedTsConfigPath);
+  assert.deepEqual(generatedTsConfig.contentMappers, [{ package: "vize", extensions: [".vue"] }]);
+  fs.copyFileSync(generatedTsConfigPath, path.join(artifacts, "candidate-tsconfig.app.json"));
+  console.log("Generated Nuxt app tsconfig contains the exact Vize Content Mapper entry");
   console.log("Candidate client and SSR builds passed (compiler enabled)");
   const port = await freePort();
   const serverLog = fs.openSync(path.join(artifacts, "server.log"), "w");
@@ -126,10 +133,14 @@ try {
           candidateHead: process.env.GITHUB_SHA ?? null,
           node: process.version,
           nuxt: "4.5.2",
+          nuxtModule: "0.428.1",
+          typescript: "7.0.2",
           vue: "3.5.43",
+          vize: "0.428.1",
           native: "0.428.1",
           baselineExit: baseline.status,
           candidateExit: fixed.status,
+          contentMappers: generatedTsConfig.contentMappers,
           scope: paragraph[1],
           stylesheets,
           inlineStyles,

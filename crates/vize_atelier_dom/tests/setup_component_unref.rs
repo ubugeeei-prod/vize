@@ -141,13 +141,13 @@ fn setup_component_tag_binding_matrix_matches_dom_modes() {
     assert_eq!(
         component_call_targets(&function),
         vec![
-            "$setup.RefMenu",
-            "$setup.MaybeMenu",
-            "$setup.LetMenu",
-            "$setup.ImportedMenu",
-            "$setup.ShallowMenu",
-            "$setup.lowercaseWidget",
-            "$setup.RefMenu.Item",
+            "$setup[\"RefMenu\"]",
+            "$setup[\"MaybeMenu\"]",
+            "$setup[\"LetMenu\"]",
+            "$setup[\"ImportedMenu\"]",
+            "$setup[\"ShallowMenu\"]",
+            "$setup[\"lowercaseWidget\"]",
+            "$setup[\"RefMenu\"].Item",
         ]
     );
 }

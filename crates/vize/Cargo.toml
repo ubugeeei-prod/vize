@@ -18,10 +18,12 @@ name = "vize"
 path = "src/lib.rs"
 
 [features]
+# Untimed source custody only; never enabled by default or in shipping builds.
+cache-custody = ["vize_canon/cache-custody"]
 default = ["glyph", "maestro"]
 glyph = ["dep:vize_glyph", "vize_maestro?/glyph"]
 maestro = ["dep:vize_maestro"]
-profiling = ["vize_l0/micro-profiling", "vize_carton/micro-profiling"]
+profiling = ["vize_l0/micro-profiling", "vize_carton/micro-profiling", "vize_canon/profiling"]
 # Opt-in legacy Vue (v0 / v1 / v2) support. Off by default so the Vue 3 binary
 # never activates or compiles it; turns on the legacy feature across the stack.
 legacy = ["vize_atelier_core/legacy", "vize_canon/legacy", "vize_maestro?/legacy"]

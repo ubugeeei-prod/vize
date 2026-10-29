@@ -93,6 +93,36 @@ fn queries_borrow_the_exact_tables() {
 }
 
 #[test]
+fn a_declared_table_can_leave_a_consumed_manager() {
+    let _serial = serial();
+    let before = counts();
+    let summary = FactManager::new(&REGISTRY)
+        .prepare_owned::<SummaryRule, Summary>(ARTIFACT)
+        .unwrap();
+    let expected: FactTable<Summary> = [(0, 4 + 16)].into_iter().collect();
+    assert_eq!(summary, expected);
+    assert_eq!(delta(before, counts()), [1, 0, 1, 1, 1]);
+}
+
+#[test]
+fn owning_a_table_keeps_the_consumers_declared_demand_boundary() {
+    let _serial = serial();
+    let error = FactManager::new(&REGISTRY)
+        .prepare_owned::<SquareRule, Summary>(ARTIFACT)
+        .unwrap_err();
+    #[cfg(debug_assertions)]
+    assert_eq!(
+        error,
+        FactError::Undeclared {
+            consumer: "square-rule",
+            group: Summary::ID,
+        }
+    );
+    #[cfg(not(debug_assertions))]
+    assert_eq!(error, FactError::NotComputed { group: Summary::ID });
+}
+
+#[test]
 fn an_unregistered_demand_is_refused_before_anything_runs() {
     let _serial = serial();
     take_log();

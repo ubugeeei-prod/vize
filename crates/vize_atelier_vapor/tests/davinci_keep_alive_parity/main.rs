@@ -131,3 +131,123 @@ fn cache_policy_reuses_or_evicts_the_same_components_as_official_vapor() {
         assert_eq!(upstream, expected, "{props}: official trace");
     }
 }
+
+#[test]
+fn computed_filter_key_removes_stale_policy_and_matches_official_vapor() {
+    const SOURCE: &str = r#"<main data-id="root"><KeepAlive :[filter]="names"><component :is="view" :label="label" @send="record" /></KeepAlive><i data-id="tail">tail</i></main>"#;
+    const FIRST: &str =
+        r#"<button data-id="first" @click="send('send', label)">{{ label }}</button>"#;
+    const SECOND: &str =
+        r#"<button data-id="second" @click="send('send', label)">{{ label }}</button>"#;
+
+    let context = json!({"filter": "include", "names": ["First"], "view": "First", "label": "A"});
+    let steps = json!([
+        {"click": "first"},
+        {"patch": {"view": "Second", "label": "B"}},
+        {"click": "second"},
+        {"patch": {"view": "First", "label": "C"}},
+        {"click": "first"},
+        {"patch": {"filter": "exclude", "view": "Second", "label": "D"}},
+        {"click": "second"},
+        {"patch": {"view": "First", "label": "E"}},
+        {"click": "first"},
+        {"patch": {"view": "Second", "label": "F"}},
+        {"click": "second"},
+        {"patch": {"filter": "include", "view": "First", "label": "G"}},
+        {"click": "first"},
+        {"patch": {"view": "Second", "label": "H"}},
+        {"click": "second"},
+        {"patch": {"view": "First", "label": "I"}},
+        {"click": "first"},
+    ]);
+    let expected = vec![
+        view("first", "A", 1, json!([])),
+        view("first", "A", 1, json!(["A"])),
+        view("second", "B", 3, json!(["A"])),
+        view("second", "B", 3, json!(["A", "B"])),
+        view("first", "C", 1, json!(["A", "B"])),
+        view("first", "C", 1, json!(["A", "B", "C"])),
+        view("second", "D", 4, json!(["A", "B", "C"])),
+        view("second", "D", 4, json!(["A", "B", "C", "D"])),
+        view("first", "E", 5, json!(["A", "B", "C", "D"])),
+        view("first", "E", 5, json!(["A", "B", "C", "D", "E"])),
+        view("second", "F", 4, json!(["A", "B", "C", "D", "E"])),
+        view("second", "F", 4, json!(["A", "B", "C", "D", "E", "F"])),
+        view("first", "G", 6, json!(["A", "B", "C", "D", "E", "F"])),
+        view("first", "G", 6, json!(["A", "B", "C", "D", "E", "F", "G"])),
+        view("second", "H", 7, json!(["A", "B", "C", "D", "E", "F", "G"])),
+        view(
+            "second",
+            "H",
+            7,
+            json!(["A", "B", "C", "D", "E", "F", "G", "H"]),
+        ),
+        view(
+            "first",
+            "I",
+            6,
+            json!(["A", "B", "C", "D", "E", "F", "G", "H"]),
+        ),
+        view(
+            "first",
+            "I",
+            6,
+            json!(["A", "B", "C", "D", "E", "F", "G", "H", "I"]),
+        ),
+        json!({"tree": [], "events": ["A", "B", "C", "D", "E", "F", "G", "H", "I"], "identities": []}),
+    ];
+
+    let allocator = Allocator::new();
+    let options = VaporCompilerOptions {
+        prefix_identifiers: true,
+        ..Default::default()
+    };
+    let before = WalkCounts::snapshot();
+    let native = compile_vapor(&allocator, SOURCE, options.clone());
+    let first = compile_vapor(&allocator, FIRST, options.clone());
+    let second = compile_vapor(&allocator, SECOND, options.clone());
+    for result in [&native, &first, &second] {
+        assert!(
+            result.error_messages.is_empty(),
+            "native compile: {:?}",
+            result.error_messages
+        );
+    }
+    assert_eq!(
+        WalkCounts::snapshot().since(before).total_walks(),
+        0,
+        "computed KeepAlive filter key must stay on native L3"
+    );
+    let retained = compile_vapor(
+        &allocator,
+        SOURCE,
+        VaporCompilerOptions {
+            davinci_retained_lane: true,
+            ..options
+        },
+    );
+    assert!(
+        retained.error_messages.is_empty(),
+        "retained compile: {:?}",
+        retained.error_messages
+    );
+
+    for (lane, code) in [("native", native.code), ("retained", retained.code)] {
+        let actual = trace(
+            "davinci-mounted-trace.mjs",
+            json!({
+                "backend": "vapor", "code": code, "context": context, "steps": steps, "identities": true,
+                "components": {"First": {"code": first.code, "props": ["label"], "emits": ["send"]}, "Second": {"code": second.code, "props": ["label"], "emits": ["send"]}},
+            }),
+        );
+        assert_eq!(actual, expected, "{lane} trace");
+    }
+    let official = trace(
+        "davinci-upstream-vapor-trace.mjs",
+        json!({
+            "source": SOURCE, "context": context, "steps": steps,
+            "components": {"First": {"source": FIRST, "props": ["label"], "emits": ["send"]}, "Second": {"source": SECOND, "props": ["label"], "emits": ["send"]}},
+        }),
+    );
+    assert_eq!(official, expected, "official trace");
+}

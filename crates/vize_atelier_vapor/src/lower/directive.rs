@@ -199,7 +199,10 @@ pub(crate) fn transform_directive<'a>(
                         value,
                         modifiers,
                         delegate,
-                        effect: is_dynamic,
+                        // A computed event name in a `v-once` subtree is
+                        // evaluated only at mount, while its handler closure
+                        // continues to observe the current render context.
+                        effect: is_dynamic && !ctx.is_non_reactive(),
                     };
 
                     block.operation.push(OperationNode::SetEvent(set_event));

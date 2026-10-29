@@ -144,11 +144,15 @@ for (const [event, profile] of [
     try {
       const bin = join(cwd, "bin");
       mkdirSync(bin);
+      const runtimeDir = join(cwd, "node_modules/@typescript/typescript-linux-x64/lib");
+      mkdirSync(runtimeDir, { recursive: true });
+      const nativeRuntime = join(runtimeDir, "tsc");
+      writeFileSync(nativeRuntime, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
       const argv = join(cwd, "argv.json");
       writeFileSync(
         join(bin, "cargo"),
         `#!/bin/sh
-exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);const full=process.env.NEXTEST_PROFILE==="full";if(full?(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")):(process.env.VIZE_TEST_DISABLE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_REQUIRE_TSGO")))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(args.includes("--archive-file"))process.exit(91);fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
+exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);const full=process.env.NEXTEST_PROFILE==="full";if(full?(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")):(process.env.VIZE_TEST_DISABLE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_REQUIRE_TSGO")))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(process.env.CORSA_PATH!==process.env.EXPECTED_CORSA_PATH)process.exit(94);try{fs.accessSync(process.env.CORSA_PATH,fs.constants.X_OK)}catch{process.exit(95)}if(args.includes("--archive-file"))process.exit(91);fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
 `,
         { mode: 0o755 },
       );
@@ -171,7 +175,8 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
         GITHUB_WORKSPACE: cwd,
         GITHUB_ENV: join(cwd, "github-env"),
         GITHUB_EVENT_NAME: event,
-        COHORT: "compiler",
+        COHORT: "typechecker",
+        EXPECTED_CORSA_PATH: nativeRuntime,
         NEXTEST_FILTER: "package(=vize_armature) | package(=vize_l1)",
         NEXTEST_PROFILE: profile,
         VIZE_NUXT_CONFIG_ITERATIONS: "100",

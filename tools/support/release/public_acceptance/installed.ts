@@ -14,6 +14,8 @@ export const runtimeOverrides = [
   "CORSA_EXECUTABLE",
   "TSGO_PATH",
   "TSGO_EXECUTABLE",
+  "TSRS_PATH",
+  "TSRS_EXECUTABLE",
   "VIZE_PUBLIC_NATIVE_CUSTODY",
   "VIZE_OXLINT_NATIVE_CUSTODY",
 ];
@@ -22,6 +24,31 @@ export function rejectOverrides(environment = process.env) {
   for (const name of runtimeOverrides) {
     assert.ok(!environment[name], `runtime override must be absent: ${name}`);
   }
+}
+
+/** Whether a published manifest would install or auto-install a checker. */
+export function hasCheckerDependency(manifest: unknown): boolean {
+  if (manifest === null || typeof manifest !== "object" || Array.isArray(manifest)) return false;
+  return ["dependencies", "optionalDependencies", "peerDependencies"].some((section) => {
+    const declared = (manifest as Record<string, unknown>)[section];
+    return (
+      declared !== null &&
+      typeof declared === "object" &&
+      !Array.isArray(declared) &&
+      Object.entries(declared).some(
+        ([name, value]) =>
+          name === "typescript" ||
+          name === "tsrs" ||
+          name.startsWith("@typescript/typescript-") ||
+          name.startsWith("@typescript/native-preview") ||
+          name.startsWith("@tsrs/") ||
+          (typeof value === "string" &&
+            /^npm:(?:typescript|tsrs|@typescript\/(?:typescript-[^@]+|native-preview)|@tsrs\/[^@]+)(?:@|$)/u.test(
+              value,
+            )),
+      )
+    );
+  });
 }
 
 export function installedPackages(version: string) {

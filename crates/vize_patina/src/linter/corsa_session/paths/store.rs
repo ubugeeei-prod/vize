@@ -1,7 +1,6 @@
 use super::{
-    CORSA_EXECUTABLE_NAMES, CorsaResolveError, CorsaResolveRequest, Path, PathBuf,
-    SESSION_DIRECTORY_PREFIX, String, TSCONFIG_CONTENTS, ToCompactString, Value, cstr,
-    remove_session_root,
+    CorsaResolveRequest, Path, PathBuf, SESSION_DIRECTORY_PREFIX, String, TSCONFIG_CONTENTS,
+    ToCompactString, Value, cstr, remove_session_root,
 };
 use vize_canon::{TsconfigOwnershipCache, TsconfigSourceKind};
 
@@ -94,14 +93,14 @@ pub(super) fn remove_empty_session_parents(session_root: &Path) {
 pub(in crate::linter) fn resolve_project_root(filename: &str) -> PathBuf {
     let start_dir = source_directory(filename);
     let mut current = start_dir.as_path();
-    let mut package_root = None;
+    let mut vue_root = None;
 
     loop {
-        if current.join("node_modules").join("vue").is_dir() {
+        if current.join("package.json").is_file() {
             return current.to_path_buf();
         }
-        if package_root.is_none() && current.join("package.json").is_file() {
-            package_root = Some(current.to_path_buf());
+        if vue_root.is_none() && current.join("node_modules").join("vue").is_dir() {
+            vue_root = Some(current.to_path_buf());
         }
         let Some(parent) = current.parent() else {
             break;
@@ -109,25 +108,33 @@ pub(in crate::linter) fn resolve_project_root(filename: &str) -> PathBuf {
         current = parent;
     }
 
-    package_root.unwrap_or(start_dir)
+    vue_root.unwrap_or(start_dir)
+}
+
+pub(in super::super) fn runtime_project_root<'a>(
+    project_root: &'a Path,
+    tsconfig: Option<&'a Path>,
+) -> &'a Path {
+    tsconfig
+        .and_then(Path::parent)
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or(project_root)
 }
 
 pub(in super::super) fn resolve_corsa_executable(
     project_root: &Path,
+    runtime_root: &Path,
     configured_path: Option<&Path>,
 ) -> Result<PathBuf, String> {
+    // A relative configured runtime belongs to the authored project; only
+    // discovery starts from the selected tsconfig directory.
+    let configured = configured_path.map(|path| project_root.join(path));
     let request = CorsaResolveRequest {
-        explicit_path: configured_path,
-        project_root: Some(project_root),
+        explicit_path: configured.as_deref(),
+        project_root: Some(runtime_root),
     };
 
-    match vize_carton::corsa_resolver::resolve_corsa_executable(request) {
-        Ok(path) => Ok(path),
-        // Preserve the historical lenient fallback: a bare `corsa` lets the
-        // spawn-time `PATH` lookup have the final word.
-        Err(CorsaResolveError::NotFound) => Ok(PathBuf::from(CORSA_EXECUTABLE_NAMES[0])),
-        Err(error @ CorsaResolveError::ExplicitNotFound { .. }) => Err(cstr!("{error}")),
-    }
+    vize_carton::corsa_resolver::resolve_corsa_executable(request).map_err(|error| cstr!("{error}"))
 }
 
 fn source_directory(filename: &str) -> PathBuf {
@@ -332,3 +339,6 @@ pub(super) fn push_u64(buffer: &mut String, value: u64) {
 
 #[cfg(test)]
 mod compiler_options_tests;
+
+#[cfg(test)]
+mod runtime_tests;

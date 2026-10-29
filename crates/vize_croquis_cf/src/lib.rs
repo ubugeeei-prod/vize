@@ -75,6 +75,16 @@ pub use graph::{DependencyEdge, DependencyGraph, ModuleNode};
 pub use registry::{FileId, ModuleEntry, ModuleRegistry};
 pub use suppression::{SuppressionDirective, SuppressionError, SuppressionMap};
 
+/// Build normalized logical candidates for a local import without consulting
+/// the host filesystem. Callers may use this to admit source modules before
+/// rebuilding the dependency graph.
+pub fn logical_import_candidates(
+    specifier: &str,
+    from_dir: Option<&std::path::Path>,
+) -> Vec<std::path::PathBuf> {
+    module_paths::import_candidates(specifier, from_dir)
+}
+
 // Re-export rule result types
 pub use rules::{
     BoundaryInfo, BoundaryKind, ComplexityBand, ComplexityContributor, ComplexityDimension,

@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use serde_json::{Map, Value};
 use vize_carton::{FxHashMap, FxHashSet};
 
-use crate::batch::error::CorsaResult;
+use crate::batch::error::{CorsaError, CorsaResult};
 
 use super::super::VirtualProject;
 use super::super::tsconfig_paths::{
@@ -145,13 +145,7 @@ impl VirtualProject {
         {
             return Ok(snapshot.verbatim.clone());
         }
-        let mut load = ChainLoad {
-            inputs,
-            ..Default::default()
-        };
-        Ok(self
-            .load_compiler_options_inner(tsconfig_path, &mut load, PathOptions::Verbatim)?
-            .0)
+        CompilerOptionsContext::new(&self.project_root).load_verbatim(tsconfig_path, inputs)
     }
 
     /// Flatten the chain and rebase `paths` targets onto the project root from
@@ -174,6 +168,62 @@ impl VirtualProject {
         {
             return Ok(snapshot.flattened.clone());
         }
+        CompilerOptionsContext::new(&self.project_root).load_flattened(tsconfig_path, inputs)
+    }
+
+    pub(in super::super) fn checked_compiler_config_paths(
+        &self,
+        tsconfig_path: &Path,
+    ) -> CorsaResult<Vec<PathBuf>> {
+        Ok(self
+            .load_compiler_options_flattened(Some(tsconfig_path))?
+            .input_paths)
+    }
+}
+
+/// Read-only compiler-option authority over an already-selected project root.
+/// This context never constructs a virtual project, acquires its cache lock, or
+/// refreshes unrelated source/emission policies. All chain parsing stays shared.
+pub(super) struct CompilerOptionsContext<'a> {
+    project_root: &'a Path,
+    strict_structure: bool,
+}
+
+impl<'a> CompilerOptionsContext<'a> {
+    pub(super) fn new(project_root: &'a Path) -> Self {
+        Self {
+            project_root,
+            strict_structure: false,
+        }
+    }
+
+    pub(super) fn observed(project_root: &'a Path) -> Self {
+        Self {
+            project_root,
+            strict_structure: true,
+        }
+    }
+
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+    fn load_verbatim(
+        &self,
+        tsconfig_path: &Path,
+        inputs: Option<&CompilerInputs>,
+    ) -> CorsaResult<Map<std::string::String, Value>> {
+        let mut load = ChainLoad {
+            inputs,
+            ..Default::default()
+        };
+        Ok(self
+            .load_compiler_options_inner(tsconfig_path, &mut load, PathOptions::Verbatim)?
+            .0)
+    }
+
+    pub(super) fn load_flattened(
+        &self,
+        tsconfig_path: Option<&Path>,
+        inputs: Option<&CompilerInputs>,
+    ) -> CorsaResult<FlattenedCompilerOptions> {
         let Some(tsconfig_path) = tsconfig_path else {
             return Ok(FlattenedCompilerOptions::default());
         };
@@ -190,7 +240,7 @@ impl VirtualProject {
             .map(str::to_owned);
         let base_url = match (&raw_base_url, &dirs.base_url) {
             (Some(raw), Some(dir)) => {
-                Some(normalize_tsconfig_path_target(dir, &self.project_root, raw))
+                Some(normalize_tsconfig_path_target(dir, self.project_root, raw))
             }
             _ => None,
         };
@@ -203,7 +253,7 @@ impl VirtualProject {
             paths_anchor.as_deref(),
             options.get_mut("paths").and_then(Value::as_object_mut),
         ) {
-            path_rebase::paths_onto_project_root(paths, anchor, &self.project_root);
+            path_rebase::paths_onto_project_root(paths, anchor, self.project_root);
         }
 
         let mut input_paths = load.completed.keys().cloned().collect::<Vec<_>>();
@@ -216,15 +266,6 @@ impl VirtualProject {
             input_paths,
             unresolved_extends: load.unresolved,
         })
-    }
-
-    pub(in super::super) fn checked_compiler_config_paths(
-        &self,
-        tsconfig_path: &Path,
-    ) -> CorsaResult<Vec<PathBuf>> {
-        Ok(self
-            .load_compiler_options_flattened(Some(tsconfig_path))?
-            .input_paths)
     }
 
     /// `load.active` is the *active* `extends` path, not a set of everything
@@ -246,6 +287,12 @@ impl VirtualProject {
             return Ok(cached.clone());
         }
         if !load.active.insert(normalized.clone()) {
+            if self.strict_structure {
+                return Err(CorsaError::Configuration(vize_carton::cstr!(
+                    "compiler configuration cycle includes {}",
+                    normalized.display()
+                )));
+            }
             load.cycle_cut = true;
             return Ok((Map::new(), DeclarationDirs::default()));
         }
@@ -269,6 +316,9 @@ impl VirtualProject {
         path_options: PathOptions,
     ) -> CorsaResult<FlattenedChain> {
         let config = read_jsonc(normalized, load.inputs)?;
+        if self.strict_structure {
+            validate_config_structure(&config, normalized)?;
+        }
         let mut compiler_options = config
             .get("compilerOptions")
             .and_then(Value::as_object)
@@ -289,7 +339,7 @@ impl VirtualProject {
                 compiler_options.entry(name).or_insert(value);
             }
         }
-        let base_dir = normalized.parent().unwrap_or(self.project_root.as_path());
+        let base_dir = normalized.parent().unwrap_or(self.project_root);
         let mut dirs = DeclarationDirs::default();
         if compiler_options.contains_key("paths") {
             dirs.paths = Some(base_dir.to_path_buf());
@@ -298,7 +348,7 @@ impl VirtualProject {
             dirs.base_url = Some(base_dir.to_path_buf());
         }
         if matches!(path_options, PathOptions::Rebase) {
-            path_rebase::onto_project_root(&mut compiler_options, base_dir, &self.project_root);
+            path_rebase::onto_project_root(&mut compiler_options, base_dir, self.project_root);
         }
 
         // `extends` may be a single specifier or an array; array entries are
@@ -355,4 +405,30 @@ fn record_unresolved(load: &mut ChainLoad<'_>, config: &Path, extends: &str) {
     if !load.unresolved.contains(&unresolved) {
         load.unresolved.push(unresolved);
     }
+}
+
+fn validate_config_structure(config: &Value, path: &Path) -> CorsaResult<()> {
+    let invalid = if !config.is_object() {
+        Some("the root value must be an object")
+    } else if config
+        .get("compilerOptions")
+        .is_some_and(|value| !value.is_object() && !value.is_null())
+    {
+        Some("compilerOptions must be an object or null")
+    } else if config.get("extends").is_some_and(|value| match value {
+        Value::String(_) => false,
+        Value::Array(entries) => entries.iter().any(|entry| !entry.is_string()),
+        _ => true,
+    }) {
+        Some("extends must be a string or an array of strings")
+    } else {
+        None
+    };
+    if let Some(reason) = invalid {
+        return Err(CorsaError::Configuration(vize_carton::cstr!(
+            "cannot admit tsconfig {}: {reason}",
+            path.display()
+        )));
+    }
+    Ok(())
 }

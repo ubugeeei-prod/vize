@@ -103,13 +103,32 @@ declare const __vizeDirectiveBindingRest: { instance: null; oldValue: null; modi
 declare function __vizeDirectiveTail<F extends (...args: any[]) => any>(hook: F): 4 extends Parameters<F>['length'] ? [never, never] : 3 extends Parameters<F>['length'] ? [never] : [];
 
 
+declare module "vize:virtual-ts" {
 // Template-ref widening. Hoisted-only, deliberately absent from the per-file
 // preamble: a module-scope copy is dead code (TS6196) in every component whose
 // template scope emits no __U, and only generated template scopes use it.
 type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
-type __VizeWidenTemplateRef<T> = __VizeIsAny<T> extends true ? T : __VizeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
+export type __VizeWidenTemplateRef<T> = __VizeIsAny<T> extends true ? T : __VizeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
+}
 
 // Emit-overload helpers (consumed by the per-file __EmitProps alias)
+declare module "vize:virtual-ts" {
+  export type __VizeSlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : C extends (props: any, context: infer __Ctx, ...args: any[]) => any ? NonNullable<__Ctx> extends { slots: infer __S } ? __S : any : unknown;
+  function __vizeFunctionalSlots<P, C, R>(component: (props: P, context: C, ...args: any[]) => R): (props: P) => "__ctx" extends keyof R ? NonNullable<R["__ctx"]> extends { slots: infer S } ? S : any : NonNullable<C> extends { slots: infer S } ? S : any;
+  type __VizeNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? (component: C) => (props: any) => __VizeSlotHostSlots<C> : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => __VizeSlotHostSlots<C>;
+  export type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeSlotsFactory<C> : C extends { readonly __vizeComponentMarker: true } ? (component: C) => (props: any) => __VizeSlotHostSlots<C> : __VizeNativeSlotsFactory<C>;
+  type __VizeHasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? true : false : false;
+  type __VizeDirectSlotConstructor<C> = __VizeIsAny<C> extends true ? never : __VizeHasSlotResolver<C> extends true ? never : C extends { readonly __vizeComponentMarker: true } ? never : C extends new (...args: any[]) => { $slots: any } ? C : never;
+  export type __VizeSlotConstructor<C> = [__VizeDirectSlotConstructor<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : __VizeDirectSlotConstructor<C>;
+  export type __VizeSlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any ? { [K in keyof A]: any } : [];
+  export type __VizeSlotHostSelector<C> = [__VizeDirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
+}
+declare module "vize:virtual-ts" {
+  // @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
+  type __VizeSilentAny = {}["__vizeSilentAny"];
+  type __VizeNamedSlotPayload<S, N> = { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] extends infer P ? ([P] extends [never] ? any : P) : any;
+  export type __VizeSlotPayload<S, N> = __VizeIsAny<S> extends true ? __VizeSilentAny : string extends N ? string extends keyof S ? __VizeNamedSlotPayload<S, N> : any : __VizeNamedSlotPayload<S, N>;
+}
 type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
 type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = []> = TDepth['length'] extends 32 ? never : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>, [...TDepth, unknown]> | ((...args: TArgs) => TReturn) : never;
 type __VizeOverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<__VizeOverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;
@@ -119,6 +138,68 @@ type __VizeParametersToFns<T extends any[]> = string extends T[0] ? { [K in stri
 type __EmitOptions<T, S = __EmitShape<T>> = { [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});
 type __VizeCamelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<__VizeCamelize<Tail>>}` : S;
 type __VizeHandlerKey<K extends string> = `on${Capitalize<__VizeCamelize<K>>}`;
+declare module "vize:virtual-ts" {
+  export type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };
+}
+declare module "vize:virtual-ts" {
+  type __VizeEmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
+  type __VizeEmitRequiredFields<T> = T extends unknown ? Pick<T, __VizeEmitRequiredKeys<T>> : never;
+  type __VizeEmitFiniteFields<T> = { [K in keyof T as {} extends Record<K, unknown> ? never : K]: T[K] };
+  type __VizeEmitFallthrough<F> = __VizeIsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>;
+  export type __VizeEmitOwnedKeys<C> = __VizeComponentOwnKeys<C extends { readonly __vizeRawProps?: infer P } ? P : {}, C extends { readonly __vizeEmitProps?: infer E } ? E : {}>;
+  type __VizeEmitInput<P, F, O extends PropertyKey, A> = P extends unknown ? F extends unknown ? { [K in keyof A]: K extends O ? K extends keyof P ? P[K] : never : K extends keyof F ? F[K] : K extends keyof P ? P[K] : unknown } & __VizeEmitRequiredFields<P> & __VizeEmitRequiredFields<Omit<__VizeEmitFiniteFields<F>, O>> : never : never;
+  function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
+  type __VizeConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: __VizeEmitInput<P, __VizeEmitFallthrough<F>, O, A>) => __EmitProps<E>;
+  type __VizeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? __VizeConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, __VizeEmitOwnedKeys<C>> : typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
+  export type __VizeEmitPropsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : __VizeNativeEmitPropsFactory<C>;
+}
+declare module "vize:virtual-ts" {
+// Component usage helpers shared by every generated module in a batch project.
+export type IsAny<T> = __VizeIsAny<T>;
+export type ComponentGlobalHtmlAttrs = __VizeComponentGlobalHtmlAttrs;
+export type __VizeComponentNavigationProps<P> = __VizeIsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;
+export type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? __VizeIsAny<__E> extends true ? {} : NonNullable<__E> : {};
+export type __VizeIsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;
+export type __VizeHasFallthroughProps<C> = __VizeIsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;
+export type __VizeFallthroughProps<C> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
+export type __VizeRequiredFallthroughProps<C, __F = __VizeFallthroughProps<C>, __K = __VizeRequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
+type __VizeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
+type __VizePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? __VizeIsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};
+type __VizeInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;
+type __VizeStaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;
+type __VizeHasInstanceRawProps<C> = __VizeIsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? __VizeIsAny<__P> extends true ? false : true : false : false;
+type __VizeHasStaticRawProps<C> = __VizeIsGeneratedComponent<C> extends true ? C extends { readonly __vizeRawProps?: infer __P } ? __VizeIsAny<__P> extends true ? false : true : false : false;
+export type __VizeComponentRawProps<C, __P = __VizeHasInstanceRawProps<C> extends true ? __VizeInstanceRawProps<C> : __VizeHasStaticRawProps<C> extends true ? __VizeStaticRawProps<C> : __VizePublicProps<C>> = unknown extends __P ? Record<string, unknown> : __P;
+type __VizeHasRawProps<C> = __VizeHasInstanceRawProps<C> extends true ? true : __VizeHasStaticRawProps<C>;
+export type __VizeFallthroughValue<C, K extends PropertyKey> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? unknown : __VizePropValue<NonNullable<__F>, K, unknown> : unknown : unknown;
+type __VizeEventName<K extends string> = K extends `on${infer E}` ? Uncapitalize<E> | __VizeKebabCase<Uncapitalize<E>> : never;
+type __VizeKebabEventAliases<E> = { [K in keyof E & string as __VizeKebabCase<K> extends K ? never : __VizeKebabCase<K>]: E[K] };
+export type __VizeComponentEvents<C> = C extends { __vizeRawEmits?: infer __R; __vizeEventMap?: infer __E } ? [keyof NonNullable<__R>] extends [never] ? NonNullable<__E> : NonNullable<__R> & __VizeKebabEventAliases<NonNullable<__R>> : { [K in keyof (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {}) & string as __VizeEventName<K>]: (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : {})[K] };
+export type __VizeIsLibraryGenericExport<C> = C extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : C extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
+export type __VizePropChecker<C, P, T> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? (props: __VizeComponentCheckProps<P, T>) => void : unknown extends __F ? (props: __VizeComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: __VizeComponentCheckProps<P, T>) => void : __VizeIsLibraryGenericExport<C> extends true ? C : (props: __VizeComponentCheckProps<P, T>) => void;
+export type __VizePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
+type __VizeInvalidFallthroughSpreadKeys<P, F, A> = { [K in keyof A]-?: K extends keyof P | keyof __VizeKebabProps<P> ? never : K extends keyof F ? __VizeIsAny<A[K]> extends true ? never : A[K] extends F[K] ? never : K extends "id" ? A[K] extends string | number ? never : K : K : never }[keyof A];
+type __VizeFallthroughSpreadGuard<C, P, A, __K = __VizeInvalidFallthroughSpreadKeys<P, __VizeFallthroughProps<C>, A>> = [__K] extends [never] ? unknown : { readonly __vizeInvalidFallthroughSpreadValues: __K };
+export type __VizeFallthroughSpreadChecker<C, P> = <A>(props: A & __VizeFallthroughSpreadGuard<C, P, NoInfer<A>>) => A;
+export type __VizeCallableProp<T> = __VizeIsAny<T> extends true ? T : unknown extends T ? (...args: any[]) => any : T;
+export type __VizePropsResolver<C> = C extends { __vizeResolveProps?: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => {}) : __VizeIsLibraryGenericExport<C> extends true ? C : (props: any) => {};
+export type __VizeResolvedContextProps = <R>(resolved: R) => R extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : R : R;
+export type __VizePropsSelector<R> = <A extends Partial<R> & Record<string, unknown>>(props: A) => A;
+type __VizeMissingProp = { readonly __vizeMissingProp: unique symbol };
+type __VizeResolvedPropEntry<R, K extends PropertyKey> = R extends unknown ? K extends keyof R ? { value: R[K] } : __VizeMissingProp : never;
+type __VizeSelectedProps<R, A> = R extends unknown ? A extends Partial<R> ? R : never : never;
+export type __VizeResolvedProp<R, A, K extends PropertyKey, F, __S = __VizeSelectedProps<R, A>, __E = __VizeResolvedPropEntry<__S, K>, __A = __VizeResolvedPropEntry<R, K>, __P = Extract<__E, { value: unknown }>> = [__S] extends [never] ? F : [__P] extends [never] ? [Extract<__A, { value: unknown }>] extends [never] ? F : never : __P extends { value: infer V } ? V : never;
+export type __VizeComponentRefCallback = (ref: any, refs: Record<string, any>) => void;
+export type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
+type __VizeEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? __VizeIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? __VizeIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;
+type __VizeNativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? __VizeIsAny<InstanceType<C>> extends true ? __VizeEmptyVueNavigationSlots<C> : __VizeIsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;
+export type __VizeNavigationSlots<C> = __VizeIsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? __VizeIsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? __VizeNativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : __VizeNativeNavigationSlots<C>;
+type __VizeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
+type __VizeMissingRequiredSlots<__S, __P> = Exclude<__VizeRequiredSlotKeys<__S>, keyof __P>;
+export type __VizeRequiredSlots<__S, __P> = __VizeIsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [__VizeMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: __VizeMissingRequiredSlots<__S, __P> };
+export type __VizeSlotChildren<__S, __K extends PropertyKey> = __VizeIsAny<__S> extends true ? any : string extends keyof __S ? any : __K extends keyof __S ? ReturnType<Extract<NonNullable<__S[__K]>, (...args: any[]) => any>> : any;
+export type __VizeProvidedSlotChildren<__T extends unknown[]> = __T extends [infer __Only] ? __Only | __T : __T;
+}
 
 // Compiler-macro signatures (aliased inside each module's __setup() scope)
 declare function __vize_defineProps<_T = unknown>(): __DefineProps<__LooseRequired<_T>, Extract<__VizeBooleanKey<_T>, keyof __LooseRequired<_T>>>;

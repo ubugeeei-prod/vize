@@ -271,11 +271,9 @@ crates/vize_canon/src/virtual_ts/tests/options_api_props_spread.rs	19
 crates/vize_canon/src/virtual_ts/tests/options_api_setup_spread.rs	5
 crates/vize_canon/src/virtual_ts/tests/options_api_this_bridge.rs	8
 crates/vize_canon/src/virtual_ts/tests/slot_component_bindings.rs	16
-crates/vize_canon/src/virtual_ts/tests/slot_outlet_spread.rs	2
 crates/vize_canon/src/virtual_ts/tests/slot_outlet_spread/union.rs	1
 crates/vize_canon/src/virtual_ts/tests/unused_refs.rs	11
 crates/vize_canon/src/virtual_ts/tests/vif_chain.rs	7
-crates/vize_canon/src/virtual_ts/unknown_props_tests.rs	14
 crates/vize_carton/src/config/loader/project_settings_tests.rs	1
 crates/vize_carton/src/corsa_resolver/tests.rs	2
 crates/vize_croquis/src/croquis/alpha/emit_tests.rs	1
@@ -357,7 +355,6 @@ crates/vize_maestro/src/ide/diagnostics/editor_typecheck_tests.rs	9
 crates/vize_maestro/src/ide/diagnostics/native/tests.rs	2
 crates/vize_maestro/src/ide/diagnostics/tests.rs	3
 crates/vize_maestro/src/ide/diagnostics/tests/self_closing_compatibility.rs	1
-crates/vize_maestro/src/ide/diagnostics/typecheck_unavailable_tests.rs	3
 crates/vize_maestro/src/ide/diagnostics/vize_sfc_type_tests.rs	1
 crates/vize_maestro/src/ide/document_link/resident_tests.rs	4
 crates/vize_maestro/src/ide/ecosystem/resident_tests.rs	2
@@ -422,7 +419,6 @@ crates/vize_marquette/src/validate/tests.rs	4
 crates/vize_musea/src/transform/to_csf/tests.rs	5
 crates/vize_patina/src/linter/corsa_session/session/tests.rs	1
 crates/vize_patina/src/linter/native_type_aware/public_expression_tests.rs	1
-crates/vize_patina/src/linter/native_type_aware/template_queries/tests.rs	1
 crates/vize_patina/src/linter/native_type_aware/tests.rs	15
 crates/vize_patina/src/linter/tests/basic.rs	4
 crates/vize_patina/src/linter/tests/jsx_no_duplicate_dt.rs	1

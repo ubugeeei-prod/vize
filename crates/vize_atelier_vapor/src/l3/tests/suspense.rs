@@ -63,7 +63,6 @@ fn unproved_suspense_shapes_keep_explicit_legacy_routes() {
         r#"<Suspense><template #default="p"><AsyncChild /></template></Suspense>"#,
         r#"<Suspense><template #[name]><AsyncChild /></template></Suspense>"#,
         r#"<Suspense><template #default><AsyncChild /></template><template #other><p>other</p></template></Suspense>"#,
-        r#"<Suspense :[timeout]="limit"><AsyncChild /></Suspense>"#,
         r#"<Suspense suspensible><AsyncChild /></Suspense>"#,
         r#"<Suspense v-bind="props"><AsyncChild /></Suspense>"#,
         r#"<Suspense @unknown="save"><AsyncChild /></Suspense>"#,

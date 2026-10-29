@@ -83,6 +83,12 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "派生的响应式状态优先使用 computed()",
     ),
     (
+        "script/prefer-define-emits-binding.description",
+        "Prefer the captured defineEmits function over template $emit",
+        "テンプレートの $emit より defineEmits で捕捉した関数を優先する",
+        "优先使用从 defineEmits 捕获的函数而不是模板 $emit",
+    ),
+    (
         "script/prefer-define-options.description",
         "Prefer defineOptions() over a plain <script> that only sets name/inheritAttrs",
         "name や inheritAttrs を設定するだけの通常の <script> より defineOptions() を推奨する",

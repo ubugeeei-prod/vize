@@ -188,6 +188,110 @@ fn declaration_map_composes_import_rewrite_owned_deletions_and_helper_prefix() {
 }
 
 #[test]
+fn declaration_emit_rehomes_only_checker_qualified_emit_props_types() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("Public.vue.d.ts");
+    std::fs::write(
+        &path,
+        concat!(
+            "export type __EmitProps = \"authored\";\n",
+            "export type Public = import(\"vize:virtual-ts\").__EmitProps<{ save: [] }>;\n",
+            "export type ValueQuery = typeof import(\"vize:virtual-ts\").__EmitProps;\n",
+            "export type Prefix = import(\"vize:virtual-ts\").__EmitPropsAuthored;\n",
+            "export type UnicodePrefix = import(\"vize:virtual-ts\").__EmitPropsé;\n",
+            "export type EscapedPrefix = import(\"vize:virtual-ts\").__EmitProps\\u0061;\n",
+            "export type Foreign = import(\"authored\").__EmitProps<{ close: [] }>;\n",
+        ),
+    )
+    .unwrap();
+
+    super::super::declaration_outputs::rewrite_declaration_outputs(dir.path()).unwrap();
+
+    assert_eq!(
+        std::fs::read_to_string(path).unwrap(),
+        concat!(
+            "import type {  } from \"./__vize_helpers.js\";\n",
+            "export type __EmitProps = \"authored\";\n",
+            "export type Public = import(\"./__vize_helpers.js\").__EmitProps<{ save: [] }>;\n",
+            "export type ValueQuery = typeof import(\"./__vize_helpers.js\").__EmitProps;\n",
+            "export type Prefix = import(\"vize:virtual-ts\").__EmitPropsAuthored;\n",
+            "export type UnicodePrefix = import(\"vize:virtual-ts\").__EmitPropsé;\n",
+            "export type EscapedPrefix = import(\"vize:virtual-ts\").__EmitProps\\u0061;\n",
+            "export type Foreign = import(\"authored\").__EmitProps<{ close: [] }>;\n",
+        )
+    );
+    let helpers = std::fs::read_to_string(dir.path().join("__vize_helpers.d.ts")).unwrap();
+    assert_eq!(helpers.matches("type __EmitProps<T>").count(), 1);
+    let export_line = helpers.lines().next_back().unwrap();
+    assert_eq!(
+        export_line
+            .split(|character: char| !character.is_alphanumeric() && character != '_')
+            .filter(|identifier| *identifier == "__EmitProps")
+            .count(),
+        1
+    );
+}
+
+#[test]
+fn declaration_emit_rehomes_emit_props_at_nested_depth() {
+    let dir = tempfile::tempdir().unwrap();
+    let nested = dir.path().join("nested");
+    std::fs::create_dir_all(&nested).unwrap();
+    let path = nested.join("Nested.vue.d.ts");
+    std::fs::write(
+        &path,
+        "export type Public = import(\"vize:virtual-ts\").__EmitProps<{ save: [] }>;\n",
+    )
+    .unwrap();
+
+    super::super::declaration_outputs::rewrite_declaration_outputs(dir.path()).unwrap();
+
+    assert_eq!(
+        std::fs::read_to_string(path).unwrap(),
+        concat!(
+            "import type {  } from \"../__vize_helpers.js\";\n",
+            "export type Public = import(\"../__vize_helpers.js\").__EmitProps<{ save: [] }>;\n",
+        )
+    );
+}
+
+#[test]
+fn declaration_map_tracks_rehomed_emit_props_identity() {
+    use oxc_sourcemap::{SourceMap, SourceMapBuilder};
+    use vize_carton::line_index::LineIndex;
+
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("Mapped.vue.d.ts");
+    let before = "export type Public = import(\"vize:virtual-ts\").__EmitProps<{ save: [] }>;\n";
+    std::fs::write(&path, before).unwrap();
+
+    let before_index = LineIndex::new(before);
+    let helper_offset = before.find("__EmitProps").unwrap();
+    let (line, col) = before_index.line_col(helper_offset);
+    let mut builder = SourceMapBuilder::default();
+    let source_id = builder.add_source_and_content("Mapped.vue", "authored source");
+    builder.add_token(line, col, 7, 11, Some(source_id), None);
+    let map_path = dir.path().join("Mapped.vue.d.ts.map");
+    std::fs::write(&map_path, builder.into_sourcemap().to_json_string()).unwrap();
+
+    super::super::declaration_outputs::rewrite_declaration_outputs(dir.path()).unwrap();
+
+    let after = std::fs::read_to_string(path).unwrap();
+    let after_index = LineIndex::new(&after);
+    let helper_offset = after.rfind("__EmitProps").unwrap();
+    let (expected_line, expected_col) = after_index.line_col(helper_offset);
+    let raw_map = std::fs::read_to_string(map_path).unwrap();
+    let map = SourceMap::from_json_string(&raw_map).unwrap();
+    let tokens = map.get_tokens().collect::<Vec<_>>();
+    assert_eq!(tokens.len(), 1);
+    assert_eq!(tokens[0].get_dst_line(), expected_line);
+    assert_eq!(tokens[0].get_dst_col(), expected_col);
+    assert_eq!(tokens[0].get_src_line(), 7);
+    assert_eq!(tokens[0].get_src_col(), 11);
+    assert_eq!(tokens[0].get_source_id(), Some(source_id));
+}
+
+#[test]
 fn retains_marker_properties_on_other_or_authored_declarations() {
     for source in [
         "declare const Other: { readonly __vizeComponentMarker: true };\n",

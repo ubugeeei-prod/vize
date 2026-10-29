@@ -14,8 +14,12 @@ The npm package also exports shared configuration helpers. See the [command comp
 For apps, install from npm and wire stable commands into project scripts:
 
 ```bash
-vp install -D vize
+vp install -D vize typescript-native@npm:typescript@7.1.0-beta
 ```
+
+The native compiler belongs to the project; Vize does not bundle or download it. The alias keeps
+TypeScript 6 available for other tools. See [Type Checking](./type-checking.md) for canonical and
+explicit-path alternatives before using `vize check` or `vize ready`.
 
 ```json
 {
@@ -149,9 +153,13 @@ Default discovery formats Vue, JavaScript/TypeScript and JSON/JSONC files. YAML 
 | `--use-tabs`                       | Toggle tabs vs spaces                                |
 | `--no-semi`                        | Omit semicolons                                      |
 | `--sort-attributes`                | Sort template attributes                             |
+| `--attribute-sort-order`           | Choose `alphabetical` or `as-written` within groups  |
 | `--single-attribute-per-line`      | Put one attribute per line                           |
+| `--vue-indent-script-and-style`    | Indent the contents of script and style blocks       |
 | `--max-attributes-per-line`        | Wrap after a given attribute count                   |
 | `--normalize-directive-shorthands` | Normalize `v-bind:` / `v-on:` / `v-slot:` shorthands |
+| `--sort-blocks`                    | Toggle canonical SFC block ordering                  |
+| `--self-close-void-elements`       | Toggle `/>` on HTML void elements                    |
 | `--preset`                         | Apply `vize`, `prettier`, `compact` or `documentation` formatter defaults |
 | `--profile`                        | Print timing profile                                 |
 
@@ -250,7 +258,9 @@ Key options:
 | `--declaration`     | Emit `.d.ts` output                                |
 | `--declaration-dir` | Output directory for emitted declarations          |
 
-Use `--corsa-path` to pin a local Corsa build. The shared config key is `typeChecker.corsaPath`;
+Vize uses a native TypeScript executable installed by the selected project; it does not bundle
+or download a compiler. Use `--corsa-path` to select an explicit executable. The shared config key
+is `typeChecker.corsaPath`;
 `typeChecker.tsgoPath` remains only as a compatibility alias. `--tsrs-path` and
 `typeChecker.tsrsPath` select tsrs as the runtime for this packaged checker. To type-check with
 tsrs itself, use the content mapper command in [Type Checking](./type-checking.md).

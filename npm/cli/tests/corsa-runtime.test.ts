@@ -4,302 +4,123 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-
 import { test } from "vite-plus/test";
 
-import {
-  configureBundledCorsaRuntime,
-  publicCorsaEnvironmentVariables,
-  resolveBundledCorsaRuntime,
-} from "../src/corsa-runtime.ts";
+const environmentNames = [
+  "CORSA_PATH",
+  "CORSA_EXECUTABLE",
+  "TSGO_PATH",
+  "TSGO_EXECUTABLE",
+  "TSRS_PATH",
+  "TSRS_EXECUTABLE",
+] as const;
 
-test("packed CLI prefers its compatible runtime over an older project runtime", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cli-corsa-collision-"));
-  try {
-    const packageRoot = path.join(root, "node_modules", "vize");
-    const platformPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
-    const oldRuntime = writeTypeScriptRuntime(root, platformPackage, "6.0.3", oldRuntimeSource);
-    const bundledRuntime = writeTypeScriptRuntime(
-      packageRoot,
-      platformPackage,
-      "7.0.2",
-      compatibleRuntimeSource,
-    );
-    writeJson(path.join(packageRoot, "package.json"), {
+function fixture() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cli-user-runtime-"));
+  const packageRoot = path.join(root, "node_modules", "vize");
+  const platformPackage = "@typescript/typescript-" + process.platform + "-" + process.arch;
+  const stalePackage = path.join(packageRoot, "node_modules", platformPackage);
+  fs.mkdirSync(path.join(stalePackage, "lib"), { recursive: true });
+  fs.writeFileSync(
+    path.join(stalePackage, "package.json"),
+    JSON.stringify({
+      name: platformPackage,
+      version: "7.0.2",
+    }),
+  );
+  fs.writeFileSync(
+    path.join(stalePackage, "lib", process.platform === "win32" ? "tsc.exe" : "tsc"),
+    "stale bundled runtime must not be selected",
+  );
+  fs.writeFileSync(
+    path.join(packageRoot, "package.json"),
+    JSON.stringify({
       name: "vize",
+      type: "module",
       optionalDependencies: { [platformPackage]: "7.0.2" },
-      type: "module",
-    });
-    writeNativeStub(packageRoot);
-
-    const packageDir = path.dirname(fileURLToPath(import.meta.url));
-    const builtCli = path.join(packageDir, "../dist/cli.mjs");
-    const installedCli = path.join(packageRoot, "dist", "cli.mjs");
-    fs.mkdirSync(path.dirname(installedCli), { recursive: true });
-    fs.copyFileSync(builtCli, installedCli);
-
-    const oldProbe = spawnSync(process.execPath, [oldRuntime, "--api", "--async"], {
-      encoding: "utf8",
-    });
-    assert.equal(oldProbe.status, 2);
-    assert.match(oldProbe.stderr, /flag provided but not defined: -async/u);
-
-    const environment = { ...process.env, PROJECT_LOCAL_TSGO: oldRuntime };
-    for (const name of publicCorsaEnvironmentVariables) delete environment[name];
-    const run = spawnSync(process.execPath, [installedCli, "lsp"], {
-      cwd: root,
-      encoding: "utf8",
-      env: environment,
-    });
-
-    assert.equal(run.status, 0, run.stderr);
-    const result = JSON.parse(run.stdout) as {
-      args: string[];
-      probeStatus: number | null;
-      selectedRuntime: string;
-    };
-    assert.deepEqual(result.args, ["lsp"]);
-    assert.equal(result.selectedRuntime, fs.realpathSync(bundledRuntime));
-    assert.equal(result.probeStatus, 0);
-  } finally {
-    fs.rmSync(root, { force: true, recursive: true });
-  }
-});
-
-test("content mapper package wrapper reaches the native CLI bridge", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cli-content-mapper-"));
-  try {
-    const packageRoot = path.join(root, "node_modules", "vize");
-    writeJson(path.join(packageRoot, "package.json"), {
-      name: "vize",
-      type: "module",
-    });
-    writeNativeStub(
-      packageRoot,
-      `exports.runCli = (args) => {
-  process.stdout.write(JSON.stringify({
-    args,
-    corsaPath: process.env.CORSA_PATH || null
-  }));
-};
-`,
-    );
-
-    const packageDir = path.dirname(fileURLToPath(import.meta.url));
-    const builtCli = path.join(packageDir, "../dist/cli.mjs");
-    const installedCli = path.join(packageRoot, "dist", "cli.mjs");
-    fs.mkdirSync(path.dirname(installedCli), { recursive: true });
-    fs.copyFileSync(builtCli, installedCli);
-
+    }),
+  );
+  const stub = path.join(packageRoot, "node_modules", "@vizejs", "native");
+  fs.mkdirSync(stub, { recursive: true });
+  fs.writeFileSync(
+    path.join(stub, "package.json"),
+    JSON.stringify({ name: "@vizejs/native", main: "index.cjs" }),
+  );
+  fs.writeFileSync(
+    path.join(stub, "index.cjs"),
+    "exports.runCli = (args) => process.stdout.write(JSON.stringify({args, environment: Object.fromEntries(" +
+      JSON.stringify(environmentNames) +
+      ".map(name => [name, process.env[name] ?? null]))}));\n",
+  );
+  const installed = path.join(packageRoot, "dist", "cli.mjs");
+  fs.cpSync(fileURLToPath(new URL("../dist", import.meta.url)), path.dirname(installed), {
+    recursive: true,
+  });
+  const run = (args: string[], override: Record<string, string> = {}) => {
     const environment = { ...process.env };
-    for (const name of publicCorsaEnvironmentVariables) delete environment[name];
-    const run = spawnSync(process.execPath, [installedCli, "content-mapper"], {
+    for (const name of environmentNames) delete environment[name];
+    Object.assign(environment, override);
+    const result = spawnSync(process.execPath, [installed, ...args], {
       cwd: root,
-      encoding: "utf8",
       env: environment,
+      encoding: "utf8",
     });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stderr, "");
+    return JSON.parse(result.stdout) as {
+      args: string[];
+      environment: Record<string, string | null>;
+    };
+  };
+  return { run, remove: () => fs.rmSync(root, { force: true, recursive: true }) };
+}
 
-    assert.equal(run.status, 0, run.stderr);
-    assert.deepEqual(JSON.parse(run.stdout), {
-      args: ["content-mapper"],
-      corsaPath: null,
-    });
-  } finally {
-    fs.rmSync(root, { force: true, recursive: true });
-  }
-});
-
-test("all public runtime overrides retain precedence", () => {
-  const fixture = createRuntimeFixture();
+test("CLI, LSP, mapper and syntax-only commands delegate without selecting a stale bundled runtime", () => {
+  const f = fixture();
   try {
-    for (const name of publicCorsaEnvironmentVariables) {
-      const environment = { [name]: "/user/configured/tsgo" };
-      const before = { ...environment };
-
-      assert.equal(
-        configureBundledCorsaRuntime(environment, { packageRoot: fixture.packageRoot }),
-        null,
-        name,
-      );
-      assert.deepEqual(environment, before, name);
+    for (const command of ["check", "lsp", "content-mapper", "lint", "fmt", "--version"]) {
+      assert.deepEqual(f.run([command]), {
+        args: [command],
+        environment: Object.fromEntries(environmentNames.map((name) => [name, null])),
+      });
     }
   } finally {
-    fixture.cleanup();
+    f.remove();
   }
 });
 
-test("empty public runtime variables keep resolver fallback semantics", () => {
-  const fixture = createRuntimeFixture();
+test("every explicit runtime environment and CLI path reaches the shared native resolver unchanged", () => {
+  const f = fixture();
   try {
-    const environment = { TSGO_PATH: "" };
-
-    const resolved = configureBundledCorsaRuntime(environment, {
-      packageRoot: fixture.packageRoot,
+    for (const name of environmentNames) {
+      const value = "/project/日本語/native runtime";
+      assert.deepEqual(f.run(["check"], { [name]: value }), {
+        args: ["check"],
+        environment: Object.fromEntries(
+          environmentNames.map((key) => [key, key === name ? value : null]),
+        ),
+      });
+    }
+    const args = ["check", "--corsa-path", "/project/config/native runtime"];
+    assert.deepEqual(f.run(args), {
+      args,
+      environment: Object.fromEntries(environmentNames.map((name) => [name, null])),
     });
-
-    assert.equal(resolved, fs.realpathSync(fixture.runtime));
-    assert.equal(environment.CORSA_PATH, resolved);
-    assert.equal(environment.TSGO_PATH, "");
   } finally {
-    fixture.cleanup();
+    f.remove();
   }
 });
 
-test("missing bundled runtime leaves existing discovery untouched", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cli-corsa-missing-"));
-  try {
-    const packageRoot = path.join(root, "node_modules", "vize");
-    const platformPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
-    writeTypeScriptRuntime(root, platformPackage, "6.0.3", oldRuntimeSource);
-    writeJson(path.join(packageRoot, "package.json"), {
-      name: "vize",
-      optionalDependencies: { [platformPackage]: "7.0.2" },
-      type: "module",
-    });
-    const environment = {};
-
-    assert.equal(resolveBundledCorsaRuntime({ packageRoot }), null);
-    assert.equal(configureBundledCorsaRuntime(environment, { packageRoot }), null);
-    assert.deepEqual(environment, {});
-  } finally {
-    fs.rmSync(root, { force: true, recursive: true });
-  }
-});
-
-test("old bundled TypeScript platform runtime leaves existing discovery untouched", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cli-corsa-old-runtime-"));
-  try {
-    const packageRoot = path.join(root, "node_modules", "vize");
-    const platformPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
-    writeTypeScriptRuntime(packageRoot, platformPackage, "6.0.3", oldRuntimeSource);
-    writeJson(path.join(packageRoot, "package.json"), {
-      name: "vize",
-      optionalDependencies: { [platformPackage]: "6.0.3" },
-      type: "module",
-    });
-    const environment = {};
-
-    assert.equal(resolveBundledCorsaRuntime({ packageRoot }), null);
-    assert.equal(configureBundledCorsaRuntime(environment, { packageRoot }), null);
-    assert.deepEqual(environment, {});
-  } finally {
-    fs.rmSync(root, { force: true, recursive: true });
-  }
-});
-
-test("missing platform executable falls back without mutating the environment", () => {
-  const fixture = createRuntimeFixture();
-  try {
-    fs.rmSync(fixture.runtime);
-    const environment = {};
-
-    assert.equal(
-      configureBundledCorsaRuntime(environment, {
-        packageRoot: fixture.packageRoot,
-      }),
-      null,
-    );
-    assert.deepEqual(environment, {});
-  } finally {
-    fixture.cleanup();
-  }
-});
-
-test("unsupported platform falls back without mutating the environment", () => {
-  const fixture = createRuntimeFixture();
-  try {
-    const environment = {};
-
-    assert.equal(
-      configureBundledCorsaRuntime(environment, {
-        arch: "unsupported",
-        packageRoot: fixture.packageRoot,
-        platform: "aix",
-      }),
-      null,
-    );
-    assert.deepEqual(environment, {});
-  } finally {
-    fixture.cleanup();
-  }
-});
-
-function createRuntimeFixture(): {
-  cleanup(): void;
-  packageRoot: string;
-  runtime: string;
-} {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cli-corsa-runtime-"));
-  const packageRoot = path.join(root, "node_modules", "vize");
-  const platformPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
-  const runtime = writeTypeScriptRuntime(
-    packageRoot,
-    platformPackage,
-    "7.0.2",
-    compatibleRuntimeSource,
-  );
-  writeJson(path.join(packageRoot, "package.json"), {
-    name: "vize",
-    optionalDependencies: { [platformPackage]: "7.0.2" },
-    type: "module",
-  });
-  return {
-    cleanup: () => fs.rmSync(root, { force: true, recursive: true }),
-    packageRoot,
-    runtime,
+test("published CLI manifest does not automatically install a native TypeScript runtime", () => {
+  const manifest = JSON.parse(
+    fs.readFileSync(fileURLToPath(new URL("../package.json", import.meta.url)), "utf8"),
+  ) as {
+    optionalDependencies?: Record<string, string>;
   };
-}
-
-function writeTypeScriptRuntime(
-  packageRoot: string,
-  platformPackage: string,
-  version: string,
-  runtimeSource: string,
-): string {
-  const nodeModules = path.join(packageRoot, "node_modules");
-  const scope = path.join(nodeModules, "@typescript");
-  const platformRoot = path.join(scope, platformPackage.replace("@typescript/", ""));
-  writeJson(path.join(platformRoot, "package.json"), {
-    name: platformPackage,
-    version,
-  });
-  const runtime = path.join(platformRoot, "lib", process.platform === "win32" ? "tsc.exe" : "tsc");
-  fs.mkdirSync(path.dirname(runtime), { recursive: true });
-  fs.writeFileSync(runtime, runtimeSource);
-  return runtime;
-}
-
-function writeNativeStub(packageRoot: string, source?: string): void {
-  const nativeRoot = path.join(packageRoot, "node_modules", "@vizejs", "native");
-  writeJson(path.join(nativeRoot, "package.json"), {
-    main: "index.cjs",
-    name: "@vizejs/native",
-  });
-  fs.writeFileSync(
-    path.join(nativeRoot, "index.cjs"),
-    source ??
-      `const { spawnSync } = require("node:child_process");
-exports.runCli = (args) => {
-  const selectedRuntime = process.env.CORSA_PATH || process.env.PROJECT_LOCAL_TSGO;
-  const probe = spawnSync(process.execPath, [selectedRuntime, "--api", "--async"], {
-    encoding: "utf8",
-  });
-  process.stdout.write(JSON.stringify({ args, probeStatus: probe.status, selectedRuntime }));
-};
-`,
+  assert.deepEqual(
+    Object.keys(manifest.optionalDependencies ?? {}).filter(
+      (name) => name === "typescript" || name.startsWith("@typescript/"),
+    ),
+    [],
   );
-}
-
-function writeJson(filename: string, value: unknown): void {
-  fs.mkdirSync(path.dirname(filename), { recursive: true });
-  fs.writeFileSync(filename, `${JSON.stringify(value, null, 2)}\n`);
-}
-
-const oldRuntimeSource = `if (process.argv.includes("--async")) {
-  process.stderr.write("flag provided but not defined: -async\\nUsage of api:\\n  -cwd string\\n");
-  process.exit(2);
-}
-`;
-
-const compatibleRuntimeSource = `if (!process.argv.includes("--async")) process.exit(2);
-`;
+});

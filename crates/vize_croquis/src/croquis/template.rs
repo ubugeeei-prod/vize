@@ -5,6 +5,18 @@
 
 use vize_carton::{CompactString, SmallVec};
 
+/// A statically selected Nuxt page layout from `definePageMeta`.
+///
+/// This is an analyzer-only render fact. It is intentionally absent from
+/// semantic snapshots, DTOs, and cache fingerprints.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NuxtPageLayout {
+    /// `layout: false` renders the page without a layout wrapper.
+    Disabled,
+    /// A literal named layout, resolved against Nuxt's configured layout dir.
+    Named(CompactString),
+}
+
 /// Private admission facts collected in the existing template element visit.
 /// Counts alone are not evidence: only a full original descriptor adapter may
 /// set `admitted`. Default, recovered, and caller-owned analyses stay unknown.
@@ -13,7 +25,7 @@ use vize_carton::{CompactString, SmallVec};
 pub struct NuxtTemplateRenderFacts {
     /// Number of authored slot outlets visited, saturating on overflow.
     pub slot_outlets: u32,
-    /// A directive or recovered structural arm prevents an invocation proof.
+    /// A directive, active native carrier, or recovered arm prevents an invocation proof.
     pub opaque_structure: bool,
     /// The original full inline template was successfully analyzed.
     pub admitted: bool,

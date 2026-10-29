@@ -88,6 +88,11 @@ fn imported_component_precedes_same_name_prop_in_complete_result() {
         "  setup(__props: any) {\n",
         "  setup(__props: any, { expose: __expose }) {\n  __expose();\n",
     );
+    let expected = support::closed_setup_reference::advance(
+        expected,
+        "$setup.Predefine",
+        "$setup[\"Predefine\"]",
+    );
     assert_eq!(
         serde_json::to_value(actual).expect("serialize complete public Result"),
         expected,

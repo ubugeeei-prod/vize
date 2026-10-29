@@ -6,8 +6,13 @@
 //!
 //! Uses the `element_ids` field from Croquis analysis for accurate tracking.
 
+mod nuxt_context;
+
+use crate::NuxtRenderDirs;
 use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
+use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
+use nuxt_context::NuxtIdDomains;
 use vize_carton::{CompactString, FxHashMap, cstr};
 use vize_croquis::croquis::ElementIdKind;
 
@@ -41,6 +46,33 @@ struct IdLocation {
 /// to detect duplicate IDs and non-unique IDs in loops.
 pub fn analyze_element_ids(
     registry: &ModuleRegistry,
+) -> (Vec<UniqueIdIssue>, Vec<CrossFileDiagnostic>) {
+    analyze_in_domains(registry, None)
+}
+
+/// Potential original source facts only; this never grants host authority.
+pub(crate) fn has_closed_nuxt_render_facts(
+    registry: &ModuleRegistry,
+    graph: &DependencyGraph,
+    configured: Option<&NuxtRenderDirs>,
+) -> bool {
+    NuxtIdDomains::new(registry, graph, configured, true).is_some()
+}
+
+/// The existing entry point remains conservative for callers with no host proof.
+pub(crate) fn analyze_element_ids_with_nuxt_context(
+    registry: &ModuleRegistry,
+    graph: &DependencyGraph,
+    configured: Option<&NuxtRenderDirs>,
+    complete_scope: bool,
+) -> (Vec<UniqueIdIssue>, Vec<CrossFileDiagnostic>) {
+    let domains = NuxtIdDomains::new(registry, graph, configured, complete_scope);
+    analyze_in_domains(registry, domains.as_ref())
+}
+
+fn analyze_in_domains(
+    registry: &ModuleRegistry,
+    domains: Option<&NuxtIdDomains<'_>>,
 ) -> (Vec<UniqueIdIssue>, Vec<CrossFileDiagnostic>) {
     let mut issues = Vec::new();
     let mut diagnostics = Vec::new();
@@ -85,7 +117,7 @@ pub fn analyze_element_ids(
 
     // Check for duplicate static IDs across files
     for (id, locations) in &static_ids {
-        if locations.len() > 1 {
+        if locations.len() > 1 && !domains.is_some_and(|domains| domains.all_exclusive(locations)) {
             // Same ID used in multiple places (cross-file duplicate)
             let loc_list: Vec<_> = locations
                 .iter()

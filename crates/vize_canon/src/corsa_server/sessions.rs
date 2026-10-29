@@ -91,9 +91,29 @@ fn corsa_executable(corsa_path: Option<&str>, working_dir: &Path) -> Result<Path
         explicit_path: corsa_path.map(Path::new),
         project_root: Some(working_dir),
     };
-    match vize_carton::corsa_resolver::resolve_corsa_executable(request) {
-        Ok(path) => Ok(path),
-        Err(vize_carton::corsa_resolver::CorsaResolveError::NotFound) => Ok(PathBuf::from("corsa")),
-        Err(error) => Err(cstr!("{error}")),
+    resolved_corsa_path(vize_carton::corsa_resolver::resolve_corsa_executable(
+        request,
+    ))
+}
+
+fn resolved_corsa_path(
+    result: Result<PathBuf, vize_carton::corsa_resolver::CorsaResolveError>,
+) -> Result<PathBuf, String> {
+    result.map_err(|error| cstr!("{error}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::resolved_corsa_path;
+    use vize_carton::corsa_resolver::CorsaResolveError;
+
+    #[test]
+    fn missing_runtime_never_falls_back_to_a_bare_path_lookup() {
+        let error = resolved_corsa_path(Err(CorsaResolveError::NotFound)).unwrap_err();
+
+        assert_eq!(
+            error,
+            "No native TypeScript/tsgo executable found. Install a native TypeScript runtime in the selected project, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to its executable."
+        );
     }
 }

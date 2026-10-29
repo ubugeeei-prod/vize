@@ -46,6 +46,28 @@ function invertTypescriptDriverSuccessor(current: string, original: string): str
     "assert.equal(context.repoRoot, fs.realpathSync.native(process.env.VIZE_REPO_ROOT));",
     "assert.equal(context.repoRoot, fs.realpathSync(process.env.VIZE_REPO_ROOT));",
   );
+  replaceOnce(
+    `  for (const name of [
+    "CORSA_PATH",
+    "CORSA_EXECUTABLE",
+    "TSGO_PATH",
+    "TSGO_EXECUTABLE",
+    "TSRS_PATH",
+    "TSRS_EXECUTABLE",
+  ]) {`,
+    '  for (const name of ["CORSA_PATH", "CORSA_EXECUTABLE", "TSGO_PATH", "TSGO_EXECUTABLE"]) {',
+  );
+  replaceOnce(
+    `  assert.deepEqual(Object.keys(context.peers).sort(), [
+    "typescript",
+    "typescript-native",
+    "vite",
+    "vite-plus",
+    "vue",
+  ]);
+  assert.equal(context.peers["typescript-native"], "npm:typescript@7.1.0-beta");`,
+    '  assert.deepEqual(Object.keys(context.peers).sort(), ["typescript", "vite", "vite-plus", "vue"]);',
+  );
   // These complete successor calls retain every original argument, environment
   // and refusal check. Only the reviewed driver selector and Windows canonical
   // roots change. An altered option cannot disappear behind the inverse.
@@ -62,6 +84,8 @@ function invertTypescriptDriverSuccessor(current: string, original: string): str
         CORSA_EXECUTABLE: "/unrelated/host/corsa",
         TSGO_PATH: "/unrelated/host/tsgo",
         TSGO_EXECUTABLE: "/unrelated/host/tsgo",
+        TSRS_PATH: "/unrelated/host/tsrs",
+        TSRS_EXECUTABLE: "/unrelated/host/tsrs",
       },
     });
 `,
@@ -303,6 +327,11 @@ test("the driver successor inverse refuses undeclared dispatcher or invocation c
     ['[...prefix, entry, "--runtime-checks", cli, platform]', "[...prefix, entry, cli]"],
     ["timeout: 180_000", "timeout: 360_000"],
     ['CORSA_PATH: "/unrelated/host/corsa"', "CORSA_PATH: process.env.CORSA_PATH"],
+    ['TSRS_PATH: "/unrelated/host/tsrs"', "TSRS_PATH: process.env.TSRS_PATH"],
+    [
+      'context.peers["typescript-native"], "npm:typescript@7.1.0-beta"',
+      'context.peers["typescript-native"], "latest"',
+    ],
   ]) {
     assert.notEqual(current.indexOf(before), -1);
     assert.throws(

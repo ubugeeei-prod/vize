@@ -1,0 +1,20 @@
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer";
+import { mergeProps as _mergeProps } from "vue";
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<button${_ssrRenderAttrs(_mergeProps({ type: "button" }, _attrs))}> press </button>`);
+}
+export default {
+  __name: "Layout",
+  emits: ["press"],
+  ssrRender,
+  setup(__props, { expose: __expose, emit: __emit }) {
+    __expose();
+    const emit = __emit;
+    const __returned__ = { emit };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};

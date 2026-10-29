@@ -1,4 +1,5 @@
 use super::{Document, DocumentStore};
+use std::sync::Arc;
 use tower_lsp::lsp_types::{Position, Range, TextDocumentContentChangeEvent, Url};
 
 mod unicode_boundaries;
@@ -306,6 +307,109 @@ fn test_document_store_text_snapshot_holds_no_shard_lock() {
     assert_eq!(snapshot, "before");
     assert_eq!(store.text(&uri).as_deref(), Some("after"));
     assert_eq!(store.text(&Url::parse("file:///absent.vue").unwrap()), None);
+}
+
+#[test]
+fn shared_text_snapshot_is_revision_bound_and_utf16_exact() {
+    let store = DocumentStore::new();
+    let uri = test_uri();
+    let source = "<template>\r\n😀雪\r\n</template>";
+    store.open(uri.clone(), source.into(), 1, "vue".into());
+
+    let first = store.text_snapshot(&uri).unwrap();
+    let warm = store.text_snapshot(&uri).unwrap();
+    assert!(Arc::ptr_eq(&first, &warm), "warm reads share one buffer");
+
+    let line_start = "<template>\r\n".len();
+    let at_line_start = store.snapshot_at(&uri, pos(1, 0)).unwrap();
+    let after_astral = store.snapshot_at(&uri, pos(1, 2)).unwrap();
+    let after_unicode = store.snapshot_at(&uri, pos(1, 3)).unwrap();
+    assert!(Arc::ptr_eq(&first, &at_line_start.content));
+    assert!(Arc::ptr_eq(&first, &after_astral.content));
+    assert!(Arc::ptr_eq(&first, &after_unicode.content));
+    assert_eq!(at_line_start.offset, line_start);
+    assert_eq!(after_astral.offset, line_start + "😀".len());
+    assert_eq!(after_unicode.offset, line_start + "😀雪".len());
+    assert!(
+        store.snapshot_at(&uri, pos(1, 1)).is_none(),
+        "the interior of an UTF-16 surrogate pair is not a cursor boundary"
+    );
+    assert!(
+        store.snapshot_at(&uri, pos(0, 11)).is_none(),
+        "a position cannot spill into CRLF"
+    );
+
+    assert!(store.apply_changes(&uri, vec![ranged_change(pos(1, 2), pos(1, 3), "海")], 2,));
+    let changed = store.text_snapshot(&uri).unwrap();
+    let changed_warm = store.text_snapshot(&uri).unwrap();
+    assert!(!Arc::ptr_eq(&first, &changed));
+    assert!(Arc::ptr_eq(&changed, &changed_warm));
+    assert_eq!(first.as_str(), source, "stale requests keep their revision");
+    assert_eq!(changed.as_str(), "<template>\r\n😀海\r\n</template>");
+}
+
+#[test]
+fn positioned_snapshot_matches_lsp_standalone_cr_boundaries() {
+    let store = DocumentStore::new();
+    let uri = test_uri();
+    store.open(uri.clone(), "a\rb\r😀".into(), 1, "vue".into());
+
+    let resident = store.text_snapshot(&uri).unwrap();
+    let second_line = store.snapshot_at(&uri, pos(1, 0)).unwrap();
+    let end = store.snapshot_at(&uri, pos(2, 2)).unwrap();
+    assert!(Arc::ptr_eq(&resident, &second_line.content));
+    assert!(Arc::ptr_eq(&resident, &end.content));
+    assert_eq!(second_line.offset, "a\r".len());
+    assert_eq!(end.offset, "a\rb\r😀".len());
+    assert!(store.snapshot_at(&uri, pos(2, 1)).is_none());
+}
+
+#[test]
+fn positioned_snapshot_crosses_a_real_await_without_a_guard_or_deadlock() {
+    let store = DocumentStore::new();
+    let uri = test_uri();
+    store.open(uri.clone(), "before😀".into(), 1, "vue".into());
+    let snapshot = store.snapshot_at(&uri, pos(0, 6)).unwrap();
+
+    crate::runtime::block_on(async {
+        let mut pending_once = true;
+        futures::future::poll_fn(|cx| {
+            if std::mem::take(&mut pending_once) {
+                cx.waker().wake_by_ref();
+                std::task::Poll::Pending
+            } else {
+                std::task::Poll::Ready(())
+            }
+        })
+        .await;
+        assert!(store.apply_changes(&uri, vec![full_change("after")], 2));
+    });
+
+    assert_eq!(snapshot.content.as_str(), "before😀");
+    assert_eq!(snapshot.offset, "before".len());
+    assert_eq!(store.text_snapshot(&uri).unwrap().as_str(), "after");
+}
+
+#[test]
+fn mutable_document_access_invalidates_the_shared_snapshot() {
+    let store = DocumentStore::new();
+    let uri = test_uri();
+    store.open(uri.clone(), "before".into(), 1, "vue".into());
+    let before = store.text_snapshot(&uri).unwrap();
+
+    {
+        let mut document = store.get_mut(&uri).unwrap();
+        let chars = document
+            .content
+            .try_byte_to_char(document.content.len_bytes())
+            .unwrap();
+        document.content.replace(0..chars, "after");
+    }
+
+    let after = store.text_snapshot(&uri).unwrap();
+    assert!(!Arc::ptr_eq(&before, &after));
+    assert_eq!(before.as_str(), "before");
+    assert_eq!(after.as_str(), "after");
 }
 
 // `revision` is what content caches key on, so an unchanged stamp has to be

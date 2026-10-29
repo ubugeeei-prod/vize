@@ -10,7 +10,7 @@ use std::{
     process::{Command, ExitCode},
 };
 
-const OVERRIDES: [&str; 11] = [
+const OVERRIDES: [&str; 13] = [
     "NODE_OPTIONS",
     "VIZE_PREFER_WORKSPACE_BINDING",
     "NAPI_RS_NATIVE_LIBRARY_PATH",
@@ -20,6 +20,8 @@ const OVERRIDES: [&str; 11] = [
     "CORSA_EXECUTABLE",
     "TSGO_PATH",
     "TSGO_EXECUTABLE",
+    "TSRS_PATH",
+    "TSRS_EXECUTABLE",
     "VIZE_PUBLIC_NATIVE_CUSTODY",
     "VIZE_OXLINT_NATIVE_CUSTODY",
 ];

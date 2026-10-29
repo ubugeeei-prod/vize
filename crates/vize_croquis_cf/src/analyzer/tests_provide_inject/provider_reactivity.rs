@@ -56,11 +56,67 @@ const unknownCall = inject('unknown-call')"#,
 
     assert_eq!(
         reported,
-        BTreeSet::from([
-            "snapshot".to_owned(),
-            "snapshot-binding".to_owned(),
-            "unknown-call".to_owned()
-        ])
+        BTreeSet::from(["snapshot".to_owned(), "snapshot-binding".to_owned()])
+    );
+}
+
+#[test]
+fn test_composable_results_are_not_reported_as_known_plain_provides() {
+    use crate::rules::CrossFileReactivityIssueKind;
+    use std::collections::BTreeSet;
+
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));
+    analyzer.add_file_with_analysis(
+        Path::new("App.vue"),
+        "",
+        script_analysis(
+            r#"import { provide, ref } from 'vue'
+const { selected } = useSelection()
+const toast = useToast()
+const maybeLive = getService()
+const source = ref('live')
+const snapshot = source.value
+const plain = 'fixed'
+provide('selected', selected)
+provide('toast', toast)
+provide('maybe-live', maybeLive)
+provide('snapshot', snapshot)
+provide('plain', plain)"#,
+            &["Picker"],
+        ),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("Picker.vue"),
+        "",
+        script_analysis(
+            r#"import { inject } from 'vue'
+const selected = inject('selected')
+const toast = inject('toast')
+const maybeLive = inject('maybe-live')
+const snapshot = inject('snapshot')
+const plain = inject('plain')"#,
+            &[],
+        ),
+    );
+    analyzer.rebuild_component_edges();
+
+    let reported = analyzer
+        .analyze()
+        .cross_file_reactivity_issues
+        .iter()
+        .filter_map(|issue| match &issue.kind {
+            CrossFileReactivityIssueKind::NonReactiveProvide { key } => {
+                Some(key.as_str().to_owned())
+            }
+            _ => None,
+        })
+        .collect::<BTreeSet<_>>();
+
+    assert_eq!(
+        reported,
+        BTreeSet::from(["plain".to_owned(), "snapshot".to_owned()]),
+        "only values proven to be plain should warn"
     );
 }
 

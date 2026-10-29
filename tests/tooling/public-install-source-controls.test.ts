@@ -28,7 +28,7 @@ globalThis.fetch = () => {
 type Manifest = Record<string, unknown> & {
   version: string;
   dependencies: Record<string, string>;
-  optionalDependencies: Record<string, string>;
+  optionalDependencies?: Record<string, string>;
 };
 const manifestPaths = [
   "npm/cli/package.json",
@@ -113,7 +113,11 @@ describe("SourceControls", () => {
     const receipt = sourceManifests(repository, source(actualHead, version));
     assert.equal(receipt.files.length, 4);
     assert.ok(Number(receipt.corsaVersion.split(".")[0]) >= 7);
-    assert.equal("@vizejs/native-darwin-arm64" in cliManifest().optionalDependencies, false);
+    assert.equal(
+      "@vizejs/native-darwin-arm64" in (cliManifest().optionalDependencies ?? {}),
+      false,
+    );
+    assert.equal(receipt.corsaResolutionMode, "explicit-user-provider");
     assert.equal(sourceManifests(f.root, source(f.commit())).files.length, 4);
   });
 
@@ -137,7 +141,7 @@ describe("SourceControls", () => {
       const file = path.join(f.root, name);
       const manifest = JSON.parse(fs.readFileSync(file, "utf8")) as Record<string, unknown>;
       if (child === null) manifest[field] = value;
-      else (manifest[field] as Record<string, string>)[child] = value;
+      else ((manifest[field] ??= {}) as Record<string, string>)[child] = value;
       fs.writeFileSync(file, JSON.stringify(manifest));
       assert.throws(() => sourceManifests(f.root, source(f.commit())), `${name} ${field}`);
     }
@@ -157,26 +161,30 @@ describe("SourceControls", () => {
     }
   });
 
-  test("full identity and exact raw single parent are required", (t) => {
+  test("historical bundled H stays distinct from current explicit-provider source", (t) => {
     const f = fixture(t);
-    const head = f.commit();
-    assert.equal(sourceIdentity(f.root, f.cut, head, "v0.999.0", "123").H, head);
-    for (const [cut, candidate, tag, run] of [
-      [head, f.cut, "v0.999.0", "123"],
-      [f.cut.slice(0, 8), head, "v0.999.0", "123"],
-      [f.cut, head, "v0.999.1", "123"],
-      [f.cut, head, "v0.999.0", "0"],
-    ] as const)
-      assert.throws(() => sourceIdentity(f.root, cut, candidate, tag, run));
+    const file = path.join(f.root, "npm/cli/package.json");
+    const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+    manifest.optionalDependencies = {
+      "@typescript/typescript-darwin-arm64": "catalog:corsa-runtime",
+    };
+    fs.writeFileSync(file, JSON.stringify(manifest));
+    assert.equal(sourceManifests(f.root, source(f.commit())).corsaResolutionMode, undefined);
+
+    manifest.optionalDependencies = { "@typescript/typescript-linux-x64": "catalog:corsa-runtime" };
+    fs.writeFileSync(file, JSON.stringify(manifest));
+    assert.throws(() => sourceManifests(f.root, source(f.commit())), /incomplete bundled/);
+
+    delete manifest.optionalDependencies;
+    manifest.peerDependencies = { "project-checker": "npm:tsrs@0.18.0" };
+    fs.writeFileSync(file, JSON.stringify(manifest));
+    assert.throws(() => sourceManifests(f.root, source(f.commit())), /incomplete bundled/);
   });
 
-  test("installed CLI native and Corsa must equal actual H edges before probe", async (t) => {
+  test("current private provider must be explicit before Node or network probes", async (t) => {
     const f = fixture(t);
     const head = f.commit();
-    const corsa = sourceManifests(f.root, source(head)).corsaVersion;
-    const install = fs.realpathSync(
-      fs.mkdtempSync(path.join(os.tmpdir(), "public-install-consumer-")),
-    );
+    const install = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "public-user-request-")));
     t.after(() => fs.rmSync(install, { recursive: true, force: true }));
     const versions = Object.fromEntries(
       ["vize", "oxlint-plugin-vize", "@vizejs/native", "@vizejs/native-darwin-arm64"].map(
@@ -191,22 +199,106 @@ describe("SourceControls", () => {
       path.join(install, "package-lock.json"),
       JSON.stringify({ lockfileVersion: 3, packages: { "": { dependencies: versions } } }),
     );
+    const cli = cliManifest();
+    cli.version = "0.999.0";
+    cli.dependencies["@vizejs/native"] = "0.999.0";
+    delete cli.optionalDependencies;
+    fs.mkdirSync(path.join(install, "node_modules/vize"), { recursive: true });
+    fs.writeFileSync(path.join(install, "node_modules/vize/package.json"), JSON.stringify(cli));
+    const { node, sentinel } = f.fakeNode();
+    await assert.rejects(
+      collect(f.args(head, "v0.999.0", install, node)),
+      /explicitly declared private user provider required/,
+    );
+    assert.equal(fs.existsSync(sentinel), false);
+
+    const provider = "@typescript/typescript-darwin-arm64";
+    const providerVersion = sourceManifests(f.root, source(head)).corsaVersion;
+    fs.writeFileSync(
+      path.join(install, "package.json"),
+      JSON.stringify({
+        private: true,
+        dependencies: versions,
+        devDependencies: { [provider]: providerVersion },
+      }),
+    );
+    fs.writeFileSync(
+      path.join(install, "package-lock.json"),
+      JSON.stringify({
+        lockfileVersion: 3,
+        packages: {
+          "": {
+            dependencies: versions,
+            devDependencies: { [provider]: "7.0.0-wrong" },
+          },
+        },
+      }),
+    );
+    await assert.rejects(collect(f.args(head, "v0.999.0", install, node)), /root lock declaration/);
+    assert.equal(fs.existsSync(sentinel), false);
+    assert.equal(fs.existsSync(path.join(f.root, "receipt.json")), false);
+  });
+
+  test("full identity and exact raw single parent are required", (t) => {
+    const f = fixture(t);
+    const head = f.commit();
+    assert.equal(sourceIdentity(f.root, f.cut, head, "v0.999.0", "123").H, head);
+    for (const [cut, candidate, tag, run] of [
+      [head, f.cut, "v0.999.0", "123"],
+      [f.cut.slice(0, 8), head, "v0.999.0", "123"],
+      [f.cut, head, "v0.999.1", "123"],
+      [f.cut, head, "v0.999.0", "0"],
+    ] as const)
+      assert.throws(() => sourceIdentity(f.root, cut, candidate, tag, run));
+  });
+
+  test("installed CLI native and checker absence must equal actual H before probe", async (t) => {
+    const f = fixture(t);
+    const head = f.commit();
+    const corsa = sourceManifests(f.root, source(head)).corsaVersion;
+    const install = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), "public-install-consumer-")),
+    );
+    t.after(() => fs.rmSync(install, { recursive: true, force: true }));
+    const versions = Object.fromEntries(
+      ["vize", "oxlint-plugin-vize", "@vizejs/native", "@vizejs/native-darwin-arm64"].map(
+        (name) => [name, "0.999.0"],
+      ),
+    );
+    fs.writeFileSync(
+      path.join(install, "package.json"),
+      JSON.stringify({
+        private: true,
+        dependencies: versions,
+        devDependencies: { "@typescript/typescript-darwin-arm64": corsa },
+      }),
+    );
+    fs.writeFileSync(
+      path.join(install, "package-lock.json"),
+      JSON.stringify({
+        lockfileVersion: 3,
+        packages: {
+          "": {
+            dependencies: versions,
+            devDependencies: { "@typescript/typescript-darwin-arm64": corsa },
+          },
+        },
+      }),
+    );
     const manifestPath = path.join(install, "node_modules/vize/package.json");
     fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
     const { node, sentinel } = f.fakeNode();
-    for (const edge of ["native", "corsa"]) {
-      const manifest = cliManifest();
-      manifest.dependencies["@vizejs/native"] = edge === "native" ? "0.998.0" : "0.999.0";
-      manifest.optionalDependencies["@typescript/typescript-darwin-arm64"] =
-        edge === "corsa" ? "7.999.0" : corsa;
-      fs.writeFileSync(manifestPath, JSON.stringify(manifest));
-      await assert.rejects(
-        collect(f.args(head, "v0.999.0", install, node)),
-        /actual H declaration/u,
-      );
-      assert.equal(fs.existsSync(sentinel), false);
-      assert.equal(fs.existsSync(path.join(f.root, "receipt.json")), false);
-    }
+    const wrongNative = cliManifest();
+    wrongNative.dependencies["@vizejs/native"] = "0.998.0";
+    fs.writeFileSync(manifestPath, JSON.stringify(wrongNative));
+    await assert.rejects(collect(f.args(head, "v0.999.0", install, node)), /actual H declaration/u);
+
+    const bundled = cliManifest();
+    bundled.optionalDependencies = { "@typescript/typescript-darwin-arm64": corsa };
+    fs.writeFileSync(manifestPath, JSON.stringify(bundled));
+    await assert.rejects(collect(f.args(head, "v0.999.0", install, node)), /checker dependency/u);
+    assert.equal(fs.existsSync(sentinel), false);
+    assert.equal(fs.existsSync(path.join(f.root, "receipt.json")), false);
   });
 
   test("Git replacement cannot substitute H source or CLI wrapper", (t) => {

@@ -3041,6 +3041,16 @@ script/prefer-computed · lint 规则
 类别: script
 自动修复: 不支持
 文档: docs/content/rules/type-and-script.md
+=== script/prefer-define-emits-binding
+script/prefer-define-emits-binding · lint 规则
+优先使用从 defineEmits 捕获的函数而不是模板 $emit
+
+精度层级: complete
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: script
+自动修复: 支持
+文档: docs/content/rules/type-and-script.md
 === script/prefer-define-options
 script/prefer-define-options · lint 规则
 优先使用 defineOptions()，而不是只设置 name/inheritAttrs 的普通 <script>

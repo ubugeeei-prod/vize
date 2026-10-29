@@ -9,7 +9,6 @@ import {
   type StatusBarItem,
 } from "vscode";
 import { LanguageClient, Trace } from "vscode-languageclient/node.js";
-import { resolveCorsaServerEnv } from "./corsa-runtime.js";
 import { createServerOptions } from "./server-options.js";
 import {
   WORKSPACE_LSP_CONFIG_FILES,
@@ -334,16 +333,7 @@ async function startClient(
     return;
   }
   outputChannel.appendLine(`Using server: ${serverPath}`);
-  const serverEnv = await resolveCorsaServerEnv({
-    extensionPath: context.extensionPath,
-    globalStoragePath: context.globalStorageUri.fsPath,
-    output: outputChannel,
-  });
-  if (generation !== configurationSyncGeneration) {
-    traceConfig(`start refused generation=${generation} stage=corsa`);
-    return;
-  }
-  const serverOptions = createServerOptions(serverPath, serverEnv);
+  const serverOptions = createServerOptions(serverPath);
   let nextClient: LanguageClient | undefined;
   nextClient = new LanguageClient(
     "vize",

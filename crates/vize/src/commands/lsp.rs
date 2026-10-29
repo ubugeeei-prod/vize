@@ -15,6 +15,9 @@ pub struct LspArgs {
     /// Enable debug logging
     #[arg(long)]
     pub debug: bool,
+
+    #[command(flatten)]
+    pub profile_export: super::profile_export::ProfileExportArgs,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -24,10 +27,12 @@ pub(crate) enum LspTransport {
 }
 
 pub fn run(args: LspArgs) {
+    args.profile_export.begin(false);
     let result = match transport_from_port(args.port) {
         LspTransport::Stdio => vize_maestro::serve_blocking(),
         LspTransport::Tcp(port) => vize_maestro::serve_tcp_blocking(port),
     };
+    args.profile_export.finish("lsp", false);
 
     if let Err(e) = result {
         eprintln!("LSP server error: {}", e);
@@ -52,6 +57,7 @@ mod tests {
             debug: false,
             port: None,
             stdio: true,
+            profile_export: Default::default(),
         };
 
         assert_eq!(transport_from_port(args.port), LspTransport::Stdio);
@@ -63,6 +69,7 @@ mod tests {
             debug: false,
             port: Some(9257),
             stdio: true,
+            profile_export: Default::default(),
         };
 
         assert_eq!(transport_from_port(args.port), LspTransport::Tcp(9257));
@@ -74,6 +81,7 @@ mod tests {
             debug: true,
             port: Some(9258),
             stdio: true,
+            profile_export: Default::default(),
         };
 
         assert_eq!(transport_from_port(args.port), LspTransport::Tcp(9258));

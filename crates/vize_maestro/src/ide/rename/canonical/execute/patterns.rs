@@ -33,10 +33,11 @@ pub(super) fn rewrite_shorthand_bindings(
             let source = if uri == ctx.uri {
                 Some(ctx.content.clone())
             } else {
-                ctx.state
-                    .documents
-                    .text(uri)
-                    .or_else(|| document.authored_source(uri).map(str::to_owned))
+                ctx.state.documents.text_snapshot(uri).or_else(|| {
+                    document
+                        .authored_source(uri)
+                        .map(|source| std::sync::Arc::new(source.to_owned()))
+                })
             }?;
             let local = IdeContext::for_unopened(ctx.state, uri, 0, source);
             collect(&local, new_name)

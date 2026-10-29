@@ -4,6 +4,9 @@
 static ALLOCATOR: vize_l0::profiler::ProfilingAllocator<std::alloc::System> =
     vize_l0::profiler::ProfilingAllocator::from_allocator(std::alloc::System);
 
+#[cfg(feature = "micro-profiling")]
+mod source_probes;
+
 // Keep libtest's listing protocol while excluding its reporting threads from
 // the allocator window. Nextest invokes this executable with --list first.
 fn main() {
@@ -137,5 +140,6 @@ fn run() {
     );
     profiler.clear();
     assert!(micro::snapshot().is_empty());
+    source_probes::run();
     println!("source operation scopes, allocation exclusion, and 64-worker counts passed");
 }

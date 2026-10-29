@@ -1,6 +1,14 @@
+// Active #6852 pins are corpus inputs without a batch pack. Keep that manifest
+// distinction beside the pack registry instead of teaching every consumer it.
+export function packCases<T extends { pack?: unknown }>(cases: readonly T[]): T[] {
+  return cases.filter((fixture) => fixture.pack !== undefined);
+}
+
 // Exact production fixture-body and original-source registrations, sorted by pack.
 export const TYPECHECKER_TESTS = {
   "allow-importing-ts-extensions-9890": "authored_ts_extensions_report_ts5097_by_default",
+  "aria-kebab-prop-11048":
+    "aria_kebab_prop_11048::declared_kebab_aria_props_preserve_batch_diagnostics",
   "art-variant-implicit-component-9854":
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
   "authored-unused-symbols": "authored_unused_symbols_preserve_complete_original_diagnostics",
@@ -49,6 +57,8 @@ export const TYPECHECKER_TESTS = {
     "content_mapper_keeps_inferred_type_only_imports_out_of_value_anchors",
   "content-mapper-unknown-options-10218":
     "content_mapper_unknown_options_preserve_requested_diagnostics",
+  "content-mapper-vue-generic-11051":
+    "content_mapper_vue_generic_11051::content_mapper_vue_generic_preserves_explicit_type_arguments",
   "contextual-prop-anchors-10661": "contextual_prop_anchors_preserve_authored_diagnostics",
   "declared-prop-names-original": "declared_prop_names_preserve_complete_original_diagnostics",
   "dependency-probe-history-10936": "dependency_probe_histories_preserve_complete_diagnostics",
@@ -120,6 +130,8 @@ export const TYPECHECKER_TESTS = {
   "undeclared-instance-globals-10617": "undeclared_instance_globals_report_at_every_read",
   "unicode-prop-bindings-10573": "unicode_prop_bindings_preserve_complete_authored_diagnostics",
   "unicode-reserved-props": "unicode_reserved_props_preserve_value_diagnostics",
+  "unknown-component-slot-payload-11027":
+    "unknown_component_slots_preserve_authored_type_diagnostics",
   "v-for-component-source-original":
     "component_v_for_source_preserves_complete_original_diagnostics",
   "v-for-source-original": "v_for_source_callbacks_preserve_complete_original_diagnostics",
@@ -133,6 +145,7 @@ export const TYPECHECKER_TESTS = {
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
 export const sourceRevisions = {
   "allow-importing-ts-extensions-9890": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
+  "aria-kebab-prop-11048": "65b38273c8713a724f42f0bb63a2aef7cc6daae4",
   "art-variant-implicit-component-9854": "f07065df35d25bc76f355e5f106c80dbefa922b5",
   "authored-unused-symbols": "cd7156d28386e072953476fdbc354a963758dc89",
   "cache-maintenance-9860": "4714c0f264dedffaa81377df9545fbfa9514a64e",
@@ -165,6 +178,7 @@ export const sourceRevisions = {
   "content-mapper-template-expression-syntax": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
   "content-mapper-type-only-import-use": "fb89f41ffc518768e3053ccf9fe6b83bf24a1122",
   "content-mapper-unknown-options-10218": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+  "content-mapper-vue-generic-11051": "dfc8b0e13c20ea7c8d46e555f70ffd7fe3e89a27",
   "contextual-prop-anchors-10661": "da6d833de40c8a084022d0229beaeec25a92eb41",
   "declared-prop-names-original": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
   "dependency-probe-history-10936": "1266cd3a014654bbdcf3378500b93447411b26d9",
@@ -224,6 +238,7 @@ export const sourceRevisions = {
   "undeclared-instance-globals-10617": "42ca747027a86da7f94b473cff737cb330134d8c",
   "unicode-prop-bindings-10573": "751dc1971ba6613ea2a5642e57a4a76b16fc9353",
   "unicode-reserved-props": originalFixtureRevision,
+  "unknown-component-slot-payload-11027": "99ee7d1c4b99f9121f70a5f60d5f9aa81c596d47",
   "v-for-component-source-original": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
   "v-for-source-original": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
   "valueless-directive-import-3140": "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",

@@ -46,8 +46,8 @@ export function prepareNuxt2BridgeSource(
         manifest: JSON.parse(manifest.toString()),
       });
     }
-    // The module retains its Nuxt 2-safe Kit pin; the Bridge host independently
-    // resolves its own newer Kit. Vite deliberately resolves from the consumer.
+    // The module and Bridge host independently resolve their own runtime Kit.
+    // Vite deliberately resolves from the consumer.
     const kit = path.join(fixture, "node_modules/@vizejs/nuxt/node_modules/@nuxt/kit");
     fs.mkdirSync(path.dirname(kit), { recursive: true });
     fs.symlinkSync(

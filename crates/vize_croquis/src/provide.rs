@@ -173,6 +173,15 @@ impl ProvideInjectTracker {
         }
     }
 
+    /// Whether this exact call was already recorded by the binding-aware
+    /// declarator pass before the generic expression walker reached it.
+    #[inline]
+    pub(crate) fn has_inject_span(&self, start: u32, end: u32) -> bool {
+        self.injects
+            .last()
+            .is_some_and(|inject| inject.start == start && inject.end == end)
+    }
+
     /// Add a composable function call
     #[expect(clippy::too_many_arguments, reason = "distinct analysis inputs")]
     pub fn add_composable(

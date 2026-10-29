@@ -8,7 +8,7 @@ on:
 
 concurrency:
   group: cleanup-obsolete-merge-groups
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 permissions:
   contents: read
