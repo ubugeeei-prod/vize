@@ -5,12 +5,15 @@
     reason = "project owners share buffers and protocol consumers require std String"
 )]
 
+mod uri_snapshot;
+
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, OnceLock};
 
 use dashmap::DashMap;
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 
+use self::uri_snapshot::UriSnapshotCache;
 use super::DocumentText;
 use super::edit_cancel::EditCancellation;
 use crate::utils::position_to_offset;
@@ -182,6 +185,7 @@ pub(crate) struct DocumentPositionSnapshot {
 #[derive(Clone)]
 pub struct DocumentStore {
     documents: Arc<DashMap<Url, Document>>,
+    uri_snapshots: Arc<UriSnapshotCache>,
     revision: Arc<AtomicU64>,
     mutations: Arc<AtomicUsize>,
     edits: Arc<EditCancellation>,
@@ -198,6 +202,7 @@ impl DocumentStore {
     pub fn new() -> Self {
         Self {
             documents: Arc::new(DashMap::new()),
+            uri_snapshots: Arc::default(),
             revision: Arc::new(AtomicU64::new(0)),
             mutations: Arc::new(AtomicUsize::new(0)),
             edits: Arc::default(),
@@ -207,9 +212,11 @@ impl DocumentStore {
     /// Open a new document.
     pub fn open(&self, uri: Url, content: String, version: i32, language_id: String) {
         let _mutation = self.source_set_mutation();
+        let uri_set = self.uri_snapshots.mutation(&uri, None);
         let doc = Document::new(uri.clone(), content, version, language_id);
-        self.documents.insert(uri, doc);
+        self.documents.insert(uri.clone(), doc);
         self.revision.fetch_add(1, Ordering::Release);
+        uri_set.opened(uri);
     }
 
     /// Close a document.
@@ -218,8 +225,10 @@ impl DocumentStore {
             return;
         }
         let _mutation = self.source_set_mutation();
+        let uri_set = self.uri_snapshots.mutation(uri, None);
         if self.documents.remove(uri).is_some() {
             self.revision.fetch_add(1, Ordering::Release);
+            uri_set.closed(uri);
         }
     }
 
@@ -237,6 +246,14 @@ impl DocumentStore {
             return false;
         }
         let _mutation = self.source_set_mutation();
+        let uri_set = self.uri_snapshots.mutation(old_uri, Some(&new_uri));
+
+        // The optimistic checks above avoid stamping obvious no-ops. Repeat
+        // them after acquiring the URI stripes so conflicting key mutations
+        // and their cache commits have one order.
+        if self.documents.contains_key(&new_uri) || !self.documents.contains_key(old_uri) {
+            return false;
+        }
 
         let Some((_, mut document)) = self.documents.remove(old_uri) else {
             return false;
@@ -247,8 +264,9 @@ impl DocumentStore {
         // the path, so the entry they cached under the old URI must not be
         // mistaken for this one; a fresh stamp keeps the two unrelatable.
         document.revision = next_revision();
-        self.documents.insert(new_uri, document);
+        self.documents.insert(new_uri.clone(), document);
         self.revision.fetch_add(1, Ordering::Release);
+        uri_set.renamed(old_uri, new_uri);
         true
     }
 
@@ -373,22 +391,26 @@ impl DocumentStore {
         self.documents.contains_key(uri)
     }
 
-    /// Get all document URIs.
-    pub fn uris(&self) -> Vec<Url> {
+    /// Get a sorted immutable snapshot of all open document URIs.
+    ///
+    /// Completed key mutations advance the snapshot generation. In-flight
+    /// mutations remain invisible until their complete delta is published, so
+    /// stale `Arc`s stay valid without exposing rename remove/insert windows.
+    pub fn uris(&self) -> Arc<[Url]> {
         vize_l0::micro_count!("lsp.document_store.uris.calls", 1);
-        let snapshots: Vec<Url> = vize_l0::micro_span!(
+        let snapshot = vize_l0::micro_span!(
             "lsp.document_store.uris.clone_snapshot",
-            self.documents.iter().map(|r| r.key().clone()).collect()
+            self.uri_snapshots.snapshot()
         );
-        vize_l0::micro_count!("lsp.document_store.uris.returned_items", snapshots.len());
+        vize_l0::micro_count!("lsp.document_store.uris.returned_items", snapshot.len());
         vize_l0::micro_count!(
             "lsp.document_store.uris.returned_uri_utf8_bytes",
-            snapshots
+            snapshot
                 .iter()
                 .map(|uri| uri.as_str().len() as u64)
                 .sum::<u64>()
         );
-        snapshots
+        snapshot
     }
 
     /// Owned snapshots of open Vue documents, holding no shard guard on return.
@@ -463,5 +485,7 @@ impl Drop for SourceSetMutation<'_> {
 mod snapshot_tests;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod uri_snapshot_tests;
 #[cfg(test)]
 mod version_tests;

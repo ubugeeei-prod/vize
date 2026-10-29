@@ -5,6 +5,8 @@
     reason = "document snapshots own protocol strings"
 )]
 
+use std::sync::Arc;
+
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 use vize_maestro::document::DocumentStore;
 
@@ -13,7 +15,7 @@ use vize_maestro::document::DocumentStore;
 static ALLOCATOR: vize_l0::profiler::ProfilingAllocator<std::alloc::System> =
     vize_l0::profiler::ProfilingAllocator::from_allocator(std::alloc::System);
 
-type Snapshot = (Vec<Url>, Vec<(Url, String)>);
+type Snapshot = (Arc<[Url]>, Vec<(Url, String)>);
 
 #[derive(Clone, Copy)]
 struct Expected {
@@ -118,7 +120,6 @@ fn uri(value: &str) -> Url {
 
 #[cfg(feature = "micro-profiling")]
 fn assert_shared_text_snapshot_allocation_law() {
-    use std::sync::Arc;
     use vize_l0::profiler::{
         allocation_snapshot, reset_allocation_counters, set_allocation_tracking_enabled,
     };
@@ -176,6 +177,74 @@ fn assert_shared_text_snapshot_allocation_law() {
                 "requestedBytes": shared.requested_bytes(),
             },
             "law": "warm shared Arc clones allocate zero bytes",
+        })
+    );
+}
+
+#[cfg(feature = "micro-profiling")]
+fn assert_shared_uri_snapshot_allocation_law() {
+    use vize_l0::profiler::{
+        allocation_snapshot, reset_allocation_counters, set_allocation_tracking_enabled,
+    };
+
+    const DOCUMENTS: usize = 2_500;
+    const READS: u64 = 338;
+    let store = DocumentStore::new();
+    for index in 0..DOCUMENTS {
+        let path = vize_l0::cstr!("file:///fixture/uri-snapshot/{index:04}-%E6%97%A5.vue");
+        store.open(
+            Url::parse(path.as_str()).expect("generated URI is valid"),
+            String::new(),
+            1,
+            String::from("vue"),
+        );
+    }
+
+    // Build and register the cache and counter sites outside the measured window.
+    let resident = store.uris();
+    assert_eq!(resident.len(), DOCUMENTS);
+
+    reset_allocation_counters();
+    set_allocation_tracking_enabled(true);
+    for _ in 0..READS {
+        let owned = resident.iter().cloned().collect::<Vec<Url>>();
+        assert_eq!(owned.len(), DOCUMENTS);
+        assert_eq!(owned.as_slice(), resident.as_ref());
+        std::hint::black_box(&owned);
+    }
+    let legacy_owned = allocation_snapshot();
+    set_allocation_tracking_enabled(false);
+
+    reset_allocation_counters();
+    set_allocation_tracking_enabled(true);
+    for _ in 0..READS {
+        let shared = store.uris();
+        assert!(Arc::ptr_eq(&resident, &shared));
+        std::hint::black_box(&shared);
+    }
+    let shared = allocation_snapshot();
+    set_allocation_tracking_enabled(false);
+
+    assert!(legacy_owned.allocation_calls() > 0);
+    assert!(legacy_owned.requested_bytes() > 0);
+    assert_eq!(legacy_owned.allocation_failures(), 0);
+    assert_eq!(shared.allocation_calls(), 0);
+    assert_eq!(shared.requested_bytes(), 0);
+    assert_eq!(shared.allocation_failures(), 0);
+    println!(
+        "document_uri_snapshot_allocation={}",
+        serde_json::json!({
+            "documents": DOCUMENTS,
+            "reads": READS,
+            "legacyOwned": {
+                "allocationCalls": legacy_owned.allocation_calls(),
+                "requestedBytes": legacy_owned.requested_bytes(),
+            },
+            "shared": {
+                "allocationCalls": shared.allocation_calls(),
+                "requestedBytes": shared.requested_bytes(),
+            },
+            "law": "warm URI Arc clones allocate zero bytes after the same-process owned baseline",
         })
     );
 }
@@ -289,5 +358,8 @@ fn snapshot_producers_keep_owned_results_and_exact_utf8_payloads() {
     assert_eq!(original[0].1[1].1, "abc\r\n");
 
     #[cfg(feature = "micro-profiling")]
-    assert_shared_text_snapshot_allocation_law();
+    {
+        assert_shared_text_snapshot_allocation_law();
+        assert_shared_uri_snapshot_allocation_law();
+    }
 }
