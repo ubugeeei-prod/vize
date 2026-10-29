@@ -551,7 +551,7 @@
       },
       "reference": {
         "path": "computed-keep-alive-filter-11101/module.expected.txt",
-        "sha256": "bd83865766fb6ff65fcb5be9cf333186db34c87580dd41bf3e8dcdcd3a89ede4",
+        "sha256": "146dc507068bccaa44b5fa7dfc46daf423728bc2636f21e5f06af31f8ad7ab39",
         "source": "crates/vize_atelier_vapor/src/tests_source_map.rs:computed_keep_alive_filter_key_maps_authored_operands; SSR source coverage only"
       },
       "adapters": {
