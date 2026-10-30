@@ -4,6 +4,10 @@ use vize_l0::ts;
 
 use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
 
+#[expect(
+    clippy::redundant_closure_call,
+    reason = "the ts! interpolation closure gives the emitted block a named writer"
+)]
 pub(super) fn emit_authored_event_map(
     ts: &mut String,
     summary: &Croquis,

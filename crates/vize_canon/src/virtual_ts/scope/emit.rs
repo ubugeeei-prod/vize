@@ -144,7 +144,11 @@ impl AsMappings for super::context::ScopeMappings<'_> {
     }
 }
 
-#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
+#[expect(
+    clippy::too_many_arguments,
+    clippy::redundant_closure_call,
+    reason = "independent emitter inputs and a ts! interpolation writer"
+)]
 pub(super) fn emit_v_for_loop_open<M>(
     ts: &mut String,
     mappings: &mut M,

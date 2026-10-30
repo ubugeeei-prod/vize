@@ -181,7 +181,9 @@ fn emit_ref_loops(
         }
         return;
     }
-    let scope = loops[index];
+    let Some(&scope) = loops.get(index) else {
+        return;
+    };
     if let Some(guard) = ctx.vfor_enclosing_guards.get(&scope.id.as_u32()) {
         with_guard(ts, indent, guard.as_str(), |ts, indent| {
             emit_ref_loop(ts, ctx, usage, component, loops, scope, index, indent, name);
