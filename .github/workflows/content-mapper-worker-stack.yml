@@ -1,0 +1,70 @@
+name: Content Mapper worker stack
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/content-mapper-worker-stack.yml
+      - tools/benchmarks/scripts/content-mapper-worker-stack.py
+      - crates/vize/src/commands/content_mapper/dispatch.rs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: content-mapper-worker-stack-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  calibrate:
+    name: Nested closure stack (${{ matrix.profile }})
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [ci, ci-opt]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: content-mapper-worker-stack-${{ matrix.profile }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Build exact mapper source
+        env:
+          BUILD_PROFILE: ${{ matrix.profile }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          cargo build --locked --profile "$BUILD_PROFILE" -p vize --bin vize
+      - name: Probe bounded child processes and retain complete packets
+        env:
+          BUILD_PROFILE: ${{ matrix.profile }}
+        run: |
+          python3 tools/benchmarks/scripts/content-mapper-worker-stack.py \
+            --binary "target/$BUILD_PROFILE/vize" \
+            --source-sha "$SOURCE_SHA" \
+            --profile "$BUILD_PROFILE" \
+            --out "$RUNNER_TEMP/worker-stack"
+      - name: Retain complete source and process evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: content-mapper-worker-stack-${{ matrix.profile }}-${{ env.SOURCE_SHA }}
+          path: ${{ runner.temp }}/worker-stack
+          if-no-files-found: error
+          retention-days: 7

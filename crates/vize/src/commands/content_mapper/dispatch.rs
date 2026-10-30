@@ -5,7 +5,7 @@ use std::io::{self, BufRead, Write};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::Path;
 use std::sync::mpsc::{self, Receiver, Sender};
-use std::sync::{Arc, Condvar, Mutex};
+use std::sync::{Arc, Condvar, Mutex, PoisonError};
 use std::thread;
 
 use serde::Serialize;
@@ -48,21 +48,24 @@ impl WriteProgress {
     }
 
     fn record(&self, flushed: u64) {
-        let mut state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
         state.flushed = flushed;
         self.ready.notify_all();
     }
 
     fn fail(&self) {
-        let mut state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
         state.failed = true;
         self.ready.notify_all();
     }
 
     fn wait_until(&self, flushed: u64) -> io::Result<()> {
-        let mut state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
         while state.flushed < flushed && !state.failed {
-            state = self.ready.wait(state).unwrap();
+            state = self
+                .ready
+                .wait(state)
+                .unwrap_or_else(PoisonError::into_inner);
         }
         if state.failed && state.flushed < flushed {
             Err(io::Error::other("content-mapper writer stopped"))
@@ -85,7 +88,8 @@ pub(super) fn serve<R: BufRead, W: Write + Send>(reader: &mut R, writer: &mut W)
         scope.spawn(move || {
             if let Err(error) = write_ordered(writer, done_rx, &writer_progress) {
                 writer_progress.fail();
-                *writer_error.lock().unwrap() = Some(error.to_string());
+                *writer_error.lock().unwrap_or_else(PoisonError::into_inner) =
+                    Some(error.to_string());
             }
         });
         let workers = thread::available_parallelism()
@@ -101,7 +105,11 @@ pub(super) fn serve<R: BufRead, W: Write + Send>(reader: &mut R, writer: &mut W)
         drop(done_tx);
         read
     });
-    if let Some(error) = recorded.lock().unwrap().take() {
+    if let Some(error) = recorded
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .take()
+    {
         return Err(io::Error::other(error));
     }
     read_result
@@ -110,7 +118,7 @@ pub(super) fn serve<R: BufRead, W: Write + Send>(reader: &mut R, writer: &mut W)
 fn worker(jobs: Arc<Mutex<Receiver<TransformJob>>>, done: Sender<(u64, Vec<u8>)>) {
     loop {
         let job = {
-            let receiver = jobs.lock().unwrap();
+            let receiver = jobs.lock().unwrap_or_else(PoisonError::into_inner);
             receiver.recv()
         };
         let Ok(job) = job else { break };
@@ -160,7 +168,7 @@ fn read_loop<R: BufRead>(
             Err(error) => {
                 let message = cstr!("Parse error: {error}");
                 let frame = encode_error(&Value::Null, -32700, &message)?;
-                sync_frame(progress, done, &mut seq, &frame)?;
+                reply(done, &mut seq, &frame)?;
                 continue;
             }
         };
@@ -169,42 +177,31 @@ fn read_loop<R: BufRead>(
             "initialize" => {
                 progress.wait_until(seq)?;
                 let frame = initialize(id, request.params, &mut initialized)?;
-                sync_frame(progress, done, &mut seq, &frame)?;
+                reply(done, &mut seq, &frame)?;
             }
             "openProject" | "closeProject" | "transform" if !initialized => {
                 let frame = encode_error(&id, -32002, "Content mapper is not initialized")?;
-                sync_frame(progress, done, &mut seq, &frame)?;
+                reply(done, &mut seq, &frame)?;
             }
             "openProject" => {
                 progress.wait_until(seq)?;
                 let frame = open_project(id, request.params, &mut projects)?;
-                sync_frame(progress, done, &mut seq, &frame)?;
+                reply(done, &mut seq, &frame)?;
             }
             "closeProject" => {
                 progress.wait_until(seq)?;
                 let frame = close_project(id, request.params, &mut projects)?;
-                sync_frame(progress, done, &mut seq, &frame)?;
+                reply(done, &mut seq, &frame)?;
             }
             "transform" => dispatch_transform(id, request.params, &projects, jobs, done, &mut seq)?,
             _ => {
                 let message = cstr!("Method not found: {}", request.method);
                 let frame = encode_error(&id, -32601, &message)?;
-                sync_frame(progress, done, &mut seq, &frame)?;
+                reply(done, &mut seq, &frame)?;
             }
         }
     }
     Ok(())
-}
-
-fn sync_frame(
-    progress: &WriteProgress,
-    done: &Sender<(u64, Vec<u8>)>,
-    seq: &mut u64,
-    frame: &[u8],
-) -> io::Result<()> {
-    // Callers that read project config wait before building this frame.
-    reply(done, seq, frame)?;
-    progress.wait_until(*seq)
 }
 
 fn reply(done: &Sender<(u64, Vec<u8>)>, seq: &mut u64, frame: &[u8]) -> io::Result<()> {
@@ -317,13 +314,13 @@ fn transform_frame(job: &TransformJob) -> io::Result<Vec<u8>> {
 fn encode_result(id: &Value, result: &impl Serialize) -> io::Result<Vec<u8>> {
     #[derive(Serialize)]
     struct Envelope<'a, T> {
-        jsonrpc: &'static str,
         id: &'a Value,
+        jsonrpc: &'static str,
         result: &'a T,
     }
     encode_frame(&Envelope {
-        jsonrpc: "2.0",
         id,
+        jsonrpc: "2.0",
         result,
     })
 }
