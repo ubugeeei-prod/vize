@@ -30,7 +30,7 @@ function assertConstructorPacketCustody(source: string): void {
   const start = source.indexOf("  unchanged-projection-packets:");
   assert.ok(start >= 0);
   const job = source.slice(start).replace(/\\\r?\n\s*/gu, " ");
-  const comparisons = [...job.matchAll(/^\s*cmp\s+([^\n]+)$/gmu)].map((match) => match[1].trim());
+  const comparisons = [...job.matchAll(/\bcmp\s+([^;\n]+)/gu)].map((match) => match[1].trim());
   assert.deepEqual(comparisons, ['"$observer" "$baseline/$observer"']);
   assert.match(job, /constructor-projection-parity\.ts/u);
   assert.match(job, /base-legacy\.json/u);
@@ -72,6 +72,13 @@ test("constructor packet custody delegates certified changes to complete parity"
     () =>
       assertConstructorPacketCustody(
         `${source}\n  cmp "$RUNNER_TEMP/base.json" \\\n    "$RUNNER_TEMP/head-legacy.json"\n`,
+      ),
+    assert.AssertionError,
+  );
+  assert.throws(
+    () =>
+      assertConstructorPacketCustody(
+        `${source}\n  if ! cmp "$RUNNER_TEMP/base.json" "$RUNNER_TEMP/head-legacy.json"; then exit 1; fi\n`,
       ),
     assert.AssertionError,
   );

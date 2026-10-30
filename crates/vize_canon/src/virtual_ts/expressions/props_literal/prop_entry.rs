@@ -372,7 +372,7 @@ mod tests {
 
     #[test]
     fn synthetic_value_gaps_preserve_only_contiguous_authored_bytes() {
-        let (actual, mut expected, source) = spans(&[3..5], 100..108);
+        let (actual, mut expected, source) = spans(std::slice::from_ref(&(3..5)), 100..108);
         expected.extend([
             VizeSubSpan {
                 gen_range: 100..103,
@@ -385,7 +385,7 @@ mod tests {
         ]);
         assert_eq!(actual, expected);
 
-        let (leading, mut expected, source) = spans(&[0..2], 100..108);
+        let (leading, mut expected, source) = spans(std::slice::from_ref(&(0..2)), 100..108);
         expected.push(VizeSubSpan {
             gen_range: 102..108,
             src_range: source,
@@ -395,7 +395,7 @@ mod tests {
             "a leading gap must not emit an empty span"
         );
 
-        let (trailing, mut expected, source) = spans(&[6..8], 100..108);
+        let (trailing, mut expected, source) = spans(std::slice::from_ref(&(6..8)), 100..108);
         expected.push(VizeSubSpan {
             gen_range: 100..106,
             src_range: source,
@@ -410,8 +410,8 @@ mod tests {
     fn unauthenticated_synthetic_gaps_fall_back_to_key_spans() {
         for (gaps, generated) in [
             (vec![2..4, 3..5], 100..110),
-            (vec![7..9], 100..108),
-            (vec![3..5], 100..109),
+            (std::iter::once(7..9).collect(), 100..108),
+            (std::iter::once(3..5).collect(), 100..109),
         ] {
             let (actual, keys, _) = spans(&gaps, generated);
             assert_eq!(actual, keys);
