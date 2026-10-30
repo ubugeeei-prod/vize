@@ -70,7 +70,7 @@ test("constructor packet custody delegates certified changes to complete parity"
   assert.throws(
     () =>
       assertConstructorPacketCustody(
-        `${source}\n  cmp "$RUNNER_TEMP/base-legacy.json" \\\n+    "$RUNNER_TEMP/head-legacy.json"\n`,
+        `${source}\n  cmp "$RUNNER_TEMP/base.json" \\\n    "$RUNNER_TEMP/head-legacy.json"\n`,
       ),
     assert.AssertionError,
   );
