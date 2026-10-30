@@ -10,6 +10,12 @@ import {
   callbackSetupReferencePrefix,
   type SourceSpan,
 } from "./callback-owner-projects.ts";
+import {
+  currentSlotsExport,
+  currentSlotsMarker,
+  previousSlotsExport,
+  previousSlotsMarker,
+} from "./constructor-projection-parity.ts";
 
 type Observation = {
   argv: string[];
@@ -29,6 +35,62 @@ type Diagnostic = {
   message: string;
   continuation: string[];
 };
+
+/** Preserve complete packets across the certified, unmapped public Slots contract. */
+export function assertPreservedCallbackPacket(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+) {
+  assert.equal(typeof before.text, "string");
+  assert.equal(typeof after.text, "string");
+  if (before.text === after.text) {
+    assert.deepEqual(after, before, "all unchanged callback transform fields stay exact");
+    return;
+  }
+  const original = before.text as string,
+    actual = after.text as string;
+  assert.equal(original.split(previousSlotsExport).length, 2);
+  assert.equal(original.split(currentSlotsExport).length, 1);
+  assert.equal(actual.split(previousSlotsExport).length, 1);
+  assert.equal(actual.split(currentSlotsExport).length, 2);
+  const boundary = Buffer.byteLength(original.slice(0, original.indexOf(previousSlotsExport)));
+  const precedesExport = (start: number, length: number) => {
+    assert.ok(Number.isSafeInteger(start) && start >= 0);
+    assert.ok(Number.isSafeInteger(length) && length >= 0);
+    assert.ok(start + length <= boundary, "authored projection must precede the Slots export");
+  };
+  assert.ok(Array.isArray(before.mappings));
+  for (const tuple of before.mappings as number[][]) {
+    assert.equal(tuple.length, 6);
+    precedesExport(tuple[0], tuple[1]);
+  }
+  for (const link of (before.semanticLinks ?? []) as {
+    sourceStart: number;
+    sourceLength: number;
+    targetStart: number;
+    targetLength: number;
+  }[]) {
+    precedesExport(link.sourceStart, link.sourceLength);
+    precedesExport(link.targetStart, link.targetLength);
+  }
+  for (const tuple of (before.diagnosticDirectives as { directives: number[][] } | undefined)
+    ?.directives ?? [])
+    precedesExport(tuple[2], tuple[3] - tuple[2]);
+  let expected = original.replace(previousSlotsExport, currentSlotsExport);
+  if (expected !== actual) {
+    assert.equal(original.split(previousSlotsMarker).length, 2);
+    assert.equal(original.split(currentSlotsMarker).length, 1);
+    assert.equal(actual.split(previousSlotsMarker).length, 1);
+    assert.equal(actual.split(currentSlotsMarker).length, 2);
+    assert.ok(original.indexOf(previousSlotsMarker) > original.indexOf(previousSlotsExport));
+    expected = expected.replace(previousSlotsMarker, currentSlotsMarker);
+  }
+  assert.deepEqual(
+    after,
+    { ...before, text: expected },
+    "all other complete callback transform fields must stay exact",
+  );
+}
 const header = "<!-- 日本 🧭 -->";
 const digest = (source: string) => createHash("sha256").update(source).digest("hex");
 
@@ -174,7 +236,7 @@ export function auditCallbackOwners(directory: string) {
   let qualified = 0,
     preserved = 0,
     frontiers = 0,
-    mapperFrontiers = 0;
+    resolvedMapperFrontiers = 0;
   for (const row of rows) {
     const project = projects.find((project) => row.id.startsWith(`${project.id}-`));
     assert.ok(project);
@@ -246,11 +308,8 @@ export function auditCallbackOwners(directory: string) {
       processPacket(row.observations[`${side}-mapper`], [0, 2]);
     }
     if (project.comparison === "complete-before-head-packets") {
-      assert.deepEqual(
-        candidate,
-        before,
-        `${row.id}: all unsupported transform fields stay identical`,
-      );
+      assert.equal(candidate.length, before.length);
+      before.forEach((packet, index) => assertPreservedCallbackPacket(packet, candidate[index]));
       assert.equal(
         row.observations["candidate-check"].stdout,
         row.observations["baseline-check"].stdout,
@@ -364,29 +423,29 @@ export function auditCallbackOwners(directory: string) {
       })
       .join("");
     if (project.mapperFrontier) {
-      // The native packet is reference-exact. The mapper EXPECT interval is a
-      // separate, pre-existing defect; it must keep its complete before packet.
-      assert.notEqual(mapper.stdout, expectedMapper);
+      // These historical #10871 controls now match the independent reference.
+      // Keep the exact PR-base packet as well: fixing EXPECT ownership must
+      // never hide the foreign interpolation or make the unused EXPECT used.
       assert.equal(
-        withoutMapperIdentity(mapper.stdout),
-        withoutMapperIdentity(row.observations["baseline-mapper"].stdout),
+        row.observations["baseline-mapper"].stdout,
+        expectedMapper,
+        `${row.id}: complete resolved EXPECT packet from the authenticated PR base`,
       );
-      assert.equal(mapper.status, row.observations["baseline-mapper"].status);
-      mapperFrontiers++;
-      outcomes.push({
-        id: row.id,
-        completeNativePacket: true,
-        mapperIssue: project.mapperFrontier,
-      });
-      continue;
+      assert.equal(row.observations["baseline-mapper"].status, authored.length ? 2 : 0);
+      resolvedMapperFrontiers++;
     }
     assert.equal(mapper.stdout, expectedMapper, `${row.id}: complete same-SDK mapped stdout`);
     assert.equal(mapper.status, authored.length ? 2 : 0);
     qualified++;
-    outcomes.push({ id: row.id, referenceQualified: true, completeNativeAndMapperPackets: true });
+    outcomes.push({
+      id: row.id,
+      referenceQualified: true,
+      completeNativeAndMapperPackets: true,
+      ...(project.mapperFrontier ? { resolvedMapperIssue: project.mapperFrontier } : {}),
+    });
   }
-  assert.equal(qualified, 36);
-  assert.equal(mapperFrontiers, 4);
+  assert.equal(qualified, 40);
+  assert.equal(resolvedMapperFrontiers, 4);
   assert.equal(preserved, 44);
   assert.equal(frontiers, 8);
   const report = {
@@ -398,7 +457,7 @@ export function auditCallbackOwners(directory: string) {
     qualifiedReferenceProjects: qualified,
     unchangedUnsupportedProjects: preserved,
     explicitlyUnqualified10739Projects: frontiers,
-    nativeOnly10871Projects: mapperFrontiers,
+    referenceQualified10871Projects: resolvedMapperFrontiers,
     wholeCorpusQualified: false,
     outcomes,
   };

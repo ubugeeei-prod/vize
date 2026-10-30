@@ -40,7 +40,7 @@ export type CallbackOwnerProject = {
     | "known-10739-frontier"
     | "exact-before-head-preservation-pending";
   comparison: "reference-parity" | "complete-before-head-packets";
-  /** The mapper packet stays unqualified under this separate issue. */
+  /** Historical mapper issue whose resolved packets must match the reference. */
   mapperFrontier?: 10871;
   sequence?: { family: "callback-return"; phase: "valid" | "error" | "repaired" };
   scopeProbes?: readonly ["nested", "branch", "loop"];

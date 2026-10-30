@@ -3,9 +3,75 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { assertPreservedCallbackPacket } from "../../tools/support/compat/content-mapper/callback-owner-audit.ts";
+import {
+  currentSlotsExport,
+  currentSlotsMarker,
+  previousSlotsExport,
+  previousSlotsMarker,
+} from "../../tools/support/compat/content-mapper/constructor-projection-parity.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const historicalBefore = "78719553cf550bcffbf1d0fb891fda642f42de3a";
+
+test("callback packets certify only the unmapped public Slots re-export", () => {
+  const before = {
+    extension: ".tsx",
+    text: `const item = 1;\n${previousSlotsExport}\n`,
+    mappings: [[6, 4, 0, 4, 0, 1048575]],
+    diagnostics: [],
+    semanticLinks: [{ sourceStart: 6, sourceLength: 4, targetStart: 6, targetLength: 4 }],
+  };
+  const after = { ...before, text: before.text.replace(previousSlotsExport, currentSlotsExport) };
+  assertPreservedCallbackPacket(before, before);
+  assertPreservedCallbackPacket(before, after);
+  const beforeMarker = { ...before, text: `${before.text}type Public = ${previousSlotsMarker};\n` };
+  const afterMarker = {
+    ...after,
+    text: `${after.text}type Public = ${currentSlotsMarker};\n`,
+  };
+  assertPreservedCallbackPacket(beforeMarker, afterMarker);
+  for (const marker of [
+    "Partial<any>",
+    "Partial<$Wrong>",
+    `${currentSlotsMarker} & ${currentSlotsMarker}`,
+  ])
+    assert.throws(
+      () =>
+        assertPreservedCallbackPacket(beforeMarker, {
+          ...afterMarker,
+          text: afterMarker.text.replace(currentSlotsMarker, marker),
+        }),
+      assert.AssertionError,
+    );
+  for (const mutated of [
+    { ...after, text: after.text.replace("const item = 1", "const item = 2") },
+    { ...after, text: after.text.replace(currentSlotsExport, "export type Slots = any;") },
+    { ...after, text: `${after.text}${currentSlotsExport}\n` },
+    { ...after, mappings: [[7, 4, 0, 4, 0, 1048575]] },
+    { ...after, diagnostics: [{ start: 0, length: 4, code: 2304 }] },
+    {
+      ...after,
+      semanticLinks: [{ sourceStart: 7, sourceLength: 4, targetStart: 6, targetLength: 4 }],
+    },
+  ])
+    assert.throws(() => assertPreservedCallbackPacket(before, mutated), assert.AssertionError);
+  const boundary = Buffer.byteLength(before.text.split(previousSlotsExport)[0]);
+  for (const mutation of [
+    { mappings: [[boundary - 1, 2, 0, 2, 0, 1048575]] },
+    { mappings: [[boundary + 1, 0, 0, 0, 0, 1048575]] },
+    {
+      semanticLinks: [
+        { sourceStart: boundary - 1, sourceLength: 2, targetStart: 6, targetLength: 4 },
+      ],
+    },
+    { diagnosticDirectives: { directives: [[0, 4, boundary - 1, boundary + 1, 0, 0]] } },
+  ])
+    assert.throws(
+      () => assertPreservedCallbackPacket({ ...before, ...mutation }, { ...after, ...mutation }),
+      assert.AssertionError,
+    );
+});
 
 function assertAuthenticatedBaseComparison(source: string): void {
   const start = source.indexOf("  published-sdk-packets:");
