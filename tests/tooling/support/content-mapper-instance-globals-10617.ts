@@ -454,6 +454,9 @@ export function makeSourceProject(
     "content-mapper-helpers.d.mts",
     "content-mapper-helpers.d.cts",
     "generated/content-mapper-types.d.ts",
+    "virtual-ts.d.ts",
+    "virtual-ts.d.mts",
+    "virtual-ts.d.cts",
   ];
   for (const name of helperFiles) {
     const target = path.join(adapter, name);

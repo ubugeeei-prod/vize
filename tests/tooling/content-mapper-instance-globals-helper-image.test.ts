@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { makeSourceProject, sha } from "./support/content-mapper-instance-globals-10617.ts";
 
-test("10617 source adapter preserves the complete current helper declaration image", (t) => {
+test("10617 source adapter preserves all seven current SDK declarations and public type exports", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-instance-globals-helper-image-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -22,6 +22,9 @@ test("10617 source adapter preserves the complete current helper declaration ima
     "content-mapper-helpers.d.mts",
     "content-mapper-helpers.d.cts",
     "generated/content-mapper-types.d.ts",
+    "virtual-ts.d.ts",
+    "virtual-ts.d.mts",
+    "virtual-ts.d.cts",
   ];
   for (const name of helpers) {
     assert.deepEqual(
@@ -35,6 +38,50 @@ test("10617 source adapter preserves the complete current helper declaration ima
   manifest.typescript.contentMapper.exec = [binary, "content-mapper"];
   const manifestBytes = `${JSON.stringify(manifest, null, 2)}\n`;
   assert.equal(fs.readFileSync(path.join(adapter, "package.json"), "utf8"), manifestBytes);
+  assert.deepEqual(
+    manifest.files.filter((name: string) => /\.d\.(?:ts|mts|cts)$/u.test(name)).sort(),
+    [...helpers].sort(),
+    "every declaration advertised by the actual package is materialized",
+  );
+  const exports = JSON.parse(fs.readFileSync(path.join(adapter, "package.json"), "utf8")).exports;
+  for (const [subpath, stem] of [
+    ["./virtual-ts", "virtual-ts"],
+    ["./content-mapper-helpers", "content-mapper-helpers"],
+  ]) {
+    const selected = {
+      import: `./${stem}.d.mts`,
+      require: `./${stem}.d.cts`,
+      types: `./${stem}.d.ts`,
+    };
+    assert.deepEqual(exports[subpath], {
+      import: { types: selected.import },
+      require: { types: selected.require },
+      types: selected.types,
+    });
+    for (const [condition, expected] of Object.entries(selected)) {
+      const target =
+        condition === "types" ? exports[subpath].types : exports[subpath][condition].types;
+      assert.equal(target, expected);
+      assert.ok(fs.lstatSync(path.join(adapter, target)).isFile(), `${subpath}/${condition}`);
+      assert.deepEqual(
+        fs.readFileSync(path.join(adapter, target)),
+        fs.readFileSync(path.join(repoRoot, "npm/cli", target)),
+        `${subpath}/${condition}`,
+      );
+    }
+  }
+  for (const name of [
+    "content-mapper-helpers.d.ts",
+    "content-mapper-helpers.d.mts",
+    "content-mapper-helpers.d.cts",
+  ]) {
+    assert.match(
+      fs.readFileSync(path.join(adapter, name), "utf8"),
+      /export type \* from "\.\/generated\/content-mapper-types\.js"/u,
+      `${name} retains its real transitive declaration dependency`,
+    );
+    assert.ok(fs.lstatSync(path.join(adapter, "generated/content-mapper-types.d.ts")).isFile());
+  }
   assert.deepEqual(receipt, {
     role: "source protocol adapter, not public-package acceptance",
     manifestSha256: sha(manifestBytes),
@@ -50,6 +97,9 @@ test("10617 source adapter preserves the complete current helper declaration ima
     "content-mapper-helpers.d.ts",
     "generated",
     "package.json",
+    "virtual-ts.d.cts",
+    "virtual-ts.d.mts",
+    "virtual-ts.d.ts",
   ]);
   assert.deepEqual(fs.readdirSync(path.join(adapter, "generated")), ["content-mapper-types.d.ts"]);
 });
