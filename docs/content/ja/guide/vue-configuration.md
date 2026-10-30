@@ -81,11 +81,11 @@ export default defineConfig({
 一致する compiler 設定は Vite と CLI でファイルごとに適用されます。エディターでのファイル単位のスコープ適用と、
 ほかのセクションのスコープ対応は未完了です。
 
-エントリの `ignores` は、その `files`、`compiler`、`linter` 設定を適用する範囲を絞ります。
+`compiler` または `linter` 設定を持つエントリの `ignores` は、その設定を適用する範囲を絞ります。
 そのファイルを `vize fmt` の対象から除外する設定にはなりません。
-トップレベルの `vue.ignores` と、`ignores` だけのエントリ（任意の `name` / `basePath` を含む）は、
-引き続きフォーマッターの探索から除外します。フォーマットだけの除外には
-`vue.formatter.ignorePatterns` を使ってください。
+トップレベルの `vue.ignores` とツール設定を持たないエントリは、引き続きフォーマッターの探索から除外します。
+`files` / `basePath` だけで対象を選ぶエントリの動作も変わりません。
+フォーマットだけの除外には `vue.formatter.ignorePatterns` を使ってください。
 
 ## TypeScript プロジェクトの設定
 

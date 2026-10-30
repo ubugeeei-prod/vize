@@ -2,13 +2,14 @@ use super::ConfigDocument;
 use crate::config::{LintRuleSeverity, VueVersion};
 
 #[test]
-fn formatter_entry_ignores_exclude_only_global_entries() {
+fn formatter_entry_ignores_exclude_override_filters_from_discovery() {
     let document: ConfigDocument = serde_json::from_str(
         r#"{
             "ignores": ["global/**", "!global/keep.vue"],
             "entries": [
                 {"name":"generated", "basePath":"日本語/🎨", "ignores":["**", "!keep.vue"]},
-                {"files":["src/**/*.vue"], "ignores":["scoped-file/**"]},
+                {"files":["src/**/*.vue"], "ignores":["selection/**"]},
+                {"files":["src/**/*.vue"], "ignores":["scoped-file/**"], "linter":{}},
                 {"ignores":["scoped-lint/**"], "linter":{"rules":{"vue/no-v-html":"off"}}},
                 {"ignores":["empty-lint/**"], "linter":{}},
                 {"ignores":["default-lint/**"], "linter":{"enabled":true}},
@@ -30,6 +31,8 @@ fn formatter_entry_ignores_exclude_only_global_entries() {
             (None, "!global/keep.vue"),
             (Some("日本語/🎨"), "**"),
             (Some("日本語/🎨"), "!keep.vue"),
+            (None, "selection/**"),
+            (None, "empty-files/**"),
         ]
     );
     assert_eq!(document.clone().formatter_entry_ignores(), ignores);
@@ -45,6 +48,7 @@ fn formatter_entry_ignores_exclude_only_global_entries() {
             "!global/keep.vue",
             "**",
             "!keep.vue",
+            "selection/**",
             "scoped-file/**",
             "scoped-lint/**",
             "empty-lint/**",

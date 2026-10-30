@@ -20,9 +20,9 @@ pub(crate) struct RawConfigEntry {
 }
 
 impl RawConfigEntry {
-    /// An ignores-only entry affects discovery; an override only scopes its settings.
-    pub(crate) fn is_global_ignore(&self) -> bool {
-        self.files.is_none() && !self.settings_authored
+    /// Selection-only entries affect discovery; an override only scopes its settings.
+    pub(crate) fn is_discovery_ignore(&self) -> bool {
+        !self.settings_authored
     }
 }
 
