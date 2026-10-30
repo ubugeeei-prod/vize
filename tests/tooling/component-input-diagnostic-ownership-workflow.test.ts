@@ -26,6 +26,16 @@ function assertAuthenticatedBaseComparison(source: string): void {
   assert.doesNotMatch(job, /--comparison-source-sha 78719553cf550bcffbf1d0fb891fda642f42de3a/u);
 }
 
+function assertConstructorPacketCustody(source: string): void {
+  const start = source.indexOf("  unchanged-projection-packets:");
+  assert.ok(start >= 0);
+  const job = source.slice(start).replace(/\\\r?\n\s*/gu, " ");
+  assert.doesNotMatch(job, /\bcmp\b[^\n]*legacy/u);
+  assert.match(job, /constructor-projection-parity\.ts/u);
+  assert.match(job, /base-legacy\.json/u);
+  assert.match(job, /head-legacy\.json/u);
+}
+
 test("callback packet custody binds the comparison CLI to the exact PR base", () => {
   const source = fs.readFileSync(
     path.join(root, ".github/workflows/component-input-diagnostic-ownership.yml"),
@@ -56,11 +66,12 @@ test("constructor packet custody delegates certified changes to complete parity"
     path.join(root, ".github/workflows/component-input-diagnostic-ownership.yml"),
     "utf8",
   );
-  const start = source.indexOf("  unchanged-projection-packets:");
-  assert.ok(start >= 0);
-  const job = source.slice(start);
-  assert.doesNotMatch(job, /cmp .*base-legacy\.json.*head-legacy\.json/u);
-  assert.match(job, /constructor-projection-parity\.ts/u);
-  assert.match(job, /base-legacy\.json/u);
-  assert.match(job, /head-legacy\.json/u);
+  assertConstructorPacketCustody(source);
+  assert.throws(
+    () =>
+      assertConstructorPacketCustody(
+        `${source}\n  cmp "$RUNNER_TEMP/base-legacy.json" \\\n+    "$RUNNER_TEMP/head-legacy.json"\n`,
+      ),
+    assert.AssertionError,
+  );
 });
