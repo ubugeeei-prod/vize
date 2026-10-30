@@ -30,7 +30,10 @@ function assertConstructorPacketCustody(source: string): void {
   const start = source.indexOf("  unchanged-projection-packets:");
   assert.ok(start >= 0);
   const job = source.slice(start).replace(/\\\r?\n\s*/gu, " ");
-  assert.doesNotMatch(job, /\bcmp\b[^\n]*legacy/u);
+  const comparisons = [...job.matchAll(/^\s*cmp\s+([^\n]+)$/gmu)].map((match) =>
+    match[1].trim(),
+  );
+  assert.deepEqual(comparisons, ['"$observer" "$baseline/$observer"']);
   assert.match(job, /constructor-projection-parity\.ts/u);
   assert.match(job, /base-legacy\.json/u);
   assert.match(job, /head-legacy\.json/u);

@@ -49,31 +49,31 @@ fn props_type_of(script: &str) -> std::string::String {
 fn an_optional_model_update_payload_carries_undefined() {
     let emits = emits_of("const model = defineModel<string>()\nvoid model;\n");
     assert!(
-        emits.contains("\"update:modelValue\": (string) | undefined"),
+        emits.contains("\"update:modelValue\": [value: (string) | undefined]"),
         "optional model must accept undefined in its update payload:\n{emits}"
     );
 }
 
 #[test]
-fn required_and_defaulted_models_keep_the_bare_payload() {
+fn required_and_defaulted_models_keep_the_bare_tuple_payload() {
     let required = emits_of("const model = defineModel<string>({ required: true })\nvoid model;\n");
     assert!(
-        required.ends_with("\"update:modelValue\": string"),
+        required.ends_with("\"update:modelValue\": [value: string]"),
         "required model keeps the bare payload:\n{required}"
     );
     let defaulted =
         emits_of("const model = defineModel<string>({ default: \"x\" })\nvoid model;\n");
     assert!(
-        defaulted.ends_with("\"update:modelValue\": string"),
+        defaulted.ends_with("\"update:modelValue\": [value: string]"),
         "defaulted model keeps the bare payload:\n{defaulted}"
     );
 }
 
 #[test]
-fn an_untyped_model_keeps_the_bare_unknown_payload() {
+fn an_untyped_model_keeps_the_unknown_tuple_payload() {
     let emits = emits_of("const model = defineModel()\nvoid model;\n");
     assert!(
-        emits.contains("\"update:modelValue\": unknown"),
+        emits.contains("\"update:modelValue\": [value: unknown]"),
         "an untyped model keeps the bare `unknown` payload:\n{emits}"
     );
 }
@@ -87,7 +87,7 @@ fn runtime_constructor_model_flows_into_public_props_and_emits() {
         "runtime constructor model should expose a string public prop:\n{code}"
     );
     assert!(
-        code.contains("\"update:modelValue\": string"),
+        code.contains("\"update:modelValue\": [value: string]"),
         "runtime constructor model should expose a string update payload:\n{code}"
     );
 }
@@ -101,7 +101,7 @@ fn runtime_constructor_model_array_type_can_include_null() {
         "runtime constructor model should preserve null public prop type:\n{code}"
     );
     assert!(
-        code.contains("\"update:modelValue\": (string | null) | undefined"),
+        code.contains("\"update:modelValue\": [value: (string | null) | undefined]"),
         "runtime constructor model should preserve null update payload:\n{code}"
     );
 }
@@ -120,7 +120,7 @@ fn runtime_constructor_model_array_parenthesizes_function_members() {
 fn optional_runtime_constructor_model_update_payload_carries_undefined() {
     let emits = emits_of("const model = defineModel({ type: String })\nvoid model;\n");
     assert!(
-        emits.contains("\"update:modelValue\": (string) | undefined"),
+        emits.contains("\"update:modelValue\": [value: (string) | undefined]"),
         "optional runtime constructor model should accept undefined:\n{emits}"
     );
 }
@@ -129,7 +129,7 @@ fn optional_runtime_constructor_model_update_payload_carries_undefined() {
 fn a_function_typed_model_parenthesizes_the_base() {
     let emits = emits_of("const model = defineModel<() => string>()\nvoid model;\n");
     assert!(
-        emits.contains("\"update:modelValue\": (() => string) | undefined"),
+        emits.contains("\"update:modelValue\": [value: (() => string) | undefined]"),
         "a function-typed model must not absorb the union into its return type:\n{emits}"
     );
 }
@@ -149,7 +149,7 @@ fn define_model_prop_names_are_escaped_as_typescript_string_literals() {
         "model modifier prop names must be escaped in public props:\n{props}"
     );
     assert!(
-        emits.contains(r#""update:quote\"line\u2028": (string) | undefined"#),
+        emits.contains(r#""update:quote\"line\u2028": [value: (string) | undefined]"#),
         "model update event names must be escaped in public emits:\n{emits}"
     );
 }

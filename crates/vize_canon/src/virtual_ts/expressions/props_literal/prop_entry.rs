@@ -323,3 +323,98 @@ pub(crate) fn key_sub_spans(
         },
     ]
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{entry_sub_spans_with_synthetic_value_gaps, key_sub_spans};
+    use crate::virtual_ts::expressions::component_props::ComponentPropSource;
+    use crate::virtual_ts::types::VizeSubSpan;
+    use vize_croquis::{ScopeChain, croquis::PassedProp};
+
+    fn fixture() -> (&'static str, PassedProp, ScopeChain) {
+        let template = "雪:entry=\"abcdef\"";
+        (
+            template,
+            PassedProp {
+                name: "entry".into(),
+                name_is_dynamic: false,
+                value: Some("abcdef".into()),
+                start: "雪".len() as u32,
+                end: template.len() as u32,
+                is_dynamic: true,
+            },
+            ScopeChain::default(),
+        )
+    }
+
+    fn spans(
+        synthetic: &[std::ops::Range<usize>],
+        generated: std::ops::Range<usize>,
+    ) -> (Vec<VizeSubSpan>, Vec<VizeSubSpan>, std::ops::Range<usize>) {
+        let (template, prop, scopes) = fixture();
+        let offset = 10usize;
+        let name = template.find("entry").unwrap();
+        let value = template.find("abcdef").unwrap();
+        let keys = key_sub_spans(20..27, offset + name..offset + name + "entry".len());
+        let actual = entry_sub_spans_with_synthetic_value_gaps(
+            ComponentPropSource::new(Some(template), offset as u32, &scopes),
+            &prop,
+            20..27,
+            generated,
+            synthetic,
+        );
+        (
+            actual,
+            keys,
+            offset + value..offset + value + "abcdef".len(),
+        )
+    }
+
+    #[test]
+    fn synthetic_value_gaps_preserve_only_contiguous_authored_bytes() {
+        let (actual, mut expected, source) = spans(&[3..5], 100..108);
+        expected.extend([
+            VizeSubSpan {
+                gen_range: 100..103,
+                src_range: source.start..source.start + 3,
+            },
+            VizeSubSpan {
+                gen_range: 105..108,
+                src_range: source.start + 3..source.end,
+            },
+        ]);
+        assert_eq!(actual, expected);
+
+        let (leading, mut expected, source) = spans(&[0..2], 100..108);
+        expected.push(VizeSubSpan {
+            gen_range: 102..108,
+            src_range: source,
+        });
+        assert_eq!(
+            leading, expected,
+            "a leading gap must not emit an empty span"
+        );
+
+        let (trailing, mut expected, source) = spans(&[6..8], 100..108);
+        expected.push(VizeSubSpan {
+            gen_range: 100..106,
+            src_range: source,
+        });
+        assert_eq!(
+            trailing, expected,
+            "a trailing gap must not emit an empty span"
+        );
+    }
+
+    #[test]
+    fn unauthenticated_synthetic_gaps_fall_back_to_key_spans() {
+        for (gaps, generated) in [
+            (vec![2..4, 3..5], 100..110),
+            (vec![7..9], 100..108),
+            (vec![3..5], 100..109),
+        ] {
+            let (actual, keys, _) = spans(&gaps, generated);
+            assert_eq!(actual, keys);
+        }
+    }
+}

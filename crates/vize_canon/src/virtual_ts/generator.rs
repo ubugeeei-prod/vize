@@ -848,7 +848,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         MacroTypeMappings::new(&mut mappings, script_content, &script_source_offset),
         generic_injection.as_ref(),
         !module_plan.exported_types.contains("Slots"),
-        module_plan.bound_types.contains("Slots"),
+        module_plan.bound_types.contains("Slots")
+            && component_public_types::uses_module_scoped_authored_slots_binding(summary),
         inferred_slots,
     );
     let (has_exposed_type, exposed_is_generic) =

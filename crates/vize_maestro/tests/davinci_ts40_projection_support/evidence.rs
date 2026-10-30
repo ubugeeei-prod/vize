@@ -213,21 +213,25 @@ fn authenticate_successor_receipt(
     if receipt["delta"]["canonAndContentMapperUnchanged"].as_bool() == Some(true) {
         for section in ["[canon]\n", "[content-mapper]\n"] {
             assert_eq!(
-                generated_text_bytes(successor, section),
-                generated_text_bytes(predecessor, section),
+                generated_text_record(successor, section),
+                generated_text_record(predecessor, section),
                 "canonAndContentMapperUnchanged must hold for {section}"
             );
         }
     }
 }
 
-fn generated_text_bytes(record: &str, section: &str) -> i64 {
+fn generated_text_record<'a>(record: &'a str, section: &str) -> &'a str {
     let section = record.split_once(section).expect("projection section").1;
-    let text = section
+    section
         .lines()
         .find_map(|line| line.strip_prefix("text="))
-        .expect("generated text record");
-    text.split_once(':')
+        .expect("generated text record")
+}
+
+fn generated_text_bytes(record: &str, section: &str) -> i64 {
+    generated_text_record(record, section)
+        .split_once(':')
         .expect("generated text byte/hash separator")
         .0
         .parse()

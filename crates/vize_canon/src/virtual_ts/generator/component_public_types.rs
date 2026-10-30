@@ -84,6 +84,21 @@ pub(super) fn emit_slots_type(
     is_generic
 }
 
+/// Whether a module-level authored `Slots` binding is the actual
+/// `defineSlots` contract. A same-named declaration is not sufficient: inline
+/// slot contracts and setup-local aliases that depend on setup values must use
+/// the generated `$Slots` alias.
+pub(super) fn uses_module_scoped_authored_slots_binding(summary: &Croquis) -> bool {
+    summary
+        .macros
+        .define_slots()
+        .and_then(|call| call.type_args.as_deref())
+        .is_some_and(|args| {
+            inner_type_of(args).trim() == "Slots"
+                && !super::setup_scope::define_slots_type_requires_setup_scope(summary)
+        })
+}
+
 /// Emit the module-scope `export type Exposed` alias (for `InstanceType` and
 /// `useTemplateRef`); returns whether the component exposes anything. A typed
 /// `defineExpose` referencing an SFC generic parameter re-declares the

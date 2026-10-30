@@ -88,6 +88,6 @@ fn standard_tsgo_accepts_computed_component_event_names() {
         .collect::<Vec<_>>();
     assert_eq!(
         diagnostics,
-        ["src/Probe.vue(13,36): error TS2322: Type 'number' is not assignable to type 'boolean'."]
+        ["src/Probe.vue(13,34): error TS2322: Type 'number' is not assignable to type 'boolean'."]
     );
 }

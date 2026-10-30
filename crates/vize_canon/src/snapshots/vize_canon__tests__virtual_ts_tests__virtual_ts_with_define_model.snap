@@ -187,8 +187,8 @@ function __setup() {
 __setup();
 
 export type Emits = {
-  "update:modelValue": string;
-  "update:count": number;
+  "update:modelValue": [value: string];
+  "update:count": [value: number];
 };
 type $Slots = {};
 export type Slots = $Slots;
