@@ -33,7 +33,7 @@ mod props_literal;
 pub(crate) use props_literal::key_sub_spans;
 pub(crate) use props_literal::{
     NAMED_PROP_DIAGNOSTIC_MARKER, append_inference_props_literal, append_props_literal,
-    append_spread_value, prop_entry_sub_spans,
+    append_spread_value, prop_entry_sub_spans_with_synthetic_value_gaps,
 };
 mod instance_rewrite;
 pub(crate) use instance_rewrite::{PreparedInstanceRewrite, prepare_instance_rewrite};
@@ -68,5 +68,7 @@ pub(crate) use reserved_props::{
 pub(crate) use statements::{
     ExpressionListEmitContext, generate_expressions, generate_expressions_in_enclosing_guard,
 };
-pub(crate) use ts_suppression_comments::callback_parameters_on_ignored_line;
+pub(crate) use ts_suppression_comments::{
+    callback_parameters_on_ignored_line, callback_parameters_on_ignored_line_with_ranges,
+};
 pub(crate) use value_checks::{TemplateValueCheckTables, TemplateValueChecks};
