@@ -1,4 +1,4 @@
-/** Exact unmapped callback scaffolding transitions; all other packet fields stay intact. */
+/** Exact observed embedded callback scaffolding; shared references require separate evidence. */
 import assert from "node:assert/strict";
 import {
   currentSlotsExport,
@@ -17,7 +17,7 @@ export function callbackNativeEventGate(component: string): string {
   return `"__vizeEmitProps" extends keyof { [__K in keyof typeof ${component} as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown } ? `;
 }
 
-function scaffoldEdits(text: string): Edit[] {
+function scaffoldEdits(text: string, markerTransition: boolean): Edit[] {
   const edits: Edit[] = [];
   const add = (start: number, end: number, replacement: string) => {
     edits.push({
@@ -36,7 +36,7 @@ function scaffoldEdits(text: string): Edit[] {
     const body = text.slice(start, end);
     assert.match(
       body,
-      /^[ \t]*\? (?:\$IsAny|import\("vize:virtual-ts"\)\.\$IsAny)<__F> extends true \? unknown\[\] : NonNullable<__F> extends infer __P \? \(/u,
+      /^[ \t]*\? \$IsAny<__F> extends true \? unknown\[\] : NonNullable<__F> extends infer __P \? \(/u,
     );
     assert.ok(
       body.endsWith(argumentSuffix),
@@ -60,7 +60,7 @@ function scaffoldEdits(text: string): Edit[] {
     assert.ok(line.startsWith(prefix));
     assert.match(
       line.slice(prefix.length),
-      /^(?:\$IsAny|import\("vize:virtual-ts"\)\.\$IsAny)<__F> extends true \? any : NonNullable<__F> extends \{ .+?\?: infer __H \} \? Extract<NonNullable<__H>, \(\.\.\.args: any\[\]\) => any> extends \(\.\.\.args: any\[\]\) => infer __R \? __R : any : any : any;\n$/u,
+      /^\$IsAny<__F> extends true \? any : NonNullable<__F> extends \{ .+?\?: infer __H \} \? Extract<NonNullable<__H>, \(\.\.\.args: any\[\]\) => any> extends \(\.\.\.args: any\[\]\) => infer __R \? __R : any : any : any;\n$/u,
     );
     const gate = match.index + prefix.length;
     add(gate, gate, callbackNativeEventGate(component));
@@ -71,6 +71,7 @@ function scaffoldEdits(text: string): Edit[] {
     [previousSlotsExport, currentSlotsExport],
     [previousSlotsMarker, currentSlotsMarker],
   ]) {
+    if (before === previousSlotsMarker && !markerTransition) continue;
     const start = text.indexOf(before);
     if (start < 0) continue;
     assert.equal(text.indexOf(before, start + 1), -1, "a certified Slots token occurs once");
@@ -100,9 +101,23 @@ export function assertPreservedCallbackPacket(
     return;
   }
   const original = before.text as string;
+  const actualText = after.text as string;
+  assert.equal(original.split(previousSlotsExport).length, 2);
+  assert.equal(original.split(currentSlotsExport).length, 1);
+  assert.equal(actualText.split(previousSlotsExport).length, 1);
+  assert.equal(actualText.split(currentSlotsExport).length, 2);
+  const markerTransition =
+    original.includes(previousSlotsMarker) && !actualText.includes(previousSlotsMarker);
+  if (markerTransition) {
+    assert.equal(original.split(previousSlotsMarker).length, 2);
+    assert.equal(original.split(currentSlotsMarker).length, 1);
+    assert.equal(actualText.split(previousSlotsMarker).length, 1);
+    assert.equal(actualText.split(currentSlotsMarker).length, 2);
+    assert.ok(original.indexOf(previousSlotsMarker) > original.indexOf(previousSlotsExport));
+  }
   const source = Buffer.from(original);
-  const actual = Buffer.from(after.text as string);
-  const edits = scaffoldEdits(original);
+  const actual = Buffer.from(actualText);
+  const edits = scaffoldEdits(original, markerTransition);
   assert.ok(edits.length > 0, "only observed callback scaffolding may change");
   const chunks: Buffer[] = [];
   let position = 0;
@@ -113,7 +128,7 @@ export function assertPreservedCallbackPacket(
   chunks.push(source.subarray(position));
   assert.deepEqual(Buffer.concat(chunks), actual, "the complete text has only certified edits");
   const exportAt = original.indexOf(previousSlotsExport);
-  const boundary = exportAt < 0 ? source.length : Buffer.byteLength(original.slice(0, exportAt));
+  const boundary = Buffer.byteLength(original.slice(0, exportAt));
   const point = (offset: number) =>
     offset +
     edits

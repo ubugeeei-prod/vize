@@ -32,6 +32,24 @@ test("callback packets certify only the unmapped public Slots re-export", () => 
     text: `${after.text}type Public = ${currentSlotsMarker};\n`,
   };
   assertPreservedCallbackPacket(beforeMarker, afterMarker);
+  assertPreservedCallbackPacket(beforeMarker, {
+    ...after,
+    text: `${after.text}type Public = ${previousSlotsMarker};\n`,
+  });
+  for (const [original, candidate] of [
+    [`${before.text}${currentSlotsExport}\n`, `${after.text}${currentSlotsExport}\n`],
+    [`${before.text}${previousSlotsExport}\n`, `${after.text}${currentSlotsExport}\n`],
+    [
+      `${beforeMarker.text}type Existing = ${currentSlotsMarker};\n`,
+      `${afterMarker.text}type Existing = ${currentSlotsMarker};\n`,
+    ],
+  ]) {
+    assert.throws(
+      () =>
+        assertPreservedCallbackPacket({ ...before, text: original }, { ...after, text: candidate }),
+      assert.AssertionError,
+    );
+  }
   for (const marker of [
     "Partial<any>",
     "Partial<$Wrong>",
@@ -128,6 +146,44 @@ test("callback event scaffolding relocates complete UTF-8 packets and refuses un
       },
     };
     assertPreservedCallbackPacket(before, after);
+    assert.throws(
+      () =>
+        assertPreservedCallbackPacket(
+          {
+            ...before,
+            text: before.text.replace(
+              `${previousSlotsExport}\ntype Public = ${previousSlotsMarker};\n`,
+              "",
+            ),
+          },
+          {
+            ...after,
+            text: after.text.replace(
+              `${currentSlotsExport}\ntype Public = ${currentSlotsMarker};\n`,
+              "",
+            ),
+          },
+        ),
+      assert.AssertionError,
+    );
+    for (const unobserved of [
+      'import("vize:virtual-ts").IsAny',
+      'import("vize:virtual-ts").$IsAny',
+    ]) {
+      const unprojected = {
+        mappings: [],
+        semanticLinks: [],
+        diagnosticDirectives: { directives: [] },
+      };
+      assert.throws(
+        () =>
+          assertPreservedCallbackPacket(
+            { ...before, ...unprojected, text: before.text.replaceAll("$IsAny", unobserved) },
+            { ...after, ...unprojected, text: after.text.replaceAll("$IsAny", unobserved) },
+          ),
+        assert.AssertionError,
+      );
+    }
     for (const mutation of [
       { ...after, text: after.text.replace("__vizeEmitProps", "__otherMarker") },
       { ...after, text: `${after.text}type NewSlotConstructor = any;\n` },
@@ -186,6 +242,11 @@ test("callback certificate is covered by exact-head materialization and producer
     ),
     "utf8",
   );
+  const references = fs.readFileSync(
+    path.join(root, "crates/vize_canon/src/virtual_ts/helpers/shared_types.rs"),
+    "utf8",
+  );
+  assert.ok(references.includes('IS_ANY => ("$IsAny", "IsAny")'));
   const emitted = producer
     .split("\n")
     .filter((line) => line.trim().startsWith('"') && line.includes("__vizeEmitProps"));
