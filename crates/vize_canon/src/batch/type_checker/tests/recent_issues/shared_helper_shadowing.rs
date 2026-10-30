@@ -213,10 +213,10 @@ fn authored_module_types_cannot_capture_batch_helpers() {
     );
     assert_eq!(
         generated
-            .matches("function __vizeComponentAriaPropValue")
+            .matches("function __vizeComponentAriaPropEntries")
             .count(),
         1,
-        "the ARIA present-value witness must precede the hoisted-helper early return:\n{generated}"
+        "the ARIA key/value witness must precede the hoisted-helper early return:\n{generated}"
     );
     assert_eq!(
         generated.matches("T extends undefined ? never : T").count(),
