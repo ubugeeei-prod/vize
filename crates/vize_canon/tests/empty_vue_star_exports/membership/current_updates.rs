@@ -89,4 +89,47 @@ pub(super) fn apply(manifest: &mut Value, members: &mut [Value]) {
     );
     *helper = resolver["after"].clone();
     manifest["provenance"]["currentSlotResolverUpdate"] = resolver;
+
+    let resolver_default = fs::read(
+        support::corpus().join("malformed-membership/slot-resolver-default-update-11153.json"),
+    )
+    .unwrap();
+    assert_eq!(
+        support::hash(&resolver_default),
+        "4b83d67b63eca20a1fe7b65b9e8e657e4f1cdb524de3ede56164a82e6d21c49d"
+    );
+    let resolver_default: Value = serde_json::from_slice(&resolver_default).unwrap();
+    assert_eq!(resolver_default["version"], 1);
+    assert_eq!(resolver_default["pullRequest"], 11153);
+    assert_eq!(
+        resolver_default["sourceRevision"],
+        "06180e7d273c72d507dc2590d6eb5518455ea457"
+    );
+    assert_eq!(
+        resolver_default["testedMerge"],
+        "1087711502f84c72430d269c0a1f529164f52dd5"
+    );
+    assert_eq!(resolver_default["observedRun"], 41065960975_i64);
+    assert_eq!(resolver_default["observedJob"], 124098349503_i64);
+    assert_eq!(resolver_default["artifact"], 12983250250_i64);
+    assert_eq!(
+        resolver_default["artifactArchiveSha256"],
+        "e3d8aa526f2fc0eb975fe20fadb7f1223a674390b673af8600f0f668be8c5766"
+    );
+    assert_eq!(
+        resolver_default["extractedPacketSha256"],
+        "1c3c2d1153012c2da6159e089cb89ffeffce0812ec619c343a6cd3b11bf8a7ef"
+    );
+    assert_eq!(resolver_default["entry"], 82);
+    assert_eq!(resolver_default["deltaBytes"], 56);
+    let helper = members.get_mut(82).unwrap();
+    assert_eq!(*helper, resolver_default["before"]);
+    assert_eq!(resolver_default["before"][0], resolver_default["after"][0]);
+    assert_eq!(
+        resolver_default["after"][1].as_u64().unwrap()
+            - resolver_default["before"][1].as_u64().unwrap(),
+        56
+    );
+    *helper = resolver_default["after"].clone();
+    manifest["provenance"]["currentSlotResolverDefaultUpdate"] = resolver_default;
 }
