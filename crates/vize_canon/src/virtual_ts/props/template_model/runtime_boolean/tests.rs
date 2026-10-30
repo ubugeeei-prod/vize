@@ -53,3 +53,15 @@ fn unresolved_runtime_overrides_and_shadowed_constructors_do_not_prove_casting()
         assert_eq!(model.resolved_type_ref.as_str(), "Props", "{script}");
     }
 }
+
+#[test]
+fn a_template_prop_named_boolean_does_not_shadow_the_script_constructor() {
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup("defineProps({ Boolean: Boolean, enabled: Boolean })");
+    let summary = analyzer.finish();
+    let mut names = super::resolved_runtime_boolean_names(&summary)
+        .into_iter()
+        .collect::<Vec<_>>();
+    names.sort_unstable();
+    assert_eq!(names, ["Boolean", "enabled"]);
+}

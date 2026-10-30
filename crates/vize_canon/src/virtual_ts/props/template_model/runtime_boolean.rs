@@ -5,7 +5,7 @@ use oxc_ast::ast::{Expression, ObjectPropertyKind, PropertyKey};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String};
-use vize_croquis::Croquis;
+use vize_croquis::{BindingType, Croquis};
 
 /// Vue resolves an absent runtime Boolean prop to `false`, including a
 /// Boolean/String constructor union. A type annotation containing `boolean`
@@ -23,7 +23,9 @@ pub(super) fn resolved_runtime_boolean_names(summary: &Croquis) -> FxHashSet<Str
         return names;
     };
     // An authored local constructor of this name is not the global Boolean.
-    if crate::virtual_ts::script_facts::contains_binding(summary, "Boolean") {
+    if crate::virtual_ts::script_facts::binding_type(summary, "Boolean")
+        .is_some_and(|binding| !matches!(binding, BindingType::Props))
+    {
         return names;
     }
     let allocator = Allocator::default();
