@@ -105,6 +105,19 @@ Still unfinished: actual conversion ownership adoption; the once-parsed L1
 embed handoff; resolution/declaration production; neutral analyses and pass
 moves; dialect compatibility legalization; product fixture gates and routes.
 
+## Canonical iteration binding facts
+
+L2 owns `analysis::for_facts::{ForParts, ForName}` alongside the canonical
+model and static-fact schemas. Vue lowering still discovers the grammar's
+binding positions and attaches the same table at its existing scope-minting
+site. The old `lower` and `pass::vfor` paths reexport these exact types, so
+consumers retain their existing source API and output.
+
+Named, pending and absent positions, provenance spellings and the original
+24/80-byte layout guards are preserved. No tree walk or name inference is
+added. This moves one product schema; canonical artifact adoption, neutral
+pass moves and the remaining #6838 acceptance stay open.
+
 ## Publication gate repair
 
 The first exact published provider head (`38b9967`) failed script formatting

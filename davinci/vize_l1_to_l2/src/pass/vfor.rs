@@ -18,26 +18,10 @@ use vize_l0::side_table::SideTable;
 
 use crate::lower::Lowered;
 
-pub use crate::lower::{ForName, ForParts as ForFacts};
+pub use vize_l2::analysis::for_facts::{ForName, ForParts as ForFacts};
 
 /// The pass name kept for existing folio/report strings.
 pub const NAME: &str = "v-for";
-
-/// Facts cross compile boundaries with their artifact (P1-11; the same
-/// enforcement `Diagnostic` and `ProvenanceRecord` carry).
-const _: () = {
-    const fn assert_owned<T: 'static>() {}
-    assert_owned::<ForName>();
-    assert_owned::<ForFacts>();
-};
-
-/// 64-bit footprints, guarded like every node-size assert (the wasm32
-/// lane is 32-bit).
-#[cfg(target_pointer_width = "64")]
-const _: () = {
-    assert!(core::mem::size_of::<ForName>() == 24);
-    assert!(core::mem::size_of::<ForFacts>() == 80);
-};
 
 /// Mirror lowering-published `ui.for` facts for transform consumers.
 #[must_use]
