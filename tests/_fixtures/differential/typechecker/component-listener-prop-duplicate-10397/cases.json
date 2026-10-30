@@ -36,6 +36,22 @@
       "diagnostics": [
         {
           "file": "src/App.vue",
+          "line": 7,
+          "column": 24,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(_value: boolean) => void' is not assignable to type '(payload: Event) => void'.\nTypes of parameters '_value' and 'payload' are incompatible.\nType 'Event' is not assignable to type 'boolean'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 27,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(_value: boolean) => void' is not assignable to type '(payload: Event) => void'.\nTypes of parameters '_value' and 'payload' are incompatible.\nType 'Event' is not assignable to type 'boolean'."
+        },
+        {
+          "file": "src/App.vue",
           "line": 6,
           "column": 11,
           "severity": 1,

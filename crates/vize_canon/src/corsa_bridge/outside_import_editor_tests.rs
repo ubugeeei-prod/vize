@@ -122,10 +122,10 @@ pub(super) fn assert_complete_alias_response(
         complete,
         json!([
             {"range":{"start":{"line":41,"character":5},"end":{"line":41,"character":10}},"severity":4,"code":6196,"source":"ts","message":"'__Ref' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":52,"character":5},"end":{"line":52,"character":32}},"severity":4,"code":6196,"source":"ts","message":"'$UnownedComponentAttrs' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":53,"character":5},"end":{"line":53,"character":19}},"severity":4,"code":6196,"source":"ts","message":"'$Prettify' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":55,"character":5},"end":{"line":55,"character":36}},"severity":4,"code":6196,"source":"ts","message":"'$ComponentFallthroughProps' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":62,"character":5},"end":{"line":62,"character":37}},"severity":4,"code":6196,"source":"ts","message":"'$ComponentMissingInputGuard' is declared but never used.","relatedInformation":null}
+            {"range":{"start":{"line":52,"character":5},"end":{"line":52,"character":27}},"severity":4,"code":6196,"source":"ts","message":"'$UnownedComponentAttrs' is declared but never used.","relatedInformation":null},
+            {"range":{"start":{"line":53,"character":5},"end":{"line":53,"character":14}},"severity":4,"code":6196,"source":"ts","message":"'$Prettify' is declared but never used.","relatedInformation":null},
+            {"range":{"start":{"line":55,"character":5},"end":{"line":55,"character":31}},"severity":4,"code":6196,"source":"ts","message":"'$ComponentFallthroughProps' is declared but never used.","relatedInformation":null},
+            {"range":{"start":{"line":62,"character":5},"end":{"line":62,"character":32}},"severity":4,"code":6196,"source":"ts","message":"'$ComponentMissingInputGuard' is declared but never used.","relatedInformation":null}
         ])
     );
 }

@@ -90,6 +90,14 @@
         {
           "file": "src/Globals.vue",
           "line": 6,
+          "column": 43,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ known: number; }'."
+        },
+        {
+          "file": "src/Globals.vue",
+          "line": 6,
           "column": 57,
           "severity": 1,
           "code": 2551,
@@ -110,14 +118,6 @@
           "severity": 1,
           "code": 2551,
           "message": "Property '$undeclared' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'. Did you mean '$declared'?"
-        },
-        {
-          "file": "src/Globals.vue",
-          "line": 6,
-          "column": 43,
-          "severity": 1,
-          "code": 2339,
-          "message": "Property 'missing' does not exist on type '{ known: number; }'."
         }
       ]
     },
