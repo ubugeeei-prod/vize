@@ -16,6 +16,11 @@ normal Batch fixture files in `aria-propertykey-capture-11153`: the authored
 retain the required `ariaLabel`; both invalid `size` values must retain the same
 complete authored error. The original 14 phases remain unchanged.
 
+Each SDK also checks the emitted helper in raw contextual assignments against an
+independent three-argument reference. Status, signal, error, stdout and stderr
+must match exactly, including all three native errors. This preserves raw
+inference alongside the required four-argument contract for diagnostic literals.
+
 The runner requires the actual `vize/virtual-ts` package import and the shipped
 declaration export conditions. An embedded-helper fixture would miss this bug.
 Source mode copies all shipped declaration files and the actual CLI manifest,
