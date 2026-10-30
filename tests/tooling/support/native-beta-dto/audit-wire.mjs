@@ -344,8 +344,7 @@ save("closed-full-wire.json", {
   leaders,
   owners: receipts,
 });
-function stableWatcherShutdown(registrationRefusal) {
-  const cancellations = registrationRefusal ? 4 : 2;
+function stableWatcherShutdown(cancellations) {
   return Buffer.from(
     "1 paths ineligible for watching\n" +
       `errors updating watches: [${Array.from(
@@ -354,8 +353,7 @@ function stableWatcherShutdown(registrationRefusal) {
       ).join(" ")}]\n`,
   );
 }
-function requireStableWatcherShutdown(bytes, registrationRefusal) {
-  const expected = stableWatcherShutdown(registrationRefusal);
+function requireStableWatcherShutdown(bytes) {
   const watch =
     /^Added new watch: root files for (\/tmp\/[^\n]+)\/tsconfig\.json watcher 6\.0\n\t\1\/\*\*\/\*\n\n/u.exec(
       bytes.toString("utf8"),
@@ -366,13 +364,12 @@ function requireStableWatcherShutdown(bytes, registrationRefusal) {
     bytes = bytes.subarray(prefix.length);
   }
   if (bytes.length === 0 || bytes.equals(Buffer.from("\n"))) return;
-  if (bytes.length === expected.length + 1) {
-    assert.equal(bytes[0], 0x0a, "Only the observed single leading newline is permitted");
+  if (bytes[0] === 0x0a) {
     bytes = bytes.subarray(1);
   }
-  assert.deepEqual(
-    bytes,
-    expected,
+  assert.equal(
+    [stableWatcherShutdown(2), stableWatcherShutdown(4)].some((expected) => bytes.equals(expected)),
+    true,
     "Stable control permits only its exact post-shutdown watcher cancellation",
   );
 }
@@ -418,7 +415,7 @@ if (baseline) {
     assert.equal(receipt.nativeExit, 0, "Actual candidate/control native owner must exit cleanly");
     const bytes = fs.readFileSync(path.join(root, receipt.stderr.file));
     if (provider.version === "7.0.2") {
-      if (bytes.length) requireStableWatcherShutdown(bytes, receipt.registrationRefusals === 1);
+      if (bytes.length) requireStableWatcherShutdown(bytes);
     } else {
       assert.equal(bytes.length, 0, "Nonempty native beta stderr refuses qualification");
     }

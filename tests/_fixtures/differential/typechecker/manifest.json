@@ -13169,7 +13169,7 @@
         },
         {
           "path": "native-beta-diagnostic-dto-10731/source-pairs.json",
-          "sha256": "9f752f5366b38dee3ae39538307abeaa714f211fd8dfc2d5ad2bf20ece07cb4e"
+          "sha256": "3c06fb9d6a0abc92e40807beabd8b4674b619db353429e7d37159fa55c5d14a3"
         }
       ],
       "tests": [
