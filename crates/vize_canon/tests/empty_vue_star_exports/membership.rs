@@ -265,9 +265,9 @@ fn expected() -> (Value, Value) {
     );
     let generated_contract_entries = generated_contract_update["entries"].as_array().unwrap();
     assert_eq!(generated_contract_entries.len(), 3);
-    for update in generated_contract_entries {
+    for (update, expected_index) in generated_contract_entries.iter().zip([74usize, 75, 82]) {
         let index = update["entry"].as_u64().unwrap() as usize;
-        assert!([74usize, 75, 82].contains(&index));
+        assert_eq!(index, expected_index);
         let member = members.get_mut(index).unwrap();
         assert_eq!(*member, update["before"]);
         assert_eq!(update["before"][0], update["after"][0]);
