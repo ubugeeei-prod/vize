@@ -1,0 +1,13 @@
+export function a(): unknown {
+  // vize-disable-next-line script/no-restricted-globals
+  return process.env.HOME;
+}
+
+export function b(): unknown {
+  return process.env.HOME; // vize-disable-line script/no-restricted-globals
+}
+
+/* vize-disable script/no-restricted-globals */
+export function c(): unknown {
+  return process.env.HOME;
+}

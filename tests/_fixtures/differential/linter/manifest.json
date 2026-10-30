@@ -2872,6 +2872,42 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/vize-script-suppressions-11150",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "vize-script-suppressions-11150",
+        "files": [
+          {
+            "path": "a.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "ba9e5ef82da52c8758ae4bf36aaeb1dfb5f63379f9a1b7c8e0fc9edb6ef5c84d"
+          },
+          {
+            "path": "d.ts.txt",
+            "role": "eslint-compatibility-control",
+            "sha256": "63d98e5fcd9e47d10e756a040083cc152afbd2dc71264ff638cbbbc01ac7d743"
+          },
+          {
+            "path": "e.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "b1c2f0286151e9c6632d87c3ab3e68524ac48bc9568c0a7b4fa99ccbde57c7e5"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "issue #11150 original script and SFC sources; exact CLI JSON regression"
+          }
+        ]
+      }
     }
   ]
 }

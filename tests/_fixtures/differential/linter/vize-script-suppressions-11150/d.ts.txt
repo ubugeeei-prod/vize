@@ -1,0 +1,4 @@
+export function d(): unknown {
+  // eslint-disable-next-line script/no-restricted-globals
+  return process.env.HOME;
+}

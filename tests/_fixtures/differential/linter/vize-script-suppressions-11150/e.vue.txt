@@ -1,0 +1,8 @@
+<script setup lang="ts">
+// vize-disable-next-line script/no-restricted-globals
+const home = process.env.HOME;
+</script>
+
+<template>
+  <p>{{ home }}</p>
+</template>

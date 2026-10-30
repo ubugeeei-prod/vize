@@ -78,15 +78,21 @@ fn lint_cli_honors_vize_script_aliases_in_plain_modules_and_sfc_setup() {
     let sources = [
         (
             "a.ts",
-            "export function a(): unknown {\n  // vize-disable-next-line script/no-restricted-globals\n  return process.env.HOME;\n}\n\nexport function b(): unknown {\n  return process.env.HOME; // vize-disable-line script/no-restricted-globals\n}\n\n/* vize-disable script/no-restricted-globals */\nexport function c(): unknown {\n  return process.env.HOME;\n}\n",
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/vize-script-suppressions-11150/a.ts.txt"
+            ),
         ),
         (
             "d.ts",
-            "export function d(): unknown {\n  // eslint-disable-next-line script/no-restricted-globals\n  return process.env.HOME;\n}\n",
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/vize-script-suppressions-11150/d.ts.txt"
+            ),
         ),
         (
             "e.vue",
-            "<script setup lang=\"ts\">\n// vize-disable-next-line script/no-restricted-globals\nconst home = process.env.HOME;\n</script>\n<template><p>{{ home }}</p></template>\n",
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/vize-script-suppressions-11150/e.vue.txt"
+            ),
         ),
     ];
     for (filename, source) in sources {
