@@ -29,9 +29,14 @@ export default defineComponent({
 "#;
 
 const SETUP_CHILD: &str = r#"<script setup lang="ts">
+const sharedBooleanBase = { type: Boolean } as const
+const sharedBoolean = { ...sharedBooleanBase } as const
+
 defineProps({
   label: { type: String, default: '', required: true },
   flag: { type: Boolean, default: false, required: true },
+  spreadFlag: { ...sharedBoolean, default: false, required: true },
+  overriddenLabel: { ...sharedBoolean, type: String, default: '', required: true },
   title: { type: String, required: true },
 })
 </script>
@@ -185,6 +190,8 @@ fn project_diagnostics(project_root: &Path, native: &Path) -> Vec<(String, Optio
     for (file, expected) in [
         ("SetupChild.vue", "  \"label\"?: string;"),
         ("SetupChild.vue", "  \"flag\": boolean;"),
+        ("SetupChild.vue", "  \"spreadFlag\": boolean;"),
+        ("SetupChild.vue", "  \"overriddenLabel\"?: string;"),
         ("SetupChild.vue", "  \"title\": string;"),
         (
             "SpreadChild.vue",
