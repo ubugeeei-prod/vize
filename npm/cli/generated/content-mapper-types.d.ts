@@ -87,9 +87,7 @@ type $IfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
 type $NotUndefined<T> = T extends undefined ? never : T;
 type $MappedOmit<T, K extends keyof any> = { [P in keyof T as P extends K ? never : P]: T[P] };
 type $DefaultNativeType = null | number | string | boolean | symbol | Function;
-type $InferDefault<P, T> =
-  | ((props: P) => T & {})
-  | (T extends $DefaultNativeType ? T : never);
+type $InferDefault<P, T> = ((props: P) => T & {}) | (T extends $DefaultNativeType ? T : never);
 type __WithDefaultsArgs<T> = { [K in keyof T]?: $InferDefault<T, T[K]> };
 type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown
   ? Readonly<$MappedOmit<T, keyof D>> & {
@@ -109,10 +107,7 @@ type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unk
 type __Ref<T> = import("vue").Ref<T>;
 type __ShallowRef<T> = import("vue").ShallowRef<T>;
 
-type $KebabCase<
-  S extends string,
-  Acc extends string = "",
-> = S extends `${infer Head}${infer Tail}`
+type $KebabCase<S extends string, Acc extends string = ""> = S extends `${infer Head}${infer Tail}`
   ? Head extends Lowercase<Head>
     ? $KebabCase<Tail, `${Acc}${Head}`>
     : $KebabCase<Tail, `${Acc}-${Lowercase<Head>}`>
@@ -223,8 +218,7 @@ type $ComponentMissingInputGuard<T, Authored> = T extends unknown
       }
   : never;
 type $ComponentInputGuardFor<T, Declared, Authored, Allowed> = [
-  | $MissingRequiredInputKeys<T, Authored>
-  | $ExtraInputKeys<T, Declared, Authored, Allowed>,
+  $MissingRequiredInputKeys<T, Authored> | $ExtraInputKeys<T, Declared, Authored, Allowed>,
 ] extends [never]
   ? {}
   : {
@@ -269,11 +263,9 @@ type $LiteralKeys<T> = keyof {
 };
 type $ReplaceComponentProps<T, P> = Omit<T, "$props"> &
   Pick<T, Exclude<$LiteralKeys<T>, "$props">> & { $props: P };
-type $PublicEmit<
-  T,
-  S = __EmitShape<T>,
-  K extends keyof S & string = keyof S & string,
-> = S extends (...args: any[]) => any
+type $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (
+  ...args: any[]
+) => any
   ? S
   : [K] extends [never]
     ? (event: string, ...args: any[]) => void
