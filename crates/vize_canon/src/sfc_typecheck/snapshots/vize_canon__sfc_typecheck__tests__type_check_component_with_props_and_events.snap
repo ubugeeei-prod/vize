@@ -84,7 +84,7 @@ type $NativeElement<Tag extends PropertyKey> = Tag extends keyof $NativeElements
 type $NativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
 declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: $NativeElementProp<$NativeElement<__Tag>, __Prop>): void;
 type $ComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<$ComponentAttrCamel<__T>>}` : S;
-type $ComponentNativeAttrNames = { [K in keyof $NativeElements & string]: keyof $NativeElements[K] }[keyof $NativeElements & string] & string;
+type $ComponentNativeAttrNames = { [K in keyof $NativeElements & string]: keyof $NativeElements[K] }[keyof $NativeElements & string];
 type $ComponentGlobalHtmlAttrs = $IsAny<$NativeElements> extends true ? {} : { [K in $ComponentNativeAttrNames as K | $ComponentAttrCamel<K>]?: unknown } & { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };
 declare function __vizeComponentGlobalHtmlAttrs(value: $ComponentGlobalHtmlAttrs): void;
 declare function __vForList<const T>(source: T): T extends number ? [item: number, key: number][] : T extends string ? [item: string, key: number][] : T extends readonly any[] ? (T extends readonly (infer U)[] ? [item: U, key: number] : never)[] : T extends Iterable<any> ? (T extends Iterable<infer U> ? [item: U, key: number] : never)[] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number][];type $DirectiveHook<D, H = Extract<D[keyof D & ('created' | 'beforeMount' | 'mounted' | 'beforeUpdate' | 'updated' | 'beforeUnmount' | 'unmounted')], (...args: any[]) => any>> = D extends (...args: any[]) => any ? D : [H] extends [never] ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }, ...args: any[]) => void : H;
@@ -135,7 +135,7 @@ function __setup() {
   const props = defineProps<Props>()
   const emit = defineEmits<Emits>()
   
-  // @vize-map: 15588:15667 -> 0:212
+  // @vize-map: 14989:15068 -> 0:212
 
   // ========== Template Scope (inherits from setup) ==========
   // Anchor before the template scope shadows `props`
@@ -233,5 +233,5 @@ type $VueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { __vizeEmitProps?: $StaticEmitProps; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, $StaticEmitProps>; } & $ComponentConstructor & $VueComponentOptions;
+declare const __vize_component__: { __vizeEmitProps?: $StaticEmitProps; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, $StaticEmitProps>; } & $ComponentConstructor & $VueComponentOptions;
 export default __vize_component__;

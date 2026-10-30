@@ -328,8 +328,7 @@ declare global {
     : S;
   type $ComponentNativeAttrNames = {
     [K in keyof $NativeElements & string]: keyof $NativeElements[K];
-  }[keyof $NativeElements & string] &
-    string;
+  }[keyof $NativeElements & string];
   type $ComponentGlobalHtmlAttrs =
     $IsAny<$NativeElements> extends true
       ? {}
