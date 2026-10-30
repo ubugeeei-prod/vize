@@ -449,20 +449,24 @@ export function makeSourceProject(
   manifest.private = true;
   manifest.typescript.contentMapper.exec = [binary, "content-mapper"];
   fs.writeFileSync(path.join(adapter, "package.json"), `${JSON.stringify(manifest, null, 2)}\n`);
-  for (const name of [
+  const helperFiles = [
     "content-mapper-helpers.d.ts",
     "content-mapper-helpers.d.mts",
     "content-mapper-helpers.d.cts",
-  ])
-    fs.copyFileSync(path.join(repoRoot, "npm/cli", name), path.join(adapter, name));
+    "generated/content-mapper-types.d.ts",
+  ];
+  for (const name of helperFiles) {
+    const target = path.join(adapter, name);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(repoRoot, "npm/cli", name), target);
+  }
   return {
     role: "source protocol adapter, not public-package acceptance",
     manifestSha256: sha(fs.readFileSync(path.join(adapter, "package.json"))),
     binarySha256: sha(fs.readFileSync(binary)),
-    helperFiles: [
-      "content-mapper-helpers.d.ts",
-      "content-mapper-helpers.d.mts",
-      "content-mapper-helpers.d.cts",
-    ].map((name) => ({ name, sha256: sha(fs.readFileSync(path.join(adapter, name))) })),
+    helperFiles: helperFiles.map((name) => ({
+      name,
+      sha256: sha(fs.readFileSync(path.join(adapter, name))),
+    })),
   };
 }
