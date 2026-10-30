@@ -177,7 +177,13 @@ function frames(data: Buffer): Packet[] {
   assert.equal(offset, data.length);
   return packets;
 }
-const key = (value: unknown) => `${typeof value}:${value}`;
+const key = (value: unknown) => {
+  assert(
+    typeof value === "string" || (typeof value === "number" && Number.isSafeInteger(value)),
+    "Native request ID must be a string or safe integer",
+  );
+  return `${typeof value}:${value}`;
+};
 const watcherBoundaryObservations: NonNullable<ReturnType<typeof verifyNativeRelations>>[] = [];
 function relations(
   client: Packet[],

@@ -85,7 +85,7 @@ const runtime = (source: Buffer) =>
 // producer identity or equate the distinct root and SDK watcher registrations.
 const watcherSuccessor = {
   id: "before-stable-post-shutdown-observation-41099824102",
-  auditRuntimeSha256: "ef4e63be27815bcf2e59197115c1d7c2876239282c71d09ed3ac58cc8900995b",
+  auditRuntimeSha256: "68bf0df8fb226da2569dd70cad509a31ee38eae79fa4439839b1c93250be77ad",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
   helperRuntimeSha256: "2eb567c30f1d0a6710036b39763b289bdf2fe25b0517c6326e5538f27f7dcfdd",
   actualFiles: [
