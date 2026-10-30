@@ -50,3 +50,17 @@ test("callback packet custody binds the comparison CLI to the exact PR base", ()
     assert.throws(() => assertAuthenticatedBaseComparison(tampered), assert.AssertionError);
   }
 });
+
+test("constructor packet custody delegates certified changes to complete parity", () => {
+  const source = fs.readFileSync(
+    path.join(root, ".github/workflows/component-input-diagnostic-ownership.yml"),
+    "utf8",
+  );
+  const start = source.indexOf("  unchanged-projection-packets:");
+  assert.ok(start >= 0);
+  const job = source.slice(start);
+  assert.doesNotMatch(job, /cmp .*base-legacy\.json.*head-legacy\.json/u);
+  assert.match(job, /constructor-projection-parity\.ts/u);
+  assert.match(job, /base-legacy\.json/u);
+  assert.match(job, /head-legacy\.json/u);
+});
