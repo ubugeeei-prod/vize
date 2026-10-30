@@ -62,6 +62,8 @@ export async function exerciseAuthoredImporterOverlay(
   let copied = false;
   let retargeted = false;
   let failed = false;
+  let failure: unknown;
+  let cleanupError: unknown;
 
   try {
     fs.writeFileSync(copiedPath, dependency.source, { encoding: "utf8", flag: "wx" });
@@ -114,12 +116,10 @@ export async function exerciseAuthoredImporterOverlay(
     );
     assertUnsaved();
     retargeted = false;
-    return version;
   } catch (error) {
     failed = true;
-    throw error;
+    failure = error;
   } finally {
-    let cleanupError: unknown;
     if (retargeted) {
       try {
         change(session, importer.uri, importer.source, ++version);
@@ -136,8 +136,10 @@ export async function exerciseAuthoredImporterOverlay(
         cleanupError ??= error;
       }
     }
-    if (!failed && cleanupError != null) throw cleanupError;
   }
+  if (failed) throw failure;
+  if (cleanupError != null) throw cleanupError;
+  return version;
 }
 
 async function expectDefinition(

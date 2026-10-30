@@ -142,6 +142,22 @@ test("importer overlay refuses an existing copy without deleting its authored by
   }
 });
 
+test("importer overlay reports cleanup failure after its semantic checks pass", async () => {
+  const fixture = createFixture();
+  const notify = fixture.session.notify.bind(fixture.session);
+  const cleanup = new Error("copy deletion notification failed");
+  fixture.session.notify = (method, params) => {
+    if (method === "workspace/didDeleteFiles") throw cleanup;
+    notify(method, params);
+  };
+  try {
+    await assert.rejects(fixture.run, (error) => error === cleanup);
+    fixture.assertRestored();
+  } finally {
+    fixture.dispose();
+  }
+});
+
 const position = { line: 0, character: 0 };
 
 function createFixture() {
