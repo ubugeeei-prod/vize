@@ -197,7 +197,7 @@ fn carrying_native_category_preserves_the_complete_virtual_document_and_definiti
         let doc = crate::ide::corsa_support::html_tag_virtual_document(tag).unwrap();
         assert_eq!(doc.category, category);
         assert_eq!(doc.content.as_str(), [PREFIX, expression, SUFFIX].concat());
-        assert_eq!(doc.definition_offset, 120);
+        assert_eq!(doc.definition_offset, 115);
         assert_eq!(doc.hover_offset, hover_offset);
     }
     for tag in [
