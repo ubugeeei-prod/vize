@@ -121,10 +121,11 @@ test("CLI display successors require exact truncation, duplicate diagnostics and
   assertCliDiagnosticContract(row, observed.base, observed.head);
   assert.ok(isRecord(observed.head) && isRecord(observed.head.result));
   const candidate = observed.head;
+  const originalResult = observed.head.result;
   for (const result of [
-    { ...candidate.result, errorCount: 0 },
-    { ...candidate.result, programs: [] },
-    { ...candidate.result, files: [] },
+    { ...originalResult, errorCount: 0 },
+    { ...originalResult, programs: [] },
+    { ...originalResult, files: [] },
   ])
     assert.throws(() => assertCliDiagnosticContract(row, observed.base, { ...candidate, result }));
   const withoutExactTruncation = JSON.parse(
