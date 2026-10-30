@@ -1,8 +1,13 @@
 use vize_carton::{FxHashSet, String, append, cstr};
-use vize_croquis::{Croquis, macros::ModelDefinition};
+use vize_croquis::{
+    Croquis,
+    macros::{ModelDefinition, PropDefinition},
+};
 use vize_l0::ts;
 
-use crate::virtual_ts::{helpers::push_ts_string_literal, model_types::model_value_type};
+use crate::virtual_ts::{
+    helpers::push_ts_string_literal, model_types::model_value_type, types::RESOLVED_RUNTIME_DEFAULT,
+};
 
 use crate::virtual_ts::generic_parameters::GenericParameters;
 
@@ -12,6 +17,30 @@ fn emit_type_member(ts: &mut String, name: &str, optional: &str, ty: &str) {
     ts.push_str("  ");
     push_ts_string_literal(ts, name);
     append!(*ts, "{optional}: {ty};\n");
+}
+
+/// Vue publishes a runtime prop that carries a `default` (even `undefined`) as
+/// optional to the parent although it is `required: true` (`$props` is
+/// `Partial<Defaults> & Omit<Props, keyof Defaults>`), except a plain `Boolean`
+/// prop, whose `required: true` outranks its default. `vue-tsc` checks the
+/// parent against that `$props`, so the published member must agree with it;
+/// the setup-side `props` binding is typed through `__WithDefaultsResult` and
+/// keeps the defaulted value either way.
+///
+/// A prop the runtime resolver collected from a spread or an import carries
+/// only the [`RESOLVED_RUNTIME_DEFAULT`] placeholder, which stands for a
+/// `Boolean` declaration as much as for a real default; the resolver has
+/// already settled `required` for the parent, so the placeholder is not a
+/// default here.
+fn parent_requires_prop(prop: &PropDefinition) -> bool {
+    if !prop.required {
+        return false;
+    }
+    let has_default = prop
+        .default_value
+        .as_deref()
+        .is_some_and(|default| default != RESOLVED_RUNTIME_DEFAULT);
+    !has_default || prop.prop_type.as_deref() == Some("boolean")
 }
 
 fn emit_model_prop_members(
@@ -94,7 +123,7 @@ pub(super) fn append_macro_props_type_literal(
                 let mut emitted_names: FxHashSet<String> = FxHashSet::default();
                 for prop in summary.macros.props() {
                     let prop_type = prop.prop_type.as_deref().unwrap_or("unknown");
-                    let optional = if prop.required { "" } else { "?" };
+                    let optional = if parent_requires_prop(prop) { "" } else { "?" };
                     emit_type_member(__ts, prop.name.as_str(), optional, prop_type);
                     emitted_names.insert(prop.name.as_str().into());
                 }

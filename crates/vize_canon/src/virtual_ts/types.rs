@@ -36,6 +36,12 @@ pub struct TemplateGlobal {
 pub(crate) const CSS_MODULE_GLOBAL_MARKER: &str = "__vize_css_module_global";
 pub(crate) const TYPED_ROUTE_GLOBAL_MARKER: &str = "__vize_typed_route_global";
 
+/// Placeholder `default_value` of a runtime prop the batch resolver collected
+/// from a spread or an imported object: it records that the setup-side value
+/// is never `undefined` (a `default`, a `Boolean` declaration or a
+/// `*WithDefault` helper), not an authored default expression.
+pub(crate) const RESOLVED_RUNTIME_DEFAULT: &str = "__vize_resolved_runtime_default";
+
 impl TemplateGlobal {
     pub(crate) fn context_type_annotation(&self) -> String {
         if self.default_value == CSS_MODULE_GLOBAL_MARKER

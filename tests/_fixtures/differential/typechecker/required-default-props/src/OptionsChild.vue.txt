@@ -1,0 +1,15 @@
+<template>
+  <span :title="title">{{ label.toUpperCase() }} {{ flag }}</span>
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  props: {
+    label: { type: String, default: '', required: true },
+    flag: { type: Boolean, default: false, required: true },
+    title: { type: String, required: true },
+  },
+})
+</script>

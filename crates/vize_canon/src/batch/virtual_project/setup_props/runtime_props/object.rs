@@ -13,6 +13,7 @@ use crate::batch::virtual_project::setup_props::{
         runtime_prop_shape_member_type,
     },
 };
+use crate::virtual_ts::RESOLVED_RUNTIME_DEFAULT;
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_props_from_object<'a>(
@@ -36,9 +37,10 @@ pub(super) fn collect_props_from_object<'a>(
                 props.push(PropDefinition {
                     name: name.to_compact_string(),
                     prop_type: Some(runtime_prop_shape_member_type(root_runtime_binding, name)),
-                    required: shape::runtime_prop_is_required(&property.value),
+                    required: shape::runtime_prop_is_required(&property.value)
+                        && !shape::runtime_prop_default_relaxes_required(&property.value),
                     default_value: shape::runtime_prop_is_defaulted(&property.value, source)
-                        .then(|| "undefined".into()),
+                        .then(|| RESOLVED_RUNTIME_DEFAULT.into()),
                 });
             }
             ObjectPropertyKind::SpreadProperty(spread) => collect_props_from_spread_expression(
