@@ -136,8 +136,12 @@ pub struct VSlotScopeData {
 /// Data specific to event handler scope
 #[derive(Debug, Clone)]
 pub struct EventHandlerScopeData {
-    /// Event name (e.g., "click")
+    /// Event name or authored dynamic-name expression (e.g., "click" or
+    /// "events.save").
     pub event_name: CompactString,
+    /// Whether `event_name` is a computed directive argument rather than a
+    /// statically declared event name.
+    pub event_name_is_dynamic: bool,
     /// Whether this handler has implicit $event
     pub has_implicit_event: bool,
     /// Explicit parameter names (stack-allocated for typical cases)

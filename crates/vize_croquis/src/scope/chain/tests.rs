@@ -117,6 +117,7 @@ fn test_event_handler_scope() {
     chain.enter_event_handler_scope(
         EventHandlerScopeData {
             event_name: CompactString::new("click"),
+            event_name_is_dynamic: false,
             has_implicit_event: true,
             param_names: vize_carton::smallvec![],
             handler_expression: None,
@@ -138,6 +139,7 @@ fn test_event_handler_scope_with_params() {
     chain.enter_event_handler_scope(
         EventHandlerScopeData {
             event_name: CompactString::new("click"),
+            event_name_is_dynamic: false,
             has_implicit_event: false,
             param_names: vize_carton::smallvec![
                 CompactString::new("e"),
@@ -245,6 +247,7 @@ fn test_nested_callback_in_v_for() {
     chain.enter_event_handler_scope(
         EventHandlerScopeData {
             event_name: CompactString::new("click"),
+            event_name_is_dynamic: false,
             has_implicit_event: false,
             param_names: vize_carton::smallvec![CompactString::new("e")],
             handler_expression: None,
@@ -728,6 +731,7 @@ fn test_snapshot_complex_nested_scopes() {
     chain.enter_event_handler_scope(
         EventHandlerScopeData {
             event_name: CompactString::new("click"),
+            event_name_is_dynamic: false,
             has_implicit_event: false,
             param_names: vize_carton::smallvec![CompactString::new("e")],
             handler_expression: None,

@@ -143,7 +143,7 @@ pub(super) fn generate_event_handler_scope(
         );
 
         append!(*ts, "{indent}}});\n");
-    } else if data.target_component.is_some() {
+    } else if data.target_component.is_some() && !data.event_name_is_dynamic {
         component_scope::generate_component_handler_scope(
             ts,
             mappings,
@@ -211,12 +211,14 @@ pub(super) fn generate_event_handler_scope(
         );
 
         append!(*ts, "{indent}}});\n");
-    } else if dynamic_component_custom_event(
-        ctx.template_source,
-        ctx.template_ast,
-        scope.span.start,
-        data.event_name.as_str(),
-    ) {
+    } else if (data.target_component.is_some() && data.event_name_is_dynamic)
+        || dynamic_component_custom_event(
+            ctx.template_source,
+            ctx.template_ast,
+            scope.span.start,
+            data.event_name.as_str(),
+        )
+    {
         let listener_type = vize_carton::cstr!("__vize_dynamic_component_{}_listener", scope_id);
         append!(
             *ts,
