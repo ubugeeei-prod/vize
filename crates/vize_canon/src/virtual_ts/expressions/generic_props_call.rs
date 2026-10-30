@@ -70,12 +70,14 @@ pub(super) fn generate_generic_props_call(
     // The per-entry mappings pushed below stay inside this range and remain the
     // anchor for a per-property failure; this one only catches what TypeScript
     // reports about the literal as a whole.
+    let mut diagnostic_source = source_context;
+    diagnostic_source.aria_value_contract_index = Some(idx);
     let literal_range = append_props_literal(
         ts,
         mappings,
         usage,
         template_binding_access,
-        source_context,
+        diagnostic_source,
         expr_indent.as_str(),
     );
     ts.push_str(");\n");

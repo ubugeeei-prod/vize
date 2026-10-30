@@ -293,7 +293,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
         true,
     );
     assert_eq!(
-        code.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)")
+        code.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label, (undefined as unknown as __Child_0_prop_aria_label))")
             .count(),
         1,
         "{code}"
@@ -327,7 +327,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     );
     assert_eq!(
         camel
-            .matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)")
+            .matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label, (undefined as unknown as __Child_0_prop_ariaLabel))")
             .count(),
         1,
         "a camel-authored binding must retain the raw quoted-key witness: {camel}"

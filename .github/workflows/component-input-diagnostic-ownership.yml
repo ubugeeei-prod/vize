@@ -89,7 +89,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/component-input-ownership"
           cargo test --locked --profile ci -p vize_canon --lib 'root_callback_owners::tests::' -- --nocapture > "$RUNNER_TEMP/component-input-ownership/root-callback-unit.stdout" 2> "$RUNNER_TEMP/component-input-ownership/root-callback-unit.stderr"
-          cargo test --locked --profile ci -p vize_canon --lib shared_aria_witness_emits_the_callable_three_argument_helper_without_alias_capture -- --nocapture > "$RUNNER_TEMP/component-input-ownership/aria-witness-unit.stdout" 2> "$RUNNER_TEMP/component-input-ownership/aria-witness-unit.stderr"
+          cargo test --locked --profile ci -p vize_canon --lib 'helper_modes::aria_' -- --nocapture > "$RUNNER_TEMP/component-input-ownership/aria-witness-unit.stdout" 2> "$RUNNER_TEMP/component-input-ownership/aria-witness-unit.stderr"
       - name: Build the exact authenticated PR base separately
         run: |
           set -euo pipefail

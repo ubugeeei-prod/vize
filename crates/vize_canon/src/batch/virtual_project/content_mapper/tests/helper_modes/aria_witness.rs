@@ -21,18 +21,18 @@ type $NotUndefined<T> = never;
         .expect("installed shared-helper transform");
         let text = result.text.as_str();
         assert_eq!(
-            text.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", \"x\")")
+            text.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", \"x\", (undefined as unknown as __Child_0_prop_aria_label))")
                 .count(),
             1,
             "the literal must call the emitted helper: {text}"
         );
         let narrowing = if shared_virtual_module {
-            "T extends undefined ? never : T"
+            "T extends E ? T extends undefined ? never : T : E extends undefined ? never : E"
         } else {
-            "$NotUndefined<T>"
+            "$NotUndefined<T extends E ? T : E>"
         };
         let helper = format!(
-            "function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T>(raw: R, camel: C, value: T): {{ readonly [K in R | C]: {narrowing} }} {{ return {{ [raw]: value, [camel]: value }} as unknown as {{ readonly [K in R | C]: {narrowing} }}; }}"
+            "function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T, E = unknown>(raw: R, camel: C, value: T, _expected?: E): {{ readonly [K in R | C]: {narrowing} }} {{ return {{ [raw]: value, [camel]: value }} as unknown as {{ readonly [K in R | C]: {narrowing} }}; }}"
         );
         assert_eq!(
             text.matches(helper.as_str()).count(),

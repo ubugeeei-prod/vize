@@ -1,11 +1,15 @@
 use crate::virtual_ts::expressions::component_prop_bindings::merged_class_binding_value;
-use crate::virtual_ts::expressions::component_props::ComponentPropSource;
+use crate::virtual_ts::expressions::component_props::{
+    ComponentPropSource, has_per_prop_value_check,
+};
 use crate::virtual_ts::expressions::map_rewritten_template_binding;
 use crate::virtual_ts::expressions::prop_sources::{
     PropSpan, append_prop_value, generated_prop_span, prop_name_source_range,
     prop_value_source_range,
 };
-use crate::virtual_ts::helpers::{component_aria_prop_keys, component_prop_key};
+use crate::virtual_ts::helpers::{
+    component_aria_prop_keys, component_prop_key, to_safe_identifier_fragment,
+};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 use vize_carton::{FxHashSet, String, append};
@@ -27,6 +31,7 @@ pub(super) fn append_prop_entry<'p>(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     prop: &PassedProp,
+    component_name: &str,
     template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
@@ -117,6 +122,20 @@ pub(super) fn append_prop_entry<'p>(
     ts.push_str(if aria_present_value { ", " } else { ": " });
     let value_gen_range = append_prop_value(ts, generated_value.text.as_str());
     if aria_present_value {
+        // Only the mapped diagnostic call may reuse the contract already
+        // checked above. Raw inference copies must retain their exact value.
+        if has_per_prop_value_check(prop)
+            && !inline_callback
+            && !source_context.is_inference_only()
+            && let Some(idx) = source_context.aria_value_contract_index
+        {
+            let component = to_safe_identifier_fragment(component_name);
+            let name = to_safe_identifier_fragment(prop.name.as_str());
+            append!(
+                *ts,
+                ", (undefined as unknown as __{component}_{idx}_prop_{name})",
+            );
+        }
         ts.push(')');
     }
     let entry_gen_end = if generated_value.omits_tail() {
