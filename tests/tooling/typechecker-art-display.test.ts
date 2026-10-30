@@ -57,7 +57,10 @@ test("the real manifest selects the full Art successor with separate authority",
     rows.map((item) => item.diagnosticAuthority),
     [selected.diagnosticAuthority, selected.diagnosticAuthority],
   );
-  assert.equal(loaded.cases.filter((item) => item.diagnosticAuthority).length, 2);
+  assert.equal(
+    loaded.cases.filter((item) => item.pack === artDisplayPack && item.diagnosticAuthority).length,
+    2,
+  );
 });
 
 test("the actual selector refuses mutations of every authenticated authority", async (t) => {

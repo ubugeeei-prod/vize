@@ -18,6 +18,7 @@ pub(crate) fn native_fixture_runtime_disabled() -> bool {
 
 mod art_native_display;
 mod capture;
+mod required_listener_events;
 pub(crate) use capture::WorkspaceCapturePolicy;
 
 pub(crate) fn check_pack(
@@ -470,6 +471,11 @@ pub(crate) fn check_pack_with_capture_policy(
             (
                 actual.clone(),
                 art_native_display::expected(&fixtures, &fixture_pack, &case),
+            )
+        } else if name == "component-listener-prop-duplicate-10397" {
+            (
+                actual.clone(),
+                required_listener_events::expected(&fixtures, &fixture_pack, &case),
             )
         } else {
             (actual.clone(), case.diagnostics.clone())
