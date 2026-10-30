@@ -50,8 +50,8 @@ fn test_vue_template_context_v3_default_is_unchanged() {
     // The default Vue 3 dialect must emit the exact same context as the
     // dialect-unaware default — no Vue 2-only members leak into Vue 3.
     let v3 = template_context(&VirtualTsOptions::default(), VueVersion::V3);
-    assert!(!v3.contains("$listeners"));
-    assert!(!v3.contains("$children"));
+    assert_eq!(v3.matches("$listeners").count(), 0);
+    assert_eq!(v3.matches("$children").count(), 0);
     assert!(!v3.contains("$scopedSlots"));
     assert!(!v3.contains("$createElement"));
     assert!(!v3.contains("Vue 2 instance members"));
