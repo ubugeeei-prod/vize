@@ -143,6 +143,9 @@ pub(super) fn build_format_options(
     if let Some(v) = args.self_close_void_elements {
         opts.self_close_void_elements = v;
     }
+    if let Some(v) = args.normalize_css_quotes {
+        opts.normalize_css_quotes = v;
+    }
     opts.skip_script_stabilization = !args.write;
     (
         opts,

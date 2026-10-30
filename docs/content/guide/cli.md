@@ -160,6 +160,7 @@ Default discovery formats Vue, JavaScript/TypeScript and JSON/JSONC files. YAML 
 | `--normalize-directive-shorthands` | Normalize `v-bind:` / `v-on:` / `v-slot:` shorthands |
 | `--sort-blocks`                    | Toggle canonical SFC block ordering                  |
 | `--self-close-void-elements`       | Toggle `/>` on HTML void elements                    |
+| `--normalize-css-quotes`          | Re-quote CSS, SCSS and Less strings using `--single-quote` |
 | `--preset`                         | Apply `vize`, `prettier`, `compact` or `documentation` formatter defaults |
 | `--profile`                        | Print timing profile                                 |
 

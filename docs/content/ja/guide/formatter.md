@@ -127,6 +127,7 @@ export default defineConfig({}).withVue({
 | `--max-attributes-per-line`        | 指定した数を超えると、属性を折り返します。                      |
 | `--normalize-directive-shorthands` | `v-bind:`、`v-on:`、`v-slot:` を `:`、`@`、`#` に置き換えます。 |
 | `--sort-blocks`                    | SFC ブロックの標準順序を切り替えます。                          |
+| `--normalize-css-quotes`          | CSS・SCSS・Less の文字列の引用符を指定した形式に合わせます。 |
 
 個々の設定は、次のガイドで詳しく説明しています。
 
@@ -175,6 +176,10 @@ Node の native `formatSfc` API でも、Prettier 移行用の 5 つの真偽値
 `normalizeCssQuotes`、`normalizeInlineStyles`、`normalizeVForParens`、
 `selfCloseVoidElements`、`reindentPreprocessorStyles` を同じ名前で指定できます。
 明示した値は `false` を含めて `preset` より優先されます。
+
+CSS の引用符の正規化は、CLI でも `--normalize-css-quotes[=false]` で直接上書きできます。
+明示した値は設定と選択したプリセットより優先されます。`--single-quote` に従って
+引用符を選び、コメントを保ちます。エスケープが増える場合はもう一方の引用符を使います。
 
 空要素を閉じるポリシーは、CLI でも
 `--self-close-void-elements[=false]` で直接上書きできます。明示した値は設定と
