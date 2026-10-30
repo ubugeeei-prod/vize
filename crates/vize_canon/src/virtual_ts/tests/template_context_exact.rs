@@ -10,7 +10,7 @@ fn vue3_default_excludes_legacy_members() {
     let v3 = template_context(&VirtualTsOptions::default(), VueVersion::V3);
     assert_eq!(v3.matches("$listeners").count(), 0);
     assert_eq!(v3.matches("$children").count(), 0);
-    assert!(!v3.contains("$scopedSlots"));
-    assert!(!v3.contains("$createElement"));
-    assert!(!v3.contains("Vue 2 instance members"));
+    assert_eq!(v3.matches("$scopedSlots").count(), 0);
+    assert_eq!(v3.matches("$createElement").count(), 0);
+    assert_eq!(v3.matches("Vue 2 instance members").count(), 0);
 }
