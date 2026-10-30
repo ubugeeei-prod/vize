@@ -2904,7 +2904,7 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "issue #11150 original script and SFC sources; exact CLI JSON regression"
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }
