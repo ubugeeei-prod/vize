@@ -32,6 +32,7 @@ jobs:
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
       RUST_TEST_THREADS: "4"
       NEXTEST_PROFILE: ${{ github.event_name == 'merge_group' && 'full' || 'pr' }}
+      INSTA_UPDATE: new
       VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ github.workspace }}/target/nextest/${{ github.event_name == 'merge_group' && 'full' || 'pr' }}/template-emit-ts40-projection
       COHORT: ${{ matrix.cohort }}
       NEXTEST_FILTER: ${{ matrix.filter }}
@@ -114,7 +115,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: rust-test-cohort-${{ matrix.cohort }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: target/nextest/${{ env.NEXTEST_PROFILE }}/
+          path: |
+            target/nextest/${{ env.NEXTEST_PROFILE }}/
+            crates/**/*.snap.new
           if-no-files-found: error
           retention-days: 7
 
