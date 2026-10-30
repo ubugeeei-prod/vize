@@ -1,0 +1,591 @@
+{
+  "schema": "vize.template-script-shadow-correctness",
+  "version": 1,
+  "issue": 10822,
+  "sourceBase": "09cc1727c687fa2baa30ecd1dcab854ec72ca597",
+  "versions": {
+    "eslint": "10.4.1",
+    "eslint-plugin-vue": "10.9.2",
+    "vue-eslint-parser": "10.4.1",
+    "@typescript-eslint/parser": "8.65.0"
+  },
+  "originalMatrix": {
+    "run": 41049126273,
+    "artifact": 12974982174,
+    "revision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+    "evidence": {
+      "commitSha": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
+      "machine": {
+        "arch": "x64",
+        "logicalCpuCount": 32,
+        "platform": "linux"
+      },
+      "runtime": {
+        "name": "node",
+        "version": "v24.14.0"
+      }
+    },
+    "budget": {
+      "falseNegativePassed": false,
+      "falsePositivePassed": true,
+      "maxFalseNegativeCount": 0,
+      "maxFalsePositiveCount": 0,
+      "passed": false,
+      "unusableReason": null,
+      "verdict": "breached"
+    },
+    "falseNegatives": [
+      {
+        "column": 37,
+        "endColumn": 49,
+        "endLine": 416,
+        "file": "packages/frontend/@n8n/design-system/src/components/N8nDropdownMenu/DropdownMenuItem.vue",
+        "line": 416,
+        "message": "Variable 'leadingProps' is already declared in the upper scope.",
+        "ruleId": "vue/no-template-shadow",
+        "severity": "warning",
+        "upstreamRuleId": "vue/no-template-shadow"
+      },
+      {
+        "column": 38,
+        "endColumn": 51,
+        "endLine": 422,
+        "file": "packages/frontend/@n8n/design-system/src/components/N8nDropdownMenu/DropdownMenuItem.vue",
+        "line": 422,
+        "message": "Variable 'trailingProps' is already declared in the upper scope.",
+        "ruleId": "vue/no-template-shadow",
+        "severity": "warning",
+        "upstreamRuleId": "vue/no-template-shadow"
+      },
+      {
+        "column": 36,
+        "endColumn": 48,
+        "endLine": 453,
+        "file": "packages/frontend/@n8n/design-system/src/components/N8nDropdownMenu/DropdownMenuItem.vue",
+        "line": 453,
+        "message": "Variable 'leadingProps' is already declared in the upper scope.",
+        "ruleId": "vue/no-template-shadow",
+        "severity": "warning",
+        "upstreamRuleId": "vue/no-template-shadow"
+      },
+      {
+        "column": 37,
+        "endColumn": 50,
+        "endLine": 459,
+        "file": "packages/frontend/@n8n/design-system/src/components/N8nDropdownMenu/DropdownMenuItem.vue",
+        "line": 459,
+        "message": "Variable 'trailingProps' is already declared in the upper scope.",
+        "ruleId": "vue/no-template-shadow",
+        "severity": "warning",
+        "upstreamRuleId": "vue/no-template-shadow"
+      },
+      {
+        "column": 33,
+        "endColumn": 37,
+        "endLine": 181,
+        "file": "packages/frontend/editor-ui/src/features/ndv/runData/components/RunDataJson.vue",
+        "line": 181,
+        "message": "Variable 'node' is already declared in the upper scope.",
+        "ruleId": "vue/no-template-shadow",
+        "severity": "warning",
+        "upstreamRuleId": "vue/no-template-shadow"
+      },
+      {
+        "column": 35,
+        "endColumn": 39,
+        "endLine": 196,
+        "file": "packages/frontend/editor-ui/src/features/ndv/runData/components/RunDataJson.vue",
+        "line": 196,
+        "message": "Variable 'node' is already declared in the upper scope.",
+        "ruleId": "vue/no-template-shadow",
+        "severity": "warning",
+        "upstreamRuleId": "vue/no-template-shadow"
+      }
+    ],
+    "falsePositives": []
+  },
+  "historical": {
+    "path": "crates/vize_patina/tests/fixtures/template-shadow-scopes/controls.json",
+    "sha256": "02dd836abcea881926df89a1ac848c05cadb4c8f9373d4a09de0dc078a7da0e1"
+  },
+  "originals": [
+    {
+      "id": "n8n-dropdown-menu",
+      "filename": "packages/frontend/@n8n/design-system/src/components/N8nDropdownMenu/DropdownMenuItem.vue",
+      "source": "<script setup lang=\"ts\" generic=\"T = string, D = never\">\nimport {\n\tDropdownMenuCheckboxItem,\n\tDropdownMenuItem,\n\tDropdownMenuLabel,\n\tDropdownMenuSeparator,\n\tDropdownMenuSub,\n\tDropdownMenuSubTrigger,\n\tDropdownMenuSubContent,\n\tDropdownMenuPortal,\n} from 'reka-ui';\nimport { computed, inject, nextTick, onBeforeUnmount, ref, useCssModule, watch } from 'vue';\n\nimport Icon from '../N8nIcon/Icon.vue';\nimport N8nLoading from '../N8nLoading';\nimport {\n\tDropdownMenuPortalTargetKey,\n\tDropdownMenuSubMaxHeightKey,\n\tDropdownMenuWidthKey,\n\tDropdownMenuExternalNavigationKey,\n\ttype DropdownMenuItemProps,\n\ttype DropdownMenuItemSlots,\n\ttype DropdownMenuSearchMode,\n} from './DropdownMenu.types';\nimport DropdownMenuSearchableContent from './DropdownMenuSearchableContent.vue';\nimport N8nText from '../N8nText/Text.vue';\n\ndefineOptions({ name: 'N8nDropdownMenuItem', inheritAttrs: false });\n\nconst props = withDefaults(\n\tdefineProps<\n\t\tDropdownMenuItemProps<T, D> & {\n\t\t\thtmlId?: string;\n\t\t\tdisablePointerFocus?: boolean;\n\t\t\tcloseOnSelect?: boolean;\n\t\t\tsearchMode?: DropdownMenuSearchMode;\n\t\t}\n\t>(),\n\t{\n\t\tloadingItemCount: 3,\n\t\tdisablePointerFocus: false,\n\t\tcheckbox: false,\n\t\tcloseOnSelect: true,\n\t\tsearchMode: 'internal',\n\t},\n);\nconst slots = defineSlots<DropdownMenuItemSlots<T, D>>();\n\nconst emit = defineEmits<{\n\tselect: [value: T];\n\tsearch: [searchTerm: string, itemId: T];\n\t'update:subMenuOpen': [open: boolean];\n\tpointermove: [event: PointerEvent];\n}>();\n\nconst $style = useCssModule();\nconst portalTarget = inject(DropdownMenuPortalTargetKey, ref(undefined));\nconst subMenuMaxHeight = inject(DropdownMenuSubMaxHeightKey, ref(undefined));\nconst menuWidth = inject(DropdownMenuWidthKey, ref('24rem'));\nconst externalNavigation = inject(DropdownMenuExternalNavigationKey, null);\n\nconst internalSubMenuOpen = ref(false);\n// True when the parent menu opened this sub-menu (keyboard: ArrowRight or Enter).\n// Pointer and chevron opens start inside this item and set internalSubMenuOpen first,\n// so the parent's prop never finds it closed.\nconst subMenuOpenedByParent = ref(false);\nconst childrenContainerRef = ref<HTMLElement | null>(null);\nconst subContentMaxHeight = ref<string>();\n\nconst SUB_MENU_ITEM_GLIMPSE_RATIO = 0.5;\nconst SUB_MENU_ITEM_ALIGNMENT_TOLERANCE = 2;\n\nconst waitForLayout = async () => {\n\tawait nextTick();\n\tawait new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));\n};\n\nconst handleChildSearch = (term: string, itemId: T) => {\n\temit('search', term, itemId);\n};\n\nconst hasChildren = computed(() => props.children && props.children.length > 0);\nconst hasSubMenu = computed(() => hasChildren.value || props.loading || props.searchable);\n\nconst handleSubMenuOpenChange = (open: boolean) => {\n\tif (internalSubMenuOpen.value === open) return;\n\tinternalSubMenuOpen.value = open;\n\temit('update:subMenuOpen', open);\n};\n\nconst closeSubMenu = () => {\n\thandleSubMenuOpenChange(false);\n};\n\nconst leadingProps = computed(() => ({\n\tclass: $style['item-leading'],\n}));\n\nconst labelProps = computed(() => ({\n\tclass: $style['item-label'],\n}));\n\nconst trailingProps = computed(() => ({\n\tclass: $style['item-trailing'],\n}));\n\nconst titleAttr = computed(() => (props.label.length >= 20 ? props.label : undefined));\n\nconst handleSelect = (value: T) => {\n\temit('select', value);\n};\n\nconst handleItemSelect = (event: Event) => {\n\tif (props.disabled || hasSubMenu.value) return;\n\t// Keep the menu open for toggle-style rows (keepOpen) or items opting out of close-on-select.\n\tif (props.keepOpen || !props.closeOnSelect) event.preventDefault();\n\temit('select', props.id);\n};\n\nconst handlePointerMove = (event: PointerEvent) => {\n\tif (props.disablePointerFocus && props.searchMode === 'external') event.preventDefault();\n\temit('pointermove', event);\n};\n\nconst openSubMenu = () => {\n\tif (props.disabled || internalSubMenuOpen.value) return;\n\thandleSubMenuOpenChange(true);\n};\n\nconst handleSelectableParentKeydown = (event: KeyboardEvent) => {\n\tif (\n\t\t!props.selectable ||\n\t\tprops.disabled ||\n\t\tevent.key !== 'Enter' ||\n\t\tevent.isComposing ||\n\t\tevent.keyCode === 229\n\t) {\n\t\treturn;\n\t}\n\n\tevent.preventDefault();\n\tevent.stopPropagation();\n\temit('select', props.id);\n};\n\nconst handleSelectableParentClick = (event: MouseEvent) => {\n\tif (props.disabled) return;\n\tevent.preventDefault();\n\temit('select', props.id);\n};\n\nconst handleSubMenuIndicatorClick = (event: MouseEvent) => {\n\tevent.preventDefault();\n\topenSubMenu();\n\tif (props.searchMode === 'external') externalNavigation?.focusTarget();\n};\n\nconst handleSubMenuTriggerClick = (event: MouseEvent) => {\n\tif (!props.disablePointerFocus || props.searchMode !== 'external') return;\n\n\tconst action = (event.target as HTMLElement | null)?.closest?.('[data-sub-menu-action]');\n\tif (props.selectable && action) return;\n\n\tevent.preventDefault();\n\topenSubMenu();\n\tif (props.searchMode === 'external') externalNavigation?.focusTarget();\n};\n\nconst handleSubContentFocusOutside = (event: Event) => {\n\tif (props.disablePointerFocus) {\n\t\tevent.preventDefault();\n\t}\n};\n\nconst handleSubContentOpenAutoFocus = (event: Event) => {\n\tif (props.searchMode !== 'external') return;\n\tevent.preventDefault();\n\texternalNavigation?.focusTarget();\n};\n\nconst handleSubContentCloseAutoFocus = (event: Event) => {\n\tif (props.searchMode === 'external') event.preventDefault();\n};\n\nconst updateSubContentMaxHeight = async () => {\n\tsubContentMaxHeight.value = undefined;\n\tawait waitForLayout();\n\n\tconst container = childrenContainerRef.value;\n\tif (!container || container.scrollHeight <= container.clientHeight) return;\n\n\tconst items = [...container.querySelectorAll<HTMLElement>('[role=\"menuitem\"]')];\n\tconst containerTop = container.getBoundingClientRect().top;\n\tconst viewportBottom = container.clientHeight;\n\tconst itemRects = items.map((item) => {\n\t\tconst rect = item.getBoundingClientRect();\n\t\treturn {\n\t\t\ttop: rect.top - containerTop,\n\t\t\tbottom: rect.bottom - containerTop,\n\t\t\theight: rect.height,\n\t\t};\n\t});\n\tconst hasPartialItem = itemRects.some(\n\t\t({ top, bottom }) =>\n\t\t\ttop < viewportBottom - SUB_MENU_ITEM_ALIGNMENT_TOLERANCE &&\n\t\t\tbottom > viewportBottom + SUB_MENU_ITEM_ALIGNMENT_TOLERANCE,\n\t);\n\tif (hasPartialItem) return;\n\n\tconst lastFullItemIndex = itemRects.findLastIndex(\n\t\t({ bottom }) => bottom <= viewportBottom + SUB_MENU_ITEM_ALIGNMENT_TOLERANCE,\n\t);\n\tconst lastFullItem = itemRects[lastFullItemIndex];\n\tconst nextItem = itemRects[lastFullItemIndex + 1];\n\tif (!lastFullItem || !nextItem) return;\n\n\tsubContentMaxHeight.value = `${Math.floor(\n\t\tlastFullItem.bottom + nextItem.height * SUB_MENU_ITEM_GLIMPSE_RATIO,\n\t)}px`;\n};\n\nconst handleResize = () => {\n\tvoid updateSubContentMaxHeight();\n};\n\n// Sync internal state with prop when prop changes (controlled mode)\nwatch(\n\t() => props.subMenuOpen,\n\t(newValue) => {\n\t\tif (newValue === undefined) return;\n\t\tsubMenuOpenedByParent.value = newValue && !internalSubMenuOpen.value;\n\t\tinternalSubMenuOpen.value = newValue;\n\t},\n\t{ immediate: true },\n);\n\nwatch(internalSubMenuOpen, (open) => {\n\tif (open) {\n\t\tvoid updateSubContentMaxHeight();\n\t\twindow.addEventListener('resize', handleResize);\n\t} else {\n\t\twindow.removeEventListener('resize', handleResize);\n\t\tsubContentMaxHeight.value = undefined;\n\t}\n});\n\nonBeforeUnmount(() => {\n\twindow.removeEventListener('resize', handleResize);\n});\n</script>\n\n<template>\n\t<div ref=\"itemRef\" :class=\"$style.wrapper\">\n\t\t<DropdownMenuSeparator v-if=\"divided\" :class=\"$style.separator\" />\n\n\t\t<DropdownMenuLabel v-if=\"header\" :class=\"$style['section-header']\">\n\t\t\t<N8nText size=\"small\" color=\"text-light\" bold>{{ label }}</N8nText>\n\t\t</DropdownMenuLabel>\n\n\t\t<DropdownMenuSub\n\t\t\tv-else-if=\"hasSubMenu\"\n\t\t\t:open=\"internalSubMenuOpen\"\n\t\t\t@update:open=\"handleSubMenuOpenChange\"\n\t\t>\n\t\t\t<DropdownMenuSubTrigger\n\t\t\t\t:id=\"htmlId\"\n\t\t\t\t:data-virtual-highlighted=\"highlighted ? '' : undefined\"\n\t\t\t\t:disabled=\"disabled\"\n\t\t\t\t:data-test-id=\"testId\"\n\t\t\t\t:class=\"[\n\t\t\t\t\t$style.item,\n\t\t\t\t\t$style['sub-trigger'],\n\t\t\t\t\tprops.class,\n\t\t\t\t\t{ 'is-disabled': !!disabled, [$style.destructive]: destructive },\n\t\t\t\t]\"\n\t\t\t\t@keydown.capture=\"handleSelectableParentKeydown\"\n\t\t\t\t@click.capture=\"handleSubMenuTriggerClick\"\n\t\t\t\t@pointermove.capture=\"handlePointerMove\"\n\t\t\t>\n\t\t\t\t<slot name=\"item-leading\" :item=\"props\" :ui=\"leadingProps\">\n\t\t\t\t\t<Icon\n\t\t\t\t\t\tv-if=\"icon?.type === 'icon'\"\n\t\t\t\t\t\t:icon=\"icon.value\"\n\t\t\t\t\t\t:class=\"[$style['item-leading'], $style.icon]\"\n\t\t\t\t\t\t:color=\"disabled ? 'text-xlight' : 'text-light'\"\n\t\t\t\t\t\tsize=\"large\"\n\t\t\t\t\t/>\n\t\t\t\t\t<span v-else-if=\"icon?.type === 'emoji'\" :class=\"[$style['item-leading'], $style.emoji]\">\n\t\t\t\t\t\t{{ icon.value }}\n\t\t\t\t\t</span>\n\t\t\t\t</slot>\n\t\t\t\t<span\n\t\t\t\t\tv-if=\"selectable\"\n\t\t\t\t\t:class=\"$style['selectable-label']\"\n\t\t\t\t\tdata-sub-menu-action=\"select\"\n\t\t\t\t\t@click.stop=\"handleSelectableParentClick\"\n\t\t\t\t>\n\t\t\t\t\t<slot name=\"item-label\" :item=\"props\" :ui=\"labelProps\">\n\t\t\t\t\t\t<N8nText\n\t\t\t\t\t\t\t:class=\"$style['item-label']\"\n\t\t\t\t\t\t\t:title=\"titleAttr\"\n\t\t\t\t\t\t\tsize=\"medium\"\n\t\t\t\t\t\t\t:color=\"disabled ? 'text-xlight' : 'text-dark'\"\n\t\t\t\t\t\t>\n\t\t\t\t\t\t\t{{ label }}\n\t\t\t\t\t\t</N8nText>\n\t\t\t\t\t</slot>\n\t\t\t\t</span>\n\t\t\t\t<slot v-else name=\"item-label\" :item=\"props\" :ui=\"labelProps\">\n\t\t\t\t\t<N8nText\n\t\t\t\t\t\t:class=\"$style['item-label']\"\n\t\t\t\t\t\t:title=\"titleAttr\"\n\t\t\t\t\t\tsize=\"medium\"\n\t\t\t\t\t\t:color=\"disabled ? 'text-xlight' : 'text-dark'\"\n\t\t\t\t\t>\n\t\t\t\t\t\t{{ label }}\n\t\t\t\t\t</N8nText>\n\t\t\t\t</slot>\n\t\t\t\t<span\n\t\t\t\t\tv-if=\"selectable\"\n\t\t\t\t\t:class=\"$style['sub-indicator-action']\"\n\t\t\t\t\tdata-sub-menu-action=\"open\"\n\t\t\t\t\t@click.stop=\"handleSubMenuIndicatorClick\"\n\t\t\t\t>\n\t\t\t\t\t<slot\n\t\t\t\t\t\tv-if=\"slots['item-trailing']\"\n\t\t\t\t\t\tname=\"item-trailing\"\n\t\t\t\t\t\t:item=\"props\"\n\t\t\t\t\t\t:ui=\"trailingProps\"\n\t\t\t\t\t/>\n\t\t\t\t\t<Icon\n\t\t\t\t\t\ticon=\"chevron-right\"\n\t\t\t\t\t\t:class=\"$style['sub-indicator']\"\n\t\t\t\t\t\t:color=\"disabled ? 'text-xlight' : 'text-light'\"\n\t\t\t\t\t\tsize=\"large\"\n\t\t\t\t\t/>\n\t\t\t\t</span>\n\t\t\t\t<span v-else-if=\"slots['item-trailing']\" :class=\"$style['sub-indicator-action']\">\n\t\t\t\t\t<slot name=\"item-trailing\" :item=\"props\" :ui=\"trailingProps\" />\n\t\t\t\t\t<Icon\n\t\t\t\t\t\ticon=\"chevron-right\"\n\t\t\t\t\t\t:class=\"$style['sub-indicator']\"\n\t\t\t\t\t\t:color=\"disabled ? 'text-xlight' : 'text-light'\"\n\t\t\t\t\t\tsize=\"large\"\n\t\t\t\t\t/>\n\t\t\t\t</span>\n\t\t\t\t<Icon\n\t\t\t\t\tv-else\n\t\t\t\t\ticon=\"chevron-right\"\n\t\t\t\t\t:class=\"$style['sub-indicator']\"\n\t\t\t\t\t:color=\"disabled ? 'text-xlight' : 'text-light'\"\n\t\t\t\t\tsize=\"large\"\n\t\t\t\t/>\n\t\t\t</DropdownMenuSubTrigger>\n\n\t\t\t<DropdownMenuPortal v-bind=\"portalTarget ? { to: portalTarget } : {}\">\n\t\t\t\t<DropdownMenuSubContent\n\t\t\t\t\t:class=\"$style['sub-content']\"\n\t\t\t\t\t:style=\"[\n\t\t\t\t\t\tsubContentMaxHeight ? { maxHeight: subContentMaxHeight } : {},\n\t\t\t\t\t\tsubMenuMaxHeight ? { '--n8n-dropdown-sub-max-height': subMenuMaxHeight } : {},\n\t\t\t\t\t\t{ '--n8n--dropdown-menu-width': menuWidth },\n\t\t\t\t\t]\"\n\t\t\t\t\t:side-offset=\"1\"\n\t\t\t\t\t:prioritize-position=\"true\"\n\t\t\t\t\tsticky=\"partial\"\n\t\t\t\t\t@open-auto-focus=\"handleSubContentOpenAutoFocus\"\n\t\t\t\t\t@close-auto-focus=\"handleSubContentCloseAutoFocus\"\n\t\t\t\t\t@focus-outside=\"handleSubContentFocusOutside\"\n\t\t\t\t>\n\t\t\t\t\t<DropdownMenuSearchableContent\n\t\t\t\t\t\tv-if=\"searchable || searchMode === 'external'\"\n\t\t\t\t\t\t:open=\"internalSubMenuOpen\"\n\t\t\t\t\t\t:items=\"children ?? []\"\n\t\t\t\t\t\t:search-placeholder=\"searchPlaceholder\"\n\t\t\t\t\t\t:search-mode=\"searchMode\"\n\t\t\t\t\t\t:is-sub-menu=\"true\"\n\t\t\t\t\t\t:highlight-first-item-on-open=\"searchMode === 'external' && subMenuOpenedByParent\"\n\t\t\t\t\t\t@select=\"handleSelect\"\n\t\t\t\t\t\t@search=\"(term: string, itemId?: T) => emit('search', term, itemId ?? props.id)\"\n\t\t\t\t\t\t@close=\"closeSubMenu\"\n\t\t\t\t\t\t@back=\"closeSubMenu\"\n\t\t\t\t\t>\n\t\t\t\t\t\t<template #default=\"searchableContent\">\n\t\t\t\t\t\t\t<div v-if=\"loading\" :class=\"$style['loading-container']\">\n\t\t\t\t\t\t\t\t<N8nLoading\n\t\t\t\t\t\t\t\t\tv-for=\"i in loadingItemCount\"\n\t\t\t\t\t\t\t\t\t:key=\"i\"\n\t\t\t\t\t\t\t\t\t:rows=\"1\"\n\t\t\t\t\t\t\t\t\t:class=\"$style['loading-item']\"\n\t\t\t\t\t\t\t\t\tvariant=\"p\"\n\t\t\t\t\t\t\t\t/>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<template v-else-if=\"hasChildren\">\n\t\t\t\t\t\t\t\t<div\n\t\t\t\t\t\t\t\t\tref=\"childrenContainerRef\"\n\t\t\t\t\t\t\t\t\t:class=\"$style['children-container']\"\n\t\t\t\t\t\t\t\t\tdata-menu-items\n\t\t\t\t\t\t\t\t>\n\t\t\t\t\t\t\t\t\t<template v-for=\"(child, childIndex) in props.children\" :key=\"child.id\">\n\t\t\t\t\t\t\t\t\t\t<N8nDropdownMenuItem\n\t\t\t\t\t\t\t\t\t\t\tv-bind=\"child\"\n\t\t\t\t\t\t\t\t\t\t\t:html-id=\"searchableContent.getItemDomId(childIndex)\"\n\t\t\t\t\t\t\t\t\t\t\t:highlighted=\"searchableContent.highlightedIndex === childIndex\"\n\t\t\t\t\t\t\t\t\t\t\t:sub-menu-open=\"searchableContent.openSubMenuIndex === childIndex\"\n\t\t\t\t\t\t\t\t\t\t\t:disable-pointer-focus=\"true\"\n\t\t\t\t\t\t\t\t\t\t\t:search-mode=\"searchMode\"\n\t\t\t\t\t\t\t\t\t\t\t:divided=\"child.divided && childIndex > 0\"\n\t\t\t\t\t\t\t\t\t\t\t@select=\"handleSelect\"\n\t\t\t\t\t\t\t\t\t\t\t@search=\"handleChildSearch\"\n\t\t\t\t\t\t\t\t\t\t\t@update:sub-menu-open=\"\n\t\t\t\t\t\t\t\t\t\t\t\tsearchableContent.onSubMenuOpenChange(childIndex, $event)\n\t\t\t\t\t\t\t\t\t\t\t\"\n\t\t\t\t\t\t\t\t\t\t\t@pointermove=\"searchableContent.onItemHover(childIndex)\"\n\t\t\t\t\t\t\t\t\t\t>\n\t\t\t\t\t\t\t\t\t\t\t<template #item-leading=\"leadingProps\">\n\t\t\t\t\t\t\t\t\t\t\t\t<slot name=\"item-leading\" v-bind=\"leadingProps\" />\n\t\t\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t\t\t\t<template #item-label=\"bodyProps\">\n\t\t\t\t\t\t\t\t\t\t\t\t<slot name=\"item-label\" v-bind=\"bodyProps\" />\n\t\t\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t\t\t\t<template #item-trailing=\"trailingProps\">\n\t\t\t\t\t\t\t\t\t\t\t\t<slot name=\"item-trailing\" v-bind=\"trailingProps\" />\n\t\t\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t\t\t</N8nDropdownMenuItem>\n\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t<div v-else :class=\"$style['empty-state']\">No items</div>\n\t\t\t\t\t\t</template>\n\t\t\t\t\t</DropdownMenuSearchableContent>\n\n\t\t\t\t\t<template v-else>\n\t\t\t\t\t\t<div v-if=\"loading\" :class=\"$style['loading-container']\">\n\t\t\t\t\t\t\t<N8nLoading\n\t\t\t\t\t\t\t\tv-for=\"i in loadingItemCount\"\n\t\t\t\t\t\t\t\t:key=\"i\"\n\t\t\t\t\t\t\t\t:rows=\"1\"\n\t\t\t\t\t\t\t\t:class=\"$style['loading-item']\"\n\t\t\t\t\t\t\t\tvariant=\"p\"\n\t\t\t\t\t\t\t/>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<template v-else-if=\"hasChildren\">\n\t\t\t\t\t\t\t<div ref=\"childrenContainerRef\" :class=\"$style['children-container']\" data-menu-items>\n\t\t\t\t\t\t\t\t<template v-for=\"(child, childIndex) in props.children\" :key=\"child.id\">\n\t\t\t\t\t\t\t\t\t<N8nDropdownMenuItem\n\t\t\t\t\t\t\t\t\t\tv-bind=\"child\"\n\t\t\t\t\t\t\t\t\t\t:divided=\"child.divided && childIndex > 0\"\n\t\t\t\t\t\t\t\t\t\t:search-mode=\"searchMode\"\n\t\t\t\t\t\t\t\t\t\t@select=\"handleSelect\"\n\t\t\t\t\t\t\t\t\t\t@search=\"handleChildSearch\"\n\t\t\t\t\t\t\t\t\t>\n\t\t\t\t\t\t\t\t\t\t<template #item-leading=\"leadingProps\">\n\t\t\t\t\t\t\t\t\t\t\t<slot name=\"item-leading\" v-bind=\"leadingProps\" />\n\t\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t\t\t<template #item-label=\"bodyProps\">\n\t\t\t\t\t\t\t\t\t\t\t<slot name=\"item-label\" v-bind=\"bodyProps\" />\n\t\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t\t\t<template #item-trailing=\"trailingProps\">\n\t\t\t\t\t\t\t\t\t\t\t<slot name=\"item-trailing\" v-bind=\"trailingProps\" />\n\t\t\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t\t\t</N8nDropdownMenuItem>\n\t\t\t\t\t\t\t\t</template>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</template>\n\t\t\t\t\t</template>\n\t\t\t\t</DropdownMenuSubContent>\n\t\t\t</DropdownMenuPortal>\n\t\t</DropdownMenuSub>\n\n\t\t<!-- Checkbox item without children -->\n\t\t<DropdownMenuCheckboxItem\n\t\t\tv-else-if=\"checkbox\"\n\t\t\t:id=\"htmlId\"\n\t\t\t:model-value=\"checked\"\n\t\t\t:data-virtual-highlighted=\"highlighted ? '' : undefined\"\n\t\t\t:disabled=\"disabled\"\n\t\t\t:data-test-id=\"testId\"\n\t\t\t:class=\"[\n\t\t\t\t$style.item,\n\t\t\t\tprops.class,\n\t\t\t\t{ 'is-disabled': !!disabled, [$style.destructive]: destructive },\n\t\t\t]\"\n\t\t\t@pointermove.capture=\"handlePointerMove\"\n\t\t\t@select=\"handleItemSelect\"\n\t\t>\n\t\t\t<slot name=\"item-leading\" :item=\"props\" :ui=\"leadingProps\">\n\t\t\t\t<Icon\n\t\t\t\t\tv-if=\"icon?.type === 'icon'\"\n\t\t\t\t\t:icon=\"icon.value\"\n\t\t\t\t\t:class=\"[$style['item-leading'], $style.icon]\"\n\t\t\t\t\t:color=\"disabled ? 'text-xlight' : 'text-light'\"\n\t\t\t\t\tsize=\"large\"\n\t\t\t\t/>\n\t\t\t\t<span v-else-if=\"icon?.type === 'emoji'\" :class=\"[$style['item-leading'], $style.emoji]\">\n\t\t\t\t\t{{ icon.value }}\n\t\t\t\t</span>\n\t\t\t</slot>\n\t\t\t<slot name=\"item-label\" :item=\"props\" :ui=\"labelProps\">\n\t\t\t\t<N8nText\n\t\t\t\t\t:class=\"$style['item-label']\"\n\t\t\t\t\t:title=\"titleAttr\"\n\t\t\t\t\tsize=\"medium\"\n\t\t\t\t\t:color=\"disabled ? 'text-xlight' : 'text-dark'\"\n\t\t\t\t>\n\t\t\t\t\t{{ label }}\n\t\t\t\t</N8nText>\n\t\t\t</slot>\n\t\t\t<slot name=\"item-trailing\" :item=\"props\" :ui=\"trailingProps\" />\n\t\t</DropdownMenuCheckboxItem>\n\n\t\t<!-- Regular item without children -->\n\t\t<DropdownMenuItem\n\t\t\tv-else\n\t\t\t:id=\"htmlId\"\n\t\t\t:data-virtual-highlighted=\"highlighted ? '' : undefined\"\n\t\t\t:disabled=\"disabled\"\n\t\t\t:data-test-id=\"testId\"\n\t\t\t:class=\"[\n\t\t\t\t$style.item,\n\t\t\t\tprops.class,\n\t\t\t\t{ 'is-disabled': !!disabled, [$style.destructive]: destructive },\n\t\t\t]\"\n\t\t\t@pointermove.capture=\"handlePointerMove\"\n\t\t\t@select=\"handleItemSelect\"\n\t\t>\n\t\t\t<slot name=\"item-leading\" :item=\"props\" :ui=\"leadingProps\">\n\t\t\t\t<Icon\n\t\t\t\t\tv-if=\"icon?.type === 'icon'\"\n\t\t\t\t\t:icon=\"icon.value\"\n\t\t\t\t\t:class=\"[$style['item-leading'], $style.icon]\"\n\t\t\t\t\t:color=\"disabled ? 'text-xlight' : 'text-light'\"\n\t\t\t\t\tsize=\"large\"\n\t\t\t\t/>\n\t\t\t\t<span v-else-if=\"icon?.type === 'emoji'\" :class=\"[$style['item-leading'], $style.emoji]\">\n\t\t\t\t\t{{ icon.value }}\n\t\t\t\t</span>\n\t\t\t</slot>\n\t\t\t<slot name=\"item-label\" :item=\"props\" :ui=\"labelProps\">\n\t\t\t\t<N8nText\n\t\t\t\t\t:class=\"$style['item-label']\"\n\t\t\t\t\t:title=\"titleAttr\"\n\t\t\t\t\tsize=\"medium\"\n\t\t\t\t\t:color=\"disabled ? 'text-xlight' : 'text-dark'\"\n\t\t\t\t>\n\t\t\t\t\t{{ label }}\n\t\t\t\t</N8nText>\n\t\t\t</slot>\n\t\t\t<slot name=\"item-trailing\" :item=\"props\" :ui=\"trailingProps\" />\n\t\t\t<Icon\n\t\t\t\tv-if=\"checked\"\n\t\t\t\ticon=\"check\"\n\t\t\t\t:class=\"$style['item-check']\"\n\t\t\t\tsize=\"large\"\n\t\t\t\t:color=\"disabled ? 'text-xlight' : 'text-light'\"\n\t\t\t/>\n\t\t</DropdownMenuItem>\n\t</div>\n</template>\n\n<style module lang=\"scss\">\n@use '@n8n/design-system/css/mixins/floating-item' as floating-item;\n@use '../../css/common/var';\n@use '../../css/mixins/mixins' as scrollbar-mixins;\n\n.wrapper {\n\tdisplay: contents;\n}\n\n.children-container {\n\tpadding: var(--spacing--4xs);\n\tmax-height: inherit;\n\toverflow-y: auto;\n\t@include scrollbar-mixins.hoverable-scroll-bar;\n\tmask-image: linear-gradient(\n\t\tto bottom,\n\t\tblack 0,\n\t\tblack calc(100% - var(--spacing--sm)),\n\t\ttransparent 100%\n\t);\n}\n\n.section-header {\n\tdisplay: flex;\n\talign-items: center;\n\tpadding: var(--spacing--2xs) var(--spacing--2xs) var(--spacing--3xs);\n\tuser-select: none;\n}\n\n.item {\n\t@include floating-item.floating-item;\n\n\tcolor: var(--text-color);\n\n\t&:not([data-disabled]) {\n\t\t&:hover,\n\t\t&[data-highlighted],\n\t\t&[data-virtual-highlighted] {\n\t\t\tbackground-color: var(--background--hover);\n\t\t\tcursor: pointer;\n\t\t}\n\t}\n\n\t&[data-disabled] {\n\t\tcolor: var(--text-color--disabled);\n\t\tcursor: not-allowed;\n\t}\n\n\t&.destructive.destructive:not([data-disabled]) {\n\t\t&:hover,\n\t\t&[data-highlighted],\n\t\t&[data-virtual-highlighted] {\n\t\t\t.item-label.item-label {\n\t\t\t\tcolor: var(--text-color--danger);\n\t\t\t}\n\n\t\t\t.icon.icon,\n\t\t\t.item-check.item-check,\n\t\t\t.sub-indicator.sub-indicator {\n\t\t\t\tcolor: var(--icon-color--danger) !important;\n\t\t\t}\n\t\t}\n\t}\n\n\t:global([data-menu-items]:has([data-virtual-highlighted])) &:not([data-virtual-highlighted]) {\n\t\t&:hover,\n\t\t&[data-highlighted] {\n\t\t\tbackground-color: transparent;\n\t\t}\n\t}\n}\n\n.sub-trigger {\n\t&:not([data-disabled]) {\n\t\t&[data-virtual-highlighted],\n\t\t&[data-state='open'] {\n\t\t\tbackground-color: var(--background--hover);\n\t\t\tcursor: pointer;\n\t\t}\n\t}\n}\n\n.sub-indicator {\n\tmargin-left: auto;\n\tflex-shrink: 0;\n\tcolor: var(--color--text--tint-1);\n}\n\n.selectable-label {\n\tdisplay: flex;\n\tflex-grow: 1;\n\tmin-width: 0;\n}\n\n.sub-indicator-action {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: var(--spacing--2xs);\n\tflex-shrink: 0;\n\tmargin-left: auto;\n}\n\n.sub-indicator-action .item-trailing,\n.sub-indicator-action .sub-indicator {\n\tmargin-left: 0;\n}\n\n.sub-content {\n\tborder-radius: var(--radius--xs);\n\tbox-shadow: var(--shadow--md), var(--shadow--outline);\n\tbackground-color: var(--background--surface);\n\tz-index: var.$index-popper;\n\twidth: fit-content;\n\tmin-width: calc(var(--n8n--dropdown-menu-width, 24rem) / 4);\n\tmax-width: var(--n8n--dropdown-menu-width, 24rem);\n\tmax-height: min(\n\t\tvar(--reka-dropdown-menu-content-available-height),\n\t\tvar(--n8n-dropdown-sub-max-height, 75vh)\n\t);\n\ttransform-origin: var(--n8n--dropdown--offset--origin-x) var(--n8n--dropdown--offset--origin-y);\n\toverflow: hidden;\n\tscrollbar-width: none;\n\n\t&::-webkit-scrollbar {\n\t\tdisplay: none;\n\t}\n}\n\n.item-leading {\n\tflex-shrink: 0;\n}\n\n.emoji {\n\tfont-size: var(--font-size--sm);\n\tline-height: 1;\n}\n\n.item-label {\n\tflex-grow: 1;\n\toverflow: hidden;\n\ttext-overflow: ellipsis;\n\twhite-space: nowrap;\n}\n\n.item-check,\n.item-trailing {\n\tmargin-left: auto;\n\tflex-shrink: 0;\n}\n\n.separator {\n\theight: 1px;\n\tbackground-color: var(--border-color);\n\tmargin: var(--spacing--5xs) calc(var(--spacing--4xs) * -1);\n}\n\n.loading-container {\n\tpadding: var(--spacing--4xs);\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: var(--spacing--5xs);\n}\n\n.loading-item div {\n\theight: var(--spacing--xl);\n}\n\n.empty-state {\n\tpadding: var(--spacing--2xs) var(--spacing--xs);\n\tcolor: var(--text-color--subtle);\n\tfont-size: var(--font-size--sm);\n\ttext-align: center;\n}\n</style>\n",
+      "reference": [
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'leadingProps' is already declared in the upper scope.",
+          "line": 416,
+          "column": 37,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 416,
+          "endColumn": 49
+        },
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'trailingProps' is already declared in the upper scope.",
+          "line": 422,
+          "column": 38,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 422,
+          "endColumn": 51
+        },
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'leadingProps' is already declared in the upper scope.",
+          "line": 453,
+          "column": 36,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 453,
+          "endColumn": 48
+        },
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'trailingProps' is already declared in the upper scope.",
+          "line": 459,
+          "column": 37,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 459,
+          "endColumn": 50
+        }
+      ],
+      "expectedNative": {
+        "filename": "packages/frontend/@n8n/design-system/src/components/N8nDropdownMenu/DropdownMenuItem.vue",
+        "error_count": 0,
+        "warning_count": 4,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'leadingProps' shadows a variable in an outer scope",
+            "start": 12662,
+            "end": 12674,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'trailingProps' shadows a variable in an outer scope",
+            "start": 12927,
+            "end": 12940,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'leadingProps' shadows a variable in an outer scope",
+            "start": 13980,
+            "end": 13992,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'trailingProps' shadows a variable in an outer scope",
+            "start": 14239,
+            "end": 14252,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "path": "originals/DropdownMenuItem.vue.txt",
+      "sourceSha256": "f0ebf4ee5ed025b9d64fdb7fe9cb2784b80203a7f1dd9a90503c1a94bbeff2b8"
+    },
+    {
+      "id": "n8n-run-data",
+      "filename": "packages/frontend/editor-ui/src/features/ndv/runData/components/RunDataJson.vue",
+      "source": "<script setup lang=\"ts\">\nimport { computed, defineAsyncComponent, ref } from 'vue';\nimport VueJsonPretty from 'vue-json-pretty';\nimport type { INodeExecutionData, IRunExecutionData } from 'n8n-workflow';\nimport Draggable from '@/app/components/Draggable.vue';\nimport { executionDataToJson } from '@/app/utils/nodeTypesUtils';\nimport { isString } from '@/app/utils/typeGuards';\nimport { shorten } from '@/app/utils/typesUtils';\nimport type { INodeUi } from '@/Interface';\nimport { injectNDVStore } from '@/features/ndv/shared/ndv.store';\nimport MappingPill from './MappingPill.vue';\nimport { getMappedExpression } from '@/app/utils/mappingUtils';\nimport { nonExistingJsonPath } from '@/app/constants';\nimport { useExternalHooks } from '@/app/composables/useExternalHooks';\nimport TextWithHighlights from './TextWithHighlights.vue';\nimport { useTelemetry } from '@n8n/composables/useTelemetry';\nimport { useElementSize } from '@vueuse/core';\nimport { useTelemetryContext } from '@/app/composables/useTelemetryContext';\nimport { injectWorkflowDocumentStore } from '@/app/stores/workflowDocument.store';\n\nconst LazyRunDataJsonActions = defineAsyncComponent(\n\tasync () => await import('@/features/ndv/runData/components/RunDataJsonActions.vue'),\n);\n\nconst props = withDefaults(\n\tdefineProps<{\n\t\teditMode: { enabled?: boolean; value?: string };\n\t\tpushRef?: string;\n\t\tpaneType: string;\n\t\tnode: INodeUi;\n\t\tinputData: INodeExecutionData[];\n\t\tmappingEnabled?: boolean;\n\t\tdistanceFromActive: number;\n\t\toutputIndex: number | undefined;\n\t\trunIndex: number | undefined;\n\t\ttotalRuns: number | undefined;\n\t\tsearch: string | undefined;\n\t\tcompact?: boolean;\n\t\texecution?: IRunExecutionData;\n\t}>(),\n\t{\n\t\teditMode: () => ({}),\n\t},\n);\n\nconst ndvStore = injectNDVStore();\nconst workflowDocumentStore = injectWorkflowDocumentStore();\n\nconst externalHooks = useExternalHooks();\nconst telemetry = useTelemetry();\nconst telemetryContext = useTelemetryContext();\n\nconst selectedJsonPath = ref(nonExistingJsonPath);\nconst draggingPath = ref<null | string>(null);\nconst jsonDataContainer = ref(null);\n\nconst { height } = useElementSize(jsonDataContainer);\n\nconst jsonData = computed(() => executionDataToJson(props.inputData));\n\nconst highlight = computed(() => ndvStore.value.highlightDraggables);\n\nconst getShortKey = (el: HTMLElement) => {\n\tif (!el) {\n\t\treturn '';\n\t}\n\n\treturn shorten(el.dataset.name ?? '', 16, 2);\n};\n\nconst getJsonParameterPath = (path: string) => {\n\tconst subPath = path.replace(/^(\\[\"?\\d\"?])/, ''); // remove item position\n\n\treturn getMappedExpression({\n\t\tnodeName: props.node.name,\n\t\tdistanceFromActive: props.distanceFromActive,\n\t\tpath: subPath,\n\t\tbinaryMode: workflowDocumentStore?.value?.settings?.binaryMode,\n\t});\n};\n\nconst canDraggableDrop = computed(() => ndvStore.value.canDraggableDrop);\nconst draggableStickyPosition = computed(() => ndvStore.value.draggableStickyPos);\n\nconst onDragStart = (el: HTMLElement, data?: string) => {\n\tif (el?.dataset.path) {\n\t\tdraggingPath.value = el.dataset.path;\n\t}\n\n\tndvStore.value.draggableStartDragging({\n\t\ttype: 'mapping',\n\t\tdata: data ?? '',\n\t\tdimensions: el?.getBoundingClientRect() ?? null,\n\t});\n\tndvStore.value.resetMappingTelemetry();\n};\n\nconst onDragEnd = (el: HTMLElement) => {\n\tndvStore.value.draggableStopDragging();\n\tdraggingPath.value = null;\n\tconst mappingTelemetry = ndvStore.value.mappingTelemetry;\n\tconst telemetryPayload = {\n\t\tsrc_node_type: props.node.type,\n\t\tsrc_field_name: el.dataset.name ?? '',\n\t\tsrc_nodes_back: props.distanceFromActive,\n\t\tsrc_run_index: props.runIndex,\n\t\tsrc_runs_total: props.totalRuns,\n\t\tsrc_field_nest_level: el.dataset.depth ?? 0,\n\t\tsrc_view: 'json',\n\t\tsrc_element: el,\n\t\tsuccess: false,\n\t\tview_shown: telemetryContext.view_shown,\n\t\t...mappingTelemetry,\n\t};\n\n\tsetTimeout(() => {\n\t\tvoid externalHooks.run('runDataJson.onDragEnd', telemetryPayload);\n\t\ttelemetry.track('User dragged data for mapping', telemetryPayload);\n\t}, 1000); // ensure dest data gets set if drop\n};\n\nconst formatKey = (value: unknown) => {\n\treturn isString(value) ? `\"${value}\"` : JSON.stringify(value);\n};\n\nconst formatValue = (value: unknown) => {\n\treturn JSON.stringify(value);\n};\n\nconst getListItemName = (path: string) => {\n\treturn path.replace(/^(\\[\"?\\d\"?]\\.?)/g, '');\n};\n</script>\n\n<template>\n\t<div\n\t\tref=\"jsonDataContainer\"\n\t\t:class=\"[\n\t\t\t$style.jsonDisplay,\n\t\t\t{ [$style.highlight]: highlight, [$style.compact]: props.compact },\n\t\t]\"\n\t>\n\t\t<Suspense>\n\t\t\t<LazyRunDataJsonActions\n\t\t\t\tv-if=\"!editMode.enabled\"\n\t\t\t\t:node=\"node\"\n\t\t\t\t:pane-type=\"paneType\"\n\t\t\t\t:push-ref=\"pushRef\"\n\t\t\t\t:distance-from-active=\"distanceFromActive\"\n\t\t\t\t:selected-json-path=\"selectedJsonPath\"\n\t\t\t\t:json-data=\"jsonData\"\n\t\t\t\t:output-index=\"outputIndex\"\n\t\t\t\t:run-index=\"runIndex\"\n\t\t\t\t:execution=\"execution\"\n\t\t\t/>\n\t\t</Suspense>\n\t\t<Draggable\n\t\t\ttype=\"mapping\"\n\t\t\ttarget-data-key=\"mappable\"\n\t\t\t:disabled=\"!mappingEnabled\"\n\t\t\t:can-drop=\"canDraggableDrop\"\n\t\t\t:sticky-position=\"draggableStickyPosition\"\n\t\t\t@dragstart=\"onDragStart\"\n\t\t\t@dragend=\"onDragEnd\"\n\t\t>\n\t\t\t<template #preview=\"{ canDrop, el }\">\n\t\t\t\t<MappingPill v-if=\"el\" :html=\"getShortKey(el)\" :can-drop=\"canDrop\" />\n\t\t\t</template>\n\t\t\t<VueJsonPretty\n\t\t\t\t:data=\"jsonData\"\n\t\t\t\t:deep=\"10\"\n\t\t\t\t:show-length=\"true\"\n\t\t\t\t:selected-value=\"selectedJsonPath\"\n\t\t\t\troot-path=\"\"\n\t\t\t\tselectable-type=\"single\"\n\t\t\t\tclass=\"json-data\"\n\t\t\t\t:virtual=\"true\"\n\t\t\t\t:height=\"height\"\n\t\t\t\t@update:selected-value=\"selectedJsonPath = $event\"\n\t\t\t>\n\t\t\t\t<template #renderNodeKey=\"{ node }\">\n\t\t\t\t\t<TextWithHighlights\n\t\t\t\t\t\t:content=\"formatKey(node.key)\"\n\t\t\t\t\t\t:search=\"search\"\n\t\t\t\t\t\tdata-target=\"mappable\"\n\t\t\t\t\t\t:data-value=\"getJsonParameterPath(node.path)\"\n\t\t\t\t\t\t:data-name=\"node.key\"\n\t\t\t\t\t\t:data-path=\"node.path\"\n\t\t\t\t\t\t:data-depth=\"node.level\"\n\t\t\t\t\t\t:class=\"{\n\t\t\t\t\t\t\t[$style.mappable]: mappingEnabled,\n\t\t\t\t\t\t\t[$style.dragged]: draggingPath === node.path,\n\t\t\t\t\t\t}\"\n\t\t\t\t\t/>\n\t\t\t\t</template>\n\t\t\t\t<template #renderNodeValue=\"{ node }\">\n\t\t\t\t\t<TextWithHighlights\n\t\t\t\t\t\t:content=\"formatValue(node.content)\"\n\t\t\t\t\t\t:search=\"search\"\n\t\t\t\t\t\tdata-target=\"mappable\"\n\t\t\t\t\t\t:data-value=\"getJsonParameterPath(node.path)\"\n\t\t\t\t\t\t:data-name=\"getListItemName(node.path)\"\n\t\t\t\t\t\t:data-path=\"node.path\"\n\t\t\t\t\t\t:data-depth=\"node.level\"\n\t\t\t\t\t\t:class=\"{\n\t\t\t\t\t\t\t[$style.mappable]: mappingEnabled,\n\t\t\t\t\t\t\t[$style.dragged]: draggingPath === node.path,\n\t\t\t\t\t\t}\"\n\t\t\t\t\t\tclass=\"ph-no-capture\"\n\t\t\t\t\t/>\n\t\t\t\t</template>\n\t\t\t</VueJsonPretty>\n\t\t</Draggable>\n\t</div>\n</template>\n\n<style lang=\"scss\" module>\n.jsonDisplay {\n\tposition: absolute;\n\ttop: 0;\n\tleft: 0;\n\tpadding-left: var(--spacing--sm);\n\tright: 0;\n\toverflow-y: hidden;\n\tline-height: 1.5;\n\tword-break: normal;\n\theight: 100%;\n\n\t&:hover {\n\t\t/* Shows .actionsGroup element from <run-data-json-actions /> child component */\n\t\t> div:first-child {\n\t\t\topacity: 1;\n\t\t}\n\t}\n\n\t.mappable {\n\t\tcursor: grab;\n\n\t\t&:hover {\n\t\t\tbackground-color: var(--json--highlight--color);\n\t\t}\n\t}\n\n\t&.highlight .mappable,\n\t.dragged {\n\t\t&,\n\t\t&:hover {\n\t\t\tbackground-color: var(--color--primary--tint-2);\n\t\t\tcolor: var(--color--primary);\n\t\t}\n\t}\n\n\t&.compact {\n\t\tpadding-left: var(--spacing--2xs);\n\t}\n}\n</style>\n\n<style lang=\"scss\">\n.vjs-tree {\n\tcolor: var(--json--color);\n\t--line-break--color: var(--code--line-break--color);\n\tfont-size: var(--font-size--2xs);\n}\n\n.vjs-tree-node {\n\t&:hover {\n\t\tbackground-color: transparent;\n\t}\n\n\t&.is-highlight {\n\t\tbackground-color: var(--json--highlight--color);\n\t}\n}\n\n.vjs-key,\n.vjs-value {\n\t> span {\n\t\tcolor: var(--color--text--shade-1);\n\t\tline-height: 1.7;\n\t\tborder-radius: var(--radius);\n\t}\n}\n\n.vjs-value {\n\t> span {\n\t\tpadding: 0 var(--spacing--5xs) 0 var(--spacing--5xs);\n\t\tmargin-left: var(--spacing--5xs);\n\t\twhite-space: pre-wrap;\n\t}\n}\n\n.vjs-tree .vjs-value-null {\n\t&,\n\tspan {\n\t\tcolor: var(--json--null--color);\n\t}\n}\n\n.vjs-tree .vjs-value-boolean {\n\t&,\n\tspan {\n\t\tcolor: var(--json--boolean--color);\n\t}\n}\n\n.vjs-tree .vjs-value-number {\n\t&,\n\tspan {\n\t\tcolor: var(--json--number--color);\n\t}\n}\n\n.vjs-tree .vjs-value-string {\n\t&,\n\tspan {\n\t\tcolor: var(--json--string--color);\n\t}\n}\n\n.vjs-tree .vjs-key {\n\tcolor: var(--json--key--color);\n}\n\n.vjs-tree .vjs-tree__brackets {\n\tcolor: var(--json--brackets--color);\n}\n\n.vjs-tree .vjs-tree__brackets:hover {\n\tcolor: var(--json--brackets--color--hover);\n}\n\n.vjs-tree .vjs-tree__content.has-line {\n\tborder-left: 1px dotted var(--json--line--color);\n}\n\n.vjs-tree .vjs-tree-list-holder-inner {\n\tpadding-bottom: var(--spacing--3xl);\n}\n</style>\n",
+      "reference": [
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'node' is already declared in the upper scope.",
+          "line": 181,
+          "column": 33,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 181,
+          "endColumn": 37
+        },
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'node' is already declared in the upper scope.",
+          "line": 196,
+          "column": 35,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 196,
+          "endColumn": 39
+        }
+      ],
+      "expectedNative": {
+        "filename": "packages/frontend/editor-ui/src/features/ndv/runData/components/RunDataJson.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'node' shadows a variable in an outer scope",
+            "start": 5431,
+            "end": 5435,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'node' shadows a variable in an outer scope",
+            "start": 5872,
+            "end": 5876,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "path": "originals/RunDataJson.vue.txt",
+      "sourceSha256": "e1dbb6132731a79b2f7bbd703c16a4e9e502c47ab5bb53077400eff6c3035aac"
+    }
+  ],
+  "successors": [
+    {
+      "id": "script-setup-for",
+      "filename": "Probe.vue",
+      "source": "<script setup>const item = 1</script><template><div v-for=\"item in items\" /></template>",
+      "reference": [
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'item' is already declared in the upper scope.",
+          "line": 1,
+          "column": 60,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 1,
+          "endColumn": 64
+        }
+      ],
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 59,
+            "end": 63,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "historicalNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "script-setup-slot",
+      "filename": "Probe.vue",
+      "source": "<script setup>const item = 1</script><template><Panel v-slot=\"{ item }\" /></template>",
+      "reference": [
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'item' is already declared in the upper scope.",
+          "line": 1,
+          "column": 65,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 1,
+          "endColumn": 69
+        }
+      ],
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 64,
+            "end": 68,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "historicalNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "props-slot",
+      "filename": "Probe.vue",
+      "source": "<script setup lang=\"ts\">defineProps<{ item: string }>()</script><template><Panel v-slot=\"{ item }\" /></template>",
+      "reference": [
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'item' is already declared in the upper scope.",
+          "line": 1,
+          "column": 92,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 1,
+          "endColumn": 96
+        }
+      ],
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 91,
+            "end": 95,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "historicalNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    }
+  ],
+  "controls": [
+    {
+      "id": "setup-siblings",
+      "filename": "Probe.vue",
+      "source": "<script setup>const item=1</script><template><Panel v-slot=\"{ item }\"/><Panel v-slot=\"{ item }\"/></template>",
+      "reference": [
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'item' is already declared in the upper scope.",
+          "line": 1,
+          "column": 63,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 1,
+          "endColumn": 67
+        },
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'item' is already declared in the upper scope.",
+          "line": 1,
+          "column": 89,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 1,
+          "endColumn": 93
+        }
+      ],
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 62,
+            "end": 66,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 88,
+            "end": 92,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "setup-nested",
+      "filename": "Probe.vue",
+      "source": "<script setup>const item=1</script><template><div v-for=\"item in items\"><Panel v-slot=\"{ item }\"/></div></template>",
+      "reference": [
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'item' is already declared in the upper scope.",
+          "line": 1,
+          "column": 58,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 1,
+          "endColumn": 62
+        },
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'item' is already declared in the upper scope.",
+          "line": 1,
+          "column": 90,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 1,
+          "endColumn": 94
+        }
+      ],
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 57,
+            "end": 61,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 89,
+            "end": 93,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "module-local-negative",
+      "filename": "Probe.vue",
+      "source": "<script>const item=1; export default {}</script><template><Panel v-slot=\"{ item }\"/></template>",
+      "reference": [],
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "function-local-negative",
+      "filename": "Probe.vue",
+      "source": "<script setup>function f(){const item=1}</script><template><Panel v-slot=\"{ item }\"/></template>",
+      "reference": [],
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "different-binding-negative",
+      "filename": "Probe.vue",
+      "source": "<script setup>const other=1</script><template><Panel v-slot=\"{ item }\"/></template>",
+      "reference": [],
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "v-pre-negative",
+      "filename": "Probe.vue",
+      "source": "<script setup>const item=1</script><template><div v-pre><Panel v-slot=\"{ item }\"/></div></template>",
+      "reference": [],
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "template-siblings-negative",
+      "filename": "Probe.vue",
+      "source": "<template><Panel v-slot=\"{ item }\"/><Panel v-slot=\"{ item }\"/></template>",
+      "reference": [],
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "unicode-crlf",
+      "filename": "Probe.vue",
+      "source": "<script setup>const item=1</script>\r\n<template><Panel title=\"雪🌸\" v-slot=\"{ item }\"/></template>",
+      "reference": [
+        {
+          "ruleId": "vue/no-template-shadow",
+          "severity": 1,
+          "message": "Variable 'item' is already declared in the upper scope.",
+          "line": 2,
+          "column": 40,
+          "messageId": "alreadyDeclaredInUpperScope",
+          "endLine": 2,
+          "endColumn": 44
+        }
+      ],
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 80,
+            "end": 84,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    }
+  ]
+}

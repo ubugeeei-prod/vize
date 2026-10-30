@@ -10,6 +10,7 @@
 //!   instead of letting each rule re-parse the file.
 
 pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
+    "vue/no-template-shadow",
     "vue/no-unused-vars",
     "vue/no-unused-setup-bindings",
     "vue/no-unused-components",

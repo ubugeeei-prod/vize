@@ -1,9 +1,10 @@
 //! vue/no-template-shadow
 //!
-//! Disallow template declarations that shadow another template binding.
+//! Disallow template declarations that shadow template or script-setup bindings.
 //!
 //! v-for and modern/legacy scoped-slot declarations use their authored identifier
-//! ranges and lexical template scopes. Script/component exposure is separate.
+//! ranges and lexical template scopes. Existing semantic facts supply script-setup
+//! values and declared props; ordinary module locals remain outside template scope.
 //!
 //! ## Examples
 //!

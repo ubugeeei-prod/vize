@@ -1,6 +1,7 @@
 //! Exact public native answers for template lexical scopes (#8849).
 //! Complete original source and pinned foreign packets accompany every case;
-//! script/component exposure remains deliberately outside this repair.
+//! script/component exposure was outside that repair. The #10822 successor
+//! authenticates only its three newly supported setup-value cases.
 
 use serde_json::{Value, json};
 use vize_patina::{LintResult, Linter};
@@ -39,7 +40,8 @@ fn template_scope_positive_and_negative_controls_keep_complete_native_results() 
         let source = case["source"].as_str().unwrap();
         assert_eq!(
             complete(&linter.lint_sfc(source, "Probe.vue")),
-            case["expectedNative"],
+            super::template_shadow_script_exposure::successor_for(case)
+                .unwrap_or(&case["expectedNative"]),
             "{}",
             case["id"]
         );
