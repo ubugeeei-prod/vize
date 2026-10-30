@@ -24,6 +24,11 @@ mod expressions;
 pub(crate) use expressions::NAMED_PROP_DIAGNOSTIC_MARKER;
 #[cfg(feature = "native")]
 pub(crate) use expressions::key_sub_spans;
+#[expect(
+    clippy::redundant_closure_call,
+    clippy::needless_borrow,
+    reason = "the ts! interpolation closure reborrows its named writer throughout generation"
+)]
 mod generator;
 mod reference_paths;
 #[cfg(feature = "native")]
