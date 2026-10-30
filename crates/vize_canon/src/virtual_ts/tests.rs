@@ -680,9 +680,15 @@ fn test_unknown_pascal_component_props_use_the_ambient_fallback() {
         &VirtualTsOptions::default(),
     );
 
-    assert!(output.code.contains(
-        "declare const AutoCard: $GlobalComponent<\"AutoCard\"> & $GlobalComponentFallback;"
-    ));
+    assert_eq!(
+        output
+            .code
+            .matches(
+                "declare const AutoCard: $GlobalComponent<\"AutoCard\"> & $GlobalComponentFallback;"
+            )
+            .count(),
+        1
+    );
     assert!(output.code.contains("type __AutoCard_Props_0"));
     assert!(output.code.contains("__AutoCard_Check_0"));
 }
@@ -735,7 +741,13 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
     );
 
     assert!(!configured_output.code.contains("__ctx.$t"));
-    assert!(!configured_output.code.contains("$InstanceGlobal<'$t'>"));
+    assert_eq!(
+        configured_output
+            .code
+            .matches("$InstanceGlobal<'$t'>")
+            .count(),
+        0
+    );
     assert!(
         configured_output
             .code

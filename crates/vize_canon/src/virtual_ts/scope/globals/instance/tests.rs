@@ -105,10 +105,14 @@ fn vue3_reads_every_occurrence_off_the_public_instance() {
 fn vue2_declares_the_name_once_with_an_any_fallback() {
     let output = generate_for(false, VueVersion::V2_7);
 
-    assert!(
-        output.code.contains(
-            "type $InstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;"
-        ),
+    assert_eq!(
+        output
+            .code
+            .matches(
+                "type $InstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;"
+            )
+            .count(),
+        1,
         "{}",
         output.code
     );
@@ -121,14 +125,24 @@ fn vue2_declares_the_name_once_with_an_any_fallback() {
         "{}",
         output.code
     );
-    assert!(!output.code.contains("__ctx.$missing"), "{}", output.code);
+    assert_eq!(
+        output.code.matches("__ctx.$missing").count(),
+        0,
+        "{}",
+        output.code
+    );
 }
 
 #[test]
 fn the_strict_form_reads_every_occurrence_off_the_template_context() {
     let output = generate(true);
 
-    assert!(!output.code.contains("$InstanceGlobal"), "{}", output.code);
+    assert_eq!(
+        output.code.matches("$InstanceGlobal").count(),
+        0,
+        "{}",
+        output.code
+    );
     assert_eq!(
         output
             .code

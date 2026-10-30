@@ -155,8 +155,10 @@ fn installed_virtual_module_points_helpers_at_the_package() {
         transform_request(3, "<template><main /></template>"),
     ]));
     let text = responses[2]["result"]["text"].as_str().unwrap();
-    assert!(
-        text.contains("import type {} from \"vize/virtual-ts\";"),
+    assert_eq!(
+        text.matches("import type {} from \"vize/virtual-ts\";")
+            .count(),
+        1,
         "{text}"
     );
     assert_eq!(text.matches("vize:virtual-ts").count(), 0, "{text}");

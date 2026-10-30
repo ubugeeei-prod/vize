@@ -185,15 +185,20 @@ fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
 fn ambient_signature_is_not_vue_ownership() {
     let mut helpers = vize_carton::String::default();
     usage("const target = useTemplateRef('target');\n").emit_inference_helpers(&mut helpers);
-    assert!(
-        helpers.contains("type __vizeInferRefIsVue = false;"),
+    assert_eq!(
+        helpers.matches("type __vizeInferRefIsVue = false;").count(),
+        1,
         "{helpers}"
     );
-    assert!(!helpers.contains("Equal<"), "{helpers}");
+    assert_eq!(helpers.matches("Equal<").count(), 0, "{helpers}");
     let imported = generate(
         "import { useTemplateRef } from 'vue';\nconst target = useTemplateRef('target');\n",
     );
-    assert!(imported.contains("__vizeInferRef('target')"), "{imported}");
+    assert_eq!(
+        imported.matches("__vizeInferRef('target')").count(),
+        1,
+        "{imported}"
+    );
 }
 
 #[test]

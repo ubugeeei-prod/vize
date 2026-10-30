@@ -14,19 +14,23 @@ fn expand_body(body: &str) -> String {
 fn assert_static(body: &str, expected: &str) {
     let generated = expand_body(body);
     let literal = format!("{expected:?}");
-    assert!(
-        generated.contains(&literal),
-        "missing {expected:?}\n{generated}"
+    assert_eq!(
+        generated.matches(&literal).count(),
+        1,
+        "missing unique {expected:?}\n{generated}"
     );
     assert_eq!(generated.matches("reserve_ts").count(), 1, "{generated}");
-    assert!(
-        generated.contains(&format!("__len : usize = {}", expected.len())),
-        "reserve length is not {}\n{generated}",
+    assert_eq!(
+        generated
+            .matches(&format!("__len : usize = {}", expected.len()))
+            .count(),
+        1,
+        "reserve length is not uniquely {}\n{generated}",
         expected.len()
     );
-    assert!(!generated.contains("format !"), "{generated}");
-    assert!(!generated.contains(":: std"), "{generated}");
-    assert!(!generated.contains(":: alloc"), "{generated}");
+    assert_eq!(generated.matches("format !").count(), 0, "{generated}");
+    assert_eq!(generated.matches(":: std").count(), 0, "{generated}");
+    assert_eq!(generated.matches(":: alloc").count(), 0, "{generated}");
 }
 
 #[test]
@@ -63,19 +67,19 @@ fn arrows_and_logical_and_keep_typescript_spaces() {
 fn a_repeat_reserves_once_and_clones_the_sequence() {
     let generated = expand_body("#(name in names => #name,)*");
     assert_eq!(generated.matches("reserve_ts").count(), 1, "{generated}");
-    assert!(generated.contains(". clone ()"), "{generated}");
+    assert_eq!(generated.matches(". clone ()").count(), 1, "{generated}");
     assert_eq!(generated.matches("for name in").count(), 2, "{generated}");
-    assert!(generated.contains("hole_len"), "{generated}");
-    assert!(!generated.contains(":: std"), "{generated}");
-    assert!(!generated.contains("Vec"), "{generated}");
+    assert_eq!(generated.matches("hole_len").count(), 1, "{generated}");
+    assert_eq!(generated.matches(":: std").count(), 0, "{generated}");
+    assert_eq!(generated.matches("Vec").count(), 0, "{generated}");
 }
 
 #[test]
 fn a_statement_splice_keeps_tight_braces_and_its_own_reserve() {
     let generated = expand_body("{ #{ let _kept = 1; } #(\"x\") }");
-    assert!(generated.contains("\"{\""), "{generated}");
-    assert!(generated.contains("\"x}\""), "{generated}");
-    assert!(generated.contains("_kept"), "{generated}");
+    assert_eq!(generated.matches("\"{\"").count(), 1, "{generated}");
+    assert_eq!(generated.matches("\"x}\"").count(), 1, "{generated}");
+    assert_eq!(generated.matches("_kept").count(), 1, "{generated}");
     assert_eq!(generated.matches("reserve_ts").count(), 2, "{generated}");
 }
 
@@ -83,15 +87,15 @@ fn a_statement_splice_keeps_tight_braces_and_its_own_reserve() {
 fn a_repeat_statement_runs_inside_the_iteration() {
     let generated = expand_body("#(item in items => #{ let _seen = item; } #item)*");
     assert_eq!(generated.matches("for item in").count(), 1, "{generated}");
-    assert!(generated.contains("_seen"), "{generated}");
-    assert!(generated.contains("reserve_ts"), "{generated}");
-    assert!(!generated.contains(". clone ()"), "{generated}");
+    assert_eq!(generated.matches("_seen").count(), 1, "{generated}");
+    assert_eq!(generated.matches("reserve_ts").count(), 1, "{generated}");
+    assert_eq!(generated.matches(". clone ()").count(), 0, "{generated}");
 }
 
 #[test]
 fn a_dynamic_ts_string_stays_a_hole() {
     let generated = expand_body("#TsString(name)");
-    assert!(generated.contains("hole_len"), "{generated}");
-    assert!(generated.contains("TsString"), "{generated}");
+    assert_eq!(generated.matches("hole_len").count(), 1, "{generated}");
+    assert_eq!(generated.matches("TsString").count(), 1, "{generated}");
     assert_eq!(generated.matches("reserve_ts").count(), 1, "{generated}");
 }
