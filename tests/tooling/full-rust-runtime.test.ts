@@ -425,3 +425,19 @@ test("source coverage uses the same carrier before full native tests and retains
     "source-coverage-native-runtime-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}",
   );
 });
+
+test("source coverage declares every resolver override across the task's filtered environment", () => {
+  const source = readRepoFile("tools/config/vite-plus/tasks/test-benchmark.ts");
+  const task = source.match(
+    /"coverage:source": task\(rustSourceCoverageCommand, \{([\s\S]*?)\n  \}\),/,
+  );
+  assert.ok(task, "the original source coverage command must remain selected");
+  const environment = task[1].match(/env: \[([\s\S]*?)\]/);
+  assert.ok(environment, "the coverage task must declare its inherited runtime variables");
+  assert.deepEqual(
+    [...environment[1].matchAll(/"([A-Z_]+)"/g)].map((entry) => entry[1]),
+    ["VIZE_NUXT_CONFIG_ITERATIONS", "VIZE_NATIVE_SYNTAX_CAPTURE_DIR", ...variables],
+  );
+  assert.match(task[1], /input: cacheInputs\.rust,/);
+  assert.doesNotMatch(task[1], /cache:|uncached|passThroughEnv/);
+});
