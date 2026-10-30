@@ -73,14 +73,20 @@ fn project_tsrs_discovery_preserves_nullable_boolean_findings() {
         .expect("project tsrs native image")
         .canonicalize()
         .unwrap();
-    let provider_modules = Path::new(&tsrs)
-        .canonicalize()
+    let provider = Path::new(&tsrs).canonicalize().unwrap();
+    let metadata: Value =
+        serde_json::from_slice(&fs::read(provider.join("package.json")).unwrap()).unwrap();
+    assert_eq!(metadata["name"], "tsrs");
+    assert_eq!(metadata["version"], "0.20.1-ts7.1.0-beta");
+    let installed: Vec<_> = metadata["optionalDependencies"]
+        .as_object()
         .unwrap()
-        .parent()
-        .unwrap()
-        .join("@tsrs");
-    assert!(selected.starts_with(provider_modules));
-    assert_eq!(selected.file_name().unwrap(), "tsrs");
+        .keys()
+        .map(|name| provider.parent().unwrap().join(name).join("tsrs"))
+        .filter(|path| path.is_file())
+        .map(|path| path.canonicalize().unwrap())
+        .collect();
+    assert_eq!(vec![selected], installed);
     let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
     command
         .current_dir(project.path())
