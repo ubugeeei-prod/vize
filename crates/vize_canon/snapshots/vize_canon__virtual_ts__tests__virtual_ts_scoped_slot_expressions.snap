@@ -124,7 +124,7 @@ type $SlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => a
 type $SlotContractIsUsable<S> = $IsAny<S> extends true ? false : unknown extends S ? false : [S] extends [never] ? false : true;
 type $SlotContractHasKeys<S> = [keyof S] extends [never] ? false : true;
 type $SlotConstructorFallback<C, Z, P> = $SlotContractIsUsable<$SlotHostSlots<C>> extends true ? { $slots: $SlotHostSlots<C> } : Z extends unknown ? P extends unknown ? { $slots: any } : never : never;
-type $SlotConstructorInstance<C, Z, P> = P extends { $slots: infer S } ? $SlotContractIsUsable<S> extends true ? $SlotContractHasKeys<S> extends true ? P : $SlotConstructorFallback<C, Z, P> : $SlotConstructorFallback<C, Z, P> : $SlotConstructorFallback<C, Z, P>;
+type $SlotConstructorInstance<C, Z, P> = [$SlotConstructorHasArguments<C>] extends [never] ? Z : P extends { $slots: infer S } ? $SlotContractIsUsable<S> extends true ? $SlotContractHasKeys<S> extends true ? P : $SlotConstructorFallback<C, Z, P> : $SlotConstructorFallback<C, Z, P> : $SlotConstructorFallback<C, Z, P>;
 declare function __vizeSlotConstructorInstance<C>(): <Z, P>(withoutArguments: Z, withArguments: P) => $SlotConstructorInstance<C, Z, P>;
 type $SlotHostSelector<C> = [$DirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
 // @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
@@ -158,7 +158,7 @@ function __setup() {
   // User setup code
   const items = ['a', 'b']
   
-  // @vize-map: 19663:19693 -> 0:59
+  // @vize-map: 19719:19749 -> 0:59
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
