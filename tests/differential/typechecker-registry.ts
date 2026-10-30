@@ -117,6 +117,7 @@ export const TYPECHECKER_TESTS = {
   "relative-sibling-storage-10934":
     "relative_sibling_imports_preserve_complete_package_diagnostics",
   "reopen-repaired-diagnostics-10730": "repaired_dependency_buffer_keeps_its_own_diagnostics",
+  "required-default-props": "defaulted_required_props_stay_optional_for_the_parent",
   "required-props-edges": "required_props_keep_exact_unicode_diagnostics",
   "reserved-expression-shapes": "reserved_prop_shapes_preserve_literal_and_member_diagnostics",
   "runtime-props-report-10100-10101": "runtime_props_reports_10100_10101_retain_expected_types",
@@ -230,6 +231,7 @@ export const sourceRevisions = {
   "reactive-props-destructure-10008": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
   "relative-sibling-storage-10934": "cb9c06d2b879da6b47a0a2f783d9a5f324776585",
   "reopen-repaired-diagnostics-10730": "9403195279c75693aea30f097bf996cb83dd9729",
+  "required-default-props": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
   "required-props-edges": originalFixtureRevision,
   "reserved-expression-shapes": originalFixtureRevision,
   "runtime-props-report-10100-10101": "5dfe002a9467d152c8545693df33def3aa5f3bf7",

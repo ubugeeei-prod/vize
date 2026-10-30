@@ -9250,6 +9250,197 @@
       "diagnostics": []
     },
     {
+      "id": "typechecker/required-default-props/defaulted-required-props-accept-omission-and-undefined",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "required-default-props",
+      "case": "defaulted-required-props-accept-omission-and-undefined",
+      "test": "defaulted_required_props_stay_optional_for_the_parent",
+      "regressionCommit": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
+      "sourceRevision": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
+      "checkerOptions": {
+        "optionsApi": true
+      },
+      "packReference": {
+        "path": "required-default-props/cases.json",
+        "sha256": "652725e01be53de61a16c1a5f532989adc2e3e01115eabae24beac550db87b78"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "required-default-props/tsconfig.json.txt",
+          "sha256": "e6f26dd6bc1929582d982162d78514fb7d0df8c238748dc209017c566293ed20"
+        },
+        {
+          "file": "src/OptionsChild.vue",
+          "path": "required-default-props/src/OptionsChild.vue.txt",
+          "sha256": "452a8e671415a5db165180a3e50b1bf11b7f9a335d829c2f0dc2ab24efab2b17"
+        },
+        {
+          "file": "src/SetupChild.vue",
+          "path": "required-default-props/src/SetupChild.vue.txt",
+          "sha256": "cbe332fdbe52c19b55167c4d0aa3e51f34dd75aca945972513ebd4dbdeac3a07"
+        },
+        {
+          "file": "src/shared.ts",
+          "path": "required-default-props/src/shared.ts.txt",
+          "sha256": "156bac95e874919cbacbf0aaf90d0eabef9477fb65136445b4772cf8b913e3ad"
+        },
+        {
+          "file": "src/SpreadChild.vue",
+          "path": "required-default-props/src/SpreadChild.vue.txt",
+          "sha256": "9179ee1a2b8e70531dbbe46e9f0b18d1038895b17a9ce3a5049a32896e55541e"
+        },
+        {
+          "file": "src/Parent.vue",
+          "path": "required-default-props/src/Valid.vue.txt",
+          "sha256": "aaa8f82120cc791c7765c5fff9217e4b3398f2d695b95b11d50f6b52844b22e1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/required-default-props/required-props-without-default-stay-required",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "required-default-props",
+      "case": "required-props-without-default-stay-required",
+      "test": "defaulted_required_props_stay_optional_for_the_parent",
+      "regressionCommit": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
+      "sourceRevision": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
+      "checkerOptions": {
+        "optionsApi": true
+      },
+      "packReference": {
+        "path": "required-default-props/cases.json",
+        "sha256": "652725e01be53de61a16c1a5f532989adc2e3e01115eabae24beac550db87b78"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "required-default-props/tsconfig.json.txt",
+          "sha256": "e6f26dd6bc1929582d982162d78514fb7d0df8c238748dc209017c566293ed20"
+        },
+        {
+          "file": "src/OptionsChild.vue",
+          "path": "required-default-props/src/OptionsChild.vue.txt",
+          "sha256": "452a8e671415a5db165180a3e50b1bf11b7f9a335d829c2f0dc2ab24efab2b17"
+        },
+        {
+          "file": "src/SetupChild.vue",
+          "path": "required-default-props/src/SetupChild.vue.txt",
+          "sha256": "cbe332fdbe52c19b55167c4d0aa3e51f34dd75aca945972513ebd4dbdeac3a07"
+        },
+        {
+          "file": "src/shared.ts",
+          "path": "required-default-props/src/shared.ts.txt",
+          "sha256": "156bac95e874919cbacbf0aaf90d0eabef9477fb65136445b4772cf8b913e3ad"
+        },
+        {
+          "file": "src/SpreadChild.vue",
+          "path": "required-default-props/src/SpreadChild.vue.txt",
+          "sha256": "9179ee1a2b8e70531dbbe46e9f0b18d1038895b17a9ce3a5049a32896e55541e"
+        },
+        {
+          "file": "src/Parent.vue",
+          "path": "required-default-props/src/Invalid.vue.txt",
+          "sha256": "26086380644697edd7db0b854565c5cc294dc79febdd2c712cf64537c5d677ab"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 10,
+          "column": 18,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | undefined' is not assignable to type 'string'.\nType 'undefined' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 11,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<__OptionsChild_CheckProps_0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 676 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\nProperty 'flag' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 12,
+          "column": 16,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | undefined' is not assignable to type 'string'.\nType 'undefined' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 13,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 671 more ...; zoomAndPan?: unknown...'.\nProperty '\"flag\"' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 14,
+          "column": 17,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | undefined' is not assignable to type 'string'.\nType 'undefined' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 15,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 671 more ...; zoomAndPan?: unknown...'.\nProperty '\"flag\"' is missing in type '{ title: string; }' but required in type '{ readonly title: string; readonly label?: string | undefined; readonly flag: boolean; }'."
+        }
+      ]
+    },
+    {
       "id": "typechecker/required-props-edges/complete-attribute-boundaries",
       "state": "active",
       "targets": [
