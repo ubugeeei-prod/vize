@@ -13,6 +13,11 @@ const PACKAGE: &str = "{\"name\":\"vize-event-fixture\",\"version\":\"0.0.0\",\"
 const SLOT_NAVIGATION_PRELUDE: &str = include_str!(
     "../../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-prelude.expected.txt"
 );
+const HISTORICAL_SLOT_NAVIGATION_PRELUDE: &str = concat!(
+    "  type __VizeEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? __VizeIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? __VizeIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;\n",
+    "  type __VizeNativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? __VizeIsAny<InstanceType<C>> extends true ? __VizeEmptyVueNavigationSlots<C> : __VizeIsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;\n",
+    "  type __VizeNavigationSlots<C> = __VizeIsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? __VizeIsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? __VizeNativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : __VizeNativeNavigationSlots<C>;\n",
+);
 const COMPONENT_NAVIGATION_HELPER: &str = "  type $ComponentNavigationProps<P> = $IsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;\n";
 
 pub(crate) struct Witness {
@@ -236,7 +241,10 @@ pub fn public_input_prelude_utf16_delta() -> usize {
 pub fn kebab_case_prelude_utf16_delta() -> usize {
     let before = include_str!(
         "../../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-before-source-counterfactual.txt"
-    ).lines().find(|line| line.starts_with("type $KebabCase<")).unwrap();
+    )
+    .lines()
+    .find(|line| line.starts_with("type __VizeKebabCase<"))
+    .unwrap();
     assert_eq!(
         super::hash(before.as_bytes()),
         "252e573afbee269915bdda1cb0725b6cb723b7bba2f8bd1195ec51aca24263b9"
@@ -259,13 +267,17 @@ pub fn component_navigation_helper_utf16_len() -> usize {
 
 // A named source counterfactual preserves the old position; it is not an old backend run.
 fn historical_counterfactual(app: &str, construct: &str) -> (Value, usize) {
-    assert!(!SLOT_NAVIGATION_PRELUDE.is_empty());
+    source_counterfactual(app, construct, SLOT_NAVIGATION_PRELUDE)
+}
+
+fn source_counterfactual(app: &str, construct: &str, prelude: &str) -> (Value, usize) {
+    assert!(!prelude.is_empty());
     assert_eq!(
-        app.matches(SLOT_NAVIGATION_PRELUDE).count(),
+        app.matches(prelude).count(),
         1,
         "one exact slot-navigation prelude"
     );
-    let source = app.replacen(SLOT_NAVIGATION_PRELUDE, "", 1);
+    let source = app.replacen(prelude, "", 1);
     assert_eq!(source.matches(construct).count(), 1);
     let cursor = source.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
     let query_position = source[..cursor].encode_utf16().count();
@@ -273,7 +285,7 @@ fn historical_counterfactual(app: &str, construct: &str) -> (Value, usize) {
     (
         json!({
             "kind": "remove-only-exact-slot-navigation-prelude-source-counterfactual",
-            "helperBytesRemoved": SLOT_NAVIGATION_PRELUDE.len(),
+            "helperBytesRemoved": prelude.len(),
             "source": source,
             "sha256": digest,
             "byteCursor": cursor,
@@ -286,22 +298,29 @@ fn historical_counterfactual(app: &str, construct: &str) -> (Value, usize) {
 
 #[test]
 fn complete_event_source_counterfactual_recovers_original_position() {
-    // Authored final source is the whole original hosted mirror with only its known helper changed.
-    let current = include_str!(
-        "../../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-current-source-counterfactual.txt"
-    );
+    // Reconstruct the historical generated source from the immutable hosted
+    // witness plus the exact helper it gained. Later helper renames must not
+    // change this counterfactual's original-source custody.
     let original = include_str!(
         "../../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-before-source-counterfactual.txt"
     );
+    let anchor = "  type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;\n";
+    assert_eq!(original.matches(anchor).count(), 1);
+    let current = original.replacen(
+        anchor,
+        &format!("{anchor}{HISTORICAL_SLOT_NAVIGATION_PRELUDE}"),
+        1,
+    );
     let construct =
         "\n  void MySwitch;\n  const { } = undefined as unknown as __MySwitch_Props_0;\n";
-    let (counterfactual, position) = historical_counterfactual(current, construct);
+    let (counterfactual, position) =
+        source_counterfactual(&current, construct, HISTORICAL_SLOT_NAVIGATION_PRELUDE);
     assert_eq!(position, 20_850);
     assert_eq!(counterfactual["source"].as_str(), Some(original));
     let cursor = current.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
     assert_eq!(
         current[..cursor].encode_utf16().count(),
-        position + slot_navigation_prelude_utf16_len()
+        position + HISTORICAL_SLOT_NAVIGATION_PRELUDE.encode_utf16().count()
     );
     let current_maps = current
         .lines()
