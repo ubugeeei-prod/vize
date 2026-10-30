@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import ts from "typescript";
 import { format } from "oxfmt";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -50,6 +51,87 @@ const outputs = new Map([
   ["npm/cli/generated/content-mapper-types.d.ts", generated],
   [`${helperRoot}/declarations/content-mapper-type-imports.d.ts.txt`, imports],
 ]);
+
+// The checked-in virtual-ts exports predate the canonical zero-call policy.
+// Synchronize only this alias; all other public declarations remain byte-exact.
+const slotAlias = "$SlotConstructorWithoutArguments";
+const printer = ts.createPrinter({ removeComments: true });
+async function slotDeclaration(source: string, label: string, exported: boolean) {
+  const checked = await format("slot-resolver.d.ts", source, { printWidth: 100 });
+  assert.deepEqual(checked.errors, [], `${label} must parse`);
+  const parsed = ts.createSourceFile(label, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const matches: ts.TypeAliasDeclaration[] = [];
+  function visit(node: ts.Node) {
+    if (ts.isTypeAliasDeclaration(node) && node.name.text === slotAlias) matches.push(node);
+    ts.forEachChild(node, visit);
+  }
+  visit(parsed);
+  assert.equal(matches.length, 1, `${label} must declare exactly one ${slotAlias}`);
+  const declaration = matches[0]!;
+  assert.equal(declaration.typeParameters?.length, 1, `${label} must retain one type parameter`);
+  assert.equal(declaration.typeParameters?.[0]?.name.text, "C", `${label} must retain C`);
+  assert.equal(
+    declaration.typeParameters?.[0]?.constraint === undefined,
+    true,
+    `${label} must not constrain C`,
+  );
+  assert.equal(
+    declaration.typeParameters?.[0]?.default === undefined,
+    true,
+    `${label} must not default C`,
+  );
+  assert.equal(
+    declaration.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword) ??
+      false,
+    exported,
+    `${label} export visibility drifted`,
+  );
+  const rhs = printer.printNode(ts.EmitHint.Unspecified, declaration.type, parsed);
+  return { parsed, declaration, rhs };
+}
+const embeddedSlot = await slotDeclaration(
+  readFileSync(path.join(root, helperRoot, "declarations/slot-resolver.d.ts.txt"), "utf8"),
+  "canonical embedded slot resolver",
+  false,
+);
+const sharedSlot = await slotDeclaration(
+  readFileSync(path.join(root, helperRoot, "declarations/shared-slot-resolver.d.ts.txt"), "utf8"),
+  "canonical shared slot resolver",
+  true,
+);
+assert.equal(
+  embeddedSlot.rhs,
+  sharedSlot.rhs,
+  "canonical embedded/shared zero-call policies drifted",
+);
+const oldPublicSlot = await slotDeclaration(
+  `export type ${slotAlias}<C> = [$SlotConstructorHasArguments<C>] extends [never] ? C : new () => { $slots: never };`,
+  "known previous public zero-call export",
+  true,
+);
+// Preserve canonical syntax as formatter input; printer output is only an identity check.
+const publicSlot = await format(
+  "virtual-ts.d.ts",
+  `export type ${slotAlias}<C> = ${sharedSlot.declaration.type.getText(sharedSlot.parsed)};\n`,
+  { printWidth: 100 },
+);
+assert.deepEqual(publicSlot.errors, [], "canonical public zero-call export must parse");
+for (const extension of ["ts", "mts", "cts"]) {
+  const relativePath = `npm/cli/virtual-ts.d.${extension}`;
+  const filePath = path.join(root, relativePath);
+  const original = readFileSync(filePath, "utf8");
+  const current = await slotDeclaration(original, relativePath, true);
+  assert.ok(
+    current.rhs === oldPublicSlot.rhs || current.rhs === sharedSlot.rhs,
+    `${relativePath} has an unknown zero-call export; refuse to overwrite drift`,
+  );
+  const replaced =
+    original.slice(0, current.declaration.getStart(current.parsed)) +
+    publicSlot.code.trimEnd() +
+    original.slice(current.declaration.end);
+  outputs.set(relativePath, replaced);
+}
+// Refuse every malformed or unknown input before replacing any SDK copy.
 for (const [relativePath, contents] of outputs) {
   const filePath = path.join(root, relativePath);
   if (process.argv.includes("--check")) {
