@@ -30,9 +30,14 @@ type $NotUndefined<T> = never;
         1,
         "the three-argument helper must preserve literal values without capturing the authored alias: {text}"
     );
-    assert_eq!(text.matches("function __vizeComponentAriaPropValue").count(), 0);
     assert_eq!(
-        text.matches("import type {} from \"vize/virtual-ts\";").count(),
+        text.matches("function __vizeComponentAriaPropValue")
+            .count(),
+        0
+    );
+    assert_eq!(
+        text.matches("import type {} from \"vize/virtual-ts\";")
+            .count(),
         1,
         "this must exercise the installed declaration route"
     );
