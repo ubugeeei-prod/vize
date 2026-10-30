@@ -125,12 +125,13 @@ test("public9498 retains the canonical eleven-case selection without default sui
     [
       ["issue-9498", [], 0],
       ["public-props-9498-without-listener", [], 0],
-      ["public-props-9498-wrong-allowed-prop-listener", [2322, 2322, 2322], 2],
-      ["public-props-9498-wrong-allowed-prop", [2322, 2322], 2],
+      // #11121 calibrated the unchanged fixtures to one authored prop error.
+      ["public-props-9498-wrong-allowed-prop-listener", [2322], 2],
+      ["public-props-9498-wrong-allowed-prop", [2322], 2],
       ["public-props-9498-unknown-prop", [], 0],
       ["public-props-9498-unknown-prop-strict", [2353], 2],
       ["public-props-9498-custom-props-listener", [], 0],
-      ["public-props-9498-wrong-custom-prop", [2322, 2322], 2],
+      ["public-props-9498-wrong-custom-prop", [2322], 2],
       ["public-props-9498-vnode-props-listener", [], 0],
       ["public-props-9498-generic-listener", [], 0],
       ["public-props-9498-wrong-listener-payload", [2345], 2],
