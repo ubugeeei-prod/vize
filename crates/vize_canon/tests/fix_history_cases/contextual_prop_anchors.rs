@@ -1,6 +1,6 @@
 use crate::support::fix_history_runner::check_pack;
 
-pub(super) fn contextual_prop_anchors() {
+pub(crate) fn contextual_prop_anchors() {
     check_pack(
         "contextual-prop-anchors-10661",
         "contextual_prop_anchors_preserve_authored_diagnostics",
