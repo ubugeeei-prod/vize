@@ -1,0 +1,85 @@
+name: Native beta diagnostic DTO
+on:
+  pull_request:
+    paths:
+      - crates/vize_canon/src/lsp_client/**
+      - tests/_fixtures/differential/typechecker/snapshot-source-text/**
+      - tests/tooling/support/native-beta-dto/**
+      - .github/workflows/native-beta-diagnostic-dto.yml
+      - Cargo.toml
+      - Cargo.lock
+  workflow_dispatch: {}
+permissions: { contents: read }
+concurrency:
+  group: native-beta-dto-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  actual-source-wire:
+    name: ${{ matrix.role == 'before' && matrix.sdk.version == '7.1.0-beta' && 'Baseline DTO refusal observation' || matrix.role == 'before' && matrix.sdk.version == '7.0.2' && 'Baseline registration boundary observation' || 'Functional source control' }} (${{ matrix.role }}, ${{ matrix.sdk.version }})
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [before, after]
+        sdk:
+          - version: 7.0.2
+            sha256: 4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4
+          - version: 7.1.0-beta
+            sha256: a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70
+    env:
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      BASE_SHA: 13fa41356d075047a229f580014b637d3bbeb57f
+      ROLE: ${{ matrix.role }}
+      SDK_VERSION: ${{ matrix.sdk.version }}
+      SDK_SHA256: ${{ matrix.sdk.sha256 }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.HEAD_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: 1.99.1, components: clippy }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - name: Install exact official SDK into an isolated consumer
+        working-directory: ${{ runner.temp }}
+        run: |
+          sdk_root="$RUNNER_TEMP/native-dto-sdk-$SDK_VERSION"
+          npm install --prefix "$sdk_root" --ignore-scripts --no-audit --no-fund "typescript@$SDK_VERSION"
+          echo "SDK_ROOT=$sdk_root" >> "$GITHUB_ENV"
+          command -v strace
+      - name: Pin before production bytes and identical observer separately
+        run: node tests/tooling/support/native-beta-dto/prepare-role.mjs
+      - name: Pin actual native image and retain all raw process streams
+        run: node tests/tooling/support/native-beta-dto/provider.mjs
+      - name: Exercise same source and SDK error, repair, hover, refs and foreign-file control
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$VIZE_NATIVE_DTO_SOURCE_ROOT"
+          test ! -e "$CARGO_TARGET_DIR"
+          cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete --no-run --message-format=json >"$VIZE_NATIVE_DTO_CAPTURE/build.jsonl" 2>"$VIZE_NATIVE_DTO_CAPTURE/build.stderr"
+          node "$GITHUB_WORKSPACE/tests/tooling/support/native-beta-dto/run-source.mjs"
+      - name: Verify closed raw native frames and exact per-file request shapes
+        if: ${{ !cancelled() }}
+        run: node tests/tooling/support/native-beta-dto/audit-wire.mjs
+      - name: Keep strict known DTO, unknown fields, source ownership and both envelope controls
+        if: ${{ matrix.role == 'after' && matrix.sdk.version == '7.0.2' }}
+        run: |
+          cargo test --locked --profile ci -p vize_canon --lib lsp_client::initial_diagnostics::
+          cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::
+          cargo clippy --locked --profile ci -p vize_canon --lib -- -D warnings
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: native-beta-dto-${{ matrix.role }}-${{ matrix.sdk.version }}-${{ env.HEAD_SHA }}
+          path: target/vize-tests/native-beta-dto/
+          if-no-files-found: error
+          retention-days: 7

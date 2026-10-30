@@ -1,5 +1,6 @@
 // One closed API/SourceFile ABI registration, outside authored-language rates.
 import { createHash } from "node:crypto";
+import { stripTypeScriptTypes } from "node:module";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";
@@ -65,6 +66,16 @@ const producerFiles = [
   "tests/tooling/support/native-beta-dto/audit-wire.mjs",
   "tests/tooling/support/native-beta-dto/run-source.mjs",
 ];
+// Keep the historical source-pairs authority unchanged. Current owned tooling
+// is strictly typed; these exact archival bytes authenticate its erased runtime.
+const producerOriginalRoot = `${fixtureRoot}native-beta-diagnostic-dto-10731/producer-originals/`;
+const producerHashes = [
+  "881a9d76c6910b4dbbad3eecf443f7cefa32afb7869580687116d4ddc737c8ad",
+  "e168dec0d8f5b7bbf83d5bc2938224473e5909e8513b05627ffbb4f5f6c38e14",
+  "cb3c4b64797b47d4473900e1ead922b8597e3dd2504a4fe5d4c119c20029b1fb",
+  "e6920284a12b5b07af0502233b06a97ff2745061d5040d2e9b4d34f74290dbd5",
+  "b0a69848f88a5ead7b5674bc1658d00b9c93685eb04edadc0909eb7cee135445",
+];
 const before = "13fa41356d075047a229f580014b637d3bbeb57f";
 const betaCommit = "3e9236361fa97a9e6c685f4833ac457ae2d8c50a";
 const sha = (value: Buffer) => createHash("sha256").update(value).digest("hex");
@@ -87,6 +98,39 @@ function pinned(
   const data = read(side, path);
   require(data !== null && sha(data) === hash, `missing or changed ${side} file: ${path}`);
   return data;
+}
+export function nativeBetaDtoProducerCustody(read: ReadFile) {
+  return producerFiles.map((originalPath, index) => {
+    const archivedPath = producerOriginalRoot + originalPath.split("/").at(-1) + ".txt";
+    const original = pinned(read, archivedPath, producerHashes[index]);
+    const currentPath = index === 0 ? originalPath : originalPath.replace(/\.mjs$/u, ".ts");
+    const current = read("head", currentPath);
+    require(current !== null, `missing current typed producer: ${currentPath}`);
+    if (index === 0) {
+      let transitioned = original.toString("utf8");
+      for (const file of producerFiles.slice(1)) {
+        require(transitioned.split(file).length === 2, "one exact producer workflow path required");
+        transitioned = transitioned.replace(file, file.replace(/\.mjs$/u, ".ts"));
+      }
+      require(current.equals(
+        Buffer.from(transitioned),
+      ), "workflow changed beyond four typed producer paths");
+    } else {
+      const runtime = (source: Buffer) =>
+        stripTypeScriptTypes(source.toString("utf8"), {
+          mode: "transform",
+        });
+      require(runtime(current) ===
+        runtime(original), `typed producer executable changed: ${currentPath}`);
+    }
+    return {
+      historicalPath: originalPath,
+      archivedPath,
+      historicalSha256: sha(original),
+      currentPath,
+      currentSha256: sha(current),
+    };
+  });
 }
 export function nativeBetaDtoProtocolSource(path: string): boolean {
   return scope.has(path);
@@ -201,8 +245,9 @@ export function newNativeBetaDtoProtocolCases(
     for (const [index, path] of producerFiles.entries()) {
       const entry = object(pairs.producerFiles[index], ["path", "sha256"]);
       require(entry.path === path, "unregistered four-role producer authority");
-      pinned(read, path, entry.sha256);
+      require(entry.sha256 === producerHashes[index], "historical producer hash differs");
     }
+    nativeBetaDtoProducerCustody(read);
     require(Array.isArray(row.tests) &&
       row.tests.length === tests.length, "all required protocol/source selectors required");
     for (const [index, expected] of tests.entries()) {
@@ -250,8 +295,8 @@ export function newNativeBetaDtoProtocolCases(
       "version: 7.1.0-beta",
       before,
       tests[3]!.selector,
-      "run-source.mjs",
-      "audit-wire.mjs",
+      "run-source.ts",
+      "audit-wire.ts",
     ])
       require(job.includes(marker), `missing actual four-role producer: ${marker}`);
     return [NATIVE_BETA_DTO_PROTOCOL_ID];

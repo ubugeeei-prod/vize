@@ -56,9 +56,9 @@ jobs:
           echo "SDK_ROOT=$sdk_root" >> "$GITHUB_ENV"
           command -v strace
       - name: Pin before production bytes and identical observer separately
-        run: node tests/tooling/support/native-beta-dto/prepare-role.mjs
+        run: node tests/tooling/support/native-beta-dto/prepare-role.ts
       - name: Pin actual native image and retain all raw process streams
-        run: node tests/tooling/support/native-beta-dto/provider.mjs
+        run: node tests/tooling/support/native-beta-dto/provider.ts
       - name: Exercise same source and SDK error, repair, hover, refs and foreign-file control
         shell: bash
         run: |
@@ -66,10 +66,10 @@ jobs:
           cd "$VIZE_NATIVE_DTO_SOURCE_ROOT"
           test ! -e "$CARGO_TARGET_DIR"
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete --no-run --message-format=json >"$VIZE_NATIVE_DTO_CAPTURE/build.jsonl" 2>"$VIZE_NATIVE_DTO_CAPTURE/build.stderr"
-          node "$GITHUB_WORKSPACE/tests/tooling/support/native-beta-dto/run-source.mjs"
+          node "$GITHUB_WORKSPACE/tests/tooling/support/native-beta-dto/run-source.ts"
       - name: Verify closed raw native frames and exact per-file request shapes
         if: ${{ !cancelled() }}
-        run: node tests/tooling/support/native-beta-dto/audit-wire.mjs
+        run: node tests/tooling/support/native-beta-dto/audit-wire.ts
       - name: Keep strict known DTO, unknown fields, source ownership and both envelope controls
         if: ${{ matrix.role == 'after' && matrix.sdk.version == '7.0.2' }}
         run: |

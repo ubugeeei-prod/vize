@@ -5,6 +5,7 @@ import fs from "node:fs";
 import { test } from "node:test";
 import {
   NATIVE_BETA_DTO_PROTOCOL_ID,
+  nativeBetaDtoProducerCustody,
   nativeBetaDtoProtocolSource,
   newNativeBetaDtoProtocolCases,
 } from "../../tools/support/compat/github/native-beta-dto-fixtures.ts";
@@ -53,6 +54,57 @@ void test("one closed DTO registration consumes actual ABI and four-role authori
     manifest.cases.filter((entry: { pack?: string }) => entry.pack !== undefined).length,
   );
   assert(!loaded.cases.some((entry) => entry.id === NATIVE_BETA_DTO_PROTOCOL_ID));
+});
+void test("typed current producers retain exact historical bytes and unchanged executable authority", () => {
+  const custody = nativeBetaDtoProducerCustody(read);
+  assert.equal(custody.length, 5);
+  assert.deepEqual(
+    custody.map((entry) => entry.historicalPath),
+    [
+      ".github/workflows/native-beta-diagnostic-dto.yml",
+      "tests/tooling/support/native-beta-dto/prepare-role.mjs",
+      "tests/tooling/support/native-beta-dto/provider.mjs",
+      "tests/tooling/support/native-beta-dto/audit-wire.mjs",
+      "tests/tooling/support/native-beta-dto/run-source.mjs",
+    ],
+  );
+  for (const entry of custody) {
+    assert.equal(entry.currentPath, entry.historicalPath.replace(/\.mjs$/u, ".ts"));
+    assert.equal(entry.historicalSha256, hash(fs.readFileSync(entry.archivedPath)));
+    assert.equal(entry.currentSha256, hash(fs.readFileSync(entry.currentPath)));
+    for (const path of [entry.archivedPath, entry.currentPath]) {
+      assert.throws(() => validate([row], [], { [path]: null }));
+      assert.throws(() => validate([row], [], { [path]: Buffer.from("changed producer\n") }));
+    }
+  }
+  const current = custody.find((entry) => entry.currentPath.endsWith("audit-wire.ts"))!;
+  const bytes = fs.readFileSync(current.currentPath, "utf8");
+  assert.throws(() =>
+    validate([row], [], {
+      [current.currentPath]: Buffer.from(
+        bytes.replace(
+          "assert.equal(source.rows.length, 3);",
+          "assert.equal(source.rows.length, 0);",
+        ),
+      ),
+    }),
+  );
+  assert.deepEqual(
+    validate([row], [], {
+      [current.currentPath]: Buffer.from("type InertTypeOnly = number;\n" + bytes),
+    }),
+    [NATIVE_BETA_DTO_PROTOCOL_ID],
+  );
+  const workflow = custody[0]!;
+  assert.throws(() =>
+    validate([row], [], {
+      [workflow.currentPath]: Buffer.from(
+        fs
+          .readFileSync(workflow.currentPath, "utf8")
+          .replace("role: [before, after]", "role: [after]"),
+      ),
+    }),
+  );
 });
 void test("only the finite registered source files enter this protocol family", () => {
   for (const path of [
