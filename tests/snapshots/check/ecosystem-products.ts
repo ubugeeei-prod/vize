@@ -1,6 +1,7 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ecosystemProductsApp, requireVizeAndCorsaBins } from "../../_helpers/apps.ts";
@@ -69,12 +70,13 @@ const ariaPropReceipts = [
   {
     file: "src/PrimeVueOptionsApi.vue",
     priorProperty: '"aria-label": `${selectedAction.label} search`,',
-    property: '"ariaLabel": __vizeComponentAriaPropValue(`${selectedAction.label} search`),',
+    property:
+      '...__vizeComponentAriaPropEntries("aria-label", "ariaLabel", `${selectedAction.label} search`),',
   },
   {
     file: "src/UiLibraries.vue",
     priorProperty: '"aria-label": "PrimeVue input",',
-    property: '"ariaLabel": __vizeComponentAriaPropValue("PrimeVue input"),',
+    property: '...__vizeComponentAriaPropEntries("aria-label", "ariaLabel", "PrimeVue input"),',
   },
 ] as const;
 
@@ -120,6 +122,11 @@ describe(`${app.name} check (type checker)`, () => {
         timeoutMs: 300_000,
       }),
     );
+    // Keep the complete source output even if an earlier contract guard fails.
+    // The existing Vue-parity artifact retains this exact packet for review.
+    const prettyOutput = stringifyDiagnosticSnapshot(parsed, checkConfig.cwd);
+    fs.mkdirSync(SNAPSHOT_DIR, { recursive: true });
+    fs.writeFileSync(path.join(SNAPSHOT_DIR, `${app.name}-check.snap.actual`), prettyOutput);
     console.log(`fileCount=${parsed.fileCount}, errorCount=${parsed.errorCount}`);
     assert.ok(parsed.fileCount > 0, "fileCount should be > 0");
     assert.deepEqual(
@@ -220,7 +227,7 @@ describe(`${app.name} check (type checker)`, () => {
       assert.equal(
         count(virtualTs, receipt.property),
         1,
-        `${receipt.file} must use the camel prop`,
+        `${receipt.file} must retain the raw and camel prop witness`,
       );
       assert.equal(
         count(virtualTs, receipt.priorProperty),
@@ -229,7 +236,6 @@ describe(`${app.name} check (type checker)`, () => {
       );
     }
 
-    const prettyOutput = stringifyDiagnosticSnapshot(parsed, checkConfig.cwd);
     assertSnapshot(SNAPSHOT_DIR, `${app.name}-check`, prettyOutput);
     assert.equal(
       sha256(prettyOutput),
