@@ -33,6 +33,7 @@ on:
       - "tests/tooling/constructor-projection-parity.test.ts"
       - "tests/tooling/component-input-diagnostic-ownership-workflow.test.ts"
       - "tests/tooling/aria-component-attrs.test.ts"
+      - "tests/_fixtures/differential/typechecker/aria-propertykey-capture-11153/**"
       - "tests/_fixtures/differential/typechecker/component-input-diagnostic-owners-10607/**"
       - ".github/workflows/component-input-diagnostic-ownership.yml"
 

@@ -1,5 +1,6 @@
 /** Original #11144 inputs and bounded authored negative/repair controls. */
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 export const reportedAriaChild = `<script setup lang="ts">
 defineProps<{ size?: string | number }>();
@@ -100,6 +101,29 @@ export function ariaComponentProjects(): AriaProject[] {
     projects.push({
       id: `declared-prop-cycle${unicode ? "-crlf-unicode" : ""}`,
       child: unicode ? reportedAriaChild.replaceAll("\n", "\r\n") : reportedAriaChild,
+      component: true,
+      phases: [
+        { id: "valid", parent: valid, expectedStdout: "", expectedStatus: 0 },
+        { id: "invalid", parent: invalid, expectedStdout: error(invalid), expectedStatus: 2 },
+        { id: "repaired", parent: valid, expectedStdout: "", expectedStatus: 0 },
+      ],
+    });
+  }
+  for (const shadowed of [false, true]) {
+    const prefix = shadowed ? "Alias" : "Control",
+      fixture = (phase: "Valid" | "Invalid") =>
+        readFileSync(
+          new URL(
+            `../../../../tests/_fixtures/differential/typechecker/aria-propertykey-capture-11153/${prefix}${phase}.vue.txt`,
+            import.meta.url,
+          ),
+          "utf8",
+        ),
+      valid = fixture("Valid"),
+      invalid = fixture("Invalid");
+    projects.push({
+      id: `${shadowed ? "shadowed-property-key-" : ""}required-camel-aria-cycle`,
+      child: reportedAriaChild,
       component: true,
       phases: [
         { id: "valid", parent: valid, expectedStdout: "", expectedStatus: 0 },

@@ -10,6 +10,12 @@ Each physical SDK first checks an independent handwritten TypeScript prop
 assignment. Its exact `false` type error supplies the negative contract; the
 Vue diagnostics must retain the authored attribute-name coordinates.
 
+The 20 phases include two required-camel-ARIA repair cycles. They read the exact
+normal Batch fixture files in `aria-propertykey-capture-11153`: the authored
+`type PropertyKey = 0` case and its blank-line control. Both valid inputs must
+retain the required `ariaLabel`; both invalid `size` values must retain the same
+complete authored error. The original 14 phases remain unchanged.
+
 The runner requires the actual `vize/virtual-ts` package import and the shipped
 declaration export conditions. An embedded-helper fixture would miss this bug.
 Source mode copies all shipped declaration files and the actual CLI manifest,
