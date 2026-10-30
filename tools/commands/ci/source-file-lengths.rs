@@ -240,6 +240,12 @@ fn is_excluded_path(path: &str) -> bool {
         || path.starts_with("tools/support/")
         || path == "npm/cli/schemas/vize.config.schema.json"
         || path == "npm/cli/src/types/generated.ts"
+        || matches!(
+            path,
+            "npm/cli/virtual-ts.d.ts"
+                | "npm/cli/virtual-ts.d.mts"
+                | "npm/cli/virtual-ts.d.cts"
+        )
         || path == "docs/davinci/plan/croquis-consumption.md"
         || path == "docs/davinci/plan/corpus-coverage.md"
         || path == "package.json"
