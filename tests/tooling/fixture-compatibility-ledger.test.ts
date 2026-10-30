@@ -1,4 +1,8 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 
 import {
@@ -14,6 +18,42 @@ import { capabilityCounts as counts } from "./support/fixture-compatibility-coun
 
 const context = createCompatibilityContext();
 const ledger = readCompatibilityLedger();
+
+test("source profiling submodules stay outside the strict fixture inventory", (t) => {
+  const root = mkdtempSync(path.join(tmpdir(), "vize-fixture-inventory-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const git = (...args: string[]) => execFileSync("git", args, { cwd: root });
+  const fixture = "tests/_fixtures/_git/control";
+  const upstream = "upstream/tsrs";
+  const revision = "1111111111111111111111111111111111111111";
+  git("init", "--quiet");
+  mkdirSync(path.join(root, "tests/_fixtures"), { recursive: true });
+  writeFileSync(
+    path.join(root, "tests/_fixtures/vue-ecosystem-fixtures.json"),
+    JSON.stringify({ projects: [] }),
+  );
+  writeFileSync(
+    path.join(root, ".gitmodules"),
+    `[submodule "fixture"]\npath = ${fixture}\n[submodule "profiling"]\npath = ${upstream}\n`,
+  );
+  for (const gitlink of [fixture, upstream]) {
+    git("update-index", "--add", "--cacheinfo", "160000", revision, gitlink);
+  }
+  assert.deepEqual(createCompatibilityContext(root).gitlinkPaths, [fixture]);
+
+  git("update-index", "--force-remove", fixture);
+  assert.throws(() => createCompatibilityContext(root), /gitlink inventory drifted/);
+  git("update-index", "--add", "--cacheinfo", "160000", revision, fixture);
+  git(
+    "update-index",
+    "--add",
+    "--cacheinfo",
+    "160000",
+    revision,
+    "tests/_fixtures/_git/unregistered",
+  );
+  assert.throws(() => createCompatibilityContext(root), /gitlink inventory drifted/);
+});
 
 test("compatibility ledger joins every fixture inventory exactly once", () => {
   const validated = validateCompatibilityLedger(ledger, context);
