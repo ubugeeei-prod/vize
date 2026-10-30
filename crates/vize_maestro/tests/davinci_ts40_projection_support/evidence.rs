@@ -118,7 +118,22 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             predecessor,
             successor,
         );
-        assert_eq!(capture_fixture(fixture).render().as_str(), successor);
+        let baseline_successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-11149-baseline/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!(
+                "fixtures/public-instance-mixed-vue2/successor-11149-baseline/receipt.json"
+            ),
+            "3ee66ed07c983eee843375c9ba8458b075a3b3c902f9a6228a48ed70704d37d1",
+            11149,
+            successor,
+            baseline_successor,
+        );
+        assert_eq!(
+            capture_fixture(fixture).render().as_str(),
+            baseline_successor
+        );
     }
 }
 

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "pullRequest": 11149,
+  "observation": {
+    "rawProductRevision": "d543ffc723b7b55b67954728f29405aba2bd597e",
+    "testedMerge": "08c25107c293b2b21584bfffa6509e913ea63dc9",
+    "run": 41011231948,
+    "job": 123917330508,
+    "artifact": 12957477950,
+    "pendingSnapshotPath": "pending-snapshots/davinci_ts40_projection__davinci_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
+    "pendingSnapshotBytes": 2441,
+    "pendingSnapshotSha256": "c33acdd317b16463f9984108f4131136634a1b9fdd1a8f925f37937e136e2f48"
+  },
+  "predecessor": {
+    "path": "successor-11069/projection-record.txt",
+    "bytes": 2325,
+    "sha256": "1ae7fe09812291aae4ff51af41efd28c547faeb03100d3191d78d95d3f113974"
+  },
+  "successor": {
+    "path": "successor-11149-baseline/projection-record.txt",
+    "bytes": 2325,
+    "sha256": "900764f49362116010e2649fee0d0757df0f30a430cb9d7760b3a4fff63ccd57"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": -200,
+    "contentMapperGeneratedTextBytes": -666,
+    "maestroGeneratedTextBytes": -606,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "scope": "The frozen 205-file custody remains byte-identical. This receipt authenticates the clean main baseline after generated Vue aliases moved to their shorter public names: the legacy projection retains every mapping, semantic link, diagnostic and authored hit while only generated coordinates and derived hashes move."
+}

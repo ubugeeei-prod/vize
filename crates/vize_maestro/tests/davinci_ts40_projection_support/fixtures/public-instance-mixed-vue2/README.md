@@ -53,3 +53,14 @@ after record. This records the existing harness routing and the reviewed
 default-generator transition; it does not claim Vue 2 diagnostic parity for
 Maestro's default Vue 3 route. Actual legacy Canon generation is unchanged in
 this fixture.
+
+`successor-11149-baseline` authenticates the shorter generated Vue helper
+aliases already present on the clean `main` integration baseline. Exact head
+`d543ffc723b7b55b67954728f29405aba2bd597e` and tested merge
+`08c25107c293b2b21584bfffa6509e913ea63dc9` were captured by
+[run 41011231948](https://github.com/ubugeeei-prod/vize/actions/runs/41011231948),
+[legacy artifact 12957477950](https://github.com/ubugeeei-prod/vize/actions/runs/41011231948/artifacts/12957477950).
+The 205-file custody remains fixed. Generated text shrinks, while all mapping,
+semantic-link, diagnostic and authored-hit counts remain unchanged; the new
+receipt authenticates the resulting coordinate hashes rather than weakening
+the projection checks.
