@@ -208,4 +208,6 @@ export interface CardProps { title: string }
             ("save-item".to_owned(), SymbolKind::EVENT, card(), 3, 32),
         ]
     );
+
+    super::contracts::assert_whole_packet_parity();
 }
