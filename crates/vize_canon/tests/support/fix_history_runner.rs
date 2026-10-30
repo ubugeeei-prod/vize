@@ -4,7 +4,6 @@
 
 use super::fix_history_contract::{Diagnostic, Pack};
 use super::fix_history_normalization::normalize_generated_check_ordinals;
-use super::fix_history_observation as observation;
 use super::fix_history_paths::{link_vue, safe_relative};
 use std::path::Path;
 use vize_canon::{
@@ -17,12 +16,35 @@ pub(crate) fn native_fixture_runtime_disabled() -> bool {
     std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
 }
 
+mod capture;
+pub(crate) use capture::WorkspaceCapturePolicy;
+
 pub(crate) fn check_pack(
     name: &str,
     test: &str,
     regression: &str,
     historical_issue: Option<u32>,
     case_ids: &[&str],
+) {
+    check_pack_with_capture_policy(
+        name,
+        test,
+        regression,
+        historical_issue,
+        case_ids,
+        WorkspaceCapturePolicy { record: true },
+    );
+}
+
+/// Dedicated admission executes every assertion; only the selected canonical
+/// executable owns the full-workspace observation receipt.
+pub(crate) fn check_pack_with_capture_policy(
+    name: &str,
+    test: &str,
+    regression: &str,
+    historical_issue: Option<u32>,
+    case_ids: &[&str],
+    capture_policy: WorkspaceCapturePolicy,
 ) {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let fixtures = root
@@ -208,7 +230,7 @@ pub(crate) fn check_pack(
         pack.project_options,
         (name == "authored-unused-symbols").then(|| serde_json::json!({"vuePackage":"absent"}))
     );
-    let mut capture = observation::Capture::from_environment();
+    let mut capture = capture_policy.capture(name, test);
     for case in pack.cases {
         let project = tempfile::tempdir().expect("a project must be created");
         let uses_router_provider = matches!(
