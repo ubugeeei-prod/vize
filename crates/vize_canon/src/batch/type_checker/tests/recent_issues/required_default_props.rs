@@ -31,18 +31,20 @@ export default defineComponent({
 const SETUP_CHILD: &str = r#"<script setup lang="ts">
 const sharedBooleanBase = { type: Boolean } as const
 const sharedBoolean = { ...sharedBooleanBase } as const
+const labelWithDefault = () => ({ default: '' })
 
 defineProps({
   label: { type: String, default: '', required: true },
   flag: { type: Boolean, default: false, required: true },
   spreadFlag: { ...sharedBoolean, default: false, required: true },
   overriddenLabel: { ...sharedBoolean, type: String, default: '', required: true },
+  helperLabel: { type: String, ...labelWithDefault() },
   title: { type: String, required: true },
 })
 </script>
 
 <template>
-  <span :title="title">{{ label.toUpperCase() }} {{ flag }}</span>
+  <span :title="title">{{ label.toUpperCase() }} {{ helperLabel.toUpperCase() }} {{ flag }}</span>
 </template>
 "#;
 
@@ -77,8 +79,8 @@ const account: { name?: string } = {}
 <template>
   <OptionsChild :label="account.name" flag title="t" />
   <OptionsChild flag title="t" />
-  <SetupChild :label="account.name" flag title="t" />
-  <SetupChild flag title="t" />
+  <SetupChild :label="account.name" flag spread-flag title="t" />
+  <SetupChild flag spread-flag title="t" />
   <SpreadChild :label="account.name" flag title="t" />
   <SpreadChild flag title="t" />
 </template>
@@ -95,8 +97,8 @@ const account: { name?: string } = {}
 <template>
   <OptionsChild :title="account.name" flag />
   <OptionsChild title="t" />
-  <SetupChild :title="account.name" flag />
-  <SetupChild title="t" />
+  <SetupChild :title="account.name" flag spread-flag />
+  <SetupChild title="t" spread-flag />
   <SpreadChild :title="account.name" flag />
   <SpreadChild title="t" />
 </template>
@@ -192,6 +194,7 @@ fn project_diagnostics(project_root: &Path, native: &Path) -> Vec<(String, Optio
         ("SetupChild.vue", "  \"flag\": boolean;"),
         ("SetupChild.vue", "  \"spreadFlag\": boolean;"),
         ("SetupChild.vue", "  \"overriddenLabel\"?: string;"),
+        ("SetupChild.vue", "  \"helperLabel\"?: string;"),
         ("SetupChild.vue", "  \"title\": string;"),
         (
             "SpreadChild.vue",

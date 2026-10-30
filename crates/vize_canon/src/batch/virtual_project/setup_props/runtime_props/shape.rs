@@ -179,6 +179,11 @@ fn collect_runtime_prop_options_from_expr<'a>(
                 options,
             );
         }
+        Expression::CallExpression(_) => {
+            options.has_resolved_default_marker |=
+                runtime_call_name(expr).is_some_and(|name| name.ends_with("WithDefault"));
+            mark_runtime_prop_options_unknown(options);
+        }
         _ => mark_runtime_prop_options_unknown(options),
     }
 }
