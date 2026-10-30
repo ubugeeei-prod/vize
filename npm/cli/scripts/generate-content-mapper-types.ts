@@ -16,7 +16,7 @@ const contents = sources.map((source) => readFileSync(path.join(root, source), "
 const componentPublicBaseIgnore =
   "// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.";
 const componentPublicBaseDeclaration = "type $ComponentPublicBase = Omit<";
-const rawDeclarations = contents.join("\n");
+const rawDeclarations = contents.join("\n").replaceAll("\r\n", "\n");
 assert.ok(
   rawDeclarations.includes(`${componentPublicBaseIgnore}\n${componentPublicBaseDeclaration}`),
   "component public fallback suppression must remain attached to its declaration",
