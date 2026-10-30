@@ -170,12 +170,10 @@ export async function verifyComputedEventRelease(
     read,
     fetchImpl,
   );
-  assert.equal(
-    ownership.workflowHead,
-    ownership.producerSource,
-    "exact-source Release run required",
-  );
-  assert.equal(sha(run.head_sha), ownership.producerSource, "Release source differs");
+  // A controlled source= release can use newer main workflow tooling. The
+  // genuine producer artifact binds that workflow head and the selected
+  // qualified source separately; its source/candidate custody stays exact.
+  assert.equal(sha(run.head_sha), ownership.workflowHead, "Release workflow head differs");
   let integration = null;
   if (request.phase === "before") {
     assert.equal(candidate, baseline.candidate, "before tag commit is immutable");

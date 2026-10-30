@@ -171,6 +171,24 @@ test("before is the frozen public 0.608 release with its genuine original produc
   assert.ok(!f.calls.includes("pulls/11142"));
 });
 
+test("qualified source and newer main workflow tooling retain separate authentic identities", async () => {
+  const f = fixture();
+  const workflowHead = "a".repeat(40);
+  f.record("actions/runs/42").head_sha = workflowHead;
+  f.owner.workflowHead = workflowHead;
+  f.records.set(`compare/${f.source}...${workflowHead}`, comparison(f.source));
+  const result = await verifyComputedEventRelease(f.request, f.github, f.fetchImpl);
+  assert.equal(result.verified, true);
+  const ownership = (
+    result.proof as { ownership: { workflowHead: string; producerSource: string } }
+  ).ownership;
+  assert.equal(ownership.workflowHead, workflowHead);
+  assert.equal(ownership.producerSource, f.source);
+
+  f.record(`compare/${f.source}...${workflowHead}`).status = "diverged";
+  await assert.rejects(verifyComputedEventRelease(f.request, f.github, f.fetchImpl));
+});
+
 test("malformed, historical and substituted before requests fail before any API read", async () => {
   for (const request of [
     { version: "0.608.0", releaseRun: "42", phase: "before" },

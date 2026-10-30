@@ -25,7 +25,7 @@ on:
         type: string
         required: true
 
-permissions: { contents: read, actions: read }
+permissions: { contents: read }
 concurrency:
   group: published-computed-events-${{ github.event.pull_request.number || github.ref }}-${{ inputs.phase || 'before' }}-${{ inputs.version || '0.608.0' }}
   cancel-in-progress: false
@@ -55,6 +55,7 @@ jobs:
     name: Authenticate the public release and integrated fix
     if: github.repository == 'ubugeeei-prod/vize'
     needs: contracts
+    permissions: { contents: read, actions: read }
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
@@ -88,7 +89,10 @@ jobs:
         include:
           - { os: Windows, runner: blacksmith-32vcpu-windows-2025 }
           - { os: Linux, runner: blacksmith-8vcpu-ubuntu-2404 }
-          - { os: macOS, runner: macos-15 }
+          - {
+              os: macOS,
+              runner: "${{ vars.VIZE_RELEASE_MACOS_RUNNER || 'blacksmith-12vcpu-macos-15' }}",
+            }
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 15
     steps:
