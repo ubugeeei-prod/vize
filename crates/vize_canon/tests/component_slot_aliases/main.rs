@@ -22,6 +22,24 @@ defineSlots<Slots>();
 }
 
 #[test]
+fn imported_slot_types_are_reexported_without_redeclaring_the_binding() {
+    let component = r#"<script setup lang="ts">
+import type { SharedSlots as Slots } from './slots';
+defineSlots<Slots>();
+</script>"#;
+    let slots = "export type SharedSlots = { default: (props: { value: string }) => unknown };";
+    let consumer = "import type { Slots } from './App.vue';\nexport const slots: Slots = { default: ({ value }) => value.toUpperCase() };";
+    assert_eq!(
+        project::check(&[
+            ("src/App.vue", component),
+            ("src/slots.ts", slots),
+            ("src/consumer.ts", consumer),
+        ]),
+        [] as [String; 0]
+    );
+}
+
+#[test]
 fn an_explicit_normal_script_slot_export_keeps_its_authored_meaning() {
     let component =
         "<script lang=\"ts\">export type Slots = { named: string }; export default {};</script>";
