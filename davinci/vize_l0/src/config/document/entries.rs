@@ -21,13 +21,13 @@ impl ConfigDocument {
         self.project_entry_ignores(false)
     }
 
-    /// Formatter discovery excludes only global ignores and ignores-only entries.
-    /// Entry-local filters narrow compiler/linter settings without excluding files.
+    /// Formatter discovery retains global and selection-only entry exclusions.
+    /// Override filters narrow compiler/linter settings without excluding files.
     pub fn formatter_entry_ignores(&self) -> Vec<ConfigEntryIgnore> {
         self.project_entry_ignores(true)
     }
 
-    fn project_entry_ignores(&self, global_only: bool) -> Vec<ConfigEntryIgnore> {
+    fn project_entry_ignores(&self, exclude_overrides: bool) -> Vec<ConfigEntryIgnore> {
         let top_level_ignores = self
             .0
             .ignores
@@ -45,7 +45,7 @@ impl ConfigDocument {
             .as_deref()
             .unwrap_or_default()
             .iter()
-            .filter(|entry| !global_only || entry.is_global_ignore())
+            .filter(|entry| !exclude_overrides || entry.is_discovery_ignore())
             .flat_map(|entry| {
                 entry
                     .ignores
