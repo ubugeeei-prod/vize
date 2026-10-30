@@ -61,6 +61,18 @@ test("the real manifest selects the full Art successor with separate authority",
     loaded.cases.filter((item) => item.pack === artDisplayPack && item.diagnosticAuthority).length,
     2,
   );
+  assert.deepEqual(
+    loaded.cases
+      .filter((item) => item.diagnosticAuthority)
+      .map((item) => `${item.pack}/${item.case}/${item.diagnosticAuthority?.kind}`)
+      .sort(),
+    [
+      "art-variant-implicit-component-9854/implicit-and-explicit-props/finite-art-native-display",
+      "art-variant-implicit-component-9854/implicit-subject-avoids-unknown-global-diagnostics/finite-art-native-display",
+      "component-listener-prop-duplicate-10397/required-boolean-with-listener/finite-open-component-event",
+    ],
+    "only the three separately authenticated cases select a current diagnostic authority",
+  );
 });
 
 test("the actual selector refuses mutations of every authenticated authority", async (t) => {
