@@ -326,10 +326,10 @@ declare global {
   type $ComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}`
     ? `${__H}${Capitalize<$ComponentAttrCamel<__T>>}`
     : S;
-  type $ComponentNativeElementNames = Extract<keyof $NativeElements, string>;
   type $ComponentNativeAttrNames = {
-    [K in $ComponentNativeElementNames]: Extract<keyof $NativeElements[K], string>;
-  }[$ComponentNativeElementNames];
+    [K in keyof $NativeElements & string]: keyof $NativeElements[K];
+  }[keyof $NativeElements & string] &
+    string;
   type $ComponentGlobalHtmlAttrs =
     $IsAny<$NativeElements> extends true
       ? {}
