@@ -47,6 +47,10 @@ export const currentNativeAttributeAliases = [
   "type $ComponentNativeElementNames = Extract<keyof $NativeElements, string>;",
   "type $ComponentNativeAttrNames = { [K in $ComponentNativeElementNames]: Extract<keyof $NativeElements[K], string> }[$ComponentNativeElementNames];",
 ].join("\n");
+export const previousSlotsExport = "export type Slots = $Slots;";
+export const currentSlotsExport = "export type { $Slots as Slots };";
+export const previousSlotsMarker = "Partial<Slots>";
+export const currentSlotsMarker = "Partial<$Slots>";
 
 export function readAssets(baseRoot: string, headRoot: string) {
   const baseBytes = canonicalPaths.map((file) => readFileSync(path.join(baseRoot, file)));
@@ -155,6 +159,60 @@ function uniqueOffset(text: Buffer, needle: Buffer) {
   assert.ok(at >= 0 && text.indexOf(needle, at + 1) < 0, "exact helper block must occur once");
   return at;
 }
+function occurrences(text: string, needle: string) {
+  return text.split(needle).length - 1;
+}
+function bufferOccurrences(text: Buffer, needle: Buffer) {
+  let count = 0;
+  for (let offset = text.indexOf(needle); offset >= 0; offset = text.indexOf(needle, offset + 1))
+    count++;
+  return count;
+}
+function certifiedTransition(
+  before: Buffer,
+  after: Buffer,
+  previous: string,
+  current: string,
+  label: string,
+) {
+  const counts = {
+    beforePrevious: occurrences(before.toString(), previous),
+    beforeCurrent: occurrences(before.toString(), current),
+    afterPrevious: occurrences(after.toString(), previous),
+    afterCurrent: occurrences(after.toString(), current),
+  };
+  if (
+    (counts.beforePrevious === 0 &&
+      counts.beforeCurrent === 0 &&
+      counts.afterPrevious === 0 &&
+      counts.afterCurrent === 0) ||
+    (counts.beforePrevious === 1 &&
+      counts.beforeCurrent === 0 &&
+      counts.afterPrevious === 1 &&
+      counts.afterCurrent === 0) ||
+    (counts.beforePrevious === 0 &&
+      counts.beforeCurrent === 1 &&
+      counts.afterPrevious === 0 &&
+      counts.afterCurrent === 1)
+  )
+    return;
+  assert.deepEqual(
+    counts,
+    {
+      beforePrevious: 1,
+      beforeCurrent: 0,
+      afterPrevious: 0,
+      afterCurrent: 1,
+    },
+    `only the certified ${label} transition may change`,
+  );
+  return {
+    start: uniqueOffset(before, Buffer.from(previous)),
+    end: uniqueOffset(before, Buffer.from(previous)) + Buffer.byteLength(previous),
+    replacement: Buffer.from(current),
+    label,
+  };
+}
 function comments(text: string, generatedRanges: [number, number][]) {
   return [...text.matchAll(/^([ \t]*)\/\/ @vize-map: (\d+):(\d+) -> (\d+):(\d+)\r?$/gmu)]
     .map((match) => ({
@@ -182,23 +240,62 @@ function relocationEdits(
   assets: Assets,
   replacement: Buffer,
 ) {
-  const start = uniqueOffset(before, assets.embedded);
-  assert.equal(uniqueOffset(after, replacement), start, "helper prefix boundary moved");
-  const edits: Edit[] = [{ start, end: start + assets.embedded.length, replacement }];
+  const sameHelper = assets.embedded.equals(replacement);
+  const helperCounts = {
+    beforePrevious: bufferOccurrences(before, assets.embedded),
+    beforeCurrent: sameHelper ? 0 : bufferOccurrences(before, replacement),
+    afterPrevious: bufferOccurrences(after, assets.embedded),
+    afterCurrent: sameHelper ? 0 : bufferOccurrences(after, replacement),
+  };
+  const helperAbsent = Object.values(helperCounts).every((count) => count === 0);
+  const helperPrevious =
+    helperCounts.beforePrevious === 1 &&
+    helperCounts.beforeCurrent === 0 &&
+    helperCounts.afterPrevious === 1 &&
+    helperCounts.afterCurrent === 0;
+  const helperCurrent =
+    !sameHelper &&
+    helperCounts.beforePrevious === 0 &&
+    helperCounts.beforeCurrent === 1 &&
+    helperCounts.afterPrevious === 0 &&
+    helperCounts.afterCurrent === 1;
+  const helperTransition =
+    !sameHelper &&
+    helperCounts.beforePrevious === 1 &&
+    helperCounts.beforeCurrent === 0 &&
+    helperCounts.afterPrevious === 0 &&
+    helperCounts.afterCurrent === 1;
+  assert.ok(
+    helperAbsent || helperPrevious || helperCurrent || helperTransition,
+    `helper inventory changed: ${JSON.stringify(helperCounts)}`,
+  );
+  const start = helperAbsent
+    ? null
+    : helperCurrent
+      ? uniqueOffset(before, replacement)
+      : uniqueOffset(before, assets.embedded);
+  const certifiedEdits: (Edit & { label: string })[] = [];
+  if (start !== null && helperTransition)
+    certifiedEdits.push({
+      start,
+      end: start + assets.embedded.length,
+      replacement,
+      label: "helper prefix",
+    });
   if (!assets.baseNativeAttributes.equals(assets.headNativeAttributes)) {
     const aliasStart = uniqueOffset(before, Buffer.from(previousNativeAttributeAliases));
-    assert.ok(aliasStart >= edits.at(-1)!.end, "certified replacements must remain ordered");
-    assert.equal(
-      uniqueOffset(after, Buffer.from(currentNativeAttributeAliases)),
-      point(aliasStart, edits),
-      "native attribute alias boundary moved",
-    );
-    edits.push({
+    certifiedEdits.push({
       start: aliasStart,
       end: aliasStart + Buffer.byteLength(previousNativeAttributeAliases),
       replacement: Buffer.from(currentNativeAttributeAliases),
+      label: "native attribute alias",
     });
   }
+  for (const transition of [
+    certifiedTransition(before, after, previousSlotsExport, currentSlotsExport, "Slots export"),
+    certifiedTransition(before, after, previousSlotsMarker, currentSlotsMarker, "Slots marker"),
+  ])
+    if (transition) certifiedEdits.push(transition);
   const originalComments = comments(before.toString(), baseGeneratedRanges);
   const actualComments = comments(after.toString(), headGeneratedRanges);
   assert.equal(
@@ -206,8 +303,29 @@ function relocationEdits(
     originalComments.length,
     "generated map-comment inventory changed",
   );
-  for (const [index, original] of originalComments.entries()) {
-    const actual = actualComments[index];
+  const events = [
+    ...certifiedEdits.map((edit) => ({ kind: "replacement" as const, start: edit.start, edit })),
+    ...originalComments.map((original, index) => ({
+      kind: "comment" as const,
+      start: original.start,
+      original,
+      actual: actualComments[index],
+    })),
+  ].sort((left, right) => left.start - right.start);
+  const edits: Edit[] = [];
+  for (const event of events) {
+    if (event.kind === "replacement") {
+      const { edit } = event;
+      assert.ok((edits.at(-1)?.end ?? 0) <= edit.start, "certified replacements must be disjoint");
+      assert.equal(
+        uniqueOffset(after, edit.replacement),
+        point(edit.start, edits),
+        `${edit.label} boundary moved`,
+      );
+      edits.push(edit);
+      continue;
+    }
+    const { actual, original } = event;
     const [g0, g1, s0, s1] = original.values;
     bounds(g0, g1 - g0, before.length);
     bounds(s0, s1 - s0, sourceBytes);

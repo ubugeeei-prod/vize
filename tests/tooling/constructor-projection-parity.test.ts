@@ -7,9 +7,13 @@ import { test } from "node:test";
 import {
   canonicalPaths,
   comparePackets,
+  currentSlotsExport,
+  currentSlotsMarker,
   currentNativeAttributeAliases,
   nativeAttributesPath,
   previousNativeAttributeAliases,
+  previousSlotsExport,
+  previousSlotsMarker,
   readAssets,
   relocatePacket,
   relocateVirtualPacket,
@@ -70,6 +74,43 @@ test("certified helper and self-described coordinates preserve complete packets"
   assert.equal(proof.edits.length, 2);
   assert.equal(proof.edits[0].start, base.text.indexOf(assets.embedded.toString()));
   assert.equal(proof.edits[1].replacementBytes < proof.edits[1].end - proof.edits[1].start, true);
+});
+
+test("collision-safe slot exports and markers are exact certified replacements", () => {
+  const { source, base, head } = fixture();
+  base.text += `\n${previousSlotsExport}\ntype Marker = ${previousSlotsMarker};\n`;
+  head.text += `\n${currentSlotsExport}\ntype Marker = ${currentSlotsMarker};\n`;
+  const proof = relocatePacket(base, head, source, assets);
+  assert.equal(proof.edits.length, 4);
+  const slotExportStart = bytes(base.text.slice(0, base.text.indexOf(previousSlotsExport)));
+  const slotMarkerStart = bytes(base.text.slice(0, base.text.indexOf(previousSlotsMarker)));
+  assert.ok(proof.edits.some((edit) => edit.start === slotExportStart));
+  assert.ok(proof.edits.some((edit) => edit.start === slotMarkerStart));
+
+  const wrongExport = structuredClone(head);
+  wrongExport.text = wrongExport.text.replace(currentSlotsExport, "export type Slots = unknown;");
+  assert.throws(() => relocatePacket(base, wrongExport, source, assets), /Slots export/);
+
+  const wrongMarker = structuredClone(head);
+  wrongMarker.text = wrongMarker.text.replace(currentSlotsMarker, "Partial<unknown>");
+  assert.throws(() => relocatePacket(base, wrongMarker, source, assets), /Slots marker/);
+});
+
+test("slot-only packets do not invent a helper relocation", () => {
+  const packet = (text: string) => ({
+    text,
+    mappings: [],
+    diagnostics: [],
+  });
+  const base = packet(`${previousSlotsExport}\ntype Marker = ${previousSlotsMarker};\n`);
+  const head = packet(`${currentSlotsExport}\ntype Marker = ${currentSlotsMarker};\n`);
+  const proof = relocatePacket(base, head, "", assets);
+  assert.equal(proof.helperStart, null);
+  assert.equal(proof.edits.length, 2);
+  assert.throws(
+    () => relocatePacket(base, packet("export type Slots = unknown;\n"), "", assets),
+    /Slots export/,
+  );
 });
 
 test("an authored range crossing the helper prefix boundary is refused", () => {
