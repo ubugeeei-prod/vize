@@ -99,7 +99,9 @@ async function runLspCase(
     }
     for (const request of fixture.requests) {
       await wire.request(request.method ?? fixture.data.method, {
-        textDocument: { uri: entryUri },
+        ...((request.method ?? fixture.data.method) === "workspace/symbol"
+          ? {}
+          : { textDocument: { uri: entryUri } }),
         ...request.params,
       });
     }

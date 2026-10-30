@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/workspace-symbol-qualification-11153",
+  "provenance": {
+    "fixCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038"
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "ecosystem": false
+  },
+  "initialDiagnostics": [],
+  "files": [
+    {
+      "source": "QualifiedSymbols.vue.txt",
+      "sha256": "9ec788b977c9a5c34c45c1bcb244564b738256ac4af3feeccb4a50bc139d6363",
+      "runtimePath": "QualifiedSymbols.vue"
+    }
+  ],
+  "entry": "QualifiedSymbols.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "d9a940484df2b01e200b2dec474eef2b51bb9571f3f87b7dcd325a9cc5d57e06"
+  },
+  "method": "workspace/symbol"
+}
