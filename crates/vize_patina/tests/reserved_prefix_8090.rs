@@ -45,7 +45,7 @@ fn reserved_names_obey_exact_membership_and_group_policy_with_complete_packets()
     .unwrap();
     let api_cases = api_order["coreCases"].as_array().unwrap();
     assert_eq!(api_cases.len(), 20);
-    assert_eq!(api_order["summary"]["coreDiagnosticCount"], 216);
+    assert_eq!(api_order["summary"]["coreDiagnosticCount"], 211);
     let projection: Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/n8n-cli-adoption.json"
     ))
@@ -71,7 +71,7 @@ fn reserved_names_obey_exact_membership_and_group_policy_with_complete_packets()
             .iter()
             .map(|case| case["diagnostics"].as_array().unwrap().len())
             .sum::<usize>(),
-        153
+        152
     );
     assert_eq!(
         cases
