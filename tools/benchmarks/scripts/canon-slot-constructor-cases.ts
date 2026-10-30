@@ -98,6 +98,14 @@ export function slotCases(): SlotCase[] {
       requiresAuthoredError: false,
     },
     {
+      id: "union-zero-required-slot-string",
+      component:
+        base.replace("item: number", "item: string") +
+        "export declare const WitnessChild: { new(): Instance } | { new(props: { value: number }): Instance };\nexport default WitnessChild;\n",
+      source: slotSource,
+      requiresAuthoredError: true,
+    },
+    {
       id: "overload-last-zero",
       component: ctor("new(props: { value: number }): Typed<number>; new(): Typed<string>"),
       source: slotSource,
