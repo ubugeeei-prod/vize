@@ -17,7 +17,9 @@ fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
     assert_eq!(
         result
             .text
-            .matches("$ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps>")
+            .matches(
+                "$ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps>"
+            )
             .count(),
         1
     );

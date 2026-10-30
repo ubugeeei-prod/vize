@@ -208,10 +208,7 @@ mod tests {
     fn html_tag_virtual_document_uses_mathml_fallback_for_unmapped_tags() {
         let doc = super::html_tag_virtual_document("menclose").expect("menclose tag doc");
 
-        assert!(
-            doc.content
-                .contains("type $DomElement = MathMLElement;")
-        );
+        assert!(doc.content.contains("type $DomElement = MathMLElement;"));
         assert_eq!(
             &doc.content[doc.definition_offset..doc.definition_offset + "MathMLElement".len()],
             "MathMLElement",

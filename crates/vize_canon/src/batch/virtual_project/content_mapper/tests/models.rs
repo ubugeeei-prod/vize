@@ -133,9 +133,9 @@ defineModel<string>("title", { required: true });
         result.text
     );
     assert!(
-        result.text.contains(
-            "$ComponentInput<$ResolvedProps, __EmitProps<Emits>, $AuthoredProps>"
-        ),
+        result
+            .text
+            .contains("$ComponentInput<$ResolvedProps, __EmitProps<Emits>, $AuthoredProps>"),
         "text:\n{}",
         result.text
     );
