@@ -42,9 +42,10 @@ const currentReceipt = {
     "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
   slotFallbackProvenance: "#11064 / c2ee0878fec5d53edb7c30e10f374e37ab256f02",
   slotFallbackFiles: [],
-  // Whole packet observed with #11153 / d83c194c899 (local source CLI).
-  // Exact-head full Actions qualification remains required for this successor.
-  snapshotSha256: "ffd237083004fd1a5eb9b5c8b517ce16c05de9a211310f6aafdc379f1be97dc3",
+  // Whole packet observed in #11153 / 8b86ad667fc, Actions 41117365474.
+  // Prior packet ffd237083004fd1a5eb9b5c8b517ce16c05de9a211310f6aafdc379f1be97dc3
+  // differs only in the two ARIA helpers' hygienic key constraints.
+  snapshotSha256: "e0d7fd37fead28615939040a3e13dc11b8ecd4209252f99abeb29f8e9657a5f4",
   warningCount: 0,
   widenHelperFiles: [
     "src/ComposablesAndRouting.vue",
@@ -63,7 +64,7 @@ const retiredSlotFallbackFiles = [
   "src/UiLibraries.vue",
 ] as const;
 const componentAriaHelper =
-  "function __vizeComponentAriaPropEntries<const R extends PropertyKey, const C extends PropertyKey, const T>" +
+  "function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T>" +
   "(raw: R, camel: C, value: T): { readonly [K in R | C]: T extends undefined ? never : T } " +
   "{ return { [raw]: value, [camel]: value } as unknown as " +
   "{ readonly [K in R | C]: T extends undefined ? never : T }; }";
