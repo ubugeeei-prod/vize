@@ -485,7 +485,12 @@ async function main() {
     passed: failures.length === 0,
     timingUsable: false,
   });
-  assert.equal(failures.length, 0, "no constructor argument or slot precision failure may survive");
+  assert.equal(
+    failures.length,
+    0,
+    "no constructor argument or slot precision failure may survive:\n" +
+      JSON.stringify(failures, null, 2),
+  );
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url))
   await main();
