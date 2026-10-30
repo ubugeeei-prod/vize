@@ -178,6 +178,9 @@ test("canonical bodies and alias order are independently exact", (context) => {
   assert.throws(() => readAssets(base, head), /alias order/);
   writeFileSync(path.join(head, importPath), readFileSync(path.join(base, importPath)));
   const nativeAttributes = path.join(head, nativeAttributesPath);
-  writeFileSync(nativeAttributes, readFileSync(nativeAttributes, "utf8").replace("Extract<", "Awaited<"));
+  writeFileSync(
+    nativeAttributes,
+    readFileSync(nativeAttributes, "utf8").replace("Extract<", "Awaited<"),
+  );
   assert.throws(() => readAssets(base, head), /certified native attribute aliases/);
 });

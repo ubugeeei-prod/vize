@@ -154,7 +154,10 @@ function relations(client, server, allowStableWatcherRegistrationRefusal) {
     const [registration] = request.params.registrations;
     assert.match(registration.id, /^root files for .+\/tsconfig\.json watcher 6\.0$/u);
     assert.equal(registration.method, "workspace/didChangeWatchedFiles");
-    assert.deepEqual(registration.registerOptions?.watchers?.map((watcher) => watcher.kind), [7]);
+    assert.deepEqual(
+      registration.registerOptions?.watchers?.map((watcher) => watcher.kind),
+      [7],
+    );
     assert.match(registration.registerOptions.watchers[0].globPattern, /\/\*\*\/\*$/u);
     registrationRefusals += 1;
   }
