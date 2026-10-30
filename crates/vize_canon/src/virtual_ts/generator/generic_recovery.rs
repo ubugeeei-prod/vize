@@ -85,7 +85,12 @@ pub(crate) fn generate(
     code.push_str(plan.authored());
     let closing = code.len();
     code.push_str(">() {\n");
-    let helpers = SetupHelperPlan::collect(summary, Some(script), false);
+    let helpers = SetupHelperPlan::collect(
+        summary,
+        Some(script),
+        false,
+        generation.configured_global_template_ref,
+    );
     helpers.emit_error_recovery(&mut code, generation.hoist_shared_preamble);
     code.push('\n');
     for chunk in body {

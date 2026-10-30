@@ -38,6 +38,7 @@ pub(in crate::batch::virtual_project) struct VueCodegenOptions<'a> {
     pub(in crate::batch::virtual_project) typed_router:
         Option<super::super::typed_router::Config<'a>>,
     pub(in crate::batch::virtual_project) preserve_unused_diagnostics: bool,
+    pub(in crate::batch::virtual_project) configured_global_template_ref: bool,
     pub(in crate::batch::virtual_project) options_api: bool,
     pub(in crate::batch::virtual_project) preserve_authored_component: bool,
     /// Editor requests retain script mappings while an unusable template is omitted.

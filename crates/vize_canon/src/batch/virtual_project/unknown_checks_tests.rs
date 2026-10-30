@@ -71,6 +71,44 @@ fn assert_unknown_checks(content: &str, enabled: bool) {
     assert_eq!(open_tail, !enabled, "{content}");
 }
 
+fn configured_global_template_ref_source(enabled: bool) -> vize_carton::String {
+    let root = case_dir(if enabled {
+        "configured-global-template-ref"
+    } else {
+        "custom-global-template-ref"
+    });
+    let _ = fs::remove_dir_all(&root);
+    fs::create_dir_all(root.join("src")).unwrap();
+    let composables = if enabled {
+        r#"["useTemplateRef"]"#
+    } else {
+        "[]"
+    };
+    fs::write(
+        root.join("tsconfig.json"),
+        format!(
+            r#"{{
+  "compilerOptions": {{ "strict": true }},
+  "vueCompilerOptions": {{ "composables": {{ "useTemplateRef": {composables} }} }},
+  "include": ["src/**/*"]
+}}"#,
+        ),
+    )
+    .unwrap();
+    let app = root.join("src/App.vue");
+    fs::write(
+        &app,
+        "<script setup lang=\"ts\">\nconst target = useTemplateRef('target');\n</script>\n<template><button ref=\"target\" /></template>\n",
+    )
+    .unwrap();
+    let mut project = VirtualProject::new(&root).unwrap();
+    project.set_tsconfig_path(Some(root.join("tsconfig.json")));
+    project.register_path(&app).unwrap();
+    let content = project.find_by_original(&app).unwrap().content.clone();
+    let _ = fs::remove_dir_all(&root);
+    content
+}
+
 fn type_declaration<'a>(content: &'a str, name: &str) -> Option<&'a str> {
     content.lines().find(|line| {
         line.strip_prefix("  type ")
@@ -102,6 +140,23 @@ fn unknown_checks_follow_vue_compiler_options() {
         project_source("strict", "\"strictTemplates\": true").as_str(),
         true,
     );
+}
+
+#[test]
+fn ambient_template_ref_ownership_requires_explicit_vue_configuration() {
+    for (enabled, expected) in [(true, "true"), (false, "false")] {
+        let content = configured_global_template_ref_source(enabled);
+        assert!(
+            content.contains(&format!("type __vizeInferRefIsVue = {expected};")),
+            "{content}"
+        );
+        let global = if enabled {
+            "type __vizeInferRefGlobal = $UseTemplateRef;"
+        } else {
+            "type __vizeInferRefGlobal = __vizeInferRefSource;"
+        };
+        assert!(content.contains(global), "{content}");
+    }
 }
 
 #[test]

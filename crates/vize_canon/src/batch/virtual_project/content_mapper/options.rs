@@ -19,6 +19,7 @@ pub struct ContentMapperTransformOptions {
     pub(in crate::batch::virtual_project) fallthrough_attributes_specified: bool,
     pub(in crate::batch::virtual_project) check_unknown_directives: bool,
     pub(in crate::batch::virtual_project) strict_css_modules: bool,
+    pub(in crate::batch::virtual_project) configured_global_template_ref: bool,
     /// Resolved `vueCompilerOptions.target`. `None` leaves intrinsic names checked.
     pub(in crate::batch::virtual_project) vue_compiler_target: Option<VueVersion>,
 }
@@ -39,6 +40,7 @@ impl Default for ContentMapperTransformOptions {
             fallthrough_attributes_specified: false,
             check_unknown_directives: false,
             strict_css_modules: false,
+            configured_global_template_ref: false,
             vue_compiler_target: None,
         }
     }

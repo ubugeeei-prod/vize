@@ -13,7 +13,7 @@ fn usage(script: &str) -> TemplateRefUsage {
     let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
     assert!(parsed.diagnostics.is_empty());
     let built = SemanticBuilder::new().build(&parsed.program);
-    TemplateRefUsage::collect(&parsed.program, built.semantic.scoping(), script)
+    TemplateRefUsage::collect(&parsed.program, built.semantic.scoping(), script, false)
 }
 
 fn generate(script: &str) -> String {
@@ -104,11 +104,21 @@ fn authored_helpers_and_nested_shadow_bindings_are_not_specialized() {
         "import { useTemplateRef } from 'other';\nconst ref = useTemplateRef('user');",
         "import { useTemplateRef } from 'vue';\n{ const useTemplateRef = (key: string) => key; useTemplateRef('user'); }",
     ] {
-        let plan = SetupHelperPlan::collect(&vize_croquis::Croquis::default(), Some(script), false);
+        let plan = SetupHelperPlan::collect(
+            &vize_croquis::Croquis::default(),
+            Some(script),
+            false,
+            false,
+        );
         assert!(!plan.template_refs.needs_registry(), "{script}");
     }
     let script = "import { useTemplateRef } from 'vue';\nconst ref = useTemplateRef('box');";
-    let plan = SetupHelperPlan::collect(&vize_croquis::Croquis::default(), Some(script), false);
+    let plan = SetupHelperPlan::collect(
+        &vize_croquis::Croquis::default(),
+        Some(script),
+        false,
+        false,
+    );
     assert!(plan.template_refs.needs_registry());
 }
 

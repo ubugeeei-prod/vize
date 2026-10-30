@@ -245,6 +245,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         summary,
         script_content,
         generation_options.preserve_event_navigation,
+        generation_options.configured_global_template_ref,
     );
     let mut declared_default_alias = false;
     if let Some(script) = script_content {

@@ -300,6 +300,7 @@ pub(super) fn generate_vue_virtual_ts(
         check_options: codegen_options.check_options,
         dialect: codegen_options.dialect,
         preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
+        configured_global_template_ref: codegen_options.configured_global_template_ref,
         extra_template_referenced_names: extra_template_referenced_names.as_ref(),
         options_api: codegen_options.options_api || vue2_compat,
         preserve_authored_component: codegen_options.preserve_authored_component,
