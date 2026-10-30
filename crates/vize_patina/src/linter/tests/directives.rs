@@ -3,6 +3,7 @@ use super::Linter;
 mod root_comment_scope;
 mod script_file_scope;
 mod script_style;
+mod vize_script_aliases;
 
 #[test]
 fn test_vize_todo_emits_warning() {

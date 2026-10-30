@@ -101,9 +101,12 @@ impl Linter {
         );
         let mut art = empty_lint_result(filename);
         self.append_art_variant_template_diagnostics(source, filename, &mut art, Some(&descriptor));
-        let suppressions = (source.contains("eslint-") || source.contains("oxlint-"))
-            .then(|| SfcSuppression::new(&descriptor))
-            .flatten();
+        let suppressions = (source.contains("eslint-")
+            || source.contains("oxlint-")
+            || source.contains("vize-disable")
+            || source.contains("vize-enable"))
+        .then(|| SfcSuppression::new(&descriptor))
+        .flatten();
         PreparedLint {
             filename: filename.to_compact_string(),
             work: Work::Sfc(Box::new(SfcWork {

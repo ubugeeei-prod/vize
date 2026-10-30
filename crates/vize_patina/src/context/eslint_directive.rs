@@ -193,6 +193,31 @@ pub(super) fn parse_eslint_disable_comment(line: &str) -> Option<EslintDisableDi
     None
 }
 
+/// Vize's script aliases share ordering and rule-list semantics with ESLint.
+/// Template comments retain their existing ESLint/Oxlint grammar.
+pub(super) fn parse_script_disable_comment(line: &str) -> Option<EslintDisableDirective> {
+    const MARKERS: [(&str, EslintDisableKind); 4] = [
+        ("vize-disable-next-line", EslintDisableKind::DisableNextLine),
+        ("vize-disable-line", EslintDisableKind::DisableLine),
+        ("vize-disable", EslintDisableKind::Disable),
+        ("vize-enable", EslintDisableKind::Enable),
+    ];
+    for (marker, kind) in MARKERS {
+        let Some(raw) = line.strip_prefix(marker) else {
+            continue;
+        };
+        if !raw.is_empty() && !raw.starts_with(char::is_whitespace) && !raw.starts_with("*/") {
+            continue;
+        }
+        let raw = raw.split_once("*/").map_or(raw, |(comment, _)| comment);
+        return Some(EslintDisableDirective {
+            kind,
+            rules: parse_eslint_rule_list(raw),
+        });
+    }
+    parse_eslint_disable_comment(line)
+}
+
 fn parse_eslint_rule_list(raw: &str) -> Vec<String> {
     let raw = raw
         .split_once("--")

@@ -11,11 +11,33 @@ use vize_l0::{FxHashMap, FxHashSet};
 
 use super::DisabledRange;
 use super::eslint_directive::{
-    EslintDisableDirective, EslintDisableKind, InlineSuppressionState, parse_eslint_disable_comment,
+    EslintDisableDirective, EslintDisableKind, InlineSuppressionState,
+    parse_eslint_disable_comment, parse_script_disable_comment,
 };
 use lexer::{DirectiveLexer, StyleDirectiveLexer};
 
 mod root_comments;
+
+/// Plain modules use the same lexical comment admission as SFC scripts.
+pub(super) fn script_suppressions(source: &str, filename: &str) -> InlineSuppressionState {
+    let tsx = filename.ends_with(".tsx");
+    let mut lexer = DirectiveLexer::new(tsx || filename.ends_with(".jsx"), tsx);
+    let mut state = InlineSuppressionState::default();
+    let mut offset = 0;
+    for (line_number, raw_line) in (1u32..).zip(source.split_inclusive('\n')) {
+        let line = raw_line.trim_end_matches(['\r', '\n']);
+        let markers = lexer.scan_line(line, source.get(offset..).unwrap_or_default());
+        if let Some(directive) = markers
+            .eslint
+            .and_then(|index| line.get(index..))
+            .and_then(parse_script_disable_comment)
+        {
+            state.record(directive, line_number);
+        }
+        offset += raw_line.len();
+    }
+    state
+}
 
 #[derive(Clone, Copy)]
 enum BlockDomain<'a> {
@@ -272,12 +294,19 @@ impl BlockDirectiveState {
         let Some(index) = index else {
             return;
         };
-        let Some(directive) = line.get(index..).and_then(parse_eslint_disable_comment) else {
+        let parser = if self.script {
+            parse_script_disable_comment
+        } else {
+            parse_eslint_disable_comment
+        };
+        let Some(directive) = line.get(index..).and_then(parser) else {
             return;
         };
         let text = line.get(index..).unwrap_or_default();
         let text = text.split_once("*/").map_or(text, |(comment, _)| comment);
-        let marker = Some((
+        // Vize aliases suppress script findings without joining the existing
+        // ESLint/Oxlint unused-directive reporting contract.
+        let marker = (!text.starts_with("vize-")).then_some((
             line_start + index as u32,
             line_start + index as u32 + text.trim_end().len() as u32,
         ));
@@ -338,7 +367,11 @@ impl BlockDirectiveState {
 }
 
 fn has_directive_marker(source: &str) -> bool {
-    source.contains("eslint-") || source.contains("oxlint-") || source.contains("@vize:")
+    source.contains("eslint-")
+        || source.contains("oxlint-")
+        || source.contains("vize-disable")
+        || source.contains("vize-enable")
+        || source.contains("@vize:")
 }
 
 fn range_contains(range: &DisabledRange, line: u32) -> bool {

@@ -36,6 +36,16 @@ CLI opt-in flags remain available for direct `vize lint` invocation, and
 configured lint settings. An absent warning limit permits warnings; `0` fails
 when any warning remains. Negative limits are invalid.
 
+In standalone JavaScript/TypeScript files and SFC script blocks, use
+`// vize-disable-next-line script/rule-name`, an end-of-line
+`// vize-disable-line script/rule-name`, or a `/* vize-disable script/rule-name */`
+region followed by `/* vize-enable script/rule-name */`. Omit the rule list to
+control all rules, or separate rule names with commas. These aliases let Vize
+script rules coexist with Oxlint's unused-disable checks. Marker text inside
+strings, template literals, and regular expressions does not suppress findings.
+Template comments retain the `eslint-` / `oxlint-` grammar described below;
+existing CSS `vize-disable` comments keep their style-block behavior.
+
 Vite+ lint tasks accept paths and `--fix`. Put native-only flags in `lint.vue`
 instead of passing them through to Oxlint. For example, `vp run lint -- src`
 runs both linters with their own configuration.
