@@ -56,6 +56,7 @@ fn semantic_summary_collects_core_croquis_counts() {
     croquis.scopes.enter_event_handler_scope(
         EventHandlerScopeData {
             event_name: CompactString::new("click"),
+            event_name_is_dynamic: false,
             has_implicit_event: true,
             param_names: smallvec![],
             handler_expression: Some(CompactString::new("onClick($event)")),
