@@ -1,5 +1,6 @@
 use super::*;
 
+mod open_component_event_contracts;
 mod pattern_listener_contracts;
 
 const COMPONENT_COUNT: usize = 160;
