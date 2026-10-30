@@ -20,6 +20,7 @@ DEPTHS = (128, 512, 1100, 2048, 4094)
 STACKS = tuple(256 * 1024 * 2**power for power in range(10))
 TIMEOUT_SECONDS = 30
 OUTPUT_LIMIT_BYTES = 512 * 1024 * 1024
+RSS_LIMIT_BYTES = 2 * 1024 * 1024 * 1024
 
 
 def sha256(path):
@@ -100,42 +101,71 @@ def check_response(path, shape, depth):
     return text_hash
 
 
-def child_limits():
+def child_limits(timeout_seconds):
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
     resource.setrlimit(resource.RLIMIT_FSIZE, (OUTPUT_LIMIT_BYTES, OUTPUT_LIMIT_BYTES))
-    resource.setrlimit(resource.RLIMIT_CPU, (TIMEOUT_SECONDS, TIMEOUT_SECONDS + 1))
+    resource.setrlimit(resource.RLIMIT_CPU, (timeout_seconds, timeout_seconds + 1))
 
 
-def trial(binary, directory, shape, depth, stack):
+def process_tree_rss(pid):
+    pending = [pid]
+    total = 0
+    while pending:
+        current = pending.pop()
+        try:
+            process = Path(f"/proc/{current}")
+            total += int((process / "statm").read_text().split()[1]) * os.sysconf("SC_PAGE_SIZE")
+            pending.extend(
+                int(child) for child in (process / f"task/{current}/children").read_text().split()
+            )
+        except (FileNotFoundError, ProcessLookupError):
+            pass
+    return total
+
+
+def trial(binary, directory, shape, depth, stack, timeout_seconds=TIMEOUT_SECONDS):
     directory.mkdir(parents=True)
     wire = frames(witness(shape, depth))
     (directory / "stdin.wire").write_bytes(wire)
     started = time.monotonic()
     timed_out = False
-    with (directory / "stdout.wire").open("wb") as stdout, (
-        directory / "stderr.txt"
-    ).open("wb") as stderr:
+    rss_limit_exceeded = False
+    peak_rss = 0
+    with (directory / "stdin.wire").open("rb") as stdin, (
+        directory / "stdout.wire"
+    ).open("wb") as stdout, (directory / "stderr.txt").open("wb") as stderr:
         child = subprocess.Popen(
             ["/usr/bin/time", "-v", "-o", str(directory / "resources.txt"), str(binary), "content-mapper"],
-            stdin=subprocess.PIPE,
+            stdin=stdin,
             stdout=stdout,
             stderr=stderr,
             env={**os.environ, "RUST_MIN_STACK": str(stack)},
             start_new_session=True,
-            preexec_fn=child_limits,
+            preexec_fn=lambda: child_limits(timeout_seconds),
         )
-        try:
-            child.communicate(wire, timeout=TIMEOUT_SECONDS)
-        except subprocess.TimeoutExpired:
-            timed_out = True
-            os.killpg(child.pid, signal.SIGKILL)
-            child.communicate()
+        while child.poll() is None:
+            peak_rss = max(peak_rss, process_tree_rss(child.pid))
+            timed_out = time.monotonic() - started >= timeout_seconds
+            rss_limit_exceeded = peak_rss > RSS_LIMIT_BYTES
+            if timed_out or rss_limit_exceeded:
+                try:
+                    os.killpg(child.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                break
+            time.sleep(0.05)
+        child.wait()
     result = {
         "shape": shape,
         "depth": depth,
         "inheritedMinStackBytes": stack,
         "returncode": child.returncode,
         "timedOut": timed_out,
+        "timeoutSeconds": timeout_seconds,
+        "rssLimitExceeded": rss_limit_exceeded,
+        "peakProcessTreeRssBytes": peak_rss,
+        "stackOverflow": b"stack overflow" in (directory / "stderr.txt").read_bytes(),
+        "stdinTransport": "file",
         "wallSeconds": time.monotonic() - started,
         "stdinSha256": sha256(directory / "stdin.wire"),
         "stdoutSha256": sha256(directory / "stdout.wire"),
@@ -161,6 +191,7 @@ def main():
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--source-sha", required=True)
     parser.add_argument("--profile", choices=("ci", "ci-opt"), required=True)
+    parser.add_argument("--remaining-v-slot-only", action="store_true")
     args = parser.parse_args()
     binary = args.binary.resolve(strict=True)
     out = args.out.resolve()
@@ -173,9 +204,28 @@ def main():
         "candidateInheritedStacks": STACKS,
         "timeoutSeconds": TIMEOUT_SECONDS,
         "perFileOutputLimitBytes": OUTPUT_LIMIT_BYTES,
+        "processTreeRssLimitBytes": RSS_LIMIT_BYTES,
+        "remainingVSlotOnly": args.remaining_v_slot_only,
         "trials": [],
     }
     try:
+        if args.remaining_v_slot_only:
+            assert args.profile == "ci-opt", "focused follow-up uses the optimized source binary"
+            accepted = []
+            for stack in (32 * 1024**2, 64 * 1024**2, 128 * 1024**2):
+                result = trial(binary, out / f"v-slot-4094-{stack}", "v-slot", 4094, stack, 90)
+                report["trials"].append(result)
+                assert not result["rssLimitExceeded"], "bounded RSS limit reached; stop the probe"
+                if result["accepted"]:
+                    if accepted:
+                        assert result["stdoutSha256"] == accepted[0]["stdoutSha256"], "stack changed complete response"
+                    accepted.append(result)
+                elif not result["timedOut"]:
+                    assert result["stackOverflow"], "non-stack failure is not a stack-budget observation"
+            assert len(accepted) >= 2, "require complete output plus an independent larger-stack control"
+            report["confirmedInheritedStacks"] = [trial["inheritedMinStackBytes"] for trial in accepted]
+            report["complete"] = True
+            return
         for shape in ("v-for", "v-slot"):
             candidate = 0
             for depth in DEPTHS:
@@ -186,7 +236,9 @@ def main():
                     if result["accepted"]:
                         break
                     assert not result["timedOut"], "timeout is not a stack-budget observation"
+                    assert not result["rssLimitExceeded"], "bounded RSS limit reached; stop the probe"
                     assert result["returncode"] != 0, "semantic refusal is not a stack-budget observation"
+                    assert result["stackOverflow"], "non-stack failure is not a stack-budget observation"
                     candidate += 1
                 assert candidate < len(STACKS), (shape, depth, "no candidate stack completed")
                 control_stack = STACKS[min(candidate + 1, len(STACKS) - 1)]

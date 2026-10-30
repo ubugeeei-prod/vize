@@ -5,7 +5,7 @@ use std::io::{self, BufRead, Write};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::Path;
 use std::sync::mpsc::{self, Receiver, Sender};
-use std::sync::{Arc, Condvar, Mutex, PoisonError};
+use std::sync::{Condvar, Mutex, PoisonError};
 use std::thread;
 
 use serde::Serialize;
@@ -76,27 +76,25 @@ impl WriteProgress {
 }
 
 pub(super) fn serve<R: BufRead, W: Write + Send>(reader: &mut R, writer: &mut W) -> io::Result<()> {
-    let write_error = Arc::new(Mutex::new(None::<String>));
-    let recorded = Arc::clone(&write_error);
+    let write_error = Mutex::new(None::<io::Error>);
+    let progress = WriteProgress::new();
+    let (job_tx, job_rx) = mpsc::channel::<TransformJob>();
+    let job_rx = Mutex::new(job_rx);
+    let (done_tx, done_rx) = mpsc::channel::<(u64, Vec<u8>)>();
     let read_result = thread::scope(|scope| {
-        let (job_tx, job_rx) = mpsc::channel::<TransformJob>();
-        let job_rx = Arc::new(Mutex::new(job_rx));
-        let (done_tx, done_rx) = mpsc::channel::<(u64, Vec<u8>)>();
-        let writer_error = Arc::clone(&write_error);
-        let progress = Arc::new(WriteProgress::new());
-        let writer_progress = Arc::clone(&progress);
+        let writer_error = &write_error;
+        let writer_progress = &progress;
         scope.spawn(move || {
-            if let Err(error) = write_ordered(writer, done_rx, &writer_progress) {
+            if let Err(error) = write_ordered(writer, done_rx, writer_progress) {
                 writer_progress.fail();
-                *writer_error.lock().unwrap_or_else(PoisonError::into_inner) =
-                    Some(error.to_string());
+                *writer_error.lock().unwrap_or_else(PoisonError::into_inner) = Some(error);
             }
         });
         let workers = thread::available_parallelism()
             .map(std::num::NonZero::get)
             .unwrap_or(1);
         for _ in 0..workers {
-            let jobs = Arc::clone(&job_rx);
+            let jobs = &job_rx;
             let done = done_tx.clone();
             scope.spawn(move || worker(jobs, done));
         }
@@ -105,17 +103,17 @@ pub(super) fn serve<R: BufRead, W: Write + Send>(reader: &mut R, writer: &mut W)
         drop(done_tx);
         read
     });
-    if let Some(error) = recorded
+    if let Some(error) = write_error
         .lock()
         .unwrap_or_else(PoisonError::into_inner)
         .take()
     {
-        return Err(io::Error::other(error));
+        return Err(error);
     }
     read_result
 }
 
-fn worker(jobs: Arc<Mutex<Receiver<TransformJob>>>, done: Sender<(u64, Vec<u8>)>) {
+fn worker(jobs: &Mutex<Receiver<TransformJob>>, done: Sender<(u64, Vec<u8>)>) {
     loop {
         let job = {
             let receiver = jobs.lock().unwrap_or_else(PoisonError::into_inner);
@@ -125,7 +123,7 @@ fn worker(jobs: Arc<Mutex<Receiver<TransformJob>>>, done: Sender<(u64, Vec<u8>)>
         let seq = job.seq;
         let bytes = match catch_unwind(AssertUnwindSafe(|| transform_frame(&job))) {
             Ok(Ok(bytes)) => bytes,
-            Ok(Err(error)) => encode_error(&job.id, -32603, &error.to_string()).unwrap_or_default(),
+            Ok(Err(error)) => encode_error(&job.id, -32603, &cstr!("{error}")).unwrap_or_default(),
             Err(_) => encode_error(&job.id, -32603, "Transform failed").unwrap_or_default(),
         };
         if done.send((seq, bytes)).is_err() {
@@ -212,11 +210,11 @@ fn reply(done: &Sender<(u64, Vec<u8>)>, seq: &mut u64, frame: &[u8]) -> io::Resu
 }
 
 fn initialize(id: Value, params: Value, initialized: &mut bool) -> io::Result<Vec<u8>> {
-    let params = serde_json::from_value::<InitializeParams>(params)
-        .map_err(|error| io::Error::other(cstr!("Invalid initialize params: {error}").to_string()));
-    let params = match params {
+    let params = match serde_json::from_value::<InitializeParams>(params) {
         Ok(params) => params,
-        Err(error) => return encode_error(&id, -32602, &error.to_string()),
+        Err(error) => {
+            return encode_error(&id, -32602, &cstr!("Invalid initialize params: {error}"));
+        }
     };
     if !params
         .position_encodings
