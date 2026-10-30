@@ -29,7 +29,12 @@ function assertAuthenticatedBaseComparison(source: string): void {
 function assertConstructorPacketCustody(source: string): void {
   const start = source.indexOf("  unchanged-projection-packets:");
   assert.ok(start >= 0);
-  const job = source.slice(start).replace(/\\\r?\n\s*/gu, " ");
+  const job = source
+    .slice(start)
+    .split(/\r?\n/gu)
+    .filter((line) => !line.trimStart().startsWith("#"))
+    .join("\n")
+    .replace(/\\\r?\n\s*/gu, " ");
   const comparisons = [...job.matchAll(/\bcmp\s+([^;\n]+)/gu)].map((match) => match[1].trim());
   assert.deepEqual(comparisons, ['"$observer" "$baseline/$observer"']);
   assert.match(job, /constructor-projection-parity\.ts/u);
@@ -68,6 +73,7 @@ test("constructor packet custody delegates certified changes to complete parity"
     "utf8",
   );
   assertConstructorPacketCustody(source);
+  assertConstructorPacketCustody(`${source}\n  # cmp only describes the observer\n`);
   assert.throws(
     () =>
       assertConstructorPacketCustody(

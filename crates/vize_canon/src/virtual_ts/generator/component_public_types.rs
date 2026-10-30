@@ -70,15 +70,12 @@ pub(super) fn emit_slots_type(
             // `defineSlots<Slots>()`. Export that binding instead of declaring
             // a second `Slots` alias in the same type namespace.
             ts! { &mut *ts => export type { Slots }; }
-        } else if is_generic {
-            // Call sites instantiate `$Slots<...>`. The re-export does not bind
-            // `Slots` locally, and nothing in this module names it bare.
-            ts! { &mut *ts => export type { $Slots as Slots }; }
         } else {
-            // `export type { $Slots as Slots }` does not bind `Slots` in this
-            // module. The component contract writes `Partial<Slots>` so an
-            // unknown slot names the public alias (#10902) without TS2304 (#11137).
-            ts! { &mut *ts => export type Slots = $Slots; }
+            // Re-export without introducing a module-local `Slots` binding.
+            // The component marker consumes `$Slots` directly, so an unrelated
+            // authored alias or value-only import named `Slots` cannot collide
+            // with or replace the generated contract.
+            ts! { &mut *ts => export type { $Slots as Slots }; }
         }
     }
     is_generic

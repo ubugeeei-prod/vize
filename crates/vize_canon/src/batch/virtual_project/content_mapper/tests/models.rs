@@ -188,7 +188,7 @@ defineModel("title", { type: String, default: "" });
         result.text
     );
     assert!(
-        result.text.contains("\"update:title\": string;"),
+        result.text.contains("\"update:title\": [value: string];"),
         "runtime constructor model should expose a string update payload:\n{}",
         result.text
     );

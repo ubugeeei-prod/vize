@@ -71,7 +71,7 @@ fn reserved_names_obey_exact_membership_and_group_policy_with_complete_packets()
             .iter()
             .map(|case| case["diagnostics"].as_array().unwrap().len())
             .sum::<usize>(),
-        152
+        153
     );
     assert_eq!(
         cases

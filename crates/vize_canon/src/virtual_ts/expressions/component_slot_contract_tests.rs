@@ -26,16 +26,19 @@ fn define_slots_exports_static_slot_marker_for_parents() {
     assert_eq!(
         output
             .code
-            .matches("readonly __vizeSlots?: Partial<Slots>;")
+            .matches("readonly __vizeSlots?: Partial<$Slots>;")
             .count(),
         1,
         "defineSlots must expose optional parent-provided slots without losing payload types:\n{}",
         output.code
     );
     assert_eq!(
-        output.code.matches("export type Slots = $Slots;").count(),
+        output
+            .code
+            .matches("export type { $Slots as Slots };")
+            .count(),
         1,
-        "Slots must be a unique local alias; a type-only re-export is TS2304 at Partial<Slots>:\n{}",
+        "Slots must be a public re-export without introducing a colliding local binding:\n{}",
         output.code
     );
 }

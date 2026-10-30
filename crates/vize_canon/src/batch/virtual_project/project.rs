@@ -115,6 +115,10 @@ impl VirtualProject {
         Ok(project)
     }
 
+    pub(crate) fn configured_global_template_ref(&self) -> bool {
+        self.configured_global_template_ref
+    }
+
     /// Register a supported file path.
     pub(super) fn rewriter(&self) -> &crate::batch::import_rewriter::ImportRewriter {
         &self.rewriter
