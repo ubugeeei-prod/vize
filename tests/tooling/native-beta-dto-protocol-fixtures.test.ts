@@ -82,6 +82,10 @@ void test("typed producers retain historical bytes and only the exact registered
     current.currentRuntimeRegistration,
     "before-stable-post-shutdown-observation-41099824102",
   );
+  assert.equal(
+    current.currentRouteRegistration,
+    "configured-startup-beta-semantic-route-41108828160",
+  );
   assert(
     custody
       .filter((entry) => entry !== current)
@@ -118,6 +122,7 @@ void test("typed producers retain historical bytes and only the exact registered
 void test("current observer successor requires its exact bounded runtime and actual raw packet authority", () => {
   for (const path of [
     "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
+    "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
     ...["client.bin", "server.bin", "identity.json"].map(
       (name) =>
         "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/" +
@@ -129,6 +134,16 @@ void test("current observer successor requires its exact bounded runtime and act
     assert.throws(() => validate([row], [], { [path]: Buffer.from("changed observation\n") }));
   }
   const helper = "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts";
+  const route = "tests/tooling/support/native-beta-dto/beta-attached-route.ts";
+  assert.throws(() =>
+    validate([row], [], {
+      [route]: Buffer.from(
+        fs
+          .readFileSync(route, "utf8")
+          .replace('assert.equal(context.role, "after")', 'assert.equal(context.role, "before")'),
+      ),
+    }),
+  );
   assert.throws(() =>
     validate([row], [], {
       [helper]: Buffer.from(

@@ -85,9 +85,12 @@ const runtime = (source: Buffer) =>
 // producer identity or equate the distinct root and SDK watcher registrations.
 const watcherSuccessor = {
   id: "before-stable-post-shutdown-observation-41099824102",
-  auditRuntimeSha256: "68bf0df8fb226da2569dd70cad509a31ee38eae79fa4439839b1c93250be77ad",
+  auditRuntimeSha256: "89d2328f6013ec7f7283947d906d9efb08c8ac9a08e8b73f1c85123ffafb9583",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
   helperRuntimeSha256: "2eb567c30f1d0a6710036b39763b289bdf2fe25b0517c6326e5538f27f7dcfdd",
+  routeId: "configured-startup-beta-semantic-route-41108828160",
+  routePath: "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
+  routeRuntimeSha256: "c577043a694e0254b9be7b4505cb49531e527431be332c3343b814f3c4d2ae40",
   actualFiles: [
     ["client.bin", "cd11915afee013a728a287098714d5db70e8719867bd596a1c4721ca5a876c13"],
     ["server.bin", "47cc76661e039b28a3e7056d3d2b07d6d4c6da31440166c2e490b76f78079f73"],
@@ -137,6 +140,10 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       require(helper !== null &&
         sha(Buffer.from(runtime(helper))) ===
           watcherSuccessor.helperRuntimeSha256, "missing or changed registered watcher boundary runtime");
+      const route = read("head", watcherSuccessor.routePath);
+      require(route !== null &&
+        sha(Buffer.from(runtime(route))) ===
+          watcherSuccessor.routeRuntimeSha256, "missing or changed registered beta semantic route runtime");
       for (const [name, hash] of watcherSuccessor.actualFiles)
         pinned(
           read,
@@ -154,6 +161,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       currentPath,
       currentSha256: sha(current),
       currentRuntimeRegistration: index === 3 ? watcherSuccessor.id : null,
+      currentRouteRegistration: index === 3 ? watcherSuccessor.routeId : null,
     };
   });
 }

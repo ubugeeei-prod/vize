@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline";
 import { verifyNativeRelations } from "./stable-watcher-boundary.ts";
+import { verifyBetaAttachedRoute } from "./beta-attached-route.ts";
 
 type Registration = {
   id: string;
@@ -371,10 +372,42 @@ assert.equal(
 );
 assert.equal(receipts[0].apiAttached, true, "The explicit owned scope must retain its API wire");
 if (provider.version === "7.1.0-beta") {
-  assert(
-    receipts.slice(1).some((receipt) => !receipt.apiAttached),
-    "The beta attached-editor route must retain an LSP-only native owner",
-  );
+  if (source.role === "before")
+    assert(
+      receipts.slice(1).some((receipt) => !receipt.apiAttached),
+      "The beta attached-editor route must retain an LSP-only native owner",
+    );
+  else
+    save(
+      "beta-attached-semantic-route.json",
+      verifyBetaAttachedRoute(
+        receipts.slice(1).map((receipt) => {
+          const lspClient = receipt.streams.find((stream) => stream.fd === 0)!.client!;
+          const lspServer = receipt.streams.find((stream) => stream.fd === 1)!.server!;
+          const api = receipt.streams.find(
+            (stream) => stream.fd >= 3 && stream.client && stream.server,
+          );
+          return {
+            nativeOwner: receipt.nativeOwner,
+            client: lspClient.packets,
+            server: lspServer.packets,
+            apiClient: api?.client?.packets ?? [],
+            apiServer: api?.server?.packets ?? [],
+          };
+        }),
+        {
+          source: source.source,
+          role: source.role,
+          sdkVersion: provider.version,
+          sdkSha256: provider.executableSha256,
+          sdkExecutable: provider.executable,
+          projectRoots: [source.root, source.attached.root],
+        },
+        process.env.VIZE_NATIVE_DTO_SOURCE_SHA!,
+        source.attached.root,
+        source.attached.rows,
+      ),
+    );
 }
 save("stable-watcher-post-shutdown-observation.json", {
   source: source.source,
