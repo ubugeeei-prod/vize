@@ -66,7 +66,9 @@ pub(crate) fn check_pack_with_capture_policy(
     assert_eq!(
         pack.source_revision,
         match name {
-            "aria-kebab-prop-11048" | "component-tag-aliases-11020" => regression,
+            "aria-kebab-prop-11048"
+            | "aria-propertykey-capture-11153"
+            | "component-tag-aliases-11020" => regression,
             "content-mapper-template-callback-listener-11023" => regression,
             "content-mapper-vue-generic-11051" => regression,
             "unknown-component-slot-payload-11027" => regression,

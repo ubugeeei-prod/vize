@@ -283,6 +283,288 @@
       }
     },
     {
+      "id": "typechecker/aria-propertykey-capture-11153/reported-alias",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-propertykey-capture-11153",
+      "case": "reported-alias",
+      "test": "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
+      "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "packReference": {
+        "path": "aria-propertykey-capture-11153/cases.json",
+        "sha256": "74ea52977bba0c9ebf183f5b7af752197e7467f239088b041c56b84c240ad067"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-propertykey-capture-11153/tsconfig.json.txt",
+          "sha256": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "aria-propertykey-capture-11153/Reported.vue.txt",
+          "sha256": "02f19182f0867674f4944ef65f4a1c068da2d946465b1fb05c9c03d979302c14"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/aria-propertykey-capture-11153/reported-control",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-propertykey-capture-11153",
+      "case": "reported-control",
+      "test": "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
+      "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "packReference": {
+        "path": "aria-propertykey-capture-11153/cases.json",
+        "sha256": "74ea52977bba0c9ebf183f5b7af752197e7467f239088b041c56b84c240ad067"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-propertykey-capture-11153/tsconfig.json.txt",
+          "sha256": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "aria-propertykey-capture-11153/Control.vue.txt",
+          "sha256": "132ca3d4f2483630520ade2c3c5b717891dfd5bba6466a84765a6f26e7f16cf3"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/aria-propertykey-capture-11153/alias-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-propertykey-capture-11153",
+      "case": "alias-valid",
+      "test": "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
+      "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "packReference": {
+        "path": "aria-propertykey-capture-11153/cases.json",
+        "sha256": "74ea52977bba0c9ebf183f5b7af752197e7467f239088b041c56b84c240ad067"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-propertykey-capture-11153/tsconfig.json.txt",
+          "sha256": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "aria-propertykey-capture-11153/AliasValid.vue.txt",
+          "sha256": "668dc66f234c3f7c75df3699015c876d90530c024111e9f221861baf519190f3"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/aria-propertykey-capture-11153/alias-invalid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-propertykey-capture-11153",
+      "case": "alias-invalid",
+      "test": "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
+      "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "packReference": {
+        "path": "aria-propertykey-capture-11153/cases.json",
+        "sha256": "74ea52977bba0c9ebf183f5b7af752197e7467f239088b041c56b84c240ad067"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-propertykey-capture-11153/tsconfig.json.txt",
+          "sha256": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "aria-propertykey-capture-11153/AliasInvalid.vue.txt",
+          "sha256": "7c23c4cba829ae78e08d3c29042f351ab3acca15572ee9a1b456bb09ad1a639f"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/aria-propertykey-capture-11153/control-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-propertykey-capture-11153",
+      "case": "control-valid",
+      "test": "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
+      "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "packReference": {
+        "path": "aria-propertykey-capture-11153/cases.json",
+        "sha256": "74ea52977bba0c9ebf183f5b7af752197e7467f239088b041c56b84c240ad067"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-propertykey-capture-11153/tsconfig.json.txt",
+          "sha256": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "aria-propertykey-capture-11153/ControlValid.vue.txt",
+          "sha256": "9dfeedafc8dc5ef967a284396b8784f963cea937b10f444b964bd6373a90f3b3"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/aria-propertykey-capture-11153/control-invalid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-propertykey-capture-11153",
+      "case": "control-invalid",
+      "test": "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
+      "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "packReference": {
+        "path": "aria-propertykey-capture-11153/cases.json",
+        "sha256": "74ea52977bba0c9ebf183f5b7af752197e7467f239088b041c56b84c240ad067"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-propertykey-capture-11153/tsconfig.json.txt",
+          "sha256": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "aria-propertykey-capture-11153/ControlInvalid.vue.txt",
+          "sha256": "862c9396f98a0710dc271b7aa077dffaa0f3024ba43878d1055adeac39d520ef"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/art-variant-implicit-component-9854/implicit-and-explicit-props",
       "state": "active",
       "targets": [

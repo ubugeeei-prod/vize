@@ -14,6 +14,7 @@ mod support {
     pub(crate) mod fix_history_zero_argument;
 }
 mod aria_kebab_prop_11048;
+mod aria_propertykey_capture_11153;
 mod content_mapper_template_callback_listener_11023;
 mod content_mapper_vue_generic_11051;
 mod fix_history_cases;
