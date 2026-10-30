@@ -109,7 +109,15 @@ test("async ancestry workflow wires the bounded selector into its historical pro
   );
   assert.match(workflow, /merged_squash = "deda174ca6da0fc54a4f7483acbd3f71c382095c"/);
   assert.match(workflow, /\["git", "merge-base", "--is-ancestor", merged_squash, head\]/);
-  assert.match(workflow, /parent, spec\["feature"\], spec\["feature"\], "--", "crates", "davinci"/);
+  assert.match(
+    workflow,
+    /parent, spec\["feature"\], landed_feature, landed_merge, head,\s+"--", "crates", "davinci"/,
+  );
+  assert.match(workflow, /delta\["historicalParent"\] == parent/);
+  assert.match(workflow, /delta\["historicalFeature"\] == spec\["feature"\]/);
+  assert.match(workflow, /delta\["landedFeature"\] == landed_feature/);
+  assert.match(workflow, /delta\["landedMerge"\] == landed_merge/);
+  assert.match(workflow, /delta\["head"\] == head/);
   assert.match(workflow, /"featureDelta": delta/);
   assert.match(workflow, /\["git", "worktree", "add", "--detach"/);
   assert.match(workflow, /cwd=worktree/);
