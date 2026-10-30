@@ -17,7 +17,7 @@ fn assert_static(body: &str, expected: &str) {
     assert_eq!(
         generated.matches(&literal).count(),
         1,
-        "missing {expected:?}\n{generated}"
+        "missing unique {expected:?}\n{generated}"
     );
     assert_eq!(generated.matches("reserve_ts").count(), 1, "{generated}");
     assert_eq!(
@@ -25,7 +25,7 @@ fn assert_static(body: &str, expected: &str) {
             .matches(&format!("__len : usize = {}", expected.len()))
             .count(),
         1,
-        "reserve length is not {}\n{generated}",
+        "reserve length is not uniquely {}\n{generated}",
         expected.len()
     );
     assert_eq!(generated.matches("format !").count(), 0, "{generated}");

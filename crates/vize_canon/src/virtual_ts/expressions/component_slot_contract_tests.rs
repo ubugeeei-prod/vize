@@ -32,9 +32,10 @@ fn define_slots_exports_static_slot_marker_for_parents() {
         "defineSlots must expose optional parent-provided slots without losing payload types:\n{}",
         output.code
     );
-    assert!(
-        output.code.contains("export type Slots = $Slots;"),
-        "Slots must be a local alias; a type-only re-export is TS2304 at Partial<Slots>:\n{}",
+    assert_eq!(
+        output.code.matches("export type Slots = $Slots;").count(),
+        1,
+        "Slots must be a unique local alias; a type-only re-export is TS2304 at Partial<Slots>:\n{}",
         output.code
     );
 }

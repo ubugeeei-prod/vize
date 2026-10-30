@@ -486,8 +486,15 @@ fn expect_interval_leaves_a_later_sibling_interpolation_visible() {
     let copies = text.match_indices("state.missing").collect::<Vec<_>>();
     assert_eq!(directives.unused_expect_directive_diagnostics.len(), 1);
     assert!(
-        start <= owner && owner < end && text[owner..end].contains("(field: number) => !!field"),
+        start <= owner && owner < end,
         "{start}..{end} misses {owner}"
+    );
+    assert_eq!(
+        text[owner..end]
+            .matches("(field: number) => !!field")
+            .count(),
+        1,
+        "{start}..{end} does not own the prop callback"
     );
     assert!(!copies.is_empty(), "sibling was not generated");
     assert!(
