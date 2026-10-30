@@ -485,7 +485,14 @@ export type $HasFallthroughProps<C> = $IsGeneratedComponent<C> extends true ? C 
 export type $FallthroughProps<C> = $HasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $IsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
 export type $RequiredFallthroughProps<C, __F = $FallthroughProps<C>, __K = $RequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
 type $ComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
-type $PublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};
+type $CtorArgLists<C> = C extends { new (...args: infer A1): any; new (...args: infer A2): any; new (...args: infer A3): any; new (...args: infer A4): any; new (...args: infer A5): any; new (...args: infer A6): any; new (...args: infer A7): any; new (...args: infer A8): any } ? [A1, A2, A3, A4, A5, A6, A7, A8] : [C extends abstract new (...args: infer A) => any ? A : []];
+type $CtorFirstProps<A> = A extends readonly [infer P, ...any[]] ? P extends object ? P : never : never;
+type $CtorProps<C, __L extends readonly any[] = $CtorArgLists<C>> = $CtorFirstProps<__L[0]> | $CtorFirstProps<__L[1]> | $CtorFirstProps<__L[2]> | $CtorFirstProps<__L[3]> | $CtorFirstProps<__L[4]> | $CtorFirstProps<__L[5]> | $CtorFirstProps<__L[6]> | $CtorFirstProps<__L[7]>;
+type $UniformCtorArgs<C, __L extends readonly any[] = $CtorArgLists<C>> = __L[number] extends __L[0] ? __L[0] extends __L[number] ? true : false : false;
+type $LastCtorArgs<C> = C extends abstract new (...args: infer A) => any ? A : [];
+type $LastCtorArgsEmpty<C> = $LastCtorArgs<C> extends readonly [] ? true : false;
+type $InstancePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};
+type $PublicProps<C> = $UniformCtorArgs<C> extends true ? $InstancePublicProps<C> : $LastCtorArgsEmpty<C> extends true ? ([$CtorProps<C>] extends [never] ? $InstancePublicProps<C> : $CtorProps<C>) : $InstancePublicProps<C>;
 type $InstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? $PublicProps<C> : __P : $PublicProps<C>;
 type $StaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? $IsAny<__P> extends true ? $PublicProps<C> : __P : $PublicProps<C>;
 type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? false : true : false : false;

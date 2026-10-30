@@ -173,11 +173,35 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
         );
     }
     ts.push_str("  type $ComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;\n");
-    // Abstract component constructors carry the same instance props as concrete
-    // constructors. Only an authored `any` instance has no prop contract; keep
-    // typed instances closed rather than opening every constructor's attrs.
+    // A uniform construct signature keeps the instance `$props`. That includes
+    // Vue's `defineComponent` and a zero-argument constructor whose public
+    // props live on the instance. Several signatures whose last overload takes
+    // no arguments would otherwise check that last instance (#11023):
+    // `new(props: { value: number }): Typed<number>; new(): Typed<string>`
+    // must check `value` as `number`.
     ts.push_str(
-        "  type $PublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};\n",
+        "  type $CtorArgLists<C> = C extends { new (...args: infer A1): any; new (...args: infer A2): any; new (...args: infer A3): any; new (...args: infer A4): any; new (...args: infer A5): any; new (...args: infer A6): any; new (...args: infer A7): any; new (...args: infer A8): any } ? [A1, A2, A3, A4, A5, A6, A7, A8] : [C extends abstract new (...args: infer A) => any ? A : []];\n",
+    );
+    ts.push_str(
+        "  type $CtorFirstProps<A> = A extends readonly [infer P, ...any[]] ? P extends object ? P : never : never;\n",
+    );
+    ts.push_str(
+        "  type $CtorProps<C, __L extends readonly any[] = $CtorArgLists<C>> = $CtorFirstProps<__L[0]> | $CtorFirstProps<__L[1]> | $CtorFirstProps<__L[2]> | $CtorFirstProps<__L[3]> | $CtorFirstProps<__L[4]> | $CtorFirstProps<__L[5]> | $CtorFirstProps<__L[6]> | $CtorFirstProps<__L[7]>;\n",
+    );
+    ts.push_str(
+        "  type $UniformCtorArgs<C, __L extends readonly any[] = $CtorArgLists<C>> = __L[number] extends __L[0] ? __L[0] extends __L[number] ? true : false : false;\n",
+    );
+    ts.push_str(
+        "  type $LastCtorArgs<C> = C extends abstract new (...args: infer A) => any ? A : [];\n",
+    );
+    ts.push_str(
+        "  type $LastCtorArgsEmpty<C> = $LastCtorArgs<C> extends readonly [] ? true : false;\n",
+    );
+    ts.push_str(
+        "  type $InstancePublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};\n",
+    );
+    ts.push_str(
+        "  type $PublicProps<C> = $UniformCtorArgs<C> extends true ? $InstancePublicProps<C> : $LastCtorArgsEmpty<C> extends true ? ([$CtorProps<C>] extends [never] ? $InstancePublicProps<C> : $CtorProps<C>) : $InstancePublicProps<C>;\n",
     );
     ts.push_str(
         "  type $InstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? $PublicProps<C> : __P : $PublicProps<C>;\n",

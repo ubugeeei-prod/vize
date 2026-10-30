@@ -242,8 +242,10 @@ fn abstract_component_constructor_extracts_its_actual_instance_props() {
         true,
     );
     assert_eq!(
-        code.matches("type $PublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {}")
-            .count(),
+        code.matches(
+            "type $PublicProps<C> = $UniformCtorArgs<C> extends true ? $InstancePublicProps<C>"
+        )
+        .count(),
         1,
         "{code}"
     );
