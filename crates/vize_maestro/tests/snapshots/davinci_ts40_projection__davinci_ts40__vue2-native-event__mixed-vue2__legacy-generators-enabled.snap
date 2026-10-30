@@ -1,15 +1,16 @@
 ---
 source: crates/vize_maestro/tests/davinci_ts40_projection.rs
+assertion_line: 47
 expression: record.render()
 ---
 fixture=vue2-native-event
 source-sha256=2b2f3214a7683c004e02b705721aa82bfb50a333a21cbf74e35443d1c9d3a47f
 [canon]
 status=ok:legacy-feature-projection
-text=11539:d11da96aa8336332092a737cbda4cbd2b4111fe1e6f0ec09a3b2d586a67bc9ea
-pre-rewrite-text=11539:d11da96aa8336332092a737cbda4cbd2b4111fe1e6f0ec09a3b2d586a67bc9ea
+text=11544:f27c02e9f79ece593e6d0305596244f046e2aff5a6f794f383c44e4e2b813876
+pre-rewrite-text=11544:f27c02e9f79ece593e6d0305596244f046e2aff5a6f794f383c44e4e2b813876
 import-source-map=0:8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42
-import-source-map-probes=23080:b7bc847dac1984a1aa8b02abd8d33640b39c4caba2bd5e7a24c52c2d93bed652
+import-source-map-probes=23090:a76b2c871d3296da16540a9f1a408467235dcffb90636c227325af53dfd7e5a7
 mappings=7:719c3fbbb7bdc0b039dcbcb6aa7f7804e481411cf2e0578ee95ddc7213937ba2
 semantic-links=1:a16513b9682ee285d84f9c65cd5c2cf09419a2192fcfe737a902d5019d61cda0
 diagnostics=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
@@ -17,7 +18,7 @@ authored-hits=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 authored-hit-anchors=[]
 [content-mapper]
 status=ok:vue3-fixed-production
-text=18428:4069fad7b5ef217c5762dba0dc51fb1837adaf938fd2cd6d220925ead4ec2fe8
+text=18433:6b21475e41a69edb98e498dd52012e21a08e8a8858265aac5270214a00205ab4
 pre-rewrite-text=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 import-source-map=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 import-source-map-probes=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
@@ -28,7 +29,7 @@ authored-hits=5:2e9d51ce540cdfc7d9e372db58be0b5f709ce56b435766f3157b57b38ef25a1a
 authored-hit-anchors=["message", "input"]
 [maestro]
 status=ok:legacy-feature-projection
-text=17861:0a05abd8c7ac382909fc07a6b2f6a72705ea523a2267fa078deb68ae29cb8a1a
+text=17866:fe43d66b7818f8b0349315594f37cc4cd4f64dd065819b75000cdf44925ad301
 pre-rewrite-text=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 import-source-map=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 import-source-map-probes=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
