@@ -75,7 +75,7 @@ function assertDisplaySuccessor(prior: Packet, current: Packet): void {
       const identity = `${witness.file}:${index}`;
       assert.equal(changed.has(identity), false, "one display change per diagnostic");
       changed.add(identity);
-      const before = file.diagnostics[index];
+      const before: string = file.diagnostics[index];
       const at = before.indexOf(receipt.display.before);
       assert.notEqual(at, -1, "the exact old type display is present");
       assert.equal(before.indexOf(receipt.display.before, at + 1), -1);
