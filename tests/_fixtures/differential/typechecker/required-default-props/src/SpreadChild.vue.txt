@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { shared } from './shared'
+
+defineProps({
+  ...shared,
+  title: { type: String, required: true },
+})
+</script>
+
+<template>
+  <span :title="title">{{ label.toUpperCase() }} {{ flag }}</span>
+</template>

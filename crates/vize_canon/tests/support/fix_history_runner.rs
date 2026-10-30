@@ -138,7 +138,8 @@ pub(crate) fn check_pack(
             | "empty-v-slot-expression"
             | "public-instance-ts-directives-10984"
             | "zero-argument-slot-constructor-11013"
-            | "event-inference-callback-10739" => regression,
+            | "event-inference-callback-10739"
+            | "required-default-props" => regression,
             "valueless-directive-import-3140" => {
                 "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
             }
@@ -166,6 +167,7 @@ pub(crate) fn check_pack(
             "options-api-any-instance"
                 | "options-api-reserved-component-reference"
                 | "setup-custom-properties"
+                | "required-default-props"
                 | "jsx-prop-token-ranges-10494"
         )
         .then_some(matches!(
@@ -173,6 +175,7 @@ pub(crate) fn check_pack(
             "options-api-any-instance"
                 | "options-api-reserved-component-reference"
                 | "setup-custom-properties"
+                | "required-default-props"
         )),
         "the original explicit checker options must be retained"
     );
@@ -185,6 +188,7 @@ pub(crate) fn check_pack(
             "options-api-any-instance"
                 | "options-api-reserved-component-reference"
                 | "setup-custom-properties"
+                | "required-default-props"
                 | "jsx-prop-token-ranges-10494"
         )
         .then_some(name == "jsx-prop-token-ranges-10494"),

@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import OptionsChild from './OptionsChild.vue'
+import SetupChild from './SetupChild.vue'
+import SpreadChild from './SpreadChild.vue'
+
+const account: { name?: string } = {}
+</script>
+
+<template>
+  <OptionsChild :title="account.name" flag />
+  <OptionsChild title="t" />
+  <SetupChild :title="account.name" flag />
+  <SetupChild title="t" />
+  <SpreadChild :title="account.name" flag />
+  <SpreadChild title="t" />
+</template>

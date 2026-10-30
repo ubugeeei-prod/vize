@@ -181,7 +181,8 @@ export function loadTypecheckerManifest(manifestPath: string) {
       pack.checkerOptions,
       fixture.pack === "options-api-any-instance" ||
         fixture.pack === "options-api-reserved-component-reference" ||
-        fixture.pack === "setup-custom-properties"
+        fixture.pack === "setup-custom-properties" ||
+        fixture.pack === "required-default-props"
         ? { optionsApi: true }
         : fixture.pack === "jsx-prop-token-ranges-10494"
           ? { jsxTypecheck: true }
