@@ -160,7 +160,7 @@ fn safe_to_collapse(prefix: &str) -> bool {
 
 fn safe_prefix(prefix: &str) -> Option<bool> {
     let bytes = prefix.as_bytes();
-    let (mut index, mut quote, mut escaped) = (0usize, None, false);
+    let mut index = 0usize;
     let (mut line_comment, mut block_comment) = (false, false);
     while let Some(&current) = bytes.get(index) {
         let next = index.checked_add(1);
@@ -177,17 +177,6 @@ fn safe_prefix(prefix: &str) -> Option<bool> {
                 index = after;
                 continue;
             }
-        } else if let Some(delimiter) = quote {
-            if matches!(current, b'\n' | b'\r') {
-                return Some(false);
-            }
-            if escaped {
-                escaped = false;
-            } else if current == b'\\' {
-                escaped = true;
-            } else if current == delimiter {
-                quote = None;
-            }
         } else if current == b'/' && next.and_then(|next| bytes.get(next)) == Some(&b'/') {
             line_comment = true;
             index = next.and_then(|next| next.checked_add(1))?;
@@ -196,12 +185,93 @@ fn safe_prefix(prefix: &str) -> Option<bool> {
             block_comment = true;
             index = next.and_then(|next| next.checked_add(1))?;
             continue;
-        } else if matches!(current, b'\'' | b'"' | b'`') {
-            quote = Some(current);
+        } else if matches!(current, b'\'' | b'"') {
+            index = skip_quoted(bytes, index, current)?;
+            continue;
+        } else if current == b'`' {
+            index = skip_template(bytes, index)?;
+            continue;
         }
         index = index.checked_add(1)?;
     }
-    Some(!line_comment && !block_comment && quote.is_none() && !escaped)
+    Some(!line_comment && !block_comment)
+}
+
+fn skip_quoted(bytes: &[u8], mut index: usize, delimiter: u8) -> Option<usize> {
+    index = index.checked_add(1)?;
+    while let Some(&current) = bytes.get(index) {
+        if matches!(current, b'\n' | b'\r') {
+            return None;
+        }
+        if current == b'\\' {
+            index = index.checked_add(2)?;
+        } else if current == delimiter {
+            return index.checked_add(1);
+        } else {
+            index = index.checked_add(1)?;
+        }
+    }
+    None
+}
+
+fn skip_template(bytes: &[u8], mut index: usize) -> Option<usize> {
+    index = index.checked_add(1)?;
+    while let Some(&current) = bytes.get(index) {
+        if matches!(current, b'\n' | b'\r') {
+            return None;
+        }
+        if current == b'\\' {
+            index = index.checked_add(2)?;
+        } else if current == b'`' {
+            return index.checked_add(1);
+        } else if current == b'$' && bytes.get(index.checked_add(1)?) == Some(&b'{') {
+            index = skip_template_expression(bytes, index.checked_add(2)?, 1)?;
+        } else {
+            index = index.checked_add(1)?;
+        }
+    }
+    None
+}
+
+fn skip_template_expression(bytes: &[u8], mut index: usize, mut depth: usize) -> Option<usize> {
+    let (mut line_comment, mut block_comment) = (false, false);
+    while let Some(&current) = bytes.get(index) {
+        let next = index.checked_add(1)?;
+        if line_comment {
+            if matches!(current, b'\n' | b'\r') {
+                return None;
+            }
+        } else if block_comment {
+            if current == b'*' && bytes.get(next) == Some(&b'/') {
+                block_comment = false;
+                index = next.checked_add(1)?;
+                continue;
+            }
+        } else if current == b'/' && bytes.get(next) == Some(&b'/') {
+            line_comment = true;
+            index = next.checked_add(1)?;
+            continue;
+        } else if current == b'/' && bytes.get(next) == Some(&b'*') {
+            block_comment = true;
+            index = next.checked_add(1)?;
+            continue;
+        } else if matches!(current, b'\'' | b'"') {
+            index = skip_quoted(bytes, index, current)?;
+            continue;
+        } else if current == b'`' {
+            index = skip_template(bytes, index)?;
+            continue;
+        } else if current == b'{' {
+            depth = depth.checked_add(1)?;
+        } else if current == b'}' {
+            depth = depth.checked_sub(1)?;
+            if depth == 0 {
+                return index.checked_add(1);
+            }
+        }
+        index = index.checked_add(1)?;
+    }
+    None
 }
 
 fn last_structural_arrow(value: &str, start: usize, end: usize) -> Option<usize> {
