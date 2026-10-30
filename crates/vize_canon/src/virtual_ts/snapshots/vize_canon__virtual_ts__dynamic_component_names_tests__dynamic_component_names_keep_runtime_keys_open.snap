@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/dynamic_component_names_tests.rs
+assertion_line: 72
 expression: output.code
 ---
 /// <reference lib="es2022" />
@@ -164,8 +165,8 @@ function __setup() {
       ? __P extends { onSave?: (...args: infer __A) => any } ? __A : __P extends { onSave?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[]
       : unknown[];
   type __Child_8_save_fallthrough_args = typeof Child extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F }
-    ? $IsAny<__F> extends true ? unknown[] : NonNullable<__F> extends infer __P ? (__P extends { onSave?: (...args: infer __A) => any } ? __A : __P extends { onSave?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[]) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[]
-    : unknown[];
+    ? "__vizeEmitProps" extends keyof { [__K in keyof typeof Child as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? unknown[] : NonNullable<__F> extends infer __P ? (__P extends { onSave?: (...args: infer __A) => any } ? __A : __P extends { onSave?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[]) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[]
+    : unknown[] : unknown[];
   type __Child_0_emit_resolver = $EmitPropsFactory<typeof Child>;
   const __vize_emit_props_0 = (undefined as unknown as __Child_0_emit_resolver)(Child)({
     // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.
@@ -178,7 +179,7 @@ function __setup() {
   type __Child_8_save_emit_args = unknown[] extends __Child_8_save_inferred_emit_args ? __Child_8_save_static_emit_args : __Child_8_save_inferred_emit_args;
   type __Child_8_save_args = unknown[] extends __Child_8_save_inferred_emit_args ? (unknown[] extends __Child_8_save_prop_args ? (unknown[] extends __Child_8_save_emit_args ? __Child_8_save_fallthrough_args : __Child_8_save_emit_args) : __Child_8_save_prop_args) : __Child_8_save_inferred_emit_args;
   type __Child_8_save_event = __Child_8_save_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
-  type __Child_8_save_return_native_fallthrough = typeof Child extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? $IsAny<__F> extends true ? any : NonNullable<__F> extends { onSave?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any;
+  type __Child_8_save_return_native_fallthrough = typeof Child extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? "__vizeEmitProps" extends keyof { [__K in keyof typeof Child as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? any : NonNullable<__F> extends { onSave?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : any;
   type __Child_8_save_return = unknown[] extends __Child_8_save_prop_args ? __Child_8_save_return_native_fallthrough : typeof Child extends { new (...args: any[]): { $props: infer __P } }
     ? (__P extends { onSave?: (...args: any[]) => infer __R } ? __R : any)
     : typeof Child extends (props: infer __P, ...args: any[]) => any
