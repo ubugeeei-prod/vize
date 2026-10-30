@@ -1,6 +1,6 @@
 use super::*;
 use crate::container::{ContainerFormat, Vue};
-use crate::dialect::vue2::surface::{self, TextRefusal};
+use crate::dialect::vue2::surface::TextRefusal;
 use crate::dialect::vue2::text::TextBoundaryKind;
 use crate::embed::syntax::EmbedHole;
 use crate::markup::SurfaceParseOptions;

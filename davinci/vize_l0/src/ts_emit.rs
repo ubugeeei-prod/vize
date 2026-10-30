@@ -325,7 +325,7 @@ fn hex_digit(value: u8) -> u8 {
 
 #[cfg(test)]
 mod tests {
-    use super::TsString;
+    use super::{EmitHole, EmitLen, TsString, i64_len, u64_len};
     use crate::{String, emit_ts, ts};
 
     #[test]
