@@ -10,6 +10,7 @@ mod tests;
 impl ServerState {
     /// Effective project Vue version used by type checking and formatting.
     #[cfg(any(
+        test,
         feature = "native",
         feature = "glyph",
         feature = "experimental-source-navigation"
