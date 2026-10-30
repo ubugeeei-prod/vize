@@ -239,7 +239,7 @@ pub(super) fn prop_alias_type(
             component_aria_prop_keys(fallthrough_prop_name).map(|(raw, _)| raw);
         let resolved = if let Some(raw_prop_name) = raw_aria_prop_name {
             cstr!(
-                "$PropValue<__{component_type_name}_ValueProps_{idx}, '{raw_prop_name}', {normalized}>"
+                "$PropValue<__{component_type_name}_Props_{idx}, '{raw_prop_name}', {normalized}>"
             )
         } else if fallthrough_prop_name == camel_prop_name {
             normalized
@@ -271,9 +271,7 @@ pub(super) fn prop_alias_type(
     // A declared literal key such as `data-owned` is still an owned prop.
     // Try its authored spelling before the normal camelized alias and root.
     let resolved = if let Some(raw_prop_name) = raw_aria_prop_name {
-        cstr!(
-            "$PropValue<__{component_type_name}_ValueProps_{idx}, '{raw_prop_name}', {normalized}>"
-        )
+        cstr!("{prop_value}<__{component_type_name}_Props_{idx}, '{raw_prop_name}', {normalized}>")
     } else if fallthrough_prop_name == camel_prop_name {
         normalized
     } else {

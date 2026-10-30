@@ -324,7 +324,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
         public_dts.contains(
             "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps>, ...args: any[])"
         ) && public_dts.contains(
-            "declare const __vize_component__: {\n    __vizeEmitProps?: $StaticEmitProps;\n    readonly __vizeRawProps?: Props;\n    readonly __vizeSlots?: Partial<Slots>;\n} & $ComponentConstructor & $VueComponentOptions;"
+            "declare const __vize_component__: {\n    __vizeEmitProps?: $StaticEmitProps;\n    readonly __vizeRawProps?: Props;\n    readonly __vizeSlots?: Partial<$Slots>;\n} & $ComponentConstructor & $VueComponentOptions;"
         )
             && !public_dts.contains("$ComponentInputConstructor")
             && !public_dts.contains("$ComponentPublicConstructor"),

@@ -118,10 +118,13 @@ type $SlotConstructor<C> = [$DirectSlotConstructor<C>] extends [never] ? new (pr
 // library constructors with a context tail still run.
 type $SlotConstructorArgumentLists<C> = C extends { new (...args: infer A1): any; new (...args: infer A2): any; new (...args: infer A3): any; new (...args: infer A4): any; new (...args: infer A5): any; new (...args: infer A6): any; new (...args: infer A7): any; new (...args: infer A8): any } ? A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 : C extends new (...args: infer A) => any ? A : [unknown];
 type $SlotConstructorHasArguments<C> = $SlotConstructorArgumentLists<C> extends infer A ? A extends [] ? never : true : never;
-type $SlotConstructorWithoutArguments<C> = [$SlotConstructorHasArguments<C>] extends [never] ? C : new () => { $slots: never };
+type $SlotConstructorWithoutArguments<C> = C extends new () => any ? C : new () => { $slots: never };
 type $SlotConstructorWithArguments<C> = [$SlotConstructorHasArguments<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : C;
 type $SlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any ? { [K in keyof A]: any } : [];
-type $SlotConstructorInstance<C, Z, P> = [$SlotConstructorHasArguments<C>] extends [never] ? Z : P;
+type $SlotContractIsUsable<S> = $IsAny<S> extends true ? false : unknown extends S ? false : [S] extends [never] ? false : true;
+type $SlotContractHasKeys<S> = [keyof S] extends [never] ? false : true;
+type $SlotConstructorFallback<C, Z, P> = $SlotContractIsUsable<$SlotHostSlots<C>> extends true ? { $slots: $SlotHostSlots<C> } : Z extends unknown ? P extends unknown ? { $slots: any } : never : never;
+type $SlotConstructorInstance<C, Z, P> = P extends { $slots: infer S } ? $SlotContractIsUsable<S> extends true ? $SlotContractHasKeys<S> extends true ? P : $SlotConstructorFallback<C, Z, P> : $SlotConstructorFallback<C, Z, P> : $SlotConstructorFallback<C, Z, P>;
 declare function __vizeSlotConstructorInstance<C>(): <Z, P>(withoutArguments: Z, withArguments: P) => $SlotConstructorInstance<C, Z, P>;
 type $SlotHostSelector<C> = [$DirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
 // @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
@@ -158,7 +161,7 @@ function __setup() {
   
   const items = ref(['a', 'b', 'c'])
   
-  // @vize-map: 19148:19194 -> 0:97
+  // @vize-map: 19689:19735 -> 0:97
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -312,7 +315,7 @@ __setup();
 
 export type Emits = {};
 type $Slots = {};
-export type Slots = $Slots;
+export type { $Slots as Slots };
 
 // ========== Default Export ==========
 type $ComponentInstance = {

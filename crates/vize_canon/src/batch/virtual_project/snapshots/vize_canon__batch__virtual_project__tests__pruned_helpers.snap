@@ -123,10 +123,13 @@ declare module "vize:virtual-ts" {
   export type $SlotConstructor<C> = [$DirectSlotConstructor<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : $DirectSlotConstructor<C>;
   type $SlotConstructorArgumentLists<C> = C extends { new (...args: infer A1): any; new (...args: infer A2): any; new (...args: infer A3): any; new (...args: infer A4): any; new (...args: infer A5): any; new (...args: infer A6): any; new (...args: infer A7): any; new (...args: infer A8): any } ? A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 : C extends new (...args: infer A) => any ? A : [unknown];
   type $SlotConstructorHasArguments<C> = $SlotConstructorArgumentLists<C> extends infer A ? A extends [] ? never : true : never;
-  export type $SlotConstructorWithoutArguments<C> = [$SlotConstructorHasArguments<C>] extends [never] ? C : new () => { $slots: never };
+  export type $SlotConstructorWithoutArguments<C> = C extends new () => any ? C : new () => { $slots: never };
   export type $SlotConstructorWithArguments<C> = [$SlotConstructorHasArguments<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : C;
   export type $SlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any ? { [K in keyof A]: any } : [];
-  export type $SlotConstructorInstance<C, Z, P> = [$SlotConstructorHasArguments<C>] extends [never] ? Z : P;
+  type $SlotContractIsUsable<S> = $IsAny<S> extends true ? false : unknown extends S ? false : [S] extends [never] ? false : true;
+  type $SlotContractHasKeys<S> = [keyof S] extends [never] ? false : true;
+  type $SlotConstructorFallback<C, Z, P> = $SlotContractIsUsable<$SlotHostSlots<C>> extends true ? { $slots: $SlotHostSlots<C> } : Z extends unknown ? P extends unknown ? { $slots: any } : never : never;
+  export type $SlotConstructorInstance<C, Z, P> = P extends { $slots: infer S } ? $SlotContractIsUsable<S> extends true ? $SlotContractHasKeys<S> extends true ? P : $SlotConstructorFallback<C, Z, P> : $SlotConstructorFallback<C, Z, P> : $SlotConstructorFallback<C, Z, P>;
   export type $SlotHostSelector<C> = [$DirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
 }
 declare module "vize:virtual-ts" {

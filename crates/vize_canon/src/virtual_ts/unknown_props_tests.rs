@@ -313,7 +313,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     assert_eq!(code.matches("\"dataTest\": label").count(), 1, "{code}");
     assert_eq!(
         code.matches(
-            "type __Child_0_prop_aria_label = $PropValue<__Child_ValueProps_0, 'aria-label', $PropValue<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'aria-label'>>>;"
+            "type __Child_0_prop_aria_label = $PropValue<__Child_Props_0, 'aria-label', $PropValue<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'aria-label'>>>;"
         )
         .count(),
         1,
@@ -335,7 +335,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     assert_eq!(
         camel
             .matches(
-                "type __Child_0_prop_ariaLabel = $PropValue<__Child_ValueProps_0, 'aria-label', $PropValue<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'ariaLabel'>>>;"
+                "type __Child_0_prop_ariaLabel = $PropValue<__Child_Props_0, 'aria-label', $PropValue<__Child_ValueProps_0, 'ariaLabel', __Child_FallthroughValue_0<'ariaLabel'>>>;"
             )
             .count(),
         1,

@@ -38,7 +38,11 @@ pub(super) fn collect_props_from_object<'a>(
                     shape::resolve_runtime_prop_options(&property.value, source, local_values);
                 props.push(PropDefinition {
                     name: name.to_compact_string(),
-                    prop_type: Some(runtime_prop_shape_member_type(root_runtime_binding, name)),
+                    prop_type: Some(if options.plain_boolean && root_type_is_local {
+                        "boolean".into()
+                    } else {
+                        runtime_prop_shape_member_type(root_runtime_binding, name)
+                    }),
                     required: options.required && !options.default_relaxes_required,
                     default_value: options.defaulted.then(|| RESOLVED_RUNTIME_DEFAULT.into()),
                 });

@@ -120,9 +120,15 @@ fn merge_resolved_runtime_props_into_croquis(croquis: &mut Croquis, props: Vec<P
         .map(|prop| prop.name.clone())
         .collect();
     for mut prop in props {
-        if !known.insert(prop.name.clone()) {
+        if known.contains(&prop.name) {
+            if let Some(prop_type) = prop.prop_type.as_deref() {
+                croquis
+                    .macros
+                    .refine_unknown_prop_type(prop.name.as_str(), prop_type);
+            }
             continue;
         }
+        known.insert(prop.name.clone());
         if !croquis.has_binding(prop.name.as_str()) {
             croquis.note_binding(prop.name.as_str(), BindingType::Props);
         }
