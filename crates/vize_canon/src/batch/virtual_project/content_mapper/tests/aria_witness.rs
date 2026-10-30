@@ -31,7 +31,9 @@ type $NotUndefined<T> = never;
         } else {
             "$NotUndefined<T>"
         };
-        let helper = format!("function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T>(raw: R, camel: C, value: T): {{ readonly [K in R | C]: {narrowing} }} {{ return {{ [raw]: value, [camel]: value }} as unknown as {{ readonly [K in R | C]: {narrowing} }}; }}");
+        let helper = format!(
+            "function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T>(raw: R, camel: C, value: T): {{ readonly [K in R | C]: {narrowing} }} {{ return {{ [raw]: value, [camel]: value }} as unknown as {{ readonly [K in R | C]: {narrowing} }}; }}"
+        );
         assert_eq!(
             text.matches(helper.as_str()).count(),
             1,
@@ -48,10 +50,15 @@ type $NotUndefined<T> = never;
             usize::from(shared_virtual_module),
             "the requested embedded or installed declaration route must execute"
         );
-        assert!(
-            text.contains("type PropertyKey = 0;"),
+        assert_eq!(
+            text.matches("type PropertyKey = 0;").count(),
+            1,
             "the authored shadow must remain present: {text}"
         );
-        assert!(!text.contains("__vizeComponentAriaPropEntries<const R extends PropertyKey"));
+        assert_eq!(
+            text.matches("__vizeComponentAriaPropEntries<const R extends PropertyKey")
+                .count(),
+            0
+        );
     }
 }

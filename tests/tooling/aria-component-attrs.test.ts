@@ -99,10 +99,7 @@ test("required camel ARIA props survive authored PropertyKey shadows through rep
   }
   for (const [index, phase] of shadowed.phases.entries()) {
     assert.ok(phase.parent.includes("type PropertyKey = 0;"));
-    assert.equal(
-      phase.parent.replace("type PropertyKey = 0;", ""),
-      control.phases[index].parent,
-    );
+    assert.equal(phase.parent.replace("type PropertyKey = 0;", ""), control.phases[index].parent);
   }
 });
 
