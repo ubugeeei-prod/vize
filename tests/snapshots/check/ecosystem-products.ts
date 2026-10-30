@@ -42,7 +42,9 @@ const currentReceipt = {
     "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
   slotFallbackProvenance: "#11064 / c2ee0878fec5d53edb7c30e10f374e37ab256f02",
   slotFallbackFiles: [],
-  snapshotSha256: "e9d32f824e414d040439ffe8d6775d20ddcfeada8baf3f9210b2bd314e1769e9",
+  // Whole packet observed with #11153 / d83c194c899 (local source CLI).
+  // Exact-head full Actions qualification remains required for this successor.
+  snapshotSha256: "ffd237083004fd1a5eb9b5c8b517ce16c05de9a211310f6aafdc379f1be97dc3",
   warningCount: 0,
   widenHelperFiles: [
     "src/ComposablesAndRouting.vue",
@@ -61,11 +63,16 @@ const retiredSlotFallbackFiles = [
   "src/UiLibraries.vue",
 ] as const;
 const componentAriaHelper =
+  "function __vizeComponentAriaPropEntries<const R extends PropertyKey, const C extends PropertyKey, const T>" +
+  "(raw: R, camel: C, value: T): { readonly [K in R | C]: T extends undefined ? never : T } " +
+  "{ return { [raw]: value, [camel]: value } as unknown as " +
+  "{ readonly [K in R | C]: T extends undefined ? never : T }; }";
+const retiredComponentAriaHelpers = [
   "function __vizeComponentAriaPropValue<const T>(value: T): " +
-  "T extends undefined ? never : T { return value as (T extends undefined ? never : T); }";
-const retiredComponentAriaHelper =
+    "T extends undefined ? never : T { return value as (T extends undefined ? never : T); }",
   "function __vizeComponentAriaPropValue<const T>(value: T): " +
-  "__VizeNotUndefined<T> { return value as __VizeNotUndefined<T>; }";
+    "__VizeNotUndefined<T> { return value as __VizeNotUndefined<T>; }",
+] as const;
 const ariaPropReceipts = [
   {
     file: "src/PrimeVueOptionsApi.vue",
@@ -214,11 +221,13 @@ describe(`${app.name} check (type checker)`, () => {
       const virtualTs =
         parsed.files.find((candidate) => candidate.file === receipt.file)?.virtualTs ?? "";
       assert.equal(count(virtualTs, componentAriaHelper), 1, `${receipt.file} must own one helper`);
-      assert.equal(
-        count(virtualTs, retiredComponentAriaHelper),
-        0,
-        `${receipt.file} must not restore the capturable helper signature`,
-      );
+      for (const retired of retiredComponentAriaHelpers) {
+        assert.equal(
+          count(virtualTs, retired),
+          0,
+          `${receipt.file} must not restore a retired ARIA value helper`,
+        );
+      }
       assert.equal(
         count(virtualTs, "T extends undefined ? never : T"),
         2,
