@@ -1,5 +1,5 @@
 use super::support;
-use serde_json::Value;
+use serde_json::{Value, json};
 use std::fs;
 
 pub(super) fn apply(manifest: &mut Value, members: &mut [Value]) {
@@ -132,4 +132,100 @@ pub(super) fn apply(manifest: &mut Value, members: &mut [Value]) {
     );
     *helper = resolver_default["after"].clone();
     manifest["provenance"]["currentSlotResolverDefaultUpdate"] = resolver_default;
+    apply_slot_factory_union(manifest, members);
+}
+
+fn slot_factory_union() -> Value {
+    let bytes = fs::read(
+        support::corpus().join("malformed-membership/slot-factory-union-update-20261031.json"),
+    )
+    .unwrap();
+    assert_eq!(
+        support::hash(&bytes),
+        "9dc2caf4c5f2c4855ca5070e10f10efddcfafa99d305c6cd601a01246d41fe65"
+    );
+    serde_json::from_slice(&bytes).unwrap()
+}
+
+/// Invert only the complete certified lines, then authenticate every other byte.
+fn inverse_slot_factory_union(current: &str, record: &Value) -> String {
+    assert_eq!(json!(current.len()), record["afterBytes"]);
+    assert_eq!(
+        support::hash(current.as_bytes()),
+        record["afterSha256"].as_str().unwrap()
+    );
+    assert_eq!(
+        record["afterBytes"].as_u64().unwrap() - record["beforeBytes"].as_u64().unwrap(),
+        8
+    );
+    let mut historical = current.to_owned();
+    for edit in record["edits"].as_array().unwrap() {
+        let before = edit["before"].as_str().unwrap();
+        let after = edit["after"].as_str().unwrap();
+        assert_eq!(historical.matches(after).count(), 1);
+        historical = historical.replacen(after, before, 1);
+    }
+    assert_eq!(json!(historical.len()), record["beforeBytes"]);
+    assert_eq!(
+        support::hash(historical.as_bytes()),
+        record["beforeSha256"].as_str().unwrap()
+    );
+    historical
+}
+
+fn apply_slot_factory_union(manifest: &mut Value, members: &mut [Value]) {
+    let update = slot_factory_union();
+    assert_eq!(update["version"], 1);
+    assert_eq!(update["pullRequest"], 11153);
+    assert_eq!(update["kind"], "exact-source-finite-inverse");
+    assert_eq!(update["nativeAcceptanceCredit"], false);
+    assert_eq!(update["entry"], 82);
+    assert_eq!(update["deltaBytes"], 8);
+    let declarations = update["declarations"].as_array().unwrap();
+    let paths = [
+        "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-resolver.d.ts.txt",
+        "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-resolver.d.ts.txt",
+        "npm/cli/virtual-ts.d.ts",
+        "npm/cli/virtual-ts.d.mts",
+        "npm/cli/virtual-ts.d.cts",
+    ];
+    assert_eq!(declarations.len(), paths.len());
+    for (declaration, expected_path) in declarations.iter().zip(paths) {
+        assert_eq!(declaration["path"], expected_path);
+        let body = fs::read_to_string(support::repository().join(expected_path)).unwrap();
+        inverse_slot_factory_union(&body, declaration);
+    }
+    let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
+    inverse_slot_factory_union(current, &update["helper"]);
+    let helper = members.get_mut(82).unwrap();
+    assert_eq!(*helper, update["before"]);
+    assert_eq!(update["before"][0], update["after"][0]);
+    assert_eq!(
+        update["after"],
+        json!([
+            "project/__vize_helpers.d.ts",
+            current.len(),
+            support::hash(current.as_bytes())
+        ])
+    );
+    *helper = update["after"].clone();
+    manifest["provenance"]["currentSlotFactoryUnionUpdate"] = update;
+}
+
+#[test]
+fn slot_factory_union_postimage_rejects_unrelated_or_missing_bytes() {
+    let update = slot_factory_union();
+    let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
+    inverse_slot_factory_union(current, &update["helper"]);
+    let line = update["helper"]["edits"][0]["after"].as_str().unwrap();
+    for mutated in [
+        current.replace(line, ""),
+        format!("{current}{line}"),
+        format!("{current}\n"),
+    ] {
+        assert!(
+            std::panic::catch_unwind(|| inverse_slot_factory_union(&mutated, &update["helper"]))
+                .is_err()
+        );
+    }
 }

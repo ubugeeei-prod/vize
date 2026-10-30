@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "pullRequest": 11153,
+  "kind": "exact-source-finite-inverse",
+  "sourceRevision": "493b2ca699f54e9813102fe5d6a01131ed8ca416",
+  "productionRevisions": [
+    "98f0000bfd7c4d348d532841527e05ec718e3e4a",
+    "a6611fd4a3d39bfa44e3a701a4989e749e68ad46"
+  ],
+  "scope": "Append only the current slot-factory union tuple-wrap postimage. Historical malformed-membership packets and all11153 successors remain unchanged.",
+  "nativeAcceptanceCredit": false,
+  "entry": 82,
+  "before": [
+    "project/__vize_helpers.d.ts",
+    43526,
+    "ce42f8bde09b50b0ba5ee280eade2a0c02f7c75d5b5cc244075a6405c693716a"
+  ],
+  "after": [
+    "project/__vize_helpers.d.ts",
+    43534,
+    "0afec0320d60c2bb34e1efa16a57d6cce0f805d1353d41106f9f92291eda6c54"
+  ],
+  "deltaBytes": 8,
+  "helper": {
+    "beforeBytes": 43526,
+    "beforeSha256": "ce42f8bde09b50b0ba5ee280eade2a0c02f7c75d5b5cc244075a6405c693716a",
+    "afterBytes": 43534,
+    "afterSha256": "0afec0320d60c2bb34e1efa16a57d6cce0f805d1353d41106f9f92291eda6c54",
+    "edits": [
+      {
+        "before": "  export type $SlotsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeSlotsFactory<C> : C extends { readonly __vizeComponentMarker: true } ? (component: C) => (props: any) => $SlotHostSlots<C> : $NativeSlotsFactory<C>;\n",
+        "after": "  export type $SlotsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => any : [C] extends [{ __vizeResolveSlots?: infer F }] ? F extends (...args: any[]) => any ? (component: C) => F : $NativeSlotsFactory<C> : [C] extends [{ readonly __vizeComponentMarker: true }] ? (component: C) => (props: any) => $SlotHostSlots<C> : $NativeSlotsFactory<C>;\n"
+      }
+    ]
+  },
+  "declarations": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-resolver.d.ts.txt",
+      "beforeGitBlob": "f4919c795bb40f318cee8d8e0ccafa3a16003338",
+      "afterGitBlob": "9aa735286053bc31d41c06466a9d16c327d1c158",
+      "beforeBytes": 3578,
+      "beforeSha256": "fb8a893e3b0c758c9ef364915ea47ecf13b902a16f3b761e1c8868469254e1be",
+      "afterBytes": 3586,
+      "afterSha256": "4617d04ea9b4771f45ce0f11f65e94df5bbf80c7c8d1469cf1f49efc5c2e51f4",
+      "edits": [
+        {
+          "before": "  export type $SlotsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeSlotsFactory<C> : C extends { readonly __vizeComponentMarker: true } ? (component: C) => (props: any) => $SlotHostSlots<C> : $NativeSlotsFactory<C>;\n",
+          "after": "  export type $SlotsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => any : [C] extends [{ __vizeResolveSlots?: infer F }] ? F extends (...args: any[]) => any ? (component: C) => F : $NativeSlotsFactory<C> : [C] extends [{ readonly __vizeComponentMarker: true }] ? (component: C) => (props: any) => $SlotHostSlots<C> : $NativeSlotsFactory<C>;\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-resolver.d.ts.txt",
+      "beforeGitBlob": "a7db3ad215da544989a59427017fc19f5ba3dbc9",
+      "afterGitBlob": "6e650acf100c598266fbc91b4fc9adfbf0297b27",
+      "beforeBytes": 4181,
+      "beforeSha256": "f2e954c5a9cd0fdc89c5817ee20e633388d23a494353e6544452dfd57cf80f12",
+      "afterBytes": 4189,
+      "afterSha256": "a2f1a3228c59c5669378c6de604c29c3a88f8200b86ef0a5a348c339601c3d47",
+      "edits": [
+        {
+          "before": "type $SlotsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeSlotsFactory<C> : C extends { readonly __vizeComponentMarker: true } ? (component: C) => (props: any) => $SlotHostSlots<C> : $NativeSlotsFactory<C>;\n",
+          "after": "type $SlotsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => any : [C] extends [{ __vizeResolveSlots?: infer F }] ? F extends (...args: any[]) => any ? (component: C) => F : $NativeSlotsFactory<C> : [C] extends [{ readonly __vizeComponentMarker: true }] ? (component: C) => (props: any) => $SlotHostSlots<C> : $NativeSlotsFactory<C>;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "beforeGitBlob": "636c9916efbbde6667a45c919ff561af8305890d",
+      "afterGitBlob": "42e879ccc66cb74f69dd989d10ddbf8294a8a30a",
+      "beforeBytes": 47831,
+      "beforeSha256": "af38ec96b7d31f0bca4068e2f82266398b0cb25e8b2c38be99e3ebf8802f42ff",
+      "afterBytes": 47839,
+      "afterSha256": "6c5564e17dde2d8430dc13809dedc74e3e51aebe07841d3e49b4b02c07c83b90",
+      "edits": [
+        {
+          "before": "    : C extends { __vizeResolveSlots?: infer F }\n",
+          "after": "    : [C] extends [{ __vizeResolveSlots?: infer F }]\n"
+        },
+        {
+          "before": "      : C extends { readonly __vizeComponentMarker: true }\n",
+          "after": "      : [C] extends [{ readonly __vizeComponentMarker: true }]\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "beforeGitBlob": "636c9916efbbde6667a45c919ff561af8305890d",
+      "afterGitBlob": "42e879ccc66cb74f69dd989d10ddbf8294a8a30a",
+      "beforeBytes": 47831,
+      "beforeSha256": "af38ec96b7d31f0bca4068e2f82266398b0cb25e8b2c38be99e3ebf8802f42ff",
+      "afterBytes": 47839,
+      "afterSha256": "6c5564e17dde2d8430dc13809dedc74e3e51aebe07841d3e49b4b02c07c83b90",
+      "edits": [
+        {
+          "before": "    : C extends { __vizeResolveSlots?: infer F }\n",
+          "after": "    : [C] extends [{ __vizeResolveSlots?: infer F }]\n"
+        },
+        {
+          "before": "      : C extends { readonly __vizeComponentMarker: true }\n",
+          "after": "      : [C] extends [{ readonly __vizeComponentMarker: true }]\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "beforeGitBlob": "636c9916efbbde6667a45c919ff561af8305890d",
+      "afterGitBlob": "42e879ccc66cb74f69dd989d10ddbf8294a8a30a",
+      "beforeBytes": 47831,
+      "beforeSha256": "af38ec96b7d31f0bca4068e2f82266398b0cb25e8b2c38be99e3ebf8802f42ff",
+      "afterBytes": 47839,
+      "afterSha256": "6c5564e17dde2d8430dc13809dedc74e3e51aebe07841d3e49b4b02c07c83b90",
+      "edits": [
+        {
+          "before": "    : C extends { __vizeResolveSlots?: infer F }\n",
+          "after": "    : [C] extends [{ __vizeResolveSlots?: infer F }]\n"
+        },
+        {
+          "before": "      : C extends { readonly __vizeComponentMarker: true }\n",
+          "after": "      : [C] extends [{ readonly __vizeComponentMarker: true }]\n"
+        }
+      ]
+    }
+  ]
+}
