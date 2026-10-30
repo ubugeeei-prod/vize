@@ -6,7 +6,6 @@ use crate::batch::{
     ContentMapperTransformOptions, generate_vue_content_mapper_transform_with_options,
 };
 
-#[path = "aria_witness.rs"]
 mod aria_witness;
 
 fn packet(options: ContentMapperTransformOptions) -> serde_json::Value {
