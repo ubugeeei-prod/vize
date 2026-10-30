@@ -90,6 +90,18 @@ fn public_instance_slot_packets_remain_authenticated() {
         exact_successor,
         external_successor,
     );
+    let collision_safe_receipt =
+        include_str!("fixtures/public-instance-options-api-slots/successor-11153/receipt.json");
+    let collision_safe_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11153/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        collision_safe_receipt,
+        "cd58fde4a43fbb181c31f21f2b2c56d80dcd504b943e2370350b1db5894474f0",
+        11153,
+        external_successor,
+        collision_safe_successor,
+    );
     let matrix = load_matrix();
     let fixture = matrix
         .fixtures
@@ -98,7 +110,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        external_successor
+        collision_safe_successor
     );
 }
 
@@ -152,7 +164,20 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             successor,
             latest_successor,
         );
-        assert_eq!(capture_fixture(fixture).render().as_str(), latest_successor);
+        let collision_safe_successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-11153/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!("fixtures/public-instance-mixed-vue2/successor-11153/receipt.json"),
+            "84c1c49f0874cb1cb0b3d5227af293e378cfd72be2957232c46dbed7a38aa00e",
+            11153,
+            latest_successor,
+            collision_safe_successor,
+        );
+        assert_eq!(
+            capture_fixture(fixture).render().as_str(),
+            collision_safe_successor
+        );
     }
 }
 
