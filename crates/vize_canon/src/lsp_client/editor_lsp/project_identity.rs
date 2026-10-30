@@ -6,6 +6,8 @@ use serde_json::Value;
 use std::path::{Path, PathBuf};
 use vize_l0::{String, cstr};
 
+mod startup_member;
+
 pub(super) enum ProjectIdentityError {
     Communication(String),
     Unconfigured,
@@ -43,7 +45,8 @@ impl EditorLspSession {
             )),
         ))
         .map_err(|error| cstr!("Cannot read native startup configuration: {error}"))?;
-        let member = startup_member(&parsed.file_names)?;
+        let member = startup_member::select(config, &parsed.file_names)
+            .ok_or_else(|| cstr!("Native startup configuration has no existing absolute member"))?;
         let uri = crate::file_uri::path_to_file_uri(member);
         let result = self.request_project_info(serde_json::json!(uri));
         super::inlay_hint::trace_native_inlay("startupConfigurationSnapshot", || {
@@ -80,14 +83,6 @@ impl EditorLspSession {
     }
 }
 
-fn startup_member(files: &[std::string::String]) -> Result<&Path, String> {
-    files
-        .iter()
-        .map(Path::new)
-        .find(|path| path.is_absolute() && path.is_file())
-        .ok_or_else(|| cstr!("Native startup configuration has no existing absolute member"))
-}
-
 fn configured_path(result: &Value) -> Result<PathBuf, ProjectIdentityError> {
     result
         .get("configFilePath")
@@ -105,6 +100,8 @@ mod tests {
     #[test]
     fn startup_member_uses_only_an_existing_native_config_member() {
         let root = tempfile::tempdir().unwrap();
+        let config = root.path().join("tsconfig.json");
+        std::fs::write(&config, "{}").unwrap();
         let member = root.path().join("source.ts");
         std::fs::write(&member, "export {};").unwrap();
         for files in [
@@ -112,13 +109,13 @@ mod tests {
             vec!["source.ts".into()],
             vec![root.path().join("absent.ts").to_string_lossy().into_owned()],
         ] {
-            assert!(startup_member(&files).is_err());
+            assert!(startup_member::select(&config, &files).is_none());
         }
         let files = vec![
             root.path().join("absent.ts").to_string_lossy().into_owned(),
             member.to_string_lossy().into_owned(),
         ];
-        assert_eq!(startup_member(&files).unwrap(), member);
+        assert_eq!(startup_member::select(&config, &files).unwrap(), member);
         assert_eq!(std::fs::read(&member).unwrap(), b"export {};");
     }
 
