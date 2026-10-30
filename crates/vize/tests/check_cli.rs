@@ -2605,7 +2605,7 @@ const props = defineProps<PublicProps>()
         snapshot_path => "snapshots"
     }, {
         insta::assert_snapshot!(
-            "check_can_emit_declarations",
+            "check_can_emit_declarations_slot_reexport",
             serde_json::to_string_pretty(&snapshot).unwrap()
         );
     });
