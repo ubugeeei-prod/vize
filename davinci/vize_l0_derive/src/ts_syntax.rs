@@ -134,7 +134,9 @@ impl Printer {
                     index += 2;
                     continue;
                 }
-                if let Some(repeated) = self.repeat(pieces, &tokens[index..])? {
+                if let Some(repeated) =
+                    self.repeat(pieces, tokens.get(index..).unwrap_or_default())?
+                {
                     index += repeated;
                     continue;
                 }
