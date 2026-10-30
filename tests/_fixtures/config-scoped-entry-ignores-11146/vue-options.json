@@ -1,0 +1,9 @@
+{
+  "entries": [
+    {
+      "files": ["src/**/*.vue"],
+      "ignores": ["src/**/*.story.vue"],
+      "linter": { "rules": { "vue/require-scoped-style": "off" } }
+    }
+  ]
+}
