@@ -844,11 +844,11 @@ type $NativeSlotsFactory<C> = [C] extends [new (...args: any[]) => any]
 export type $SlotsFactory<C> =
   $IsAny<C> extends true
     ? (component: C) => (props: any) => any
-    : C extends { __vizeResolveSlots?: infer F }
+    : [C] extends [{ __vizeResolveSlots?: infer F }]
       ? F extends (...args: any[]) => any
         ? (component: C) => F
         : $NativeSlotsFactory<C>
-      : C extends { readonly __vizeComponentMarker: true }
+      : [C] extends [{ readonly __vizeComponentMarker: true }]
         ? (component: C) => (props: any) => $SlotHostSlots<C>
         : $NativeSlotsFactory<C>;
 type $HasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F }

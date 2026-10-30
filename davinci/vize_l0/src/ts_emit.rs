@@ -36,18 +36,6 @@ impl TsBuf for CompactString {
     }
 }
 
-impl TsBuf for std::string::String {
-    #[inline]
-    fn reserve_ts(&mut self, additional: usize) {
-        self.reserve(additional);
-    }
-
-    #[inline]
-    fn push_ts_str(&mut self, text: &str) {
-        self.push_str(text);
-    }
-}
-
 /// Byte length of a hole, matching what [`EmitHole::emit_hole`] writes.
 pub trait EmitLen {
     fn hole_len(&self) -> usize;
@@ -394,7 +382,7 @@ mod tests {
 
     #[test]
     fn hole_lengths_match_the_written_bytes() {
-        let mut buffer = std::string::String::new();
+        let mut buffer = String::default();
         let samples: &[(&str, &str)] = &[
             ("plain", "\"plain\""),
             ("say \"hi\"", "\"say \\\"hi\\\"\""),

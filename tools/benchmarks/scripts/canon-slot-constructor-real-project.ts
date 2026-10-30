@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import { identify, hash } from "./canon-instance-directives-io.ts";
-import type { Row } from "./canon-slot-constructor-audit.ts";
+import { canonicalMappedGenerated, type Row } from "./canon-slot-constructor-audit.ts";
 
 export function lines(source: string): number {
   return source.split(/\r\n|[\r\n\u2028\u2029]/u).length;
@@ -74,9 +74,11 @@ export function authoredMappings(
             features !== undefined,
         );
         return {
-          generated: Buffer.from(source)
-            .subarray(generated, generated + length)
-            .toString("utf8"),
+          generated: canonicalMappedGenerated(
+            Buffer.from(source)
+              .subarray(generated, generated + length)
+              .toString("utf8"),
+          ),
           original,
           originalLength,
           kind,

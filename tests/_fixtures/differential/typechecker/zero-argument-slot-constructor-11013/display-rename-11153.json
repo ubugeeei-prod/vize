@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "policy": "Only these complete independently observed diagnostic displays may change after the generated helper rename. No diagnostic identity, location, severity, cardinality or project metadata is omitted. Historical source and published outputs remain immutable.",
+  "provenance": {
+    "workflowRun": 41076273383,
+    "artifact": 12987777810,
+    "artifactSha256": "ab2fd94953e3d00e8d78bb96572a5c270e7decfd82c562600011fe64752c13de",
+    "prHead": "b1825c24158cf296b9108029b3ff3448edf1175c",
+    "productSource": "0ec9c8b88bd3506b26b592ed264b27cde1a9933f",
+    "publicVersion": "0.603.0",
+    "providerLockSha256": "9ca03c3cb103e1ff8d0a8c633145a743a056f21c5a0be56fa633a19541ab5256",
+    "checkerSha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70"
+  },
+  "cases": {
+    "missing-symbol": {
+      "sourceSha256": "072a0bf071f0171da8650b1d2ec443d9c1c502af34d2f45c5fcc91137bfa1b95",
+      "componentSha256": "78ac73b49c1bfb8860ca415006acfb74afed31d417e38bfbba6f15edcf9f81e8",
+      "observations": {
+        "base": {
+          "cliStdoutSha256": "55db72cd899911a89f078423d8511abc6828fa0a5faee0393bd0cb3e78885a62",
+          "mapperStdoutSha256": "5f614d3117fdcc287e4b2752f11097f032dfc5c7c9a4a444695961934ceb97d9"
+        },
+        "head": {
+          "cliStdoutSha256": "b6aef9ef041648cc96678f4674e2bd0c79c88eab339574d221bbbb52687ff02d",
+          "mapperStdoutSha256": "2ce554da93ae5a427a6ad094cef01439ce3304c962036b2fade1e7282a3cb95e"
+        }
+      },
+      "native": {
+        "base": [
+          {
+            "file": "src/Tiny.vue",
+            "line": 12,
+            "column": 25,
+            "code": 2339,
+            "message": "Property 'missing' does not exist on type '__VizeTemplateInstance'."
+          }
+        ],
+        "head": [
+          {
+            "file": "src/Tiny.vue",
+            "line": 12,
+            "column": 25,
+            "code": 2339,
+            "message": "Property 'missing' does not exist on type '$TemplateInstance'."
+          }
+        ]
+      }
+    },
+    "unknown-prop": {
+      "sourceSha256": "e29dc4bfe23e9976fbb595c802e4aaa696530052df7ef3e63bf30eaf28585c89",
+      "componentSha256": "78ac73b49c1bfb8860ca415006acfb74afed31d417e38bfbba6f15edcf9f81e8",
+      "observations": {
+        "base": {
+          "cliStdoutSha256": "d849341ea4f3f81a8986b40c65137eb443180803a90e7d02bb73f191eb424ae6",
+          "mapperStdoutSha256": "41c8bb02be29091f5b448f946ef487e1e26344e14a40119ed259c5e85daf2715"
+        },
+        "head": {
+          "cliStdoutSha256": "ac77c869958f89443698f2850e73a8d35434f2fb7e2ba5aa0f2487ea67562a14",
+          "mapperStdoutSha256": "128aa70b20137067d89b7c4d9dfa0c758de95025069665f5d5cf012fd3fe4269"
+        }
+      },
+      "cli": {
+        "base": {
+          "diagnostics": [
+            {
+              "file": "src/Tiny.vue",
+              "severity": "error",
+              "line": 12,
+              "column": 29,
+              "code": 2353,
+              "message": "Object literal may only specify known properties, and '\"extra\"' does not exist in type '__VizeComponentCheckProps<__WitnessChild_CheckProps_0, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; ... 677 more ...; zoomAndPan?: unknown; } & ...>'. (source: <WitnessChild :value=\"1\" :extra=\"1\">; binding: 'extra')",
+              "raw": "error:12:29 [TS2353] Object literal may only specify known properties, and '\"extra\"' does not exist in type '__VizeComponentCheckProps<__WitnessChild_CheckProps_0, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; ... 677 more ...; zoomAndPan?: unknown; } & ...>'. (source: <WitnessChild :value=\"1\" :extra=\"1\">; binding: 'extra')"
+            }
+          ],
+          "result": {
+            "files": [
+              {
+                "file": "component.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "src/Tiny.vue",
+                "diagnostics": [
+                  "error:12:29 [TS2353] Object literal may only specify known properties, and '\"extra\"' does not exist in type '__VizeComponentCheckProps<__WitnessChild_CheckProps_0, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; ... 677 more ...; zoomAndPan?: unknown; } & ...>'. (source: <WitnessChild :value=\"1\" :extra=\"1\">; binding: 'extra')"
+                ]
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "incremental": false,
+                  "lib": [
+                    "ES2024",
+                    "DOM"
+                  ],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "noEmit": true,
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ES2024",
+                  "types": []
+                },
+                "files": [
+                  "component.ts",
+                  "src/Tiny.vue"
+                ]
+              }
+            ],
+            "errorCount": 1,
+            "warningCount": 0,
+            "fileCount": 2
+          }
+        },
+        "head": {
+          "diagnostics": [
+            {
+              "file": "src/Tiny.vue",
+              "severity": "error",
+              "line": 12,
+              "column": 29,
+              "code": 2353,
+              "message": "Object literal may only specify known properties, and '\"extra\"' does not exist in type '$ComponentCheckProps<__WitnessChild_CheckProps_0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 676 more ...; zoomAndPan?: unknown; } & ...>'. (source: <WitnessChild :value=\"1\" :extra=\"1\">; binding: 'extra')",
+              "raw": "error:12:29 [TS2353] Object literal may only specify known properties, and '\"extra\"' does not exist in type '$ComponentCheckProps<__WitnessChild_CheckProps_0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 676 more ...; zoomAndPan?: unknown; } & ...>'. (source: <WitnessChild :value=\"1\" :extra=\"1\">; binding: 'extra')"
+            }
+          ],
+          "result": {
+            "files": [
+              {
+                "file": "component.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "src/Tiny.vue",
+                "diagnostics": [
+                  "error:12:29 [TS2353] Object literal may only specify known properties, and '\"extra\"' does not exist in type '$ComponentCheckProps<__WitnessChild_CheckProps_0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 676 more ...; zoomAndPan?: unknown; } & ...>'. (source: <WitnessChild :value=\"1\" :extra=\"1\">; binding: 'extra')"
+                ]
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "incremental": false,
+                  "lib": [
+                    "ES2024",
+                    "DOM"
+                  ],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "noEmit": true,
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ES2024",
+                  "types": []
+                },
+                "files": [
+                  "component.ts",
+                  "src/Tiny.vue"
+                ]
+              }
+            ],
+            "errorCount": 1,
+            "warningCount": 0,
+            "fileCount": 2
+          }
+        }
+      }
+    }
+  }
+}
