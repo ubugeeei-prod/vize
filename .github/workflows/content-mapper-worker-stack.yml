@@ -6,7 +6,9 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - .github/workflows/content-mapper-worker-stack.yml
-      - tools/benchmarks/scripts/content-mapper-worker-stack.py
+      - tools/benchmarks/scripts/content-mapper-worker-stack.ts
+      - tools/benchmarks/scripts/content-mapper-worker-stack-core.ts
+      - tests/tooling/content-mapper-worker-stack.test.ts
       - crates/vize/src/commands/content_mapper/dispatch.rs
 
 permissions:
@@ -38,6 +40,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with:
           toolchain: "1.99.1"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - name: Verify calibration protocol and limit contracts
+        run: node --test tests/tooling/content-mapper-worker-stack.test.ts
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -55,7 +63,9 @@ jobs:
         env:
           BUILD_PROFILE: ${{ matrix.profile }}
         run: |
-          python3 tools/benchmarks/scripts/content-mapper-worker-stack.py \
+          test -x /usr/bin/prlimit
+          test -x /usr/bin/time
+          node tools/benchmarks/scripts/content-mapper-worker-stack.ts \
             --binary "target/$BUILD_PROFILE/vize" \
             --source-sha "$SOURCE_SHA" \
             --profile "$BUILD_PROFILE" \
