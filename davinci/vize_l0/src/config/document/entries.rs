@@ -18,6 +18,16 @@ impl ConfigDocument {
 
     /// Top-level ignores precede entry-local ignores, retaining each base path.
     pub fn entry_ignores(&self) -> Vec<ConfigEntryIgnore> {
+        self.project_entry_ignores(false)
+    }
+
+    /// Formatter discovery excludes only global ignores and ignores-only entries.
+    /// Entry-local filters narrow compiler/linter settings without excluding files.
+    pub fn formatter_entry_ignores(&self) -> Vec<ConfigEntryIgnore> {
+        self.project_entry_ignores(true)
+    }
+
+    fn project_entry_ignores(&self, global_only: bool) -> Vec<ConfigEntryIgnore> {
         let top_level_ignores = self
             .0
             .ignores
@@ -35,6 +45,7 @@ impl ConfigDocument {
             .as_deref()
             .unwrap_or_default()
             .iter()
+            .filter(|entry| !global_only || entry.is_global_ignore())
             .flat_map(|entry| {
                 entry
                     .ignores

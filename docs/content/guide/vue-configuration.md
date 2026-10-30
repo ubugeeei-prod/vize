@@ -80,6 +80,12 @@ Canonical entries accept `name`, `basePath`, `files`, `ignores`, `compiler` and
 sections and `version` remain project-wide; placing them in an entry is an error.
 Per-file editor scope support and additional scoped sections remain unfinished.
 
+An entry's `ignores` narrows where its `files`, `compiler`, or `linter` settings
+apply; it does not exclude those files from `vize fmt`. Top-level `vue.ignores`
+and entries containing only `ignores` (with optional `name` / `basePath`) remain
+formatter discovery exclusions. Use `vue.formatter.ignorePatterns` for exclusions
+that should apply only to formatting.
+
 ## TypeScript project settings
 
 Keep TypeScript `compilerOptions`, standard `extends` and `references` in the

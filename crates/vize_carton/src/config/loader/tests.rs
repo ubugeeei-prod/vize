@@ -67,6 +67,43 @@ fn explicit_serialized_config_preserves_native_formatter_profile() {
 }
 
 #[test]
+fn formatter_snapshot_preserves_global_and_formatter_only_exclusions() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("serialized-config.json");
+    std::fs::write(
+        &config_path,
+        r#"{
+            "ignores":["global/**"],
+            "formatter":{"ignorePatterns":["formatter/**", "!formatter/keep.vue"]},
+            "entries":[
+                {"basePath":"packages/ui", "ignores":["generated/**"]},
+                {"files":["src/**/*.vue"], "ignores":["src/**/*.story.vue"],
+                 "linter":{"rules":{"vue/require-scoped-style":"off"}}}
+            ]
+        }"#,
+    )
+    .unwrap();
+    let snapshot = try_load_formatter_snapshot(Some(&config_path)).unwrap();
+    assert_eq!(
+        snapshot
+            .ignores
+            .iter()
+            .map(|ignore| (ignore.base_path.as_deref(), ignore.pattern.as_str()))
+            .collect::<Vec<_>>(),
+        [
+            (None, "global/**"),
+            (Some("packages/ui"), "generated/**"),
+            (None, "formatter/**"),
+            (None, "!formatter/keep.vue"),
+        ]
+    );
+    assert_eq!(
+        snapshot.loaded.source_path.as_deref(),
+        Some(config_path.as_path())
+    );
+}
+
+#[test]
 fn explicit_serialized_vite_config_still_projects_vue_settings() {
     let dir = tempfile::tempdir().unwrap();
     let config_path = dir.path().join("serialized-config.json");
