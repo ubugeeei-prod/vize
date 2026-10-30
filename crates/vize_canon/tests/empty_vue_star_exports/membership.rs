@@ -278,6 +278,50 @@ fn expected() -> (Value, Value) {
         *member = update["after"].clone();
     }
     manifest["provenance"]["currentGeneratedContractUpdate"] = generated_contract_update;
+    let slot_resolver_update =
+        fs::read(support::corpus().join("malformed-membership/slot-resolver-update-11153.json"))
+            .unwrap();
+    assert_eq!(
+        support::hash(&slot_resolver_update),
+        "dd97c8e3361b9782d3d63a97e8831d03645e70bf0261406d7c81ef1bdac9374e"
+    );
+    let slot_resolver_update: Value = serde_json::from_slice(&slot_resolver_update).unwrap();
+    assert_eq!(slot_resolver_update["version"], 1);
+    assert_eq!(slot_resolver_update["pullRequest"], 11153);
+    assert_eq!(
+        slot_resolver_update["sourceRevision"],
+        "ebe4557da5c5598d746fca6a1f5fec4655f9c7f5"
+    );
+    assert_eq!(
+        slot_resolver_update["testedMerge"],
+        "f04d35bba69dcf5b860496b95097b115e6bc7a9b"
+    );
+    assert_eq!(slot_resolver_update["observedRun"], 41049205214_i64);
+    assert_eq!(slot_resolver_update["observedJob"], 124041861371_i64);
+    assert_eq!(slot_resolver_update["artifact"], 12974471198_i64);
+    assert_eq!(
+        slot_resolver_update["artifactArchiveSha256"],
+        "bab980089fe5260acb1356d2a87655743aed8ca21d1fdcdbfba91f058c45059e"
+    );
+    assert_eq!(
+        slot_resolver_update["extractedPacketSha256"],
+        "5ab08fea04db6ef67c50cde5bcf1b347b3ec719efade6b420e00cf2016b7ecfa"
+    );
+    assert_eq!(slot_resolver_update["entry"], 82);
+    assert_eq!(slot_resolver_update["deltaBytes"], 547);
+    let helper = members.get_mut(82).unwrap();
+    assert_eq!(*helper, slot_resolver_update["before"]);
+    assert_eq!(
+        slot_resolver_update["before"][0],
+        slot_resolver_update["after"][0]
+    );
+    assert_eq!(
+        slot_resolver_update["after"][1].as_u64().unwrap()
+            - slot_resolver_update["before"][1].as_u64().unwrap(),
+        547
+    );
+    *helper = slot_resolver_update["after"].clone();
+    manifest["provenance"]["currentSlotResolverUpdate"] = slot_resolver_update;
     (manifest, json!(members))
 }
 

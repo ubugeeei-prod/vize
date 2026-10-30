@@ -59,22 +59,14 @@
     "coreCases": 20,
     "bareCases": 16,
     "requiredCarrierShape": "No template, no style, no SFC-lane diagnostics",
-    "apiOrder": [
-      "script/no-reserved-keys",
-      "script/no-reserved-props"
-    ],
-    "defaultRoutes": [
-      "default",
-      "recommended",
-      "essential",
-      "ecosystem"
-    ],
+    "apiOrder": ["script/no-reserved-keys", "script/no-reserved-props"],
+    "defaultRoutes": ["default", "recommended", "essential", "ecosystem"],
     "offRoutes": "Unchanged companion-only packets",
     "cli": "Unchanged sorted full packets",
     "productionChanged": false
   },
   "summary": {
-    "coreDiagnosticCount": 212,
+    "coreDiagnosticCount": 216,
     "bareDiagnosticCount": 11,
     "diagnosticMetadataChanges": 0
   },
@@ -3320,15 +3312,31 @@
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
+          "message": "Reserved key '$data'",
+          "start": 107,
+          "end": 112,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '$'",
+              "start": 107,
+              "end": 112
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
           "message": "Reserved key '_private'",
-          "start": 118,
-          "end": 126,
+          "start": 117,
+          "end": 125,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
           "labels": [
             {
               "message": "data key starts with reserved '_'",
-              "start": 118,
-              "end": 126
+              "start": 117,
+              "end": 125
             }
           ],
           "fix": null
@@ -3337,14 +3345,14 @@
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
           "message": "Reserved key '_$data'",
-          "start": 131,
-          "end": 137,
+          "start": 130,
+          "end": 136,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
           "labels": [
             {
               "message": "data key starts with reserved '_'",
-              "start": 131,
-              "end": 137
+              "start": 130,
+              "end": 136
             }
           ],
           "fix": null
@@ -3355,19 +3363,70 @@
       "id": "lookalikes-computed",
       "filename": "LookalikesComputed.vue",
       "sourceSha256": "403cdb6f633aaccee26c2916b10ba62ab85e466b9f87e6e6e0de3a7a3868a2d8",
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '$data'",
+          "start": 161,
+          "end": 166,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "computed key starts with reserved '$'",
+              "start": 161,
+              "end": 166
+            }
+          ],
+          "fix": null
+        }
+      ]
     },
     {
       "id": "lookalikes-methods",
       "filename": "LookalikesMethods.vue",
       "sourceSha256": "5ced2cc917b6ef6528014d56153fed70060b9114da7af66c8ae572fd080e49c7",
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '$data'",
+          "start": 160,
+          "end": 165,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "methods key starts with reserved '$'",
+              "start": 160,
+              "end": 165
+            }
+          ],
+          "fix": null
+        }
+      ]
     },
     {
       "id": "lookalikes-setup",
       "filename": "LookalikesSetup.vue",
       "sourceSha256": "0a5783d9096878abb47976f658d9bd17f273df107855431141d2716d2b30a08a",
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '$data'",
+          "start": 108,
+          "end": 113,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "setup key starts with reserved '$'",
+              "start": 108,
+              "end": 113
+            }
+          ],
+          "fix": null
+        }
+      ]
     },
     {
       "id": "inject-object-excluded",
