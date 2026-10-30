@@ -265,7 +265,7 @@ crates/vize_canon/src/virtual_ts/tests/generic_module_type_exports.rs	12
 crates/vize_canon/src/virtual_ts/tests/legacy_nuxt2_page_context.rs	13
 crates/vize_canon/src/virtual_ts/tests/model_update_payload.rs	26
 crates/vize_canon/src/virtual_ts/tests/no_check_template_bindings.rs	23
-crates/vize_canon/src/virtual_ts/tests/options_api_instance.rs	17
+crates/vize_canon/src/virtual_ts/tests/options_api_instance.rs	16
 crates/vize_canon/src/virtual_ts/tests/options_api_props_spread.rs	19
 crates/vize_canon/src/virtual_ts/tests/options_api_setup_spread.rs	5
 crates/vize_canon/src/virtual_ts/tests/options_api_this_bridge.rs	8
