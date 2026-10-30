@@ -162,6 +162,36 @@ pub(super) fn assert_whole_packet_parity() {
             true,
         ),
         (
+            "runtime object alias",
+            "const events = { save: (value: number) => true }; const copied = { ...events }; const emit = defineEmits(copied);",
+            true,
+        ),
+        (
+            "runtime object spread",
+            "const events = { save: (value: number) => true }; const copied = { ...events }; const emit = defineEmits({ ...copied, cancel: null });",
+            true,
+        ),
+        (
+            "typed method",
+            "const emit = defineEmits<{ save(id: number): void; 'close-item'(): void }>();",
+            true,
+        ),
+        (
+            "slot intersection and property",
+            "defineSlots<({ header(): any } & { 'item-row': (props: { item: number }) => any; header(): any })>();",
+            true,
+        ),
+        (
+            "incomplete member with producer",
+            "defineSlots<{ header(): any }>(); const slots = useSlots(); slots?.",
+            true,
+        ),
+        (
+            "incomplete member without producer",
+            "const slots = useSlots(); slots?.",
+            false,
+        ),
+        (
             "typed calls",
             "const emit = defineEmits<{ (event: 'save-item', id: number): void; (event: 'close'): void }>();",
             true,
@@ -296,6 +326,31 @@ pub(super) fn assert_whole_packet_parity() {
             r"\u0064efineEmits(['save-item']);",
             "save-item",
             SymbolKind::EVENT,
+        ),
+        (
+            "const events = { save: (value: number) => true }; const copied = { ...events }; defineEmits(copied);",
+            "save",
+            SymbolKind::EVENT,
+        ),
+        (
+            "const events = { save: (value: number) => true }; const copied = { ...events }; defineEmits({ ...copied, cancel: null });",
+            "save",
+            SymbolKind::EVENT,
+        ),
+        (
+            "defineEmits<{ save(id: number): void }>();",
+            "save",
+            SymbolKind::EVENT,
+        ),
+        (
+            "defineSlots<({ header(): any } & { 'item-row': () => any })>();",
+            "item-row",
+            SymbolKind::INTERFACE,
+        ),
+        (
+            "defineSlots<{ header(): any }>(); const slots = useSlots(); slots?.",
+            "header",
+            SymbolKind::INTERFACE,
         ),
         (
             "defineSlots<{ header(): any }>();",
