@@ -161,3 +161,44 @@ test("only an admitted exact third-host roster acquires matrix qualification", (
   assert.equal(hasCompleteHostMatrix(false, true, ["official-nightly", "pinned-source"]), false);
   assert.equal(hasCompleteHostMatrix(true, false, ["official-nightly", "pinned-source"]), false);
 });
+
+test("CURRENT binds all eighty unmodified SDK7 results to the independent review", () => {
+  const { authority, files, cases } = readGlobalsFixture();
+  const golden = selectPacketGoldens(authority, files, cases)!;
+  assert.equal(golden.complete, true);
+  assert.equal(golden.packets.length, 80);
+  const provenance = JSON.parse(files.get(golden.provenance as string)!);
+  assert.equal(provenance.producer.sourceRevision, "b66e208809edb527d3fd590835fa6295ba3285d1");
+  assert.equal(provenance.capturedQualification.fullPacketQualification, false);
+  assert.equal(provenance.capturedQualification.hostMatrixQualification, false);
+  assert.equal(provenance.strictQualificationClaim, false);
+  assert.equal(
+    provenance.independentCurrentReview.rawSourceProtocolSha256,
+    "eb78ab15eb122789df7a6b5778eac61fe99274edae7d87dd5d30fe2702fccf21",
+  );
+  assert.deepEqual(provenance.independentNativeTuplesReview.totals, {
+    nativeMain: 240,
+    receiverNativeAndActorCli: 12,
+    optionsMethodFormerDiscoveryFullyChecked: 6,
+  });
+  assert.deepEqual(provenance.primaryNativeReview.semanticFailures, []);
+  assert.deepEqual(provenance.primaryNativeReview.nonWholePacketGaps, []);
+  const reviewed = provenance.independentCurrentReview.wholeTransformReview.rows as Array<{
+    id: number;
+    allFieldSerializationSha256: string;
+    textSha256: string;
+  }>;
+  assert.equal(reviewed.length, 80);
+  for (const [index, packet] of golden.packets.entries()) {
+    const entry = cases[index % 40]!;
+    const source =
+      index < 40
+        ? entry.source
+        : entry.source.replace("{{ ", '{{ "日本語🍣" + ').replaceAll("\n", "\r\n");
+    assert.equal(packet.sourceSha256, sha(source), packet.label);
+    assert.equal(packet.globalsSha256, sha(entry.globals), packet.label);
+    assert.equal(reviewed[index]!.id, index + 3);
+    assert.equal(sha(JSON.stringify(packet.result)), reviewed[index]!.allFieldSerializationSha256);
+    assert.equal(sha(packet.result.text), reviewed[index]!.textSha256);
+  }
+});
