@@ -1,0 +1,51 @@
+{
+  "scope": "Honest actual current source CLI PropertyKey shadow counterexample; no source checkout changes",
+  "sourceRevision": "d83c194c899cc36359784073fe5ec78693e8c268",
+  "cwd": "/private/tmp/vize-overnight-20261031/davinci/aria-propertykey-probe",
+  "binary": "/private/tmp/vize-overnight-20261031/typechecker/d83-cli-target/debug/vize",
+  "binarySha256": "c586919ebcf16bed94dabcff967dfb73bf9ea88ae198a7a8a6e158acec6b3060",
+  "nativeHost": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+  "nativeHostSha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+  "hostVersion": "Version 7.0.2\n",
+  "node": "/Users/ubugeeei/.local/share/mise/installs/node/24.14.0/bin/node",
+  "sdkManifestSha256": "32140cc4b407a149bd1ee282711f357ad3320c39ad8b845a61f19dfbdd708df5",
+  "vueVersion": "3.5.35",
+  "argv": [
+    "check",
+    "src/Probe.vue",
+    "--format",
+    "json",
+    "--quiet",
+    "--show-virtual-ts",
+    "--corsa-path",
+    "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc"
+  ],
+  "cases": [
+    {
+      "name": "before",
+      "sourceSha256": "132ca3d4f2483630520ade2c3c5b717891dfd5bba6466a84765a6f26e7f16cf3",
+      "status": 0,
+      "diagnostics": [
+        []
+      ]
+    },
+    {
+      "name": "shadow",
+      "sourceSha256": "02f19182f0867674f4944ef65f4a1c068da2d946465b1fb05c9c03d979302c14",
+      "status": 1,
+      "diagnostics": [
+        [
+          "error:6:12 [TS2345] Missing required prop `ariaLabel`. (source: <template><Child aria-label=\"ok\" /></template>)"
+        ]
+      ]
+    },
+    {
+      "name": "equivalent",
+      "sourceSha256": "08a8fad8176a99874393ec9897f039c857ca817805a203faeb11495db125c52e",
+      "status": 0,
+      "diagnostics": [
+        []
+      ]
+    }
+  ]
+}
