@@ -15,10 +15,23 @@ type TaskShape = {
   env?: string[];
 };
 
-test("source coverage tracks the Nuxt stress iteration environment", () => {
+const runtimeVariables = [
+  "CORSA_PATH",
+  "CORSA_EXECUTABLE",
+  "TSGO_PATH",
+  "TSGO_EXECUTABLE",
+  "TSRS_PATH",
+  "TSRS_EXECUTABLE",
+];
+
+test("source coverage tracks the exact stress, capture and native runtime environment", () => {
   const coverage = testAndBenchmarkTasks["coverage:source"] as TaskShape;
 
-  assert.deepEqual(coverage.env, ["VIZE_NUXT_CONFIG_ITERATIONS", "VIZE_NATIVE_SYNTAX_CAPTURE_DIR"]);
+  assert.deepEqual(coverage.env, [
+    "VIZE_NUXT_CONFIG_ITERATIONS",
+    "VIZE_NATIVE_SYNTAX_CAPTURE_DIR",
+    ...runtimeVariables,
+  ]);
 });
 
 function probeEnvironment(names: string[], variables: Record<string, string>) {
@@ -83,4 +96,21 @@ test("source coverage transports whole-packet capture through the real cacheable
     VIZE_NUXT_CONFIG_ITERATIONS: "100",
     VIZE_HIDDEN_ENV: null,
   });
+});
+
+test("source coverage transports all six explicit runtime choices without leaking other variables", () => {
+  const names = (testAndBenchmarkTasks["coverage:source"] as TaskShape).env ?? [];
+  const variables = Object.fromEntries([
+    ...runtimeVariables.map((name) => [name, `/explicit-missing/${name}`]),
+    ["VIZE_HIDDEN_ENV", "must-not-leak"],
+  ]);
+  const expected = { ...variables, VIZE_HIDDEN_ENV: null };
+  assert.deepEqual(probeEnvironment(names, variables), expected);
+  assert.deepEqual(
+    probeEnvironment(
+      names.filter((name) => !runtimeVariables.includes(name)),
+      variables,
+    ),
+    Object.fromEntries(Object.keys(variables).map((name) => [name, null])),
+  );
 });
