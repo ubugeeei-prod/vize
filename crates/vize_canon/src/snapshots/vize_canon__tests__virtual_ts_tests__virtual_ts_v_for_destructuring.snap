@@ -134,7 +134,7 @@ function __setup() {
   
   const items = ref<Item[]>([])
   
-  // @vize-map: 15543:15587 -> 0:106
+  // @vize-map: 14953:14997 -> 0:106
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -218,5 +218,5 @@ type $VueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"ul">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"ul">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;
 export default __vize_component__;

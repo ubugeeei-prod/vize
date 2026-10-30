@@ -129,7 +129,7 @@ function __setup() {
   
   const slots = useSlots()
   
-  // @vize-map: 15501:15537 -> 0:58
+  // @vize-map: 14911:14947 -> 0:58
 
   // ========== Template Scope (inherits from setup) ==========
   const __vize_template = (function __template() {
@@ -151,7 +151,7 @@ function __setup() {
   var __vize_slot_payload_13 = {
     "title": 'Header',
   };
-  return {} as { "header"?: (props: typeof __vize_slot_payload_13) => any } & { "default"?: (props: typeof __vize_slot_payload_63) => any } & { "footer"?: (props: typeof __vize_slot_payload_81) => any };
+  return {} as { "header"?: (props: typeof __vize_slot_payload_13) => any} & { "default"?: (props: typeof __vize_slot_payload_63) => any} & { "footer"?: (props: typeof __vize_slot_payload_81) => any};
 
   // Reference setup bindings (used in template/CSS v-bind)
   void slots; void (null as unknown as keyof typeof useSlots);
@@ -200,5 +200,5 @@ type $VueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeSlots?: Partial<$Slots>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeSlots?: Partial<Slots>; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;
 export default __vize_component__;

@@ -133,7 +133,7 @@ function __setup() {
   const model = defineModel<string>({ required: true })
   const count = defineModel<number>('count', { default: 0 })
   
-  // @vize-map: 15619:15742 -> 0:114
+  // @vize-map: 15029:15152 -> 0:114
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -186,8 +186,8 @@ function __setup() {
 __setup();
 
 export type Emits = {
-  "update:modelValue": [value: string];
-  "update:count": [value: number];
+  "update:modelValue": string;
+  "update:count": number;
 };
 type $Slots = {};
 export type Slots = $Slots;

@@ -135,7 +135,7 @@ function __setup() {
   const props = defineProps<Props>()
   const emit = defineEmits<Emits>()
   
-  // @vize-map: 15588:15667 -> 0:212
+  // @vize-map: 14998:15077 -> 0:212
 
   // ========== Template Scope (inherits from setup) ==========
   // Anchor before the template scope shadows `props`
@@ -233,5 +233,5 @@ type $VueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { __vizeEmitProps?: $StaticEmitProps; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, $StaticEmitProps>; } & $ComponentConstructor & $VueComponentOptions;
+declare const __vize_component__: { __vizeEmitProps?: $StaticEmitProps; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, $StaticEmitProps>; } & $ComponentConstructor & $VueComponentOptions;
 export default __vize_component__;

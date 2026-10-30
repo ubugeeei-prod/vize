@@ -157,7 +157,7 @@ function __setup() {
   
   const items = ref(['a', 'b', 'c'])
   
-  // @vize-map: 19838:19884 -> 0:97
+  // @vize-map: 19068:19114 -> 0:97
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

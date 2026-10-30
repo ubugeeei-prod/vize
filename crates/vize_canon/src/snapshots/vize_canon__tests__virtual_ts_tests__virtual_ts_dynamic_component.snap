@@ -135,7 +135,7 @@ function __setup() {
     currentComponent.value = currentComponent.value === CompA ? markRaw(CompB) : markRaw(CompA)
   }
   
-  // @vize-map: 15569:15759 -> 0:272
+  // @vize-map: 14979:15169 -> 0:272
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -269,5 +269,5 @@ type $VueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;
 export default __vize_component__;

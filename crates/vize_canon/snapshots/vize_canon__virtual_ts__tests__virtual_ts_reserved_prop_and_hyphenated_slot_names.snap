@@ -158,7 +158,7 @@ function __setup() {
     class?: string
   }>()
   
-  // @vize-map: 19838:19883 -> 0:78
+  // @vize-map: 19068:19113 -> 0:78
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

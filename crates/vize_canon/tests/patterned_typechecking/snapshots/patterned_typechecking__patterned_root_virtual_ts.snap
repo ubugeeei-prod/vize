@@ -1,5 +1,5 @@
 ---
-source: crates/vize_canon/tests/patterned_typechecking.rs
+source: crates/vize_canon/tests/patterned_typechecking/main.rs
 expression: code
 ---
 /// <reference lib="es2022" />
@@ -434,7 +434,7 @@ function __setup() {
   
   const result = {} as Result<number>;
   
-  // @vize-map: 27444:27489 -> 0:110
+  // @vize-map: 26849:26894 -> 0:110
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
