@@ -89,12 +89,12 @@ test("source provenance, original digest and archive membership cannot be omitte
 
 function assertLiveInventory(workflow: string, release: string): void {
   assert.equal(workflow, after, "the active whole workflow is the registered successor");
-  const expected = after.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
+  const expected = before.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
   assert.ok(expected);
   assert.deepEqual(
     release.split("\n").filter((row) => row.startsWith("  RELEASE_JS_PACKAGES: ")),
     [expected],
-    "the active release inventory retains exactly the same ordered sixteen packages",
+    "release retains the fifteen established packages while Babel awaits registry setup",
   );
 }
 
@@ -105,7 +105,7 @@ test("actual native-smoke and release files bind the registered successor", () =
   );
 });
 
-test("rolling back either or both active inventories cannot reuse historical admission", () => {
+test("smoke rollback or premature Babel publication cannot reuse historical admission", () => {
   const release = fs.readFileSync(
     new URL("../../.github/workflows/release.yml", import.meta.url),
     "utf8",
@@ -113,7 +113,12 @@ test("rolling back either or both active inventories cannot reuse historical adm
   const oldLine = before.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
   const newLine = after.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
   assert.ok(oldLine && newLine);
-  const rolledBackRelease = release.replace(newLine, oldLine);
-  assert.throws(() => assertLiveInventory(before, rolledBackRelease));
-  assert.throws(() => assertLiveInventory(after, rolledBackRelease));
+  assert.throws(() => assertLiveInventory(before, release));
+  assert.throws(() => assertLiveInventory(after, release.replace(oldLine, newLine)));
+  for (const changed of [
+    oldLine.replace(" npm/cli", ""),
+    oldLine.replace(" npm/cli", " npm/cli npm/cli"),
+    oldLine.replace("npm/cli npm/builder/vite", "npm/builder/vite npm/cli"),
+  ])
+    assert.throws(() => assertLiveInventory(after, release.replace(oldLine, changed)));
 });
