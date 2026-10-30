@@ -34,3 +34,9 @@ the current snapshot only advances the three reviewed Maestro record fields.
 The packet authentication test checks the retained files and binds the complete
 after record to the live generator. Both existing mapping and diagnostic drift
 controls remain in place.
+
+The successor chain preserves later authenticated projection-only changes.
+`successor-11142-2` records the final 9-byte helper reduction from PR #11142's
+merge candidate `9ac745a02f9b98fb0991ce4df92ebf0b6f6f69f9`, captured by
+[run 41002941654](https://github.com/ubugeeei-prod/vize/actions/runs/41002941654),
+[artifact 12954566002](https://github.com/ubugeeei-prod/vize/actions/runs/41002941654/artifacts/12954566002).

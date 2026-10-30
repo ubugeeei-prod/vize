@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "pullRequest": 11142,
+  "observation": {
+    "rawProductRevision": "d53eb645a568e1e50562c69e90f35d2cb26cf7da",
+    "testedMerge": "9ac745a02f9b98fb0991ce4df92ebf0b6f6f69f9",
+    "run": 41002941654,
+    "job": 123891335773,
+    "artifact": 12954566002,
+    "pendingSnapshotPath": "pending-snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+    "pendingSnapshotBytes": 2350,
+    "pendingSnapshotSha256": "b01f7f67f27d97c1c5b9f8428976b17061868787fced30d8cb7b9381cca38894"
+  },
+  "predecessor": {
+    "path": "successor-11142/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "74a67fb305fcf932dcf83ee02024e464a0ff18ce6903f91319ae1f991491393b"
+  },
+  "successor": {
+    "path": "successor-11142-2/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "20a8be3a1fcf8f65f9ce531106c41cd042c6bef150311197c0927a5c50f078d0"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": -9,
+    "contentMapperGeneratedTextBytes": -9,
+    "maestroGeneratedTextBytes": -9,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "scope": "The frozen 194-file custody and earlier successors remain byte-identical. This receipt authenticates the redundant native-attribute string intersection removal observed at the tested merge."
+}
