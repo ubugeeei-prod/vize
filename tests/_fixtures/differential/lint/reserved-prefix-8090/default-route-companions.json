@@ -7564,13 +7564,13 @@
           "severity": "error",
           "message": "Prop name '$data' is reserved.",
           "start": 123,
-          "end": 129,
+          "end": 128,
           "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. Rename this prop to something else.",
           "labels": [
             {
               "message": "reserved prop name",
               "start": 123,
-              "end": 129
+              "end": 128
             }
           ],
           "fix": null
