@@ -24,9 +24,9 @@
     "sha256": "f51490f618a58a82d71b5bb84e1e75699fcbb6b695341a7d5db2f0fbea47abb2"
   },
   "delta": {
-    "canonGeneratedTextBytes": 85,
-    "contentMapperGeneratedTextBytes": 85,
-    "maestroGeneratedTextBytes": 0,
+    "canonGeneratedTextBytes": 165,
+    "contentMapperGeneratedTextBytes": 165,
+    "maestroGeneratedTextBytes": 80,
     "mappingCountsUnchanged": true,
     "diagnosticCountsUnchanged": true,
     "authoredHitCountsUnchanged": true

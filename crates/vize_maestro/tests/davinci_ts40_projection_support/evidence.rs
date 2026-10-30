@@ -61,7 +61,7 @@ fn public_instance_slot_packets_remain_authenticated() {
     );
     authenticate_successor_receipt(
         release_receipt,
-        "ec788565650f2f3b7286070552d5f648499fa2867e3165565e094b215e0864d3",
+        "191c8243c6287c80bf70bc769a989b3f0bab66384f10fd2832049e459b7e07d3",
         11149,
         current_successor,
         release_successor,
@@ -167,6 +167,56 @@ fn authenticate_successor_receipt(
         receipt["successor"]["sha256"].as_str(),
         Some(successor_sha.as_str())
     );
+    for (field, section) in [
+        ("canonGeneratedTextBytes", "canon"),
+        ("contentMapperGeneratedTextBytes", "content-mapper"),
+        ("maestroGeneratedTextBytes", "maestro"),
+    ] {
+        if let Some(expected) = receipt["delta"][field].as_i64() {
+            assert_eq!(
+                expected,
+                generated_text_bytes(successor, section)
+                    - generated_text_bytes(predecessor, section),
+                "{field} must equal the authenticated predecessor-to-successor delta"
+            );
+        }
+    }
+    if let Some(expected) = receipt["delta"]["generatedTextBytesPerProjection"].as_i64() {
+        for section in ["canon", "content-mapper", "maestro"] {
+            assert_eq!(
+                expected,
+                generated_text_bytes(successor, section)
+                    - generated_text_bytes(predecessor, section),
+                "generatedTextBytesPerProjection must match {section}"
+            );
+        }
+    }
+    if receipt["delta"]["canonAndContentMapperUnchanged"].as_bool() == Some(true) {
+        for section in ["canon", "content-mapper"] {
+            assert_eq!(
+                generated_text_bytes(successor, section),
+                generated_text_bytes(predecessor, section),
+                "canonAndContentMapperUnchanged must hold for {section}"
+            );
+        }
+    }
+}
+
+fn generated_text_bytes(record: &str, section: &str) -> i64 {
+    let marker = format!("[{section}]\n");
+    let section = record
+        .split_once(marker.as_str())
+        .expect("projection section")
+        .1;
+    let text = section
+        .lines()
+        .find_map(|line| line.strip_prefix("text="))
+        .expect("generated text record");
+    text.split_once(':')
+        .expect("generated text byte/hash separator")
+        .0
+        .parse()
+        .expect("generated text byte count")
 }
 
 fn authenticate_packets(
