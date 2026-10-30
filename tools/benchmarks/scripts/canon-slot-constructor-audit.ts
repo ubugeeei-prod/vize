@@ -60,11 +60,18 @@ function offset(value: unknown, field: string): number {
   return value;
 }
 
+export function canonicalMappedGenerated(source: string): string {
+  return source.replace(
+    /(\bconst __vize_required_slots_\d+\s*:\s*)\$RequiredSlots<\$SlotContract_(\d+),/gu,
+    "$1__VizeRequiredSlots<__VizeSlotContract_$2,",
+  );
+}
+
 function mappingContract(result: Record<string, unknown>) {
   const source = text(result);
   return tuples(result.mappings).map(
     ([generated, length, original, originalLength, kind, features]) => ({
-      generated: bytes(source, generated, generated + length),
+      generated: canonicalMappedGenerated(bytes(source, generated, generated + length)),
       original,
       originalLength,
       kind,
