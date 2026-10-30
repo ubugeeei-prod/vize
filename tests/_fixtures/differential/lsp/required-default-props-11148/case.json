@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "id": "lsp/regression/required-default-props-11148",
+  "provenance": {
+    "fixCommit": "95f237bd5c67e757babe488add444bfe2f247f0d",
+    "witnessPath": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/required_default_props.rs",
+    "inputOrigin": "Authored LSP reproduction of the third-party required-plus-default prop report from PR #11148, including its spread runtime object and a wrapped required Boolean control.",
+    "contractOrigin": "A typecheck-only empty initial diagnostic packet proves that the parent may pass string-or-undefined or omit the defaulted string prop while the required wrapped Boolean remains present; the CSS color request is an independent completion barrier."
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "e52cdb532aa11bf8da2adc90aabc72a315ab613e4b34616ada4b8bd32f9dc509"
+    },
+    {
+      "source": "Child.vue.txt",
+      "runtimePath": "Child.vue",
+      "sha256": "146b7df38282ea1720bb6e4f16ed57902c527358ad1df12bfa542e3aa588a952"
+    },
+    {
+      "source": "shared.ts.txt",
+      "runtimePath": "shared.ts",
+      "sha256": "9b72cc938c54c92ad20cb0fbafbb7346de8c2cb49a16c106055da398b911092f"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "b6a08547ffda4a5fa53ae5a1d367c9261a1c4b8b6f91e7db6202088101460965"
+    }
+  ],
+  "entry": "App.vue",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "initialDiagnostics": [],
+  "method": "textDocument/documentColor",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "ac8cb84bd1906b75d1e78fdd51aa6caf4d2f14c341a9991c918e259185d33a2b"
+  },
+  "scope": "The exact typecheck-only initial packet is the regression contract for editor diagnostics. The documentColor result only proves that the same native stdio session completed a request after readiness."
+}
