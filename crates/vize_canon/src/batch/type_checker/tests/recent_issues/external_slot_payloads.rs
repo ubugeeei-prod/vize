@@ -179,7 +179,9 @@ fn declaration_only_and_package_child_slot_payloads_stay_exact() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
-    let project_root = create_project_case(
+    // This contract uses Vue's real DefineComponent overloads. The dependency
+    // facade deliberately has broad slots and cannot serve as its type oracle.
+    let project_root = super::real_vue::create_project_case(
         "external-slot-payload-declared",
         &[
             ("src/declared.ts", DECLARED_CHILDREN),
@@ -221,6 +223,17 @@ function takesString(value: string) {
 "#,
             ),
         ],
+    );
+
+    let provider: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(project_root.join("node_modules/vue/package.json"))
+            .expect("the external-slot contract requires the installed tests Vue provider"),
+    )
+    .expect("the installed Vue provider must have a valid package manifest");
+    assert_eq!(provider["name"], "vue");
+    assert_eq!(
+        provider["version"], "3.6.0-beta.10",
+        "the external-slot contract requires the pinned tests workspace Vue provider"
     );
 
     let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
