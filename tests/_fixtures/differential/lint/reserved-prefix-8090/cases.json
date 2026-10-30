@@ -10505,15 +10505,31 @@
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
+          "message": "Reserved key '$data'",
+          "start": 107,
+          "end": 112,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "data key starts with reserved '$'",
+              "start": 107,
+              "end": 112
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
           "message": "Reserved key '_private'",
-          "start": 118,
-          "end": 126,
+          "start": 117,
+          "end": 125,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
           "labels": [
             {
               "message": "data key starts with reserved '_'",
-              "start": 118,
-              "end": 126
+              "start": 117,
+              "end": 125
             }
           ],
           "fix": null
@@ -10522,14 +10538,14 @@
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
           "message": "Reserved key '_$data'",
-          "start": 131,
-          "end": 137,
+          "start": 130,
+          "end": 136,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
           "labels": [
             {
               "message": "data key starts with reserved '_'",
-              "start": 131,
-              "end": 137
+              "start": 130,
+              "end": 136
             }
           ],
           "fix": null

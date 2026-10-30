@@ -1,6 +1,5 @@
 ---
 source: crates/vize_maestro/tests/davinci_ts40_projection.rs
-assertion_line: 47
 expression: record.render()
 ---
 fixture=generic-sfc

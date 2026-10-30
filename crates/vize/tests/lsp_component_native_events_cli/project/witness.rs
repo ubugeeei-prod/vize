@@ -24,7 +24,6 @@ pub(crate) struct Witness {
     pub app_path: PathBuf,
     pub query_position: usize,
     pub historical_query_position: usize,
-    pub child_import_utf16_delta: isize,
 }
 
 pub(crate) fn create_marker(root: &Path) {
@@ -121,7 +120,7 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     receipt["query"] = json!({ "sourceRange": [source_start, source_end], "construct": construct, "byteCursor": cursor, "utf16Position": query_position });
     let (counterfactual, historical_query_position) = historical_counterfactual(&app, construct);
     receipt["navigationPreludeCounterfactual"] = counterfactual;
-    let (import_relocation, child_import_utf16_delta) = child_import_relocation(&app, &child_path);
+    let (import_relocation, _) = child_import_relocation(&app, &child_path);
     receipt["childImportRelocation"] = import_relocation;
     record(receipt);
     let parsed: Value = serde_json::from_str(&config).unwrap();
@@ -136,7 +135,6 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
         app_path,
         query_position,
         historical_query_position,
-        child_import_utf16_delta,
     }
 }
 
@@ -215,54 +213,6 @@ fn child_import_relocation_preserves_utf16_offsets_and_rejects_a_different_owner
 /// UTF-16 length of the generated slot-navigation prelude that precedes the query.
 pub fn slot_navigation_prelude_utf16_len() -> usize {
     SLOT_NAVIGATION_PRELUDE.encode_utf16().count()
-}
-
-/// UTF-16 growth from the complete helper at the original test's source
-/// baseline (da26dc4b2bb9f02492f8682929d29c4dfc1f7ec9). The older hosted
-/// counterfactual remains untouched; it predates other helper changes too.
-pub fn public_input_prelude_utf16_delta() -> usize {
-    let current = include_str!("../../../../vize_canon/src/virtual_ts/component_prop_helpers.txt");
-    let before = include_str!(
-        "../../../../../tests/_fixtures/differential/lsp/component-native-events/public-input-prelude-before-9498.txt"
-    );
-    assert_eq!(
-        super::hash(before.as_bytes()),
-        "86a95b8a79b0c6dd2d17a79362ec9cd617bbc8a95e361387dc364cda0f2c945d"
-    );
-    current
-        .encode_utf16()
-        .count()
-        .checked_sub(before.encode_utf16().count())
-        .unwrap()
-}
-
-/// Keep the original hosted witness bytes and account for #10423's helper
-/// growth separately from the component input and navigation declarations.
-pub fn kebab_case_prelude_utf16_delta() -> usize {
-    let before = include_str!(
-        "../../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-before-source-counterfactual.txt"
-    )
-    .lines()
-    .find(|line| line.starts_with("type __VizeKebabCase<"))
-    .unwrap();
-    assert_eq!(
-        super::hash(before.as_bytes()),
-        "252e573afbee269915bdda1cb0725b6cb723b7bba2f8bd1195ec51aca24263b9"
-    );
-    let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS
-        .lines()
-        .find(|line| line.starts_with("type $KebabCase<"))
-        .unwrap();
-    current
-        .encode_utf16()
-        .count()
-        .checked_sub(before.encode_utf16().count())
-        .unwrap()
-}
-
-/// UTF-16 length of the navigation helper added ahead of every prop query.
-pub fn component_navigation_helper_utf16_len() -> usize {
-    COMPONENT_NAVIGATION_HELPER.encode_utf16().count()
 }
 
 // A named source counterfactual preserves the old position; it is not an old backend run.
