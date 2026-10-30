@@ -36,10 +36,7 @@ const value = 'a' as 'a' | 'b';
         .unwrap();
         assert_eq!(project.host.code.contains("$Patterns.Match<"), enabled);
         assert_eq!(
-            project
-                .host
-                .code
-                .contains("declare namespace $Patterns"),
+            project.host.code.contains("declare namespace $Patterns"),
             enabled
         );
         let dependency = project

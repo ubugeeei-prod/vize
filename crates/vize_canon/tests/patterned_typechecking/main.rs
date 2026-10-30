@@ -71,10 +71,7 @@ fn pattern_declarations_are_requested_once_and_only_when_used() {
         let result = type_check_sfc(source, &options);
         assert_eq!(result.virtual_ts_helpers.is_some(), used);
         if let Some(helpers) = result.virtual_ts_helpers {
-            assert_eq!(
-                helpers.matches("declare namespace $Patterns").count(),
-                1
-            );
+            assert_eq!(helpers.matches("declare namespace $Patterns").count(), 1);
         }
         // Standalone virtual files embed their declarations; project files use
         // the program-wide helper instead. Neither path repeats them per arm.

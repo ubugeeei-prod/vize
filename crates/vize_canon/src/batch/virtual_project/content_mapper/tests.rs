@@ -118,10 +118,7 @@ const $ComponentCheckProps = 1
     );
     assert_eq!(
         (
-            result
-                .text
-                .matches("type $ComponentCheckProps<")
-                .count(),
+            result.text.matches("type $ComponentCheckProps<").count(),
             result
                 .text
                 .matches("interface $PublicComponentAttrs")
@@ -310,11 +307,7 @@ fn a_component_without_setup_bindings_declares_no_widening_helpers() {
     let result =
         generate_vue_content_mapper_transform(Path::new("Static.vue"), source).expect("transform");
 
-    for declaration in [
-        "type __U<",
-        "type $IsUnion<",
-        "type $WidenTemplateRef<",
-    ] {
+    for declaration in ["type __U<", "type $IsUnion<", "type $WidenTemplateRef<"] {
         assert_eq!(
             result.text.matches(declaration).count(),
             0,
