@@ -150,12 +150,8 @@ type $UnownedComponentAttrs<F, P = {}, E = {}> =
           ? F
           : { [K in keyof F as K extends $ComponentOwnKeys<P, E> ? never : K]: F[K] }
         : never;
-type $Prettify<T> = (T extends any
-  ? { [K in keyof T]: T[K] }
-  : { [K in keyof T as K]: T[K] }) & {};
-type $ComponentFallthroughSurface<C> = (C extends {
-  new (...args: any[]): { $props: infer __P };
-}
+type $Prettify<T> = (T extends any ? { [K in keyof T]: T[K] } : { [K in keyof T as K]: T[K] }) & {};
+type $ComponentFallthroughSurface<C> = (C extends { new (...args: any[]): { $props: infer __P } }
   ? __P
   : C extends (props: infer __P, ...args: any[]) => any
     ? __P
@@ -285,8 +281,8 @@ type $PublicEmit<
 type $PublicSlots<T> = [keyof T] extends [never]
   ? import("vue").ComponentPublicInstance["$slots"]
   : T;
-// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
 type $ComponentPublicBase = Omit<
+  // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
   import("vue").ComponentPublicInstance,
   "$props" | "$emit" | "$slots"
 >;
