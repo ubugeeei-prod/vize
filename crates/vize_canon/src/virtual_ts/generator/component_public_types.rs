@@ -19,6 +19,7 @@ pub(super) fn emit_slots_type(
     mut mappings: MacroTypeMappings<'_>,
     generic_injection: Option<&(String, Vec<String>)>,
     export_slots: bool,
+    authored_slots_binding: bool,
     inferred_slots: bool,
 ) -> bool {
     let slots_type_args = summary
@@ -64,7 +65,12 @@ pub(super) fn emit_slots_type(
         false
     };
     if export_slots {
-        if is_generic {
+        if authored_slots_binding {
+            // The authored binding is already the public contract named by
+            // `defineSlots<Slots>()`. Export that binding instead of declaring
+            // a second `Slots` alias in the same type namespace.
+            ts! { &mut *ts => export type { Slots }; }
+        } else if is_generic {
             // Call sites instantiate `$Slots<...>`. The re-export does not bind
             // `Slots` locally, and nothing in this module names it bare.
             ts! { &mut *ts => export type { $Slots as Slots }; }
