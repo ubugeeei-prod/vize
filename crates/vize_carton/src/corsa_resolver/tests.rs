@@ -424,7 +424,7 @@ fn typescript_six_does_not_authorize_an_undeclared_preview() {
 }
 
 #[test]
-fn ignores_vize_owned_runtime_and_an_undeclared_preview() {
+fn uses_vize_owned_runtime_after_an_undeclared_preview_is_rejected() {
     let suffix = platform_suffix();
     let temp_dir = TempDir::new().unwrap();
     let root = temp_dir.path().join("project");
@@ -452,7 +452,7 @@ fn ignores_vize_owned_runtime_and_an_undeclared_preview() {
 
     let resolved = discover_in_walk(std::slice::from_ref(&root));
 
-    assert_eq!(resolved, None);
+    assert_eq!(resolved, Some(owned_binary.canonicalize().unwrap()));
 }
 
 mod bundled_vize;
