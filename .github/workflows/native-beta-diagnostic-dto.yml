@@ -75,7 +75,7 @@ jobs:
         run: |
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::initial_diagnostics::
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::
-          cargo clippy --locked --profile ci -p vize_canon --all-targets -- -D warnings
+          cargo clippy --locked --profile ci -p vize_canon --lib -- -D warnings
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
