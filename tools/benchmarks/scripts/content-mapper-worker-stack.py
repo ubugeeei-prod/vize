@@ -192,6 +192,7 @@ def main():
     parser.add_argument("--source-sha", required=True)
     parser.add_argument("--profile", choices=("ci", "ci-opt"), required=True)
     parser.add_argument("--remaining-v-slot-only", action="store_true")
+    parser.add_argument("--fixed-worker-budget", action="store_true")
     args = parser.parse_args()
     binary = args.binary.resolve(strict=True)
     out = args.out.resolve()
@@ -206,11 +207,36 @@ def main():
         "perFileOutputLimitBytes": OUTPUT_LIMIT_BYTES,
         "processTreeRssLimitBytes": RSS_LIMIT_BYTES,
         "remainingVSlotOnly": args.remaining_v_slot_only,
+        "fixedWorkerBudget": args.fixed_worker_budget,
         "trials": [],
     }
     try:
+        assert not (args.fixed_worker_budget and args.remaining_v_slot_only)
+        if args.fixed_worker_budget:
+            report["explicitWorkerStackBytes"] = 64 * 1024**2
+            # Preserve the measured profile coverage. Debug 4094 was not
+            # qualified by the original bounded calibration.
+            depth = 4094 if args.profile == "ci-opt" else 2048
+            report["qualifiedDepth"] = depth
+            report["depths"] = [depth]
+            report["candidateInheritedStacks"] = [256 * 1024, 512 * 1024]
+            report["timeoutSeconds"] = 90
+            for shape in ("v-for", "v-slot"):
+                reference = None
+                for inherited in (256 * 1024, 512 * 1024):
+                    result = trial(binary, out / f"{shape}-{depth}-{inherited}", shape, depth, inherited, 90)
+                    report["trials"].append(result)
+                    assert result["accepted"], "explicit worker budget must survive the tiny inherited stack"
+                    if reference is not None:
+                        assert result["stdoutSha256"] == reference, "inherited stack changed complete response"
+                    reference = result["stdoutSha256"]
+            report["complete"] = True
+            return
         if args.remaining_v_slot_only:
             assert args.profile == "ci-opt", "focused follow-up uses the optimized source binary"
+            report["depths"] = [4094]
+            report["candidateInheritedStacks"] = [32 * 1024**2, 64 * 1024**2, 128 * 1024**2]
+            report["timeoutSeconds"] = 90
             accepted = []
             for stack in (32 * 1024**2, 64 * 1024**2, 128 * 1024**2):
                 result = trial(binary, out / f"v-slot-4094-{stack}", "v-slot", 4094, stack, 90)

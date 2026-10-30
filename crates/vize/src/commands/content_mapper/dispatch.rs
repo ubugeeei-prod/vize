@@ -18,6 +18,12 @@ use super::project::{
 };
 use super::{InitializeParams, Request, TransformParams, read_frame};
 
+// Actions measured both closure shapes at 4,094 levels in the optimized
+// ci-opt profile with 32 MiB and an independent 64 MiB output control.
+// Debug v-for replay at 2,048 levels also completed with 32/64 MiB. Keep the
+// measured headroom independent of a host's inherited RUST_MIN_STACK setting.
+const TRANSFORM_WORKER_STACK_BYTES: usize = 64 * 1024 * 1024;
+
 struct TransformJob {
     seq: u64,
     id: Value,
@@ -96,7 +102,9 @@ pub(super) fn serve<R: BufRead, W: Write + Send>(reader: &mut R, writer: &mut W)
         for _ in 0..workers {
             let jobs = &job_rx;
             let done = done_tx.clone();
-            scope.spawn(move || worker(jobs, done));
+            thread::Builder::new()
+                .stack_size(TRANSFORM_WORKER_STACK_BYTES)
+                .spawn_scoped(scope, move || worker(jobs, done))?;
         }
         let read = read_loop(reader, &job_tx, &done_tx, &progress);
         drop(job_tx);

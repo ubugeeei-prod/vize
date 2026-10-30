@@ -29,9 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The original run retains both profiles. This follow-up measures only
-        # the unfinished maximum-depth v-slot case with an explicit 90s bound.
-        profile: [ci-opt]
+        profile: [ci, ci-opt]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -61,7 +59,7 @@ jobs:
             --binary "target/$BUILD_PROFILE/vize" \
             --source-sha "$SOURCE_SHA" \
             --profile "$BUILD_PROFILE" \
-            --remaining-v-slot-only \
+            --fixed-worker-budget \
             --out "$RUNNER_TEMP/worker-stack"
       - name: Retain complete source and process evidence
         if: always()
