@@ -46,6 +46,8 @@ test("slot constructor audit selects the binary and declarations from one SDK im
   );
   for (const extension of ["ts", "mts", "cts"])
     fs.writeFileSync(path.join(head, `content-mapper-helpers.d.${extension}`), `head-${extension}`);
+  fs.mkdirSync(path.join(head, "generated"));
+  fs.writeFileSync(path.join(head, "generated/content-mapper-types.d.ts"), "head-generated-types");
 
   selectSdk(project, "/head/vize", head);
 
@@ -59,4 +61,8 @@ test("slot constructor audit selects the binary and declarations from one SDK im
       fs.readFileSync(path.join(installed, `content-mapper-helpers.d.${extension}`), "utf8"),
       `head-${extension}`,
     );
+  assert.equal(
+    fs.readFileSync(path.join(installed, "generated/content-mapper-types.d.ts"), "utf8"),
+    "head-generated-types",
+  );
 });
