@@ -16,6 +16,7 @@ pub(crate) fn native_fixture_runtime_disabled() -> bool {
     std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
 }
 
+mod art_native_display;
 mod capture;
 pub(crate) use capture::WorkspaceCapturePolicy;
 
@@ -464,6 +465,11 @@ pub(crate) fn check_pack_with_capture_policy(
             (
                 normalize_generated_check_ordinals(&actual),
                 normalize_generated_check_ordinals(&case.diagnostics),
+            )
+        } else if name == "art-variant-implicit-component-9854" {
+            (
+                actual.clone(),
+                art_native_display::expected(&fixtures, &fixture_pack, &case),
             )
         } else {
             (actual.clone(), case.diagnostics.clone())
