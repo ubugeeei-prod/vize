@@ -69,28 +69,8 @@ fn dynamic_prop_names_do_not_become_static_component_contract_keys() {
     assert_eq!(&output.code[prop_link.source_range.clone()], "Child");
     assert_eq!(&output.code[prop_link.target_range.clone()], "staticProp");
 
-    assert!(output.code.contains("__Child_0_prop_static_prop"));
-    assert!(output.code.contains("\"staticProp\": staticValue"));
-    assert!(!output.code.contains("__Child_0_prop_propName"));
-    assert!(!output.code.contains("\"propName\": dynamicValue"));
-    assert!(!output.code.contains("__vize_props_nav_0.propName"));
-    assert!(
-        output.code.contains("void (dynamicValue); // VBind"),
-        "dynamic value expressions must still be checked:\n{}",
-        output.code
-    );
-    assert!(
-        output
-            .code
-            .contains("void ({ [propName]: undefined }); // DynamicDirectiveArgument"),
-        "dynamic prop names must be checked as expressions:\n{}",
-        output.code
-    );
-    assert!(
-        output
-            .code
-            .contains("void (eventName); // DynamicEventArgument"),
-        "dynamic event names must be checked as expressions:\n{}",
+    insta::assert_snapshot!(
+        "dynamic_component_names_keep_runtime_keys_open",
         output.code
     );
 }
@@ -106,7 +86,7 @@ fn computed_component_event_names_never_become_static_listener_types() {
         "const enter = 'enter'\n",
         "let pressed = false\n",
     );
-    for (target, argument) in [
+    for (index, (target, argument)) in [
         ("Child", "'ping'"),
         ("Child", r#"`${Events.UP}`"#),
         ("Child", "getKey(Events.UP)"),
@@ -115,7 +95,10 @@ fn computed_component_event_names_never_become_static_listener_types() {
         ("Child", "vnodeMounted"),
         ("button", "vnodeMounted"),
         ("Transition", "enter"),
-    ] {
+    ]
+    .into_iter()
+    .enumerate()
+    {
         let template = if target == "button" {
             format!(r#"<button @[{argument}]="pressed = true"></button>"#)
         } else {
@@ -130,17 +113,9 @@ fn computed_component_event_names_never_become_static_listener_types() {
             "computed listener {argument} generated invalid TypeScript:\n{:?}\n{code}",
             parsed.diagnostics,
         );
-        assert!(
-            code.contains("// DynamicEventArgument"),
-            "computed listener name must still be checked as an authored expression:\n{code}",
-        );
-        assert!(
-            code.contains("type __vize_dynamic_component_"),
-            "computed listener must use the open runtime listener contract:\n{code}",
-        );
-        assert!(
-            !code.contains("type __vize_vnode_hook_"),
-            "computed listener names must not be mistaken for static vnode hooks:\n{code}",
+        insta::assert_snapshot!(
+            format!("computed_component_event_name_{index}_{target}"),
+            code
         );
     }
 }

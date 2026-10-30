@@ -78,16 +78,16 @@ fn standard_tsgo_accepts_computed_component_event_names() {
     let broken = PROBE.replacen("pressed = true", "pressed = 1", 1);
     std::fs::write(project.path().join("src/Probe.vue"), broken).unwrap();
     let output = check_project(&tsgo, project.path(), "tsconfig.json");
-    assert!(
-        !output.status.success(),
-        "broken handler unexpectedly passed"
+    assert_eq!(output.status.code(), Some(2), "{}", output_text(&output));
+    assert_eq!(output.stderr, b"", "{}", output_text(&output));
+    let diagnostics = std::str::from_utf8(&output.stdout)
+        .unwrap()
+        .lines()
+        .filter(|line| !line.is_empty())
+        .map(|line| line.replace('\\', "/"))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        diagnostics,
+        ["src/Probe.vue(13,36): error TS2322: Type 'number' is not assignable to type 'boolean'."]
     );
-    let text = output_text(&output).replace('\\', "/");
-    assert!(
-        text.contains(
-            "src/Probe.vue(13,36): error TS2322: Type 'number' is not assignable to type 'boolean'."
-        ),
-        "{text}",
-    );
-    assert!(!text.contains(".vue.ts"), "{text}");
 }
