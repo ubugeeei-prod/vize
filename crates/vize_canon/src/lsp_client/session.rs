@@ -23,6 +23,7 @@ use vize_l0::{String, cstr};
 mod bootstrap;
 mod canon_document;
 mod capabilities;
+mod close;
 mod replay;
 pub(super) use bootstrap::{
     ProjectSessionSpawnError, api_mode_for_executable, spawn_project_session,
@@ -141,24 +142,45 @@ impl CorsaProjectClient {
     }
 
     pub(super) fn delete_overlay_document(&mut self, uri: &str) -> Result<(), String> {
+        let document_uri = self
+            .session_document_uris
+            .get(uri)
+            .cloned()
+            .unwrap_or_else(|| self.session_document_uri(uri));
+        let file_changes = if document_uri != uri {
+            close::close_materialized_document(uri, document_uri.as_str(), &self.project_root)?
+        } else {
+            virtual_overlay::delete_file_changes(uri, document_uri.as_str(), &self.project_root)
+        };
+        let restored = matches!(&file_changes, Some(FileChanges::Summary(summary))
+            if !summary.changed.is_empty() || !summary.created.is_empty());
+        // A closed disk-backed member still belongs to the materialized
+        // project. Preserve its external identity for navigation results.
+        if !restored {
+            self.session_document_uris.remove(uri);
+            self.external_document_uris.remove(document_uri.as_str());
+        }
         if self.document_texts.remove(uri).is_some() {
             self.editor_lsp_documents_dirty = true;
         }
         self.overlay_versions.remove(uri);
-        let document_uri = self
-            .session_document_uris
-            .remove(uri)
-            .unwrap_or_else(|| self.session_document_uri(uri));
-        self.external_document_uris.remove(document_uri.as_str());
-        let file_changes = remove_session_document(uri, document_uri.as_str()).or_else(|| {
-            virtual_overlay::delete_file_changes(uri, document_uri.as_str(), &self.project_root)
-        });
+        if document_uri != uri {
+            if let Some(editor) = self.editor_lsp.as_mut()
+                && let Some(FileChanges::Summary(summary)) = &file_changes
+                && let Some(path) = file_uri_to_path(document_uri.as_str())
+            {
+                if !summary.created.is_empty() {
+                    editor.refresh_materialized_files(&[], &[path], &[])?;
+                } else if restored {
+                    editor.refresh_materialized_files(&[path], &[], &[])?;
+                } else {
+                    editor.refresh_materialized_files(&[], &[], &[path])?;
+                }
+            }
+            return self.refresh_materialized_overlay_snapshot(file_changes);
+        }
         if !self.has_project_session() {
             return Ok(());
-        }
-        if document_uri != uri {
-            return block_on(self.project_session_mut()?.refresh(file_changes))
-                .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"));
         }
 
         if !self.supports_overlay_api() {
@@ -272,25 +294,6 @@ pub(super) fn materialize_session_document(
             vec![uri_document_identifier(document_uri)]
         },
         deleted: Vec::new(),
-    }))
-}
-
-fn remove_session_document(external_uri: &str, document_uri: &str) -> Option<FileChanges> {
-    if document_uri == external_uri {
-        return None;
-    }
-
-    let path = file_uri_to_path(document_uri)?;
-    let path = path.as_path();
-    if !path.exists() {
-        return None;
-    }
-
-    let _ = std::fs::remove_file(path);
-    Some(FileChanges::Summary(FileChangeSummary {
-        changed: Vec::new(),
-        created: Vec::new(),
-        deleted: vec![uri_document_identifier(document_uri)],
     }))
 }
 
