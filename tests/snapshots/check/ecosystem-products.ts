@@ -42,11 +42,13 @@ const currentReceipt = {
     "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
   slotFallbackProvenance: "#11064 / c2ee0878fec5d53edb7c30e10f374e37ab256f02",
   slotFallbackFiles: [],
-  // Whole packet observed with #11153 / 197682982b4, local leased CLI 73ddcc7cfc8.
+  // Whole packet observed with #11153 / c647f8af136, local leased CLI 37ded2f2052.
+  // Prior packet f3bfea0213d0c612b3f700d96b8918add8ec06e99bda5842428dd78985cbb9e5
+  // was observed with 197682982b4 / CLI 73ddcc7cfc8 and remains historical.
   // Prior Linux packet e0d7fd37fead28615939040a3e13dc11b8ecd4209252f99abeb29f8e9657a5f4
   // and earlier ffd237083004fd1a5eb9b5c8b517ce16c05de9a211310f6aafdc379f1be97dc3 remain historical.
-  // Only two ARIA helper blocks and their owned calls change; Actions must qualify the latest head.
-  snapshotSha256: "f3bfea0213d0c612b3f700d96b8918add8ec06e99bda5842428dd78985cbb9e5",
+  // Only eight native-event alias pairs change; Actions must qualify the latest head.
+  snapshotSha256: "8b36860739cc363cda440deb29464652fd37df3f09e86e0f145e7d09150eef0c",
   warningCount: 0,
   widenHelperFiles: [
     "src/ComposablesAndRouting.vue",
