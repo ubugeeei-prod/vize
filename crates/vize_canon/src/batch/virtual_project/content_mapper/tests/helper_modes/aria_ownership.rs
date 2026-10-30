@@ -19,6 +19,25 @@ const label = 'ok';
         )
         .expect("production ARIA and slot transform");
         let text = transform.text.as_str();
+        let raw_return = if shared {
+            "T extends undefined ? never : T"
+        } else {
+            "$NotUndefined<T>"
+        };
+        let raw_signature = format!(
+            "function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T>(raw: R, camel: C, value: T): {{ readonly [K in R | C]: {raw_return} }};"
+        );
+        assert_eq!(
+            text.matches(raw_signature.as_str()).count(),
+            1,
+            "the raw overload must expose no expected-contract type to contextual inference: {text}"
+        );
+        assert_eq!(
+            text.matches("function __vizeComponentAriaPropEntries")
+                .count(),
+            3,
+            "raw and owned overloads precede their hidden implementation: {text}"
+        );
         assert_eq!(
             text.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label, (undefined as unknown as __Child_0_prop_aria_label))").count(),
             1,

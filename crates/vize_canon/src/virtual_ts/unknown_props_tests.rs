@@ -301,7 +301,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     assert_eq!(
         code.matches("function __vizeComponentAriaPropEntries")
             .count(),
-        1,
+        3,
         "the value witness must be emitted once per relevant SFC: {code}"
     );
     assert_eq!(

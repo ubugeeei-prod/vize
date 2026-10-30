@@ -215,12 +215,12 @@ fn authored_module_types_cannot_capture_batch_helpers() {
         generated
             .matches("function __vizeComponentAriaPropEntries")
             .count(),
-        1,
+        3,
         "the ARIA key/value witness must precede the hoisted-helper early return:\n{generated}"
     );
     assert_eq!(
         generated.matches("T extends undefined ? never : T").count(),
-        2,
+        4,
         "the ARIA witness must inline its collision-proof narrowing contract:\n{generated}"
     );
     let _ = std::fs::remove_dir_all(&project_root);
