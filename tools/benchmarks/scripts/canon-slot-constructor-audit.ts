@@ -210,6 +210,12 @@ export function native(stdout: Buffer, status: number | null, project: string): 
   return rows;
 }
 
+const contentMapperHelperDeclarations = [
+  "content-mapper-helpers.d.ts",
+  "content-mapper-helpers.d.mts",
+  "content-mapper-helpers.d.cts",
+] as const;
+
 function materializeSdk(project: string, provider: string, binary: string | null) {
   const modules = path.join(project, "node_modules");
   fs.mkdirSync(modules);
@@ -219,8 +225,16 @@ function materializeSdk(project: string, provider: string, binary: string | null
   const source = path.join(provider, "node_modules/vize"),
     target = path.join(modules, "vize");
   fs.mkdirSync(target);
-  for (const name of fs.readdirSync(source))
-    if (name !== "package.json") fs.symlinkSync(path.join(source, name), path.join(target, name));
+  for (const name of fs.readdirSync(source)) {
+    if (name === "package.json") continue;
+    if (
+      contentMapperHelperDeclarations.includes(
+        name as (typeof contentMapperHelperDeclarations)[number],
+      )
+    )
+      fs.copyFileSync(path.join(source, name), path.join(target, name));
+    else fs.symlinkSync(path.join(source, name), path.join(target, name));
+  }
   const manifest = jsonValue(fs.readFileSync(path.join(source, "package.json"), "utf8"));
   assert.ok(
     isRecord(manifest) &&
@@ -240,7 +254,7 @@ export function installedSdk(project: string, provider: string) {
   materializeSdk(project, provider, null);
 }
 
-export function selectSdk(project: string, binary: string) {
+export function selectSdk(project: string, binary: string, declarations?: string) {
   const file = path.join(project, "node_modules/vize/package.json"),
     value = jsonValue(fs.readFileSync(file, "utf8"));
   assert.ok(
@@ -248,4 +262,7 @@ export function selectSdk(project: string, binary: string) {
   );
   value.typescript.contentMapper.exec = [binary, "content-mapper"];
   save(file, value);
+  if (declarations)
+    for (const name of contentMapperHelperDeclarations)
+      fs.copyFileSync(path.join(declarations, name), path.join(project, "node_modules/vize", name));
 }

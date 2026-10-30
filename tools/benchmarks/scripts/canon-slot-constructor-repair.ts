@@ -30,6 +30,7 @@ import {
 const realProjectFixture = path.resolve(
   "tests/_fixtures/differential/typechecker/zero-argument-slot-constructor-11013/real-project",
 );
+const headSdkDeclarations = path.resolve("npm/cli");
 const realProjectFiles = [
   ["QSplitter.ts.txt", "src/components/QSplitter.ts"],
   ["SongEditor.vue.txt", "src/components/Song/SongEditor.vue"],
@@ -198,7 +199,7 @@ function captureRealProject(provider: string, head: string, checker: string, out
     expectedScreenshotMultiset,
     "the published Corsa surface must reproduce both exact screenshot paths and TS2554 messages",
   );
-  selectSdk(project, head);
+  selectSdk(project, head, headSdkDeclarations);
   const repaired = execute("head");
   assert.deepEqual(repaired, [], "the repaired real project must have no virtual-only diagnostics");
   const receipt = {
@@ -316,7 +317,7 @@ async function main() {
         ["head", head],
       ]) {
         assert.ok(role && binary);
-        selectSdk(project, binary);
+        selectSdk(project, binary, role === "head" ? headSdkDeclarations : undefined);
         const out = path.join(root, role),
           env = {
             ...process.env,
@@ -421,7 +422,7 @@ async function main() {
         assert.ok(original);
         fs.writeFileSync(path.join(project, "component.ts"), original.component);
         fs.writeFileSync(path.join(project, "src/Tiny.vue"), original.source);
-        selectSdk(project, head);
+        selectSdk(project, head, headSdkDeclarations);
         const repaired = run(
           path.join(root, "repair"),
           "mapper",
