@@ -74,36 +74,30 @@ pub fn resolve_real_server_path(repo_root: &Path) -> Result<PathBuf, String> {
 }
 
 pub fn resolve_corsa_path(repo_root: &Path) -> Result<PathBuf, String> {
-    let extension = vscode_extension_path(repo_root);
     let package = format!("@typescript/typescript-{}-{}", node_platform(), node_arch());
-    let direct = extension
-        .join("node_modules")
-        .join(package.replace('/', std::path::MAIN_SEPARATOR_STR))
-        .join("lib")
-        .join(if cfg!(windows) { "tsc.exe" } else { "tsc" });
-    if direct.exists() {
-        return direct
-            .canonicalize()
-            .map_err(|error| format!("cannot canonicalize {}: {error}", direct.display()));
-    }
-    if let Some(found) = find_file_named(
-        &extension.join("node_modules"),
-        if cfg!(windows) { "tsc.exe" } else { "tsc" },
-    )? {
-        if found.components().any(|component| {
-            component
-                .as_os_str()
-                .to_string_lossy()
-                .contains("@typescript")
-        }) {
-            return found
+    // The private pinned runtime is a root optional dependency. Keep the exact
+    // extension-local route for standalone editor installs, never a recursive
+    // search that could select another platform or an unrelated compiler.
+    let candidates = [repo_root.to_path_buf(), vscode_extension_path(repo_root)].map(|root| {
+        root.join("node_modules")
+            .join(package.replace('/', std::path::MAIN_SEPARATOR_STR))
+            .join("lib")
+            .join(if cfg!(windows) { "tsc.exe" } else { "tsc" })
+    });
+    for candidate in &candidates {
+        if candidate.is_file() {
+            return candidate
                 .canonicalize()
-                .map_err(|error| format!("cannot canonicalize {}: {error}", found.display()));
+                .map_err(|error| format!("cannot canonicalize {}: {error}", candidate.display()));
         }
     }
     Err(format!(
         "missing TypeScript 7 runtime (checked {})",
-        direct.display()
+        candidates
+            .iter()
+            .map(|path| path.display().to_string())
+            .collect::<Vec<_>>()
+            .join(", ")
     ))
 }
 
@@ -200,32 +194,6 @@ fn symlink_dir(from: &Path, to: &Path) -> Result<(), String> {
             from.display()
         )
     })
-}
-
-fn find_file_named(root: &Path, name: &str) -> Result<Option<PathBuf>, String> {
-    if !root.exists() {
-        return Ok(None);
-    }
-    let mut entries = fs::read_dir(root)
-        .map_err(|error| format!("cannot read {}: {error}", root.display()))?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|error| format!("cannot read {}: {error}", root.display()))?;
-    entries.sort_by_key(|entry| entry.file_name());
-    for entry in entries {
-        let path = entry.path();
-        let file_type = entry
-            .file_type()
-            .map_err(|error| format!("cannot stat {}: {error}", path.display()))?;
-        if file_type.is_file() && entry.file_name() == name {
-            return Ok(Some(path));
-        }
-        if file_type.is_dir() {
-            if let Some(found) = find_file_named(&path, name)? {
-                return Ok(Some(found));
-            }
-        }
-    }
-    Ok(None)
 }
 
 fn node_platform() -> &'static str {
