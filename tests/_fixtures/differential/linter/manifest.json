@@ -2047,8 +2047,8 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "ts"],
-            "selector": "original issue CLI and live protocol5/protocol9 boolean expression tests"
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }
