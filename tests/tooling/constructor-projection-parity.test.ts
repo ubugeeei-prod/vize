@@ -7,9 +7,13 @@ import { test } from "node:test";
 import {
   canonicalPaths,
   comparePackets,
+  currentNativeAttributeAliases,
   nativeAttributesPath,
+  previousNativeAttributeAliases,
   readAssets,
   relocatePacket,
+  relocateVirtualPacket,
+  type Assets,
   type Row,
 } from "../../tools/support/compat/content-mapper/constructor-projection-parity.ts";
 
@@ -17,19 +21,20 @@ const root = fileURLToPath(new URL("../..", import.meta.url));
 const assets = readAssets(root, root);
 const bytes = (text: string) => Buffer.byteLength(text);
 
-function fixture() {
+function fixture(selectedAssets: Assets = assets) {
   const source = "<template>日本 🧭</template>";
   // An authored comment with the same spelling must never become generated metadata.
   const prefix = "  // @vize-map: 0:0 -> 0:0\n" + "// padded\n".repeat(120);
   const body = "const value = '日本 🧭';\n";
   const tail = "const result = value;\n";
-  const packet = (helper: Buffer) => {
-    const g0 = bytes(prefix) + helper.length,
+  const packet = (helper: Buffer, nativeAttributes: Buffer) => {
+    const declarations = Buffer.concat([helper, Buffer.from("\n"), nativeAttributes]);
+    const g0 = bytes(prefix) + declarations.length,
       g1 = g0 + bytes(body);
     const comment = `  // @vize-map: ${g0}:${g1} -> 0:${bytes(source)}\n`;
     const target = g1 + bytes(comment);
     return {
-      text: prefix + helper.toString() + body + comment + tail,
+      text: prefix + declarations.toString() + body + comment + tail,
       extension: ".tsx",
       mappings: [
         [0, bytes(prefix) - 1, 0, 1, 1, 0],
@@ -52,7 +57,11 @@ function fixture() {
       diagnostics: [{ start: 0, length: 1, code: 100001, messageText: "original message" }],
     };
   };
-  return { source, base: packet(assets.embedded), head: packet(assets.imported) };
+  return {
+    source,
+    base: packet(selectedAssets.embedded, selectedAssets.baseNativeAttributes),
+    head: packet(selectedAssets.imported, selectedAssets.headNativeAttributes),
+  };
 }
 
 test("certified helper and self-described coordinates preserve complete packets", () => {
@@ -69,6 +78,38 @@ test("an authored range crossing the helper prefix boundary is refused", () => {
   base.mappings.push([start - 1, 2, 0, 1, 1, 0]);
   head.mappings.push([start - 1, 2, 0, 1, 1, 0]);
   assert.throws(() => relocatePacket(base, head, source, assets), /certified replacement/);
+});
+
+test("virtual ranges crossing a certified replacement are refused", () => {
+  const source = "x";
+  const before = `prefix\n${assets.embedded.toString()}tail\n`;
+  const after = `prefix\n${assets.imported.toString()}tail\n`;
+  const helperStart = bytes("prefix\n");
+  const base = {
+    virtual_ts: before,
+    virtual_ts_mappings: [
+      {
+        authored: { start: 0, end: 1 },
+        generated: { start: helperStart - 1, end: helperStart + assets.embedded.length + 1 },
+        subSpans: [],
+      },
+    ],
+    virtual_ts_semantic_links: [],
+  };
+  const head = {
+    ...structuredClone(base),
+    virtual_ts: after,
+    virtual_ts_mappings: [
+      {
+        ...base.virtual_ts_mappings[0],
+        generated: { start: helperStart - 1, end: helperStart + assets.imported.length + 1 },
+      },
+    ],
+  };
+  assert.throws(
+    () => relocateVirtualPacket(base, head, source, assets, assets.imported),
+    /certified replacement/,
+  );
 });
 
 test("matching authored coordinates outside the source are refused independently of parity", () => {
@@ -152,7 +193,7 @@ test("all 228 original observations participate, including every unshared packet
   assert.throws(() => comparePackets(baseRows, headRows.slice(1), assets));
 });
 
-test("canonical bodies and alias order are independently exact", (context) => {
+test("canonical bodies, alias order and native alias migration are independently exact", (context) => {
   const directory = mkdtempSync(path.join(os.tmpdir(), "vize-helper-parity-"));
   context.after(() => rmSync(directory, { recursive: true, force: true }));
   const base = path.join(directory, "base"),
@@ -164,7 +205,20 @@ test("canonical bodies and alias order are independently exact", (context) => {
       mkdirSync(path.dirname(path.join(destination, file)), { recursive: true });
       writeFileSync(path.join(destination, file), readFileSync(path.join(root, file)));
     }
-  readAssets(base, head);
+  const baseNativeAttributes = path.join(base, nativeAttributesPath);
+  writeFileSync(
+    baseNativeAttributes,
+    readFileSync(baseNativeAttributes, "utf8").replace(
+      currentNativeAttributeAliases,
+      previousNativeAttributeAliases,
+    ),
+  );
+  const migratedAssets = readAssets(base, head);
+  const migrated = fixture(migratedAssets);
+  const proof = relocatePacket(migrated.base, migrated.head, migrated.source, migratedAssets);
+  const aliasStart = migrated.base.text.indexOf(previousNativeAttributeAliases);
+  assert.ok(proof.edits.some((edit) => edit.start === aliasStart));
+
   const canonical = path.join(head, canonicalPaths[0]);
   writeFileSync(canonical, readFileSync(canonical, "utf8") + "\n");
   assert.throws(() => readAssets(base, head), /canonical helper body changed/);
@@ -180,7 +234,10 @@ test("canonical bodies and alias order are independently exact", (context) => {
   const nativeAttributes = path.join(head, nativeAttributesPath);
   writeFileSync(
     nativeAttributes,
-    readFileSync(nativeAttributes, "utf8").replace("Extract<", "Awaited<"),
+    readFileSync(nativeAttributes, "utf8").replace(
+      currentNativeAttributeAliases,
+      currentNativeAttributeAliases.replace("Extract<", "Awaited<"),
+    ),
   );
   assert.throws(() => readAssets(base, head), /certified native attribute aliases/);
 });

@@ -41,9 +41,9 @@ export type Row = {
 type Edit = { start: number; end: number; replacement: Buffer };
 export type Assets = ReturnType<typeof readAssets>;
 
-const previousNativeAttributeAliases =
+export const previousNativeAttributeAliases =
   "type $ComponentNativeAttrNames = { [K in keyof $NativeElements & string]: keyof $NativeElements[K] }[keyof $NativeElements & string] & string;";
-const currentNativeAttributeAliases = [
+export const currentNativeAttributeAliases = [
   "type $ComponentNativeElementNames = Extract<keyof $NativeElements, string>;",
   "type $ComponentNativeAttrNames = { [K in $ComponentNativeElementNames]: Extract<keyof $NativeElements[K], string> }[$ComponentNativeElementNames];",
 ].join("\n");
@@ -177,7 +177,8 @@ function relocationEdits(
   before: Buffer,
   after: Buffer,
   sourceBytes: number,
-  generatedRanges: [number, number][],
+  baseGeneratedRanges: [number, number][],
+  headGeneratedRanges: [number, number][],
   assets: Assets,
   replacement: Buffer,
 ) {
@@ -198,8 +199,8 @@ function relocationEdits(
       replacement: Buffer.from(currentNativeAttributeAliases),
     });
   }
-  const originalComments = comments(before.toString(), generatedRanges);
-  const actualComments = comments(after.toString(), generatedRanges);
+  const originalComments = comments(before.toString(), baseGeneratedRanges);
+  const actualComments = comments(after.toString(), headGeneratedRanges);
   assert.equal(
     actualComments.length,
     originalComments.length,
@@ -280,6 +281,7 @@ export function relocatePacket(
     after,
     sourceBytes,
     base.mappings.map(([generated, length]) => [generated, length]),
+    head.mappings.map(([generated, length]) => [generated, length]),
     assets,
     replacement,
   );
@@ -340,7 +342,7 @@ type VirtualPacket = {
   }[];
 };
 
-function relocateVirtualPacket(
+export function relocateVirtualPacket(
   base: VirtualPacket,
   head: VirtualPacket,
   source: string,
@@ -350,32 +352,43 @@ function relocateVirtualPacket(
   const sourceBytes = Buffer.byteLength(source);
   const before = Buffer.from(base.virtual_ts),
     after = Buffer.from(head.virtual_ts);
-  const generatedRanges: [number, number][] = [];
-  for (const mapping of base.virtual_ts_mappings) {
-    bounds(mapping.authored.start, mapping.authored.end - mapping.authored.start, sourceBytes);
-    bounds(mapping.generated.start, mapping.generated.end - mapping.generated.start, before.length);
-    generatedRanges.push([
-      mapping.generated.start,
-      mapping.generated.end - mapping.generated.start,
-    ]);
-    for (const span of mapping.subSpans) {
-      bounds(span.authored.start, span.authored.end - span.authored.start, sourceBytes);
-      bounds(span.generated.start, span.generated.end - span.generated.start, before.length);
-      generatedRanges.push([span.generated.start, span.generated.end - span.generated.start]);
+  const collectGeneratedRanges = (packet: VirtualPacket, generatedBytes: number) => {
+    const ranges: [number, number][] = [];
+    for (const mapping of packet.virtual_ts_mappings) {
+      bounds(mapping.authored.start, mapping.authored.end - mapping.authored.start, sourceBytes);
+      bounds(
+        mapping.generated.start,
+        mapping.generated.end - mapping.generated.start,
+        generatedBytes,
+      );
+      ranges.push([mapping.generated.start, mapping.generated.end - mapping.generated.start]);
+      for (const span of mapping.subSpans) {
+        bounds(span.authored.start, span.authored.end - span.authored.start, sourceBytes);
+        bounds(span.generated.start, span.generated.end - span.generated.start, generatedBytes);
+        ranges.push([span.generated.start, span.generated.end - span.generated.start]);
+      }
     }
-  }
+    for (const link of packet.virtual_ts_semantic_links) {
+      bounds(link.source.start, link.source.end - link.source.start, generatedBytes);
+      bounds(link.target.start, link.target.end - link.target.start, generatedBytes);
+    }
+    return ranges;
+  };
+  const baseGeneratedRanges = collectGeneratedRanges(base, before.length);
+  const headGeneratedRanges = collectGeneratedRanges(head, after.length);
   const { start, edits } = relocationEdits(
     before,
     after,
     sourceBytes,
-    generatedRanges,
+    baseGeneratedRanges,
+    headGeneratedRanges,
     assets,
     replacement,
   );
-  const shift = ({ start, end }: { start: number; end: number }) => ({
-    start: point(start, edits),
-    end: point(end, edits),
-  });
+  const shift = ({ start, end }: { start: number; end: number }) => {
+    const [relocated, length] = range(start, end - start, edits, before.length);
+    return { start: relocated, end: relocated + length };
+  };
   const expected = structuredClone(base);
   expected.virtual_ts = head.virtual_ts;
   expected.virtual_ts_mappings = base.virtual_ts_mappings.map((mapping) => ({
