@@ -232,6 +232,52 @@ fn expected() -> (Value, Value) {
         *slot_member = update["after"].clone();
     }
     manifest["provenance"]["currentSlotOutletAliasUpdate"] = slot_update;
+    let generated_contract_update = fs::read(
+        support::corpus().join("malformed-membership/generated-contract-update-11153.json"),
+    )
+    .unwrap();
+    assert_eq!(
+        support::hash(&generated_contract_update),
+        "4ed2c20757f3cbb830771a7235dc2e7696a208bddb0f08a2a18e4b7629ceea88"
+    );
+    let generated_contract_update: Value =
+        serde_json::from_slice(&generated_contract_update).unwrap();
+    assert_eq!(generated_contract_update["version"], 1);
+    assert_eq!(generated_contract_update["pullRequest"], 11153);
+    assert_eq!(
+        generated_contract_update["sourceRevision"],
+        "8862213fc88ec98ea51a52bbd0809668b9cd0dce"
+    );
+    assert_eq!(
+        generated_contract_update["testedMerge"],
+        "a311a7da3cd1390b19b69b658929ca6d8627b179"
+    );
+    assert_eq!(generated_contract_update["observedRun"], 41043029472_i64);
+    assert_eq!(generated_contract_update["observedJob"], 124021180957_i64);
+    assert_eq!(generated_contract_update["artifact"], 12971895560_i64);
+    assert_eq!(
+        generated_contract_update["artifactArchiveSha256"],
+        "b8e7e11735c2e8b8bd9de42c38371585f8b1c32d22f5750cdb731aa81c44814f"
+    );
+    assert_eq!(
+        generated_contract_update["extractedPacketSha256"],
+        "56ece424e5858328feac89f9ed30a25de7738d3a429d56545966cb327a2b848f"
+    );
+    let generated_contract_entries = generated_contract_update["entries"].as_array().unwrap();
+    assert_eq!(generated_contract_entries.len(), 3);
+    for update in generated_contract_entries {
+        let index = update["entry"].as_u64().unwrap() as usize;
+        assert!([74usize, 75, 82].contains(&index));
+        let member = members.get_mut(index).unwrap();
+        assert_eq!(*member, update["before"]);
+        assert_eq!(update["before"][0], update["after"][0]);
+        assert_eq!(
+            update["after"][1].as_i64().unwrap() - update["before"][1].as_i64().unwrap(),
+            update["deltaBytes"].as_i64().unwrap()
+        );
+        *member = update["after"].clone();
+    }
+    manifest["provenance"]["currentGeneratedContractUpdate"] = generated_contract_update;
     (manifest, json!(members))
 }
 

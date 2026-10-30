@@ -19,6 +19,207 @@ const hash = (b) => createHash("sha256").update(b).digest("hex"),
 const family = "tests/_fixtures/differential/typechecker/template-context-undefined-10667";
 const observer = "crates/vize/tests/content_mapper_tsgo_cli/typed_context_undefined.rs";
 const sourceSha = readFileSync(join(out, "source.sha"), "utf8").trim();
+const embeddedHelperPaths = [
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt",
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt",
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/prop-keys.d.ts.txt",
+  null,
+  "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/native-elements.d.ts.txt",
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/component-global-attributes.d.ts.txt",
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/for-list.d.ts.txt",
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/directives.d.ts.txt",
+];
+const embeddedHelpers = (root) =>
+  Buffer.concat(
+    embeddedHelperPaths.map((path) =>
+      path === null ? Buffer.from("\n") : readFileSync(join(root, path)),
+    ),
+  );
+const overlap = (start, length, edit) => start < edit.end && edit.start < start + length;
+const point = (value, edits) => {
+  assert(Number.isSafeInteger(value) && value >= 0);
+  let delta = 0;
+  for (const edit of edits) {
+    if (value >= edit.end) delta += edit.replacement.length - (edit.end - edit.start);
+    else {
+      assert(value <= edit.start, "coordinate enters a certified generated replacement");
+      break;
+    }
+  }
+  return value + delta;
+};
+const projectedRange = (start, length, edits) => {
+  assert(edits.every((edit) => !overlap(start, length, edit)));
+  const relocated = point(start, edits);
+  return [relocated, point(start + length, edits) - relocated];
+};
+const uniqueOffset = (text, needle) => {
+  const offset = text.indexOf(needle);
+  assert(offset >= 0 && text.indexOf(needle, offset + 1) < 0, "certified bytes must occur once");
+  return offset;
+};
+const applyEdits = (text, edits) => {
+  let cursor = 0;
+  const fragments = [];
+  for (const edit of edits) {
+    assert(cursor <= edit.start && edit.start <= edit.end);
+    fragments.push(text.subarray(cursor, edit.start), edit.replacement);
+    cursor = edit.end;
+  }
+  fragments.push(text.subarray(cursor));
+  return Buffer.concat(fragments);
+};
+const certifyMapperTransition = (beforePacket, afterPacket) => {
+  const before = Buffer.from(beforePacket.text);
+  const after = Buffer.from(afterPacket.text);
+  const beforeHelper = embeddedHelpers("before");
+  const afterHelper = embeddedHelpers("source");
+  const helperStart = uniqueOffset(before, beforeHelper);
+  uniqueOffset(after, afterHelper);
+  const mapped = beforePacket.mappings.map(([start, length]) => [start, length]);
+  const generated = (start, length) =>
+    !mapped.some(([g, l]) => overlap(start, length, { start: g, end: g + l }));
+  const primary = [
+    {
+      start: helperStart,
+      end: helperStart + beforeHelper.length,
+      replacement: afterHelper,
+      label: "embedded helper block",
+    },
+  ];
+  const beforeText = before.toString();
+  for (const match of beforeText.matchAll(/\b__Vize[A-Za-z0-9_]+\b/gu)) {
+    const start = Buffer.byteLength(beforeText.slice(0, match.index));
+    const end = start + Buffer.byteLength(match[0]);
+    if (helperStart <= start && end <= helperStart + beforeHelper.length) continue;
+    if (!generated(start, end - start)) continue;
+    primary.push({
+      start,
+      end,
+      replacement: Buffer.from(`$${match[0].slice("__Vize".length)}`),
+      label: "collision-safe generated identifier",
+    });
+  }
+  for (const context of ["const defineModel = undefined", "const __ctx = undefined"]) {
+    const at = uniqueOffset(before, Buffer.from(context));
+    const start = at + Buffer.byteLength(context) - Buffer.byteLength("undefined");
+    primary.push({
+      start,
+      end: start + Buffer.byteLength("undefined"),
+      replacement: Buffer.from("(void 0)"),
+      label: "undefined-safe generated value",
+    });
+  }
+  const markerPrefix = "readonly __vizeRawProps?: Props; ";
+  const markerNeedle = `${markerPrefix}readonly __vizeHasFallthroughProps: true;`;
+  const markerStart =
+    uniqueOffset(before, Buffer.from(markerNeedle)) + Buffer.byteLength(markerPrefix);
+  primary.push({
+    start: markerStart,
+    end: markerStart,
+    replacement: Buffer.from("readonly __vizeNativeFallthroughRoot: true; "),
+    label: "native fallthrough ownership marker",
+  });
+  primary.sort((left, right) => left.start - right.start || left.end - right.end);
+  for (let index = 1; index < primary.length; index++)
+    assert(primary[index - 1].end <= primary[index].start, "certified generated edits overlap");
+  const comments = [...beforeText.matchAll(/\/\/ @vize-map: (\d+):(\d+) -> (\d+):(\d+)/gu)];
+  const commentEdits = comments.map((match) => {
+    const start = Buffer.byteLength(beforeText.slice(0, match.index));
+    const [generatedStart, generatedEnd, sourceStart, sourceEnd] = match.slice(1).map(Number);
+    const replacement = Buffer.from(
+      `// @vize-map: ${point(generatedStart, primary)}:${point(generatedEnd, primary)} -> ${sourceStart}:${sourceEnd}`,
+    );
+    return {
+      start,
+      end: start + Buffer.byteLength(match[0]),
+      replacement,
+      label: "derived map coordinates",
+    };
+  });
+  const edits = [...primary, ...commentEdits].sort(
+    (left, right) => left.start - right.start || left.end - right.end,
+  );
+  for (let index = 1; index < edits.length; index++)
+    assert(edits[index - 1].end <= edits[index].start, "complete certified edits overlap");
+  assert.deepEqual(after, applyEdits(before, edits), "all other generated bytes must remain exact");
+  return {
+    edits,
+    beforeHelperSha256: hash(beforeHelper),
+    afterHelperSha256: hash(afterHelper),
+    generatedIdentifierEdits: primary.filter(
+      (edit) => edit.label === "collision-safe generated identifier",
+    ).length,
+  };
+};
+const certifyNativeTransition = (beforeText, afterText) => {
+  const before = Buffer.from(beforeText);
+  const after = Buffer.from(afterText);
+  const source = before.toString();
+  const primary = [];
+  for (const match of source.matchAll(/\b__Vize[A-Za-z0-9_]+\b/gu)) {
+    const start = Buffer.byteLength(source.slice(0, match.index));
+    primary.push({
+      start,
+      end: start + Buffer.byteLength(match[0]),
+      replacement: Buffer.from(`$${match[0].slice("__Vize".length)}`),
+      label: "collision-safe generated identifier",
+    });
+  }
+  const context = "const __ctx = undefined";
+  const contextAt = uniqueOffset(before, Buffer.from(context));
+  const contextStart = contextAt + Buffer.byteLength(context) - Buffer.byteLength("undefined");
+  primary.push({
+    start: contextStart,
+    end: contextStart + Buffer.byteLength("undefined"),
+    replacement: Buffer.from("(void 0)"),
+    label: "undefined-safe generated value",
+  });
+  const markerPrefix = "readonly __vizeRawProps?: Props; ";
+  const markerNeedle = `${markerPrefix}readonly __vizeHasFallthroughProps: true;`;
+  const markerStart =
+    uniqueOffset(before, Buffer.from(markerNeedle)) + Buffer.byteLength(markerPrefix);
+  primary.push({
+    start: markerStart,
+    end: markerStart,
+    replacement: Buffer.from("readonly __vizeNativeFallthroughRoot: true; "),
+    label: "native fallthrough ownership marker",
+  });
+  primary.sort((left, right) => left.start - right.start || left.end - right.end);
+  for (let index = 1; index < primary.length; index++)
+    assert(primary[index - 1].end <= primary[index].start, "certified native edits overlap");
+  const commentEdits = [...source.matchAll(/\/\/ @vize-map: (\d+):(\d+) -> (\d+):(\d+)/gu)].map(
+    (match) => {
+      const start = Buffer.byteLength(source.slice(0, match.index));
+      const [generatedStart, generatedEnd, sourceStart, sourceEnd] = match.slice(1).map(Number);
+      return {
+        start,
+        end: start + Buffer.byteLength(match[0]),
+        replacement: Buffer.from(
+          `// @vize-map: ${point(generatedStart, primary)}:${point(generatedEnd, primary)} -> ${sourceStart}:${sourceEnd}`,
+        ),
+        label: "derived map coordinates",
+      };
+    },
+  );
+  const edits = [...primary, ...commentEdits].sort(
+    (left, right) => left.start - right.start || left.end - right.end,
+  );
+  for (let index = 1; index < edits.length; index++)
+    assert(edits[index - 1].end <= edits[index].start, "complete certified native edits overlap");
+  assert.deepEqual(
+    after,
+    applyEdits(before, edits),
+    "all other native generated bytes must remain exact",
+  );
+  return {
+    edits,
+    generatedIdentifierEdits: primary.filter(
+      (edit) => edit.label === "collision-safe generated identifier",
+    ).length,
+  };
+};
 if (mode === "prepare") {
   assert.equal(process.version, "v26.12.1");
   assert.match(sourceSha, /^[a-f0-9]{40}$/);
@@ -225,44 +426,16 @@ if (mode === "prepare") {
   const post = after.find((p) => p.path.includes("/lf/prop-used/native-raw-702.json")).value;
   const pre = baseline["native-raw-702"].inputs;
   assert.equal(post.inputs.source, pre.source);
-  assert.equal(
-    post.inputs.virtualCode,
-    pre.virtualCode.replace(
-      "const __ctx = undefined as unknown as __Ctx;",
-      "const __ctx = (void 0) as unknown as __Ctx;",
-    ),
-  );
+  const nativeTransition = certifyNativeTransition(pre.virtualCode, post.inputs.virtualCode);
   const a = pre.mapperTransform,
     b = post.inputs.mapperTransform;
-  const edits = [];
-  for (const token of ["const defineModel = undefined", "const __ctx = undefined"]) {
-    const at = a.text.indexOf(token);
-    assert(at >= 0);
-    const start = at + token.length - "undefined".length;
-    edits.push({
-      start: Buffer.byteLength(a.text.slice(0, start)),
-      end: Buffer.byteLength(a.text.slice(0, start + 9)),
-      char: start,
-    });
-  }
-  let expected = a.text;
-  for (const e of [...edits].sort((x, y) => y.char - x.char))
-    expected = expected.slice(0, e.char) + "(void 0)" + expected.slice(e.char + 9);
-  const shift = (n) => {
-    assert(!edits.some((e) => e.start < n && n < e.end));
-    return n - edits.filter((e) => e.end <= n).length;
-  };
-  expected = expected.replace(
-    /\/\/ @vize-map: (\d+):(\d+) ->/g,
-    (_, start, end) => `// @vize-map: ${shift(+start)}:${shift(+end)} ->`,
-  );
-  assert.equal(b.text, expected);
+  const transition = certifyMapperTransition(a, b);
+  const edits = transition.edits;
   assert.equal(a.extension, b.extension);
   assert.deepEqual(a.diagnostics, b.diagnostics);
   assert.deepEqual(a.diagnosticDirectives, b.diagnosticDirectives);
   const mappings = a.mappings.map(([start, length, ...rest]) => {
-    assert(!edits.some((e) => start < e.end && e.start < start + length));
-    return [shift(start), shift(start + length) - shift(start), ...rest];
+    return [...projectedRange(start, length, edits), ...rest];
   });
   assert.deepEqual(b.mappings, mappings);
   const links = a.semanticLinks ?? [];
@@ -270,10 +443,10 @@ if (mode === "prepare") {
     b.semanticLinks ?? [],
     links.map((l) => ({
       ...l,
-      sourceStart: shift(l.sourceStart),
-      sourceLength: shift(l.sourceStart + l.sourceLength) - shift(l.sourceStart),
-      targetStart: shift(l.targetStart),
-      targetLength: shift(l.targetStart + l.targetLength) - shift(l.targetStart),
+      sourceStart: projectedRange(l.sourceStart, l.sourceLength, edits)[0],
+      sourceLength: projectedRange(l.sourceStart, l.sourceLength, edits)[1],
+      targetStart: projectedRange(l.targetStart, l.targetLength, edits)[0],
+      targetLength: projectedRange(l.targetStart, l.targetLength, edits)[1],
     })),
   );
   for (const p of [...before, ...after]) {
@@ -293,8 +466,12 @@ if (mode === "prepare") {
     optionPackets: options.length,
     unfilteredRawOutcomes: true,
     oldCliFalseCleanPreserved: true,
-    wholeNativeCodeOnlyContextLiteralChanged: true,
-    wholeMapperCodeOnlyTwoValueLiteralsAndPrefixOffsetsChanged: true,
+    wholeNativeCodeOnlyCertifiedGeneratedContractsAndContextLiteralChanged: true,
+    nativeCollisionSafeGeneratedIdentifierEdits: nativeTransition.generatedIdentifierEdits,
+    wholeMapperCodeOnlyCertifiedGeneratedContractsAndContextLiteralsChanged: true,
+    beforeEmbeddedHelperSha256: transition.beforeHelperSha256,
+    afterEmbeddedHelperSha256: transition.afterHelperSha256,
+    collisionSafeGeneratedIdentifierEdits: transition.generatedIdentifierEdits,
     allAuthoredRangesAndFeaturesExact: true,
     productionMappingNormalization: false,
     packets: [...before, ...after, ...options].map((p) => ({

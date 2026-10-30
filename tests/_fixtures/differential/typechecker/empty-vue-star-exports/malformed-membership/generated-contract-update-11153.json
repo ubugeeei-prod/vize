@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "pullRequest": 11153,
+  "sourceRevision": "8862213fc88ec98ea51a52bbd0809668b9cd0dce",
+  "testedMerge": "a311a7da3cd1390b19b69b658929ca6d8627b179",
+  "observedRun": 41043029472,
+  "observedJob": 124021180957,
+  "artifact": 12971895560,
+  "artifactArchiveSha256": "b8e7e11735c2e8b8bd9de42c38371585f8b1c32d22f5750cdb731aa81c44814f",
+  "extractedPacketSha256": "56ece424e5858328feac89f9ed30a25de7738d3a429d56545966cb327a2b848f",
+  "scope": "complete ordered malformed-project membership after collision-safe generated helpers and native fallthrough ownership",
+  "proof": "The failed exact roster named the first changed member. The retained whole packet independently authenticates all 86 ordered file bodies; exactly A.vue.ts, B.vue.ts, and __vize_helpers.d.ts changed from the previously authenticated postimages.",
+  "entries": [
+    {
+      "entry": 74,
+      "before": [
+        "project/A.vue.ts",
+        4120,
+        "e10241d8a37cb1aacec155cef53c080a1f7e69599910c99e7801df616a18c8d3"
+      ],
+      "after": [
+        "project/A.vue.ts",
+        3984,
+        "c08c85d1bbb96388fa79ebbfdd5c54510e8d0c40357285b9ff6937735149b6b8"
+      ],
+      "deltaBytes": -136
+    },
+    {
+      "entry": 75,
+      "before": [
+        "project/B.vue.ts",
+        4344,
+        "1987438ba338865f75c1160122b27d3f67d49a1beb8fd0feef456e486d477673"
+      ],
+      "after": [
+        "project/B.vue.ts",
+        4204,
+        "5d346edebfa79b07ce5e5695a8148b8e36b833c602afedb288d8121eefa08c54"
+      ],
+      "deltaBytes": -140
+    },
+    {
+      "entry": 82,
+      "before": [
+        "project/__vize_helpers.d.ts",
+        44383,
+        "ffa4105b1ea5c8276bb34d5e90f61447212bd7a88afcd31abbaa7dc38417a2c4"
+      ],
+      "after": [
+        "project/__vize_helpers.d.ts",
+        42923,
+        "c380658c771cfa8ab074395e5a8750cac2d5b5dcc56504b10a1339930eb5f988"
+      ],
+      "deltaBytes": -1460
+    }
+  ]
+}
