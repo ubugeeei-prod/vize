@@ -356,6 +356,21 @@ function stableWatcherShutdown(registrationRefusal) {
 }
 function requireStableWatcherShutdown(bytes, registrationRefusal) {
   const expected = stableWatcherShutdown(registrationRefusal);
+  const watch =
+    /^Added new watch: root files for (\/tmp\/[^\n]+)\/tsconfig\.json watcher 6\.0\n\t\1\/\*\*\/\*\n\n/u.exec(
+      bytes.toString("utf8"),
+    );
+  if (watch) {
+    assert.equal(
+      registrationRefusal,
+      true,
+      "Only the authenticated registration-refusal owner may report its registered watch",
+    );
+    const prefix = Buffer.from(watch[0]);
+    assert.deepEqual(bytes.subarray(0, prefix.length), prefix);
+    bytes = bytes.subarray(prefix.length);
+  }
+  if (bytes.equals(Buffer.from("\n"))) return;
   if (bytes.length === expected.length + 1) {
     assert.equal(bytes[0], 0x0a, "Only the observed single leading newline is permitted");
     bytes = bytes.subarray(1);
