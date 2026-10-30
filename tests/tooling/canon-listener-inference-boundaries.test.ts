@@ -19,11 +19,7 @@ const shared = fs.readFileSync(
   new URL("../../crates/vize_canon/src/virtual_ts/component_prop_helpers.txt", import.meta.url),
   "utf8",
 );
-const ownership = [
-  "$ComponentMetadataKeys",
-  "$ComponentOwnKeys",
-  "$UnownedComponentAttrs",
-]
+const ownership = ["$ComponentMetadataKeys", "$ComponentOwnKeys", "$UnownedComponentAttrs"]
   .map((name) => {
     const line = shared.split("\n").find((line) => line.startsWith(`type ${name}<`));
     assert.ok(line);

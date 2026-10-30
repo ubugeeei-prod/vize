@@ -166,9 +166,7 @@ function update(value: T | undefined) {}
 
     assert!(
         snapshot.iter().all(|(file, code, message)| {
-            !(file == "src/Foo.vue"
-                && *code == Some(2345)
-                && message.contains("$WidenTemplateRef"))
+            !(file == "src/Foo.vue" && *code == Some(2345) && message.contains("$WidenTemplateRef"))
         }),
         "generic refs should keep T | undefined in templates, got: {snapshot:#?}"
     );

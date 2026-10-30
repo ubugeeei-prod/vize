@@ -222,7 +222,8 @@ test("complete legacy-only observations stay in the denominator with zero native
     capture,
   );
   const report = typecheckerReport(loaded, captures, sourceRevision);
-  assert.equal(report.summary.legacyMatches, loaded.cases.length);  const acceptance = summarizeNativeAcceptance(loaded, report, {
+  assert.equal(report.summary.legacyMatches, loaded.cases.length);
+  const acceptance = summarizeNativeAcceptance(loaded, report, {
     sourceRevision,
     buildReceiptSha256: sha256(receipt),
     requiredStages: ["parse", "facts", "emit", "check"],
@@ -231,7 +232,8 @@ test("complete legacy-only observations stay in the denominator with zero native
     planned: loaded.cases.length,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: loaded.cases.length,    legacyBacked: 0,
+    unsupported: loaded.cases.length,
+    legacyBacked: 0,
     unverified: 0,
   });
 });

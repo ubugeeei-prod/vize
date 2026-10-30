@@ -32,7 +32,11 @@ fn nested_vize_optional_platform_compiler_is_the_fallback() {
     let found = discover_in_walk(&[project.to_path_buf()]).unwrap();
     assert_eq!(
         found.canonicalize().unwrap(),
-        platform.join("lib").join(executable).canonicalize().unwrap()
+        platform
+            .join("lib")
+            .join(executable)
+            .canonicalize()
+            .unwrap()
     );
 
     pnpm_sibling_link_resolves(&package_name, executable);
@@ -66,7 +70,11 @@ fn pnpm_sibling_link_resolves(package_name: &str, executable: &str) {
     let found = discover_in_walk(&[project]).unwrap();
     assert_eq!(
         found.canonicalize().unwrap(),
-        platform.join("lib").join(executable).canonicalize().unwrap()
+        platform
+            .join("lib")
+            .join(executable)
+            .canonicalize()
+            .unwrap()
     );
 }
 

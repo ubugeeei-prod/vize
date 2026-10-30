@@ -33,8 +33,7 @@ fn installed_vize_package_enables_shared_component_attribute_helpers() {
         "{text}"
     );
     assert_eq!(
-        text.matches("type $ComponentNativeAttrNames =")
-            .count(),
+        text.matches("type $ComponentNativeAttrNames =").count(),
         0,
         "{text}"
     );
@@ -73,8 +72,7 @@ fn mismatched_project_and_helper_vue_packages_keep_transforms_self_contained() {
         "{text}"
     );
     assert_eq!(
-        text.matches("type $ComponentNativeAttrNames =")
-            .count(),
+        text.matches("type $ComponentNativeAttrNames =").count(),
         1,
         "{text}"
     );
