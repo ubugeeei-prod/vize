@@ -1,80 +1,205 @@
-name: Current-source LSP baseline
+name: Temporary reviewed Misskey legacy RSS diagnostic
 
-# Finite, manually approved RPC baseline. Ordinary PR checks run pure controls.
+# REVIEW ARTIFACT ONLY. Reuse the existing dispatch path on an isolated branch.
+# Never cherry-pick this workflow to main. After qualification, restore that path
+# from its original reviewed commit; the production fix is a separate commit.
 on:
   workflow_dispatch:
     inputs:
-      source_sha:
-        description: Exact reviewed source SHA (must equal the dispatched ref)
+      base_sha:
+        description: Immutable observed failing baseline
+        required: true
+        default: c4ee353b79611126138a82fb68ae187dd171ef70
+        type: string
+      candidate_sha:
+        description: Immutable reviewed source-only candidate
+        required: true
+        default: acb904e246475975573f791ee8bf4dea71876538
+        type: string
+      workflow_ref:
+        description: Exact commit executing this temporary workflow
         required: true
         type: string
 
-permissions:
-  contents: read
-
+permissions: { contents: read }
 concurrency:
-  group: lsp-current-baseline-${{ inputs.source_sha }}
+  group: misskey-legacy-rss-${{ inputs.workflow_ref }}-${{ github.run_id }}
   cancel-in-progress: false
-
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+  RAYON_NUM_THREADS: "4"
+  CARGO_INCREMENTAL: "0"
+  VIZE_PERF_BUDGET_SCALE: "1"
 
 jobs:
-  misskey:
+  observe:
+    name: Legacy RSS (${{ matrix.role }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
+    timeout-minutes: 45
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix: { role: [base, candidate] }
     env:
-      VIZE_BASELINE_EXPECTED_SOURCE: ${{ inputs.source_sha }}
-      VIZE_PERF_BUDGET_SCALE: "1"
-      RAYON_NUM_THREADS: "4"
+      BASE_SHA: ${{ inputs.base_sha }}
+      CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+      WORKFLOW_SHA: ${{ inputs.workflow_ref }}
+      EXECUTED_WORKFLOW_SHA: ${{ github.workflow_sha }}
+      RUNNER_ENVIRONMENT: ${{ runner.environment }}
+      ROLE: ${{ matrix.role }}
+      SOURCE_SHA: ${{ matrix.role == 'base' && inputs.base_sha || inputs.candidate_sha }}
+      VIZE_LSP_BIN: target/ci/vize
+      CARGO_TARGET_DIR: ${{ runner.temp }}/misskey-rss-build-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ inputs.source_sha }}
-          persist-credentials: false
-      - name: Refuse a stale or different dispatch source
+      - name: Refuse mutable, stale, or unrelated dispatch authorities
         shell: bash
         run: |
           set -euo pipefail
-          [[ "$VIZE_BASELINE_EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
-          test "$(git rev-parse HEAD)" = "$VIZE_BASELINE_EXPECTED_SOURCE"
-          test "$GITHUB_SHA" = "$VIZE_BASELINE_EXPECTED_SOURCE"
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: package.json
-          cache: true
-          run-install: false
-      - name: Install locked JavaScript and native TypeScript dependencies
-        run: vp install --frozen-lockfile --prefer-offline
-      - name: Hydrate only the pinned Misskey fixture
-        run: git submodule update --init --depth 1 tests/_fixtures/_git/misskey
-      - name: Install repository Rust toolchain
+          for sha in "$BASE_SHA" "$CANDIDATE_SHA" "$WORKFLOW_SHA"; do
+            [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
+          done
+          test "$BASE_SHA" = c4ee353b79611126138a82fb68ae187dd171ef70
+          test "$CANDIDATE_SHA" = acb904e246475975573f791ee8bf4dea71876538
+          test "$BASE_SHA" != "$CANDIDATE_SHA"
+          test "$WORKFLOW_SHA" = "$EXECUTED_WORKFLOW_SHA"
+          test "$GITHUB_SHA" = "$WORKFLOW_SHA"
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$RUNNER_ENVIRONMENT" = self-hosted
+          test "$RUNNER_OS" = Linux
+          echo "EVIDENCE=$RUNNER_TEMP/misskey-rss-$ROLE" >> "$GITHUB_ENV"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ env.SOURCE_SHA }}", fetch-depth: 1, persist-credentials: false }
+      - name: Verify immutable role and identical original harnesses
+        shell: bash
         run: |
-          rustup toolchain install || rustup show active-toolchain
-          cargo --version
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: lsp-current-baseline
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Build and receipt the exact current source server
+          set -euo pipefail
+          mkdir -p "$EVIDENCE"
+          test ! -e "$CARGO_TARGET_DIR"
+          test ! -e target
+          mkdir -p "$CARGO_TARGET_DIR"
+          ln -s "$CARGO_TARGET_DIR" target
+          printf 'initially absent: %s/ci/vize and receipt\n' "$CARGO_TARGET_DIR" > "$EVIDENCE/initial-output-absence.txt"
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          git fetch --no-tags --depth=1 origin "$BASE_SHA" "$CANDIDATE_SHA" "$WORKFLOW_SHA"
+          git diff --exit-code "$BASE_SHA" "$CANDIDATE_SHA" -- \
+            tests/performance tests/_helpers tests/tooling/support/lsp tests/differential \
+            tests/_fixtures/vue-ecosystem-fixtures.json tests/package.json \
+            tools/support/compat/davinci tools/config/vite-plus \
+            .github/actions/check-vue-parity/action.yml \
+            package.json pnpm-lock.yaml pnpm-workspace.yaml vite.config.ts vite-plus.config.ts
+          git rev-parse HEAD HEAD^{tree} > "$EVIDENCE/source-and-tree.txt"
+          git show --no-patch --format=raw HEAD > "$EVIDENCE/source-commit.txt"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Install unchanged providers and hydrate pinned inputs
+        shell: bash
         run: |
-          cargo build --profile ci -p vize
-          node tests/differential/build-receipt.ts
-      - name: Qualify pure observation and refusal laws
-        run: node --test tests/tooling/lsp-current-baseline*.test.ts tests/tooling/lsp-session-capture.test.ts
-      - name: Measure three serial fresh sessions with all original checks
-        run: node tests/performance/lsp-current-baseline.ts
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+          set -euo pipefail
+          vp install --frozen-lockfile --prefer-offline
+          git submodule update --init --depth 1 -- \
+            tests/_fixtures/_git/misskey tests/_fixtures/_git/vue-vben-admin
+          for fixture in misskey vue-vben-admin; do
+            path="tests/_fixtures/_git/$fixture"
+            expected=$(git ls-tree HEAD "$path" | awk '{print $3}')
+            test "$(git -C "$path" rev-parse HEAD)" = "$expected"
+            test -z "$(git -C "$path" status --porcelain --untracked-files=all)"
+            printf '%s %s\n' "$fixture" "$expected" >> "$EVIDENCE/fixture-gitlinks.txt"
+          done
+      - name: Build original FullVue legacy CLI and fresh role receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e "$CARGO_TARGET_DIR/ci/vize"
+          test ! -e "$CARGO_TARGET_DIR/ci/vize.differential-build.json"
+          cargo build --profile ci -p vize --features legacy
+          node tests/differential/build-receipt.ts --legacy
+          cp target/ci/vize.differential-build.json "$EVIDENCE/legacy-build-receipt.json"
+          cargo test --profile ci -p vize_maestro --features legacy --lib \
+            ide::workspace_symbols::tests::script_and_component_contract_symbols_point_at_their_declarations \
+            -- --exact --nocapture \
+            > "$EVIDENCE/workspace-symbols.stdout" 2> "$EVIDENCE/workspace-symbols.stderr"
+          grep -Eq 'test result: ok\. [1-9][0-9]* passed' "$EVIDENCE/workspace-symbols.stdout"
+          cp crates/vize_maestro/src/ide/workspace_symbols/tests.rs "$EVIDENCE/focused-oracle-source.rs"
+          if test -f crates/vize_maestro/src/ide/workspace_symbols/contracts.rs; then
+            cp crates/vize_maestro/src/ide/workspace_symbols/contracts.rs "$EVIDENCE/contracts-source.rs"
+          fi
+      - name: Stage exact reviewed strict TypeScript diagnostic helpers
+        shell: bash
+        run: |
+          set -euo pipefail
+          for helper in custody source-census results; do
+            git show "$WORKFLOW_SHA:.github/actions/lsp-rss-diagnostic/$helper.ts" > "$EVIDENCE/$helper.ts"
+          done
+          sha256sum "$EVIDENCE/"*.ts > "$EVIDENCE/helper-sha256.txt"
+          compiler=node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/tsc.js
+          test -f "$compiler"
+          node "$compiler" --version > "$EVIDENCE/strict-tsc-version.txt"
+          node "$compiler" --ignoreConfig --strict --noEmit --noImplicitAny \
+            --noUncheckedIndexedAccess --exactOptionalPropertyTypes --target ES2022 \
+            --module ESNext --moduleResolution Bundler --esModuleInterop --skipLibCheck \
+            --types node --typeRoots "$GITHUB_WORKSPACE/node_modules/@types" \
+            "$EVIDENCE/custody.ts" "$EVIDENCE/source-census.ts" "$EVIDENCE/results.ts" \
+            > "$EVIDENCE/strict-tsc.stdout" 2> "$EVIDENCE/strict-tsc.stderr"
+      - name: Record immutable runtime and all-harness custody
+        shell: bash
+        run: |
+          node "$EVIDENCE/custody.ts" before
+          cat /proc/cpuinfo > "$EVIDENCE/cpuinfo.txt"
+          env | sort | grep -E '^(RAYON_|GOMAXPROCS|CARGO_INCREMENTAL|RUSTFLAGS|VIZE_PERF_)' \
+            > "$EVIDENCE/measurement-env.txt"
+      - name: Supplementary hydrated filesystem census (not compiler proof)
+        run: node "$EVIDENCE/source-census.ts"
+      - name: Original incremental controls then three independent original churn sessions
+        shell: bash
+        run: |
+          set -euo pipefail
+          observe() {
+            local label="$1" task="$2" code
+            mkdir -p "$EVIDENCE/$label"
+            node "$EVIDENCE/custody.ts" before
+            for suite in misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn; do
+              if test -d "target/vize-tests/metrics/$suite"; then
+                mv "target/vize-tests/metrics/$suite" "$EVIDENCE/$label/prior-$suite"
+              fi
+            done
+            set +e
+            vp run --no-cache --filter './tests' "$task" \
+              > "$EVIDENCE/$label/stdout.txt" 2> "$EVIDENCE/$label/stderr.txt"
+            code=$?
+            set -e
+            printf '{"exitCode":%s}\n' "$code" > "$EVIDENCE/$label/exit.json"
+            if test -d target/vize-tests/metrics; then
+              cp -R target/vize-tests/metrics "$EVIDENCE/$label/metrics"
+            else
+              printf 'metrics directory absent\n' > "$EVIDENCE/$label/metrics-missing.txt"
+            fi
+            node "$EVIDENCE/custody.ts" after
+            cp "$EVIDENCE/after.json" "$EVIDENCE/$label/custody-after.json"
+          }
+          observe incremental test:performance:lsp-incremental
+          for session in 1 2 3; do observe "churn-$session" test:performance:lsp-churn; done
+      - name: Recheck sources, provider, fixtures and every candidate result
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node "$EVIDENCE/custody.ts" after
+          test -z "$(git status --porcelain --untracked-files=no)"
+          for fixture in misskey vue-vben-admin; do
+            test -z "$(git -C tests/_fixtures/_git/$fixture status --porcelain --untracked-files=all)"
+          done
+          node "$EVIDENCE/results.ts"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: lsp-current-baseline-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.source_sha }}
-          path: |
-            target/vize-tests/lsp-current-baseline/
-            target/differential/lsp-sessions/
+          name: misskey-legacy-rss-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}
+          path: ${{ runner.temp }}/misskey-rss-${{ matrix.role }}/
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 14
