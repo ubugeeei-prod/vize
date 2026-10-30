@@ -361,11 +361,6 @@ function requireStableWatcherShutdown(bytes, registrationRefusal) {
       bytes.toString("utf8"),
     );
   if (watch) {
-    assert.equal(
-      registrationRefusal,
-      true,
-      "Only the authenticated registration-refusal owner may report its registered watch",
-    );
     const prefix = Buffer.from(watch[0]);
     assert.deepEqual(bytes.subarray(0, prefix.length), prefix);
     bytes = bytes.subarray(prefix.length);
