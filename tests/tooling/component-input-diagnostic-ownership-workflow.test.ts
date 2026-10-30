@@ -4,6 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { assertPreservedCallbackPacket } from "../../tools/support/compat/content-mapper/callback-owner-audit.ts";
+import { callbackNativeEventGate } from "../../tools/support/compat/content-mapper/callback-owner-packet-parity.ts";
 import {
   currentSlotsExport,
   currentSlotsMarker,
@@ -71,6 +72,132 @@ test("callback packets certify only the unmapped public Slots re-export", () => 
       () => assertPreservedCallbackPacket({ ...before, ...mutation }, { ...after, ...mutation }),
       assert.AssertionError,
     );
+});
+
+test("callback event scaffolding relocates complete UTF-8 packets and refuses unknown changes", () => {
+  for (const newline of ["\n", "\r\n"]) {
+    const prefix = `// 日本 🧭${newline}`;
+    const root =
+      "{ readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F }";
+    const args =
+      `  type __Comp_1_save_fallthrough_args = typeof Comp extends ${root}\n` +
+      "    ? $IsAny<__F> extends true ? unknown[] : NonNullable<__F> extends infer __P ? (__P extends { onSave?: (...args: infer __A) => any } ? __A : unknown[]) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[]\n" +
+      "    : unknown[];\n";
+    const returns = `  type __Comp_1_save_return_native_fallthrough = typeof Comp extends ${root} ? $IsAny<__F> extends true ? any : NonNullable<__F> extends { onSave?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any;\n`;
+    const gate = callbackNativeEventGate("Comp");
+    const nextArgs = args
+      .replace("    ? $IsAny", `    ? ${gate}$IsAny`)
+      .replace("    : unknown[];\n", "    : unknown[] : unknown[];\n");
+    const nextReturn = returns
+      .replace(`extends ${root} ? `, `extends ${root} ? ${gate}`)
+      .replace(";\n", " : any;\n");
+    const mapped = "const café = '雪🧭';\n";
+    const beforeStart = Buffer.byteLength(`${prefix}${args}${returns}const `);
+    const afterStart = Buffer.byteLength(`${prefix}${nextArgs}${nextReturn}const `);
+    const length = Buffer.byteLength("café");
+    const before = {
+      text: `${prefix}${args}${returns}${mapped}${previousSlotsExport}\ntype Public = ${previousSlotsMarker};\n`,
+      extension: ".tsx",
+      mappings: [[beforeStart, length, 0, length, 0, 1048575]],
+      semanticLinks: [
+        {
+          sourceStart: beforeStart,
+          sourceLength: length,
+          targetStart: beforeStart,
+          targetLength: length,
+          kind: "rename",
+        },
+      ],
+      diagnosticDirectives: {
+        directives: [[0, length, beforeStart, beforeStart + length, 0, 0]],
+        unusedExpectDirectiveDiagnostics: [],
+      },
+      diagnostics: [],
+      futureMetadata: { preserved: true },
+    };
+    const after = {
+      ...before,
+      text: `${prefix}${nextArgs}${nextReturn}${mapped}${currentSlotsExport}\ntype Public = ${currentSlotsMarker};\n`,
+      mappings: [[afterStart, length, 0, length, 0, 1048575]],
+      semanticLinks: [
+        { ...before.semanticLinks[0], sourceStart: afterStart, targetStart: afterStart },
+      ],
+      diagnosticDirectives: {
+        ...before.diagnosticDirectives,
+        directives: [[0, length, afterStart, afterStart + length, 0, 0]],
+      },
+    };
+    assertPreservedCallbackPacket(before, after);
+    for (const mutation of [
+      { ...after, text: after.text.replace("__vizeEmitProps", "__otherMarker") },
+      { ...after, text: `${after.text}type NewSlotConstructor = any;\n` },
+      { ...after, mappings: [[afterStart + 1, length, 0, length, 0, 1048575]] },
+      { ...after, mappings: [[afterStart, length, 1, length, 0, 1048575]] },
+      { ...after, mappings: [[afterStart, length, 0, length, 0, 10]] },
+      {
+        ...after,
+        diagnosticDirectives: {
+          ...after.diagnosticDirectives,
+          directives: [[0, length, afterStart, afterStart + length, 1, 0]],
+        },
+      },
+      { ...after, semanticLinks: [{ ...after.semanticLinks[0], kind: "other" }] },
+      { ...after, futureMetadata: { preserved: false } },
+    ])
+      assert.throws(() => assertPreservedCallbackPacket(before, mutation), assert.AssertionError);
+    const insertion = Buffer.byteLength(`${prefix}${args.split("    ? ")[0]}    ? `);
+    for (const [start, spanLength] of [
+      [insertion - 1, 2],
+      [insertion, 0],
+    ]) {
+      assert.throws(
+        () =>
+          assertPreservedCallbackPacket(
+            { ...before, mappings: [[start, spanLength, 0, spanLength, 0, 1048575]] },
+            { ...after, mappings: [[start, spanLength, 0, spanLength, 0, 1048575]] },
+          ),
+        assert.AssertionError,
+      );
+    }
+  }
+});
+
+test("callback certificate is covered by exact-head materialization and producer templates", () => {
+  const file = "tools/support/compat/content-mapper/callback-owner-packet-parity.ts";
+  const workflow = fs.readFileSync(
+    path.join(root, ".github/workflows/component-input-diagnostic-ownership.yml"),
+    "utf8",
+  );
+  assert.ok(workflow.includes('"tools/support/compat/content-mapper/callback-owner*.ts"'));
+  assert.ok(path.basename(file).startsWith("callback-owner"));
+  assert.ok(workflow.includes('ref: "${{ github.event.pull_request.head.sha }}"'));
+  assert.ok(workflow.includes("node tools/support/compat/content-mapper/callback-owner-audit.ts"));
+  const audit = fs.readFileSync(
+    path.join(root, "tools/support/compat/content-mapper/callback-owner-audit.ts"),
+    "utf8",
+  );
+  assert.ok(audit.includes('from "./callback-owner-packet-parity.ts"'));
+  assert.ok(audit.includes("packetCertificateFiles"));
+  assert.ok(audit.includes('"./callback-owner-packet-parity.ts"'));
+  const producer = fs.readFileSync(
+    path.join(
+      root,
+      "crates/vize_canon/src/virtual_ts/scope/component_events/native_fallthrough.rs",
+    ),
+    "utf8",
+  );
+  const emitted = producer
+    .split("\n")
+    .filter((line) => line.trim().startsWith('"') && line.includes("__vizeEmitProps"));
+  assert.equal(emitted.length, 2);
+  for (const line of emitted) {
+    const literal = JSON.parse(line.trim().replace(/,$/u, "")) as string;
+    const rendered = literal
+      .replaceAll("{component_ref}", "Comp")
+      .replaceAll("{{", "{")
+      .replaceAll("}}", "}");
+    assert.ok(rendered.includes(callbackNativeEventGate("Comp")));
+  }
 });
 
 function assertAuthenticatedBaseComparison(source: string): void {

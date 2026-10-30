@@ -10,12 +10,8 @@ import {
   callbackSetupReferencePrefix,
   type SourceSpan,
 } from "./callback-owner-projects.ts";
-import {
-  currentSlotsExport,
-  currentSlotsMarker,
-  previousSlotsExport,
-  previousSlotsMarker,
-} from "./constructor-projection-parity.ts";
+import { assertPreservedCallbackPacket } from "./callback-owner-packet-parity.ts";
+export { assertPreservedCallbackPacket } from "./callback-owner-packet-parity.ts";
 
 type Observation = {
   argv: string[];
@@ -36,61 +32,6 @@ type Diagnostic = {
   continuation: string[];
 };
 
-/** Preserve complete packets across the certified, unmapped public Slots contract. */
-export function assertPreservedCallbackPacket(
-  before: Record<string, unknown>,
-  after: Record<string, unknown>,
-) {
-  assert.equal(typeof before.text, "string");
-  assert.equal(typeof after.text, "string");
-  if (before.text === after.text) {
-    assert.deepEqual(after, before, "all unchanged callback transform fields stay exact");
-    return;
-  }
-  const original = before.text as string,
-    actual = after.text as string;
-  assert.equal(original.split(previousSlotsExport).length, 2);
-  assert.equal(original.split(currentSlotsExport).length, 1);
-  assert.equal(actual.split(previousSlotsExport).length, 1);
-  assert.equal(actual.split(currentSlotsExport).length, 2);
-  const boundary = Buffer.byteLength(original.slice(0, original.indexOf(previousSlotsExport)));
-  const precedesExport = (start: number, length: number) => {
-    assert.ok(Number.isSafeInteger(start) && start >= 0);
-    assert.ok(Number.isSafeInteger(length) && length >= 0);
-    assert.ok(start + length <= boundary, "authored projection must precede the Slots export");
-  };
-  assert.ok(Array.isArray(before.mappings));
-  for (const tuple of before.mappings as number[][]) {
-    assert.equal(tuple.length, 6);
-    precedesExport(tuple[0], tuple[1]);
-  }
-  for (const link of (before.semanticLinks ?? []) as {
-    sourceStart: number;
-    sourceLength: number;
-    targetStart: number;
-    targetLength: number;
-  }[]) {
-    precedesExport(link.sourceStart, link.sourceLength);
-    precedesExport(link.targetStart, link.targetLength);
-  }
-  for (const tuple of (before.diagnosticDirectives as { directives: number[][] } | undefined)
-    ?.directives ?? [])
-    precedesExport(tuple[2], tuple[3] - tuple[2]);
-  let expected = original.replace(previousSlotsExport, currentSlotsExport);
-  if (expected !== actual) {
-    assert.equal(original.split(previousSlotsMarker).length, 2);
-    assert.equal(original.split(currentSlotsMarker).length, 1);
-    assert.equal(actual.split(previousSlotsMarker).length, 1);
-    assert.equal(actual.split(currentSlotsMarker).length, 2);
-    assert.ok(original.indexOf(previousSlotsMarker) > original.indexOf(previousSlotsExport));
-    expected = expected.replace(previousSlotsMarker, currentSlotsMarker);
-  }
-  assert.deepEqual(
-    after,
-    { ...before, text: expected },
-    "all other complete callback transform fields must stay exact",
-  );
-}
 const header = "<!-- 日本 🧭 -->";
 const digest = (source: string) => createHash("sha256").update(source).digest("hex");
 
@@ -459,6 +400,19 @@ export function auditCallbackOwners(directory: string) {
     explicitlyUnqualified10739Projects: frontiers,
     referenceQualified10871Projects: resolvedMapperFrontiers,
     wholeCorpusQualified: false,
+    packetCertificateFiles: [
+      "./callback-owner-audit.ts",
+      "./callback-owner-packet-parity.ts",
+      "./callback-owner-projects.ts",
+      "./constructor-projection-parity.ts",
+      "../../../../tests/tooling/support/lsp/installed-alias-replay/frames.ts",
+      "../../../../crates/vize_canon/src/virtual_ts/scope/component_events/native_fallthrough.rs",
+    ].map((file) => ({
+      file,
+      sha256: createHash("sha256")
+        .update(fs.readFileSync(new URL(file, import.meta.url)))
+        .digest("hex"),
+    })),
     outcomes,
   };
   fs.writeFileSync(
