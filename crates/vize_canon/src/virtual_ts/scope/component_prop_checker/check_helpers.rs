@@ -80,7 +80,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
         // authored module alias named `$NotUndefined` is otherwise the
         // nearest lexical declaration and can capture this generated helper.
         ts.push_str(
-            "  function __vizeComponentAriaPropValue<const T>(value: T): T extends undefined ? never : T { return value as (T extends undefined ? never : T); }\n",
+            "  function __vizeComponentAriaPropEntries<const R extends PropertyKey, const C extends PropertyKey, const T>(raw: R, camel: C, value: T): { readonly [K in R | C]: T extends undefined ? never : T } { return { [raw]: value, [camel]: value } as unknown as { readonly [K in R | C]: T extends undefined ? never : T }; }\n",
         );
     }
     if hoist_shared_preamble {
