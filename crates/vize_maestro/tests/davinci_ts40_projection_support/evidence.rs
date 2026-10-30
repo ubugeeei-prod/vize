@@ -78,13 +78,28 @@ fn public_instance_slot_packets_remain_authenticated() {
         latest_successor,
         exact_successor,
     );
+    let external_receipt =
+        include_str!("fixtures/public-instance-options-api-slots/successor-11148/receipt.json");
+    let external_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11148/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        external_receipt,
+        "e2a6dd88ae954c9ff77bb969fa8ebc4ce562850972a2a29b10b1c42d943e7555",
+        11148,
+        exact_successor,
+        external_successor,
+    );
     let matrix = load_matrix();
     let fixture = matrix
         .fixtures
         .iter()
         .find(|fixture| fixture.id == "options-api-slots")
         .expect("reviewed Options API slot fixture");
-    assert_eq!(capture_fixture(fixture).render().as_str(), exact_successor);
+    assert_eq!(
+        capture_fixture(fixture).render().as_str(),
+        external_successor
+    );
 }
 
 #[test]
