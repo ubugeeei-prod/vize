@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+
+const account: { name?: string } = {};
+</script>
+
+<template>
+  <Child :label="account.name" flag title="present" />
+  <Child flag title="omitted" />
+</template>
+
+<style>.swatch { color: #ff0000; }</style>
