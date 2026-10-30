@@ -168,9 +168,9 @@ fn authenticate_successor_receipt(
         Some(successor_sha.as_str())
     );
     for (field, section) in [
-        ("canonGeneratedTextBytes", "canon"),
-        ("contentMapperGeneratedTextBytes", "content-mapper"),
-        ("maestroGeneratedTextBytes", "maestro"),
+        ("canonGeneratedTextBytes", "[canon]\n"),
+        ("contentMapperGeneratedTextBytes", "[content-mapper]\n"),
+        ("maestroGeneratedTextBytes", "[maestro]\n"),
     ] {
         if let Some(expected) = receipt["delta"][field].as_i64() {
             assert_eq!(
@@ -182,7 +182,7 @@ fn authenticate_successor_receipt(
         }
     }
     if let Some(expected) = receipt["delta"]["generatedTextBytesPerProjection"].as_i64() {
-        for section in ["canon", "content-mapper", "maestro"] {
+        for section in ["[canon]\n", "[content-mapper]\n", "[maestro]\n"] {
             assert_eq!(
                 expected,
                 generated_text_bytes(successor, section)
@@ -192,7 +192,7 @@ fn authenticate_successor_receipt(
         }
     }
     if receipt["delta"]["canonAndContentMapperUnchanged"].as_bool() == Some(true) {
-        for section in ["canon", "content-mapper"] {
+        for section in ["[canon]\n", "[content-mapper]\n"] {
             assert_eq!(
                 generated_text_bytes(successor, section),
                 generated_text_bytes(predecessor, section),
@@ -203,11 +203,7 @@ fn authenticate_successor_receipt(
 }
 
 fn generated_text_bytes(record: &str, section: &str) -> i64 {
-    let marker = format!("[{section}]\n");
-    let section = record
-        .split_once(marker.as_str())
-        .expect("projection section")
-        .1;
+    let section = record.split_once(section).expect("projection section").1;
     let text = section
         .lines()
         .find_map(|line| line.strip_prefix("text="))
