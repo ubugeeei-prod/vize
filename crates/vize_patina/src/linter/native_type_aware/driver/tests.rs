@@ -46,6 +46,52 @@ fn prepared_sfc_outlives_source_descriptor_and_template_arena() {
 }
 
 #[test]
+fn selected_runtime_query_failure_is_an_error_and_preserves_css_findings() {
+    let linter = configured(&[RULE_NO_UNSAFE_TEMPLATE_BINDING, "css/no-important"]);
+    let source = "<script setup lang=\"ts\">const value: any = 1;</script>\n\
+                  <template><p>{{ value }}</p></template>\n\
+                  <style>p { color: red !important }</style>";
+    let unchanged = prepare(&linter, source).finish(&linter, None);
+    let result = prepare(&linter, source).finish(
+        &linter,
+        Some(TypeAwareFailure::Query(
+            "Native TypeScript runtime /project/node_modules/@tsrs/linux-x64-gnu/tsrs failed: protocol error: Invalid boolean checker AST: unsupported protocol version".into(),
+        )),
+    );
+    assert_eq!((result.error_count, result.warning_count), (1, 1));
+    assert_eq!(result.diagnostics.len(), unchanged.diagnostics.len() + 1);
+    let query = &result.diagnostics[0];
+    assert_eq!(
+        (
+            query.rule_name,
+            query.severity,
+            query.message.as_str(),
+            query.start,
+            query.end,
+            query.help.as_deref(),
+            query.labels.len(),
+            query.fix.is_none(),
+        ),
+        (
+            "type/corsa-runtime",
+            crate::Severity::Error,
+            "Native TypeScript runtime /project/node_modules/@tsrs/linux-x64-gnu/tsrs failed: protocol error: Invalid boolean checker AST: unsupported protocol version",
+            0,
+            0,
+            Some(
+                "Type-aware lint could not complete with the selected native runtime. Use a compatible runtime or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable."
+            ),
+            0,
+            true,
+        )
+    );
+    assert_eq!(
+        format!("{:?}", &result.diagnostics[1..]),
+        format!("{:?}", unchanged.diagnostics)
+    );
+}
+
+#[test]
 fn no_query_sfc_keeps_static_type_findings_before_css_and_ignores_checker_failure() {
     let linter = configured(&[RULE_REQUIRE_TYPED_PROPS, "css/no-important"]);
     let prepared = prepare(

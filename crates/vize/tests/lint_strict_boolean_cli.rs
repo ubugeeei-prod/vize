@@ -127,6 +127,73 @@ fn native_boolean_conditions_match_complete_authored_reports() {
     }
 }
 
+#[cfg(unix)]
+#[test]
+fn project_tsrs_discovery_preserves_nullable_boolean_findings() {
+    let Some(tsrs) = std::env::var_os("VIZE_TEST_TSRS_PACKAGE") else {
+        assert!(
+            std::env::var_os("VIZE_TEST_REQUIRE_TSRS").is_none(),
+            "the required tsrs provider package is missing"
+        );
+        return;
+    };
+    let source = include_str!(
+        "../../../tests/_fixtures/differential/linter/native-boolean-tsrs-11147/App.vue.txt"
+    );
+    let Some(project) = project(source, json!({})) else {
+        return;
+    };
+    let expected = json!([{
+        "file":"App.vue",
+        "messages":[{
+            "ruleId":RULE,
+            "ruleDocsPath":"docs/content/rules/type-and-script.md",
+            "severity":2,
+            "message":"[vize:type/strict-boolean-expressions] Unexpected nullable number value in conditional. Please handle the nullish and zero cases explicitly.",
+            "line":6,"column":12,"endLine":6,"endColumn":17
+        }],
+        "errorCount":1,"warningCount":0
+    }]);
+    assert_eq!(lint(project.path()), (Some(1), expected.clone()));
+
+    let config_path = project.path().join("vite.config.mjs");
+    let mut config = read_native_config(&config_path);
+    config.as_object_mut().unwrap().remove("typeChecker");
+    fs::write(
+        &config_path,
+        vite_config::source(serde_json::to_vec(&config).unwrap()),
+    )
+    .unwrap();
+    fs::write(
+        project.path().join("package.json"),
+        r#"{"type":"module","devDependencies":{"tsrs":"0.20.1-ts7.1.0-beta"}}"#,
+    )
+    .unwrap();
+    std::os::unix::fs::symlink(tsrs, project.path().join("node_modules/tsrs")).unwrap();
+    let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
+    command
+        .current_dir(project.path())
+        .args(["lint", "--format", "json", "App.vue"]);
+    for name in vize_carton::corsa_resolver::CORSA_ENV_VARS {
+        command.env_remove(name);
+    }
+    let output = command.output().expect("auto-discovered tsrs lint");
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        serde_json::from_slice::<Value>(&output.stdout).unwrap(),
+        expected
+    );
+    assert_eq!(
+        fs::read_to_string(project.path().join("App.vue")).unwrap(),
+        source
+    );
+}
+
 #[test]
 fn defaults_allow_truthy_nullable_literals_and_nullable_objects() {
     let source = include_str!("fixtures/strict-boolean/TruthyLiterals.vue");

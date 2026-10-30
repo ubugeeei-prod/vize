@@ -90,7 +90,7 @@ impl CorsaTypeAwareSession {
             block_on(ProjectSession::spawn(
                 vize_canon::corsa_profile::with_request_profiling(
                     configure(
-                        ApiSpawnConfig::new(executable)
+                        ApiSpawnConfig::new(executable.clone())
                             .with_mode(api_mode)
                             .with_cwd(&session_root)
                     ),
@@ -118,6 +118,7 @@ impl CorsaTypeAwareSession {
             super::virtual_documents::PublishedDocuments::primed(virtual_file_wire.clone());
         Ok(Self {
             session,
+            executable,
             project_root,
             tsconfig_path,
             session_root,

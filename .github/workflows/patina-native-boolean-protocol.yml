@@ -1,0 +1,79 @@
+name: Patina native boolean protocols
+on:
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+      - crates/vize_patina/src/linter/corsa_session/**
+      - crates/vize_patina/src/linter/corsa_session.rs
+      - crates/vize_patina/src/linter/native_type_aware/**
+      - crates/vize_patina/src/linter/native_type_aware.rs
+      - crates/vize_patina/src/linter/engine/batch/projects.rs
+      - crates/vize_patina/tests/fixtures/strict-boolean-nodes/**
+      - crates/vize/tests/lint_strict_boolean_cli/**
+      - crates/vize/tests/lint_strict_boolean_cli.rs
+      - .github/workflows/patina-native-boolean-protocol.yml
+permissions: { contents: read }
+concurrency:
+  group: patina-native-boolean-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  live-native:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    permissions: { contents: read, actions: read }
+    env:
+      CARGO_BUILD_JOBS: "24"
+      RUST_TEST_THREADS: "4"
+      VIZE_TEST_REQUIRE_TSGO: "1"
+      VIZE_TEST_REQUIRE_TSRS: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: nextest-ci, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          {
+            version: latest,
+            node-version-file: package.json,
+            cache: true,
+            cache-save: false,
+            run-install: true,
+          }
+      - name: Install the exact reported project runtime independently
+        working-directory: ${{ runner.temp }}
+        run: |
+          npm install --prefix "$RUNNER_TEMP/patina-tsrs" --ignore-scripts --no-audit --no-fund tsrs@0.20.1-ts7.1.0-beta
+          echo "VIZE_TEST_TSRS_PACKAGE=$RUNNER_TEMP/patina-tsrs/node_modules/tsrs" >> "$GITHUB_ENV"
+          mkdir -p "$GITHUB_WORKSPACE/target/patina-native-boolean"
+          cp "$RUNNER_TEMP/patina-tsrs/package-lock.json" "$GITHUB_WORKSPACE/target/patina-native-boolean/provider-package-lock.json"
+          sha256sum "$RUNNER_TEMP/patina-tsrs/node_modules/@tsrs/linux-x64-gnu/tsrs" "$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc" > "$GITHUB_WORKSPACE/target/patina-native-boolean/provider-sha256.txt"
+      - name: Keep captured AST refusal laws and runtime failure severity
+        run: |
+          set -o pipefail
+          cargo test --locked --profile ci -p vize_patina --lib corsa_session::boolean::nodes::tests -- --nocapture 2>&1 | tee target/patina-native-boolean/ast-tests.txt
+          cargo test --locked --profile ci -p vize_patina --lib selected_runtime_query_failure_is_an_error -- --nocapture 2>&1 | tee target/patina-native-boolean/query-failure-tests.txt
+      - name: Preserve all complete boolean reports with the stable runtime
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+        run: |
+          set -o pipefail
+          cargo test --locked --profile ci -p vize --test integration lint_strict_boolean_cli:: -- --nocapture 2>&1 | tee target/patina-native-boolean/stable-tests.txt
+      - name: Preserve the same complete reports with the reported tsrs runtime
+        run: |
+          set -o pipefail
+          export CORSA_PATH="$RUNNER_TEMP/patina-tsrs/node_modules/@tsrs/linux-x64-gnu/tsrs"
+          cargo test --locked --profile ci -p vize --test integration lint_strict_boolean_cli:: -- --nocapture 2>&1 | tee target/patina-native-boolean/tsrs-tests.txt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: patina-native-boolean-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/patina-native-boolean/
+          if-no-files-found: error
+          retention-days: 7

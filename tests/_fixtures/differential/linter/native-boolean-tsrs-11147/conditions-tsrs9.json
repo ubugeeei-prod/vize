@@ -1,0 +1,42 @@
+{
+  "provider": {
+    "package": "tsrs",
+    "version": "0.20.1-ts7.1.0-beta",
+    "upstream": "77d3cddb44540734abc33a42ccca4d3f33bee527",
+    "platform": "darwin-arm64",
+    "executableSha256": "5c1f6789358b9947e5c2176532f2cbee5488a5d7481652ee2f1763efdf105217"
+  },
+  "file": "/private/tmp/vize-overnight-20261031/p0/boolean-node-fixture/conditions.ts",
+  "sourceSha256": "b3897f1d2d567116f0f40162f8eceb324d25c8fd68438c562360a1f67716d845",
+  "binarySha256": "e5241f4f5fccbe7199cbe274c3e16b5263c91a24a83194a7141bd343a896c851",
+  "binaryBytes": 1419,
+  "snapshot": 1,
+  "project": "/private/tmp/vize-overnight-20261031/p0/boolean-node-fixture/tsconfig.json",
+  "locations": [
+    "22.214./private/tmp/vize-overnight-20261031/p0/boolean-node-fixture/conditions.ts",
+    "28.215./private/tmp/vize-overnight-20261031/p0/boolean-node-fixture/conditions.ts"
+  ],
+  "types": [
+    {
+      "id": 89,
+      "flags": 1048576,
+      "objectFlags": 2097168,
+      "isTupleType": false,
+      "value": null,
+      "isThisType": false,
+      "symbol": {
+        "id": 2,
+        "file": "106"
+      }
+    },
+    {
+      "id": 14,
+      "flags": 32,
+      "objectFlags": 0,
+      "isTupleType": false,
+      "value": null,
+      "isThisType": false,
+      "intrinsicName": "string"
+    }
+  ]
+}

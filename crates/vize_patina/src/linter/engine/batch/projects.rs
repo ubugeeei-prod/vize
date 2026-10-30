@@ -86,7 +86,8 @@ fn finish_project(mut inputs: Vec<Input<'_>>) -> Vec<(usize, LintResult)> {
                     "patina.type_aware.project.evaluate",
                     prepared.evaluate(linter, session)
                 )
-                .err(),
+                .err()
+                .map(|error| session.query_error(&error)),
             );
         }
         // Keep independent file queries available, then retire a suspect session.
@@ -105,12 +106,13 @@ fn finish_project(mut inputs: Vec<Input<'_>>) -> Vec<(usize, LintResult)> {
                 failures
                     .get_mut(position)
                     .and_then(Option::take)
-                    .map(TypeAwareFailure::Runtime)
+                    .map(TypeAwareFailure::Query)
             } else {
                 outcome.as_ref().err().map(|failure| match failure {
                     TypeAwareFailure::Runtime(message) => {
                         TypeAwareFailure::Runtime(message.clone())
                     }
+                    TypeAwareFailure::Query(message) => TypeAwareFailure::Query(message.clone()),
                     TypeAwareFailure::ProjectConfiguration { message, report } => {
                         TypeAwareFailure::ProjectConfiguration {
                             message: message.clone(),

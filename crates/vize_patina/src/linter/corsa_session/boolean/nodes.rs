@@ -1,9 +1,9 @@
 //! Select checker-owned syntax nodes instead of touching punctuation tokens.
-//! Wire layout: TypeScript 7.0.2, encoder.go at 2bd066d87f5bafd315be9f40889d0a60b9e58e0b.
+//! Wire layouts: TypeScript 7.0.2 protocol 5 and tsrs 0.20.1 protocol 9.
+//! Each handle belongs to the same source snapshot queried by the caller.
 use corsa::api::NodeHandle;
 use vize_l0::cstr;
 
-const HEADER: usize = 44;
 const NODE: usize = 28;
 
 fn invalid(reason: &str) -> corsa::CorsaError {
@@ -31,27 +31,42 @@ struct Tree<'a> {
     extended: usize,
     structured: usize,
     nodes: usize,
+    node_end: usize,
 }
 
 impl<'a> Tree<'a> {
     fn read(data: &'a [u8]) -> corsa::Result<Self> {
-        if data.len() < HEADER || word(data, 0)? >> 24 != 5 {
-            return Err(invalid("unsupported protocol version"));
+        let header = match word(data, 0)? >> 24 {
+            5 => 44,
+            9 => 64,
+            _ => return Err(invalid("unsupported protocol version")),
+        };
+        if data.len() < header {
+            return Err(invalid("truncated header"));
         }
         let strings = word(data, 24)? as usize;
         let text = word(data, 28)? as usize;
         let extended = word(data, 32)? as usize;
         let structured = word(data, 36)? as usize;
         let nodes = word(data, 40)? as usize;
-        if strings != HEADER
+        // Protocol 9 can append opaque binder data after its node records.
+        // Those bytes are not syntax nodes and must never produce handles.
+        let binder = if header == 64 {
+            word(data, 60)? as usize
+        } else {
+            0
+        };
+        let node_end = if binder == 0 { data.len() } else { binder };
+        if strings != header
             || !(strings <= text
                 && text <= extended
                 && extended <= structured
-                && structured <= nodes)
-            || nodes > data.len()
+                && structured <= nodes
+                && nodes <= node_end
+                && node_end <= data.len())
             || !(text - strings).is_multiple_of(8)
-            || !(data.len() - nodes).is_multiple_of(NODE)
-            || data.len() - nodes < NODE * 2
+            || !(node_end - nodes).is_multiple_of(NODE)
+            || node_end - nodes < NODE * 2
         {
             return Err(invalid("invalid section bounds"));
         }
@@ -62,6 +77,7 @@ impl<'a> Tree<'a> {
             extended,
             structured,
             nodes,
+            node_end,
         })
     }
 
@@ -123,7 +139,7 @@ pub(super) fn locations(
     }
     let length = u32::try_from(source.encode_utf16().count())
         .map_err(|_| invalid("source length overflow"))?;
-    let count = (data.len() - tree.nodes) / NODE;
+    let count = (tree.node_end - tree.nodes) / NODE;
     let mut ordered = Vec::new();
     for index in 1..count {
         if tree.field(index, 12)? as usize >= count || tree.field(index, 16)? as usize >= count {
@@ -169,13 +185,16 @@ pub(super) fn locations(
 
 #[cfg(test)]
 mod tests {
-    //! Captured from the pinned TypeScript 7.0.2 worker, not fabricated handles.
+    //! Captured from actual stable and tsrs workers, not fabricated handles.
     use super::{NODE, locations, word};
 
     const SOURCE: &str =
         include_str!("../../../../tests/fixtures/strict-boolean-nodes/conditions.ts");
     const ENCODED: &[u8] =
         include_bytes!("../../../../tests/fixtures/strict-boolean-nodes/conditions.bin");
+    const TSRS9: &[u8] = include_bytes!(
+        "../../../../../../tests/_fixtures/differential/linter/native-boolean-tsrs-11147/conditions-tsrs9.bin"
+    );
 
     fn range(expression: &str) -> (u32, u32) {
         let start = SOURCE.find(expression).expect("authored expression");
@@ -200,6 +219,64 @@ mod tests {
                 "22.213./private/tmp/vize-checker-node-fixture/conditions.ts",
                 "28.214./private/tmp/vize-checker-node-fixture/conditions.ts",
             ]
+        );
+    }
+
+    #[test]
+    fn actual_tsrs9_nodes_resolve_whole_expressions_in_the_same_snapshot() {
+        assert_eq!(
+            SOURCE,
+            include_str!(
+                "../../../../../../tests/_fixtures/differential/linter/native-boolean-tsrs-11147/conditions.ts.txt"
+            )
+        );
+        let receipt: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../../../tests/_fixtures/differential/linter/native-boolean-tsrs-11147/conditions-tsrs9.json"
+        ))
+        .unwrap();
+        let handles = locations(TSRS9, SOURCE, &[range("items[0]"), range("getTitle()")])
+            .expect("captured protocol9 nodes");
+        let actual: Vec<_> = handles.iter().map(|handle| handle.as_str()).collect();
+        assert_eq!(serde_json::json!(actual), receipt["locations"]);
+        assert_eq!(receipt["binaryBytes"], TSRS9.len());
+        assert_eq!(
+            receipt["types"],
+            serde_json::json!([
+                {"id":89,"flags":1048576,"objectFlags":2097168,"isTupleType":false,"value":null,"isThisType":false,"symbol":{"id":2,"file":"106"}},
+                {"id":14,"flags":32,"objectFlags":0,"isTupleType":false,"value":null,"isThisType":false,"intrinsicName":"string"}
+            ])
+        );
+    }
+
+    #[test]
+    fn tsrs9_truncated_headers_sections_and_parent_links_fail_closed() {
+        for end in 0..TSRS9.len() {
+            assert!(locations(&TSRS9[..end], SOURCE, &[range("items[0]")]).is_err());
+        }
+        let nodes = word(TSRS9, 40).unwrap() as usize;
+        for (offset, value) in [
+            (0, 8 << 24),
+            (24, 44),
+            (60, nodes as u32 - 1),
+            (60, TSRS9.len() as u32 + 1),
+            (nodes + 23 * NODE + 16, 23),
+        ] {
+            let mut changed = TSRS9.to_vec();
+            set(&mut changed, offset, value);
+            assert!(locations(&changed, SOURCE, &[range("items[0]")]).is_err());
+        }
+        assert!(locations(TSRS9, "different source", &[range("items[0]")]).is_err());
+    }
+
+    #[test]
+    fn tsrs9_binder_bytes_cannot_be_selected_as_syntax_nodes() {
+        let expected = locations(TSRS9, SOURCE, &[range("items[0]")]).unwrap();
+        let mut changed = TSRS9.to_vec();
+        set(&mut changed, 60, TSRS9.len() as u32);
+        changed.extend_from_slice(&[0xff; 31]);
+        assert_eq!(
+            locations(&changed, SOURCE, &[range("items[0]")]).unwrap(),
+            expected
         );
     }
 

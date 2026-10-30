@@ -13,6 +13,7 @@ use vize_l0::{String, ToCompactString, profile};
 pub(in crate::linter) enum TypeAwareFailure {
     ProjectConfiguration { message: String, report: bool },
     Runtime(String),
+    Query(String),
 }
 
 pub(in crate::linter) mod document;
@@ -210,6 +211,7 @@ pub(super) fn with_corsa_session<T>(
     };
     let corsa_path = linter.corsa_path.clone();
     let spawn_tsconfig = tsconfig.clone();
+    let mut queried = false;
     linter
         .native_corsa
         .with_session(
@@ -226,10 +228,18 @@ pub(super) fn with_corsa_session<T>(
             },
             |session| {
                 debug_assert!(session.matches_source_file(filename, tsconfig.as_deref()));
+                queried = true;
                 profile!("patina.type_aware.corsa.session_work", f(session))
+                    .map_err(|error| session.query_error(&error))
             },
         )
-        .map_err(TypeAwareFailure::Runtime)
+        .map_err(|error| {
+            if queried {
+                TypeAwareFailure::Query(error)
+            } else {
+                TypeAwareFailure::Runtime(error)
+            }
+        })
 }
 
 pub(super) fn push_type_aware_failure(result: &mut LintResult, failure: TypeAwareFailure) {
@@ -246,6 +256,14 @@ pub(super) fn push_type_aware_failure(result: &mut LintResult, failure: TypeAwar
             );
         }
         TypeAwareFailure::ProjectConfiguration { report: false, .. } => {}
+        TypeAwareFailure::Query(error) => {
+            result.error_count += 1;
+            result.diagnostics.push(
+                LintDiagnostic::error("type/corsa-runtime", error, 0, 0).with_help(
+                    "Type-aware lint could not complete with the selected native runtime. Use a compatible runtime or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.",
+                ),
+            );
+        }
         TypeAwareFailure::Runtime(error) => push_warning(
             result,
             LintDiagnostic::warn("type/corsa-runtime", error, 0, 0).with_help(
