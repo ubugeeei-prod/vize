@@ -30,16 +30,28 @@ fn public_instance_slot_packets_remain_authenticated() {
         predecessor,
         historical_successor,
     );
-    let current_receipt =
+    let previous_receipt =
         include_str!("fixtures/public-instance-options-api-slots/successor-11069/receipt.json");
-    let current_successor = include_str!(
+    let previous_successor = include_str!(
         "fixtures/public-instance-options-api-slots/successor-11069/projection-record.txt"
     );
     authenticate_successor_receipt(
-        current_receipt,
+        previous_receipt,
         "afc2f211f4b841b1385f09924a3593dadad1fb280b694d233250639a7020be7f",
         11069,
         historical_successor,
+        previous_successor,
+    );
+    let current_receipt =
+        include_str!("fixtures/public-instance-options-api-slots/successor-11142/receipt.json");
+    let current_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11142/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        current_receipt,
+        "d3eae1337abcc6904773256c46069a9745ffc2e533a79b2c8ad186d433e412e7",
+        11142,
+        previous_successor,
         current_successor,
     );
     let matrix = load_matrix();

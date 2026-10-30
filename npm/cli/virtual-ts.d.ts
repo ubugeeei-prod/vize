@@ -307,8 +307,8 @@ declare global {
   type $PublicSlots<T> = [keyof T] extends [never]
     ? import("vue").ComponentPublicInstance["$slots"]
     : T;
-  // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
   type $ComponentPublicBase = Omit<
+    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
     import("vue").ComponentPublicInstance,
     "$props" | "$emit" | "$slots"
   >;
@@ -326,10 +326,10 @@ declare global {
   type $ComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}`
     ? `${__H}${Capitalize<$ComponentAttrCamel<__T>>}`
     : S;
+  type $ComponentNativeElementNames = Extract<keyof $NativeElements, string>;
   type $ComponentNativeAttrNames = {
-    [K in keyof $NativeElements & string]: keyof $NativeElements[K];
-  }[keyof $NativeElements & string] &
-    string;
+    [K in $ComponentNativeElementNames]: Extract<keyof $NativeElements[K], string>;
+  }[$ComponentNativeElementNames];
   type $ComponentGlobalHtmlAttrs =
     $IsAny<$NativeElements> extends true
       ? {}
