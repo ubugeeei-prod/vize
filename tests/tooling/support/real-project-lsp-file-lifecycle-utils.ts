@@ -58,7 +58,7 @@ export async function waitForDiagnostics(
   timeoutMs: number,
   predicate?: (diagnostics: PublishDiagnosticsParams) => boolean,
 ): Promise<PublishDiagnosticsParams> {
-  const observed: Array<Array<{ code: unknown; message: string }>> = [];
+  const observed: Array<Array<Pick<LspDiagnostic, "code" | "message">>> = [];
   try {
     return (await session.waitForNotification(
       "textDocument/publishDiagnostics",
