@@ -33,6 +33,8 @@ pub enum DocumentHtmlRefusal {
     Lexical(DocumentLexicalRefusal),
     ExplicitEnvelope,
     UnsupportedElement(Span),
+    /// Content outside the bounded native select/option/optgroup subset.
+    UnsupportedSelectContent(Span),
     VueSyntax,
     NonHtmlToken,
     InvalidFrame(Span),
@@ -62,7 +64,7 @@ pub enum DocumentHtmlRefusal {
 /// `source`, `track`, `wbr`, `article`, `aside`, `footer`, `header`, `main`, `nav`
 /// `section`, `address`, `blockquote`, `figure`, `figcaption`, `hgroup`,
 /// `search`, `p`, the `ul`/`ol`/`menu`/`dl` lists and their items, ruby text
-/// (`ruby`, `rb`, `rt`, `rtc`, `rp`), `option`/`optgroup` outside `select`,
+/// (`ruby`, `rb`, `rt`, `rtc`, `rp`), `select`/`option`/`optgroup`,
 /// and table parts. HTML names match without ASCII case, and a slash never
 /// closes a nonvoid HTML element.
 ///
@@ -75,7 +77,9 @@ pub enum DocumentHtmlRefusal {
 /// Every authored start tag has at most 64 attributes (including duplicates)
 /// and 16 KiB of original opening bytes. Larger tags explicitly refuse.
 ///
-/// Foreign content, raw-text elements, formatting, `select`, templates, Vue
+/// Select content is bounded to options, groups, `hr`, text and comments;
+/// other nested elements refuse instead of borrowing obsolete HTML rules.
+/// Foreign content, raw-text elements, formatting, templates, Vue
 /// directive/interpolation syntax and implicit envelopes refuse this provider.
 /// Direct body-subtree child nodes retain original text/comment callbacks;
 /// outer insertion-mode text is a separate typed refusal. Petite-vue remains

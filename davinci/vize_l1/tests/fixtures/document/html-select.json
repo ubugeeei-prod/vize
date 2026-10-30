@@ -1,0 +1,113 @@
+[
+  {
+    "name": "empty select and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><select></select><div>end</div></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["div", 2, []]],
+    "nodes": [["body", [[1, "select"], [1, "div"]]], ["select", []], ["div", [[3, "end"]]]],
+    "frames": [["html", [15, 21], [78, 85], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [71, 78], false], ["select", [40, 48], [48, 57], false], ["div", [57, 62], [65, 71], false]],
+    "implied": [],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 47], "select"], ["close", [50, 56], "select"], ["open", [58, 61], "div"], ["close", [67, 70], "div"], ["close", [73, 77], "body"], ["close", [80, 84], "html"]]
+  },
+  {
+    "name": "explicit options and static attributes",
+    "source": "<!DOCTYPE html><html><head></head><body><select name=x><option value=a>A</option><option selected>B</option></select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, [["name", "x"]]], ["option", 3, [["value", "a"]]], ["option", 3, [["selected", ""]]]],
+    "nodes": [["body", [[1, "select"]]], ["select", [[1, "option"], [1, "option"]]], ["option", [[3, "A"]]], ["option", [[3, "B"]]]],
+    "frames": [["html", [15, 21], [124, 131], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [117, 124], false], ["select", [40, 55], [108, 117], false], ["option", [55, 71], [72, 81], false], ["option", [81, 98], [99, 108], false]],
+    "implied": [],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 47], "select"], ["open", [56, 62], "option"], ["close", [74, 80], "option"], ["open", [82, 88], "option"], ["close", [101, 107], "option"], ["close", [110, 116], "select"], ["close", [119, 123], "body"], ["close", [126, 130], "html"]]
+  },
+  {
+    "name": "option starts and select end imply option closes",
+    "source": "<!DOCTYPE html><html><head></head><body><select><option>a<option>b</select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["option", 3, []], ["option", 3, []]],
+    "nodes": [["body", [[1, "select"]]], ["select", [[1, "option"], [1, "option"]]], ["option", [[3, "a"]]], ["option", [[3, "b"]]]],
+    "frames": [["html", [15, 21], [82, 89], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [75, 82], false], ["select", [40, 48], [66, 75], false], ["option", [48, 56], null, false], ["option", [57, 65], null, false]],
+    "implied": ["option", "option"],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 47], "select"], ["open", [49, 55], "option"], ["open", [58, 64], "option"], ["close", [68, 74], "select"], ["close", [77, 81], "body"], ["close", [84, 88], "html"]]
+  },
+  {
+    "name": "group starts close preceding groups and options",
+    "source": "<!DOCTYPE html><html><head></head><body><select><optgroup label=x><option>a<option>b<optgroup label=y><option>c</select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["optgroup", 3, [["label", "x"]]], ["option", 4, []], ["option", 4, []], ["optgroup", 3, [["label", "y"]]], ["option", 7, []]],
+    "nodes": [["body", [[1, "select"]]], ["select", [[1, "optgroup"], [1, "optgroup"]]], ["optgroup", [[1, "option"], [1, "option"]]], ["option", [[3, "a"]]], ["option", [[3, "b"]]], ["optgroup", [[1, "option"]]], ["option", [[3, "c"]]]],
+    "frames": [["html", [15, 21], [127, 134], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [120, 127], false], ["select", [40, 48], [111, 120], false], ["optgroup", [48, 66], null, false], ["option", [66, 74], null, false], ["option", [75, 83], null, false], ["optgroup", [84, 102], null, false], ["option", [102, 110], null, false]],
+    "implied": ["optgroup", "option", "option", "optgroup", "option"],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 47], "select"], ["open", [49, 57], "optgroup"], ["open", [67, 73], "option"], ["open", [76, 82], "option"], ["open", [85, 93], "optgroup"], ["open", [103, 109], "option"], ["close", [113, 119], "select"], ["close", [122, 126], "body"], ["close", [129, 133], "html"]]
+  },
+  {
+    "name": "authored group end closes its final option",
+    "source": "<!DOCTYPE html><html><head></head><body><select><optgroup><option>a</optgroup><option>b</select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["optgroup", 3, []], ["option", 4, []], ["option", 3, []]],
+    "nodes": [["body", [[1, "select"]]], ["select", [[1, "optgroup"], [1, "option"]]], ["optgroup", [[1, "option"]]], ["option", [[3, "a"]]], ["option", [[3, "b"]]]],
+    "frames": [["html", [15, 21], [103, 110], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [96, 103], false], ["select", [40, 48], [87, 96], false], ["optgroup", [48, 58], [67, 78], false], ["option", [58, 66], null, false], ["option", [78, 86], null, false]],
+    "implied": ["option", "option"],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 47], "select"], ["open", [49, 57], "optgroup"], ["open", [59, 65], "option"], ["close", [69, 77], "optgroup"], ["open", [79, 85], "option"], ["close", [89, 95], "select"], ["close", [98, 102], "body"], ["close", [105, 109], "html"]]
+  },
+  {
+    "name": "hr closes groups and options into select siblings",
+    "source": "<!DOCTYPE html><html><head></head><body><select><optgroup><option>a<hr><option>b</select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["optgroup", 3, []], ["option", 4, []], ["hr", 3, []], ["option", 3, []]],
+    "nodes": [["body", [[1, "select"]]], ["select", [[1, "optgroup"], [1, "hr"], [1, "option"]]], ["optgroup", [[1, "option"]]], ["option", [[3, "a"]]], ["hr", []], ["option", [[3, "b"]]]],
+    "frames": [["html", [15, 21], [96, 103], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [89, 96], false], ["select", [40, 48], [80, 89], false], ["optgroup", [48, 58], null, false], ["option", [58, 66], null, false], ["hr", [67, 71], null, false], ["option", [71, 79], null, false]],
+    "implied": ["optgroup", "option", "option"],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 47], "select"], ["open", [49, 57], "optgroup"], ["open", [59, 65], "option"], ["open", [68, 70], "hr"], ["open", [72, 78], "option"], ["close", [82, 88], "select"], ["close", [91, 95], "body"], ["close", [98, 102], "html"]]
+  },
+  {
+    "name": "case folding and ignored nonvoid slash",
+    "source": "<!DOCTYPE html><html><head></head><body><SeLeCt/><OpTiOn VALUE=\"a&amp;b\" value=x>A</oPtIoN></sElEcT></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["option", 3, [["value", "a&b"]]]],
+    "nodes": [["body", [[1, "select"]]], ["select", [[1, "option"]]], ["option", [[3, "A"]]]],
+    "frames": [["html", [15, 21], [107, 114], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [100, 107], false], ["select", [40, 49], [91, 100], true], ["option", [49, 81], [82, 91], false]],
+    "implied": [],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 47], "SeLeCt"], ["open", [50, 56], "OpTiOn"], ["close", [84, 90], "oPtIoN"], ["close", [93, 99], "sElEcT"], ["close", [102, 106], "body"], ["close", [109, 113], "html"]]
+  },
+  {
+    "name": "direct text comments and once decoded values",
+    "source": "<!DOCTYPE html><html><head></head><body><select> \r\n<!--&amp;--><option>A&amp;\r\n\u0000雪</option>\t<optgroup label=\"x&#13;y\"><option>🌸</option></optgroup></select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["option", 3, []], ["optgroup", 3, [["label", "x\ry"]]], ["option", 5, []]],
+    "nodes": [["body", [[1, "select"]]], ["select", [[3, " \n"], [8, "&amp;"], [1, "option"], [3, "\t"], [1, "optgroup"]]], ["option", [[3, "A&\n雪"]]], ["optgroup", [[1, "option"]]], ["option", [[3, "🌸"]]]],
+    "frames": [["html", [15, 21], [167, 174], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [160, 167], false], ["select", [40, 48], [151, 160], false], ["option", [63, 71], [83, 92], false], ["optgroup", [93, 119], [140, 151], false], ["option", [119, 127], [131, 140], false]],
+    "implied": [],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 47], "select"], ["open", [64, 70], "option"], ["close", [85, 91], "option"], ["open", [94, 102], "optgroup"], ["open", [120, 126], "option"], ["close", [133, 139], "option"], ["close", [142, 150], "optgroup"], ["close", [153, 159], "select"], ["close", [162, 166], "body"], ["close", [169, 173], "html"]]
+  },
+  {
+    "name": "selected content in a table cell preserves table mode",
+    "source": "<!DOCTYPE html><html><head></head><body><table><tbody><tr><td><select><option>a<option>b</select>tail</td></tr></tbody></table></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["table", 2, []], ["tbody", 3, []], ["tr", 4, []], ["td", 5, []], ["select", 6, []], ["option", 7, []], ["option", 7, []]],
+    "nodes": [["body", [[1, "table"]]], ["table", [[1, "tbody"]]], ["tbody", [[1, "tr"]]], ["tr", [[1, "td"]]], ["td", [[1, "select"], [3, "tail"]]], ["select", [[1, "option"], [1, "option"]]], ["option", [[3, "a"]]], ["option", [[3, "b"]]]],
+    "frames": [["html", [15, 21], [134, 141], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [127, 134], false], ["table", [40, 47], [119, 127], false], ["tbody", [47, 54], [111, 119], false], ["tr", [54, 58], [106, 111], false], ["td", [58, 62], [101, 106], false], ["select", [62, 70], [88, 97], false], ["option", [70, 78], null, false], ["option", [79, 87], null, false]],
+    "implied": ["option", "option"],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 46], "table"], ["open", [48, 53], "tbody"], ["open", [55, 57], "tr"], ["open", [59, 61], "td"], ["open", [63, 69], "select"], ["open", [71, 77], "option"], ["open", [80, 86], "option"], ["close", [90, 96], "select"], ["close", [103, 105], "td"], ["close", [108, 110], "tr"], ["close", [113, 118], "tbody"], ["close", [121, 126], "table"], ["close", [129, 133], "body"], ["close", [136, 140], "html"]]
+  },
+  {
+    "name": "outside select optgroups retain authored nesting",
+    "source": "<!DOCTYPE html><html><head></head><body><div><optgroup><option>a<optgroup><option>b</optgroup></div></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["div", 2, []], ["optgroup", 3, []], ["option", 4, []], ["optgroup", 4, []], ["option", 6, []]],
+    "nodes": [["body", [[1, "div"]]], ["div", [[1, "optgroup"]]], ["optgroup", [[1, "option"], [1, "optgroup"]]], ["option", [[3, "a"]]], ["optgroup", [[1, "option"]]], ["option", [[3, "b"]]]],
+    "frames": [["html", [15, 21], [107, 114], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [100, 107], false], ["div", [40, 45], [94, 100], false], ["optgroup", [45, 55], null, false], ["option", [55, 63], null, false], ["optgroup", [64, 74], [83, 94], false], ["option", [74, 82], null, false]],
+    "implied": ["optgroup", "option", "option"],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 44], "div"], ["open", [46, 54], "optgroup"], ["open", [56, 62], "option"], ["open", [65, 73], "optgroup"], ["open", [75, 81], "option"], ["close", [85, 93], "optgroup"], ["close", [96, 99], "div"], ["close", [102, 106], "body"], ["close", [109, 113], "html"]]
+  },
+  {
+    "name": "modern select children are unsupported rather than ignored",
+    "source": "<!DOCTYPE html><html><head></head><body><select><div>x</div></select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["div", 3, []]],
+    "nodes": [["body", [[1, "select"]]], ["select", [[1, "div"]]], ["div", [[3, "x"]]]],
+    "refusal": {"kind": "UnsupportedSelectContent", "span": [49, 52]}
+  },
+  {
+    "name": "nested select token closes the original select",
+    "source": "<!DOCTYPE html><html><head></head><body><select><option>a<select><option>b</select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["option", 3, []], ["option", 2, []]],
+    "nodes": [["body", [[1, "select"], [1, "option"]]], ["select", [[1, "option"]]], ["option", [[3, "a"]]], ["option", [[3, "b"]]]],
+    "refusal": {"kind": "IgnoredTag", "span": [58, 64]}
+  },
+  {
+    "name": "input closes the original select before insertion",
+    "source": "<!DOCTYPE html><html><head></head><body><select><option>a<input><option>b</select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["option", 3, []], ["input", 2, []], ["option", 2, []]],
+    "nodes": [["body", [[1, "select"], [1, "input"], [1, "option"]]], ["select", [[1, "option"]]], ["option", [[3, "a"]]], ["input", []], ["option", [[3, "b"]]]],
+    "refusal": {"kind": "ImpliedEnd", "span": [58, 63]}
+  }
+]

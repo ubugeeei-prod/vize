@@ -178,7 +178,7 @@ fn vue_flavored_callbacks_cannot_hide_real_html_structure() {
 }
 
 #[test]
-fn foreign_raw_formatting_and_select_content_are_explicit() {
+fn foreign_raw_formatting_and_template_content_are_explicit() {
     for body in [
         "<svg></svg>",
         "<math></math>",
@@ -186,7 +186,6 @@ fn foreign_raw_formatting_and_select_content_are_explicit() {
         "<SCRIPT></SCRIPT>",
         "<b></b>",
         "<template></template>",
-        "<select><option></option></select>",
     ] {
         let source = source(body);
         let allocator = Allocator::default();

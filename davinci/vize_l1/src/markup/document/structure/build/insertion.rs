@@ -11,6 +11,9 @@ use crate::markup::Profile;
 
 impl<P: Profile> Builder<'_, '_, P> {
     pub(super) fn body_start(&mut self, tag: Tag) -> Result<(), Refusal> {
+        if P::SELECT_CONTENT_MODEL {
+            self.select_start(&tag)?;
+        }
         if P::TABLE_CONTENT_MODEL && TABLE_PARTS.contains(&tag.name) {
             return Err(Refusal::IgnoredTag(tag.span));
         }

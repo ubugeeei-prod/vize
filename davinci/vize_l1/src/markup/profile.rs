@@ -5,7 +5,7 @@
 //! and each branch folds away under static dispatch. The lexer reads
 //! [`Profile::TOLERATE_DECLARATIONS`] and folds special opening-tag names
 //! under [`Profile::FOLD_NAME_CASE`]. The Document HTML structure builder
-//! reads the name, self-closing, implied-end and table rules.
+//! reads the name, self-closing, implied-end, select and table rules.
 
 /// Which profile a generic function was instantiated with.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -27,6 +27,8 @@ pub trait Profile: Copy + Default + 'static {
     const SELF_CLOSING_ANY_ELEMENT: bool;
     /// HTML implied end tags (`<p>` closed by a block, `<li>` by `<li>`).
     const IMPLIED_END_TAGS: bool;
+    /// HTML select/option/optgroup stack rules, rather than authored nesting.
+    const SELECT_CONTENT_MODEL: bool;
     /// The table content model (foster parenting, `is="vue:…"` workarounds).
     const TABLE_CONTENT_MODEL: bool;
 }
@@ -45,6 +47,7 @@ impl Profile for Document {
     const FOLD_NAME_CASE: bool = true;
     const SELF_CLOSING_ANY_ELEMENT: bool = false;
     const IMPLIED_END_TAGS: bool = true;
+    const SELECT_CONTENT_MODEL: bool = true;
     const TABLE_CONTENT_MODEL: bool = true;
 }
 
@@ -54,5 +57,6 @@ impl Profile for Component {
     const FOLD_NAME_CASE: bool = false;
     const SELF_CLOSING_ANY_ELEMENT: bool = true;
     const IMPLIED_END_TAGS: bool = false;
+    const SELECT_CONTENT_MODEL: bool = false;
     const TABLE_CONTENT_MODEL: bool = false;
 }
