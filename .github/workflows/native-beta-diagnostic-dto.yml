@@ -18,7 +18,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   actual-source-wire:
-    name: ${{ matrix.role == 'before' && matrix.sdk.version == '7.1.0-beta' && 'Baseline refusal observation' || 'Functional source control' }} (${{ matrix.role }}, ${{ matrix.sdk.version }})
+    name: ${{ matrix.role == 'before' && matrix.sdk.version == '7.1.0-beta' && 'Baseline DTO refusal observation' || matrix.role == 'before' && matrix.sdk.version == '7.0.2' && 'Baseline registration refusal observation' || 'Functional source control' }} (${{ matrix.role }}, ${{ matrix.sdk.version }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     strategy:
