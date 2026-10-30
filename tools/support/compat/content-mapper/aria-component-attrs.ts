@@ -36,6 +36,7 @@ for (let index = 2; index < process.argv.length; index += 2) {
       "--mapper-version",
       "--candidate-cli",
       "--source-sha",
+      "--source-package",
     ].includes(name),
   );
   assert.ok(value && !value.startsWith("--") && !options.has(name));
@@ -53,11 +54,15 @@ const consumer = fs.realpathSync(required("--consumer")),
     ? fs.realpathSync(required("--candidate-cli"))
     : undefined;
 assert.equal(options.has("--source-sha"), !!candidate);
+assert.ok(
+  !options.has("--source-package") || candidate,
+  "installed mode cannot override package files",
+);
 if (candidate) assert.match(required("--source-sha"), /^[0-9a-f]{40}$/u);
 assert.equal(fs.existsSync(output), false, "never overwrite an earlier observation");
 fs.mkdirSync(output, { recursive: true });
 const sourcePackage = candidate
-  ? path.join(repo, "npm/cli")
+  ? fs.realpathSync(options.get("--source-package") ?? path.join(repo, "npm/cli"))
   : path.join(consumer, "node_modules/vize");
 const manifest = JSON.parse(fs.readFileSync(path.join(sourcePackage, "package.json"), "utf8"));
 assert.equal(manifest.name, "vize");
@@ -111,6 +116,20 @@ const version = run([host, "--version"], consumer, path.join(output, "host"));
 assert.equal(version.status, 0);
 assert.equal(version.stderr, "");
 assert.equal(version.stdout, `${required("--mapper-version")}\n`);
+if (candidate) {
+  const source = run(
+    ["git", "-C", sourcePackage, "rev-parse", "HEAD"],
+    sourcePackage,
+    path.join(output, "source-package"),
+  );
+  assert.equal(source.status, 0);
+  assert.equal(source.stderr, "");
+  assert.equal(
+    source.stdout,
+    `${required("--source-sha")}\n`,
+    "declarations and source CLI must name the same exact revision",
+  );
+}
 const declarations = packageFiles.map((file) => ({
   file,
   sha256: digest(fs.readFileSync(path.join(sourcePackage, file))),
@@ -120,6 +139,7 @@ write(path.join(output, "providers.json"), {
   mode: candidate ? "source-cli-with-shipped-declarations" : "unmodified-installed-package",
   source: options.get("--source-sha"),
   sourceCli: candidate,
+  sourcePackage,
   sourceCliSha256: candidate ? digest(fs.readFileSync(candidate)) : undefined,
   package: {
     name: manifest.name,

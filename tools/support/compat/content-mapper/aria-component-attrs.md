@@ -6,12 +6,18 @@ valid → invalid → repaired cycles. CRLF with a Unicode prefix is included fo
 original and the prop edit cycle. It checks all mapper stdout, stderr and exit
 statuses, including exact authored UTF16 error positions. Every protocol response,
 process result, input byte hash and package declaration hash is retained.
+Each physical SDK first checks an independent handwritten TypeScript prop
+assignment. Its exact `false` type error supplies the negative contract; the
+Vue diagnostics must retain the authored attribute-name coordinates.
 
 The runner requires the actual `vize/virtual-ts` package import and the shipped
 declaration export conditions. An embedded-helper fixture would miss this bug.
 Source mode copies all shipped declaration files and the actual CLI manifest,
 changing only its mapper command to the supplied source CLI. Installed mode uses
 the installed package and its mapper command without modifications.
+For a binary built in another clean checkout, pass `--source-package` with that
+checkout's `npm/cli` path. Its Git revision must equal `--source-sha`; installed
+mode refuses this override.
 
 After the existing component-input workflow builds its source CLI and installs
 the three physical SDKs, invoke once per SDK:
