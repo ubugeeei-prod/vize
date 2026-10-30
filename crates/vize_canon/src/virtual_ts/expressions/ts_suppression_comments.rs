@@ -6,6 +6,12 @@ use vize_croquis::drawer::strip_js_comments;
 mod callback_line_suppression;
 use callback_line_suppression::{CallbackLineRewrite, rewrite_callback_branches};
 
+pub(crate) struct CallbackParameterRewrite {
+    pub(crate) text: String,
+    /// Generated-only ranges relative to `text` that must stay unmapped.
+    pub(crate) synthetic_ranges: Vec<std::ops::Range<usize>>,
+}
+
 /// Keep inference-only callback parameters on a line covered by a generated
 /// `@ts-ignore` without changing the authored diagnostic owner.
 ///
@@ -13,8 +19,19 @@ use callback_line_suppression::{CallbackLineRewrite, rewrite_callback_branches};
 /// sequence, conditional and function shapes delegate to parser-derived
 /// branch-local suppression ranges. `None` leaves borrowed input unchanged.
 pub(crate) fn callback_parameters_on_ignored_line(value: &str) -> Option<String> {
+    callback_parameters_on_ignored_line_with_ranges(value).map(|rewrite| rewrite.text)
+}
+
+pub(crate) fn callback_parameters_on_ignored_line_with_ranges(
+    value: &str,
+) -> Option<CallbackParameterRewrite> {
     match rewrite_callback_branches(value) {
-        CallbackLineRewrite::Rewritten(rewritten) => return Some(rewritten),
+        CallbackLineRewrite::Rewritten(rewritten) => {
+            return Some(CallbackParameterRewrite {
+                text: rewritten.text,
+                synthetic_ranges: rewritten.synthetic_ranges,
+            });
+        }
         CallbackLineRewrite::Preserve => return None,
         CallbackLineRewrite::NotApplicable => {}
     }
@@ -29,7 +46,10 @@ pub(crate) fn callback_parameters_on_ignored_line(value: &str) -> Option<String>
         collapsed.push(if matches!(ch, '\n' | '\r') { ' ' } else { ch });
     }
     collapsed.push_str(value.get(arrow..)?);
-    Some(collapsed)
+    Some(CallbackParameterRewrite {
+        text: collapsed,
+        synthetic_ranges: Vec::new(),
+    })
 }
 
 fn lexical_arrow_token_offset(value: &str) -> Option<usize> {

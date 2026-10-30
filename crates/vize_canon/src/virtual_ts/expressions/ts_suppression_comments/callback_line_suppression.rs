@@ -16,10 +16,16 @@ pub(super) fn has_callback_parser_candidate(value: &str) -> bool {
 
 pub(super) const BRANCH_IGNORE: &str = "// @ts-ignore Inference-only callback branch.\n";
 
+pub(super) struct RewrittenCallbackBranches {
+    pub(super) text: String,
+    /// Generated-only byte ranges in `text` inserted by this rewrite.
+    pub(super) synthetic_ranges: Vec<Range<usize>>,
+}
+
 pub(super) enum CallbackLineRewrite {
     NotApplicable,
     Preserve,
-    Rewritten(String),
+    Rewritten(RewrittenCallbackBranches),
 }
 
 pub(super) fn rewrite_callback_branches(value: &str) -> CallbackLineRewrite {
@@ -38,7 +44,7 @@ pub(super) fn rewrite_callback_branches(value: &str) -> CallbackLineRewrite {
     }) {
         return CallbackLineRewrite::Preserve;
     }
-    rewrite_ranges(value, &ranges).map_or(
+    rewrite_ranges_with_synthetic_ranges(value, &ranges).map_or(
         CallbackLineRewrite::Preserve,
         CallbackLineRewrite::Rewritten,
     )
@@ -109,9 +115,18 @@ fn collect_ranges(
     }
 }
 
+#[cfg(test)]
 pub(super) fn rewrite_ranges(value: &str, ranges: &[Range<usize>]) -> Option<String> {
+    rewrite_ranges_with_synthetic_ranges(value, ranges).map(|rewrite| rewrite.text)
+}
+
+fn rewrite_ranges_with_synthetic_ranges(
+    value: &str,
+    ranges: &[Range<usize>],
+) -> Option<RewrittenCallbackBranches> {
     let inserted = ranges.len().checked_mul(BRANCH_IGNORE.len())?;
     let mut output = String::with_capacity(value.len().checked_add(inserted)?);
+    let mut synthetic_ranges = Vec::with_capacity(ranges.len());
     let mut copied = 0usize;
     for range in ranges {
         if copied > range.start || range.start > range.end {
@@ -122,14 +137,19 @@ pub(super) fn rewrite_ranges(value: &str, ranges: &[Range<usize>]) -> Option<Str
             return None;
         }
         output.push_str(value.get(copied..range.start)?);
+        let synthetic_start = output.len();
         output.push_str(BRANCH_IGNORE);
+        synthetic_ranges.push(synthetic_start..output.len());
         for ch in prefix.chars() {
             output.push(if matches!(ch, '\n' | '\r') { ' ' } else { ch });
         }
         copied = range.end;
     }
     output.push_str(value.get(copied..)?);
-    Some(output)
+    Some(RewrittenCallbackBranches {
+        text: output,
+        synthetic_ranges,
+    })
 }
 
 /// A newline in a literal changes its value; one in a line comment terminates

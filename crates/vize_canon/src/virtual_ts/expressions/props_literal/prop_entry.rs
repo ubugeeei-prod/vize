@@ -247,6 +247,65 @@ pub(crate) fn entry_sub_spans(
     spans
 }
 
+/// Refine a rewritten prop value around generated-only insertions.
+///
+/// The caller supplies ranges relative to `value_gen_range`. If the authored
+/// and generated lengths cannot be authenticated after removing those gaps,
+/// retain only the key mappings instead of publishing a false value map.
+pub(crate) fn entry_sub_spans_with_synthetic_value_gaps(
+    source_context: ComponentPropSource<'_>,
+    prop: &PassedProp,
+    key_gen_range: std::ops::Range<usize>,
+    value_gen_range: std::ops::Range<usize>,
+    synthetic_ranges: &[std::ops::Range<usize>],
+) -> Vec<VizeSubSpan> {
+    if synthetic_ranges.is_empty() {
+        return entry_sub_spans(source_context, prop, key_gen_range, value_gen_range);
+    }
+    let Some(name_src_range) = prop_name_source_range(source_context, prop) else {
+        return Vec::new();
+    };
+    let Some(value_src_range) = prop_value_source_range(source_context, prop) else {
+        return Vec::new();
+    };
+    let synthetic_len = synthetic_ranges
+        .iter()
+        .try_fold(0usize, |total, range| total.checked_add(range.len()));
+    if synthetic_len.and_then(|length| value_gen_range.len().checked_sub(length))
+        != Some(value_src_range.len())
+        || synthetic_ranges
+            .windows(2)
+            .any(|ranges| ranges[0].end > ranges[1].start)
+        || synthetic_ranges
+            .last()
+            .is_some_and(|range| range.end > value_gen_range.len())
+    {
+        return key_sub_spans(key_gen_range, name_src_range);
+    }
+
+    let mut spans = key_sub_spans(key_gen_range, name_src_range);
+    let (mut generated_cursor, mut source_cursor) = (0usize, value_src_range.start);
+    for gap in synthetic_ranges {
+        if generated_cursor < gap.start {
+            let length = gap.start - generated_cursor;
+            spans.push(VizeSubSpan {
+                gen_range: value_gen_range.start + generated_cursor
+                    ..value_gen_range.start + gap.start,
+                src_range: source_cursor..source_cursor + length,
+            });
+            source_cursor += length;
+        }
+        generated_cursor = gap.end;
+    }
+    if generated_cursor < value_gen_range.len() {
+        spans.push(VizeSubSpan {
+            gen_range: value_gen_range.start + generated_cursor..value_gen_range.end,
+            src_range: source_cursor..value_src_range.end,
+        });
+    }
+    spans
+}
+
 pub(crate) fn key_sub_spans(
     generated: std::ops::Range<usize>,
     source: std::ops::Range<usize>,

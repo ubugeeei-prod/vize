@@ -202,7 +202,14 @@ const emit = defineEmits<{ quit: [] }>();
             feature_masks,
             Vec::<usize>::new(),
             "synthetic branch directives must have exactly zero source-map overlaps: {directive:?}\n{:#?}",
-            result.mappings,
+            result
+                .mappings
+                .iter()
+                .filter(|mapping| {
+                    let generated = mapping.0[0]..mapping.0[0] + mapping.0[1];
+                    generated.start < directive.end && directive.start < generated.end
+                })
+                .collect::<Vec<_>>(),
         );
     }
 
