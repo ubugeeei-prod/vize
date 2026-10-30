@@ -303,13 +303,75 @@ fn canonical_project_alias_may_restore_inside_its_same_owned_tree() {
     let directory = tempfile::tempdir().unwrap();
     let alias = directory.path().join("project-alias");
     symlink(&fixture.root, &alias).unwrap();
+    // Workspace constructors canonicalize legitimate aliases before retaining
+    // the project root; the close guard must use the same owned boundary.
+    let project_root = alias.canonicalize().unwrap();
     let external_uri = path_to_file_uri(&alias.join("src/support.ts"));
-    let mapped_uri = path_to_file_uri(&overlay_root_for_project(&alias).join("src/support.ts"));
+    let mapped_uri =
+        path_to_file_uri(&overlay_root_for_project(&project_root).join("src/support.ts"));
     assert!(
-        close_materialized_document(&external_uri, &mapped_uri, &alias)
+        close_materialized_document(&external_uri, &mapped_uri, &project_root)
             .unwrap()
             .is_some()
     );
     assert_eq!(fs::read(&fixture.mirror).unwrap(), DISK);
     assert_eq!(fs::read(&fixture.original).unwrap(), DISK);
+}
+
+#[cfg(unix)]
+#[test]
+fn replaced_project_root_cannot_restore_or_delete_through_a_foreign_tree() {
+    use std::os::unix::fs::symlink;
+    for disk_backed in [true, false] {
+        let fixture = Fixture::new("src/support.ts", disk_backed.then_some(DISK));
+        let mut client = fixture.client();
+        let buffers = client.document_texts.clone();
+        let versions = client.overlay_versions.clone();
+        let mappings = client.session_document_uris.clone();
+        let reverse = client.external_document_uris.clone();
+        let foreign = tempfile::tempdir().unwrap();
+        let retired = tempfile::tempdir().unwrap();
+        let saved_root = retired.path().join("original-project");
+        let foreign_root = foreign.path().canonicalize().unwrap();
+        let foreign_source = foreign_root.join("src/support.ts");
+        let foreign_mirror = overlay_root_for_project(&foreign_root).join("src/support.ts");
+        fs::create_dir_all(foreign_mirror.parent().unwrap()).unwrap();
+        if disk_backed {
+            fs::create_dir_all(foreign_source.parent().unwrap()).unwrap();
+            fs::write(&foreign_source, b"foreign source must stay unchanged\n").unwrap();
+        }
+        fs::write(&foreign_mirror, b"foreign mirror must stay unchanged\n").unwrap();
+        fs::rename(&fixture.root, &saved_root).unwrap();
+        symlink(&foreign_root, &fixture.root).unwrap();
+        assert!(
+            client
+                .did_close(&path_to_file_uri(&fixture.original))
+                .is_err()
+        );
+        assert_eq!(client.document_texts, buffers);
+        assert_eq!(client.overlay_versions, versions);
+        assert_eq!(client.session_document_uris, mappings);
+        assert_eq!(client.external_document_uris, reverse);
+        assert!(!client.editor_lsp_documents_dirty);
+        assert_eq!(
+            fs::read(&foreign_mirror).unwrap(),
+            b"foreign mirror must stay unchanged\n"
+        );
+        if disk_backed {
+            assert_eq!(
+                fs::read(&foreign_source).unwrap(),
+                b"foreign source must stay unchanged\n"
+            );
+            assert_eq!(fs::read(saved_root.join("src/support.ts")).unwrap(), DISK);
+        } else {
+            assert!(!foreign_source.exists());
+            assert!(!saved_root.join("src/support.ts").exists());
+        }
+        assert_eq!(
+            fs::read(overlay_root_for_project(&saved_root).join("src/support.ts")).unwrap(),
+            OVERLAY
+        );
+        fs::remove_file(&fixture.root).unwrap();
+        fs::rename(&saved_root, &fixture.root).unwrap();
+    }
 }

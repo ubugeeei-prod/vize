@@ -81,6 +81,18 @@ pub(super) fn close_materialized_document(
 }
 
 fn check_owned_destination(project_root: &Path, path: &Path) -> Result<bool, String> {
+    // Constructors retain a canonical root. Refuse a later replacement of
+    // that boundary before inspecting any child through a foreign tree.
+    let root = fs::symlink_metadata(project_root)
+        .map_err(|error| cstr!("Failed to inspect closed Corsa project root: {error}"))?;
+    if !root.is_dir()
+        || root.file_type().is_symlink()
+        || (cfg!(windows) && fs::read_link(project_root).is_ok())
+    {
+        return Err(cstr!(
+            "Closed Corsa project root is not an owned real directory"
+        ));
+    }
     let relative = path
         .strip_prefix(project_root)
         .map_err(|_| cstr!("Closed Corsa document is outside its project"))?;
