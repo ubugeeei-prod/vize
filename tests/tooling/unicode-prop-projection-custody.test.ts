@@ -13,14 +13,50 @@ import {
   nativeAttributesPath,
 } from "../../tools/support/compat/content-mapper/constructor-projection-parity.ts";
 
+type ByteRange = { start: number; end: number };
+type Diagnostic = { start: number; length: number; code: number; messageText: string };
+type MapperPacket = {
+  text: string;
+  extension: string;
+  mappings: number[][];
+  semanticLinks: {
+    sourceStart: number;
+    sourceLength: number;
+    targetStart: number;
+    targetLength: number;
+    kind: string;
+  }[];
+  diagnosticDirectives: { unusedExpectDirectiveDiagnostics: Diagnostic[]; directives: number[][] };
+  diagnostics: Diagnostic[];
+};
+type VirtualPacket = {
+  virtual_ts: string;
+  virtual_ts_mappings: {
+    generated: ByteRange;
+    authored: ByteRange;
+    subSpans: { generated: ByteRange; authored: ByteRange }[];
+  }[];
+  virtual_ts_semantic_links: { source: ByteRange; target: ByteRange; kind: string }[];
+  diagnostics: Diagnostic[];
+  error_count: number;
+};
+type ProjectionRow = {
+  case: string;
+  newline: string;
+  source: string;
+  target: string;
+  options?: number;
+  packet: MapperPacket | VirtualPacket;
+};
+
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const importPath =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/content-mapper-type-imports.d.ts.txt";
 const assets = [...canonicalPaths, nativeAttributesPath, importPath];
-const encode = (value) => Buffer.from(JSON.stringify(value));
-const bytes = (value) => Buffer.byteLength(value);
+const encode = (value: ProjectionRow[]) => Buffer.from(JSON.stringify(value));
+const bytes = (value: string) => Buffer.byteLength(value);
 
-function packet(target, current, marker) {
+function packet(target: string, current: boolean, marker: boolean): MapperPacket | VirtualPacket {
   const source = "<template>日本 🧭</template>";
   const body = "const value = '日本 🧭';\n";
   const declaration = current
@@ -74,8 +110,8 @@ function packet(target, current, marker) {
 }
 
 function fixture() {
-  const base = [],
-    head = [];
+  const base: ProjectionRow[] = [],
+    head: ProjectionRow[] = [];
   for (const newline of ["\n", "\r\n"]) {
     for (const name of ["generic", "invalid", "repaired", "plain", "javascript", "tsx"]) {
       for (const target of ["vue3", "options-api", "legacy-vue2", "content-mapper"]) {
@@ -101,11 +137,11 @@ function fixture() {
   return { base, head };
 }
 
-function replay(base, head, baseRoot = root, headRoot = root) {
+function replay(base: ProjectionRow[], head: ProjectionRow[], baseRoot = root, headRoot = root) {
   return certifyUnaffectedProjectionPackets(encode(base), encode(head), baseRoot, headRoot);
 }
 
-const mapperIndex = (rows) =>
+const mapperIndex = (rows: ProjectionRow[]) =>
   rows.findIndex((row) => row.case === "plain" && row.target === "content-mapper");
 
 test("Unicode consumer retains all 228 packets under the existing finite certificate", () => {
@@ -122,7 +158,7 @@ test("Unicode consumer retains all 228 packets under the existing finite certifi
   assert.deepEqual(encode(head), headBytes, "head packets are retained without normalization");
 });
 
-for (const [name, mutate] of [
+const mutations: [string, (packet: MapperPacket) => void][] = [
   [
     "diagnostic",
     (p) => {
@@ -162,7 +198,7 @@ for (const [name, mutate] of [
   [
     "unknown packet field",
     (p) => {
-      p.unqualified = true;
+      Object.assign(p, { unqualified: true });
     },
   ],
   [
@@ -183,10 +219,13 @@ for (const [name, mutate] of [
       p.text = p.text.replace("Partial<$Slots>", "Partial<unknown>");
     },
   ],
-]) {
+];
+for (const [name, mutate] of mutations) {
   test(`Unicode consumer refuses ${name} mutations`, () => {
     const { base, head } = fixture();
-    mutate(head[mapperIndex(head)].packet);
+    const selected = head[mapperIndex(head)].packet;
+    assert.ok("text" in selected);
+    mutate(selected);
     assert.throws(() => replay(base, head));
   });
 }
@@ -251,12 +290,12 @@ test("Unicode workflow registers the exact certificate, assets and refusal tests
   for (const file of [
     "tools/support/compat/content-mapper/constructor-projection-parity.ts",
     "tests/tooling/constructor-projection-parity.test.ts",
-    "tests/tooling/unicode-prop-projection-custody.test.mjs",
+    "tests/tooling/unicode-prop-projection-custody.test.ts",
     ...assets,
   ])
     assert.ok(workflow.includes(`      - ${file}\n`), `missing path registration: ${file}`);
   const tests = workflow.indexOf(
-    "node --test tests/tooling/constructor-projection-parity.test.ts tests/tooling/unicode-prop-projection-custody.test.mjs",
+    "node --test tests/tooling/constructor-projection-parity.test.ts tests/tooling/unicode-prop-projection-custody.test.ts",
   );
   const capture = workflow.indexOf(
     "run: node tools/support/compat/github/unicode-prop-projection-custody.mjs",
