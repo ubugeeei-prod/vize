@@ -21,7 +21,8 @@ const currentReceipt = {
   helperHoistProvenance: "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
   slotAliasProvenance: "#11064 / c2ee0878fec5d53edb7c30e10f374e37ab256f02",
   slotCallFiles: ["src/DefineSlotsType.vue"],
-  snapshotSha256: "777b523a530649363f1fa423e4417e03c9dfabfbe24cb3013cfcc5927c4e9c75",
+  // Exact source packet successor: #11153 / Actions 41101082471, artifact 12998523533.
+  snapshotSha256: "03ff2bbda760469cae9fe73b603995287b78338c96819f52a8941d3780f565bd",
   widenHelperFiles: [
     "src/DefineExposeType.vue",
     "src/DefineModelType.vue",
