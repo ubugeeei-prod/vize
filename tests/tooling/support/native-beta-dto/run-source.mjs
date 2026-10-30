@@ -67,7 +67,7 @@ fs.writeFileSync(
           ? "baseline-observation-known-dto-refusal"
           : process.env.VIZE_NATIVE_DTO_ROLE === "before" &&
               process.env.VIZE_NATIVE_DTO_SDK_VERSION === "7.0.2"
-            ? "baseline-observation-known-registration-refusal"
+            ? "baseline-observation-registration-boundary"
             : "functional-source-control",
       signal: result.signal,
       error: result.error?.message ?? null,

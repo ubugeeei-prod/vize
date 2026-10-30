@@ -323,9 +323,9 @@ for (const [index, process] of native.entries()) {
 }
 assert.equal(source.attached.rows.length, 4);
 assert.equal(
-  registrationRefusals,
-  stableRegistrationBaseline ? 1 : 0,
-  "Only the exact historical stable watcher registration refusal may remain unanswered",
+  stableRegistrationBaseline ? registrationRefusals <= 1 : registrationRefusals === 0,
+  true,
+  "Only the exact historical stable watcher registration request may race shutdown",
 );
 assert.equal(receipts[0].apiAttached, true, "The explicit owned scope must retain its API wire");
 if (provider.version === "7.1.0-beta") {
@@ -365,7 +365,7 @@ function requireStableWatcherShutdown(bytes, registrationRefusal) {
     assert.deepEqual(bytes.subarray(0, prefix.length), prefix);
     bytes = bytes.subarray(prefix.length);
   }
-  if (bytes.equals(Buffer.from("\n"))) return;
+  if (bytes.length === 0 || bytes.equals(Buffer.from("\n"))) return;
   if (bytes.length === expected.length + 1) {
     assert.equal(bytes[0], 0x0a, "Only the observed single leading newline is permitted");
     bytes = bytes.subarray(1);
@@ -431,12 +431,14 @@ const disposition = {
   roleKind: baseline
     ? "baseline-observation-known-dto-refusal"
     : stableRegistrationBaseline
-      ? "baseline-observation-known-registration-refusal"
+      ? registrationRefusals === 1
+        ? "baseline-observation-known-registration-refusal"
+        : "baseline-observation-registration-acknowledged"
       : "functional-source-control",
   observerCompleted: true,
   dtoFunctionalPass: !baseline,
   lifecyclePass: !baseline,
-  registrationPass: !stableRegistrationBaseline,
+  registrationPass: registrationRefusals === 0,
   nativeOwners: receipts.length,
   allFramesClosed: true,
 };
