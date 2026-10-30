@@ -161,6 +161,9 @@ Default discovery formats Vue, JavaScript/TypeScript and JSON/JSONC files. YAML 
 | `--sort-blocks`                    | Toggle canonical SFC block ordering                  |
 | `--self-close-void-elements`       | Toggle `/>` on HTML void elements                    |
 | `--normalize-css-quotes`          | Re-quote CSS, SCSS and Less strings using `--single-quote` |
+| `--normalize-inline-styles`       | Lay out plain static `style` declarations            |
+| `--normalize-v-for-parens`        | Parenthesize multiple `v-for` aliases                 |
+| `--reindent-preprocessor-styles`  | Re-indent SCSS and Less blocks by nesting depth       |
 | `--preset`                         | Apply `vize`, `prettier`, `compact` or `documentation` formatter defaults |
 | `--profile`                        | Print timing profile                                 |
 

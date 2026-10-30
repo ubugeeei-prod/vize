@@ -10,6 +10,8 @@ use crate::support::lsp_process;
 mod css_quotes;
 #[cfg(all(feature = "maestro", feature = "glyph"))]
 mod nested_lsp;
+#[cfg(feature = "glyph")]
+mod normalizers;
 mod root;
 mod support;
 mod typecheck;

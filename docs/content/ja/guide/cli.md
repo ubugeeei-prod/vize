@@ -158,6 +158,9 @@ vize fmt --write src
 | `--sort-blocks`                    | SFC ブロックの標準順序を切り替える                     |
 | `--self-close-void-elements`       | HTML の空要素に `/>` を付けるか切り替える              |
 | `--normalize-css-quotes`          | CSS・SCSS・Less の文字列の引用符を `--single-quote` に合わせる |
+| `--normalize-inline-styles`       | 静的な `style` 宣言の空白を整える                     |
+| `--normalize-v-for-parens`        | 複数の `v-for` エイリアスを括弧で囲む                 |
+| `--reindent-preprocessor-styles`  | SCSS・Less ブロックを入れ子の深さでインデントする       |
 | `--preset`                         | `vize`、`prettier`、`compact`、`documentation` のフォーマッタ既定値を適用する |
 | `--profile`                        | 処理時間のプロファイルを表示する                       |
 
