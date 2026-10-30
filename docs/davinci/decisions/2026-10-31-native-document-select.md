@@ -5,7 +5,8 @@ through the existing original event-tape builder. It adds no parser, event/node
 storage, decoded buffer, synthesized element, pipeline stage or product route.
 `Profile::SELECT_CONTENT_MODEL` declares this host difference beside the existing
 name, self-closing, implied-end and table policies. Component retains authored
-nesting; Document retains HTML stack behavior.
+nesting; Document retains HTML stack behavior. The new associated constant
+defaults to false, so existing public custom profiles remain source-compatible.
 
 The current [HTML in-body rules](https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inbody)
 handle select-family starts without a separate select insertion mode. In this

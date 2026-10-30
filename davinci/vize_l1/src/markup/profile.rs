@@ -28,7 +28,8 @@ pub trait Profile: Copy + Default + 'static {
     /// HTML implied end tags (`<p>` closed by a block, `<li>` by `<li>`).
     const IMPLIED_END_TAGS: bool;
     /// HTML select/option/optgroup stack rules, rather than authored nesting.
-    const SELECT_CONTENT_MODEL: bool;
+    /// Existing custom profiles keep authored nesting unless they opt in.
+    const SELECT_CONTENT_MODEL: bool = false;
     /// The table content model (foster parenting, `is="vue:…"` workarounds).
     const TABLE_CONTENT_MODEL: bool;
 }
@@ -59,4 +60,33 @@ impl Profile for Component {
     const IMPLIED_END_TAGS: bool = false;
     const SELECT_CONTENT_MODEL: bool = false;
     const TABLE_CONTENT_MODEL: bool = false;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Component, Document, Profile, ProfileKind};
+
+    #[derive(Clone, Copy, Default)]
+    struct ExistingProfile;
+
+    impl Profile for ExistingProfile {
+        const KIND: ProfileKind = ProfileKind::Component;
+        const TOLERATE_DECLARATIONS: bool = false;
+        const FOLD_NAME_CASE: bool = false;
+        const SELF_CLOSING_ANY_ELEMENT: bool = true;
+        const IMPLIED_END_TAGS: bool = false;
+        const TABLE_CONTENT_MODEL: bool = false;
+    }
+
+    #[test]
+    fn existing_profile_implementations_need_no_new_required_constant() {
+        assert_eq!(
+            (
+                ExistingProfile::SELECT_CONTENT_MODEL,
+                Component::SELECT_CONTENT_MODEL,
+                Document::SELECT_CONTENT_MODEL,
+            ),
+            (false, false, true)
+        );
+    }
 }
