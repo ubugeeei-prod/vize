@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "kind": "source-owned-helper-display-successor",
+  "productionRevision": "32d80c319cfb413194ac934e160451a357643e38",
+  "nativeAcceptanceCredit": false,
+  "scope": "Exactly the nine reviewed missing-template-name diagnostic messages rename __VizeTemplateInstance to $TemplateInstance; every other field and all archived native packets remain unchanged.",
+  "historicalCompleteFileSha256": "e0ec4c167ef11063fe7d2c91672fb77ce5ddeaca7d9a0a7f99b319e5f605486e",
+  "historicalPartialFileSha256": "365f17924cafbe6b761288adc8a85e8f6ed257f1bcde340e1bac2d96b1b70ca8",
+  "historicalReferencePacketBytes": 37178,
+  "historicalReferencePacketSha256": "305f94d966ee194ad565a0d05807343fb77ce916897ff486c229622b2aed9238",
+  "currentReferencePacketBytes": 37133,
+  "currentReferencePacketSha256": "32464d46dd74406f8f8b23b5c455b70d13e2dd3b815776148b9819fbe51221d6",
+  "changes": [
+    {
+      "packet": "basic-diagnostics",
+      "diagnostic": 1,
+      "name": "absent",
+      "start": 298
+    },
+    {
+      "packet": "unsaved-update-diagnostics",
+      "diagnostic": 3,
+      "name": "absent",
+      "start": 299
+    },
+    {
+      "packet": "delete-import-diagnostics",
+      "diagnostic": 4,
+      "name": "absent",
+      "start": 299
+    },
+    {
+      "packet": "recreate-import-diagnostics",
+      "diagnostic": 3,
+      "name": "absent",
+      "start": 299
+    },
+    {
+      "packet": "directive-diagnostics",
+      "diagnostic": 0,
+      "name": "realMissing",
+      "start": 197
+    },
+    {
+      "packet": "directive-diagnostics",
+      "diagnostic": 1,
+      "name": "childMissing",
+      "start": 254
+    },
+    {
+      "packet": "musea-variant-diagnostics",
+      "diagnostic": 0,
+      "name": "unknownStoryBinding",
+      "start": 250
+    },
+    {
+      "packet": "musea-unsaved-update-diagnostics",
+      "diagnostic": 1,
+      "name": "unknownStoryBinding",
+      "start": 247
+    },
+    {
+      "packet": "musea-delete-import-diagnostics",
+      "diagnostic": 2,
+      "name": "unknownStoryBinding",
+      "start": 247
+    }
+  ],
+  "historicalArtifactPacketSha256": "7b97260ef14c31e9b7081833fef5c44f8a1ef6bf816b122a9a9d9d7644a917d8"
+}
