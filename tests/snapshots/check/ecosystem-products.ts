@@ -42,10 +42,11 @@ const currentReceipt = {
     "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
   slotFallbackProvenance: "#11064 / c2ee0878fec5d53edb7c30e10f374e37ab256f02",
   slotFallbackFiles: [],
-  // Whole packet observed in #11153 / 8b86ad667fc, Actions 41117365474.
-  // Prior packet ffd237083004fd1a5eb9b5c8b517ce16c05de9a211310f6aafdc379f1be97dc3
-  // differs only in the two ARIA helpers' hygienic key constraints.
-  snapshotSha256: "e0d7fd37fead28615939040a3e13dc11b8ecd4209252f99abeb29f8e9657a5f4",
+  // Whole packet observed with #11153 / 197682982b4, local leased CLI 73ddcc7cfc8.
+  // Prior Linux packet e0d7fd37fead28615939040a3e13dc11b8ecd4209252f99abeb29f8e9657a5f4
+  // and earlier ffd237083004fd1a5eb9b5c8b517ce16c05de9a211310f6aafdc379f1be97dc3 remain historical.
+  // Only two ARIA helper blocks and their owned calls change; Actions must qualify the latest head.
+  snapshotSha256: "f3bfea0213d0c612b3f700d96b8918add8ec06e99bda5842428dd78985cbb9e5",
   warningCount: 0,
   widenHelperFiles: [
     "src/ComposablesAndRouting.vue",
@@ -64,10 +65,9 @@ const retiredSlotFallbackFiles = [
   "src/UiLibraries.vue",
 ] as const;
 const componentAriaHelper =
-  "function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T>" +
-  "(raw: R, camel: C, value: T): { readonly [K in R | C]: T extends undefined ? never : T } " +
-  "{ return { [raw]: value, [camel]: value } as unknown as " +
-  "{ readonly [K in R | C]: T extends undefined ? never : T }; }";
+  "function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T>(raw: R, camel: C, value: T): { readonly [K in R | C]: T extends undefined ? never : T };\n" +
+  "  function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T, E>(raw: R, camel: C, value: T, _expected: E): { readonly [K in R | C]: T extends E ? T extends undefined ? never : T : E extends undefined ? never : E };\n" +
+  "  function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T, E = unknown>(raw: R, camel: C, value: T, _expected?: E): { readonly [K in R | C]: T extends E ? T extends undefined ? never : T : E extends undefined ? never : E } { return { [raw]: value, [camel]: value } as unknown as { readonly [K in R | C]: T extends E ? T extends undefined ? never : T : E extends undefined ? never : E }; }";
 const retiredComponentAriaHelpers = [
   "function __vizeComponentAriaPropValue<const T>(value: T): " +
     "T extends undefined ? never : T { return value as (T extends undefined ? never : T); }",
@@ -79,12 +79,13 @@ const ariaPropReceipts = [
     file: "src/PrimeVueOptionsApi.vue",
     priorProperty: '"aria-label": `${selectedAction.label} search`,',
     property:
-      '...__vizeComponentAriaPropEntries("aria-label", "ariaLabel", `${selectedAction.label} search`),',
+      '...__vizeComponentAriaPropEntries("aria-label", "ariaLabel", `${selectedAction.label} search`, (undefined as unknown as __InputText_0_prop_aria_label)),',
   },
   {
     file: "src/UiLibraries.vue",
     priorProperty: '"aria-label": "PrimeVue input",',
-    property: '...__vizeComponentAriaPropEntries("aria-label", "ariaLabel", "PrimeVue input"),',
+    property:
+      '...__vizeComponentAriaPropEntries("aria-label", "ariaLabel", "PrimeVue input", (undefined as unknown as __InputText_16_prop_aria_label)),',
   },
 ] as const;
 
@@ -231,7 +232,7 @@ describe(`${app.name} check (type checker)`, () => {
       }
       assert.equal(
         count(virtualTs, "T extends undefined ? never : T"),
-        2,
+        4,
         `${receipt.file} must retain the collision-proof narrowing contract`,
       );
       assert.equal(
