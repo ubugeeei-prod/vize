@@ -17,6 +17,7 @@ import { inspectLspObservation, validateLspReport } from "./lsp-report.ts";
 import { LspWire } from "./lsp-wire.ts";
 import { lspWorkspace, observeLspWorkspace } from "./lsp-workspace.ts";
 import { sourceSessionUnsupportedLegacy } from "./lsp-source-sessions.ts";
+import { sourceLspRuntimeEnvironment } from "../tooling/support/lsp/runtime-environment.ts";
 import {
   errorText,
   hasCapabilities,
@@ -33,6 +34,7 @@ async function runLspCase(
   fixture: LspFixture,
   binaryPath: string | undefined,
   binaryFailure?: string,
+  repoRoot?: string,
 ): Promise<LspRow> {
   const row: LspRow = {
     id: fixture.id,
@@ -61,7 +63,12 @@ async function runLspCase(
     row.legacy.workspace.before = observeLspWorkspace(workspace, active.mapping);
     const workspaceUri = pathToFileURL(workspace).href;
     const entryUri = pathToFileURL(path.join(workspace, fixture.entry)).href;
-    wire = new LspWire(binaryPath, ["lsp"], workspace);
+    wire = new LspWire(
+      binaryPath,
+      ["lsp"],
+      workspace,
+      repoRoot ? sourceLspRuntimeEnvironment(repoRoot) : undefined,
+    );
     const initialized = await wire.request("initialize", {
       processId: process.pid,
       rootUri: workspaceUri,
@@ -201,7 +208,7 @@ export async function runLspPack({
     binaryFailure = errorText(error);
   }
   for (const fixture of loaded.cases) {
-    report.rows.push(await runLspCase(fixture, binaryPath, binaryFailure));
+    report.rows.push(await runLspCase(fixture, binaryPath, binaryFailure, repoRoot));
   }
   assertExactRows(loaded, report.rows);
   report.summary = {
