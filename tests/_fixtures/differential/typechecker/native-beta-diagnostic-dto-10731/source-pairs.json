@@ -58,7 +58,7 @@
     },
     {
       "path": "tests/tooling/support/native-beta-dto/audit-wire.mjs",
-      "sha256": "327aaa2c973f9ab32cdb2ebcbb95cecefa0f495f7dfaa93d3c441df121e589e3"
+      "sha256": "e6920284a12b5b07af0502233b06a97ff2745061d5040d2e9b4d34f74290dbd5"
     },
     {
       "path": "tests/tooling/support/native-beta-dto/run-source.mjs",
