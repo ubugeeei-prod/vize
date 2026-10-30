@@ -321,11 +321,7 @@ test("unpublished, foreign, failed, incomplete or mismatched release facts refus
   for (const [name, mutate] of mutations) {
     const f = fixture();
     mutate(f);
-    await assert.rejects(
-      verifyComputedEventRelease(f.request, f.github, f.fetchImpl),
-      undefined,
-      name,
-    );
+    await assert.rejects(verifyComputedEventRelease(f.request, f.github, f.fetchImpl), name);
   }
 });
 
@@ -405,11 +401,7 @@ test("unmerged integration, missing fix ancestry, foreign paths and altered squa
   for (const [name, mutate] of mutations) {
     const f = fixture();
     mutate(f);
-    await assert.rejects(
-      verifyComputedEventRelease(f.request, f.github, f.fetchImpl),
-      undefined,
-      name,
-    );
+    await assert.rejects(verifyComputedEventRelease(f.request, f.github, f.fetchImpl), name);
   }
 });
 

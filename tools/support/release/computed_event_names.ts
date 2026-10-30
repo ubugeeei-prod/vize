@@ -174,7 +174,11 @@ export function captureProcess(
   return observation;
 }
 
-export function parseArguments(args: string[]) {
+export function parseArguments(args: string[]): {
+  version: string;
+  output: string;
+  phase: "before" | "after";
+} {
   const values: Record<string, string> = {};
   for (let index = 0; index < args.length; index += 2) {
     const key = args[index];
