@@ -6,6 +6,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { FrameDecoder } from "../../../../tests/tooling/support/lsp/installed-alias-replay/frames.ts";
+import { verifyRawAriaContext } from "./aria-component-raw-context.ts";
 import {
   ariaComponentProjects,
   ariaPropReference,
@@ -344,6 +345,12 @@ for (const declaration of declarations)
     declaration.sha256,
     "the installed or shipped declaration bytes must remain unchanged",
   );
+let rawContext: { passed: boolean; error?: string };
+try {
+  rawContext = verifyRawAriaContext(output, host, run);
+} catch (error) {
+  rawContext = { passed: false, error: error instanceof Error ? error.message : String(error) };
+}
 const report = {
   issue: 11144,
   completeCases: results.length,
@@ -351,6 +358,7 @@ const report = {
   source: options.get("--source-sha"),
   installedVersion: candidate ? undefined : manifest.version,
   independentPropReference: true,
+  rawContext,
   results,
 };
 write(path.join(output, "report.json"), report);
@@ -360,3 +368,4 @@ assert.equal(
   report.completeCases,
   "every original, native and invalid/repair package control must pass",
 );
+assert.equal(rawContext.passed, true, "raw three-argument context must retain every native error");
