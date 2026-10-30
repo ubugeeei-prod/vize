@@ -66,7 +66,7 @@
           "column": 26,
           "severity": 1,
           "code": 2322,
-          "message": "Type '(event: string) => number' is not assignable to type '(event: MouseEvent) => void'.\nTypes of parameters 'event' and 'event' are incompatible.\nType 'MouseEvent' is not assignable to type 'string'."
+          "message": "Type '(event: string) => number' is not assignable to type '(payload: PointerEvent) => void'.\nTypes of parameters 'event' and 'payload' are incompatible.\nType 'PointerEvent' is not assignable to type 'string'."
         }
       ]
     }
