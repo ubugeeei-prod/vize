@@ -137,10 +137,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             successor,
             latest_successor,
         );
-        assert_eq!(
-            capture_fixture(fixture).render().as_str(),
-            latest_successor
-        );
+        assert_eq!(capture_fixture(fixture).render().as_str(), latest_successor);
     }
 }
 
