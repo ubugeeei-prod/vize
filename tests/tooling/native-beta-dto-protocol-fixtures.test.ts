@@ -55,7 +55,7 @@ void test("one closed DTO registration consumes actual ABI and four-role authori
   );
   assert(!loaded.cases.some((entry) => entry.id === NATIVE_BETA_DTO_PROTOCOL_ID));
 });
-void test("typed current producers retain exact historical bytes and unchanged executable authority", () => {
+void test("typed producers retain historical bytes and only the exact registered observer successor", () => {
   const custody = nativeBetaDtoProducerCustody(read);
   assert.equal(custody.length, 5);
   assert.deepEqual(
@@ -78,6 +78,15 @@ void test("typed current producers retain exact historical bytes and unchanged e
     }
   }
   const current = custody.find((entry) => entry.currentPath.endsWith("audit-wire.ts"))!;
+  assert.equal(
+    current.currentRuntimeRegistration,
+    "before-stable-post-shutdown-observation-41099824102",
+  );
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentRuntimeRegistration === null),
+  );
   const bytes = fs.readFileSync(current.currentPath, "utf8");
   assert.throws(() =>
     validate([row], [], {
@@ -102,6 +111,30 @@ void test("typed current producers retain exact historical bytes and unchanged e
         fs
           .readFileSync(workflow.currentPath, "utf8")
           .replace("role: [before, after]", "role: [after]"),
+      ),
+    }),
+  );
+});
+void test("current observer successor requires its exact bounded runtime and actual raw packet authority", () => {
+  for (const path of [
+    "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
+    ...["client.bin", "server.bin", "identity.json"].map(
+      (name) =>
+        "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/" +
+        "stable-post-shutdown-41099824102/" +
+        name,
+    ),
+  ]) {
+    assert.throws(() => validate([row], [], { [path]: null }));
+    assert.throws(() => validate([row], [], { [path]: Buffer.from("changed observation\n") }));
+  }
+  const helper = "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts";
+  assert.throws(() =>
+    validate([row], [], {
+      [helper]: Buffer.from(
+        fs
+          .readFileSync(helper, "utf8")
+          .replace('assert.equal(context.role, "before",', 'assert.equal(context.role, "after",'),
       ),
     }),
   );

@@ -79,6 +79,21 @@ const producerHashes = [
 const before = "13fa41356d075047a229f580014b637d3bbeb57f";
 const betaCommit = "3e9236361fa97a9e6c685f4833ac457ae2d8c50a";
 const sha = (value: Buffer) => createHash("sha256").update(value).digest("hex");
+const runtime = (source: Buffer) =>
+  stripTypeScriptTypes(source.toString("utf8"), { mode: "transform" });
+// One explicit current observer successor. This does not rewrite the original
+// producer identity or equate the distinct root and SDK watcher registrations.
+const watcherSuccessor = {
+  id: "before-stable-post-shutdown-observation-41099824102",
+  auditRuntimeSha256: "ef4e63be27815bcf2e59197115c1d7c2876239282c71d09ed3ac58cc8900995b",
+  helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
+  helperRuntimeSha256: "2eb567c30f1d0a6710036b39763b289bdf2fe25b0517c6326e5538f27f7dcfdd",
+  actualFiles: [
+    ["client.bin", "cd11915afee013a728a287098714d5db70e8719867bd596a1c4721ca5a876c13"],
+    ["server.bin", "47cc76661e039b28a3e7056d3d2b07d6d4c6da31440166c2e490b76f78079f73"],
+    ["identity.json", "990dc13e94623891b8781a37ea05fa96b61c3fb168e6d7e7bef0a2ef265cf05a"],
+  ],
+};
 function require(value: unknown, message: string): asserts value {
   if (!value) throw new Error(`invalid native beta DTO protocol case: ${message}`);
 }
@@ -115,11 +130,20 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       require(current.equals(
         Buffer.from(transitioned),
       ), "workflow changed beyond four typed producer paths");
+    } else if (index === 3) {
+      require(sha(Buffer.from(runtime(current))) ===
+        watcherSuccessor.auditRuntimeSha256, "unregistered current watcher observer runtime");
+      const helper = read("head", watcherSuccessor.helperPath);
+      require(helper !== null &&
+        sha(Buffer.from(runtime(helper))) ===
+          watcherSuccessor.helperRuntimeSha256, "missing or changed registered watcher boundary runtime");
+      for (const [name, hash] of watcherSuccessor.actualFiles)
+        pinned(
+          read,
+          `${fixtureRoot}native-beta-diagnostic-dto-10731/stable-post-shutdown-41099824102/${name}`,
+          hash,
+        );
     } else {
-      const runtime = (source: Buffer) =>
-        stripTypeScriptTypes(source.toString("utf8"), {
-          mode: "transform",
-        });
       require(runtime(current) ===
         runtime(original), `typed producer executable changed: ${currentPath}`);
     }
@@ -129,6 +153,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       historicalSha256: sha(original),
       currentPath,
       currentSha256: sha(current),
+      currentRuntimeRegistration: index === 3 ? watcherSuccessor.id : null,
     };
   });
 }

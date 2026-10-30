@@ -1,0 +1,40 @@
+{
+  "schema": "vize.nativeStableWatcher.actualPostShutdownFixture.v1",
+  "artifact": {
+    "id": 12999465087,
+    "run": 41099824102,
+    "job": 124214960352,
+    "bytes": 120026631,
+    "sha256": "4b3d9e522adb59a740c75d9c6958e12d6d0c58c41928560d9da371c6a0e9fdbb",
+    "workflowHead": "d0dcc39cf06f3ef5075001458cfa843eb04f5a8a",
+    "workflowBranch": "perf/mapper-cold-500"
+  },
+  "context": {
+    "source": "13fa41356d075047a229f580014b637d3bbeb57f",
+    "role": "before",
+    "sdkVersion": "7.0.2",
+    "sdkSha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+    "sdkExecutable": "/home/runner/_work/_temp/native-dto-sdk-7.0.2/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+    "projectRoots": [
+      "/tmp/.tmpHhiPjp",
+      "/tmp/.tmpP3tMZe"
+    ]
+  },
+  "nativeOwner": 19288,
+  "files": [
+    {
+      "path": "client.bin",
+      "bytes": 1488,
+      "sha256": "cd11915afee013a728a287098714d5db70e8719867bd596a1c4721ca5a876c13",
+      "originalMember": "before-7.0.2/raw-streams/owner-19288-fd-0.client.bin"
+    },
+    {
+      "path": "server.bin",
+      "bytes": 8196,
+      "sha256": "47cc76661e039b28a3e7056d3d2b07d6d4c6da31440166c2e490b76f78079f73",
+      "originalMember": "before-7.0.2/raw-streams/owner-19288-fd-1.server.bin"
+    }
+  ],
+  "qualified": false,
+  "scope": "A distinct historical before-only late SDK watcher observation, not alpha-renaming, source qualification, or successful lifecycle."
+}

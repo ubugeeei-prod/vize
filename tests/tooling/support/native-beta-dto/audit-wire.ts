@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline";
+import { verifyNativeRelations } from "./stable-watcher-boundary.ts";
 
 type Registration = {
   id: string;
@@ -41,11 +42,12 @@ type StreamPair = { fd: number; client?: Stream; server?: Stream };
 type Provider = { version: string; executable: string; executableSha256: string };
 type Source = {
   source: string;
+  root: string;
   role: string;
   sdkVersion: string;
   sdkSha256: string;
   rows: Array<{ phase: string; encodedSourceSha256: string; lower: { refused: string } }>;
-  attached: { rows: unknown[] };
+  attached: { root: string; rows: unknown[] };
 };
 type Receipt = {
   scope: string;
@@ -176,52 +178,25 @@ function frames(data: Buffer): Packet[] {
   return packets;
 }
 const key = (value: unknown) => `${typeof value}:${value}`;
+const watcherBoundaryObservations: NonNullable<ReturnType<typeof verifyNativeRelations>>[] = [];
 function relations(
   client: Packet[],
   server: Packet[],
   allowStableWatcherRegistrationRefusal: boolean,
 ) {
-  let registrationRefusals = 0;
-  for (const [index, [requests, responses]] of [
-    [client, server],
-    [server, client],
-  ].entries()) {
-    const ids = requests.filter((row) => "id" in row && "method" in row).map((row) => key(row.id));
-    const answers = responses
-      .filter((row) => "id" in row && !("method" in row))
-      .map((row) => key(row.id));
-    assert.equal(new Set(ids).size, ids.length, "Duplicate native request ID");
-    assert.equal(new Set(answers).size, answers.length, "Duplicate native response ID");
-    assert.deepEqual(
-      answers.filter((id) => !ids.includes(id)),
-      [],
-      "Native response without a matching request",
-    );
-    const unanswered = requests.filter(
-      (row) => "id" in row && "method" in row && !answers.includes(key(row.id)),
-    );
-    if (!unanswered.length) continue;
-    assert.equal(
-      allowStableWatcherRegistrationRefusal && index === 1,
-      true,
-      "Unanswered or unmatched native request",
-    );
-    assert.equal(unanswered.length, 1, "Exactly one historical watcher refusal is permitted");
-    const [request] = unanswered;
-    assert.equal(request.id, "ts2");
-    assert.equal(request.method, "client/registerCapability");
-    assert.equal(request.params?.registrations?.length, 1);
-    const [registration] = request.params.registrations!;
-    assert.match(registration.id, /^root files for .+\/tsconfig\.json watcher 6\.0$/u);
-    assert.equal(registration.method, "workspace/didChangeWatchedFiles");
-    assert.deepEqual(
-      registration.registerOptions?.watchers?.map((watcher) => watcher.kind),
-      [7],
-    );
-    assert.match(registration.registerOptions.watchers[0].globPattern, /\/\*\*\/\*$/u);
-    registrationRefusals += 1;
+  const observation = verifyNativeRelations(client, server, {
+    source: source.source,
+    role: source.role,
+    sdkVersion: provider.version,
+    sdkSha256: provider.executableSha256,
+    sdkExecutable: provider.executable,
+    projectRoots: [source.root, source.attached.root],
+  });
+  if (observation) {
+    assert.equal(allowStableWatcherRegistrationRefusal, true);
+    watcherBoundaryObservations.push(observation);
   }
-  return registrationRefusals;
+  return observation === null ? 0 : 1;
 }
 const kinds = new Set([
   "getSyntacticDiagnostics",
@@ -298,7 +273,7 @@ for (const [index, process] of native.entries()) {
   let ownerRegistrationRefusals = relations(
     byFd.get(0)!.client!.packets,
     byFd.get(1)!.server!.packets,
-    stableRegistrationRuntime,
+    stableRegistrationBaseline,
   );
   const apiStreams = observations.filter((entry) => entry.fd >= 3 && entry.client && entry.server);
   assert(
@@ -310,7 +285,7 @@ for (const [index, process] of native.entries()) {
     ownerRegistrationRefusals += relations(
       api.client!.packets,
       api.server!.packets,
-      stableRegistrationRuntime,
+      stableRegistrationBaseline,
     );
   registrationRefusals += ownerRegistrationRefusals;
   const requests = api?.client!.packets.filter((row) => "id" in row && "method" in row) ?? [];
@@ -384,7 +359,7 @@ for (const [index, process] of native.entries()) {
 }
 assert.equal(source.attached.rows.length, 4);
 assert.equal(
-  stableRegistrationRuntime ? registrationRefusals <= 1 : registrationRefusals === 0,
+  stableRegistrationBaseline ? registrationRefusals <= 1 : registrationRefusals === 0,
   true,
   "Only the exact historical stable watcher registration request may race shutdown",
 );
@@ -395,6 +370,13 @@ if (provider.version === "7.1.0-beta") {
     "The beta attached-editor route must retain an LSP-only native owner",
   );
 }
+save("stable-watcher-post-shutdown-observation.json", {
+  source: source.source,
+  role: source.role,
+  observations: watcherBoundaryObservations,
+  scope:
+    "Distinct before-only post-shutdown refusals; original whole packets retained without ID or payload normalization.",
+});
 save("closed-full-wire.json", {
   source: source.source,
   role: source.role,
@@ -481,12 +463,12 @@ const disposition = {
     ? "baseline-observation-known-dto-refusal"
     : stableRegistrationBaseline
       ? registrationRefusals === 1
-        ? "baseline-observation-known-registration-refusal"
+        ? "baseline-observation-known-post-shutdown-registration-refusal"
         : "baseline-observation-registration-acknowledged"
       : "functional-source-control",
   observerCompleted: true,
-  dtoFunctionalPass: !baseline,
-  lifecyclePass: !baseline,
+  dtoFunctionalPass: !baseline && registrationRefusals === 0,
+  lifecyclePass: !baseline && registrationRefusals === 0,
   registrationPass: registrationRefusals === 0,
   nativeOwners: receipts.length,
   allFramesClosed: true,
