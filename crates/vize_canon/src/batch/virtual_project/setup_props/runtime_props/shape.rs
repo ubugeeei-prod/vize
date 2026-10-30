@@ -33,6 +33,33 @@ pub(super) fn runtime_prop_is_required(expr: &Expression<'_>) -> bool {
     })
 }
 
+/// Whether a `default` relaxes the prop's `required: true` for the parent: Vue
+/// publishes every defaulted prop as optional (`Partial<Defaults>`), except a
+/// plain `Boolean` prop, whose `required: true` outranks its default.
+pub(super) fn runtime_prop_default_relaxes_required(expr: &Expression<'_>) -> bool {
+    let Some(object) = runtime_prop_options_object(expr) else {
+        return false;
+    };
+    let mut has_default = false;
+    let mut plain_boolean = false;
+    for property in &object.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        match runtime_object_property_name(&property.key) {
+            Some("default") => has_default = true,
+            Some("type") => {
+                plain_boolean = matches!(
+                    &property.value,
+                    Expression::Identifier(identifier) if identifier.name.as_str() == "Boolean"
+                );
+            }
+            _ => {}
+        }
+    }
+    has_default && !plain_boolean
+}
+
 pub(super) fn runtime_prop_is_defaulted(expr: &Expression<'_>, source: &str) -> bool {
     if runtime_prop_declares_boolean(expr) {
         return true;

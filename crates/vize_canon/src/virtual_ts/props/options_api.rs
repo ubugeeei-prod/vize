@@ -67,8 +67,12 @@ pub(super) fn emit_options_api_props_type(
         );
     }
     match source.direct.as_ref() {
+        // A `default` makes the prop optional for the parent even beside
+        // `required: true` (Vue's `$props` is `Partial<Defaults> & …`), except
+        // on a plain `Boolean` prop, whose `required: true` wins; this is the
+        // `$props` `vue-tsc` checks the parent against.
         Some(DirectOptionsApiPropsSource::DeferredObject(_)) => ts.push_str(
-            "type $OptionsPropRequired<T> = T extends { required: true } ? true : false;\ntype $OptionsPropShape<T extends Record<string, any>> = { [K in keyof T as $OptionsPropRequired<T[K]> extends true ? K : never]-?: __RuntimePropCtor<T[K]>; } & { [K in keyof T as $OptionsPropRequired<T[K]> extends true ? never : K]?: __RuntimePropCtor<T[K]>; };\n",
+            "type $OptionsPropRequired<T> = T extends { required: true } ? T extends { default: any } ? T extends { type: BooleanConstructor } ? true : false : true : false;\ntype $OptionsPropShape<T extends Record<string, any>> = { [K in keyof T as $OptionsPropRequired<T[K]> extends true ? K : never]-?: __RuntimePropCtor<T[K]>; } & { [K in keyof T as $OptionsPropRequired<T[K]> extends true ? never : K]?: __RuntimePropCtor<T[K]>; };\n",
         ),
         Some(DirectOptionsApiPropsSource::Names(names)) => {
             if exported {
