@@ -14,6 +14,8 @@ export const canonicalPaths = [
 ];
 const importPath =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/content-mapper-type-imports.d.ts.txt";
+export const nativeAttributesPath =
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/component-global-attributes.d.ts.txt";
 const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 type Link = {
   sourceStart: number;
@@ -39,15 +41,51 @@ export type Row = {
 type Edit = { start: number; end: number; replacement: Buffer };
 export type Assets = ReturnType<typeof readAssets>;
 
+const previousNativeAttributeAliases =
+  "type $ComponentNativeAttrNames = { [K in keyof $NativeElements & string]: keyof $NativeElements[K] }[keyof $NativeElements & string] & string;";
+const currentNativeAttributeAliases = [
+  "type $ComponentNativeElementNames = Extract<keyof $NativeElements, string>;",
+  "type $ComponentNativeAttrNames = { [K in $ComponentNativeElementNames]: Extract<keyof $NativeElements[K], string> }[$ComponentNativeElementNames];",
+].join("\n");
+
 export function readAssets(baseRoot: string, headRoot: string) {
-  const bytes = canonicalPaths.map((file) => {
-    const base = readFileSync(path.join(baseRoot, file));
-    const head = readFileSync(path.join(headRoot, file));
-    assert.deepEqual(head, base, `canonical helper body changed: ${file}`);
-    return head;
-  });
-  const embedded = Buffer.concat([bytes[0], bytes[1], bytes[2], Buffer.from("\n"), bytes[3]]);
-  const names = [...embedded.toString().matchAll(/\btype\s+(__\w+)\b/gu)].map((match) => match[1]);
+  const baseBytes = canonicalPaths.map((file) => readFileSync(path.join(baseRoot, file)));
+  const headBytes = canonicalPaths.map((file) => readFileSync(path.join(headRoot, file)));
+  for (const [index, file] of canonicalPaths.entries()) {
+    assert.deepEqual(headBytes[index], baseBytes[index], `canonical helper body changed: ${file}`);
+  }
+  const baseNativeAttributes = readFileSync(path.join(baseRoot, nativeAttributesPath));
+  const headNativeAttributes = readFileSync(path.join(headRoot, nativeAttributesPath));
+  if (!baseNativeAttributes.equals(headNativeAttributes)) {
+    const before = baseNativeAttributes.toString();
+    assert.equal(
+      before.split(previousNativeAttributeAliases).length,
+      2,
+      `only the certified native attribute aliases may change: ${nativeAttributesPath}`,
+    );
+    assert.equal(
+      headNativeAttributes.toString(),
+      before.replace(previousNativeAttributeAliases, currentNativeAttributeAliases),
+      `only the certified native attribute aliases may change: ${nativeAttributesPath}`,
+    );
+  }
+  const embedded = Buffer.concat([
+    baseBytes[0],
+    baseBytes[1],
+    baseBytes[2],
+    Buffer.from("\n"),
+    baseBytes[3],
+  ]);
+  const headEmbedded = Buffer.concat([
+    headBytes[0],
+    headBytes[1],
+    headBytes[2],
+    Buffer.from("\n"),
+    headBytes[3],
+  ]);
+  const names = [...headEmbedded.toString().matchAll(/\btype\s+((?:__|\$)\w+)/gu)].map(
+    (match) => match[1],
+  );
   assert.equal(names.length, 53);
   assert.equal(new Set(names).size, 53);
   const imported = readFileSync(path.join(headRoot, importPath));
@@ -61,8 +99,21 @@ export function readAssets(baseRoot: string, headRoot: string) {
   assert.equal(imported.toString(), expected, "the exact original alias order must be imported");
   return {
     embedded,
+    headEmbedded,
     imported,
-    canonical: canonicalPaths.map((file, index) => ({ file, sha256: digest(bytes[index]) })),
+    canonical: canonicalPaths
+      .map((file, index) => ({
+        file,
+        baseSha256: digest(baseBytes[index]),
+        headSha256: digest(headBytes[index]),
+      }))
+      .concat({
+        file: nativeAttributesPath,
+        baseSha256: digest(baseNativeAttributes),
+        headSha256: digest(headNativeAttributes),
+      }),
+    baseNativeAttributes,
+    headNativeAttributes,
     names,
   };
 }
@@ -104,22 +155,91 @@ function uniqueOffset(text: Buffer, needle: Buffer) {
   assert.ok(at >= 0 && text.indexOf(needle, at + 1) < 0, "exact helper block must occur once");
   return at;
 }
-function comments(packet: Packet) {
-  return [...packet.text.matchAll(/^([ \t]*)\/\/ @vize-map: (\d+):(\d+) -> (\d+):(\d+)\r?$/gmu)]
+function comments(text: string, generatedRanges: [number, number][]) {
+  return [...text.matchAll(/^([ \t]*)\/\/ @vize-map: (\d+):(\d+) -> (\d+):(\d+)\r?$/gmu)]
     .map((match) => ({
       text: match[0],
       values: match.slice(2, 6).map(Number),
       indent: match[1],
-      start: Buffer.byteLength(packet.text.slice(0, match.index)),
+      start: Buffer.byteLength(text.slice(0, match.index)),
     }))
     .filter(
       (comment) =>
-        !packet.mappings.some(
+        !generatedRanges.some(
           ([start, length]) =>
             start < comment.start + Buffer.byteLength(comment.text) &&
             comment.start < start + length,
         ),
     );
+}
+
+function relocationEdits(
+  before: Buffer,
+  after: Buffer,
+  sourceBytes: number,
+  generatedRanges: [number, number][],
+  assets: Assets,
+  replacement: Buffer,
+) {
+  const start = uniqueOffset(before, assets.embedded);
+  assert.equal(uniqueOffset(after, replacement), start, "helper prefix boundary moved");
+  const edits: Edit[] = [{ start, end: start + assets.embedded.length, replacement }];
+  if (!assets.baseNativeAttributes.equals(assets.headNativeAttributes)) {
+    const aliasStart = uniqueOffset(before, Buffer.from(previousNativeAttributeAliases));
+    assert.ok(aliasStart >= edits.at(-1)!.end, "certified replacements must remain ordered");
+    assert.equal(
+      uniqueOffset(after, Buffer.from(currentNativeAttributeAliases)),
+      point(aliasStart, edits),
+      "native attribute alias boundary moved",
+    );
+    edits.push({
+      start: aliasStart,
+      end: aliasStart + Buffer.byteLength(previousNativeAttributeAliases),
+      replacement: Buffer.from(currentNativeAttributeAliases),
+    });
+  }
+  const originalComments = comments(before.toString(), generatedRanges);
+  const actualComments = comments(after.toString(), generatedRanges);
+  assert.equal(
+    actualComments.length,
+    originalComments.length,
+    "generated map-comment inventory changed",
+  );
+  for (const [index, original] of originalComments.entries()) {
+    const actual = actualComments[index];
+    const [g0, g1, s0, s1] = original.values;
+    bounds(g0, g1 - g0, before.length);
+    bounds(s0, s1 - s0, sourceBytes);
+    assert.ok(g1 <= original.start, "a map comment must describe preceding code");
+    const values = [point(g0, edits), point(g1, edits), s0, s1];
+    assert.deepEqual(
+      actual.values,
+      values,
+      "self-described coordinates must obey the same relocation",
+    );
+    assert.equal(actual.start, point(original.start, edits));
+    const replacementText = `${original.indent}// @vize-map: ${values[0]}:${values[1]} -> ${s0}:${s1}${original.text.endsWith("\r") ? "\r" : ""}`;
+    assert.equal(actual.text, replacementText, "only derived coordinate digits may change");
+    edits.push({
+      start: original.start,
+      end: original.start + Buffer.byteLength(original.text),
+      replacement: Buffer.from(replacementText),
+    });
+  }
+  let cursor = 0;
+  const fragments: Buffer[] = [];
+  for (const edit of edits) {
+    assert.ok(cursor <= edit.start, "certified edits must be ordered and disjoint");
+    fragments.push(before.subarray(cursor, edit.start), edit.replacement);
+    cursor = edit.end;
+  }
+  fragments.push(before.subarray(cursor));
+  assert.deepEqual(
+    after,
+    Buffer.concat(fragments),
+    "all other complete generated bytes must remain exact",
+  );
+  return { start, edits };
 }
 function validateSource(packet: Packet, sourceBytes: number) {
   const generatedBytes = Buffer.byteLength(packet.text);
@@ -143,57 +263,28 @@ function validateSource(packet: Packet, sourceBytes: number) {
   }
 }
 
-export function relocatePacket(base: Packet, head: Packet, source: string, assets: Assets) {
+export function relocatePacket(
+  base: Packet,
+  head: Packet,
+  source: string,
+  assets: Assets,
+  replacement = assets.imported,
+) {
   const sourceBytes = Buffer.byteLength(source);
   validateSource(base, sourceBytes);
   validateSource(head, sourceBytes);
   const before = Buffer.from(base.text),
     after = Buffer.from(head.text);
-  const start = uniqueOffset(before, assets.embedded);
-  assert.equal(uniqueOffset(after, assets.imported), start, "helper prefix boundary moved");
-  const edits: Edit[] = [
-    { start, end: start + assets.embedded.length, replacement: assets.imported },
-  ];
-  const originalComments = comments(base),
-    actualComments = comments(head);
-  assert.equal(
-    actualComments.length,
-    originalComments.length,
-    "generated map-comment inventory changed",
+  const { start, edits } = relocationEdits(
+    before,
+    after,
+    sourceBytes,
+    base.mappings.map(([generated, length]) => [generated, length]),
+    assets,
+    replacement,
   );
-  for (const [index, original] of originalComments.entries()) {
-    const actual = actualComments[index];
-    const [g0, g1, s0, s1] = original.values;
-    bounds(g0, g1 - g0, before.length);
-    bounds(s0, s1 - s0, sourceBytes);
-    assert.ok(g1 <= original.start, "a map comment must describe preceding code");
-    const values = [point(g0, edits), point(g1, edits), s0, s1];
-    assert.deepEqual(
-      actual.values,
-      values,
-      "self-described coordinates must obey the same relocation",
-    );
-    assert.equal(actual.start, point(original.start, edits));
-    const replacement = `${original.indent}// @vize-map: ${values[0]}:${values[1]} -> ${s0}:${s1}${original.text.endsWith("\r") ? "\r" : ""}`;
-    assert.equal(actual.text, replacement, "only derived coordinate digits may change");
-    edits.push({
-      start: original.start,
-      end: original.start + Buffer.byteLength(original.text),
-      replacement: Buffer.from(replacement),
-    });
-  }
-  let cursor = 0;
-  const fragments: Buffer[] = [];
-  for (const edit of edits) {
-    assert.ok(cursor <= edit.start, "certified edits must be ordered and disjoint");
-    fragments.push(before.subarray(cursor, edit.start), edit.replacement);
-    cursor = edit.end;
-  }
-  fragments.push(before.subarray(cursor));
-  const expectedText = Buffer.concat(fragments);
-  assert.deepEqual(after, expectedText, "all other complete generated bytes must remain exact");
   const expected = structuredClone(base);
-  expected.text = expectedText.toString();
+  expected.text = after.toString();
   expected.mappings = base.mappings.map(([g, length, ...rest]) => [
     ...range(g, length, edits, before.length),
     ...rest,
@@ -233,6 +324,86 @@ export function relocatePacket(base: Packet, head: Packet, source: string, asset
   };
 }
 
+type VirtualPacket = {
+  virtual_ts: string;
+  virtual_ts_mappings: {
+    authored: { start: number; end: number };
+    generated: { start: number; end: number };
+    subSpans: {
+      authored: { start: number; end: number };
+      generated: { start: number; end: number };
+    }[];
+  }[];
+  virtual_ts_semantic_links: {
+    source: { start: number; end: number };
+    target: { start: number; end: number };
+  }[];
+};
+
+function relocateVirtualPacket(
+  base: VirtualPacket,
+  head: VirtualPacket,
+  source: string,
+  assets: Assets,
+  replacement: Buffer,
+) {
+  const sourceBytes = Buffer.byteLength(source);
+  const before = Buffer.from(base.virtual_ts),
+    after = Buffer.from(head.virtual_ts);
+  const generatedRanges: [number, number][] = [];
+  for (const mapping of base.virtual_ts_mappings) {
+    bounds(mapping.authored.start, mapping.authored.end - mapping.authored.start, sourceBytes);
+    bounds(mapping.generated.start, mapping.generated.end - mapping.generated.start, before.length);
+    generatedRanges.push([
+      mapping.generated.start,
+      mapping.generated.end - mapping.generated.start,
+    ]);
+    for (const span of mapping.subSpans) {
+      bounds(span.authored.start, span.authored.end - span.authored.start, sourceBytes);
+      bounds(span.generated.start, span.generated.end - span.generated.start, before.length);
+      generatedRanges.push([span.generated.start, span.generated.end - span.generated.start]);
+    }
+  }
+  const { start, edits } = relocationEdits(
+    before,
+    after,
+    sourceBytes,
+    generatedRanges,
+    assets,
+    replacement,
+  );
+  const shift = ({ start, end }: { start: number; end: number }) => ({
+    start: point(start, edits),
+    end: point(end, edits),
+  });
+  const expected = structuredClone(base);
+  expected.virtual_ts = head.virtual_ts;
+  expected.virtual_ts_mappings = base.virtual_ts_mappings.map((mapping) => ({
+    ...mapping,
+    generated: shift(mapping.generated),
+    subSpans: mapping.subSpans.map((span) => ({ ...span, generated: shift(span.generated) })),
+  }));
+  expected.virtual_ts_semantic_links = base.virtual_ts_semantic_links.map((link) => ({
+    ...link,
+    source: shift(link.source),
+    target: shift(link.target),
+  }));
+  assert.deepEqual(
+    head,
+    expected,
+    "the complete virtual packet must equal only the certified relocation",
+  );
+  return {
+    helperStart: start,
+    edits: edits.map((edit) => ({
+      start: edit.start,
+      end: edit.end,
+      replacementSha256: digest(edit.replacement),
+      replacementBytes: edit.replacement.length,
+    })),
+  };
+}
+
 export function comparePackets(base: Row[], head: Row[], assets: Assets) {
   assert.equal(base.length, 228);
   assert.equal(head.length, 228);
@@ -245,20 +416,25 @@ export function comparePackets(base: Row[], head: Row[], assets: Assets) {
   for (const [index, before] of base.entries()) {
     const after = head[index];
     assert.deepEqual({ ...before, packet: null }, { ...after, packet: null });
-    if (before.target === "content-mapper" && ((before.options ?? 0) & 8) !== 0) {
-      shared++;
-      if (isDeepStrictEqual(after, before)) {
-        validateSource(before.packet, Buffer.byteLength(before.source));
-        unchanged++;
-      } else {
-        relocations.push({
-          identity: identity(before),
-          ...relocatePacket(before.packet, after.packet, before.source, assets),
-        });
-      }
-    } else {
-      assert.deepEqual(after, before);
+    const usesSharedHelpers =
+      before.target === "content-mapper" && ((before.options ?? 0) & 8) !== 0;
+    if (usesSharedHelpers) shared++;
+    if (isDeepStrictEqual(after, before)) {
+      if ("text" in before.packet) validateSource(before.packet, Buffer.byteLength(before.source));
       unchanged++;
+    } else {
+      const replacement = usesSharedHelpers ? assets.imported : assets.headEmbedded;
+      const proof =
+        "text" in before.packet
+          ? relocatePacket(before.packet, after.packet, before.source, assets, replacement)
+          : relocateVirtualPacket(
+              before.packet as unknown as VirtualPacket,
+              after.packet as unknown as VirtualPacket,
+              before.source,
+              assets,
+              replacement,
+            );
+      relocations.push({ identity: identity(before), ...proof });
     }
   }
   assert.equal(shared, 96);
@@ -266,7 +442,7 @@ export function comparePackets(base: Row[], head: Row[], assets: Assets) {
   return {
     completePackets: 228,
     unchangedPackets: unchanged,
-    unsharedExactPackets: 132,
+    unsharedPackets: 132,
     sharedPackets: shared,
     relocatedPackets: relocations.length,
     canonical: assets.canonical,
@@ -282,16 +458,16 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const headBytes = readFileSync(path.join(directory, "head.json"));
   const legacyBaseBytes = readFileSync(path.join(directory, "base-legacy.json"));
   const legacyHeadBytes = readFileSync(path.join(directory, "head-legacy.json"));
-  assert.deepEqual(
-    legacyHeadBytes,
-    legacyBaseBytes,
-    "every existing attribute-only packet must remain byte exact",
+  const assets = readAssets(baseRoot, headRoot);
+  const legacyProof = comparePackets(
+    JSON.parse(legacyBaseBytes.toString()),
+    JSON.parse(legacyHeadBytes.toString()),
+    assets,
   );
-  assert.equal(JSON.parse(legacyBaseBytes.toString()).length, 228);
   const proof = comparePackets(
     JSON.parse(baseBytes.toString()),
     JSON.parse(headBytes.toString()),
-    readAssets(baseRoot, headRoot),
+    assets,
   );
   const receipt = {
     pullRequestBase: process.env.BASE_SHA,
@@ -305,9 +481,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     comparatorSha256: digest(readFileSync(fileURLToPath(import.meta.url))),
     basePacketSha256: digest(baseBytes),
     headPacketSha256: digest(headBytes),
-    legacyCompletePackets: 228,
     legacyBasePacketSha256: digest(legacyBaseBytes),
     legacyHeadPacketSha256: digest(legacyHeadBytes),
+    legacy: legacyProof,
     ...proof,
     scope:
       "Complete source packets under exact helper relocation; not native type-engine or publication acceptance",

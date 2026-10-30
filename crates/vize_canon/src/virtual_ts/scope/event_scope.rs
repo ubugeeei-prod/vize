@@ -58,7 +58,9 @@ pub(super) fn generate_event_handler_scope(
         && scope
             .get_binding("$event")
             .is_some_and(|binding| !binding.is_used());
-    if !ctx.check_options.check_emits || (unused_event && data.target_component.is_none()) {
+    if !ctx.check_options.check_emits
+        || (unused_event && data.target_component.is_none() && !data.event_name_is_dynamic)
+    {
         if unused_event {
             append!(*ts, "{indent}void (() => {{\n");
         } else {
@@ -90,7 +92,10 @@ pub(super) fn generate_event_handler_scope(
         return;
     }
 
-    if let Some((event_type, listener_args)) = vnode_hook_signature(data.event_name.as_str()) {
+    if let Some((event_type, listener_args)) = (!data.event_name_is_dynamic)
+        .then(|| vnode_hook_signature(data.event_name.as_str()))
+        .flatten()
+    {
         let listener_type = vize_carton::cstr!("__vize_vnode_hook_{}_listener", scope_id);
         let handler_type = vize_carton::cstr!("__vize_vnode_hook_{}_handler", scope_id);
         let needs_typed_handler_assignment = needs_typed_handler_assignment(data);
@@ -143,7 +148,7 @@ pub(super) fn generate_event_handler_scope(
         );
 
         append!(*ts, "{indent}}});\n");
-    } else if data.target_component.is_some() {
+    } else if data.target_component.is_some() && !data.event_name_is_dynamic {
         component_scope::generate_component_handler_scope(
             ts,
             mappings,
@@ -153,12 +158,17 @@ pub(super) fn generate_event_handler_scope(
             enclosing_vif_guard,
             (indent, inner_indent),
         );
-    } else if let Some((event_type, listener_args)) = transition_hook_signature(
-        ctx.template_source,
-        ctx.template_ast,
-        scope.span.start,
-        data.event_name.as_str(),
-    ) {
+    } else if let Some((event_type, listener_args)) = (!data.event_name_is_dynamic)
+        .then(|| {
+            transition_hook_signature(
+                ctx.template_source,
+                ctx.template_ast,
+                scope.span.start,
+                data.event_name.as_str(),
+            )
+        })
+        .flatten()
+    {
         let listener_type = vize_carton::cstr!("__vize_transition_{}_listener", scope_id);
         let handler_type = vize_carton::cstr!("__vize_transition_{}_handler", scope_id);
         let needs_typed_handler_assignment = needs_typed_handler_assignment(data);
@@ -211,12 +221,14 @@ pub(super) fn generate_event_handler_scope(
         );
 
         append!(*ts, "{indent}}});\n");
-    } else if dynamic_component_custom_event(
-        ctx.template_source,
-        ctx.template_ast,
-        scope.span.start,
-        data.event_name.as_str(),
-    ) {
+    } else if data.event_name_is_dynamic
+        || dynamic_component_custom_event(
+            ctx.template_source,
+            ctx.template_ast,
+            scope.span.start,
+            data.event_name.as_str(),
+        )
+    {
         let listener_type = vize_carton::cstr!("__vize_dynamic_component_{}_listener", scope_id);
         append!(
             *ts,

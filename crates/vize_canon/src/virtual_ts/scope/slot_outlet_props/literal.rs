@@ -30,6 +30,10 @@ impl SlotOutletLiteralEntry<'_> {
     }
 }
 
+#[expect(
+    clippy::redundant_closure_call,
+    reason = "the ts! interpolation closure gives the emitted block a named writer"
+)]
 pub(super) fn append_slot_outlet_literal(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,

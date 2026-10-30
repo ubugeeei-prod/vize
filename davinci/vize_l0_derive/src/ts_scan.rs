@@ -8,12 +8,12 @@ use syn::Expr;
 pub(crate) fn contains_semi(stream: &TokenStream) -> bool {
     let tokens: Vec<TokenTree> = stream.clone().into_iter().collect();
     let mut index = 0;
-    while index < tokens.len() {
+    while let Some(token) = tokens.get(index) {
         if is_stmt_splice(&tokens, index) {
             index += 2;
             continue;
         }
-        match &tokens[index] {
+        match token {
             TokenTree::Punct(punct) if punct.as_char() == ';' => return true,
             TokenTree::Group(group) if contains_semi(&group.stream()) => return true,
             _ => {}
@@ -26,11 +26,11 @@ pub(crate) fn contains_semi(stream: &TokenStream) -> bool {
 pub(crate) fn contains_stmt(stream: &TokenStream) -> bool {
     let tokens: Vec<TokenTree> = stream.clone().into_iter().collect();
     let mut index = 0;
-    while index < tokens.len() {
+    while let Some(token) = tokens.get(index) {
         if is_stmt_splice(&tokens, index) {
             return true;
         }
-        if let TokenTree::Group(group) = &tokens[index]
+        if let TokenTree::Group(group) = token
             && contains_stmt(&group.stream())
         {
             return true;
@@ -69,8 +69,8 @@ pub(crate) fn parse_repeat(
         ));
     }
     let mut arrow = None;
-    for index in 2..tokens.len() {
-        let TokenTree::Punct(punct) = &tokens[index] else {
+    for (index, token) in tokens.iter().enumerate().skip(2) {
+        let TokenTree::Punct(punct) = token else {
             continue;
         };
         if punct.as_char() == '='
@@ -87,8 +87,16 @@ pub(crate) fn parse_repeat(
             "ts! repeat needs `=>` between the iterator and the body",
         ));
     };
-    let expr = syn::parse2(TokenStream::from_iter(tokens[2..arrow].iter().cloned()))?;
-    let body = TokenStream::from_iter(tokens[arrow + 2..].iter().cloned());
+    let expr = syn::parse2(TokenStream::from_iter(
+        tokens.get(2..arrow).unwrap_or_default().iter().cloned(),
+    ))?;
+    let body = TokenStream::from_iter(
+        tokens
+            .get(arrow.saturating_add(2)..)
+            .unwrap_or_default()
+            .iter()
+            .cloned(),
+    );
     Ok((binding.clone(), expr, body))
 }
 

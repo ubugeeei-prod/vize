@@ -7,6 +7,7 @@ import { test } from "node:test";
 import {
   canonicalPaths,
   comparePackets,
+  nativeAttributesPath,
   readAssets,
   relocatePacket,
   type Row,
@@ -159,7 +160,7 @@ test("canonical bodies and alias order are independently exact", (context) => {
   const importPath =
     "crates/vize_canon/src/virtual_ts/helpers/declarations/content-mapper-type-imports.d.ts.txt";
   for (const destination of [base, head])
-    for (const file of [...canonicalPaths, importPath]) {
+    for (const file of [...canonicalPaths, nativeAttributesPath, importPath]) {
       mkdirSync(path.dirname(path.join(destination, file)), { recursive: true });
       writeFileSync(path.join(destination, file), readFileSync(path.join(root, file)));
     }
@@ -175,4 +176,11 @@ test("canonical bodies and alias order are independently exact", (context) => {
       .replace("  __EmitShape,\n  __EmitArgs,", "  __EmitArgs,\n  __EmitShape,"),
   );
   assert.throws(() => readAssets(base, head), /alias order/);
+  writeFileSync(path.join(head, importPath), readFileSync(path.join(base, importPath)));
+  const nativeAttributes = path.join(head, nativeAttributesPath);
+  writeFileSync(
+    nativeAttributes,
+    readFileSync(nativeAttributes, "utf8").replace("Extract<", "Awaited<"),
+  );
+  assert.throws(() => readAssets(base, head), /certified native attribute aliases/);
 });

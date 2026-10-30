@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "pullRequest": 11142,
+  "observation": {
+    "rawProductRevision": "05bb79b020bd7ff7a93dd0a34804562f6166966e",
+    "testedMerge": "9d497e72ba1740602a66eb86ca074c0b33da4590",
+    "run": 40998287807,
+    "job": 123876458797,
+    "artifact": 12952605875,
+    "pendingSnapshotPath": "pending-snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+    "pendingSnapshotBytes": 2350,
+    "pendingSnapshotSha256": "a6a4f19305cfa712a99f14b1e7dba8a2c37b9d5096cbf99162845a69d4f5bed9"
+  },
+  "predecessor": {
+    "path": "successor-11069/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "6e7a38263f7c851e67516ae6ea52042fd6b87d19d66574010d98527209576496"
+  },
+  "successor": {
+    "path": "successor-11142/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "74a67fb305fcf932dcf83ee02024e464a0ff18ce6903f91319ae1f991491393b"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": -777,
+    "contentMapperGeneratedTextBytes": -812,
+    "maestroGeneratedTextBytes": -727,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "scope": "The frozen 194-file custody and earlier successors remain byte-identical. This receipt authenticates the shared virtual-helper projection observed at the tested merge."
+}

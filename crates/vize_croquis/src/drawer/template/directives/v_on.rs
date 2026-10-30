@@ -75,15 +75,19 @@ impl Drawer {
                 EventHandlerExpression::Callback { params, .. } => params,
                 _ => Default::default(),
             };
-            let event_name = match event_arg {
-                ExpressionNode::Simple(argument) => CompactString::new(argument.content),
-                ExpressionNode::Compound(argument) => {
-                    CompactString::new(argument.loc.span.slice(&self.template_source))
+            let (event_name, event_name_is_dynamic) = match event_arg {
+                ExpressionNode::Simple(argument) => {
+                    (CompactString::new(argument.content), !argument.is_static)
                 }
+                ExpressionNode::Compound(argument) => (
+                    CompactString::new(argument.loc.span.slice(&self.template_source)),
+                    true,
+                ),
             };
             self.croquis.scopes.enter_event_handler_scope(
                 EventHandlerScopeData {
                     event_name,
+                    event_name_is_dynamic,
                     has_implicit_event,
                     param_names: params.into_iter().collect(),
                     handler_expression: Some(CompactString::new(content)),

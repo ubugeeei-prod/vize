@@ -64,8 +64,11 @@ fs.writeFileSync(
       roleKind:
         process.env.VIZE_NATIVE_DTO_ROLE === "before" &&
         process.env.VIZE_NATIVE_DTO_SDK_VERSION === "7.1.0-beta"
-          ? "baseline-observation-known-refusal"
-          : "functional-source-control",
+          ? "baseline-observation-known-dto-refusal"
+          : process.env.VIZE_NATIVE_DTO_ROLE === "before" &&
+              process.env.VIZE_NATIVE_DTO_SDK_VERSION === "7.0.2"
+            ? "baseline-observation-known-registration-refusal"
+            : "functional-source-control",
       signal: result.signal,
       error: result.error?.message ?? null,
       note: "Trace the actual source observer externally. Production receives the actual SDK image path, retaining its native image authentication.",

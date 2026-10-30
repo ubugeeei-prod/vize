@@ -120,18 +120,48 @@ function frames(data) {
   return packets;
 }
 const key = (value) => `${typeof value}:${value}`;
-function relations(client, server) {
-  for (const [requests, responses] of [
+function relations(client, server, allowStableWatcherRegistrationRefusal) {
+  let registrationRefusals = 0;
+  for (const [index, [requests, responses]] of [
     [client, server],
     [server, client],
-  ]) {
+  ].entries()) {
     const ids = requests.filter((row) => "id" in row && "method" in row).map((row) => key(row.id));
     const answers = responses
       .filter((row) => "id" in row && !("method" in row))
       .map((row) => key(row.id));
     assert.equal(new Set(ids).size, ids.length, "Duplicate native request ID");
-    assert.deepEqual(ids.sort(), answers.sort(), "Unanswered or unmatched native request");
+    assert.equal(new Set(answers).size, answers.length, "Duplicate native response ID");
+    assert.deepEqual(
+      answers.filter((id) => !ids.includes(id)),
+      [],
+      "Native response without a matching request",
+    );
+    const unanswered = requests.filter(
+      (row) => "id" in row && "method" in row && !answers.includes(key(row.id)),
+    );
+    if (!unanswered.length) continue;
+    assert.equal(
+      allowStableWatcherRegistrationRefusal && index === 1,
+      true,
+      "Unanswered or unmatched native request",
+    );
+    assert.equal(unanswered.length, 1, "Exactly one historical watcher refusal is permitted");
+    const [request] = unanswered;
+    assert.equal(request.id, "ts2");
+    assert.equal(request.method, "client/registerCapability");
+    assert.equal(request.params?.registrations?.length, 1);
+    const [registration] = request.params.registrations;
+    assert.match(registration.id, /^root files for .+\/tsconfig\.json watcher 6\.0$/u);
+    assert.equal(registration.method, "workspace/didChangeWatchedFiles");
+    assert.deepEqual(
+      registration.registerOptions?.watchers?.map((watcher) => watcher.kind),
+      [7],
+    );
+    assert.match(registration.registerOptions.watchers[0].globPattern, /\/\*\*\/\*$/u);
+    registrationRefusals += 1;
   }
+  return registrationRefusals;
 }
 const kinds = new Set([
   "getSyntacticDiagnostics",
@@ -154,6 +184,8 @@ const semantic = new Set([
   "getSourceFile",
 ]);
 const receipts = [];
+const stableRegistrationBaseline = source.role === "before" && provider.version === "7.0.2";
+let registrationRefusals = 0;
 fs.mkdirSync(path.join(root, "raw-streams"), { recursive: true });
 for (const [index, process] of native.entries()) {
   const leader = process.pid;
@@ -202,14 +234,24 @@ for (const [index, process] of native.entries()) {
   }
   const byFd = new Map(observations.map((entry) => [entry.fd, entry]));
   assert(byFd.get(0)?.client && byFd.get(1)?.server);
-  relations(byFd.get(0).client.packets, byFd.get(1).server.packets);
+  let ownerRegistrationRefusals = relations(
+    byFd.get(0).client.packets,
+    byFd.get(1).server.packets,
+    stableRegistrationBaseline,
+  );
   const apiStreams = observations.filter((entry) => entry.fd >= 3 && entry.client && entry.server);
   assert(
     apiStreams.length <= 1,
     "At most one retained API attachment may belong to one native LSP owner",
   );
   const api = apiStreams[0];
-  if (api) relations(api.client.packets, api.server.packets);
+  if (api)
+    ownerRegistrationRefusals += relations(
+      api.client.packets,
+      api.server.packets,
+      stableRegistrationBaseline,
+    );
+  registrationRefusals += ownerRegistrationRefusals;
   const requests = api?.client.packets.filter((row) => "id" in row && "method" in row) ?? [];
   const responses = new Map(
     api?.server.packets
@@ -273,12 +315,18 @@ for (const [index, process] of native.entries()) {
     nativeStdinEof: eofReads.some((row) => owner(row.tid) === leader && row.fd === 0),
     exitNotifications: lspClient.filter((row) => row.method === "exit").length,
     apiAttached: api !== undefined,
+    registrationRefusals: ownerRegistrationRefusals,
     stderr: { file: stderrFile, bytes: stderr.length, sha256: hash(stderr) },
     streams: observations,
     compilerKindPackets: kindRows,
   });
 }
 assert.equal(source.attached.rows.length, 4);
+assert.equal(
+  registrationRefusals,
+  stableRegistrationBaseline ? 1 : 0,
+  "Only the exact historical stable watcher registration refusal may remain unanswered",
+);
 assert.equal(receipts[0].apiAttached, true, "The explicit owned scope must retain its API wire");
 if (provider.version === "7.1.0-beta") {
   assert(
@@ -296,19 +344,25 @@ save("closed-full-wire.json", {
   leaders,
   owners: receipts,
 });
-const stableWatcherShutdown = Buffer.from(
-  "1 paths ineligible for watching\n" +
-    "errors updating watches: [failed to register file watcher: context canceled " +
-    "failed to register file watcher: context canceled]\n",
-);
-function requireStableWatcherShutdown(bytes) {
-  if (bytes.length === stableWatcherShutdown.length + 1) {
+function stableWatcherShutdown(registrationRefusal) {
+  const cancellations = registrationRefusal ? 4 : 2;
+  return Buffer.from(
+    "1 paths ineligible for watching\n" +
+      `errors updating watches: [${Array.from(
+        { length: cancellations },
+        () => "failed to register file watcher: context canceled",
+      ).join(" ")}]\n`,
+  );
+}
+function requireStableWatcherShutdown(bytes, registrationRefusal) {
+  const expected = stableWatcherShutdown(registrationRefusal);
+  if (bytes.length === expected.length + 1) {
     assert.equal(bytes[0], 0x0a, "Only the observed single leading newline is permitted");
     bytes = bytes.subarray(1);
   }
   assert.deepEqual(
     bytes,
-    stableWatcherShutdown,
+    expected,
     "Stable control permits only its exact post-shutdown watcher cancellation",
   );
 }
@@ -354,7 +408,7 @@ if (baseline) {
     assert.equal(receipt.nativeExit, 0, "Actual candidate/control native owner must exit cleanly");
     const bytes = fs.readFileSync(path.join(root, receipt.stderr.file));
     if (provider.version === "7.0.2") {
-      if (bytes.length) requireStableWatcherShutdown(bytes);
+      if (bytes.length) requireStableWatcherShutdown(bytes, receipt.registrationRefusals === 1);
     } else {
       assert.equal(bytes.length, 0, "Nonempty native beta stderr refuses qualification");
     }
@@ -364,10 +418,15 @@ const disposition = {
   source: source.source,
   role: source.role,
   sdk: provider.version,
-  roleKind: baseline ? "baseline-observation-known-refusal" : "functional-source-control",
+  roleKind: baseline
+    ? "baseline-observation-known-dto-refusal"
+    : stableRegistrationBaseline
+      ? "baseline-observation-known-registration-refusal"
+      : "functional-source-control",
   observerCompleted: true,
   dtoFunctionalPass: !baseline,
   lifecyclePass: !baseline,
+  registrationPass: !stableRegistrationBaseline,
   nativeOwners: receipts.length,
   allFramesClosed: true,
 };

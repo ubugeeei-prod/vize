@@ -58,9 +58,7 @@ fn renders_use_context_injection_augmentations() {
     assert!(globals.contains("$logger: $NuxtInjection<'$logger'>;"));
     assert!(types.contains("interface Context extends $NuxtInjectedProperties"));
     assert!(composition.starts_with("// @vize-module-augmentation\n"));
-    assert!(
-        composition.contains("interface UseContextReturn extends $NuxtInjectedProperties")
-    );
+    assert!(composition.contains("interface UseContextReturn extends $NuxtInjectedProperties"));
 }
 
 #[test]

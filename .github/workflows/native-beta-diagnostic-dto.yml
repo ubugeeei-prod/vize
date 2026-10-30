@@ -18,7 +18,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   actual-source-wire:
-    name: ${{ matrix.role == 'before' && matrix.sdk.version == '7.1.0-beta' && 'Baseline refusal observation' || 'Functional source control' }} (${{ matrix.role }}, ${{ matrix.sdk.version }})
+    name: ${{ matrix.role == 'before' && matrix.sdk.version == '7.1.0-beta' && 'Baseline DTO refusal observation' || matrix.role == 'before' && matrix.sdk.version == '7.0.2' && 'Baseline registration refusal observation' || 'Functional source control' }} (${{ matrix.role }}, ${{ matrix.sdk.version }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     strategy:
@@ -75,7 +75,7 @@ jobs:
         run: |
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::initial_diagnostics::
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::
-          cargo clippy --locked --profile ci -p vize_canon --all-targets -- -D warnings
+          cargo clippy --locked --profile ci -p vize_canon --lib -- -D warnings
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:

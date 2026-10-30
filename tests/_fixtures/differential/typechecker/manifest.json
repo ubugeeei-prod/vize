@@ -10778,6 +10778,45 @@
               }
             },
     {
+      "id": "typechecker/dynamic-component-event-names-11140",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "dynamic-component-event-names-11140/tsconfig.json.txt",
+          "sha256": "e8a76433f9507dde49cc98f92d9d07f477d778347a810ffbc2462bec177a40cb",
+          "role": "project-configuration"
+        },
+        {
+          "path": "dynamic-component-event-names-11140/Child.vue.txt",
+          "sha256": "955ed75ef099fadfb5101550ac70c1d5ad0fab5e8de16933e5cebeb82db94b7c",
+          "role": "component-contract"
+        },
+        {
+          "path": "dynamic-component-event-names-11140/Probe.vue.txt",
+          "sha256": "37f852e8cb0d45d4484404e91f45f024454be0326eccc823af81e957cb6a2632",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
           "id": "typechecker/expect-sibling-interpolation-10871",
           "state": "active",
           "targets": ["batch"],
