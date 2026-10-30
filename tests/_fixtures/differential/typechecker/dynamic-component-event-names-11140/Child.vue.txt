@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineEmits<{ pointerdown: []; pointerup: [] }>();
+</script>
+
+<template><div /></template>

@@ -102,16 +102,25 @@ fn computed_component_event_names_never_become_static_listener_types() {
         "const Events = { UP: 'up' } as const\n",
         "const keys = Events\n",
         "const getKey = (name: string) => name\n",
+        "const vnodeMounted = 'save'\n",
+        "const enter = 'enter'\n",
         "let pressed = false\n",
     );
-    for argument in [
-        "'ping'",
-        r#"`${Events.UP}`"#,
-        "getKey(Events.UP)",
-        "keys.UP",
-        "(getKey(Events.UP))",
+    for (target, argument) in [
+        ("Child", "'ping'"),
+        ("Child", r#"`${Events.UP}`"#),
+        ("Child", "getKey(Events.UP)"),
+        ("Child", "keys.UP"),
+        ("Child", "(getKey(Events.UP))"),
+        ("Child", "vnodeMounted"),
+        ("button", "vnodeMounted"),
+        ("Transition", "enter"),
     ] {
-        let template = format!(r#"<Child @[{argument}]="pressed = true" />"#);
+        let template = if target == "button" {
+            format!(r#"<button @[{argument}]="pressed = true"></button>"#)
+        } else {
+            format!(r#"<{target} @[{argument}]="pressed = true" />"#)
+        };
         let code = generate(script, &template);
         let allocator = oxc_allocator::Allocator::default();
         let parsed = oxc_parser::Parser::new(&allocator, &code, oxc_span::SourceType::ts()).parse();
@@ -128,6 +137,10 @@ fn computed_component_event_names_never_become_static_listener_types() {
         assert!(
             code.contains("type __vize_dynamic_component_"),
             "computed listener must use the open runtime listener contract:\n{code}",
+        );
+        assert!(
+            !code.contains("type __vize_vnode_hook_"),
+            "computed listener names must not be mistaken for static vnode hooks:\n{code}",
         );
     }
 }
