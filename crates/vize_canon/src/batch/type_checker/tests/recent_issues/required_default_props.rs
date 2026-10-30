@@ -43,7 +43,7 @@ defineProps({
 
 const SHARED_PROPS: &str = r#"export const shared = {
   label: { type: String, default: '', required: true },
-  flag: { type: Boolean, default: false, required: true },
+  flag: { type: (Boolean as BooleanConstructor)!, default: false, required: true },
 } as const
 "#;
 

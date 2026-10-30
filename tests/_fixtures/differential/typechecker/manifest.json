@@ -9290,7 +9290,7 @@
         {
           "file": "src/shared.ts",
           "path": "required-default-props/src/shared.ts.txt",
-          "sha256": "156bac95e874919cbacbf0aaf90d0eabef9477fb65136445b4772cf8b913e3ad"
+          "sha256": "135935cc7bc67ed83c359997e1f0d122ca221cdb0ccece5305947c3bcc663cd1"
         },
         {
           "file": "src/SpreadChild.vue",
@@ -9361,7 +9361,7 @@
         {
           "file": "src/shared.ts",
           "path": "required-default-props/src/shared.ts.txt",
-          "sha256": "156bac95e874919cbacbf0aaf90d0eabef9477fb65136445b4772cf8b913e3ad"
+          "sha256": "135935cc7bc67ed83c359997e1f0d122ca221cdb0ccece5305947c3bcc663cd1"
         },
         {
           "file": "src/SpreadChild.vue",

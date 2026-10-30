@@ -49,15 +49,31 @@ pub(super) fn runtime_prop_default_relaxes_required(expr: &Expression<'_>) -> bo
         match runtime_object_property_name(&property.key) {
             Some("default") => has_default = true,
             Some("type") => {
-                plain_boolean = matches!(
-                    &property.value,
-                    Expression::Identifier(identifier) if identifier.name.as_str() == "Boolean"
-                );
+                plain_boolean = runtime_prop_is_plain_boolean_constructor(&property.value);
             }
             _ => {}
         }
     }
     has_default && !plain_boolean
+}
+
+fn runtime_prop_is_plain_boolean_constructor(expr: &Expression<'_>) -> bool {
+    match expr {
+        Expression::Identifier(identifier) => identifier.name.as_str() == "Boolean",
+        Expression::TSAsExpression(ts_as) => {
+            runtime_prop_is_plain_boolean_constructor(&ts_as.expression)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            runtime_prop_is_plain_boolean_constructor(&ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            runtime_prop_is_plain_boolean_constructor(&ts_non_null.expression)
+        }
+        Expression::ParenthesizedExpression(parenthesized) => {
+            runtime_prop_is_plain_boolean_constructor(&parenthesized.expression)
+        }
+        _ => false,
+    }
 }
 
 pub(super) fn runtime_prop_is_defaulted(expr: &Expression<'_>, source: &str) -> bool {
