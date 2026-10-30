@@ -5,6 +5,10 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { slotCases } from "./canon-slot-constructor-cases.ts";
 import { captureSlotPacket } from "./canon-slot-constructor-protocol.ts";
+import {
+  assertAuthoredNativeDiagnostics,
+  assertCliDiagnosticContract,
+} from "./canon-slot-constructor-display.ts";
 import { identify, hash, run, save } from "./canon-instance-directives-io.ts";
 import { packet, isRecord } from "./canon-instance-directives-model.ts";
 import {
@@ -371,11 +375,7 @@ async function main() {
       const sourceLines = row.source.split(/\r\n|[\r\n\u2028\u2029]/u).length,
         authored = (rows: Row[]) => rows.filter((diagnostic) => diagnostic.line <= sourceLines),
         generated = (rows: Row[]) => rows.filter((diagnostic) => diagnostic.line > sourceLines);
-      assert.deepEqual(
-        authored(h.native),
-        authored(b.native),
-        "every authored native diagnostic stays exact",
-      );
+      assertAuthoredNativeDiagnostics(row, authored(b.native), authored(h.native));
       assert.ok(
         h.native.every((diagnostic) => diagnostic.code !== 2554),
         "the repaired constructor call must not report TS2554",
@@ -408,11 +408,7 @@ async function main() {
       } else {
         assert.deepEqual(headGenerated, [], "the repair must add no generated diagnostics");
       }
-      assert.deepEqual(
-        cliContract(h.cli),
-        cliContract(b.cli),
-        "whole public CLI diagnostics and project metadata stay exact",
-      );
+      assertCliDiagnosticContract(row, cliContract(b.cli), cliContract(h.cli));
       if (row.requiresAuthoredError) {
         assert.ok(
           h.native.some((d) => d.line <= row.source.split("\n").length),
