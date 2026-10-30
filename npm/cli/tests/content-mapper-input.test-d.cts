@@ -29,10 +29,7 @@ export type PreservesNativeFallthrough = Expect<
   Equal<Accepts<{ id: number; onClick: (event: MouseEvent) => void }>, true>
 >;
 export type PreservesConsumerAugmentation = Expect<
-  Equal<
-    $PublicComponentInputProps["sharedProjectFlag"],
-    ComponentCustomProps["sharedProjectFlag"]
-  >
+  Equal<$PublicComponentInputProps["sharedProjectFlag"], ComponentCustomProps["sharedProjectFlag"]>
 >;
 export type AugmentationRemainsOwned = Expect<
   Equal<"sharedProjectFlag" extends $ComponentOwnKeys ? true : false, true>
