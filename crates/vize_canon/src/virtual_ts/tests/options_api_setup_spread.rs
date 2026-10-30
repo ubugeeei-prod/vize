@@ -104,11 +104,17 @@ export default defineComponent({
         "the spread setup binding should be declared exactly once:\n{}",
         output.code
     );
-    assert!(
-        !output
+    assert_eq!(
+        output
             .code
-            .contains("const $fetch: $InstanceGlobal<'$fetch'>")
-            && !output.code.contains("__ctx.$fetch"),
+            .matches("const $fetch: $InstanceGlobal<'$fetch'>")
+            .count(),
+        0,
+        "an instance-global declaration must not duplicate the spread setup binding:\n{}",
+        output.code
+    );
+    assert!(
+        !output.code.contains("__ctx.$fetch"),
         "an instance-global declaration must not duplicate the spread setup binding:\n{}",
         output.code
     );

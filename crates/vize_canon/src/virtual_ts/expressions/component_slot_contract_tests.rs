@@ -23,10 +23,12 @@ fn define_slots_exports_static_slot_marker_for_parents() {
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-    assert!(
+    assert_eq!(
         output
             .code
-            .contains("readonly __vizeSlots?: Partial<Slots>;"),
+            .matches("readonly __vizeSlots?: Partial<Slots>;")
+            .count(),
+        1,
         "defineSlots must expose optional parent-provided slots without losing payload types:\n{}",
         output.code
     );

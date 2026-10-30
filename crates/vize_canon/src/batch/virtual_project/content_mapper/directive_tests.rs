@@ -90,7 +90,7 @@ fn expect_directive_targets_the_next_template_line() {
         "@vue-expect-error"
     );
     let suppressed = &result.text.as_str()[virtual_start..virtual_end];
-    assert!(suppressed.contains("count"), "{suppressed}");
+    assert_eq!(suppressed.matches("count").count(), 1, "{suppressed}");
 }
 
 #[test]
