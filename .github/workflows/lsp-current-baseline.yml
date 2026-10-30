@@ -47,14 +47,14 @@ jobs:
       CANDIDATE_SHA: ${{ inputs.candidate_sha }}
       WORKFLOW_SHA: ${{ inputs.workflow_ref }}
       EXECUTED_WORKFLOW_SHA: ${{ github.workflow_sha }}
-      RUNNER_ENVIRONMENT: ${{ runner.environment }}
       ROLE: ${{ matrix.role }}
       SOURCE_SHA: ${{ matrix.role == 'base' && inputs.base_sha || inputs.candidate_sha }}
       VIZE_LSP_BIN: target/ci/vize
-      CARGO_TARGET_DIR: ${{ runner.temp }}/misskey-rss-build-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Refuse mutable, stale, or unrelated dispatch authorities
         shell: bash
+        env:
+          RUNNER_ENVIRONMENT: ${{ runner.environment }}
         run: |
           set -euo pipefail
           for sha in "$BASE_SHA" "$CANDIDATE_SHA" "$WORKFLOW_SHA"; do
@@ -69,6 +69,7 @@ jobs:
           test "$RUNNER_ENVIRONMENT" = self-hosted
           test "$RUNNER_OS" = Linux
           echo "EVIDENCE=$RUNNER_TEMP/misskey-rss-$ROLE" >> "$GITHUB_ENV"
+          echo "CARGO_TARGET_DIR=$RUNNER_TEMP/misskey-rss-build-$ROLE-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ env.SOURCE_SHA }}", fetch-depth: 1, persist-credentials: false }
       - name: Verify immutable role and identical original harnesses
