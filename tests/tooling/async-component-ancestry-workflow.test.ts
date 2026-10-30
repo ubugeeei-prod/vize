@@ -59,6 +59,9 @@ test("historical proof selects only the bounded feature delta after a main rebas
     head,
     paths: ["src"],
   });
+  assert.equal(selected.historicalParent, historicalParent);
+  assert.equal(selected.historicalFeature, historicalFeature);
+  assert.equal(selected.head, head);
   assert.notEqual(selected.selectedParent, historicalParent);
   assert.notEqual(selected.selectedFeature, historicalFeature);
   assert.equal(selected.landedFeature, landedFeature);
