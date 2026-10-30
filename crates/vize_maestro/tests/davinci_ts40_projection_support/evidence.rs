@@ -54,6 +54,18 @@ fn public_instance_slot_packets_remain_authenticated() {
         previous_successor,
         current_successor,
     );
+    let release_receipt =
+        include_str!("fixtures/public-instance-options-api-slots/successor-11149/receipt.json");
+    let release_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11149/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        release_receipt,
+        "ec788565650f2f3b7286070552d5f648499fa2867e3165565e094b215e0864d3",
+        11149,
+        current_successor,
+        release_successor,
+    );
     let matrix = load_matrix();
     let fixture = matrix
         .fixtures
@@ -62,7 +74,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        current_successor
+        release_successor
     );
 }
 

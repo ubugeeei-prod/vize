@@ -34,3 +34,14 @@ the current snapshot only advances the three reviewed Maestro record fields.
 The packet authentication test checks the retained files and binds the complete
 after record to the live generator. Both existing mapping and diagnostic drift
 controls remain in place.
+
+`successor-11149` authenticates the clean integration of third-party PR #11148
+at exact head `10306f53dc11086b3ff3dfc16889154fb8801833` and tested merge
+`a1fd32a50137348a18273b76338deaf366f9680f`. The record was captured by
+[run 41010875066](https://github.com/ubugeeei-prod/vize/actions/runs/41010875066),
+[default artifact 12957965658](https://github.com/ubugeeei-prod/vize/actions/runs/41010875066/artifacts/12957965658),
+and
+[legacy artifact 12957273258](https://github.com/ubugeeei-prod/vize/actions/runs/41010875066/artifacts/12957273258).
+Both dialects produced the same complete record. Canon and the content mapper
+grow by 85 bytes; mapping, semantic-link, diagnostic and authored-hit counts
+remain unchanged, so every changed hash is authenticated as derived relocation.
