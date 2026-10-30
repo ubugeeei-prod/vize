@@ -275,7 +275,7 @@ pub(crate) fn entry_sub_spans_with_synthetic_value_gaps(
         != Some(value_src_range.len())
         || synthetic_ranges
             .windows(2)
-            .any(|ranges| ranges[0].end > ranges[1].start)
+            .any(|ranges| matches!(ranges, [left, right] if left.end > right.start))
         || synthetic_ranges
             .last()
             .is_some_and(|range| range.end > value_gen_range.len())
