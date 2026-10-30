@@ -86,6 +86,15 @@ void test("typed producers retain historical bytes and only the exact registered
     current.currentRouteRegistration,
     "configured-startup-beta-semantic-route-41108828160",
   );
+  assert.deepEqual(current.currentTypeDependency, {
+    path: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
+    sha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
+  });
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentTypeDependency === null),
+  );
   assert(
     custody
       .filter((entry) => entry !== current)
@@ -121,6 +130,7 @@ void test("typed producers retain historical bytes and only the exact registered
 });
 void test("current observer successor requires its exact bounded runtime and actual raw packet authority", () => {
   for (const path of [
+    "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
     "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
     ...["client.bin", "server.bin", "identity.json"].map(
@@ -134,6 +144,13 @@ void test("current observer successor requires its exact bounded runtime and act
     assert.throws(() => validate([row], [], { [path]: Buffer.from("changed observation\n") }));
   }
   const helper = "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts";
+  const types = "tests/tooling/support/native-beta-dto/audit-wire-types.ts";
+  const typeBytes = fs.readFileSync(types, "utf8");
+  for (const mutation of [
+    typeBytes + "\nthrow new Error('unexpected executable type dependency');\n",
+    typeBytes.replace("phase: string;", "phase: unknown;"),
+  ])
+    assert.throws(() => validate([row], [], { [types]: Buffer.from(mutation) }));
   const route = "tests/tooling/support/native-beta-dto/beta-attached-route.ts";
   assert.throws(() =>
     validate([row], [], {

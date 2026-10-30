@@ -86,6 +86,8 @@ const runtime = (source: Buffer) =>
 const watcherSuccessor = {
   id: "before-stable-post-shutdown-observation-41099824102",
   auditRuntimeSha256: "89d2328f6013ec7f7283947d906d9efb08c8ac9a08e8b73f1c85123ffafb9583",
+  typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
+  typesSha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
   helperRuntimeSha256: "2eb567c30f1d0a6710036b39763b289bdf2fe25b0517c6326e5538f27f7dcfdd",
   routeId: "configured-startup-beta-semantic-route-41108828160",
@@ -124,6 +126,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
     const currentPath = index === 0 ? originalPath : originalPath.replace(/\.mjs$/u, ".ts");
     const current = read("head", currentPath);
     require(current !== null, `missing current typed producer: ${currentPath}`);
+    let currentTypeDependency: { path: string; sha256: string } | null = null;
     if (index === 0) {
       let transitioned = original.toString("utf8");
       for (const file of producerFiles.slice(1)) {
@@ -134,6 +137,9 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
         Buffer.from(transitioned),
       ), "workflow changed beyond four typed producer paths");
     } else if (index === 3) {
+      const types = pinned(read, watcherSuccessor.typesPath, watcherSuccessor.typesSha256);
+      require(runtime(types) === "", "audit type dependency must erase completely");
+      currentTypeDependency = { path: watcherSuccessor.typesPath, sha256: sha(types) };
       require(sha(Buffer.from(runtime(current))) ===
         watcherSuccessor.auditRuntimeSha256, "unregistered current watcher observer runtime");
       const helper = read("head", watcherSuccessor.helperPath);
@@ -162,6 +168,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       currentSha256: sha(current),
       currentRuntimeRegistration: index === 3 ? watcherSuccessor.id : null,
       currentRouteRegistration: index === 3 ? watcherSuccessor.routeId : null,
+      currentTypeDependency,
     };
   });
 }
