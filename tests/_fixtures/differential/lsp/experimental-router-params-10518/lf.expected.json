@@ -448,11 +448,11 @@
   "generated": {
     "valid": {
       "file": "lf.valid.virtual.ts.txt",
-      "sha256": "1d8b7eb5f1a7b021d920cccaac5e1ab03ab3b9336003d0059f9fd5061d17adeb"
+      "sha256": "3a96db2529472428850865a918bedeb8cf4e0a89af03eebbcb024f0da9615648"
     },
     "invalid": {
       "file": "lf.invalid.virtual.ts.txt",
-      "sha256": "4c56ee7a5b05531812dc66d47e0d1e55c218e7255a431def7e61400333957a61"
+      "sha256": "0f521f21c9dcaeb8957ffd5f29e58ef8733e23b5b7b5ef1cdd4d8be1942aee75"
     }
   }
 }
