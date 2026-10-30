@@ -43,12 +43,32 @@ const label = 'ok';
             1,
             "only the mapped diagnostic literal may reuse its checked contract: {text}"
         );
+        let raw_call = "...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)";
         assert_eq!(
-            text.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)")
-                .count(),
-            2,
-            "both slot inference copies must keep the exact raw value: {text}"
+            text.matches(raw_call).count(),
+            4,
+            "both slot scopes must retain their two raw inference copies: {text}"
         );
+        for (start, end) in [
+            (
+                "// v-slot scope: #default",
+                "// Component props type declarations",
+            ),
+            (
+                "// Component props in v-slot scope: #default",
+                "// Mark used components as referenced",
+            ),
+        ] {
+            assert_eq!(text.matches(start).count(), 1, "unique scope start: {text}");
+            assert_eq!(text.matches(end).count(), 1, "unique scope end: {text}");
+            let (_, after_start) = text.split_once(start).expect("the slot scope exists");
+            let (scope, _) = after_start.split_once(end).expect("the slot scope ends");
+            assert_eq!(
+                scope.matches(raw_call).count(),
+                2,
+                "the constructor and factory in {start} must each retain their raw value: {text}"
+            );
+        }
         assert_eq!(
             text.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", true)")
                 .count(),
