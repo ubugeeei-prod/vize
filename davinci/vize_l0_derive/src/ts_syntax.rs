@@ -380,7 +380,6 @@ impl Printer {
 }
 
 #[cfg(test)]
-#[path = "ts_print_tests.rs"]
 mod print_tests;
 
 fn is_splice(token: &TokenTree) -> bool {
