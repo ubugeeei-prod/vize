@@ -1,5 +1,6 @@
 // Generated from the shared virtual TypeScript helpers. Do not edit.
 // One module for every content-mapper virtual file.
+/* oxlint-disable typescript/no-redundant-type-constituents -- generated helper types deliberately narrow native keys through string intersections */
 declare global {
   // ============================================
   // Shared ambient helpers for vize virtual TypeScript
