@@ -117,6 +117,13 @@ fn type_declaration<'a>(content: &'a str, name: &str) -> Option<&'a str> {
     })
 }
 
+fn template_ref_helper_lines(content: &str) -> Vec<&str> {
+    content
+        .lines()
+        .filter(|line| line.strip_prefix("  type __vizeInferRef").is_some())
+        .collect()
+}
+
 #[test]
 fn unknown_checks_follow_vue_compiler_options() {
     assert_unknown_checks(
@@ -144,18 +151,22 @@ fn unknown_checks_follow_vue_compiler_options() {
 
 #[test]
 fn ambient_template_ref_ownership_requires_explicit_vue_configuration() {
-    for (enabled, expected) in [(true, "true"), (false, "false")] {
+    for enabled in [true, false] {
         let content = configured_global_template_ref_source(enabled);
-        assert!(
-            content.contains(&format!("type __vizeInferRefIsVue = {expected};")),
-            "{content}"
-        );
-        let global = if enabled {
-            "type __vizeInferRefGlobal = $UseTemplateRef;"
+        let expected = if enabled {
+            [
+                "  type __vizeInferRefSource = typeof useTemplateRef;",
+                "  type __vizeInferRefIsVue = true;",
+                "  type __vizeInferRefGlobal = $UseTemplateRef;",
+            ]
         } else {
-            "type __vizeInferRefGlobal = __vizeInferRefSource;"
+            [
+                "  type __vizeInferRefSource = typeof useTemplateRef;",
+                "  type __vizeInferRefIsVue = false;",
+                "  type __vizeInferRefGlobal = __vizeInferRefSource;",
+            ]
         };
-        assert!(content.contains(global), "{content}");
+        assert_eq!(template_ref_helper_lines(&content), expected, "{content}");
     }
 }
 
