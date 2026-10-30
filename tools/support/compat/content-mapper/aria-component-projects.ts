@@ -32,7 +32,10 @@ export const reportedAriaConfig = {
 };
 type Phase = { id: string; parent: string; expectedStdout: string; expectedStatus: number };
 export type AriaProject = { id: string; child: string; phases: Phase[]; component: boolean };
-const typeError = "Type 'boolean' is not assignable to type 'string | number | undefined'.";
+const typeError = "Type 'false' is not assignable to type 'string | number | undefined'.";
+export const ariaPropReference =
+  "declare function accept(props: { size?: string | number }): void;\naccept({ size: false });\n";
+export const ariaPropReferenceStdout = `reference.ts(2,10): error TS2322: ${typeError}\n`;
 const variant = (source: string, unicode: boolean) =>
   unicode
     ? source.replace("  <Child", "  <!-- 日本 🧭 --><Child").replaceAll("\n", "\r\n")
@@ -42,9 +45,11 @@ function error(parent: string) {
   const token = ':size="false"',
     start = parent.indexOf(token);
   assert.ok(start >= 0 && parent.indexOf(token, start + 1) < 0);
-  // The per-prop diagnostic belongs to the authored value, not generated code.
-  const value = start + ':size="'.length,
-    lines = parent.slice(0, value).split(/\r\n|\n/u);
+  // Both the literal key and the per-prop synthetic identifier map to the
+  // authored attribute name. The independent same-SDK object check owns the
+  // complete message and proves that the literal false must be rejected.
+  const name = start + 1,
+    lines = parent.slice(0, name).split(/\r\n|\n/u);
   return `src/parent.vue(${lines.length},${lines.at(-1)!.length + 1}): error TS2322: ${typeError}\n`;
 }
 

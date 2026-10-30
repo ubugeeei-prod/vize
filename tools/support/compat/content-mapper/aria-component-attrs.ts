@@ -6,7 +6,12 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { FrameDecoder } from "../../../../tests/tooling/support/lsp/installed-alias-replay/frames.ts";
-import { ariaComponentProjects, reportedAriaConfig } from "./aria-component-projects.ts";
+import {
+  ariaComponentProjects,
+  ariaPropReference,
+  ariaPropReferenceStdout,
+  reportedAriaConfig,
+} from "./aria-component-projects.ts";
 
 const packageFiles = [
   "virtual-ts.d.ts",
@@ -134,6 +139,31 @@ write(path.join(output, "providers.json"), {
   host: { path: host, sha256: digest(fs.readFileSync(host)), version: version.stdout },
 });
 const results: { id: string; phase: string; passed: boolean; error?: string }[] = [];
+const referenceDirectory = path.join(output, "independent-reference");
+fs.mkdirSync(referenceDirectory);
+fs.writeFileSync(path.join(referenceDirectory, "reference.ts"), ariaPropReference);
+write(path.join(referenceDirectory, "tsconfig.json"), {
+  compilerOptions: reportedAriaConfig.compilerOptions,
+  files: ["reference.ts"],
+});
+write(path.join(referenceDirectory, "inputs.json"), {
+  source: ariaPropReference,
+  sourceSha256: digest(ariaPropReference),
+  expectedStdout: ariaPropReferenceStdout,
+  expectedStatus: 2,
+});
+const reference = run(
+  [host, "--noEmit", "--pretty", "false", "-p", "tsconfig.json"],
+  referenceDirectory,
+  path.join(referenceDirectory, "compiler"),
+);
+assert.equal(reference.stderr, "");
+assert.equal(
+  reference.stdout,
+  ariaPropReferenceStdout,
+  "the same physical SDK must reject the handwritten owned prop",
+);
+assert.equal(reference.status, 2);
 for (const project of ariaComponentProjects()) {
   const directory = path.join(output, "projects", project.id),
     modules = path.join(directory, "node_modules");
@@ -300,6 +330,7 @@ const report = {
   passed: results.filter((result) => result.passed).length,
   source: options.get("--source-sha"),
   installedVersion: candidate ? undefined : manifest.version,
+  independentPropReference: true,
   results,
 };
 write(path.join(output, "report.json"), report);

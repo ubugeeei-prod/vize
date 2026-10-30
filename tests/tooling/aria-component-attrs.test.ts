@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   ariaComponentProjects,
+  ariaPropReference,
+  ariaPropReferenceStdout,
   reportedAriaChild,
   reportedAriaConfig,
   reportedAriaParent,
@@ -43,8 +45,8 @@ test("declared prop errors keep exact authored UTF16 coordinates through repair"
     14,
   );
   for (const [id, column] of [
-    ["declared-prop-cycle", 32],
-    ["declared-prop-cycle-crlf-unicode", 46],
+    ["declared-prop-cycle", 26],
+    ["declared-prop-cycle-crlf-unicode", 40],
   ] as const) {
     const project = projects.find((project) => project.id === id)!;
     assert.ok(project);
@@ -57,9 +59,9 @@ test("declared prop errors keep exact authored UTF16 coordinates through repair"
     assert.equal(invalid.parent.replace(':size="false"', ':size="20"'), valid.parent);
     assert.equal(
       invalid.expectedStdout,
-      `src/parent.vue(6,${column}): error TS2322: Type 'boolean' is not assignable to type 'string | number | undefined'.\n`,
+      `src/parent.vue(6,${column}): error TS2322: Type 'false' is not assignable to type 'string | number | undefined'.\n`,
     );
-    assert.equal(invalid.parent.split(/\r\n|\n/u)[5].slice(column - 1, column + 4), "false");
+    assert.equal(invalid.parent.split(/\r\n|\n/u)[5].slice(column - 1, column + 3), "size");
     assert.deepEqual(
       [valid.expectedStatus, invalid.expectedStatus, repaired.expectedStatus],
       [0, 2, 0],
@@ -67,4 +69,16 @@ test("declared prop errors keep exact authored UTF16 coordinates through repair"
     assert.equal(valid.expectedStdout, "");
     assert.equal(repaired.expectedStdout, "");
   }
+});
+
+test("the negative reference is an independent plain TypeScript prop assignment", () => {
+  assert.equal(
+    ariaPropReference,
+    "declare function accept(props: { size?: string | number }): void;\naccept({ size: false });\n",
+  );
+  assert.equal(
+    ariaPropReferenceStdout,
+    "reference.ts(2,10): error TS2322: Type 'false' is not assignable to type 'string | number | undefined'.\n",
+  );
+  assert.equal(ariaPropReference.split("\n")[1].slice(9, 13), "size");
 });
