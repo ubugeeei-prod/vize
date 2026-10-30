@@ -58,10 +58,10 @@ test("10617 source adapter preserves all seven current SDK declarations and publ
       require: { types: selected.require },
       types: selected.types,
     });
-    for (const [condition, expected] of Object.entries(selected)) {
-      const target =
+    for (const condition of ["import", "require", "types"] as const) {
+      const target: string =
         condition === "types" ? exports[subpath].types : exports[subpath][condition].types;
-      assert.equal(target, expected);
+      assert.equal(target, selected[condition]);
       assert.ok(fs.lstatSync(path.join(adapter, target)).isFile(), `${subpath}/${condition}`);
       assert.deepEqual(
         fs.readFileSync(path.join(adapter, target)),
