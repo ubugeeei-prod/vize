@@ -9,6 +9,9 @@ const localGeneratedIgnorePatterns = [
   ".direnv/**",
   "editors/vscode/.vscode-test/**",
   "npm/fresco-native/index.d.ts",
+  // Generated declaration artifacts are byte-stable release inputs.
+  "npm/cli/generated/content-mapper-types.d.ts",
+  "npm/cli/virtual-ts.d.{ts,mts,cts}",
   "target/**",
 ];
 const testOutputIgnorePattern = ["**", "target", "vize-tests", "**"].join("/");

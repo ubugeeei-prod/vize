@@ -1,5 +1,0 @@
-# Generated declaration artifacts are byte-stable release inputs.
-npm/cli/generated/content-mapper-types.d.ts
-npm/cli/virtual-ts.d.ts
-npm/cli/virtual-ts.d.mts
-npm/cli/virtual-ts.d.cts
