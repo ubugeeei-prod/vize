@@ -53,6 +53,10 @@ pub(crate) fn append_inference_props_literal(
 /// source order (last binding wins), exactly as an object literal does.
 /// Spreading first unconditionally would check `1` for the `count` of
 /// `:count="1" v-bind="bag"`, a key the runtime takes from `bag` instead.
+#[expect(
+    clippy::redundant_closure_call,
+    reason = "the ts! interpolation closure gives the emitted block a named writer"
+)]
 pub(crate) fn append_props_literal(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,

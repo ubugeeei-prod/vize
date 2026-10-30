@@ -56,9 +56,11 @@ fn direct_callback_prefix_ranges(value: &str) -> Option<Vec<Range<usize>>> {
         return None;
     }
     ranges.sort_unstable_by_key(|range| range.start);
-    (!ranges
-        .windows(2)
-        .any(|ranges| ranges[0].end > ranges[1].start))
+    (!ranges.windows(2).any(|pair| {
+        pair.first()
+            .zip(pair.get(1))
+            .is_some_and(|(left, right)| left.end > right.start)
+    }))
     .then_some(ranges)
 }
 

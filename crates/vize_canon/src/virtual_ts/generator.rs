@@ -83,6 +83,11 @@ use vize_carton::{FxHashMap, FxHashSet, String, append, config::VueVersion, cstr
 use vize_croquis::{Croquis, facts::component_usage_list};
 use vize_l0::ts;
 
+#[expect(
+    clippy::redundant_closure_call,
+    clippy::needless_borrow,
+    reason = "the ts! interpolation closure reborrows its named writer throughout generation"
+)]
 pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     summary: &Croquis,
     script_content: Option<&str>,
