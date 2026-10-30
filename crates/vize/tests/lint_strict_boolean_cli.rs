@@ -94,6 +94,9 @@ fn lint(root: &Path) -> (Option<i32>, Value) {
         .args(["lint", "--format", "json", "App.vue"])
         .output()
         .expect("lint command");
+    if !output.stderr.is_empty() {
+        eprint!("{}", String::from_utf8_lossy(&output.stderr));
+    }
     let value = serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
         panic!(
             "{error}: stdout={} stderr={}",
