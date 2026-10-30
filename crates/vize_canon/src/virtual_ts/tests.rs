@@ -21,7 +21,6 @@ mod options_api_props_spread;
 mod options_api_setup_spread;
 mod options_api_this_bridge;
 mod public_instance_refs;
-mod required_default_props;
 mod slot_component_bindings;
 mod slot_outlet_spread;
 mod template_ref_unwrap;

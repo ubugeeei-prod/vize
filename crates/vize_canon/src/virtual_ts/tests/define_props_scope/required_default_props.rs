@@ -3,7 +3,7 @@
 //! publishes it; a required prop without a default and a required plain
 //! `Boolean` prop stay required.
 
-use super::{analyze_options_api_script, generate_virtual_ts_with_offsets_options_api};
+use super::super::{analyze_options_api_script, generate_virtual_ts_with_offsets_options_api};
 use crate::virtual_ts::generate_virtual_ts_with_offsets;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
