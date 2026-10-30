@@ -186,6 +186,52 @@ fn authenticate_successor_receipt(
         receipt["successor"]["sha256"].as_str(),
         Some(successor_sha.as_str())
     );
+    for (field, section) in [
+        ("canonGeneratedTextBytes", "[canon]\n"),
+        ("contentMapperGeneratedTextBytes", "[content-mapper]\n"),
+        ("maestroGeneratedTextBytes", "[maestro]\n"),
+    ] {
+        if let Some(expected) = receipt["delta"][field].as_i64() {
+            assert_eq!(
+                expected,
+                generated_text_bytes(successor, section)
+                    - generated_text_bytes(predecessor, section),
+                "{field} must equal the authenticated predecessor-to-successor delta"
+            );
+        }
+    }
+    if let Some(expected) = receipt["delta"]["generatedTextBytesPerProjection"].as_i64() {
+        for section in ["[canon]\n", "[content-mapper]\n", "[maestro]\n"] {
+            assert_eq!(
+                expected,
+                generated_text_bytes(successor, section)
+                    - generated_text_bytes(predecessor, section),
+                "generatedTextBytesPerProjection must match {section}"
+            );
+        }
+    }
+    if receipt["delta"]["canonAndContentMapperUnchanged"].as_bool() == Some(true) {
+        for section in ["[canon]\n", "[content-mapper]\n"] {
+            assert_eq!(
+                generated_text_bytes(successor, section),
+                generated_text_bytes(predecessor, section),
+                "canonAndContentMapperUnchanged must hold for {section}"
+            );
+        }
+    }
+}
+
+fn generated_text_bytes(record: &str, section: &str) -> i64 {
+    let section = record.split_once(section).expect("projection section").1;
+    let text = section
+        .lines()
+        .find_map(|line| line.strip_prefix("text="))
+        .expect("generated text record");
+    text.split_once(':')
+        .expect("generated text byte/hash separator")
+        .0
+        .parse()
+        .expect("generated text byte count")
 }
 
 fn authenticate_packets(
