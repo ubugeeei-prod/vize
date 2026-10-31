@@ -231,3 +231,226 @@ export function verifyNativeRelations(
     serverPackets: serverValue,
   };
 }
+
+export interface WatcherTimedIo {
+  at: string;
+  op: string;
+  fd: number;
+  tid: number;
+  line: number;
+  data: Uint8Array;
+}
+const micros = (value: string) => {
+  assert.match(value, /^[0-9]+\.[0-9]{6}$/u, "whole syscall timestamp required");
+  return BigInt(value.replace(".", ""));
+};
+function timedPackets(io: readonly WatcherTimedIo[], op: string, fd: number) {
+  const chunks = io
+    .filter((row) => row.op === op && row.fd === fd)
+    .sort((a, b) => a.at.localeCompare(b.at) || a.tid - b.tid || a.line - b.line);
+  const raw = Buffer.concat(chunks.map((row) => Buffer.from(row.data)));
+  let offset = 0;
+  const packets: Array<{ packet: Packet; at: string }> = [];
+  while (offset < raw.length) {
+    const marker = raw.indexOf("\r\n\r\n", offset);
+    assert.ok(marker >= 0, "complete timed native header required");
+    const header = raw.subarray(offset, marker).toString("ascii");
+    assert.match(header, /^Content-Length: [0-9]+$/u);
+    const end = marker + 4 + Number(header.slice("Content-Length: ".length));
+    assert.ok(end <= raw.length, "complete timed native body required");
+    let bytes = 0;
+    const chunk = chunks.find((row) => (bytes += row.data.length) >= end)!;
+    packets.push({
+      packet: object(JSON.parse(raw.subarray(marker + 4, end).toString("utf8"))),
+      at: chunk.at,
+    });
+    offset = end;
+  }
+  return packets;
+}
+
+/** One historical log split across protocol stdout and post-EOF stderr. */
+export function observeStableSplitWatchLog(
+  client: readonly unknown[],
+  server: readonly unknown[],
+  context: WatcherContext,
+  io: readonly WatcherTimedIo[],
+  eofTimes: readonly string[],
+) {
+  assert.equal(context.role, "before", "split watch log is a baseline observation only");
+  assert.equal(context.source, historicalSource);
+  assert.equal(context.sdkVersion, "7.0.2");
+  assert.equal(context.sdkSha256, stableImageSha256);
+  assert.match(
+    context.sdkExecutable,
+    /^\/[^\n]*\/node_modules\/@typescript\/typescript-linux-x64\/lib\/tsc$/u,
+  );
+  for (const row of io) micros(row.at);
+  const input = timedPackets(io, "read", 0),
+    output = timedPackets(io, "write", 1);
+  assert.deepEqual(
+    input.map((row) => row.packet),
+    client,
+    "whole owned stdin required",
+  );
+  assert.deepEqual(
+    output.map((row) => row.packet),
+    server,
+    "whole owned stdout required",
+  );
+  assert.ok(
+    input.every((row) => row.packet.method !== "exit"),
+    "EOF-only native shutdown required",
+  );
+  assert.equal(
+    verifyNativeRelations(client, server, context),
+    null,
+    "all requests must be answered",
+  );
+  const call = (method: string) =>
+    one(
+      input.filter((row) => row.packet.method === method),
+      `one ${method} required`,
+    );
+  const reply = (request: Packet) =>
+    one(
+      output.filter(
+        (row) =>
+          "id" in row.packet && !("method" in row.packet) && id(row.packet.id) === id(request.id),
+      ),
+      "one whole native reply required",
+    );
+  const projectInfo = call("custom/projectInfo"),
+    projectReply = reply(projectInfo.packet);
+  const config = closed(projectReply.packet.result, ["configFilePath"]).configFilePath;
+  assert.ok(typeof config === "string");
+  const project = path.posix.dirname(config as string);
+  assert.ok(/^\/tmp\/[^\r\n]+$/u.test(project) && path.posix.normalize(project) === project);
+  assert.ok(context.projectRoots.includes(project), "exact source project required");
+  assert.equal(config, project + "/tsconfig.json");
+  assert.deepEqual(projectInfo.packet.params, {
+    textDocument: { uri: pathToFileURL(project + "/main.ts").href },
+  });
+  const initialize = call("initialize"),
+    initialized = reply(initialize.packet);
+  assert.deepEqual(object(object(initialized.packet.result).serverInfo), {
+    name: "typescript-go",
+    version: "7.0.2",
+  });
+  const initializedRoot = object(initialize.packet.params).rootPath;
+  assert.equal(initializedRoot, project + "/node_modules/.vize/corsa-overlay");
+  assert.equal(
+    object(initialize.packet.params).rootUri,
+    pathToFileURL(initializedRoot as string).href,
+  );
+  const shutdown = call("shutdown"),
+    shutdownAck = reply(shutdown.packet);
+  for (const [request, answer] of [
+    [initialize, initialized],
+    [projectInfo, projectReply],
+    [shutdown, shutdownAck],
+  ])
+    assert.ok(micros(request!.at) < micros(answer!.at));
+  assert.ok(
+    micros(initialize.at) < micros(projectInfo.at) && micros(projectInfo.at) < micros(shutdown.at),
+  );
+  assert.equal(shutdownAck.packet.result, null);
+  closed(shutdownAck.packet, ["jsonrpc", "id", "result"]);
+  for (const row of [...input, ...output])
+    if ("id" in row.packet && !("method" in row.packet)) assert.equal("error" in row.packet, false);
+  assert.ok(
+    micros(initialized.at) < micros(projectReply.at) &&
+      micros(projectReply.at) < micros(shutdownAck.at),
+  );
+  const eofAt = one([...eofTimes], "one owned native stdin EOF required");
+  assert.ok(micros(shutdownAck.at) < micros(eofAt));
+  const header = one(
+    output.filter(
+      (row) =>
+        row.packet.method === "window/logMessage" &&
+        object(row.packet.params).message ===
+          `Added new watch: root files for ${config} watcher 6.0`,
+    ),
+    "one complete watch header required",
+  );
+  assert.deepEqual(header.packet, {
+    jsonrpc: "2.0",
+    method: "window/logMessage",
+    params: {
+      type: 3,
+      message: `Added new watch: root files for ${config} watcher 6.0`,
+    },
+  });
+  assert.ok(micros(eofAt) < micros(header.at));
+  const watcher = one(
+    output.filter(
+      (row) =>
+        row.packet.method === "client/registerCapability" &&
+        JSON.stringify(row.packet.params) ===
+          JSON.stringify({
+            registrations: [
+              {
+                id: `root files for ${config} watcher 6.0`,
+                method: "workspace/didChangeWatchedFiles",
+                registerOptions: { watchers: [{ globPattern: project + "/**/*", kind: 7 }] },
+              },
+            ],
+          }),
+    ),
+    "one exact owned root watcher required",
+  );
+  closed(watcher.packet, ["jsonrpc", "id", "method", "params"]);
+  assert.equal(typeof watcher.packet.id, "string");
+  assert.match(watcher.packet.id as string, /^ts[1-9]\d*$/u);
+  const watcherAck = one(
+    input.filter(
+      (row) =>
+        "id" in row.packet &&
+        !("method" in row.packet) &&
+        id(row.packet.id) === id(watcher.packet.id),
+    ),
+    "one acknowledged root watcher required",
+  );
+  assert.equal(watcherAck.packet.result, null);
+  closed(watcherAck.packet, ["jsonrpc", "id", "result"]);
+  assert.ok(micros(watcher.at) < micros(watcherAck.at) && micros(watcherAck.at) < micros(eofAt));
+  const stderr = io
+    .filter((row) => row.op === "write" && row.fd === 2)
+    .sort((a, b) => a.at.localeCompare(b.at) || a.tid - b.tid || a.line - b.line);
+  const expected = [
+    `\t${project}/**/*\n`,
+    "\n",
+    "1 paths ineligible for watching\n",
+    "errors updating watches: [failed to register file watcher: context canceled failed to register file watcher: context canceled]\n",
+  ];
+  assert.deepEqual(
+    stderr.map((row) => Buffer.from(row.data)),
+    expected.map((row) => Buffer.from(row)),
+  );
+  for (const row of stderr)
+    assert.ok(micros(eofAt) < micros(row.at), "each stderr write must follow owned native EOF");
+  return {
+    schema: "vize.nativeStableWatcher.splitWatchLogObservation.v1",
+    context,
+    nativeQualification: false,
+    candidateFunctionalPass: false,
+    lifecyclePass: false,
+    registrationPass: true,
+    header,
+    projectInfo,
+    projectReply,
+    shutdown,
+    shutdownAck,
+    watcher,
+    watcherAck,
+    nativeStdinEofAt: eofAt,
+    stderrWrites: stderr.map((row) => ({
+      at: row.at,
+      tid: row.tid,
+      line: row.line,
+      hex: Buffer.from(row.data).toString("hex"),
+    })),
+    clientPackets: client,
+    serverPackets: server,
+  };
+}

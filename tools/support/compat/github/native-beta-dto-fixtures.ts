@@ -85,11 +85,12 @@ const runtime = (source: Buffer) =>
 // producer identity or equate the distinct root and SDK watcher registrations.
 const watcherSuccessor = {
   id: "before-stable-post-shutdown-observation-41099824102",
-  auditRuntimeSha256: "89d2328f6013ec7f7283947d906d9efb08c8ac9a08e8b73f1c85123ffafb9583",
+  splitLogId: "before-stable-split-watch-log-41152849787",
+  auditRuntimeSha256: "6c0f5e6aa785de99a2f779f72e9e643ca5666754108b62e23c0377211f631a7a",
   typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
   typesSha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
-  helperRuntimeSha256: "2eb567c30f1d0a6710036b39763b289bdf2fe25b0517c6326e5538f27f7dcfdd",
+  helperRuntimeSha256: "665175bafb17232427a58791b60a796afdb1f13b6e631d9ad2b80d130f0982cc",
   routeId: "configured-startup-beta-semantic-route-41108828160",
   routePath: "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
   routeRuntimeSha256: "c577043a694e0254b9be7b4505cb49531e527431be332c3343b814f3c4d2ae40",
@@ -167,6 +168,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       currentPath,
       currentSha256: sha(current),
       currentRuntimeRegistration: index === 3 ? watcherSuccessor.id : null,
+      currentSplitLogRegistration: index === 3 ? watcherSuccessor.splitLogId : null,
       currentRouteRegistration: index === 3 ? watcherSuccessor.routeId : null,
       currentTypeDependency,
     };

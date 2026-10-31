@@ -86,6 +86,12 @@ void test("typed producers retain historical bytes and only the exact registered
     current.currentRouteRegistration,
     "configured-startup-beta-semantic-route-41108828160",
   );
+  assert.equal(current.currentSplitLogRegistration, "before-stable-split-watch-log-41152849787");
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentSplitLogRegistration === null),
+  );
   assert.deepEqual(current.currentTypeDependency, {
     path: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
     sha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
@@ -144,6 +150,18 @@ void test("current observer successor requires its exact bounded runtime and act
     assert.throws(() => validate([row], [], { [path]: Buffer.from("changed observation\n") }));
   }
   const helper = "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts";
+  assert.throws(() =>
+    validate([row], [], {
+      [helper]: Buffer.from(
+        fs
+          .readFileSync(helper, "utf8")
+          .replace(
+            "assert.equal(context.source, historicalSource);",
+            'assert.equal(context.source, "other");',
+          ),
+      ),
+    }),
+  );
   const types = "tests/tooling/support/native-beta-dto/audit-wire-types.ts";
   const typeBytes = fs.readFileSync(types, "utf8");
   for (const mutation of [

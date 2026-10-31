@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline";
-import { verifyNativeRelations } from "./stable-watcher-boundary.ts";
+import { observeStableSplitWatchLog, verifyNativeRelations } from "./stable-watcher-boundary.ts";
 import { verifyBetaAttachedRoute } from "./beta-attached-route.ts";
 import type { Packet, Syscall, StreamPair, Provider, Source, Receipt } from "./audit-wire-types.ts";
 
@@ -130,6 +130,10 @@ const key = (value: unknown) => {
   return `${typeof value}:${value}`;
 };
 const watcherBoundaryObservations: NonNullable<ReturnType<typeof verifyNativeRelations>>[] = [];
+const splitWatchLogObservations: Array<{
+  nativeOwner: number;
+  observation: ReturnType<typeof observeStableSplitWatchLog>;
+}> = [];
 function relations(
   client: Packet[],
   server: Packet[],
@@ -432,12 +436,35 @@ if (baseline) {
     assert.equal(receipt.nativeExit, 0, "Actual candidate/control native owner must exit cleanly");
     const bytes = fs.readFileSync(path.join(root, receipt.stderr.file));
     if (provider.version === "7.0.2") {
-      if (bytes.length) requireStableWatcherShutdown(bytes);
+      if (stableRegistrationBaseline && bytes[0] === 0x09) {
+        assert.equal(receipt.registrationRefusals, 0);
+        splitWatchLogObservations.push({
+          nativeOwner: receipt.nativeOwner,
+          observation: observeStableSplitWatchLog(
+            receipt.streams.find((row) => row.fd === 0)!.client!.packets,
+            receipt.streams.find((row) => row.fd === 1)!.server!.packets,
+            {
+              source: source.source,
+              role: source.role,
+              sdkVersion: provider.version,
+              sdkSha256: provider.executableSha256,
+              sdkExecutable: provider.executable,
+              projectRoots: [source.root, source.attached.root],
+            },
+            records.filter((row) => owner(row.tid) === receipt.nativeOwner),
+            eofReads
+              .filter((row) => owner(row.tid) === receipt.nativeOwner && row.fd === 0)
+              .map((row) => row.at),
+          ),
+        });
+      } else if (bytes.length) requireStableWatcherShutdown(bytes);
     } else {
       assert.equal(bytes.length, 0, "Nonempty native beta stderr refuses qualification");
     }
   }
 }
+assert.ok(splitWatchLogObservations.length <= 1, "one historical split watch log observation only");
+save("stable-split-watch-log-observation.json", splitWatchLogObservations);
 const disposition = {
   source: source.source,
   role: source.role,
@@ -445,13 +472,16 @@ const disposition = {
   roleKind: baseline
     ? "baseline-observation-known-dto-refusal"
     : stableRegistrationBaseline
-      ? registrationRefusals === 1
-        ? "baseline-observation-known-post-shutdown-registration-refusal"
-        : "baseline-observation-registration-acknowledged"
+      ? splitWatchLogObservations.length
+        ? "baseline-observation-split-watch-log"
+        : registrationRefusals === 1
+          ? "baseline-observation-known-post-shutdown-registration-refusal"
+          : "baseline-observation-registration-acknowledged"
       : "functional-source-control",
   observerCompleted: true,
-  dtoFunctionalPass: !baseline && registrationRefusals === 0,
-  lifecyclePass: !baseline && registrationRefusals === 0,
+  dtoFunctionalPass:
+    !baseline && registrationRefusals === 0 && splitWatchLogObservations.length === 0,
+  lifecyclePass: !baseline && registrationRefusals === 0 && splitWatchLogObservations.length === 0,
   registrationPass: registrationRefusals === 0,
   nativeOwners: receipts.length,
   allFramesClosed: true,
