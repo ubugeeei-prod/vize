@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -24,6 +24,12 @@ import {
   capture,
   completed,
 } from "../../../tools/support/release/constructor_original27_public/capture.ts";
+import {
+  assertVuePackageVersions,
+  assertVueProviderLineage,
+  captureVueNamespace,
+  vueFrameworkPackages,
+} from "../../../tools/support/release/constructor_original27_public/host-versions.ts";
 
 const version = "0.614.0",
   candidate = "c".repeat(40),
@@ -389,4 +395,89 @@ test("failed inert tooling child leaves exact raw bytes before process assertion
       asRecord(JSON.parse(readFileSync(join(root, "inert.process.json"), "utf8"))).status,
       2,
     );
+  }));
+
+const vuePackages = () => [
+  ...vueFrameworkPackages.map((name) => ({ name, version: "3.5.42" })),
+  { name: "@vue/language-core", version: "3.3.13" },
+];
+test("Vue framework and language tooling retain their distinct exact frozen versions", () => {
+  const rows = vuePackages();
+  assertVuePackageVersions(rows);
+  for (const [name, version] of [
+    ["@vue/compiler-core", "3.3.13"],
+    ["@vue/language-core", "3.5.42"],
+  ])
+    assert.throws(() =>
+      assertVuePackageVersions(rows.map((row) => (row.name === name ? { name, version } : row))),
+    );
+  assert.throws(() =>
+    assertVuePackageVersions([...rows, { name: "@vue/unknown", version: "3.5.42" }]),
+  );
+  assert.throws(() => assertVuePackageVersions([...rows, rows[0]]));
+  assert.throws(() => assertVuePackageVersions(rows.slice(1)));
+});
+test("the original overrides and VueTSC language-core dependency lineage remain exact", () => {
+  const overrides = {
+    "@vue/compiler-dom": "3.5.42",
+    "@vue/compiler-core": "3.5.42",
+    "@vue/compiler-sfc": "3.5.42",
+    "@vue/shared": "3.5.42",
+  };
+  const official = {
+    name: "vue-tsc",
+    version: "3.3.13",
+    dependencies: { "@vue/language-core": "3.3.13" },
+  };
+  assertVueProviderLineage(overrides, official);
+  assert.throws(() =>
+    assertVueProviderLineage({ ...overrides, "@vue/shared": "3.3.13" }, official),
+  );
+  assert.throws(() => assertVueProviderLineage(overrides, { ...official, version: "3.5.42" }));
+  assert.throws(() =>
+    assertVueProviderLineage(overrides, {
+      ...official,
+      dependencies: { "@vue/language-core": "^3.3.0" },
+    }),
+  );
+});
+test("mock package-family failure retains the complete actual namespace manifests", () =>
+  fixture((root) => {
+    const modules = join(root, "node_modules"),
+      rows = vuePackages();
+    for (const row of rows) {
+      const path = join(modules, row.name);
+      mkdirSync(path, { recursive: true });
+      writeFileSync(
+        join(path, "package.json"),
+        JSON.stringify({
+          ...row,
+          version: row.name === "@vue/language-core" ? "3.5.42" : row.version,
+        }),
+      );
+    }
+    const record = new Recorder(join(root, "proof"));
+    assert.throws(() => captureVueNamespace(modules, record));
+    const saved = JSON.parse(
+      readFileSync(join(record.root, "vue-namespace-inventory.json"), "utf8"),
+    ) as unknown;
+    assert.equal(asArray(saved).length, 10);
+    const language = asArray(saved)
+      .map((row) => asRecord(row))
+      .find((row) => row.directory === "language-core")!;
+    assert.equal(
+      asRecord(JSON.parse(Buffer.from(asString(language.rawBase64), "base64").toString("utf8")))
+        .version,
+      "3.5.42",
+    );
+    writeFileSync(join(modules, "@vue/language-core/package.json"), JSON.stringify(rows.at(-1)));
+    for (const [directory, name] of [
+      ["compiler-core", "@vue/compiler-dom"],
+      ["compiler-dom", "@vue/compiler-core"],
+    ])
+      writeFileSync(
+        join(modules, "@vue", directory, "package.json"),
+        JSON.stringify({ name, version: "3.5.42" }),
+      );
+    assert.throws(() => captureVueNamespace(modules, record), /manifest name must match/);
   }));

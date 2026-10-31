@@ -1,13 +1,6 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import {
-  copyFileSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  realpathSync,
-  writeFileSync,
-} from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { asRecord, asString, readJsonRecord } from "../../json-value.ts";
@@ -22,6 +15,7 @@ import {
 import { assertLockedPackage, validateNativeReceipt, type authenticate } from "./authority.ts";
 import { installedManifest, type loadOriginal27 } from "./fixtures.ts";
 import { capture, completed } from "./capture.ts";
+import { assertVueProviderLineage, captureVueNamespace } from "./host-versions.ts";
 
 export async function install(
   root: string,
@@ -144,7 +138,11 @@ export async function install(
       readFileSync(actual.path),
     );
   }
-  const hostImages = [];
+  const hostImages = captureVueNamespace(modules, record);
+  assertVueProviderLineage(
+    manifest.overrides,
+    readJsonRecord(join(modules, "vue-tsc/package.json")),
+  );
   for (const [name, expected] of [
     ["vue", "3.5.42"],
     ["typescript", "6.0.3"],
@@ -154,8 +152,6 @@ export async function install(
     hostImages.push(
       fileImage(pkg(name, expected, name === "typescript-native" ? "typescript" : name).file),
     );
-  for (const name of readdirSync(join(modules, "@vue")))
-    hostImages.push(fileImage(pkg("@vue/" + name, "3.5.42").file));
   const resolver = join(modules, "typescript-native/lib/getExePath.js");
   const nativeChecker = asRecord(await import(pathToFileURL(resolver).href));
   assert.equal(typeof nativeChecker.default, "function");
