@@ -1,3 +1,10 @@
+#![expect(
+    clippy::disallowed_types,
+    reason = "tests exercise shared resolver snapshots and owned publication"
+)]
+
+use std::sync::Arc;
+
 use super::super::{
     PackageResolutionContext, PackageResolutionMode, PackageRoute, String,
     sort_package_route_bindings,
@@ -17,7 +24,7 @@ fn pending(label: &str, sources: &[&str], package: &str) -> DeferredWorkspaceRou
         specifier: String::from("@workspace/pkg"),
         occurrence_mode: PackageResolutionMode::Import,
         context: PackageResolutionContext::default(),
-        route: PackageRoute {
+        route: Arc::new(PackageRoute {
             source_paths: paths(sources),
             dependency_paths: Vec::new(),
             source_targets: Vec::new(),
@@ -27,7 +34,7 @@ fn pending(label: &str, sources: &[&str], package: &str) -> DeferredWorkspaceRou
             package_name: Some(String::from("@workspace/pkg")),
             workspace_source: true,
             nested_routes: Vec::new(),
-        },
+        }),
         invalidation_paths: paths(&["/config/tsconfig.json"]),
         package_graph: false,
     }
@@ -51,7 +58,7 @@ fn graph() -> ImportReachabilityGraph {
 
 fn requests() -> Vec<DeferredWorkspaceRoute> {
     let mut first = pending("first", &["/pkg/a.ts"], "/pkg");
-    first.route.dependency_paths = paths(&["/pkg/retained.ts"]);
+    Arc::make_mut(&mut first.route).dependency_paths = paths(&["/pkg/retained.ts"]);
     let duplicate = pending("duplicate", &["/pkg/a.ts", "/pkg/a.ts"], "/pkg");
     let boundary = pending("boundary", &["/pkg/a.ts"], "/pkg/nested");
     let mut conditional = pending("conditional", &["/pkg/requires/index.ts"], "/pkg");
@@ -61,11 +68,13 @@ fn requests() -> Vec<DeferredWorkspaceRoute> {
     conditional.package_graph = true;
     let negative = pending("negative", &["/pkg/plain.ts"], "/pkg");
     let mut forced = pending("forced", &["/forced/source.ts"], "/forced");
-    forced.route.source_targets.push(PackageRouteSource {
-        target_path: PathBuf::from("/forced/runtime.js"),
-        source_path: PathBuf::from("/forced/source.ts"),
-        native_probe_path: PathBuf::from("/forced/runtime.ts"),
-    });
+    Arc::make_mut(&mut forced.route)
+        .source_targets
+        .push(PackageRouteSource {
+            target_path: PathBuf::from("/forced/runtime.js"),
+            source_path: PathBuf::from("/forced/source.ts"),
+            native_probe_path: PathBuf::from("/forced/runtime.ts"),
+        });
     vec![first, duplicate, boundary, conditional, negative, forced]
 }
 
@@ -144,7 +153,7 @@ fn repeated_routes_share_traversals_without_merging_conditions_or_package_bounda
             .find(|(label, _)| *label == name)
             .expect("every eligible request has a complete explicit expected closure")
             .1;
-        let mut route = pending.route;
+        let mut route = pending.route.as_ref().clone();
         route.dependency_paths = paths(dependencies);
         expected.push(PackageRouteBinding {
             importer_path: pending.importer_path,
@@ -207,4 +216,126 @@ fn a_new_collection_observes_changed_edges_and_empty_requests_do_no_work() {
         bindings.pop().unwrap().route.unwrap().dependency_paths,
         paths(&["/pkg/New.vue", "/pkg/a.ts"])
     );
+}
+
+#[test]
+fn deferred_snapshots_publish_independent_full_routes_and_ordered_inputs() {
+    let mut original = pending("snapshot", &["/pkg/a.ts"], "/pkg")
+        .route
+        .as_ref()
+        .clone();
+    original.dependency_paths = paths(&["/pkg/retained.ts"]);
+    original.nested_routes.push(
+        pending("nested", &["/pkg/a.ts"], "/pkg")
+            .route
+            .as_ref()
+            .clone(),
+    );
+    let shared = Arc::new(original.clone());
+    let mut first = pending("first-shared", &["/pkg/a.ts"], "/pkg");
+    first.route = shared.clone();
+    first.invalidation_paths = paths(&["/scope/first.json", "/scope/common.json"]);
+    let mut second = pending("second-shared", &["/pkg/a.ts"], "/pkg");
+    second.route = shared.clone();
+    second.invalidation_paths = paths(&["/scope/second.json", "/scope/common.json"]);
+    assert!(Arc::ptr_eq(&first.route, &shared));
+    assert!(Arc::ptr_eq(&second.route, &shared));
+    assert_eq!(Arc::strong_count(&shared), 3);
+    let requests = vec![first, second];
+    let mut published = original.clone();
+    published.dependency_paths = paths(&[
+        "/pkg/a.ts",
+        "/pkg/b.ts",
+        "/pkg/c.ts",
+        "/pkg/nested/Leaf.vue",
+        "/pkg/retained.ts",
+    ]);
+    let mut expected = requests
+        .iter()
+        .map(|request| PackageRouteBinding {
+            importer_path: request.importer_path.clone(),
+            specifier: request.specifier.clone(),
+            occurrence_mode: request.occurrence_mode,
+            context: request.context.clone(),
+            route: Some(published.clone()),
+            invalidation_paths: request.invalidation_paths.clone(),
+            shared_invalidation_paths: Vec::new(),
+        })
+        .collect::<Vec<_>>();
+    let mut registered = FxHashSet::default();
+    let mut registrations = Vec::new();
+    let mut bindings = Vec::new();
+    assert_eq!(
+        complete_routes(
+            &graph(),
+            requests,
+            &mut registered,
+            &mut registrations,
+            &mut bindings,
+        ),
+        CompletionWork {
+            requests: 2,
+            eligible: 2,
+            traversals: 1,
+            reachable_nodes: 5,
+        }
+    );
+    assert_eq!(
+        registrations,
+        paths(&["/app/first-shared.vue", "/app/second-shared.vue"])
+    );
+    sort_package_route_bindings(&mut bindings);
+    sort_package_route_bindings(&mut expected);
+    assert_eq!(bindings, expected);
+    assert_eq!(Arc::strong_count(&shared), 1);
+    assert_eq!(shared.as_ref(), &original);
+
+    let first_route = bindings[0].route.as_mut().unwrap();
+    first_route
+        .source_paths
+        .push(PathBuf::from("/owned/first.ts"));
+    first_route.nested_routes[0]
+        .dependency_paths
+        .push(PathBuf::from("/owned/nested.ts"));
+    bindings[0]
+        .invalidation_paths
+        .push(PathBuf::from("/owned/input.json"));
+    assert_eq!(shared.as_ref(), &original);
+    assert_eq!(bindings[1], expected[1]);
+}
+
+#[test]
+fn ineligible_shared_requests_drop_without_publishing_or_mutating_the_snapshot() {
+    let original = pending("snapshot", &["/pkg/plain.ts"], "/pkg")
+        .route
+        .as_ref()
+        .clone();
+    let shared = Arc::new(original.clone());
+    let requests = ["first", "second", "third"].map(|label| {
+        let mut request = pending(label, &["/pkg/plain.ts"], "/pkg");
+        request.route = shared.clone();
+        request
+    });
+    assert_eq!(Arc::strong_count(&shared), 4);
+    let mut registered = FxHashSet::default();
+    let mut registrations = Vec::new();
+    let mut bindings = Vec::new();
+    assert_eq!(
+        complete_routes(
+            &graph(),
+            requests.into(),
+            &mut registered,
+            &mut registrations,
+            &mut bindings,
+        ),
+        CompletionWork {
+            requests: 3,
+            ..CompletionWork::default()
+        }
+    );
+    assert_eq!(registered, FxHashSet::default());
+    assert_eq!(registrations, Vec::<PathBuf>::new());
+    assert_eq!(bindings, Vec::<PackageRouteBinding>::new());
+    assert_eq!(Arc::strong_count(&shared), 1);
+    assert_eq!(shared.as_ref(), &original);
 }

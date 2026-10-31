@@ -49,7 +49,13 @@ struct DeferredWorkspaceRoute {
     specifier: String,
     occurrence_mode: PackageResolutionMode,
     context: PackageResolutionContext,
-    route: PackageRoute,
+    // Keep the existing immutable resolver snapshot until this request is
+    // actually admitted for publication; most workspace requests are dropped.
+    #[expect(
+        clippy::disallowed_types,
+        reason = "deferred work retains the existing shared snapshot until owned publication"
+    )]
+    route: std::sync::Arc<PackageRoute>,
     invalidation_paths: Vec<PathBuf>,
     package_graph: bool,
 }
@@ -275,7 +281,8 @@ pub(super) fn collect_transitive_local_imports_with_session(
                 && route.workspace_source
                 && !own_package_entry
                 && !specifier.starts_with('#')
-                && let Some((_, invalidation_paths, mode, context, _)) = package_lookup.as_ref()
+                && let Some((Some(shared_route), invalidation_paths, mode, context, _)) =
+                    package_lookup.as_ref()
             {
                 for candidate in route.all_source_paths() {
                     reachability_graph.add_edge(&file, candidate);
@@ -294,7 +301,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
                     specifier: specifier.clone(),
                     occurrence_mode: *mode,
                     context: context.clone(),
-                    route: route.clone(),
+                    route: shared_route.clone(),
                     invalidation_paths: invalidation_paths.clone(),
                     package_graph,
                 });

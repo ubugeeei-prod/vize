@@ -60,7 +60,10 @@ pub(super) fn complete_routes(
         );
         work.reachable_nodes += sources.len() as u64;
         for pending in routes {
-            let mut route = pending.route;
+            // Rejected requests never copied the route's owned path graph.
+            // Accepted bindings still receive independent owned routes before
+            // their dependency closure is extended below.
+            let mut route = pending.route.as_ref().clone();
             let before = route.dependency_paths.len();
             route.dependency_paths.extend(
                 sources
