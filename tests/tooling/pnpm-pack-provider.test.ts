@@ -42,6 +42,8 @@ void test("active physical native PNPM bypasses hostile PATH without executing f
 void test("missing, relative, symlink, directory, foreign and unowned script providers fail closed", () => {
   const f = fixture();
   try {
+    assert.throws(() => resolvePnpmPackProvider(f.root, undefined, valid), /is missing/);
+    assert.throws(() => resolvePnpmPackProvider(f.root, "pnpm", valid), /absolute/);
     for (const entry of [undefined, "pnpm", path.join(f.root, "missing"), f.root])
       assert.throws(() => resolvePnpmPackProvider(f.root, entry, valid));
     const link = path.join(f.root, "link");
