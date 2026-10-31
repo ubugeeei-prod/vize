@@ -1,0 +1,119 @@
+{
+  "schema": "vize.native-sfc.original-root-if-else-text-inputs",
+  "filename": "OriginalRootIfElseText雪🌸.vue",
+  "compiler": { "version": "3.5.35" },
+  "runtime": { "version": "3.5.35" },
+  "typescript": { "version": "6.0.3" },
+  "qualification": "input-only; no native code, source-map or primary capture credit",
+  "provenance": "Original adjacent If/Else inputs with one original primitive setup interpolation per selected body. The first two explicitly succeed the exact old lower refusals; all other sources are new. Runtime vectors are independently declared input expectations, not generated code or map goldens.",
+  "fixtures": [
+    {
+      "id": "historical-first-only",
+      "source": "<script setup>let ready=true</script><template><p v-if='ready'>{{ready}}</p><b v-else/></template>",
+      "script": "let ready=true",
+      "template": "<p v-if='ready'>{{ready}}</p><b v-else/>",
+      "bindings": ["ready"],
+      "immutableBindings": [],
+      "updates": { "ready": false },
+      "conditionBinding": "ready",
+      "textBindings": ["ready", null],
+      "ifElseTextRuntime": {
+        "initial": { "branch": 0, "tag": "p", "text": "true", "patchFlag": 1 },
+        "updated": { "branch": 1, "tag": "b", "text": null, "patchFlag": 0 }
+      },
+      "successorOf": {
+        "sourceRevision": "f233823358c1242013b51e53680ce257253c84fc",
+        "path": "davinci/vize_l2/src/file/region/native/pair/tests.rs",
+        "test": "paired_text_nested_mixed_headers_and_nonadjacent_roots_stay_lower_refusals",
+        "sourceSha256": "d3da5c41da333984ff7b2d205667d71b8d05ecf6b699d7774cbbb466636359b2",
+        "oracleGitBlob": "88c13a550551258e704f32b5312478aa581af0a4",
+        "oracleFileSha256": "efbad814c4b683024bb16955d507f597fc69683bbeea731e8fd3333ed9f64178",
+        "outcome": "UnsupportedChild; cursor 0; incomplete File and selected view; Refused conditional with no original operation, retaining the same authored root"
+      }
+    },
+    {
+      "id": "historical-else-only",
+      "source": "<script setup>let ready=true</script><template><p v-if='ready'/><b v-else>{{ready}}</b></template>",
+      "script": "let ready=true",
+      "template": "<p v-if='ready'/><b v-else>{{ready}}</b>",
+      "bindings": ["ready"],
+      "immutableBindings": [],
+      "updates": { "ready": false },
+      "conditionBinding": "ready",
+      "textBindings": [null, "ready"],
+      "ifElseTextRuntime": {
+        "initial": { "branch": 0, "tag": "p", "text": null, "patchFlag": 0 },
+        "updated": { "branch": 1, "tag": "b", "text": "false", "patchFlag": 1 }
+      },
+      "successorOf": {
+        "sourceRevision": "f233823358c1242013b51e53680ce257253c84fc",
+        "path": "davinci/vize_l2/src/file/region/native/pair/tests.rs",
+        "test": "paired_text_nested_mixed_headers_and_nonadjacent_roots_stay_lower_refusals",
+        "sourceSha256": "3df55f9463e1ca613c46d74ce839219af5c4c8b1c46468fc2d184afdd2b46b62",
+        "oracleGitBlob": "88c13a550551258e704f32b5312478aa581af0a4",
+        "oracleFileSha256": "efbad814c4b683024bb16955d507f597fc69683bbeea731e8fd3333ed9f64178",
+        "outcome": "UnsupportedChild; cursor 0; incomplete File and selected view; Refused conditional with no original operation, retaining the same authored root"
+      }
+    },
+    {
+      "id": "two-text-bindings-switch",
+      "source": "<script setup>var ready=false; let left='left before'; let right='right before'</script><template><p v-if='ready'>{{left}}</p><b v-else>{{right}}</b></template>",
+      "script": "var ready=false; let left='left before'; let right='right before'",
+      "template": "<p v-if='ready'>{{left}}</p><b v-else>{{right}}</b>",
+      "bindings": ["ready", "left", "right"],
+      "immutableBindings": [],
+      "updates": { "ready": true, "left": "left after", "right": "right after" },
+      "conditionBinding": "ready",
+      "textBindings": ["left", "right"],
+      "ifElseTextRuntime": {
+        "initial": { "branch": 1, "tag": "b", "text": "right before", "patchFlag": 1 },
+        "updated": { "branch": 0, "tag": "p", "text": "left after", "patchFlag": 1 }
+      }
+    },
+    {
+      "id": "same-binding-three-occurrences",
+      "source": "<script setup>let ready=true</script><template><div v-if='ready'>{{ready}}</div><section v-else>{{ready}}</section></template>",
+      "script": "let ready=true",
+      "template": "<div v-if='ready'>{{ready}}</div><section v-else>{{ready}}</section>",
+      "bindings": ["ready"],
+      "immutableBindings": [],
+      "updates": { "ready": false },
+      "conditionBinding": "ready",
+      "textBindings": ["ready", "ready"],
+      "ifElseTextRuntime": {
+        "initial": { "branch": 0, "tag": "div", "text": "true", "patchFlag": 1 },
+        "updated": { "branch": 1, "tag": "section", "text": "false", "patchFlag": 1 }
+      }
+    },
+    {
+      "id": "constant-primitive-text",
+      "source": "<script setup>let ready=true; const message='fixed雪🌸'</script><template><p v-if='ready'>{{message}}</p><b v-else>{{message}}</b></template>",
+      "script": "let ready=true; const message='fixed雪🌸'",
+      "template": "<p v-if='ready'>{{message}}</p><b v-else>{{message}}</b>",
+      "bindings": ["ready", "message"],
+      "immutableBindings": ["message"],
+      "updates": { "ready": false },
+      "conditionBinding": "ready",
+      "textBindings": ["message", "message"],
+      "ifElseTextRuntime": {
+        "initial": { "branch": 0, "tag": "p", "text": "fixed雪🌸", "patchFlag": 0 },
+        "updated": { "branch": 1, "tag": "b", "text": "fixed雪🌸", "patchFlag": 0 }
+      }
+    },
+    {
+      "id": "typescript-unicode-crlf-active-text-update",
+      "source": "\r\n<script setup lang='ts'>/* from 'vue' 雪🌸 */\r\nlet 可視:boolean=true; let 左:string='雪🌸'; let 右:string='空'</script>\r\n<template><section v-if='可視'>{{ 左 }}</section><b v-else>{{\r\n右\r\n}}</b></template>\r\n",
+      "script": "/* from 'vue' 雪🌸 */\r\nlet 可視:boolean=true; let 左:string='雪🌸'; let 右:string='空'",
+      "template": "<section v-if='可視'>{{ 左 }}</section><b v-else>{{\r\n右\r\n}}</b>",
+      "bindings": ["可視", "左", "右"],
+      "immutableBindings": [],
+      "updates": { "左": "🌸雪", "右": "更新" },
+      "conditionBinding": "可視",
+      "textBindings": ["左", "右"],
+      "ifElseTextRuntime": {
+        "initial": { "branch": 0, "tag": "section", "text": "雪🌸", "patchFlag": 1 },
+        "updated": { "branch": 0, "tag": "section", "text": "🌸雪", "patchFlag": 1 }
+      }
+    }
+  ]
+}

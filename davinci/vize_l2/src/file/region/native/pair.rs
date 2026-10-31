@@ -16,6 +16,8 @@ use vize_l1::markup::{
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod text_tests;
 
 pub(super) fn construct<'o, 'a: 'b, 'b, R>(
     selected: &NativeTemplateComponent<'a>,
@@ -71,7 +73,7 @@ where
             let node = file.mint_conditional(observed.index, span)?;
             let ready = header.resolve_handlers(file)?;
             let (first_body, first_allocation) =
-                static_body(original, selected, span, ready.attributes, file)?;
+                branch_body(original, selected, span, ready.attributes, file)?;
             file.attach_attribute_values(ready.values, first_body, first_allocation)?;
             #[cfg(test)]
             tests::inject(2);
@@ -86,7 +88,7 @@ where
                 .map_err(Kind::Artifact)?;
             #[cfg(test)]
             tests::inject(3);
-            let (else_body, allocation) = static_body(
+            let (else_body, allocation) = branch_body(
                 otherwise,
                 selected,
                 else_span,
@@ -171,7 +173,7 @@ where
     Ok(())
 }
 
-fn static_body<'a: 'b, 'b, R>(
+fn branch_body<'a: 'b, 'b, R>(
     original: NativeElement<'_, 'a>,
     selected: &NativeTemplateComponent<'a>,
     span: Span,
@@ -188,7 +190,7 @@ where
             Namespace::Html,
             attributes,
             span,
-            StaticBody {
+            BranchBody {
                 original,
                 selected,
                 result: &mut result,
@@ -199,13 +201,13 @@ where
     Ok(output)
 }
 
-/// Deliberately separate from the single-If interpolation-enabled callback.
-struct StaticBody<'selected, 'owner, 'result, 'a> {
+/// One original bounded child; interpolation uses the same checked File receiver.
+struct BranchBody<'selected, 'owner, 'result, 'a> {
     original: NativeElement<'owner, 'a>,
     selected: &'selected NativeTemplateComponent<'a>,
     result: &'result mut Result<(), Kind>,
 }
-impl<'a> TemplateBody<'a, NativeVisibility> for StaticBody<'_, '_, '_, 'a> {
+impl<'a> TemplateBody<'a, NativeVisibility> for BranchBody<'_, '_, '_, 'a> {
     fn run<'r, 'b>(self, region: &mut TemplateChildRegion<'r, 'b, 'a, NativeVisibility>, _: NodeId)
     where
         'a: 'b,
@@ -213,12 +215,19 @@ impl<'a> TemplateBody<'a, NativeVisibility> for StaticBody<'_, '_, '_, 'a> {
     {
         let mut seen = false;
         for child in self.original.children() {
-            if seen || !matches!(child.surface(), SurfaceChild::Text(_)) {
+            if seen {
                 *self.result = Err(Kind::UnsupportedChild);
                 return;
             }
             seen = true;
-            if let Err(kind) = body::construct(self.selected, child, &mut region.inner) {
+            let result = match child.surface() {
+                SurfaceChild::Text(_) => body::construct(self.selected, child, &mut region.inner),
+                SurfaceChild::Interpolation(_) => {
+                    super::interpolation::checked_primitive(self.selected, child, &mut region.inner)
+                }
+                _ => Err(Kind::UnsupportedChild),
+            };
+            if let Err(kind) = result {
                 *self.result = Err(kind);
                 return;
             }

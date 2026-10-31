@@ -12,6 +12,8 @@ on:
       - tests/fixtures/typechecker/public-slot-instance/proof.ts.txt
       - tests/tooling/release/slot-instance-public.test.ts
       - tests/tooling/release/slot-instance-public-graph.test.ts
+      - tests/tooling/release/slot-instance-public-version.test.ts
+      - tests/fixtures/release/slot-instance-public/c12-version-exit.json
       - tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/slot-provider-payload-update-11027.json
       - tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/public-slot-instance-update-11023.json
   workflow_dispatch:
@@ -44,7 +46,7 @@ jobs:
         with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "24.14.0", package-manager-cache: false }
-      - run: node --test tests/tooling/release/slot-instance-public.test.ts tests/tooling/release/slot-instance-public-graph.test.ts
+      - run: node --test tests/tooling/release/slot-instance-public.test.ts tests/tooling/release/slot-instance-public-graph.test.ts tests/tooling/release/slot-instance-public-version.test.ts
   installed-public:
     name: Untouched C12 and C13 SDKs across ESM CJS and direct declarations
     if: github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'

@@ -108,7 +108,9 @@ impl<'a> NativeSelectedSetupSfcDomCompilation<'a> {
 /// A two-alias head requires one bare current key-alias interpolation and emits
 /// both original callback parameters in source order.
 /// One root If may read a direct setup BooleanLiteral binding and own one
-/// attribute-free native Element with empty/static text in the same File scope.
+/// attribute-free native Element with empty/static text or one bare primitive
+/// setup interpolation in the same File scope. An adjacent original valueless
+/// Else may own another Element with the same bounded body shape.
 /// Imports, wider TS, compound reads, outer handler accesses and
 /// nested/mixed-body For families remain
 /// precise lower/target refusals with no partial module.

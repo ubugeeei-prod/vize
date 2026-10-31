@@ -14,6 +14,9 @@ use vize_l1::{
 };
 
 std::thread_local! { static FAULT: std::cell::Cell<u8> = const { std::cell::Cell::new(0) }; }
+pub(super) fn set_fault(point: u8) {
+    FAULT.with(|fault| fault.set(point));
+}
 pub(super) fn inject(point: u8) {
     FAULT.with(|fault| {
         if fault.get() == point {
@@ -23,7 +26,7 @@ pub(super) fn inject(point: u8) {
     });
 }
 
-fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateOwner<'a> {
+pub(super) fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateOwner<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -43,7 +46,7 @@ fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateOwner<'a> {
     owner
 }
 
-fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+pub(super) fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
     let mut owner = owner(arena, source);
     {
         let mut walk = owner.begin().unwrap();
@@ -194,8 +197,6 @@ fn pair_tail_preserves_ordinary_siblings_and_existing_single_if_text_dispatch() 
 #[test]
 fn paired_text_nested_mixed_headers_and_nonadjacent_roots_stay_lower_refusals() {
     for template in [
-        "<p v-if='ready'>{{ready}}</p><b v-else/>",
-        "<p v-if='ready'/><b v-else>{{ready}}</b>",
         "<p v-if='ready'/><b v-else><i/></b>",
         "<p v-if='ready'/><b v-else>a b</b>",
         "<p v-if='ready'/><b v-else>&amp;</b>",
