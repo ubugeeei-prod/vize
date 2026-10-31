@@ -11672,6 +11672,47 @@
       }
     },
     {
+      "id": "typechecker/shared-ref-factory/instantiated-generic-dom",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "virtual_ts::generator::setup_helpers::hoisted_ref_factory_tests::batch_ref_factory_uses_pinned_generic_and_dom_inputs",
+      "sourceRevision": "424fdf47aa5fedb1b57489124c853d8ff3234902",
+      "inputs": [
+        {
+          "file": "src/Child.vue",
+          "path": "shared-ref-factory/Child.vue.txt",
+          "sha256": "96da64118348deb55968b7a3f3e8e634f472a841a4466070a59a86f299b26f78"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "shared-ref-factory/Probe.vue.txt",
+          "sha256": "ee7f5d7b48bd770f2080ba65c4368fe93e8e4778ac20ef678c99a1e448a14112"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "shared-ref-factory/tsconfig.json.txt",
+          "sha256": "894d9da9f8ecf8e87381e594a225aaf5557e8578694f3a359c96866e2ee71aaf"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "virtual_ts::generator::setup_helpers::hoisted_ref_factory_tests::batch_ref_factory_uses_pinned_generic_and_dom_inputs; exact pinned project supplied to ordinary VirtualProject generation; native NoAny/inference acceptance remains separate"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/shorthand-double-diagnostic-10920",
       "state": "active",
       "targets": ["batch"],

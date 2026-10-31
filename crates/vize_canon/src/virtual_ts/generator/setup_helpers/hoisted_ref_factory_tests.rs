@@ -139,3 +139,37 @@ fn authored_module_factory_types_do_not_capture_the_local_forwarder() {
         );
     }
 }
+
+#[cfg(feature = "native")]
+#[test]
+fn batch_ref_factory_uses_pinned_generic_and_dom_inputs() {
+    use crate::batch::VirtualProject;
+    use std::{fs, path::Path};
+
+    let inputs = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/_fixtures/differential/typechecker/shared-ref-factory");
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path();
+    fs::create_dir(root.join("src")).unwrap();
+    for (source, target) in [
+        ("Child.vue.txt", "src/Child.vue"),
+        ("Probe.vue.txt", "src/Probe.vue"),
+        ("tsconfig.json.txt", "tsconfig.json"),
+    ] {
+        fs::copy(inputs.join(source), root.join(target)).unwrap();
+    }
+    let child = root.join("src/Child.vue");
+    let probe = root.join("src/Probe.vue");
+    let mut project = VirtualProject::new(root).unwrap();
+    project
+        .register_paths(&[child.clone(), probe.clone()])
+        .unwrap();
+    assert_eq!(
+        factory_lines(&project.find_by_original(&child).unwrap().content),
+        Vec::<&str>::new()
+    );
+    assert_eq!(
+        factory_lines(&project.find_by_original(&probe).unwrap().content),
+        vec![FORWARD.trim_end()]
+    );
+}

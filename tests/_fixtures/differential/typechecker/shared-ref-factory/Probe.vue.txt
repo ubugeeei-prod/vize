@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+import { useTemplateRef } from 'vue'
+type $RefInstanceFactory = 'authored'
+const child = useTemplateRef('child')
+const primary = useTemplateRef('primary')
+type Value = ReturnType<NonNullable<typeof child.value>['current']>
+const noAny: false = null! as (0 extends (1 & Value) ? true : false)
+const numeric: number = child.value!.current()
+primary.value?.focus()
+void noAny; void numeric
+</script>
+<template>
+  <Child ref="child" :value="1" />
+  <button ref="primary" />
+</template>
