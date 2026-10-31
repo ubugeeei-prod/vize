@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import type { Formatter } from './contracts';
+const formatter: Formatter = (value) => String(value ?? '');
+defineProps<{ user?: { name: string }; count: number | null }>();
+</script>
+
+<template>
+  <p v-if="count">{{ count }}</p>
+  <p v-if="user">{{ user.name }}</p>
+  <span>{{ formatter(count) }}</span>
+</template>

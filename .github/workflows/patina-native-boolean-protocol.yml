@@ -1,6 +1,15 @@
 name: Patina native boolean protocols
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      symbol_owner_repro:
+        description: Run only the bounded symbol-owner causal collector
+        type: boolean
+        default: false
+      source_sha:
+        description: Exact source commit required by the causal collector
+        type: string
+        default: ""
   pull_request:
     paths:
       - crates/vize_patina/src/linter/corsa_session/**
@@ -21,6 +30,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   live-native:
+    if: github.event_name != 'workflow_dispatch' || !inputs.symbol_owner_repro
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     permissions: { contents: read, actions: read }
@@ -75,5 +85,83 @@ jobs:
         with:
           name: patina-native-boolean-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/patina-native-boolean/
+          if-no-files-found: error
+          retention-days: 7
+  symbol-owner-counterfactual:
+    if: github.event_name == 'workflow_dispatch' && inputs.symbol_owner_repro
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    permissions: { contents: read, actions: read }
+    env:
+      CARGO_BUILD_JOBS: "24"
+      VIZE_SYMBOL_OWNER_REPRO: "1"
+      EXPECTED_SOURCE: ${{ inputs.source_sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Pin this instrumentation to its exact source
+        run: |
+          [[ "$EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
+          test "$GITHUB_SHA" = "$EXPECTED_SOURCE"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          mkdir -p target/patina-symbol-owner
+          git show -s --format='%H %T %P' HEAD > target/patina-symbol-owner/source.txt
+          sha256sum Cargo.lock pnpm-lock.yaml package.json > target/patina-symbol-owner/lock-sha256.txt
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: nextest-ci, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          {
+            version: latest,
+            node-version-file: package.json,
+            cache: true,
+            cache-save: false,
+            run-install: true,
+          }
+      - name: Authenticate the two exact installed native providers
+        working-directory: ${{ runner.temp }}
+        run: |
+          npm install --prefix "$RUNNER_TEMP/patina-symbol-owner" --ignore-scripts --no-audit --no-fund tsrs@0.20.1-ts7.1.0-beta
+          cp "$RUNNER_TEMP/patina-symbol-owner/package-lock.json" "$GITHUB_WORKSPACE/target/patina-symbol-owner/provider-package-lock.json"
+          cp "$RUNNER_TEMP/patina-symbol-owner/node_modules/tsrs/package.json" "$GITHUB_WORKSPACE/target/patina-symbol-owner/tsrs-package.json"
+          cp "$RUNNER_TEMP/patina-symbol-owner/node_modules/@tsrs/linux-x64-gnu/package.json" "$GITHUB_WORKSPACE/target/patina-symbol-owner/tsrs-image-package.json"
+          cp "$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/package.json" "$GITHUB_WORKSPACE/target/patina-symbol-owner/stable-image-package.json"
+          sha256sum "$RUNNER_TEMP/patina-symbol-owner/node_modules/@tsrs/linux-x64-gnu/tsrs" "$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc" > "$GITHUB_WORKSPACE/target/patina-symbol-owner/provider-sha256.txt"
+      - name: Collect only the explicitly ignored causal target with both providers
+        run: |
+          set -o pipefail
+          result=0
+          for provider in stable tsrs; do
+            if [[ "$provider" = stable ]]; then
+              export CORSA_PATH="$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+            else
+              export CORSA_PATH="$RUNNER_TEMP/patina-symbol-owner/node_modules/@tsrs/linux-x64-gnu/tsrs"
+            fi
+            export VIZE_SYMBOL_OWNER_PROVIDER_LABEL="$provider"
+            export VIZE_SYMBOL_OWNER_EVIDENCE_DIR="$GITHUB_WORKSPACE/target/patina-symbol-owner/$provider"
+            if cargo test --locked --profile ci -p vize --test integration lint_symbol_owner_cli::same_connection_foreign_callable_probe -- --ignored --exact --nocapture 2>&1 | tee "target/patina-symbol-owner/$provider-tests.txt"; then
+              echo "$provider collector completed; inspect packets for reproduction status"
+            else
+              result=1
+            fi
+          done
+          exit "$result"
+      - name: Bind the compiled SDK source and CLI without copying images
+        if: always()
+        run: |
+          client_crate="$(find "$CARGO_HOME/registry/cache" -type f -name corsa_client-2.0.0-beta.2.crate -print -quit)"
+          test -n "$client_crate"
+          echo "7ec16cb3138106003a1c1cdea181debb9281e3e54b88c45fa9550544a943e79a  $client_crate" | sha256sum --check
+          sha256sum "$client_crate" > target/patina-symbol-owner/sdk-crate-sha256.txt
+          tar -xOf "$client_crate" corsa_client-2.0.0-beta.2/.cargo_vcs_info.json > target/patina-symbol-owner/sdk-vcs.json
+          sha256sum target/ci/vize > target/patina-symbol-owner/cli-sha256.txt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: patina-symbol-owner-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/patina-symbol-owner/
           if-no-files-found: error
           retention-days: 7

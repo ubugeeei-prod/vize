@@ -232,6 +232,8 @@ mod lint_sibling_script_imports_cli;
 mod lint_solution_tsconfig_cli;
 mod lint_storybook_tsx_cli;
 mod lint_strict_boolean_cli;
+#[cfg(unix)]
+mod lint_symbol_owner_cli;
 mod lint_supported_targets_cli;
 mod lint_unchecked_indexed_access_cli;
 mod lint_undefined_refs_cli;
