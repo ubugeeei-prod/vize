@@ -27,6 +27,7 @@ mod close;
 mod replay;
 pub(super) use bootstrap::{
     ProjectSessionSpawnError, api_mode_for_executable, spawn_project_session,
+    spawn_project_session_for_document, validate_materialized_project_selection,
 };
 #[cfg(test)]
 use bootstrap::{classify_project_session_error, should_retry_json_rpc};

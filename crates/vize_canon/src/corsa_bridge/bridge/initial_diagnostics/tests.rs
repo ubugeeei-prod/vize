@@ -201,6 +201,29 @@ fn respond(writer: &mut impl std::io::Write, id: RequestId, result: Value) {
 }
 
 #[test]
+fn refused_materialized_refresh_retires_the_session_before_later_access() {
+    let peer = Peer::start(2);
+    let bridge = peer.bridge();
+    let directory = tempfile::tempdir().unwrap();
+    let config = directory.path().join("tsconfig.json");
+    let member = directory.path().join("member.ts");
+    std::fs::write(&config, "{}").unwrap();
+    std::fs::write(&member, "export const value = 1;").unwrap();
+    let member = crate::file_uri::path_to_file_uri(&member);
+    block_on(bridge.with_client(move |client| {
+        assert!(client.project_session_for_test().is_some());
+        let result = client.refresh_materialized_for_test(config, member);
+        assert!(result.is_err());
+        assert!(client.project_session_for_test().is_none());
+        Ok(())
+    }))
+    .unwrap();
+    let mut released = peer.finish(bridge);
+    released.sort();
+    assert_eq!(released, vec![OLD.to_owned(), NEW.to_owned()]);
+}
+
+#[test]
 fn current_read_commits_whole_cache_only_after_foreground_lane_remains_usable() {
     let peer = Peer::start(1);
     let bridge = peer.bridge();

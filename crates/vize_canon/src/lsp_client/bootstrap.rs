@@ -76,6 +76,7 @@ impl CorsaProjectClient {
                     project_root,
                     &config_path,
                     &overlay_storage,
+                    None,
                 )
             })
             .flatten();
@@ -107,6 +108,7 @@ impl CorsaProjectClient {
             materialized_project_session: false,
             project_root: project_root.to_path_buf(),
             explicit_project_config,
+            materialized_project_preference: None,
             diagnostics: Default::default(),
             overlay_versions: Default::default(),
             document_texts: Default::default(),
@@ -171,6 +173,12 @@ impl CorsaProjectClient {
             }
             mappings.push((uri.clone(), document_uri));
         }
+        self.materialized_project_preference = mappings
+            .iter()
+            .map(|(_, uri)| uri)
+            .min()
+            .cloned()
+            .map(|uri| (config_path.clone(), uri));
         if self.has_project_session() {
             self.retire_project_session()?;
             let overlay_root = self.overlay_storage.root().to_path_buf();
@@ -192,6 +200,16 @@ impl CorsaProjectClient {
         } else {
             self.retire_editor_lsp()
         }
+    }
+
+    pub(in crate::lsp_client) fn preferred_document_for_config(
+        &self,
+        config: &Path,
+    ) -> Option<String> {
+        self.materialized_project_preference
+            .as_ref()
+            .filter(|(selected, _)| selected == config)
+            .map(|(_, uri)| uri.clone())
     }
 }
 

@@ -98,12 +98,37 @@ impl CorsaProjectClient {
         if !self.has_project_session() {
             return Ok(());
         }
+        if self.materialized_project_session
+            && self
+                .materialized_project_preference
+                .as_ref()
+                .is_some_and(|(_, uri)| !file_uri_to_path(uri).is_some_and(|path| path.is_file()))
+        {
+            return self.reload_materialized_project_transport();
+        }
         if matches!(&file_changes, Some(FileChanges::Summary(summary)) if !summary.created.is_empty())
         {
             return self.reload_materialized_project_transport();
         }
         block_on(self.project_session_mut()?.refresh(file_changes))
-            .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"))
+            .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"))?;
+        if self.materialized_project_session
+            && let Some((config, preferred)) = &self.materialized_project_preference
+        {
+            let session = self
+                .session
+                .as_ref()
+                .ok_or_else(|| cstr!("Materialized Corsa session disappeared after refresh"))?;
+            if let Err(error) = super::validate_materialized_project_selection(
+                session.project(),
+                config,
+                Some(preferred),
+            ) {
+                let _ = self.retire_project_session();
+                return Err(error);
+            }
+        }
+        Ok(())
     }
 
     pub(in crate::lsp_client) fn reload_materialized_project_transport(
@@ -117,6 +142,21 @@ impl CorsaProjectClient {
             .explicit_project_config
             .clone()
             .unwrap_or_else(|| crate::lsp_client::lifecycle_setup::workspace_config_path(&root));
+        if self.materialized_project_session {
+            // A deleted virtual member cannot remain the SDK preference. Only
+            // another exact, still-present mapped member may replace it.
+            self.materialized_project_preference = self
+                .session_document_uris
+                .values()
+                .filter(|uri| {
+                    file_uri_to_path(uri).is_some_and(|path| {
+                        path.strip_prefix(self.overlay_storage.root()).is_ok() && path.is_file()
+                    })
+                })
+                .min()
+                .cloned()
+                .map(|uri| (config.clone(), uri));
+        }
         self.retire_project_session()?;
         self.replace_project_transport(&config, &root)
     }

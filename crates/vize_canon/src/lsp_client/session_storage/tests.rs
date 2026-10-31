@@ -6,6 +6,33 @@ use crate::{
 use std::{fs, path::Path};
 
 #[test]
+fn preferred_materialized_member_refuses_foreign_config_and_incomplete_membership() {
+    let storage = SessionStorage::new(Path::new(env!("CARGO_MANIFEST_DIR"))).unwrap();
+    let config = storage.root().join("tsconfig.json");
+    let foreign = storage.root().join("other.json");
+    let member = storage.root().join("main.ts");
+    fs::write(&config, "{}").unwrap();
+    fs::write(&foreign, "{}").unwrap();
+    fs::write(&member, "export const value = 1;").unwrap();
+    let mut project: corsa::api::ProjectResponse = serde_json::from_value(serde_json::json!({"id":"fixture","configFileName":config,"compilerOptions":{},"rootFiles":[member]})).unwrap();
+    let uri = path_to_file_uri(&member);
+    let validate = crate::lsp_client::session::validate_materialized_project_selection;
+    assert_eq!(validate(&project, &config, Some(&uri)), Ok(()));
+    project.config_file_name = foreign.to_string_lossy().as_ref().into();
+    let refusal = vize_l0::cstr!(
+        "Preferred materialized Corsa member did not retain its exact configured project"
+    );
+    assert_eq!(
+        validate(&project, &config, Some(&uri)),
+        Err(refusal.clone())
+    );
+    assert_eq!(validate(&project, &config, None), Ok(()));
+    project.config_file_name = config.to_string_lossy().as_ref().into();
+    project.root_files.clear();
+    assert_eq!(validate(&project, &config, Some(&uri)), Err(refusal));
+}
+
+#[test]
 fn private_owners_are_unique_and_drop_only_their_own_complete_mirror() {
     let project = tempfile::tempdir().unwrap();
     let original = project.path().join("source.ts");

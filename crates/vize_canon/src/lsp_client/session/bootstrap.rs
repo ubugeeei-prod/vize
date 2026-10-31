@@ -15,6 +15,15 @@ pub(in crate::lsp_client) fn spawn_project_session(
     cwd: &Path,
     config_path: &Path,
 ) -> Result<(ProjectSession, Arc<CapabilitiesResponse>), ProjectSessionSpawnError> {
+    spawn_project_session_for_document(executable, cwd, config_path, None)
+}
+
+pub(in crate::lsp_client) fn spawn_project_session_for_document(
+    executable: &str,
+    cwd: &Path,
+    config_path: &Path,
+    preferred: Option<&str>,
+) -> Result<(ProjectSession, Arc<CapabilitiesResponse>), ProjectSessionSpawnError> {
     let config_path_wire = crate::file_uri::path_to_typescript_name(config_path);
     let mode = api_mode_for_executable(executable);
     let session = match block_on(spawn_project_session_with_mode(
@@ -22,6 +31,7 @@ pub(in crate::lsp_client) fn spawn_project_session(
         cwd,
         config_path_wire.as_ref(),
         mode,
+        preferred,
     )) {
         Ok(session) => note_project_init(session),
         Err(error) if should_retry_json_rpc(mode, &error) => {
@@ -30,6 +40,7 @@ pub(in crate::lsp_client) fn spawn_project_session(
                 cwd,
                 config_path_wire.as_ref(),
                 ApiMode::AsyncJsonRpcStdio,
+                preferred,
             )) {
                 Ok(session) => note_project_init(session),
                 Err(fallback) => {
@@ -84,6 +95,7 @@ async fn spawn_project_session_with_mode(
     cwd: &Path,
     config_path: &str,
     mode: ApiMode,
+    preferred: Option<&str>,
 ) -> Result<ProjectSession, CorsaError> {
     ProjectSession::spawn(
         crate::corsa_profile::with_request_profiling(
@@ -93,9 +105,41 @@ async fn spawn_project_session_with_mode(
             crate::corsa_profile::RequestOrigin::Canon,
         ),
         config_path,
-        None,
+        preferred.map(super::uri_document_identifier),
     )
     .await
+}
+
+pub(in crate::lsp_client) fn validate_materialized_project_selection(
+    project: &corsa::api::ProjectResponse,
+    config: &Path,
+    preferred: Option<&str>,
+) -> Result<(), String> {
+    let Some(preferred) = preferred else {
+        return Ok(());
+    };
+    let expected_config = config
+        .canonicalize()
+        .map_err(|error| cstr!("Cannot inspect materialized Corsa config: {error}"))?;
+    let selected = Path::new(project.config_file_name.as_str())
+        .canonicalize()
+        .map_err(|error| cstr!("Cannot inspect selected materialized Corsa config: {error}"))?;
+    let member = crate::file_uri::file_uri_to_path(preferred)
+        .ok_or_else(|| cstr!("Invalid preferred materialized Corsa document"))?
+        .canonicalize()
+        .map_err(|error| cstr!("Cannot inspect preferred materialized Corsa member: {error}"))?;
+    if selected != expected_config
+        || !project.root_files.iter().any(|file| {
+            Path::new(file.as_str())
+                .canonicalize()
+                .is_ok_and(|path| path == member)
+        })
+    {
+        return Err(cstr!(
+            "Preferred materialized Corsa member did not retain its exact configured project"
+        ));
+    }
+    Ok(())
 }
 
 pub(super) fn should_retry_json_rpc(mode: ApiMode, error: &CorsaError) -> bool {

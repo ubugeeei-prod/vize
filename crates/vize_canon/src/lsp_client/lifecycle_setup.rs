@@ -41,8 +41,17 @@ pub(super) fn write_materialized_project_tsconfig(
     selected_config: Option<&Path>,
 ) -> Result<std::path::PathBuf, String> {
     let config_path = overlay_root.join("tsconfig.json");
+    let selected = selected_config
+        .map(|config| {
+            if config.is_absolute() {
+                config.to_path_buf()
+            } else {
+                project_root.join(config)
+            }
+        })
+        .unwrap_or_else(|| workspace_config_path(project_root));
     let content = json!({
-        "extends": selected_config.map(|config| if config.is_absolute() { config.to_path_buf() } else { project_root.join(config) }).unwrap_or_else(|| workspace_config_path(project_root)).to_string_lossy(),
+        "extends": crate::file_uri::path_to_typescript_name(&selected),
         "compilerOptions": {
             "allowImportingTsExtensions": true,
             "noEmit": true
@@ -106,7 +115,7 @@ mod tests {
         assert_eq!(generated, storage.root().join("tsconfig.json"));
         assert_eq!(
             parsed["extends"],
-            workspace_config.to_string_lossy().as_ref()
+            crate::file_uri::path_to_typescript_name(&workspace_config).as_str()
         );
         assert_eq!(parsed["include"], serde_json::json!(["**/*"]));
         assert_eq!(parsed["exclude"], serde_json::json!([]));
@@ -152,7 +161,10 @@ mod tests {
         .unwrap();
         let parsed: serde_json::Value =
             serde_json::from_slice(&std::fs::read(generated).unwrap()).unwrap();
-        assert_eq!(parsed["extends"], selected.to_string_lossy().as_ref());
+        assert_eq!(
+            parsed["extends"],
+            crate::file_uri::path_to_typescript_name(&selected).as_str()
+        );
         assert_eq!(
             parsed["compilerOptions"],
             serde_json::json!({"allowImportingTsExtensions":true,"noEmit":true})

@@ -52,6 +52,8 @@ pub struct CorsaProjectClient {
     project_root: PathBuf,
     /// Explicit Batch configuration, retained across editor fallback/retries.
     explicit_project_config: Option<PathBuf>,
+    /// Exact mapped member and config retained across materialized refreshes.
+    materialized_project_preference: Option<(PathBuf, String)>,
     /// Cached diagnostics keyed by document URI.
     pub(crate) diagnostics: FxHashMap<String, Vec<Diagnostic>>,
     /// Per-document overlay versions so Corsa can keep snapshots ordered.
@@ -101,6 +103,16 @@ impl CorsaProjectClient {
         &mut self.session
     }
 
+    pub(crate) fn refresh_materialized_for_test(
+        &mut self,
+        config: PathBuf,
+        member: String,
+    ) -> Result<(), String> {
+        self.materialized_project_session = true;
+        self.materialized_project_preference = Some((config, member));
+        self.refresh_materialized_overlay_snapshot(None)
+    }
+
     pub(crate) fn empty_for_test(project_root: PathBuf) -> Self {
         Self {
             executable: String::new(""),
@@ -112,6 +124,7 @@ impl CorsaProjectClient {
             overlay_storage: Arc::new(session_storage::SessionStorage::new(&project_root).unwrap()),
             project_root,
             explicit_project_config: None,
+            materialized_project_preference: None,
             diagnostics: Default::default(),
             overlay_versions: Default::default(),
             document_texts: Default::default(),

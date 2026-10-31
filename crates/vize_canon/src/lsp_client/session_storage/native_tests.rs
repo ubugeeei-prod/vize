@@ -100,7 +100,7 @@ fn run(root: &Path, native: &Path, old_policy: bool, capture: &Path) -> Value {
     let parsed: Value = serde_json::from_slice(&generated_config).unwrap();
     assert_eq!(
         parsed["extends"],
-        root.join("tsconfig.json").to_string_lossy().as_ref()
+        path_to_typescript_name(&root.join("tsconfig.json")).as_str()
     );
     assert_eq!(
         parsed["compilerOptions"],
@@ -114,11 +114,19 @@ fn run(root: &Path, native: &Path, old_policy: bool, capture: &Path) -> Value {
         ("dependency-repair", "export const value = 2;\n"),
         ("dependency-close", SUPPORT),
     ] {
-        if phase == "dependency-close" {
-            client.did_close(&support_uri).unwrap();
+        let synchronization = if phase == "dependency-close" {
+            client.did_close(&support_uri)
         } else {
-            client.did_change(&support_uri, text).unwrap();
-        }
+            client.did_change(&support_uri, text)
+        };
+        retain(
+            capture,
+            policy,
+            phase,
+            "sync",
+            &json!({"phase":phase,"synchronization":synchronization,"materializedRoot":materialized_root,"project":client.session.as_ref().map(|session| session.project())}),
+        );
+        synchronization.unwrap();
         let project = client
             .session
             .as_ref()
@@ -201,9 +209,24 @@ fn positive_answers(packet: &Value, support_uri: &str) {
             row["hover"],
             json!({"contents":{"kind":"markdown","value":vize_l0::cstr!("```typescript\n(alias) const value: {value_type}\n```\n")},"range":{"start":{"line":2,"character":31},"end":{"line":2,"character":36}}})
         );
+        let targets = row["definition"].as_array().unwrap();
+        assert_eq!(targets.len(), 1);
+        let target_uri = targets.first().unwrap()["uri"].as_str().unwrap();
+        // Native Windows URIs lowercase/escape the drive. Compare its complete
+        // physical identity while retaining the exact whole wire packet below.
+        assert_eq!(
+            crate::file_uri::file_uri_to_path(target_uri)
+                .unwrap()
+                .canonicalize()
+                .unwrap(),
+            crate::file_uri::file_uri_to_path(support_uri)
+                .unwrap()
+                .canonicalize()
+                .unwrap()
+        );
         assert_eq!(
             row["definition"],
-            json!([{"uri":support_uri,"range":{"start":{"line":0,"character":13},"end":{"line":0,"character":18}}}])
+            json!([{"uri":target_uri,"range":{"start":{"line":0,"character":13},"end":{"line":0,"character":18}}}])
         );
     }
 }
