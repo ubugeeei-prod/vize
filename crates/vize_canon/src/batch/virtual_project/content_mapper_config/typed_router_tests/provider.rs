@@ -2,9 +2,6 @@
 
 use std::path::{Path, PathBuf};
 
-use oxc_ast::ast::{Expression, Statement};
-use oxc_parser::Parser;
-use oxc_span::SourceType;
 use serde_json::json;
 use sha2::{Digest, Sha256};
 
@@ -35,8 +32,7 @@ pub(in crate::batch::virtual_project) fn install(root: &Path, kind: &str) {
     }
     for entry in provider["files"].as_array().unwrap() {
         let path = entry["path"].as_str().unwrap();
-        let bytes =
-            std::fs::read(fixture.join(kind).join(vize_carton::cstr!("{path}.txt"))).unwrap();
+        let bytes = std::fs::read(fixture.join(kind).join(vize_l0::cstr!("{path}.txt"))).unwrap();
         assert_eq!(bytes.len() as u64, entry["bytes"].as_u64().unwrap());
         assert_eq!(
             super::super::super::identity::encode_digest(Sha256::digest(&bytes)),
@@ -82,37 +78,6 @@ fn transform(root: &Path, config: &ContentMapperProjectConfiguration) -> Content
     .unwrap()
 }
 
-fn page_call(output: &ContentMapperTransform) -> &str {
-    let allocator = oxc_allocator::Allocator::default();
-    let parsed = Parser::new(&allocator, &output.text, SourceType::tsx()).parse();
-    assert_eq!(parsed.panicked, false);
-    assert_eq!(parsed.diagnostics.len(), 0);
-    let calls = parsed
-        .program
-        .body
-        .iter()
-        .filter_map(|statement| {
-            let Statement::ExpressionStatement(statement) = statement else {
-                return None;
-            };
-            let Expression::CallExpression(call) = &statement.expression else {
-                return None;
-            };
-            if !matches!(&call.callee, Expression::Identifier(name) if name.name == "definePage") {
-                return None;
-            }
-            Some(
-                output
-                    .text
-                    .get(call.span.start as usize..call.span.end as usize)
-                    .unwrap(),
-            )
-        })
-        .collect::<Vec<_>>();
-    assert_eq!(calls.len(), 1);
-    calls[0]
-}
-
 fn expected_watch(root: &Path, entry: &str) -> Vec<vize_l0::String> {
     let mut paths = [
         "tsconfig.json".to_owned(),
@@ -141,12 +106,18 @@ fn both_actual_same_version_providers_are_observed_without_granting_native_autho
     let enabled = transform(&preview, &admitted);
     let disabled = transform(&published, &refused);
     assert_eq!(
-        page_call(&enabled),
-        "definePage<\"src/pages/[id].vue\">({ props: true })"
+        admitted
+            .project_context
+            .config()
+            .map(|config| config.route_props),
+        Some(false)
     );
     assert_eq!(
-        page_call(&disabled),
-        "definePage<\"src/pages/[id].vue\">({ props: true })"
+        refused
+            .project_context
+            .config()
+            .map(|config| config.route_props),
+        Some(false)
     );
     assert_eq!(
         admitted.watched_files,
@@ -163,7 +134,17 @@ fn both_actual_same_version_providers_are_observed_without_granting_native_autho
         Some(&preview),
     )
     .unwrap();
-    assert_eq!(page_call(&legacy), page_call(&disabled));
+    let published_legacy = generate_vue_content_mapper_transform_with_project_options(
+        &published.join("src/pages/[id].vue"),
+        PAGE,
+        refused.transform_options,
+        Some(&published),
+    )
+    .unwrap();
+    assert_eq!(
+        serde_json::to_value(&disabled).unwrap(),
+        serde_json::to_value(published_legacy).unwrap()
+    );
     assert_eq!(
         serde_json::to_value(&enabled).unwrap(),
         serde_json::to_value(&legacy).unwrap()
@@ -252,8 +233,8 @@ fn reopening_tracks_provider_bytes_reexports_removal_and_configuration_changes()
     let removed = load(&root, json!(100));
     assert_ne!(removed.config_identity, before.config_identity);
     assert_eq!(
-        page_call(&transform(&root, &removed)),
-        "definePage<\"src/pages/[id].vue\">({ props: true })"
+        serde_json::to_value(transform(&root, &removed)).unwrap(),
+        output
     );
     let mut missing_watch = [
         root.join("tsconfig.json"),
@@ -294,13 +275,13 @@ fn reopening_tracks_provider_bytes_reexports_removal_and_configuration_changes()
     assert_eq!(rebound.watched_files, rebound_watch);
     std::fs::remove_file(&reexport).unwrap();
     assert_eq!(
-        page_call(&transform(&root, &load(&root, json!(100)))),
-        "definePage<\"src/pages/[id].vue\">({ props: true })"
+        serde_json::to_value(transform(&root, &load(&root, json!(100)))).unwrap(),
+        output
     );
     install(&root, "published");
     assert_eq!(
-        page_call(&transform(&root, &load(&root, json!(100)))),
-        "definePage<\"src/pages/[id].vue\">({ props: true })"
+        serde_json::to_value(transform(&root, &load(&root, json!(100)))).unwrap(),
+        output
     );
     install(&root, "preview");
     std::fs::write(
@@ -308,9 +289,17 @@ fn reopening_tracks_provider_bytes_reexports_removal_and_configuration_changes()
         r#"{"vueCompilerOptions":{"plugins":[]}}"#,
     )
     .unwrap();
+    let disabled = load(&root, json!(100));
+    let unconfigured = generate_vue_content_mapper_transform_with_project_options(
+        &root.join("src/pages/[id].vue"),
+        PAGE,
+        disabled.transform_options,
+        None,
+    )
+    .unwrap();
     assert_eq!(
-        page_call(&transform(&root, &load(&root, json!(100)))),
-        "definePage({ props: true })"
+        serde_json::to_value(transform(&root, &disabled)).unwrap(),
+        serde_json::to_value(unconfigured).unwrap()
     );
 }
 
