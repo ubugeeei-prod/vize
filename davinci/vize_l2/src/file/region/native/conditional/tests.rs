@@ -124,7 +124,16 @@ fn native_boolean_if_keeps_actual_input_read_scope_and_if_allocation_without_ali
         let resolution = file.expression(node).unwrap();
         assert_eq!(resolution.scope(), Some(unit.scope));
         let table = resolution.table().unwrap();
-        assert!(record.input().matches_expression(table.expression()));
+        let canonical = record.input().expression().unwrap();
+        let resolved = table.expression();
+        assert!(!record.input().matches_expression(resolved));
+        assert!(core::ptr::eq(resolved.ast, canonical.ast));
+        assert!(core::ptr::eq(resolved.source, canonical.source));
+        assert_eq!(resolved.span, canonical.span);
+        assert!(core::ptr::eq(
+            resolved.coordinates.unwrap(),
+            canonical.coordinates.unwrap()
+        ));
         let [occurrence] = table.occurrences() else {
             panic!("one real read");
         };

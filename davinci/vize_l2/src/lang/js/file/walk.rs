@@ -289,10 +289,10 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             None => None,
         };
         if let Some(declaration) = self.facts.declarations.get_mut(binding.index() as usize) {
-            declaration.boolean_initializer = match expression {
+            declaration.record_boolean_initializer(match expression {
                 Some(Expression::BooleanLiteral(literal)) => Some(literal.value),
                 _ => None,
-            };
+            });
         }
         if let Some(declaration) = self.facts.declarations.get(binding.index() as usize) {
             self.observer.declared(DeclaredEvent {

@@ -221,10 +221,9 @@ impl<'a> Facts<'a> {
             namespace: site.namespace,
             kind: site.kind,
             initializer: site.initializer,
-            boolean_initializer: None,
             import_source: site.import_source,
             imported_name: site.imported_name,
-            direct_program: site.direct_program,
+            origin: super::records::DeclarationOrigin::new(site.direct_program),
         });
         if site.direct_program
             && site.namespace == Namespace::Value
