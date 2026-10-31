@@ -6,6 +6,7 @@ on:
       - .github/workflows/published-slot-provider.yml
       - tools/support/release/slot_provider_public/**
       - tests/tooling/release/slot-provider-public.test.ts
+      - tests/tooling/release/slot-provider-cli-files.test.ts
       - tools/support/release/constructor_original27_public/**
       - tools/support/release/computed_event_custody.ts
       - tools/support/release/computed_event_names.ts
@@ -61,7 +62,9 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "24.14.0", package-manager-cache: false }
       - name: Check complete vectors and refusal controls without installed products
-        run: node --test tests/tooling/release/slot-provider-public.test.ts
+        run: >-
+          node --test tests/tooling/release/slot-provider-public.test.ts
+          tests/tooling/release/slot-provider-cli-files.test.ts
 
   installed-public:
     name: Original10 and separate38 Linux public slot provider stages
