@@ -80,7 +80,7 @@ use super::{
         VizeMapping, emit_lib_reference_directives,
     },
 };
-use vize_carton::{FxHashMap, FxHashSet, String, append, config::VueVersion, cstr, profile};
+use vize_carton::{FxHashMap, String, append, config::VueVersion, cstr, profile};
 use vize_croquis::Croquis;
 use vize_l0::ts;
 
