@@ -11619,6 +11619,37 @@
       }
     },
     {
+      "id": "typechecker/regression/native-overlay-input-custody-11145",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "lsp_cli::overlay_storage::default_native_overlay_preserves_the_whole_linked_installation_and_authored_project",
+      "sourceRevision": "497fc8a13749e065b126850d5fb1cf918eecd945",
+      "inputs": [
+        {
+          "file": "App.vue",
+          "path": "native-overlay-input-custody-11145/App.vue.txt",
+          "sha256": "d423cb62ecd4cc1fc89a9287b33d95e2fb17f9703e77de1d5b439ef0b270943d"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "source CLI original11145 physical input pin only; checker packet/native parity/filesystem/public acceptance unsupported"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/router-mapper-capability-10579/automatic-route-props",
       "state": "active",
       "targets": ["batch"],

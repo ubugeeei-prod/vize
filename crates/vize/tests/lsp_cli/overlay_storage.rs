@@ -99,7 +99,7 @@ fn default_native_overlay_preserves_the_whole_linked_installation_and_authored_p
     link(&installed, &project.join("node_modules"));
     fs::write(installed.join("sentinel"), b"whole installation\0\r\n").unwrap();
     let source = include_str!(
-        "../../../../tests/_fixtures/differential/lsp/default-log-installation-custody-11145/App.vue.txt"
+        "../../../../tests/_fixtures/differential/typechecker/native-overlay-input-custody-11145/App.vue.txt"
     );
     let app = project.join("App.vue");
     fs::write(&app, source).unwrap();
