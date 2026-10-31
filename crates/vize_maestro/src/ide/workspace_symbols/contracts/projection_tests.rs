@@ -1,6 +1,6 @@
 //! Differential controls for the narrow closed-file event/slot demand.
 
-use super::{MacroTracker, Url, WorkspaceSymbolsService};
+use super::{MacroTracker, Url};
 
 pub(super) fn assert_projection_packet_parity() {
     let scripts = [
