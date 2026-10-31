@@ -53,6 +53,7 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 
 # Utilities
+dirs.workspace = true
 dashmap.workspace = true
 parking_lot.workspace = true
 ignore.workspace = true

@@ -168,8 +168,8 @@ function git(...args: string[]): string {
 
 export function retainNativeLog(source: string, destination: string): boolean {
   if (!fs.existsSync(source)) return false;
-  // The native server logs at its repository cwd, outside the mutable fixture
-  // directory removed by the unchanged test. Preserve its complete raw bytes.
+  // The explicit log stays outside the mutable fixture removed by the
+  // unchanged test. Preserve its complete raw bytes.
   fs.copyFileSync(source, destination);
   return true;
 }
@@ -267,7 +267,8 @@ export function runDiagnostics(): number {
     "--test-concurrency=1",
     "tests/performance/vben-lsp-incremental.test.ts",
   ];
-  const nativeLog = path.join(root, "node_modules/.vize/lsp.log");
+  const nativeLog = path.join(directory, "process-lsp.log");
+  const environment: NodeJS.ProcessEnv = { ...process.env, VIZE_LSP_LOG_FILE: nativeLog };
   const nativeLogBefore = fs.existsSync(nativeLog) ? fs.readFileSync(nativeLog) : Buffer.alloc(0);
   const sources = sourcePaths.map((relative) => {
     const bytes = fs.readFileSync(path.join(root, relative));
@@ -292,7 +293,8 @@ export function runDiagnostics(): number {
         "VIZE_PERF_BUDGET_SCALE",
         "VIZE_TRACE_EDITOR_PREPARATION",
         "VIZE_LSP_BIN",
-      ].map((name) => [name, process.env[name]]),
+        "VIZE_LSP_LOG_FILE",
+      ].map((name) => [name, environment[name]]),
     ),
     sources,
     nativeLogBefore: { bytes: nativeLogBefore.length, sha256: sha256(nativeLogBefore) },
@@ -306,7 +308,7 @@ export function runDiagnostics(): number {
   try {
     result = spawnSync(command[0], command.slice(1), {
       cwd: root,
-      env: process.env,
+      env: environment,
       stdio: ["ignore", stdout, stderr],
     });
   } finally {

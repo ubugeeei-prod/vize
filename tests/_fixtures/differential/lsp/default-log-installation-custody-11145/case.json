@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "id": "lsp/regression/default-log-installation-custody-11145",
+  "provenance": {
+    "fixCommit": "8a7043eb8119b18470d486be2299a32fc363b2d8",
+    "witnessPath": "crates/vize/tests/lsp_cli/logging.rs",
+    "witnessTest": "default_log_uses_user_cache_with_override_unset_and_no_installation_writes",
+    "inputOrigin": "Exact src/app.vue bytes from the pinned original #11145 project.json, also retained in the public 0.610.0 stdio session.",
+    "originalProject": {
+      "path": "tests/_fixtures/differential/typechecker/editor-vite-stub-11145/project.json",
+      "sha256": "8e13ee81f8a0086e34e44f2ec49f7dc6ecde19d55694a75bf3415b212d120f5a"
+    },
+    "contractOrigin": "Authored complete folding regions: template lines 4..5 and script setup lines 0..1, excluding their closing tags. No optional character fields are present."
+  },
+  "input": {
+    "source": "App.vue.txt",
+    "runtimePath": "src/app.vue",
+    "sha256": "d423cb62ecd4cc1fc89a9287b33d95e2fb17f9703e77de1d5b439ef0b270943d"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "2e965f8a6ffef076e9bf0f653ff2da3807cae2229faa6ecd5ecb449a2b870948"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "ecosystem": false
+  },
+  "scope": "Source-built ordinary stdio registration of the original minimal Vue input only. Full default-mode installation immutability is asserted separately by the actual CLI regression and containing-public acceptance; this response oracle grants no filesystem or native whole-product credit."
+}

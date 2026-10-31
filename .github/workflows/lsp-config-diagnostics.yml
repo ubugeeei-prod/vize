@@ -156,7 +156,6 @@ jobs:
             target/vize-tests/metrics/vben-lsp-incremental/
             target/ci/vize
             target/ci/vize.differential-build.json
-            node_modules/.vize/lsp.log
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 3
