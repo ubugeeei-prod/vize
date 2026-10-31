@@ -37,6 +37,13 @@ pub fn parse_workspace_contracts_in(allocator: &Allocator, source: &str) -> Macr
 /// Every returned fact is owned and can survive resetting the caller's arena.
 #[doc(hidden)]
 pub fn parse_workspace_symbol_contracts_in(allocator: &Allocator, source: &str) -> MacroTracker {
+    // Diagnostic control only: select the existing full demand while retaining
+    // the narrow reader/imports in the same source and compiler context.
+    const FULL_DEMAND_CONTROL: bool = true;
+    if FULL_DEMAND_CONTROL {
+        // The full facade records parse_requests once; do not count it twice.
+        return parse_workspace_contracts_in(allocator, source);
+    }
     vize_carton::micro_count!("croquis.setup.parse_requests.bytes", source.len());
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
     let ret = parse_program_for_analysis(allocator.as_oxc(), source, source_type);
