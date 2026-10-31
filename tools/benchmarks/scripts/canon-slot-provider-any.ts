@@ -6,8 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { slotProviderTypes } from "../../../tests/tooling/support/canon-slot-provider-types.ts";
 import { captureSlotPacket } from "./canon-slot-constructor-protocol.ts";
 import { native, type Row } from "./canon-slot-constructor-audit.ts";
-import { sourceSdk } from "./canon-source-sdk.ts";
-export { sourceSdk } from "./canon-source-sdk.ts";
+import { sourceSdk as materializeSourceSdk } from "./canon-component-casing-observe.ts";
 import { packet, isRecord } from "./canon-instance-directives-model.ts";
 import { identify, hash, run, save } from "./canon-instance-directives-io.ts";
 
@@ -16,6 +15,12 @@ const original = path.resolve(
 );
 const successor = path.resolve("tests/_fixtures/typechecker/slot-provider-owners-11027/imported");
 const read = (root: string, file: string) => fs.readFileSync(path.join(root, file), "utf8");
+
+export function sourceSdk(project: string, provider: string, binary: string) {
+  const custody = materializeSourceSdk(project, provider, binary);
+  save(path.join(project, "..", "source-sdk-custody.json"), custody);
+  return custody;
+}
 
 export function expected(source: string, invalid: boolean): Row[] {
   if (!invalid) return [];

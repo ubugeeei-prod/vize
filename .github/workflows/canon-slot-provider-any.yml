@@ -30,7 +30,7 @@ on:
       - tools/benchmarks/scripts/canon-slot-provider-any.ts
       - tools/benchmarks/scripts/canon-registered-slot-provider.ts
       - tools/benchmarks/scripts/canon-slot-provider-collisions.ts
-      - tools/benchmarks/scripts/canon-source-sdk.ts
+      - tools/benchmarks/scripts/canon-component-casing-observe.ts
       - .github/workflows/canon-slot-provider-any.yml
   workflow_dispatch:
     inputs:
