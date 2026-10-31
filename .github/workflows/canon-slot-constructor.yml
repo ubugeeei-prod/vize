@@ -10,6 +10,14 @@ on:
       - crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-resolver.d.ts.txt
       - crates/vize_canon/src/virtual_ts/helpers/declarations/slot-resolver.d.ts.txt
       - crates/vize_canon/src/virtual_ts/helpers/preamble.rs
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/ref-instance-factory.d.ts.txt
+      - crates/vize_canon/src/virtual_ts/scope/ref_instances.rs
+      - crates/vize_canon/src/virtual_ts/generator/setup_helpers.rs
+      - crates/vize_canon/src/virtual_ts/generator/setup_helpers/hoisted_ref_factory_tests.rs
+      - crates/vize_canon/tests/ref_factory_projection.rs
+      - tests/_fixtures/differential/typechecker/shared-ref-factory/**
+      - tools/benchmarks/scripts/ref-factory-*.ts
+      - tests/tooling/ref-factory-*.test.ts
       - crates/vize_canon/src/virtual_ts/helpers/shared_types.rs
       - crates/vize_canon/src/virtual_ts/scope/slot_scope/payload.rs
       - crates/vize_canon/src/virtual_ts/tests/slot_component_bindings.rs
@@ -38,6 +46,7 @@ jobs:
       RAYON_NUM_THREADS: "2"
       NODE_DISABLE_COMPILE_CACHE: "1"
       PR_HEAD: ${{ github.event.pull_request.head.sha }}
+      PR_BASE: ${{ github.event.pull_request.base.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { fetch-depth: 2, persist-credentials: false }
@@ -128,6 +137,61 @@ jobs:
           (evidence/'package.json').write_bytes((provider/'package.json').read_bytes())
           (evidence/'package-lock.json').write_bytes(lock_bytes)
           PY
+      - name: Select the bounded ref-factory insertion qualification
+        run: |
+          set -euo pipefail
+          asset=crates/vize_canon/src/virtual_ts/helpers/declarations/ref-instance-factory.d.ts.txt
+          [[ "$PR_BASE" =~ ^[a-f0-9]{40}$ ]]
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$PR_BASE"
+          if [[ -f "$asset" ]] && ! git cat-file -e "$PR_BASE:$asset" 2>/dev/null; then
+            echo REF_FACTORY_INSERTION=true >> "$GITHUB_ENV"
+          else
+            echo REF_FACTORY_INSERTION=false >> "$GITHUB_ENV"
+          fi
+      - name: Seal the exact clean baseline image before importing the test observer
+        if: env.REF_FACTORY_INSERTION == 'true'
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/slot-evidence/ref-factory"
+          mkdir "$evidence"
+          baseline="$RUNNER_TEMP/ref-factory-base"
+          git worktree add --detach "$baseline" "$PR_BASE"
+          git -C "$baseline" diff --exit-code
+          node tools/benchmarks/scripts/ref-factory-projection-verify.ts --source-only "$baseline" "$GITHUB_WORKSPACE"
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/ref-factory-base-target" cargo build --locked --profile ci-opt -p vize --bin vize --message-format=json) > "$evidence/base-cargo.jsonl" 2> "$evidence/base-cargo.stderr"
+          node tools/benchmarks/scripts/ref-factory-source-custody.ts --root "$baseline" --source "$PR_BASE" --cargo "$evidence/base-cargo.jsonl" --image "$RUNNER_TEMP/ref-factory-base-image" --out "$evidence/base-build.json"
+      - name: Capture identical external observers and exact current source controls
+        if: env.REF_FACTORY_INSERTION == 'true'
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/slot-evidence/ref-factory"
+          observer=crates/vize_canon/tests/ref_factory_projection.rs
+          baseline="$RUNNER_TEMP/ref-factory-base"
+          cp "$observer" "$baseline/$observer"
+          cmp "$observer" "$baseline/$observer"
+          git -C "$baseline" diff --exit-code -- crates/vize_canon/src
+          git -C "$baseline" status --porcelain --untracked-files=all > "$evidence/base-after-observer-copy.status"
+          sha256sum "$observer" "$baseline/$observer" > "$evidence/observer-copies.sha256"
+          export VIZE_REF_FACTORY_FIXTURE="$GITHUB_WORKSPACE/tests/_fixtures/differential/typechecker/shared-ref-factory"
+          export VIZE_REF_FACTORY_PROJECT="$RUNNER_TEMP/ref-factory-observed-project"
+          export VIZE_REF_FACTORY_PROVIDER="$RUNNER_TEMP/slot-provider"
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/ref-factory-base-target" VIZE_REF_FACTORY_CAPTURE="$evidence/base-projection.json" cargo test --locked --profile ci-opt -p vize_canon --test ref_factory_projection complete_ref_factory_projection_packets -- --exact --nocapture) > "$evidence/base-projection.stdout" 2> "$evidence/base-projection.stderr"
+          CARGO_TARGET_DIR="$RUNNER_TEMP/slot-head-target" VIZE_REF_FACTORY_CAPTURE="$evidence/head-projection.json" cargo test --locked --profile ci-opt -p vize_canon --test ref_factory_projection complete_ref_factory_projection_packets -- --exact --nocapture > "$evidence/head-projection.stdout" 2> "$evidence/head-projection.stderr"
+          for role in base head; do
+            grep -Fxq 'running 1 test' "$evidence/$role-projection.stdout"
+            grep -Fq 'test result: ok. 1 passed; 0 failed; 0 ignored;' "$evidence/$role-projection.stdout"
+          done
+          CARGO_TARGET_DIR="$RUNNER_TEMP/slot-head-target" cargo test --locked --profile ci-opt -p vize_canon --lib virtual_ts::generator::setup_helpers::hoisted_ref_factory_tests:: -- --nocapture > "$evidence/source-units.stdout" 2> "$evidence/source-units.stderr"
+          grep -Fxq 'running 5 tests' "$evidence/source-units.stdout"
+          grep -Fq 'test result: ok. 5 passed; 0 failed; 0 ignored;' "$evidence/source-units.stdout"
+      - name: Verify complete factory packets and actual native negative/NoAny/repair vectors
+        if: env.REF_FACTORY_INSERTION == 'true'
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/slot-evidence/ref-factory"
+          node --test tests/tooling/ref-factory-authority.test.ts tests/tooling/ref-factory-parity.test.ts
+          node tools/benchmarks/scripts/ref-factory-projection-verify.ts "$evidence" "$RUNNER_TEMP/ref-factory-base" "$GITHUB_WORKSPACE"
+          node tools/benchmarks/scripts/ref-factory-native-qualification.ts "$RUNNER_TEMP/slot-provider" "$RUNNER_TEMP/ref-factory-base-image" "$RUNNER_TEMP/slot-head" "$evidence/native"
       - name: Require the pinned batch diagnostic fixture through the native provider
         run: |
           set -euo pipefail
