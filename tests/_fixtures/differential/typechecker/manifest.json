@@ -11705,6 +11705,35 @@
       }
     },
     {
+      "id": "typechecker/regression/windows-verbatim-overlay-11145",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "windows-verbatim-overlay-11145/input.json",
+          "sha256": "09e9e861a991d5ba37cd88c87a3a70a86ab2443cbf1b4443243515bb7c8af4f4",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "corsa_bridge::vue_document::build::tests::windows_overlays::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes; compile-included main/Child.vue/support/config and all four overlay phases; input registration only, no diagnostic oracle or native admission"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/router-mapper-capability-10579/automatic-route-props",
       "state": "active",
       "targets": ["batch"],

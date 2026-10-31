@@ -33,7 +33,8 @@ pub(super) fn collect_dependency_documents(
     overlays: &FxHashMap<PathBuf, &str>,
 ) -> Vec<PathBuf> {
     let mut visited_vue = FxHashSet::<PathBuf>::default();
-    visited_vue.insert(host.source_path.clone());
+    let source_key = vize_carton::path::canonicalize_non_verbatim(&host.source_path);
+    visited_vue.insert(source_key.clone());
     let mut visited_ts = FxHashSet::<PathBuf>::default();
     let mut queue = VecDeque::<DependencyScan>::new();
     queue.push_back(DependencyScan::Vue {
@@ -53,8 +54,7 @@ pub(super) fn collect_dependency_documents(
         &mut visited_ts,
         queue,
     );
-    visited_vue.remove(&host.source_path);
-    visited_vue.remove(&normalize_path(&host.source_path));
+    visited_vue.remove(&source_key);
     let mut paths = visited_vue
         .into_iter()
         .chain(visited_ts)
@@ -77,7 +77,8 @@ pub(super) fn collect_script_dependency_documents(
 ) -> Vec<PathBuf> {
     let mut visited_vue = FxHashSet::<PathBuf>::default();
     let mut visited_ts = FxHashSet::<PathBuf>::default();
-    visited_ts.insert(source_path.to_path_buf());
+    let source_key = vize_carton::path::canonicalize_non_verbatim(source_path);
+    visited_ts.insert(source_key.clone());
     let mut queue = VecDeque::new();
     queue.push_back(DependencyScan::Script {
         path: source_path.to_path_buf(),
@@ -95,8 +96,7 @@ pub(super) fn collect_script_dependency_documents(
         &mut visited_ts,
         queue,
     );
-    visited_ts.remove(source_path);
-    visited_ts.remove(&normalize_path(source_path));
+    visited_ts.remove(&source_key);
     let mut paths = visited_vue
         .into_iter()
         .chain(visited_ts)
@@ -181,7 +181,7 @@ pub(super) fn queue_vue_dependency(
     alias_context: &super::vue_dependencies_alias::AliasContext,
     path: &Path,
 ) {
-    let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    let key = vize_carton::path::canonicalize_non_verbatim(path);
     if !imports.visited_vue.insert(key.clone()) {
         return;
     }
@@ -286,7 +286,7 @@ pub(super) fn queue_script_dependency(
     alias_context: &super::vue_dependencies_alias::AliasContext,
     path: &Path,
 ) {
-    let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    let key = vize_carton::path::canonicalize_non_verbatim(path);
     if !imports.visited_ts.insert(key.clone()) {
         return;
     }

@@ -83,7 +83,7 @@ pub(super) fn canonical_overlays<'a>(
     overlays
         .iter()
         .map(|(path, content)| {
-            let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.clone());
+            let key = vize_carton::path::canonicalize_non_verbatim(path);
             (key, *content)
         })
         .collect()
