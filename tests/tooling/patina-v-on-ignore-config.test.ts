@@ -6,6 +6,7 @@ import type { LintRuleOptions } from "../../npm/cli/src/types/generated.ts";
 import {
   vueConfigOptions,
   mergeVueConfigOptions,
+  projectViteConfigSource,
 } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
 
 type Equal<A, B> =
@@ -149,13 +150,52 @@ test("both validators refuse unknown keys, bad types, duplicate strings, blank a
   }
 });
 
-test("canonical overlays retain authored ignore arrays and existing strict uniqueness", () => {
-  const base = { linter: { ruleOptions: { [rule]: { style: "never", ignore: ["before"] } } } };
-  const own = { linter: { ruleOptions: { [rule]: { ignore: [] } } } };
-  const merged = mergeVueConfigOptions<typeof base | typeof own>(base, own);
-  assert.deepEqual(merged, { linter: { ruleOptions: { [rule]: { style: "never", ignore: [] } } } });
-  assert.equal(vueConfigOptions({ vue: merged }), merged);
-  assert.deepEqual(base.linter.ruleOptions[rule].ignore, ["before"]);
+test("canonical overlays replace whole policies while preserving peer rules and other sections", async () => {
+  const base = {
+    compiler: { compatibility: { vueVersion: "2.7" }, sourceMap: true },
+    formatter: { singleQuote: true, semi: true },
+    linter: {
+      rules: { [rule]: "warn", "vue/v-bind-style": "error" },
+      ruleOptions: {
+        [rule]: { style: "never", ignore: ["before"] },
+        "vue/v-bind-style": "longform",
+      },
+    },
+  };
+  const before = structuredClone(base);
+  for (const option of [{ ignore: [] }, {}, { style: "always" }]) {
+    const own = {
+      compiler: { sourceMap: false },
+      formatter: { singleQuote: false, semi: undefined },
+      linter: { ruleOptions: { [rule]: option, "vue/v-bind-style": undefined } },
+    };
+    const ownBefore = structuredClone(own);
+    const merged = mergeVueConfigOptions<unknown>(base, own);
+    const expected = {
+      compiler: { compatibility: { vueVersion: "2.7" }, sourceMap: false },
+      formatter: { singleQuote: false, semi: true },
+      linter: { ...base.linter, ruleOptions: { [rule]: option, "vue/v-bind-style": "longform" } },
+    };
+    assert.deepEqual(merged, expected);
+    assert.equal(vueConfigOptions({ vue: merged }), merged);
+    assert.deepEqual(await projectViteConfigSource({ vue: merged }), {
+      typeChecker: { jsxTypecheck: true },
+      ...expected,
+    });
+    assert.deepEqual(own, ownBefore, "composition must not mutate the later config");
+  }
+  for (const own of [
+    undefined,
+    {},
+    { linter: { ruleOptions: {} } },
+    { linter: { ruleOptions: { [rule]: undefined } } },
+  ]) {
+    assert.deepEqual(mergeVueConfigOptions<unknown>(base, own), base);
+  }
+  assert.deepEqual(base, before, "composition must not mutate inherited policy or peers");
+});
+
+test("canonical overlays retain existing strict uniqueness refusals", () => {
   assert.throws(
     () =>
       vueConfigOptions({

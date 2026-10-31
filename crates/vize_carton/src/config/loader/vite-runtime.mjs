@@ -377,14 +377,17 @@ function flatVueOptions(selected) {
   };
 }
 
-// Native arrays replace; authored false leaves win and undefined remains absent.
-function overlayVueOptions(base, own) {
+// Native arrays and whole rule policies replace; undefined remains absent.
+function overlayVueOptions(base, own, replaceEntries = false) {
   const result = { ...base };
   for (const [key, value] of Object.entries(own)) {
     if (value === undefined) continue;
     const previous = Object.hasOwn(result, key) ? result[key] : undefined;
     Object.defineProperty(result, key, {
-      value: object(value) && object(previous) ? overlayVueOptions(previous, value) : value,
+      value:
+        !replaceEntries && object(value) && object(previous)
+          ? overlayVueOptions(previous, value, key === "ruleOptions")
+          : value,
       enumerable: true,
       configurable: true,
       writable: true,
