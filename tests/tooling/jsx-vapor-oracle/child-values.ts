@@ -29,7 +29,7 @@ type Phase = {
 type Trace = { phases: Phase[]; readsAfterUnmount: number; completeUnmount: boolean };
 
 const originalFile = new URL(
-  "../../_fixtures/differential/jsx/child-values-6890-original.json",
+  "../../_fixtures/differential/compiler/jsx-child-values-6890/original.json",
   import.meta.url,
 );
 const original: Original = JSON.parse(fs.readFileSync(originalFile, "utf8"));

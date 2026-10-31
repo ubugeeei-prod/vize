@@ -358,6 +358,7 @@ fn generate(
         options.binding_metadata.as_ref(),
         crate::generate::VaporGenerateOptions::default(),
         crate::generate::VaporGenerateExperimentalOptions {
+            jsx_children: false,
             component_name: experimental_options.component_name.as_deref(),
             self_component: experimental_options.self_component,
             source_map: experimental_options.source_map,
