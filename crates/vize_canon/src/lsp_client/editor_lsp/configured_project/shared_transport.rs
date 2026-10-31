@@ -189,10 +189,15 @@ impl CorsaProjectClient {
             if discard {
                 return Ok(());
             }
-            // Graceful retirement releases the live snapshot before its owner.
+            // A derived snapshot's lineage can retain its live head, while
+            // replaced snapshots already have releases on the SDK worker.
+            // Await those replies with both the API reader and LSP owner alive.
             // ProjectSession::close must never close the shared socket first.
-            block_on(session.snapshot().release())
-                .map_err(|error| cstr!("Cannot release attached editor snapshot: {error}"))
+            let released = block_on(session.snapshot().release())
+                .map_err(|error| cstr!("Cannot release attached editor snapshot: {error}"));
+            let drained = block_on(session.client().drain_snapshot_releases())
+                .map_err(|error| cstr!("Cannot drain attached editor snapshot releases: {error}"));
+            released.and(drained)
         });
         let editor_result = self.editor_lsp.take().map_or(Ok(()), |mut editor| {
             if discard {
