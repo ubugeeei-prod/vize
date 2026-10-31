@@ -1,11 +1,13 @@
-<script setup lang="ts">
-import { onMounted, useTemplateRef } from "vue";
-import Resolver from "./Resolver.vue";
+<script lang="ts">
 import type { $RefInstanceFactory, $TemplateRefInstance, InstanceType, ReturnType, _C, _F } from "./names";
-type IsAny<T> = 0 extends (1 & T) ? true : false;
 const ownership: [$RefInstanceFactory, $TemplateRefInstance, InstanceType, ReturnType, _C, _F] = [
   "authored-factory", "authored-instance", "authored-instance-type", "authored-return-type", "authored-c", "authored-f",
 ];
+</script>
+<script setup lang="ts">
+import { onMounted, useTemplateRef } from "vue";
+import Resolver from "./Resolver.vue";
+type IsAny<T> = 0 extends (1 & T) ? true : false;
 const numericRef = useTemplateRef("numeric");
 const textualRef = useTemplateRef("textual");
 const nativeRef = useTemplateRef("native");
