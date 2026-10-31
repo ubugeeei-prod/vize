@@ -113,11 +113,38 @@ async function main() {
       providers = types.rows.filter((row) => row.role === "actual-provider");
     assert.equal(providers.length, 1, "one actual generated registry provider must remain");
     assert.equal(providers[0]!.any, kind !== "number", `${stage.id}: actual selected provider`);
-    assert.equal(bindings.length, 2, "both actual slot scopes must be queried");
+    const authored = stage.inputs.find((input) => input.file === "src/Tiny.vue");
+    assert.ok(authored);
+    assert.ok(
+      ["source-known.txt", "source-fallback-any.txt", "source-unicode-any.txt"].includes(
+        authored.source,
+      ),
+    );
+    // Under the retained checkUnknownComponents:false config, the existing
+    // PascalCase policy emits a props scope for RegistryChild. The authored
+    // registry-child controls have one template scope and no props scope.
+    // This describes emission roles, never the provider's any/error identity.
+    const expectedScopes =
+      authored.source === "source-fallback-any.txt" ? ["template"] : ["template", "props"];
+    const actualScopes = bindings.map((row) => {
+      const owner = /^_slot_(props_)?default_([0-9]+)$/u.exec(row.ownerFunction ?? "");
+      assert.ok(owner, `${stage.id}: each item binding must belong to an actual slot function`);
+      return { role: owner[1] ? "props" : "template", scope: owner[2] };
+    });
+    assert.deepEqual(
+      actualScopes.map((row) => row.role),
+      expectedScopes,
+      `${stage.id}: complete expected slot emission roles`,
+    );
+    assert.equal(
+      new Set(actualScopes.map((row) => row.scope)).size,
+      1,
+      `${stage.id}: both roles must retain the same authored slot`,
+    );
     assert.equal(reports.length, 1, "the authored witness must remain complete");
     assert.deepEqual(
       bindings.map(({ flags, any, intrinsicName }) => ({ flags, any, intrinsicName })),
-      Array.from({ length: 2 }, () => ({
+      expectedScopes.map(() => ({
         flags: kind === "number" ? 64 : 1,
         any: kind !== "number",
         intrinsicName: kind,
@@ -194,8 +221,15 @@ async function main() {
       project,
       env,
     );
-    for (const process of [mapper, framework])
-      assert.equal(process.stderr.length, 0, "complete stderr must remain empty");
+    for (const [name, result] of [
+      ["native-mapper", mapper],
+      ["vue-tsc", framework],
+    ] as const)
+      assert.equal(
+        result.stderr.length,
+        0,
+        `${stage.id}/${name}: complete stderr must remain empty`,
+      );
     const mapperRows = native(mapper.stdout, mapper.status, project),
       cliRows = slotCliPacket(cli, project).diagnostics.map(
         ({ file, line, column, code, message }) => ({ file, line, column, code, message }),

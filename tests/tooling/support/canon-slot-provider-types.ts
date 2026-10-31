@@ -49,9 +49,17 @@ export function slotProviderTypes(
     intrinsicName: string | null;
     debugIntrinsicName: string | null;
     symbol: string | null;
+    ownerFunction: string | null;
   }> = [];
   const record = (role: string, node: ts.Node) => {
     const type = checker.getTypeAtLocation(node) as IntrinsicType;
+    let ownerFunction: string | null = null;
+    for (let parent = node.parent; parent; parent = parent.parent) {
+      if (ts.isFunctionExpression(parent) || ts.isFunctionDeclaration(parent)) {
+        ownerFunction = parent.name?.getText(source) ?? null;
+        break;
+      }
+    }
     rows.push({
       role,
       start: node.getStart(source),
@@ -63,6 +71,7 @@ export function slotProviderTypes(
       intrinsicName: type.intrinsicName ?? null,
       debugIntrinsicName: type.debugIntrinsicName ?? null,
       symbol: checker.getSymbolAtLocation(node)?.getName() ?? null,
+      ownerFunction,
     });
   };
   const visit = (node: ts.Node) => {

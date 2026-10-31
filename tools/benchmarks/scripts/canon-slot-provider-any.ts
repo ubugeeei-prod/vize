@@ -197,8 +197,15 @@ async function main() {
       project,
       env,
     );
-    for (const process of [mapper, framework])
-      assert.equal(process.stderr.length, 0, "complete stderr must remain empty");
+    for (const [name, result] of [
+      ["native-mapper", mapper],
+      ["vue-tsc", framework],
+    ] as const)
+      assert.equal(
+        result.stderr.length,
+        0,
+        `${stage.id}/${name}: complete stderr must remain empty`,
+      );
     const mapperRows = native(mapper.stdout, mapper.status, project);
     const cliRows = slotCliPacket(cli, project).diagnostics.map(
       ({ file, line, column, code, message }) => ({ file, line, column, code, message }),

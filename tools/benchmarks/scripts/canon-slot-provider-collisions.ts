@@ -169,7 +169,15 @@ async function main() {
         project,
         env,
       );
-      for (const process of [mapper, framework]) assert.equal(process.stderr.length, 0);
+      for (const [name, result] of [
+        ["native-mapper", mapper],
+        ["vue-tsc", framework],
+      ] as const)
+        assert.equal(
+          result.stderr.length,
+          0,
+          `${control.id}/${state}/${name}: complete stderr must remain empty`,
+        );
       const mapperRows = native(mapper.stdout, mapper.status, project);
       const frameworkRows = native(framework.stdout, framework.status, project);
       const cliRows = slotCliPacket(cli, project).diagnostics.map(
