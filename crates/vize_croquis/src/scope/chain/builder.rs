@@ -45,7 +45,7 @@ impl ScopeChain {
     #[inline]
     pub fn exit_scope(&mut self) {
         if let Some(parent) = self.current_scope().parent() {
-            self.current = parent;
+            self.set_current(parent);
         }
     }
 
