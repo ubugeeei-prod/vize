@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import "../../../tests/tooling/patina-plain-type-packet-revisions.test.ts";
 import {
   PROVIDER_SHA,
   INPUT_ROOT,
@@ -100,13 +101,13 @@ function packets() {
             : undefined;
       const result = {
         filename: `/same/cwd/${kind}-${name}.tsx`,
-        error_count: 0,
-        warning_count: rule ? 1 : 0,
+        error_count: name === "unavailable" ? 1 : 0,
+        warning_count: rule && name !== "unavailable" ? 1 : 0,
         diagnostics: rule
           ? [
               {
                 rule_name: rule,
-                severity: "warning",
+                severity: name === "unavailable" ? "error" : "warning",
                 message: "complete message",
                 start: 0,
                 end: 6,
@@ -132,6 +133,21 @@ function packets() {
 void test("full ordered native packets include all positive and negative fields", () => {
   const document = packets();
   assert.deepEqual(verifyPackets(Buffer.from(JSON.stringify(document))), document);
+});
+
+void test("only an explicit legacy revision contract accepts the original unavailable warnings", () => {
+  const document = packets();
+  for (const row of document.packets) {
+    if (row.case !== "unavailable") continue;
+    row.actual.error_count = 0;
+    row.actual.warning_count = 1;
+    row.actual.diagnostics[0].severity = "warning";
+    row.expected = structuredClone(row.actual);
+  }
+  const bytes = Buffer.from(JSON.stringify(document));
+  assert.deepEqual(verifyPackets(bytes, undefined, "runtime-warning-v1"), document);
+  assert.throws(() => verifyPackets(bytes));
+  assert.throws(() => verifyPackets(bytes, undefined, "unregistered-contract"));
 });
 
 for (const [name, change] of [

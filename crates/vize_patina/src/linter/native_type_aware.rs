@@ -29,6 +29,8 @@ mod public_expression_tests;
 mod reactivity_loss;
 mod relative_imports;
 mod rule_queries;
+#[cfg(test)]
+mod runtime_failure_tests;
 mod script_options;
 #[cfg(test)]
 mod slot_binding_tests;
@@ -264,12 +266,14 @@ pub(super) fn push_type_aware_failure(result: &mut LintResult, failure: TypeAwar
                 ),
             );
         }
-        TypeAwareFailure::Runtime(error) => push_warning(
-            result,
-            LintDiagnostic::warn("type/corsa-runtime", error, 0, 0).with_help(
-                "Type-aware lint rules were skipped because the native compiler could not be started. Install a native TypeScript runtime in this project or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.",
-            ),
-        ),
+        TypeAwareFailure::Runtime(error) => {
+            result.error_count += 1;
+            result.diagnostics.push(
+                LintDiagnostic::error("type/corsa-runtime", error, 0, 0).with_help(
+                    "Requested type-aware lint could not initialize its native runtime. Check the reported failure, install a compatible native TypeScript runtime, or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.",
+                ),
+            );
+        }
     }
 }
 
