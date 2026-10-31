@@ -186,3 +186,37 @@ fn whitespace_after_body_joins_the_open_implied_end_element() {
         Refusal::OutsideBodyText(Span::new(51, 52))
     );
 }
+
+#[test]
+fn select_stack_rules_preserve_the_profiles_distinct_nesting() {
+    let body = "<select><optgroup><option>a<option>b<optgroup><option>c</select>";
+    assert_eq!(
+        shape::<Document>(body).expect(body),
+        [
+            ("select", Some(2), true),
+            ("optgroup", Some(3), false),
+            ("option", Some(4), false),
+            ("option", Some(4), false),
+            ("optgroup", Some(3), false),
+            ("option", Some(7), false),
+        ]
+    );
+    assert_eq!(
+        shape::<Component>(body),
+        Err(Refusal::ImpliedEnd(Span::new(97, 103)))
+    );
+    let body = "<select><optgroup><option>a<option>b</option></option></optgroup></select>";
+    assert_eq!(
+        shape::<Component>(body).expect(body),
+        [
+            ("select", Some(2), true),
+            ("optgroup", Some(3), true),
+            ("option", Some(4), true),
+            ("option", Some(5), true),
+        ]
+    );
+    assert_eq!(
+        shape::<Document>(body),
+        Err(Refusal::ImpliedEnd(Span::new(87, 93)))
+    );
+}

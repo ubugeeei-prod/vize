@@ -80,3 +80,12 @@ table insertion modes. Native Rust and actual Chromium consume the same
 packets; native Rust also pins each element closed without an authored end
 tag. Implied starts, fostered content, table text, ignored tags and
 parse-error ends keep typed refusals.
+
+`html-select.json` retains thirteen complete sources: ten bounded native select
+packets and three actual browser trees that native construction explicitly
+refuses. Whole ancestry, effective attributes and direct child nodes execute in
+Rust and Chromium; native laws also pin every original tag callback and exact
+UTF-8 opening/closing spans. Omitted option/group ends, hr separation, table-cell
+context, case/slashes, static duplicates, decoded values and outside-select
+nesting are explicit. Nested select/input recovery and other select children
+remain typed refusals; previous fixture bytes remain unchanged.

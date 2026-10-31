@@ -1,7 +1,7 @@
 //! Native HTML structure, with a fail-closed explicit-envelope insertion mode.
 //!
 //! Host rules come from `P: Profile`: name folding, self-closing, implied end
-//! tags and the table content model each branch on one associated constant.
+//! tags, select rules and the table content model branch on associated constants.
 //! `html_structure` builds with `Document`; tests also build with `Component`.
 
 use vize_l0::{Span, Vec};
@@ -11,6 +11,7 @@ use crate::markup::document::{DocumentTokenKind as Kind, NativeDocument};
 use crate::markup::{Document, Profile};
 
 mod insertion;
+mod select;
 mod table;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -388,7 +389,7 @@ struct End {
     event: usize,
 }
 
-const NAMES: [&str; 55] = [
+const NAMES: [&str; 56] = [
     "html",
     "head",
     "body",
@@ -434,6 +435,7 @@ const NAMES: [&str; 55] = [
     "rp",
     "option",
     "optgroup",
+    "select",
     "table",
     "caption",
     "colgroup",

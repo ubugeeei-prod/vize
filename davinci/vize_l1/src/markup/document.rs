@@ -180,7 +180,7 @@ impl<'a> NativeDocument<'a> {
 
     /// Construct only the admitted explicit HTML envelope's element ancestry,
     /// under the Document profile's name folding, self-closing, implied end
-    /// tag and table rules. The original retained events are consumed
+    /// tag, select and table rules. The original retained events are consumed
     /// directly, without lexing again. Direct child text/comment readback is
     /// scoped to the admitted body subtree; this does not certify general
     /// HTML tree or petite-vue semantics.
