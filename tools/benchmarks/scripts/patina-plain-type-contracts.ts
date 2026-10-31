@@ -60,7 +60,13 @@ function packetSpans(bytes: Buffer) {
   assert(Array.isArray(document.packets) && document.packets.length === 20);
   const rows = (document.packets as unknown[]).map(record);
   assert.deepEqual(
-    rows.map((row) => `${row.kind}/${row.case}`),
+    rows.map((row) => {
+      assert(
+        typeof row.kind === "string" && typeof row.case === "string",
+        "packet kind/case must be strings",
+      );
+      return `${row.kind}/${row.case}`;
+    }),
     ids,
   );
   let depth = 0,
