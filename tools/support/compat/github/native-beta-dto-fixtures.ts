@@ -88,12 +88,15 @@ const watcherSuccessor = {
   splitLogId: "before-stable-split-watch-log-41152849787",
   terminalId: "before-stable-terminal-stderr-41156819864",
   ioPath: "tests/tooling/support/native-beta-dto/native-io.ts",
-  ioSha256: "77a6440bc9da8a899fa3a39223b879a960bb89bf7fdf63289e4cafc3d04303e0",
-  ioRuntimeSha256: "edab52799b4f83a7726fbbacf9176d1cfab57e8d557cd5ed34462b8c974960cf",
+  ioSha256: "d4a8ac3d4ce7c2d38a53bc64aaf02a7f0b86b870a0b10b8174e0fb48739c8b54",
+  ioRuntimeSha256: "ba488b82755d55e3230b5ebc7a75cef432d0279e31d8b817bc6ef675571b1036",
+  handoffPath: "tests/tooling/support/native-beta-dto/execve-handoff.ts",
+  handoffSha256: "9c40b14722ee5e1b70f8343ad37bc9f093d474bb99c69da1ea9d12eb29f6218f",
+  handoffRuntimeSha256: "6a12c1726bd7829b6023613041cb2c28ce4c49bd0d906053d406932a4db188d0",
   terminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
   terminalSha256: "83b167d4146f812255b01a946ead297693bad85cdf904817e4207a2bf1c97c35",
   terminalRuntimeSha256: "2ed2edfda0877fa9a4b1093242f8501c5fb2ce834dfaf39ff478edfa9da18013",
-  auditRuntimeSha256: "4469b3610fbd9c148a9ec3c35669cd789839ac7d407dc5de6a32df4d81322235",
+  auditRuntimeSha256: "ff7db54ce23d5d58f1b3138409459bc099351cf0d6294f1b4041300604b38a08",
   typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
   typesSha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
@@ -160,6 +163,11 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
           watcherSuccessor.routeRuntimeSha256, "missing or changed registered beta semantic route runtime");
       for (const [path, physical, executable] of [
         [watcherSuccessor.ioPath, watcherSuccessor.ioSha256, watcherSuccessor.ioRuntimeSha256],
+        [
+          watcherSuccessor.handoffPath,
+          watcherSuccessor.handoffSha256,
+          watcherSuccessor.handoffRuntimeSha256,
+        ],
         [
           watcherSuccessor.terminalPath,
           watcherSuccessor.terminalSha256,

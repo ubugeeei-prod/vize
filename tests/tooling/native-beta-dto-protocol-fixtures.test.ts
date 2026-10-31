@@ -146,6 +146,7 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
     "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
     "tests/tooling/support/native-beta-dto/native-io.ts",
+    "tests/tooling/support/native-beta-dto/execve-handoff.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
     ...["client.bin", "server.bin", "identity.json"].map(
       (name) =>

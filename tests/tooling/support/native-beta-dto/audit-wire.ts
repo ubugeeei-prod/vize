@@ -30,6 +30,7 @@ assert.equal(source.source, process.env.VIZE_NATIVE_DTO_SOURCE_SHA);
 assert.equal(source.rows.length, 3);
 const trace = await readNativeTrace(root, provider.executable);
 const { threads, leaders, exits, records, eofReads } = trace;
+save("native-execve-handoffs.json", trace.execveHandoffs);
 const native = leaders.filter((entry) => entry.lsp).sort((a, b) => a.pid - b.pid);
 assert(native.length >= 2, "Separate owned-API and attached-editor native scopes required");
 function owner(value: number): number {

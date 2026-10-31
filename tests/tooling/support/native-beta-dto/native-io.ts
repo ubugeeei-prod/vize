@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline";
 import type { Syscall } from "./audit-wire-types.ts";
+import { ExecveHandoffs } from "./execve-handoff.ts";
 
 interface NativeIoPayload {
   at: string;
@@ -239,6 +240,8 @@ export function parseNativeIo(line: string): ParsedNativeIo | null {
 }
 
 export async function readNativeTrace(root: string, executable: string) {
+  const handoffs = new ExecveHandoffs(),
+    lastLines = new Map<number, number>();
   const files = fs
     .readdirSync(root)
     .filter((file) => /^syscalls\.[0-9]+$/u.test(file))
@@ -279,13 +282,14 @@ export async function readNativeTrace(root: string, executable: string) {
       let line = original;
       let startedLine = lineNumber;
       let resumed = false;
+      if (handoffs.observe(tid, file, lineNumber, line, pending !== undefined)) continue;
       if (line.includes("<unfinished ...>")) {
         assert.equal(pending, undefined, "Unobserved nested syscall");
         pending = { text: line.replace("<unfinished ...>", ""), line: lineNumber };
         continue;
       }
       if (line.includes("resumed>")) {
-        assert.ok(pending, "Resumed syscall has no observed start");
+        assert.ok(pending, `${file}:${lineNumber}: Resumed syscall has no observed start`);
         startedLine = pending.line;
         resumed = true;
         line = pending.text + line.slice(line.indexOf("resumed>") + "resumed>".length);
@@ -342,6 +346,7 @@ export async function readNativeTrace(root: string, executable: string) {
           line: lineNumber,
         });
     }
+    lastLines.set(tid, lineNumber);
     if (pending) {
       const normalized = pending.text.trimEnd().replace(/\)?$/u, ") = ?");
       const write = /^([0-9]+\.[0-9]+) writev?\(/u.test(pending.text)
@@ -362,6 +367,13 @@ export async function readNativeTrace(root: string, executable: string) {
   }
   for (const tid of threads.keys())
     assert.ok(files.includes(`syscalls.${tid}`), "whole cloned thread trace required");
+  const execveHandoffs = handoffs.resolve(threads, lastLines);
+  for (const handoff of execveHandoffs)
+    assert.notEqual(
+      handoff.executable,
+      executable,
+      "SDK execve handoff requires separate process-generation authority",
+    );
   return {
     files,
     threads,
@@ -375,6 +387,7 @@ export async function readNativeTrace(root: string, executable: string) {
     threadExits,
     exitGroups,
     unfinishedOperations,
+    execveHandoffs,
   };
 }
 
