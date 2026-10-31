@@ -1,0 +1,1205 @@
+{
+  "schema": 1,
+  "role": "independent semantic classification, not repair or native-phase performance qualification",
+  "fixtureDriver": {
+    "source": "190257dbe52a7d4942be4496403a55b32c24426f",
+    "blob": "d34ce4bf37ea26ac8a9120c8bd6f66c79346d86f",
+    "identity": {
+      "path": "/home/runner/work/vize/vize/.slot-driver/tools/benchmarks/scripts/canon-slot-constructor-cases.ts",
+      "bytes": 5155,
+      "sha256": "07bf14866c4debd560d5e928d46069d843a17a3b0f3b27ec27f78466768de232"
+    }
+  },
+  "versions": {
+    "vize": "0.602.0",
+    "vue": "3.5.42",
+    "typescript": "6.0.3",
+    "typescript-native": "7.1.0-beta",
+    "vue-tsc": "3.3.13"
+  },
+  "identities": [
+    {
+      "file": "package-lock.json",
+      "path": "/home/runner/work/_temp/slot-framework-provider/package-lock.json",
+      "bytes": 48490,
+      "sha256": "404c0044722de82488d559210af047bda408b5f353d74b8e333c512d15375cc7"
+    },
+    {
+      "file": "node_modules/vize/package.json",
+      "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/vize/package.json",
+      "bytes": 3726,
+      "sha256": "d35eb055b9a44ad2baa46099d916621e3beded141f14d49e701f8ac16e1664c6"
+    },
+    {
+      "file": "node_modules/@vizejs/native/package.json",
+      "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/@vizejs/native/package.json",
+      "bytes": 2011,
+      "sha256": "50f6e29aafb91ba1d85b633def077c5c30ae63b32cb7a2bfd78496522879bf59"
+    },
+    {
+      "file": "node_modules/@vizejs/native-linux-x64-gnu/package.json",
+      "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/@vizejs/native-linux-x64-gnu/package.json",
+      "bytes": 781,
+      "sha256": "d2f60c77ba4bc82678438617e26111c5ad837eadc48d7c0ba65cc4c5ed40a2a5"
+    },
+    {
+      "file": "node_modules/vue/package.json",
+      "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/vue/package.json",
+      "bytes": 2769,
+      "sha256": "c0907b63af03a21a63b3e7f6bd1279a8680d4478387ee2ae3502f0f73d52e1a7"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/typescript/package.json",
+      "bytes": 3527,
+      "sha256": "9332e97c30d3e53ed54910b89207ed657fb444066484df6e5b6965bf130865e9"
+    },
+    {
+      "file": "node_modules/typescript-native/package.json",
+      "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/typescript-native/package.json",
+      "bytes": 3423,
+      "sha256": "29955061fde038b8154a844f4d99837343143d057ef8feb2a588bbf5c7d2cbd1"
+    },
+    {
+      "file": "node_modules/vue-tsc/package.json",
+      "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/vue-tsc/package.json",
+      "bytes": 588,
+      "sha256": "1dfd0d3841336062c2f1b6e2238ad9a83571066336daee01804ca4d2e571022f"
+    },
+    {
+      "file": "node_modules/vize/content-mapper-helpers.d.ts",
+      "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/vize/content-mapper-helpers.d.ts",
+      "bytes": 1109,
+      "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+    },
+    {
+      "file": "node_modules/vize/generated/content-mapper-types.d.ts",
+      "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/vize/generated/content-mapper-types.d.ts",
+      "bytes": 11844,
+      "sha256": "eb11e7d6783f8d0a4b64ddb9ba8d4c7a10d08771306bcc9a7a220d4b861ce6e8"
+    },
+    {
+      "file": "node_modules/@vizejs/native-linux-x64-gnu/vize-vitrine.linux-x64-gnu.node",
+      "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/@vizejs/native-linux-x64-gnu/vize-vitrine.linux-x64-gnu.node",
+      "bytes": 77687567,
+      "sha256": "cbaa82c9a91d761945dc0bdb652753e45d9e2730b715fbe28f9e5dc13863dbf6"
+    }
+  ],
+  "checker": {
+    "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+    "bytes": 24522912,
+    "sha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70"
+  },
+  "stock": {
+    "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/typescript/lib/tsc.js",
+    "bytes": 267,
+    "sha256": "2cffde0b8c6760dfb0b5b0382bbb7e00ba6a8b2d981b9205b256a700a481d983"
+  },
+  "vueTsc": {
+    "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/vue-tsc/bin/vue-tsc.js",
+    "bytes": 50,
+    "sha256": "8abac3bc0ab3cec75fe48dcb893d4afb0906a76447e52fceb9294309a9d35dba"
+  },
+  "vueTscTypeScript": {
+    "path": "/home/runner/work/_temp/slot-framework-provider/node_modules/typescript/package.json",
+    "bytes": 3527,
+    "sha256": "9332e97c30d3e53ed54910b89207ed657fb444066484df6e5b6965bf130865e9"
+  },
+  "physicalVue": "/home/runner/work/_temp/slot-framework-provider/node_modules/vue/package.json",
+  "manifest": [
+    {
+      "file": "zero/component.ts",
+      "bytes": 604,
+      "sha256": "78ac73b49c1bfb8860ca415006acfb74afed31d417e38bfbba6f15edcf9f81e8"
+    },
+    {
+      "file": "zero/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "optional/component.ts",
+      "bytes": 629,
+      "sha256": "132f378229a3b9f9fdbb6f2b4fb393d0644ffd665683bdb0c667d99b9b846226"
+    },
+    {
+      "file": "optional/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "rest/component.ts",
+      "bytes": 623,
+      "sha256": "3f406912ccf67f8aa40163d6e53a77b4ad2e43ffbfb429de0201e7adfaffdb03"
+    },
+    {
+      "file": "rest/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "generic-default-zero/component.ts",
+      "bytes": 616,
+      "sha256": "911eea244a8de36cf94ec570939bb086d9c35eff1b8a70a79d2795392d30293f"
+    },
+    {
+      "file": "generic-default-zero/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "generic-props/component.ts",
+      "bytes": 626,
+      "sha256": "8189791b7584cf5fb0675cd488849ff6e55af0a3c79f61021281f3163c163ddd"
+    },
+    {
+      "file": "generic-props/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "overload-last-zero/component.ts",
+      "bytes": 655,
+      "sha256": "3e9842e0a18b23b1b8dba19479347d7c5a799b75508739cfe59b32bbe851f785"
+    },
+    {
+      "file": "overload-last-zero/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "overload-first-zero/component.ts",
+      "bytes": 655,
+      "sha256": "d5a10efa9516beaa28e700772d4f3f382c4407eda954d4d4b1878ca43a98ce03"
+    },
+    {
+      "file": "overload-first-zero/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "missing-required/component.ts",
+      "bytes": 604,
+      "sha256": "78ac73b49c1bfb8860ca415006acfb74afed31d417e38bfbba6f15edcf9f81e8"
+    },
+    {
+      "file": "missing-required/src/Tiny.vue",
+      "bytes": 839,
+      "sha256": "590a85bb5e25e47ba6fabeb5358f3a47e73829ac484e2d48be0ea850fb3fe198"
+    },
+    {
+      "file": "wrong-prop/component.ts",
+      "bytes": 604,
+      "sha256": "78ac73b49c1bfb8860ca415006acfb74afed31d417e38bfbba6f15edcf9f81e8"
+    },
+    {
+      "file": "wrong-prop/src/Tiny.vue",
+      "bytes": 854,
+      "sha256": "c324e98e05b9a943b7d182cd2750dfce71e9bd7659680a195ff664f89f7398f8"
+    },
+    {
+      "file": "unknown-prop/component.ts",
+      "bytes": 604,
+      "sha256": "78ac73b49c1bfb8860ca415006acfb74afed31d417e38bfbba6f15edcf9f81e8"
+    },
+    {
+      "file": "unknown-prop/src/Tiny.vue",
+      "bytes": 861,
+      "sha256": "e29dc4bfe23e9976fbb595c802e4aaa696530052df7ef3e63bf30eaf28585c89"
+    },
+    {
+      "file": "callback-body/component.ts",
+      "bytes": 604,
+      "sha256": "78ac73b49c1bfb8860ca415006acfb74afed31d417e38bfbba6f15edcf9f81e8"
+    },
+    {
+      "file": "callback-body/src/Tiny.vue",
+      "bytes": 893,
+      "sha256": "b92774e51d7e7057a4bf5f93f6ce15e4c0b50d044b76851c07ee27c0e4059c35"
+    },
+    {
+      "file": "missing-symbol/component.ts",
+      "bytes": 604,
+      "sha256": "78ac73b49c1bfb8860ca415006acfb74afed31d417e38bfbba6f15edcf9f81e8"
+    },
+    {
+      "file": "missing-symbol/src/Tiny.vue",
+      "bytes": 856,
+      "sha256": "072a0bf071f0171da8650b1d2ec443d9c1c502af34d2f45c5fcc91137bfa1b95"
+    },
+    {
+      "file": "readonly-prop/component.ts",
+      "bytes": 604,
+      "sha256": "78ac73b49c1bfb8860ca415006acfb74afed31d417e38bfbba6f15edcf9f81e8"
+    },
+    {
+      "file": "readonly-prop/src/Tiny.vue",
+      "bytes": 953,
+      "sha256": "2eebf686b79460e8b37ee27a375d7cddb4722d3c62afabd2b4e802b97a037452"
+    },
+    {
+      "file": "constructor-public-props-discrepancy/component.ts",
+      "bytes": 646,
+      "sha256": "a9cc56b2a8b615bc61b970797072119722d443a54abc4b8602271d2b6be12d66"
+    },
+    {
+      "file": "constructor-public-props-discrepancy/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "constructor-public-type-discrepancy/component.ts",
+      "bytes": 628,
+      "sha256": "ec66f8e1916195f6925ec6a85ce3d8e9bed49277656fb20fb526ae92be2ad325"
+    },
+    {
+      "file": "constructor-public-type-discrepancy/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "slot-poison-any/component.ts",
+      "bytes": 601,
+      "sha256": "fb3be0a6d52b7a7cb21ebb532ff2417021b0f5ea3e4f9f8228964971d4572546"
+    },
+    {
+      "file": "slot-poison-any/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "slot-poison-unknown/component.ts",
+      "bytes": 605,
+      "sha256": "34b6840754b513bc34c71a56dcb7b87189672f64dfab6f181916d03f546b3065"
+    },
+    {
+      "file": "slot-poison-unknown/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "slot-poison-never/component.ts",
+      "bytes": 603,
+      "sha256": "0a798a6cce1e583b8f7b77d277c78c9e71b073229cf606e59bbca63970c629db"
+    },
+    {
+      "file": "slot-poison-never/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "slot-poison-string/component.ts",
+      "bytes": 604,
+      "sha256": "3e81bb297181190243091f00b474a22f872da6ee8f7bdc18e2f3d17a00d718f6"
+    },
+    {
+      "file": "slot-poison-string/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "unicode-crlf/component.ts",
+      "bytes": 604,
+      "sha256": "78ac73b49c1bfb8860ca415006acfb74afed31d417e38bfbba6f15edcf9f81e8"
+    },
+    {
+      "file": "unicode-crlf/src/Tiny.vue",
+      "bytes": 887,
+      "sha256": "bffb4aad51fdfbf62e9bfd8e1bfe4bec0dcc528a9aea30fc30e0257380b75f75"
+    },
+    {
+      "file": "required-public-internal/component.ts",
+      "bytes": 648,
+      "sha256": "1eb92d0599db4e810d568f24f6f4bea38ad824ac83cc851cd8b62690ccf85a1d"
+    },
+    {
+      "file": "required-public-internal/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "casing-pascal-valid/component.ts",
+      "bytes": 586,
+      "sha256": "de08d51f3208a6f063035048557b8c83f0f7b6ab9e4e7300573d1a89538c6902"
+    },
+    {
+      "file": "casing-pascal-valid/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455"
+    },
+    {
+      "file": "casing-pascal-invalid/component.ts",
+      "bytes": 586,
+      "sha256": "de08d51f3208a6f063035048557b8c83f0f7b6ab9e4e7300573d1a89538c6902"
+    },
+    {
+      "file": "casing-pascal-invalid/src/Tiny.vue",
+      "bytes": 854,
+      "sha256": "c324e98e05b9a943b7d182cd2750dfce71e9bd7659680a195ff664f89f7398f8"
+    },
+    {
+      "file": "casing-camel-valid/component.ts",
+      "bytes": 586,
+      "sha256": "de08d51f3208a6f063035048557b8c83f0f7b6ab9e4e7300573d1a89538c6902"
+    },
+    {
+      "file": "casing-camel-valid/src/Tiny.vue",
+      "bytes": 850,
+      "sha256": "cd0e4cbb12e316319a74f52c558cfa167b28509d70d105c6d77ed6db4a836db9"
+    },
+    {
+      "file": "casing-camel-invalid/component.ts",
+      "bytes": 586,
+      "sha256": "de08d51f3208a6f063035048557b8c83f0f7b6ab9e4e7300573d1a89538c6902"
+    },
+    {
+      "file": "casing-camel-invalid/src/Tiny.vue",
+      "bytes": 854,
+      "sha256": "a4d6cccc15911fffe4e17a563536f2da1f76253e15693f1fba64003808ba7e4a"
+    },
+    {
+      "file": "casing-kebab-valid/component.ts",
+      "bytes": 586,
+      "sha256": "de08d51f3208a6f063035048557b8c83f0f7b6ab9e4e7300573d1a89538c6902"
+    },
+    {
+      "file": "casing-kebab-valid/src/Tiny.vue",
+      "bytes": 852,
+      "sha256": "6e54ca61ddc7908e8768f25ab1b2e0590db37cf3bfbec30bcfcfd0c1da273b00"
+    },
+    {
+      "file": "casing-kebab-invalid/component.ts",
+      "bytes": 586,
+      "sha256": "de08d51f3208a6f063035048557b8c83f0f7b6ab9e4e7300573d1a89538c6902"
+    },
+    {
+      "file": "casing-kebab-invalid/src/Tiny.vue",
+      "bytes": 856,
+      "sha256": "22149b752e86b665333b5e01798440de0a82ba9d89090a82636260d4a94c3d52"
+    },
+    {
+      "file": "authored_h.ts",
+      "bytes": 772,
+      "sha256": "9ab30848b3f0ff7675b99d253ab632eaf0b2901aceb606ea179522b3d1ca3651"
+    },
+    {
+      "file": "tsconfig.json",
+      "bytes": 455,
+      "sha256": "a619867d3932c065dd60789380f6014b8c6572d93fdcb7f4a2a57ed6a3d8c965"
+    },
+    {
+      "file": "tsconfig.mapper.json",
+      "bytes": 564,
+      "sha256": "5e7751eaad3cd87a456e23a86336a851c3f0bcc1a8507bf515f45fd722ac68e9"
+    },
+    {
+      "file": "tsconfig.h.json",
+      "bytes": 460,
+      "sha256": "6dd924d0ace9c298bb7ef1897c523a6b3e2ffb7ebd56ff76a7b934923266062a"
+    }
+  ],
+  "hDiagnostics": [
+    {
+      "file": "authored_h.ts",
+      "line": 19,
+      "column": 7,
+      "code": 2322,
+      "message": "Type '{ value: number; }' is not assignable to type 'Partial<{}> & Omit<{ readonly value: number; readonly internal: string; readonly render?: ((value: number) => string) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'."
+    }
+  ],
+  "hOwners": [
+    {
+      "id": "zero",
+      "start": 2,
+      "end": 6
+    },
+    {
+      "id": "constructor-public-props-discrepancy",
+      "start": 7,
+      "end": 11
+    },
+    {
+      "id": "constructor-public-type-discrepancy",
+      "start": 12,
+      "end": 16
+    },
+    {
+      "id": "required-public-internal",
+      "start": 17,
+      "end": 21
+    }
+  ],
+  "hSource": "import { h, type Component } from 'vue';\nimport C0 from './zero/component';\nconst component0:Component=C0;\nconst props0:InstanceType<typeof C0>['$props']={value:1};\nh(C0, props0);\nvoid component0;\nimport C13 from './constructor-public-props-discrepancy/component';\nconst component13:Component=C13;\nconst props13:InstanceType<typeof C13>['$props']={value:1};\nh(C13, props13);\nvoid component13;\nimport C14 from './constructor-public-type-discrepancy/component';\nconst component14:Component=C14;\nconst props14:InstanceType<typeof C14>['$props']={value:1};\nh(C14, props14);\nvoid component14;\nimport C20 from './required-public-internal/component';\nconst component20:Component=C20;\nconst props20:InstanceType<typeof C20>['$props']={value:1};\nh(C20, props20);\nvoid component20;\n",
+  "byCase": [
+    {
+      "id": "zero",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [
+        {
+          "file": "zero/src/Tiny.vue",
+          "line": 162,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "zero/src/Tiny.vue",
+          "line": 238,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": []
+    },
+    {
+      "id": "optional",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [],
+      "cli": []
+    },
+    {
+      "id": "rest",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [],
+      "cli": []
+    },
+    {
+      "id": "generic-default-zero",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [
+        {
+          "file": "generic-default-zero/src/Tiny.vue",
+          "line": 162,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "generic-default-zero/src/Tiny.vue",
+          "line": 238,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": []
+    },
+    {
+      "id": "generic-props",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [],
+      "cli": []
+    },
+    {
+      "id": "overload-last-zero",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [
+        {
+          "file": "overload-last-zero/src/Tiny.vue",
+          "line": 12,
+          "column": 18,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ],
+      "cli": [
+        {
+          "file": "overload-last-zero/src/Tiny.vue",
+          "severity": "error",
+          "line": 12,
+          "column": 18,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'. (source: <WitnessChild :value=\"1\">; binding: 'value')",
+          "raw": "error:12:18 [TS2322] Type 'number' is not assignable to type 'string'. (source: <WitnessChild :value=\"1\">; binding: 'value')"
+        }
+      ]
+    },
+    {
+      "id": "overload-first-zero",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [],
+      "cli": []
+    },
+    {
+      "id": "missing-required",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "missing-required/src/Tiny.vue",
+          "line": 12,
+          "column": 4,
+          "code": 2345,
+          "message": "Argument of type '{}' is not assignable to parameter of type 'Partial<{}> & Omit<{ readonly value: number; readonly render?: ((value: number) => string) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "missing-required/src/Tiny.vue",
+          "line": 160,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "missing-required/src/Tiny.vue",
+          "line": 12,
+          "column": 4,
+          "code": 2345,
+          "message": "Argument of type '{}' is not assignable to parameter of type 'ComponentPropsForTemplate<__WitnessChild_CheckProps_0, VueTemplatePublicAttrsType & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; ... 677 more ...; zoomAndPan?: unknown; } & ...>'."
+        },
+        {
+          "file": "missing-required/src/Tiny.vue",
+          "line": 229,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": [
+        {
+          "file": "missing-required/src/Tiny.vue",
+          "severity": "error",
+          "line": 12,
+          "column": 4,
+          "code": 2345,
+          "message": "Missing required prop `value`. (source: <WitnessChild>)",
+          "raw": "error:12:4 [TS2345] Missing required prop `value`. (source: <WitnessChild>)"
+        }
+      ]
+    },
+    {
+      "id": "wrong-prop",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "wrong-prop/src/Tiny.vue",
+          "line": 12,
+          "column": 18,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "wrong-prop/src/Tiny.vue",
+          "line": 162,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "wrong-prop/src/Tiny.vue",
+          "line": 12,
+          "column": 18,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        },
+        {
+          "file": "wrong-prop/src/Tiny.vue",
+          "line": 238,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": [
+        {
+          "file": "wrong-prop/src/Tiny.vue",
+          "severity": "error",
+          "line": 12,
+          "column": 18,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'. (source: <WitnessChild :value=\"'bad'\">; binding: 'value')",
+          "raw": "error:12:18 [TS2322] Type 'string' is not assignable to type 'number'. (source: <WitnessChild :value=\"'bad'\">; binding: 'value')"
+        }
+      ]
+    },
+    {
+      "id": "unknown-prop",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "unknown-prop/src/Tiny.vue",
+          "line": 12,
+          "column": 29,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and 'extra' does not exist in type 'Partial<{}> & Omit<{ readonly value: number; readonly render?: ((value: number) => string) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "unknown-prop/src/Tiny.vue",
+          "line": 164,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "unknown-prop/src/Tiny.vue",
+          "line": 12,
+          "column": 29,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"extra\"' does not exist in type 'ComponentPropsForTemplate<__WitnessChild_CheckProps_0, VueTemplatePublicAttrsType & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; ... 677 more ...; zoomAndPan?: unknown; } & ...>'."
+        },
+        {
+          "file": "unknown-prop/src/Tiny.vue",
+          "line": 248,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": [
+        {
+          "file": "unknown-prop/src/Tiny.vue",
+          "severity": "error",
+          "line": 12,
+          "column": 29,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"extra\"' does not exist in type '__VizeComponentCheckProps<__WitnessChild_CheckProps_0, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; ... 677 more ...; zoomAndPan?: unknown; } & ...>'. (source: <WitnessChild :value=\"1\" :extra=\"1\">; binding: 'extra')",
+          "raw": "error:12:29 [TS2353] Object literal may only specify known properties, and '\"extra\"' does not exist in type '__VizeComponentCheckProps<__WitnessChild_CheckProps_0, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; ... 677 more ...; zoomAndPan?: unknown; } & ...>'. (source: <WitnessChild :value=\"1\" :extra=\"1\">; binding: 'extra')"
+        }
+      ]
+    },
+    {
+      "id": "callback-body",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "callback-body/src/Tiny.vue",
+          "line": 12,
+          "column": 62,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'number'."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "callback-body/src/Tiny.vue",
+          "line": 162,
+          "column": 174,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "callback-body/src/Tiny.vue",
+          "line": 12,
+          "column": 62,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'number'."
+        },
+        {
+          "file": "callback-body/src/Tiny.vue",
+          "line": 263,
+          "column": 180,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": [
+        {
+          "file": "callback-body/src/Tiny.vue",
+          "severity": "error",
+          "line": 12,
+          "column": 62,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'number'. (source: <WitnessChild :value=\"1\" :render=\"(value: number) => value.missing\">; binding: 'render')",
+          "raw": "error:12:62 [TS2339] Property 'missing' does not exist on type 'number'. (source: <WitnessChild :value=\"1\" :render=\"(value: number) => value.missing\">; binding: 'render')"
+        }
+      ]
+    },
+    {
+      "id": "missing-symbol",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "missing-symbol/src/Tiny.vue",
+          "line": 12,
+          "column": 25,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "missing-symbol/src/Tiny.vue",
+          "line": 162,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "missing-symbol/src/Tiny.vue",
+          "line": 12,
+          "column": 25,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '__VizeTemplateInstance'."
+        },
+        {
+          "file": "missing-symbol/src/Tiny.vue",
+          "line": 247,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": [
+        {
+          "file": "missing-symbol/src/Tiny.vue",
+          "severity": "error",
+          "line": 12,
+          "column": 25,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on the component instance. (source: <WitnessChild :value=\"missing\">; binding: 'value')",
+          "raw": "error:12:25 [TS2339] Property 'missing' does not exist on the component instance. (source: <WitnessChild :value=\"missing\">; binding: 'value')"
+        }
+      ]
+    },
+    {
+      "id": "readonly-prop",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "readonly-prop/src/Tiny.vue",
+          "line": 11,
+          "column": 17,
+          "code": 2540,
+          "message": "Cannot assign to 'value' because it is a read-only property."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "readonly-prop/src/Tiny.vue",
+          "line": 11,
+          "column": 17,
+          "code": 2540,
+          "message": "Cannot assign to 'value' because it is a read-only property."
+        },
+        {
+          "file": "readonly-prop/src/Tiny.vue",
+          "line": 164,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "readonly-prop/src/Tiny.vue",
+          "line": 240,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": [
+        {
+          "file": "readonly-prop/src/Tiny.vue",
+          "severity": "error",
+          "line": 11,
+          "column": 17,
+          "code": 2540,
+          "message": "Cannot assign to 'value' because it is a read-only property.",
+          "raw": "error:11:17 [TS2540] Cannot assign to 'value' because it is a read-only property."
+        }
+      ]
+    },
+    {
+      "id": "constructor-public-props-discrepancy",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [
+        {
+          "file": "constructor-public-props-discrepancy/src/Tiny.vue",
+          "line": 162,
+          "column": 173,
+          "code": 2741,
+          "message": "Property 'internal' is missing in type '{ value: number; }' but required in type '{ value: number; internal: string; }'."
+        },
+        {
+          "file": "constructor-public-props-discrepancy/src/Tiny.vue",
+          "line": 238,
+          "column": 179,
+          "code": 2741,
+          "message": "Property 'internal' is missing in type '{ value: number; }' but required in type '{ value: number; internal: string; }'."
+        }
+      ],
+      "cli": []
+    },
+    {
+      "id": "constructor-public-type-discrepancy",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [],
+      "cli": []
+    },
+    {
+      "id": "slot-poison-any",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "slot-poison-any/src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "slot-poison-any/src/Tiny.vue",
+          "line": 162,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "slot-poison-any/src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        },
+        {
+          "file": "slot-poison-any/src/Tiny.vue",
+          "line": 238,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": [
+        {
+          "file": "slot-poison-any/src/Tiny.vue",
+          "severity": "error",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)",
+          "raw": "error:13:51 [TS2345] Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)"
+        }
+      ]
+    },
+    {
+      "id": "slot-poison-unknown",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "slot-poison-unknown/src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"unknown\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "slot-poison-unknown/src/Tiny.vue",
+          "line": 162,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "slot-poison-unknown/src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"unknown\"' is not assignable to parameter of type '\"number\"'."
+        },
+        {
+          "file": "slot-poison-unknown/src/Tiny.vue",
+          "line": 238,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": [
+        {
+          "file": "slot-poison-unknown/src/Tiny.vue",
+          "severity": "error",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"unknown\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)",
+          "raw": "error:13:51 [TS2345] Argument of type '\"unknown\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)"
+        }
+      ]
+    },
+    {
+      "id": "slot-poison-never",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "slot-poison-never/src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"never\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "slot-poison-never/src/Tiny.vue",
+          "line": 162,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "slot-poison-never/src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"never\"' is not assignable to parameter of type '\"number\"'."
+        },
+        {
+          "file": "slot-poison-never/src/Tiny.vue",
+          "line": 238,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": [
+        {
+          "file": "slot-poison-never/src/Tiny.vue",
+          "severity": "error",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"never\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)",
+          "raw": "error:13:51 [TS2345] Argument of type '\"never\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)"
+        }
+      ]
+    },
+    {
+      "id": "slot-poison-string",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "slot-poison-string/src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"other\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "slot-poison-string/src/Tiny.vue",
+          "line": 162,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "slot-poison-string/src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"other\"' is not assignable to parameter of type '\"number\"'."
+        },
+        {
+          "file": "slot-poison-string/src/Tiny.vue",
+          "line": 238,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": [
+        {
+          "file": "slot-poison-string/src/Tiny.vue",
+          "severity": "error",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"other\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)",
+          "raw": "error:13:51 [TS2345] Argument of type '\"other\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)"
+        }
+      ]
+    },
+    {
+      "id": "unicode-crlf",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [
+        {
+          "file": "unicode-crlf/src/Tiny.vue",
+          "line": 162,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "unicode-crlf/src/Tiny.vue",
+          "line": 238,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": []
+    },
+    {
+      "id": "required-public-internal",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "required-public-internal/src/Tiny.vue",
+          "line": 12,
+          "column": 4,
+          "code": 2345,
+          "message": "Argument of type '{ value: number; }' is not assignable to parameter of type 'Partial<{}> & Omit<{ readonly value: number; readonly internal: string; readonly render?: ((value: number) => string) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "required-public-internal/src/Tiny.vue",
+          "line": 162,
+          "column": 173,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        },
+        {
+          "file": "required-public-internal/src/Tiny.vue",
+          "line": 12,
+          "column": 4,
+          "code": 2345,
+          "message": "Argument of type '{ value: number; }' is not assignable to parameter of type 'ComponentPropsForTemplate<__WitnessChild_CheckProps_0, VueTemplatePublicAttrsType & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; ... 677 more ...; zoomAndPan?: unknown; } & ...>'."
+        },
+        {
+          "file": "required-public-internal/src/Tiny.vue",
+          "line": 238,
+          "column": 179,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ],
+      "cli": [
+        {
+          "file": "required-public-internal/src/Tiny.vue",
+          "severity": "error",
+          "line": 12,
+          "column": 4,
+          "code": 2345,
+          "message": "Missing required prop `internal`. (source: <WitnessChild :value=\"1\">; binding: 'value')",
+          "raw": "error:12:4 [TS2345] Missing required prop `internal`. (source: <WitnessChild :value=\"1\">; binding: 'value')"
+        }
+      ]
+    },
+    {
+      "id": "casing-pascal-valid",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [],
+      "cli": []
+    },
+    {
+      "id": "casing-pascal-invalid",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "casing-pascal-invalid/src/Tiny.vue",
+          "line": 12,
+          "column": 18,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "casing-pascal-invalid/src/Tiny.vue",
+          "line": 12,
+          "column": 18,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ],
+      "cli": [
+        {
+          "file": "casing-pascal-invalid/src/Tiny.vue",
+          "severity": "error",
+          "line": 12,
+          "column": 18,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'. (source: <WitnessChild :value=\"'bad'\">; binding: 'value')",
+          "raw": "error:12:18 [TS2322] Type 'string' is not assignable to type 'number'. (source: <WitnessChild :value=\"'bad'\">; binding: 'value')"
+        }
+      ]
+    },
+    {
+      "id": "casing-camel-valid",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [],
+      "cli": []
+    },
+    {
+      "id": "casing-camel-invalid",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "casing-camel-invalid/src/Tiny.vue",
+          "line": 12,
+          "column": 18,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ],
+      "mapper": [
+        {
+          "file": "casing-camel-invalid/src/Tiny.vue",
+          "line": 12,
+          "column": 18,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ],
+      "cli": [
+        {
+          "file": "casing-camel-invalid/src/Tiny.vue",
+          "severity": "error",
+          "line": 12,
+          "column": 18,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'. (source: <witnessChild :value=\"'bad'\">; binding: 'value')",
+          "raw": "error:12:18 [TS2322] Type 'string' is not assignable to type 'number'. (source: <witnessChild :value=\"'bad'\">; binding: 'value')"
+        }
+      ]
+    },
+    {
+      "id": "casing-kebab-valid",
+      "requiresAuthoredError": false,
+      "official": [],
+      "mapper": [],
+      "cli": []
+    },
+    {
+      "id": "casing-kebab-invalid",
+      "requiresAuthoredError": true,
+      "official": [
+        {
+          "file": "casing-kebab-invalid/src/Tiny.vue",
+          "line": 12,
+          "column": 19,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ],
+      "mapper": [],
+      "cli": []
+    }
+  ],
+  "timingUsable": false,
+  "claimedRepair": false,
+  "previousUnsafeConservationGate": "failed; not waived or repinned"
+}

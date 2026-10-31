@@ -1,5 +1,11 @@
 name: Canon slot constructor admission
 on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact production source to capture against the original 27 issue cases
+        required: true
+        type: string
   pull_request:
     paths:
       - crates/vize_canon/src/virtual_ts/expressions/generic_props_call.rs
@@ -21,10 +27,11 @@ on:
       - .github/workflows/canon-slot-constructor.yml
 permissions: { contents: read }
 concurrency:
-  group: canon-slot-constructor-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  group: canon-slot-constructor-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   admission:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -159,4 +166,94 @@ jobs:
         with:
           name: slot-constructor-${{ github.sha }}
           path: ${{ runner.temp }}/slot-constructor-evidence.tgz
+          retention-days: 14
+  original-27-baseline:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      SOURCE_SHA: ${{ inputs.source_sha }}
+      CARGO_BUILD_JOBS: "4"
+      CARGO_INCREMENTAL: "0"
+      GOMAXPROCS: "2"
+      RAYON_NUM_THREADS: "2"
+      NODE_DISABLE_COMPILE_CACHE: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.sha }}
+          path: .original27-driver
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /tools/support/compat/content-mapper/constructor-overload-*.ts
+            /tools/benchmarks/scripts/canon-instance-directives-*.ts
+            /tools/benchmarks/scripts/canon-slot-constructor-protocol.ts
+            /tests/_fixtures/differential/typechecker/constructor-overload-11023-original27/
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Authenticate and isolate the driver from the production source
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+          [[ "$(git -C .original27-driver rev-parse HEAD)" == "$GITHUB_SHA" ]]
+          [[ ! -e "$RUNNER_TEMP/original27-driver" ]]
+          mv .original27-driver "$RUNNER_TEMP/original27-driver"
+          git diff --exit-code
+          mkdir "$RUNNER_TEMP/original27-evidence"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/original27-evidence/source.txt"
+          git -C "$RUNNER_TEMP/original27-driver" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/original27-evidence/driver.txt"
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Build the exact production CLI with the normal cached CI recipe
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/original27-evidence"
+          rustc -Vv > "$evidence/rustc.txt"
+          cargo -V > "$evidence/cargo.txt"
+          lscpu > "$evidence/cpu.txt"
+          cargo build --locked --profile ci -p vize --bin vize --message-format=json > "$evidence/cargo.jsonl" 2> "$evidence/cargo.stderr"
+          node "$RUNNER_TEMP/original27-driver/tools/support/compat/content-mapper/constructor-overload-baseline-11023.ts" build "$SOURCE_SHA" "$evidence"
+      - name: Install the original pinned public and independent framework providers
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/slot-framework-provider"
+          cp "$RUNNER_TEMP/original27-driver/tests/_fixtures/differential/typechecker/constructor-overload-11023-original27/provider-package.json" "$RUNNER_TEMP/slot-framework-provider/package.json"
+          cd "$RUNNER_TEMP/slot-framework-provider"
+          npm install --ignore-scripts --no-audit --no-fund
+      - name: Capture all original cases through public and actual source CLI and SDK mapper
+        run: |
+          set -euo pipefail
+          node "$RUNNER_TEMP/original27-driver/tools/support/compat/content-mapper/constructor-overload-baseline-11023.ts" capture "$SOURCE_SHA" "$RUNNER_TEMP/original27-evidence" "$RUNNER_TEMP/slot-framework-provider"
+      - name: Preserve full packets, inputs, physical declarations and provider custody
+        if: always()
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/original27-evidence"
+          if [[ -f "$RUNNER_TEMP/slot-framework-provider/package-lock.json" ]]; then
+            cp "$RUNNER_TEMP/slot-framework-provider/package.json" "$RUNNER_TEMP/slot-framework-provider/package-lock.json" "$evidence/"
+          fi
+          if [[ -d "$evidence" ]]; then
+            tar --exclude=node_modules --exclude=published-project --exclude=current-source-project -czf "$RUNNER_TEMP/original27-raw.tgz" -C "$RUNNER_TEMP" original27-evidence
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: original27-constructor-baseline-${{ inputs.source_sha }}-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/original27-evidence/summary.json
+            ${{ runner.temp }}/original27-evidence/providers.json
+            ${{ runner.temp }}/original27-evidence/build.json
+            ${{ runner.temp }}/original27-raw.tgz
           retention-days: 14
