@@ -129,8 +129,19 @@ fn repeated_type_only_tags_share_the_actual_auto_import_declaration() {
         "<AB v-slot=\"{ item }\">{{ item }}</AB><A-b v-slot=\"{ item }\">{{ item }}</A-b>",
     ] {
         let code = generate(script, template, &options);
-        assert_eq!(code.matches("declare const $Component_AB:").count(), 1);
-        assert!(!code.contains("declare const $Component_A_x2d_b:"));
+        let declarations = code
+            .lines()
+            .filter_map(|line| {
+                let (name, _) = line.strip_prefix("declare const ")?.split_once(": ")?;
+                name.strip_prefix("$Component_").map(|_| line)
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            declarations,
+            [
+                "declare const $Component_AB: { new(): { $slots: { default(props: { item: number }): any } } };"
+            ]
+        );
         assert!(registry_declarations(code.as_str()).is_empty());
     }
 }

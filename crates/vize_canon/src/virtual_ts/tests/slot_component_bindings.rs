@@ -368,7 +368,7 @@ fn empty_v_slot_expression_keeps_the_slot_function_parseable() {
             parsed.diagnostics
         );
         let function = vize_carton::cstr!(
-            "  void function _slot_content_{scope}(__vize_slot_props_{scope}: $SlotPayload<typeof __vize_slot_host_{scope}, \"content\">) {{"
+            "  void function _slot_content_{scope}(__vize_slot_props_{scope}: $SlotPayload<typeof __vize_slot_host_{scope}, \"content\", $RegisteredSlotProvider<import(\"vue\").GlobalComponents, \"ElBadge\", \"elBadge\", \"el-badge\">>) {{"
         );
         let parameter = vize_carton::cstr!("    void __vize_slot_props_{scope};");
         for expected in [function, parameter] {

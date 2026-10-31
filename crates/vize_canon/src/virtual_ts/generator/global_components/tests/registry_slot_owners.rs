@@ -183,20 +183,20 @@ fn vue3_stub_and_slot_provenance_share_pascal_camel_authored_order_without_chang
     );
     assert_eq!(
         vue3.lines()
-            .filter(|line| line.starts_with("declare const registry_child:"))
+            .filter_map(|line| line.strip_prefix("declare const "))
             .collect::<Vec<_>>(),
         [
-            "declare const registry_child: $GlobalComponent<\"RegistryChild\", \"registryChild\", \"registry-child\"> & $GlobalComponentFallback;"
+            "registry_child: $GlobalComponent<\"RegistryChild\", \"registryChild\", \"registry-child\"> & $GlobalComponentFallback;"
         ]
     );
     let (owners, vue2) = emit("", template, true, VirtualTsOptions::default());
     assert!(owners.is_empty());
     assert_eq!(
         vue2.lines()
-            .filter(|line| line.starts_with("declare const registry_child:"))
+            .filter_map(|line| line.strip_prefix("declare const "))
             .collect::<Vec<_>>(),
         [
-            "declare const registry_child: $GlobalComponent<\"registry-child\", \"RegistryChild\"> & $GlobalComponentFallback;"
+            "registry_child: $GlobalComponent<\"registry-child\", \"RegistryChild\"> & $GlobalComponentFallback;"
         ]
     );
 }

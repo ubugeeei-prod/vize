@@ -98,6 +98,16 @@ jobs:
           mkdir -p "target/nextest/$NEXTEST_PROFILE"
           printf '{"phase":"workspace-cohort","cohort":"%s","elapsed_seconds":%d,"exit_code":%d}\n' "$COHORT" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
           exit "$phase_exit"
+      - name: Retain genuine pending Canon snapshot observations
+        # Observation transport only; the original failed test remains failed.
+        # Pending files are reviewed before any checked-in golden changes.
+        if: ${{ failure() && matrix.cohort == 'typechecker' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pending-canon-snapshots-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: crates/vize_canon/**/*.snap.new
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Preserve actual Rust build units and fresh timing HTML
         if: ${{ always() }}
         run: node tools/support/compat/github/rust-build-evidence.ts collect "$RUNNER_TEMP/rust-build-evidence"
