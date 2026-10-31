@@ -1,6 +1,7 @@
 use super::{BatchTypeChecker, unique_case_dir};
 
 mod incremental;
+mod shared_import_facts;
 
 mod suffix_path_aliases;
 

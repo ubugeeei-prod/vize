@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import { value } from './value';
+const label: string = value;
+</script>
+<template><div>{{ label }}</div></template>
