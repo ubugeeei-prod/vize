@@ -3,11 +3,40 @@ use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 
+use serde::Serialize;
 use serde_json::{Value, json};
 
 use super::{TRANSFORM_WORKER_STACK_BYTES, WorkerPoolReceipt, serve_with_worker_plan};
 
 const IMPOSSIBLE_STACK: usize = usize::MAX / 4;
+
+#[test]
+fn result_frames_preserve_recursive_legacy_field_order() {
+    #[derive(Serialize)]
+    struct Opaque {
+        zeta: u8,
+        alpha: u8,
+    }
+    #[derive(Serialize)]
+    struct Packet<'a> {
+        text: &'a str,
+        extension: &'a str,
+        mappings: [[u32; 6]; 1],
+        diagnostics: [u8; 0],
+        opaque: Opaque,
+    }
+    let packet = Packet {
+        text: "雪🌸",
+        extension: ".tsx",
+        mappings: [[1, 2, 3, 4, 5, 6]],
+        diagnostics: [],
+        opaque: Opaque { zeta: 2, alpha: 1 },
+    };
+    let body = r#"{"id":7,"jsonrpc":"2.0","result":{"diagnostics":[],"extension":".tsx","mappings":[[1,2,3,4,5,6]],"opaque":{"alpha":1,"zeta":2},"text":"雪🌸"}}"#;
+    let mut expected = format!("Content-Length: {}\r\n\r\n", body.len()).into_bytes();
+    expected.extend_from_slice(body.as_bytes());
+    assert_eq!(super::encode_result(&json!(7), &packet).unwrap(), expected);
+}
 
 fn bounded_plan(
     writer: thread::Builder,

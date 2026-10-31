@@ -375,16 +375,19 @@ fn transform_frame(job: &TransformJob) -> io::Result<Vec<u8>> {
 }
 
 fn encode_result(id: &Value, result: &impl Serialize) -> io::Result<Vec<u8>> {
+    // The original server's json! envelope recursively ordered every object
+    // through Value. Preserve opaque nested fields as well as envelope keys.
+    let result = serde_json::to_value(result).map_err(io::Error::other)?;
     #[derive(Serialize)]
-    struct Envelope<'a, T> {
+    struct Envelope<'a> {
         id: &'a Value,
         jsonrpc: &'static str,
-        result: &'a T,
+        result: &'a Value,
     }
     encode_frame(&Envelope {
         id,
         jsonrpc: "2.0",
-        result,
+        result: &result,
     })
 }
 
