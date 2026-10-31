@@ -138,7 +138,7 @@ fn binding_identifier_visitation_preserves_semantic_range_vectors() {
     for (case, script) in SCRIPTS.iter().enumerate() {
         for lang in ["", "ts", "tsx", "jsx", "js"] {
             let attribute = if lang.is_empty() {
-                String::new()
+                String::default()
             } else {
                 cstr!(" lang=\"{lang}\"")
             };
