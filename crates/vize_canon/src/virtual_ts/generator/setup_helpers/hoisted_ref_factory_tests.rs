@@ -226,6 +226,12 @@ fn batch_ref_factory_uses_pinned_generic_and_dom_inputs() {
             &project.find_by_original(&probe).unwrap().content,
             "$RefInstanceFactory"
         ),
-        vec![("function:__setup".to_owned(), FORWARD.trim())]
+        vec![
+            (
+                std::string::String::new(),
+                "type $RefInstanceFactory = 'authored'"
+            ),
+            ("function:__setup".to_owned(), FORWARD.trim()),
+        ]
     );
 }
