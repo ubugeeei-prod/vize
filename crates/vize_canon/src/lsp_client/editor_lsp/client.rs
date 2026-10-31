@@ -4,10 +4,14 @@
 use corsa::runtime::block_on;
 use lsp_types::DocumentDiagnosticReportResult;
 use serde_json::Value;
+use std::borrow::Cow;
 use std::path::PathBuf;
 use vize_l0::{FxHashMap, String, cstr};
 
 use super::{CorsaProjectClient, EditorLspSession, retry::retry_transient_editor_request};
+
+#[cfg(all(test, unix))]
+mod query_view_tests;
 
 impl CorsaProjectClient {
     /// A shared API snapshot also reads the editor's open buffers. Materialized
@@ -292,15 +296,23 @@ impl CorsaProjectClient {
         &mut self,
         documents: &FxHashMap<String, String>,
     ) -> Result<&mut EditorLspSession, String> {
-        self.validate_logical_workspace_documents(documents)?;
-        let keep_dirty_after_sync = !document_maps_equal(documents, &self.document_texts);
+        // A query subset cannot close another retained logical buffer. Only
+        // explicit lifecycle mutations remove that owner's retained inputs.
+        // Materialized callers already supply the mapped native namespace.
+        let documents = if self.logical_workspace_overlays {
+            logical_query_documents(&self.document_texts, documents)
+        } else {
+            Cow::Borrowed(documents)
+        };
+        self.validate_logical_workspace_documents(&documents)?;
+        let keep_dirty_after_sync = !document_maps_equal(&documents, &self.document_texts);
         self.ensure_editor_transport()?;
         let session = self
             .editor_lsp
             .as_mut()
             .ok_or_else(|| cstr!("Corsa editor LSP session did not initialize"))?;
-        if self.editor_lsp_documents_dirty || !session.has_documents(documents) {
-            session.synchronize(documents)?;
+        if self.editor_lsp_documents_dirty || !session.has_documents(&documents) {
+            session.synchronize(&documents)?;
             self.editor_lsp_documents_dirty = keep_dirty_after_sync;
         }
         Ok(session)
@@ -359,6 +371,22 @@ impl CorsaProjectClient {
         self.overlay_storage.observe_retirement(&result);
         result
     }
+}
+
+fn logical_query_documents<'a>(
+    retained: &FxHashMap<String, String>,
+    requested: &'a FxHashMap<String, String>,
+) -> Cow<'a, FxHashMap<String, String>> {
+    if retained.keys().all(|uri| requested.contains_key(uri)) {
+        return Cow::Borrowed(requested);
+    }
+    let mut documents = retained.clone();
+    documents.extend(
+        requested
+            .iter()
+            .map(|(uri, text)| (uri.clone(), text.clone())),
+    );
+    Cow::Owned(documents)
 }
 
 fn document_maps_equal(lhs: &FxHashMap<String, String>, rhs: &FxHashMap<String, String>) -> bool {
