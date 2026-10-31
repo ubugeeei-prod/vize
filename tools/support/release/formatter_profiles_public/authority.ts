@@ -26,6 +26,8 @@ const originalPaths = [
   "tests/_fixtures/differential/lsp/art-range-formatting-6098/case.json",
   "tests/_fixtures/differential/lsp/art-range-formatting-6098/response.expected.json",
   "crates/vize_maestro/src/server/format/custom_blocks.rs",
+  "crates/vize_carton/src/config/loader/js_cache.rs",
+  "crates/vize_carton/src/config/loader/js.rs",
 ] as const;
 export type OriginalReference = {
   path: string;

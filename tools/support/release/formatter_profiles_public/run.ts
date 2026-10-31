@@ -19,6 +19,9 @@ export const forbiddenOverrides = [
   "VIZE_PREFER_WORKSPACE_BINDING",
   "VIZE_ALLOW_NATIVE_VERSION_MISMATCH",
   "VIZE_CONFIG_CACHE",
+  "VIZE_TRACE_EDITOR_PREPARATION",
+  "VIZE_EXPLICIT_VITE_CONFIG",
+  "VIZE_EXPLICIT_NATIVE_CARRIER",
   "CORSA_PATH",
   "CORSA_EXECUTABLE",
   "TSGO_PATH",
@@ -110,7 +113,7 @@ async function run(args: string[]): Promise<void> {
       sort: "whole original CLI and document/range/on-type formatting controls",
       art: "whole original UTF16 selection, four profiles and finite source controls",
       filesystem:
-        "published payload exact throughout; complete module CLI effects retained; strict whole project+installation for all LSP intervals",
+        "every CLI module row exact except closed source-owned cache transitions; strict whole project+installation for all LSP intervals",
       limitations: [
         "Linux x64/glibc and Node24 only",
         "Frozen independent Prettier3.8.3 outputs; reference not reexecuted here",

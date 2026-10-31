@@ -16,6 +16,7 @@ import {
 } from "../../tools/support/release/formatter_profiles_public/authority.ts";
 import {
   assertAuthoredUnchanged,
+  assertVersionUnchanged,
   packagePayload,
   preservePayload,
   type Context,
@@ -23,6 +24,8 @@ import {
 import {
   assertWholeFilesystem,
   assertWholeReply,
+  changedTextEvidence,
+  diagnosticTextLimits,
   formattingInitialization,
 } from "../../tools/support/release/formatter_profiles_public/session.ts";
 import {
@@ -48,8 +51,8 @@ import { inventory, type Entry } from "../../tools/support/release/editor_vite_s
 
 const original = originalContract();
 test("all immutable original inputs and complete source oracles retain their actual Git bytes", () => {
-  assert.equal(original.references.length, 17);
-  assert.equal(new Set(original.references.map((row) => row.path)).size, 17);
+  assert.equal(original.references.length, 19);
+  assert.equal(new Set(original.references.map((row) => row.path)).size, 19);
   for (const mutation of ["byte", "sha", "source", "missing", "duplicate", "order"]) {
     const value = structuredClone(original.raw);
     const rows = value.references as Record<string, unknown>[];
@@ -254,6 +257,32 @@ test("whole LSP filesystem guards reject extra overlay/cache rows, payload chang
   );
 });
 
+test("version initialization refuses every unrelated dependency and authored-file mutation", () => {
+  const file = (path: string): Entry => ({
+    path,
+    kind: "file",
+    mode: 0o100644,
+    bytes: 1,
+    sha256: "a".repeat(64),
+  });
+  const before = {
+    project: [file("package-lock.json"), file("vite.config.mjs")],
+    modules: [file("unrelated/index.js")],
+  };
+  assertVersionUnchanged(before, structuredClone(before));
+  for (const part of ["project", "modules"] as const) {
+    const changed = structuredClone(before);
+    changed[part][0]!.sha256 = "b".repeat(64);
+    assert.throws(() => assertVersionUnchanged(before, changed));
+    const added = structuredClone(before);
+    added[part].push(file("unexpected"));
+    assert.throws(() => assertVersionUnchanged(before, added));
+    const removed = structuredClone(before);
+    removed[part].pop();
+    assert.throws(() => assertVersionUnchanged(before, removed));
+  }
+});
+
 test("actual payload guard persists the changed finite fixture before refusing it", () => {
   const directory = mkdtempSync(join(tmpdir(), "vize-formatter-payload-"));
   try {
@@ -265,6 +294,7 @@ test("actual payload guard persists the changed finite fixture before refusing i
     const record = new Recorder(join(directory, "proof"));
     const context: Context = {
       root,
+      version: "0.626.0",
       cli: "unused-no-execution",
       identity: {},
       original,
@@ -279,6 +309,38 @@ test("actual payload guard persists the changed finite fixture before refusing i
       readFileSync(join(record.root, "after.modules.json"), "utf8"),
     );
     assert(Array.isArray(evidence) && evidence.length > 0);
+  } finally {
+    rmSync(directory, { recursive: true });
+  }
+});
+
+test("many small changed files and aggregate bytes are bounded without hiding any filesystem failure", () => {
+  const directory = mkdtempSync(join(tmpdir(), "vize-formatter-diagnostic-cap-"));
+  try {
+    for (let index = 0; index < 130; index++)
+      writeFileSync(join(directory, index + ".js"), "changed");
+    const rows = inventory(directory).filter((row) => row.kind === "file");
+    const proof = changedTextEvidence(directory, rows);
+    assert.deepEqual(proof.limits, {
+      perFileBytes: 2 * 1024 ** 2,
+      totalBytes: 8 * 1024 ** 2,
+      files: 128,
+    });
+    assert.deepEqual(diagnosticTextLimits, proof.limits);
+    assert.equal(proof.capturedFiles, 128);
+    assert.equal(proof.omittedFiles, 2);
+    assert.equal(proof.omissionReasons["file-count-budget"], 2);
+    assert.equal(proof.candidateEntries, 130);
+    assert.throws(() => assertWholeFilesystem(rows, [], "all130changedrows-still-refused"));
+    const bytes = changedTextEvidence(directory, rows.slice(0, 3), {
+      perFileBytes: 16,
+      totalBytes: 12,
+      files: 128,
+    });
+    assert.equal(bytes.rawBytes, 7);
+    assert.equal(bytes.capturedFiles, 1);
+    assert.equal(bytes.omissionReasons["aggregate-byte-budget"], 2);
+    assert.equal(rows.length, 130);
   } finally {
     rmSync(directory, { recursive: true });
   }

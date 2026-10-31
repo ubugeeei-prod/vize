@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { closeSync, openSync, readSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { InstalledAliasSession } from "../../../../tests/tooling/support/lsp/installed-alias-replay/protocol.ts";
 import type { JsonRecord } from "../../json-value.ts";
-import { inventory, type Entry } from "../editor_vite_stub/filesystem.ts";
+import { inside, inventory, type Entry } from "../editor_vite_stub/filesystem.ts";
+import { sha256 } from "../../config/windows_consumer/common.ts";
 import { hook, observed, verifyJournal } from "../editor_vite_stub/custody.ts";
 import { resetAuthoredCase, type Context } from "./install.ts";
 
@@ -30,6 +31,108 @@ export function assertWholeFilesystem(actual: Entry[], expected: Entry[], phase:
   );
 }
 
+export const diagnosticTextLimits = {
+  perFileBytes: 2 * 1024 ** 2,
+  totalBytes: 8 * 1024 ** 2,
+  files: 128,
+} as const;
+export function changedTextEvidence(
+  root: string,
+  changed: Entry[],
+  limits: { perFileBytes: number; totalBytes: number; files: number } = diagnosticTextLimits,
+) {
+  for (const key of ["perFileBytes", "totalBytes", "files"] as const)
+    assert(
+      Number.isSafeInteger(limits[key]) &&
+        limits[key] > 0 &&
+        limits[key] <= diagnosticTextLimits[key],
+    );
+  const files: { path: string; sha256: string; rawBase64: string }[] = [];
+  const omitted: Record<string, number> = {};
+  let rawBytes = 0;
+  const skip = (reason: string) => {
+    omitted[reason] = (omitted[reason] ?? 0) + 1;
+  };
+  for (const row of changed) {
+    if (row.kind !== "file") {
+      skip("not-regular-file");
+      continue;
+    }
+    if (!/\.(?:json|log|[cm]?[jt]sx?|map|toml|ya?ml)$/u.test(row.path)) {
+      skip("non-text-extension");
+      continue;
+    }
+    if ((row.bytes ?? Infinity) > limits.perFileBytes) {
+      skip("per-file-budget");
+      continue;
+    }
+    if (files.length >= limits.files) {
+      skip("file-count-budget");
+      continue;
+    }
+    if ((row.bytes ?? Infinity) > limits.totalBytes - rawBytes) {
+      skip("aggregate-byte-budget");
+      continue;
+    }
+    const file = resolve(root, row.path);
+    if (!inside(root, file)) {
+      skip("path-escape");
+      continue;
+    }
+    const limit = Math.min(limits.perFileBytes, limits.totalBytes - rawBytes);
+    const buffer = Buffer.alloc(Math.min(limit, row.bytes ?? limit) + 1);
+    let used = 0;
+    try {
+      const fd = openSync(file, "r");
+      try {
+        while (used < buffer.length) {
+          const count = readSync(fd, buffer, used, buffer.length - used, null);
+          if (!count) break;
+          used += count;
+        }
+      } finally {
+        closeSync(fd);
+      }
+    } catch {
+      skip("unreadable-during-capture");
+      continue;
+    }
+    if (used > limit) {
+      skip("grew-beyond-read-budget");
+      continue;
+    }
+    const bytes = buffer.subarray(0, used),
+      hash = sha256(bytes);
+    if (hash !== row.sha256) {
+      skip("changed-during-capture");
+      continue;
+    }
+    try {
+      const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+      if (text.includes("\0")) {
+        skip("nul-byte");
+        continue;
+      }
+    } catch {
+      skip("non-utf8");
+      continue;
+    }
+    files.push({ path: row.path, sha256: hash, rawBase64: bytes.toString("base64") });
+    rawBytes += bytes.length;
+  }
+  return {
+    files,
+    limits,
+    rawBytes,
+    capturedFiles: files.length,
+    omittedFiles: Object.values(omitted).reduce((sum, count) => sum + count, 0),
+    omissionReasons: omitted,
+    candidateEntries: changed.length,
+    scope:
+      "bounded supplementary text only; every whole filesystem row/hash is retained independently and the unchanged strict filesystem assertion still decides acceptance",
+  };
+}
+
 /** Original authored cwd/rootUri and strict whole project/install vectors. */
 export async function withFormattingSession(
   context: Context,
@@ -52,23 +155,10 @@ export async function withFormattingSession(
         row.kind === "file" &&
         !baseline.some((old) => old.path === row.path && old.sha256 === row.sha256),
     );
-    const text: unknown[] = [];
-    for (const row of changed) {
-      if (
-        (row.bytes ?? Infinity) > 2 * 1024 * 1024 ||
-        !/\.(?:json|log|[cm]?[jt]sx?|map|toml|ya?ml)$/u.test(row.path)
-      )
-        continue;
-      const bytes = readFileSync(join(context.root, row.path));
-      try {
-        const decoded = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-        if (!decoded.includes("\0"))
-          text.push({ path: row.path, rawBase64: bytes.toString("base64") });
-      } catch {
-        /* Keep whole inventory hashes; binary images are never uploaded. */
-      }
-    }
-    context.record.json(label + ".changed-text-" + phase + ".json", text);
+    context.record.json(
+      label + ".changed-text-" + phase + ".json",
+      changedTextEvidence(context.root, changed),
+    );
     assertWholeFilesystem(actual, baseline, phase);
   };
   const custody = observed(context.root, context.identity, context.record, label);

@@ -6,6 +6,7 @@ on:
       - .github/workflows/formatter-profiles-public.yml
       - tools/support/release/formatter_profiles_public/**
       - tests/tooling/formatter-profiles-public.test.ts
+      - tests/tooling/formatter-profiles-public-cache.test.ts
       - tests/tooling/fixtures/formatter-profiles-public-original.json
       - tests/tooling/support/lsp/installed-alias-replay/**
       - tools/support/release/editor_vite_stub/custody.ts
@@ -50,7 +51,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "24.14.0", package-manager-cache: false }
       - name: Check immutable inputs, whole edits, initialization defaults and filesystem refusals
-        run: node --test tests/tooling/formatter-profiles-public.test.ts
+        run: node --test tests/tooling/formatter-profiles-public.test.ts tests/tooling/formatter-profiles-public-cache.test.ts
   published:
     needs: controls
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'

@@ -22,6 +22,7 @@ import {
   validateNativeReceipt,
 } from "../constructor_original27_public/authority.ts";
 import type { Authority, OriginalContract } from "./authority.ts";
+import { auditCache, captureCache } from "./cache.ts";
 
 /** This child observes only modules resolved from the fresh registry installation. */
 export function probe(rootArg: string, output: string): void {
@@ -105,6 +106,7 @@ export function expectStatus(packet: Packet, expected: number): void {
 
 export type Context = {
   root: string;
+  version: string;
   cli: string;
   identity: JsonRecord;
   original: OriginalContract;
@@ -121,6 +123,13 @@ export function preservePayload(context: Context, label: string): Entry[] {
     "published package bytes and links must remain exact",
   );
   return rows;
+}
+
+export function assertVersionUnchanged(
+  before: { project: Entry[]; modules: Entry[] },
+  after: { project: Entry[]; modules: Entry[] },
+): void {
+  assert.deepEqual(after, before, "--version must preserve the whole project and installation");
 }
 
 export function assertAuthoredUnchanged(before: Entry[], after: Entry[], writable: string[]): void {
@@ -198,6 +207,13 @@ export function cli(
     );
   capture("before");
   const before = preservePayload(context, label + "-before");
+  const cacheBefore = captureCache(
+    context.root,
+    context.version,
+    before,
+    context.record,
+    label + "-before",
+  );
   const custody = observed(context.root, context.identity, context.record, label);
   const packet = context.record.run(
     label,
@@ -209,12 +225,28 @@ export function cli(
   const authoredAfter = inventory(context.root);
   context.record.json(label + ".project-after.json", authoredAfter);
   const after = preservePayload(context, label + "-after");
+  const cacheAfter = captureCache(
+    context.root,
+    context.version,
+    after,
+    context.record,
+    label + "-after",
+  );
   context.record.json(label + ".filesystem.json", {
     before,
     after,
     scope:
-      "complete retained module vectors; package payload equality enforced; no blanket module immutability claim for CLI config cache",
+      "complete retained module vectors; all rows enforced with only source-owned validated config-cache transitions",
   });
+  const explicit =
+    args.includes("--no-config") ||
+    args.includes("config.json") ||
+    args.some((flag) => flag === "--semi=invalid") ||
+    (args.includes("--no-semi") &&
+      args.some((flag) => flag === "--semi" || flag === "--semi=false"))
+      ? null
+      : args.includes("--config");
+  auditCache(cacheBefore, cacheAfter, explicit, context.record, label);
   expectStatus(packet, expected);
   const writable =
     expected === 0 && args.includes("--write")
@@ -357,6 +389,7 @@ export function install(
   );
   const context: Context = {
     root,
+    version: authority.version,
     cli: asString(identity.cli),
     identity,
     original,
@@ -364,6 +397,11 @@ export function install(
     payloadRoots,
     payload: packagePayload(modules, payloadRoots),
   };
+  const versionBefore = {
+    project: inventory(root),
+    modules: inventory(join(root, "node_modules")),
+  };
+  record.json("version-before.filesystem.json", versionBefore);
   const custody = observed(root, identity, record, "public-version");
   const version = record.run(
     "public-version",
@@ -371,10 +409,12 @@ export function install(
     root,
     custody.env,
   );
+  const versionAfter = { project: inventory(root), modules: inventory(join(root, "node_modules")) };
+  record.json("version-after.filesystem.json", versionAfter);
+  assertVersionUnchanged(versionBefore, versionAfter);
   success(version);
   assert.equal(version.stdout, "vize " + authority.version + "\n");
   verifyJournal(custody.journal, identity, null);
-  preservePayload(context, "version-after");
   return context;
 }
 
