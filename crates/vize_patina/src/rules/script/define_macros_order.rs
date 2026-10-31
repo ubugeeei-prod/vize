@@ -137,10 +137,13 @@ fn check<'a>(
     // Upstream emits this suggestion-only finding before the ordinary order
     // finding. Trailing type/import/empty statements still occupy the last slot.
     if define_expose_last
-        && let Some(index) = body.iter().rposition(is_define_expose_statement)
+        && let Some((index, statement)) = body
+            .iter()
+            .enumerate()
+            .rfind(|(_, statement)| is_define_expose_statement(statement))
         && index + 1 < body.len()
     {
-        let span = body[index].span();
+        let span = statement.span();
         let start = offset as u32 + span.start;
         let end = offset as u32 + span.end;
         result.add_diagnostic(

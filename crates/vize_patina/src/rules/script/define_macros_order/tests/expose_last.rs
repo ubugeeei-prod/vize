@@ -10,7 +10,7 @@ const EXPOSE: &str = "`defineExpose` should be the last statement in `<script se
 fn check(source: &str, offset: usize, setup: bool) -> ScriptLintResult {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
-    assert!(parsed.errors.is_empty());
+    assert!(parsed.diagnostics.is_empty());
     let rule = DefineMacrosOrder::configured(DefineMacrosOrderOptions {
         define_expose_last: true,
         ..Default::default()

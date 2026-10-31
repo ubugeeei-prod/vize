@@ -37,17 +37,6 @@ vp run lint
 
 ## Bad
 
-The optional `defineExposeLast: true` policy requires the last direct
-`defineExpose(...)` statement to be the final statement in `<script setup>`.
-It defaults to `false` and can be enabled through
-`linter.ruleOptions["script/define-macros-order"]`. When enabled, `order` must
-omit `defineExpose`. Imports, type declarations and empty statements after the
-macro still count as later statements; comments do not. Move the statement
-manually: Vize reports actionable help and does not apply the upstream
-suggestion as an automatic fix. This check does not apply to normal `<script>`
-or standalone JavaScript/TypeScript. An independent prefix-order finding may
-also be reported.
-
 `defineEmits` comes before `defineProps`, but `defineProps` and then `defineEmits` must be the first statements of `<script setup>`.
 
 ```vue

@@ -27,6 +27,7 @@ export interface ExposeCase {
 interface Corpus {
   schema: string;
   version: number;
+  provider: Record<string, string>;
   ruleSource: { path: string; sha256: string };
   files: { file: string; bytes: number; sha256: string }[];
   cases: ExposeCase[];

@@ -30,10 +30,19 @@ const packets: unknown[] = [];
 let nativeBuild: unknown;
 let binding: Binding | undefined;
 let completedTests = 0;
+const conflictOutcome = {
+  kind: "threw",
+  error: {
+    name: "Error",
+    message: "`defineExpose` macro can't be in the `order` array if `defineExposeLast` is true.",
+    code: "InvalidArg",
+  },
+};
 function record(value: unknown): asserts value is Record<string, unknown> {
   assert.ok(value !== null && typeof value === "object" && !Array.isArray(value));
 }
 function persist() {
+  if (completedTests === 3) assert.equal(packets.length, 29);
   fs.mkdirSync(path.dirname(output), { recursive: true });
   fs.writeFileSync(
     output,
@@ -181,9 +190,25 @@ test("JSON resets the compatibility option and an unselected rule stays disabled
     defineMacrosOrder: row.options,
     enabledRules: [],
   });
+  const incompatible = { order: ["defineExpose"], defineExposeLast: true };
+  const resetConflicting = observe("json-reset-owns-conflicting-compatibility-policy", row, {
+    defineMacrosOrder: incompatible,
+    ruleOptionsJson: JSON.stringify({ [rule]: {} }),
+  });
+  const overrideConflicting = observe("json-true-owns-conflicting-compatibility-policy", row, {
+    defineMacrosOrder: incompatible,
+    ruleOptionsJson: JSON.stringify({ [rule]: row.options }),
+  });
+  const omission = observe("json-omission-still-validates-compatibility-policy", row, {
+    defineMacrosOrder: incompatible,
+    ruleOptionsJson: "{}",
+  });
   assert.deepEqual(reset, { kind: "returned", value: expected(clean) });
   assert.deepEqual(override, { kind: "returned", value: expected(row) });
   assert.deepEqual(disabled, { kind: "returned", value: expected(clean) });
+  assert.deepEqual(resetConflicting, { kind: "returned", value: expected(clean) });
+  assert.deepEqual(overrideConflicting, { kind: "returned", value: expected(row) });
+  assert.deepEqual(omission, conflictOutcome);
   completedTests++;
   persist();
 });
@@ -197,14 +222,7 @@ test("a conflicting direct policy fails completely and the next repaired query s
   const repaired = observe("valid-query-after-conflicting-policy", repair, {
     defineMacrosOrder: repair.options,
   });
-  assert.deepEqual(rejected, {
-    kind: "threw",
-    error: {
-      name: "Error",
-      message: "`defineExpose` macro can't be in the `order` array if `defineExposeLast` is true.",
-      code: "InvalidArg",
-    },
-  });
+  assert.deepEqual(rejected, conflictOutcome);
   assert.deepEqual(repaired, { kind: "returned", value: expected(repair) });
   completedTests++;
   persist();

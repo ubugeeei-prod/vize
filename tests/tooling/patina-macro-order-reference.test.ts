@@ -12,6 +12,11 @@ import {
   sourceFor,
   type Finding,
 } from "./support/patina-macro-order-contract.ts";
+import {
+  corpus as exposeCorpus,
+  filename as exposeFilename,
+  sourceFor as exposeSourceFor,
+} from "./support/patina-expose-last-contract.ts";
 
 interface Reference {
   verify(source: string, config: unknown[], options: { filename: string }): Finding[];
@@ -82,4 +87,50 @@ test("original macro bodies retain complete pinned reference diagnostics and fix
     assert.equal(hash(sourceFor(row)), hash(source), row.id);
   }
   assert.equal(fixed, 3, "real upstream fix outputs must not be erased to claim Vize fixer parity");
+});
+
+test("defineExposeLast retains all seven complete independent messages and suggestion/fix records", () => {
+  const require = createRequire(path.join(root, "tools/benchmarks/scripts/package.json"));
+  assert.deepEqual(exposeCorpus.provider, corpus.provider);
+  for (const [name, version] of Object.entries(exposeCorpus.provider)) {
+    assert.equal((require(`${name}/package.json`) as { version: string }).version, version);
+  }
+  const { Linter } = require("eslint") as { Linter: new () => Reference };
+  const plugin: unknown = require("eslint-plugin-vue");
+  const parser: unknown = require("vue-eslint-parser");
+  const scriptParser: unknown = require("@typescript-eslint/parser");
+  const providerDirectory = path.dirname(require.resolve("eslint-plugin-vue/package.json"));
+  assert.equal(
+    hash(fs.readFileSync(path.join(providerDirectory, exposeCorpus.ruleSource.path))),
+    exposeCorpus.ruleSource.sha256,
+  );
+  let fixed = 0;
+  for (const row of exposeCorpus.cases) {
+    const source = exposeSourceFor(row);
+    const config = [
+      {
+        files: ["**/*.vue"],
+        languageOptions: {
+          parser,
+          parserOptions: { parser: scriptParser, ecmaVersion: 2022, sourceType: "module" },
+        },
+        plugins: { vue: plugin },
+        rules: { "vue/define-macros-order": ["error", row.options] },
+      },
+    ];
+    const linter = new Linter();
+    assert.deepEqual(
+      linter.verify(source, config, { filename: exposeFilename }),
+      row.reference.messages,
+      row.id,
+    );
+    assert.deepEqual(
+      linter.verifyAndFix(source, config, { filename: exposeFilename }),
+      row.reference.fixResult,
+      row.id,
+    );
+    fixed += Number(row.reference.fixResult.fixed);
+    assert.equal(hash(exposeSourceFor(row)), hash(source), row.id);
+  }
+  assert.equal(fixed, 2, "only the independent prefix-order findings have automatic fixes");
 });
