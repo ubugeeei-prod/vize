@@ -132,7 +132,7 @@ fn default_native_overlay_preserves_the_whole_linked_installation_and_authored_p
     lsp.send(json!({"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":uri,"languageId":"vue","version":1,"text":source}}}));
     let publication = lsp.recv_matching(|message| {
         message["method"] == "textDocument/publishDiagnostics"
-            && message["params"]["uri"] == uri
+            && message["params"]["uri"].as_str() == Some(uri.as_str())
             && message["params"]["version"] == 1
     });
     lsp.send(json!({"jsonrpc":"2.0","id":2,"method":"textDocument/diagnostic","params":{"textDocument":{"uri":uri}}}));

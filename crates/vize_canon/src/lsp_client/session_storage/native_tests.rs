@@ -1,7 +1,10 @@
 //! Same-image old physical-policy control; never an old-source binary claim.
 
 use super::SessionStorage;
-use crate::{file_uri::path_to_file_uri, lsp_client::CorsaProjectClient};
+use crate::{
+    file_uri::{path_to_file_uri, path_to_typescript_name},
+    lsp_client::CorsaProjectClient,
+};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{fs, path::Path, path::PathBuf, process::Command, sync::Arc};
@@ -197,9 +200,82 @@ fn positive_answers(packet: &Value, support_uri: &str) {
     }
 }
 
+fn relocated_messages(packet: &Value, destination: &Value) -> (Value, Vec<Value>) {
+    let from = path_to_typescript_name(Path::new(packet["materializedRoot"].as_str().unwrap()));
+    let to = path_to_typescript_name(Path::new(destination["materializedRoot"].as_str().unwrap()));
+    let mut projected = packet["rows"].clone();
+    let mut substitutions = Vec::new();
+    for (row_index, row) in projected.as_array_mut().unwrap().iter_mut().enumerate() {
+        for (index, diagnostic) in row["diagnostics"]
+            .as_array_mut()
+            .unwrap()
+            .iter_mut()
+            .enumerate()
+        {
+            // Only single-quoted physical paths in the observed diagnostic
+            // message field may relocate. Every other field stays byte-exact.
+            let before = diagnostic["message"].as_str().unwrap();
+            let mut after = vize_l0::String::default();
+            for (part_index, part) in before.split('\'').enumerate() {
+                if part_index > 0 {
+                    after.push('\'');
+                }
+                let suffix = part.strip_prefix(from.as_str());
+                if part_index % 2 == 1
+                    && let Some(suffix) =
+                        suffix.filter(|rest| rest.is_empty() || rest.starts_with('/'))
+                {
+                    after.push_str(&to);
+                    after.push_str(suffix);
+                } else {
+                    after.push_str(part);
+                }
+            }
+            if before != after.as_str() {
+                substitutions.push(json!({"field":["rows",row_index,"diagnostics",index,"message"],"before":before,"after":after}));
+                diagnostic["message"] = json!(after);
+            }
+        }
+    }
+    (projected, substitutions)
+}
+
+fn relocation_controls() {
+    let from = std::env::temp_dir().join("old-owned-root");
+    let to = std::env::temp_dir().join("new-owned-root");
+    let from_name = path_to_typescript_name(&from);
+    let to_name = path_to_typescript_name(&to);
+    let before = vize_l0::cstr!(
+        "File '{from_name}/src/a.ts'; sibling '{from_name}-sibling/a.ts'; unquoted {from_name}/a.ts"
+    );
+    let after = vize_l0::cstr!(
+        "File '{to_name}/src/a.ts'; sibling '{from_name}-sibling/a.ts'; unquoted {from_name}/a.ts"
+    );
+    let packet = json!({"materializedRoot":from,"rows":[{"diagnostics":[{"code":6059,"message":before,"unknown":from_name}],"hover":null,"definition":[]}]});
+    let destination = json!({"materializedRoot":to});
+    let (projected, substitutions) = relocated_messages(&packet, &destination);
+    let mut expected = packet["rows"].clone();
+    expected[0]["diagnostics"][0]["message"] = json!(after);
+    assert_eq!(projected, expected);
+    assert_eq!(substitutions.len(), 1);
+    expected[0]["diagnostics"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({"code":6059,"message":"additional rootDir error"}));
+    assert_ne!(
+        projected, expected,
+        "an additional diagnostic cannot relocate away"
+    );
+    assert_eq!(
+        packet["rows"][0]["diagnostics"][0]["message"],
+        json!(before)
+    );
+}
+
 #[test]
 #[ignore = "actual locked native provider; same-job Linux and Windows Actions"]
 fn actual_native_old_and_private_roots_preserve_complete_configured_overlay_answers() {
+    relocation_controls();
     let capture = PathBuf::from(
         std::env::var_os("VIZE_PRIVATE_OVERLAY_CAPTURE").expect("owned capture required"),
     );
@@ -240,6 +316,7 @@ fn actual_native_old_and_private_roots_preserve_complete_configured_overlay_answ
     );
     let test_image = std::env::current_exe().unwrap();
     fs::write(capture.join("identity.json"), serde_json::to_vec_pretty(&json!({"schema":1,"scope":"same-image physical storage policy differential, not an old-source binary or published-product proof","source":source,"native":{"path":native,"sha256":native_hash,"versionStdout":version.stdout},"libraryImage":{"path":test_image,"sha256":hash(&fs::read(&test_image).unwrap())},"vuePackage":{"path":vue,"manifestSha256":vue_manifest_hash}})).unwrap()).unwrap();
+    let mut comparisons = Vec::new();
     for root_dir in ["src", "."] {
         for composite in [false, true] {
             let work = tempfile::tempdir().unwrap();
@@ -273,33 +350,39 @@ fn actual_native_old_and_private_roots_preserve_complete_configured_overlay_answ
             let before = inventory(&root);
             let private = run(&root, &native, false, &phase_capture);
             let after = inventory(&root);
-            let retained = json!({"rootDir":root_dir,"composite":composite,"authoredConfig":serde_json::from_slice::<Value>(&config).unwrap(),"originalPhysicalPolicy":old,"privateOwner":private,"authoredBefore":before,"authoredAfter":after});
+            let (relocated, substitutions) = relocated_messages(&old, &private);
+            let retained = json!({"rootDir":root_dir,"composite":composite,"authoredConfig":serde_json::from_slice::<Value>(&config).unwrap(),"originalPhysicalPolicy":old,"privateOwner":private,"authoredBefore":before,"authoredAfter":after,"comparison":{"scope":"only exact single-quoted physical mirror paths inside diagnostic message fields relocate; all other keys, values, diagnostic codes, counts and order remain exact","originalRowsAtPrivateRoot":relocated,"substitutions":substitutions}});
             fs::write(
                 capture.join(vize_l0::cstr!("{label}.json").as_str()),
                 serde_json::to_vec_pretty(&retained).unwrap(),
             )
             .unwrap();
-            assert_eq!(
-                before, after,
-                "private role changed the complete authored inventory: {label}"
-            );
             let support_uri = path_to_file_uri(&root.join("src/support.ts"));
-            positive_answers(&old, &support_uri);
-            positive_answers(&private, &support_uri);
-            assert_eq!(old["rows"].as_array().unwrap().len(), 4);
-            assert_eq!(private["rows"].as_array().unwrap().len(), 4);
-            for (old, private) in old["rows"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .zip(private["rows"].as_array().unwrap())
-            {
-                assert_eq!(old["phase"], private["phase"]);
-                for key in ["diagnostics", "hover", "definition"] {
-                    assert_eq!(old[key], private[key], "whole {key} mismatch: {label}");
-                }
-            }
             assert_eq!(fs::read(root.join("tsconfig.json")).unwrap(), config);
+            comparisons.push((label, old, private, relocated, before, after, support_uri));
+        }
+    }
+    // Capture every rootDir/composite role before any cross-role assertion.
+    assert_eq!(comparisons.len(), 4);
+    for (label, old, private, relocated, before, after, support_uri) in comparisons {
+        assert_eq!(
+            before, after,
+            "private role changed the complete authored inventory: {label}"
+        );
+        positive_answers(&old, &support_uri);
+        positive_answers(&private, &support_uri);
+        assert_eq!(old["rows"].as_array().unwrap().len(), 4);
+        assert_eq!(private["rows"].as_array().unwrap().len(), 4);
+        for (old, private) in relocated
+            .as_array()
+            .unwrap()
+            .iter()
+            .zip(private["rows"].as_array().unwrap())
+        {
+            assert_eq!(old["phase"], private["phase"]);
+            for key in ["diagnostics", "hover", "definition"] {
+                assert_eq!(old[key], private[key], "whole {key} mismatch: {label}");
+            }
         }
     }
     assert_eq!(hash(&fs::read(&native).unwrap()), native_hash);
