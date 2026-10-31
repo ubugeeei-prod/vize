@@ -4,6 +4,7 @@ on:
     paths:
       - crates/vize_canon/src/virtual_ts/scope/component_props.rs
       - tools/benchmarks/scripts/canon-component-casing*.ts
+      - tools/benchmarks/scripts/canon-source-sdk.ts
       - .github/workflows/canon-component-casing.yml
 permissions: { contents: read }
 concurrency:

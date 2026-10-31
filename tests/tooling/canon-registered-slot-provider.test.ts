@@ -138,7 +138,7 @@ for (const variant of ["embedded", "shared", "published"] as const) {
       [
         {
           code: 2345,
-          message: `Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'.`,
+          message: `Argument of type '"any"' is not assignable to parameter of type '"number"'.`,
         },
       ],
     );

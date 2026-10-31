@@ -5,7 +5,9 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { slotProviderTypes } from "../../../tests/tooling/support/canon-slot-provider-types.ts";
 import { captureSlotPacket } from "./canon-slot-constructor-protocol.ts";
-import { sdk, native, type Row } from "./canon-slot-constructor-audit.ts";
+import { native, type Row } from "./canon-slot-constructor-audit.ts";
+import { sourceSdk } from "./canon-source-sdk.ts";
+export { sourceSdk } from "./canon-source-sdk.ts";
 import { packet, isRecord } from "./canon-instance-directives-model.ts";
 import { identify, hash, run, save } from "./canon-instance-directives-io.ts";
 
@@ -13,46 +15,7 @@ const original = path.resolve(
   "tests/_fixtures/differential/typechecker/unknown-component-slot-payload-11027",
 );
 const successor = path.resolve("tests/_fixtures/typechecker/slot-provider-owners-11027/imported");
-export const sourceDeclarations = [
-  "content-mapper-helpers.d.ts",
-  "content-mapper-helpers.d.mts",
-  "content-mapper-helpers.d.cts",
-  "generated/content-mapper-types.d.ts",
-  "virtual-ts.d.ts",
-  "virtual-ts.d.mts",
-  "virtual-ts.d.cts",
-  "virtual-ts-globals.d.ts",
-  "virtual-ts-patterns.d.ts",
-];
 const read = (root: string, file: string) => fs.readFileSync(path.join(root, file), "utf8");
-
-export function sourceSdk(project: string, provider: string, binary: string) {
-  sdk(project, provider, binary);
-  const installed = path.join(project, "node_modules/vize"),
-    source = path.resolve("npm/cli");
-  const manifest: unknown = JSON.parse(read(source, "package.json"));
-  assert.ok(
-    isRecord(manifest) &&
-      isRecord(manifest.typescript) &&
-      isRecord(manifest.typescript.contentMapper),
-  );
-  manifest.typescript.contentMapper.exec = [binary, "content-mapper"];
-  save(path.join(installed, "package.json"), manifest);
-  for (const file of sourceDeclarations) {
-    const destination = path.join(installed, file);
-    fs.rmSync(destination, { force: true });
-    fs.mkdirSync(path.dirname(destination), { recursive: true });
-    fs.copyFileSync(path.join(source, file), destination);
-  }
-  save(path.join(project, "source-sdk-custody.json"), {
-    package: identify(path.join(installed, "package.json")),
-    declarations: sourceDeclarations.map((file) => ({
-      file,
-      source: identify(path.join(source, file)),
-      installed: identify(path.join(installed, file)),
-    })),
-  });
-}
 
 export function expected(source: string, invalid: boolean): Row[] {
   if (!invalid) return [];

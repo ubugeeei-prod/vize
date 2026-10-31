@@ -2,8 +2,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { isRecord, jsonValue } from "./canon-instance-directives-model.ts";
 import { save, identify, run } from "./canon-instance-directives-io.ts";
+export { sourceSdk } from "./canon-source-sdk.ts";
 export type NativeDiagnostic = {
   file: string;
   line: number;
@@ -32,26 +32,6 @@ export function nativeDiagnostics(
   assert.equal(result.length, (text.match(/error TS\d+:/gu) ?? []).length);
   assert.equal(status, result.length ? 2 : 0);
   return result;
-}
-export function sourceSdk(project: string, provider: string, binary: string): void {
-  const modules = path.join(project, "node_modules");
-  fs.mkdirSync(modules);
-  for (const name of fs.readdirSync(path.join(provider, "node_modules")))
-    if (name !== "vize")
-      fs.symlinkSync(path.join(provider, "node_modules", name), path.join(modules, name), "dir");
-  const original = path.join(provider, "node_modules/vize"),
-    target = path.join(modules, "vize");
-  fs.mkdirSync(target);
-  for (const name of fs.readdirSync(original))
-    if (name !== "package.json") fs.symlinkSync(path.join(original, name), path.join(target, name));
-  const manifest = jsonValue(fs.readFileSync(path.join(original, "package.json"), "utf8"));
-  assert.ok(
-    isRecord(manifest) &&
-      isRecord(manifest.typescript) &&
-      isRecord(manifest.typescript.contentMapper),
-  );
-  manifest.typescript.contentMapper.exec = [binary, "content-mapper"];
-  save(path.join(target, "package.json"), manifest);
 }
 export function position(source: string, token: string, skip = 0) {
   const at = source.lastIndexOf(token);

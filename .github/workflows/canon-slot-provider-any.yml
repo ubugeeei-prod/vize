@@ -30,6 +30,7 @@ on:
       - tools/benchmarks/scripts/canon-slot-provider-any.ts
       - tools/benchmarks/scripts/canon-registered-slot-provider.ts
       - tools/benchmarks/scripts/canon-slot-provider-collisions.ts
+      - tools/benchmarks/scripts/canon-source-sdk.ts
       - .github/workflows/canon-slot-provider-any.yml
   workflow_dispatch:
     inputs:
@@ -76,6 +77,10 @@ jobs:
           git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/slot-provider-any/source.txt"
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version: "24.14.0", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/restore-source-cli
         with: { producer: "${{ toJSON(needs.source-cli.outputs) }}" }
       - name: Install pinned independent framework and native compilers

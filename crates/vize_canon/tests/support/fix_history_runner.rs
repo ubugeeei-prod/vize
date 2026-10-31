@@ -73,7 +73,8 @@ pub(crate) fn check_pack_with_capture_policy(
             | "component-tag-aliases-11020" => regression,
             "content-mapper-template-callback-listener-11023" => regression,
             "content-mapper-vue-generic-11051" => regression,
-            "unknown-component-slot-payload-11027" => regression,
+            "unknown-component-slot-payload-11027" | "declared-any-slot-provider-11027" =>
+                regression,
             "import-literal-geometry-10762" | "escaped-import-literals-10763" => {
                 "62652a4d4029fa11016dfa1ac8c24669b42c8d7a"
             }

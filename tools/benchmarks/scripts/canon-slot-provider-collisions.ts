@@ -102,13 +102,15 @@ async function main() {
       );
       assert.equal(new Set(providers.map((row) => row.symbol)).size, 2);
       assert.deepEqual(
-        providers.map((row) => row.any).sort(),
+        providers.map((row) => row.any).sort((left, right) => Number(left) - Number(right)),
         state === "invalid" ? [false, true] : [false, false],
       );
       const bindings = types.rows.filter((row) => row.role === "slot-binding");
       assert.equal(bindings.length, 4, "both emitted slot scopes for each distinct provider");
       assert.deepEqual(
-        bindings.map((row) => row.intrinsicName).sort(),
+        bindings
+          .map((row) => row.intrinsicName)
+          .sort((left, right) => String(left).localeCompare(String(right))),
         state === "invalid"
           ? ["any", "any", "number", "number"]
           : ["number", "number", "number", "number"],
