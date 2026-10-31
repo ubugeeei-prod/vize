@@ -25,6 +25,8 @@ import { currentNativeBetaDtoObserver } from "./native-beta-dto-observer-success
 import {
   LOGICAL_WORKSPACE_PROTOCOL_ID,
   newLogicalWorkspaceProtocolCases,
+  remainingShutdownProtocolCases,
+  protocolPartition,
 } from "./native-beta-logical-workspace-fixtures.ts";
 
 import { knownCompilerCssSource } from "../../../../tests/differential/compiler-css-api-registry.ts";
@@ -131,21 +133,6 @@ function coverageLost(before?: DialectCoverage, after?: DialectCoverage): boolea
   if (rank(before) !== rank(after)) return rank(after) < rank(before);
   const kept = dialects(after);
   return [...dialects(before)].some((dialect) => !kept.has(dialect));
-}
-
-// Route only one explicitly registered protocol ID; malformed/unknown rows
-// remain with the original closed validator and cannot disappear in filtering.
-function protocolPartition(value: unknown, id: string, include: boolean): unknown {
-  if (!Array.isArray(value)) return value;
-  return value.filter((row: unknown) => {
-    const matches =
-      row !== null &&
-      typeof row === "object" &&
-      !Array.isArray(row) &&
-      "id" in row &&
-      row.id === id;
-    return matches === include;
-  });
 }
 
 function sha256(bytes: Buffer): string {
@@ -344,16 +331,8 @@ function checkProduct(
     const protocols =
       product === "typechecker"
         ? newNativeShutdownProtocolCases(
-            protocolPartition(
-              protocolPartition(before?.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
-              LOGICAL_WORKSPACE_PROTOCOL_ID,
-              false,
-            ),
-            protocolPartition(
-              protocolPartition(manifest.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
-              LOGICAL_WORKSPACE_PROTOCOL_ID,
-              false,
-            ),
+            remainingShutdownProtocolCases(before?.protocolCases),
+            remainingShutdownProtocolCases(manifest.protocolCases),
             readFile,
           )
         : [];

@@ -1,10 +1,36 @@
 // A source-bound logical editor revision protocol, outside authored Batch rates.
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { NATIVE_BETA_DTO_PROTOCOL_ID } from "./native-beta-dto-fixtures.ts";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const LOGICAL_WORKSPACE_PROTOCOL_ID =
   "typechecker/protocol/logical-workspace-overlay-revision-11145";
+
+// Route only one explicitly registered protocol ID; malformed/unknown rows
+// remain with the original closed validator and cannot disappear in filtering.
+export function protocolPartition(value: unknown, id: string, include: boolean): unknown {
+  if (!Array.isArray(value)) return value;
+  return value.filter((row: unknown) => {
+    const matches =
+      row !== null &&
+      typeof row === "object" &&
+      !Array.isArray(row) &&
+      "id" in row &&
+      row.id === id;
+    return matches === include;
+  });
+}
+
+/** Unknown or malformed rows still belong to the original shutdown validator. */
+export function remainingShutdownProtocolCases(value: unknown): unknown {
+  return protocolPartition(
+    protocolPartition(value, NATIVE_BETA_DTO_PROTOCOL_ID, false),
+    LOGICAL_WORKSPACE_PROTOCOL_ID,
+    false,
+  );
+}
+
 const root = "tests/_fixtures/differential/typechecker/";
 const directory = "logical-workspace-overlay-revision-11145/";
 const authorityHash = "c3950279205ac4939b10c019c5e10e55632ed336f06fd3f46bc4a8085f7ab3dd";
