@@ -1,4 +1,8 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import {
@@ -20,6 +24,48 @@ const release = parse(readRepoFile(".github", "workflows", "release.yml"));
 const seed = parse(readRepoFile(".github", "workflows", "release-build-cache.yml"));
 const recipe = (name: string): { runs: { steps: Step[] } } =>
   parse(readRepoFile(".github", "actions", name, "action.yml"));
+
+test("cache planning preserves a failed version producer before writing any job output", () => {
+  const step = seed.jobs.plan.steps.find((item: { id?: string }) => item.id === "next");
+  assert.equal(step.shell, "bash");
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cache-version-producer-"));
+  try {
+    const bin = path.join(directory, "bin"),
+      output = path.join(directory, "output");
+    fs.mkdirSync(bin);
+    const node = path.join(bin, "node");
+    const original = "retained=original\n";
+    for (const [status, version] of [
+      [37, "0.614.0"],
+      [0, "0.614.0-rc.1"],
+    ] as const) {
+      fs.writeFileSync(node, `#!/bin/sh\nprintf '%s\\n' '${version}'\nexit ${status}\n`, {
+        mode: 0o755,
+      });
+      fs.writeFileSync(output, original);
+      const result = spawnSync(
+        "bash",
+        ["--noprofile", "--norc", "-e", "-o", "pipefail", "-c", step.run],
+        {
+          cwd: directory,
+          encoding: "utf8",
+          env: {
+            ...process.env,
+            PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}`,
+            GITHUB_OUTPUT: output,
+          },
+        },
+      );
+      assert.equal(result.status, status, result.stderr);
+      assert.equal(
+        fs.readFileSync(output, "utf8"),
+        status === 0 ? `${original}version=${version}\n` : original,
+      );
+    }
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 test("release and cache warming share every exact-checkout binary recipe", () => {
   for (const [releaseJob, seedJob, action] of [
