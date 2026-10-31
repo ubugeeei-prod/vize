@@ -7,6 +7,7 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
+mod constructor_without_args;
 mod current_updates;
 
 type Roots = [(&'static str, PathBuf); 3];

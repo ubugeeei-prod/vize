@@ -1,4 +1,4 @@
-use super::support;
+use super::{constructor_without_args, support};
 use serde_json::{Value, json};
 use std::fs;
 
@@ -175,6 +175,7 @@ fn inverse_slot_factory_union(current: &str, record: &Value) -> String {
 
 fn apply_slot_factory_union(manifest: &mut Value, members: &mut [Value]) {
     let update = slot_factory_union();
+    let constructor = constructor_without_args::load();
     assert_eq!(update["version"], 1);
     assert_eq!(update["pullRequest"], 11153);
     assert_eq!(update["kind"], "exact-source-finite-inverse");
@@ -190,13 +191,16 @@ fn apply_slot_factory_union(manifest: &mut Value, members: &mut [Value]) {
         "npm/cli/virtual-ts.d.cts",
     ];
     assert_eq!(declarations.len(), paths.len());
-    for (declaration, expected_path) in declarations.iter().zip(paths) {
+    for (index, (declaration, expected_path)) in declarations.iter().zip(paths).enumerate() {
         assert_eq!(declaration["path"], expected_path);
         let body = fs::read_to_string(support::repository().join(expected_path)).unwrap();
-        inverse_slot_factory_union(&body, declaration);
+        let previous =
+            constructor_without_args::previous(&body, &constructor["declarations"][index]);
+        inverse_slot_factory_union(&previous, declaration);
     }
     let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-    inverse_slot_factory_union(current, &update["helper"]);
+    let previous = constructor_without_args::previous(current, &constructor["helper"]);
+    inverse_slot_factory_union(&previous, &update["helper"]);
     let helper = members.get_mut(82).unwrap();
     assert_eq!(*helper, update["before"]);
     assert_eq!(update["before"][0], update["after"][0]);
@@ -204,19 +208,24 @@ fn apply_slot_factory_union(manifest: &mut Value, members: &mut [Value]) {
         update["after"],
         json!([
             "project/__vize_helpers.d.ts",
-            current.len(),
-            support::hash(current.as_bytes())
+            previous.len(),
+            support::hash(previous.as_bytes())
         ])
     );
     *helper = update["after"].clone();
     manifest["provenance"]["currentSlotFactoryUnionUpdate"] = update;
+    constructor_without_args::apply(manifest, members, constructor);
 }
 
 #[test]
 fn slot_factory_union_postimage_rejects_unrelated_or_missing_bytes() {
     let update = slot_factory_union();
-    let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-    inverse_slot_factory_union(current, &update["helper"]);
+    let constructor = constructor_without_args::load();
+    let current = constructor_without_args::previous(
+        vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        &constructor["helper"],
+    );
+    inverse_slot_factory_union(&current, &update["helper"]);
     let line = update["helper"]["edits"][0]["after"].as_str().unwrap();
     for mutated in [
         current.replace(line, ""),
