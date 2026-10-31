@@ -783,8 +783,32 @@
           ]
         },
         "vue/attribute-hyphenation": {
-          "type": "string",
-          "enum": ["always", "never"]
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["always", "never"]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "style": {
+                  "default": "always",
+                  "type": "string",
+                  "enum": ["always", "never"]
+                },
+                "ignore": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^(?!\\s*$)(?![\\s\\S]*:exit$)"
+                  },
+                  "uniqueItems": true
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
         },
         "vue/valid-v-on": {
           "type": "object",

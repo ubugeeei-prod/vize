@@ -491,42 +491,6 @@ export default defineConfig({
 
 <span id="vue-attribute-hyphenation"></span>
 
-## `vue/attribute-hyphenation`：コンポーネントに渡す属性名
+## `vue/attribute-hyphenation`
 
-カスタムコンポーネントに渡す、静的な props の属性名を指定するためのオプションです。
-`always` は camelCase で書かれた属性を報告し、`never` はハイフン区切りで書かれた属性を報告します。
-通常の要素の属性、`aria-*`、`data-*`、SVG の大文字と小文字が混在する属性、
-動的な引数、属性として解析されるディレクティブの省略記法は対象外です。
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/attribute-hyphenation": "warn"
-      },
-      "ruleOptions": {
-        "vue/attribute-hyphenation": "never"
-      }
-    }
-  }
-});
-```
-
-上の設定で報告される例：
-
-```vue
-<template>
-  <UserCard user-name="Ada" />
-</template>
-```
-
-設定に沿った例：
-
-```vue
-<template>
-  <UserCard userName="Ada" aria-label="Ada Lovelace" />
-</template>
-```
+[属性名のスタイルと例外](./options-attributes.md)を参照してください。

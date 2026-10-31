@@ -78,11 +78,6 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
     let html_self_closing = opts.html_self_closing;
     let v_on_event_hyphenation = opts.v_on_event_hyphenation.as_deref();
     let attribute_hyphenation = opts.attribute_hyphenation.as_deref();
-    let attribute_hyphenation_ignore = opts.attribute_hyphenation_ignore.as_deref();
-    if let Some(ignore) = attribute_hyphenation_ignore {
-        validate_attribute_hyphenation_ignore(attribute_hyphenation, ignore)
-            .map_err(|message| Error::new(Status::InvalidArg, message.to_owned()))?;
-    }
     let rule_options = opts
         .rule_options_json
         .as_deref()
@@ -107,6 +102,20 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
                 .map_err(|message| Error::new(Status::InvalidArg, message.to_owned()))?;
         }
         (ignore, opts.v_on_event_hyphenation_autofix)
+    };
+    let attribute_hyphenation_ignore = if rule_options
+        .as_ref()
+        .is_some_and(|options| options.attribute_hyphenation().is_some())
+    {
+        // Canonical JSON owns the whole attribute policy, including custom-list resets.
+        None
+    } else {
+        let ignore = opts.attribute_hyphenation_ignore.as_deref();
+        if let Some(ignore) = ignore {
+            validate_attribute_hyphenation_ignore(attribute_hyphenation, ignore)
+                .map_err(|message| Error::new(Status::InvalidArg, message.to_owned()))?;
+        }
+        ignore
     };
     let define_macros_order = if rule_options
         .as_ref()

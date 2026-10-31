@@ -158,6 +158,11 @@ class VOnEventHyphenationOptions {
   autofix: Boolean = false
 }
 
+class AttributeHyphenationOptions {
+  style: HyphenationStyle = "always"
+  ignore: Listing<String> = new Listing {}
+}
+
 class ValidVOnOptions {
   modifiers: Listing<String> = new Listing {}
 }
@@ -185,7 +190,7 @@ class LintRuleOptions {
   `vue/v-bind-style`: VBindStyle? = null
   `vue/v-on-style`: VOnStyle? = null
   `vue/v-slot-style`: (VSlotUniformStyle|VSlotStyleOptions)? = null
-  `vue/attribute-hyphenation`: HyphenationStyle? = null
+  `vue/attribute-hyphenation`: (HyphenationStyle|AttributeHyphenationOptions)? = null
   `vue/valid-v-on`: ValidVOnOptions? = null
   `vue/valid-v-slot`: ValidVSlotOptions? = null
   `musea/prefer-design-tokens`: MuseaPreferDesignTokensOptions? = null

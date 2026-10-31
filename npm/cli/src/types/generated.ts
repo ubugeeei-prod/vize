@@ -334,7 +334,12 @@ export interface LintRuleOptions {
         default?: "shorthand" | "longform" | "v-slot";
         named?: "shorthand" | "longform";
       };
-  "vue/attribute-hyphenation"?: "always" | "never";
+  "vue/attribute-hyphenation"?:
+    | ("always" | "never")
+    | {
+        style?: "always" | "never";
+        ignore?: string[];
+      };
   "vue/valid-v-on"?: {
     modifiers?: string[];
   };

@@ -461,40 +461,4 @@ Good:
 
 ## `vue/attribute-hyphenation`
 
-Use this option for static prop names on custom components. `always` reports camelCase-authored
-attributes; `never` reports authored attributes that are hyphenated. Native attributes, `aria-*`, `data-*`,
-SVG mixed-case attributes, dynamic arguments, and directive shorthand that is parsed as an attribute
-are skipped.
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/attribute-hyphenation": "warn"
-      },
-      "ruleOptions": {
-        "vue/attribute-hyphenation": "never"
-      }
-    }
-  }
-});
-```
-
-Bad with the config above:
-
-```vue
-<template>
-  <UserCard user-name="Ada" />
-</template>
-```
-
-Good:
-
-```vue
-<template>
-  <UserCard userName="Ada" aria-label="Ada Lovelace" />
-</template>
-```
+See [attribute styles and literal exemptions](./options-attributes.md).
