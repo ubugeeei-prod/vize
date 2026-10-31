@@ -99,7 +99,10 @@ export function resolvePnpmPackProvider(
   assert.ok(declaration, "workspace must pin an exact pnpm version");
   const expectedVersion = declaration[1];
   assert.ok(execpath, "npm_execpath is missing from the package-test task environment");
-  assert.ok(path.isAbsolute(execpath), "npm_execpath must identify the active absolute pnpm provider");
+  assert.ok(
+    path.isAbsolute(execpath),
+    "npm_execpath must identify the active absolute pnpm provider",
+  );
   const entry = path.resolve(execpath);
   assert.ok(
     fs.lstatSync(entry).isFile(),
