@@ -418,13 +418,15 @@ fn hoisted_slot_constructor_branches_keep_the_component_owner() {
             "the hoisted helper module must export {helper}",
         );
     }
+    let selector = format!(
+        "  const __vize_slot_host_1 = (undefined as unknown as import(\"vize:virtual-ts\").$SlotHostSelector<typeof el_badge>)((undefined as unknown as import(\"vize:virtual-ts\").$SlotConstructorInstance<{constructor}, typeof __vize_slot_host_1_instances.withoutArguments, typeof __vize_slot_host_1_instances.withArguments>), (undefined as unknown as import(\"vize:virtual-ts\").$SlotsFactory<typeof el_badge>)(el_badge)({{",
+    );
     assert_eq!(
-        code.matches(&format!(
-            "import(\"vize:virtual-ts\").$SlotConstructorInstance<{constructor}, __Z, __P>",
-        ))
-        .count(),
-        1,
-        "the branch selector must retain the exact component owner:\n{code}",
+        code.lines()
+            .filter(|line| line.trim_start().starts_with("const __vize_slot_host_1 = "))
+            .collect::<Vec<_>>(),
+        vec![selector.as_str()],
+        "the complete branch selector must retain its owner and both actual constructor results",
     );
     assert_eq!(
         crate::virtual_ts::helpers::SHARED_PREAMBLE_DTS

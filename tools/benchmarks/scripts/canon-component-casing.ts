@@ -83,10 +83,11 @@ async function main() {
     include: ["**/*.vue", "**/component.ts"],
   };
   const inputManifest = [];
+  let sourceSdkCustody: ReturnType<typeof sourceSdk> | null = null;
   for (const role of ["published", "source"]) {
     const project = path.join(out, role);
     fs.mkdirSync(project);
-    if (role === "source") sourceSdk(project, provider, binary);
+    if (role === "source") sourceSdkCustody = sourceSdk(project, provider, binary);
     else
       fs.symlinkSync(
         path.join(provider, "node_modules"),
@@ -220,6 +221,7 @@ async function main() {
     vueTs: identify(vueTs),
     physicalVue: fs.realpathSync(path.join(published, "node_modules/vue/package.json")),
     inputManifest,
+    sourceSdkCustody,
     stock,
     byCase,
     timingUsable: false,

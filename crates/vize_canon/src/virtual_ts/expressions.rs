@@ -12,9 +12,9 @@ mod component_props;
 #[cfg(test)]
 mod component_props_tests;
 mod component_ref_callbacks;
-pub(crate) mod constructor_instance;
 #[cfg(test)]
 mod component_slot_contract_tests;
+pub(crate) mod constructor_instance;
 mod directive_values;
 #[cfg(test)]
 mod directive_values_tests;
