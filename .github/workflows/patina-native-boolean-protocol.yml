@@ -1,6 +1,17 @@
 name: Patina native boolean protocols
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      history_only:
+        description: Run only the immutable post-main 79-case native lint history capture
+        type: boolean
+        required: false
+        default: false
+      source_sha:
+        description: Exact merged source for the one history role
+        type: string
+        required: false
+        default: ""
   pull_request:
     paths:
       - crates/vize_patina/src/linter/corsa_session/**
@@ -21,6 +32,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   live-native:
+    if: ${{ !inputs.history_only }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     permissions: { contents: read, actions: read }
@@ -75,5 +87,63 @@ jobs:
         with:
           name: patina-native-boolean-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/patina-native-boolean/
+          if-no-files-found: error
+          retention-days: 7
+  history-observer:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.history_only }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    permissions: { contents: read, actions: read }
+    env:
+      CARGO_BUILD_JOBS: "24"
+      SOURCE_SHA: ${{ inputs.source_sha }}
+      VIZE_LINTER_API_EVIDENCE_DIR: target/differential/linter-api
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - name: Checkout immutable controller
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with: { version: latest, node-version-file: package.json, cache: false, cache-save: false, run-install: false }
+      - name: Seal controller outside the source checkout
+        run: node tools/support/compat/github/native-linter-history-capture.ts controller "$RUNNER_TEMP/native-input-label-capture"
+      - name: Checkout exact merged product source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "2ff539aab5d1aa076f4af628ca863d6bdcfb4e70", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Authenticate actual source, providers and frozen input pins
+        run: node "$RUNNER_TEMP/native-input-label-capture/controller.ts" source "$RUNNER_TEMP/native-input-label-capture"
+      - name: Install only the ordinary pinned observer dependencies
+        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './tests...' --filter './npm/ui...'
+      - name: Build and attest the genuine source CLI before the test
+        run: |
+          set -euo pipefail
+          cargo build --profile ci -p vize 2>&1 | tee "$RUNNER_TEMP/native-input-label-capture/cli-build.log"
+          node tests/differential/build-receipt.ts
+          node "$RUNNER_TEMP/native-input-label-capture/controller.ts" cli "$RUNNER_TEMP/native-input-label-capture"
+      - name: Execute the one existing complete 79-case observer test directly
+        run: |
+          set -euo pipefail
+          node --test tests/tooling/differential-linter-api-execution.test.ts 2>&1 | tee "$RUNNER_TEMP/native-input-label-capture/test.log"
+      - name: Require exact original population, whole results and source receipt
+        run: node "$RUNNER_TEMP/native-input-label-capture/controller.ts" verify "$RUNNER_TEMP/native-input-label-capture"
+      - name: Preserve all controlled raw packets and receipts without native images
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-linter-history-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/native-input-label-capture/
+            target/differential/linter-api/report.json
+            target/differential/linter-api/acceptance.json
+            target/differential/linter-api/build-receipt.json
+            target/differential/linter-api/cargo.jsonl
+            target/differential/linter-api/cargo.stderr.txt
+            target/ci/vize.differential-build.json
           if-no-files-found: error
           retention-days: 7
