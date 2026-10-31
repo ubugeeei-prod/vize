@@ -1,0 +1,8 @@
+{
+  "typeChecker": { "corsaPath": "missing-native-runtime" },
+  "linter": {
+    "preset": "incremental",
+    "typeAware": true,
+    "rules": { "type/strict-boolean-expressions": "error" }
+  }
+}

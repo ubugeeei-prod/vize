@@ -112,7 +112,7 @@ jobs:
       - name: Verify transactional source fixture preparation
         run: vp node --test tests/tooling/nuxt2-bridge-*.test.ts
       - name: Verify both packed entries without loading Vue 3-only Vite APIs
-        run: vp node --test npm/framework/nuxt/src/nuxt2-entry.test.ts
+        run: pnpm --dir npm/framework/nuxt run test:packed-entry
       - name: Verify version-specific plans and original modern oracle
         run: vp node --test npm/framework/nuxt-lint-config/src/*.test.ts npm/framework/nuxt/src/lint/generation*.test.ts npm/framework/nuxt/src/builder.test.ts npm/framework/nuxt/src/lint/checker/setup.test.ts
       - name: Install the Nuxt 2 reproduction

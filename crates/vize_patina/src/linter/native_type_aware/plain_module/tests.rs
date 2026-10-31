@@ -46,8 +46,9 @@ fn plain_plan_outlives_source_and_preserves_existing_findings_on_failure() {
         .map(|diagnostic| diagnostic.rule_name)
         .collect::<Vec<_>>();
     assert_eq!(rules, ["script/existing", "type/corsa-runtime"]);
-    assert_eq!(result.warning_count, 2);
-    assert_eq!(result.error_count, 0);
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.error_count, 1);
+    assert_eq!(result.diagnostics.last().unwrap().severity, Severity::Error);
 }
 
 #[test]

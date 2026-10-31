@@ -1,0 +1,30 @@
+An original minimal project shows a false negative when an unrelated ambient function has the same structural signature as Vue's `useTemplateRef`.
+
+Environment verified locally: vize/@vizejs/native 0.596.0, Vue 3.6.0-rc.13, native TypeScript 7.1.0-beta; independent vue-tsc 3.3.13 with TypeScript 6.0.3.
+
+`global.d.ts`:
+```ts
+export {};
+declare global {
+  const useTemplateRef: <T = unknown, K extends string = string>(key: K) => Readonly<import('vue').ShallowRef<T | null>>;
+}
+```
+
+`Probe.vue`:
+```vue
+<script setup lang="ts">
+const target = useTemplateRef('target');
+if (target.value) target.value.focus();
+</script>
+<template><button ref="target" /></template>
+```
+
+The ambient declaration is authored as a separate function, rather than an auto-import alias of Vue. Its untyped return value is `unknown`. Inside the truthy branch, `focus` must be rejected as TS2339 on `{}` (line 3, column 32).
+
+Actual public Vize result: exit 0, errorCount 0, two files checked. The independent Vue/TypeScript oracle reports exactly `Probe.vue(3,32): error TS2339: Property 'focus' does not exist on type '{}'.` Configure `vueCompilerOptions.composables.useTemplateRef` to `[]` for this unrelated function; leaving Vue's name-only composable inference enabled repeats the same mistaken assumption.
+
+Strict tsconfig: noEmit/strict/skipLibCheck, module ESNext, moduleResolution Bundler, lib ES2024+DOM, types [], include *.vue and *.ts.
+
+Root cause/repair constraint: function type assignability, bidirectional Exact, and return-type identity cannot distinguish a separately declared structurally identical function from `typeof import('vue').useTemplateRef`. Do not use those alone as proof of Vue declaration ownership. Preserve real custom defaults/overloads/mutability and missing-import diagnostics. Real Nuxt/Vue auto-imports still need precise DOM/component inference. Declaration/provider origin metadata or another independently proven ownership mechanism is required.
+
+Adjacent to #10948 / #10950. The readonly and missing-import repairs improve other cases; structural signature equality alone does not close this separate case. This reproduction is original and contains no private benchmark source.

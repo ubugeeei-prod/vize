@@ -41,8 +41,31 @@ fn prepared_sfc_outlives_source_descriptor_and_template_arena() {
         .map(|diagnostic| diagnostic.rule_name)
         .collect::<Vec<_>>();
     assert_eq!(rules, ["type/corsa-runtime", "css/no-important"]);
-    assert_eq!(result.warning_count, 2);
-    assert_eq!(result.error_count, 0);
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.error_count, 1);
+    let runtime = result.diagnostics.first().unwrap();
+    assert_eq!(
+        (
+            runtime.severity,
+            runtime.message.as_str(),
+            runtime.start,
+            runtime.end,
+            runtime.help.as_deref(),
+            runtime.labels.len(),
+            runtime.fix.is_none(),
+        ),
+        (
+            crate::Severity::Error,
+            "owned checker failure",
+            0,
+            0,
+            Some(
+                "Requested type-aware lint could not initialize its native runtime. Check the reported failure, install a compatible native TypeScript runtime, or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable."
+            ),
+            0,
+            true,
+        )
+    );
 }
 
 #[test]
