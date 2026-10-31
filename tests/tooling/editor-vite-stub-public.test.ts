@@ -149,19 +149,19 @@ test("pnpm uses only its pinned manifest entry and rejects missing, wrong-versio
         JSON.stringify({ name: "pnpm", version, bin: { pnpm: bin } }),
       );
     assert.throws(() => resolvePnpm(root));
-    for (const name of ["declared.mjs", "declared.cjs"]) {
+    for (const name of ["pnpm", "pnpm.exe"]) {
       writeFileSync(
         join(pkg, "bin", name),
         'throw new Error("control must never execute a fixture");\n',
       );
       save("bin/" + name);
       const selected = resolvePnpm(root);
-      assert.deepEqual(selected.argv, [process.execPath, realpathSync(join(pkg, "bin", name))]);
+      assert.deepEqual(selected.argv, [realpathSync(join(pkg, "bin", name))]);
       assert.equal(selected.package.entry.sha256, sha256(readFileSync(join(pkg, "bin", name))));
     }
     save("bin/missing.mjs");
     assert.throws(() => resolvePnpm(root));
-    save("bin/declared.mjs", "12.0.0");
+    save("bin/pnpm", "12.0.0");
     assert.throws(() => resolvePnpm(root));
     save("../../../escape.mjs");
     assert.throws(() => resolvePnpm(root), /declared pnpm entry escaped/);
@@ -184,6 +184,6 @@ test(
     mkdirSync(output);
     const record = new Recorder(join(output, "proof"));
     const argv = bootstrapPnpm(join(output, "package-manager"), record);
-    assert.equal(argv[0], process.execPath);
+    assert.equal(argv.length, 1, "execute the package-declared native entry directly");
   },
 );

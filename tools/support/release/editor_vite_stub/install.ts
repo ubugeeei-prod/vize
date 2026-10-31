@@ -33,7 +33,7 @@ export function resolvePnpm(tools: string) {
     "pnpm entry must be an owned regular file",
   );
   return {
-    argv: [process.execPath, entry],
+    argv: [entry],
     package: {
       root,
       name: manifest.name,
@@ -54,7 +54,6 @@ export function bootstrapPnpm(tools: string, record: Recorder): string[] {
         "install",
         "--prefix",
         tools,
-        "--ignore-scripts",
         "--no-audit",
         "--no-fund",
         "--save-exact",
@@ -66,6 +65,10 @@ export function bootstrapPnpm(tools: string, record: Recorder): string[] {
   const selected = resolvePnpm(tools);
   record.json("pnpm-bootstrap-identity.json", selected);
   copyFileSync(selected.package.manifestPath, join(record.root, "pnpm-package-manifest.json"));
+  copyFileSync(
+    join(tools, "package-lock.json"),
+    join(record.root, "pnpm-bootstrap-package-lock.json"),
+  );
   const version = record.run("pnpm-version", [...selected.argv, "--version"], tools);
   success(version);
   assert.equal(version.stdout.trim(), "12.1.0");
