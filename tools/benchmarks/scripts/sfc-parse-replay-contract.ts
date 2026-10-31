@@ -28,7 +28,7 @@ const CASE_ORDERS = [
   ["medium", "simple", "complex"],
 ];
 
-type HashInput = Parameters<ReturnType<typeof createHash>["update"]>[0];
+type HashInput = string | NodeJS.ArrayBufferView;
 
 export function sha256(bytes: HashInput): string {
   return createHash("sha256").update(bytes).digest("hex");
