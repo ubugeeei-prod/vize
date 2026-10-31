@@ -57,6 +57,8 @@ const result: Record<string, unknown> = {
   roles: [],
 };
 record.json("qualification.json", result);
+let moduleCells = 0,
+  semanticCompilerProcesses = 0;
 try {
   for (const [role, blob] of [
     ["before", beforeBlob],
@@ -73,6 +75,16 @@ try {
       roleRecord,
     );
     const observations = observe(role, installed, roleRecord);
+    moduleCells += observations.length;
+    semanticCompilerProcesses += observations.reduce(
+      (sum, cell) =>
+        sum +
+        cell.targetBad.length +
+        (cell.targetFixed?.length ?? 0) +
+        cell.preservationBad.length +
+        cell.preservationFixed.length,
+      0,
+    );
     assertCustody(installed.images);
     (result.roles as unknown[]).push({
       role,
@@ -83,9 +95,11 @@ try {
     });
     record.json("qualification.json", result);
   }
+  assert.equal(moduleCells, 6);
+  assert.equal(semanticCompilerProcesses, 42);
   result.accepted = true;
-  result.moduleCells = 6;
-  result.semanticCompilerProcesses = 42;
+  result.moduleCells = moduleCells;
+  result.semanticCompilerProcesses = semanticCompilerProcesses;
 } catch (error) {
   result.error = error instanceof Error ? error.message : String(error);
   throw error;

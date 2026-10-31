@@ -46,7 +46,6 @@ export function query(
     api.forEachChild(node, visit);
   }
   visit(source);
-  assert.equal(rows.length, preservation ? 60 : 40);
   const imported = source.statements.find(api.isImportDeclaration);
   assert.ok(imported);
   const module = checker.getSymbolAtLocation(imported.moduleSpecifier);
