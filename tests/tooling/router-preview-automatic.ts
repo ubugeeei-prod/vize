@@ -6,7 +6,7 @@ import path from "node:path";
 import { repoRoot } from "../_helpers/realworld-patch.ts";
 import { resolveTsgoBinary } from "../_helpers/realworld-typecheck.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
-import { previewPage } from "./support/router-preview/authority.ts";
+import { hash, previewPage } from "./support/router-preview/authority.ts";
 import { prepareProject } from "./support/router-preview/project.ts";
 import { verifyBuiltProvider } from "./support/router-preview/provider.ts";
 import { processRecorder, type Observation } from "./support/router-preview/processes.ts";
@@ -22,24 +22,16 @@ fs.mkdirSync(output, { recursive: true });
 const [source] = resolveVizeLaunchCommand(undefined, sourceBinary, { required: true, repoRoot });
 const tsgo = resolveTsgoBinary();
 
-const base = `<script setup lang="ts">
-// 自動の props 🍣
-import { definePage } from 'vue-router/experimental'
-const props = defineProps<{ extra?: string }>()
-definePage({
-  params: {
-    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },
-    hash: { heading: {} },
-  },
-  props: true,
-})
-const id: number = props.id
-const page: number = props.page
-const tags: string[] | undefined = props.tags
-const at: Date | undefined = props.at
-</script>
-<template><div>{{ props.id.toFixed() }} {{ heading?.length }} {{ props.at?.toISOString() }}</div></template>
-`;
+// Newly pinned original generated input; the semantic program and all64 controls
+// remain byte-identical. These bytes physically feed both checkers below.
+const pinned = fs.readFileSync(
+  new URL(
+    "../_fixtures/differential/typechecker/router-mapper-capability-10579/Page.vue.txt",
+    import.meta.url,
+  ),
+);
+assert.equal(hash(pinned), "534b9539a6a5ae2d986ab9c62caa52c920d8eb88e2a4fb5e3b05c119677bf0c2");
+const base = pinned.toString("utf8");
 const declaration = "const props = defineProps<{ extra?: string }>()";
 // A props function stays out: vue-tsc resolves its self-import circularly.
 const controls: Array<[string, string]> = [
@@ -72,23 +64,44 @@ type Diagnostic = [file: string, line: number, column: number, code: number];
 
 function reference(record: Observation): Diagnostic[] {
   assert.equal(record.error, null, record.label);
-  return record.stdout.split(/\r?\n/u).flatMap((line) => {
+  assert.equal(record.signal, null, record.label);
+  assert.equal(record.stderr, "", record.label);
+  const diagnostics: Diagnostic[] = [];
+  for (const line of record.stdout.split(/\r?\n/u)) {
+    if (!line) continue;
     const match = /^(.+?)\((\d+),(\d+)\): error TS(\d+): /u.exec(line);
-    return match ? [[match[1], Number(match[2]), Number(match[3]), Number(match[4])]] : [];
-  });
+    if (match) diagnostics.push([match[1], Number(match[2]), Number(match[3]), Number(match[4])]);
+    else
+      assert.ok(
+        diagnostics.length && /^\s/u.test(line),
+        `${record.label}: unclassified output ${line}`,
+      );
+  }
+  if (diagnostics.length) assert.ok(record.status === 1 || record.status === 2, record.label);
+  else assert.equal(record.status, 0, record.label);
+  return diagnostics;
 }
 
 function native(record: Observation): Diagnostic[] {
   assert.equal(record.error, null, record.label);
+  assert.equal(record.signal, null, record.label);
+  assert.equal(record.stderr, "", record.label);
   const report = JSON.parse(record.stdout) as {
+    errorCount: number;
+    warningCount: number;
     files: Array<{ file: string; diagnostics: string[] }>;
   };
-  return report.files.flatMap(({ file, diagnostics }) =>
-    diagnostics.flatMap((text) => {
+  const diagnostics = report.files.flatMap(({ file, diagnostics }) =>
+    diagnostics.map((text): Diagnostic => {
       const match = /^error:(\d+):(\d+) \[TS(\d+)\] /u.exec(text);
-      return match ? [[file, Number(match[1]), Number(match[2]), Number(match[3])]] : [];
+      assert.ok(match, `${record.label}: unclassified diagnostic ${text}`);
+      return [file, Number(match[1]), Number(match[2]), Number(match[3])];
     }),
   );
+  assert.equal(report.errorCount, diagnostics.length, record.label);
+  assert.equal(report.warningCount, 0, record.label);
+  assert.equal(record.status, diagnostics.length ? 1 : 0, record.label);
+  return diagnostics;
 }
 
 const provider = verifyBuiltProvider(providerDirectory, receiptSha);
@@ -113,6 +126,13 @@ try {
         ] as const) {
           const id = `${kind}/${enabled ? "enabled" : "disabled"}/${name}/${newlineId}`;
           fs.writeFileSync(path.join(root, previewPage), page.replaceAll("\n", newline));
+          const retained = path.join(output, "inputs", id);
+          fs.mkdirSync(retained, { recursive: true });
+          const inputs = [previewPage, "tsconfig.json"].map((file, index) => {
+            const bytes = fs.readFileSync(path.join(root, file));
+            fs.writeFileSync(path.join(retained, `${index}.txt`), bytes);
+            return { file, bytes: bytes.length, sha256: hash(bytes) };
+          });
           const expected = reference(
             processes.run(
               `${id}/reference`,
@@ -146,8 +166,8 @@ try {
               root,
             ),
           );
-          results.push({ id, expected, actual });
-          if (JSON.stringify(actual) !== JSON.stringify(expected)) failures.push(id);
+          results.push({ id, inputs, expected, actual });
+          if (JSON.stringify(actual) !== JSON.stringify(expected)) failures.push(`${id}/check`);
         }
       }
     }
@@ -160,7 +180,7 @@ try {
   preview.cleanup();
   published.cleanup();
 }
-assert.deepEqual(failures, [], "every automatic control matches vue-tsc with the real plugin");
+assert.deepEqual(failures, [], "every complete check vector matches vue-tsc with the real plugin");
 // Both packs report 5.4.0; only the source build may change the diagnostics.
 const outcome = (id: string) =>
   JSON.stringify(

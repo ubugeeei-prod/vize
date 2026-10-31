@@ -40,6 +40,7 @@ export const pathHostCallers: Record<string, readonly [number, number, number, n
   "crates/vize/src/commands/check/tsconfig_inputs/tests.rs": [0, 1, 0, 0],
   "crates/vize/src/commands/check/tsconfig_inputs/type_references/tsconfig_types.rs": [0, 1, 0, 0],
   "crates/vize/src/commands/content_mapper/typed_router_tests.rs": [0, 2, 0, 0],
+  "crates/vize/src/commands/content_mapper/typed_router_tests/provider.rs": [0, 2, 0, 0],
   "crates/vize/src/commands/doctor/discovery.rs": [2, 0, 0, 0],
   "crates/vize/src/commands/fmt/files.rs": [4, 0, 0, 0],
   "crates/vize/src/commands/inspector/input_files.rs": [6, 2, 0, 0],
@@ -53,6 +54,8 @@ export const pathHostCallers: Record<string, readonly [number, number, number, n
   "crates/vize_canon/src/batch/virtual_project/content_mapper_config/typed_router_tests.rs": [
     0, 3, 0, 0,
   ],
+  "crates/vize_canon/src/batch/virtual_project/content_mapper_config/typed_router_tests/provider.rs":
+    [0, 1, 0, 0],
   "crates/vize_canon/src/batch/virtual_project/content_mapper/typed_router_profile_tests.rs": [
     0, 1, 0, 0,
   ],
