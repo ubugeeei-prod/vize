@@ -221,6 +221,24 @@ order. Public CLI and Node whole-output controls prove all three states and
 their fixed points; the existing option matrix continues to exercise
 `as-written` over the full in-repo Vue corpus.
 
+## Node attribute group option parity
+
+The existing `attributeGroups` nested string arrays now have a typed Node
+projection in addition to Rust, config schema, generated TypeScript, Pkl and
+WASM support. Node `formatSfc` forwards the groups after selecting a preset;
+the existing sorter still applies them only within order-safe static attribute
+runs. Explicit `sortAttributes: false` retains authored order, and the four
+presets keep their existing sorting assignments. An empty group list places
+static attributes in one alphabetical group unless `attributeSortOrder` says
+otherwise. Public Node controls pin exact groups, prefix/catch-all patterns,
+empty/unmatched groups, dynamic barriers, duplicate static names, every preset,
+immutable option arrays and second/third-pass fixed points. The existing
+option matrix retains its `attributeGroups` axis over the in-repo Vue corpus.
+
+This is one public-option parity slice. Exact range/source-map acceptance and
+the umbrella's broader formatter/linter and option-combination guarantees stay
+open.
+
 ## SFC block order option parity
 
 The existing `sortBlocks` boolean now has a direct CLI override in addition to

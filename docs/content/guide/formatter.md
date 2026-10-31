@@ -229,6 +229,13 @@ config option `attributeSortOrder`. The formatter still applies Vue priority
 groups; `as-written` only preserves authored order inside each group. Use
 `--sort-attributes=false` to preserve the complete authored order instead.
 
+Node `formatSfc` also accepts `attributeGroups`, using the same nested string
+arrays as config: `attributeGroups: [["data-*"], ["class"], ["*"]]`. Groups
+apply within static attribute runs; dynamic bindings and duplicate static names
+retain their order. Set `sortAttributes: true` to enable sorting with a preset
+that preserves authored order. An empty array places all static attributes in
+one group; `sortAttributes: false` keeps the complete authored order.
+
 SFC block order is projected consistently too: `--sort-blocks[=false]` maps
 to the typed Node and config option `sortBlocks`. An explicit CLI value
 overrides config and a selected preset. `false` preserves authored root-block

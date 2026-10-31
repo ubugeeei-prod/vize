@@ -578,6 +578,8 @@ export interface FormatOptionsNapi {
   sortAttributes?: boolean;
   /** Choose the order of attributes within each Vue priority group. */
   attributeSortOrder?: "alphabetical" | "as-written";
+  /** Custom attribute priority groups within order-safe static attribute runs. */
+  attributeGroups?: Array<Array<string>>;
   singleAttributePerLine?: boolean;
   /** Indent the contents of `<script>` and `<style>` blocks. */
   vueIndentScriptAndStyle?: boolean;

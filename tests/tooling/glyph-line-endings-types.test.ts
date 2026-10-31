@@ -175,7 +175,7 @@ test("config schema and shipped Node types share SFC layout booleans", (t) => {
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
 
-test("config schema and shipped Node types share attribute order modes", (t) => {
+test("config schema and shipped Node types share attribute order modes and groups", (t) => {
   const schema = JSON.parse(
     fs.readFileSync(path.join(root, "npm/cli/schemas/vize.config.schema.json"), "utf8"),
   );
@@ -183,6 +183,11 @@ test("config schema and shipped Node types share attribute order modes", (t) => 
     "alphabetical",
     "as-written",
   ]);
+  assert.deepEqual(schema.definitions.FormatterConfig.properties.attributeGroups, {
+    description: "Custom attribute groups",
+    type: "array",
+    items: { type: "array", items: { type: "string" } },
+  });
 
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "glyph-attribute-order-types-"));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
@@ -200,6 +205,14 @@ test("config schema and shipped Node types share attribute order modes", (t) => 
       "formatSfc('', { attributeSortOrder: 'source' });",
       "// @ts-expect-error attribute order modes remain string-only.",
       "formatSfc('', { attributeSortOrder: false });",
+      "const config: FormatterConfig = { attributeGroups: [['data-*'], ['*']] };",
+      "const native: FormatOptionsNapi = { attributeGroups: config.attributeGroups };",
+      "formatSfc('', native);",
+      "formatSfc('', { attributeGroups: [] });",
+      "// @ts-expect-error groups remain nested arrays, not a flat pattern list.",
+      "formatSfc('', { attributeGroups: ['id'] });",
+      "// @ts-expect-error group patterns remain strings.",
+      "formatSfc('', { attributeGroups: [[1]] });",
       "",
     ].join("\n"),
   );
