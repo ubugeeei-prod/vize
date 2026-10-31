@@ -57,7 +57,7 @@ pub(super) fn region_span(region: &l2::Region<'_>, fallback: Span) -> Span {
             l2::Op::Element(op) => op.span,
             l2::Op::Component(op) => op.span,
             l2::Op::Text(op) => op.span,
-            l2::Op::Interpolation(op) => op.span,
+            l2::Op::Interpolation(op) | l2::Op::JsxChildValue(op) => op.span,
             l2::Op::Comment(op) => op.span,
             l2::Op::If(op) => op.span,
             l2::Op::For(op) => op.span,

@@ -59,6 +59,7 @@ fn conditional_slot_template_has_direct_v_for(region: &Region<'_>) -> bool {
         | Op::OriginalFor(_)
         | Op::Text(_)
         | Op::Interpolation(_)
+        | Op::JsxChildValue(_)
         | Op::Comment(_) => false,
     })
 }
@@ -138,6 +139,7 @@ fn dynamic_slot_carrier_has_slot_outlet(region: &Region<'_>) -> bool {
         | Op::Slot(_)
         | Op::Text(_)
         | Op::Interpolation(_)
+        | Op::JsxChildValue(_)
         | Op::Comment(_) => false,
     })
 }
@@ -200,6 +202,7 @@ pub(super) fn op_is_direct_slot_carrier(op: &Op<'_>) -> bool {
         | Op::Text(_)
         | Op::Interpolation(_)
         | Op::JsxChildValue(_)
+        | Op::JsxChildValue(_)
         | Op::Comment(_) => false,
     }
 }
@@ -229,6 +232,7 @@ fn op_has_direct_slot_carrier(op: &Op<'_>) -> bool {
         | Op::Text(_)
         | Op::Interpolation(_)
         | Op::JsxChildValue(_)
+        | Op::JsxChildValue(_)
         | Op::Comment(_) => false,
     }
 }
@@ -249,6 +253,7 @@ fn component_tree_has_slot_carrier(region: &Region<'_>) -> bool {
         Op::Slot(_)
         | Op::Text(_)
         | Op::Interpolation(_)
+        | Op::JsxChildValue(_)
         | Op::JsxChildValue(_)
         | Op::Comment(_) => false,
     })

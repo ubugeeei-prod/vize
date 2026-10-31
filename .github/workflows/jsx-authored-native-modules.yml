@@ -82,6 +82,8 @@ jobs:
           sha256sum "$observer" "$baseline/$observer" tests/tooling/jsx-vapor-oracle/{child-values.ts,vdom-child-values.ts,runtime.ts} tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json > "$directory/observer.sha256"
           status=0
           cargo test --locked --profile ci -p vize_l2 --test op_family --test jsx_child_dump > "$directory/typed-ir.stdout" 2> "$directory/typed-ir.stderr" || status=1
+          cargo test --locked --profile ci -p vize_l2_to_l3 --test jsx_child_value > "$directory/child-graph.stdout" 2> "$directory/child-graph.stderr" || status=1
+          cargo test --locked --profile ci -p vize_l3 --test op_family --test values_dump > "$directory/child-graph-codec.stdout" 2> "$directory/child-graph-codec.stderr" || status=1
           VIZE_JSX_VDOM_CHILD_CAPTURE="$directory/head" cargo test --locked --profile ci -p vize_atelier_jsx --test vdom_child_values -- --nocapture > "$directory/head.stdout" 2> "$directory/head.stderr" || status=1
           (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-vdom-values-base-target" VIZE_JSX_VALUE_ORACLE_ROOT="$GITHUB_WORKSPACE" VIZE_JSX_VDOM_EXPECT_OLD=1 VIZE_JSX_VDOM_CHILD_CAPTURE="$directory/base" cargo test --locked --profile ci -p vize_atelier_jsx --test vdom_child_values -- --nocapture) > "$directory/base.stdout" 2> "$directory/base.stderr" || status=1
           if test "$status" = 0; then
