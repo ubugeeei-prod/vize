@@ -91,10 +91,10 @@ fn run(root: &Path, native: &Path, policy: logical_control::Policy, capture: &Pa
         client.activate_materialized_project_session().unwrap();
     }
     if old_policy {
-        assert_ne!(
-            client.materialized_project_preference.as_ref().unwrap().1,
-            client.session_document_uri(&hidden_uri)
-        );
+        let (_, preferred) = client.materialized_project_preference.as_ref().unwrap();
+        let preferred = preferred.clone();
+        let hidden_document = client.session_document_uri(&hidden_uri);
+        assert_ne!(preferred, hidden_document);
     }
     assert_eq!(client.materialized_project_session, old_policy);
     assert_eq!(client.cwd, root);

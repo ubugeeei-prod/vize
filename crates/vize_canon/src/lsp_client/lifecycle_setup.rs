@@ -50,7 +50,7 @@ pub(super) fn write_materialized_project_tsconfig(
             }
         })
         .unwrap_or_else(|| workspace_config_path(project_root));
-    let content = json!({
+    let mut content = json!({
         "extends": crate::file_uri::path_to_typescript_name(&selected),
         "compilerOptions": {
             "allowImportingTsExtensions": true,
@@ -59,6 +59,20 @@ pub(super) fn write_materialized_project_tsconfig(
         "include": ["**/*"],
         "exclude": []
     });
+    if overlay_root
+        .parent()
+        .is_some_and(|owner| owner.join("scratch") == project_root)
+    {
+        // A rootless session owns these exact generated declarations. Keep
+        // them when materializing, without globbing unrelated scratch files.
+        content["include"] = json!([
+            "**/*",
+            crate::file_uri::path_to_typescript_name(&project_root.join("__vize_vue_modules.d.ts")),
+            crate::file_uri::path_to_typescript_name(
+                &project_root.join(crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME)
+            )
+        ]);
+    }
     super::session_storage::write_owned_file(
         overlay_root,
         &config_path,

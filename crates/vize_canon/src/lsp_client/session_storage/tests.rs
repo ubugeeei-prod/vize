@@ -67,6 +67,46 @@ fn scratch_project_is_an_owned_sibling_outside_the_materialized_include_scope() 
 }
 
 #[test]
+fn materialized_scratch_config_retains_only_its_two_generated_declarations() {
+    use crate::lsp_client::lifecycle_setup::{
+        write_materialized_project_tsconfig, write_shared_helper_decls, write_temp_tsconfig,
+        write_vue_module_stubs,
+    };
+    let project = tempfile::tempdir().unwrap();
+    let storage = SessionStorage::new(project.path()).unwrap();
+    let scratch = storage.create_scratch_root().unwrap();
+    write_temp_tsconfig(&scratch).unwrap();
+    write_vue_module_stubs(&scratch).unwrap();
+    write_shared_helper_decls(&scratch).unwrap();
+    let unrelated = scratch.join("unrelated.ts");
+    fs::write(&unrelated, "declare const mustStayOutside: unique symbol;").unwrap();
+    let config = write_materialized_project_tsconfig(&scratch, storage.root(), None).unwrap();
+    let parsed: serde_json::Value = serde_json::from_slice(&fs::read(config).unwrap()).unwrap();
+    assert_eq!(
+        parsed["include"],
+        serde_json::json!([
+            "**/*",
+            crate::file_uri::path_to_typescript_name(&scratch.join("__vize_vue_modules.d.ts")),
+            crate::file_uri::path_to_typescript_name(
+                &scratch.join(crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME)
+            )
+        ])
+    );
+    assert_eq!(parsed.get("files"), None);
+    assert_eq!(parsed["exclude"], serde_json::json!([]));
+    assert_eq!(
+        fs::read(scratch.join(crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME)).unwrap(),
+        crate::virtual_ts::SHARED_PREAMBLE_DTS.as_bytes()
+    );
+    let authored =
+        write_materialized_project_tsconfig(project.path(), storage.root(), None).unwrap();
+    let authored: serde_json::Value = serde_json::from_slice(&fs::read(authored).unwrap()).unwrap();
+    assert_eq!(authored.get("files"), None);
+    assert_eq!(authored["include"], serde_json::json!(["**/*"]));
+    assert!(unrelated.is_file());
+}
+
+#[test]
 fn preferred_materialized_member_refuses_foreign_config_and_incomplete_membership() {
     let storage = SessionStorage::new(Path::new(env!("CARGO_MANIFEST_DIR"))).unwrap();
     let config = storage.root().join("tsconfig.json");
