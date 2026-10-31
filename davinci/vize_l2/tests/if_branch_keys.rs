@@ -42,7 +42,7 @@ fn carrier<'a>(
     span: Span,
 ) -> Op<'a> {
     let children = Region {
-        ops: Vec::new_in(arena),
+        ops: Vec::new_in(&arena),
     };
     match kind {
         Carrier::Element => Op::Element(Box::new_in(
@@ -54,7 +54,7 @@ fn carrier<'a>(
                 children,
                 span,
             },
-            arena,
+            &arena,
         )),
         Carrier::Component => Op::Component(Box::new_in(
             ComponentOp {
@@ -64,7 +64,7 @@ fn carrier<'a>(
                 children,
                 span,
             },
-            arena,
+            &arena,
         )),
         Carrier::Slot => Op::Slot(Box::new_in(
             SlotOp {
@@ -74,7 +74,7 @@ fn carrier<'a>(
                 fallback: children,
                 span,
             },
-            arena,
+            &arena,
         )),
     }
 }
@@ -89,13 +89,13 @@ fn root<'a>(arena: &'a Allocator, ops: Vec<'a, Op<'a>>, span: Span) -> Vec<'a, O
                         region: Region { ops },
                         span,
                     }],
-                    arena,
+                    &arena,
                 ),
                 span,
             },
-            arena,
+            &arena,
         ))],
-        arena,
+        &arena,
     )
 }
 
@@ -169,17 +169,18 @@ fn bind<'a>(
     Ok(BindingOp::Bind(Box::new_in(
         BindOp {
             name: Some(name),
-            modifiers: Vec::new_in(arena),
+            modifiers: Vec::new_in(&arena),
             value: Some(js(arena, source, value)?),
             span: span(source, token)?,
         },
-        arena,
+        &arena,
     )))
 }
 
 #[test]
 fn static_extraction_preserves_the_whole_neighboring_branch() -> Check<()> {
     let arena = Allocator::new();
+    let arena = &arena;
     let source = "<p title='before' key='chosen' id='after'/>";
     let extent = span(source, source)?;
     let attrs = Vec::from_iter_in(
@@ -190,8 +191,8 @@ fn static_extraction_preserves_the_whole_neighboring_branch() -> Check<()> {
         ],
         &arena,
     );
-    let op = carrier(&arena, Carrier::Element, attrs, Vec::new_in(&arena), extent);
-    let mut tree = root(&arena, Vec::from_iter_in([op], &arena), extent);
+    let op = carrier(arena, Carrier::Element, attrs, Vec::new_in(&arena), extent);
+    let mut tree = root(arena, Vec::from_iter_in([op], &arena), extent);
     let before = Page::of(&tree);
     assert_eq!(
         take(&mut tree)?,
@@ -208,29 +209,24 @@ fn static_extraction_preserves_the_whole_neighboring_branch() -> Check<()> {
 #[test]
 fn earliest_dynamic_keeps_its_original_index_and_retained_ast() -> Check<()> {
     let arena = Allocator::new();
+    let arena = &arena;
     let source = "<p :title='label' :key='id' key='late'/>";
     let extent = span(source, source)?;
     let ops = Vec::from_iter_in(
         [
             bind(
-                &arena,
+                arena,
                 source,
                 DynamicName::Static("title"),
                 "label",
                 ":title='label'",
             )?,
-            bind(
-                &arena,
-                source,
-                DynamicName::Static("key"),
-                "id",
-                ":key='id'",
-            )?,
+            bind(arena, source, DynamicName::Static("key"), "id", ":key='id'")?,
         ],
         &arena,
     );
     let op = carrier(
-        &arena,
+        arena,
         Carrier::Element,
         Vec::from_iter_in(
             [attribute(source, "key", Some("late"), "key='late'")?],
@@ -239,7 +235,7 @@ fn earliest_dynamic_keeps_its_original_index_and_retained_ast() -> Check<()> {
         ops,
         extent,
     );
-    let mut tree = root(&arena, Vec::from_iter_in([op], &arena), extent);
+    let mut tree = root(arena, Vec::from_iter_in([op], &arena), extent);
     let before = Page::of(&tree);
     let [BindingOp::Bind(_), BindingOp::Bind(key)] = bindings(&tree)? else {
         return Err(String::from("two real bindings"));
@@ -274,10 +270,11 @@ fn earliest_dynamic_keeps_its_original_index_and_retained_ast() -> Check<()> {
 #[test]
 fn earliest_static_removes_only_its_attribute_and_keeps_dynamic_binding() -> Check<()> {
     let arena = Allocator::new();
+    let arena = &arena;
     let source = "<p key='first' :key='id'/>";
     let extent = span(source, source)?;
     let op = carrier(
-        &arena,
+        arena,
         Carrier::Element,
         Vec::from_iter_in(
             [attribute(source, "key", Some("first"), "key='first'")?],
@@ -285,7 +282,7 @@ fn earliest_static_removes_only_its_attribute_and_keeps_dynamic_binding() -> Che
         ),
         Vec::from_iter_in(
             [bind(
-                &arena,
+                arena,
                 source,
                 DynamicName::Static("key"),
                 "id",
@@ -295,7 +292,7 @@ fn earliest_static_removes_only_its_attribute_and_keeps_dynamic_binding() -> Che
         ),
         extent,
     );
-    let mut tree = root(&arena, Vec::from_iter_in([op], &arena), extent);
+    let mut tree = root(arena, Vec::from_iter_in([op], &arena), extent);
     let before = Page::of(&tree);
     assert_eq!(
         take(&mut tree)?,
@@ -311,12 +308,13 @@ fn earliest_static_removes_only_its_attribute_and_keeps_dynamic_binding() -> Che
 #[test]
 fn mismatched_carrier_span_and_multiple_roots_never_extract_or_mutate() -> Check<()> {
     let arena = Allocator::new();
+    let arena = &arena;
     let source = "<template><p key='one'/><p key='two'/></template>";
     let first = span(source, "<p key='one'/>")?;
     let second = span(source, "<p key='two'/>")?;
     let first_op = || -> Check<Op<'_>> {
         Ok(carrier(
-            &arena,
+            arena,
             Carrier::Element,
             Vec::from_iter_in(
                 [attribute(source, "key", Some("one"), "key='one'")?],
@@ -327,7 +325,7 @@ fn mismatched_carrier_span_and_multiple_roots_never_extract_or_mutate() -> Check
         ))
     };
     let mut foreign = root(
-        &arena,
+        arena,
         Vec::from_iter_in([first_op()?], &arena),
         span(source, source)?,
     );
@@ -335,7 +333,7 @@ fn mismatched_carrier_span_and_multiple_roots_never_extract_or_mutate() -> Check
     assert_eq!(take(&mut foreign)?, None);
     assert_eq!(Page::of(&foreign), before);
     let second_op = carrier(
-        &arena,
+        arena,
         Carrier::Element,
         Vec::from_iter_in(
             [attribute(source, "key", Some("two"), "key='two'")?],
@@ -345,7 +343,7 @@ fn mismatched_carrier_span_and_multiple_roots_never_extract_or_mutate() -> Check
         second,
     );
     let mut multiple = root(
-        &arena,
+        arena,
         Vec::from_iter_in([first_op()?, second_op], &arena),
         Span::new(first.start, second.end),
     );
@@ -358,11 +356,12 @@ fn mismatched_carrier_span_and_multiple_roots_never_extract_or_mutate() -> Check
 #[test]
 fn element_component_and_slot_share_static_and_dynamic_receivers() -> Check<()> {
     let arena = Allocator::new();
+    let arena = &arena;
     let source = "<p key='chosen' :key='id'/>";
     let extent = span(source, source)?;
     for kind in [Carrier::Element, Carrier::Component, Carrier::Slot] {
         let op = carrier(
-            &arena,
+            arena,
             kind,
             Vec::from_iter_in(
                 [attribute(source, "key", Some("chosen"), "key='chosen'")?],
@@ -370,7 +369,7 @@ fn element_component_and_slot_share_static_and_dynamic_receivers() -> Check<()> 
             ),
             Vec::from_iter_in(
                 [bind(
-                    &arena,
+                    arena,
                     source,
                     DynamicName::Static("key"),
                     "id",
@@ -380,7 +379,7 @@ fn element_component_and_slot_share_static_and_dynamic_receivers() -> Check<()> 
             ),
             extent,
         );
-        let mut tree = root(&arena, Vec::from_iter_in([op], &arena), extent);
+        let mut tree = root(arena, Vec::from_iter_in([op], &arena), extent);
         let before = Page::of(&tree);
         assert_eq!(
             take(&mut tree)?,
@@ -409,16 +408,17 @@ fn element_component_and_slot_share_static_and_dynamic_receivers() -> Check<()> 
 #[test]
 fn bare_static_and_legacy_dynamic_argument_preserve_key_kinds() -> Check<()> {
     let arena = Allocator::new();
+    let arena = &arena;
     let source = "<p key/>";
     let extent = span(source, source)?;
     let op = carrier(
-        &arena,
+        arena,
         Carrier::Element,
         Vec::from_iter_in([attribute(source, "key", None, "key")?], &arena),
         Vec::new_in(&arena),
         extent,
     );
-    let mut tree = root(&arena, Vec::from_iter_in([op], &arena), extent);
+    let mut tree = root(arena, Vec::from_iter_in([op], &arena), extent);
     let Some(key) = take(&mut tree)? else {
         return Err(String::from("bare key extracts"));
     };
@@ -433,14 +433,14 @@ fn bare_static_and_legacy_dynamic_argument_preserve_key_kinds() -> Check<()> {
     let source = "<p :[key]='id'/>";
     let extent = span(source, source)?;
     let op = carrier(
-        &arena,
+        arena,
         Carrier::Element,
         Vec::new_in(&arena),
         Vec::from_iter_in(
             [bind(
-                &arena,
+                arena,
                 source,
-                DynamicName::Dynamic(js(&arena, source, "key")?),
+                DynamicName::Dynamic(js(arena, source, "key")?),
                 "id",
                 ":[key]='id'",
             )?],
@@ -448,7 +448,7 @@ fn bare_static_and_legacy_dynamic_argument_preserve_key_kinds() -> Check<()> {
         ),
         extent,
     );
-    let mut tree = root(&arena, Vec::from_iter_in([op], &arena), extent);
+    let mut tree = root(arena, Vec::from_iter_in([op], &arena), extent);
     let before = Page::of(&tree);
     assert_eq!(
         take(&mut tree)?,
