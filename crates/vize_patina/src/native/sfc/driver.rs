@@ -22,12 +22,9 @@ impl Linter {
     ) -> Result<LintResult, Refusal> {
         // Select from actual enabled instances before parsing. A refusal never
         // retries the other owner model or the legacy SFC parser.
-        if self
-            .registry
-            .rules()
-            .iter()
-            .any(|rule| self.is_rule_enabled(rule.meta().name))
-        {
+        if self.registry.rules().iter().any(|rule| {
+            self.is_rule_enabled(rule.meta().name) && rule.as_native_sfc_template_rule().is_some()
+        }) {
             return super::template::lint(self, allocator, source, filename);
         }
         let callbacks = self.native_sfc_callbacks()?;
