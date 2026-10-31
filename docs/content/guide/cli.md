@@ -152,6 +152,7 @@ Default discovery formats Vue, JavaScript/TypeScript and JSON/JSONC files. YAML 
 | `--tab-width`                      | Indentation width                                    |
 | `--use-tabs`                       | Toggle tabs vs spaces                                |
 | `--no-semi`                        | Omit semicolons                                      |
+| `--semi[=true\|false]`             | Override semicolons; cannot be combined with `--no-semi` |
 | `--sort-attributes`                | Sort template attributes                             |
 | `--attribute-sort-order`           | Choose `alphabetical` or `as-written` within groups  |
 | `--single-attribute-per-line`      | Put one attribute per line                           |

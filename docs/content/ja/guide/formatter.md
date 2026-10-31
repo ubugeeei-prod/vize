@@ -120,6 +120,7 @@ export default defineConfig({}).withVue({
 | `--bracket-same-line`              | 複数行タグの `>` を最後の属性行に置きます。                      |
 | `--end-of-line`                    | 改行を `lf`、`crlf`、`cr`、自動検出の `auto` から選びます。       |
 | `--no-semi`                        | 文末のセミコロンを省略します。                                  |
+| `--semi[=true\|false]`             | 設定のセミコロン方針を、付ける側と省略する側の両方へ上書きします。 |
 | `--sort-attributes`                | テンプレートとブロックタグの属性を並べ替えます。                |
 | `--attribute-sort-order`           | 優先グループ内で `alphabetical` または `as-written` を選びます。 |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ書きます。                                |
@@ -131,6 +132,10 @@ export default defineConfig({}).withVue({
 | `--normalize-inline-styles`       | 静的な `style` 宣言を一行に整えます。                 |
 | `--normalize-v-for-parens`        | 複数の `v-for` エイリアスを括弧で囲みます。             |
 | `--reindent-preprocessor-styles`  | SCSS・Less を入れ子の深さでインデントします。           |
+
+`--semi` は `--semi=true` と同じです。`--semi=false` と既存の `--no-semi`
+はセミコロンを省略します。どちらも指定しなければ設定値を使います。
+`--semi` と `--no-semi` の同時指定は引数エラーになります。
 
 個々の設定は、次のガイドで詳しく説明しています。
 
