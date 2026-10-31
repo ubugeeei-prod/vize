@@ -379,10 +379,10 @@ fn assert_vdom_snapshot(name: &str, source: &str, lang: JsxLang) {
     let bump = Allocator::new();
     let output = compile_to_vdom(&bump, source, lang, VdomCompileOptions::default());
     let active = match name {
-        "directives_slots_svg_and_spreads"
-        | "fragment_whitespace_text"
-        | "stateful_destructured_component"
-        | "tsx_syntax_edges" => format!("{name}_vdom_vdom_child_values_6890"),
+        "directives_slots_svg_and_spreads" => format!("{name}_vdom_vdom_dynamic_slots_6890"),
+        "fragment_whitespace_text" | "stateful_destructured_component" | "tsx_syntax_edges" => {
+            format!("{name}_vdom_vdom_child_values_6890")
+        }
         _ => format!("{name}_vdom"),
     };
     insta::assert_debug_snapshot!(active, vdom_output_summary(source, &output));

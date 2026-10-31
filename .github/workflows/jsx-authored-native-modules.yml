@@ -19,6 +19,7 @@ on:
       - "crates/vize_patina/tests/jsx_child_expression_control.rs"
       - "crates/vize_patina/tests/main.rs"
       - "tests/tooling/jsx-vdom-snapshot-custody.test.ts"
+      - "tests/tooling/jsx-vdom-slot-snapshot-custody.test.ts"
       - "tests/_fixtures/differential/jsx/child-values-6890-vdom-snapshot-successors.json"
       - "tests/_fixtures/differential/linter/jsx-child-expression-control-6890/**"
       - "tests/_fixtures/differential/typechecker/jsx-child-expression-control-6890/**"
@@ -331,7 +332,7 @@ jobs:
           cargo test --locked --profile ci -p vize_vitrine --no-default-features --features wasm --lib wasm::jsx::tests::
       - name: Verify complete native fixture and historical custody
         if: always()
-        run: node --test tests/tooling/jsx-authored-native-workflow-paths.test.ts tests/tooling/jsx-vdom-snapshot-custody.test.ts tests/tooling/jsx-authored-module-fixture-custody.test.ts tests/tooling/jsx-child-golden-custody.test.ts tests/tooling/jsx-child-profile-contract.test.ts tests/tooling/jsx-child-api-fixtures.test.ts tests/tooling/vapor-third-party-reports.test.mjs
+        run: node --test tests/tooling/jsx-authored-native-workflow-paths.test.ts tests/tooling/jsx-vdom-snapshot-custody.test.ts tests/tooling/jsx-vdom-slot-snapshot-custody.test.ts tests/tooling/jsx-authored-module-fixture-custody.test.ts tests/tooling/jsx-child-golden-custody.test.ts tests/tooling/jsx-child-profile-contract.test.ts tests/tooling/jsx-child-api-fixtures.test.ts tests/tooling/vapor-third-party-reports.test.mjs
       - name: Capture whole native fixture packets and genuine runtime traces
         if: always()
         env:

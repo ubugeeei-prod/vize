@@ -13,6 +13,7 @@ type Item = {
   mapped: boolean;
   functionName: string;
   diagnostics: unknown[];
+  optimizedParent: boolean;
 };
 type Packet = {
   original: {
@@ -21,6 +22,7 @@ type Packet = {
     expectedText: string[];
   };
   cases: Item[];
+  refused: { source: string; code: string; map: unknown; diagnostics: unknown[] };
 };
 const [beforePath, afterPath, outputPath] = process.argv.slice(2);
 assert.ok(beforePath && afterPath && outputPath);
@@ -38,8 +40,8 @@ const original = JSON.parse(
 assert.deepEqual(before.original, original);
 assert.deepEqual(after.original, original);
 assert.deepEqual(installed, { packageVersion: "3.2.26", vueVersion: "3.6.0-rc.10" });
-assert.equal(before.cases.length, 4);
-assert.equal(after.cases.length, 4);
+assert.equal(before.cases.length, 6);
+assert.equal(after.cases.length, 6);
 const names = [
   original.initial.value.$jsxValue,
   ...original.steps.map(
@@ -106,7 +108,12 @@ function observe(parent: Node): unknown[] {
   }
   return result;
 }
-async function trace(code: string, functionName: string) {
+async function trace(
+  code: string,
+  functionName: string,
+  optimizedParent: boolean,
+  runtimeFacts: unknown[],
+) {
   let reads = 0;
   const effects: string[] = [];
   const reactive = Vue.shallowReactive<Record<string, unknown>>({
@@ -125,7 +132,33 @@ async function trace(code: string, functionName: string) {
   const render = linkedFunction(code, functionName, state, [], {
     propPublications: 0,
   }) as () => VNode;
-  const app = Vue.createApp({ setup: () => () => render() });
+  let owner: ReturnType<typeof Vue.getCurrentInstance>;
+  const app = Vue.createApp({
+    setup: () => {
+      owner = Vue.getCurrentInstance();
+      return () => {
+        if (!optimizedParent) return render();
+        Vue.openBlock();
+        return Vue.createElementBlock("section", null, [render()]);
+      };
+    },
+  });
+  const recordRuntimeFacts = () => {
+    const root = owner?.subTree;
+    const host = optimizedParent
+      ? (root?.children as VNode[] | null)?.[0]?.component
+      : root?.component;
+    const slotFlag = (host?.slots as { _?: number } | undefined)?._ ?? null;
+    const fragment = host?.subTree as (VNode & { dynamicChildren?: VNode[] | null }) | undefined;
+    runtimeFacts.push({
+      optimizedParent,
+      slotFlag,
+      fragmentPatchFlag: fragment?.patchFlag ?? null,
+      fragmentDynamicChildrenLength: Array.isArray(fragment?.dynamicChildren)
+        ? fragment.dynamicChildren.length
+        : null,
+    });
+  };
   const warnings: string[] = [];
   app.config.warnHandler = (message) => warnings.push(message);
   app.config.errorHandler = (error) => warnings.push(String(error));
@@ -149,10 +182,12 @@ async function trace(code: string, functionName: string) {
     app.mount(host as unknown as Parameters<typeof app.mount>[0]);
     mounted = true;
     await Vue.nextTick();
+    recordRuntimeFacts();
     const phases = [snapshot()];
     for (const name of names.slice(1)) {
       state.value = value(name);
       await Vue.nextTick();
+      recordRuntimeFacts();
       phases.push(snapshot());
     }
     app.unmount();
@@ -187,9 +222,23 @@ const capture = {
 };
 let failure: unknown;
 try {
+  assert.equal(after.refused.source, before.refused.source);
+  assert.deepEqual(
+    after.refused.diagnostics,
+    before.refused.diagnostics,
+    "whole original rejected-source diagnostic and authored byte span",
+  );
+  assert.equal(after.refused.diagnostics.length, 1);
   for (const [index, item] of after.cases.entries()) {
     const old = before.cases[index]!;
-    for (const key of ["kind", "source", "mapped", "functionName", "diagnostics"] as const)
+    for (const key of [
+      "kind",
+      "source",
+      "mapped",
+      "functionName",
+      "diagnostics",
+      "optimizedParent",
+    ] as const)
       assert.deepEqual(item[key], old[key]);
     const reference = transformSync(item.source, {
       configFile: false,
@@ -198,10 +247,20 @@ try {
       plugins: [babelJsx],
     });
     assert.equal(typeof reference?.code, "string");
+    const runtimeFacts = {
+      before: [] as unknown[],
+      after: [] as unknown[],
+      reference: [] as unknown[],
+    };
     const routes = {
-      before: await trace(old.code, item.functionName),
-      after: await trace(item.code, item.functionName),
-      reference: await trace(reference!.code!, item.functionName),
+      before: await trace(old.code, item.functionName, item.optimizedParent, runtimeFacts.before),
+      after: await trace(item.code, item.functionName, item.optimizedParent, runtimeFacts.after),
+      reference: await trace(
+        reference!.code!,
+        item.functionName,
+        item.optimizedParent,
+        runtimeFacts.reference,
+      ),
     };
     const matches = routes.before.phases.map(
       (p, i) => JSON.stringify(p) === JSON.stringify(routes.reference.phases[i]),
@@ -211,6 +270,7 @@ try {
       reference: { code: reference!.code },
       routes,
       beforeMatchesBabel: matches,
+      runtimeFacts,
     });
   }
   for (const [index, raw] of capture.cases.entries()) {
@@ -218,15 +278,28 @@ try {
       item: Item;
       routes: Record<"before" | "after" | "reference", Awaited<ReturnType<typeof trace>>>;
       beforeMatchesBabel: boolean[];
+      runtimeFacts: Record<"before" | "after" | "reference", { slotFlag: number | null }[]>;
     };
     const { item, routes } = result;
     assert.deepEqual(
       result.beforeMatchesBabel,
       item.kind === "sequence"
         ? Array(10).fill(false)
-        : [true, false, false, false, false, false, false, false, false, true],
+        : item.optimizedParent
+          ? [true, false, false, false, false, false, false, false, false, true]
+          : Array(10).fill(true),
       "retain exact genuine pre-review regression",
     );
+    if (item.kind === "slot")
+      for (const role of ["before", "after", "reference"] as const) {
+        const expectedFlag =
+          item.optimizedParent && role !== "reference" ? (role === "before" ? 1 : 2) : null;
+        assert.deepEqual(
+          result.runtimeFacts[role].map((f) => f.slotFlag),
+          Array(10).fill(expectedFlag),
+          "actual optimized-parent slot flag witness",
+        );
+      }
     for (const route of Object.values(routes)) {
       assert.equal(route.phases.length, 10);
       assert.equal(route.readsAfterUnmount, 10);

@@ -35,7 +35,7 @@ fn complete_review_sources_and_genuine_authored_maps() {
     for (kind, body) in [
         (
             "sequence",
-            "const App=()=> <main>{state.record(\"left\"),state.record(\"right\"),state.value}</main>;",
+            "const App=()=> <main>{(state.record(\"left\"),state.record(\"right\"),state.value)}</main>;",
         ),
         (
             "slot",
@@ -43,38 +43,54 @@ fn complete_review_sources_and_genuine_authored_maps() {
         ),
     ] {
         let source = format!("// 日本語 雪🌸 'quoted'\r\n{body}");
-        for mapped in [false, true] {
-            let allocator = Allocator::new();
-            let mut options = JsxCompileConfig::default();
-            options.vdom.source_map = mapped;
-            let output = compile_jsx(&allocator, &source, JsxLang::Jsx, &options);
-            let code = output.module_code();
-            let mut tokens = Vec::new();
-            if let Some(encoded) = output.source_map() {
-                let map = SourceMap::from_json_string(encoded).expect("actual generated map");
-                assert_eq!(
-                    map.get_source_contents().collect::<Vec<_>>(),
-                    [Some(source.as_str())]
-                );
-                tokens = map
-                    .get_source_view_tokens()
-                    .map(|token| {
-                        (
-                            (token.get_dst_line(), token.get_dst_col()),
-                            (token.get_src_line(), token.get_src_col()),
-                        )
-                    })
-                    .collect();
-            }
-            cases.push(json!({
-                "kind":kind,"source":source,"mapped":mapped,"code":code,"functionName":"App",
+        let parents: &[bool] = if kind == "slot" {
+            &[false, true]
+        } else {
+            &[false]
+        };
+        for &optimized_parent in parents {
+            for mapped in [false, true] {
+                let allocator = Allocator::new();
+                let mut options = JsxCompileConfig::default();
+                options.vdom.source_map = mapped;
+                let output = compile_jsx(&allocator, &source, JsxLang::Jsx, &options);
+                let code = output.module_code();
+                let mut tokens = Vec::new();
+                if let Some(encoded) = output.source_map() {
+                    let map = SourceMap::from_json_string(encoded).expect("actual generated map");
+                    assert_eq!(
+                        map.get_source_contents().collect::<Vec<_>>(),
+                        [Some(source.as_str())]
+                    );
+                    tokens = map
+                        .get_source_view_tokens()
+                        .map(|token| {
+                            (
+                                (token.get_dst_line(), token.get_dst_col()),
+                                (token.get_src_line(), token.get_src_col()),
+                            )
+                        })
+                        .collect();
+                }
+                cases.push(json!({
+                "kind":kind,"source":source,"mapped":mapped,"code":code,"functionName":"App","optimizedParent":optimized_parent,
                 "map":output.source_map(),"tokens":tokens,
                 "diagnostics":output.diagnostics.iter().map(|d| json!({"message":d.message,"start":d.start,"end":d.end,"error":d.is_error()})).collect::<Vec<_>>(),
                 "components":output.components.iter().map(|c| json!({"name":c.component_name(),"mode":format!("{:?}",c.mode()),"code":c.code(),"preamble":c.preamble(),"map":c.map()})).collect::<Vec<_>>()
             }));
+            }
         }
     }
-    let packet = json!({"original":original,"cases":cases});
+    let refused_source = "// 日本語 雪🌸 'quoted'\r\nconst App=()=> <main>{state.record(\"left\"),state.record(\"right\"),state.value}</main>;";
+    let allocator = Allocator::new();
+    let refused = compile_jsx(
+        &allocator,
+        refused_source,
+        JsxLang::Jsx,
+        &JsxCompileConfig::default(),
+    );
+    let refused_packet = json!({"source":refused_source,"code":refused.module_code(),"map":refused.source_map(),"diagnostics":refused.diagnostics.iter().map(|d|json!({"message":d.message,"start":d.start,"end":d.end,"error":d.is_error()})).collect::<Vec<_>>()});
+    let packet = json!({"original":original,"cases":cases,"refused":refused_packet});
     if let Some(path) = std::env::var_os("VIZE_JSX_VDOM_REVIEW_CAPTURE").map(PathBuf::from) {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent).expect("capture parent");
@@ -85,6 +101,11 @@ fn complete_review_sources_and_genuine_authored_maps() {
         )
         .expect("preserve before validation");
     }
+    assert_eq!(
+        packet["refused"]["diagnostics"],
+        json!([{"message":"JSX expressions may not use the comma operator","start":refused_source.find("state.record").expect("authored start"),"end":refused_source.find("}</main>").expect("authored end"),"error":true}]),
+        "illegal unparenthesized JSX comma retains its complete original refusal"
+    );
     for case in packet["cases"].as_array().expect("cases") {
         assert_eq!(case["diagnostics"], json!([]));
         let source = case["source"].as_str().expect("source");

@@ -31,6 +31,8 @@ test("all raw-child producers, exhaustive visitors and the three registered inpu
     "crates/vize_patina/tests/jsx_child_expression_control.rs",
     "crates/vize_patina/tests/main.rs",
     "tests/tooling/jsx-vdom-snapshot-custody.test.ts",
+    "tests/tooling/jsx-vdom-slot-snapshot-custody.test.ts",
+    "tests/_fixtures/differential/jsx/child-values-6890-vdom-slot-snapshot-successors.json",
     "tests/_fixtures/differential/jsx/child-values-6890-vdom-snapshot-successors.json",
     "tests/_fixtures/differential/compiler/jsx-vdom-template-control-6890/Layout.vue.txt",
     "tests/_fixtures/differential/linter/jsx-child-expression-control-6890/Layout.vue.txt",

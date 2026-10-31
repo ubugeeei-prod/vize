@@ -19,6 +19,7 @@ type Packet = {
     code: string;
     functionName: string;
     mapped: boolean;
+    optimizedParent: boolean;
   }[];
 };
 const [basePath, headPath, outputPath] = process.argv.slice(2);
@@ -36,12 +37,12 @@ const original = JSON.parse(
 );
 assert.deepEqual(before.original, original);
 assert.deepEqual(after.original, original);
-assert.equal(before.cases.length, 4);
-assert.equal(after.cases.length, 4);
+assert.equal(before.cases.length, 6);
+assert.equal(after.cases.length, 6);
 const subjects = new Map<string, string>();
 for (const [index, item] of after.cases.entries()) {
   const old = before.cases[index]!;
-  for (const key of ["source", "functionName", "kind", "mapped"] as const)
+  for (const key of ["source", "functionName", "kind", "mapped", "optimizedParent"] as const)
     assert.equal(item[key], old[key]);
   const result = transformSync(item.source, {
     configFile: false,
@@ -95,7 +96,7 @@ try {
     try {
       await page.goto(`http://127.0.0.1:${address.port}/`);
       capture.routes[name] = await page.evaluate(
-        async ({ name, original }) => {
+        async ({ name, original, optimizedParent }) => {
           const entry = "/vue.js";
           const Vue = (await import(entry)) as typeof import("vue");
           const value = (name: string): unknown => {
@@ -142,7 +143,41 @@ try {
           });
           (globalThis as unknown as { __childState: typeof state }).__childState = state;
           const module = await import(`/${name}.js`);
-          const app = Vue.createApp({ setup: () => () => module.App() });
+          let owner: ReturnType<typeof Vue.getCurrentInstance>;
+          const runtimeFacts: {
+            optimizedParent: boolean;
+            slotFlag: number | null;
+            fragmentPatchFlag: number | null;
+            fragmentDynamicChildrenLength: number | null;
+          }[] = [];
+          const app = Vue.createApp({
+            setup: () => {
+              owner = Vue.getCurrentInstance();
+              return () => {
+                if (!optimizedParent) return module.App();
+                Vue.openBlock();
+                return Vue.createElementBlock("section", null, [module.App()]);
+              };
+            },
+          });
+          const recordRuntimeFacts = () => {
+            const root = owner?.subTree;
+            const host = optimizedParent
+              ? (root?.children as import("vue").VNode[] | null)?.[0]?.component
+              : root?.component;
+            const slotFlag = (host?.slots as { _?: number } | undefined)?._ ?? null;
+            const fragment = host?.subTree as
+              | (import("vue").VNode & { dynamicChildren?: import("vue").VNode[] | null })
+              | undefined;
+            runtimeFacts.push({
+              optimizedParent,
+              slotFlag,
+              fragmentPatchFlag: fragment?.patchFlag ?? null,
+              fragmentDynamicChildrenLength: Array.isArray(fragment?.dynamicChildren)
+                ? fragment.dynamicChildren.length
+                : null,
+            });
+          };
           const warnings: string[] = [];
           app.config.warnHandler = (message) => warnings.push(message);
           app.config.errorHandler = (error) => warnings.push(String(error));
@@ -187,6 +222,7 @@ try {
                 state.value = value(phase.value.$jsxValue);
                 await Vue.nextTick();
               }
+              recordRuntimeFacts();
               phases.push({
                 dom: observe(host),
                 text: host.textContent,
@@ -211,17 +247,25 @@ try {
             )
               throw Error("render survived unmount");
             return {
-              phases,
-              readsAfterUnmount: reads,
-              effectsAfterUnmount: [...effects],
-              completeUnmount: host.childNodes.length === 0,
+              runtimeFacts,
+              observations: {
+                phases,
+                readsAfterUnmount: reads,
+                effectsAfterUnmount: [...effects],
+                completeUnmount: host.childNodes.length === 0,
+              },
             };
           } finally {
             if (mounted) app.unmount();
             host.remove();
           }
         },
-        { name, original: after.original },
+        {
+          name,
+          original: after.original,
+          optimizedParent:
+            after.cases[Number(name.slice(name.lastIndexOf("-") + 1))]!.optimizedParent,
+        },
       );
     } catch (error) {
       capture.routes[name] = { error: String(error) };
@@ -235,9 +279,26 @@ try {
     readsAfterUnmount: number;
     completeUnmount: boolean;
   };
-  for (let index = 0; index < 4; index++) {
+  for (let index = 0; index < 6; index++) {
     const get = (role: string) => {
-      const trace = capture.routes[`${role}-${index}`] as Trace;
+      const raw = capture.routes[`${role}-${index}`] as {
+        observations: Trace;
+        runtimeFacts: { slotFlag: number | null }[];
+      };
+      const trace = raw.observations;
+      if (after.cases[index]!.kind === "slot") {
+        const expectedFlag =
+          after.cases[index]!.optimizedParent && role !== "reference"
+            ? role === "base"
+              ? 1
+              : 2
+            : null;
+        assert.deepEqual(
+          raw.runtimeFacts.map((f) => f.slotFlag),
+          Array(10).fill(expectedFlag),
+          "actual optimized-parent slot flag witness",
+        );
+      }
       assert.ok(trace.phases, JSON.stringify(trace));
       assert.equal(trace.phases.length, 10);
       assert.equal(trace.readsAfterUnmount, 10);
@@ -264,7 +325,9 @@ try {
       old.phases.map((phase, i) => JSON.stringify(phase) === JSON.stringify(reference.phases[i])),
       after.cases[index]!.kind === "sequence"
         ? Array(10).fill(false)
-        : [true, false, false, false, false, false, false, false, false, true],
+        : after.cases[index]!.optimizedParent
+          ? [true, false, false, false, false, false, false, false, false, true]
+          : Array(10).fill(true),
       "preserve actual old Chromium failure",
     );
     assert.deepEqual(
