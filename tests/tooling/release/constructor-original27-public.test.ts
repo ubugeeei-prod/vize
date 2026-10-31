@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { Recorder, sha256 } from "../../../tools/support/config/windows_consumer/common.ts";
-import { asArray, asRecord } from "../../../tools/support/json-value.ts";
+import { asArray, asNumber, asRecord, asString } from "../../../tools/support/json-value.ts";
 import {
   assertLockedPackage,
   validateCapsule,
@@ -171,8 +171,8 @@ test("whole compiler continuations preserve trailing spaces and reject blank or 
   const render = (rows: ReturnType<typeof expectedMapper>) =>
     rows
       .flatMap((row) => [
-        `${row.file}(${row.line},${row.column}): error TS${row.code}: ${row.message}`,
-        ...asArray(row.continuation).map(String),
+        `${asString(row.file)}(${asNumber(row.line)},${asNumber(row.column)}): error TS${asNumber(row.code)}: ${asString(row.message)}`,
+        ...asArray(row.continuation).map((line) => asString(line)),
       ])
       .join("\n") + "\n";
   const raw = render(mapper);
