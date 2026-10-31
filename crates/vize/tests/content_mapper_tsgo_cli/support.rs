@@ -2,7 +2,6 @@
 
 use super::{Command, CompactString, Output, Path, PathBuf, TSGO_ENV, VUE_ENV, cstr, json};
 
-#[path = "ambient_template_ref.rs"]
 mod ambient_template_ref;
 
 pub(super) fn workspace_root() -> &'static Path {

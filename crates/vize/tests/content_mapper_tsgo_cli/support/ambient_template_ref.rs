@@ -13,13 +13,13 @@ use serde_json::{Value, json};
 use super::{TSGO_ENV, check_project, install_mapper_manifest, install_vue_package, output_text};
 
 const ORIGINAL: &str = include_str!(
-    "../../../../tests/_fixtures/differential/typechecker/ambient-template-ref-10980/Probe.vue.txt"
+    "../../../../../tests/_fixtures/differential/typechecker/ambient-template-ref-10980/Probe.vue.txt"
 );
 const AMBIENT: &str = include_str!(
-    "../../../../tests/_fixtures/differential/typechecker/ambient-template-ref-10980/global.d.ts.txt"
+    "../../../../../tests/_fixtures/differential/typechecker/ambient-template-ref-10980/global.d.ts.txt"
 );
 const CONFIG: &str = include_str!(
-    "../../../../tests/_fixtures/differential/typechecker/ambient-template-ref-10980/tsconfig.json.txt"
+    "../../../../../tests/_fixtures/differential/typechecker/ambient-template-ref-10980/tsconfig.json.txt"
 );
 const FOCUS_ERROR: &str = "Property 'focus' does not exist on type '{}'.";
 
@@ -158,10 +158,11 @@ fn ambient_template_ref_retains_native_cli_and_mapper_errors_through_repairs() {
         1,
     );
     for route in [Route::Cli, Route::Mapper] {
-        for (case, composables) in [
-            ("default", None),
-            ("disabled", Some([].as_slice())),
-            ("unrelated", Some(["anotherRef"].as_slice())),
+        for (case, composables, configured) in [
+            ("default", None, false),
+            ("disabled", Some([].as_slice()), false),
+            ("unrelated", Some(["anotherRef"].as_slice()), false),
+            ("configured", Some(["useTemplateRef"].as_slice()), true),
         ] {
             let project = tempfile::tempdir().unwrap();
             install_mapper_manifest(project.path());
@@ -189,7 +190,11 @@ fn ambient_template_ref_retains_native_cli_and_mapper_errors_through_repairs() {
                 std::fs::write(project.path().join("Probe.vue"), source).unwrap();
                 let output = run(route, &native, project.path());
                 capture(project.path(), route, case, phase, &output);
-                let expected = expected.iter().map(String::as_str).collect::<Vec<_>>();
+                let expected = if configured {
+                    Vec::new()
+                } else {
+                    expected.iter().map(String::as_str).collect::<Vec<_>>()
+                };
                 assert_diagnostics(route, &output, &expected, true);
             }
             std::fs::remove_file(project.path().join("global.d.ts")).unwrap();

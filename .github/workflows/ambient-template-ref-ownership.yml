@@ -5,10 +5,14 @@ on:
     paths:
       - .github/workflows/ambient-template-ref-ownership.yml
       - crates/vize/tests/content_mapper_tsgo_cli/support.rs
-      - crates/vize/tests/content_mapper_tsgo_cli/ambient_template_ref.rs
+      - crates/vize/tests/content_mapper_tsgo_cli/support/ambient_template_ref.rs
+      - crates/vize_canon/src/virtual_ts/generator.rs
       - crates/vize_canon/src/virtual_ts/generator/template_ref_keys.rs
       - crates/vize_canon/src/virtual_ts/generator/template_ref_keys/**
       - crates/vize_canon/src/virtual_ts/generator/setup_helpers/declarations.rs
+      - crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options.rs
+      - crates/vize_canon/src/batch/virtual_project/content_mapper_config.rs
+      - crates/vize_canon/src/batch/virtual_project/document.rs
       - tests/_fixtures/differential/typechecker/ambient-template-ref-10980/**
       - tools/support/compat/content-mapper/ambient-template-ref-oracle.ts
 permissions: { contents: read }

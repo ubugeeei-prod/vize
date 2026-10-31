@@ -9,7 +9,11 @@ use crate::virtual_ts::{
 };
 
 fn registry_of(template: &str) -> Option<vize_l0::String> {
-    registry_for("const box = useTemplateRef('box')", template).map(|registry| registry.body)
+    registry_for(
+        "import { useTemplateRef } from 'vue';\nconst box = useTemplateRef('box')",
+        template,
+    )
+    .map(|registry| registry.body)
 }
 
 fn registry_for(script: &str, template: &str) -> Option<super::TemplateRefRegistry> {
@@ -98,7 +102,7 @@ fn dollar_refs_read_the_registry_with_unmounted_components() {
 #[test]
 fn an_instantiated_component_ref_reads_the_template_record() {
     let registry = registry_checked(
-        "const child = useTemplateRef('child')",
+        "import { useTemplateRef } from 'vue';\nconst child = useTemplateRef('child')",
         r#"<Child ref="declared" /><Child ref="child" :foo="1" />"#,
         (&Croquis::default(), &VirtualTsOptions::default()),
         (
@@ -117,6 +121,15 @@ fn an_instantiated_component_ref_reads_the_template_record() {
 #[test]
 fn a_script_that_never_names_use_template_ref_registers_nothing() {
     assert!(registry_for("const label = 'hi'", r#"<div ref="box" />"#).is_none());
+}
+
+#[test]
+fn an_unowned_global_call_does_not_demand_inferred_ref_instances() {
+    assert_eq!(
+        registry_for("const box = useTemplateRef('box')", r#"<div ref="box" />"#)
+            .map(|registry| registry.body),
+        None,
+    );
 }
 
 #[test]
