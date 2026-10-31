@@ -118,10 +118,7 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         help_key: &str,
     ) -> Result<(), NativeTemplateLintRefusal> {
         let original = element.original();
-        if !core::ptr::eq(original.component(), self.root.component()) {
-            return Err(NativeTemplateLintRefusal::SourceMismatch);
-        }
-        let range = crate::native::header::opening_range(original)?;
+        let range = self.element_opening_range(element)?;
         if !matches!(
             original.surface().close,
             vize_l1::markup::ElementClose::NotExpected
@@ -130,6 +127,19 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         }
         self.warn_with_help(range, message_key, variables, help_key);
         Ok(())
+    }
+
+    /// Read the complete opening of this context's genuine checked element.
+    /// This observation grants no diagnostic or source-grammar admission.
+    pub fn element_opening_range(
+        &self,
+        element: &NativeTemplateElement<'_, 'a>,
+    ) -> Result<Span, NativeTemplateLintRefusal> {
+        let original = element.original();
+        if !core::ptr::eq(original.component(), self.root.component()) {
+            return Err(NativeTemplateLintRefusal::SourceMismatch);
+        }
+        Ok(crate::native::header::opening_range(original)?)
     }
 
     fn warn_with_help(

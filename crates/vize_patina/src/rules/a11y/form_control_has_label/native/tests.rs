@@ -177,3 +177,44 @@ fn late_whole_grammar_refusals_and_rule_selection_remain_fail_closed() {
         }
     );
 }
+
+#[test]
+fn duplicate_static_hidden_and_type_keep_whole_legacy_packets_but_refuse_native_headers() {
+    let linter = configured();
+    let original = cases()
+        .into_iter()
+        .find(|case| case.id == "form-label-visible-input-control")
+        .unwrap();
+    assert_original(&original, false);
+    let warning = linter.lint_template(&original.source, "Duplicate.vue");
+    for (source, name, findings) in [
+        ("<input hidden hidden='until-found'>", "hidden", 0),
+        ("<input hidden='until-found' hidden>", "hidden", 0),
+        ("<input type='hidden' type='text'>", "type", 0),
+        ("<input type='text' type='hidden'>", "type", 1),
+        ("<input type type='hidden'>", "type", 1),
+        ("<input type='hidden' type>", "type", 0),
+    ] {
+        let mut expected = warning.clone();
+        if findings == 0 {
+            expected.diagnostics.clear();
+            expected.warning_count = 0;
+        } else {
+            expected.diagnostics.first_mut().unwrap().end = u32::try_from(source.len()).unwrap();
+        }
+        for _ in 0..2 {
+            let legacy = linter.lint_template(source, "Duplicate.vue");
+            assert_eq!(format!("{legacy:#?}"), format!("{expected:#?}"), "{source}");
+            println!("native-form-label-duplicate source={source:?} legacy={legacy:#?}");
+            let start = u32::try_from(source.match_indices(name).nth(1).unwrap().0).unwrap();
+            assert_eq!(
+                linter
+                    .lint_native_template(source, "Duplicate.vue")
+                    .unwrap_err(),
+                Refusal::Header(crate::native::NativeLintRefusal::DuplicateAttribute {
+                    span: Span::new(start, start + u32::try_from(name.len()).unwrap())
+                })
+            );
+        }
+    }
+}

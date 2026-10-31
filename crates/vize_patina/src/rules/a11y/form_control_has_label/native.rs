@@ -40,7 +40,7 @@ impl NativeTemplateRule for FormControlHasLabel {
         // owner before its children, including when an earlier input warned.
         if tag == "label" {
             return Err(Refusal::UnsupportedContext {
-                span: crate::native::header::opening_range(original)?,
+                span: context.element_opening_range(element)?,
             });
         }
         if tag != "input" {
