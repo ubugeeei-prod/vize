@@ -1,0 +1,101 @@
+name: Published original constructor 27
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/published-constructor-original27.yml
+      - tools/support/release/constructor_original27_public/**
+      - tests/tooling/release/constructor-original27-public.test.ts
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact containing public version (first expected 0.614.0)
+        type: string
+        required: true
+      release_run:
+        description: Successful official Release producer run
+        type: string
+        required: true
+      authority_blob:
+        description: Immutable authenticated producer receipt and npm SRI capsule Git blob
+        type: string
+        required: true
+
+permissions: { contents: read }
+concurrency:
+  group: published-original27-${{ github.event.pull_request.number || github.ref }}-${{ inputs.version || 'contracts' }}
+  cancel-in-progress: false
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_DISABLE_COMPILE_CACHE: "1"
+defaults:
+  run: { shell: bash }
+
+jobs:
+  contracts:
+    name: Frozen original population and public authority controls
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Require whole vectors, debt preservation, registry custody and repair isolation
+        run: node --test tests/tooling/release/constructor-original27-public.test.ts
+
+  installed-public:
+    name: Original Linux public 27 cases and separate repair copy
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
+    needs: contracts
+    permissions: { contents: read, actions: read }
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - name: Obtain immutable historical fixtures separately from installed products
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: a8ce1ec166a53b380e74dbf7189cc8578c80c676
+          path: .original27-fixtures
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /tools/support/compat/content-mapper/constructor-overload-original27.ts
+            /tests/_fixtures/differential/typechecker/constructor-overload-11023-original27/
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Isolate the unchanged fixture driver
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "$GITHUB_SHA" ]]
+          [[ "$(git -C .original27-fixtures rev-parse HEAD)" == "a8ce1ec166a53b380e74dbf7189cc8578c80c676" ]]
+          git -C .original27-fixtures diff --exit-code
+          mv .original27-fixtures "$RUNNER_TEMP/original27-fixtures"
+      - name: Fresh installed-public capture without source or package overlays
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PUBLIC_VERSION: ${{ inputs.version }}
+          RELEASE_RUN: ${{ inputs.release_run }}
+          AUTHORITY_BLOB: ${{ inputs.authority_blob }}
+        run: >-
+          node tools/support/release/constructor_original27_public/run.ts
+          "$PUBLIC_VERSION" "$RELEASE_RUN" "$AUTHORITY_BLOB"
+          "$RUNNER_TEMP/original27-fixtures" "$RUNNER_TEMP/original27-public"
+      - name: Preserve complete raw failures, authored files and installed SDK custody
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ -d "$RUNNER_TEMP/original27-public" ]]; then
+            tar --exclude=node_modules --exclude=registry-installation -czf "$RUNNER_TEMP/original27-public-raw.tgz" -C "$RUNNER_TEMP" original27-public
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: original27-installed-public-${{ inputs.version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/original27-public-raw.tgz
+          if-no-files-found: error
+          retention-days: 90
