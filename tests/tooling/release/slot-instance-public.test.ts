@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { asArray, asRecord, readJsonRecord } from "../../../tools/support/json-value.ts";
@@ -31,6 +33,13 @@ import {
 import { providerManifest } from "../../../tools/support/release/slot_instance_public/install.ts";
 import { assertJournalPid } from "../../../tools/support/release/slot_instance_public/process.ts";
 import { mergeImages } from "../../../tools/support/release/slot_instance_public/libraries.ts";
+import { writeTarGz, type TarEntry } from "../../../tools/support/archive/tar.ts";
+import { Recorder } from "../../../tools/support/config/windows_consumer/common.ts";
+import {
+  assertPackedManifest,
+  captureInstalledManifests,
+  packedManifest,
+} from "../../../tools/support/release/slot_instance_public/packed-manifest.ts";
 
 const sha = (raw: Buffer) => createHash("sha256").update(raw).digest("hex");
 const edgeFile = fileURLToPath(
@@ -40,6 +49,98 @@ const edgeFile = fileURLToPath(
   ),
 );
 const edges = readJsonRecord(edgeFile);
+test("packed dependency transforms require exact capsule-SRI bytes and every other source field", () => {
+  const source = {
+    name: "vize",
+    version: "0.620.0",
+    bin: { vize: "bin/vize" },
+    exports: { "./virtual-ts": "./virtual-ts.d.ts" },
+    typescript: { contentMapper: { exec: ["node", "./bin/vize", "content-mapper"] } },
+    files: ["virtual-ts.d.ts"],
+    dependencies: { "@vizejs/native": "workspace:*" },
+    devDependencies: { typescript: "catalog:default" },
+    peerDependencies: { vite: "catalog:default" },
+  };
+  const packed = {
+    ...source,
+    dependencies: { "@vizejs/native": "0.620.0" },
+    devDependencies: { typescript: "6.0.3" },
+    peerDependencies: { vite: "^8.0.0" },
+    optionalDependencies: { "@typescript/typescript-linux-x64": "7.0.2" },
+  };
+  const raw = Buffer.from(JSON.stringify(packed, null, 2) + "\n");
+  const members: TarEntry[] = [
+    { name: "package/package.json", data: raw },
+    { name: "package/virtual-ts.d.ts", data: Buffer.from("export type Proof = true;\n") },
+  ];
+  const payload = writeTarGz(members),
+    sri = (bytes: Buffer) => "sha512-" + createHash("sha512").update(bytes).digest("base64");
+  const authenticated = packedManifest(payload, sri(payload));
+  assert.deepEqual(authenticated.manifest, raw);
+  assert.deepEqual(assertPackedManifest(raw, authenticated.manifest, source), packed);
+  assert.throws(() => packedManifest(payload, sri(Buffer.from("different archive"))));
+  assert.throws(() =>
+    assertPackedManifest(
+      Buffer.from(JSON.stringify({ ...packed, dependencies: { arbitrary: "1.0.0" } })),
+      authenticated.manifest,
+      source,
+    ),
+  );
+  for (const change of [
+    { exports: { ".": "./foreign.js" } },
+    { typescript: { contentMapper: { exec: ["foreign"] } } },
+    { files: [] },
+    { addedNonDependency: true },
+  ]) {
+    const changed = Buffer.from(JSON.stringify({ ...packed, ...change }));
+    const archive = writeTarGz([{ name: "package/package.json", data: changed }]);
+    const exact = packedManifest(archive, sri(archive));
+    assert.throws(() => assertPackedManifest(changed, exact.manifest, source));
+  }
+  for (const extra of [
+    members[0],
+    { name: "package/../escape", data: raw },
+    { name: "foreign/package.json", data: raw },
+    { name: "package/link", typeflag: "2", linkname: "package.json" },
+    { name: "package/hardlink", typeflag: "1", linkname: "package.json" },
+  ]) {
+    const invalid = writeTarGz([...members, extra]);
+    assert.throws(() => packedManifest(invalid, sri(invalid)));
+  }
+  const absent = writeTarGz(members.slice(1));
+  assert.throws(() => packedManifest(absent, sri(absent)));
+});
+test("all three actual manifest buffers survive a validation failure before native loading", () => {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "slot-packed-custody-")));
+  try {
+    const modules = join(root, "node_modules"),
+      record = new Recorder(join(root, "evidence"));
+    const names = ["vize", "@vizejs/native", "@vizejs/native-linux-x64-gnu"];
+    for (const name of names) {
+      const directory = join(modules, name);
+      mkdirSync(directory, { recursive: true });
+      writeFileSync(join(directory, "package.json"), "invalid-json-" + name);
+    }
+    const captured = captureInstalledManifests(modules, record);
+    assert.equal(captured.size, 3);
+    assert.throws(() => JSON.parse(captured.get("vize")!.raw.toString("utf8")));
+    for (const [name, label] of [
+      [names[0], "cli"],
+      [names[1], "native"],
+      [names[2], "platform"],
+    ])
+      assert.equal(
+        readFileSync(join(record.root, "installed-" + label + "-package.raw.json"), "utf8"),
+        "invalid-json-" + name,
+      );
+    assert.equal(
+      readJsonRecord(join(record.root, "installation-phase.json")).phase,
+      "capture-installed-manifests",
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 test("overlapping library and program-input snapshots retain every unique file and reject changes", () => {
   const first = { path: "/owned/typescript/lib/typescript.js", bytes: 10, sha256: "a".repeat(64) };
   const second = { path: "/owned/vize/virtual-ts.d.ts", bytes: 20, sha256: "b".repeat(64) };
