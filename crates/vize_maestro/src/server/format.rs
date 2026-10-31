@@ -5,6 +5,9 @@
 #[cfg(all(test, feature = "glyph"))]
 mod vite_whitespace;
 
+#[cfg(all(test, feature = "glyph"))]
+mod custom_blocks;
+
 #[cfg(feature = "glyph")]
 mod blocks;
 #[cfg(feature = "glyph")]

@@ -39,6 +39,15 @@ pub(super) fn block_spans(source: &str, filename: &str) -> Option<Vec<BlockSpan>
                     .iter()
                     .map(|block| (block.loc.start, block.loc.end)),
             )
+            .chain(
+                descriptor
+                    .custom_blocks
+                    .iter()
+                    // Glyph formats Musea examples through its template formatter.
+                    // Other custom blocks have no supported embedded formatter.
+                    .filter(|block| block.block_type.as_ref() == "art")
+                    .map(|block| (block.loc.start, block.loc.end)),
+            )
             .collect(),
     )
 }
