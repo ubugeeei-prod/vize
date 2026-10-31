@@ -99,16 +99,16 @@ runs:
         VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_PRIMARY_CAPTURE: ${{ runner.temp }}/native-original-for-key-sfc-dom-primary
         VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-original-for-key-sfc-dom-runtime
       run: |
-        rust_status=0
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_for_key::nine_whole_original_key_sources_capture_real_bindings_and_maps -- --exact --nocapture || rust_status=$?
-        development_status=0
-        NODE_ENV=development vp node --test tests/tooling/native-original-for-key-sfc-dom-reference.test.ts || development_status=$?
-        production_status=0
-        NODE_ENV=production vp node --test tests/tooling/native-original-for-key-sfc-dom-reference.test.ts || production_status=$?
-        printf '{"rust":%s,"development":%s,"production":%s}\n' "$rust_status" "$development_status" "$production_status" > "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_CAPTURE}.statuses.json"
-        test "$rust_status" -eq 0
-        test "$development_status" -eq 0
-        test "$production_status" -eq 0
+        key_rust_status=0
+        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_for_key::nine_whole_original_key_sources_capture_real_bindings_and_maps -- --exact --nocapture || key_rust_status=$?
+        key_development_status=0
+        NODE_ENV=development vp node --test tests/tooling/native-original-for-key-sfc-dom-reference.test.ts || key_development_status=$?
+        key_production_status=0
+        NODE_ENV=production vp node --test tests/tooling/native-original-for-key-sfc-dom-reference.test.ts || key_production_status=$?
+        printf '{"rust":%s,"development":%s,"production":%s}\n' "$key_rust_status" "$key_development_status" "$key_production_status" > "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_CAPTURE}.statuses.json"
+        test "$key_rust_status" -eq 0
+        test "$key_development_status" -eq 0
+        test "$key_production_status" -eq 0
         test -s "$VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_CAPTURE"
         test -s "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_PRIMARY_CAPTURE}.development.json"
         test -s "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_PRIMARY_CAPTURE}.production.json"
