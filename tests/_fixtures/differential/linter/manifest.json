@@ -2204,6 +2204,32 @@
       }
     },
     {
+      "id": "linter/native-input-label-history-6881",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "native-input-label-history-6881",
+        "files": [
+          {
+            "path": "BoundHiddenInput.vue.txt",
+            "role": "original-history-input-consumed-by-legacy-and-native",
+            "sha256": "854b287edd4ca07e1d437a967ecbb1bb7c855d303826471c826d2c2a1e70b84b"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/next-tick-vapor-gating-10784",
       "state": "active",
       "targets": ["lint"],
