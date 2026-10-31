@@ -21,6 +21,7 @@ const configurableRuleOptions = [
   "vue/html-quotes",
   "vue/mustache-interpolation-spacing",
   "vue/no-mutating-props",
+  "vue/prop-name-casing",
   "vue/require-component-registration",
   "vue/sfc-element-order",
   "vue/v-on-event-hyphenation",
@@ -32,6 +33,7 @@ test("rule option docs enumerate every typed lint rule option", () => {
     path.join(repoRoot, "docs/content/rules/options.md"),
     path.join(repoRoot, "docs/content/rules/options-script.md"),
     path.join(repoRoot, "docs/content/rules/options-vue.md"),
+    path.join(repoRoot, "docs/content/rules/options-props.md"),
     path.join(repoRoot, "docs/content/rules/options-musea.md"),
     path.join(repoRoot, "docs/content/rules/options-type.md"),
   ]);
@@ -50,6 +52,7 @@ test("Japanese rule option docs mirror every typed lint rule option", () => {
     path.join(repoRoot, "docs/content/ja/rules/options.md"),
     path.join(repoRoot, "docs/content/ja/rules/options-script.md"),
     path.join(repoRoot, "docs/content/ja/rules/options-vue.md"),
+    path.join(repoRoot, "docs/content/ja/rules/options-props.md"),
     path.join(repoRoot, "docs/content/ja/rules/options-musea.md"),
     path.join(repoRoot, "docs/content/ja/rules/options-type.md"),
   ]);
@@ -168,6 +171,7 @@ test("strict boolean rows render within the complete option and type-aware table
     "script/define-macros-order",
     "vue/component-name-in-template-casing",
     "script/custom-event-name-casing",
+    "vue/prop-name-casing",
     "script/define-props-destructuring",
     "vue/no-mutating-props",
     "vue/require-component-registration",
@@ -246,6 +250,17 @@ void test("documented props rule options typecheck against the generated public 
     assert.equal(options.length, 2, `${doc}: complete setup and migration options`);
     recipes.push(...options);
   }
+  for (const doc of ["rules/options-props.md", "ja/rules/options-props.md"]) {
+    const section = sectionFor(
+      fs.readFileSync(path.join(repoRoot, "docs/content", doc), "utf8"),
+      "## `vue/prop-name-casing`",
+    );
+    const options = [...section.matchAll(/^\s*ruleOptions: (\{[^\n]+\})[, ]*$/gm)].map(
+      (match) => match[1]!,
+    );
+    assert.equal(options.length, 1, `${doc}: complete declared-prop casing options`);
+    recipes.push(...options);
+  }
   const filename = path.join(repoRoot, ".cache/docs-props-options-contract.ts");
   const generated = path.join(repoRoot, "npm/cli/src/types/generated.ts");
   const compilerOptions: ts.CompilerOptions = {
@@ -274,6 +289,16 @@ void test("documented props rule options typecheck against the generated public 
     diagnose(recipes).map((item) => ts.flattenDiagnosticMessageText(item.messageText, "\n")),
     [],
     "every whole documented option object must satisfy the actual generated API",
+  );
+  const invalidCasing = diagnose(['{ "vue/prop-name-casing": { casing: "unsupported" } }']);
+  assert(
+    invalidCasing.some((item) => item.code === 2322),
+    "invalid declared-prop casing is refused",
+  );
+  const unsupportedIgnore = diagnose(['{ "vue/prop-name-casing": { ignoreProps: ["myProp"] } }']);
+  assert(
+    unsupportedIgnore.some((item) => item.code === 2353),
+    "unexposed ignoreProps is refused",
   );
   const oldField = diagnose(['{ "script/define-props-destructuring": { mode: "always" } }']);
   assert(

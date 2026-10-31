@@ -17,8 +17,9 @@ use crate::rules::script::{CustomEventNameCasing, EventNameCasing};
 use crate::rules::script::{DefineMacrosOrder, NoRestrictedMembers, RestrictedGlobals};
 use crate::rules::vue::{
     AttributeHyphenation, HtmlQuotes, HyphenationStyle, MustacheInterpolationSpacing,
-    MustacheInterpolationSpacingStyle, NoMutatingProps, NoMutatingPropsOptions, SfcElementOrder,
-    SfcElementOrderOptions, VBindStyle, VBindStyleOption, VOnStyle, VOnStyleOption, VSlotStyle,
+    MustacheInterpolationSpacingStyle, NoMutatingProps, NoMutatingPropsOptions, PropNameCasing,
+    PropNameCasingOption, SfcElementOrder, SfcElementOrderOptions, VBindStyle, VBindStyleOption,
+    VOnStyle, VOnStyleOption, VSlotStyle,
 };
 use vize_l0::String;
 
@@ -206,6 +207,14 @@ impl Linter {
         if self.registry.has_rule("vue/mustache-interpolation-spacing") {
             self.registry
                 .replace(Box::new(MustacheInterpolationSpacing { style }));
+        }
+        self
+    }
+
+    /// Configure declared prop casing without enabling an unselected rule.
+    pub fn with_prop_name_casing(mut self, casing: PropNameCasingOption) -> Self {
+        if self.registry.has_rule("vue/prop-name-casing") {
+            self.registry.replace(Box::new(PropNameCasing { casing }));
         }
         self
     }

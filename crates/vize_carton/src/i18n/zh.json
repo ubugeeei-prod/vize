@@ -348,6 +348,7 @@
   "vue/v-slot-style.help": "**简写:** `<template #header>` (默认)\n**完整形式:** `<template v-slot:header>`\n\n选择一种风格并保持一致。",
   "vue/prop-name-casing.description": "强制声明的prop名使用指定的命名风格",
   "vue/prop-name-casing.message": "prop \"{name}\" 不是 {casing}",
+  "vue/prop-name-casing.help_snake": "声明prop时使用snake_case（模板中仍可写成kebab-case）:\n```vue\n<!-- 错误 -->\ndefineProps({ myProp: String })\n\n<!-- 正确 -->\ndefineProps({ my_prop: String })\n```",
   "vue/prop-name-casing.help": "声明prop时使用camelCase（模板中仍可写成kebab-case）:\n```vue\n<!-- 错误 -->\ndefineProps({ 'my-prop': String })\n\n<!-- 正确 -->\ndefineProps({ myProp: String })\n```",
   "vue/html-quotes.description": "强制HTML属性引号风格",
   "vue/html-quotes.message_double": "应使用双引号而非单引号",

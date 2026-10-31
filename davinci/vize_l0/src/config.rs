@@ -18,11 +18,12 @@ pub use model::{
     LinterConfigPlanWithConfigRuleOptions, LinterConfigPlanWithRuleOptions, LinterExecutionOptions,
     LinterFeatureFlags, LspConfig, MuseaDesignToken, MuseaPreferDesignTokensOptions,
     MustacheInterpolationSpacingStyle, NoMutatingPropsOptions, NoRestrictedGlobalsOptions,
-    NoRestrictedMembersOptions, ParseVueVersionError, PropsDestructureMode, QuoteProps,
-    ResolvedLinterConfig, ResolvedLinterConfigWithConfigRuleOptions, RestrictedGlobal,
-    RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions, SortImportsConfig,
-    SortImportsSetting, StrictBooleanExpressionsOptions, TemplateComponentNameCasing,
-    TrailingComma, TypeCheckerConfig, VBindStyle, VOnStyle, VSlotNamedStyle, VSlotStyle,
-    VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle, VizeConfig, VueVersion,
+    NoRestrictedMembersOptions, ParseVueVersionError, PropNameCasingOptions, PropNameCasingStyle,
+    PropsDestructureMode, QuoteProps, ResolvedLinterConfig,
+    ResolvedLinterConfigWithConfigRuleOptions, RestrictedGlobal, RestrictedMember,
+    SfcElementOrderGroup, SfcElementOrderOptions, SortImportsConfig, SortImportsSetting,
+    StrictBooleanExpressionsOptions, TemplateComponentNameCasing, TrailingComma, TypeCheckerConfig,
+    VBindStyle, VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue,
+    VSlotUniformStyle, VizeConfig, VueVersion,
 };
 pub use normalize::normalize_public_config_value;

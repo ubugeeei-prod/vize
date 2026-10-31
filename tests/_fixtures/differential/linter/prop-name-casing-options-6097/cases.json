@@ -1,0 +1,72 @@
+{
+  "provider": {
+    "eslint": "10.4.1",
+    "eslint-plugin-vue": "10.9.2",
+    "vue-eslint-parser": "10.4.1"
+  },
+  "cases": [
+    {
+      "id": "default-camel",
+      "source": "Probe.vue.txt",
+      "casing": null,
+      "findings": [
+        {
+          "ruleId": "vue/prop-name-casing",
+          "severity": 2,
+          "message": "Prop \"authored_name\" is not in camelCase.",
+          "line": 2,
+          "column": 15,
+          "messageId": "invalidCase",
+          "endLine": 2,
+          "endColumn": 36
+        }
+      ]
+    },
+    {
+      "id": "explicit-camel",
+      "source": "Probe.vue.txt",
+      "casing": "camelCase",
+      "findings": [
+        {
+          "ruleId": "vue/prop-name-casing",
+          "severity": 2,
+          "message": "Prop \"authored_name\" is not in camelCase.",
+          "line": 2,
+          "column": 15,
+          "messageId": "invalidCase",
+          "endLine": 2,
+          "endColumn": 36
+        }
+      ]
+    },
+    {
+      "id": "explicit-snake",
+      "source": "Probe.vue.txt",
+      "casing": "snake_case",
+      "findings": [
+        {
+          "ruleId": "vue/prop-name-casing",
+          "severity": 2,
+          "message": "Prop \"authoredName\" is not in snake_case.",
+          "line": 2,
+          "column": 38,
+          "messageId": "invalidCase",
+          "endLine": 2,
+          "endColumn": 58
+        }
+      ]
+    },
+    {
+      "id": "template-only-camelCase",
+      "source": "TemplateOnly.vue.txt",
+      "casing": "camelCase",
+      "findings": []
+    },
+    {
+      "id": "template-only-snake_case",
+      "source": "TemplateOnly.vue.txt",
+      "casing": "snake_case",
+      "findings": []
+    }
+  ]
+}

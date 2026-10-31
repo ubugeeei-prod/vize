@@ -50,6 +50,16 @@ impl Linter {
                 }
             });
         }
+        if let Some(value) = options.prop_name_casing() {
+            self = self.with_prop_name_casing(match value {
+                vize_l0::config::PropNameCasingStyle::CamelCase => {
+                    crate::rules::vue::PropNameCasingOption::CamelCase
+                }
+                vize_l0::config::PropNameCasingStyle::SnakeCase => {
+                    crate::rules::vue::PropNameCasingOption::SnakeCase
+                }
+            });
+        }
         if let Some(value) = options.no_mutating_props() {
             self = self.with_no_mutating_props_options(NoMutatingPropsOptions {
                 shallow_only: value.shallow_only,

@@ -61,6 +61,7 @@
       "/rules/all": "Toutes les règles",
       "/rules/options": "Options des règles",
       "/rules/options-vue": "Options : Vue",
+      "/rules/options-props": "Options : props",
       "/rules/options-script": "Options : scripts",
       "/rules/options-type": "Options : types",
       "/rules/options-musea": "Options : Musea",
