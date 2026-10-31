@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import type tsApi from "typescript";
+import type tsApi from "../../../../npm/cli/node_modules/typescript/lib/typescript.js";
 import { assertCustody, fileImage, type FileImage } from "../computed_event_custody.ts";
 import type { Stage } from "./fixtures.ts";
 
@@ -177,11 +177,13 @@ export function assertTypeIdentity(stage: Stage, observed: ReturnType<typeof slo
     assert.equal(providers.length, 2);
     assert.equal(new Set(providers.map((row) => row.symbol)).size, 2);
     assert.deepEqual(
-      providers.map((row) => row.any).sort(),
+      providers.map((row) => row.any).sort((left, right) => Number(left) - Number(right)),
       stage.collisionInvalid ? [false, true] : [false, false],
     );
     assert.deepEqual(
-      bindings.map((row) => row.intrinsicName).sort(),
+      bindings
+        .map((row) => row.intrinsicName)
+        .sort((left, right) => String(left).localeCompare(String(right))),
       stage.collisionInvalid
         ? ["any", "any", "number", "number"]
         : ["number", "number", "number", "number"],

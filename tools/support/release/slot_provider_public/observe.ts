@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import type tsApi from "typescript";
+import type tsApi from "../../../../npm/cli/node_modules/typescript/lib/typescript.js";
 import { asRecord, asString, parseJson } from "../../json-value.ts";
 import { Recorder } from "../../config/windows_consumer/common.ts";
 import {
