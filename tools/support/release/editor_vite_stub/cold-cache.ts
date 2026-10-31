@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { join } from "node:path";
-import { asArray, asNumber, asRecord, asString, parseJson } from "../../json-value.ts";
+import { asArray, asRecord, asString } from "../../json-value.ts";
 import { Recorder } from "../../config/windows_consumer/common.ts";
 import { digest, inside, inventory } from "./filesystem.ts";
 
@@ -11,7 +11,31 @@ function exactKeys(value: unknown, keys: string[]) {
   return record;
 }
 export function validateCacheBytes(raw: Buffer, root: string, version: string): void {
-  const entries = asArray(parseJson(raw.toString("utf8")));
+  // Preserve the native integer lexemes without changing parsed values or raw bytes.
+  const numbers = new WeakMap<object, Map<string, string>>();
+  const parsed: unknown = JSON.parse(
+    raw.toString("utf8"),
+    function (this: unknown, field: string, value: unknown, context?: { source?: string }) {
+      if (
+        typeof this === "object" &&
+        this !== null &&
+        typeof value === "number" &&
+        context?.source !== undefined
+      ) {
+        let fields = numbers.get(this);
+        if (!fields) numbers.set(this, (fields = new Map()));
+        fields.set(field, context.source);
+      }
+      return value;
+    },
+  ) as unknown;
+  const u64 = (parent: Record<string, unknown>, field: string, max = 18446744073709551615n) => {
+    const source = numbers.get(parent)?.get(field);
+    assert.ok(source !== undefined, "native integer requires its original numeric token");
+    assert.match(source, /^(0|[1-9][0-9]{0,19})$/);
+    assert.ok(BigInt(source) <= max, "native integer exceeds its declared unsigned range");
+  };
+  const entries = asArray(parsed);
   assert.ok(
     entries.length >= 1 && entries.length <= 4,
     "C2 format1 stores one to four environment entries",
@@ -23,7 +47,7 @@ export function validateCacheBytes(raw: Buffer, root: string, version: string): 
     assert.equal(key.version, version);
     assert.equal(key.config, join(root, "vite.config.ts"));
     assert.equal(key.explicit, false);
-    assert.ok(Number.isInteger(asNumber(key.runtime)) && asNumber(key.runtime) >= 0);
+    u64(key, "runtime");
     for (const value of asArray(entry.env)) {
       const row = asArray(value);
       assert.equal(row.length, 2);
@@ -49,11 +73,9 @@ export function validateCacheBytes(raw: Buffer, root: string, version: string): 
       asString(row[0]);
       assert.equal(typeof row[1], "boolean");
       const stamp = exactKeys(row[2], ["kind", "len", "modified", "changed", "inode", "link"]);
-      // Native u64 timestamps/inodes can exceed JS's safe-integer range. Raw bytes
-      // retain numeric custody; these checks validate shape without reserializing it.
-      for (const field of ["kind", "len", "modified", "changed", "inode"])
-        assert.ok(Number.isInteger(asNumber(stamp[field])) && asNumber(stamp[field]) >= 0);
-      assert.ok(asNumber(stamp.kind) <= 3);
+      // Native timestamps/inodes can exceed JS's safe-integer range.
+      for (const field of ["len", "modified", "changed", "inode"]) u64(stamp, field);
+      u64(stamp, "kind", 3n);
       assert.ok(stamp.link === null || typeof stamp.link === "string");
     }
     const evaluation = exactKeys(entry.evaluation, [

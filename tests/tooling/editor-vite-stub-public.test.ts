@@ -221,18 +221,14 @@ test(
     mkdirSync(dependency);
     writeFileSync(
       join(project, "package.json"),
-      '{"name":"inert-project","private":true,"type":"module"}\n',
+      '{"name":"inert-project","private":true,"type":"module","devDependencies":{"inert-local-dependency":"file:../local-dependency"}}\n',
     );
     writeFileSync(
       join(dependency, "package.json"),
       '{"name":"inert-local-dependency","version":"1.0.0"}\n',
     );
     success(
-      record.run(
-        "inert-local-install",
-        [...argv, "add", "-D", "--save-exact", "file:" + dependency],
-        project,
-      ),
+      record.run("inert-local-install", [...argv, "install", "--no-frozen-lockfile"], project),
     );
     auditPnpmState(realpathSync(project), argv, record);
   },
@@ -369,11 +365,14 @@ test("declared cache transitions retain full bytes and reject package edits, for
           version,
         ),
       );
-    validateCacheBytes(
-      Buffer.from(JSON.stringify([value]).replace('"runtime":1', '"runtime":18446744073709551615')),
-      root,
-      version,
-    );
+    for (const field of ["runtime", "len", "modified", "changed", "inode", "kind"]) {
+      const token = '"' + field + '":' + (field === "len" ? "0" : "1");
+      const raw = (number: string) =>
+        Buffer.from(JSON.stringify([value]).replace(token, '"' + field + '":' + number));
+      for (const invalid of ["18446744073709551616", "1e100"])
+        assert.throws(() => validateCacheBytes(raw(invalid), root, version));
+      if (field !== "kind") validateCacheBytes(raw("18446744073709551615"), root, version);
+    }
     const duplicate = join(directory, "fedcba0987654321.json");
     writeFileSync(duplicate, JSON.stringify([value]));
     assert.throws(() => cacheSnapshot(root, version), /one cache filename/);

@@ -2,14 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, lstatSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  asArray,
-  asNumber,
-  asRecord,
-  asString,
-  parseJson,
-  readJsonRecord,
-} from "../../json-value.ts";
+import { asArray, asNumber, asRecord, parseJson, readJsonRecord } from "../../json-value.ts";
 import { Recorder, sha256, success } from "../../config/windows_consumer/common.ts";
 import { digest, inside, inventory, type Entry } from "./filesystem.ts";
 
