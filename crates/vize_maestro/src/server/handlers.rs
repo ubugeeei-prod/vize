@@ -261,10 +261,13 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
-        let server = self.for_pos(&params.text_document_position).await;
-        server
-            .workspace_native_request(|| references::references(&server, params.clone()))
-            .await
+        navigation_request("references", async {
+            let server = self.for_pos(&params.text_document_position).await;
+            server
+                .workspace_native_request(|| references::references(&server, params.clone()))
+                .await
+        })
+        .await
     }
 
     async fn document_highlight(
@@ -292,17 +295,23 @@ impl LanguageServer for MaestroServer {
         &self,
         params: TextDocumentPositionParams,
     ) -> Result<Option<PrepareRenameResponse>> {
-        let server = self.for_document(&params.text_document.uri).await;
-        server
-            .native_request(server.prepare_rename_request(params))
-            .await
+        navigation_request("prepare_rename", async {
+            let server = self.for_document(&params.text_document.uri).await;
+            server
+                .native_request(server.prepare_rename_request(params))
+                .await
+        })
+        .await
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
-        let server = self.for_pos(&params.text_document_position).await;
-        server
-            .workspace_native_request(|| server.rename_request(params.clone()))
-            .await
+        navigation_request("rename", async {
+            let server = self.for_pos(&params.text_document_position).await;
+            server
+                .workspace_native_request(|| server.rename_request(params.clone()))
+                .await
+        })
+        .await
     }
 
     async fn semantic_tokens_full(
@@ -430,6 +439,19 @@ impl LanguageServer for MaestroServer {
     }
 }
 
+async fn navigation_request<F: core::future::Future>(method: &'static str, future: F) -> F::Output {
+    #[cfg(feature = "native")]
+    return vize_canon::corsa_bridge::EditorPreparationPhase::request(method, future).await;
+    #[cfg(not(feature = "native"))]
+    {
+        let _ = method;
+        future.await
+    }
+}
+
 #[cfg(test)]
 #[expect(clippy::disallowed_methods, reason = "fixtures use std String")]
 mod tests;
+
+#[cfg(all(test, feature = "native"))]
+mod navigation_trace_formatter;

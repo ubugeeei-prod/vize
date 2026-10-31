@@ -200,9 +200,13 @@ impl CorsaBridge {
     ) -> Result<Option<Value>, CorsaBridgeError> {
         let uri = uri.to_owned();
         self.with_client(move |client| {
-            client
+            let phase =
+                super::super::preparation_trace::Phase::navigation("navigation.native.prepare", 1);
+            let result = client
                 .prepare_rename_raw(uri.as_str(), line, character)
-                .map_err(CorsaBridgeError::CommunicationError)
+                .map_err(CorsaBridgeError::CommunicationError);
+            phase.finish();
+            result
         })
         .await
     }
@@ -218,9 +222,13 @@ impl CorsaBridge {
         let uri = uri.to_owned();
         let new_name = new_name.to_owned();
         self.with_client(move |client| {
-            client
+            let phase =
+                super::super::preparation_trace::Phase::navigation("navigation.native.rename", 1);
+            let result = client
                 .rename_raw(uri.as_str(), line, character, new_name.as_str())
-                .map_err(CorsaBridgeError::CommunicationError)
+                .map_err(CorsaBridgeError::CommunicationError);
+            phase.finish();
+            result
         })
         .await
     }
@@ -243,9 +251,15 @@ impl CorsaBridge {
                 positions
                     .iter()
                     .map(|(uri, line, character)| {
-                        client
+                        let phase = super::super::preparation_trace::Phase::navigation(
+                            "navigation.native.rename_linked",
+                            1,
+                        );
+                        let result = client
                             .rename_raw(uri.as_str(), *line, *character, new_name.as_str())
-                            .map_err(CorsaBridgeError::CommunicationError)
+                            .map_err(CorsaBridgeError::CommunicationError);
+                        phase.finish();
+                        result
                     })
                     .collect::<Result<Vec<_>, _>>()
             })

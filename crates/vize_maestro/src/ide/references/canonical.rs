@@ -1,6 +1,6 @@
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::Location;
-use vize_canon::CorsaBridge;
+use vize_canon::{CorsaBridge, corsa_bridge::EditorPreparationPhase};
 use vize_croquis::{Drawer, DrawerOptions};
 use vize_l0::{Allocator, FxHashSet};
 
@@ -26,7 +26,12 @@ pub(super) fn setup_local_references(
             .as_ref()
             .is_some_and(|documents| documents.art_templates.iter().any(Option::is_some))
         || !matches!(
-            setup_local_binding_type(ctx),
+            {
+                let phase = EditorPreparationPhase::navigation("references_setup_classify", 1);
+                let result = setup_local_binding_type(ctx);
+                phase.finish();
+                result
+            },
             Some(binding) if is_setup_local(binding) || binding == BindingType::LiteralConst
         )
     {
@@ -36,12 +41,18 @@ pub(super) fn setup_local_references(
     if descriptor.script.is_some() || descriptor.template.is_none() {
         return None;
     }
-    ReferencesService::references(ctx, include_declaration)
+    let phase = EditorPreparationPhase::navigation("references_private_structural", 1);
+    let result = ReferencesService::references(ctx, include_declaration);
+    phase.finish();
+    result
 }
 
 /// Keep independent setup locals on the inexpensive existing surface.
 fn is_script_setup_local_binding(ctx: &IdeContext<'_>) -> bool {
-    setup_local_binding_type(ctx).is_some_and(is_setup_local)
+    let phase = EditorPreparationPhase::navigation("references_setup_classify", 1);
+    let result = setup_local_binding_type(ctx).is_some_and(is_setup_local);
+    phase.finish();
+    result
 }
 
 fn is_setup_local(binding: BindingType) -> bool {
@@ -67,20 +78,24 @@ fn setup_local_binding_type(ctx: &IdeContext<'_>) -> Option<BindingType> {
     let script_setup = descriptor.script_setup.as_ref()?;
     // Reuse the original analysis parse for the pattern decision and Croquis.
     let allocator = Allocator::default();
+    let parse_phase = EditorPreparationPhase::navigation("references_setup_parse", 1);
     let parsed = vize_croquis::script_parser::parse_program_for_analysis(
         &allocator,
         &script_setup.content,
         SourceType::from_path("script.ts").unwrap_or_default(),
     );
+    parse_phase.finish();
     if parsed.panicked
         || !parsed.diagnostics.is_empty()
         || local_binding::property_linked(&parsed.program, &word)
     {
         return None;
     }
+    let drawer_phase = EditorPreparationPhase::navigation("references_setup_drawer", 1);
     let mut analyzer = Drawer::with_options(DrawerOptions::full());
     analyzer.analyze_script_setup_program(&parsed.program, &script_setup.content, None);
     let croquis = analyzer.finish();
+    drawer_phase.finish();
     if croquis.macros.define_expose().is_some()
         || croquis
             .macros
@@ -134,13 +149,23 @@ pub(super) async fn references(
             position
         }
     };
-    let mut locations = bridge
-        .references(&document.request_uri, line, character, include_declaration)
-        .await
-        .ok()?;
-    let (prop_locations, _) =
-        component_prop_references(ctx, bridge, &document, line, character, include_declaration)
+    let mut locations = {
+        let phase = EditorPreparationPhase::navigation("references_primary_native", 1);
+        let result = bridge
+            .references(&document.request_uri, line, character, include_declaration)
             .await;
+        phase.finish();
+        result
+    }
+    .ok()?;
+    let (prop_locations, _) = {
+        let phase = EditorPreparationPhase::navigation("references_component_props", 1);
+        let result =
+            component_prop_references(ctx, bridge, &document, line, character, include_declaration)
+                .await;
+        phase.finish();
+        result
+    };
     locations.extend(prop_locations);
     let mut linked = linked_positions(ctx, &document, &locations);
     if attribute.is_none() {
@@ -166,22 +191,32 @@ pub(super) async fn references(
         character,
     });
     if !include_declaration {
-        let discovery = bridge
-            .references(&document.request_uri, line, character, true)
-            .await
-            .ok()?;
+        let discovery = {
+            let phase = EditorPreparationPhase::navigation("references_discovery_native", 1);
+            let result = bridge
+                .references(&document.request_uri, line, character, true)
+                .await;
+            phase.finish();
+            result
+        }
+        .ok()?;
         linked.extend(linked_positions(ctx, &document, &discovery));
     }
     for position in linked {
-        let extra = bridge
-            .references(
-                &position.request_uri,
-                position.line,
-                position.character,
-                include_declaration,
-            )
-            .await
-            .ok()?;
+        let extra = {
+            let phase = EditorPreparationPhase::navigation("references_linked_native", 1);
+            let result = bridge
+                .references(
+                    &position.request_uri,
+                    position.line,
+                    position.character,
+                    include_declaration,
+                )
+                .await;
+            phase.finish();
+            result
+        }
+        .ok()?;
         locations.extend(extra);
     }
     let mut mapped = corsa_support::map_canonical_corsa_locations(ctx, &document, locations);

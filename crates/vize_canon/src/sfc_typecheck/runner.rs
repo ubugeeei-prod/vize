@@ -1,6 +1,8 @@
 use vize_l0::Allocator;
 use vize_l0::cstr;
 
+#[cfg(feature = "native")]
+use crate::corsa_bridge::EditorPreparationPhase;
 use crate::script_parse::collect_script_parse_diagnostics;
 
 use super::{
@@ -73,6 +75,8 @@ fn type_check_analyzed(
         ..Default::default()
     };
 
+    #[cfg(feature = "native")]
+    let parse_phase = EditorPreparationPhase::navigation("structural_sfc_parse", 1);
     let descriptor = match parse_sfc(source, parse_opts) {
         Ok(d) => d,
         Err(e) => {
@@ -89,6 +93,8 @@ fn type_check_analyzed(
         }
     };
 
+    #[cfg(feature = "native")]
+    parse_phase.finish();
     let descriptor = match vize_atelier_sfc::prepare_root_patterned_template(
         &descriptor,
         options.experimental_patterned_template,
@@ -222,6 +228,8 @@ fn type_check_analyzed(
     // the resolved analysis merges the script compile context's props before
     // the template pass so undefined-reference detection doesn't flag them
     // (editor-only false positives that `vize check` never reported).
+    #[cfg(feature = "native")]
+    let resolved_phase = EditorPreparationPhase::navigation("structural_resolved_analysis", 1);
     let analysis = vize_atelier_sfc::croquis::analyze_sfc_descriptor_resolved(
         &descriptor,
         template_ast.as_ref(),
@@ -230,6 +238,8 @@ fn type_check_analyzed(
         legacy_vue2,
         options.filename.as_str(),
     );
+    #[cfg(feature = "native")]
+    resolved_phase.finish();
     let script_content = analysis.script_content;
     let script_offset = analysis.script_offset;
     let mut summary = analysis.croquis;
@@ -302,6 +312,9 @@ fn type_check_analyzed(
 
     // Generate virtual TypeScript with scope information if requested
     if options.include_virtual_ts && !has_template_parse_errors && !has_script_parse_errors {
+        #[cfg(feature = "native")]
+        let generate_phase =
+            EditorPreparationPhase::navigation("structural_virtual_ts_generate", 1);
         let output = crate::virtual_ts::generate_virtual_ts_with_offsets_and_checks(
             &summary,
             script_content.as_deref(),
@@ -318,6 +331,8 @@ fn type_check_analyzed(
                 ..Default::default()
             },
         );
+        #[cfg(feature = "native")]
+        generate_phase.finish();
         result.virtual_ts = Some(output.code);
         if summary
             .scopes

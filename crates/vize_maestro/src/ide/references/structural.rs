@@ -15,6 +15,8 @@ mod style;
 mod template;
 use oxc_syntax::symbol::SymbolId;
 use tower_lsp::lsp_types::{Location, Position, Range};
+#[cfg(feature = "native")]
+use vize_canon::corsa_bridge::EditorPreparationPhase;
 use vize_canon::sfc_typecheck::{
     SfcTypeCheckOptions, type_check_sfc, type_check_sfc_with_legacy_vue2,
     type_check_sfc_with_options_api,
@@ -58,7 +60,11 @@ fn fresh_projection(ctx: &IdeContext<'_>) -> Option<snapshot::Projection> {
         snapshot::Mode::OptionsApi => type_check_sfc_with_options_api,
         snapshot::Mode::Standard => type_check_sfc,
     };
+    #[cfg(feature = "native")]
+    let generate_phase = EditorPreparationPhase::navigation("structural_generate", 1);
     let projection = generate(&ctx.content, &options);
+    #[cfg(feature = "native")]
+    generate_phase.finish();
     let code = projection.virtual_ts?;
     Some(snapshot::Projection {
         filename: options.filename,
@@ -75,18 +81,30 @@ fn analyze_projection(
     projection: &snapshot::Projection,
 ) -> Option<snapshot::Facts> {
     let code = &projection.code;
+    #[cfg(feature = "native")]
+    let parse_phase = EditorPreparationPhase::navigation("structural_oxc_parse", 1);
     let allocator = Allocator::default();
     let mut parsed = Parser::new(&allocator, code, SourceType::ts()).parse();
     if !parsed.diagnostics.is_empty() {
+        #[cfg(feature = "native")]
+        let retry_phase = EditorPreparationPhase::navigation("structural_oxc_tsx_retry", 1);
         parsed = Parser::new(&allocator, code, SourceType::tsx()).parse();
+        #[cfg(feature = "native")]
+        retry_phase.finish();
     }
+    #[cfg(feature = "native")]
+    parse_phase.finish();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;
     }
+    #[cfg(feature = "native")]
+    let semantic_phase = EditorPreparationPhase::navigation("structural_semantic", 1);
     let semantic = SemanticBuilder::new()
         .with_build_nodes(true)
         .build(&parsed.program)
         .semantic;
+    #[cfg(feature = "native")]
+    semantic_phase.finish();
     let scoping = semantic.scoping();
     let mut occurrences: Vec<_> = semantic
         .nodes()
@@ -149,10 +167,14 @@ fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrenc
         .documents
         .structural_snapshot_owner(ctx.uri, &ctx.content);
     let entry = if let Some(cached) = owner.as_ref().and_then(|owner| owner.get(&projection)) {
+        #[cfg(feature = "native")]
+        EditorPreparationPhase::navigation("structural_retained_hit", 1).finish();
         cached
     } else {
+        #[cfg(feature = "native")]
+        let build_phase = EditorPreparationPhase::navigation("structural_fresh_build", 1);
         let facts = analyze_projection(ctx, &projection)?;
-        match owner {
+        let entry = match owner {
             Some(owner) => owner.publish(projection, facts),
             None => std::sync::Arc::new(snapshot::Entry::uncached(
                 std::sync::Arc::clone(&ctx.content),
@@ -160,7 +182,10 @@ fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrenc
                 projection,
                 facts,
             )),
-        }
+        };
+        #[cfg(feature = "native")]
+        build_phase.finish();
+        entry
     };
     select(ctx, new_name, &entry)
 }

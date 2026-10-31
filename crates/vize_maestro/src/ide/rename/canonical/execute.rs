@@ -1,5 +1,5 @@
 use tower_lsp::lsp_types::WorkspaceEdit;
-use vize_canon::CorsaBridge;
+use vize_canon::{CorsaBridge, corsa_bridge::EditorPreparationPhase};
 use vize_l0::{FxHashSet, String, cstr};
 
 use super::{
@@ -82,10 +82,15 @@ pub(super) async fn rename_strict_inner(
     let Some(bridge) = initialized_bridge(bridge) else {
         return Ok(Answer::Unavailable);
     };
-    let Some(document) =
-        corsa_support::open_canonical_virtual_navigation_project_document_strict(ctx, bridge)
-            .await
-            .map_err(CanonicalFailure::from_project_open)?
+    let Some(document) = {
+        let phase = EditorPreparationPhase::navigation("rename_project_open", 1);
+        let result =
+            corsa_support::open_canonical_virtual_navigation_project_document_strict(ctx, bridge)
+                .await;
+        phase.finish();
+        result
+    }
+    .map_err(CanonicalFailure::from_project_open)?
     else {
         return Ok(Answer::Unavailable);
     };
@@ -101,15 +106,20 @@ pub(super) async fn rename_strict_inner(
             Answer::Unavailable
         });
     };
-    let mut component_props = corsa_support::matching_component_prop_navigation_positions(
-        ctx,
-        bridge,
-        &document,
-        &document.request_uri,
-        line,
-        character,
-    )
-    .await;
+    let mut component_props = {
+        let phase = EditorPreparationPhase::navigation("rename_component_prop_probe", 1);
+        let result = corsa_support::matching_component_prop_navigation_positions(
+            ctx,
+            bridge,
+            &document,
+            &document.request_uri,
+            line,
+            character,
+        )
+        .await;
+        phase.finish();
+        result
+    };
     // A native declaration name alone does not prove a public prop identity.
     // Event/model queries retain their existing semantic projections.
     let definition_positions = if component_props.positions.is_empty() {
@@ -137,10 +147,15 @@ pub(super) async fn rename_strict_inner(
         line,
         character,
     });
-    let response = bridge
-        .rename(&document.request_uri, line, character, &semantic_name)
-        .await
-        .map_err(CanonicalFailure::FallbackBridge)?;
+    let response = {
+        let phase = EditorPreparationPhase::navigation("rename_primary_rpc", 1);
+        let result = bridge
+            .rename(&document.request_uri, line, character, &semantic_name)
+            .await;
+        phase.finish();
+        result
+    }
+    .map_err(CanonicalFailure::FallbackBridge)?;
     if response.is_none() {
         record(&mut trace, || CanonicalRenameStage::PrimaryNull);
     }
@@ -208,10 +223,14 @@ pub(super) async fn rename_strict_inner(
             )
         })
         .collect::<Vec<_>>();
-    let linked_responses = bridge
-        .rename_batch(&linked_queries, &semantic_name)
-        .await
-        .map_err(CanonicalFailure::AuthoritativeBridge)?;
+    let linked_responses = {
+        let phase =
+            EditorPreparationPhase::navigation("rename_linked_rpc_batch", linked_queries.len());
+        let result = bridge.rename_batch(&linked_queries, &semantic_name).await;
+        phase.finish();
+        result
+    }
+    .map_err(CanonicalFailure::AuthoritativeBridge)?;
     for (position, extra) in linked.into_iter().zip(linked_responses) {
         record(&mut trace, || CanonicalRenameStage::LinkedQuery {
             request_uri: position.request_uri.clone(),
