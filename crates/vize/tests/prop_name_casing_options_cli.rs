@@ -12,8 +12,9 @@ use std::{
 };
 
 const RULE: &str = "vue/prop-name-casing";
-const CAMEL_HELP: &str = "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```";
-const SNAKE_HELP: &str = "Declare props in snake_case; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ myProp: String })\n\n<!-- Good -->\ndefineProps({ my_prop: String })\n```";
+// JSON diagnostics expose the existing plain-text help rendering.
+const CAMEL_HELP: &str = "Declare props in camelCase; a template may still write them in kebab-case:\n  <!-- Bad -->\n  defineProps({ 'my-prop': String })\n  \n  <!-- Good -->\n  defineProps({ myProp: String })";
+const SNAKE_HELP: &str = "Declare props in snake_case; a template may still write them in kebab-case:\n  <!-- Bad -->\n  defineProps({ myProp: String })\n  \n  <!-- Good -->\n  defineProps({ my_prop: String })";
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -236,10 +237,10 @@ fn public_prop_casing_config_rejects_invalid_values_without_modifying_inputs() {
         };
         config_refusal::assert_error(
             &output,
-            &directory.join("vite.config.mjs"),
+            Path::new("vite.config.mjs"),
             &directory,
             &exception,
-            1,
+            2,
         );
         assert_eq!(fs::read(project.path().join("Probe.vue")).unwrap(), input);
         assert_eq!(
