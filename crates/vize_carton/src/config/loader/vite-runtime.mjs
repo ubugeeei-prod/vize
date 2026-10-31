@@ -197,7 +197,7 @@ export async function projectViteConfigSource(source, env, configDir) {
     overrides.linter = overlayVueOptions(overrides.linter ?? {}, { enabled: lint });
   } else if (object(lint)) {
     const { typecheck: _typecheck, locale: _locale, helpLevel: _helpLevel, ...native } = lint;
-    overrides.linter = overlayVueOptions(overrides.linter ?? {}, native);
+    overrides.linter = overlayVueOptions(overrides.linter ?? {}, native, "linter");
   }
   if (object(source.fmt)) {
     // Share supported formatter controls without forwarding host-owned tasks,
@@ -378,15 +378,15 @@ function flatVueOptions(selected) {
 }
 
 // Native arrays and whole rule policies replace; undefined remains absent.
-function overlayVueOptions(base, own, replaceEntries = false) {
+function overlayVueOptions(base, own, path = "") {
   const result = { ...base };
   for (const [key, value] of Object.entries(own)) {
     if (value === undefined) continue;
     const previous = Object.hasOwn(result, key) ? result[key] : undefined;
     Object.defineProperty(result, key, {
       value:
-        !replaceEntries && object(value) && object(previous)
-          ? overlayVueOptions(previous, value, key === "ruleOptions")
+        path !== "linter.ruleOptions" && object(value) && object(previous)
+          ? overlayVueOptions(previous, value, path ? `${path}.${key}` : key)
           : value,
       enumerable: true,
       configurable: true,

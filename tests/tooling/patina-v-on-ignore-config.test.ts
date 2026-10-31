@@ -195,6 +195,59 @@ test("canonical overlays replace whole policies while preserving peer rules and 
   assert.deepEqual(base, before, "composition must not mutate inherited policy or peers");
 });
 
+test("policy replacement is confined to the canonical linter section", async () => {
+  const base = {
+    experimentals: {
+      somePlugin: {
+        ruleOptions: { foo: { a: 1, b: 2 } },
+        linter: { ruleOptions: { foo: { a: 1, b: 2 } } },
+      },
+    },
+  };
+  const own = {
+    experimentals: {
+      somePlugin: {
+        ruleOptions: { foo: { b: 3 } },
+        linter: { ruleOptions: { foo: { b: 3 } } },
+      },
+    },
+  };
+  const expected = {
+    experimentals: {
+      somePlugin: {
+        ruleOptions: { foo: { a: 1, b: 3 } },
+        linter: { ruleOptions: { foo: { a: 1, b: 3 } } },
+      },
+    },
+  };
+  const merged = mergeVueConfigOptions<unknown>(base, own);
+  assert.deepEqual(merged, expected);
+  assert.deepEqual(await projectViteConfigSource({ vue: merged }), {
+    typeChecker: { jsxTypecheck: true },
+    ...expected,
+  });
+  const inherited = { linter: { ruleOptions: { [rule]: { style: "never", ignore: ["before"] } } } };
+  const replacement = { linter: { ruleOptions: { [rule]: {} } } };
+  assert.deepEqual(
+    mergeVueConfigOptions<unknown>({ entries: [inherited] }, { entries: [replacement] }),
+    { entries: [replacement] },
+    "matching-entry arrays retain their existing whole replacement boundary",
+  );
+  assert.deepEqual(
+    await projectViteConfigSource({
+      lint: {
+        rules: { [`vize/${rule}`]: ["warn", inherited.linter.ruleOptions[rule]] },
+        vue: replacement.linter,
+      },
+    }),
+    {
+      typeChecker: { jsxTypecheck: true },
+      linter: { rules: { [rule]: "warn" }, ruleOptions: { [rule]: {} } },
+    },
+    "the legacy lint.vue override enters the real linter section explicitly",
+  );
+});
+
 test("canonical overlays retain existing strict uniqueness refusals", () => {
   assert.throws(
     () =>
