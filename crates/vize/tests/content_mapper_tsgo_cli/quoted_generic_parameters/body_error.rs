@@ -188,6 +188,8 @@ fn independent_authored_body_errors_survive_generic_repairs() {
         .unwrap();
     let fixture = workspace_root()
         .join("tests/_fixtures/differential/typechecker/quoted-generic-parameters-10540");
+    let retirement_fixture = workspace_root()
+        .join("tests/_fixtures/differential/typechecker/project-session-retirement-11168");
     let config: Value =
         serde_json::from_slice(&std::fs::read(fixture.join("tsconfig.json.txt")).unwrap()).unwrap();
     let mut mapper_config = config.clone();
@@ -227,7 +229,18 @@ fn independent_authored_body_errors_survive_generic_repairs() {
                 &serde_json::to_vec_pretty(value).unwrap(),
             );
         }
-        write(project.path(), "reference/tsconfig.json", &reference_config);
+        let project_reference_config = if id == "crlf" {
+            let pinned = std::fs::read(retirement_fixture.join("tsconfig.json.txt")).unwrap();
+            assert_eq!(pinned, reference_config);
+            pinned
+        } else {
+            reference_config.clone()
+        };
+        write(
+            project.path(),
+            "reference/tsconfig.json",
+            &project_reference_config,
+        );
         install_mapper_manifest(project.path());
         install_vue_package(project.path());
         for name in ["Comma", "Edges"] {
@@ -265,13 +278,17 @@ fn independent_authored_body_errors_survive_generic_repairs() {
                 "src/App.vue",
                 authored.replace('\n', newline).as_bytes(),
             );
-            write(
-                project.path(),
-                "reference/probe.ts",
+            let reference_source =
                 cstr!("{reference_prefix}function probe<{generic}>() {{\n{body}}}\n")
-                    .replace('\n', newline)
-                    .as_bytes(),
-            );
+                    .replace('\n', newline);
+            let reference_source = if id == "crlf" && phase == "both-repaired" {
+                let pinned = std::fs::read(retirement_fixture.join("probe.ts.txt")).unwrap();
+                assert_eq!(pinned, reference_source.as_bytes());
+                pinned
+            } else {
+                reference_source.as_bytes().to_vec()
+            };
+            write(project.path(), "reference/probe.ts", &reference_source);
             let reference_column = 25 + reference_prefix.encode_utf16().count();
             let target = variant.join(phase);
             let mut reference = Command::new(&native);
