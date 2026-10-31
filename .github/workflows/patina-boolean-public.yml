@@ -57,7 +57,7 @@ jobs:
     runs-on: blacksmith-12vcpu-macos-15
     timeout-minutes: 30
     env:
-      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
       PUBLIC_VERSION: ${{ inputs.version }}
       PRODUCER_RUN: ${{ inputs.producer_run }}
       AUTHORITY_BLOB: ${{ inputs.authority_blob }}
