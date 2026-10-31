@@ -57,6 +57,9 @@ const consumer = fs.realpathSync(required("--consumer")),
     ? fs.realpathSync(required("--candidate-cli"))
     : undefined;
 assert.equal(options.has("--source-sha"), !!candidate);
+// Source-mode packages include the extracted slot family. Installed release
+// roles retain their separately pinned declaration inventory until qualified.
+if (candidate) packageFiles.push("virtual-ts-slots.d.ts");
 assert.ok(
   !options.has("--source-package") || candidate,
   "installed mode cannot override package files",

@@ -1,0 +1,106 @@
+// Generated from the canonical slot-constructor family. Do not edit.
+import type { $IsAny } from "./generated/content-mapper-types.js" with {
+  "resolution-mode": "import",
+};
+
+export type $SlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S }
+  ? NonNullable<__S>
+  : C extends { new (): { $slots: infer __S } }
+    ? __S
+    : C extends (props: any, context: infer __Ctx, ...args: any[]) => any
+      ? NonNullable<__Ctx> extends { slots: infer __S }
+        ? __S
+        : any
+      : unknown;
+declare function __vizeFunctionalSlots<P, C, R>(
+  component: (props: P, context: C, ...args: any[]) => R,
+): (
+  props: P,
+) => "__ctx" extends keyof R
+  ? NonNullable<R["__ctx"]> extends { slots: infer S }
+    ? S
+    : any
+  : NonNullable<C> extends { slots: infer S }
+    ? S
+    : any;
+type $NativeSlotsFactory<C> = [C] extends [new (...args: any[]) => any]
+  ? (component: C) => (props: any) => $SlotHostSlots<C>
+  : C extends (...args: any[]) => any
+    ? typeof __vizeFunctionalSlots
+    : (component: C) => (props: any) => $SlotHostSlots<C>;
+export type $SlotsFactory<C> =
+  $IsAny<C> extends true
+    ? (component: C) => (props: any) => any
+    : [C] extends [{ __vizeResolveSlots?: infer F }]
+      ? F extends (...args: any[]) => any
+        ? (component: C) => F
+        : $NativeSlotsFactory<C>
+      : [C] extends [{ readonly __vizeComponentMarker: true }]
+        ? (component: C) => (props: any) => $SlotHostSlots<C>
+        : $NativeSlotsFactory<C>;
+type $HasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F }
+  ? F extends (...args: any[]) => any
+    ? true
+    : false
+  : false;
+type $DirectSlotConstructor<C> =
+  $IsAny<C> extends true
+    ? never
+    : $HasSlotResolver<C> extends true
+      ? never
+      : C extends { readonly __vizeComponentMarker: true }
+        ? never
+        : C extends new (...args: any[]) => { $slots: any }
+          ? C
+          : never;
+export type $SlotConstructor<C> = [$DirectSlotConstructor<C>] extends [never]
+  ? new (props: any, ...args: any[]) => { $slots: never }
+  : $DirectSlotConstructor<C>;
+type $SlotConstructorArgumentLists<C> = C extends {
+  new (...args: infer A1): any;
+  new (...args: infer A2): any;
+  new (...args: infer A3): any;
+  new (...args: infer A4): any;
+  new (...args: infer A5): any;
+  new (...args: infer A6): any;
+  new (...args: infer A7): any;
+  new (...args: infer A8): any;
+}
+  ? A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8
+  : C extends new (...args: infer A) => any
+    ? A
+    : [unknown];
+type $SlotConstructorHasArguments<C> =
+  $SlotConstructorArgumentLists<C> extends infer A ? (A extends [] ? never : true) : never;
+export type $SlotConstructorWithoutArguments<C> = C extends new () => any
+  ? C & ([$SlotConstructorHasArguments<C>] extends [never] ? unknown : new () => { $slots: never })
+  : new () => { $slots: never };
+export type $SlotConstructorWithArguments<C> = [$SlotConstructorHasArguments<C>] extends [never]
+  ? new (props: any, ...args: any[]) => { $slots: never }
+  : C;
+export type $SlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any
+  ? { [K in keyof A]: any }
+  : [];
+type $SlotContractIsUsable<S> =
+  $IsAny<S> extends true ? false : unknown extends S ? false : [S] extends [never] ? false : true;
+type $SlotContractHasKeys<S> = [keyof S] extends [never] ? false : true;
+type $SlotConstructorFallback<C, Z, P> =
+  $SlotContractIsUsable<$SlotHostSlots<C>> extends true
+    ? { $slots: $SlotHostSlots<C> }
+    : Z extends unknown
+      ? P extends unknown
+        ? { $slots: any }
+        : never
+      : never;
+export type $SlotConstructorInstance<C, Z, P> = [$SlotConstructorHasArguments<C>] extends [never]
+  ? Z
+  : P extends { $slots: infer S }
+    ? $SlotContractIsUsable<S> extends true
+      ? $SlotContractHasKeys<S> extends true
+        ? P
+        : $SlotConstructorFallback<C, Z, P>
+      : $SlotConstructorFallback<C, Z, P>
+    : $SlotConstructorFallback<C, Z, P>;
+export type $SlotHostSelector<C> = [$DirectSlotConstructor<C>] extends [never]
+  ? <S>(instance: unknown, slots: S) => S
+  : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];

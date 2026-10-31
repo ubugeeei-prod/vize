@@ -129,6 +129,26 @@ fn zero_witnesses_preserve_native_overload_results_and_public_exports() {
                     include_str!("../../../../../npm/cli/virtual-ts-patterns.d.ts"),
                 ),
                 (
+                    "virtual-ts-slots.d.ts",
+                    include_str!("../../../../../npm/cli/virtual-ts-slots.d.ts"),
+                ),
+                (
+                    "content-mapper-helpers.d.ts",
+                    include_str!("../../../../../npm/cli/content-mapper-helpers.d.ts"),
+                ),
+                (
+                    "content-mapper-helpers.d.mts",
+                    include_str!("../../../../../npm/cli/content-mapper-helpers.d.mts"),
+                ),
+                (
+                    "content-mapper-helpers.d.cts",
+                    include_str!("../../../../../npm/cli/content-mapper-helpers.d.cts"),
+                ),
+                (
+                    "generated/content-mapper-types.d.ts",
+                    include_str!("../../../../../npm/cli/generated/content-mapper-types.d.ts"),
+                ),
+                (
                     "virtual-ts.d.ts",
                     include_str!("../../../../../npm/cli/virtual-ts.d.ts"),
                 ),
@@ -141,7 +161,9 @@ fn zero_witnesses_preserve_native_overload_results_and_public_exports() {
                     include_str!("../../../../../npm/cli/virtual-ts.d.cts"),
                 ),
             ] {
-                std::fs::write(package.join(name), contents).unwrap();
+                let target = package.join(name);
+                std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+                std::fs::write(target, contents).unwrap();
             }
             HELPERS.replace(declaration, "type $SlotConstructorWithoutArguments<C> = import(\"vize/virtual-ts\").$SlotConstructorWithoutArguments<C>;")
         };
