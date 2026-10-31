@@ -198,6 +198,16 @@
             "path": "eslint-plugin-vue.original.json",
             "role": "independent-eslint-reference",
             "sha256": "f284836de666e741f1cb4b3cb6a86bff8614711b36fdd386c1ebcac9b58a833b"
+          },
+          {
+            "path": "runtime-controls.original.json",
+            "role": "independent-product-runtime-counterfactual",
+            "sha256": "96711d8ae2e3d73365ed768b3acff4334bf0d241cbf13764f4a95102a076a5fa"
+          },
+          {
+            "path": "vite-runtime-6852.mjs.fixture",
+            "role": "independent-product-runtime-counterfactual",
+            "sha256": "3efc312a8430dac0e331dc823fd3fd134f59c694404b3283da0eb851b6663de0"
           }
         ]
       },

@@ -49,59 +49,69 @@ fn attribute_ignore_vite_cli_preserves_nine_whole_reports_actual_fixes_and_fixed
     let rows = corpus["valid"].as_array().unwrap();
     assert_eq!(rows.len(), 9);
     let project = tempfile::tempdir().unwrap();
-    for row in rows {
-        let source = source(row["file"].as_str().unwrap());
-        let reference = &original["rows"][row["referenceRow"].as_u64().unwrap() as usize];
-        assert_eq!(reference["id"], row["id"]);
-        assert_eq!(reference["source"], source);
-        write(project.path(),"vite.config.mjs",&vite_config::source(json!({"linter":{"preset":"incremental","rules":{RULE:"error"},"ruleOptions":{RULE:row["policy"]}}}).to_string()));
-        write(project.path(), "src/Probe.vue", source);
-        for pass in 0..3 {
-            let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
-            command.current_dir(project.path()).args([
-                "lint",
-                "--config",
-                "vite.config.mjs",
-                "--format",
-                "json",
-                "src/Probe.vue",
-            ]);
-            if pass == 1 {
-                command.arg("--fix");
-            }
-            let output = command.output().unwrap();
-            let file = fs::read_to_string(project.path().join("src/Probe.vue")).unwrap();
-            let packet = serde_json::to_vec(&json!({"id":row["id"],"pass":pass,"status":output.status.code(),"source":source,"file":file,"stdout":std::str::from_utf8(&output.stdout).unwrap(),"stderr":std::str::from_utf8(&output.stderr).unwrap()})).unwrap();
-            let mut stdout = std::io::stdout().lock();
-            stdout.write_all(b"vize-attribute-ignore-cli ").unwrap();
-            stdout.write_all(&packet).unwrap();
-            stdout.write_all(b"\n").unwrap();
-            assert_eq!(
-                output.status.code(),
-                Some(i32::from(
-                    pass == 0 && row["expectedCount"].as_u64().unwrap() > 0
-                )),
-                "{}",
-                row["id"]
-            );
-            assert_eq!(
-                serde_json::from_slice::<Value>(&output.stdout).unwrap(),
-                if pass == 0 {
-                    expected(reference)
-                } else {
-                    clean()
-                },
-                "{}",
-                row["id"]
-            );
-            assert_eq!(
-                file,
-                if pass == 0 {
-                    source
-                } else {
-                    reference["fixedSource"].as_str().unwrap()
+    for dynamic in [false, true] {
+        for row in rows {
+            let source = source(row["file"].as_str().unwrap());
+            let reference = &original["rows"][row["referenceRow"].as_u64().unwrap() as usize];
+            assert_eq!(reference["id"], row["id"]);
+            assert_eq!(reference["source"], source);
+            let config = vite_config::source(json!({"linter":{"preset":"incremental","rules":{RULE:"error"},"ruleOptions":{RULE:row["policy"]}}}).to_string());
+            let config = if dynamic {
+                config
+                    .replacen("export default ", "export default () => (", 1)
+                    .replace(";\n", ");\n")
+            } else {
+                config
+            };
+            write(project.path(), "vite.config.mjs", &config);
+            write(project.path(), "src/Probe.vue", source);
+            for pass in 0..3 {
+                let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
+                command.current_dir(project.path()).args([
+                    "lint",
+                    "--config",
+                    "vite.config.mjs",
+                    "--format",
+                    "json",
+                    "src/Probe.vue",
+                ]);
+                if pass == 1 {
+                    command.arg("--fix");
                 }
-            );
+                let output = command.output().unwrap();
+                let file = fs::read_to_string(project.path().join("src/Probe.vue")).unwrap();
+                let packet = serde_json::to_vec(&json!({"id":row["id"],"dynamic":dynamic,"pass":pass,"status":output.status.code(),"source":source,"file":file,"stdout":std::str::from_utf8(&output.stdout).unwrap(),"stderr":std::str::from_utf8(&output.stderr).unwrap()})).unwrap();
+                let mut stdout = std::io::stdout().lock();
+                stdout.write_all(b"vize-attribute-ignore-cli ").unwrap();
+                stdout.write_all(&packet).unwrap();
+                stdout.write_all(b"\n").unwrap();
+                assert_eq!(
+                    output.status.code(),
+                    Some(i32::from(
+                        pass == 0 && row["expectedCount"].as_u64().unwrap() > 0
+                    )),
+                    "{}",
+                    row["id"]
+                );
+                assert_eq!(
+                    serde_json::from_slice::<Value>(&output.stdout).unwrap(),
+                    if pass == 0 {
+                        expected(reference)
+                    } else {
+                        clean()
+                    },
+                    "{}",
+                    row["id"]
+                );
+                assert_eq!(
+                    file,
+                    if pass == 0 {
+                        source
+                    } else {
+                        reference["fixedSource"].as_str().unwrap()
+                    }
+                );
+            }
         }
     }
     let input = source("RegisteredCamel.vue.txt");

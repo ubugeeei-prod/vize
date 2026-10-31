@@ -1,0 +1,426 @@
+{
+  "schema": "vize.attribute-ignore.runtime-counterfactual.v1",
+  "producer": {
+    "source": "crates/vize_carton/src/config/loader/vite-runtime.mjs",
+    "revision": "6852b4994a3d06f1852c59d11a15dda1a254d3dc",
+    "bytes": 35659,
+    "sha256": "3efc312a8430dac0e331dc823fd3fd134f59c694404b3283da0eb851b6663de0"
+  },
+  "scope": "Whole projectViteConfigSource return or complete public error name/message; error stacks are not portable API fields.",
+  "rows": [
+    {
+      "id": "attribute-always",
+      "input": {
+        "vue": {
+          "linter": {
+            "ruleOptions": {
+              "vue/attribute-hyphenation": "always"
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "typeChecker": {
+            "jsxTypecheck": true
+          },
+          "linter": {
+            "ruleOptions": {
+              "vue/attribute-hyphenation": "always"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "attribute-never",
+      "input": {
+        "vue": {
+          "linter": {
+            "ruleOptions": {
+              "vue/attribute-hyphenation": "never"
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "typeChecker": {
+            "jsxTypecheck": true
+          },
+          "linter": {
+            "ruleOptions": {
+              "vue/attribute-hyphenation": "never"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "attribute-invalid-string",
+      "input": {
+        "vue": {
+          "linter": {
+            "ruleOptions": {
+              "vue/attribute-hyphenation": "sometimes"
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "threw",
+        "error": {
+          "name": "TypeError",
+          "message": "vue.linter.ruleOptions.vue/attribute-hyphenation: unsupported native option value"
+        }
+      }
+    },
+    {
+      "id": "quotes-single",
+      "input": {
+        "vue": {
+          "linter": {
+            "ruleOptions": {
+              "vue/html-quotes": "single"
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "typeChecker": {
+            "jsxTypecheck": true
+          },
+          "linter": {
+            "ruleOptions": {
+              "vue/html-quotes": "single"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "quotes-invalid-string",
+      "input": {
+        "vue": {
+          "linter": {
+            "ruleOptions": {
+              "vue/html-quotes": "backtick"
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "threw",
+        "error": {
+          "name": "TypeError",
+          "message": "vue.linter.ruleOptions.vue/html-quotes: must match one documented native option type"
+        }
+      }
+    },
+    {
+      "id": "quotes-invalid-object",
+      "input": {
+        "vue": {
+          "linter": {
+            "ruleOptions": {
+              "vue/html-quotes": {
+                "style": "backtick"
+              }
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "threw",
+        "error": {
+          "name": "TypeError",
+          "message": "vue.linter.ruleOptions.vue/html-quotes: must match one documented native option type"
+        }
+      }
+    },
+    {
+      "id": "event-always",
+      "input": {
+        "vue": {
+          "linter": {
+            "ruleOptions": {
+              "vue/v-on-event-hyphenation": "always"
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "typeChecker": {
+            "jsxTypecheck": true
+          },
+          "linter": {
+            "ruleOptions": {
+              "vue/v-on-event-hyphenation": "always"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "event-invalid-string",
+      "input": {
+        "vue": {
+          "linter": {
+            "ruleOptions": {
+              "vue/v-on-event-hyphenation": "sometimes"
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "threw",
+        "error": {
+          "name": "TypeError",
+          "message": "vue.linter.ruleOptions.vue/v-on-event-hyphenation: must match one documented native option type"
+        }
+      }
+    },
+    {
+      "id": "event-invalid-object",
+      "input": {
+        "vue": {
+          "linter": {
+            "ruleOptions": {
+              "vue/v-on-event-hyphenation": {
+                "style": "sometimes"
+              }
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "threw",
+        "error": {
+          "name": "TypeError",
+          "message": "vue.linter.ruleOptions.vue/v-on-event-hyphenation: must match one documented native option type"
+        }
+      }
+    },
+    {
+      "id": "sort-string",
+      "input": {
+        "vue": {
+          "formatter": {
+            "sortImports": {
+              "groups": [
+                "type"
+              ]
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "typeChecker": {
+            "jsxTypecheck": true
+          },
+          "formatter": {
+            "sortImports": {
+              "groups": [
+                "type"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "sort-array",
+      "input": {
+        "vue": {
+          "formatter": {
+            "sortImports": {
+              "groups": [
+                [
+                  "type",
+                  "value"
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "typeChecker": {
+            "jsxTypecheck": true
+          },
+          "formatter": {
+            "sortImports": {
+              "groups": [
+                [
+                  "type",
+                  "value"
+                ]
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "sort-object",
+      "input": {
+        "vue": {
+          "formatter": {
+            "sortImports": {
+              "groups": [
+                {
+                  "newlinesBetween": true
+                }
+              ]
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "typeChecker": {
+            "jsxTypecheck": true
+          },
+          "formatter": {
+            "sortImports": {
+              "groups": [
+                {
+                  "newlinesBetween": true
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "sort-invalid-object",
+      "input": {
+        "vue": {
+          "formatter": {
+            "sortImports": {
+              "groups": [
+                {
+                  "newlinesBetween": "yes"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "outcome": {
+        "kind": "threw",
+        "error": {
+          "name": "TypeError",
+          "message": "vue.formatter.sortImports: must match one documented native option type"
+        }
+      }
+    },
+    {
+      "id": "sort-invalid-union",
+      "input": {
+        "vue": {
+          "formatter": {
+            "sortImports": true
+          }
+        }
+      },
+      "outcome": {
+        "kind": "threw",
+        "error": {
+          "name": "TypeError",
+          "message": "vue.formatter.sortImports: must match one documented native option type"
+        }
+      }
+    },
+    {
+      "id": "scoped-attribute-invalid",
+      "input": {
+        "vue": {
+          "lint": {
+            "jsPlugins": [
+              "oxlint-plugin-vize"
+            ],
+            "plugins": [
+              "vue"
+            ],
+            "rules": {},
+            "settings": {
+              "vize": {}
+            },
+            "overrides": [
+              {
+                "files": [
+                  "src/**/*.vue"
+                ],
+                "rules": {
+                  "vize/vue/attribute-hyphenation": [
+                    "error",
+                    "sometimes"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "outcome": {
+        "kind": "threw",
+        "error": {
+          "name": "TypeError",
+          "message": "vue.lint.overrides[0].ruleOptions.vue/attribute-hyphenation: unsupported native option value"
+        }
+      }
+    },
+    {
+      "id": "foreign-policy",
+      "input": {
+        "vue": {
+          "experimentals": {
+            "somePlugin": {
+              "ruleOptions": {
+                "x": {
+                  "a": 1
+                }
+              }
+            }
+          },
+          "formatter": {
+            "singleQuote": false
+          }
+        }
+      },
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "typeChecker": {
+            "jsxTypecheck": true
+          },
+          "experimentals": {
+            "somePlugin": {
+              "ruleOptions": {
+                "x": {
+                  "a": 1
+                }
+              }
+            }
+          },
+          "formatter": {
+            "singleQuote": false
+          }
+        }
+      }
+    }
+  ]
+}

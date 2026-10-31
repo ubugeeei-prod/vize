@@ -15,6 +15,7 @@ use std::{
 use crate::config::ConfigDocument;
 
 mod runtime_file;
+mod runtime_source;
 
 use runtime_file::NodeRuntimeFile;
 
@@ -141,8 +142,9 @@ pub(super) fn evaluate_with_node(
     compile_cache: Option<&Path>,
     explicit_vite_config: bool,
 ) -> Result<CachedEvaluation, Box<dyn std::error::Error>> {
+    let vite_runtime = runtime_source::vite_runtime();
     let script = [
-        VITE_RUNTIME,
+        vite_runtime.as_str(),
         include_str!("module-runtime.mjs"),
         include_str!("config-inputs.mjs"),
         r#"
