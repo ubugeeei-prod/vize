@@ -18,6 +18,8 @@ mod diagnostics;
 mod diagnostics_api;
 mod diagnostics_lsp;
 mod editor_lsp;
+#[cfg(test)]
+pub(crate) use editor_lsp::logical_disk_control::run as native_logical_disk_control_for_test;
 mod initial_diagnostics;
 mod language_id;
 mod lifecycle;

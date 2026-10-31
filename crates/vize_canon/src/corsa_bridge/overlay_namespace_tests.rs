@@ -239,7 +239,7 @@ pub(crate) fn run() {
                 "selectedConfigText":fs::read_to_string(&selected).unwrap(),"helpers":helpers,
                 "physicalGeneratedFile":{"path":native_path,"bytes":physical_code.len(),"sha256":Sha256::digest(&physical_code).iter().map(|byte|cstr!("{byte:02x}")).collect::<String>()}});
             save(&capture, phase, "generated-authority", &packet);
-            let disk = crate::lsp_client::editor_lsp::logical_disk_control::run(
+            let disk = crate::lsp_client::native_logical_disk_control_for_test(
                 &native,
                 generated_root,
                 &document.request_uri,
