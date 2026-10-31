@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import {
   nativeHistoryDirectory,
   nativeHistoryReceipt,
@@ -45,8 +45,13 @@ const keys = [
 const previous = keys.map((key) => [key, process.env[key]] as const);
 const observations: unknown[] = [];
 
-function messages(row: AutofixCase, source: string, findings: unknown): unknown[] {
-  const diagnostics = expected(row, source, findings, true, "none").diagnostics;
+function messages(
+  row: AutofixCase,
+  source: string,
+  findings: unknown,
+  kebab: (name: string) => string,
+): unknown[] {
+  const diagnostics = expected(row, source, findings, true, "none", kebab).diagnostics;
   return asArray(findings).map((value, index) => {
     const finding = asRecord(value);
     return {
@@ -55,7 +60,6 @@ function messages(row: AutofixCase, source: string, findings: unknown): unknown[
       message: diagnostics[index]!.message,
       line: asNumber(finding.line),
       column: asNumber(finding.column),
-      nodeType: null,
       endLine: asNumber(finding.endLine),
       endColumn: asNumber(finding.endColumn),
       ...(finding.fix === undefined ? {} : { fix: finding.fix }),
@@ -77,6 +81,25 @@ try {
   const oracle = createRequire(workspace.resolve("@nuxt/eslint-config"));
   const Linter = asRecord(oracle("eslint")).Linter as new () => Host;
   const parser: unknown = oracle("vue-eslint-parser");
+  // This filtered package job owns the Nuxt reference stack, not benchmark
+  // dependencies. Authenticate the same independent official casing source.
+  const pluginRoot = dirname(oracle.resolve("eslint-plugin-vue/package.json"));
+  assert.equal(asRecord(oracle("eslint-plugin-vue/package.json")).version, "10.9.2");
+  const casingPath = join(pluginRoot, "dist/utils/casing.js");
+  const casingSha256 = hash(readFileSync(casingPath));
+  assert.equal(casingSha256, "911df4eed3c7d75afac7c6df4a13527d104afdbbd43821993c2b4ece6108f44c");
+  const converter = asRecord(oracle(casingPath)).kebabCase;
+  assert.equal(typeof converter, "function");
+  const kebab = converter as (name: string) => string;
+  const providers = Object.fromEntries(
+    ["eslint", "vue-eslint-parser", "eslint-plugin-vue"].map((name) => [
+      name,
+      {
+        version: asRecord(oracle(name + "/package.json")).version,
+        path: realpathSync(oracle.resolve(name + "/package.json")),
+      },
+    ]),
+  );
   const selected = [
     "LocaleMenu.vue/default",
     "LocaleMenu.vue/always-false",
@@ -110,9 +133,9 @@ try {
     const packet = { id, original, verify, fixResult, requery, secondFixResult };
     observations.push(packet);
     console.log("vize-v-on-autofix-eslint-host " + JSON.stringify(packet));
-    assert.deepEqual(verify, messages(row, original, reference.messages), id);
+    assert.deepEqual(verify, messages(row, original, reference.messages, kebab), id);
     const expectedOutput = asString(asRecord(reference.fixResult).output);
-    const remaining = messages(row, expectedOutput, reference.requery);
+    const remaining = messages(row, expectedOutput, reference.requery, kebab);
     assert.deepEqual(
       fixResult,
       { fixed: asRecord(reference.fixResult).fixed, messages: remaining, output: expectedOutput },
@@ -130,6 +153,8 @@ try {
     complete: true,
     node: process.version,
     source: receipt.source,
+    providers,
+    expectedCasingSha256: casingSha256,
     frozen: receipt.frozen,
     receiptSha256: hash(receiptBytes),
     exportSha256: hash(readFileSync(new URL("../dist/eslint.mjs", import.meta.url))),

@@ -5684,7 +5684,7 @@ tier: exact
 domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
 severity: warning
 category: recommended
-autofix: no
+autofix: yes
 docs: docs/content/rules/vue.md
 
 invalid:

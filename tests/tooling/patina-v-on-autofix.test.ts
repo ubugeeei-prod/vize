@@ -226,8 +226,6 @@ test("public option precedence, omissions, actual marshalling and invalid canoni
       positive.messages,
     ],
     ["flat-undefined", { vOnEventHyphenationAutofix: undefined }, negative.messages],
-    // ?bool uses napi-rs's optional-value marshaller; record the real null boundary.
-    ["flat-null-is-optional-unset", { vOnEventHyphenationAutofix: null }, negative.messages],
   ] as const)
     assert.deepEqual(
       returned(observe(id, row, source, options)),
@@ -261,12 +259,21 @@ test("public option precedence, omissions, actual marshalling and invalid canoni
     assert.equal(outcome.kind, "threw");
     assert.equal(asRecord(outcome.error).code, "InvalidArg");
   }
-  for (const value of ["true", 1, [], {}]) {
+  // The actual source addon refuses own-null as BooleanExpected; optional
+  // omission/undefined above are different from every present non-boolean.
+  for (const value of [null, "true", 1, [], {}]) {
     const outcome = observe("flat-invalid-" + JSON.stringify(value), row, source, {
       vOnEventHyphenationAutofix: value,
     });
-    assert.equal(outcome.kind, "threw");
-    assert.equal(asRecord(outcome.error).code, "InvalidArg");
+    assert.deepEqual(outcome, {
+      kind: "threw",
+      error: {
+        name: "Error",
+        message:
+          "Failed to convert napi value into rust type `bool` on PatinaLintOptionsNapi.vOnEventHyphenationAutofix",
+        code: "BooleanExpected",
+      },
+    });
   }
   const unknown = observe("canonical-unknown-key", row, source, {
     ruleOptionsJson: JSON.stringify({ [rule]: { autofixTypo: true } }),

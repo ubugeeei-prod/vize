@@ -5573,7 +5573,7 @@ vue/v-on-event-hyphenation · lint ルール
 対象: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
 重大度: 警告
 カテゴリー: recommended
-自動修正: なし
+自動修正: あり
 ドキュメント: docs/content/rules/vue.md
 
 不正な例:

@@ -5850,7 +5850,7 @@ vue/v-on-event-hyphenation · lint 规则
 适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
 严重级别: 警告
 类别: recommended
-自动修复: 不支持
+自动修复: 支持
 文档: docs/content/rules/vue.md
 
 错误示例:

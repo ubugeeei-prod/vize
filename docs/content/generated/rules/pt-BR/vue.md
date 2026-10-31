@@ -5571,10 +5571,14 @@ Exigir hífens nos nomes de eventos personalizados em v-on de componentes
 
 [Incorreto](#vue-v-on-event-hyphenation-bad) · [Correto](#vue-v-on-event-hyphenation-good)
 
-Severidade padrão: `warning`  
-Predefinições: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Correção automática: Nenhuma; revise a alteração sugerida  
-Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
+Severidade padrão: `warning`
+
+Predefinições: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+
+Correção automática: Disponível para os diagnósticos compatíveis
+
+Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra
+
 Opções: Consulte as [opções tipadas e os valores padrão](/rules/options.md).
 
 **Configuração (Vite+)**
@@ -5628,7 +5632,7 @@ O listener do componente personalizado usa `@myEvent` em vez de um nome de event
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L38) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L40) · [Todas as regras](all.md)
 
 ### `vue/v-on-handler-style`
 

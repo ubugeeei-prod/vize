@@ -5569,10 +5569,14 @@ Enforce hyphenation of custom event names in v-on on components
 
 [Bad](#vue-v-on-event-hyphenation-bad) · [Good](#vue-v-on-event-hyphenation-good)
 
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
-Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
+Default severity: `warning`
+
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+
+Automatic fix: Available for supported findings
+
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it
+
 Options: See [typed options and defaults](options.md).
 
 **Configuration (Vite+)**
@@ -5626,7 +5630,7 @@ The custom component listener uses `@myEvent` instead of a hyphenated event name
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L38) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L40) · [All rules](all.md)
 
 ### `vue/v-on-handler-style`
 

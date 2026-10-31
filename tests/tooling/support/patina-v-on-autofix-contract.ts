@@ -149,8 +149,8 @@ export function expected(
   findings: unknown,
   includeFixes = true,
   helpLevel = "full",
+  kebab: (name: string) => string = provider().kebab,
 ) {
-  const { kebab } = provider();
   const diagnostics = asArray(findings).map((value) => {
     const finding = asRecord(value);
     assert.equal(finding.ruleId, rule);

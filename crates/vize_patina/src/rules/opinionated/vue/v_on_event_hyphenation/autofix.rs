@@ -43,11 +43,10 @@ pub(super) fn camel_case(name: &str) -> CompactString {
     let mut output = CompactString::with_capacity(name.len());
     while let Some(character) = characters.next() {
         if matches!(character, '-' | '_')
-            && characters
-                .peek()
-                .is_some_and(|next| next.is_ascii_alphanumeric() || *next == '_')
+            && let Some(next) =
+                characters.next_if(|next| next.is_ascii_alphanumeric() || *next == '_')
         {
-            output.push(characters.next().unwrap().to_ascii_uppercase());
+            output.push(next.to_ascii_uppercase());
         } else {
             output.push(character);
         }

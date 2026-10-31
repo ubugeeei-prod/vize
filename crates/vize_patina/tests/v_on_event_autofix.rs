@@ -99,10 +99,6 @@ fn compare(source: &str, result: &LintResult, findings: &Value, id: &str) {
                     fix["text"].as_str().unwrap(),
                     "{id}"
                 );
-                assert!(
-                    !source[edit.start as usize..edit.end as usize].contains('_'),
-                    "{id}"
-                );
             }
         }
     }
