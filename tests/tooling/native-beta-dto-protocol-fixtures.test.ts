@@ -130,7 +130,7 @@ void test("typed producers retain historical bytes and only the exact registered
       selected
         ? {
             path: storage,
-            sha256: "4754d721b81e69ea80667d2085585e08697d669c3369ad7c5c698f42f6a75da4",
+            sha256: "2332c307b0406c2dfaac421a1b4293321a0d6b71496aaf69382288622b96ac6d",
           }
         : null,
     );

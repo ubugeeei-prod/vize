@@ -33,7 +33,7 @@ const semanticMethods = [
 export const storageObserverPath =
   "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs";
 export const storageObserverSha256 =
-  "4754d721b81e69ea80667d2085585e08697d669c3369ad7c5c698f42f6a75da4";
+  "2332c307b0406c2dfaac421a1b4293321a0d6b71496aaf69382288622b96ac6d";
 export const commonObserverSha256 =
   "f9fe37e13f4a566cc01daadfc48ebb96b1842d6f3215a4020312af41bcbb97e1";
 const storageScope =

@@ -36,7 +36,7 @@ const observer = "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/te
 const observerDependencies = [
   {
     path: "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs",
-    sha256: "4754d721b81e69ea80667d2085585e08697d669c3369ad7c5c698f42f6a75da4",
+    sha256: "2332c307b0406c2dfaac421a1b4293321a0d6b71496aaf69382288622b96ac6d",
   },
 ];
 const registration = "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs";
