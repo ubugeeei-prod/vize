@@ -1,80 +1,161 @@
-name: Current-source LSP baseline
+name: Ordinary Vben native cohort VMA residency (diagnostic only)
 
-# Finite, manually approved RPC baseline. Ordinary PR checks run pure controls.
+# Temporary existing dispatch path only. Never integrate this observation harness.
 on:
   workflow_dispatch:
     inputs:
       source_sha:
-        description: Exact reviewed source SHA (must equal the dispatched ref)
+        description: Exact original-algorithm source under observation
+        required: true
+        default: c34d95586eb9459560c9be4990ff9ebdba3bde61
+        type: string
+      workflow_ref:
+        description: Exact reviewed diagnostic workflow commit
         required: true
         type: string
-
-permissions:
-  contents: read
-
+permissions: { contents: read }
 concurrency:
-  group: lsp-current-baseline-${{ inputs.source_sha }}
+  group: vben-cohort-observation-${{ github.run_id }}
   cancel-in-progress: false
-
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-
+  RAYON_NUM_THREADS: "4"
+  CARGO_INCREMENTAL: "0"
+  VIZE_PERF_BUDGET_SCALE: "1"
 jobs:
-  misskey:
+  observe:
+    name: Ordinary main S original incremental pair (zero qualification credit)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
     env:
-      VIZE_BASELINE_EXPECTED_SOURCE: ${{ inputs.source_sha }}
-      VIZE_PERF_BUDGET_SCALE: "1"
-      RAYON_NUM_THREADS: "4"
+      SOURCE_SHA: ${{ inputs.source_sha }}
+      WORKFLOW_SHA: ${{ inputs.workflow_ref }}
+      EXECUTED_WORKFLOW_SHA: ${{ github.workflow_sha }}
+      ROLE: observation
+      VIZE_LSP_BIN: target/ci/vize
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ inputs.source_sha }}
-          persist-credentials: false
-      - name: Refuse a stale or different dispatch source
+      - name: Refuse mutable or foreign observation authority
+        shell: bash
+        env:
+          RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$SOURCE_SHA" = c34d95586eb9459560c9be4990ff9ebdba3bde61
+          test "$WORKFLOW_SHA" = "$EXECUTED_WORKFLOW_SHA"
+          test "$GITHUB_SHA" = "$WORKFLOW_SHA"
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$RUNNER_ENVIRONMENT" = self-hosted
+          test "$RUNNER_OS" = Linux
+          echo "EVIDENCE=$RUNNER_TEMP/vben-cohort-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+          echo "CARGO_TARGET_DIR=$RUNNER_TEMP/vben-cohort-build-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ env.SOURCE_SHA }}", fetch-depth: 1, persist-credentials: false }
+      - name: Bind original source and prove initially absent private build outputs
         shell: bash
         run: |
           set -euo pipefail
-          [[ "$VIZE_BASELINE_EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
-          test "$(git rev-parse HEAD)" = "$VIZE_BASELINE_EXPECTED_SOURCE"
-          test "$GITHUB_SHA" = "$VIZE_BASELINE_EXPECTED_SOURCE"
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: package.json
-          cache: true
-          run-install: false
-      - name: Install locked JavaScript and native TypeScript dependencies
-        run: vp install --frozen-lockfile --prefer-offline
-      - name: Hydrate only the pinned Misskey fixture
-        run: git submodule update --init --depth 1 tests/_fixtures/_git/misskey
-      - name: Install repository Rust toolchain
+          mkdir -m 700 "$EVIDENCE"
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test ! -e "$CARGO_TARGET_DIR"
+          test ! -e target
+          mkdir -m 700 "$CARGO_TARGET_DIR"
+          ln -s "$CARGO_TARGET_DIR" target
+          git fetch --no-tags --depth=1 origin "$WORKFLOW_SHA"
+          test "$(git cat-file -p "$WORKFLOW_SHA" | sed -n 's/^parent //p')" = "$SOURCE_SHA"
+          git diff --name-only "$SOURCE_SHA" "$WORKFLOW_SHA" > "$EVIDENCE/workflow-only-paths.txt"
+          while IFS= read -r changed; do
+            case "$changed" in
+              .github/workflows/lsp-current-baseline.yml|.github/actions/lsp-lifecycle-observation/*) ;;
+              *) echo "Foreign diagnostic-only path: $changed" >&2; exit 1 ;;
+            esac
+          done < "$EVIDENCE/workflow-only-paths.txt"
+          git diff --exit-code "$SOURCE_SHA" "$WORKFLOW_SHA" -- \
+            crates tests tools Cargo.toml Cargo.lock package.json pnpm-lock.yaml pnpm-workspace.yaml
+          git rev-parse HEAD HEAD^{tree} > "$EVIDENCE/source-and-tree.txt"
+          printf 'initially absent private outputs: %s\n' "$CARGO_TARGET_DIR" > "$EVIDENCE/build-output-absence.txt"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Install unchanged locked providers and pinned fixture inputs
+        shell: bash
         run: |
-          rustup toolchain install || rustup show active-toolchain
-          cargo --version
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: lsp-current-baseline
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Build and receipt the exact current source server
+          set -euo pipefail
+          vp install --frozen-lockfile --prefer-offline
+          git submodule update --init --depth 1 -- tests/_fixtures/_git/misskey tests/_fixtures/_git/vue-vben-admin
+          for fixture in misskey vue-vben-admin; do
+            fixture_path="tests/_fixtures/_git/$fixture"
+            expected=$(git ls-tree HEAD "$fixture_path" | awk '{print $3}')
+            test "$(git -C "$fixture_path" rev-parse HEAD)" = "$expected"
+            test -z "$(git -C "$fixture_path" status --porcelain --untracked-files=all)"
+            printf '%s %s\n' "$fixture" "$expected" >> "$EVIDENCE/fixture-gitlinks.txt"
+          done
+      - name: Build and receipt the original ordinary legacy CLI
+        shell: bash
         run: |
-          cargo build --profile ci -p vize
-          node tests/differential/build-receipt.ts
-      - name: Qualify pure observation and refusal laws
-        run: node --test tests/tooling/lsp-current-baseline*.test.ts tests/tooling/lsp-session-capture.test.ts
-      - name: Measure three serial fresh sessions with all original checks
-        run: node tests/performance/lsp-current-baseline.ts
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+          set -euo pipefail
+          test ! -e target/ci/vize
+          test ! -e target/ci/vize.differential-build.json
+          cargo build --profile ci -p vize --features legacy --message-format=json-render-diagnostics \
+            > "$EVIDENCE/ordinary-cargo-artifacts.jsonl" 2> "$EVIDENCE/ordinary-cargo-build.stderr"
+          node tests/differential/build-receipt.ts --legacy
+          cp target/ci/vize.differential-build.json "$EVIDENCE/legacy-build-receipt.json"
+          sha256sum target/ci/vize > "$EVIDENCE/source-build-image.sha256"
+      - name: Stage exact reviewed typed diagnostic helpers and controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -m 700 "$EVIDENCE/controls"
+          for helper in types observer proc-sampler preload runtime-driver custody smaps-snapshots vben-observer; do
+            git show "$WORKFLOW_SHA:.github/actions/lsp-lifecycle-observation/$helper.ts" > "$EVIDENCE/$helper.ts"
+          done
+          for helper in seam-controls.test.ts proc-controls.test.ts proc-fixture.ts preload-controls.test.ts preload-fixture.ts runtime-driver-controls.test.ts smaps-controls.test.ts vben-observer-controls.test.ts; do
+            git show "$WORKFLOW_SHA:.github/actions/lsp-lifecycle-observation/controls/$helper" > "$EVIDENCE/controls/$helper"
+          done
+          sha256sum "$EVIDENCE/"*.ts "$EVIDENCE/controls/"*.ts > "$EVIDENCE/staged-helper-sha256.txt"
+      - name: Qualify only the diagnostic tooling with strict TypeScript and synthetic controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          compiler=node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/tsc.js
+          test -f "$compiler"
+          node "$compiler" --version > "$EVIDENCE/strict-tsc-version.txt"
+          node "$compiler" --ignoreConfig --strict --noEmit --noImplicitAny \
+            --noUncheckedIndexedAccess --exactOptionalPropertyTypes --erasableSyntaxOnly \
+            --allowImportingTsExtensions --target ES2022 --module ESNext --moduleResolution Bundler \
+            --esModuleInterop --skipLibCheck --types node --typeRoots "$GITHUB_WORKSPACE/node_modules/@types" \
+            "$EVIDENCE/"*.ts "$EVIDENCE/controls/"*.ts \
+            > "$EVIDENCE/strict-tsc.stdout" 2> "$EVIDENCE/strict-tsc.stderr"
+          node --test "$EVIDENCE/controls/"*.test.ts > "$EVIDENCE/synthetic-controls.stdout" 2> "$EVIDENCE/synthetic-controls.stderr"
+      - name: Record actual ordinary CLI native VP Node and harness custody
+        shell: bash
+        run: |
+          node "$EVIDENCE/custody.ts" before
+          cat /proc/cpuinfo > "$EVIDENCE/cpuinfo.txt"
+      - name: Run the original incremental pair once with passive Vben-only observation
+        shell: bash
+        run: node "$EVIDENCE/runtime-driver.ts"
+      - name: Recheck immutable original source images and fixtures
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node "$EVIDENCE/custody.ts" after
+          test -z "$(git status --porcelain --untracked-files=no)"
+          for fixture in misskey vue-vben-admin; do
+            test -z "$(git -C tests/_fixtures/_git/$fixture status --porcelain --untracked-files=all)"
+          done
+      - name: Retain every original result and bounded diagnostic observation
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: lsp-current-baseline-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.source_sha }}
-          path: |
-            target/vize-tests/lsp-current-baseline/
-            target/differential/lsp-sessions/
+          name: vben-cohort-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.source_sha }}
+          path: ${{ runner.temp }}/vben-cohort-${{ github.run_id }}-${{ github.run_attempt }}/
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 14
