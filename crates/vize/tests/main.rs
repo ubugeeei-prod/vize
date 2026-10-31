@@ -191,6 +191,7 @@ mod inspector_compare_cli;
 mod inspector_empty_json_cli;
 mod lib_cli;
 mod lib_real_registry_cli;
+mod lint_attribute_hyphenation_ignore;
 mod lint_call_source_cli;
 mod lint_component_context_cli;
 mod lint_component_value_reads_cli;

@@ -62,6 +62,7 @@
       "/rules/options": "ルールのオプション",
       "/rules/options-vue": "オプション: Vue",
       "/rules/options-events": "オプション: イベント",
+      "/rules/options-attributes": "オプション: 属性",
       "/rules/options-props": "オプション: Props",
       "/rules/options-script": "オプション: スクリプト",
       "/rules/options-type": "オプション: 型",

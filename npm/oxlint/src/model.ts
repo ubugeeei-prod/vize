@@ -1,5 +1,6 @@
 import type { OxlintHtmlOptions, OxlintHtmlOutcome } from "@vizejs/native";
 import type { VOnEventHyphenationOptions } from "./v-on-event-options.js";
+import type { AttributeHyphenationOptions } from "./attribute-options.js";
 
 export interface PatinaPosition {
   line: number;
@@ -91,6 +92,7 @@ export interface PatinaBinding {
       htmlSelfClosing?: HtmlSelfClosingOption;
       vOnEventHyphenation?: HyphenationStyle;
       attributeHyphenation?: HyphenationStyle;
+      attributeHyphenationIgnore?: string[];
       /** Full CLI-compatible per-rule option map. */
       ruleOptionsJson?: string;
     },
@@ -126,6 +128,7 @@ export interface PatinaRuleOptions {
   htmlSelfClosing?: HtmlSelfClosingOption;
   vOnEventHyphenation?: HyphenationStyle;
   attributeHyphenation?: HyphenationStyle;
+  attributeHyphenationIgnore?: string[];
   /** Full CLI-compatible per-rule option map. */
   ruleOptions?: VizeRuleOptions;
 }
@@ -167,7 +170,7 @@ export interface VizeRuleOptions {
   "vue/v-bind-style"?: VBindStyle;
   "vue/v-on-style"?: VOnStyle;
   "vue/v-slot-style"?: VSlotStyle;
-  "vue/attribute-hyphenation"?: HyphenationStyle;
+  "vue/attribute-hyphenation"?: HyphenationStyle | AttributeHyphenationOptions;
   "vue/valid-v-on"?: { modifiers?: string[] };
   "vue/valid-v-slot"?: { allowModifiers?: boolean };
   "musea/prefer-design-tokens"?: {

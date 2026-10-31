@@ -171,6 +171,64 @@
       }
     },
     {
+      "id": "linter/attribute-hyphenation-ignore-6097",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "attribute-hyphenation-ignore-6097",
+        "files": [
+          {
+            "path": "RegisteredCamel.vue.txt",
+            "role": "authored-configured-attribute-input",
+            "sha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db"
+          },
+          {
+            "path": "RegisteredHyphen.vue.txt",
+            "role": "authored-configured-attribute-input",
+            "sha256": "bd9adf1e9a5161b727da0da9d037a2844d50f21dd63ee0300316e4618ac67129"
+          },
+          {
+            "path": "cases.json",
+            "role": "pinned-option-corpus",
+            "sha256": "436d6184399349841a522bf0d08958b4f867b197b7a6fe5428d6bbf2216e6ce4"
+          },
+          {
+            "path": "eslint-plugin-vue.original.json",
+            "role": "independent-eslint-reference",
+            "sha256": "f284836de666e741f1cb4b3cb6a86bff8614711b36fdd386c1ebcac9b58a833b"
+          },
+          {
+            "path": "runtime-controls.original.json",
+            "role": "independent-product-runtime-counterfactual",
+            "sha256": "96711d8ae2e3d73365ed768b3acff4334bf0d241cbf13764f4a95102a076a5fa"
+          },
+          {
+            "path": "vite-runtime-6852.mjs.fixture",
+            "role": "independent-product-runtime-counterfactual",
+            "sha256": "3efc312a8430dac0e331dc823fd3fd134f59c694404b3283da0eb851b6663de0"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/attribute-hyphenation-range",
       "state": "active",
       "targets": ["lint"],

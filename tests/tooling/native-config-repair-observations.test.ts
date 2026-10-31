@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
+import { nativeLoaderScript } from "./support/native-config-script.ts";
 
 import {
   failedConfigModuleRequests,
@@ -14,16 +15,7 @@ import {
 
 const require = createRequire(import.meta.url);
 const vite = dirname(require.resolve("vite/package.json"));
-const loader = new URL("../../crates/vize_carton/src/config/loader/js.rs", import.meta.url);
-const rust = await readFile(loader, "utf8");
-const embedded =
-  (
-    await Promise.all(
-      [...rust.matchAll(/include_str!\("([^"]+)"\)/g)].map((match) =>
-        readFile(new URL(match[1], loader), "utf8"),
-      ),
-    )
-  ).join("") + [...rust.matchAll(/r#"([\s\S]*?)"#/g)][0][1];
+const embedded = await nativeLoaderScript();
 
 test("Node retains the actual explicit import symlink route for retarget repair", async () => {
   const root = await realpath(await mkdtemp(join(tmpdir(), "vize-config-alias-")));

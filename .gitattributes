@@ -138,3 +138,9 @@ tests/_fixtures/differential/typechecker/ambient-template-ref-10980/*.txt -text
 # Preserve the separately frozen literal public #10980 issue inputs.
 tests/fixtures/release/ambient-template-ref-public-10980/*.txt -text
 tests/fixtures/release/slot-instance-public/c12-version-exit.json -text
+
+# Native config assembly consumes these reviewed source bytes on every platform.
+crates/vize_carton/src/config/loader/vite-runtime.mjs text eol=lf
+crates/vize_carton/src/config/loader/vite-runtime-validation.js text eol=lf
+# Independent attribute observations retain their original complete bytes.
+tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/** -text

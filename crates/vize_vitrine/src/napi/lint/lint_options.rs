@@ -2,6 +2,11 @@
 use napi_derive::napi;
 use std::path::PathBuf;
 
+mod attribute_ignore;
+pub(super) use attribute_ignore::configure_patina_attribute_ignore;
+#[cfg(feature = "napi")]
+pub(super) use attribute_ignore::validate_attribute_hyphenation_ignore;
+
 /// Lint options for NAPI
 #[cfg_attr(feature = "napi", napi(object))]
 #[derive(Default)]
@@ -79,6 +84,8 @@ pub struct PatinaLintOptionsNapi {
     pub v_on_event_hyphenation_autofix: Option<bool>,
     /// Style for `vue/attribute-hyphenation`: "always" or "never"
     pub attribute_hyphenation: Option<String>,
+    /// Case-sensitive literal attribute-name substrings added to the built-in exemptions.
+    pub attribute_hyphenation_ignore: Option<Vec<String>>,
     /// CLI-compatible `linter.ruleOptions` encoded as JSON.
     pub rule_options_json: Option<String>,
 }

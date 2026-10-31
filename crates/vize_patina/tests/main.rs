@@ -1,5 +1,6 @@
 //! The Patina integration tests, linked as one binary instead of one per file.
 
+mod attribute_hyphenation_ignore;
 mod public_expression_reports;
 mod v_bind_prop_longform;
 mod v_for_key_capture;

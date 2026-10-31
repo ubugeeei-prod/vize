@@ -130,10 +130,14 @@ impl Linter {
             });
         }
         if let Some(value) = options.attribute_hyphenation() {
-            self = self.with_attribute_hyphenation(match value {
+            let style = match value {
                 ConfigHyphenationStyle::Always => HyphenationStyle::Always,
                 ConfigHyphenationStyle::Never => HyphenationStyle::Never,
-            });
+            };
+            self = match options.attribute_hyphenation_ignore() {
+                Some(ignore) => self.with_attribute_hyphenation_options(style, ignore.to_vec()),
+                None => self.with_attribute_hyphenation(style),
+            };
         }
         if let Some(value) = options.valid_v_on_modifiers() {
             self = self.with_valid_v_on_modifiers(value.to_vec());
