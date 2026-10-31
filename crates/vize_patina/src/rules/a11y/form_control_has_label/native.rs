@@ -36,9 +36,10 @@ impl NativeTemplateRule for FormControlHasLabel {
             return Err(Refusal::SourceMismatch);
         }
         let tag = original.surface().tag();
-        // This callback has no authenticated inherited-label fact. Refuse the
-        // owner before its children, including when an earlier input warned.
-        if tag == "label" {
+        // Label ancestry and non-input form controls are unprovided. Refuse
+        // their own header, including empty select owners and late controls,
+        // rather than relying on an unsupported descendant to stop traversal.
+        if matches!(tag, "label" | "select" | "textarea") {
             return Err(Refusal::UnsupportedContext {
                 span: context.element_opening_range(element)?,
             });

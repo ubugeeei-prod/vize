@@ -293,6 +293,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // one dynamic legacy.lint_template(&source) call and one scanner skip.
     // All 913 existing literal fixtures remain; native/legacy host tests and
     // 298 source CLI processes independently retain the complete new packets.
+    // Native input-label history adds seven nonliteral legacy calls: three
+    // original/pair/requery calls and two each for duplicate/select controls.
+    // Their complete outputs run in the focused native tests; each remains
+    // honestly counted as a variable-input skip in this literal-only scan.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -302,8 +306,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 2
         + 2
         + 2
-        + 1,
-    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1 + 3 + 1 + 5 + 1 + 1 + 2 + 1,
+        + 1
+        + 7,
+    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1 + 3 + 1 + 5 + 1 + 1 + 2 + 1 + 7,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42,
     restructured: 0,

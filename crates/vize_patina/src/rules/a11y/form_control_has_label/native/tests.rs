@@ -195,6 +195,7 @@ fn duplicate_static_hidden_and_type_keep_whole_legacy_packets_but_refuse_native_
         ("<input type type='hidden'>", "type", 1),
         ("<input type='hidden' type>", "type", 0),
     ] {
+        let start = u32::try_from(source.match_indices(name).nth(1).unwrap().0).unwrap();
         let mut expected = warning.clone();
         if findings == 0 {
             expected.diagnostics.clear();
@@ -202,11 +203,18 @@ fn duplicate_static_hidden_and_type_keep_whole_legacy_packets_but_refuse_native_
         } else {
             expected.diagnostics.first_mut().unwrap().end = u32::try_from(source.len()).unwrap();
         }
+        // The legacy parser intentionally retains both attributes and adds
+        // its complete recoverable warning before rule findings. Preserve it.
+        expected.diagnostics.insert(0, crate::LintDiagnostic::warn(
+            "parser/template",
+            format!("Duplicate attribute `{name}`. Keeping the repeated attribute so parsing can continue."),
+            start, start + u32::try_from(name.len()).unwrap(),
+        ));
+        expected.warning_count += 1;
         for _ in 0..2 {
             let legacy = linter.lint_template(source, "Duplicate.vue");
             assert_eq!(format!("{legacy:#?}"), format!("{expected:#?}"), "{source}");
             println!("native-form-label-duplicate source={source:?} legacy={legacy:#?}");
-            let start = u32::try_from(source.match_indices(name).nth(1).unwrap().0).unwrap();
             assert_eq!(
                 linter
                     .lint_native_template(source, "Duplicate.vue")
@@ -215,6 +223,56 @@ fn duplicate_static_hidden_and_type_keep_whole_legacy_packets_but_refuse_native_
                     span: Span::new(start, start + u32::try_from(name.len()).unwrap())
                 })
             );
+        }
+    }
+}
+
+#[test]
+fn empty_selects_refuse_at_their_own_header_without_losing_whole_legacy_findings() {
+    let linter = configured();
+    let original = cases()
+        .into_iter()
+        .find(|case| case.id == "form-label-visible-input-control")
+        .unwrap();
+    assert_original(&original, false);
+    let warning = linter.lint_template(&original.source, "Select.vue");
+    let original_diagnostic = warning.diagnostics.first().unwrap();
+    for prefix in ["", "<input>"] {
+        for (markup, hidden) in [
+            ("<select></select>", false),
+            ("<select hidden></select>", true),
+        ] {
+            let source = format!("{prefix}{markup}");
+            let mut expected = warning.clone();
+            expected.diagnostics.clear();
+            if !prefix.is_empty() {
+                let mut input = original_diagnostic.clone();
+                input.end = u32::try_from(prefix.len()).unwrap();
+                expected.diagnostics.push(input);
+            }
+            if !hidden {
+                let mut select = original_diagnostic.clone();
+                select.message = "<select> elements must have an associated label".into();
+                select.start = u32::try_from(prefix.len()).unwrap();
+                select.end = u32::try_from(source.len()).unwrap();
+                expected.diagnostics.push(select);
+            }
+            expected.warning_count = expected.diagnostics.len();
+            for _ in 0..2 {
+                let legacy = linter.lint_template(&source, "Select.vue");
+                assert_eq!(format!("{legacy:#?}"), format!("{expected:#?}"), "{source}");
+                println!("native-form-label-select source={source:?} legacy={legacy:#?}");
+                let start = u32::try_from(prefix.len()).unwrap();
+                let end = start + u32::try_from(markup.find('>').unwrap() + 1).unwrap();
+                assert_eq!(
+                    linter
+                        .lint_native_template(&source, "Select.vue")
+                        .unwrap_err(),
+                    Refusal::UnsupportedContext {
+                        span: Span::new(start, end)
+                    }
+                );
+            }
         }
     }
 }
