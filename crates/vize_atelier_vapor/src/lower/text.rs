@@ -193,7 +193,7 @@ fn flush_text_run<'a>(
             is_element: false,
             values: run_values,
         };
-        if ctx.jsx_closure {
+        if ctx.jsx_children {
             // The child owner creates its own effect exactly once. Nesting it
             // inside a shared attribute effect would register duplicate owners.
             block

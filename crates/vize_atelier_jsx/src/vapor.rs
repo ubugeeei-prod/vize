@@ -220,6 +220,7 @@ pub(crate) fn compile_root_to_vapor_with_origins(
         scoped_style.as_ref().map(|style| style.scope_id.as_str()),
         VaporGenerateOptions { jsx_closure: true },
         VaporGenerateExperimentalOptions {
+            jsx_children: true,
             source_map,
             source_map_filename: Some("module.tsx"),
             ..Default::default()

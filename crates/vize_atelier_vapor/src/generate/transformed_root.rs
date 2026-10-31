@@ -35,6 +35,7 @@ pub fn generate_vapor_from_transformed_root<'a>(
             scope_id,
             experimental.source_map,
             options.jsx_closure,
+            experimental.jsx_children,
         )
     );
     let spans = profile!(

@@ -38,6 +38,10 @@ pub struct VaporGenerateOptions {
 /// source-compatible.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct VaporGenerateExperimentalOptions<'a> {
+    /// Normalize intrinsic JSX child values while lowering a host-supplied root.
+    /// Already-lowered IR carries explicit operation kinds. Closure identifier
+    /// resolution alone retains the caller's existing template semantics.
+    pub jsx_children: bool,
     /// Current SFC component name for experimental `<Self>` resolution.
     pub component_name: Option<&'a str>,
     /// Treat the reserved `<Self>` tag as a reference to the current SFC.
