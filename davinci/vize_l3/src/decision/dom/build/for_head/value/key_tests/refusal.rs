@@ -63,14 +63,16 @@ fn key_only_completion_does_not_admit_compound_mixed_grouped_nested_or_attribute
 }
 
 #[test]
-fn unsupported_alias_shapes_and_reserved_prefixes_keep_their_original_l2_refusal() {
-    for (aliases, reserved) in [
-        ("([item],key)", false),
-        ("({item},key)", false),
-        ("(item=1,key)", false),
-        ("(item,key,third)", false),
-        ("(item,_key)", true),
-        ("(item,$key)", true),
+fn unsupported_alias_shapes_and_reserved_prefixes_keep_their_earliest_original_refusal() {
+    use vize_l1::embed::syntax::NativeForRefusal;
+
+    for (aliases, syntax_refusal) in [
+        ("([item],key)", Some(NativeForRefusal::AliasShape)),
+        ("({item},key)", Some(NativeForRefusal::AliasShape)),
+        ("(item=1,key)", Some(NativeForRefusal::AliasShape)),
+        ("(item,key,third)", Some(NativeForRefusal::AliasCount(3))),
+        ("(item,_key)", None),
+        ("(item,$key)", None),
     ] {
         let arena = Allocator::default();
         let source = alloc::format!(
@@ -84,24 +86,30 @@ fn unsupported_alias_shapes_and_reserved_prefixes_keep_their_original_l2_refusal
             .map(|file| file.rejected_for_heads())
             .or_else(|| owner.rejected_file().map(|file| file.rejected_for_heads()))
             .unwrap();
-        let [vize_l2::file::RejectedFileFor::Resolution { input, error }] = rejected else {
-            panic!("normally retained original alias refusal: {aliases}");
-        };
-        assert_eq!(error.part, vize_l1::embed::syntax::ForHeadPart::Aliases);
-        assert_eq!(
-            error.kind,
-            if reserved {
-                vize_l2::resolution::ForResolutionErrorKind::ReservedAlias
-            } else {
-                vize_l2::resolution::ForResolutionErrorKind::UnsupportedAlias
+        let operand = match (rejected, syntax_refusal) {
+            ([vize_l2::file::RejectedFileFor::Syntax(input)], Some(expected)) => {
+                assert_eq!(input.kind, expected, "{aliases}");
+                assert_eq!(input.span, input.operand().value_span());
+                assert_eq!(input.operand().syntax().native_refusal(), Some(expected));
+                assert!(input.operand().syntax().aliases().unwrap().is_ok());
+                assert!(input.operand().syntax().collection().unwrap().is_ok());
+                input.operand()
             }
-        );
-        assert_eq!(
-            input.operand().raw_value(),
-            alloc::format!("{aliases} in count")
-        );
+            ([vize_l2::file::RejectedFileFor::Resolution { input, error }], None) => {
+                assert_eq!(error.part, vize_l1::embed::syntax::ForHeadPart::Aliases);
+                assert_eq!(
+                    error.kind,
+                    vize_l2::resolution::ForResolutionErrorKind::ReservedAlias
+                );
+                assert_eq!(input.aliases().len(), 2);
+                input.operand()
+            }
+            _ => panic!("exact normally retained original alias refusal: {aliases}: {rejected:?}"),
+        };
+        assert_eq!(operand.raw_value(), alloc::format!("{aliases} in count"));
+        assert_eq!(operand.value_span().slice(&source), operand.raw_value());
         assert!(core::ptr::eq(
-            input.operand().syntax().source().authored_root(),
+            operand.syntax().source().authored_root(),
             source.as_str()
         ));
         assert!(owner.retained_setup().is_some());
