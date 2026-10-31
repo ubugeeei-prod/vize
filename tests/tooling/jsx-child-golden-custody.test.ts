@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { test } from "node:test";
+import {
+  verifyExtendedGoldenCustody,
+  verifyExtendedGoldenMutationControls,
+} from "./support/jsx-child-extended-custody.ts";
 
 type Json = null | string | number | boolean | Json[] | { [key: string]: Json };
 type RecordRow = {
@@ -191,3 +195,11 @@ test("child-code custody rejects unrelated metadata, broadened pointers and runt
     }
   }
 });
+test(
+  "additional JSX matrices and the full Rspack bundle retain exact historical inputs and outputs",
+  verifyExtendedGoldenCustody,
+);
+test(
+  "extended child custody rejects changed inputs, code populations, and runtime inflation",
+  verifyExtendedGoldenMutationControls,
+);
