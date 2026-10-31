@@ -78,6 +78,10 @@ jobs:
             runtime="$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc"
             test -x "$runtime"
             printf 'CORSA_PATH=%s\n' "$runtime" >> "$GITHUB_ENV"
+            # Insta's CI default writes no pending observations. NewFile retains
+            # actual .snap.new bytes while every mismatch still fails the test.
+            test "${INSTA_FORCE_PASS:-0}" = "0"
+            printf 'INSTA_UPDATE=new\nINSTA_FORCE_PASS=0\n' >> "$GITHUB_ENV"
           fi
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
