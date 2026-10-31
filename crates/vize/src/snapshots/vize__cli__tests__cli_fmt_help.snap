@@ -136,6 +136,21 @@ Options:
 
           [possible values: true, false]
 
+      --normalize-inline-styles[=<NORMALIZE_INLINE_STYLES>]
+          Normalize plain static style attributes as one-line CSS declarations
+
+          [possible values: true, false]
+
+      --normalize-v-for-parens[=<NORMALIZE_V_FOR_PARENS>]
+          Parenthesize multiple v-for aliases
+
+          [possible values: true, false]
+
+      --reindent-preprocessor-styles[=<REINDENT_PREPROCESSOR_STYLES>]
+          Re-indent SCSS and Less block contents by nesting depth
+
+          [possible values: true, false]
+
       --preset <PRESET>
           Apply a named set of defaults before the flags above
 

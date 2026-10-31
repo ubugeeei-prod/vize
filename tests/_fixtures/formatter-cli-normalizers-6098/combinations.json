@@ -1,0 +1,45 @@
+{
+  "source": "<template>\n  <p v-for=\"x, i in xs\" style=\"color:red;top:0;\">{{ x }}</p>\n</template>\n\n<style lang=\"scss\">\n.a {\n\tcolor: red;\n\t&:hover {\n\t\tcolor: blue;\n\t}\n}\n</style>\n",
+  "cases": [
+    {
+      "id": "none",
+      "enabled": [false, false, false],
+      "expected": "<template>\n  <p v-for=\"x, i in xs\" style=\"color:red;top:0;\">{{ x }}</p>\n</template>\n\n<style lang=\"scss\">\n.a {\n\tcolor: red;\n\t&:hover {\n\t\tcolor: blue;\n\t}\n}\n</style>\n"
+    },
+    {
+      "id": "inline-only",
+      "enabled": [true, false, false],
+      "expected": "<template>\n  <p v-for=\"x, i in xs\" style=\"color: red; top: 0\">{{ x }}</p>\n</template>\n\n<style lang=\"scss\">\n.a {\n\tcolor: red;\n\t&:hover {\n\t\tcolor: blue;\n\t}\n}\n</style>\n"
+    },
+    {
+      "id": "v-for-only",
+      "enabled": [false, true, false],
+      "expected": "<template>\n  <p v-for=\"(x, i) in xs\" style=\"color:red;top:0;\">{{ x }}</p>\n</template>\n\n<style lang=\"scss\">\n.a {\n\tcolor: red;\n\t&:hover {\n\t\tcolor: blue;\n\t}\n}\n</style>\n"
+    },
+    {
+      "id": "inline-and-v-for",
+      "enabled": [true, true, false],
+      "expected": "<template>\n  <p v-for=\"(x, i) in xs\" style=\"color: red; top: 0\">{{ x }}</p>\n</template>\n\n<style lang=\"scss\">\n.a {\n\tcolor: red;\n\t&:hover {\n\t\tcolor: blue;\n\t}\n}\n</style>\n"
+    },
+    {
+      "id": "preprocessor-only",
+      "enabled": [false, false, true],
+      "expected": "<template>\n  <p v-for=\"x, i in xs\" style=\"color:red;top:0;\">{{ x }}</p>\n</template>\n\n<style lang=\"scss\">\n.a {\n  color: red;\n  &:hover {\n    color: blue;\n  }\n}\n</style>\n"
+    },
+    {
+      "id": "inline-and-preprocessor",
+      "enabled": [true, false, true],
+      "expected": "<template>\n  <p v-for=\"x, i in xs\" style=\"color: red; top: 0\">{{ x }}</p>\n</template>\n\n<style lang=\"scss\">\n.a {\n  color: red;\n  &:hover {\n    color: blue;\n  }\n}\n</style>\n"
+    },
+    {
+      "id": "v-for-and-preprocessor",
+      "enabled": [false, true, true],
+      "expected": "<template>\n  <p v-for=\"(x, i) in xs\" style=\"color:red;top:0;\">{{ x }}</p>\n</template>\n\n<style lang=\"scss\">\n.a {\n  color: red;\n  &:hover {\n    color: blue;\n  }\n}\n</style>\n"
+    },
+    {
+      "id": "all",
+      "enabled": [true, true, true],
+      "expected": "<template>\n  <p v-for=\"(x, i) in xs\" style=\"color: red; top: 0\">{{ x }}</p>\n</template>\n\n<style lang=\"scss\">\n.a {\n  color: red;\n  &:hover {\n    color: blue;\n  }\n}\n</style>\n"
+    }
+  ]
+}
