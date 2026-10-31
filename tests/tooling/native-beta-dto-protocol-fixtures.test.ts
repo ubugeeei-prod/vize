@@ -115,8 +115,36 @@ void test("typed producers retain historical bytes and only the exact registered
   );
   assert.deepEqual(current.currentTypeDependency, {
     path: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
-    sha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
+    sha256: "3904cfaf07e59b501c2361b65410877f22780bfdc365cedf74300bb6fb88d127",
   });
+  const storage =
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs";
+  for (const entry of custody) {
+    const selected = /\/(?:prepare-role|audit-wire)\.ts$/u.test(entry.currentPath);
+    assert.equal(
+      entry.currentStorageRegistration,
+      selected ? "after-source-selected-owned-overlay-storage" : null,
+    );
+    assert.deepEqual(
+      entry.currentStorageObserverDependency,
+      selected
+        ? {
+            path: storage,
+            sha256: "4754d721b81e69ea80667d2085585e08697d669c3369ad7c5c698f42f6a75da4",
+          }
+        : null,
+    );
+    assert.deepEqual(
+      entry.currentObserverIdentity,
+      selected
+        ? {
+            path: "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
+            historicalSha256: "26eb21864007e6011c69d0a95e1be173fd586605a87400bdc3aacecb5cb31dc6",
+            currentSha256: "f9fe37e13f4a566cc01daadfc48ebb96b1842d6f3215a4020312af41bcbb97e1",
+          }
+        : null,
+    );
+  }
   assert(
     custody
       .filter((entry) => entry !== current)
@@ -166,6 +194,8 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
     ...["client.bin", "server.bin", "identity.json"].map(
       (name) =>
         "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/" +
@@ -237,12 +267,14 @@ void test("only the finite registered source files enter this protocol family", 
     "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/protocol9.rs",
     "crates/vize_canon/src/lsp_client/session/capabilities.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs",
   ])
     assert(nativeBetaDtoProtocolSource(path));
   for (const path of [
     "crates/vize_canon/src/check.rs",
     "crates/vize_canon/src/lsp_client/initial_diagnostics.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/future.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority/future.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/../protocol9.rs",
   ])
     assert(!nativeBetaDtoProtocolSource(path));

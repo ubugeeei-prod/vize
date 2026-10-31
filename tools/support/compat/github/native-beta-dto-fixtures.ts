@@ -7,6 +7,7 @@ export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-dia
 const fixtureRoot = "tests/_fixtures/differential/typechecker/";
 const dto = "crates/vize_canon/src/lsp_client/initial_diagnostics/";
 const snapshot = "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/";
+const currentObserverHelperPath = `${snapshot}tests/native_beta/storage_authority.rs`;
 const production = [
   `${dto}diagnostic_response.rs`,
   `${dto}diagnostic_response/location.rs`,
@@ -51,6 +52,7 @@ const scope = new Set([
   `${snapshot}protocol/protocol9/tests.rs`,
   `${snapshot}tests.rs`,
   `${snapshot}tests/native_beta.rs`,
+  currentObserverHelperPath,
 ]);
 const inputs = [
   "snapshot-source-text/protocol9-beta.bin",
@@ -84,6 +86,11 @@ const runtime = (source: Buffer) =>
 // One explicit current observer successor. This does not rewrite the original
 // producer identity or equate the distinct root and SDK watcher registrations.
 const watcherSuccessor = {
+  storageId: "after-source-selected-owned-overlay-storage",
+  observerHistoricalSha256: "26eb21864007e6011c69d0a95e1be173fd586605a87400bdc3aacecb5cb31dc6",
+  observerCurrentSha256: "f9fe37e13f4a566cc01daadfc48ebb96b1842d6f3215a4020312af41bcbb97e1",
+  storageObserverSha256: "4754d721b81e69ea80667d2085585e08697d669c3369ad7c5c698f42f6a75da4",
+  prepareRuntimeSha256: "804bf5d27e8b11e80b3239c74e8df7b813eb2c3f964f96e79db44b3082a0da80",
   id: "before-stable-post-shutdown-observation-41099824102",
   splitLogId: "before-stable-split-watch-log-41152849787",
   terminalId: "before-stable-terminal-stderr-41156819864",
@@ -107,14 +114,14 @@ const watcherSuccessor = {
   terminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
   terminalSha256: "83b167d4146f812255b01a946ead297693bad85cdf904817e4207a2bf1c97c35",
   terminalRuntimeSha256: "2ed2edfda0877fa9a4b1093242f8501c5fb2ce834dfaf39ff478edfa9da18013",
-  auditRuntimeSha256: "abe25f136fa1273c11d55f3c96ef784f4ead8f0be0109939d983ea93b2e37f13",
+  auditRuntimeSha256: "a9ec7023bdb75b8dc9f9c0ed55663bc96b98d6bbf0b2bf1a98bad20e03f59c9d",
   typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
-  typesSha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
+  typesSha256: "3904cfaf07e59b501c2361b65410877f22780bfdc365cedf74300bb6fb88d127",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
   helperRuntimeSha256: "13977fbeee879ea518ca8abc2329dea34919edcf984102133192f4386014fe7a",
   routeId: "configured-startup-beta-semantic-route-41108828160",
   routePath: "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
-  routeRuntimeSha256: "c577043a694e0254b9be7b4505cb49531e527431be332c3343b814f3c4d2ae40",
+  routeRuntimeSha256: "a0147de18a1415523e0453fe2e44858d5e0c30e284da6e1e3f88ea9a4ef3fde4",
   actualFiles: [
     ["client.bin", "cd11915afee013a728a287098714d5db70e8719867bd596a1c4721ca5a876c13"],
     ["server.bin", "47cc76661e039b28a3e7056d3d2b07d6d4c6da31440166c2e490b76f78079f73"],
@@ -158,7 +165,14 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       require(current.equals(
         Buffer.from(transitioned),
       ), "workflow changed beyond four typed producer paths");
+    } else if (index === 1) {
+      pinned(read, tests[3]!.source, watcherSuccessor.observerCurrentSha256);
+      pinned(read, currentObserverHelperPath, watcherSuccessor.storageObserverSha256);
+      require(sha(Buffer.from(runtime(current))) ===
+        watcherSuccessor.prepareRuntimeSha256, "unregistered current common-observer preparation runtime");
     } else if (index === 3) {
+      pinned(read, tests[3]!.source, watcherSuccessor.observerCurrentSha256);
+      pinned(read, currentObserverHelperPath, watcherSuccessor.storageObserverSha256);
       const types = pinned(read, watcherSuccessor.typesPath, watcherSuccessor.typesSha256);
       require(runtime(types) === "", "audit type dependency must erase completely");
       currentTypeDependency = { path: watcherSuccessor.typesPath, sha256: sha(types) };
@@ -226,6 +240,19 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       currentMixedEofRegistration: index === 3 ? watcherSuccessor.mixedEofId : null,
       currentLateRootRegistration: index === 3 ? watcherSuccessor.lateRootId : null,
       currentRouteRegistration: index === 3 ? watcherSuccessor.routeId : null,
+      currentStorageRegistration: index === 1 || index === 3 ? watcherSuccessor.storageId : null,
+      currentStorageObserverDependency:
+        index === 1 || index === 3
+          ? { path: currentObserverHelperPath, sha256: watcherSuccessor.storageObserverSha256 }
+          : null,
+      currentObserverIdentity:
+        index === 1 || index === 3
+          ? {
+              path: tests[3]!.source,
+              historicalSha256: watcherSuccessor.observerHistoricalSha256,
+              currentSha256: watcherSuccessor.observerCurrentSha256,
+            }
+          : null,
       currentTypeDependency,
     };
   });
@@ -352,7 +379,14 @@ export function newNativeBetaDtoProtocolCases(
       const test = object(row.tests[index], ["selector", "source", "sha256"]);
       require(test.selector === expected.selector &&
         test.source === expected.source, "unregistered selector or source");
-      const source = pinned(read, expected.source, test.sha256).toString("utf8");
+      if (index === 3)
+        require(test.sha256 ===
+          watcherSuccessor.observerHistoricalSha256, "historical common-observer identity changed");
+      const source = pinned(
+        read,
+        expected.source,
+        index === 3 ? watcherSuccessor.observerCurrentSha256 : test.sha256,
+      ).toString("utf8");
       require(source.includes(
         `fn ${expected.selector.split("::").at(-1)}(`,
       ), "required Rust test missing");

@@ -4,7 +4,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { requireCandidateStableStderr } from "./stable-watcher-boundary.ts";
 import { verifyHistoricalWatcherRelations } from "./stable-watcher-late-root.ts";
-import { verifyBetaAttachedRoute } from "./beta-attached-route.ts";
+import {
+  attachedOwners,
+  verifyAfterAttachedStorage,
+  verifyBetaAttachedRoute,
+  verifyObserverDependencies,
+} from "./beta-attached-route.ts";
 import type { Packet, Syscall, StreamPair, Provider, Source, Receipt } from "./audit-wire-types.ts";
 import {
   readNativeTrace,
@@ -26,6 +31,20 @@ assert.equal(source.sdkVersion, provider.version);
 assert.equal(source.sdkSha256, provider.executableSha256);
 assert.equal(source.source, process.env.VIZE_NATIVE_DTO_SOURCE_SHA);
 assert.equal(source.rows.length, 3);
+verifyObserverDependencies(
+  source.observerDependencies,
+  (load("source-role.json") as { harnessDependencies: unknown }).harnessDependencies,
+  source.observerSha256,
+  (load("source-role.json") as { harness: unknown }).harness,
+);
+const watcherContext = () => ({
+  source: source.source,
+  role: source.role,
+  sdkVersion: provider.version,
+  sdkSha256: provider.executableSha256,
+  sdkExecutable: provider.executable,
+  projectRoots: [source.root, source.attached.root],
+});
 const trace = await readNativeTrace(root, provider.executable);
 const { threads, leaders, exits, records, eofReads } = trace;
 save("native-execve-handoffs.json", trace.execveHandoffs);
@@ -84,14 +103,7 @@ function relations(
   server: Packet[],
   allowStableWatcherRegistrationRefusal: boolean,
 ) {
-  const observation = verifyHistoricalWatcherRelations(client, server, {
-    source: source.source,
-    role: source.role,
-    sdkVersion: provider.version,
-    sdkSha256: provider.executableSha256,
-    sdkExecutable: provider.executable,
-    projectRoots: [source.root, source.attached.root],
-  });
+  const observation = verifyHistoricalWatcherRelations(client, server, watcherContext());
   if (observation) {
     assert.equal(allowStableWatcherRegistrationRefusal, true);
     watcherBoundaryObservations.push(observation);
@@ -264,6 +276,16 @@ assert.equal(
   "Only the exact historical stable watcher registration request may race shutdown",
 );
 assert.equal(receipts[0].apiAttached, true, "The explicit owned scope must retain its API wire");
+if (source.role === "after")
+  save(
+    "attached-storage-authority.json",
+    verifyAfterAttachedStorage(
+      attachedOwners(receipts),
+      watcherContext(),
+      process.env.VIZE_NATIVE_DTO_SOURCE_SHA!,
+      source.attached,
+    ),
+  );
 if (provider.version === "7.1.0-beta") {
   if (source.role === "before")
     assert(
@@ -274,31 +296,12 @@ if (provider.version === "7.1.0-beta") {
     save(
       "beta-attached-semantic-route.json",
       verifyBetaAttachedRoute(
-        receipts.slice(1).map((receipt) => {
-          const lspClient = receipt.streams.find((stream) => stream.fd === 0)!.client!;
-          const lspServer = receipt.streams.find((stream) => stream.fd === 1)!.server!;
-          const api = receipt.streams.find(
-            (stream) => stream.fd >= 3 && stream.client && stream.server,
-          );
-          return {
-            nativeOwner: receipt.nativeOwner,
-            client: lspClient.packets,
-            server: lspServer.packets,
-            apiClient: api?.client?.packets ?? [],
-            apiServer: api?.server?.packets ?? [],
-          };
-        }),
-        {
-          source: source.source,
-          role: source.role,
-          sdkVersion: provider.version,
-          sdkSha256: provider.executableSha256,
-          sdkExecutable: provider.executable,
-          projectRoots: [source.root, source.attached.root],
-        },
+        attachedOwners(receipts),
+        watcherContext(),
         process.env.VIZE_NATIVE_DTO_SOURCE_SHA!,
         source.attached.root,
         source.attached.rows,
+        source.attached,
       ),
     );
 }
@@ -396,14 +399,7 @@ if (baseline) {
         observation: observeTerminalStableStderr(
           receipt.streams.find((row) => row.fd === 0)!.client!.packets,
           receipt.streams.find((row) => row.fd === 1)!.server!.packets,
-          {
-            source: source.source,
-            role: source.role,
-            sdkVersion: provider.version,
-            sdkSha256: provider.executableSha256,
-            sdkExecutable: provider.executable,
-            projectRoots: [source.root, source.attached.root],
-          },
+          watcherContext(),
           records.filter((row) => owner(row.tid) === receipt.nativeOwner),
           eofReads.filter((row) => owner(row.tid) === receipt.nativeOwner && row.fd === 0),
           terminal,
@@ -420,14 +416,7 @@ if (baseline) {
           observation: observeHistoricalSplitWatchLog(
             receipt.streams.find((row) => row.fd === 0)!.client!.packets,
             receipt.streams.find((row) => row.fd === 1)!.server!.packets,
-            {
-              source: source.source,
-              role: source.role,
-              sdkVersion: provider.version,
-              sdkSha256: provider.executableSha256,
-              sdkExecutable: provider.executable,
-              projectRoots: [source.root, source.attached.root],
-            },
+            watcherContext(),
             records.filter((row) => owner(row.tid) === receipt.nativeOwner),
             eofReads.filter((row) => owner(row.tid) === receipt.nativeOwner && row.fd === 0),
             terminal,

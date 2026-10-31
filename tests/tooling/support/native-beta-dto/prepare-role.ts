@@ -33,9 +33,20 @@ const output = path.join(
 );
 fs.mkdirSync(output, { recursive: true });
 const observer = "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs";
+const observerDependencies = [
+  {
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs",
+    sha256: "4754d721b81e69ea80667d2085585e08697d669c3369ad7c5c698f42f6a75da4",
+  },
+];
 const registration = "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs";
 const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const harness = fs.readFileSync(path.join(GITHUB_WORKSPACE, observer));
+for (const dependency of observerDependencies)
+  assert.equal(
+    hash(fs.readFileSync(path.join(GITHUB_WORKSPACE, dependency.path))),
+    dependency.sha256,
+  );
 if (ROLE === "before") {
   assert(!fs.existsSync(root));
   execFileSync("git", ["worktree", "add", "--detach", root, source], { cwd: GITHUB_WORKSPACE });
@@ -43,9 +54,21 @@ if (ROLE === "before") {
   assert(!original.includes("mod native_beta;"));
   fs.writeFileSync(path.join(root, registration), `${original}\n#[cfg(unix)]\nmod native_beta;\n`);
   fs.copyFileSync(path.join(GITHUB_WORKSPACE, observer), path.join(root, observer));
+  for (const dependency of observerDependencies) {
+    const target = path.join(root, dependency.path);
+    assert(
+      !fs.existsSync(target),
+      "before source must not already contain the current observer helper",
+    );
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(GITHUB_WORKSPACE, dependency.path), target);
+  }
   // The sole tracked delta only registers the separately hashed public-API test.
   assert.equal(git(["diff", "--name-only"], root), registration);
-  assert.equal(git(["ls-files", "--others", "--exclude-standard"], root), observer);
+  assert.deepEqual(
+    git(["ls-files", "--others", "--exclude-standard"], root).split("\n").sort(),
+    [observer, ...observerDependencies.map((dependency) => dependency.path)].sort(),
+  );
   execFileSync("git", ["diff", "--exit-code", "--", ".", `:(exclude)${registration}`], {
     cwd: root,
   });
@@ -55,6 +78,8 @@ if (ROLE === "before") {
   );
 }
 assert.equal(hash(fs.readFileSync(path.join(root, observer))), hash(harness));
+for (const dependency of observerDependencies)
+  assert.equal(hash(fs.readFileSync(path.join(root, dependency.path))), dependency.sha256);
 const production = [
   "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response.rs",
   "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics.rs",
@@ -76,11 +101,12 @@ const manifest = {
   sdkVersion: SDK_VERSION,
   head: HEAD_SHA,
   harness: { path: observer, sha256: hash(harness) },
+  harnessDependencies: observerDependencies,
   production: Object.fromEntries(
     production.map((file) => [file, hash(fs.readFileSync(path.join(root, file)))]),
   ),
   scope:
-    "Before source production bytes remain pinned; only the identical separately hashed public-API observer and its test-only module registration are copied. Candidate decoders are never copied into the before role.",
+    "Before production remains pinned; only the identical separately hashed observer, its one exact source-storage observation helper, and the test-only module registration are copied. Candidate decoders are never copied into the before role.",
 };
 fs.writeFileSync(path.join(output, "source-role.json"), JSON.stringify(manifest, null, 2) + "\n");
 const target = path.join(RUNNER_TEMP, `native-dto-target-${ROLE}-${SDK_VERSION}-${source}`);
