@@ -4,6 +4,8 @@ use serde_json::json;
 use std::fs;
 use vize_l0::{String, cstr};
 
+mod combinations;
+
 #[derive(Clone, Copy, Deserialize)]
 enum Normalizer {
     #[serde(rename = "normalizeInlineStyles")]
