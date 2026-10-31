@@ -1,5 +1,7 @@
 //! Generic construct signatures intersected with Vue's runtime constructor (#10416).
 
+mod correlated_props;
+
 use super::super::{resolve_test_tsgo_binary, snapshot_project_diagnostics};
 use vize_l0::String;
 

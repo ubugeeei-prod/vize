@@ -11424,6 +11424,47 @@
               }
             },
     {
+      "id": "typechecker/constructor-props-correlation-11023/per-usage-overloads-and-repair",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::generic_constructor_slots::correlated_props::constructor_props_follow_each_usage_in_both_overload_orders",
+      "sourceRevision": "f102e287fe4f735adb46f20fcd74cb14ffc9b564",
+      "inputs": [
+        {
+          "file": "src/components.ts",
+          "path": "constructor-props-correlation-11023/components.ts.txt",
+          "sha256": "8d0c3e44d881a0b7bfc3377510682d72f95bea2de92301ad01f1bf353bc5d2dc"
+        },
+        {
+          "file": "src/Valid.vue",
+          "path": "constructor-props-correlation-11023/Valid.vue.txt",
+          "sha256": "e91f2fbe74dc94d1ad2ff04b655f88fdf37fee6e1ac6bec430cd6d2f209ac967"
+        },
+        {
+          "file": "src/Invalid.vue",
+          "path": "constructor-props-correlation-11023/Invalid.vue.txt",
+          "sha256": "7f8dc322ffd2ed91d6c3f141a930e36d756c93993db13877256a06b8d55c282c"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "constructor_props_follow_each_usage_in_both_overload_orders; six numeric/string witnesses and two invalid member checks with repair"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/dynamic-component-event-names-11140",
       "state": "active",
       "targets": [

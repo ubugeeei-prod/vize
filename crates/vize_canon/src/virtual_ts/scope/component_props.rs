@@ -16,6 +16,7 @@ use vize_croquis::{ScopeData, ScopeKind, analysis::ComponentUsage};
 
 use crate::virtual_ts::VizeSemanticLink;
 use crate::virtual_ts::component_reference::component_binding_reference;
+use crate::virtual_ts::expressions::constructor_instance;
 use crate::virtual_ts::expressions::{ComponentPropCheckContext, generate_component_prop_checks};
 use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::types::VizeMapping;
@@ -294,13 +295,22 @@ fn generate_usage_declarations(
             "typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof {component_ref}> : Record<string, unknown>) : $ComponentRawProps<typeof {component_ref}>;\n",
         );
     } else {
-        let is_any =
-            crate::virtual_ts::helpers::shared_types::IS_ANY.select(ctx.hoist_shared_preamble);
-        let component_raw_props = crate::virtual_ts::helpers::shared_types::COMPONENT_RAW_PROPS
-            .select(ctx.hoist_shared_preamble);
-        append!(
-            *ts,
-            "typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {component_raw_props}<typeof {component_ref}> : Record<string, unknown>) : {component_raw_props}<typeof {component_ref}>;\n",
+        let pair = constructor_instance::root_slot_scope(
+            &summary.scopes,
+            usage,
+            ctx.hoist_shared_preamble,
+        )
+        .map(|scope| {
+            constructor_instance::instance_pair_name(
+                vize_carton::cstr!("__vize_slot_host_{}", scope.id.as_u32()).as_str(),
+                &summary.scopes,
+            )
+        });
+        constructor_instance::append_usage_props(
+            ts,
+            component_ref.as_str(),
+            pair.as_deref(),
+            ctx.hoist_shared_preamble,
         );
     }
 
@@ -346,6 +356,15 @@ fn shared_component_contracts(
     let mut groups: FxHashMap<(String, String, bool), SharedComponentContract> =
         FxHashMap::default();
     for &(idx, usage) in usages {
+        if constructor_instance::root_slot_scope(
+            &ctx.summary.scopes,
+            usage,
+            ctx.hoist_shared_preamble,
+        )
+        .is_some()
+        {
+            continue;
+        }
         let component_ref = ctx.explicit_generics.usage_reference(
             usage.start,
             named_dynamic_reference(ctx, usage).unwrap_or_else(|| {
@@ -375,6 +394,15 @@ fn shared_component_contracts(
 
     let mut contracts = FxHashMap::default();
     for &(idx, usage) in usages {
+        if constructor_instance::root_slot_scope(
+            &ctx.summary.scopes,
+            usage,
+            ctx.hoist_shared_preamble,
+        )
+        .is_some()
+        {
+            continue;
+        }
         let component_ref = ctx.explicit_generics.usage_reference(
             usage.start,
             named_dynamic_reference(ctx, usage).unwrap_or_else(|| {

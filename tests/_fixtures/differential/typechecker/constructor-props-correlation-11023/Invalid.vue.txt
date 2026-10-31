@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { LastZero, FirstZero } from './components';
+</script>
+<template>
+  <LastZero :value="1" v-slot="{ item }">{{ item.toUpperCase() }}</LastZero>
+  <FirstZero :value="'Ada'" v-slot="{ item }">{{ item.toFixed() }}</FirstZero>
+</template>
