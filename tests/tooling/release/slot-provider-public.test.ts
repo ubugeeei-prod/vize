@@ -233,6 +233,15 @@ test("complete mapper/framework vector preserves exact positions and continuatio
     diagnostics(Buffer.concat([numberFailure, Buffer.from("  continuation\n")]), "/project"),
   );
 });
+function syntheticDiagnostics(row: Stage) {
+  return row.expected.map(({ code, message }) => ({
+    file: "/control.vue.ts",
+    start: 0,
+    length: 1,
+    code,
+    message,
+  }));
+}
 function syntheticTypes(row: Stage): ReturnType<typeof slotProviderTypes> {
   const kind = row.kind!;
   const flags = { number: 64, any: 1, error: 1, unknown: 2, never: 262144, string: 32 };
@@ -269,13 +278,7 @@ function syntheticTypes(row: Stage): ReturnType<typeof slotProviderTypes> {
         intrinsicName: kind === "error" ? "error" : null,
       },
     ],
-    diagnostics: row.expected.map(({ code, message }) => ({
-      file: "/control.vue.ts",
-      start: 0,
-      length: 1,
-      code,
-      message,
-    })),
+    diagnostics: syntheticDiagnostics(row),
   };
 }
 test("original slot-string binding remains string but its actual report literal is other", () => {
@@ -372,3 +375,126 @@ for (const negative of [false, true])
       rmSync(directory, { recursive: true, force: true });
     }
   });
+
+function syntheticCollision(row: Stage) {
+  const names = [
+    "_slot_default_8",
+    "_slot_default_9",
+    "_slot_props_default_8",
+    "_slot_props_default_9",
+  ];
+  const tags = row.collisionTags!;
+  const key = (tag: string) => (tag === "A-b" ? "AB" : "A_b");
+  const kind = (key: string) =>
+    row.collisionInvalid && key === row.collisionAnyKey ? "any" : "number";
+  const text =
+    "const $Component_A_x2d_b = 0;\nconst A_b = 0;\n" +
+    names
+      .map(
+        (name, i) =>
+          `  void function ${name}({ item }: import("vize/virtual-ts").$SlotPayload<typeof __vize_slot_${i >= 2 ? "props_" : ""}host_${8 + (i % 2)}, "default", import("vize/virtual-ts").$RegisteredSlotProvider<import("vue").GlobalComponents, "${key(tags[i % 2])}", "${key(tags[i % 2])}", "${tags[i % 2]}">>) {\n${i < 2 ? "    slotReport(item);\n" : ""}  };\n`,
+      )
+      .join("");
+  const observed = syntheticTypes(stage("original10", "valid"));
+  observed.rows = [];
+  observed.sourceSha256 = sha256(text);
+  observed.diagnostics = syntheticDiagnostics(row);
+  const record = (role: string, token: string, owner: string | null, value: string) => {
+    const from = text.indexOf(owner ? "function " + owner : "const " + token),
+      start = text.indexOf(token, from),
+      report = role === "slot-report",
+      provider = role === "actual-provider";
+    assert.ok(start >= 0);
+    return {
+      role,
+      start,
+      end: start + token.length,
+      text: token,
+      ownerFunction: owner,
+      flags: report ? 1024 : value === "any" ? 1 : provider ? 268435456 : 64,
+      any: !report && value === "any",
+      intrinsicName: report || (provider && value === "number") ? null : value,
+      debugIntrinsicName: null,
+      symbol: report ? null : token,
+      display: report
+        ? JSON.stringify(value)
+        : provider && value === "number"
+          ? "typed constructor"
+          : value,
+    };
+  };
+  observed.rows.push(
+    record("actual-provider", "$Component_A_x2d_b", null, kind("AB")),
+    record("actual-provider", "A_b", null, kind("A_b")),
+  );
+  for (const [index, name] of names.entries()) {
+    const value = kind(key(tags[index % 2]));
+    observed.rows.push(record("slot-binding", "item", name, value));
+    if (index < 2) observed.rows.push(record("slot-report", "slotReport(item)", name, value));
+  }
+  return { observed, text };
+}
+test("all16 collision copies bind grouped C8 declaration IDs and frozen provider types in source order", () => {
+  for (const row of fixtures.stages.filter((row) => row.population === "collision16")) {
+    const { observed, text } = syntheticCollision(row);
+    assertTypeIdentity(row, observed, text);
+  }
+});
+test("collision row omissions/order/owner/position/type mutations cannot be sorted or normalized away", () => {
+  const row = fixtures.stages.find((row) => row.population === "collision16")!;
+  const mutations: Array<(value: ReturnType<typeof slotProviderTypes>) => void> = [
+    (value) => {
+      value.rows.splice(2, 1);
+    },
+    (value) => {
+      value.rows.push(structuredClone(value.rows[2]));
+    },
+    (value) => {
+      [value.rows[2], value.rows[4]] = [value.rows[4], value.rows[2]];
+    },
+    (value) => {
+      value.rows[6].ownerFunction = "_slot_props_default_9";
+    },
+    (value) => {
+      value.rows[2].start++;
+    },
+    (value) => {
+      value.rows[2].flags = 64;
+    },
+    (value) => {
+      value.rows[2].intrinsicName = "error";
+    },
+    (value) => {
+      value.rows[2].display = "number";
+    },
+    (value) => {
+      value.rows[2].symbol = "other";
+    },
+    (value) => {
+      value.rows[3].display = '"number"';
+    },
+    (value) => {
+      value.rows[0].any = false;
+    },
+    (value) => {
+      value.rows[0].symbol = "A_b";
+    },
+  ];
+  for (const mutate of mutations) {
+    const { observed, text } = syntheticCollision(row);
+    mutate(observed);
+    assert.throws(() => assertTypeIdentity(row, observed, text));
+  }
+  const { observed, text } = syntheticCollision(row);
+  assert.throws(() => assertTypeIdentity(row, observed));
+  assert.throws(() =>
+    assertTypeIdentity(
+      { ...row, slotRoles: ["template", "props", "template", "props"] },
+      observed,
+      text,
+    ),
+  );
+  const damaged = text.replace("host_8", "host_9");
+  observed.sourceSha256 = sha256(damaged);
+  assert.throws(() => assertTypeIdentity(row, observed, damaged));
+});

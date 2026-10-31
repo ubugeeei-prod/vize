@@ -123,7 +123,74 @@ export function slotProviderTypes(
   };
 }
 
-export function assertTypeIdentity(stage: Stage, observed: ReturnType<typeof slotProviderTypes>) {
+/** Literal C8 emits all template scopes before its component-props pass. */
+function collisionDeclarations(stage: Stage, text: string) {
+  const tags = stage.collisionTags;
+  assert.ok(tags && tags.length === 2);
+  const matches = [
+    ...text.matchAll(/^  void function (_slot_(props_)?default_([0-9]+))\(\{ item \}:/gmu),
+  ];
+  assert.equal(matches.length, 4, "all four literal slot declarations required");
+  const declarations = matches.map((match, index) => {
+    const ownerFunction = match[1]!,
+      scope = match[3]!,
+      props = Boolean(match[2]);
+    const tag = tags[index % 2],
+      key = tag === "A-b" ? "AB" : "A_b";
+    const end = text.indexOf("\n", match.index);
+    assert.ok(end > match.index);
+    assert.equal(
+      text.slice(match.index, end),
+      `  void function ${ownerFunction}({ item }: import("vize/virtual-ts").$SlotPayload<typeof __vize_slot_${props ? "props_" : ""}host_${scope}, "default", import("vize/virtual-ts").$RegisteredSlotProvider<import("vue").GlobalComponents, "${key}", "${key}", "${tag}">>) {`,
+      "complete declaration must retain its literal host ID and frozen provider owner",
+    );
+    const start = match.index + match[0].lastIndexOf("item");
+    return {
+      ownerFunction,
+      scope,
+      role: props ? "props" : "template",
+      start,
+      end: start + 4,
+      text: "item",
+      symbol: "item",
+    };
+  });
+  assert.deepEqual(
+    declarations.map((row) => row.role),
+    ["template", "template", "props", "props"],
+  );
+  const ids = declarations.map((row) => row.scope);
+  assert.notEqual(ids[0], ids[1], "two distinct authored slot scopes required");
+  assert.deepEqual(
+    ids,
+    [ids[0], ids[1], ids[0], ids[1]],
+    "props must retain each template's exact scope ID",
+  );
+  return declarations;
+}
+
+export function assertTypeIdentity(
+  stage: Stage,
+  observed: ReturnType<typeof slotProviderTypes>,
+  text?: string,
+) {
+  if (text !== undefined) {
+    assert.equal(observed.sourceSha256, createHash("sha256").update(text).digest("hex"));
+    for (const row of observed.rows) {
+      assert.ok(
+        Number.isSafeInteger(row.start) &&
+          Number.isSafeInteger(row.end) &&
+          row.start >= 0 &&
+          row.end > row.start &&
+          row.end <= text.length,
+      );
+      assert.equal(
+        text.slice(row.start, row.end),
+        row.text,
+        "exact UTF16 position and declaration text",
+      );
+    }
+  }
   const bindings = observed.rows.filter((row) => row.role === "slot-binding");
   const reports = observed.rows.filter((row) => row.role === "slot-report");
   const providers = observed.rows.filter((row) => row.role === "actual-provider");
@@ -174,22 +241,77 @@ export function assertTypeIdentity(stage: Stage, observed: ReturnType<typeof slo
       if (kind === "any") assert.notEqual(providers[0]!.intrinsicName, "error");
     }
   } else {
+    assert.ok(text !== undefined, "collision identities require their complete C8 VTS source");
+    const declarations = collisionDeclarations(stage, text);
+    assert.deepEqual(
+      bindings.map(({ start, end, text, symbol, ownerFunction }) => ({
+        start,
+        end,
+        text,
+        symbol,
+        ownerFunction,
+      })),
+      declarations.map(({ start, end, text, symbol, ownerFunction }) => ({
+        start,
+        end,
+        text,
+        symbol,
+        ownerFunction,
+      })),
+    );
+    const tags = stage.collisionTags!,
+      anyKey = stage.collisionAnyKey;
+    assert.ok(anyKey === "AB" || anyKey === "A_b");
+    const key = (tag: string) => (tag === "A-b" ? "AB" : "A_b");
+    const kind = (key: string) => (stage.collisionInvalid && key === anyKey ? "any" : "number");
+    const kinds = tags.map((tag) => kind(key(tag)));
     assert.equal(providers.length, 2);
     assert.equal(new Set(providers.map((row) => row.symbol)).size, 2);
+    const providerKeys: Record<string, string> = {
+      $Component_A_x2d_b: "AB",
+      A_b: "A_b",
+      $Component_A_x5f_b: "A_b",
+    };
+    assert.equal(new Set(providers.map((row) => providerKeys[row.symbol ?? ""])).size, 2);
+    for (const row of providers) {
+      const owner = providerKeys[row.symbol ?? ""];
+      assert.ok(owner === "AB" || owner === "A_b", "literal registered provider symbol required");
+      assert.equal(row.any, kind(owner) === "any");
+      assert.equal(row.intrinsicName, kind(owner) === "any" ? "any" : null);
+    }
     assert.deepEqual(
-      providers.map((row) => row.any).sort((left, right) => Number(left) - Number(right)),
-      stage.collisionInvalid ? [false, true] : [false, false],
-    );
-    assert.deepEqual(
-      bindings
-        .map((row) => row.intrinsicName)
-        .sort((left, right) => String(left).localeCompare(String(right))),
-      stage.collisionInvalid
-        ? ["any", "any", "number", "number"]
-        : ["number", "number", "number", "number"],
+      bindings.map(({ flags, any, intrinsicName, debugIntrinsicName, display }) => ({
+        flags,
+        any,
+        intrinsicName,
+        debugIntrinsicName,
+        display,
+      })),
+      [...kinds, ...kinds].map((kind) => ({
+        flags: kind === "any" ? 1 : 64,
+        any: kind === "any",
+        intrinsicName: kind,
+        debugIntrinsicName: null,
+        display: kind,
+      })),
     );
     assert.equal(reports.length, 2);
-    assert.ok(reports.every((row) => row.flags === 1024 && !row.any && row.intrinsicName === null));
+    assert.deepEqual(
+      reports.map(({ flags, any, intrinsicName, display, ownerFunction }) => ({
+        flags,
+        any,
+        intrinsicName,
+        display,
+        ownerFunction,
+      })),
+      kinds.map((kind, index) => ({
+        flags: 1024,
+        any: false,
+        intrinsicName: null,
+        display: JSON.stringify(kind),
+        ownerFunction: declarations[index].ownerFunction,
+      })),
+    );
   }
   assert.ok(
     observed.diagnostics.every((row) => row.file === observed.file),
