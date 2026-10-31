@@ -1,0 +1,121 @@
+{
+  "schema": "vize.native-sfc.original-root-if-text-inputs",
+  "filename": "OriginalRootIfText雪🌸.vue",
+  "compiler": {
+    "version": "3.5.35"
+  },
+  "runtime": {
+    "version": "3.5.35"
+  },
+  "typescript": {
+    "version": "6.0.3"
+  },
+  "qualification": "input-only; no native code, source-map or primary capture credit",
+  "fixtures": [
+    {
+      "id": "visible-text-update",
+      "source": "<script setup>let visible=true; let message=\"before\"</script><template><p v-if=\"visible\">{{message}}</p></template>",
+      "script": "let visible=true; let message=\"before\"",
+      "template": "<p v-if=\"visible\">{{message}}</p>",
+      "bindings": ["visible", "message"],
+      "immutableBindings": [],
+      "updates": {
+        "message": "after"
+      },
+      "conditionBinding": "visible",
+      "textBinding": "message",
+      "ifTextRuntime": {
+        "tag": "p",
+        "initial": {
+          "visible": true,
+          "text": "before"
+        },
+        "updated": {
+          "visible": true,
+          "text": "after"
+        }
+      }
+    },
+    {
+      "id": "reveal-updated-text",
+      "source": "<script setup>let visible=false; let message=\"old\"</script><template><i v-if=\"visible\">{{message}}</i></template>",
+      "script": "let visible=false; let message=\"old\"",
+      "template": "<i v-if=\"visible\">{{message}}</i>",
+      "bindings": ["visible", "message"],
+      "immutableBindings": [],
+      "updates": {
+        "visible": true,
+        "message": "new"
+      },
+      "conditionBinding": "visible",
+      "textBinding": "message",
+      "ifTextRuntime": {
+        "tag": "i",
+        "initial": {
+          "visible": false,
+          "text": "old"
+        },
+        "updated": {
+          "visible": true,
+          "text": "new"
+        }
+      }
+    },
+    {
+      "id": "typescript-unicode-hide",
+      "source": "\r\n<script setup lang=\"ts\">let 可視:boolean=true; let 文言:string=\"雪🌸\" /* from 'vue' 雪🌸 */</script><template><b v-if=\"可視\">{{文言}}</b></template>\r\n",
+      "script": "let 可視:boolean=true; let 文言:string=\"雪🌸\" /* from 'vue' 雪🌸 */",
+      "template": "<b v-if=\"可視\">{{文言}}</b>",
+      "bindings": ["可視", "文言"],
+      "immutableBindings": [],
+      "updates": {
+        "可視": false,
+        "文言": "🌸雪"
+      },
+      "conditionBinding": "可視",
+      "textBinding": "文言",
+      "ifTextRuntime": {
+        "tag": "b",
+        "initial": {
+          "visible": true,
+          "text": "雪🌸"
+        },
+        "updated": {
+          "visible": false,
+          "text": "🌸雪"
+        }
+      }
+    },
+    {
+      "id": "same-binding-condition-and-text",
+      "source": "<script setup>let ready=true</script><template><div v-if='ready'>{{ready}}</div></template>",
+      "script": "let ready=true",
+      "template": "<div v-if='ready'>{{ready}}</div>",
+      "bindings": ["ready"],
+      "immutableBindings": [],
+      "updates": {
+        "ready": false
+      },
+      "conditionBinding": "ready",
+      "textBinding": "ready",
+      "ifTextRuntime": {
+        "tag": "div",
+        "initial": {
+          "visible": true,
+          "text": "true"
+        },
+        "updated": {
+          "visible": false,
+          "text": "false"
+        }
+      },
+      "successorOf": {
+        "sourceRevision": "bc67fe89ff0193713dccaebddfeec1e1ce694068",
+        "path": "davinci/vize_l2/src/file/region/native/conditional/tests/refusal.rs",
+        "test": "unsupported_condition_spelling_and_body_shapes_remain_whole_lower_refusals",
+        "sourceSha256": "f100f09c940ce00be77f1bb1d342a779c02c9acb69951bfca38893d53cc0a698",
+        "outcome": "UnsupportedChild and no completed File/view in the original static-only RootIf slice"
+      }
+    }
+  ]
+}

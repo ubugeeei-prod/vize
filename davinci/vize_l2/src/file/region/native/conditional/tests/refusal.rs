@@ -35,7 +35,6 @@ fn unsupported_condition_spelling_and_body_shapes_remain_whole_lower_refusals() 
         "<div v-if=' ready '/>",
         "<div v-if='r&#101;ady'/>",
         "<div v-if='\\u0072eady'/>",
-        "<div v-if='ready'>{{ready}}</div>",
         "<div v-if='ready'><b/></div>",
         "<div v-if='ready'>a b</div>",
         "<div v-if='ready' title='value'/>",
