@@ -1,0 +1,104 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+
+const BASE = "c34d95586eb9459560c9be4990ff9ebdba3bde61";
+const TRACE = ["crates/vize_canon/src/corsa_bridge/preparation_trace.rs", "crates/vize_canon/src/corsa_bridge/bridge.rs",
+  "crates/vize_canon/src/corsa_bridge/bridge/language_features.rs", "crates/vize_maestro/src/server/handlers.rs",
+  "crates/vize_maestro/src/server/handlers/navigation_trace_formatter.rs", "crates/vize_maestro/src/ide/references/canonical.rs",
+  "crates/vize_maestro/src/ide/references/structural.rs", "crates/vize_maestro/src/ide/rename/canonical.rs",
+  "crates/vize_maestro/src/ide/rename/canonical/execute.rs"].sort();
+const HELPERS = ["controller.ts", "log-join.ts", "custody.ts", "controls/log-join-controls.test.ts"].map(file => ".github/actions/lsp-navigation-trace/" + file);
+const WORKFLOW = ".github/workflows/lsp-current-baseline.yml";
+const ROOTS = ["tests/performance", "tests/_helpers", "tests/tooling/support/lsp", "tests/differential", "tools/support/compat/davinci", "tools/config/vite-plus",
+  "tests/_fixtures/vue-ecosystem-fixtures.json", "tests/package.json", "package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "vite.config.ts", "vite-plus.config.ts", ".github/actions/check-vue-parity/action.yml"];
+const sha = (bytes: Uint8Array): string => createHash("sha256").update(bytes).digest("hex");
+function env(name: string): string { const value = process.env[name]; assert(value !== undefined && value.length > 0, name); return value; }
+function object(value: unknown): Record<string, unknown> { assert(value !== null && typeof value === "object" && !Array.isArray(value)); return Object.fromEntries(Object.entries(value)); }
+function git(...args: string[]): Buffer { return execFileSync("git", args, { maxBuffer: 8 * 1024 * 1024 }); }
+function text(...args: string[]): string { return git(...args).toString("utf8").trim(); }
+function names(...args: string[]): string[] { return text(...args).split("\n").filter(Boolean).sort(); }
+function write(name: string, value: unknown): void { fs.writeFileSync(path.join(output, name), JSON.stringify(value, null, 2) + "\n", { flag: "wx", mode: 0o600 }); }
+function metadata(file: string) { const stat = fs.statSync(file, { bigint: true }); assert(stat.isFile()); return {
+  dev: String(stat.dev), ino: String(stat.ino), bytes: Number(stat.size), mtimeNs: String(stat.mtimeNs), ctimeNs: String(stat.ctimeNs) }; }
+function image(file: string, elf = true) {
+  const realpath = fs.realpathSync(file), before = metadata(realpath), bytes = fs.readFileSync(realpath);
+  assert.deepEqual(metadata(realpath), before); assert(Number.isSafeInteger(before.bytes) && before.bytes > 0);
+  if (elf) assert.equal(bytes.subarray(0, 4).toString("hex"), "7f454c46"); return { realpath, sha256: sha(bytes), ...before };
+}
+function executable(command: string): string {
+  for (const entry of env("PATH").split(path.delimiter)) {
+    const candidate = path.resolve(entry, command);
+    try { fs.accessSync(candidate, fs.constants.X_OK); if (fs.statSync(candidate).isFile()) return candidate; } catch { /* Try the next PATH entry. */ }
+  }
+  throw new Error("invoked PATH launcher missing");
+}
+const mode = process.argv[2]; assert(mode === "before" || mode === "after");
+const source = env("SOURCE_SHA"), workflow = env("WORKFLOW_SHA"), output = fs.realpathSync(env("EVIDENCE"));
+assert.match(source, /^[a-f0-9]{40}$/); assert.match(workflow, /^[a-f0-9]{40}$/); assert.equal(env("EXECUTED_WORKFLOW_SHA"), workflow);
+assert.equal(process.version, "v24.14.0"); assert.equal(os.platform(), "linux"); assert.equal(os.arch(), "x64"); assert.equal(os.cpus().length, 32);
+assert.equal(env("CARGO_INCREMENTAL"), "0"); assert.equal(text("rev-parse", "HEAD"), source);
+assert.equal(text("status", "--porcelain", "--untracked-files=no"), "");
+assert.equal(text("rev-list", "--parents", "-n", "1", source), source + " " + BASE);
+assert.equal(text("rev-list", "--parents", "-n", "1", workflow), workflow + " " + source);
+assert.deepEqual(names("diff", "--name-only", BASE, source), TRACE);
+assert.deepEqual(names("diff", "--name-only", source, workflow), [...HELPERS, WORKFLOW].sort());
+const traceFiles = TRACE.map(file => {
+  const bytes = fs.readFileSync(file); assert.deepEqual(bytes, git("show", source + ":" + file));
+  assert(bytes.toString("utf8").split("\n").length - 1 <= 500, file); return { path: file, sha256: sha(bytes) };
+});
+const helpers = HELPERS.map(file => {
+  const bytes = fs.readFileSync(path.join(output, file.split("/").slice(3).join("/")));
+  assert.deepEqual(bytes, git("show", workflow + ":" + file)); return { path: file, sha256: sha(bytes) };
+});
+const harness = names("ls-tree", "-r", "--name-only", source, "--", ...ROOTS).map(file => {
+  const bytes = fs.readFileSync(file); assert.deepEqual(bytes, git("show", source + ":" + file)); assert.deepEqual(bytes, git("show", BASE + ":" + file));
+  return { path: file, sha256: sha(bytes) };
+});
+const serverImage = image("target/ci-opt/vize"), nodeImage = image(process.execPath), nativeImage = image(env("CORSA_PATH"));
+assert.equal(serverImage.realpath, fs.realpathSync(env("VIZE_LSP_BIN")));
+const receipt = object(JSON.parse(fs.readFileSync("target/ci-opt/vize.differential-build.json", "utf8")));
+assert.equal(receipt["sourceRevision"], source); assert.equal(receipt["recipe"], "cargo build --profile ci-opt -p vize --features profiling");
+assert.equal(receipt["binarySha256"], serverImage.sha256); assert.equal(receipt["binaryPath"], "target/ci-opt/vize");
+assert.equal(fs.readFileSync(path.join(output, "first-image.sha256"), "utf8").trim().split(/\s+/)[0], serverImage.sha256);
+const cargo = fs.readFileSync(path.join(output, "first-cargo.jsonl")); assert(cargo.length <= 8 * 1024 * 1024);
+const rows = cargo.toString("utf8").split("\n").filter(Boolean).map(line => object(JSON.parse(line)));
+assert.equal(rows.filter(row => row["reason"] === "build-finished" && row["success"] === true).length, 1);
+const cli = rows.filter(row => row["reason"] === "compiler-artifact" && object(row["target"])["name"] === "vize"
+  && typeof row["executable"] === "string" && fs.realpathSync(row["executable"]) === serverImage.realpath);
+assert.equal(cli.length, 1); const features = cli[0]?.["features"]; assert(Array.isArray(features) && features.includes("profiling"));
+const vpInvoked = executable("vp"), vpLauncher = { invoked: vpInvoked, ...image(vpInvoked, false) };
+const vpVersion = execFileSync(vpLauncher.invoked, ["--version"], { encoding: "utf8" }).trim();
+const toolchain = { rustc: execFileSync("rustc", ["-Vv"], { encoding: "utf8" }), cargo: execFileSync("cargo", ["-V"], { encoding: "utf8" }) };
+const snapshot = { schema: "vize.navigation-trace-custody", version: 1, mode, qualificationCredit: 0, baseSource: BASE, source, workflow,
+  sourceTree: text("rev-parse", source + "^{tree}"), traceFiles, helpers, harness, harnessSha256: sha(Buffer.from(JSON.stringify(harness))),
+  serverImage, nodeImage, nativeImage, vpLauncher, receipt, firstCargoSha256: sha(cargo), actualCliFeatures: features, toolchain, vpVersion,
+  runtime: { runId: env("GITHUB_RUN_ID"), runAttempt: env("GITHUB_RUN_ATTEMPT"), runnerImageOS: process.env["ImageOS"] ?? null,
+    runnerImageVersion: process.env["ImageVersion"] ?? null, incremental: env("CARGO_INCREMENTAL"), rustFlags: process.env["RUSTFLAGS"] ?? null },
+  scope: "Diagnostic source N/profile CLI, not ordinary S or same-image library-test qualification. No new benchmark RPC." };
+if (mode === "before") {
+  const units = fs.readFileSync(path.join(output, "formatter-test.jsonl"), "utf8");
+  assert.match(units, /running 1 test/u); assert.match(units, /test result: ok\. 1 passed; 0 failed; 0 ignored/u);
+  const unitArtifacts = units.split("\n").filter(line => line.startsWith("{")).map(line => object(JSON.parse(line)))
+    .filter(row => row["reason"] === "compiler-artifact" && object(row["target"])["name"] === "vize_maestro"
+      && object(row["profile"])["test"] === true && typeof row["executable"] === "string");
+  assert.equal(unitArtifacts.length, 1); const unitPath = unitArtifacts[0]?.["executable"]; assert(typeof unitPath === "string");
+  const unitImage = image(unitPath);
+  const formatter = fs.readFileSync(path.join(output, "formatter.raw")); assert(formatter.length > 0 && formatter.length <= 256 * 1024);
+  write("formatter-evidence.json", { rawBytes: formatter.length, sha256: sha(formatter), unitImage, measuredCliImage: serverImage,
+    imagesByteEqual: unitImage.sha256 === serverImage.sha256, sameImageProtocolQualification: false,
+    scope: "Actual locked Full formatter library fixture; distinct from measured first CLI image." });
+  write("before.json", snapshot);
+  const raw = path.join(output, "observed", "raw"); assert.equal(fs.realpathSync(raw), raw); assert.equal(fs.readdirSync(raw).length, 0);
+  write("config.json", { schema: "vize.navigation-trace-config", version: 1, repoRoot: fs.realpathSync("."), outputRoot: raw,
+    sourceRevision: source, workflowRevision: workflow, runId: env("GITHUB_RUN_ID"), runAttempt: env("GITHUB_RUN_ATTEMPT"), serverImage, nodeImage,
+    wireSourceSha256: sha(fs.readFileSync("tests/performance/support/dual-lsp-wire.ts")), benchmarkSourceSha256: sha(fs.readFileSync("tests/performance/lsp-dual-server-benchmark.ts")) });
+} else {
+  const before = object(JSON.parse(fs.readFileSync(path.join(output, "before.json"), "utf8")));
+  for (const key of ["source", "workflow", "sourceTree", "traceFiles", "helpers", "harnessSha256", "serverImage", "nodeImage", "nativeImage", "vpLauncher", "receipt", "firstCargoSha256", "actualCliFeatures", "toolchain", "vpVersion", "runtime"] as const)
+    assert.deepEqual(snapshot[key], before[key], key);
+  write("after.json", snapshot);
+}

@@ -1,80 +1,158 @@
-name: Current-source LSP baseline
+name: Request-bound navigation phases (diagnostic only)
 
-# Finite, manually approved RPC baseline. Ordinary PR checks run pure controls.
 on:
   workflow_dispatch:
     inputs:
       source_sha:
-        description: Exact reviewed source SHA (must equal the dispatched ref)
+        description: Exact reviewed instrumented source N, parent original main S
         required: true
         type: string
-
-permissions:
-  contents: read
-
+      workflow_ref:
+        description: Exact reviewed controller H, parent N
+        required: true
+        type: string
+permissions: { contents: read }
 concurrency:
-  group: lsp-current-baseline-${{ inputs.source_sha }}
+  group: navigation-phase-diagnostic-${{ github.run_id }}
   cancel-in-progress: false
-
 env:
+  CARGO_INCREMENTAL: "0"
   CARGO_TERM_COLOR: always
+  CARGO_BUILD_JOBS: "16"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-
 jobs:
-  misskey:
+  observe:
+    name: Original 1 fresh and 5 warm packets with owned request phases
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
+    timeout-minutes: 45
     env:
-      VIZE_BASELINE_EXPECTED_SOURCE: ${{ inputs.source_sha }}
-      VIZE_PERF_BUDGET_SCALE: "1"
-      RAYON_NUM_THREADS: "4"
+      SOURCE_SHA: ${{ inputs.source_sha }}
+      WORKFLOW_SHA: ${{ inputs.workflow_ref }}
+      EXECUTED_WORKFLOW_SHA: ${{ github.workflow_sha }}
+      CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+      VIZE_LSP_BIN: ${{ github.workspace }}/target/ci-opt/vize
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ inputs.source_sha }}
           persist-credentials: false
-      - name: Refuse a stale or different dispatch source
+          fetch-depth: 2
+      - name: Refuse source substitution and select fresh outputs
         shell: bash
         run: |
           set -euo pipefail
-          [[ "$VIZE_BASELINE_EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
-          test "$(git rev-parse HEAD)" = "$VIZE_BASELINE_EXPECTED_SOURCE"
-          test "$GITHUB_SHA" = "$VIZE_BASELINE_EXPECTED_SOURCE"
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$EXECUTED_WORKFLOW_SHA" = "$WORKFLOW_SHA"
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(git rev-parse HEAD^)" = c34d95586eb9459560c9be4990ff9ebdba3bde61
+          git fetch --no-tags --depth=2 origin "$WORKFLOW_SHA"
+          test "$(git rev-parse "$WORKFLOW_SHA^")" = "$SOURCE_SHA"
+          test -z "$(git status --porcelain --untracked-files=no)"
+          test ! -e target
+          test ! -L target
+          nav_target="$RUNNER_TEMP/navigation-build-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          nav_evidence="$RUNNER_TEMP/navigation-evidence-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          test ! -e "$nav_target"
+          test ! -e "$nav_evidence"
+          mkdir -m 700 "$nav_target" "$nav_evidence"
+          ln -s "$nav_target" target
+          printf 'CARGO_TARGET_DIR=%s\nEVIDENCE=%s\n' "$nav_target" "$nav_evidence" >> "$GITHUB_ENV"
+          printf '%s\n' "$SOURCE_SHA" > "$nav_evidence/source.sha"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
           cache: true
           run-install: false
-      - name: Install locked JavaScript and native TypeScript dependencies
+      - name: Install exact JavaScript product stacks
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Hydrate only the pinned Misskey fixture
-        run: git submodule update --init --depth 1 tests/_fixtures/_git/misskey
-      - name: Install repository Rust toolchain
-        run: |
-          rustup toolchain install || rustup show active-toolchain
-          cargo --version
+      - name: Install the isolated comparison provider
+        working-directory: tests/_fixtures/performance/lsp-dual-server/provider
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the repository Rust toolchain
+        run: rustup toolchain install || rustup show active-toolchain
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: lsp-current-baseline
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Build and receipt the exact current source server
+      - name: Stage only exact controller Git objects
+        shell: bash
         run: |
-          cargo build --profile ci -p vize
-          node tests/differential/build-receipt.ts
-      - name: Qualify pure observation and refusal laws
-        run: node --test tests/tooling/lsp-current-baseline*.test.ts tests/tooling/lsp-session-capture.test.ts
-      - name: Measure three serial fresh sessions with all original checks
-        run: node tests/performance/lsp-current-baseline.ts
+          set -euo pipefail
+          mkdir -m 700 "$EVIDENCE/controls" "$EVIDENCE/observed"
+          mkdir -m 700 "$EVIDENCE/observed/raw"
+          for helper in controller.ts log-join.ts custody.ts controls/log-join-controls.test.ts; do
+            git show "$WORKFLOW_SHA:.github/actions/lsp-navigation-trace/$helper" > "$EVIDENCE/$helper"
+          done
+          sha256sum "$EVIDENCE/"*.ts "$EVIDENCE/controls/"*.ts > "$EVIDENCE/helper-sha256.txt"
+          vp exec node --test "$EVIDENCE/controls/log-join-controls.test.ts" > "$EVIDENCE/controls.stdout" 2> "$EVIDENCE/controls.stderr"
+          vp exec node node_modules/typescript/lib/tsc.js --ignoreConfig --strict --noEmit \
+            --noImplicitAny --noUncheckedIndexedAccess --exactOptionalPropertyTypes --erasableSyntaxOnly \
+            --allowImportingTsExtensions --target ES2022 --module ESNext --moduleResolution Bundler \
+            --esModuleInterop --skipLibCheck --types node --typeRoots "$GITHUB_WORKSPACE/node_modules/@types" \
+            "$EVIDENCE/"*.ts "$EVIDENCE/controls/"*.ts > "$EVIDENCE/strict.stdout" 2> "$EVIDENCE/strict.stderr"
+      - name: Build and preserve the first separately instrumented CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e target/ci-opt/vize
+          cargo build --profile ci-opt -p vize --features profiling --message-format=json-render-diagnostics \
+            > "$EVIDENCE/first-cargo.jsonl" 2> "$EVIDENCE/first-cargo.stderr"
+          vp exec node tests/differential/build-receipt.ts --profile-ci-opt
+          cp --reflink=auto target/ci-opt/vize "$EVIDENCE/first-image"
+          sha256sum target/ci-opt/vize > "$EVIDENCE/first-image.sha256"
+          cmp target/ci-opt/vize "$EVIDENCE/first-image"
+      - name: Compile native-off instrumentation and execute the one actual formatter fixture
+        env:
+          VIZE_TRACE_EDITOR_PREPARATION: "1"
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo check --profile ci-opt -p vize_maestro --no-default-features \
+            > "$EVIDENCE/native-off.stdout" 2> "$EVIDENCE/native-off.stderr"
+          export VIZE_NAV_FORMATTER_OUTPUT="$EVIDENCE/formatter.raw"
+          test ! -e "$VIZE_NAV_FORMATTER_OUTPUT"
+          cargo test --profile ci-opt -p vize_maestro --features vize_canon/profiling --lib \
+            --message-format=json-render-diagnostics \
+            server::handlers::navigation_trace_formatter::navigation_trace_formatter_preserves_request_worker_ancestry \
+            -- --ignored --exact --nocapture > "$EVIDENCE/formatter-test.jsonl" 2> "$EVIDENCE/formatter-test.stderr"
+          vp exec node "$EVIDENCE/log-join.ts" --formatter-fixture "$EVIDENCE/formatter.raw" > "$EVIDENCE/formatter-join.json"
+          sha256sum target/ci-opt/vize > "$EVIDENCE/post-test-image.sha256"
+          stat target/ci-opt/vize > "$EVIDENCE/post-test-image.stat"
+          cp "$EVIDENCE/first-image" target/ci-opt/vize
+          cmp "$EVIDENCE/first-image" target/ci-opt/vize
+          sha256sum --check "$EVIDENCE/first-image.sha256"
+          rm "$EVIDENCE/first-image"
+      - name: Bind first-image custody and one original attribution command
+        env:
+          LSP_DUAL_ALLOW_SMOKE: "1"
+          LSP_DUAL_VIZE_PROFILE_DIR: ${{ runner.temp }}/navigation-evidence-${{ github.run_id }}-${{ github.run_attempt }}/observed/vize
+          LSP_DUAL_VUE_CPU_PROFILE_DIR: ${{ runner.temp }}/navigation-evidence-${{ github.run_id }}-${{ github.run_attempt }}/observed/vue
+          LSP_DUAL_ATTRIBUTION_DIR: ${{ runner.temp }}/navigation-evidence-${{ github.run_id }}-${{ github.run_attempt }}/observed
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -m 700 "$LSP_DUAL_VIZE_PROFILE_DIR" "$LSP_DUAL_VUE_CPU_PROFILE_DIR"
+          vp exec node "$EVIDENCE/custody.ts" before
+          export VIZE_NAV_TRACE_CONFIG="$EVIDENCE/config.json"
+          vp exec node "$EVIDENCE/controller.ts"
+      - name: Retain terminal source and first-image custody
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f "$EVIDENCE/before.json" ]]; then
+            vp exec node "$EVIDENCE/custody.ts" after
+          fi
+          git rev-parse HEAD > "$EVIDENCE/terminal-source.sha"
+          test -z "$(git status --porcelain --untracked-files=no)"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
+        if: ${{ always() }}
         with:
-          name: lsp-current-baseline-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.source_sha }}
+          name: lsp-navigation-phases-${{ inputs.source_sha }}-${{ github.run_attempt }}
           path: |
-            target/vize-tests/lsp-current-baseline/
-            target/differential/lsp-sessions/
+            ${{ runner.temp }}/navigation-evidence-${{ github.run_id }}-${{ github.run_attempt }}/
+            !${{ runner.temp }}/navigation-evidence-${{ github.run_id }}-${{ github.run_attempt }}/first-image
+            target/ci-opt/vize.differential-build.json
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 90
