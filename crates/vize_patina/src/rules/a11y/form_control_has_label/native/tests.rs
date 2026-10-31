@@ -1,6 +1,7 @@
 //! Original frozen history packets and genuine new partial-native controls.
 mod select;
 mod support;
+mod textarea;
 
 use crate::native::template::NativeTemplateLintRefusal as Refusal;
 use crate::{HelpLevel, Locale, Severity};
@@ -22,27 +23,13 @@ fn four_original_input_packets_preserve_all_fields_fix_absence_and_unchanged_req
 }
 
 #[test]
-fn original_select_preserves_whole_native_packet_while_textarea_remains_unprovided() {
+fn original_select_and_textarea_preserve_complete_native_packets() {
     for case in cases()
         .iter()
         .filter(|case| !case.source.starts_with("<input"))
     {
         assert_original(case, false);
-        if case.source.starts_with("<select") {
-            assert_original(case, true);
-            continue;
-        }
-        let end = u32::try_from(case.source.find('>').unwrap() + 1).unwrap();
-        for _ in 0..2 {
-            assert_eq!(
-                configured()
-                    .lint_native_template(&case.source, &case.filename)
-                    .unwrap_err(),
-                Refusal::UnsupportedContext {
-                    span: Span::new(0, end)
-                }
-            );
-        }
+        assert_original(case, true);
     }
 }
 

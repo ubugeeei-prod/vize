@@ -53,16 +53,8 @@ void test("input-label native contract pins all six whole originals and rejects 
     );
     assert(fixture);
     assert.deepEqual(JSON.parse(fixture.input.toString()), original);
-    const expected =
-      original.source.startsWith("<input") || original.source.startsWith("<select")
-        ? null
-        : {
-            api: "--native-current-api",
-            entry: "template",
-            kind: "UnsupportedContext",
-            detail: "UnsupportedContext { span: Span { start: 0, end: 17 } }",
-          };
-    assert.deepEqual(expectedNativeReason(fixture), expected);
+    assert.equal(expectedNativeReason(fixture), null);
+    assert.throws(() => expectedInputLabelReason(original, "--unprovided-native-api"));
     for (const [key, value] of Object.entries(original)) {
       const changed = {
         ...original,
@@ -185,11 +177,11 @@ function baseline() {
       legacyMatches: loaded.cases.length,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: loaded.cases.length - 16,
+      nativeUnsupported: loaded.cases.length - 17,
       nativeFailures: 0,
-      nativeHandled: 16,
-      nativeEquivalent: 16,
-      pairedComparisons: 16,
+      nativeHandled: 17,
+      nativeEquivalent: 17,
+      pairedComparisons: 17,
     },
   };
 }
@@ -207,9 +199,9 @@ void test("shared acceptance counts only validated whole-product linter observat
   const acceptance = summarizeLinterAcceptance(loaded, baseline(), receipt);
   assert.deepEqual(acceptance.total, {
     planned: loaded.cases.length,
-    nativeHandled: 16,
-    nativeEquivalent: 16,
-    unsupported: loaded.cases.length - 16,
+    nativeHandled: 17,
+    nativeEquivalent: 17,
+    unsupported: loaded.cases.length - 17,
     legacyBacked: 0,
     unverified: 0,
   });
