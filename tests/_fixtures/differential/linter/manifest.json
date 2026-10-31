@@ -2791,6 +2791,37 @@
       }
     },
     {
+      "id": "linter/template-script-shadow-10822",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "template-script-shadow-10822",
+        "files": [
+          {
+            "path": "originals/DropdownMenuItem.vue.txt",
+            "role": "original-real-project-reproduction",
+            "sha256": "f0ebf4ee5ed025b9d64fdb7fe9cb2784b80203a7f1dd9a90503c1a94bbeff2b8"
+          },
+          {
+            "path": "originals/RunDataJson.vue.txt",
+            "role": "original-real-project-reproduction",
+            "sha256": "e1dbb6132731a79b2f7bbd703c16a4e9e502c47ab5bb53077400eff6c3035aac"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/unsafe-template-binding-unicode-comment-10898",
       "state": "active",
       "targets": ["lint"],

@@ -1,11 +1,9 @@
-use std::path::Path;
-
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use vize_l0::profiler::{Metrics, global_profiler};
 
 use crate::{
-    ContentMapperProjectConfiguration, generate_vue_content_mapper_transform_with_project_options,
+    ContentMapperProjectConfiguration, generate_vue_content_mapper_transform_with_project_context,
 };
 
 fn observed(metrics: &Metrics) -> serde_json::Value {
@@ -27,33 +25,37 @@ fn typed_router_context_admission_is_outside_repeated_projection_work() {
     let config = root.join("tsconfig.json");
     std::fs::write(
         &config,
-        r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
+        r#"{"compilerOptions":{"moduleResolution":"Bundler"},"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
     )
     .unwrap();
-    let fixture = Path::new(env!("CARGO_MANIFEST_DIR")).join(
-        "../../tests/fixtures/typechecker/experimental-router-5.4/project/src/pages/products/[id=int].vue.txt",
-    );
-    let source = std::fs::read_to_string(fixture).unwrap();
-    let file = root.join("src/pages/products/[id=int].vue");
-    let compiler = json!({"rootDir":root});
+    let fixture = &super::super::content_mapper_config::typed_router_tests::provider::PAGE;
+    let source = fixture.to_string();
+    super::super::content_mapper_config::typed_router_tests::provider::install(&root, "preview");
+    let file = root.join("src/pages/[id].vue");
+    let compiler = json!({"rootDir":root,"moduleResolution":100});
     let profiler = global_profiler();
     profiler.clear();
     profiler.enable();
-    let (configuration, typed_router_root) =
-        ContentMapperProjectConfiguration::load_with_compiler_options(
-            &config,
-            compiler.as_object().unwrap(),
-        )
-        .unwrap();
+    let (configuration, _) = ContentMapperProjectConfiguration::load_with_compiler_options(
+        &config,
+        compiler.as_object().unwrap(),
+    )
+    .unwrap();
+    let admission_reads = profiler
+        .get("canon.typed_router.provider.read")
+        .unwrap()
+        .count;
+    assert!(admission_reads > 0);
     std::fs::remove_file(config).unwrap();
+    std::fs::remove_dir_all(root.join("node_modules/vue-router")).unwrap();
     let mut first = None;
     let mut last = None;
     for _ in 0..64 {
-        let output = generate_vue_content_mapper_transform_with_project_options(
+        let output = generate_vue_content_mapper_transform_with_project_context(
             &file,
             &source,
             configuration.transform_options,
-            typed_router_root.as_deref(),
+            &configuration.project_context,
         )
         .unwrap();
         if first.is_none() {
@@ -63,6 +65,20 @@ fn typed_router_context_admission_is_outside_repeated_projection_work() {
         }
     }
     profiler.disable();
+    assert_eq!(
+        profiler
+            .get("canon.typed_router.provider.admission")
+            .unwrap()
+            .count,
+        1
+    );
+    assert_eq!(
+        profiler
+            .get("canon.typed_router.provider.read")
+            .unwrap()
+            .count,
+        admission_reads
+    );
     let configuration = profiler
         .get("canon.content_mapper.project_configuration")
         .unwrap();
@@ -85,10 +101,13 @@ fn typed_router_context_admission_is_outside_repeated_projection_work() {
     let report = json!({
         "schema":"vize.content-mapper.router-source-profile",
         "version":1,
-        "scope":"projection only; provider type checking and process startup excluded",
+        "scope":"filesystem provider observations and file-only projection; native provider authority excluded",
         "sourceSha256":super::super::identity::encode_digest(Sha256::digest(source.as_bytes())),
         "projectConfiguration":observed(&configuration),
         "projection":observed(&projection),
+        "providerObservationCalls":1,
+        "providerObservationReads":admission_reads,
+        "providerReadsDuringTransforms":0,
         "phases":phases,
     });
     let report = serde_json::to_string_pretty(&report).unwrap();

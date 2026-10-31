@@ -21,6 +21,7 @@ for (const key of [
   "VIZE_NATIVE_PATH",
   "VIZE_PREFER_WORKSPACE_BINDING",
   "VIZE_ALLOW_NATIVE_VERSION_MISMATCH",
+  "VIZE_CONFIG_CACHE",
   "CORSA_PATH",
   "CORSA_EXECUTABLE",
   "TSGO_PATH",
@@ -37,13 +38,7 @@ const authority = authenticate(version, source, blob, record);
 const project = join(record.root, "consumer"),
   tooling = join(record.root, "package-manager");
 const installed = install(project, tooling, version, authority, record);
-configAcceptance(
-  realpathSync(project),
-  installed.pnpm,
-  installed.identity,
-  installed.original,
-  record,
-);
+configAcceptance(realpathSync(project), installed.identity, installed.original, record);
 await editorAcceptance(realpathSync(project), installed.identity, installed.original, record);
 record.json("qualification.json", {
   schema: "vize.editor-vite-stub-public.v1",

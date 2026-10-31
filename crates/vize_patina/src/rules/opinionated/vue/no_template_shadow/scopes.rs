@@ -95,7 +95,16 @@ fn element_bindings<'a>(ctx: &mut LintContext<'a>, element: &ElementNode<'a>, sc
 
 impl Scope {
     fn declare(&mut self, ctx: &mut LintContext<'_>, binding: Binding) {
-        if self.visible.insert(binding.name.clone()) {
+        let shadows_setup = ctx.analysis().is_some_and(|analysis| {
+            analysis.bindings.is_script_setup
+                && (analysis.bindings.contains(binding.name.as_str())
+                    || analysis
+                        .macros
+                        .props()
+                        .iter()
+                        .any(|prop| prop.name == binding.name))
+        });
+        if !shadows_setup && self.visible.insert(binding.name.clone()) {
             self.introduced.push(binding.name);
         } else {
             ctx.warn_with_help(

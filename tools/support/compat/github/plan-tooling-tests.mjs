@@ -17,6 +17,7 @@ import {
   toolingTypecheckProjects,
 } from "../../../config/vite-plus/tooling-test-scopes.ts";
 import { changedPaths } from "./plan-source-checks.ts";
+import { toolingProductSelection, toolingSourceConeIdentity } from "./tooling-product-inputs.ts";
 import {
   toolingLeadSteps,
   toolingShardMatrix,
@@ -272,6 +273,13 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
     if (typeProjects.has(file) && paths.some(typeProjects.get(file))) return true;
     const imports = closures.get(file);
     if (paths.some((path) => imports.files.includes(path))) return true;
+    const product = toolingProductSelection(file, paths, () => ({
+      complete: imports.complete,
+      files: imports.files,
+      identity: toolingSourceConeIdentity(cwd, imports.files),
+      references: imports.files.flatMap(references),
+    }));
+    if (product.required) return true;
     // A declared scope is curated: its inputs decide, and an incomplete closure
     // keeps that scope's broad inputs.
     const scope = toolingTestScopes.find((entry) => matchesAny(file, entry.tests));
@@ -279,11 +287,11 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
       scope &&
       (!typeProjects.has(file) || !imports.complete) &&
       (imports.complete ? cacheInputs[scope.input] : cacheInputs.tooling);
-    if (inputs && paths.some((path) => matchesAny(path, inputs))) return true;
+    if (inputs && product.paths.some((path) => matchesAny(path, inputs))) return true;
     // Otherwise a test depends on its import closure and on every repository
     // path its sources name: a file, a directory above it or a glob over it.
     const sources = imports.files.map(references);
-    return paths.some((path) => readsProse(path, sources));
+    return product.paths.some((path) => readsProse(path, sources));
   });
   return {
     version: 1,

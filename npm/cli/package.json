@@ -118,7 +118,16 @@
       "compilerOptions": [
         "checkJs",
         "noUnusedLocals",
-        "rootDir"
+        "rootDir",
+        "module",
+        "moduleResolution",
+        "resolvePackageJsonExports",
+        "customConditions",
+        "baseUrl",
+        "paths",
+        "moduleSuffixes",
+        "noDtsResolution",
+        "preserveSymlinks"
       ],
       "dynamicConfig": true,
       "exec": [

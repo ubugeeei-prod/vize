@@ -4,6 +4,8 @@ use serde_json::{Value, json};
 
 use super::ContentMapperProjectConfiguration;
 
+pub(in crate::batch::virtual_project) mod provider;
+
 fn host_configuration(
     path: &Path,
     compiler: Value,

@@ -8,6 +8,8 @@ use vize_carton::{FxHashMap, String};
 
 use super::export_graph::{ExportGraph, Kind};
 
+mod physical;
+
 fn payloads(kind: &str, root: &Path) -> FxHashMap<PathBuf, String> {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/fixtures/typechecker/experimental-router-project-capability");

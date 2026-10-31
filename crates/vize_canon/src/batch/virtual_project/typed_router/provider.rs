@@ -4,10 +4,12 @@
 mod export_graph;
 mod manifest;
 
-use std::path::Path;
+use std::cell::RefCell;
+use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value};
-use vize_carton::String;
+use sha2::{Digest, Sha256};
+use vize_carton::{FxHashMap, String};
 
 use super::super::tsconfig_gen::compiler_inputs::CompilerInputs;
 use export_graph::{ExportGraph, Kind};
@@ -22,7 +24,48 @@ pub(in crate::batch::virtual_project) fn admits_route_props(
     compiler: &Map<std::string::String, Value>,
     inputs: &CompilerInputs,
 ) -> bool {
-    admission(directory, compiler, inputs).is_ok()
+    vize_carton::profile!(
+        "canon.typed_router.provider.admission",
+        admission(directory, compiler, inputs, &|_, _| {}).is_ok()
+    )
+}
+
+/// Retain a provider observation, without claiming the native project uses it.
+#[expect(
+    clippy::disallowed_types,
+    reason = "host compiler options use serde_json keys"
+)]
+pub(in crate::batch::virtual_project) fn capture_observation(
+    directory: &Path,
+    compiler: &Map<std::string::String, Value>,
+    inputs: &CompilerInputs,
+) -> crate::batch::error::CorsaResult<[u8; 32]> {
+    let reads = RefCell::new(FxHashMap::<PathBuf, Option<[u8; 32]>>::default());
+    let admitted = vize_carton::profile!(
+        "canon.typed_router.provider.admission",
+        admission(directory, compiler, inputs, &|path, source| {
+            reads.borrow_mut().insert(
+                path.to_path_buf(),
+                source.map(|source| Sha256::digest(source.as_bytes()).into()),
+            );
+        })
+        .is_ok()
+    );
+    let mut reads = reads.into_inner().into_iter().collect::<Vec<_>>();
+    reads.sort_by(|left, right| left.0.cmp(&right.0));
+    // Serializing paths preserves their exact platform spelling and boundaries.
+    let bytes = serde_json::to_vec(&(admitted, reads))?;
+    Ok(Sha256::digest(bytes).into())
+}
+
+#[expect(
+    clippy::disallowed_types,
+    reason = "host compiler options use serde_json keys"
+)]
+pub(in crate::batch::virtual_project) fn supports_resolution_context(
+    compiler: &Map<std::string::String, Value>,
+) -> bool {
+    condition_sets(compiler).is_ok()
 }
 
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std strings")]
@@ -30,12 +73,27 @@ fn admission(
     directory: &Path,
     compiler: &Map<std::string::String, Value>,
     inputs: &CompilerInputs,
+    observed: &impl Fn(&Path, Option<&str>),
 ) -> Result<(), Refusal> {
+    let provider_root = RefCell::new(None::<(PathBuf, PathBuf)>);
     let read = |path: &Path| -> Result<Option<String>, Refusal> {
         inputs.observe(path);
-        match std::fs::read_to_string(path) {
-            Ok(source) => Ok(Some(source.into())),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        match vize_carton::profile!(
+            "canon.typed_router.provider.read",
+            std::fs::read_to_string(path)
+        ) {
+            Ok(source) => {
+                inputs.observe_source(path, source.as_bytes());
+                observed(path, Some(&source));
+                if let Some((logical, physical)) = provider_root.borrow().as_ref() {
+                    validate_physical_provider_file(logical, physical, path)?;
+                }
+                Ok(Some(source.into()))
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                observed(path, None);
+                Ok(None)
+            }
             Err(error) => Err(Refusal::new(
                 "unreadable-provider",
                 vize_carton::cstr!("cannot read {}: {error}", path.display()),
@@ -57,6 +115,15 @@ fn admission(
     let package_root = manifest_path
         .parent()
         .ok_or_else(|| Refusal::new("missing-provider", "vue-router has no package root"))?;
+    let physical_root = std::fs::canonicalize(package_root)
+        .map(vize_carton::path::normalize_windows_verbatim_path)
+        .map_err(|_| {
+            Refusal::new(
+                "ambiguous-provider-root",
+                "provider root has no physical identity",
+            )
+        })?;
+    *provider_root.borrow_mut() = Some((package_root.to_path_buf(), physical_root));
     let source = read(&manifest_path)?
         .ok_or_else(|| Refusal::new("missing-provider", "vue-router manifest disappeared"))?;
     let mut target = None;
@@ -101,9 +168,75 @@ fn admission(
     }
 }
 
+fn validate_physical_provider_file(
+    logical: &Path,
+    physical: &Path,
+    path: &Path,
+) -> Result<(), Refusal> {
+    let relative = path.strip_prefix(logical).map_err(|_| {
+        Refusal::new(
+            "ambiguous-provider-file",
+            "provider file escapes its package",
+        )
+    })?;
+    let actual = std::fs::canonicalize(path)
+        .map(vize_carton::path::normalize_windows_verbatim_path)
+        .map_err(|_| {
+            Refusal::new(
+                "ambiguous-provider-file",
+                "provider file has no physical identity",
+            )
+        })?;
+    if actual != physical.join(relative) {
+        return Err(Refusal::new(
+            "ambiguous-provider-file",
+            "declaration symlinks require native resolution authority",
+        ));
+    }
+    Ok(())
+}
+
 /// Every package-export condition context the selected resolver can use.
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std strings")]
 fn condition_sets(compiler: &Map<std::string::String, Value>) -> Result<Vec<Vec<String>>, Refusal> {
+    // This bounded proof reads package exports, not redirected compiler paths.
+    // A present baseUrl, even empty/null, has no admitted resolution meaning.
+    if compiler.contains_key("baseUrl") {
+        return Err(Refusal::new(
+            "unsupported-base-url",
+            "baseUrl resolution is not admitted",
+        ));
+    }
+    match compiler.get("paths") {
+        None => {}
+        Some(Value::Object(paths)) if paths.is_empty() => {}
+        Some(_) => {
+            return Err(Refusal::new(
+                "unsupported-paths",
+                "only absent or empty-object paths are admitted",
+            ));
+        }
+    }
+    if compiler.contains_key("moduleSuffixes") {
+        return Err(Refusal::new(
+            "unsupported-module-suffixes",
+            "moduleSuffixes resolution is not admitted",
+        ));
+    }
+    for (name, code) in [
+        ("preserveSymlinks", "unsupported-preserve-symlinks"),
+        ("noDtsResolution", "unsupported-no-dts-resolution"),
+    ] {
+        if compiler
+            .get(name)
+            .is_some_and(|value| value != &Value::Bool(false))
+        {
+            return Err(Refusal::new(
+                code,
+                vize_carton::cstr!("{name} requires an explicit false or absent value"),
+            ));
+        }
+    }
     let custom = match compiler.get("customConditions") {
         None => Vec::new(),
         Some(Value::Array(values)) => values
@@ -121,8 +254,18 @@ fn condition_sets(compiler: &Map<std::string::String, Value>) -> Result<Vec<Vec<
     }
     let resolution = compiler
         .get("moduleResolution")
-        .and_then(Value::as_str)
-        .map(str::to_ascii_lowercase);
+        .and_then(|value| match value {
+            Value::String(value) => Some(value.to_ascii_lowercase()),
+            // Native TypeScript serializes its effective enum values in openProject.
+            // These values are pinned by the actual SDK's core/compileroptions.go.
+            Value::Number(value) => match value.as_u64() {
+                Some(3) => Some("node16".into()),
+                Some(99) => Some("nodenext".into()),
+                Some(100) => Some("bundler".into()),
+                _ => None,
+            },
+            _ => None,
+        });
     let contexts: &[&[&str]] = match resolution.as_deref() {
         Some("bundler") => &[&["types", "import"]],
         Some("node16" | "nodenext") => {
@@ -150,3 +293,6 @@ fn condition_sets(compiler: &Map<std::string::String, Value>) -> Result<Vec<Vec<
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod resolution_tests;

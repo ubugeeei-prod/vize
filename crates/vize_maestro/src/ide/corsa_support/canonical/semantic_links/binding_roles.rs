@@ -2,9 +2,9 @@
 
 use std::ops::Range;
 
-use oxc_ast::AstKind;
+use oxc_ast::ast::BindingIdentifier;
+use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
-use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::{Location, Url};
 use vize_l0::FxHashMap;
@@ -73,22 +73,31 @@ fn setup_binding_ranges(ctx: &IdeContext<'_>, uri: &Url, source: &str) -> Vec<Ra
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return Vec::new();
     }
-    let semantic = SemanticBuilder::new()
-        .with_build_nodes(true)
-        .build(&parsed.program)
-        .semantic;
-    semantic
-        .nodes()
-        .iter()
-        .filter_map(|node| match node.kind() {
-            AstKind::BindingIdentifier(binding) => Some(
-                script.loc.start + binding.span.start as usize
-                    ..script.loc.start + binding.span.end as usize,
-            ),
-            _ => None,
-        })
-        .collect()
+    let mut bindings = BindingRanges {
+        offset: script.loc.start,
+        ranges: Vec::new(),
+    };
+    bindings.visit_program(&parsed.program);
+    bindings.ranges
 }
+
+/// Binding roles are syntax. Preserve the full AST visitation order without
+/// constructing symbol tables, references, scopes or semantic node storage.
+struct BindingRanges {
+    offset: usize,
+    ranges: Vec<Range<usize>>,
+}
+
+impl<'a> Visit<'a> for BindingRanges {
+    fn visit_binding_identifier(&mut self, binding: &BindingIdentifier<'a>) {
+        self.ranges.push(
+            self.offset + binding.span.start as usize..self.offset + binding.span.end as usize,
+        );
+    }
+}
+
+#[cfg(test)]
+mod oracle_tests;
 
 #[cfg(test)]
 mod tests {
