@@ -54,7 +54,7 @@ pub(super) fn queue_alias_imports(
         let Some(path) = context.resolve_first_party_source(specifier, dir) else {
             continue;
         };
-        let key = std::fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
+        let key = vize_carton::path::canonicalize_non_verbatim(&path);
         if context.package_route(specifier, dir).is_none() && inside_node_modules(&key) {
             continue;
         }

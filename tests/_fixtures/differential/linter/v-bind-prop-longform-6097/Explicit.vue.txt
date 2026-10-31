@@ -1,0 +1,4 @@
+<template>
+  <a .title.prop="t" .value.camel.prop='other' />
+  <a .title.prop.camel="t" />
+</template>

@@ -92,6 +92,9 @@ pub(super) fn build_format_options(
     if let Some(v) = args.use_tabs {
         opts.use_tabs = v;
     }
+    if let Some(value) = args.semi {
+        opts.semi = value;
+    }
     if args.no_semi {
         opts.semi = false;
     }

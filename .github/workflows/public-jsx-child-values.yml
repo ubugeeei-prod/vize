@@ -10,13 +10,14 @@ on:
       - tools/support/archive/tar.ts
       - tools/support/archive/zip.ts
       - tests/tooling/release/public-jsx-child-values-guards.test.ts
+      - tests/tooling/release/public-jsx-child-values-workflow.test.ts
       - tests/tooling/jsx-vapor-oracle/**
       - tests/_fixtures/differential/compiler/jsx-child-values-6890/**
       - tests/_fixtures/differential/jsx/child-values-6890-reference-conflict.json
   workflow_dispatch:
     inputs:
       version:
-        description: Exact genuine published native version containing PR11172
+        description: Exact genuine published native version containing the selected target's merge
         required: true
         type: string
       candidate:
@@ -27,6 +28,14 @@ on:
         description: Original main Release run that actually created the candidate
         required: true
         type: string
+      target:
+        description: Explicit source-bound qualification target; older evidence keeps its original scope
+        required: true
+        type: choice
+        default: vapor-nine-v1
+        options:
+          - vapor-nine-v1
+          - native-vdom-ten-v1
 permissions: { contents: read }
 concurrency:
   group: public-jsx-child-values-${{ github.event.pull_request.number || inputs.version || github.ref }}
@@ -54,6 +63,7 @@ jobs:
       PUBLIC_VERSION: ${{ inputs.version }}
       PUBLIC_CANDIDATE: ${{ inputs.candidate }}
       PUBLIC_PRODUCER_RUN: ${{ inputs.producer_run }}
+      PUBLIC_JSX_TARGET: ${{ inputs.target }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { fetch-depth: 0, persist-credentials: false }

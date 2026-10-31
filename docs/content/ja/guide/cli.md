@@ -149,6 +149,7 @@ vize fmt --write src
 | `--tab-width`                      | インデント幅                                           |
 | `--use-tabs`                       | タブとスペースを切り替える                             |
 | `--no-semi`                        | セミコロンを省略する                                   |
+| `--semi[=true\|false]`             | セミコロン方針を上書きする。`--no-semi` との同時指定は不可 |
 | `--sort-attributes`                | テンプレートの属性を並べ替える                         |
 | `--attribute-sort-order`           | グループ内で `alphabetical` または `as-written` を選ぶ |
 | `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ配置する                         |

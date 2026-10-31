@@ -73,8 +73,12 @@ pub struct FmtArgs {
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub use_tabs: Option<bool>,
 
+    /// Print semicolons at the ends of statements
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true, conflicts_with = "no_semi")]
+    pub semi: Option<bool>,
+
     /// Do not print semicolons at the ends of statements
-    #[arg(long)]
+    #[arg(long, conflicts_with = "semi")]
     pub no_semi: bool,
 
     /// Sort HTML attributes in template

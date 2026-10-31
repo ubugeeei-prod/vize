@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "id": "typechecker/regression/windows-verbatim-overlay-11145",
+  "main": "<script setup lang='ts'>import Child from './Child.vue'; import { value } from '@/support'; const checked: number = value;</script><template><Child />{{ checked }}</template>",
+  "scriptMain": "import Child from './Child.vue';\nimport { value } from '@/support';\nexport const checked: number = value;\nvoid Child;\n",
+  "child": "<script setup lang='ts'>const marker = 'saved-child';</script><template>{{ marker }}</template>",
+  "support": "export const value = 1;\n",
+  "configText": "{\"compilerOptions\":{\"baseUrl\":\".\",\"paths\":{\"@/*\":[\"src/*\"]}},\"include\":[\"src/**/*.vue\"]}",
+  "phases": [
+    {
+      "id": "valid",
+      "support": "export const value = 1;\n",
+      "child": "<script setup lang='ts'>const marker = 'saved-child';</script><template>{{ marker }}</template>"
+    },
+    {
+      "id": "dependency-error",
+      "support": "export const value = 'bad';\n",
+      "child": "<script setup lang='ts'>const marker = 'dirty-child';</script><template>{{ marker }}</template>"
+    },
+    {
+      "id": "dependency-repair",
+      "support": "export const value = 2;\n",
+      "child": "<script setup lang='ts'>const marker = 'repaired-child';</script><template>{{ marker }}</template>"
+    },
+    {
+      "id": "dependency-close",
+      "support": null,
+      "child": null
+    }
+  ]
+}

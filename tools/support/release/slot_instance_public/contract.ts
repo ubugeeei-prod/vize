@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { isAbsolute, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { asArray, asRecord, readJsonRecord } from "../../json-value.ts";
-import { sha256, type DeclarationGraph } from "../computed_event_custody.ts";
+import { inside, sha256, type DeclarationGraph } from "../computed_event_custody.ts";
 
 export const profiles = {
   before: {
@@ -44,12 +45,17 @@ export function expected(role: Role, mode: Mode) {
 }
 export function assertGraph(role: Role, root: string, graph: DeclarationGraph) {
   const sdk = asArray(expected(role, "esm").sdk).map((value) => asRecord(value));
+  assert(isAbsolute(root), "actual absolute package root required");
+  const rooted = (file: string) => {
+    assert(isAbsolute(file) && file !== root && inside(root, file), "foreign declaration path");
+    return relative(root, file).split(sep).join("/");
+  };
   assert.equal(graph.files.length, profiles[role].declarations);
   assert.equal(graph.edges.length, profiles[role].edges);
   assert.deepEqual(
     graph.files
       .map((file) => ({
-        file: file.path.slice(root.length + 1),
+        file: rooted(file.path),
         bytes: file.bytes,
         sha256: file.sha256,
       }))
@@ -59,18 +65,35 @@ export function assertGraph(role: Role, root: string, graph: DeclarationGraph) {
       .sort((a, b) => String(a.file).localeCompare(String(b.file))),
     "whole installed declaration inventory belongs to this exact release role",
   );
-  const graphPath = fileURLToPath(new URL("./declaration-edges.json.txt", import.meta.url));
+  const graphPath = fileURLToPath(
+    new URL("./declaration-graph-authority.json.txt", import.meta.url),
+  );
   assert.equal(
     sha256(readFileSync(graphPath)),
-    "22f282468418c4f0a98aacc332e7beaee7309db5bd29c0383a63a088c1c2aa8b",
+    "64b105b1e5bdaa725aa08e12d5f55bb6e15249362cf79525c6ed139e8fe55c29",
   );
+  const authority = readJsonRecord(graphPath);
+  assert.equal(authority.schema, "vize.slot-instance-public-root-relative-graph");
+  assert.equal(authority.version, 1);
+  assert.equal(authority.sourceReferenceSha256, sha256(readFileSync(referencePath)));
+  assert.equal(
+    sha256(readFileSync(fileURLToPath(new URL("./declaration-edges.json.txt", import.meta.url)))),
+    authority.historicalEdgesSha256,
+  );
+  const selected = asRecord(asRecord(authority.roles)[role]);
+  assert.equal(selected.source, profiles[role].source);
+  assert.equal(selected.candidate, profiles[role].candidate);
+  const files = new Set(graph.files.map((file) => file.path));
+  assert.equal(files.size, graph.files.length);
   assert.deepEqual(
-    graph.edges.map((edge) => ({
-      ...edge,
-      from: edge.from.slice(root.length + 1),
-      target: edge.target.slice(root.length + 1),
-    })),
-    readJsonRecord(graphPath)[role],
+    graph.edges.map((edge) => {
+      assert(
+        files.has(edge.from) && files.has(edge.target),
+        "edge outside complete declaration set",
+      );
+      return { ...edge, from: rooted(edge.from), target: rooted(edge.target) };
+    }),
+    selected.edges,
     "complete ordered edge kinds, specifiers, import attributes and physical targets",
   );
 }

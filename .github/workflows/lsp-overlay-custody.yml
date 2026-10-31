@@ -83,7 +83,7 @@ jobs:
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::session::close::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/close.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/close.stderr"
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::session::logical::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/logical.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/logical.stderr"
           if [ "$RUNNER_OS" = Windows ]; then
-            cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::vue_document::build::tests::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes -- --exact --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/windows-overlay-input.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/windows-overlay-input.stderr"
+            cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::vue_document::build::tests::windows_overlays::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes -- --exact --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/windows-overlay-input.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/windows-overlay-input.stderr"
           fi
           if [ "$RUNNER_OS" = Linux ]; then
             cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::bridge::initial_diagnostics::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stderr"

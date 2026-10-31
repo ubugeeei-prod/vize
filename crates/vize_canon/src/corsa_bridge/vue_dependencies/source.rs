@@ -8,7 +8,7 @@ pub(in crate::corsa_bridge) fn dependency_content(
     path: &Path,
     overlays: &FxHashMap<PathBuf, &str>,
 ) -> Option<String> {
-    let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    let key = vize_carton::path::canonicalize_non_verbatim(path);
     overlays
         .get(&key)
         .map(|content| String::from(*content))

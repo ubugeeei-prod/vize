@@ -88,6 +88,11 @@ Options:
 
           [possible values: true, false]
 
+      --semi[=<SEMI>]
+          Print semicolons at the ends of statements
+
+          [possible values: true, false]
+
       --no-semi
           Do not print semicolons at the ends of statements
 

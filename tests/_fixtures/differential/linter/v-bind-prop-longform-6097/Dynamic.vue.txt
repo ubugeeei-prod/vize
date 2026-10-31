@@ -1,0 +1,6 @@
+<template>
+  <!-- 雪🌸: retain the comment, quotes and expression comment. -->
+  <a .title.camel='format("雪🌸", value /* keep */)' />
+  <a .[record.key].camel="value" />
+  <a .title />
+</template>

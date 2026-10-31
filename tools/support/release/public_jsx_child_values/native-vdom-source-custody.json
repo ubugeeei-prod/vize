@@ -1,0 +1,22 @@
+{
+  "merge": "f233823358c1242013b51e53680ce257253c84fc",
+  "runtimeScope": "Native VDOM ten-phase target after PR11212; unchanged Vue3.6.0-rc.10/Babel original environment; Vapor nine cells plus reference conflict remain separate; no full issue6890 claim",
+  "pins": {
+    "tests/tooling/jsx-vapor-oracle/child-values.ts": "4061aaa141e52b17c170fe74bb4cc6532f9f1c95e5363d38691392f0f2b42bf6",
+    "tests/tooling/jsx-vapor-oracle/child-browser.ts": "055f401b4e6c23a46945e8937e32eda947892d321752f3bb2d9576fe1fa4069d",
+    "tests/tooling/jsx-vapor-oracle/runtime.ts": "c7845036b74a9a866f2c5be5116d6c47e70f0c5c533af12d61174c76727d48ae",
+    "tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json": "810595733fc8904df998e7d2a1ac1d70319c0be22046d6cb25845b6c46697a37",
+    "tests/_fixtures/differential/compiler/jsx-child-values-6890/browser-before-f7c306d.json": "47106a01b905c1036ad8c0b79c80928b967b799b0f03a1f91dbd5439a41b0a71",
+    "tests/_fixtures/differential/jsx/child-values-6890-reference-conflict.json": "41e92a4b0f2c7d3e8a5deedeb88941146f04b10fa4ee9d066478e78f79e3df6c",
+    "tests/tooling/jsx-vapor-oracle/package.json": "fabbaf1c1271fcc08277cffaa9369d14bbdda8efd9a951d36310cd997ff6825d",
+    "tests/tooling/jsx-vapor-oracle/public-vdom-child-browser.ts": "dc00ad6284216f3cebfeda8243744234d63465990d05aa12b754e6da69533f65"
+  },
+  "referenceDependencies": {
+    "@babel/core": "7.29.0",
+    "@vue/babel-plugin-jsx": "2.0.1",
+    "@playwright/test": "1.62.1",
+    "happy-dom": "21.0.4",
+    "vue": "3.6.0-rc.10",
+    "vue-jsx-vapor": "3.2.26"
+  }
+}

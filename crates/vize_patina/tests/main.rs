@@ -1,6 +1,7 @@
 //! The Patina integration tests, linked as one binary instead of one per file.
 
 mod public_expression_reports;
+mod v_bind_prop_longform;
 mod v_for_key_capture;
 
 mod a11y_attribute_spread_labels;

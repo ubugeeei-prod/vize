@@ -86,11 +86,11 @@ function libraryExecution(capture: string, nativeSha: string): void {
   }
   if (process.platform === "win32") {
     const expected =
-      "corsa_bridge::vue_document::build::tests::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes";
+      "corsa_bridge::vue_document::build::tests::windows_overlays::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes";
     assert.ok(
       sourceTests(
-        "crates/vize_canon/src/corsa_bridge/vue_document/build/tests.rs",
-        "corsa_bridge::vue_document::build::tests::",
+        "crates/vize_canon/src/corsa_bridge/vue_document/build/tests/windows_overlays.rs",
+        "corsa_bridge::vue_document::build::tests::windows_overlays::",
       ).includes(expected),
     );
     execution(fs.readFileSync(path.join(capture, "windows-overlay-input.stdout"), "utf8"), [
