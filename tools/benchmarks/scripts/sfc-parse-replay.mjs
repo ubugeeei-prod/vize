@@ -28,8 +28,8 @@ import {
   validateBuildEnvironment,
   validateFrozenFiles,
   validateRevisionInputs,
-} from "./sfc-parse-replay-contract.mjs";
-import { renderSummary, summarizeRunner } from "./sfc-parse-replay-summary.mjs";
+} from "./sfc-parse-replay-contract.ts";
+import { renderSummary, summarizeRunner } from "./sfc-parse-replay-summary.ts";
 
 const [baseDirectory, headDirectory, outputDirectory, runnerText] = process.argv.slice(2);
 assert.ok(

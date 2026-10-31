@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { basename, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
+import * as contract from "../../tools/benchmarks/scripts/sfc-parse-replay-contract.ts";
+import * as reporter from "../../tools/benchmarks/scripts/sfc-parse-replay-summary.ts";
 import {
   BASE_SHA,
   CASES,
@@ -15,11 +22,11 @@ import {
   validateFrozenFiles,
   validateReleaseProfile,
   validateRevisionInputs,
-} from "../../tools/benchmarks/scripts/sfc-parse-replay-contract.mjs";
+} from "../../tools/benchmarks/scripts/sfc-parse-replay-contract.ts";
 import {
   pairedInterval,
   summarizeRunner,
-} from "../../tools/benchmarks/scripts/sfc-parse-replay-summary.mjs";
+} from "../../tools/benchmarks/scripts/sfc-parse-replay-summary.ts";
 
 test("historical route rejects current heads, reversed pairs, and mixed routes", () => {
   const valid = { base: BASE_SHA, head: HEAD_SHA, conflictingModes: false };
@@ -175,4 +182,262 @@ test("normal workflow exact-head and ancestry guards remain separate from histor
     }
   }
   assert.match(workflow, /uses: \.\/\.github\/workflows\/sfc-parse-replay.yml/u);
+  const replay = readFileSync(
+    new URL("../../.github/workflows/sfc-parse-replay.yml", import.meta.url),
+    "utf8",
+  );
+  assert.ok(
+    replay.indexOf("uses: voidzero-dev/setup-vp@") <
+      replay.indexOf("- name: Validate frozen historical pair"),
+  );
+  assert.match(replay, /node-version-file: harness\/package\.json/u);
+  assert.match(replay, /sfc-parse-replay-contract\.ts/u);
+});
+
+type Operation = () => unknown;
+
+function outcome(operation: Operation) {
+  try {
+    return { value: operation() };
+  } catch (error) {
+    assert.ok(error instanceof Error);
+    return { error: { name: error.name, message: error.message } };
+  }
+}
+
+test("strict replay helpers preserve the authenticated JavaScript outcomes and CLI files", async () => {
+  const directory = realpathSync(mkdtempSync(join(tmpdir(), "sfc-replay-types-")));
+  try {
+    const originals = JSON.parse(
+      readFileSync(new URL("./fixtures/sfc-parse-replay-originals.json", import.meta.url), "utf8"),
+    ) as { sourceCommit: string; modules: { path: string; sha256: string; base64: string }[] };
+    assert.equal(originals.sourceCommit, "a193c99c824b54fbe7e900bb88a19f549cd25ea7");
+    assert.deepEqual(
+      originals.modules.map(({ path, sha256 }) => ({ path, sha256 })),
+      [
+        {
+          path: "tools/benchmarks/scripts/sfc-parse-replay-contract.mjs",
+          sha256: "2329a735c7fd72e849d4f470ba8367ee605a26ca25de53d832fdf213d27e2fb1",
+        },
+        {
+          path: "tools/benchmarks/scripts/sfc-parse-replay-summary.mjs",
+          sha256: "3e02fb02f20376e1d7a3d78b10b06aa13c206ca108efc0b912bfea1027394e12",
+        },
+      ],
+    );
+    for (const module of originals.modules) {
+      const bytes = Buffer.from(module.base64, "base64");
+      assert.equal(createHash("sha256").update(bytes).digest("hex"), module.sha256);
+      writeFileSync(join(directory, basename(module.path)), bytes);
+    }
+    const before = (await import(
+      pathToFileURL(join(directory, "sfc-parse-replay-contract.mjs")).href
+    )) as typeof contract;
+    const oldReporter = (await import(
+      pathToFileURL(join(directory, "sfc-parse-replay-summary.mjs")).href
+    )) as typeof reporter;
+    assert.deepEqual(Object.keys(contract), Object.keys(before));
+    assert.deepEqual(Object.keys(reporter), Object.keys(oldReporter));
+    const compare = (oldOperation: Operation, newOperation: Operation) =>
+      assert.deepEqual(outcome(newOperation), outcome(oldOperation));
+
+    for (const base of [BASE_SHA, HEAD_SHA, "", undefined, 1]) {
+      for (const conflictingModes of [false, true, "false", undefined]) {
+        const input = { base, head: HEAD_SHA, conflictingModes };
+        compare(
+          () => before.validateRevisionInputs(input),
+          () => contract.validateRevisionInputs(input),
+        );
+      }
+    }
+    const profile =
+      '[profile.release]\nopt-level = 3\nlto = "fat"\ncodegen-units = 1\npanic = "abort"\ndebug = false\ndebug-assertions = false\noverflow-checks = false\nincremental = false\n';
+    for (const input of [
+      profile,
+      "",
+      ...profile
+        .trimEnd()
+        .split("\n")
+        .map((line) => profile.replace(line, "")),
+    ]) {
+      compare(
+        () => before.validateReleaseProfile(input),
+        () => contract.validateReleaseProfile(input),
+      );
+    }
+    for (const key of [
+      "RUSTUP_TOOLCHAIN",
+      "RUSTFLAGS",
+      "CARGO_ENCODED_RUSTFLAGS",
+      "RUSTC",
+      "RUSTC_WRAPPER",
+      "RUSTC_WORKSPACE_WRAPPER",
+      "CARGO_BUILD_TARGET",
+      "CARGO_BUILD_RUSTC",
+      "CARGO_BUILD_RUSTFLAGS",
+      "CARGO_PROFILE_RELEASE_LTO",
+    ]) {
+      for (const value of [undefined, "", "changed"]) {
+        const input = { RUSTUP_TOOLCHAIN: TOOLCHAIN, [key]: value };
+        compare(
+          () => before.validateBuildEnvironment(input),
+          () => contract.validateBuildEnvironment(input),
+        );
+      }
+    }
+    for (const side of ["base", "head", "unknown"]) {
+      compare(
+        () => before.validateFrozenFiles(side, "changed", "", "", profile),
+        () => contract.validateFrozenFiles(side, "changed", "", "", profile),
+      );
+    }
+    for (const bytes of [Buffer.alloc(0), Buffer.from("雪🌸"), Buffer.from([0, 255, 1])]) {
+      assert.equal(contract.sha256(bytes), before.sha256(bytes));
+    }
+    assert.deepEqual(contract.pairPlan(), before.pairPlan());
+    for (const target of ["", "/tmp/雪 path", "--profile"])
+      assert.deepEqual(contract.buildArgs(target), before.buildArgs(target));
+    for (const name of [...CASES, "", "throughput"])
+      compare(
+        () => before.measureArgs(name),
+        () => contract.measureArgs(name),
+      );
+    const finished = { reason: "build-finished", success: true };
+    const artifact = {
+      reason: "compiler-artifact",
+      target: { name: "sfc_parse", kind: ["bench"] },
+      executable: "/isolated/雪",
+    };
+    const stream = (rows: unknown[]) => rows.map((row) => JSON.stringify(row)).join("\n");
+    for (const rows of [
+      [],
+      [artifact, finished],
+      [artifact, artifact, finished],
+      [artifact],
+      [artifact, { ...finished, success: false }],
+      [{ ...artifact, target: undefined }, finished],
+      [{ ...artifact, executable: 17 }, finished],
+      [{ ...artifact, executable: { path: "truthy" } }, finished],
+      [{ ...artifact, executable: false }, finished],
+    ]) {
+      const input = `build-script stdout\n${stream(rows)}\n`;
+      compare(
+        () => before.parseBuiltExecutable(input),
+        () => contract.parseBuiltExecutable(input),
+      );
+    }
+    compare(
+      () => before.parseBuiltExecutable("{malformed"),
+      () => contract.parseBuiltExecutable("{malformed"),
+    );
+    for (const values of [[], [1], [3, 1, 2, 4], [1, 0], [1, NaN], [Infinity]])
+      compare(
+        () => oldReporter.median(values),
+        () => reporter.median(values),
+      );
+    for (const ratios of [
+      [1, 2],
+      [0.7, 1.1, 1.2, 0.9, 1.3, 1.05],
+    ]) {
+      for (const seed of [6189, 0, -1])
+        compare(
+          () => oldReporter.pairedInterval(ratios, seed),
+          () => reporter.pairedInterval(ratios, seed),
+        );
+    }
+    const report = {
+      baseSha: BASE_SHA,
+      headSha: HEAD_SHA,
+      runner: "snow 雪",
+      settings: SETTINGS,
+      observations: observations(),
+    };
+    const reordered = [...report.observations];
+    [reordered[0], reordered[1]] = [reordered[1], reordered[0]];
+    for (const input of [
+      report,
+      { ...report, baseSha: HEAD_SHA },
+      { ...report, settings: { ...SETTINGS, pairs: 1 } },
+      { ...report, observations: report.observations.slice(1) },
+      { ...report, observations: reordered },
+      {
+        ...report,
+        observations: report.observations.map((row) => ({
+          ...row,
+          estimates: { median: { point_estimate: 0 } },
+        })),
+      },
+    ]) {
+      compare(
+        () => oldReporter.summarizeRunner(input),
+        () => reporter.summarizeRunner(input),
+      );
+    }
+    assert.equal(
+      reporter.renderSummary(reporter.summarizeRunner(report)),
+      oldReporter.renderSummary(oldReporter.summarizeRunner(report)),
+    );
+    const traced = (module: typeof contract) => {
+      const trace: string[] = [];
+      const input = Object.fromEntries(
+        ["base", "head", "conflictingModes"].map((key) => [key, undefined]),
+      );
+      for (const [key, value] of Object.entries({
+        base: BASE_SHA,
+        head: HEAD_SHA,
+        conflictingModes: false,
+      }))
+        Object.defineProperty(input, key, {
+          get() {
+            trace.push(key);
+            return value;
+          },
+        });
+      const result = outcome(() =>
+        module.validateRevisionInputs(
+          input as Parameters<typeof contract.validateRevisionInputs>[0],
+        ),
+      );
+      return { trace, result };
+    };
+    assert.deepEqual(traced(contract), traced(before));
+
+    const inputPath = join(directory, "report.json");
+    const outputPath = join(directory, "summary.json");
+    const markdownPath = join(directory, "summary.md");
+    const oldCLI = join(directory, "sfc-parse-replay-summary.mjs");
+    const newCLI = fileURLToPath(
+      new URL("../../tools/benchmarks/scripts/sfc-parse-replay-summary.ts", import.meta.url),
+    );
+    for (const input of [report, { ...report, observations: [] }]) {
+      writeFileSync(inputPath, JSON.stringify(input));
+      const run = (cli: string) => {
+        writeFileSync(outputPath, "untouched JSON");
+        writeFileSync(markdownPath, "untouched Markdown");
+        const child = spawnSync(process.execPath, [cli, inputPath, outputPath, markdownPath], {
+          encoding: "utf8",
+        });
+        return {
+          status: child.status,
+          signal: child.signal,
+          error: child.error?.message,
+          stdout: child.stdout,
+          json: readFileSync(outputPath, "utf8"),
+          markdown: readFileSync(markdownPath, "utf8"),
+        };
+      };
+      const old = run(oldCLI);
+      assert.deepEqual(run(newCLI), old);
+      assert.equal(old.status, input.observations.length ? 0 : 1);
+    }
+    // Exercise the migrated CLI entry directly, without starting the native benchmark driver.
+    writeFileSync(inputPath, JSON.stringify(report));
+    execFileSync(process.execPath, [newCLI, inputPath, outputPath, markdownPath]);
+    assert.deepEqual(
+      JSON.parse(readFileSync(outputPath, "utf8")),
+      reporter.summarizeRunner(report),
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

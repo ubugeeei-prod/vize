@@ -28,17 +28,33 @@ const CASE_ORDERS = [
   ["medium", "simple", "complex"],
 ];
 
-export function sha256(bytes) {
+type HashInput = string | NodeJS.ArrayBufferView;
+
+export function sha256(bytes: HashInput): string {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-export function validateRevisionInputs({ base, head, conflictingModes }) {
+export function validateRevisionInputs({
+  base,
+  head,
+  conflictingModes,
+}: {
+  base: unknown;
+  head: unknown;
+  conflictingModes: unknown;
+}): void {
   assert.equal(base, BASE_SHA, "historical replay requires the frozen #6189 base");
   assert.equal(head, HEAD_SHA, "historical replay requires the frozen #6189 head");
   assert.equal(conflictingModes, false, "historical replay cannot select another route");
 }
 
-export function validateFrozenFiles(side, benchmark, lock, toolchain, manifest) {
+export function validateFrozenFiles(
+  side: string,
+  benchmark: HashInput,
+  lock: HashInput,
+  toolchain: string,
+  manifest: string,
+): void {
   assert.ok(side === "base" || side === "head");
   assert.equal(sha256(benchmark), BENCH_SHA256, "benchmark inputs or timed body changed");
   assert.equal(sha256(lock), LOCK_SHA256[side], "historical locked dependencies changed");
@@ -46,7 +62,7 @@ export function validateFrozenFiles(side, benchmark, lock, toolchain, manifest) 
   validateReleaseProfile(manifest);
 }
 
-export function validateReleaseProfile(manifest) {
+export function validateReleaseProfile(manifest: string): void {
   const release = manifest.match(/\[profile\.release\]([\s\S]*?)(?=\n\[|$)/u)?.[1];
   assert.ok(release, "release profile must be present");
   for (const line of [
@@ -62,7 +78,7 @@ export function validateReleaseProfile(manifest) {
     assert.ok(release.split("\n").includes(line), `release profile lost ${line}`);
 }
 
-export function validateBuildEnvironment(env) {
+export function validateBuildEnvironment(env: Record<string, unknown>): void {
   assert.equal(env.RUSTUP_TOOLCHAIN, TOOLCHAIN);
   for (const key of Object.keys(env)) {
     assert.ok(!key.startsWith("CARGO_PROFILE_"), `unexpected profile override ${key}`);
@@ -89,7 +105,7 @@ export function pairPlan() {
   }));
 }
 
-export function buildArgs(targetDir) {
+export function buildArgs(targetDir: string): string[] {
   return [
     `+${TOOLCHAIN}`,
     "bench",
@@ -106,13 +122,19 @@ export function buildArgs(targetDir) {
   ];
 }
 
-export function parseBuiltExecutable(output) {
+interface CargoMessage {
+  reason: string;
+  target: { name: string; kind: string[] };
+  executable: unknown;
+}
+
+export function parseBuiltExecutable(output: string): unknown {
   // Cargo -vv also emits labelled build-script stdout. The complete stream is
   // retained; only Cargo's JSON message lines participate in artifact selection.
   const messages = output
     .split("\n")
     .filter((line) => line.startsWith("{"))
-    .map((line) => JSON.parse(line));
+    .map((line) => JSON.parse(line) as CargoMessage);
   const finished = messages.filter((row) => row.reason === "build-finished");
   assert.deepEqual(finished, [{ reason: "build-finished", success: true }]);
   const artifacts = messages.filter(
@@ -126,7 +148,7 @@ export function parseBuiltExecutable(output) {
   return artifacts[0].executable;
 }
 
-export function measureArgs(name) {
+export function measureArgs(name: string): string[] {
   assert.ok(CASES.includes(name), "only the three frozen SFC parse cases are measured");
   return [
     "--bench",
