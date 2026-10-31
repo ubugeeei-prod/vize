@@ -175,7 +175,10 @@ pub fn compile(id: &str, source: &str, inline: bool, ssr: bool) -> Facts {
         parse,
         ..Default::default()
     };
-    options.script.inline_template = inline;
+    // Public `inlineTemplate` selects the script output below; the Rust flag
+    // instead requests standalone `mode: "function"` output.
+    options.script.id = Some("Repro.vue".into());
+    options.template.id = Some("Repro.vue".into());
     options.template.is_prod = true;
     options.template.ssr = ssr;
     let result = compile_sfc_for_adapter(
@@ -194,7 +197,8 @@ pub fn compile(id: &str, source: &str, inline: bool, ssr: bool) -> Facts {
     // Retain complete source/result before assertions, including failed observations.
     println!(
         "inline-ref-shadow-result {}",
-        json!({"id":id,"source":source,"inline":inline,"ssr":ssr,"result":result})
+        json!({"id":id,"source":source,"inline":inline,"ssr":ssr,
+            "filename":"Repro.vue","mode":"module","isProd":true,"result":result})
     );
     assert!(result.errors.is_empty(), "{id}: {:?}", result.errors);
     assert!(result.warnings.is_empty(), "{id}: {:?}", result.warnings);
