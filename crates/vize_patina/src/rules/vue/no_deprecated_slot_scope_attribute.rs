@@ -38,12 +38,20 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Error,
 };
 
+mod native;
+
 /// Disallow the deprecated `slot-scope` attribute.
 pub struct NoDeprecatedSlotScopeAttribute;
 
 impl Rule for NoDeprecatedSlotScopeAttribute {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_native_sfc_template_rule(
+        &self,
+    ) -> Option<&dyn crate::native::sfc::NativeSfcTemplateRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
