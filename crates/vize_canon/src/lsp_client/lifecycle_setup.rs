@@ -1,4 +1,4 @@
-use super::{paths::find_node_modules_with_vue, session_paths::overlay_root_for_project};
+use super::paths::find_node_modules_with_vue;
 use serde_json::json;
 use std::{
     path::Path,
@@ -157,13 +157,12 @@ pub(super) fn workspace_config_path(project_root: &Path) -> std::path::PathBuf {
 
 pub(super) fn write_materialized_project_tsconfig(
     project_root: &Path,
+    overlay_root: &Path,
+    selected_config: Option<&Path>,
 ) -> Result<std::path::PathBuf, String> {
-    let overlay_root = overlay_root_for_project(project_root);
-    std::fs::create_dir_all(&overlay_root)
-        .map_err(|error| cstr!("Failed to create materialized Corsa project: {error}"))?;
     let config_path = overlay_root.join("tsconfig.json");
     let content = json!({
-        "extends": workspace_config_path(project_root).to_string_lossy(),
+        "extends": selected_config.map(|config| if config.is_absolute() { config.to_path_buf() } else { project_root.join(config) }).unwrap_or_else(|| workspace_config_path(project_root)).to_string_lossy(),
         "compilerOptions": {
             "allowImportingTsExtensions": true,
             "noEmit": true
@@ -171,8 +170,11 @@ pub(super) fn write_materialized_project_tsconfig(
         "include": ["**/*"],
         "exclude": []
     });
-    std::fs::write(&config_path, content.to_compact_string())
-        .map_err(|error| cstr!("Failed to write materialized Corsa tsconfig: {error}"))?;
+    super::session_storage::write_owned_file(
+        overlay_root,
+        &config_path,
+        content.to_compact_string().as_bytes(),
+    )?;
     Ok(config_path)
 }
 
@@ -215,15 +217,13 @@ mod tests {
         let workspace_config = root.join("tsconfig.json");
         std::fs::write(&workspace_config, r#"{"compilerOptions":{"strict":false}}"#).unwrap();
 
-        let generated = write_materialized_project_tsconfig(root).unwrap();
+        let storage = crate::lsp_client::session_storage::SessionStorage::new(root).unwrap();
+        let generated = write_materialized_project_tsconfig(root, storage.root(), None).unwrap();
         let parsed: serde_json::Value =
             serde_json::from_str(&std::fs::read_to_string(&generated).unwrap()).unwrap();
 
         assert_eq!(workspace_config_path(root), workspace_config);
-        assert_eq!(
-            generated,
-            root.join("node_modules/.vize/corsa-overlay/tsconfig.json")
-        );
+        assert_eq!(generated, storage.root().join("tsconfig.json"));
         assert_eq!(
             parsed["extends"],
             workspace_config.to_string_lossy().as_ref()
@@ -248,5 +248,39 @@ mod tests {
         std::fs::write(&jsconfig, "{}").unwrap();
 
         assert_eq!(workspace_config_path(project.path()), jsconfig);
+    }
+
+    #[test]
+    fn materialized_config_preserves_explicit_relative_selection_and_all_authored_bytes() {
+        let project = tempfile::tempdir().unwrap();
+        let root = project.path();
+        std::fs::create_dir(root.join("config")).unwrap();
+        let selected = root.join("config/selected.json");
+        let authored = br#"{"compilerOptions":{"rootDir":"../src","baseUrl":"..","paths":{"@/*":["src/*"]},"typeRoots":["../types"],"composite":true}}"#;
+        std::fs::write(&selected, authored).unwrap();
+        std::fs::write(
+            root.join("tsconfig.json"),
+            "{\"compilerOptions\":{\"strict\":false}}",
+        )
+        .unwrap();
+        let storage = crate::lsp_client::session_storage::SessionStorage::new(root).unwrap();
+        let generated = write_materialized_project_tsconfig(
+            root,
+            storage.root(),
+            Some(std::path::Path::new("config/selected.json")),
+        )
+        .unwrap();
+        let parsed: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(generated).unwrap()).unwrap();
+        assert_eq!(parsed["extends"], selected.to_string_lossy().as_ref());
+        assert_eq!(
+            parsed["compilerOptions"],
+            serde_json::json!({"allowImportingTsExtensions":true,"noEmit":true})
+        );
+        assert_eq!(std::fs::read(selected).unwrap(), authored);
+        assert_eq!(
+            std::fs::read(root.join("tsconfig.json")).unwrap(),
+            b"{\"compilerOptions\":{\"strict\":false}}"
+        );
     }
 }

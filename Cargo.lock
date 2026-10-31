@@ -4141,6 +4141,7 @@ dependencies = [
  "globset",
  "ignore",
  "insta",
+ "junction",
  "libc",
  "lsp-types 0.97.0",
  "mimalloc",

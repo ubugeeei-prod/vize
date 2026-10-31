@@ -97,7 +97,9 @@ impl CorsaProjectClient {
         self.diagnostics.clear();
         self.overlay_versions.clear();
         self.closed = true;
-        authored_result.and(project_result).and(editor_result)
+        let result = authored_result.and(project_result).and(editor_result);
+        self.overlay_storage.observe_retirement(&result);
+        result
     }
 
     /// Reap the API owner before another project transport can be spawned.
@@ -108,13 +110,15 @@ impl CorsaProjectClient {
         if self.project_session_attached_to_editor {
             return self.retire_shared_editor_transport(false);
         }
-        self.session.take().map_or(Ok(()), |session| {
+        let result = self.session.take().map_or(Ok(()), |session| {
             let client = session.client().clone();
             // Retire the session's snapshot before close flushes its release queue.
             drop(session);
             block_on(client.close())
                 .map_err(|error| cstr!("Failed to close Corsa project session: {error}"))
-        })
+        });
+        self.overlay_storage.observe_retirement(&result);
+        result
     }
 
     /// Open a virtual document.
@@ -151,7 +155,12 @@ impl CorsaProjectClient {
 
         let overlay_supported = self.supports_overlay_api();
         let requires_materialization = documents.iter().any(|(uri, _)| {
-            build_session_document_uri(uri, &self.project_root, overlay_supported) != *uri
+            build_session_document_uri(
+                uri,
+                &self.project_root,
+                self.overlay_storage.root(),
+                overlay_supported,
+            ) != *uri
         });
         if self.materialized_project_session || !overlay_supported || requires_materialization {
             return self.synchronize_materialized_project_documents(documents);
@@ -172,7 +181,13 @@ impl CorsaProjectClient {
             changed = true;
             merge_materialized_file_changes(
                 &mut summary,
-                materialize_session_document(uri, document_uri.as_str(), content).or_else(|| {
+                materialize_session_document(
+                    uri,
+                    document_uri.as_str(),
+                    content,
+                    self.overlay_storage.root(),
+                )?
+                .or_else(|| {
                     virtual_overlay::upsert_file_changes(
                         uri,
                         document_uri.as_str(),

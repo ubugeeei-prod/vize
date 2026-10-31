@@ -13,6 +13,7 @@ use crate::support::lsp_process;
 use lsp_process::{LspProcess, file_uri};
 
 mod logging;
+mod overlay_storage;
 
 #[test]
 fn lsp_exit_notification_terminates_process_while_stdin_stays_open() {

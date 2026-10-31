@@ -36,6 +36,9 @@ pub(crate) struct InitialDiagnosticsRead {
     external_document_uris: FxHashMap<String, String>,
     file_supported: bool,
     project_supported: bool,
+    // Detached workers keep physical materialization alive until their RPC and
+    // SDK snapshot/client fields have been dropped, including cancellation.
+    _storage: Arc<super::session_storage::SessionStorage>,
 }
 
 impl CorsaProjectClient {
@@ -68,6 +71,7 @@ impl CorsaProjectClient {
             external_document_uris: self.external_document_uris.clone(),
             file_supported: self.supports_file_diagnostics_api(),
             project_supported: self.supports_project_diagnostics_api(),
+            _storage: Arc::clone(&self.overlay_storage),
         };
         if crate::corsa_bridge::preparation_trace::enabled() {
             tracing::info!(target: "vize_editor_preparation", phase="initial_api_owner",

@@ -6,6 +6,7 @@ use vize_l0::String;
 pub(super) fn build_session_document_uri(
     uri: &str,
     project_root: &Path,
+    overlay_root: &Path,
     overlay_confirmed: bool,
 ) -> String {
     let Some(external_path) = external_document_path(uri) else {
@@ -23,22 +24,32 @@ pub(super) fn build_session_document_uri(
         return path_to_file_uri(&external_path);
     }
 
-    path_to_file_uri(&materialized_session_path(&external_path, project_root))
+    path_to_file_uri(&materialized_session_path(
+        &external_path,
+        project_root,
+        overlay_root,
+    ))
 }
 
 pub(super) fn build_materialized_session_document_uri(
     uri: &str,
     project_root: &Path,
+    overlay_root: &Path,
 ) -> Option<String> {
     let external_path = external_document_path(uri)?;
     Some(path_to_file_uri(&materialized_session_path(
         &external_path,
         project_root,
+        overlay_root,
     )))
 }
 
-fn materialized_session_path(external_path: &Path, project_root: &Path) -> PathBuf {
-    let mut session_path = overlay_root_for_project(project_root);
+fn materialized_session_path(
+    external_path: &Path,
+    project_root: &Path,
+    overlay_root: &Path,
+) -> PathBuf {
+    let mut session_path = overlay_root.to_path_buf();
     let canonical_external = external_path.parent().and_then(|parent| {
         let file_name = external_path.file_name()?;
         parent
@@ -51,14 +62,26 @@ fn materialized_session_path(external_path: &Path, project_root: &Path) -> PathB
             .as_deref()
             .and_then(|path| path.strip_prefix(project_root).ok())
     });
-    if let Some(relative) = relative {
+    if let Some(relative) = relative.filter(|path| {
+        path.components()
+            .all(|part| matches!(part, Component::Normal(_)))
+    }) {
         session_path.push(relative);
         return session_path;
     }
 
     for component in external_path.components() {
         match component {
-            Component::Prefix(prefix) => session_path.push(prefix.as_os_str()),
+            Component::Prefix(prefix) => {
+                use sha2::Digest as _;
+                session_path.push(
+                    vize_l0::cstr!(
+                        "__prefix_{:x}",
+                        sha2::Sha256::digest(prefix.as_os_str().as_encoded_bytes())
+                    )
+                    .as_str(),
+                );
+            }
             Component::RootDir | Component::CurDir => {}
             Component::ParentDir => session_path.push("__parent__"),
             Component::Normal(part) => session_path.push(part),
@@ -66,32 +89,6 @@ fn materialized_session_path(external_path: &Path, project_root: &Path) -> PathB
     }
 
     session_path
-}
-
-pub(super) fn overlay_root_for_project(project_root: &Path) -> PathBuf {
-    if is_under_node_modules_vize(project_root) {
-        return project_root.join("overlays");
-    }
-
-    project_root
-        .join("node_modules")
-        .join(".vize")
-        .join("corsa-overlay")
-}
-
-fn is_under_node_modules_vize(path: &Path) -> bool {
-    let mut previous = None;
-    for component in path.components() {
-        let Some(name) = component.as_os_str().to_str() else {
-            previous = None;
-            continue;
-        };
-        if previous == Some("node_modules") && name == ".vize" {
-            return true;
-        }
-        previous = Some(name);
-    }
-    false
 }
 
 pub(super) fn external_document_path(uri: &str) -> Option<PathBuf> {

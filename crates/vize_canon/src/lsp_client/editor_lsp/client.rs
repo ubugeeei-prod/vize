@@ -8,7 +8,6 @@ use std::path::PathBuf;
 use vize_l0::{FxHashMap, String, cstr};
 
 use super::{CorsaProjectClient, EditorLspSession, retry::retry_transient_editor_request};
-use crate::lsp_client::session_paths::overlay_root_for_project;
 
 impl CorsaProjectClient {
     /// A shared API snapshot also reads the editor's open buffers. Materialized
@@ -299,7 +298,7 @@ impl CorsaProjectClient {
 
     pub(in crate::lsp_client) fn editor_lsp_project_root(&self) -> PathBuf {
         if self.materialized_project_session {
-            overlay_root_for_project(&self.project_root)
+            self.overlay_storage.root().to_path_buf()
         } else {
             self.project_root.clone()
         }
@@ -317,6 +316,7 @@ impl CorsaProjectClient {
         };
         self.editor_lsp = None;
         self.editor_lsp_documents_dirty = true;
+        self.overlay_storage.observe_retirement(&result);
         result
     }
 
@@ -334,6 +334,7 @@ impl CorsaProjectClient {
         };
         self.editor_lsp = None;
         self.editor_lsp_documents_dirty = true;
+        self.overlay_storage.observe_retirement(&result);
         result
     }
 }

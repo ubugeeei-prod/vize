@@ -1,0 +1,100 @@
+name: Native LSP overlay custody
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - crates/vize_canon/src/lsp_client.rs
+      - crates/vize_canon/src/lsp_client/**
+      - crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics/**
+      - .github/workflows/lsp-overlay-custody.yml
+      - .github/actions/lsp-overlay-custody/**
+      - crates/vize/tests/lsp_cli/overlay_storage.rs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lsp-overlay-custody-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_TERM_COLOR: never
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+
+jobs:
+  native-overlay:
+    name: Actual overlay storage and configuration (${{ matrix.os }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: Linux, runner: blacksmith-32vcpu-ubuntu-2404 }
+          - { os: Windows, runner: blacksmith-32vcpu-windows-2025 }
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install frozen source dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: runner.os == 'Linux'
+        with: { wild-version: "0.9.0" }
+      - name: Select the exact locked platform native provider
+        env:
+          EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          # The receipt describes this literal checkout, while the later CLI
+          # receipt separately retains the actual PR event/merge SHA.
+          node --input-type=module -e 'import assert from "node:assert/strict"; for (const name of ["CORSA_PATH","CORSA_EXECUTABLE","TSGO_PATH","TSGO_EXECUTABLE","TSRS_PATH","TSRS_EXECUTABLE"]) assert.ok(!process.env[name], `ambient ${name} refused`);'
+          GITHUB_SHA="$EXPECTED_SOURCE" vp exec node tools/support/compat/github/full-rust-runtime.ts
+      - name: Exercise real native old and private physical policies with unchanged options
+        env:
+          VIZE_PRIVATE_OVERLAY_CAPTURE: ${{ runner.temp }}/lsp-overlay-custody
+          EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha }}
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+          VIZE_INLAY_HINT_CAPTURE: ${{ runner.temp }}/lsp-overlay-custody/processes
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          mkdir -m 700 "$VIZE_PRIVATE_OVERLAY_CAPTURE"
+          git rev-parse HEAD > "$VIZE_PRIVATE_OVERLAY_CAPTURE/source.txt"
+          cargo test --locked --profile ci -p vize_canon --lib lsp_client::session_storage:: --no-run --message-format=json > "$VIZE_PRIVATE_OVERLAY_CAPTURE/build.jsonl" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/build.stderr"
+          cargo test --locked --profile ci -p vize_canon --lib lsp_client::session_storage::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/storage.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/storage.stderr"
+          cargo test --locked --profile ci -p vize_canon --lib lsp_client::session::close::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/close.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/close.stderr"
+          if [ "$RUNNER_OS" = Linux ]; then
+            cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::bridge::initial_diagnostics::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stderr"
+          fi
+          set +e
+          cargo test --locked --profile ci -p vize_canon --lib lsp_client::session_storage::native_tests::actual_native_old_and_private_roots_preserve_complete_configured_overlay_answers -- --exact --ignored --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/native.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/native.stderr"
+          native_status=$?
+          printf '%s\n' "$native_status" > "$VIZE_PRIVATE_OVERLAY_CAPTURE/native.status"
+          set -e
+          node node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/tsc.js --ignoreConfig --strict --noEmit --noImplicitAny --noUncheckedIndexedAccess --exactOptionalPropertyTypes --erasableSyntaxOnly --target es2023 --module esnext --moduleResolution bundler --allowImportingTsExtensions --skipLibCheck --types node --typeRoots "$PWD/node_modules/@types" .github/actions/lsp-overlay-custody/source-cli.ts > "$VIZE_PRIVATE_OVERLAY_CAPTURE/source-cli-helper-strict.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/source-cli-helper-strict.stderr"
+          node .github/actions/lsp-overlay-custody/source-cli.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: lsp-overlay-custody-${{ matrix.os }}-${{ github.event.pull_request.head.sha }}
+          path: |
+            ${{ runner.temp }}/lsp-overlay-custody/
+            target/nextest/full/native-runtime-provider.json
+          if-no-files-found: error
+          retention-days: 14

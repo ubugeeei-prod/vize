@@ -27,6 +27,7 @@ pub(crate) mod paths;
 mod queries;
 mod session;
 mod session_paths;
+mod session_storage;
 pub use editor_lsp::snapshot_source;
 mod utils;
 mod virtual_overlay;
@@ -63,6 +64,8 @@ pub struct CorsaProjectClient {
     external_document_uris: FxHashMap<String, String>,
     /// Temporary directory for tsconfig.json (cleaned up on drop).
     temp_dir: Option<PathBuf>,
+    /// Private materialization storage, dropped after native owners retire.
+    overlay_storage: Arc<session_storage::SessionStorage>,
     /// Lazily spawned `--lsp --stdio` session answering editor requests the
     /// project-session API rejects as unsupported (corsa-bind#409), and the
     /// standard-tsgo diagnostics path when no project-session API exists.
@@ -85,6 +88,17 @@ pub struct CorsaProjectClient {
 
 #[cfg(test)]
 impl CorsaProjectClient {
+    pub(crate) fn overlay_root_for_test(&self) -> &std::path::Path {
+        self.overlay_storage.root()
+    }
+
+    pub(crate) fn replace_overlay_storage_for_test(&mut self) -> PathBuf {
+        let previous = self.overlay_storage.root().to_path_buf();
+        self.overlay_storage =
+            Arc::new(session_storage::SessionStorage::new(&self.project_root).unwrap());
+        previous
+    }
+
     pub(crate) fn project_session_for_test(&mut self) -> &mut Option<ProjectSession> {
         &mut self.session
     }
@@ -97,6 +111,7 @@ impl CorsaProjectClient {
             capabilities: Arc::new(Default::default()),
             overlay_api_disabled: false,
             materialized_project_session: false,
+            overlay_storage: Arc::new(session_storage::SessionStorage::new(&project_root).unwrap()),
             project_root,
             explicit_project_config: None,
             diagnostics: Default::default(),

@@ -77,24 +77,31 @@ fn falls_back_to_nearest_available_node_modules_root() {
 }
 
 #[test]
-fn overlay_documents_materialize_under_node_modules_vize() {
+fn overlay_documents_materialize_in_the_owned_private_root() {
     let temp_dir = TempDir::new().unwrap();
     let project_root = temp_dir.path().join("project");
     fs::create_dir_all(&project_root).unwrap();
 
+    let storage = super::session_storage::SessionStorage::new(&project_root).unwrap();
     let external_uri = "file:///external/App.vue.setup.ts";
-    let document_uri = build_session_document_uri(external_uri, &project_root, false);
+    let document_uri =
+        build_session_document_uri(external_uri, &project_root, storage.root(), false);
     let test_output_fragment = PathBuf::from("target")
         .join("vize-tests")
         .to_string_lossy()
         .replace('\\', "/");
 
-    assert!(document_uri.contains("/node_modules/.vize/corsa-overlay/"));
+    assert!(
+        crate::file_uri::file_uri_to_path(&document_uri)
+            .unwrap()
+            .starts_with(storage.root())
+    );
+    assert!(!storage.root().starts_with(&project_root));
     assert!(!document_uri.contains(test_output_fragment.as_str()));
 }
 
 #[test]
-fn internal_vize_sessions_keep_overlays_inside_session_root() {
+fn internal_vize_sessions_use_their_independent_owned_root() {
     let temp_dir = TempDir::new().unwrap();
     let project_root = temp_dir
         .path()
@@ -104,14 +111,21 @@ fn internal_vize_sessions_keep_overlays_inside_session_root() {
         .join("session");
     fs::create_dir_all(&project_root).unwrap();
 
+    let storage = super::session_storage::SessionStorage::new(&project_root).unwrap();
     let external_uri = "file:///external/App.vue.setup.ts";
-    let document_uri = build_session_document_uri(external_uri, &project_root, false);
+    let document_uri =
+        build_session_document_uri(external_uri, &project_root, storage.root(), false);
     let test_output_fragment = PathBuf::from("target")
         .join("vize-tests")
         .to_string_lossy()
         .replace('\\', "/");
 
-    assert!(document_uri.contains("/node_modules/.vize/corsa/session/overlays/"));
+    assert!(
+        crate::file_uri::file_uri_to_path(&document_uri)
+            .unwrap()
+            .starts_with(storage.root())
+    );
+    assert!(!storage.root().starts_with(&project_root));
     assert!(!document_uri.contains(test_output_fragment.as_str()));
 }
 
@@ -200,23 +214,28 @@ fn keeps_encoded_vue_virtual_overlay_uri_at_real_path_inside_project() {
         "test workspace path must exercise file URI encoding: {uri}"
     );
 
-    let mapped = build_session_document_uri(&uri, &project, true);
+    let storage = super::session_storage::SessionStorage::new(&project).unwrap();
+    let mapped = build_session_document_uri(&uri, &project, storage.root(), true);
     assert_eq!(
         mapped, uri,
         "encoded in-project overlay URI must stay stable"
     );
     assert!(
-        materialize_session_document(&uri, &mapped, "export {};").is_none(),
+        materialize_session_document(&uri, &mapped, "export {};", storage.root())
+            .unwrap()
+            .is_none(),
         "stable overlay URIs must not materialize sibling files"
     );
 
-    let mapped_without_overlay = build_session_document_uri(&uri, &project, false);
+    let mapped_without_overlay = build_session_document_uri(&uri, &project, storage.root(), false);
     assert_ne!(
         mapped_without_overlay, uri,
         "without overlay support, virtual mirrors must move into the session overlay root"
     );
     assert!(
-        mapped_without_overlay.contains("/node_modules/.vize/corsa-overlay/"),
+        crate::file_uri::file_uri_to_path(&mapped_without_overlay)
+            .unwrap()
+            .starts_with(storage.root()),
         "unexpected materialized overlay URI: {mapped_without_overlay}"
     );
     assert!(!virtual_path.exists());

@@ -31,9 +31,12 @@ impl CorsaProjectClient {
             let document_uri = self.materialized_session_document_uri(uri).ok_or_else(|| {
                 cstr!("Failed to derive materialized Corsa overlay path for {uri}")
             })?;
-            if let Some(FileChanges::Summary(delta)) =
-                materialize_session_document(uri, document_uri.as_str(), content)
-            {
+            if let Some(FileChanges::Summary(delta)) = materialize_session_document(
+                uri,
+                document_uri.as_str(),
+                content,
+                self.overlay_storage.root(),
+            )? {
                 summary.changed.extend(delta.changed);
                 summary.created.extend(delta.created);
             }

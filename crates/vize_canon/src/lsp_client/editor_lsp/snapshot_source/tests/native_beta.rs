@@ -19,6 +19,9 @@ use std::{
     process::Command,
 };
 
+mod storage_authority;
+pub(super) use storage_authority::completion_multiset;
+
 const VALID: &str = "/*🧭é日本語\u{2028}\u{2029}*/\r\nexport const label: string = \"ok\";\r\nexport const length: number = label.length;\r\nexport const echo = label;\r\n";
 const NEIGHBOR: &str = "export const outside: string = 42;\r\n";
 const BEFORE_BETA_REFUSAL: &str = "Malformed getSemanticDiagnostics response: unknown field `endPosition`, expected one of `fileName`, `pos`, `end`, `code`, `category`, `text`, `messageChain`, `relatedInformation`, `reportsUnnecessary`, `reportsDeprecated`";
@@ -232,7 +235,7 @@ fn actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete()
     drop(client);
     drop(editor);
     let mut record = json!({"source":expected_source,"role":std::env::var("VIZE_NATIVE_DTO_ROLE").unwrap(),
-        "observerSha256":hash(include_bytes!("native_beta.rs")),"testExecutable":test_exe,"testExecutableSha256":hash(&std::fs::read(&test_exe).unwrap()),
+        "observerSha256":hash(include_bytes!("native_beta.rs")),"observerDependencies":[{"path":"crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs","sha256":hash(include_bytes!("native_beta/storage_authority.rs"))}],"testExecutable":test_exe,"testExecutableSha256":hash(&std::fs::read(&test_exe).unwrap()),
         "sdkVersion":expected_version,"sdkExecutable":executable,"sdkSha256":expected_hash,"dialect":dialect,
         "scope":"API-owned explicit disk/FileChanges snapshots; attached overlay view is independently tested below",
         "root":root,"config":std::str::from_utf8(config_text).unwrap(),"neighbor":NEIGHBOR,"rows":rows});
@@ -464,6 +467,15 @@ fn attached_overlay_packets(
         );
     }
     assert!(!virtual_path.exists());
+    let storage_authority = storage_authority::capture(
+        &mut client,
+        &root,
+        &[
+            (&main_uri, MAIN),
+            (&support_uri, SUPPORT),
+            (&virtual_uri, VIRTUAL),
+        ],
+    );
     client.did_close(&virtual_uri).unwrap();
     client.did_close(&support_uri).unwrap();
     client.did_close(&main_uri).unwrap();
@@ -471,22 +483,11 @@ fn attached_overlay_packets(
     client.shutdown().unwrap();
     let result = json!({"scope":"attached editor; dependency close verified before a self-contained materialized virtual batch",
         "root":root,"mainUri":main_uri,"supportUri":support_uri,"config":std::str::from_utf8(config).unwrap(),"rows":rows,
-        "materializedBatch":{"virtualUri":virtual_uri,"mappedUri":mapped_virtual,"source":VIRTUAL,"nativePull":virtual_pull,"selected":whole_batch}});
+        "materializedBatch":{"virtualUri":virtual_uri,"mappedUri":mapped_virtual,"source":VIRTUAL,"nativePull":virtual_pull,"selected":whole_batch,"storageAuthority":storage_authority}});
     std::fs::write(
         capture.join("attached-overlay-packets.json"),
         serde_json::to_vec_pretty(&result).unwrap(),
     )
     .unwrap();
-    result
-}
-
-pub(super) fn completion_multiset(packet: &serde_json::Value) -> serde_json::Value {
-    let mut result = packet.clone();
-    result
-        .get_mut("items")
-        .unwrap()
-        .as_array_mut()
-        .unwrap()
-        .sort_by_cached_key(|item| serde_json::to_vec(item).unwrap());
     result
 }

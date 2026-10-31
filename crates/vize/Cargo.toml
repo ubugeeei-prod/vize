@@ -115,6 +115,10 @@ insta.workspace = true
 lsp-types.workspace = true
 url.workspace = true
 
+[target.'cfg(windows)'.dev-dependencies]
+# Exercise real linked-installation custody without Developer Mode privileges.
+junction = "2"
+
 # One integration binary instead of one link per tests/*.rs file.
 [[test]]
 name = "integration"

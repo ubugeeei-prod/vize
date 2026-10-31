@@ -145,9 +145,12 @@ impl CorsaProjectClient {
     pub(in crate::lsp_client) fn retire_original_diagnosing_session(
         &mut self,
     ) -> Result<(), String> {
-        self.original_diagnosing_session
+        let result = self
+            .original_diagnosing_session
             .take()
-            .map_or(Ok(()), |mut owner| owner.editor.shutdown())
+            .map_or(Ok(()), |mut owner| owner.editor.shutdown());
+        self.overlay_storage.observe_retirement(&result);
+        result
     }
 }
 

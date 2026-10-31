@@ -27,22 +27,21 @@ fn keeps_vue_virtual_overlay_at_real_path_inside_project() {
 
     let virtual_path = components.join("Button.vue.ts");
     let uri = path_to_file_uri(&virtual_path);
-    let mapped = build_session_document_uri(&uri, &project, true);
+    let storage = super::super::session_storage::SessionStorage::new(&project).unwrap();
+    let mapped = build_session_document_uri(&uri, &project, storage.root(), true);
     assert_eq!(mapped, uri, "in-project .vue.ts overlay must keep its path");
 
-    let mapped_no_overlay = build_session_document_uri(&uri, &project, false);
+    let mapped_no_overlay = build_session_document_uri(&uri, &project, storage.root(), false);
     assert_eq!(
         mapped_no_overlay,
-        path_to_file_uri(
-            &project.join("node_modules/.vize/corsa-overlay/src/components/Button.vue.ts")
-        ),
+        path_to_file_uri(&storage.root().join("src/components/Button.vue.ts")),
         "in-project overlays must preserve their project-relative path"
     );
 
     // A path outside the project is still remapped into the overlay tree.
     let outside = std::env::temp_dir().join(format!("vize-outside-{nonce}/Other.vue.ts"));
     let outside_uri = path_to_file_uri(&outside);
-    let mapped_outside = build_session_document_uri(&outside_uri, &project, true);
+    let mapped_outside = build_session_document_uri(&outside_uri, &project, storage.root(), true);
     assert_ne!(mapped_outside, outside_uri);
 
     let _ = std::fs::remove_dir_all(project);
@@ -220,7 +219,7 @@ fn canon_batch_preserves_physical_identity_only_for_a_complete_existing_project(
             assert!(!client.materialized_project_session);
             assert_eq!(mapped, &source_uri);
             assert_eq!(std::fs::read_to_string(source).unwrap(), edited);
-            assert!(!super::super::session_paths::overlay_root_for_project(root.path()).exists());
+            assert!(!client.overlay_storage.root().join("tsconfig.json").exists());
         } else {
             assert!(client.materialized_project_session);
             assert_ne!(mapped, &source_uri);

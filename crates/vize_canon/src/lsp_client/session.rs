@@ -94,15 +94,20 @@ impl CorsaProjectClient {
             return self.sync_materialized_overlay_document(uri, content);
         }
 
-        let file_changes = materialize_session_document(uri, document_uri.as_str(), content)
-            .or_else(|| {
-                virtual_overlay::upsert_file_changes(
-                    uri,
-                    document_uri.as_str(),
-                    &self.project_root,
-                    previous.is_some(),
-                )
-            });
+        let file_changes = materialize_session_document(
+            uri,
+            document_uri.as_str(),
+            content,
+            self.overlay_storage.root(),
+        )?
+        .or_else(|| {
+            virtual_overlay::upsert_file_changes(
+                uri,
+                document_uri.as_str(),
+                &self.project_root,
+                previous.is_some(),
+            )
+        });
         let version = next_overlay_version(&mut self.overlay_versions, uri);
         match block_on(self.project_session_mut()?.refresh_with_overlay_changes(
             file_changes,
@@ -137,7 +142,12 @@ impl CorsaProjectClient {
         let document_uri = self
             .materialized_session_document_uri(uri)
             .ok_or_else(|| cstr!("Failed to derive materialized Corsa overlay path for {uri}"))?;
-        let file_changes = materialize_session_document(uri, document_uri.as_str(), content);
+        let file_changes = materialize_session_document(
+            uri,
+            document_uri.as_str(),
+            content,
+            self.overlay_storage.root(),
+        )?;
         self.refresh_materialized_overlay_snapshot(file_changes)
     }
 
@@ -148,7 +158,12 @@ impl CorsaProjectClient {
             .cloned()
             .unwrap_or_else(|| self.session_document_uri(uri));
         let file_changes = if document_uri != uri {
-            close::close_materialized_document(uri, document_uri.as_str(), &self.project_root)?
+            close::close_materialized_document(
+                uri,
+                document_uri.as_str(),
+                &self.project_root,
+                self.overlay_storage.root(),
+            )?
         } else {
             virtual_overlay::delete_file_changes(uri, document_uri.as_str(), &self.project_root)
         };
@@ -213,13 +228,21 @@ impl CorsaProjectClient {
             return mapped.clone();
         }
 
-        let mapped =
-            build_session_document_uri(uri, &self.project_root, self.supports_overlay_api());
+        let mapped = build_session_document_uri(
+            uri,
+            &self.project_root,
+            self.overlay_storage.root(),
+            self.supports_overlay_api(),
+        );
         self.remember_session_document_uri(uri, mapped)
     }
 
     fn materialized_session_document_uri(&mut self, uri: &str) -> Option<String> {
-        let mapped = build_materialized_session_document_uri(uri, &self.project_root)?;
+        let mapped = build_materialized_session_document_uri(
+            uri,
+            &self.project_root,
+            self.overlay_storage.root(),
+        )?;
         Some(self.remember_session_document_uri(uri, mapped))
     }
 
@@ -270,19 +293,16 @@ pub(super) fn materialize_session_document(
     external_uri: &str,
     document_uri: &str,
     content: &str,
-) -> Option<FileChanges> {
+    overlay_root: &std::path::Path,
+) -> Result<Option<FileChanges>, String> {
     if document_uri == external_uri {
-        return None;
+        return Ok(None);
     }
-
-    let path = file_uri_to_path(document_uri)?;
-    let path = path.as_path();
-    let parent = path.parent()?;
-    let existed = path.exists();
-    let _ = std::fs::create_dir_all(parent);
-    let _ = std::fs::write(path, content);
-
-    Some(FileChanges::Summary(FileChangeSummary {
+    let path = file_uri_to_path(document_uri)
+        .ok_or_else(|| cstr!("Invalid private Corsa document URI {document_uri}"))?;
+    let existed =
+        super::session_storage::write_owned_file(overlay_root, &path, content.as_bytes())?;
+    Ok(Some(FileChanges::Summary(FileChangeSummary {
         changed: if existed {
             vec![uri_document_identifier(document_uri)]
         } else {
@@ -294,7 +314,7 @@ pub(super) fn materialize_session_document(
             vec![uri_document_identifier(document_uri)]
         },
         deleted: Vec::new(),
-    }))
+    })))
 }
 
 pub(super) fn line_character_to_utf16_offset(text: &str, line: u32, character: u32) -> u32 {

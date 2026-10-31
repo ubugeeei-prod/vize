@@ -124,7 +124,7 @@ fn virtual_vue_overlay_diagnostics_materializes_for_lsp_fallback() {
         "export {};"
     );
 
-    let generated_config = project_root.join("node_modules/.vize/corsa-overlay/tsconfig.json");
+    let generated_config = client.overlay_storage.root().join("tsconfig.json");
     let config = std::fs::read_to_string(generated_config).unwrap();
     assert!(config.contains("\"allowImportingTsExtensions\":true"));
 }
