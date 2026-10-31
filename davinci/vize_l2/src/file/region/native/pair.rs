@@ -15,6 +15,8 @@ use vize_l1::markup::{
 };
 
 #[cfg(test)]
+mod composite_tests;
+#[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod text_tests;
@@ -201,7 +203,7 @@ where
     Ok(output)
 }
 
-/// One original bounded child; interpolation uses the same checked File receiver.
+/// Original empty/singleton body, or one Text and one checked interpolation.
 struct BranchBody<'selected, 'owner, 'result, 'a> {
     original: NativeElement<'owner, 'a>,
     selected: &'selected NativeTemplateComponent<'a>,
@@ -213,13 +215,23 @@ impl<'a> TemplateBody<'a, NativeVisibility> for BranchBody<'_, '_, '_, 'a> {
         'a: 'b,
         'b: 'r,
     {
-        let mut seen = false;
+        let mut previous = None;
+        let mut paired = false;
         for child in self.original.children() {
-            if seen {
+            let interpolation = match child.surface() {
+                SurfaceChild::Text(_) => false,
+                SurfaceChild::Interpolation(_) => true,
+                _ => {
+                    *self.result = Err(Kind::UnsupportedChild);
+                    return;
+                }
+            };
+            if paired || previous == Some(interpolation) {
                 *self.result = Err(Kind::UnsupportedChild);
                 return;
             }
-            seen = true;
+            paired = previous.is_some();
+            previous = Some(interpolation);
             let result = match child.surface() {
                 SurfaceChild::Text(_) => body::construct(self.selected, child, &mut region.inner),
                 SurfaceChild::Interpolation(_) => {

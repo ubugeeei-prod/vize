@@ -57,6 +57,11 @@ test("actual selected setup consumers require source-built whole-module runtime 
     "tests/tooling/native-original-root-if-else-text-sfc-dom-reference.test.ts",
     "tests/tooling/support/native-original-root-if-else-text-sfc-dom-runtime.ts",
     "tests/tooling/support/native-original-root-if-else-text-sfc-dom-primary.ts",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_composite_inputs_vue_3_5_35.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_composite_sfc_vue_3_5_35.json",
+    "tests/tooling/native-original-root-if-else-composite-sfc-dom-reference.test.ts",
+    "tests/tooling/support/native-original-root-if-else-composite-sfc-dom-runtime.ts",
+    "tests/tooling/support/native-original-root-if-else-composite-sfc-dom-primary.ts",
     "davinci/vize_l3/src/decision/dom/build/for_head/value.rs",
   ])
     assert(nativeSetupCaptureRequired([path]), path);
@@ -187,6 +192,19 @@ test("actual selected setup consumers require source-built whole-module runtime 
     );
   assert.match(action, /native-original-root-if-else-text-sfc-dom-primary\.\*\.json/);
   assert.match(action, /native-original-root-if-else-text-sfc-dom-runtime\.\*\.json/);
+  assert.match(action, /VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_COMPOSITE_SFC_DOM_REQUIRE_CAPTURE: "1"/);
+  assert.match(
+    action,
+    /original_root_if_else_composite::fourteen_whole_original_root_if_else_composite_components_and_raw_maps_are_captured -- --exact --nocapture/,
+  );
+  for (const mode of ["development", "production"])
+    assert(
+      action.includes(
+        `NODE_ENV=${mode} vp node --test tests/tooling/native-original-root-if-else-composite-sfc-dom-reference.test.ts`,
+      ),
+    );
+  assert.match(action, /native-original-root-if-else-composite-sfc-dom-primary\.\*\.json/);
+  assert.match(action, /native-original-root-if-else-composite-sfc-dom-runtime\.\*\.json/);
   assert.doesNotMatch(action, /continue-on-error|hashFiles|existsSync|--test-name-pattern/);
 });
 
@@ -220,6 +238,11 @@ test("individual For resolver, DOM collector and writer changes keep mandatory a
     "tests/tooling/native-original-root-if-else-text-sfc-dom-reference.test.ts",
     "tests/tooling/support/native-original-root-if-else-text-sfc-dom-runtime.ts",
     "tests/tooling/support/native-original-root-if-else-text-sfc-dom-primary.ts",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_composite_inputs_vue_3_5_35.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_composite_sfc_vue_3_5_35.json",
+    "tests/tooling/native-original-root-if-else-composite-sfc-dom-reference.test.ts",
+    "tests/tooling/support/native-original-root-if-else-composite-sfc-dom-runtime.ts",
+    "tests/tooling/support/native-original-root-if-else-composite-sfc-dom-primary.ts",
     "davinci/vize_l4/src/expr.rs",
     "davinci/vize_l4/src/expr/vue.rs",
   ]) {
@@ -255,6 +278,9 @@ test("individual For resolver, DOM collector and writer changes keep mandatory a
     "tests/tooling/native-original-root-if-else-text-sfc-dom-reference_unrelated.test.ts",
     "tests/tooling/support/native-original-root-if-else-text-sfc-dom-runtime_unrelated.ts",
     "tests/tooling/support/native-original-root-if-else-text-sfc-dom-primary_unrelated.ts",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_composite_inputs_unrelated.json",
+    "tests/tooling/native-original-root-if-else-composite-sfc-dom-reference_unrelated.test.ts",
+    "tests/tooling/support/native-original-root-if-else-composite-sfc-dom-primary_unrelated.ts",
     "docs/davinci/decisions/2026-10-04-original-for-alias-body-dom-proposal.md",
     "docs/davinci/decisions/2026-10-04-original-for-primitive-dom-proposal.md",
   ]) {
