@@ -29,6 +29,7 @@ fn source(file: &str) -> &'static str {
     }
 }
 fn expected(row: &Value) -> Value {
+    let source = source(row["file"].as_str().unwrap());
     let messages = row["reference"]["messages"]
         .as_array()
         .unwrap()
@@ -51,11 +52,35 @@ fn expected(row: &Value) -> Value {
             };
             json!({"ruleId":RULE,"ruleDocsPath":"docs/content/rules/vue.md","severity":2,
             "message":format!("[vize:{RULE}] {message}"),"help":help,
-            "line":finding["line"],"column":finding["column"],
-            "endLine":finding["endLine"],"endColumn":finding["endColumn"]})
+            "line":finding["line"],"column":scalar_column(source,finding,"line","column"),
+            "endLine":finding["endLine"],"endColumn":scalar_column(source,finding,"endLine","endColumn")})
         })
         .collect::<Vec<_>>();
     json!([{"file":"src/VBindProp.vue","errorCount":messages.len(),"warningCount":0,"messages":messages}])
+}
+// JSON CLI SourceLineIndex reports Unicode scalar columns; the independent
+// ESLint corpus and public NAPI report UTF-16. Keep all three native contracts.
+fn scalar_column(source: &str, finding: &Value, line_key: &str, column_key: &str) -> usize {
+    let line = source
+        .lines()
+        .nth(finding[line_key].as_u64().unwrap() as usize - 1)
+        .unwrap();
+    let target = finding[column_key].as_u64().unwrap() as usize - 1;
+    let mut units = 0;
+    let mut column = 1;
+    for character in line.chars() {
+        if units == target {
+            return column;
+        }
+        units += character.len_utf16();
+        column += 1;
+        assert!(
+            units <= target,
+            "reference boundary must not split a surrogate pair"
+        );
+    }
+    assert_eq!(units, target);
+    column
 }
 fn clean() -> Value {
     json!([{"file":"src/VBindProp.vue","messages":[],"errorCount":0,"warningCount":0}])
