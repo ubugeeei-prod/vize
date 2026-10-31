@@ -10,7 +10,13 @@ import {
 import {
   retainInputBodies,
   recordReplayBeforeInspection,
+  recordNativeBeforeInspection,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-native-custody.ts";
+import {
+  assertProfileInputUnchanged,
+  validateProfileNames,
+  validateProfileOutput,
+} from "../../tools/benchmarks/scripts/cold-typechecker-scale-native-profile.ts";
 import { createHash } from "node:crypto";
 import { coldScaleBuildRecipe } from "../../tools/benchmarks/scripts/cold-typechecker-scale-build.ts";
 import { coldScalePacketView } from "../../tools/benchmarks/scripts/cold-typechecker-scale-packet.ts";
@@ -256,5 +262,79 @@ test("post-seal failure preserves exact replay status/error/PID/time and both ra
       invokedPid: 4242,
       elapsedNs: "12345",
     },
+  );
+});
+test("profile admits only the exact actual-PID two-line suffix, with complete baseline diagnostics intact", () => {
+  const baseline = {
+    stdout: Buffer.from("Probe.vue.ts(1,2): error TS5097: original\n"),
+    stderr: Buffer.alloc(0),
+    status: 2,
+    signal: null,
+  };
+  const suffix = Buffer.from(
+    "Memory profile: /owned/profile/123-memprofile.pb.gz\nCPU profile: /owned/profile/123-cpuprofile.pb.gz\n",
+  );
+  const candidate = { ...baseline, pid: 123, stdout: Buffer.concat([baseline.stdout, suffix]) };
+  assert.equal(
+    validateProfileOutput(baseline, candidate, "/owned/profile").cpu,
+    "/owned/profile/123-cpuprofile.pb.gz",
+  );
+  for (const change of [
+    { stdout: Buffer.concat([candidate.stdout, Buffer.from("extra\n")]) },
+    { stdout: Buffer.from(candidate.stdout.toString().replace("original", "changed")) },
+    {
+      stdout: Buffer.from(
+        candidate.stdout.toString().replaceAll("/owned/profile/", "/foreign/profile/"),
+      ),
+    },
+    {
+      stdout: Buffer.concat([
+        baseline.stdout,
+        Buffer.from(suffix.toString().split("\n").slice(0, 2).reverse().join("\n") + "\n"),
+      ]),
+    },
+    { pid: 124 },
+    { status: 0 },
+    { stderr: Buffer.from("extra") },
+    { error: new Error("spawn") },
+  ])
+    assert.throws(() =>
+      validateProfileOutput(baseline, { ...candidate, ...change }, "/owned/profile"),
+    );
+});
+test("profile filenames and sealed-input changes fail closed", () => {
+  validateProfileNames(["123-memprofile.pb.gz", "123-cpuprofile.pb.gz"], 123);
+  for (const names of [
+    ["123-cpuprofile.pb.gz"],
+    ["124-cpuprofile.pb.gz", "123-memprofile.pb.gz"],
+    ["123-cpuprofile.pb.gz", "123-memprofile.pb.gz", "extra"],
+  ])
+    assert.throws(() => validateProfileNames(names, 123));
+  const before = { rows: [{ path: "/owned/lib.d.ts", bytes: 12, sha256: "original" }] };
+  assertProfileInputUnchanged(before, structuredClone(before));
+  assert.throws(() =>
+    assertProfileInputUnchanged(before, { rows: [{ ...before.rows[0], sha256: "changed" }] }),
+  );
+});
+test("profile post-seal failure preserves actual raw output/status before inspection", (context) => {
+  const root = owned(context),
+    raw = Buffer.from("diagnostics+profile paths\n");
+  assert.throws(
+    () =>
+      recordNativeBeforeInspection(
+        root,
+        "native-profile",
+        { stdout: raw, stderr: Buffer.alloc(0), status: 2, signal: null, pid: 123 },
+        "10",
+        () => {
+          throw new Error("seal changed");
+        },
+      ),
+    /seal changed/u,
+  );
+  assert.deepEqual(fs.readFileSync(path.join(root, "native-profile.stdout.bin")), raw);
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(root, "native-profile.status.json"), "utf8")),
+    { status: 2, signal: null, error: null, invokedPid: 123, elapsedNs: "10" },
   );
 });

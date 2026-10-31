@@ -95,10 +95,20 @@ export function recordReplayBeforeInspection<T>(
   elapsedNs: string,
   inspect: (status: InputRow) => T,
 ): T {
-  fs.writeFileSync(path.join(out, "native-replay.stdout.bin"), replay.stdout ?? Buffer.alloc(0), {
+  return recordNativeBeforeInspection(out, "native-replay", replay, elapsedNs, inspect);
+}
+
+export function recordNativeBeforeInspection<T>(
+  out: string,
+  role: "native-replay" | "native-profile",
+  replay: ReplayOutcome,
+  elapsedNs: string,
+  inspect: (status: InputRow) => T,
+): T {
+  fs.writeFileSync(path.join(out, role + ".stdout.bin"), replay.stdout ?? Buffer.alloc(0), {
     flag: "wx",
   });
-  fs.writeFileSync(path.join(out, "native-replay.stderr.bin"), replay.stderr ?? Buffer.alloc(0), {
+  fs.writeFileSync(path.join(out, role + ".stderr.bin"), replay.stderr ?? Buffer.alloc(0), {
     flag: "wx",
   });
   const status = {
@@ -108,6 +118,6 @@ export function recordReplayBeforeInspection<T>(
     invokedPid: replay.pid ?? null,
     elapsedNs,
   };
-  write(path.join(out, "native-replay.status.json"), status);
+  write(path.join(out, role + ".status.json"), status);
   return inspect(status);
 }

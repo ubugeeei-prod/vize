@@ -16,6 +16,7 @@ const { values } = parseArgs({
     project: { type: "string" },
     binary: { type: "string" },
     build: { type: "string" },
+    "cpu-profile": { type: "boolean", default: false },
   },
 });
 assert(values.provider && values.out && values.project && values.binary && values.build);
@@ -102,6 +103,7 @@ try {
     out,
     expectedFiles: corpus.entries.map((entry) => path.join(project, entry.path)),
     metadataOnlyImages: images,
+    profile: values["cpu-profile"],
   });
 } catch (error) {
   fs.mkdirSync(out, { recursive: true });

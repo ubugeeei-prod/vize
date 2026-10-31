@@ -9,7 +9,7 @@ on:
       mode:
         description: Full comparison or one exact native command attribution capture
         type: choice
-        options: [full, native-command-attribution]
+        options: [full, native-command-attribution, native-command-profile]
         default: full
       sfcs:
         description: Vue SFC count plus the complete authored package dependency graph
@@ -32,11 +32,11 @@ on:
       - tests/tooling/source-pmu-calibration.test.ts
 permissions: { contents: read }
 concurrency:
-  group: cold-typechecker-scale-${{ github.event.pull_request.number || github.ref }}${{ inputs.mode == 'native-command-attribution' && '-native-command-attribution' || '' }}
+  group: cold-typechecker-scale-${{ github.event.pull_request.number || github.ref }}${{ startsWith(inputs.mode, 'native-command-') && format('-{0}', inputs.mode) || '' }}
   cancel-in-progress: true
 jobs:
   profile:
-    if: github.event_name != 'workflow_dispatch' || inputs.mode != 'native-command-attribution'
+    if: github.event_name != 'workflow_dispatch' || !startsWith(inputs.mode, 'native-command-')
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 90
     env:
@@ -161,7 +161,7 @@ jobs:
           path: ${{ runner.temp }}/cold-scale-evidence.tgz
           retention-days: 14
   native-command-attribution:
-    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'native-command-attribution'
+    if: github.event_name == 'workflow_dispatch' && startsWith(inputs.mode, 'native-command-')
     runs-on: blacksmith-8vcpu-ubuntu-2404
     permissions: { contents: read, actions: read }
     timeout-minutes: 30
@@ -178,7 +178,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version: "24.14.0", package-manager-cache: false }
       - name: Refuse custody mutation and partial-failure evidence loss
-        run: node --test tests/tooling/cold-typechecker-scale-native-command.test.ts
+        run: node --test tests/tooling/cold-typechecker-scale-native-command.test.ts tests/tooling/cold-typechecker-scale-cpu-report.test.ts
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
@@ -210,14 +210,35 @@ jobs:
           git worktree add --detach "$RUNNER_TEMP/native-command-source" "$NATIVE_SOURCE"
           node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/native-command-source" --target-dir "$RUNNER_TEMP/native-command-target" --binary "$RUNNER_TEMP/native-command-image/vize" --receipt "$RUNNER_TEMP/native-command-evidence/build.json" --role native-command-custody-untimed --observer-source-sha "$NATIVE_SOURCE"
       - name: Capture one Vize invocation and replay its bare materialized native command once
+        env: { PROFILE_MODE: "${{ inputs.mode }}" }
         run: |
           set -euo pipefail
-          node tools/benchmarks/scripts/cold-typechecker-scale-native-run.ts --provider "$RUNNER_TEMP/native-command-provider" --project "$RUNNER_TEMP/native-command-project" --out "$RUNNER_TEMP/native-command-evidence/capture" --binary "$RUNNER_TEMP/native-command-image/vize" --build "$RUNNER_TEMP/native-command-evidence/build.json"
+          profile_args=()
+          if [[ "$PROFILE_MODE" = native-command-profile ]]; then profile_args+=(--cpu-profile); fi
+          node tools/benchmarks/scripts/cold-typechecker-scale-native-run.ts --provider "$RUNNER_TEMP/native-command-provider" --project "$RUNNER_TEMP/native-command-project" --out "$RUNNER_TEMP/native-command-evidence/capture" --binary "$RUNNER_TEMP/native-command-image/vize" --build "$RUNNER_TEMP/native-command-evidence/build.json" "${profile_args[@]}"
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c
+        if: always() && inputs.mode == 'native-command-profile'
+        with: { go-version: "1.27.2", cache: false }
+      - name: Decode all CPU samples and unbounded function tables offline on the runner
+        if: always() && inputs.mode == 'native-command-profile'
+        run: node tools/benchmarks/scripts/cold-typechecker-scale-cpu-report.ts "$RUNNER_TEMP/native-command-evidence/capture"
+      - name: Retain original profile payloads remotely without downloading them for the local audit
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always() && inputs.mode == 'native-command-profile'
+        with:
+          name: native-command-profile-raw-${{ github.sha }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/native-command-evidence/capture/native-profile-data
+          retention-days: 14
       - name: Preserve source text, raw observations and metadata without executable images
         if: always()
+        env: { PROFILE_MODE: "${{ inputs.mode }}" }
         run: |
           mkdir -p "$RUNNER_TEMP/native-command-evidence"
-          tar --exclude='./capture/runtime' -czf "$RUNNER_TEMP/native-command-attribution.tgz" -C "$RUNNER_TEMP/native-command-evidence" .
+          exclusions=(--exclude='./capture/runtime')
+          if [[ "$PROFILE_MODE" = native-command-profile ]]; then
+            exclusions+=(--exclude='./capture/input-blobs' --exclude='./capture/native-profile-data')
+          fi
+          tar "${exclusions[@]}" -czf "$RUNNER_TEMP/native-command-attribution.tgz" -C "$RUNNER_TEMP/native-command-evidence" .
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

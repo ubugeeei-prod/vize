@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { coldScalePacketView } from "./cold-typechecker-scale-packet.ts";
+import { captureNativeProfile } from "./cold-typechecker-scale-native-profile.ts";
 import {
   retainInputBodies,
   recordReplayBeforeInspection,
@@ -12,6 +13,7 @@ import {
 } from "./cold-typechecker-scale-native-custody.ts";
 
 export interface CaptureSpec {
+  profile?: boolean;
   sourceSha: string;
   sourceTree: string;
   buildReceipt: string;
@@ -390,5 +392,19 @@ export function captureThenReplay(spec: CaptureSpec) {
       timingClaim: "one native replay observation; no p50/p95 or shipping Vize improvement claim",
       originalRunExternalCodeComparison: "not attempted; no cross-route equal-work claim",
     });
+    if (spec.profile)
+      captureNativeProfile({
+        program: receipt.invokedProgram as string,
+        programSha256: spec.backendSha256,
+        args,
+        cwd,
+        env,
+        out: spec.out,
+        baseline: replay,
+        baselineBuildInfo: replayBuildInfo,
+        initialSeal: inputBefore,
+        snapshot: () => seal([project, provider, cwd], buildInfo),
+        retainBuildInfo,
+      });
   });
 }
