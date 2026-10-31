@@ -261,7 +261,7 @@ void test("four source-inspected and one adapter-verified row exhaust measuremen
 
   const formatterUnknownReadinessCases = 25;
 
-  const linterUnknownReadinessCases = 122;
+  const linterUnknownReadinessCases = 123;
 
   const lspUnknownReadinessCases = 75;
 
