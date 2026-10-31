@@ -50,7 +50,9 @@ impl<'s, 'a> Retained<'s, 'a> {
                         retained.bindings(&element.bindings);
                         pending.push(&element.children);
                     }
-                    Op::Interpolation(interpolation) => retained.insert(interpolation.expression),
+                    Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
+                        retained.insert(interpolation.expression)
+                    }
                     Op::If(branches) => {
                         for branch in &branches.branches {
                             if let Some(condition) = branch.condition {
