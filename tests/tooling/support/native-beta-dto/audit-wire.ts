@@ -19,6 +19,11 @@ import {
 } from "./native-io.ts";
 import { observeHistoricalTerminalStderr } from "./terminal-stderr-unavailable.ts";
 import { observeHistoricalSplitWatchLog } from "./stable-watcher-mixed.ts";
+import {
+  historicalRootWarning,
+  observeHistoricalRootWatchWarning,
+} from "./historical-root-watch-warning.ts";
+import { buildRoleDisposition } from "./role-disposition.ts";
 
 const root = process.env.VIZE_NATIVE_DTO_CAPTURE!;
 const load = (name: string): unknown => JSON.parse(fs.readFileSync(path.join(root, name), "utf8"));
@@ -98,6 +103,29 @@ const terminalStderrObservations: Array<{
   nativeOwner: number;
   observation: ReturnType<typeof observeHistoricalTerminalStderr>;
 }> = [];
+const rootWatchWarningObservations: Array<{
+  nativeOwner: number;
+  observation: ReturnType<typeof observeHistoricalRootWatchWarning>;
+}> = [];
+function rootWarning(receipt: Receipt, terminal: ReturnType<typeof nativeOwnerTerminalState>) {
+  const api = receipt.streams.find((row) => row.fd >= 3 && row.client && row.server)!;
+  rootWatchWarningObservations.push({
+    nativeOwner: receipt.nativeOwner,
+    observation: observeHistoricalRootWatchWarning(
+      receipt.streams.find((row) => row.fd === 0)!.client!.packets,
+      receipt.streams.find((row) => row.fd === 1)!.server!.packets,
+      watcherContext(),
+      records.filter((row) => owner(row.tid) === receipt.nativeOwner),
+      eofReads.filter((row) => owner(row.tid) === receipt.nativeOwner && row.fd === 0),
+      terminal,
+      {
+        client: api.client!.packets,
+        server: api.server!.packets,
+        precedingNonProtocolBytes: api.client!.precedingNonProtocolBytes,
+      },
+    ),
+  });
+}
 function relations(
   client: Packet[],
   server: Packet[],
@@ -393,6 +421,10 @@ if (baseline) {
     const terminal = nativeOwnerTerminalState(trace, receipt.nativeOwner);
     if (terminal.unknownWrites.length) {
       assert.ok(stableRegistrationBaseline, "Unknown native writes refuse current qualification");
+      if (terminal.unknownWrites[0]?.requestedBytes === historicalRootWarning.length) {
+        rootWarning(receipt, terminal);
+        continue;
+      }
       assert.equal(receipt.registrationRefusals, 0);
       terminalStderrObservations.push({
         nativeOwner: receipt.nativeOwner,
@@ -409,6 +441,8 @@ if (baseline) {
     }
     if (provider.version === "7.0.2") {
       if (source.role === "after") requireCandidateStableStderr(bytes);
+      else if (stableRegistrationBaseline && bytes.equals(historicalRootWarning))
+        rootWarning(receipt, terminal);
       else if (stableRegistrationBaseline && bytes[0] === 0x09) {
         assert.equal(receipt.registrationRefusals, 0);
         splitWatchLogObservations.push({
@@ -429,63 +463,32 @@ if (baseline) {
   }
 }
 assert.ok(splitWatchLogObservations.length <= 1, "one historical split watch log observation only");
-const unprovenEofOrder = splitWatchLogObservations.some((row) => !row.observation.registrationPass);
 save("stable-split-watch-log-observation.json", splitWatchLogObservations);
-if (terminalStderrObservations.length)
+const terminalOwners = [
+  ...terminalStderrObservations.map((row) => row.nativeOwner),
+  ...rootWatchWarningObservations
+    .filter((row) => !row.observation.stderrOutputComplete)
+    .map((row) => row.nativeOwner),
+];
+if (terminalOwners.length)
   requireSingleTerminalStderrRole(
-    terminalStderrObservations.map((row) => row.nativeOwner),
+    terminalOwners,
     native.map((row) => nativeOwnerTerminalState(trace, row.pid)),
   );
 save("terminal-stderr-observation.json", terminalStderrObservations);
-const terminalBeforeExitRequest = terminalStderrObservations.some(
-  (row) => !row.observation.registrationPass,
-);
-const lateRoot = watcherBoundaryObservations.some(
-  (row) => row.boundary === "post-shutdown-root-and-sdk-program-files",
-);
-const disposition = {
+save("historical-root-watch-warning-observation.json", rootWatchWarningObservations);
+const disposition = buildRoleDisposition({
   source: source.source,
   role: source.role,
   sdk: provider.version,
-  roleKind: baseline
-    ? "baseline-observation-known-dto-refusal"
-    : stableRegistrationBaseline
-      ? terminalStderrObservations.length
-        ? terminalBeforeExitRequest
-          ? "baseline-observation-unavailable-stderr-before-exit-request"
-          : "baseline-observation-unobserved-terminal-stderr"
-        : splitWatchLogObservations.length
-          ? unprovenEofOrder
-            ? "baseline-observation-unproven-eof-return"
-            : "baseline-observation-split-watch-log"
-          : lateRoot
-            ? "baseline-observation-late-root-and-unanswered-sdk-watcher"
-            : registrationRefusals === 1
-              ? "baseline-observation-known-post-shutdown-registration-refusal"
-              : "baseline-observation-registration-acknowledged"
-      : "functional-source-control",
-  observerCompleted: true,
-  ...(lateRoot ? { nativeQualification: false } : {}),
-  dtoFunctionalPass:
-    !baseline &&
-    registrationRefusals === 0 &&
-    splitWatchLogObservations.length === 0 &&
-    terminalStderrObservations.length === 0,
-  lifecyclePass:
-    !baseline &&
-    registrationRefusals === 0 &&
-    splitWatchLogObservations.length === 0 &&
-    terminalStderrObservations.length === 0,
-  registrationPass: registrationRefusals === 0 && !unprovenEofOrder && !terminalBeforeExitRequest,
+  baseline,
+  stableRegistrationBaseline,
+  registrationRefusals,
   nativeOwners: receipts.length,
-  allFramesClosed: true,
-  ...(unprovenEofOrder
-    ? { nativeQualification: false, observedRegistrationAcknowledged: registrationRefusals === 0 }
-    : {}),
-  ...(terminalBeforeExitRequest ? { observedRootRegistrationAcknowledged: true } : {}),
-  ...(terminalStderrObservations.length
-    ? { stderrOutputComplete: false, rawIOComplete: false, nativeQualification: false }
-    : {}),
-};
+  watcher: watcherBoundaryObservations,
+  split: splitWatchLogObservations,
+  terminal: terminalStderrObservations,
+  rootWarnings: rootWatchWarningObservations,
+});
 save("role-disposition.json", disposition);
 console.log(JSON.stringify(disposition));

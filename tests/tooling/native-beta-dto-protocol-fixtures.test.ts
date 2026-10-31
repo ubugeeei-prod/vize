@@ -79,6 +79,15 @@ void test("typed producers retain historical bytes and only the exact registered
   }
   const current = custody.find((entry) => entry.currentPath.endsWith("audit-wire.ts"))!;
   assert.equal(
+    current.currentRootWarningRegistration,
+    "before-stable-root-watch-warning-41214579457",
+  );
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentRootWarningRegistration === null),
+  );
+  assert.equal(
     current.currentRuntimeRegistration,
     "before-stable-post-shutdown-observation-41099824102",
   );
@@ -211,6 +220,8 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr-unavailable.ts",
     "tests/tooling/support/native-beta-dto/configuration-membership.ts",
+    "tests/tooling/support/native-beta-dto/historical-root-watch-warning.ts",
+    "tests/tooling/support/native-beta-dto/role-disposition.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
@@ -252,6 +263,8 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr-unavailable.ts",
     "tests/tooling/support/native-beta-dto/configuration-membership.ts",
+    "tests/tooling/support/native-beta-dto/historical-root-watch-warning.ts",
+    "tests/tooling/support/native-beta-dto/role-disposition.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
