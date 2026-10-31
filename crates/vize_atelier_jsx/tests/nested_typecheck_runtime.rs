@@ -79,10 +79,20 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
             let refusal: Value =
                 serde_json::from_slice(&std::fs::read(fixture.join(&refusal_packet)).unwrap())
                     .unwrap();
-            let expected_packet = if name == "AfsStepperDialog.stories" && label == "vapor" {
+            let previous_expected_packet = if name == "AfsStepperDialog.stories" && label == "vapor"
+            {
                 "AfsStepperDialog.stories.vapor.static-values-10701.runtime.json.txt".to_owned()
             } else {
                 refusal_packet.clone()
+            };
+            let previous_expected: Value = serde_json::from_slice(
+                &std::fs::read(fixture.join(&previous_expected_packet)).unwrap(),
+            )
+            .unwrap();
+            let expected_packet = if label == "vapor" {
+                format!("{name}.vapor.child-values-6890.inert-template.runtime.json.txt")
+            } else {
+                previous_expected_packet.clone()
             };
             let expected: Value =
                 serde_json::from_slice(&std::fs::read(fixture.join(&expected_packet)).unwrap())
@@ -91,6 +101,7 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
                 "name": name, "mode": label, "source": source,
                 "historicalPacket": output, "historical": historical,
                 "refusalPacket": refusal_packet, "refusal": refusal,
+                "previousExpectedPacket": previous_expected_packet, "previousExpected": previous_expected,
                 "expectedPacket": expected_packet, "expected": expected,
                 "current": complete_runtime_packet(&source, mode),
             }));

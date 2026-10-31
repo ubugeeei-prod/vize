@@ -15,6 +15,8 @@ pub(crate) struct TransformContext<'a> {
     pub(crate) source: &'a str,
     pub(crate) scope_id: Option<String>,
     pub(crate) jsx_closure: bool,
+    /// A JSX producer explicitly owns intrinsic node-value normalization.
+    pub(crate) jsx_children: bool,
     /// Atoms for the names lowering computes rather than slices out of the
     /// source (camelized prop keys, builtin directive names).
     pub(crate) interner: Interner<'a>,
@@ -49,6 +51,7 @@ impl<'a> TransformContext<'a> {
             source,
             scope_id: None,
             jsx_closure: false,
+            jsx_children: false,
             interner: Interner::new(allocator),
             temp_id: 0,
             templates: Vec::new_in(&allocator),

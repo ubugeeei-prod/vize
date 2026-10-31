@@ -50,6 +50,7 @@ fn ordered_object_source_modules_and_templates_are_complete() {
     }
     assert_eq!(packets.len(), ids.len());
     insta::assert_snapshot!(
+        "ordered_object_source_modules_and_templates_are_complete_child_values_6890",
         serde_json::to_string_pretty(&packets).expect("complete compiler packets")
     );
 }

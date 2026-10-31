@@ -44,9 +44,10 @@ fn vapor_codegen_matrix() {
         ),
     ];
 
-    insta::assert_snapshot!(snapshot_lang_cases(&cases, |source, lang| {
-        vapor_code(source, lang, false)
-    }));
+    insta::assert_snapshot!(
+        "vapor_codegen_matrix_child_values_6890",
+        snapshot_lang_cases(&cases, |source, lang| { vapor_code(source, lang, false) })
+    );
 }
 
 #[test]

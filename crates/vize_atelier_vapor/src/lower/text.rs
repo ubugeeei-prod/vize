@@ -4,7 +4,7 @@
 
 use vize_carton::{Box, Vec, ensure_sufficient_stack};
 
-use crate::ir::{BlockIRNode, ChildRefIRNode, OperationNode, SetTextIRNode};
+use crate::ir::{BlockIRNode, ChildRefIRNode, OperationNode, SetJsxChildrenIRNode, SetTextIRNode};
 use vize_atelier_core::{
     ElementType, ExpressionNode, InterpolationNode, SimpleExpressionNode, SourceLocation,
     TemplateChildNode, TextNode,
@@ -188,14 +188,23 @@ fn flush_text_run<'a>(
             text_id
         };
         let run_values = std::mem::replace(values, Vec::new_in(&ctx.allocator));
-        ctx.push_dynamic_operation(
-            block,
-            OperationNode::SetText(SetTextIRNode {
-                element: text_id,
-                is_element: false,
-                values: run_values,
-            }),
-        );
+        let text = SetTextIRNode {
+            element: text_id,
+            is_element: false,
+            values: run_values,
+        };
+        if ctx.jsx_children {
+            // The child owner creates its own effect exactly once. Nesting it
+            // inside a shared attribute effect would register duplicate owners.
+            block
+                .operation
+                .push(OperationNode::SetJsxChildren(SetJsxChildrenIRNode {
+                    text,
+                    once: ctx.is_non_reactive(),
+                }));
+        } else {
+            ctx.push_dynamic_operation(block, OperationNode::SetText(text));
+        }
     } else {
         values.clear();
     }
