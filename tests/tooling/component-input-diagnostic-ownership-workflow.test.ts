@@ -8,6 +8,7 @@ import { callbackNativeEventGate } from "../../tools/support/compat/content-mapp
 import {
   currentSlotsExport,
   currentSlotsMarker,
+  nativeAttributesPath,
   previousSlotsExport,
   previousSlotsMarker,
 } from "../../tools/support/compat/content-mapper/constructor-projection-parity.ts";
@@ -235,6 +236,16 @@ test("callback certificate is covered by exact-head materialization and producer
   assert.ok(audit.includes('from "./callback-owner-packet-parity.ts"'));
   assert.ok(audit.includes("packetCertificateFiles"));
   assert.ok(audit.includes('"./callback-owner-packet-parity.ts"'));
+  assert.ok(audit.includes('"./callback-owner-reference.ts"'));
+  assert.ok(workflow.includes("tests/tooling/callback-owner-certificate.test.ts"));
+  for (const dependency of [
+    nativeAttributesPath,
+    "crates/vize_canon/src/virtual_ts/scope/event_scope.rs",
+    "crates/vize_canon/src/virtual_ts/scope/component_events/native_fallthrough.rs",
+  ]) {
+    assert.ok(workflow.includes(`"${dependency}"`));
+    assert.ok(audit.includes(`"../../../../${dependency}"`));
+  }
   const producer = fs.readFileSync(
     path.join(
       root,
