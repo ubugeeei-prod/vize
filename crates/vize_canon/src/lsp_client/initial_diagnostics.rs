@@ -220,7 +220,7 @@ impl InitialDiagnosticsRead {
             if route == "capture" {
                 tracing::info!(target: "vize_editor_preparation", phase="initial_api_input",
                     snapshot=self.snapshot.handle.as_str(), project=?self.project,
-                    logical_uri=%self.uri, request_uri=%self.document_uri, query_text=?self.text);
+                    logical_uri=%self.uri, request_uri=%self.document_uri, query_text=?self.documents.get(self.uri.as_str()));
             }
             tracing::info!(target: "vize_editor_preparation", phase = "initial_api_read",
                 route, event, logical_uri = %self.uri, request_uri = %self.document_uri,
