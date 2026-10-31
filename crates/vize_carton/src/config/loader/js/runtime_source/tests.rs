@@ -45,14 +45,6 @@ for (const row of controls.rows) {
   rows.push({...row, outcome});
 }
 
-#[test]
-fn missing_or_duplicate_owned_imports_are_refused_before_node_execution() {
-    let source = super::super::VITE_RUNTIME;
-    let missing = source.replacen(super::VALIDATION_IMPORT, "", 1);
-    assert_eq!(super::assemble(&missing),Err("missing owned validator import in the product runtime"));
-    let duplicate = [source,super::VALIDATION_IMPORT].concat();
-    assert_eq!(super::assemble(&duplicate),Err("duplicate owned validator import in the product runtime"));
-}
 process.stdout.write(JSON.stringify(rows));
 "#);
     let project = tempfile::tempdir().unwrap();
@@ -71,5 +63,20 @@ process.stdout.write(JSON.stringify(rows));
     assert_eq!(
         serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap(),
         controls["rows"]
+    );
+}
+
+#[test]
+fn missing_or_duplicate_owned_imports_are_refused_before_node_execution() {
+    let source = super::super::VITE_RUNTIME;
+    let missing = source.replacen(super::VALIDATION_IMPORT, "", 1);
+    assert_eq!(
+        super::assemble(&missing),
+        Err("missing owned validator import in the product runtime")
+    );
+    let duplicate = [source, super::VALIDATION_IMPORT].concat();
+    assert_eq!(
+        super::assemble(&duplicate),
+        Err("duplicate owned validator import in the product runtime")
     );
 }
