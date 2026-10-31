@@ -4,6 +4,8 @@ use serde_json::{Value, json};
 
 use super::ContentMapperProjectConfiguration;
 
+pub(super) mod provider;
+
 fn host_configuration(
     path: &Path,
     compiler: Value,

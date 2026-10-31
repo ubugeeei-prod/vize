@@ -12,7 +12,10 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use vize_canon::{ContentMapperProjectConfiguration, ContentMapperTransformOptions, CorsaError};
+use vize_canon::{
+    ContentMapperProjectConfiguration, ContentMapperProjectContext, ContentMapperTransformOptions,
+    CorsaError,
+};
 use vize_l0::{FxHashMap, String as CompactString, cstr};
 
 /// Mapper diagnostic code for an options value that is not an object.
@@ -27,6 +30,7 @@ const OPTION_CODE_INVALID_TYPE: i32 = 3;
 pub(super) struct ProjectSettings {
     pub transform_options: ContentMapperTransformOptions,
     pub typed_router_root: Option<PathBuf>,
+    pub project_context: ContentMapperProjectContext,
 }
 
 /// Open mapper projects, keyed by the host-assigned opaque handle.
@@ -148,6 +152,7 @@ pub(super) fn resolve_open_project(
     Ok((
         ProjectSettings {
             typed_router_root,
+            project_context: configuration.project_context,
             transform_options: configuration
                 .transform_options
                 .with_options_api(options_api)

@@ -1,0 +1,247 @@
+//! Source-built and published Router authority through the mapper API.
+
+use std::path::{Path, PathBuf};
+
+use serde_json::json;
+use sha2::{Digest, Sha256};
+
+use crate::{
+    ContentMapperProjectConfiguration, ContentMapperTransform,
+    generate_vue_content_mapper_transform_with_project_context,
+    generate_vue_content_mapper_transform_with_project_options,
+};
+
+pub(in crate::batch::virtual_project) const PAGE: &str = "<script setup lang=\"ts\">\nimport { definePage } from 'vue-router/experimental'\nconst props = defineProps<{ extra?: string }>()\ndefinePage({ props: true })\nvoid props\n</script>\n<template>{{ id }}</template>";
+const CONFIG: &str = r#"{"compilerOptions":{"moduleResolution":"Bundler","rootDir":"."},"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#;
+
+pub(in crate::batch::virtual_project) fn install(root: &Path, kind: &str) {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/fixtures/typechecker/experimental-router-project-capability");
+    let authority: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(fixture.join("artifacts.json")).unwrap()).unwrap();
+    let provider = authority["providers"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|provider| provider["kind"] == kind)
+        .unwrap();
+    assert_eq!(provider["version"], "5.4.0");
+    let package = root.join("node_modules/vue-router");
+    if package.exists() {
+        std::fs::remove_dir_all(&package).unwrap();
+    }
+    for entry in provider["files"].as_array().unwrap() {
+        let path = entry["path"].as_str().unwrap();
+        let bytes =
+            std::fs::read(fixture.join(kind).join(vize_carton::cstr!("{path}.txt"))).unwrap();
+        assert_eq!(bytes.len() as u64, entry["bytes"].as_u64().unwrap());
+        assert_eq!(
+            super::super::super::identity::encode_digest(Sha256::digest(&bytes)),
+            entry["sha256"].as_str().unwrap()
+        );
+        let target = package.join(path);
+        std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+        std::fs::write(target, bytes).unwrap();
+    }
+}
+
+fn load(root: &Path, resolution: serde_json::Value) -> ContentMapperProjectConfiguration {
+    ContentMapperProjectConfiguration::load_with_compiler_options(
+        &root.join("tsconfig.json"),
+        json!({"rootDir":root,"moduleResolution":resolution})
+            .as_object()
+            .unwrap(),
+    )
+    .unwrap()
+    .0
+}
+
+fn project(kind: &str) -> (tempfile::TempDir, PathBuf) {
+    let guard = tempfile::tempdir().unwrap();
+    let root = vize_carton::path::canonicalize_non_verbatim(guard.path());
+    std::fs::write(root.join("tsconfig.json"), CONFIG).unwrap();
+    install(&root, kind);
+    (guard, root)
+}
+
+fn transform(root: &Path, config: &ContentMapperProjectConfiguration) -> ContentMapperTransform {
+    generate_vue_content_mapper_transform_with_project_context(
+        &root.join("src/pages/[id].vue"),
+        PAGE,
+        config.transform_options,
+        &config.project_context,
+    )
+    .unwrap()
+}
+
+fn page_call(output: &ContentMapperTransform) -> &str {
+    output
+        .text
+        .lines()
+        .map(str::trim)
+        .find(|line| line.starts_with("definePage"))
+        .unwrap()
+}
+
+fn expected_watch(root: &Path, entry: &str) -> Vec<vize_l0::String> {
+    let mut paths = [
+        "tsconfig.json".to_owned(),
+        "node_modules/vue-router/package.json".to_owned(),
+        "node_modules/vue-router/dist/experimental/index.d.ts".to_owned(),
+        format!("node_modules/vue-router/dist/{entry}.ts"),
+        format!("node_modules/vue-router/dist/{entry}.tsx"),
+        format!("node_modules/vue-router/dist/{entry}.d.ts"),
+    ]
+    .map(|relative| root.join(relative).to_string_lossy().into_owned().into())
+    .to_vec();
+    paths.sort();
+    paths
+}
+
+#[test]
+fn both_actual_same_version_providers_keep_project_context_and_legacy_api_isolated() {
+    fn assert_send_sync<T: Send + Sync>() {}
+    assert_send_sync::<crate::ContentMapperProjectContext>();
+    let (_preview_guard, preview) = project("preview");
+    let (_published_guard, published) = project("published");
+    let admitted = load(&preview, json!(100));
+    let refused = load(&published, json!("Bundler"));
+    let enabled = transform(&preview, &admitted);
+    let disabled = transform(&published, &refused);
+    assert_eq!(
+        page_call(&enabled),
+        "definePage<\"src/pages/[id].vue\", typeof import(\"./[id].vue\").default>({ props: true })"
+    );
+    assert_eq!(
+        page_call(&disabled),
+        "definePage<\"src/pages/[id].vue\">({ props: true })"
+    );
+    assert_eq!(
+        admitted.watched_files,
+        expected_watch(&preview, "index-BA_Jc-EQ")
+    );
+    assert_eq!(
+        refused.watched_files,
+        expected_watch(&published, "index-u4XkZVDG")
+    );
+    let legacy = generate_vue_content_mapper_transform_with_project_options(
+        &preview.join("src/pages/[id].vue"),
+        PAGE,
+        admitted.transform_options,
+        Some(&preview),
+    )
+    .unwrap();
+    assert_eq!(page_call(&legacy), page_call(&disabled));
+    assert_eq!(
+        serde_json::to_value(transform(&preview, &admitted)).unwrap(),
+        serde_json::to_value(&enabled).unwrap()
+    );
+    for resolution in [
+        json!(3),
+        json!(99),
+        json!(100),
+        json!("Node16"),
+        json!("NodeNext"),
+        json!("Bundler"),
+    ] {
+        assert_eq!(
+            serde_json::to_value(transform(&preview, &load(&preview, resolution))).unwrap(),
+            serde_json::to_value(&enabled).unwrap(),
+        );
+    }
+    for resolution in [
+        json!(2),
+        json!(777),
+        json!("unknown"),
+        json!(-1),
+        json!(100.5),
+        json!(true),
+        json!(null),
+    ] {
+        let config = load(&preview, resolution);
+        assert_eq!(
+            config.watched_files,
+            vec![preview.join("tsconfig.json").to_string_lossy().into_owned()]
+        );
+        assert_eq!(
+            serde_json::to_value(transform(&preview, &config)).unwrap(),
+            serde_json::to_value(&legacy).unwrap(),
+        );
+    }
+}
+
+#[test]
+fn reopening_tracks_provider_bytes_reexports_removal_and_configuration_changes() {
+    let (_guard, root) = project("preview");
+    let before = load(&root, json!(100));
+    let output = serde_json::to_value(transform(&root, &before)).unwrap();
+    let entry = root.join("node_modules/vue-router/dist/experimental/index.d.ts");
+    let original = std::fs::read(&entry).unwrap();
+    std::fs::remove_file(&entry).unwrap();
+    // Captured authority is immutable; a transform does not re-read admission inputs.
+    assert_eq!(
+        serde_json::to_value(transform(&root, &before)).unwrap(),
+        output
+    );
+    let removed = load(&root, json!(100));
+    assert_ne!(removed.config_identity, before.config_identity);
+    assert_eq!(
+        page_call(&transform(&root, &removed)),
+        "definePage<\"src/pages/[id].vue\">({ props: true })"
+    );
+    let mut missing_watch = [
+        root.join("tsconfig.json"),
+        root.join("node_modules/vue-router/package.json"),
+        entry.clone(),
+    ]
+    .map(|path| path.to_string_lossy().into_owned())
+    .to_vec();
+    missing_watch.sort();
+    assert_eq!(removed.watched_files, missing_watch);
+    std::fs::write(&entry, &original).unwrap();
+    assert_eq!(
+        load(&root, json!(100)).config_identity,
+        before.config_identity
+    );
+    let reexport = entry.with_file_name("original.d.ts");
+    std::fs::write(&reexport, &original).unwrap();
+    std::fs::write(&entry, "export * from './original.js';\n").unwrap();
+    let rebound = load(&root, json!(100));
+    assert_ne!(rebound.config_identity, before.config_identity);
+    assert_eq!(
+        serde_json::to_value(transform(&root, &rebound)).unwrap(),
+        output
+    );
+    let mut rebound_watch = expected_watch(&root, "index-BA_Jc-EQ");
+    rebound_watch.extend(
+        ["original.ts", "original.tsx", "original.d.ts"].map(|name| {
+            entry
+                .with_file_name(name)
+                .to_string_lossy()
+                .into_owned()
+                .into()
+        }),
+    );
+    rebound_watch.sort();
+    assert_eq!(rebound.watched_files, rebound_watch);
+    std::fs::remove_file(&reexport).unwrap();
+    assert_eq!(
+        page_call(&transform(&root, &load(&root, json!(100)))),
+        "definePage<\"src/pages/[id].vue\">({ props: true })"
+    );
+    install(&root, "published");
+    assert_eq!(
+        page_call(&transform(&root, &load(&root, json!(100)))),
+        "definePage<\"src/pages/[id].vue\">({ props: true })"
+    );
+    install(&root, "preview");
+    std::fs::write(
+        root.join("tsconfig.json"),
+        r#"{"vueCompilerOptions":{"plugins":[]}}"#,
+    )
+    .unwrap();
+    assert_eq!(
+        page_call(&transform(&root, &load(&root, json!(100)))),
+        "definePage({ props: true })"
+    );
+}

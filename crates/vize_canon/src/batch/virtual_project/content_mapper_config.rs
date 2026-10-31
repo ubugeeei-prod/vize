@@ -10,6 +10,9 @@ use super::ContentMapperTransformOptions;
 use super::tsconfig_gen::snapshot_vue_compiler_options;
 use crate::batch::error::CorsaResult;
 
+mod typed_router;
+pub use typed_router::ContentMapperProjectContext;
+
 /// A snapshot selected by TypeScript's explicit `configFileName`.
 /// No directory search or Vize-specific configuration is performed.
 #[derive(Clone, Debug)]
@@ -20,6 +23,8 @@ pub struct ContentMapperProjectConfiguration {
     pub config_identity: CompactString,
     /// Absolute configs, package metadata, and missing candidates affecting resolution.
     pub watched_files: Vec<CompactString>,
+    /// Provider capability bound to this project's selected compiler context.
+    pub project_context: ContentMapperProjectContext,
 }
 
 impl ContentMapperProjectConfiguration {
@@ -80,8 +85,16 @@ impl ContentMapperProjectConfiguration {
                 compiler,
             )
         });
+        let (project_context, provider_identity) = ContentMapperProjectContext::admit(
+            typed_router_root.clone(),
+            config_file_name,
+            compiler_options,
+            &mut watched_files,
+        )?;
         if let Some(manifest) = vue_manifest.as_ref() {
             watched_files.push(manifest.to_string_lossy().into());
+        }
+        if vue_manifest.is_some() || provider_identity.is_some() {
             watched_files.sort();
             watched_files.dedup();
         }
@@ -104,12 +117,17 @@ impl ContentMapperProjectConfiguration {
             digest.update(b"\0typed-router-root\0");
             digest.update(serde_json::to_vec(root)?);
         }
+        if let Some(identity) = provider_identity {
+            digest.update(b"\0typed-router-provider\0");
+            digest.update(identity);
+        }
         let digest = super::identity::encode_digest(digest.finalize());
         Ok((
             Self {
                 transform_options,
                 config_identity: cstr!("vize-content-mapper-v1:{digest}"),
                 watched_files,
+                project_context,
             },
             typed_router_root,
         ))
@@ -189,4 +207,4 @@ fn resolved_target_tag(target: Option<VueVersion>) -> &'static str {
 }
 
 #[cfg(test)]
-mod typed_router_tests;
+pub(super) mod typed_router_tests;

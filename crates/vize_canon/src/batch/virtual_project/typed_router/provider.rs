@@ -4,10 +4,12 @@
 mod export_graph;
 mod manifest;
 
-use std::path::Path;
+use std::cell::RefCell;
+use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value};
-use vize_carton::String;
+use sha2::{Digest, Sha256};
+use vize_carton::{FxHashMap, String};
 
 use super::super::tsconfig_gen::compiler_inputs::CompilerInputs;
 use export_graph::{ExportGraph, Kind};
@@ -22,7 +24,48 @@ pub(in crate::batch::virtual_project) fn admits_route_props(
     compiler: &Map<std::string::String, Value>,
     inputs: &CompilerInputs,
 ) -> bool {
-    admission(directory, compiler, inputs).is_ok()
+    vize_carton::profile!(
+        "canon.typed_router.provider.admission",
+        admission(directory, compiler, inputs, &|_, _| {}).is_ok()
+    )
+}
+
+/// Retain the exact consumed provider identity for the opened mapper project.
+#[expect(
+    clippy::disallowed_types,
+    reason = "host compiler options use serde_json keys"
+)]
+pub(in crate::batch::virtual_project) fn capture_route_props(
+    directory: &Path,
+    compiler: &Map<std::string::String, Value>,
+    inputs: &CompilerInputs,
+) -> crate::batch::error::CorsaResult<(bool, [u8; 32])> {
+    let reads = RefCell::new(FxHashMap::<PathBuf, Option<[u8; 32]>>::default());
+    let admitted = vize_carton::profile!(
+        "canon.typed_router.provider.admission",
+        admission(directory, compiler, inputs, &|path, source| {
+            reads.borrow_mut().insert(
+                path.to_path_buf(),
+                source.map(|source| Sha256::digest(source.as_bytes()).into()),
+            );
+        })
+        .is_ok()
+    );
+    let mut reads = reads.into_inner().into_iter().collect::<Vec<_>>();
+    reads.sort_by(|left, right| left.0.cmp(&right.0));
+    // Serializing paths preserves their exact platform spelling and boundaries.
+    let bytes = serde_json::to_vec(&(admitted, reads))?;
+    Ok((admitted, Sha256::digest(bytes).into()))
+}
+
+#[expect(
+    clippy::disallowed_types,
+    reason = "host compiler options use serde_json keys"
+)]
+pub(in crate::batch::virtual_project) fn supports_resolution_context(
+    compiler: &Map<std::string::String, Value>,
+) -> bool {
+    condition_sets(compiler).is_ok()
 }
 
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std strings")]
@@ -30,12 +73,23 @@ fn admission(
     directory: &Path,
     compiler: &Map<std::string::String, Value>,
     inputs: &CompilerInputs,
+    observed: &impl Fn(&Path, Option<&str>),
 ) -> Result<(), Refusal> {
     let read = |path: &Path| -> Result<Option<String>, Refusal> {
         inputs.observe(path);
-        match std::fs::read_to_string(path) {
-            Ok(source) => Ok(Some(source.into())),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        match vize_carton::profile!(
+            "canon.typed_router.provider.read",
+            std::fs::read_to_string(path)
+        ) {
+            Ok(source) => {
+                inputs.observe_source(path, source.as_bytes());
+                observed(path, Some(&source));
+                Ok(Some(source.into()))
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                observed(path, None);
+                Ok(None)
+            }
             Err(error) => Err(Refusal::new(
                 "unreadable-provider",
                 vize_carton::cstr!("cannot read {}: {error}", path.display()),
@@ -121,8 +175,18 @@ fn condition_sets(compiler: &Map<std::string::String, Value>) -> Result<Vec<Vec<
     }
     let resolution = compiler
         .get("moduleResolution")
-        .and_then(Value::as_str)
-        .map(str::to_ascii_lowercase);
+        .and_then(|value| match value {
+            Value::String(value) => Some(value.to_ascii_lowercase()),
+            // Native TypeScript serializes its effective enum values in openProject.
+            // These values are pinned by the actual SDK's core/compileroptions.go.
+            Value::Number(value) => match value.as_u64() {
+                Some(3) => Some("node16".into()),
+                Some(99) => Some("nodenext".into()),
+                Some(100) => Some("bundler".into()),
+                _ => None,
+            },
+            _ => None,
+        });
     let contexts: &[&[&str]] = match resolution.as_deref() {
         Some("bundler") => &[&["types", "import"]],
         Some("node16" | "nodenext") => {
@@ -150,3 +214,6 @@ fn condition_sets(compiler: &Map<std::string::String, Value>) -> Result<Vec<Vec<
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod resolution_tests;

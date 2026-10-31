@@ -57,43 +57,18 @@ mod options;
 mod publish;
 pub use options::ContentMapperTransformOptions;
 
-/// Generate self-contained TypeScript and protocol-v1 mappings for one Vue SFC.
-///
-/// Authored parse failures are returned as mapper diagnostics with a safe
-/// fallback module. They are not transport errors, so TypeScript can keep the
-/// mapper process alive while the user edits an invalid document.
-pub fn generate_vue_content_mapper_transform(
-    path: &Path,
-    content: &str,
-) -> CorsaResult<ContentMapperTransform> {
-    generate_vue_content_mapper_transform_with_options(
-        path,
-        content,
-        ContentMapperTransformOptions::default(),
-    )
-}
+mod project_context;
+pub use project_context::{
+    generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
+    generate_vue_content_mapper_transform_with_project_context,
+    generate_vue_content_mapper_transform_with_project_options,
+};
 
-/// Generate a content-mapper transform with Vize-specific mapper settings.
-pub fn generate_vue_content_mapper_transform_with_options(
+fn transform_with_router_context(
     path: &Path,
     content: &str,
     transform_options: ContentMapperTransformOptions,
-) -> CorsaResult<ContentMapperTransform> {
-    generate_vue_content_mapper_transform_with_project_options(
-        path,
-        content,
-        transform_options,
-        None,
-    )
-}
-
-/// Generate a transform using configuration admitted when the host opened the project.
-/// The borrowed router root performs no configuration reads during transformation.
-pub fn generate_vue_content_mapper_transform_with_project_options(
-    path: &Path,
-    content: &str,
-    transform_options: ContentMapperTransformOptions,
-    typed_router_root: Option<&Path>,
+    typed_router: Option<super::typed_router::Config<'_>>,
 ) -> CorsaResult<ContentMapperTransform> {
     vize_l0::profile!(
         "canon.content_mapper.transform",
@@ -101,7 +76,7 @@ pub fn generate_vue_content_mapper_transform_with_project_options(
             path,
             content,
             transform_options,
-            typed_router_root,
+            typed_router,
             Some(Default::default()),
         )
     )
@@ -111,7 +86,7 @@ fn transform_with_diagnostic_ownership(
     path: &Path,
     content: &str,
     transform_options: ContentMapperTransformOptions,
-    typed_router_root: Option<&Path>,
+    typed_router: Option<super::typed_router::Config<'_>>,
     diagnostic_ownership: Option<
         crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
     >,
@@ -163,7 +138,7 @@ fn transform_with_diagnostic_ownership(
         VueCodegenOptions {
             diagnostic_ownership: diagnostic_ownership.as_ref(),
             check_options: transform_options.virtual_ts_check_options(),
-            typed_router: typed_router_root.map(super::typed_router::Config::files_only),
+            typed_router,
             preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
             configured_global_template_ref: transform_options.configured_global_template_ref,
             options_api: transform_options.options_api(),
