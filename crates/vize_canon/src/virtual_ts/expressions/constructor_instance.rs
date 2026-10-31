@@ -98,3 +98,28 @@ pub(crate) fn usage_raw_props(component: &str, pair: Option<&str>, hoisted: bool
         "typeof {component} extends {{ readonly __vizeComponentMarker: true }} ? {raw}<typeof {component}> : {is_any}<{selected}> extends true ? {raw}<typeof {component}> : {selected} extends {{ $props: infer __P }} ? {raw}<typeof {component}, __P> : {raw}<typeof {component}>"
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use super::instance_pair_name;
+    use vize_carton::CompactString;
+    use vize_croquis::{BindingType, ScopeBinding, ScopeChain};
+
+    #[test]
+    fn constructor_pair_names_skip_all_authored_binding_collisions() {
+        let mut scopes = ScopeChain::new();
+        for name in [
+            "__vize_slot_host_9_instances",
+            "__vize_slot_host_9_instances_1",
+        ] {
+            scopes.add_binding(
+                CompactString::new(name),
+                ScopeBinding::new(BindingType::SetupConst, 0),
+            );
+        }
+        assert_eq!(
+            instance_pair_name("__vize_slot_host_9", &scopes),
+            "__vize_slot_host_9_instances_2",
+        );
+    }
+}
