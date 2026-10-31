@@ -79,7 +79,7 @@ export function frames(source: string): Buffer {
   for (const request of requests) {
     // Match json.dumps(..., ensure_ascii=True, separators=(",", ":")) exactly.
     const text = JSON.stringify({ jsonrpc: "2.0", ...request }).replace(
-      /[^\x00-\x7e]/g,
+      /[^\x20-\x7e]/g,
       (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`,
     );
     const body = Buffer.from(text);
