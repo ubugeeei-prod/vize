@@ -42,10 +42,13 @@ fn compile(source: &str, mode: JsxOutputMode) -> Value {
 fn original_child_values_match_vapor_with_an_explicit_vnode_frontier() {
     let original: Value = serde_json::from_str(ORIGINAL).expect("unchanged original ten phases");
     let source = original["source"].as_str().expect("original source");
+    let shadowed = format!("const Node=1;const document=1;const Array=1;const String=1;{source}");
     let packet = json!({
         "original": original,
         "vapor": compile(source, JsxOutputMode::Vapor),
         "vdom": compile(source, JsxOutputMode::Vdom),
+        "shadowedSource": shadowed,
+        "shadowedVapor": compile(&shadowed, JsxOutputMode::Vapor),
     });
     if let Some(path) = std::env::var_os("VIZE_JSX_CHILD_MODULE_CAPTURE") {
         std::fs::write(

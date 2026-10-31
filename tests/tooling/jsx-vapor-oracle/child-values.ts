@@ -201,7 +201,13 @@ async function trace(
 
 let text = "";
 for await (const chunk of process.stdin) text += chunk;
-const input = JSON.parse(text) as { original: Original; vapor: Module; vdom: Module };
+const input = JSON.parse(text) as {
+  original: Original;
+  vapor: Module;
+  vdom: Module;
+  shadowedSource: string;
+  shadowedVapor: Module;
+};
 assert.deepEqual(
   input.original,
   original,
@@ -221,12 +227,23 @@ const publicBabel = transformSync(original.source, {
 assert.equal(typeof publicBabel?.code, "string");
 const referenceVapor: Module = { code: publicVapor.code!, functionName: "App" };
 const referenceBabel: Module = { code: publicBabel!.code!, functionName: "App" };
+assert.equal(
+  input.shadowedSource,
+  "const Node=1;const document=1;const Array=1;const String=1;" + original.source,
+);
+const publicShadowed = transformVueJsxVapor(
+  input.shadowedSource,
+  "/semantic-oracle/children/shadowed-value.jsx?vapor=true",
+);
+assert.equal(typeof publicShadowed.code, "string");
+const referenceShadowed: Module = { code: publicShadowed.code!, functionName: "App" };
 const capture: Record<string, unknown> = {
   original,
   installed,
   input,
   referenceVapor,
   referenceBabel,
+  referenceShadowed,
   routes: {},
 };
 const routes = capture.routes as Record<
@@ -247,6 +264,8 @@ const work: [string, Module, "vapor" | "vdom", boolean, boolean][] = [
   ["source-vdom", input.vdom, "vdom", false, false],
   ["node-control-public", referenceVapor, "vapor", false, true],
   ["node-control-source", input.vapor, "vapor", true, true],
+  ["shadowed-public", referenceShadowed, "vapor", false, false],
+  ["shadowed-source", input.shadowedVapor, "vapor", true, false],
 ];
 for (const [name, module, target, authored, nativeNode] of work) {
   try {
@@ -320,6 +339,13 @@ assert.deepEqual(
 );
 assert.equal(nodeActual.phases[8].text, "innerleaf");
 assert.deepEqual(nodeActual.phases[8].elementIdentities, [0, 1, 2, 3]);
+const shadowedPublic = get("shadowed-public"),
+  shadowedActual = get("shadowed-source");
+assert.deepEqual(
+  shadowedActual,
+  shadowedPublic,
+  "authored Node/document/Array/String bindings cannot capture the DOM normalizer",
+);
 const receipt = {
   originalPhases: 10,
   qualifiedVaporPhases: qualified.length,
@@ -336,6 +362,7 @@ const receipt = {
   originalDesiredVectorsUnchanged: true,
   allFourCompleteRawRoutesRetained: true,
   physicalNodeControls: 10,
+  authoredShadowingControls: 10,
 };
 capture.receipt = receipt;
 await window.happyDOM.close();
