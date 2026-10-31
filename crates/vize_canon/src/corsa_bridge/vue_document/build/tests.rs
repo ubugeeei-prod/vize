@@ -304,3 +304,60 @@ fn identical_source_in_separate_roots_keeps_authored_membership() {
 
 #[cfg(test)]
 mod native_union;
+
+#[cfg(windows)]
+#[test]
+fn verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes() {
+    let work = tempfile::tempdir().unwrap();
+    let root = work.path().canonicalize().unwrap();
+    std::fs::create_dir(root.join("src")).unwrap();
+    let host = root.join("src/App.vue");
+    let support = root.join("src/support.ts");
+    let source = "<script setup lang='ts'>import { value } from '@/support'; const checked: number = value;</script><template>{{ checked }}</template>";
+    const DISK: &str = "export const value = 1;\n";
+    std::fs::write(&host, source).unwrap();
+    std::fs::write(&support, DISK).unwrap();
+    std::fs::write(root.join("tsconfig.json"), r#"{"compilerOptions":{"baseUrl":".","paths":{"@/*":["src/*"]}},"include":["src/**/*.vue"]}"#).unwrap();
+    let verbatim = support.canonicalize().unwrap();
+    let key = vize_carton::path::canonicalize_non_verbatim(&support);
+    assert_ne!(verbatim, key);
+    let session = EditorMirrorSession::new();
+    for overlay in [
+        Some(DISK),
+        Some("export const value = 'bad';\n"),
+        Some("export const value = 2;\n"),
+        None,
+    ] {
+        let inputs = overlay
+            .map(|text| vec![(verbatim.clone(), text)])
+            .unwrap_or_default();
+        let normalized = canonical_overlays(&inputs);
+        assert_eq!(normalized.get(&key).copied(), overlay);
+        let project = prepare(&session, &host, source, &inputs, &[]);
+        let member = project
+            .host
+            .materialized_sources
+            .iter()
+            .find(|member| member.source_path == key)
+            .unwrap();
+        let expected = overlay.unwrap_or(DISK);
+        assert_eq!(member.source.as_str(), expected);
+        assert_eq!(member.code.as_str(), expected);
+        assert_eq!(
+            std::fs::read(&member.materialized_path).unwrap(),
+            expected.as_bytes()
+        );
+        if overlay.is_some() {
+            let uri = crate::file_uri::path_to_file_uri(&member.materialized_path);
+            assert_eq!(
+                project
+                    .documents
+                    .iter()
+                    .find(|(candidate, _)| candidate == &uri)
+                    .map(|(_, text)| text.as_str()),
+                Some(expected)
+            );
+        }
+        assert_eq!(std::fs::read(&support).unwrap(), DISK.as_bytes());
+    }
+}

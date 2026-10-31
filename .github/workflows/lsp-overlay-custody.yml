@@ -7,6 +7,8 @@ on:
       - crates/vize_canon/src/lsp_client.rs
       - crates/vize_canon/src/lsp_client/**
       - crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics/**
+      - crates/vize_canon/src/corsa_bridge/vue_document/build.rs
+      - crates/vize_canon/src/corsa_bridge/vue_document/build/tests.rs
       - .github/workflows/lsp-overlay-custody.yml
       - .github/actions/lsp-overlay-custody/**
       - crates/vize/tests/lsp_cli/overlay_storage.rs
@@ -80,6 +82,9 @@ jobs:
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::session_storage::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/storage.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/storage.stderr"
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::session::close::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/close.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/close.stderr"
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::session::logical::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/logical.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/logical.stderr"
+          if [ "$RUNNER_OS" = Windows ]; then
+            cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::vue_document::build::tests::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes -- --exact --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/windows-overlay-input.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/windows-overlay-input.stderr"
+          fi
           if [ "$RUNNER_OS" = Linux ]; then
             cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::bridge::initial_diagnostics::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stderr"
           fi

@@ -26,7 +26,7 @@ function image(file: string): Row {
   const bytes = fs.readFileSync(file);
   return { path: fs.realpathSync(file), bytes: bytes.length, sha256: hash(bytes) };
 }
-function execution(stdout: string, expected: string[]): void {
+export function execution(stdout: string, expected: string[]): void {
   const announced = [...stdout.matchAll(/^test (\S+) \.\.\./gm)].map((match) => match[1]!);
   assert.deepEqual(announced.sort(), [...expected].sort());
   const summaries = [
@@ -37,14 +37,18 @@ function execution(stdout: string, expected: string[]): void {
   assert.equal(summaries.length, 1);
   assert.deepEqual(summaries[0]!.slice(1), [String(expected.length), "0", "0", "0"]);
 }
-function sourceTests(file: string, prefix: string): string[] {
+export function sourceTests(
+  file: string,
+  prefix: string,
+  platform: NodeJS.Platform = process.platform,
+): string[] {
   const source = fs.readFileSync(file, "utf8");
-  return [...source.matchAll(/((?:#\[[^\]]+\]\s*)+)fn ([a-z_]+)\(/g)]
+  return [...source.matchAll(/((?:#\[[^\]]+\]\s*)+)fn ([A-Za-z_][A-Za-z_0-9]*)\(/g)]
     .filter(
       (match) =>
         match[1]!.includes("#[test]") &&
-        !(match[1]!.includes("#[cfg(windows)]") && process.platform !== "win32") &&
-        !(match[1]!.includes("#[cfg(unix)]") && process.platform === "win32"),
+        !(match[1]!.includes("#[cfg(windows)]") && platform !== "win32") &&
+        !(match[1]!.includes("#[cfg(unix)]") && platform === "win32"),
     )
     .map((match) => prefix + match[2]!);
 }
@@ -79,6 +83,19 @@ function libraryExecution(capture: string, nativeSha: string): void {
     const expected = sourceTests(file!, prefix!);
     assert.ok(expected.length > 0);
     execution(fs.readFileSync(path.join(capture, `${name}.stdout`), "utf8"), expected);
+  }
+  if (process.platform === "win32") {
+    const expected =
+      "corsa_bridge::vue_document::build::tests::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes";
+    assert.ok(
+      sourceTests(
+        "crates/vize_canon/src/corsa_bridge/vue_document/build/tests.rs",
+        "corsa_bridge::vue_document::build::tests::",
+      ).includes(expected),
+    );
+    execution(fs.readFileSync(path.join(capture, "windows-overlay-input.stdout"), "utf8"), [
+      expected,
+    ]);
   }
   assert.equal(fs.readFileSync(path.join(capture, "native.status"), "utf8").trim(), "0");
   const nativeStdout = fs.readFileSync(path.join(capture, "native.stdout"), "utf8");
