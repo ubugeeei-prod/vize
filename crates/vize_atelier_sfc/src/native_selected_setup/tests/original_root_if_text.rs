@@ -15,6 +15,15 @@ fn eight_whole_original_root_if_text_components_and_raw_maps_are_captured() -> R
         "../../../tests/fixtures/native_original_root_if_text_inputs_vue_3_5_35.json"
     ))
     .map_err(|error| cstr!("{error}"))?;
+    let goldens: Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/native_original_root_if_text_sfc_vue_3_5_35.json"
+    ))
+    .map_err(|error| cstr!("{error}"))?;
+    require!(
+        goldens["schema"] == "vize.native-sfc.original-root-if-text-complete-goldens"
+            && goldens["filename"] == pack["filename"],
+        "whole root If/text golden authority"
+    );
     require!(
         pack["schema"] == "vize.native-sfc.original-root-if-text-inputs",
         "original root If/text input schema"
@@ -332,11 +341,25 @@ fn eight_whole_original_root_if_text_components_and_raw_maps_are_captured() -> R
         }
     }
     let emitted = captures.len();
+    let captures = Value::Array(captures);
+    let custody = Value::Array(custody);
+    let attempts = Value::Array(attempts);
+    for (field, actual) in [
+        ("fixtures", &captures),
+        ("custody", &custody),
+        ("attempts", &attempts),
+    ] {
+        if goldens["native"].get(field) != Some(actual) {
+            failures.push(cstr!("whole ordered native {field} golden mismatch"));
+        }
+    }
+    let qualified = failures.is_empty() && emitted == fixtures.len() * 2;
     if let Some(path) = std::env::var_os("VIZE_NATIVE_ORIGINAL_ROOT_IF_TEXT_SFC_DOM_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&serde_json::json!({
             "schema":"vize.native-sfc.original-root-if-text-capture",
             "adapter":"vize_atelier_sfc::compile_native_selected_setup_sfc_dom_with_mode",
-            "qualification":"observed-unqualified-current-oracles-pending","nativeGoldenComparisonPerformed":false,
+            "qualification":if qualified { "current-complete-native-goldens-matched" } else { "failed-current-complete-native-goldens" },
+            "nativeGoldenComparisonPerformed":true,
             "sourceRevision":std::env::var("GITHUB_SHA").ok(),
             "fixtures":captures,"custody":custody,"attempts":attempts,"failures":&failures,
         })).map_err(|error| cstr!("{error}"))?).map_err(|error| cstr!("{error}"))?;
