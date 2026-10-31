@@ -112,11 +112,16 @@ fn replacing_public_scope_values_cannot_remove_the_current_physical_slot() {
     let mut chain = ScopeChain::new();
     let physical = chain.enter_scope(ScopeKind::Block);
     let length = chain.len();
-    *chain.current_scope_mut() = vize_croquis::scope::Scope::new(
-        ScopeId::new(u32::MAX),
-        Some(ScopeId::new(u32::MAX)),
-        ScopeKind::Block,
-    );
+    let mut donor = ScopeChain::new();
+    donor.enter_scope(ScopeKind::Block);
+    donor.current_scope_mut().id = ScopeId::new(u32::MAX);
+    donor.current_scope_mut().parents.clear();
+    donor
+        .current_scope_mut()
+        .parents
+        .push(ScopeId::new(u32::MAX));
+    // The public API exposes borrowed Scope values, not its private module.
+    core::mem::swap(chain.current_scope_mut(), donor.current_scope_mut());
     assert_eq!(chain.len(), length);
     assert_eq!(chain.current_id(), physical);
     assert_eq!(chain.current_scope().id, ScopeId::new(u32::MAX));
