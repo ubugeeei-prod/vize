@@ -11,6 +11,7 @@ on:
       - "tests/_fixtures/differential/jsx/**"
       - "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/**"
       - "tests/tooling/jsx-authored-module-fixture-custody.test.ts"
+      - "tests/tooling/jsx-child-golden-custody.test.ts"
       - "tests/tooling/support/jsx-authored-custody.ts"
       - "tests/tooling/jsx-vapor-oracle/**"
       - "tests/tooling/support/jsx-falsy-and-runtime.mjs"
@@ -225,7 +226,7 @@ jobs:
           cargo test --locked --profile ci -p vize_vitrine --no-default-features --features wasm --lib wasm::jsx::tests::
       - name: Verify complete native fixture and historical custody
         if: always()
-        run: node --test tests/tooling/jsx-authored-module-fixture-custody.test.ts tests/tooling/vapor-third-party-reports.test.mjs
+        run: node --test tests/tooling/jsx-authored-module-fixture-custody.test.ts tests/tooling/jsx-child-golden-custody.test.ts tests/tooling/vapor-third-party-reports.test.mjs
       - name: Capture whole native fixture packets and genuine runtime traces
         if: always()
         env:

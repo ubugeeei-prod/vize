@@ -10,7 +10,7 @@
 
 use vize_atelier_jsx::{
     JsxCompileConfig, JsxLang, JsxOutputMode, VaporCompileOptions, VdomCompileOptions, compile_jsx,
-    compile_to_vapor, compile_to_vdom, lower_source,
+    compile_to_vapor, compile_to_vdom, lower_source, parse_module,
 };
 use vize_l0::Allocator;
 mod adversarial_snapshots {
@@ -312,12 +312,16 @@ fn mode_aware_multi_component_snapshot() {
         &compile_output_summary(MIXED_MODES, &output),
         Some(output.module_code().as_str()),
     );
+    assert!(
+        !parse_module(bump.as_oxc(), output.module_code().as_str(), JsxLang::Jsx).has_errors(),
+        "the complete mixed-mode module retains valid helper declarations"
+    );
     insta::assert_debug_snapshot!(
-        "mode_aware_multi_component_summary_authored_native_10701",
+        "mode_aware_multi_component_summary_authored_native_10701_child_values_6890",
         compile_output_summary(MIXED_MODES, &output),
     );
     insta::assert_snapshot!(
-        "mode_aware_multi_component_module_authored_native_10701",
+        "mode_aware_multi_component_module_authored_native_10701_child_values_6890",
         output.module_code().as_str()
     );
 }
@@ -381,10 +385,13 @@ fn assert_vapor_snapshot(name: &str, source: &str, lang: JsxLang, options: Vapor
     let bump = Allocator::new();
     let output = compile_to_vapor(&bump, source, lang, options);
     capture_snapshot(name, source, &vapor_output_summary(source, &output), None);
-    insta::assert_debug_snapshot!(
-        format!("{name}_vapor"),
-        vapor_output_summary(source, &output)
-    );
+    let active = match name {
+        "stateful_destructured_component"
+        | "tsx_syntax_edges_root_fallthrough_8625"
+        | "fragment_whitespace_text" => format!("{name}_vapor_child_values_6890"),
+        _ => format!("{name}_vapor"),
+    };
+    insta::assert_debug_snapshot!(active, vapor_output_summary(source, &output));
 }
 
 /// Retain the complete observation before a snapshot failure can stop the test.
