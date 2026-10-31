@@ -112,6 +112,7 @@ void test(
     await trace("create-server-begin");
     const server = await createServer({
       root,
+      cacheDir: path.join(root, ".vite"),
       configFile: false,
       resolve: {
         alias: { vue: fileURLToPath(import.meta.resolve("vue/dist/vue.runtime.esm-bundler.js")) },

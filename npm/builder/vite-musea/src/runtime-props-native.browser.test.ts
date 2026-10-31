@@ -134,6 +134,7 @@ void test(
 
       server = await createServer({
         root,
+        cacheDir: path.join(root, ".vite"),
         configFile: false,
         resolve: {
           alias: { vue: fileURLToPath(import.meta.resolve("vue/dist/vue.runtime.esm-bundler.js")) },
@@ -196,8 +197,22 @@ void test(
 
       browser = await chromium.launch();
       const page = await browser.newPage();
+      const consoleErrors: string[] = [];
+      const requestFailures: { url: string; error: string | null }[] = [];
+      observations.browser = { consoleErrors, requestFailures, cacheDir: server.config.cacheDir };
       page.on("pageerror", (error) => errors.push(String(error)));
-      await page.goto(gallery);
+      page.on("console", (message) => {
+        if (message.type() === "error") consoleErrors.push(message.text());
+      });
+      page.on("requestfailed", (request) => {
+        requestFailures.push({ url: request.url(), error: request.failure()?.errorText ?? null });
+      });
+      const navigation = await page.goto(gallery);
+      observations.navigation = {
+        url: page.url(),
+        status: navigation?.status() ?? null,
+        contentType: navigation?.headers()["content-type"] ?? null,
+      };
       await page.locator(".art-item").filter({ hasText: "Runtime Controls" }).first().click();
       await page.locator(".tab-btn").filter({ hasText: "Props" }).click();
       await page.getByRole("textbox", { name: "code", exact: true }).waitFor();
