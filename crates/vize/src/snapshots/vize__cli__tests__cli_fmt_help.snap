@@ -131,6 +131,11 @@ Options:
 
           [possible values: true, false]
 
+      --normalize-css-quotes[=<NORMALIZE_CSS_QUOTES>]
+          Normalize CSS, SCSS and Less string quotes using the string quote preference
+
+          [possible values: true, false]
+
       --preset <PRESET>
           Apply a named set of defaults before the flags above
 

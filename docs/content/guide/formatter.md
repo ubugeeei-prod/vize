@@ -125,6 +125,7 @@ The same options are available as CLI flags:
 | `--max-attributes-per-line`        | Wraps after the given number of attributes.                   |
 | `--normalize-directive-shorthands` | Turns `v-bind:`, `v-on:` and `v-slot:` into `:`, `@` and `#`. |
 | `--sort-blocks`                    | Toggles canonical SFC block ordering.                         |
+| `--normalize-css-quotes`          | Re-quotes CSS, SCSS and Less strings with the string quote preference. |
 
 Each of these guides covers one setting in detail:
 
@@ -173,6 +174,11 @@ The native Node `formatSfc` API accepts the five Prettier migration booleans
 `normalizeCssQuotes`, `normalizeInlineStyles`, `normalizeVForParens`,
 `selfCloseVoidElements` and `reindentPreprocessorStyles` under the same names.
 Explicit values override `preset`, including `false`.
+
+CSS quote normalization also has the direct CLI override
+`--normalize-css-quotes[=false]`. Its explicit value applies after config and
+the selected preset. It follows `--single-quote`, keeps comments unchanged,
+and retains the other quote when that avoids additional escapes.
 
 Void-element closure is also available as the direct CLI override
 `--self-close-void-elements[=false]`. An explicit value applies after config

@@ -99,6 +99,7 @@ pub fn run(args: ReadyArgs) {
             normalize_directive_shorthands: None,
             sort_blocks: None,
             self_close_void_elements: None,
+            normalize_css_quotes: None,
             preset: None,
             profile: false,
             slow_threshold: 100,

@@ -6,6 +6,8 @@ use crate::support::corsa_requirement;
 mod lsp;
 #[cfg(all(feature = "maestro", feature = "glyph"))]
 use crate::support::lsp_process;
+#[cfg(feature = "glyph")]
+mod css_quotes;
 #[cfg(all(feature = "maestro", feature = "glyph"))]
 mod nested_lsp;
 mod root;

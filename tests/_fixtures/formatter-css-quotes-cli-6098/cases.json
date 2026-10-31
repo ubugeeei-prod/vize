@@ -1,0 +1,20 @@
+[
+  {
+    "id": "css",
+    "source": "<style>\n/* keep 'comment' \"quotes\" */\n@import 'a.css';\n.a {\n  content: 'it\\'s';\n  font-family: 'A \"B\"';\n}\n</style>\n",
+    "normalized_double": "<style>\n/* keep 'comment' \"quotes\" */\n@import \"a.css\";\n.a {\n  content: \"it's\";\n  font-family: 'A \"B\"';\n}\n</style>\n",
+    "normalized_single": "<style>\n/* keep 'comment' \"quotes\" */\n@import 'a.css';\n.a {\n  content: \"it's\";\n  font-family: 'A \"B\"';\n}\n</style>\n"
+  },
+  {
+    "id": "scss",
+    "source": "<style lang=\"scss\">\n/* keep 'comment' \"quotes\" */\n// keep 'line' \"quotes\"\n.a {\n  content: 'it\\'s';\n  font-family: 'A \"B\"';\n  --label: 'plain';\n}\n</style>\n",
+    "normalized_double": "<style lang=\"scss\">\n/* keep 'comment' \"quotes\" */\n// keep 'line' \"quotes\"\n.a {\n  content: \"it's\";\n  font-family: 'A \"B\"';\n  --label: \"plain\";\n}\n</style>\n",
+    "normalized_single": "<style lang=\"scss\">\n/* keep 'comment' \"quotes\" */\n// keep 'line' \"quotes\"\n.a {\n  content: \"it's\";\n  font-family: 'A \"B\"';\n  --label: 'plain';\n}\n</style>\n"
+  },
+  {
+    "id": "less",
+    "source": "<style lang=\"less\">\n/* keep 'comment' \"quotes\" */\n// keep 'line' \"quotes\"\n.a {\n  content: 'it\\'s';\n  font-family: 'A \"B\"';\n  --label: 'plain';\n}\n</style>\n",
+    "normalized_double": "<style lang=\"less\">\n/* keep 'comment' \"quotes\" */\n// keep 'line' \"quotes\"\n.a {\n  content: \"it's\";\n  font-family: 'A \"B\"';\n  --label: \"plain\";\n}\n</style>\n",
+    "normalized_single": "<style lang=\"less\">\n/* keep 'comment' \"quotes\" */\n// keep 'line' \"quotes\"\n.a {\n  content: \"it's\";\n  font-family: 'A \"B\"';\n  --label: 'plain';\n}\n</style>\n"
+  }
+]

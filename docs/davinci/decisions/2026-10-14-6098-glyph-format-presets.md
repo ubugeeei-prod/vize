@@ -128,6 +128,13 @@ the CLI's resolved profile and WASM. An explicit Node value is applied after
 the selected preset, so every Prettier migration normalizer can be enabled
 without the preset or disabled with `false` while retaining the rest of it.
 
+`normalizeCssQuotes` also has the direct CLI override
+`--normalize-css-quotes[=false]`, applied after the configuration and selected
+preset. It reuses the existing typed option and CSS/SCSS/Less quote policy;
+defaults and profile assignments are unchanged. CLI witnesses pin complete
+true/false outputs, both quote preferences, comment and escape controls, and
+three-pass fixed points.
+
 ## Script quote option parity
 
 The existing `jsxSingleQuote` boolean and `quoteProps` enum now have direct CLI
