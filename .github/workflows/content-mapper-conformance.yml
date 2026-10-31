@@ -5,6 +5,11 @@ on:
     - cron: "21 4 * * *"
   workflow_dispatch:
     inputs:
+      targeted-test:
+        description: "Run the full suite or the original 16-state/four-host generic body-error cohort"
+        type: choice
+        options: [full, generic-body-error]
+        default: full
       event-rename-only:
         description: "Qualify both Vize-owned event rename targets with exact upstream tsgo"
         type: boolean
@@ -18,7 +23,7 @@ on:
         type: boolean
         default: false
       expected-source-sha:
-        description: "Exact reviewed actor F for either official mode"
+        description: "Exact reviewed source for targeted or official modes"
         type: string
         required: false
       published-defaults-only:
@@ -45,7 +50,7 @@ env:
 
 jobs:
   exact-tsgo-project:
-    if: ${{ !inputs.router-experimental-only && !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only }}
+    if: ${{ inputs.targeted-test == 'generic-body-error' || (!inputs.router-experimental-only && !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only) }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -53,6 +58,14 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
+      - name: Verify targeted source and exclusive mode
+        if: inputs.targeted-test == 'generic-body-error'
+        env:
+          EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
+          OTHER_MODES: ${{ inputs.router-experimental-only || inputs.event-rename-only || inputs.official-css-options-only || inputs.published-defaults-only }}
+        run: |
+          test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"
+          test "$OTHER_MODES" = false
       - name: Checkout exact TypeScript Content Mapper revision
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -112,7 +125,14 @@ jobs:
           const receipt = { source: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID, upstream, binary, sha256: createHash('sha256').update(bytes).digest('hex'), size: bytes.length, version: {status: version.status, stdout: version.stdout.toString('base64'), stderr: version.stderr.toString('base64')} };
           writeFileSync(`${process.env.RUNNER_TEMP}/content-mapper-native-host.json`, JSON.stringify(receipt, null, 2) + '\n');
           JS
+      - name: Run original generic body-error cohort
+        if: inputs.targeted-test == 'generic-body-error'
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+        run: |
+          cargo test --locked -p vize --test integration -- content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs --exact --nocapture
       - name: Run authored syntax and setup binding conformance
+        if: inputs.targeted-test != 'generic-body-error'
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
         run: |
@@ -128,16 +148,19 @@ jobs:
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::optional_prop_spacing:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_cli::pug_refusal:: --nocapture
       - name: Run TS-40 current-projection baselines
+        if: inputs.targeted-test != 'generic-body-error'
         run: |
           cargo test -p vize --test integration -- davinci_ts40_projection_cli:: --nocapture
           cargo test -p vize_maestro --test davinci_ts40_projection -- --nocapture
           cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture
           node --test tests/tooling/davinci-ts40-projection.test.ts
       - name: Build packed Content Mapper runtime
+        if: inputs.targeted-test != 'generic-body-error'
         run: |
           vp run --filter './npm/native' build:ci
           (cd npm/cli && vp pack)
       - name: Prepare native platform packages
+        if: inputs.targeted-test != 'generic-body-error'
         working-directory: npm/native
         run: |
           vp exec napi create-npm-dirs
@@ -151,6 +174,7 @@ jobs:
             fi
           done
       - name: Run standard tsgo through fresh-installed package tarballs
+        if: inputs.targeted-test != 'generic-body-error'
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
         run: |
@@ -158,6 +182,7 @@ jobs:
             npm/native npm/native/npm/* \
             npm/cli
       - name: Run standard project and declaration conformance
+        if: inputs.targeted-test != 'generic-body-error'
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
           VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: ${{ github.workspace }}/npm/cli/node_modules/.bin/tsc
@@ -171,6 +196,7 @@ jobs:
           cargo test -p vize --test integration -- content_mapper_tsgo_watch:: --nocapture
           cargo test -p vize --test integration -- content_mapper_importer_scoped_packages:: --nocapture
       - name: Run importer-scoped package resolution matrix
+        if: inputs.targeted-test != 'generic-body-error'
         env:
           CORSA_PATH: ${{ runner.temp }}/tsgo
           VIZE_TEST_REQUIRE_TSGO: "1"
@@ -182,6 +208,7 @@ jobs:
           cargo test -p vize --test integration -- check_package_scope_mode_cli:: --nocapture
           cargo test -p vize --test integration -- check_package_tsx_shadow_cli:: --nocapture
       - name: Run Content Mapper LSP and virtual-overlay editor checks
+        if: inputs.targeted-test != 'generic-body-error'
         env:
           TSGO_PATH: ${{ runner.temp }}/tsgo
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
@@ -192,6 +219,7 @@ jobs:
           cargo test -p vize --test integration -- content_mapper_tsgo_lsp_event_forms:: --nocapture
           cargo test -p vize_canon --test lsp_import_resolution -- --nocapture
       - name: Stress every editor case against its exact native provider
+        if: inputs.targeted-test != 'generic-body-error'
         run: |
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
@@ -400,7 +428,7 @@ jobs:
           retention-days: 7
 
   event-rename:
-    if: github.event_name == 'workflow_dispatch' && !inputs.router-experimental-only && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only
+    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && !inputs.router-experimental-only && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -498,7 +526,7 @@ jobs:
         run: test "$TRANSACTIONS_OUTCOME" = success
 
   official-css-options:
-    if: github.event_name == 'workflow_dispatch' && !inputs.router-experimental-only && (inputs.official-css-options-only || inputs.published-defaults-only)
+    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && !inputs.router-experimental-only && (inputs.official-css-options-only || inputs.published-defaults-only)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
@@ -647,7 +675,7 @@ jobs:
             !${{ runner.temp }}/official-css-options/**/node_modules/**
 
   router-experimental:
-    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.router-experimental-only)
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.router-experimental-only)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
