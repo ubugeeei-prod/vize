@@ -35,7 +35,25 @@ pub(crate) const REFS_RETURN_KEY: &str = "__vizeRefs";
 /// with a `config` computed from `chart.value` would otherwise make `chart`
 /// depend on itself for every component, not only for the generic ones whose
 /// instance really is a function of their props.
-pub(crate) const REF_INSTANCE_HELPERS: &str = "  type $RefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends { __vizeResolveRef?: infer _F } ? _F extends (...args: any[]) => any ? (component: _C) => _F : (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\n  type $TemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? $TemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C>;\n";
+macro_rules! template_ref_instance_helper {
+    () => {
+        "  type $TemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? $TemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C>;\n"
+    };
+}
+
+pub(crate) const REF_INSTANCE_HELPERS: &str = concat!(
+    "  ",
+    include_str!("../helpers/declarations/ref-instance-factory.d.ts.txt"),
+    template_ref_instance_helper!()
+);
+
+// Only the factory is provider-independent: every non-keyword reference is
+// its own type parameter or an inferred local. Keep the DOM/instance helper
+// in setup scope, where authored provider and local type bindings still apply.
+pub(crate) const REF_INSTANCE_HELPERS_HOISTED: &str = concat!(
+    "  type $RefInstanceFactory<_C> = import(\"vize:virtual-ts\").$RefInstanceFactory<_C>;\n",
+    template_ref_instance_helper!()
+);
 
 /// Template-relative starts of the component usages whose ref is instantiated:
 /// a static `ref` next to at least one bound prop, outside every slot scope.

@@ -16,6 +16,8 @@ mod emit_navigation;
 pub use emit_navigation::owned_emit_navigation_source_ranges;
 mod macro_results;
 pub(super) use declarations::SetupHelperPlan;
+#[cfg(test)]
+mod hoisted_ref_factory_tests;
 mod template_ref_registry;
 
 use boolean_keys::{DefinePropsBooleanKeys, collect_define_props_boolean_keys};
@@ -139,7 +141,11 @@ pub(super) fn emit_setup_helpers(
         // `Element`, which is what a custom element resolves to.
         let registry_body = registry.body.as_str();
         let instance_helpers = if registry.includes_instantiated {
-            crate::virtual_ts::scope::REF_INSTANCE_HELPERS
+            if hoist_shared_preamble {
+                crate::virtual_ts::scope::REF_INSTANCE_HELPERS_HOISTED
+            } else {
+                crate::virtual_ts::scope::REF_INSTANCE_HELPERS
+            }
         } else {
             ""
         };
