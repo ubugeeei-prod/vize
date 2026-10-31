@@ -3,7 +3,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { resolvePnpmPackProvider } from "../../tools/support/compat/package-managers/pnpm-pack-provider.ts";
+import { pathToFileURL } from "node:url";
+import {
+  packWithPnpm,
+  resolvePnpmPackProvider,
+} from "../../tools/support/compat/package-managers/pnpm-pack-provider.ts";
 
 function fixture() {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-pnpm-provider-")));
@@ -16,6 +20,28 @@ function fixture() {
   return { root, entry, cleanup: () => fs.rmSync(root, { recursive: true, force: true }) };
 }
 const valid = () => ({ status: 0, signal: null, stdout: "12.1.0\n" });
+void test("pack wrapper refuses a missing lifecycle owner before launching any child", () => {
+  const f = fixture(),
+    previous = process.env.npm_execpath;
+  try {
+    delete process.env.npm_execpath;
+    assert.throws(
+      () =>
+        packWithPnpm(
+          f.root,
+          pathToFileURL(`${f.root}${path.sep}`),
+          path.join(f.root, "pack"),
+          120_000,
+        ),
+      /npm_execpath is missing/,
+    );
+    assert.deepEqual(fs.readdirSync(f.root).sort(), ["package.json", "pnpm-native"]);
+  } finally {
+    if (previous === undefined) delete process.env.npm_execpath;
+    else process.env.npm_execpath = previous;
+    f.cleanup();
+  }
+});
 void test("active physical native PNPM bypasses hostile PATH without executing fixture images", () => {
   const f = fixture();
   const previousPath = process.env.PATH;
