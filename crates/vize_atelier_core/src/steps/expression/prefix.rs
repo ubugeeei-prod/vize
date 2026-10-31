@@ -65,6 +65,10 @@ pub(crate) fn get_identifier_prefix(
 
 /// Check if a simple identifier is a ref binding in inline mode
 pub(crate) fn is_ref_binding_simple(name: &str, ctx: &TransformContext<'_>) -> bool {
+    if ctx.is_in_scope(name) {
+        return false;
+    }
+
     if ctx.options.inline {
         // Croquis first: use ReactiveKind for precise determination
         if let Some(kind) = ctx.get_reactive_kind(name) {

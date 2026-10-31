@@ -96,7 +96,7 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
 
     /// Check if an identifier is a ref that needs .value suffix
     fn is_ref_binding(&self, name: &str) -> bool {
-        if self.is_local(name) {
+        if self.is_local(name) || self.ctx.is_in_scope(name) {
             return false;
         }
 
@@ -120,8 +120,8 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
     ///
     /// This applies to let/var declarations and maybe-ref bindings.
     fn needs_unref(&self, name: &str) -> bool {
-        // Skip if in local scope
-        if self.is_local(name) {
+        // Template aliases shadow setup bindings just like JavaScript locals.
+        if self.is_local(name) || self.ctx.is_in_scope(name) {
             return false;
         }
 

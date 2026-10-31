@@ -801,6 +801,48 @@
       }
     },
     {
+      "id": "compiler/sfc/inline-for-ref-shadow-11210",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "inline-for-ref-shadow-11210",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "ac78ddf188e89163517383bc2dc457c93de72b85da49a643758a782da30b3fc8",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "inline-for-ref-shadow-11210/module.expected.txt",
+        "sha256": "7aeb11a6709974c258b1ce57f799b9eb7d6b836393f3b440da6647405bc03db6",
+        "source": "Actions 41212511971/job 124570281749, retained source CLI 9c594186bae97cbc4b4c5441d9165b3354ccbec0; whole process is baseline.observation.json.txt. This is the original input's SSR control, not inline or native parity."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC compilation is unavailable. The real legacy SSR control preserves the original inline-ref input; separate Rust regressions exercise the inline alias repair."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/inline-method-handlers-10777",
       "state": "active",
       "targets": ["ssr"],

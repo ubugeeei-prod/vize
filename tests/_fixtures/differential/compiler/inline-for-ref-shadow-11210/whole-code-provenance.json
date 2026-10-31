@@ -1,0 +1,52 @@
+{
+  "kind": "Source-built regression code vectors; not independent Vue or whole-product native parity.",
+  "source": "5e390ed7ad5c072e5084a8926ecb031c062b292f",
+  "mergeSource": "848fcff3a89a7452312e82c0fb4a9dc7587335df",
+  "run": 41215227525,
+  "compilerJob": 124579439465,
+  "sfcJob": 124579439487,
+  "junit": [
+    {
+      "role": "compiler",
+      "artifact": 13047649803,
+      "bytes": 36106224,
+      "sha": "656d244d594a156475668c437c52aaa4d1882af19dffa080f32f67fc8ccb7c0f",
+      "xmlSha256": "d1faf222a6cacd826f5d2fcf9c9f53c1213214e35ea26a70361de76f6e41b265",
+      "retained": 4
+    },
+    {
+      "role": "sfc",
+      "artifact": 13048200670,
+      "bytes": 247502,
+      "sha": "2126794a2b191667b3480d1e311bba00711d4907ce78dbf422c0d0b314c8287d",
+      "xmlSha256": "dd668aeb44512833c24c1a41994a893d4cb0fe83616da8cf5f9ad648060e6cb2",
+      "retained": 5
+    }
+  ],
+  "selectedJUnitSha256": "b26fdb16f30bc72e7a1d65717453435a892674a5b2dfd669ce31b687c5863f3e",
+  "capture": "Complete stdout after the fixed prefix label and before its exact next label or libtest case line; the one println separator is excluded, code bytes are otherwise unchanged.",
+  "vectors": [
+    {
+      "file": "core-metadata-ref.expected.txt",
+      "cases": ["metadata_refs_are_unwrapped_only_outside_the_loop_alias_scope"],
+      "bytes": 650,
+      "sha256": "eb88565e72e029c4a2b9bf4682c7a55119b6be2a1786d072defbd8ea0bfe233f"
+    },
+    {
+      "file": "core-metadata-maybe-ref.expected.txt",
+      "cases": [
+        "metadata_maybe_refs_are_unwrapped_only_outside_the_loop_alias_scope/SetupLet",
+        "metadata_maybe_refs_are_unwrapped_only_outside_the_loop_alias_scope/SetupMaybeRef"
+      ],
+      "bytes": 654,
+      "sha256": "f01f04e22d8dd9c2adaf0fb05d581fdf51409792214d243d885cbcca13d55f16"
+    },
+    {
+      "file": "renamed.vue.txt",
+      "cases": ["renaming_only_the_loop_alias_keeps_the_same_outer_model"],
+      "bytes": 300,
+      "sha256": "e8d41bd1af519914c1551848c11ed0aa55452c27bc5c80e2907157351f8d1334"
+    }
+  ],
+  "originalWholeBeforeAfterSha256": "14ae40f1054b3ed954fd86928de8f111ee29697c5e3c01cc81080cbdc5130f87"
+}
