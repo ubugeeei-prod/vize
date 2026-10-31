@@ -6,6 +6,7 @@ on:
       - .github/workflows/published-constructor-original27.yml
       - tools/support/release/constructor_original27_public/**
       - tests/tooling/release/constructor-original27-public.test.ts
+      - tests/tooling/release/constructor-original27-stderr.test.ts
   workflow_dispatch:
     inputs:
       version:
@@ -43,7 +44,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "24.14.0", package-manager-cache: false }
       - name: Require whole vectors, debt preservation, registry custody and repair isolation
-        run: node --test tests/tooling/release/constructor-original27-public.test.ts
+        run: node --test tests/tooling/release/constructor-original27-public.test.ts tests/tooling/release/constructor-original27-stderr.test.ts
 
   installed-public:
     name: Original Linux public 27 cases and separate repair copy
