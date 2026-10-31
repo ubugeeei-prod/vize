@@ -1,5 +1,14 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -26,6 +35,11 @@ import {
   sourcePins,
   type Observation,
 } from "../../../tools/support/release/computed_event_names.ts";
+import {
+  assertDeclarationCustody,
+  captureDeclarationCustody,
+} from "../../../tools/support/release/computed_event_custody.ts";
+import "./computed-event-module-custody.test.ts";
 
 const fixture = fileURLToPath(
   new URL(
@@ -302,5 +316,155 @@ test("argument validation freezes before version and requires exclusive absolute
     assert.equal(path.basename(findNpmCli()), "npm-cli.js");
   } finally {
     rmSync(directory, { recursive: true });
+  }
+});
+
+function declarations(current = false) {
+  const directory = mkdtempSync(path.join(tmpdir(), "vize-computed-declarations-"));
+  const root = path.join(directory, "vize");
+  mkdirSync(path.join(root, "generated"), { recursive: true });
+  const names = [
+    "virtual-ts.d.ts",
+    "virtual-ts.d.mts",
+    "virtual-ts.d.cts",
+    "content-mapper-helpers.d.ts",
+    "content-mapper-helpers.d.mts",
+    "content-mapper-helpers.d.cts",
+    "generated/content-mapper-types.d.ts",
+  ];
+  for (const name of names) writeFileSync(path.join(root, name), `// ${name}\nexport {};\n`);
+  if (current) {
+    for (const name of ["virtual-ts-globals.d.ts", "virtual-ts-patterns.d.ts"])
+      writeFileSync(path.join(root, name), `// ${name}\ndeclare const fixture: unknown;\n`);
+    for (const name of names.slice(0, 3))
+      writeFileSync(
+        path.join(root, name),
+        [
+          '/// <reference path="./virtual-ts-globals.d.ts" /> // shared declaration',
+          "/// <reference path='./virtual-ts-patterns.d.ts' preserve=\"true\" />",
+          "export {};\n",
+        ].join("\n"),
+      );
+  }
+  return { directory, root: realpathSync(root), names };
+}
+
+test("installed declaration custody accepts the legacy seven and captures the current nine", () => {
+  for (const current of [false, true]) {
+    const fixture = declarations(current);
+    try {
+      writeFileSync(path.join(fixture.root, "unreferenced.d.ts"), "export {};\n");
+      const images = captureDeclarationCustody(fixture.root);
+      const names = images.map((image) =>
+        path.relative(fixture.root, image.path).replace(/\\/gu, "/"),
+      );
+      assert.deepEqual(names.slice(0, 7), fixture.names);
+      assert.equal(images.length, current ? 9 : 7);
+      assert.equal(names.includes("unreferenced.d.ts"), false);
+      assertCustody(images);
+      assertDeclarationCustody(fixture.root, images);
+    } finally {
+      rmSync(fixture.directory, { recursive: true });
+    }
+  }
+});
+
+test("transitive declaration bytes remain in custody beyond the two new entry references", () => {
+  const fixture = declarations(true);
+  try {
+    mkdirSync(path.join(fixture.root, "nested"));
+    const leaf = path.join(fixture.root, "nested/leaf.d.cts");
+    writeFileSync(leaf, "declare const leaf: 1;\n");
+    writeFileSync(
+      path.join(fixture.root, "virtual-ts-patterns.d.ts"),
+      '/// <reference path=".\\nested\\leaf.d.cts" />\ndeclare const fixture: unknown;\n',
+    );
+    const images = captureDeclarationCustody(fixture.root);
+    assert.equal(images.length, 10);
+    assert.equal(images.filter((image) => image.path === leaf).length, 1);
+    writeFileSync(leaf, "declare const leaf: 2;\n"); // Same length; require the actual transitive bytes.
+    assert.throws(() => assertCustody(images), /installed file changed/u);
+    assert.throws(() => assertDeclarationCustody(fixture.root, images), /closure changed/u);
+  } finally {
+    rmSync(fixture.directory, { recursive: true });
+  }
+});
+
+test("legitimate leading reference cycles terminate and comment lookalikes add no files", () => {
+  const fixture = declarations(true);
+  try {
+    writeFileSync(
+      path.join(fixture.root, "virtual-ts-globals.d.ts"),
+      [
+        '\uFEFF/* /// <reference path="./not-a-real-reference.d.ts" /> */',
+        '/// <reference types="external-types" resolution-mode="import" />',
+        '/// <reference lib="esnext" />',
+        '/// <reference path="./virtual-ts-patterns.d.ts" />',
+        'declare const fixture: unknown;\n/// <reference path="./after-statement.d.ts" />\n',
+      ].join("\r\n"),
+    );
+    writeFileSync(
+      path.join(fixture.root, "virtual-ts-patterns.d.ts"),
+      '/// <reference path="./virtual-ts-globals.d.ts" />\ndeclare const pattern: unknown;\n',
+    );
+    assert.equal(captureDeclarationCustody(fixture.root).length, 9);
+  } finally {
+    rmSync(fixture.directory, { recursive: true });
+  }
+});
+
+test("missing, escaping, non-declaration and malformed local references are refused", () => {
+  const fixture = declarations();
+  try {
+    writeFileSync(path.join(fixture.directory, "outside.d.ts"), "export {};\n");
+    writeFileSync(path.join(fixture.root, "source.ts"), "export {};\n");
+    for (const [directive, message] of [
+      ['/// <reference path="../outside.d.ts" />', /escapes installed package/u],
+      ['/// <reference path="..\\outside.d.ts" />', /escapes installed package/u],
+      ['/// <reference path="C:\\outside.d.ts" />', /must stay local/u],
+      ['/// <reference path="/outside.d.ts" />', /must stay local/u],
+      ['/// <reference path="file:///outside.d.ts" />', /must stay local/u],
+      ['/// <reference path="./missing.d.ts" />', /ENOENT/u],
+      ['/// <reference path="./source.ts" />', /must name a declaration file/u],
+      ["/// <reference path=unquoted />", /malformed declaration reference/u],
+      ['/// <reference path="" />', /empty or invalid/u],
+      ['/// <reference path="./virtual-ts.d.ts" path="./virtual-ts.d.ts" />', /duplicate/u],
+      ['/// <reference path="./virtual-ts.d.ts"', /malformed declaration reference/u],
+    ] as const) {
+      writeFileSync(path.join(fixture.root, "virtual-ts.d.ts"), `${directive}\nexport {};\n`);
+      assert.throws(() => captureDeclarationCustody(fixture.root), message);
+    }
+    rmSync(path.join(fixture.root, "generated/content-mapper-types.d.ts"));
+    writeFileSync(path.join(fixture.root, "virtual-ts.d.ts"), "export {};\n");
+    assert.throws(() => captureDeclarationCustody(fixture.root), /ENOENT/u);
+  } finally {
+    rmSync(fixture.directory, { recursive: true });
+  }
+});
+
+test("realpath containment and repeated closure checks detect redirected declaration links", () => {
+  const fixture = declarations();
+  try {
+    for (const name of ["first", "second"]) mkdirSync(path.join(fixture.root, name));
+    for (const name of ["first", "second"])
+      writeFileSync(path.join(fixture.root, name, "leaf.d.ts"), "export {};\n");
+    const linked = path.join(fixture.root, "linked");
+    const linkType = process.platform === "win32" ? "junction" : "dir";
+    symlinkSync(path.join(fixture.root, "first"), linked, linkType);
+    writeFileSync(
+      path.join(fixture.root, "virtual-ts.d.ts"),
+      '/// <reference path="./linked/leaf.d.ts" />\nexport {};\n',
+    );
+    const images = captureDeclarationCustody(fixture.root);
+    rmSync(linked);
+    symlinkSync(path.join(fixture.root, "second"), linked, linkType);
+    assertCustody(images); // The original files are intact; the reference route changed.
+    assert.throws(() => assertDeclarationCustody(fixture.root, images), /closure changed/u);
+    rmSync(linked);
+    symlinkSync(fixture.directory, linked, linkType);
+    writeFileSync(path.join(fixture.directory, "leaf.d.ts"), "export {};\n");
+    assert.throws(() => captureDeclarationCustody(fixture.root), /escapes installed package/u);
+  } finally {
+    rmSync(fixture.directory, { recursive: true });
   }
 });

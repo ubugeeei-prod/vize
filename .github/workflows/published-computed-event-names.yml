@@ -5,8 +5,10 @@ on:
     paths:
       - .github/workflows/published-computed-event-names.yml
       - tools/support/release/computed_event_names.ts
+      - tools/support/release/computed_event_custody.ts
       - tools/support/release/computed_event_release.ts
       - tests/tooling/release/computed-event-names.test.ts
+      - tests/tooling/release/computed-event-module-custody.test.ts
       - tests/tooling/release/computed-event-release.test.ts
       - tests/_fixtures/differential/typechecker/dynamic-component-event-names-11140/**
   workflow_dispatch:

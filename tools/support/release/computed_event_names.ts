@@ -1,17 +1,18 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  realpathSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  assertCustody,
+  assertDeclarationCustody,
+  captureDeclarationGraph,
+  fileImage,
+  inside,
+  sha256,
+} from "./computed_event_custody.ts";
+export { assertCustody, fileImage, sha256, type FileImage } from "./computed_event_custody.ts";
 
 export const checkerVersion = "0.20.1-ts7.1.0-beta";
 export const checkerVersionOutput =
@@ -34,28 +35,12 @@ const fixture = path.join(
   "tests/_fixtures/differential/typechecker/dynamic-component-event-names-11140",
 );
 
-export const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 export const normalizeOutput = (value: string) => value.replace(/\r\n/g, "\n").replace(/\\/g, "/");
 
 export function assertSourcePins(sources: Record<string, Buffer>) {
   assert.deepEqual(Object.keys(sources).sort(), Object.keys(sourcePins).sort());
   for (const [name, expected] of Object.entries(sourcePins)) {
     assert.equal(sha256(sources[name]), expected, `frozen reporter input: ${name}`);
-  }
-}
-
-export type FileImage = { path: string; bytes: number; sha256: string };
-export function fileImage(filename: string): FileImage {
-  const actual = realpathSync(filename);
-  assert(statSync(actual).isFile(), `regular file required: ${filename}`);
-  const bytes = readFileSync(actual);
-  return { path: actual, bytes: bytes.length, sha256: sha256(bytes) };
-}
-export function assertCustody(images: FileImage[]) {
-  assert(images.length > 0, "custody must include actual installed files");
-  assert.equal(new Set(images.map((image) => image.path)).size, images.length);
-  for (const image of images) {
-    assert.deepEqual(fileImage(image.path), image, `installed file changed: ${image.path}`);
   }
 }
 
@@ -215,14 +200,6 @@ export function findNpmCli(environment = process.env): string {
   throw new Error("Cannot resolve npm-cli.js from the selected Node installation or PATH");
 }
 
-function inside(root: string, filename: string) {
-  const relative = path.relative(root, filename);
-  return (
-    relative === "" ||
-    (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative))
-  );
-}
-
 export async function main(args = process.argv.slice(2)) {
   const { version, output, phase } = parseArguments(args);
   mkdirSync(path.dirname(output), { recursive: true });
@@ -340,7 +317,13 @@ export async function main(args = process.argv.slice(2)) {
     const lock = JSON.parse(lockBytes.toString("utf8"));
     assert.equal(lock.lockfileVersion, 3);
     const require = createRequire(packagePath);
-    const images = [harness, npmImage, fileImage(packagePath), fileImage(lockPath)];
+    const images = [
+      harness,
+      fileImage(fileURLToPath(new URL("./computed_event_custody.ts", import.meta.url))),
+      npmImage,
+      fileImage(packagePath),
+      fileImage(lockPath),
+    ];
     const packages: Record<string, unknown>[] = [];
     receipt.packages = packages;
     const identify = (name: string, expected: string) => {
@@ -409,9 +392,15 @@ export async function main(args = process.argv.slice(2)) {
       fileImage(path.join(vize.directory, "bin/vize")),
       fileImage(path.join(vize.directory, "dist/cli.mjs")),
     );
-    for (const name of ["virtual-ts.d.ts", "virtual-ts.d.mts", "virtual-ts.d.cts"]) {
-      images.push(fileImage(path.join(vize.directory, name)));
-    }
+    const declarationGraph = captureDeclarationGraph(vize.directory);
+    const declarations = declarationGraph.files;
+    images.push(...declarations);
+    receipt.declarations = declarations;
+    receipt.declarationEdges = declarationGraph.edges;
+    const checkCustody = () => {
+      assertCustody(images);
+      assertDeclarationCustody(vize.directory, declarations, declarationGraph.edges);
+    };
     receipt.checker = { ...checkerImage, package: checkerManifest.name, version: checkerVersion };
     receipt.custody = images;
     save();
@@ -426,11 +415,11 @@ export async function main(args = process.argv.slice(2)) {
     receipt.checkerVersionObservation = checkerVersionObservation;
     save();
     assertCheckerVersion(checkerVersionObservation);
-    assertCustody(images);
+    checkCustody();
     const observations: Observation[] = [];
     const probe = path.join(consumer, "src/Probe.vue");
     const run = (id: string, expectedProbe: string) => {
-      assertCustody(images);
+      checkCustody();
       const checkSources = () => {
         for (const [name, expected] of Object.entries(sourcePins)) {
           assert.equal(
@@ -451,7 +440,7 @@ export async function main(args = process.argv.slice(2)) {
       observations.push(row);
       receipt.observations = observations;
       save();
-      assertCustody(images);
+      checkCustody();
       checkSources();
     };
     if (phase === "before") {
