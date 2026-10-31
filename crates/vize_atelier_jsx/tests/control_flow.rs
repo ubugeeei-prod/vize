@@ -41,9 +41,10 @@ fn vdom_control_flow_matrix() {
         ),
     ];
 
-    insta::assert_snapshot!(snapshot_cases(&cases, |source| {
-        vdom_code(source, JsxLang::Jsx)
-    }));
+    insta::assert_snapshot!(
+        "vdom_control_flow_matrix_vdom_child_values_6890",
+        snapshot_cases(&cases, |source| { vdom_code(source, JsxLang::Jsx) })
+    );
 }
 
 #[test]

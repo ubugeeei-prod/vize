@@ -126,17 +126,20 @@ fn a_scoped_slot_keeps_its_params() {
         .expect("preserve scoped-slot packet before assertion");
     }
     assert_eq!(diagnostics(source), Vec::<String>::new());
-    assert_eq!(
-        code,
-        "export function render(_ctx, _cache) {\n  \
+    let historical_stable_slot = "export function render(_ctx, _cache) {\n  \
          const _component_B = _resolveComponent(\"B\")\n  \n  \
          return (_openBlock(), _createBlock(_component_B, null, {\n    \
          header: _withCtx((p) => [\n      \
          _createElementVNode(\"i\", null, _toDisplayString(p.x), 1 /* TEXT */)\n    \
          ]),\n    \
          _: 1 /* STABLE */\n  \
-         }))\n}"
-    );
+         }))\n}";
+    assert_ne!(code, historical_stable_slot);
+    let expected: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/jsx/child-values-6890-vdom-consumers/scoped-slot-vdom.json"
+    ))
+    .expect("complete actual hosted scoped-slot module");
+    assert_eq!(serde_json::json!({"source":source,"code":code}), expected);
 }
 
 #[test]

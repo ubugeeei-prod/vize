@@ -312,13 +312,20 @@ mod tests {
         assert!(result.scoped_styles.is_empty());
     }
 
+    fn native_vdom_api_module_packet(
+        source: &str,
+        result: &JsxCompileResultNapi,
+    ) -> serde_json::Value {
+        serde_json::json!({"source":source,"scope":"complete pure Rust adapter DTO; no Node ABI execution credit","dto":{"code":result.code,"map":result.map,"errors":result.errors,"warnings":result.warnings,"scopedStyles":result.scoped_styles.iter().map(|style|serde_json::json!({"scopeId":style.scope_id,"css":style.css})).collect::<std::vec::Vec<_>>()}})
+    }
+
     fn capture_native_vdom_api_module(label: &str, source: &str, result: &JsxCompileResultNapi) {
         let Some(directory) = std::env::var_os("VIZE_JSX_VDOM_NAPI_CAPTURE") else {
             return;
         };
         let directory = std::path::PathBuf::from(directory);
         std::fs::create_dir_all(&directory).expect("capture directory");
-        let packet = serde_json::json!({"source":source,"scope":"complete pure Rust adapter DTO; no Node ABI execution credit","dto":{"code":result.code,"map":result.map,"errors":result.errors,"warnings":result.warnings,"scopedStyles":result.scoped_styles.iter().map(|style|serde_json::json!({"scopeId":style.scope_id,"css":style.css})).collect::<std::vec::Vec<_>>()}});
+        let packet = native_vdom_api_module_packet(source, result);
         std::fs::write(
             directory.join(format!("{label}.json")),
             serde_json::to_vec_pretty(&packet).expect("whole DTO"),
@@ -334,17 +341,21 @@ mod tests {
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
         // The helper import precedes the render that uses it.
-        assert_eq!(
-            result.code,
-            "import { toDisplayString as _toDisplayString, openBlock as _openBlock, \
+        // Keep the complete historical text-child module as its original preimage.
+        let historical_text_child_module = "import { toDisplayString as _toDisplayString, openBlock as _openBlock, \
              createElementBlock as _createElementBlock } from \"vue\"\n\n\
              const App = () => (() => {\n\
              return ((_ctx, _cache) => {\n  \
              return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(message), 1 /* TEXT */))\n\
              })(undefined, [])\n\
              })();\n\
-             export default App;\n"
-        );
+             export default App;\n";
+        assert_ne!(result.code, historical_text_child_module);
+        let expected: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../tests/_fixtures/differential/jsx/child-values-6890-vdom-consumers/helper-module.json"
+        ))
+        .expect("complete actual hosted source-native adapter packet");
+        assert_eq!(native_vdom_api_module_packet(source, &result), expected);
     }
 
     #[test]
@@ -367,9 +378,8 @@ mod tests {
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
         // Setup state stays inside `setup()`; no separate `render` export.
-        assert_eq!(
-            result.code,
-            "import { toDisplayString as _toDisplayString, openBlock as _openBlock, \
+        // Keep the complete historical text-child module as its original preimage.
+        let historical_text_child_module = "import { toDisplayString as _toDisplayString, openBlock as _openBlock, \
              createElementBlock as _createElementBlock } from \"vue\"\n\n\
              import { defineComponent as _defineComponent } from \"vue\"\n\n        \
              import { computed, ref } from \"vue\";\n\n        \
@@ -388,8 +398,13 @@ mod tests {
              })\n\
              })()\n\
              }\n\
-             });\n    "
-        );
+             });\n    ";
+        assert_ne!(result.code, historical_text_child_module);
+        let expected: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../tests/_fixtures/differential/jsx/child-values-6890-vdom-consumers/setup-module.json"
+        ))
+        .expect("complete actual hosted source-native adapter packet");
+        assert_eq!(native_vdom_api_module_packet(source, &result), expected);
     }
 
     #[test]

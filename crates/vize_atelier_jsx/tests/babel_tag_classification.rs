@@ -51,7 +51,12 @@ fn dashed_lowercase_is_classified_before_slot_lowering() {
     let native = compile_module(source, JsxCompatMode::Native);
     let babel = compile_module(source, JsxCompatMode::Babel);
 
-    assert!(native.contains("_toDisplayString({"), "{native}");
+    assert!(
+        native.contains("_createElementVNode(\"my-el\", null, ["),
+        "{native}"
+    );
+    assert!(native.contains("{ default: () => <span/> }"), "{native}");
+    assert!(!native.contains("_toDisplayString({"), "{native}");
     assert!(babel.contains("default: _withCtx(() => ["), "{babel}");
     assert!(!babel.contains("_toDisplayString({"), "{babel}");
     assert_ne!(native, babel);

@@ -61,7 +61,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     fn owns_native_vdom_child_values(&self) -> bool {
         self.babel_vdom_lane
             && self.current_output_mode == crate::JsxOutputMode::Vdom
-            && !self.uses_babel_vdom_compat()
+            && !self.uses_babel_compat()
     }
 
     /// Lower a list of JSX children, dropping whitespace-only text.

@@ -2054,7 +2054,7 @@
               "html-template",
               "js"
             ],
-            "selector": "ordinary_template_and_v_text_keep_the_complete_undefined_reference_diagnostic"
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

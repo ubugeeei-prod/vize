@@ -65,7 +65,10 @@ fn vdom_codegen_matrix() {
         ),
     ];
 
-    insta::assert_snapshot!(snapshot_lang_cases(&cases, vdom_code));
+    insta::assert_snapshot!(
+        "vdom_codegen_matrix_vdom_child_values_6890",
+        snapshot_lang_cases(&cases, vdom_code)
+    );
 }
 
 #[test]
@@ -126,5 +129,8 @@ fn preamble_imports_runtime_helpers() {
         VdomCompileOptions::default(),
     );
 
-    insta::assert_snapshot!(out.components[0].preamble.as_str());
+    insta::assert_snapshot!(
+        "preamble_imports_runtime_helpers_vdom_child_values_6890",
+        out.components[0].preamble.as_str()
+    );
 }

@@ -4,6 +4,7 @@ import path from "node:path";
 import { rspack } from "@rspack/core";
 import { compileJsx } from "@vizejs/native";
 import { compileJsxModule } from "./shared/compiler.ts";
+import { nativeVdomConsumers } from "./test/jsx-vdom-child-values.ts";
 import "./test/setup.ts";
 import { VizePlugin } from "./plugin/index.ts";
 import {
@@ -153,7 +154,15 @@ void test("jsx: a .jsx Vue component compiles to VDOM render code", async (t) =>
   t.assert.ok(loaded);
   t.assert.equal(loaded.originalSource()?.source().toString(), reference.code);
   t.assert.equal(nativeDto.code, reference.code);
-  t.assert.snapshot(snapshotValue);
+  const expected = nativeVdomConsumers.bundle;
+  t.assert.deepEqual({ source, entry }, { source: expected.source, entry: expected.entry });
+  t.assert.equal(Object.hasOwn(nativeDto, "map"), expected.mapOwnProperty);
+  t.assert.equal(nativeDto.map === undefined, expected.mapIsUndefined);
+  // The genuine map-off Node packet has no own map property and reads as
+  // undefined. Preserve that boundary and compare the complete DTO.
+  t.assert.deepEqual(nativeDto, expected.nativeDto);
+  t.assert.equal(loaded.originalSource()?.source().toString(), expected.loadedModule);
+  t.assert.equal(snapshotValue, expected.snapshotValue);
 });
 
 void test("jsx: a .jsx <style scoped> block emits scope-rewritten CSS into the bundle", async (t) => {

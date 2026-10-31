@@ -92,35 +92,54 @@ fn unmarked_or_malformed_compounds_keep_the_original_transformed_child_refusal()
 }
 
 #[test]
-fn babel_compat_retains_unmarked_raw_compounds_without_native_role_or_scope_fact() {
+fn babel_configurations_retain_unmarked_roles_without_a_native_scope_fact() {
     let allocator = Allocator::new();
     let source = "const App=()=> <main>{state.value}</main>;";
-    let (lowered, _) = crate::lower_source_with_compat(
-        &allocator,
-        allocator.as_oxc(),
-        source,
-        JsxLang::Jsx,
-        JsxCompatMode::Babel,
-        JsxOutputMode::Vdom,
-        BabelLoweringOptions {
-            vdom_lane: true,
-            ..Default::default()
-        },
-    );
-    assert!(!lowered.has_errors());
-    let root = &lowered.roots[0];
-    assert!(!root.vdom_value_children);
-    assert!(matches!(root.l2.as_ref(), Err(L2Refusal::TransformedChild)));
-    let TemplateChildNode::Element(element) = &root.root.children[0] else {
-        panic!("original element")
-    };
-    let TemplateChildNode::CompoundExpression(compound) = &element.children[0] else {
-        panic!("original raw compound")
-    };
-    assert!(!compound.is_jsx_child_value);
-    assert!(!compound.jsx_child_needs_grouping);
-    let [CompoundExpressionChild::Simple(expression)] = compound.children.as_slice() else {
-        panic!("one original raw expression")
-    };
-    assert_eq!(expression.content, "state.value");
+    for vdom_compat in [false, true] {
+        let (lowered, _) = crate::lower_source_with_compat(
+            &allocator,
+            allocator.as_oxc(),
+            source,
+            JsxLang::Jsx,
+            JsxCompatMode::Babel,
+            JsxOutputMode::Vdom,
+            BabelLoweringOptions {
+                vdom_lane: true,
+                vdom_compat,
+                ..Default::default()
+            },
+        );
+        assert!(!lowered.has_errors());
+        let root = &lowered.roots[0];
+        assert!(!root.vdom_value_children);
+        let TemplateChildNode::Element(element) = &root.root.children[0] else {
+            panic!("original element")
+        };
+        if !vdom_compat {
+            let TemplateChildNode::Interpolation(interpolation) = &element.children[0] else {
+                panic!("generic compatibility lowering retains template interpolation")
+            };
+            let vize_relief::ExpressionNode::Simple(expression) = &interpolation.content else {
+                panic!("original authored expression")
+            };
+            assert_eq!(expression.content, "state.value");
+            let l2 = root.l2.as_ref().expect("generic interpolation projection");
+            assert!(!l2.features.has_jsx_child_values());
+            let Op::Element(element) = &l2.root.ops[0] else {
+                panic!("original projected element")
+            };
+            assert!(matches!(&element.children.ops[0], Op::Interpolation(_)));
+        } else {
+            assert!(matches!(root.l2.as_ref(), Err(L2Refusal::TransformedChild)));
+            let TemplateChildNode::CompoundExpression(compound) = &element.children[0] else {
+                panic!("original raw compound")
+            };
+            assert!(!compound.is_jsx_child_value);
+            assert!(!compound.jsx_child_needs_grouping);
+            let [CompoundExpressionChild::Simple(expression)] = compound.children.as_slice() else {
+                panic!("one original raw expression")
+            };
+            assert_eq!(expression.content, "state.value");
+        }
+    }
 }

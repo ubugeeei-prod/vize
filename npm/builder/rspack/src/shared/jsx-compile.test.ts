@@ -2,6 +2,7 @@ import { test } from "node:test";
 import fs from "node:fs";
 import path from "node:path";
 import { prepareOutputDir } from "../test/helpers.ts";
+import { nativeVdomConsumers } from "../test/jsx-vdom-child-values.ts";
 import assert from "node:assert/strict";
 import { compileJsx } from "@vizejs/native";
 import ts from "typescript";
@@ -45,7 +46,11 @@ void test("compileJsxModule includes the runtime-helper preamble in the emitted 
       2,
     ) + "\n",
   );
-  t.assert.snapshot(observed);
+  const expected = nativeVdomConsumers.module;
+  t.assert.deepEqual(
+    { source: SOURCE, compatSource: source, observed },
+    { source: expected.source, compatSource: expected.compatSource, observed: expected.observed },
+  );
 });
 
 void test("compileJsxModule surfaces a v3 source map when sourceMap is requested", (t) => {
@@ -71,7 +76,8 @@ void test("compileJsxModule surfaces a v3 source map when sourceMap is requested
       2,
     ) + "\n",
   );
-  t.assert.snapshot(String(map));
+  t.assert.equal(SOURCE, nativeVdomConsumers.map.source);
+  t.assert.equal(String(map), nativeVdomConsumers.map.observed);
 });
 
 void test("compileJsxModule omits the source map when sourceMap is off", () => {

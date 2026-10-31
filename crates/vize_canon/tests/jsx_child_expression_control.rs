@@ -1,7 +1,7 @@
 //! Neutral expression projection consumes the authored expression, independently of rendering.
 use vize_canon::{
     projection::{project_template_expression_document, project_template_expressions},
-    virtual_ts::ProjectionMapping,
+    virtual_ts::{ProjectionMapping, VizeMapping},
 };
 use vize_l0::{Allocator, Box, Span, Vec};
 use vize_l2::{
@@ -81,21 +81,39 @@ fn planned_batch_sfc_input_preserves_all_projection_ranges_without_batch_executi
     let base = template.loc.start;
     assert_eq!(source.get(base..base + body.len()), Some(body));
     let projection = project_template_expressions(body);
-    let mut generated = 0;
-    let mut authored = base;
-    let mut ranges = std::vec::Vec::new();
-    let mut expected = std::vec::Vec::new();
-    for expression in ["state.value", "missing", "state.value"] {
-        let start = authored + source.get(authored..).unwrap().find(expression).unwrap();
-        let end = start + expression.len();
+    // The existing L1 text lowering coalesces adjacent interpolation tokens
+    // into one opaque canonical template run. Preserve that complete span;
+    // this consumer must not invent independent inner-expression links.
+    let merged = "{{ state.value }}{{ missing }}";
+    let start = body
+        .find(merged)
+        .expect("unchanged adjacent interpolation run");
+    let text = "state.value";
+    let text_start = body.rfind(text).expect("separate v-text binding");
+    let text_generated = merged.len() + 1;
+    assert_eq!(
+        projection.spans(),
+        [
+            VizeMapping::new(0..merged.len(), start..start + merged.len()),
+            VizeMapping::new(
+                text_generated..text_generated + text.len(),
+                text_start..text_start + text.len(),
+            ),
+        ]
+    );
+    for (generated, authored) in [
+        (0..merged.len(), start..start + merged.len()),
+        (
+            text_generated..text_generated + text.len(),
+            text_start..text_start + text.len(),
+        ),
+    ] {
         let relative = projection
-            .diagnostic_range_to_authored(generated, generated + expression.len())
-            .expect("whole projected expression");
-        ranges.push((relative.0 + base, relative.1 + base));
-        expected.push((start, end));
-        generated += expression.len() + 1;
-        authored = end;
+            .diagnostic_range_to_authored(generated.start, generated.end)
+            .expect("whole producer-owned span");
+        assert_eq!(
+            (relative.0 + base, relative.1 + base),
+            (authored.start + base, authored.end + base)
+        );
     }
-    assert_eq!(projection.spans().len(), 3);
-    assert_eq!(ranges, expected);
 }
