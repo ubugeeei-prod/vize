@@ -138,7 +138,8 @@ fn analyze_projection(
 }
 
 fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrence>> {
-    select(ctx, new_name, &resolve_entry(ctx)?)
+    let entry = resolve_entry(ctx)?;
+    select(ctx, new_name, &entry)
 }
 
 fn resolve_entry(ctx: &IdeContext<'_>) -> Option<std::sync::Arc<snapshot::Entry>> {
