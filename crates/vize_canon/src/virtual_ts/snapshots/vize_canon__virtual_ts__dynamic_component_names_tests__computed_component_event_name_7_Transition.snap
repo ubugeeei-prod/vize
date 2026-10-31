@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/dynamic_component_names_tests.rs
+assertion_line: 116
 expression: code
 ---
 /// <reference lib="es2022" />
@@ -104,7 +105,7 @@ declare function __vizeDirectiveTail<F extends (...args: any[]) => any>(hook: F)
 import Child from './Child.vue'
 
 // Global component stubs (vue module augmentations)
-type $GlobalComponent<__K extends PropertyKey, __F extends PropertyKey = __K, __G = import("vue").GlobalComponents, __C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : any> = unknown extends __C ? any : __C;
+type $GlobalComponent<__K extends string | number | symbol, __F extends string | number | symbol = __K, __L extends string | number | symbol = __F, __G = import("vue").GlobalComponents, __C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : __L extends keyof __G ? __G[__L] : any> = unknown extends __C ? any : __C;
 type $GlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;
 declare const Transition: $GlobalComponent<"Transition"> & $GlobalComponentFallback;
 
@@ -138,7 +139,7 @@ function __setup() {
   const enter = 'enter'
   let pressed = false
   
-  // @vize-map: 15452:15632 -> 0:197
+  // @vize-map: 15557:15737 -> 0:197
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

@@ -1,0 +1,5 @@
+import 'vue';
+// @ts-ignore Exact erroneous registry entry.
+type ErrorProvider = typeof missingRegistryProvider;
+declare module 'vue' { interface GlobalComponents { RegistryChild: ErrorProvider; } }
+export {};

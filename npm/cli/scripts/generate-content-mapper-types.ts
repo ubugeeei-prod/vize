@@ -4,6 +4,7 @@ import { format } from "oxfmt";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { slotPayloadExports } from "./slot-payload-exports.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const helperRoot = "crates/vize_canon/src/virtual_ts/helpers";
@@ -137,6 +138,17 @@ for (const extension of ["ts", "mts", "cts"]) {
     publicSlot.code.trimEnd() +
     original.slice(current.declaration.end);
   outputs.set(relativePath, replaced);
+}
+for (const [relativePath, replacement] of await slotPayloadExports(root)) {
+  // Both isolated families change the same entry. Compose the zero-call edit
+  // into the payload result instead of overwriting either source-owned family.
+  const current = await slotDeclaration(replacement, relativePath, true);
+  outputs.set(
+    relativePath,
+    replacement.slice(0, current.declaration.getStart(current.parsed)) +
+      publicSlot.code.trimEnd() +
+      replacement.slice(current.declaration.end),
+  );
 }
 // Refuse every malformed or unknown input before replacing any SDK copy.
 for (const [relativePath, contents] of outputs) {

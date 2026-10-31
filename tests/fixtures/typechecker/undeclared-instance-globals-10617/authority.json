@@ -111,9 +111,19 @@
     },
     {
       "path": "CURRENT.md",
-      "bytes": 3660,
-      "sha256": "bfbe6751df220fa0fc3d844a34c736020f34de461413e680333be56e084bf352"
+      "bytes": 3024,
+      "sha256": "ea1d139e28193643986249034a6e9fc8dd6318cc26f660dd8be3a80e93eacd65"
+    },
+    {
+      "path": "source-packets-current-4543862023a0.json",
+      "bytes": 375042,
+      "sha256": "ad50f1fa04ed8b052b8c782642c275386a4ec496700ebe44997d67ee837267ef"
+    },
+    {
+      "path": "source-packets-current-4543862023a0-provenance.json",
+      "bytes": 1532521,
+      "sha256": "b6855416884dea298edbca2c460cd32638992417ba4d20ffe4b3ac79807827f3"
     }
   ],
-  "currentSourcePackets": "source-packets-current-b66e208809ed.json"
+  "currentSourcePackets": "source-packets-current-4543862023a0.json"
 }

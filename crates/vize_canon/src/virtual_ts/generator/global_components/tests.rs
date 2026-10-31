@@ -7,6 +7,7 @@ use crate::virtual_ts::{
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 mod dynamic_props;
+mod registry_slot_owners;
 
 fn generate(script: &str, template: &str, check_unknown_components: bool) -> VirtualTsOutput {
     let allocator = vize_carton::Allocator::new();
@@ -305,7 +306,7 @@ fn named_member_exclusion_removes_only_the_exact_registry_check_and_mapping() {
         let mut code = vize_carton::String::default();
         let mut mappings = Vec::new();
         let options = VirtualTsOptions::default();
-        let plan = super::GlobalComponentPlan::new((&summary, ast), false, true, None);
+        let mut plan = super::GlobalComponentPlan::new((&summary, ast), false, true, None);
         plan.emit(
             &mut code,
             &summary,

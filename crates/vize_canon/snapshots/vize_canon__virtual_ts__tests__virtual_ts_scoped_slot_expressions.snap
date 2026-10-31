@@ -128,10 +128,11 @@ type $SlotConstructorFallback<C, Z, P> = $SlotContractIsUsable<$SlotHostSlots<C>
 type $SlotConstructorInstance<C, Z, P> = [$SlotConstructorHasArguments<C>] extends [never] ? Z : P extends { $slots: infer S } ? $SlotContractIsUsable<S> extends true ? $SlotContractHasKeys<S> extends true ? P : $SlotConstructorFallback<C, Z, P> : $SlotConstructorFallback<C, Z, P> : $SlotConstructorFallback<C, Z, P>;
 declare function __vizeSlotConstructorInstance<C>(): <Z, P>(withoutArguments: Z, withArguments: P) => $SlotConstructorInstance<C, Z, P>;
 type $SlotHostSelector<C> = [$DirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
-// @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
+// @ts-ignore A missing provider keeps its framework error-any fallback.
 type $SilentAny = {}["__vizeSilentAny"];
+type $RegisteredSlotProvider<__G, __K extends string | number | symbol, __F extends string | number | symbol = __K, __L extends string | number | symbol = __F> = $IsAny<__G> extends true ? $SilentAny : __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : __L extends keyof __G ? __G[__L] : $SilentAny;
 type $NamedSlotPayload<__S, __N> = { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
-type $SlotPayload<__S, __N> = $IsAny<__S> extends true ? $SilentAny : string extends __N ? string extends keyof __S ? $NamedSlotPayload<__S, __N> : any : $NamedSlotPayload<__S, __N>;
+type $SlotPayload<__S, __N, __C = $RegisteredSlotProvider<any, never>> = $IsAny<__S> extends true ? $IsAny<__C> extends true ? __C : any : string extends __N ? string extends keyof __S ? $NamedSlotPayload<__S, __N> : any : $NamedSlotPayload<__S, __N>;
 import MyList from './MyList.vue'
 
 // ========== Exported Types ==========
@@ -159,7 +160,7 @@ function __setup() {
   // User setup code
   const items = ['a', 'b']
   
-  // @vize-map: 19821:19851 -> 0:59
+  // @vize-map: 20195:20225 -> 0:59
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -183,7 +184,7 @@ function __setup() {
     "items": items,
   }));
   void __vize_slot_host_7;
-  void function _slot_default_7({ item }: $SlotPayload<typeof __vize_slot_host_7, "default">) {
+  void function _slot_default_7({ item }: $SlotPayload<typeof __vize_slot_host_7, "default", typeof MyList>) {
     void item;
     void (item); // Interpolation
     // @vize-map: expr -> 64:68
@@ -259,7 +260,7 @@ function __setup() {
     "items": items,
   }));
   void __vize_slot_props_host_7;
-  void function _slot_props_default_7({ item }: $SlotPayload<typeof __vize_slot_props_host_7, "default">) {
+  void function _slot_props_default_7({ item }: $SlotPayload<typeof __vize_slot_props_host_7, "default", typeof MyList>) {
     void item;
   };
 

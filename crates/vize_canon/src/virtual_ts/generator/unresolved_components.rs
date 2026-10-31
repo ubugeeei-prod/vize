@@ -6,10 +6,9 @@ use vize_croquis::Croquis;
 use super::global_components::GlobalComponentPlan;
 use crate::virtual_ts::{
     component_reference::{
-        component_binding_reference_with_bindings, component_reference_alias,
-        contains_compact_name, has_type_only_component_candidate,
+        component_binding_reference_with_bindings, component_binding_reference_with_provider,
+        component_reference_alias, contains_compact_name,
     },
-    helpers::to_safe_identifier,
     types::VirtualTsOptions,
 };
 
@@ -49,6 +48,13 @@ pub(super) fn emit_unresolved_components(
                     &external_template_bindings,
                 )
                 || global_components.keeps_unresolved_binding(name)
+                || component_binding_reference_with_provider(
+                    summary,
+                    options,
+                    syntactic_type_only_imported_names,
+                    name,
+                )
+                .1
             {
                 continue;
             }
@@ -56,12 +62,12 @@ pub(super) fn emit_unresolved_components(
                 ts.push_str("\n  // Auto-imported/built-in components (not in script bindings)\n");
                 has_unresolved = true;
             }
-            let safe =
-                if has_type_only_component_candidate(syntactic_type_only_imported_names, name) {
-                    component_reference_alias(name)
-                } else {
-                    to_safe_identifier(name)
-                };
+            let safe = component_reference_alias(
+                summary,
+                options,
+                syntactic_type_only_imported_names,
+                name,
+            );
             append!(*ts, "  const {safe}: any = undefined as any;\n");
         }
 

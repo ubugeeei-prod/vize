@@ -9,6 +9,7 @@
 
 #[cfg(test)]
 mod class_component_props_tests;
+mod component_aliases;
 mod component_reference;
 mod component_tag;
 #[cfg(test)]

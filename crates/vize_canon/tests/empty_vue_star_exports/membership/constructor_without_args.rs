@@ -3,6 +3,7 @@ use super::support;
 use serde_json::{Value, json};
 use std::fs;
 
+mod payload_update;
 mod public_layout;
 
 const RECORD: &str = "malformed-membership/constructor-without-args-update-20261031.json";
@@ -53,8 +54,9 @@ pub(super) fn load() -> Value {
     let cone = update["preambleSourceCone"].as_array().unwrap();
     assert_eq!(cone.len(), 19);
     for source in cone {
-        let path = support::repository().join(support::relative(source["path"].as_str().unwrap()));
-        let body = fs::read(path).unwrap();
+        let path = source["path"].as_str().unwrap();
+        let _ = support::relative(path);
+        let body = payload_update::source_before(path).into_bytes();
         assert_eq!(json!(body.len()), source["bytes"]);
         assert_eq!(support::hash(&body), source["sha256"].as_str().unwrap());
     }
@@ -66,11 +68,12 @@ pub(super) fn load() -> Value {
         let body = read_current(path, record);
         previous(&body, record);
     }
-    previous(
-        vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
-        &update["helper"],
-    );
+    previous(&prior_preamble(), &update["helper"]);
     update
+}
+
+pub(super) fn prior_preamble() -> String {
+    payload_update::preamble_before(vize_canon::virtual_ts::SHARED_PREAMBLE_DTS)
 }
 
 pub(super) fn read_current(path: &str, record: &Value) -> String {
@@ -114,8 +117,8 @@ pub(super) fn previous(current: &str, record: &Value) -> String {
 }
 
 pub(super) fn apply(manifest: &mut Value, members: &mut [Value], update: Value) {
-    let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-    previous(current, &update["helper"]);
+    let current = prior_preamble();
+    previous(&current, &update["helper"]);
     let helper = members.get_mut(82).unwrap();
     assert_eq!(*helper, update["before"]);
     assert_eq!(
@@ -129,6 +132,11 @@ pub(super) fn apply(manifest: &mut Value, members: &mut [Value], update: Value) 
     *helper = update["after"].clone();
     manifest["provenance"]["currentConstructorWithoutArgumentsUpdate"] = update;
     public_layout::retain_provenance(manifest);
+    payload_update::retain_current(
+        manifest,
+        members,
+        vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+    );
 }
 
 #[test]

@@ -54,7 +54,7 @@ use self::generics::HoistedGenericAliases;
 use self::global_components::{GlobalComponentDiagnostics, GlobalComponentPlan};
 pub(crate) use self::imports::extract_declared_name;
 use self::imports::{
-    collect_imported_names, collect_imported_names_without_script_value_use,
+    collect_component_imported_names, collect_imported_names_without_script_value_use,
     emit_reference_path_directives, emit_reference_type_directives,
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
@@ -80,8 +80,8 @@ use super::{
         VizeMapping, emit_lib_reference_directives,
     },
 };
-use vize_carton::{FxHashMap, FxHashSet, String, append, config::VueVersion, cstr, profile};
-use vize_croquis::{Croquis, facts::component_usage_list};
+use vize_carton::{FxHashMap, String, append, config::VueVersion, cstr, profile};
+use vize_croquis::Croquis;
 use vize_l0::ts;
 
 #[expect(
@@ -301,7 +301,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         aliases.emit_module_aliases(&mut ts);
     }
 
-    let global_components = GlobalComponentPlan::new(
+    let mut global_components = GlobalComponentPlan::new(
         (summary, template_ast),
         legacy_vue2,
         has_script_reference_types || check_options.check_unknown_components,
@@ -310,24 +310,24 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let options_api_props = options_api
         .then(|| script_content.and_then(find_options_api_props))
         .flatten();
-    // The template-scope unwrap set also needs it: an auto-import already
-    // imported by a plain `<script>` must not gain a second shadow.
-    let needs_imported_names = !options.auto_import_stubs.is_empty()
-        || !options.auto_import_bindings.is_empty()
-        || (global_components.enabled() && !component_usage_list(summary).is_empty());
-    let imported_names: FxHashSet<&str> = if needs_imported_names {
-        profile!(
-            "canon.virtual_ts.extract_imported_names",
-            collect_imported_names(summary, script_content)
-        )
-    } else {
-        FxHashSet::default()
-    };
     let syntactic_type_only_imported_names = syntactic_type_only_imported_names(
         summary,
         &global_components,
         options_api_props.is_some(),
         script_content,
+    );
+    let imported_names = collect_component_imported_names(
+        summary,
+        script_content,
+        options,
+        global_components.enabled(),
+        &syntactic_type_only_imported_names,
+    );
+    let _component_aliases = super::component_aliases::cache_aliases(
+        summary,
+        options,
+        &syntactic_type_only_imported_names,
+        &imported_names,
     );
     emit_auto_import_stubs(
         &mut ts,

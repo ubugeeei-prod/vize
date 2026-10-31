@@ -1,0 +1,397 @@
+{
+  "cases": [
+    {
+      "id": "known",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-known.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-known.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "declared-any",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-known.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-declared-any.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 12,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "error-any",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-known.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-error-any.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "missing-key",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-known.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-missing-key.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallback-any",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-fallback-any.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-declared-any.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 12,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "pascal-any-raw-typed",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-fallback-any.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-pascal-any-raw-typed.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 12,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "pascal-typed-raw-any",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-fallback-any.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-pascal-typed-raw-any.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "camel-any-only",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-fallback-any.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-camel-any-only.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 12,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "camel-typed-only",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-fallback-any.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-camel-typed-only.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "camel-any-raw-typed",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-fallback-any.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-camel-any-raw-typed.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 12,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "camel-typed-raw-any",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-fallback-any.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-camel-typed-raw-any.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "pascal-any-camel-typed",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-fallback-any.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-pascal-any-camel-typed.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 12,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "pascal-typed-camel-any",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-fallback-any.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-pascal-typed-camel-any.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "repaired",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-known.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-known.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unicode-any",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source-unicode-any.txt"
+        },
+        {
+          "file": "globals.d.ts",
+          "source": "globals-declared-any.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 12,
+          "column": 53,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    }
+  ]
+}
