@@ -208,12 +208,14 @@ pub(super) fn collect_transitive_local_imports_with_session(
                             .package_lookups
                             .entry(lookup_key)
                             .or_insert_with(|| {
-                                packages.lookup_with_context(
-                                    dir,
-                                    &specifier,
-                                    source_options,
-                                    context.clone(),
-                                )
+                                packages
+                                    .lookup_with_context(
+                                        dir,
+                                        &specifier,
+                                        source_options,
+                                        context.clone(),
+                                    )
+                                    .into()
                             })
                             .clone();
                         let watchable_negative = lookup.is_watchable_negative();
@@ -249,7 +251,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
             };
             let package_route = package_lookup
                 .as_ref()
-                .and_then(|(route, _, _, _, _)| route.as_ref());
+                .and_then(|(route, _, _, _, _)| route.as_deref());
             // Never register an ambient declaration file — its `declare module`
             // statements would shadow real modules as a program root.
             if package_route.is_none()
