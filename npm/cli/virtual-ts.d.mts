@@ -886,7 +886,7 @@ type $SlotConstructorArgumentLists<C> = C extends {
 type $SlotConstructorHasArguments<C> =
   $SlotConstructorArgumentLists<C> extends infer A ? (A extends [] ? never : true) : never;
 export type $SlotConstructorWithoutArguments<C> = C extends new () => any
-  ? C & (new () => { $slots: never })
+  ? C & ([$SlotConstructorHasArguments<C>] extends [never] ? unknown : new () => { $slots: never })
   : new () => { $slots: never };
 export type $SlotConstructorWithArguments<C> = [$SlotConstructorHasArguments<C>] extends [never]
   ? new (props: any, ...args: any[]) => { $slots: never }

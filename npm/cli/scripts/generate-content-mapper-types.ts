@@ -109,6 +109,11 @@ const oldPublicSlot = await slotDeclaration(
   "known previous public zero-call export",
   true,
 );
+const oldOriginalFirstSlot = await slotDeclaration(
+  `export type ${slotAlias}<C> = C extends new () => any ? C & (new () => { $slots: never }) : new () => { $slots: never };`,
+  "known previous original-first zero-call export",
+  true,
+);
 // Preserve canonical syntax as formatter input; printer output is only an identity check.
 const publicSlot = await format(
   "virtual-ts.d.ts",
@@ -122,7 +127,9 @@ for (const extension of ["ts", "mts", "cts"]) {
   const original = readFileSync(filePath, "utf8");
   const current = await slotDeclaration(original, relativePath, true);
   assert.ok(
-    current.rhs === oldPublicSlot.rhs || current.rhs === sharedSlot.rhs,
+    current.rhs === oldPublicSlot.rhs ||
+      current.rhs === oldOriginalFirstSlot.rhs ||
+      current.rhs === sharedSlot.rhs,
     `${relativePath} has an unknown zero-call export; refuse to overwrite drift`,
   );
   const replaced =

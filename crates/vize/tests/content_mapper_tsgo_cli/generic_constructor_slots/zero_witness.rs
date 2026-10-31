@@ -61,6 +61,33 @@ type AssertNoAny_MixedGenericNeverLast=RequireNotAny<$IsAny<SlotsOf<typeof Resul
 Result_DefaultZero.$slots.default({value:123});
 "#;
 
+const TYPED_SHIM: &str = r#"declare module '*.vue' {
+export default class Child {
+  $props: {};
+  $slots: { actions?: (props: { index: number }) => unknown };
+}
+}
+"#;
+
+const PLAIN_ZERO_CONTROLS: &str = r#"import TypedShim from './Child.vue';
+declare class PlainZero {
+  $props: {};
+  $slots: { actions?: (props: { index: number }) => unknown };
+}
+type C_PlainZero = $SlotConstructor<typeof PlainZero>;
+declare const PlainZeroWithout: $SlotConstructorWithoutArguments<C_PlainZero>;
+declare const PlainZeroWith: $SlotConstructorWithArguments<C_PlainZero>;
+const Result_PlainZero = __vizeSlotConstructorInstance<C_PlainZero>()(new PlainZeroWithout(), new PlainZeroWith({}));
+type AssertNoAny_PlainZero = RequireNotAny<$IsAny<Parameters<NonNullable<typeof Result_PlainZero.$slots.actions>>[0]>>;
+Result_PlainZero.$slots.actions?.({index:123});
+type C_TypedShim = $SlotConstructor<typeof TypedShim>;
+declare const TypedShimWithout: $SlotConstructorWithoutArguments<C_TypedShim>;
+declare const TypedShimWith: $SlotConstructorWithArguments<C_TypedShim>;
+const Result_TypedShim = __vizeSlotConstructorInstance<C_TypedShim>()(new TypedShimWithout(), new TypedShimWith({}));
+type AssertNoAny_TypedShim = RequireNotAny<$IsAny<Parameters<NonNullable<typeof Result_TypedShim.$slots.actions>>[0]>>;
+Result_TypedShim.$slots.actions?.({index:123});
+"#;
+
 #[test]
 fn zero_witnesses_preserve_native_overload_results_and_public_exports() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
@@ -110,7 +137,7 @@ fn zero_witnesses_preserve_native_overload_results_and_public_exports() {
             }
             HELPERS.replace(declaration, "type $SlotConstructorWithoutArguments<C> = import(\"vize/virtual-ts\").$SlotConstructorWithoutArguments<C>;")
         };
-        let source = format!("{helpers}\n{CONTROLS}");
+        let source = format!("{helpers}\n{CONTROLS}\n{PLAIN_ZERO_CONTROLS}");
         let bad = "Result_DefaultZero.$slots.default({value:123});";
         assert_eq!(source.matches(bad).count(), 1);
         let line = source
@@ -124,12 +151,13 @@ fn zero_witnesses_preserve_native_overload_results_and_public_exports() {
         let column = bad.find("value").unwrap() + 1;
         let file = format!("proof.{extension}");
         std::fs::write(project.join(&file), &source).unwrap();
+        std::fs::write(project.join("typed-shim.d.ts"), TYPED_SHIM).unwrap();
         std::fs::write(project.join("tsconfig.json"), serde_json::to_vec_pretty(&serde_json::json!({
             "compilerOptions": {
                 "strict": true, "noEmit": true, "skipLibCheck": true,
                 "module": "Node16", "moduleResolution": "Node16", "target": "ESNext", "types": [],
             },
-            "files": [file],
+            "files": [file, "typed-shim.d.ts"],
         })).unwrap()).unwrap();
         let output = check_project(&tsgo, &project, "tsconfig.json");
         assert_eq!(
@@ -147,11 +175,46 @@ fn zero_witnesses_preserve_native_overload_results_and_public_exports() {
             "{mode}: {}",
             output_text(&output)
         );
-        std::fs::write(
-            project.join(file),
-            source.replace(bad, "Result_DefaultZero.$slots.default({value:\"valid\"});"),
-        )
-        .unwrap();
+        let repaired = source.replace(bad, "Result_DefaultZero.$slots.default({value:\"valid\"});");
+        std::fs::write(project.join(&file), &repaired).unwrap();
+        super::assert_valid(&check_project(&tsgo, &project, "tsconfig.json"));
+        let mut invalid = repaired.clone();
+        let mut expected = std::string::String::new();
+        for marker in [
+            "Result_PlainZero.$slots.actions?.({index:123});",
+            "Result_TypedShim.$slots.actions?.({index:123});",
+        ] {
+            assert_eq!(invalid.matches(marker).count(), 1);
+            let line = invalid
+                .split_once(marker)
+                .unwrap()
+                .0
+                .bytes()
+                .filter(|byte| *byte == b'\n')
+                .count()
+                + 1;
+            let column = marker.find("index").unwrap() + 1;
+            expected.push_str(&format!(
+                "{file}({line},{column}): error TS2322: Type 'string' is not assignable to type 'number'.\n"
+            ));
+            invalid = invalid.replace(marker, &marker.replace("123", "\"wrong\""));
+        }
+        std::fs::write(project.join(&file), invalid).unwrap();
+        let output = check_project(&tsgo, &project, "tsconfig.json");
+        assert_eq!(
+            output.status.code(),
+            Some(2),
+            "{mode}: {}",
+            output_text(&output)
+        );
+        assert_eq!(output.stderr, b"", "{mode}: {}", output_text(&output));
+        assert_eq!(
+            std::str::from_utf8(&output.stdout).unwrap(),
+            expected,
+            "{mode}: {}",
+            output_text(&output)
+        );
+        std::fs::write(project.join(file), repaired).unwrap();
         super::assert_valid(&check_project(&tsgo, &project, "tsconfig.json"));
     }
 }

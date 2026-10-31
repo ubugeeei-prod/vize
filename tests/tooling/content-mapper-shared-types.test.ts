@@ -143,8 +143,12 @@ for (const [name, file, mutate, reason] of [
   [
     "canonical policy drift",
     embedded,
-    (source: string) =>
-      source.replace("C & (new () => { $slots: never })", "C & (new () => { $slots: unknown })"),
+    (source: string) => {
+      const policy =
+        "C & ([$SlotConstructorHasArguments<C>] extends [never] ? unknown : new () => { $slots: never })";
+      assert.equal(source.split(policy).length - 1, 1, "exact canonical guard required");
+      return source.replace(policy, policy.replace("$slots: never", "$slots: unknown"));
+    },
     /policies drifted/u,
   ],
   [
