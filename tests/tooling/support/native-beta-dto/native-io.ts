@@ -93,6 +93,8 @@ export interface NativeExitGroup {
   tid: number;
   at: string;
   code: number;
+  line?: number;
+  rawResult?: string | null;
 }
 export interface NativeUnfinishedOperation {
   tid: number;
@@ -301,7 +303,14 @@ export async function readNativeTrace(root: string, executable: string) {
         threadExits.push({ tid, at: exit[1]!, code: Number(exit[2]) });
       }
       const group = /^([0-9]+\.[0-9]+) exit_group\(([0-9]+)\)/u.exec(line);
-      if (group) exitGroups.push({ tid, at: group[1]!, code: Number(group[2]) });
+      if (group)
+        exitGroups.push({
+          tid,
+          at: group[1]!,
+          code: Number(group[2]),
+          line: lineNumber,
+          rawResult: /\)\s+=\s+(.+)$/u.exec(line)?.[1] ?? null,
+        });
       if (line.includes("execve(") && line.endsWith("= 0")) {
         const decoded = line.replace(/(?:\\x[0-9a-f]{2})+/gu, (value) =>
           unhex(value).toString("utf8"),

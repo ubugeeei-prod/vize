@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { stripTypeScriptTypes } from "node:module";
 import { watcherSuccessor } from "./native-beta-dto-current-custody.ts";
 const currentAuthorityPath = "tools/support/compat/github/native-beta-dto-current-custody.ts";
-const currentAuthoritySha256 = "2b30309b2fc97d0070c7cc644da7028518c5fb853bedefe2d8788934da0ef431";
+const currentAuthoritySha256 = "49e0ff6eccb2890e8323a45c60e99970e86a1c09fb102aae1f87b52eee617808";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";
@@ -160,6 +160,11 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
         sha(Buffer.from(runtime(route))) ===
           watcherSuccessor.routeRuntimeSha256, "missing or changed registered beta semantic route runtime");
       for (const [path, physical, executable] of [
+        [
+          watcherSuccessor.logicalBatchPath,
+          watcherSuccessor.logicalBatchHash,
+          watcherSuccessor.logicalBatchRuntime,
+        ],
         [
           watcherSuccessor.lateRootPath,
           watcherSuccessor.lateRootSha256,

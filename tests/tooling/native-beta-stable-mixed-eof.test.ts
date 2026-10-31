@@ -197,6 +197,99 @@ function observe(f: ReturnType<typeof fixture>, change?: (io: WatcherTimedIo[]) 
     f.owner,
   );
 }
+function exitBoundFixture() {
+  const f = fixture();
+  // Constructed counterpart of the saved bdfb EOF->exit_group entry bracket.
+  f.server[4]!.tid = 52;
+  f.server[4]!.line = 51;
+  f.eof[0]!.completion!.returnedBy = { at: at(16), line: 17, basis: "next-same-thread-event" };
+  f.owner.exitGroups = [{ tid: 38, at: at(16), code: 0, line: 17, rawResult: "?" }];
+  return f;
+}
+test("same-thread terminal exit entry bounds EOF without a point-return or qualification claim", () => {
+  const f = exitBoundFixture(),
+    result = observe(f);
+  assert.ok("eofReturnUpperBoundExitRequest" in result);
+  assert.deepEqual(result.eofReturnUpperBoundExitRequest, f.owner.exitGroups[0]);
+  assert.equal(result.nativeStdinEof.completion!.returnedAt, null);
+  assert.deepEqual(
+    result.stderrWrites.map((row) => ("eofReturnOrder" in row ? row.eofReturnOrder : null)),
+    ["UNPROVEN", "UNPROVEN", "UNPROVEN", "UNPROVEN"],
+  );
+  for (const key of [
+    "nativeQualification",
+    "candidateFunctionalPass",
+    "lifecyclePass",
+    "registrationPass",
+  ] as const)
+    assert.equal(result[key], false);
+  const value = inputs(f);
+  assert.throws(() => stableWatchActor(value.client, value.server, f.context, value.io, f.eof));
+});
+test("wrong or missing exit owner, line, entry, result and attempted-write provenance refuse", () => {
+  const changes: Array<(f: ReturnType<typeof fixture>) => void> = [
+    (f) => {
+      f.owner.exitGroups[0]!.tid = 43;
+    },
+    (f) => {
+      f.owner.exitGroups[0]!.tid = 10;
+    },
+    (f) => {
+      f.owner.exitGroups[0]!.line = 18;
+    },
+    (f) => {
+      delete f.owner.exitGroups[0]!.line;
+    },
+    (f) => {
+      f.owner.exitGroups[0]!.at = at(17);
+    },
+    (f) => {
+      f.owner.exitGroups[0]!.code = 1;
+    },
+    (f) => {
+      f.owner.exitGroups[0]!.rawResult = "-1 EINTR";
+    },
+    (f) => {
+      f.owner.exitGroups[0]!.rawResult = null;
+    },
+    (f) => {
+      f.owner.exitGroups = [];
+    },
+    (f) => {
+      f.owner.exitGroups.push({ ...f.owner.exitGroups[0]! });
+    },
+    (f) => {
+      f.eof[0]!.completion!.returnedBy!.line = 12;
+    },
+    (f) => {
+      f.eof[0]!.completion!.returnedAt = at(16);
+    },
+    (f) => {
+      f.context.role = "after";
+    },
+    (f) => {
+      f.context.source = "0".repeat(40);
+    },
+    (f) => {
+      f.context.sdkSha256 = "0".repeat(64);
+    },
+    (f) => {
+      const write = parseNativeIo('1793423752.000010 write(2, "\\x61", 1) = ?')!;
+      assert.equal(write.outcome, "unknown");
+      f.owner.unknownWrites.push({ ...write, tid: 43, line: 29, file: "syscalls.43" });
+    },
+    (f) => {
+      const write = parseNativeIo('1793423752.000010 write(2, "\\x61", 1) = -1 EAGAIN')!;
+      assert.equal(write.outcome, "failed");
+      f.owner.failedWrites.push({ ...write, tid: 43, line: 29, file: "syscalls.43" });
+    },
+  ];
+  for (const change of changes) {
+    const f = exitBoundFixture();
+    change(f);
+    assert.throws(() => observe(f));
+  }
+});
 test("mixed return intervals are explicit observations with no qualification credit", () => {
   const f = fixture(),
     result = observe(f);

@@ -83,6 +83,19 @@ export function logicalFixture() {
       ...old.attached.materializedBatch,
       mappedUri: old.attached.materializedBatch.virtualUri,
       storageAuthority: revision,
+      nativePull: {
+        kind: "full",
+        items: [
+          {
+            range: { start: { line: 0, character: 13 }, end: { line: 0, character: 16 } },
+            severity: 1,
+            code: 2322,
+            source: "ts",
+            message: "Type 'string' is not assignable to type 'number'.",
+          },
+        ],
+      },
+      selected: { Ok: [] as unknown[] },
     },
   };
   const client: Packet[] = [
@@ -149,6 +162,48 @@ export function logicalFixture() {
       server.push({ jsonrpc: "2.0", id, result: structuredClone(values[index]) });
     }
   }
+  attached.materializedBatch.selected.Ok = [
+    [attached.mainUri, []],
+    [attached.materializedBatch.virtualUri, attached.materializedBatch.nativePull.items],
+  ];
+  client.push({
+    jsonrpc: "2.0",
+    method: "textDocument/didOpen",
+    params: {
+      textDocument: {
+        languageId: "typescript",
+        text: attached.materializedBatch.source,
+        uri: attached.materializedBatch.virtualUri,
+        version: 1,
+      },
+    },
+  });
+  const diagnostic = (uri: string, result: unknown) => {
+    client.push({
+      jsonrpc: "2.0",
+      id: ++id,
+      method: "textDocument/diagnostic",
+      params: { textDocument: { uri } },
+    });
+    server.push({ jsonrpc: "2.0", id, result: structuredClone(result) });
+  };
+  diagnostic(attached.materializedBatch.virtualUri, attached.materializedBatch.nativePull);
+  client.push({
+    jsonrpc: "2.0",
+    method: "textDocument/didOpen",
+    params: {
+      textDocument: {
+        languageId: "typescript",
+        text: texts[1]![1],
+        uri: attached.supportUri,
+        version: 1,
+      },
+    },
+  });
+  diagnostic(attached.mainUri, { kind: "full", items: [] });
+  diagnostic(attached.materializedBatch.virtualUri, attached.materializedBatch.nativePull);
+  client.push({ jsonrpc: "2.0", id: ++id, method: "shutdown" });
+  server.push({ jsonrpc: "2.0", id, result: null });
   const apiClient: Packet[] = [],
     apiServer: Packet[] = [];
   for (const method of [

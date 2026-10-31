@@ -64,7 +64,23 @@ export function observeHistoricalSplitWatchLog(...args: [...ContextArgs, OwnerSt
       (row.startedLine ?? row.line) === upper.line &&
       row.at === upper.at,
   );
-  assert.equal(event.length, 1, "EOF upper bound requires its actual same-thread IO event");
+  let exitUpperBound: OwnerState["exitGroups"][number] | undefined;
+  if (event.length === 0) {
+    const groups = owner.exitGroups.filter(
+      (row) =>
+        row.tid === actor.eof.tid &&
+        row.at === upper.at &&
+        row.line === upper.line &&
+        row.code === 0 &&
+        row.rawResult === "?",
+    );
+    assert.equal(
+      groups.length,
+      1,
+      "EOF upper bound requires exact same-thread IO or terminal exit-group provenance",
+    );
+    exitUpperBound = groups[0]!;
+  } else assert.equal(event.length, 1, "EOF upper bound requires its actual same-thread IO event");
   const expected = Buffer.from(
     `\t${actor.project}/**/*\n\n1 paths ineligible for watching\n` +
       "errors updating watches: [failed to register file watcher: context canceled failed to register file watcher: context canceled]\n",
@@ -114,6 +130,7 @@ export function observeHistoricalSplitWatchLog(...args: [...ContextArgs, OwnerSt
     watcher: actor.watcher,
     watcherAck: actor.watcherAck,
     nativeStdinEof: actor.eof,
+    ...(exitUpperBound ? { eofReturnUpperBoundExitRequest: exitUpperBound } : {}),
     stderrWrites: relations,
     clientPackets: client,
     serverPackets: server,

@@ -5,6 +5,16 @@ import { isDeepStrictEqual } from "node:util";
 import { verifyNativeRelations, type WatcherContext } from "./stable-watcher-boundary.ts";
 import type { AttachedOwner } from "./beta-attached-route.ts";
 type Packet = Record<string, unknown>;
+export interface SemanticPacket {
+  request: Packet;
+  response: Packet;
+  uri: unknown;
+}
+export interface SourceSupplement {
+  phasePackets: readonly SemanticPacket[];
+  batchPackets: readonly SemanticPacket[];
+  evidence: unknown;
+}
 function object(value: unknown): Packet {
   assert.ok(value && typeof value === "object" && !Array.isArray(value));
   return value as Packet;
@@ -61,6 +71,52 @@ function sameCompletion(actual: unknown, expected: unknown): boolean {
     { ...right, items: right.items.map(canonical).sort() },
   );
 }
+/** The original exact52 order and complete-result comparator, shared without extra-query allowances. */
+export function verifySemanticPhases(main: readonly SemanticPacket[], phases: readonly Packet[]) {
+  const order = [
+    semanticMethods[0],
+    semanticMethods[0],
+    semanticMethods[0],
+    ...semanticMethods.slice(1).flatMap((method) => [method, method]),
+  ];
+  assert.equal(
+    main.length,
+    phases.length * order.length,
+    "complete distinct phase vectors required",
+  );
+  for (const [phaseIndex, phase] of phases.entries()) {
+    const packets = main.slice(phaseIndex * order.length, (phaseIndex + 1) * order.length);
+    assert.deepEqual(
+      packets.map((packet) => packet.request.method),
+      order,
+      "raw semantic phase ordering differs",
+    );
+    const expected = [
+      phase.nativePull,
+      phase.nativePull,
+      phase.nativePull,
+      phase.hover,
+      phase.hover,
+      phase.references,
+      phase.directReferences,
+      phase.definition,
+      phase.directDefinition,
+      phase.completion,
+      phase.directCompletion,
+      object(phase.rename).Ok,
+      phase.directRename,
+    ];
+    for (const [index, value] of expected.entries()) {
+      assert.notEqual(value, undefined, "complete retained source phase output required");
+      assert.ok(
+        order[index] === "textDocument/completion"
+          ? sameCompletion(packets[index]!.response.result, value)
+          : isDeepStrictEqual(packets[index]!.response.result, value),
+        `whole raw semantic result differs for phase ${phaseIndex}, query ${index}`,
+      );
+    }
+  }
+}
 
 /** Shared whole semantic comparator; each caller supplies a separately verified source authority. */
 export function verifyBetaSemanticRoute<
@@ -74,6 +130,10 @@ export function verifyBetaSemanticRoute<
   storage: T,
   queryRoot: string,
   configurationMembershipFor: (owner: AttachedOwner) => readonly { request: Packet }[],
+  supplementFor?: (
+    owner: AttachedOwner,
+    packets: readonly SemanticPacket[],
+  ) => SourceSupplement | null,
 ) {
   assert.equal(context.role, "after");
   assert.equal(context.sdkVersion, "7.1.0-beta");
@@ -148,6 +208,7 @@ export function verifyBetaSemanticRoute<
       return { request, response, uri };
     });
     const main = packets.filter((packet) => mainUris.has(packet.uri as string));
+    const supplement = supplementFor?.(owner, packets) ?? null;
     const counts = Object.fromEntries(
       semanticMethods.map((method) => [
         method,
@@ -157,50 +218,23 @@ export function verifyBetaSemanticRoute<
     const complete = semanticMethods.every(
       (method) => counts[method]! >= phases.length * (method === "textDocument/diagnostic" ? 3 : 2),
     );
-    if (complete) {
-      const order = [
-        semanticMethods[0],
-        semanticMethods[0],
-        semanticMethods[0],
-        ...semanticMethods.slice(1).flatMap((method) => [method, method]),
-      ];
+    if (supplement) {
+      assert.equal(complete, true, "source batch owner must retain all four complete phases");
+      const covered = [...supplement.phasePackets, ...supplement.batchPackets];
       assert.equal(
-        main.length,
-        phases.length * order.length,
-        "complete distinct phase vectors required",
+        covered.length,
+        packets.length,
+        "every raw semantic pair must have one source purpose",
       );
-      for (const [phaseIndex, phase] of phases.entries()) {
-        const packets = main.slice(phaseIndex * order.length, (phaseIndex + 1) * order.length);
-        assert.deepEqual(
-          packets.map((packet) => packet.request.method),
-          order,
-          "raw semantic phase ordering differs",
+      for (const [index, packet] of covered.entries())
+        assert.equal(
+          packet,
+          packets[index],
+          "whole source coverage must retain original packet identity and order",
         );
-        const expected = [
-          phase.nativePull,
-          phase.nativePull,
-          phase.nativePull,
-          phase.hover,
-          phase.hover,
-          phase.references,
-          phase.directReferences,
-          phase.definition,
-          phase.directDefinition,
-          phase.completion,
-          phase.directCompletion,
-          object(phase.rename).Ok,
-          phase.directRename,
-        ];
-        for (const [index, value] of expected.entries()) {
-          assert.notEqual(value, undefined, "complete retained source phase output required");
-          assert.ok(
-            order[index] === "textDocument/completion"
-              ? sameCompletion(packets[index]!.response.result, value)
-              : isDeepStrictEqual(packets[index]!.response.result, value),
-            `whole raw semantic result differs for phase ${phaseIndex}, query ${index}`,
-          );
-        }
-      }
+    }
+    if (complete) {
+      verifySemanticPhases(supplement?.phasePackets ?? main, phases);
     }
     return {
       nativeOwner: owner.nativeOwner,
@@ -210,6 +244,7 @@ export function verifyBetaSemanticRoute<
       semanticPackets: packets,
       counts,
       complete,
+      ...(supplement ? { sourceSupplement: supplement.evidence } : {}),
     };
   });
   assert.ok(

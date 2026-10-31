@@ -269,7 +269,7 @@ test("logical beta preserves all52 ordered semantic results and admits no physic
   const f = logicalFixture(),
     proof = verifyBetaLogicalRoute(f.owners, f.context, f.source, f.root, f.phases, f.attached);
   assert.equal(proof.owners[0]!.complete, true);
-  assert.equal(proof.owners[0]!.semanticPackets.length, 52);
+  assert.equal(proof.owners[0]!.semanticPackets.length, 55);
   assert.deepEqual(proof.owners[0]!.configurationMembership, []);
   assert.deepEqual(proof.sourcePhases, f.phases);
   assert.ok(f.owners[0]!.apiServer.some((row) => "error" in object(row)));
