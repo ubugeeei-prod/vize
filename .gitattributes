@@ -1,4 +1,6 @@
 tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
+# Dependency patch filenames must retain LF when Windows checks out the repository.
+patches/*.patch text eol=lf
 # Keep GitHub language statistics focused on authored source code.
 *.snap linguist-generated=true
 # Retain the compiler's authored whole-output whitespace in project config oracles.
