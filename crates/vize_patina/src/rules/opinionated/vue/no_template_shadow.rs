@@ -2,9 +2,8 @@
 //!
 //! Disallow template declarations that shadow template or script-setup bindings.
 //!
-//! v-for and modern/legacy scoped-slot declarations use their authored identifier
-//! ranges and lexical template scopes. Existing semantic facts supply script-setup
-//! values and declared props; ordinary module locals remain outside template scope.
+//! v-for and scoped-slot declarations use authored ranges and lexical template
+//! scopes. Shared semantic facts supply script-setup values and declared props.
 //!
 //! ## Examples
 //!

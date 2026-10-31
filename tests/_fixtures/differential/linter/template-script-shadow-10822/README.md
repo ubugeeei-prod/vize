@@ -22,3 +22,9 @@ Controls cover sibling and nested declarations, ordinary module/function locals,
 nonmatching setup names, `v-pre`, and Unicode with CRLF. Only script-setup value
 bindings and declared props are added; Options API exposure and erased type-only
 names remain separate work. Full matrix qualification is still required.
+
+The canonical linter manifest pins the same two original SFC files consumed
+directly by the ordinary public Rust API regression. The full pinned reference
+test authenticates those bytes and the unchanged 591-line case packet before
+replaying every reference answer. This input-only registration claims source
+inspection, not a whole-product native adapter or a passing full matrix.

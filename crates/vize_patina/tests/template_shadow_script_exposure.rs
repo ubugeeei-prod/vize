@@ -87,10 +87,27 @@ fn original_n8n_and_setup_controls_match_complete_native_packets_and_reference_r
         .with_help_level(HelpLevel::Full);
     for section in ["originals", "successors", "controls"] {
         for case in CORPUS[section].as_array().unwrap() {
-            let source = case["source"].as_str().unwrap();
+            let authored = match (section, case["path"].as_str()) {
+                ("originals", Some("originals/DropdownMenuItem.vue.txt")) => Some(include_str!(
+                    "../../../tests/_fixtures/differential/linter/template-script-shadow-10822/originals/DropdownMenuItem.vue.txt"
+                )),
+                ("originals", Some("originals/RunDataJson.vue.txt")) => Some(include_str!(
+                    "../../../tests/_fixtures/differential/linter/template-script-shadow-10822/originals/RunDataJson.vue.txt"
+                )),
+                ("originals", _) => panic!("unprovided original source"),
+                _ => None,
+            };
+            let source = authored.unwrap_or_else(|| case["source"].as_str().unwrap());
+            assert_eq!(source, case["source"].as_str().unwrap());
             let filename = case["filename"].as_str().unwrap();
             let result = linter.lint_sfc(source, filename);
             assert_eq!(complete(&result), case["expectedNative"], "{}", case["id"]);
+            assert_eq!(
+                complete(&linter.lint_sfc(source, filename)),
+                case["expectedNative"],
+                "unchanged re-query {}",
+                case["id"]
+            );
             let reference = case["reference"].as_array().unwrap();
             assert_eq!(result.diagnostics.len(), reference.len());
             for (diagnostic, expected) in result.diagnostics.iter().zip(reference) {

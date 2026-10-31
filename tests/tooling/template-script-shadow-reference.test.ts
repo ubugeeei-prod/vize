@@ -67,7 +67,8 @@ const fixtureRoot = path.join(
   root,
   "tests/_fixtures/differential/linter/template-script-shadow-10822",
 );
-const corpus = JSON.parse(readFileSync(path.join(fixtureRoot, "cases.json"), "utf8")) as Corpus;
+const corpusBytes = readFileSync(path.join(fixtureRoot, "cases.json"));
+const corpus = JSON.parse(corpusBytes.toString("utf8")) as Corpus;
 const oracle = createRequire(
   path.join(
     process.env.VIZE_ESLINT_ORACLE_ROOT ?? path.join(root, "tools/benchmarks/scripts"),
@@ -81,6 +82,10 @@ const tsParser: unknown = oracle("@typescript-eslint/parser");
 const digest = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
 
 test("original n8n sources and zero-budget findings retain their exact immutable inputs", () => {
+  assert.equal(
+    digest(corpusBytes),
+    "5dcd654c0d98d50a293d2aa544ac6b75873e5049ff3c0660efeb33303554fcfe",
+  );
   assert.equal(corpus.schema, "vize.template-script-shadow-correctness");
   assert.equal(corpus.version, 1);
   assert.deepEqual(
@@ -88,6 +93,26 @@ test("original n8n sources and zero-budget findings retain their exact immutable
     [4, 2],
   );
   assert.deepEqual(corpus.originalMatrix.falsePositives, []);
+  const manifest = JSON.parse(
+    readFileSync(path.join(root, "tests/_fixtures/differential/linter/manifest.json"), "utf8"),
+  ) as {
+    cases: Array<{
+      id: string;
+      inputs?: { root: string; files: Array<{ path: string; role: string; sha256: string }> };
+    }>;
+  };
+  const registration = manifest.cases.find(
+    (entry) => entry.id === "linter/template-script-shadow-10822",
+  );
+  assert(registration);
+  assert.deepEqual(registration.inputs, {
+    root: "template-script-shadow-10822",
+    files: corpus.originals.map((entry) => ({
+      path: entry.path,
+      role: "original-real-project-reproduction",
+      sha256: entry.sourceSha256,
+    })),
+  });
   const current = corpus.originals.flatMap((entry) => {
     assert.equal(readFileSync(path.join(fixtureRoot, entry.path), "utf8"), entry.source);
     assert.equal(digest(entry.source), entry.sourceSha256);
