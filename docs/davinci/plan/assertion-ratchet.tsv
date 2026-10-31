@@ -221,7 +221,6 @@ crates/vize_canon/src/corsa_bridge/vue_project_mapping_tests.rs	3
 crates/vize_canon/src/corsa_session_cache/tests.rs	1
 crates/vize_canon/src/lsp_client/diagnostics/tests.rs	1
 crates/vize_canon/src/lsp_client/diagnostics_lsp/readiness_workers/tests.rs	1
-crates/vize_canon/src/lsp_client/tests.rs	7
 crates/vize_canon/src/package_route/tests.rs	1
 crates/vize_canon/src/package_route/tests/lifecycle.rs	4
 crates/vize_canon/src/package_route/tests/lifecycle/topology.rs	5
