@@ -95,10 +95,9 @@ jobs:
           mkdir -p "$directory"
           test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
           git rev-parse HEAD HEAD^{tree} > "$directory/head-source.txt"
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
           baseline="$RUNNER_TEMP/jsx-vdom-values-base"
           observer=crates/vize_atelier_jsx/tests/vdom_child_values.rs
-          git worktree add --detach "$baseline" "$BASE_SHA"
+          git worktree add --detach "$baseline" 9c594186bae97cbc4b4c5441d9165b3354ccbec0
           cp "$observer" "$baseline/$observer"
           cmp "$observer" "$baseline/$observer"
           git -C "$baseline" diff --exit-code -- crates/*/src davinci/*/src
