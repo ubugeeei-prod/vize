@@ -101,6 +101,8 @@ jobs:
           fi
           if [ "$RUNNER_OS" = Linux ]; then
             cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::bridge::initial_diagnostics::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stderr"
+            VIZE_TEST_REQUIRE_TSGO=1 cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::configured_project::shared_transport::tests::native::native_editor_resolves_package_alias_from_monorepo_root_with_one_api_editor_owner -- --exact --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/shared-api-owner.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/shared-api-owner.stderr"
+            VIZE_TEST_REQUIRE_TSGO=1 cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::configured_project::shared_transport::tests::native::replay::native_editor_resolves_package_alias_from_monorepo_root_replays_unsaved_api_after_disk_events -- --exact --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/shared-api-replay.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/shared-api-replay.stderr"
           fi
           set +e
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::session_storage::native_tests::actual_native_old_and_private_roots_preserve_complete_configured_overlay_answers -- --exact --ignored --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/native.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/native.stderr"

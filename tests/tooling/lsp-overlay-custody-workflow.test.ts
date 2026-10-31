@@ -57,6 +57,23 @@ test("overlay custody runs the exact platform controls, mandatory native case an
     'cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::bridge::initial_diagnostics::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stderr"',
   ]);
   assert.deepEqual(
+    [
+      ...run.matchAll(
+        /^  VIZE_TEST_REQUIRE_TSGO=1 cargo test .+ --lib (\S+) -- --exact --nocapture > "\$VIZE_PRIVATE_OVERLAY_CAPTURE\/([^"]+)"/gm,
+      ),
+    ].map((match) => match.slice(1)),
+    [
+      [
+        "lsp_client::editor_lsp::configured_project::shared_transport::tests::native::native_editor_resolves_package_alias_from_monorepo_root_with_one_api_editor_owner",
+        "shared-api-owner.stdout",
+      ],
+      [
+        "lsp_client::editor_lsp::configured_project::shared_transport::tests::native::replay::native_editor_resolves_package_alias_from_monorepo_root_replays_unsaved_api_after_disk_events",
+        "shared-api-replay.stdout",
+      ],
+    ],
+  );
+  assert.deepEqual(
     [...run.matchAll(/^if \[ "\$RUNNER_OS" = (\w+) \]; then$/gm)].map((match) => match[1]),
     ["Windows", "Linux"],
   );

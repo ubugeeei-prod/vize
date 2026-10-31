@@ -84,6 +84,23 @@ function libraryExecution(capture: string, nativeSha: string): void {
     assert.ok(expected.length > 0);
     execution(fs.readFileSync(path.join(capture, `${name}.stdout`), "utf8"), expected);
   }
+  if (process.platform === "linux") {
+    const prefix = "lsp_client::editor_lsp::configured_project::shared_transport::tests::native::";
+    for (const [name, test] of [
+      [
+        "shared-api-owner",
+        prefix +
+          "native_editor_resolves_package_alias_from_monorepo_root_with_one_api_editor_owner",
+      ],
+      [
+        "shared-api-replay",
+        prefix +
+          "replay::native_editor_resolves_package_alias_from_monorepo_root_replays_unsaved_api_after_disk_events",
+      ],
+    ]) {
+      execution(fs.readFileSync(path.join(capture, `${name}.stdout`), "utf8"), [test!]);
+    }
+  }
   if (process.platform === "win32") {
     const expected =
       "corsa_bridge::vue_document::build::tests::windows_overlays::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes";

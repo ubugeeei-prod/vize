@@ -47,7 +47,7 @@ impl CorsaProjectClient {
         }
         self.editor_lsp_documents_dirty = true;
         self.diagnostics.clear();
-        Ok(())
+        self.refresh_logical_attached_project()
     }
 
     pub(in crate::lsp_client) fn validate_logical_workspace_documents(
@@ -90,7 +90,13 @@ impl CorsaProjectClient {
         // file, or its real absence, without a materialized write or deletion.
         self.editor_lsp_documents_dirty = true;
         self.diagnostics.clear();
-        Ok(())
+        if self.document_texts.is_empty() {
+            // The existing pending-reset path replaces the readonly API owner
+            // before the next direct API query when no live barrier remains.
+            Ok(())
+        } else {
+            self.refresh_logical_attached_project()
+        }
     }
 }
 

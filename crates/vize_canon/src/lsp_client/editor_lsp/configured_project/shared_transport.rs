@@ -41,6 +41,7 @@ pub(in crate::lsp_client) fn try_shared_editor_project(
     }
 }
 
+mod logical_attachment;
 #[cfg(test)]
 mod tests;
 
