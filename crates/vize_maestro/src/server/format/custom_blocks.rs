@@ -9,21 +9,19 @@ fn selected(source: &str, range: Range, options: &FormatOptions) -> Option<Vec<T
     format_range(source, "/Examples.vue", range, options, VueVersion::V3)
 }
 
-fn apply(source: &str, edits: &[TextEdit]) -> Vec<u8> {
+fn apply(source: &str, edits: &[TextEdit]) -> Option<Vec<u8>> {
     let mut bytes = source.as_bytes().to_vec();
     for edit in edits.iter().rev() {
         let start = crate::ide::position_to_offset(
             source,
             edit.range.start.line,
             edit.range.start.character,
-        )
-        .unwrap();
+        )?;
         let end =
-            crate::ide::position_to_offset(source, edit.range.end.line, edit.range.end.character)
-                .unwrap();
+            crate::ide::position_to_offset(source, edit.range.end.line, edit.range.end.character)?;
         bytes.splice(start..end, edit.new_text.bytes());
     }
-    bytes
+    Some(bytes)
 }
 
 #[test]
@@ -65,7 +63,7 @@ fn selected_art_uses_each_profile_without_editing_tags_or_neighbors() {
                 new_text: expected.to_owned()
             }]
         );
-        let bytes = apply(&source, &edits);
+        let bytes = apply(&source, &edits).unwrap();
         let applied = std::str::from_utf8(&bytes).unwrap();
         assert_eq!(applied, [PREFIX, expected, SUFFIX].concat());
         let caret = Range::new(Position::new(2, 2), Position::new(2, 3));
@@ -90,7 +88,7 @@ fn repeated_art_blocks_keep_their_identity_and_only_the_selected_one_changes() {
             new_text: "\n  <Other b=\"2\" />\n".to_owned(),
         }]
     );
-    let bytes = apply(&source, &edits);
+    let bytes = apply(&source, &edits).unwrap();
     let applied = std::str::from_utf8(&bytes).unwrap();
     assert_eq!(
         applied,
@@ -126,7 +124,7 @@ fn custom_art_ranges_preserve_crlf_and_reach_a_fixed_point() {
             new_text: "\r\n  <Button />\r\n".to_owned(),
         }]
     );
-    let bytes = apply(source, &edits);
+    let bytes = apply(source, &edits).unwrap();
     let applied = std::str::from_utf8(&bytes).unwrap();
     assert_eq!(applied, "<art>\r\n  <Button />\r\n</art>\r\n");
     assert_eq!(selected(applied, range, &options), Some(Vec::new()));
@@ -156,7 +154,7 @@ fn art_on_type_only_changes_indentation_and_preserves_in_progress_tokens() {
             new_text: "  ".to_owned(),
         }]
     );
-    let bytes = apply(source, &edits);
+    let bytes = apply(source, &edits).unwrap();
     let applied = std::str::from_utf8(&bytes).unwrap();
     assert_eq!(applied, "<art>\n  <Button />\n</art>\n");
     assert_eq!(
