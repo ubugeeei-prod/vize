@@ -150,7 +150,7 @@ try {
               if (key === "value") {
                 reads++;
                 Vue.effect(() => {
-                  nested.value;
+                  void nested.value;
                   effectRuns++;
                 });
               }

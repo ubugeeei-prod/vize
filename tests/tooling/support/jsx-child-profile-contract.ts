@@ -22,6 +22,7 @@ type Contract = {
     before: Json;
     after: Json;
   }[];
+  history: { path: string; sha256: string }[];
 };
 const hash = (bytes: Uint8Array | string) => createHash("sha256").update(bytes).digest("hex");
 const bytes = fs.readFileSync(
@@ -30,13 +31,32 @@ const bytes = fs.readFileSync(
     import.meta.url,
   ),
 );
-assert.equal(hash(bytes), "2ec2184e237da0d2c7fb7e09a83fb3c23cb06fce2bdfde057daefb61c3bc4553");
+assert.equal(hash(bytes), "e30e105298323f9d05cbd22cdf066c97774056f69e2bee0bc243acb5f63628ce");
 export const contract = JSON.parse(bytes.toString()) as Contract;
 assert.equal(contract.schema, 1);
 assert.equal(contract.originalRows, 16);
 assert.deepEqual(contract.childIndices, [0, 1, 8, 9]);
 assert.deepEqual(contract.existingStaticIndices, [12, 13]);
 assert.deepEqual(contract.qualification, { runtime: false, performance: false });
+assert.deepEqual(contract.history, [
+  {
+    path: "tests/_fixtures/differential/jsx/child-values-6890-profile-contracts.121fa31.json",
+    sha256: "efa7850bff9c7f545fe8d50f27b58f57f239081c0b4016e89262b371af9e7a7b",
+  },
+]);
+const historicalBytes = fs.readFileSync(
+  new URL("../../../" + contract.history[0].path, import.meta.url),
+);
+assert.equal(hash(historicalBytes), contract.history[0].sha256);
+const historical = JSON.parse(historicalBytes.toString()) as { rows: Contract["rows"] };
+const baselineProjection = (row: Contract["rows"][number]) => ({
+  index: row.index,
+  source: row.source,
+  ssr: row.ssr,
+  map: row.map,
+  before: row.before,
+});
+assert.deepEqual(contract.rows.map(baselineProjection), historical.rows.map(baselineProjection));
 assert.deepEqual(
   contract.rows.map((row) => row.index),
   contract.childIndices,
