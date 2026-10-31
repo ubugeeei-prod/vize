@@ -1,7 +1,8 @@
 scope	category	file	alloc_vec_direct	alloc_vec_bound	l0_string_direct	l0_string_bound	arena_vec_direct	arena_vec_bound	small_vec_direct	small_vec_bound
-l2	-	davinci/vize_l2/src/artifact/builder/close.rs	0	0	0	0	1	0	0	0
-l2	-	davinci/vize_l2/src/artifact/builder/native_if.rs	0	0	0	0	2	0	0	0
+l2	-	davinci/vize_l2/src/artifact/builder/close.rs	0	0	0	0	2	0	0	0
+l2	-	davinci/vize_l2/src/artifact/builder/native_if.rs	0	0	0	0	3	0	0	0
 l2	analysis	davinci/vize_l2/src/file/conditional.rs	4	0	0	0	0	0	0	0
+l2	-	davinci/vize_l2/src/file/region/native/pair.rs	0	0	0	0	1	2	0	0
 l2	analysis	davinci/vize_l2/src/lang/js/conditional/tests.rs	1	0	0	0	0	0	0	0
 infra	analysis	davinci/vize_l0/src/diag.rs	1	2	1	7	0	0	0	0
 infra	analysis	davinci/vize_l0/src/diag/witness.rs	1	2	0	0	0	0	0	0

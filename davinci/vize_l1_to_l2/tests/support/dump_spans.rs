@@ -35,6 +35,10 @@ fn assert_op(source: &str, root: SourceRoot<'_>, op: &DumpOp, context: &str) {
             assert_span(source, root, interpolation.span, "interpolation", context);
             assert_expr(source, root, &interpolation.expression, context);
         }
+        DumpOp::JsxChildValue(child) => {
+            assert_span(source, root, child.span, "jsx child value", context);
+            assert_expr(source, root, &child.expression, context);
+        }
         DumpOp::If(if_op) => {
             assert_span(source, root, if_op.span, "if", context);
             for branch in &if_op.branches {

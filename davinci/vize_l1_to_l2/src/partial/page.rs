@@ -113,7 +113,9 @@ fn op_surface<'a>(op: &'a Op<'a>) -> (FragmentKind, Span, Option<&'a [BindingOp<
         Op::Element(op) => (FragmentKind::Element, op.span, Some(&op.bindings[..])),
         Op::Component(op) => (FragmentKind::Component, op.span, Some(&op.bindings[..])),
         Op::Text(op) => (FragmentKind::Text, op.span, None),
-        Op::Interpolation(op) => (FragmentKind::Interpolation, op.span, None),
+        Op::Interpolation(op) | Op::JsxChildValue(op) => {
+            (FragmentKind::Interpolation, op.span, None)
+        }
         Op::Comment(op) => (FragmentKind::Comment, op.span, None),
         Op::If(op) => (FragmentKind::If, op.span, None),
         Op::For(op) => (FragmentKind::For, op.span, None),

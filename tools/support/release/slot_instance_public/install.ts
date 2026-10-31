@@ -6,15 +6,11 @@ import { pathToFileURL } from "node:url";
 import { asRecord, asString, parseJson, readJsonRecord } from "../../json-value.ts";
 import type { Recorder } from "../../config/windows_consumer/common.ts";
 import { assertNativeIdentity, findNpmCli } from "../computed_event_names.ts";
-import {
-  assertCustody,
-  captureDeclarationGraph,
-  fileImage,
-  inside,
-} from "../computed_event_custody.ts";
+import { assertCustody, fileImage, inside } from "../computed_event_custody.ts";
 import { hook, observed, verifyJournal } from "../editor_vite_stub/custody.ts";
 import { authenticate, assertLockedPackage, validateNative } from "./authority.ts";
-import { assertGraph, profiles, type Role } from "./contract.ts";
+import { profiles, type Role } from "./contract.ts";
+import { installedGraph } from "./installed-graph.ts";
 import { assertJournalPid, capture } from "./process.ts";
 import { libraryImages, libraryVersion, mergeImages } from "./libraries.ts";
 import { authenticatePackedManifest, captureInstalledManifests } from "./packed-manifest.ts";
@@ -156,16 +152,21 @@ export async function install(
     binding = Reflect.apply(helper.getBindingIdentity as (value: unknown) => unknown, helper, [
       imageExports,
     ]);
+  record.json("loaded-native-identity.json", {
+    phase: "before-native-identity-assertions",
+    role,
+    profile: profiles[role],
+    controllerPid: process.pid,
+    nativeEntry,
+    binary,
+    token,
+    imageToken,
+    binding,
+  });
+  record.json("installation-phase.json", { phase: "validate-loaded-native-identity" });
   assertNativeIdentity(token, imageToken, binding);
   validateNative(role, authority.capsule, binary, asString(token));
-  const graph = captureDeclarationGraph(cliRoot);
-  assertGraph(role, cliRoot, graph);
-  for (const file of graph.files)
-    writeFileSync(
-      join(record.root, "sdk--" + file.path.slice(cliRoot.length + 1).replaceAll("/", "--")),
-      readFileSync(file.path),
-      { flag: "wx" },
-    );
+  const graph = installedGraph(cliRoot, role, record);
   const libraries = libraryImages(modules);
   record.json("physical-library-trees.json", libraries);
   for (const name of libraries.names) {

@@ -8,7 +8,9 @@ use crate::lang::js::file::native::{
     NativeRouteState, NativeTemplateIssue, NativeTemplateIssueKind,
 };
 use vize_l0::id::NodeId;
-use vize_l1::markup::{NativeChild, NativeRootText, NativeTemplateComponent};
+use vize_l1::markup::{
+    NativeChild, NativeChildren, NativeRootText, NativeTemplateComponent, SurfaceChild,
+};
 
 mod attribute_value;
 mod body;
@@ -19,6 +21,7 @@ mod for_head;
 mod for_tests;
 mod handler;
 mod interpolation;
+mod pair;
 mod text_value;
 mod visibility;
 pub(crate) use visibility::NativeVisibility;
@@ -99,6 +102,43 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
         match result {
             Ok(node) => {
                 self.cursor += 1;
+                Ok(node)
+            }
+            Err(kind) => self.reject(kind),
+        }
+    }
+    /// Consume a possible adjacent pair through the same original root iterator.
+    /// Ordinary events and every existing direct caller retain `child` behavior.
+    pub fn child_with_tail<'o>(
+        &mut self,
+        child: NativeChild<'o, 'a>,
+        tail: &mut NativeChildren<'o, 'a>,
+    ) -> Result<NodeId, NativeTemplateIssue> {
+        if self.cursor != 0
+            || self.expected != 2
+            || !matches!(child.surface(), SurfaceChild::Element(_))
+        {
+            return self.child(child);
+        }
+        if !matches!(self.state, NativeRouteState::Walking)
+            || self.root.facts.template_walk.interruption().is_some()
+        {
+            return self.reject(NativeTemplateIssueKind::Interrupted);
+        }
+        if !core::ptr::eq(child.component(), self.selected.component())
+            || child.parent_element().is_some()
+            || child.ordinal() != self.cursor
+        {
+            return self.reject(NativeTemplateIssueKind::InvalidEvent);
+        }
+        let selected = self.selected;
+        let span = selected.component().block().span();
+        let result = self.root.with_walk(span, |root| {
+            vize_l0::ensure_sufficient_stack(|| pair::construct(selected, child, tail, root))
+        });
+        match result {
+            Ok((node, consumed)) => {
+                self.cursor += consumed;
                 Ok(node)
             }
             Err(kind) => self.reject(kind),

@@ -90,6 +90,7 @@ pub fn run(args: ReadyArgs) {
             print_width: None,
             tab_width: None,
             use_tabs: None,
+            semi: None,
             no_semi: false,
             sort_attributes: None,
             attribute_sort_order: None,

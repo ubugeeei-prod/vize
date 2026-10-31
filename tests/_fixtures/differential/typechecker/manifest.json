@@ -11597,6 +11597,57 @@
           }
         },
     {
+      "id": "typechecker/jsx-child-expression-control-6890",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": {
+        "root": "jsx-child-expression-control-6890",
+        "files": [
+          {
+            "path": "template.html.txt",
+            "role": "neutral-expression-coordinate-regression-control",
+            "sha256": "0cc2ae68eb1888868cf06c3d4cd83e5b23b14d46b8db7bc15f99f94603b25ec3"
+          },
+          {
+            "path": "Original.jsx.txt",
+            "role": "neutral-expression-coordinate-regression-control",
+            "sha256": "2720f9a62e02121cb18705b4b94da2fd22c661fa8bc84b780e1319554663f7d9"
+          },
+          {
+            "path": "Layout.vue.txt",
+            "role": "planned-batch-sfc-input-current-source-projection-only",
+            "sha256": "dc0443da0ad6467f2baed054dcb0ddcc3a999a64108fd0e6d88d6f7c12b8ca8a"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "jsx"
+            ],
+            "selector": "planned_batch_sfc_input_preserves_all_projection_ranges_without_batch_execution + typed_child_value_projects_the_same_full_expression_and_span_as_template_text; source inspection and projection only"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": null,
+        "native": null,
+        "reasons": {
+          "legacy": "Planned batch SFC input; current execution parses the genuine SFC and verifies source-expression projection ranges only. No batch diagnostic adapter or qualification is claimed.",
+          "native": "Source-projection control only; no native batch execution or deletion-readiness credit."
+        }
+      }
+    },
+    {
           "id": "typechecker/options-api-lexical-members-11069",
           "state": "active",
           "targets": ["batch"],
@@ -11649,6 +11700,35 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs; newly pinned original CRLF repaired reference input, not a new semantic program"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/windows-verbatim-overlay-11145",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "windows-verbatim-overlay-11145/input.json",
+          "sha256": "09e9e861a991d5ba37cd88c87a3a70a86ab2443cbf1b4443243515bb7c8af4f4",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "corsa_bridge::vue_document::build::tests::windows_overlays::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes; compile-included main/Child.vue/support/config and all four overlay phases; input registration only, no diagnostic oracle or native admission"
           }
         ]
       }

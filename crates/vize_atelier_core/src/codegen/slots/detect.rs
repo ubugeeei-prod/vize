@@ -1,10 +1,13 @@
 //! Slot detection predicates (which children form slots, dynamic/forwarded checks).
 
+mod forwarded;
+pub use forwarded::has_forwarded_slot_outlet;
+
 use crate::codegen::context::CodegenContext;
 use crate::codegen::expression::scope_prefix::strip_scope_prefixes_for_slot_params;
 use crate::steps::v_slot::{collect_slots, has_v_slot};
 use crate::{
-    CompoundExpressionChild, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode,
+    CompoundExpressionChild, ElementNode, ExpressionNode, PropNode, TemplateChildNode,
     TextCallContent,
 };
 use oxc_ast_visit::Visit;
@@ -110,7 +113,8 @@ pub fn has_slot_children(el: &ElementNode<'_>) -> bool {
 /// slot object itself can change (`v-for` parent, dynamic names, forwarded
 /// outlets).
 pub fn needs_dynamic_slots_patch(ctx: &CodegenContext, el: &ElementNode<'_>) -> bool {
-    el.tag == "KeepAlive"
+    (ctx.untracked_children && has_slot_children(el))
+        || el.tag == "KeepAlive"
         || el.tag == "keep-alive"
         || ((ctx.in_v_for || ctx.in_match_scope) && has_slot_children(el))
         || has_dynamic_slots_flag(el, &ctx.source)
@@ -411,33 +415,6 @@ pub fn has_dynamic_slots_flag(el: &ElementNode<'_>, source: &str) -> bool {
     }
     // Also check for v-if/v-for on slot templates (they become IfNode/ForNode children)
     has_conditional_or_loop_slots(el)
-}
-
-/// Check whether this component forwards an incoming slot to another component,
-/// e.g. `<Inner><slot /></Inner>`.
-pub fn has_forwarded_slot_outlet(el: &ElementNode<'_>) -> bool {
-    el.children.iter().any(child_contains_slot_outlet)
-}
-
-fn child_contains_slot_outlet(child: &TemplateChildNode<'_>) -> bool {
-    match child {
-        TemplateChildNode::Element(el) => {
-            if el.tag_type == ElementType::Slot || el.tag == "slot" {
-                return true;
-            }
-            ensure_sufficient_stack(|| el.children.iter().any(child_contains_slot_outlet))
-        }
-        TemplateChildNode::If(if_node) => if_node
-            .branches
-            .iter()
-            .flat_map(|branch| branch.children.iter())
-            .any(|child| ensure_sufficient_stack(|| child_contains_slot_outlet(child))),
-        TemplateChildNode::For(for_node) => for_node
-            .children
-            .iter()
-            .any(|child| ensure_sufficient_stack(|| child_contains_slot_outlet(child))),
-        _ => false,
-    }
 }
 
 /// Check if children have conditional (v-if) or looped (v-for) slot templates.

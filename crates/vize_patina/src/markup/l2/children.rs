@@ -38,7 +38,9 @@ pub(in crate::markup) fn walk_nodes<'a>(
                 }
             }
             Op::Text(text) => visitor(MarkupNode::Text(text_node(doc, text))),
-            Op::Interpolation(interpolation) => walk_interpolation(doc, interpolation, visitor),
+            Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
+                walk_interpolation(doc, interpolation, visitor)
+            }
             Op::Comment(comment) => visitor(MarkupNode::Comment(l2_range(comment.span))),
             Op::If(if_op) if doc.is_template() => {
                 walk_chain(doc, if_op, visitor);

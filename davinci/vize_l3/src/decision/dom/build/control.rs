@@ -69,7 +69,6 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         use crate::decision::dom::vue::VueReadKind;
         if !R::NATIVE_SETUP
             || !matches!(value, ValueKind::FileDependent | ValueKind::LiteralConstant)
-            || owner.branches.len() != 1
         {
             return false;
         }
@@ -77,6 +76,23 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         let Some(record) = file.native_conditional(id).filter(|row| row.accepts(owner)) else {
             return false;
         };
+        let original_branches = match (owner.branches.as_slice(), record.else_input()) {
+            ([_], None) => true,
+            ([first, last], Some(otherwise)) => {
+                last.condition.is_none()
+                    && last.span == otherwise.operand().element_span()
+                    && first.span.start == owner.span.start
+                    && first.span.end == last.span.start
+                    && last.span.end == owner.span.end
+                    && matches!(last.region.ops.as_slice(), [Op::Element(element)]
+                        if otherwise.body_node().is_some_and(|node|
+                            otherwise.accepts_body(node, element)))
+            }
+            _ => false,
+        };
+        if !original_branches {
+            return false;
+        }
         let ExprRef::Js(expression) = expression else {
             return false;
         };

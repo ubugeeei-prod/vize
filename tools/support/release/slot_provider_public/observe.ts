@@ -147,7 +147,7 @@ export function observe(
   const loaded = nativeJournal(journal.journal, installed, cli);
   const displayed = cliObservation(cli.stdout, cli.stderr, cli.status, project, stage, helperText);
   const vectors = assertCompilerVectors(stage, mapper.stdout, framework.stdout, project);
-  assertTypeIdentity(stage, typeIdentity);
+  assertTypeIdentity(stage, typeIdentity, vts);
   assert.deepEqual(assertInputs(project, stage.files), inputs);
   assertCustody(typeIdentity.physicalInputs);
   assertCustody(installed.images);

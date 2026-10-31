@@ -6,6 +6,7 @@
 //! Unsupported surfaces return a typed error and no render fragment; the
 //! caller retains the complete artifact, source and provenance diagnostics.
 
+use oxc_syntax::precedence::{GetPrecedence, Precedence};
 use vize_l0::{Span, ensure_sufficient_stack, id::NodeId};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::Op;
@@ -234,6 +235,18 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
                 Op::Element(element) => self.element(id, element, fact, None),
                 Op::If(owner) => self.conditional(id, owner),
                 Op::OriginalFor(original) => self.original_for(id, original, fact),
+                Op::JsxChildValue(child) => {
+                    let grouped = matches!(child.expression, ExprRef::Js(js)
+                        if js.ast.get_inner_expression().precedence() == Precedence::Comma);
+                    if grouped {
+                        self.writer.push("(");
+                    }
+                    self.expression(id, child.expression)?;
+                    if grouped {
+                        self.writer.push(")");
+                    }
+                    Ok(())
+                }
                 Op::Comment(comment) => {
                     helper(&mut self.writer, self.vocabulary, self.helpers.comment);
                     self.writer.push("(");

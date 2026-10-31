@@ -2,8 +2,9 @@
 
 use super::{ArtifactError, Builder, Frame, Owner, check};
 use crate::lang::js::NativeConditionalInput;
-use crate::op::IfOp;
+use crate::op::{IfOp, Op, Region};
 use vize_l0::{Span, id::NodeId};
+use vize_l1::markup::NativeAttributeElse;
 
 impl<'a> Builder<'a> {
     pub(super) fn begin_native_if(
@@ -45,6 +46,46 @@ impl<'a> Builder<'a> {
         Ok(id)
     }
 
+    /// Transition only the actual completed first Element to its real Else.
+    /// The valueless original owner supplies the second and whole-chain extent.
+    pub(super) fn begin_native_else(
+        &mut self,
+        node: NodeId,
+        input: &NativeAttributeElse<'a>,
+    ) -> Result<(), ArtifactError> {
+        let frame = self
+            .frames
+            .last_mut()
+            .ok_or(ArtifactError::UnfinishedOwner { node })?;
+        let condition = match &frame.owner {
+            Owner::NativeIf(condition) => *condition,
+            _ => return Err(ArtifactError::UnfinishedOwner { node: frame.id }),
+        };
+        let else_span = input.element_span();
+        if frame.id != node
+            || !frame.bindings.is_empty()
+            || !matches!(frame.ops.as_slice(), [Op::Element(_)])
+            || frame.span.end != else_span.start
+            || !core::ptr::eq(input.source_block().root_source(), self.parts.source)
+        {
+            return Err(ArtifactError::UnfinishedOwner { node: frame.id });
+        }
+        check::owned_span(self.parts.source, node, else_span, None)?;
+        check::owned_span(self.parts.source, node, input.name_span(), Some(else_span))?;
+        let first = Region {
+            ops: core::mem::replace(&mut frame.ops, vize_l0::Vec::new_in(&self.allocator)),
+        };
+        let first_span = frame.span;
+        frame.span = Span::new(first_span.start, else_span.end);
+        frame.owner = Owner::NativeIfElse {
+            condition,
+            first,
+            first_span,
+            else_span,
+        };
+        Ok(())
+    }
+
     pub(super) fn finish_native_if(
         &mut self,
         node: NodeId,
@@ -53,7 +94,14 @@ impl<'a> Builder<'a> {
             .frames
             .last()
             .ok_or(ArtifactError::UnfinishedOwner { node })?;
-        if frame.id != node || !matches!(&frame.owner, Owner::NativeIf(_)) {
+        if frame.id != node
+            || !matches!(
+                &frame.owner,
+                Owner::NativeIf(_) | Owner::NativeIfElse { .. }
+            )
+            || (matches!(&frame.owner, Owner::NativeIfElse { .. })
+                && !matches!(frame.ops.as_slice(), [Op::Element(_)]))
+        {
             return Err(ArtifactError::UnfinishedOwner { node: frame.id });
         }
         if !frame.bindings.is_empty() {

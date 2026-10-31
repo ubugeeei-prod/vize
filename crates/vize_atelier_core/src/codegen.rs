@@ -53,7 +53,8 @@ pub use entry::{
     generate_with_sections, generate_with_sections_and_experimental_options,
     generate_with_sections_and_experimental_options_and_slot_scope,
     generate_with_sections_and_experimental_options_slot_scope_and_environment,
-    generate_with_vnode_factory, generate_with_vnode_factory_and_merge_props,
+    generate_with_vnode_factory, generate_with_vnode_factory_and_child_values,
+    generate_with_vnode_factory_and_merge_props,
 };
 #[cfg(feature = "legacy")]
 pub(crate) use helpers::to_valid_asset_identifier;

@@ -1,4 +1,4 @@
-/// The 16 operation kinds generalized from Vapor's current flat operation set.
+/// Flat operations, including a distinct opaque JSX child materialization.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(u8)]
 pub enum OpKind {
@@ -18,6 +18,8 @@ pub enum OpKind {
     GetTextChild = 13,
     ChildRef = 14,
     NextRef = 15,
+    /// Normalize and render an opaque child value; never display-text conversion.
+    SetChildValue = 16,
 }
 
 impl OpKind {
@@ -41,6 +43,7 @@ impl OpKind {
             Self::GetTextChild => "l3.get-text-child",
             Self::ChildRef => "l3.child-ref",
             Self::NextRef => "l3.next-ref",
+            Self::SetChildValue => "l3.set-child-value",
         }
     }
 
@@ -64,6 +67,7 @@ impl OpKind {
             b"l3.get-text-child" => Some(Self::GetTextChild),
             b"l3.child-ref" => Some(Self::ChildRef),
             b"l3.next-ref" => Some(Self::NextRef),
+            b"l3.set-child-value" => Some(Self::SetChildValue),
             _ => None,
         }
     }

@@ -287,7 +287,13 @@ pub(crate) const fn is_literal(kind: ValueKind) -> bool {
 pub(crate) fn reads(operand: &Operand<'_>) -> bool {
     matches!(
         operand.role,
-        Role::Value | Role::Text | Role::Condition | Role::ForSource | Role::ModelRead | Role::Name
+        Role::Value
+            | Role::Text
+            | Role::ChildValue
+            | Role::Condition
+            | Role::ForSource
+            | Role::ModelRead
+            | Role::Name
     ) && !is_literal(operand.value.kind)
 }
 

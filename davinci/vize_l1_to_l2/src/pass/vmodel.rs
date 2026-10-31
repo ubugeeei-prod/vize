@@ -190,7 +190,7 @@ fn visit<'a>(
                 region(walk, channels, env, &component.children.ops);
             });
         }
-        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
+        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}
         Op::If(if_op) => {
             for branch in if_op.branches.iter() {
                 region(walk, channels, env, &branch.region.ops);

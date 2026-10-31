@@ -170,6 +170,7 @@ pub(crate) fn compile_root_with_origins(
     let LoweredRoot {
         mut root,
         l2,
+        vdom_value_children: _,
         mode,
         component_name,
         component_setup,

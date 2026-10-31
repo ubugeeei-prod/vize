@@ -1,0 +1,8 @@
+<script setup>
+const state = { value: false }
+</script>
+<template>
+  <!-- 雪🌸: ordinary template children retain display-text semantics. -->
+  <main>{{ state.value }}{{ missing }}</main>
+  <p v-text="state.value"></p>
+</template>

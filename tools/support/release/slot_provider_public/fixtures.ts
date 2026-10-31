@@ -24,6 +24,8 @@ export type Stage = {
   providerNames: string[];
   slotRoles: string[];
   collisionInvalid?: boolean;
+  collisionTags?: string[];
+  collisionAnyKey?: string;
   frameworkStdout?: string;
   repairCopy: boolean;
 };
@@ -201,6 +203,10 @@ export function loadFixtures(directory: string) {
     );
   assert.equal(collisions.length, 8);
   for (const control of collisions) {
+    const tags = asArray(control.names).map((name) => asString(name));
+    assert.deepEqual([...tags].sort(), ["A-b", "A_b"]);
+    const anyKey = asString(control.anyKey);
+    assert.ok(["AB", "A_b"].includes(anyKey));
     const id = asString(control.id),
       source = read(folder + "/" + id + "/source.vue.txt");
     const globals = read(folder + "/" + id + "/globals.d.ts.txt");
@@ -223,8 +229,10 @@ export function loadFixtures(directory: string) {
         files,
         expected: repair ? [] : expected(control.diagnostics),
         providerNames: ["A_b", "$Component_A_x2d_b", "$Component_A_x5f_b"],
-        slotRoles: ["template", "props", "template", "props"],
+        slotRoles: ["template", "template", "props", "props"],
         collisionInvalid: !repair,
+        collisionTags: tags,
+        collisionAnyKey: anyKey,
         frameworkStdout: repair
           ? ""
           : read(folder + "/" + id + "/independent-framework.stdout.txt"),

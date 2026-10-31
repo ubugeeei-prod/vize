@@ -221,6 +221,10 @@ pub struct CompoundExpressionNode<'a> {
     pub loc: SourceLocation,
     pub identifiers: Option<Vec<'a, &'a str>>,
     pub is_handler_key: bool,
+    /// Published only by the JSX child-value producer, not inferred from spelling.
+    pub is_jsx_child_value: bool,
+    /// The authored JSX expression has comma precedence and must remain one child.
+    pub jsx_child_needs_grouping: bool,
 }
 
 /// 88 -> 64.
@@ -234,6 +238,8 @@ impl<'a> CompoundExpressionNode<'a> {
             loc,
             identifiers: None,
             is_handler_key: false,
+            is_jsx_child_value: false,
+            jsx_child_needs_grouping: false,
         }
     }
 

@@ -177,7 +177,10 @@ fn non_scoped_style_element_still_renders() {
     let component = vdom(src, JsxLang::Jsx);
 
     assert!(component.scoped_style.is_none());
-    insta::assert_snapshot!(component.code.as_str());
+    insta::assert_snapshot!(
+        "non_scoped_style_element_still_renders_vdom_child_values_6890",
+        component.code.as_str()
+    );
 }
 
 #[test]

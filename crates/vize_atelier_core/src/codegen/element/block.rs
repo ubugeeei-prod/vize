@@ -134,8 +134,10 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
         // Open block wrapper, anchored at the element opening the block.
         ctx.push_mapped("(", el.loc.span.start);
-        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-        ctx.push("(), ");
+        if !ctx.untracked_children {
+            ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+            ctx.push("(), ");
+        }
     }
 
     match el.tag_type {

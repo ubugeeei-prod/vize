@@ -19,8 +19,9 @@ fn op_kind_mnemonics_are_the_vapor_generalization_set() {
         (OpKind::GetTextChild, "l3.get-text-child"),
         (OpKind::ChildRef, "l3.child-ref"),
         (OpKind::NextRef, "l3.next-ref"),
+        (OpKind::SetChildValue, "l3.set-child-value"),
     ];
-    assert_eq!(kinds.len(), 16);
+    assert_eq!(kinds.len(), 17);
     for (kind, mnemonic) in kinds {
         assert_eq!(kind.mnemonic(), mnemonic);
         assert_eq!(OpKind::from_mnemonic(mnemonic), Some(kind));

@@ -1,0 +1,75 @@
+{
+  "issue": 11147,
+  "origin": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues/11147",
+    "updatedAt": "2026-10-31T07:33:26Z",
+    "issueResponseSha256": "92d48006623c33bb112ee25df9b01e5d3009d72734f4d3b1060fd511c79a472a"
+  },
+  "originalInstall": "pnpm add -D vize@0.608.0 @vizejs/vite-plugin@0.608.0 vite-plus@0.3.0 vue@3.5.43 typescript\n",
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": { \"strict\": true, \"module\": \"esnext\", \"moduleResolution\": \"bundler\", \"target\": \"esnext\", \"jsx\": \"preserve\", \"skipLibCheck\": true, \"noEmit\": true },\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+    "vite.config.ts": "import { defineConfig } from \"@vizejs/vite-plugin/vite-plus\";\n\nexport default defineConfig({}).withVue({\n  linter: { rules: { \"type/strict-boolean-expressions\": \"error\" } },\n});\n",
+    "src/card.vue": "<script setup lang=\"ts\">\ndefineProps<{ user?: { name: string }; count: number | null }>();\n</script>\n\n<template>\n  <p v-if=\"count\">{{ count }}</p>\n  <p v-if=\"user\">{{ user.name }}</p>\n</template>\n"
+  },
+  "originalCommands": "npx vize lint --type-aware src/card.vue   # OK: 1 error, exit 1\npnpm add -D tsrs@0.20.1-ts7.1.0-beta\nnpx vize lint --type-aware src/card.vue   # broken\n",
+  "reportedExpected": "× [vize:type/strict-boolean-expressions] Unexpected nullable number value in conditional. Please handle the nullish and zero cases explicitly.\n1 error in 1 file\n",
+  "reportedActual": "⚠ [vize:type/corsa-runtime] Failed to query boolean condition types: protocol error: Invalid boolean checker AST: unsupported protocol version\n   ╭─[src/card.vue:1:1]\n  help: Type-aware lint rules were skipped because the native compiler could not be started. Install a native TypeScript runtime in this project or configure typeChecker.corsaPath, CORSA_PATH, or\n        TSGO_PATH to its executable.\n1 warning in 1 file\n# exit 0\n",
+  "expectedNullableReport": [
+    {
+      "file": "src/card.vue",
+      "messages": [
+        {
+          "ruleId": "type/strict-boolean-expressions",
+          "ruleDocsPath": "docs/content/rules/type-and-script.md",
+          "severity": 2,
+          "message": "[vize:type/strict-boolean-expressions] Unexpected nullable number value in conditional. Please handle the nullish and zero cases explicitly.",
+          "line": 6,
+          "column": 12,
+          "endLine": 6,
+          "endColumn": 17
+        }
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    }
+  ],
+  "expectedNoProviderReport": [
+    {
+      "file": "src/card.vue",
+      "messages": [
+        {
+          "ruleId": "type/corsa-runtime",
+          "ruleDocsPath": "docs/content/rules/type-and-script.md",
+          "severity": 2,
+          "message": "[vize:type/corsa-runtime] No native TypeScript/tsgo executable found. Install a native TypeScript runtime in the selected project, or set typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to its executable.",
+          "line": 1,
+          "column": 1,
+          "endLine": 1,
+          "endColumn": 1,
+          "help": "Requested type-aware lint could not initialize its native runtime. Check the reported failure, install a compatible native TypeScript runtime, or configure typeChecker.corsaPath, CORSA_PATH, or TSGO_PATH to its executable."
+        }
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    }
+  ],
+  "expectedAuthority": {
+    "source": "crates/vize/tests/lint_strict_boolean_cli/project_runtime.rs",
+    "revision": "87d4e6a22631aa9d0ca28c9226e3c912e38b628d",
+    "adaptation": "Only the original authored path changes from the existing Rust witness App.vue to the issue's src/card.vue; complete message/ranges/counts retained. No-provider report derives from current CorsaResolveError::NotFound and Runtime error help, not a new actual output."
+  },
+  "explicitPins": {
+    "node": "26.6.0",
+    "pnpm": "12.1.0",
+    "typescript": "6.0.3",
+    "vite-plus": "0.3.0",
+    "vue": "3.5.43",
+    "tsrs": "0.20.1-ts7.1.0-beta",
+    "stableControl": "@typescript/typescript-darwin-arm64@7.0.2"
+  },
+  "limits": [
+    "Node patch, pnpm and TypeScript versions were unspecified in the report and are explicit finite witness pins.",
+    "Current public CLI no longer supplies a bundled native checker. Preserve the unmodified dependency-role phase and its complete missing-provider error; label the separate explicitly installed stable-provider control.",
+    "The reported92-SFC repeated warning and approximately620-SFC symbol-owner failure have no original project payload here and remain unqualified; no synthetic copy-count substitutes."
+  ]
+}

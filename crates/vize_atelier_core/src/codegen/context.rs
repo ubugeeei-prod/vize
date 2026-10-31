@@ -40,6 +40,8 @@ pub struct CodegenContext {
     pub(super) component_name: Option<String>,
     /// Whether the reserved `<Self>` tag resolves to the current component.
     pub(super) experimental_self_component: bool,
+    /// Observed at actual JSX value-child mints, never inferred from output text.
+    pub(super) untracked_children: bool,
     pub(super) no_slotted: bool,
     /// Whether development-only codegen hints should be retained.
     pub(super) development: bool,
@@ -329,7 +331,9 @@ impl CodegenContext {
     /// Track a helper for preamble generation
     #[inline]
     pub fn use_helper(&mut self, helper: RuntimeHelper) {
-        self.used_helpers.add(helper);
+        if let Some(helper) = self.child_value_helper(helper) {
+            self.used_helpers.add(helper);
+        }
     }
 
     /// Push string to buffer (alias for `push`, compatible with `appends!`/`append!` macros)

@@ -56,6 +56,13 @@ impl<'a> RegionBuilder<'_, 'a> {
     ) -> Result<core::ptr::NonNull<crate::op::IfOp<'a>>, ArtifactError> {
         self.builder.finish_native_if(node)
     }
+    pub(crate) fn begin_native_else(
+        &mut self,
+        node: NodeId,
+        input: &vize_l1::markup::NativeAttributeElse<'a>,
+    ) -> Result<(), ArtifactError> {
+        self.builder.begin_native_else(node, input)
+    }
     pub(crate) fn finish_original_for(
         &mut self,
         node: NodeId,

@@ -2,7 +2,9 @@ import { test } from "node:test";
 import fs from "node:fs";
 import path from "node:path";
 import { rspack } from "@rspack/core";
+import { compileJsx } from "@vizejs/native";
 import { compileJsxModule } from "./shared/compiler.ts";
+import { nativeVdomConsumers } from "./test/jsx-vdom-child-values.ts";
 import "./test/setup.ts";
 import { VizePlugin } from "./plugin/index.ts";
 import {
@@ -109,7 +111,58 @@ void test("jsx: a .jsx Vue component compiles to VDOM render code", async (t) =>
     throw new Error(JSON.stringify(info.errors, null, 2));
   }
 
-  t.assert.snapshot(normalizeSnapshot(bundleSource(stats)));
+  const filename = resolveFixturePath("jsx-vdom", "App.jsx");
+  const source = fs.readFileSync(filename, "utf8");
+  const entry = fs.readFileSync(resolveFixturePath("jsx-vdom", "entry.ts"), "utf8");
+  const nativeDto = compileJsx(source, {
+    filename,
+    lang: "jsx",
+    jsxMode: "vdom",
+    sourceMap: false,
+  });
+  const reference = compileJsxModule(filename, source, { jsxMode: "vdom", sourceMap: false });
+  const loaded = Array.from(stats.compilation.modules).find(
+    (module) => "resource" in module && module.resource === filename,
+  );
+  const bundle = bundleSource(stats);
+  const snapshotValue = normalizeSnapshot(bundle);
+  const directory = process.env.VIZE_RSPACK_JSX_CAPTURE ?? stats.compilation.outputOptions.path;
+  if (!directory) throw new Error("Rspack must expose its actual output directory");
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    path.join(directory, "native-vdom-bundle.json"),
+    JSON.stringify(
+      {
+        source,
+        entry,
+        nativeDto,
+        mapOwnProperty: Object.hasOwn(nativeDto, "map"),
+        mapIsUndefined: nativeDto.map === undefined,
+        reference,
+        loadedModule: loaded?.originalSource()?.source().toString(),
+        stats: stats.toJson({ all: false, modules: true, providedExports: true }),
+        bundle,
+        snapshotValue,
+        sourceRevision: process.env.GITHUB_SHA ?? null,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+  t.assert.deepEqual(nativeDto.errors, []);
+  t.assert.deepEqual(nativeDto.warnings, []);
+  t.assert.ok(loaded);
+  t.assert.equal(loaded.originalSource()?.source().toString(), reference.code);
+  t.assert.equal(nativeDto.code, reference.code);
+  const expected = nativeVdomConsumers.bundle;
+  t.assert.deepEqual({ source, entry }, { source: expected.source, entry: expected.entry });
+  t.assert.equal(Object.hasOwn(nativeDto, "map"), expected.mapOwnProperty);
+  t.assert.equal(nativeDto.map === undefined, expected.mapIsUndefined);
+  // The genuine map-off Node packet has no own map property and reads as
+  // undefined. Preserve that boundary and compare the complete DTO.
+  t.assert.deepEqual(nativeDto, expected.nativeDto);
+  t.assert.equal(loaded.originalSource()?.source().toString(), expected.loadedModule);
+  t.assert.equal(snapshotValue, expected.snapshotValue);
 });
 
 void test("jsx: a .jsx <style scoped> block emits scope-rewritten CSS into the bundle", async (t) => {

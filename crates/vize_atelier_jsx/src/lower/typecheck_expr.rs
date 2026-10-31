@@ -15,6 +15,7 @@ use super::Lowerer;
 pub(crate) struct TypecheckRoot<'a> {
     pub(crate) root: RootNode<'a>,
     pub(crate) scoped_style: Option<(String, std::vec::Vec<ScopedStyleExpr>)>,
+    pub(crate) vdom_value_children: bool,
 }
 
 impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
@@ -51,11 +52,17 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         // Structural children are lowered once by the existing native lowerer.
         // Its plain-expression branches retain any deeper expression roots.
         let outer_styles = std::mem::take(&mut self.pending_styles);
+        let outer_values = self.take_vdom_value_children();
         let root = self.lower_element_root(element);
         let scoped_style = self.take_scoped_styles();
+        let vdom_value_children = self.take_vdom_value_children();
         self.pending_styles = outer_styles;
-        self.pending_typecheck_roots
-            .push(TypecheckRoot { root, scoped_style });
+        self.pending_vdom_value_children = outer_values;
+        self.pending_typecheck_roots.push(TypecheckRoot {
+            root,
+            scoped_style,
+            vdom_value_children,
+        });
     }
 
     pub(crate) fn retain_typecheck_fragment(&mut self, fragment: &JSXFragment<'_>) {
@@ -63,10 +70,16 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             return;
         }
         let outer_styles = std::mem::take(&mut self.pending_styles);
+        let outer_values = self.take_vdom_value_children();
         let root = self.lower_fragment_root(fragment);
         let scoped_style = self.take_scoped_styles();
+        let vdom_value_children = self.take_vdom_value_children();
         self.pending_styles = outer_styles;
-        self.pending_typecheck_roots
-            .push(TypecheckRoot { root, scoped_style });
+        self.pending_vdom_value_children = outer_values;
+        self.pending_typecheck_roots.push(TypecheckRoot {
+            root,
+            scoped_style,
+            vdom_value_children,
+        });
     }
 }

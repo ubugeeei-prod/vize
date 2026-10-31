@@ -259,7 +259,9 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
             kind: ChildKind::Filler,
         },
         Op::Text(text) => implicit_default_content(id, text.span),
-        Op::Interpolation(interpolation) => implicit_default_content(id, interpolation.span),
+        Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
+            implicit_default_content(id, interpolation.span)
+        }
         Op::Comment(comment) => implicit_default_content(id, comment.span),
         Op::If(if_op) => {
             let wrapper = id.and_then(|id| channels.wrappers.get(id));

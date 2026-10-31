@@ -16,7 +16,7 @@
 mod l2_differential;
 mod l2_emit;
 
-use vize_atelier_core::codegen::generate_with_vnode_factory_and_merge_props;
+use vize_atelier_core::codegen::generate_with_vnode_factory_and_child_values;
 use vize_atelier_core::lane::transform_with_jsx_compatibility;
 use vize_atelier_core::options::{CodegenMode, CodegenOptions, TransformOptions};
 // `CodegenMode::Module` is the only supported JSX target: JSX/TSX is authored
@@ -28,7 +28,7 @@ use vize_l0::{Allocator, String};
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::scoped::{ScopedStyle, build_scoped_style};
-use crate::{ComponentSetupSpan, JsxLang, JsxOutputMode, LoweredRoot, lower_source};
+use crate::{ComponentSetupSpan, JsxLang, JsxOutputMode, LoweredRoot};
 
 /// Options controlling JSX/TSX -> VDOM compilation.
 ///
@@ -117,7 +117,18 @@ pub fn compile_to_vdom(
     lang: JsxLang,
     options: VdomCompileOptions,
 ) -> VdomOutput {
-    let lowered = lower_source(allocator, allocator.as_oxc(), source, lang);
+    let (lowered, _) = crate::lower_source_with_compat(
+        allocator,
+        allocator.as_oxc(),
+        source,
+        lang,
+        crate::JsxCompatMode::Native,
+        JsxOutputMode::Vdom,
+        crate::lower::BabelLoweringOptions {
+            vdom_lane: true,
+            ..Default::default()
+        },
+    );
     let mut diagnostics = lowered.diagnostics;
     let is_ts = lang.is_typescript();
 
@@ -161,6 +172,7 @@ pub(crate) fn compile_root_to_vdom<'a>(
     let LoweredRoot {
         mut root,
         l2,
+        vdom_value_children,
         mode,
         component_name,
         component_setup,
@@ -236,12 +248,13 @@ pub(crate) fn compile_root_to_vdom<'a>(
     if options.source_map {
         root.source = source;
     }
-    let result = generate_with_vnode_factory_and_merge_props(
+    let result = generate_with_vnode_factory_and_child_values(
         &root,
         codegen_opts,
         compat.vnode_factory,
         compat.merge_props,
         Some(source),
+        vdom_value_children,
     );
     let mut preamble = result.preamble;
     if has_spread_children {

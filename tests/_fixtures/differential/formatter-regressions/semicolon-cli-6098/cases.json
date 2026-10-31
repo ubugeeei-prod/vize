@@ -1,0 +1,21 @@
+{
+  "schema": "vize.formatter-semicolon-cli-6098",
+  "reference": { "package": "prettier", "version": "3.8.3" },
+  "provenance": "New authored JS/TS controls for the documented CLI option override contract; independent reference execution is required. These are not historical semi:false captures.",
+  "cases": [
+    {
+      "file": "Original雪🌸.js",
+      "parser": "babel",
+      "source": "// 雪🌸 original JS\nconst greeting=\"hello\"\nconsole.log(greeting)\n",
+      "withSemicolons": "// 雪🌸 original JS\nconst greeting = 'hello';\nconsole.log(greeting);\n",
+      "withoutSemicolons": "// 雪🌸 original JS\nconst greeting = 'hello'\nconsole.log(greeting)\n"
+    },
+    {
+      "file": "Original雪🌸.ts",
+      "parser": "typescript",
+      "source": "// 雪🌸 original TS\nconst greeting:string=\"hello\"\nconsole.log(greeting)\n",
+      "withSemicolons": "// 雪🌸 original TS\nconst greeting: string = 'hello';\nconsole.log(greeting);\n",
+      "withoutSemicolons": "// 雪🌸 original TS\nconst greeting: string = 'hello'\nconsole.log(greeting)\n"
+    }
+  ]
+}

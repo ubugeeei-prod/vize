@@ -1,0 +1,4 @@
+{
+  "code": "export function render(_ctx, _cache) {\n  const _component_B = _resolveComponent(\"B\")\n  \n  return (_createVNode(_component_B, null, {\n    header: _withCtx((p) => [\n      _createElementVNode(\"i\", null, [\n        p.x\n      ])\n    ]),\n    _: 2 /* DYNAMIC */\n  }, 1024 /* DYNAMIC_SLOTS */))\n}",
+  "source": "const A = () => <B v-slots={{header: (p) => <i>{p.x}</i>}}/>;"
+}

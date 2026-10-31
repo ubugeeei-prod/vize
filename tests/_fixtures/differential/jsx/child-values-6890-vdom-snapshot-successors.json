@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "source": "a9b493e2ec31426eaa75a22fd23c1f04d9b586fa",
+  "run": 41210732285,
+  "artifact": 13046590004,
+  "archiveSha256": "c8865710139f5261c5533f8d9a2333ad5c9998d8bb4ea1991d131ab33881854c",
+  "originalInputsChanged": false,
+  "runtimeCredit": false,
+  "performanceCredit": false,
+  "wholeCorpusQualified": false,
+  "rows": [
+    {
+      "original": "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__module_code_prepends_merged_preamble_to_render_code.snap",
+      "originalSha256": "5a3505758ad4a2cb1423c40435f83e5d1d049056a2b7c75be4b929784fd0bde0",
+      "successor": "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__module_code_prepends_merged_preamble_to_render_code_vdom_child_values_6890.snap",
+      "successorSha256": "5008e4151d60d0a92b1b61a80bd0ac9454e25e5fdbbdad599f961a566bbdbc41",
+      "member": "vize/vize/crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__module_code_prepends_merged_preamble_to_render_code.snap.new",
+      "body": "whole actual .snap.new bytes, unchanged"
+    },
+    {
+      "original": "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__source_map_covers_single_and_multiple_component_modules.snap",
+      "originalSha256": "8d5bb75b3e57f993353b2d332d6576125362db9fb5cd32ecab1cce5d76dfaaab",
+      "successor": "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__source_map_covers_single_and_multiple_component_modules_vdom_child_values_6890.snap",
+      "successorSha256": "2afdc32c7afa6b1ce6f7e152748767598c24db98490b6f46bff772e1488a5506",
+      "member": "vize/vize/crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__source_map_covers_single_and_multiple_component_modules.snap.new",
+      "body": "whole actual .snap.new bytes, unchanged"
+    },
+    {
+      "original": "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vdom.snap",
+      "originalSha256": "1bcae38e3cbde9cef7fedbc446f5a577488135490f56b817c48c4fd4f9fc5184",
+      "successor": "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vdom_vdom_child_values_6890.snap",
+      "successorSha256": "eb68529311be0213d2d593b8bd6ebb407d38cc846eadbb7fd38c2d3939ce5cb5",
+      "member": "vize/vize/crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vdom.snap.new",
+      "body": "whole actual .snap.new bytes, unchanged"
+    },
+    {
+      "original": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__directives_slots_svg_and_spreads_vdom.snap",
+      "originalSha256": "b9575c07ec7bc23d4b087eb51253ed26f0b48569823da5ee111f68436b6fc50a",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__directives_slots_svg_and_spreads_vdom_vdom_child_values_6890.snap",
+      "successorSha256": "3f5060177a37b1e1e4d7a6f54b02e73ffad4b3e3c1b5933d630543d1df020dae",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__directives_slots_svg_and_spreads_vdom.snap.new",
+      "body": "whole actual .snap.new bytes, unchanged"
+    },
+    {
+      "original": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__fragment_whitespace_text_vdom.snap",
+      "originalSha256": "ef2b6e88b23ba9e6941569fab9678c670fb38e98bdbe4aad01cda2d12e7ebefa",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__fragment_whitespace_text_vdom_vdom_child_values_6890.snap",
+      "successorSha256": "ec85cadae470d69526f55882b8c586fca24d8a32b3dfb687c05e8121c973d6ad",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__fragment_whitespace_text_vdom.snap.new",
+      "body": "whole actual .snap.new bytes, unchanged"
+    },
+    {
+      "original": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_summary_authored_native_10701_child_values_6890_inert_template.snap",
+      "originalSha256": "e561baf17166ea5690acce87e624af8f2699629492d3dfccd7ced92c329703ae",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_summary_authored_native_10701_child_values_6890_inert_template_vdom_child_values_6890.snap",
+      "successorSha256": "7e80bba81c6ff0c32c2b5f10834a5a9658f93e6d95811e46880716a63f4bfbdf",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_summary_authored_native_10701_child_values_6890_inert_template.snap.new",
+      "body": "whole actual .snap.new bytes, unchanged"
+    },
+    {
+      "original": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__stateful_destructured_component_vdom.snap",
+      "originalSha256": "8c959bf3c11daa811c09a5cbc3add84168bf1ea65697e2d68f56cfb2cbffde3f",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__stateful_destructured_component_vdom_vdom_child_values_6890.snap",
+      "successorSha256": "9a0e0baa7b4d40bd86394b519d5f8a6c75d74d164f44b534ec8f956845143c2a",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__stateful_destructured_component_vdom.snap.new",
+      "body": "whole actual .snap.new bytes, unchanged"
+    },
+    {
+      "original": "crates/vize_atelier_jsx/tests/snapshots/parity_tsx__tsx_vdom_codegen_matrix.snap",
+      "originalSha256": "84a3aa2962c06975ea27df93a53164fd19c63f13a6f24bce97461158b1183612",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/parity_tsx__tsx_vdom_codegen_matrix_vdom_child_values_6890.snap",
+      "successorSha256": "3099b46f8b6e825b278034f14e09ed738c69de9776fd04504e18eb62b25f7a03",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/parity_tsx__tsx_vdom_codegen_matrix.snap.new",
+      "body": "whole actual .snap.new bytes, unchanged"
+    },
+    {
+      "original": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_vdom.snap",
+      "originalSha256": "7dc820acdd3c4be34140d348234e03c1ea332341eb6df0fe59c15aa78f3325ef",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_vdom_vdom_child_values_6890.snap",
+      "successorSha256": "3e7caa1510a5055156c1f1fb0ccd981707f2ae55eaf9525bd339c37e23c8b2fa",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_vdom.snap.new",
+      "body": "whole actual .snap.new bytes, unchanged"
+    },
+    {
+      "original": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_module_authored_native_10701_child_values_6890_inert_template.snap",
+      "originalSha256": "03b3b642700b20ea80ad252f42f65247821629519f6086b27a604ddec8e9c117",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_module_authored_native_10701_child_values_6890_inert_template_vdom_child_values_6890.snap",
+      "successorSha256": "d89b4fff2fd773907b6c61f2abaa3444833cf80fee27899b9a4c3437aab7003c",
+      "member": "_temp/jsx-authored-native/adversarial/mode_aware_multi_component.json",
+      "body": "whole actual module string, snapshot terminal newline only"
+    }
+  ]
+}

@@ -153,12 +153,31 @@ fn lower_child<'a>(
                 &allocator,
             )))
         }
+        TemplateChildNode::CompoundExpression(compound) => {
+            if !compound.is_jsx_child_value {
+                return Err(L2Refusal::TransformedChild);
+            }
+            let [vize_relief::CompoundExpressionChild::Simple(expression)] =
+                compound.children.as_slice()
+            else {
+                return Err(L2Refusal::TransformedChild);
+            };
+            let expression =
+                ExprRef::parse_js_in(allocator, expression.content, expression.loc.span);
+            cx.observe(OpFamily::JsxChild);
+            Ok(Op::JsxChildValue(Box::new_in(
+                InterpolationOp {
+                    expression,
+                    span: compound.loc.span,
+                },
+                &allocator,
+            )))
+        }
         TemplateChildNode::Element(element) => lower_element(allocator, source, element, cx),
         TemplateChildNode::If(if_node) => lower_if(allocator, source, if_node, cx),
         TemplateChildNode::For(for_node) => lower_for(allocator, source, for_node, node, cx),
         TemplateChildNode::IfBranch(_)
         | TemplateChildNode::TextCall(_)
-        | TemplateChildNode::CompoundExpression(_)
         | TemplateChildNode::Hoisted(_) => Err(L2Refusal::TransformedChild),
         TemplateChildNode::Comment(_) => Err(L2Refusal::UnsupportedChild),
     }
@@ -320,6 +339,8 @@ pub(super) fn simple_identifier<'a>(expr: &ExprRef<'a>) -> Option<&'a str> {
     }
 }
 
+#[cfg(test)]
+mod child_value_tests;
 #[cfg(test)]
 mod control_flow_tests;
 #[cfg(test)]

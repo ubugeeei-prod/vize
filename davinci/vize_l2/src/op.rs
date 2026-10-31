@@ -81,6 +81,8 @@ pub enum Op<'a> {
     Text(Box<'a, TextOp<'a>>),
     /// `ui.interpolation` - an expression rendered as text.
     Interpolation(Box<'a, InterpolationOp<'a>>),
+    /// `ui.jsx-child` - a genuine JSX value normalized by the child renderer.
+    JsxChildValue(Box<'a, InterpolationOp<'a>>),
     /// `ui.comment` - an authored template comment preserved for DOM output.
     Comment(Box<'a, CommentOp<'a>>),
     /// `ui.if` - structured conditional; every branch owns its region.
@@ -104,6 +106,7 @@ impl Op<'_> {
             Self::Component(_) => "ui.component",
             Self::Text(_) => "ui.text",
             Self::Interpolation(_) => "ui.interpolation",
+            Self::JsxChildValue(_) => "ui.jsx-child",
             Self::Comment(_) => "ui.comment",
             Self::If(_) => "ui.if",
             Self::For(_) => "ui.for",

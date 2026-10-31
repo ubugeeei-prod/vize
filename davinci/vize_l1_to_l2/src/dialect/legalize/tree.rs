@@ -31,7 +31,7 @@ pub(super) fn map_binding_lists<'a>(
             }
             Op::For(for_op) => map_binding_lists(&mut for_op.region.ops, visit),
             Op::OriginalFor(for_op) => map_binding_lists(&mut for_op.region.ops, visit),
-            Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
+            Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}
         }
     }
 }

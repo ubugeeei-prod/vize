@@ -279,7 +279,7 @@ mod tests {
         );
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
         assert!(
-            result.code.contains("from \"vue\"") && result.code.contains("_createElementBlock"),
+            result.code.contains("from \"vue\"") && result.code.contains("_createElementVNode"),
             "code carries the runtime-helper import: {}",
             result.code
         );

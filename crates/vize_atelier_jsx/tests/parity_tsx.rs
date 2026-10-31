@@ -29,9 +29,10 @@ fn tsx_vdom_codegen_matrix() {
         ("non null binding", "const A = () => <div title={el!}/>;"),
     ];
 
-    insta::assert_snapshot!(snapshot_cases(&cases, |source| {
-        vdom_code(source, JsxLang::Tsx)
-    }));
+    insta::assert_snapshot!(
+        "tsx_vdom_codegen_matrix_vdom_child_values_6890",
+        snapshot_cases(&cases, |source| { vdom_code(source, JsxLang::Tsx) })
+    );
 }
 
 #[test]

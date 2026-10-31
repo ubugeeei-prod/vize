@@ -147,7 +147,7 @@ fn build_script_virtual_project_with_package_routes(
         .overlays
         .iter()
         .map(|(path, content)| {
-            let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.clone());
+            let key = vize_carton::path::canonicalize_non_verbatim(path);
             (key, *content)
         })
         .collect::<FxHashMap<_, _>>();

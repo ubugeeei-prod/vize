@@ -1,0 +1,157 @@
+{
+  "schema": "vize.native-sfc.original-root-if-else-inputs",
+  "filename": "OriginalRootIfElse雪🌸.vue",
+  "compiler": {
+    "version": "3.5.35"
+  },
+  "runtime": {
+    "version": "3.5.35"
+  },
+  "typescript": {
+    "version": "6.0.3"
+  },
+  "qualification": "input-only; no native code, source-map or primary capture credit",
+  "provenance": "New bounded original adjacent root If/valueless Else sources; no historical golden is replaced. Runtime branch vectors are independently declared inputs, never emitted-code or map expectations.",
+  "fixtures": [
+    {
+      "id": "mutable-same-tag-to-else",
+      "source": "<script setup>let ready=true</script><template><p v-if='ready'>yes</p><p v-else>no</p></template>",
+      "script": "let ready=true",
+      "template": "<p v-if='ready'>yes</p><p v-else>no</p>",
+      "bindings": ["ready"],
+      "immutableBindings": [],
+      "updates": {
+        "ready": false
+      },
+      "conditionBinding": "ready",
+      "ifElseRuntime": {
+        "initial": {
+          "branch": 0,
+          "tag": "p",
+          "text": "yes"
+        },
+        "updated": {
+          "branch": 1,
+          "tag": "p",
+          "text": "no"
+        }
+      }
+    },
+    {
+      "id": "var-else-to-if",
+      "source": "<script setup>var ready=false</script><template><p v-if='ready'>yes</p><b v-else>no</b></template>",
+      "script": "var ready=false",
+      "template": "<p v-if='ready'>yes</p><b v-else>no</b>",
+      "bindings": ["ready"],
+      "immutableBindings": [],
+      "updates": {
+        "ready": true
+      },
+      "conditionBinding": "ready",
+      "ifElseRuntime": {
+        "initial": {
+          "branch": 1,
+          "tag": "b",
+          "text": "no"
+        },
+        "updated": {
+          "branch": 0,
+          "tag": "p",
+          "text": "yes"
+        }
+      }
+    },
+    {
+      "id": "self-closing-same-tag",
+      "source": "<script setup>let ready=true</script><template><i v-if='ready'/><i v-else/></template>",
+      "script": "let ready=true",
+      "template": "<i v-if='ready'/><i v-else/>",
+      "bindings": ["ready"],
+      "immutableBindings": [],
+      "updates": {
+        "ready": false
+      },
+      "conditionBinding": "ready",
+      "ifElseRuntime": {
+        "initial": {
+          "branch": 0,
+          "tag": "i",
+          "text": null
+        },
+        "updated": {
+          "branch": 1,
+          "tag": "i",
+          "text": null
+        }
+      }
+    },
+    {
+      "id": "typescript-unicode-crlf",
+      "source": "<script setup lang='ts'>/* from 'vue' 雪🌸 */\r\nlet 可視:boolean=true</script>\r\n<template><section v-if='可視'>雪🌸</section><b v-else>空</b></template>",
+      "script": "/* from 'vue' 雪🌸 */\r\nlet 可視:boolean=true",
+      "template": "<section v-if='可視'>雪🌸</section><b v-else>空</b>",
+      "bindings": ["可視"],
+      "immutableBindings": [],
+      "updates": {
+        "可視": false
+      },
+      "conditionBinding": "可視",
+      "ifElseRuntime": {
+        "initial": {
+          "branch": 0,
+          "tag": "section",
+          "text": "雪🌸"
+        },
+        "updated": {
+          "branch": 1,
+          "tag": "b",
+          "text": "空"
+        }
+      }
+    },
+    {
+      "id": "const-true",
+      "source": "<script setup>const ready=true</script><template><p v-if='ready'>yes</p><b v-else>no</b></template>",
+      "script": "const ready=true",
+      "template": "<p v-if='ready'>yes</p><b v-else>no</b>",
+      "bindings": ["ready"],
+      "immutableBindings": ["ready"],
+      "updates": {},
+      "conditionBinding": "ready",
+      "ifElseRuntime": {
+        "initial": {
+          "branch": 0,
+          "tag": "p",
+          "text": "yes"
+        },
+        "updated": {
+          "branch": 0,
+          "tag": "p",
+          "text": "yes"
+        }
+      }
+    },
+    {
+      "id": "const-false",
+      "source": "<script setup>const ready=false</script><template><i v-if='ready'/><b v-else>no</b></template>",
+      "script": "const ready=false",
+      "template": "<i v-if='ready'/><b v-else>no</b>",
+      "bindings": ["ready"],
+      "immutableBindings": ["ready"],
+      "updates": {},
+      "conditionBinding": "ready",
+      "ifElseRuntime": {
+        "initial": {
+          "branch": 1,
+          "tag": "b",
+          "text": "no"
+        },
+        "updated": {
+          "branch": 1,
+          "tag": "b",
+          "text": "no"
+        }
+      }
+    }
+  ]
+}

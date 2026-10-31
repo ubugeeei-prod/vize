@@ -3,6 +3,9 @@
 //! Generates code for individual items within a v-for loop,
 //! including props merging, key handling, and block wrapping.
 
+mod single_prop;
+pub(super) use single_prop::generate_single_prop;
+
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode,
     steps::v_memo::{get_memo_exp, has_v_memo},
@@ -17,7 +20,7 @@ use super::super::{
         has_custom_directives, has_vmodel_directive, has_vshow_directive,
     },
     expression::generate_expression,
-    helpers::{escape_js_string, is_builtin_component, to_valid_asset_identifier},
+    helpers::{is_builtin_component, to_valid_asset_identifier},
     node::generate_node,
     patch_flag::{
         calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
@@ -91,8 +94,10 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
                     ctx.use_helper(RuntimeHelper::Fragment);
                     ctx.push("(");
-                    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-                    ctx.push("(), ");
+                    if !ctx.untracked_children {
+                        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+                        ctx.push("(), ");
+                    }
                     ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push("(");
                     ctx.push(ctx.helper(RuntimeHelper::Fragment));
@@ -169,8 +174,10 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 // Dynamic list: wrap in block
                 ctx.use_helper(RuntimeHelper::OpenBlock);
                 ctx.push("(");
-                ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-                ctx.push("(), ");
+                if !ctx.untracked_children {
+                    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+                    ctx.push("(), ");
+                }
 
                 if is_component {
                     // Component: use createBlock
@@ -838,75 +845,4 @@ fn flush_for_item_props_segment(
     ctx.deindent();
     ctx.newline();
     ctx.push("}");
-}
-
-/// Generate a single prop (attribute or directive)
-pub(super) fn generate_single_prop(
-    ctx: &mut CodegenContext,
-    prop: &PropNode<'_>,
-    static_merge: super::super::props::StaticMerge<'_>,
-) {
-    match prop {
-        PropNode::Attribute(attr) => {
-            let ref_value = if attr.name == "ref" && ctx.options.inline {
-                attr.value.as_ref()
-            } else {
-                None
-            };
-            let ref_binding_type = ref_value.and_then(|v| {
-                ctx.options
-                    .binding_metadata
-                    .as_ref()
-                    .and_then(|m| m.bindings.get(v.content).copied())
-            });
-            let should_ref_runtime_binding = matches!(
-                ref_binding_type,
-                Some(
-                    crate::options::BindingType::SetupLet
-                        | crate::options::BindingType::SetupRef
-                        | crate::options::BindingType::SetupMaybeRef
-                )
-            );
-            let needs_ref_for = attr.name == "ref" && ctx.in_v_for;
-
-            if let (true, Some(ref_value)) = (should_ref_runtime_binding, ref_value) {
-                let ref_name = &ref_value.content;
-                if needs_ref_for {
-                    ctx.push("ref_for: true, ");
-                }
-                ctx.push("ref_key: \"");
-                ctx.push(ref_name);
-                ctx.push("\", ref: ");
-                ctx.push(ref_name);
-                return;
-            }
-
-            if needs_ref_for {
-                ctx.push("ref_for: true, ");
-            }
-            let needs_quotes = !super::super::helpers::is_valid_js_identifier(attr.name);
-            if needs_quotes {
-                ctx.push("\"");
-            }
-            ctx.push(attr.name);
-            if needs_quotes {
-                ctx.push("\"");
-            }
-            ctx.push(": ");
-            if let Some(value) = &attr.value {
-                if should_ref_runtime_binding {
-                    ctx.push(value.content);
-                } else {
-                    ctx.push("\"");
-                    ctx.push(&escape_js_string(value.content));
-                    ctx.push("\"");
-                }
-            } else {
-                ctx.push("\"\"");
-            }
-        }
-        PropNode::Directive(dir) => {
-            super::super::props::generate_directive_prop_with_static(ctx, dir, static_merge);
-        }
-    }
 }

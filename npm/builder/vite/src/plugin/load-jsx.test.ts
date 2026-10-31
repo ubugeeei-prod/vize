@@ -61,14 +61,15 @@ assert.ok(
 );
 assert.match(
   jsxTransform.code,
-  /_createElementBlock\("div"/,
-  "VDOM .jsx components should compile to Vize render code through the transform hook",
+  /_createElementVNode\("div", \{ class: "greeting" \}, \[\s+message\s+\]\)/,
+  "VDOM .jsx transforms retain the complete authored expression as a raw child value",
 );
+assert.doesNotMatch(jsxTransform.code, /_toDisplayString|_openBlock|_createElementBlock/);
 // The render code's runtime helpers must be imported (the preamble is no longer
 // dropped, #1533).
 assert.match(
   jsxTransform.code,
-  /import \{[^}]*createElementBlock[^}]*\} from "vue"/,
+  /import \{[^}]*createElementVNode[^}]*\} from "vue"/,
   "VDOM .jsx output should carry the runtime-helper import preamble",
 );
 // Source maps are on in dev (isProduction === false), so a single-component

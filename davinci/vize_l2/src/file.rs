@@ -20,7 +20,9 @@ mod conditional;
 pub use attribute_value::{
     FileAttributeValue, NativeFileAttributeValue, NativeFileAttributeValueState,
 };
-pub use conditional::{NativeFileConditional, NativeFileConditionalState};
+pub use conditional::{
+    NativeConditionalElseInput, NativeFileConditional, NativeFileConditionalState,
+};
 mod for_head;
 mod handler;
 mod interpolation;

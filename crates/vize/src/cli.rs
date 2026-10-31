@@ -171,6 +171,25 @@ mod tests {
         insta::assert_snapshot!("cli_fmt_help", command_help("fmt"));
     }
 
+    #[cfg(feature = "glyph")]
+    #[test]
+    fn fmt_semicolon_invalid_values_and_conflicts_have_exact_parser_kinds() {
+        for (flags, expected) in [
+            (vec!["--semi=invalid"], clap::error::ErrorKind::InvalidValue),
+            (
+                vec!["--semi", "--no-semi"],
+                clap::error::ErrorKind::ArgumentConflict,
+            ),
+            (
+                vec!["--no-semi", "--semi=false"],
+                clap::error::ErrorKind::ArgumentConflict,
+            ),
+        ] {
+            let parsed = Cli::try_parse_from(["vize", "fmt"].into_iter().chain(flags));
+            assert_eq!(parsed.err().unwrap().kind(), expected);
+        }
+    }
+
     #[test]
     fn check_help_snapshot() {
         insta::assert_snapshot!("cli_check_help", command_help("check"));

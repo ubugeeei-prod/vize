@@ -46,6 +46,7 @@ def interpretVDom : OpKind -> String
   | .getTextChild => "get-text-child"
   | .childRef => "child-ref"
   | .nextRef => "next-ref"
+  | .setChildValue => "normalize-child-value"
 
 def interpretVapor : OpKind -> String
   | .setProp => "assign-prop"
@@ -64,6 +65,7 @@ def interpretVapor : OpKind -> String
   | .getTextChild => "get-text-child"
   | .childRef => "child-ref"
   | .nextRef => "next-ref"
+  | .setChildValue => "child-value-effect"
 
 def interpret (backend : Backend) (op : Op) : TraceEvent :=
   let label :=

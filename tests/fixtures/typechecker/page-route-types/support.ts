@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { type PinnedFixtureWorkspace } from "../../../_helpers/realworld-patch.ts";
 import { type CommandResult, type VizeCheckResult } from "../../../_helpers/realworld-typecheck.ts";
-import { withoutVizeSourceContext } from "../../../../tools/support/compat/fixtures/typecheck-divergence-input.mjs";
+import { withoutVizeSourceContext } from "../../../../tools/support/compat/fixtures/typecheck-divergence-input.ts";
 import { offsetToPosition } from "../../../tooling/support/lsp/assertions.ts";
 import type { LspDiagnostic } from "../../../tooling/support/lsp/protocol.ts";
 import { writeVueConfigFixture } from "../../../tooling/support/vue-config-fixture.ts";
