@@ -37,6 +37,27 @@ impl WorkspaceSymbolsService {
     }
 
     #[cfg(feature = "native")]
+    pub(crate) fn collect_source_with_contract_allocator(
+        uri: &Url,
+        source: &str,
+        query_lower: &str,
+        symbols: &mut Vec<SymbolInformation>,
+        contract_allocator: &mut vize_l0::Allocator,
+    ) {
+        if uri.path().ends_with(".vue") {
+            Self::collect_symbols_from_document_with_contract_allocator(
+                uri,
+                source,
+                query_lower,
+                symbols,
+                Some(contract_allocator),
+            );
+        } else {
+            script::collect(uri, source, query_lower, symbols);
+        }
+    }
+
+    #[cfg(feature = "native")]
     pub(crate) fn rank_sources(
         symbols: Vec<SymbolInformation>,
         query_lower: &str,

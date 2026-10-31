@@ -62,6 +62,7 @@ fn test_parse_declaration() {
 
 #[test]
 fn macro_declaration_range_targets_quoted_name_content() {
+    super::contracts::assert_contract_packet_parity();
     let source = "<script setup>\nconst emit = defineEmits(['save-item'])\n</script>\n";
     let script_start = source.find("const emit").unwrap();
     let script_end = source.find("\n</script>").unwrap();
