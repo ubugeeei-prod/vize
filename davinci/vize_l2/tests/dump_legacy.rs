@@ -52,6 +52,7 @@ fn hand_built() -> L2Page {
                 }),
             ],
             children: vec![DumpOp::Interpolation(DumpInterpolation {
+                role: vize_l2::op::InterpolationRole::TemplateText,
                 expression: DumpExpr::Filter {
                     source: String::from("msg | cap"),
                     span: Span::new(28, 37),
@@ -117,6 +118,7 @@ fn an_arena_tree_mirrors_the_legacy_dialect_ops() {
                     ops: ArenaVec::from_iter_in(
                         [Op::Interpolation(Box::new_in(
                             InterpolationOp {
+                                role: vize_l2::op::InterpolationRole::TemplateText,
                                 expression: ExprRef::Filter(filter),
                                 span: Span::new(27, 38),
                             },

@@ -113,7 +113,10 @@ pub(in crate::dump) fn parse_item(
         "ui.element" => element(rest, line_no, grammar),
         "ui.component" => component(rest, line_no, grammar),
         "ui.text" => text(rest, line_no),
-        "ui.interpolation" => interpolation(rest, line_no),
+        "ui.interpolation" => {
+            interpolation(rest, line_no, crate::op::InterpolationRole::TemplateText)
+        }
+        "ui.jsx-child" => interpolation(rest, line_no, crate::op::InterpolationRole::JsxChild),
         "ui.comment" => comment(rest, line_no),
         "ui.if" => Ok(Item::Op(Op::If(If {
             branches: alloc::vec::Vec::new(),
@@ -237,10 +240,15 @@ fn text(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     })))
 }
 
-fn interpolation(rest: &str, line_no: usize) -> Result<Item, DumpError> {
+fn interpolation(
+    rest: &str,
+    line_no: usize,
+    role: crate::op::InterpolationRole,
+) -> Result<Item, DumpError> {
     let (expression, tail) = take_expr(rest, line_no)?;
     Ok(Item::Op(Op::Interpolation(Interpolation {
         expression,
+        role,
         span: tail_span(tail, line_no)?,
     })))
 }

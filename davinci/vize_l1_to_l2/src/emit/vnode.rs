@@ -41,7 +41,11 @@ pub(super) fn emit_unique_element(
             cx.buf.use_create_element_block();
             cx.buf.push("(");
             cx.buf.push(Buf::open_block_alias());
-            cx.buf.push("(), ");
+            cx.buf.push(if cx.untracked_children {
+                "(true), "
+            } else {
+                "(), "
+            });
             emit_call(
                 cx,
                 element,
@@ -69,7 +73,11 @@ fn emit_block(
         cx.buf.use_create_element_block();
         cx.buf.push("(");
         cx.buf.push(Buf::open_block_alias());
-        cx.buf.push("(), ");
+        cx.buf.push(if cx.untracked_children {
+            "(true), "
+        } else {
+            "(), "
+        });
         emit_call(cx, element, true, if_key, hoist, for_item, false)?;
         cx.buf.push(")");
         Ok(())

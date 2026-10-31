@@ -267,6 +267,7 @@ fn compound<'a>(a: &'a Allocator) -> Op<'a> {
     Op::Interpolation(ab(
         a,
         InterpolationOp {
+            role: vize_l2::op::InterpolationRole::TemplateText,
             expression: opaque(a, "hello {{ name }}", OpaqueReason::Compound),
             span: sp(),
         },

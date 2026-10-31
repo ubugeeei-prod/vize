@@ -1,6 +1,6 @@
 //! Native element child-list emission.
 
-use vize_l2::op::{Op, Region};
+use vize_l2::op::{InterpolationRole, Op, Region};
 
 use super::children::{emit_comment_vnode, emit_create_text_vnode, emit_text_like};
 use super::{EmitCx, EmitError};
@@ -96,7 +96,8 @@ fn emit_children_inner(
 }
 
 pub(super) fn is_text_like(op: &Op<'_>) -> bool {
-    matches!(op, Op::Text(_) | Op::Interpolation(_))
+    matches!(op, Op::Text(_))
+        || matches!(op, Op::Interpolation(child) if child.role == InterpolationRole::TemplateText)
 }
 
 /// `ops` split after its leading run of text and interpolation ops.

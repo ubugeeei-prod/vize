@@ -70,6 +70,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                 file_for_heads: SideTable::new(),
                 vue_expressions: SideTable::new(),
                 unsupported: Vec::new(),
+                jsx_child_values: false,
             },
         }
     }
@@ -97,10 +98,17 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
         let conditional = self.prepare_conditional(id, op);
         let text = match op {
             Op::Text(_) => Some(false),
-            Op::Interpolation(interpolation) => Some(
-                self.value(id, interpolation.expression)
-                    .is_some_and(ValueKind::is_dynamic),
-            ),
+            Op::Interpolation(interpolation) => {
+                let dynamic = self
+                    .value(id, interpolation.expression)
+                    .is_some_and(ValueKind::is_dynamic);
+                if interpolation.role == vize_l2::op::InterpolationRole::JsxChild {
+                    self.facts.jsx_child_values = true;
+                    None
+                } else {
+                    Some(dynamic)
+                }
+            }
             Op::Element(element) => {
                 if element.namespace != Namespace::Html {
                     self.reject(id, span, DomUnsupported::Namespace);
@@ -167,7 +175,9 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                 groups.push(DomChild::Node(id));
             }
         }
-        if matches!(op, Op::Interpolation(_)) {
+        if matches!(op, Op::Interpolation(interpolation)
+            if interpolation.role == vize_l2::op::InterpolationRole::TemplateText)
+        {
             self.demand(DomDependency::DisplayValue);
         } else if matches!(op, Op::Comment(_)) {
             self.demand(DomDependency::CommentValue);

@@ -135,7 +135,7 @@ fn emit_for_scoped(
     let construct_start = cx.buf.code.len();
     cx.buf.push("(");
     cx.buf.push(Buf::open_block_alias());
-    if stable {
+    if stable && !cx.untracked_children {
         cx.buf.push("(), ");
     } else {
         cx.buf.push("(true), ");

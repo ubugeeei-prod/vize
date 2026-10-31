@@ -73,7 +73,7 @@ fn generate_for_inner(
 
     ctx.push_mapped("(", for_node.loc.span.start);
     ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-    if is_stable {
+    if is_stable && !ctx.untracked_children {
         ctx.push("(), ");
     } else {
         ctx.push("(true), ");

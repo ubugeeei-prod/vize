@@ -40,6 +40,8 @@ pub struct CodegenContext {
     pub(super) component_name: Option<String>,
     /// Whether the reserved `<Self>` tag resolves to the current component.
     pub(super) experimental_self_component: bool,
+    /// Observed at actual JSX value-child mints, never inferred from output text.
+    pub(super) untracked_children: bool,
     pub(super) no_slotted: bool,
     /// Whether development-only codegen hints should be retained.
     pub(super) development: bool,

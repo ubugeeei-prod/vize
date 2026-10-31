@@ -200,12 +200,19 @@ pub struct DomFacts<'owner, 'arena> {
     pub(super) file_for_heads: SideTable<DomFileForHead<'owner, 'arena>>,
     pub(super) vue_expressions: SideTable<vue::VueRenderExpression<'owner, 'arena>>,
     pub(super) unsupported: Vec<DomRejection>,
+    pub(super) jsx_child_values: bool,
 }
 
 impl<'owner, 'arena> DomFacts<'owner, 'arena> {
     #[must_use]
     pub fn root(&self) -> &DomRoot {
         &self.root
+    }
+
+    /// Observed at producer-owned JSX child roles during the canonical visit.
+    #[must_use]
+    pub fn has_jsx_child_values(&self) -> bool {
+        self.jsx_child_values
     }
 
     #[must_use]

@@ -15,17 +15,18 @@ const SPREAD_CHILD_JSX_ARGUMENT: &str = "JSX inside a spread child argument (`{.
 
 impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Lower children of an intrinsic element, preserving Babel's raw value
-    /// semantics for a lone expression child in opt-in VDOM compatibility mode.
+    /// semantics for a lone expression child in client VDOM output.
     ///
-    /// Vize's native template-shaped output stringifies `{value}` and marks the
-    /// vnode with `TEXT`. Babel passes the value as a child array entry instead,
-    /// so it contributes no text patch flag. Component children deliberately do
-    /// not use this path because they are lowered through slot synthesis.
+    /// A JSX value is a child array entry, rather than template display text.
+    /// Component children deliberately do not use this path because they are
+    /// lowered through slot synthesis. Vapor and SSR keep their own contracts.
     pub(crate) fn lower_element_children(
         &mut self,
         children: &[JSXChild<'_>],
     ) -> Vec<'a, TemplateChildNode<'a>> {
-        if !self.uses_babel_vdom_compat() {
+        let client_vdom =
+            self.babel_vdom_lane && self.current_output_mode == crate::JsxOutputMode::Vdom;
+        if !self.uses_babel_vdom_compat() && !client_vdom {
             return self.lower_children(children);
         }
 
@@ -43,6 +44,10 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
                 {
                     out.push(control_flow);
                 } else {
+                    if let Some(expression) = expression.as_expression() {
+                        self.retain_nested_typecheck_roots(expression);
+                    }
+                    self.pending_vdom_value_children = true;
                     out.push(self.raw_expression_child(expression.span(), container.span));
                 }
                 out

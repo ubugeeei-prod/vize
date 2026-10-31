@@ -10,7 +10,11 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
     pub(super) fn root_fragment(&mut self, single_non_comment: bool) -> Result<(), DomError> {
         self.writer.push("(");
         spell(&mut self.writer, self.vocabulary, self.helpers.open_block);
-        self.writer.push("(), ");
+        self.writer.push(if self.facts.has_jsx_child_values() {
+            "(true), "
+        } else {
+            "(), "
+        });
         spell(
             &mut self.writer,
             self.vocabulary,

@@ -55,7 +55,7 @@ pub use handler::{HandlerId, OnHandlerRef};
 pub use model::{BindingContract, ModelOp};
 pub use original_for::{OriginalForId, OriginalForOp};
 pub use slot::{DynamicName, SlotContentOp, SlotOp, SlotsObjectOp};
-pub use text::{CommentOp, InterpolationOp, TextOp};
+pub use text::{CommentOp, InterpolationOp, InterpolationRole, TextOp};
 pub use vue::{
     VueCloakOp, VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp, VueOnceOp, VueShowOp,
     VueSlotScopeOp, VueSyncOp, VueTextOp,

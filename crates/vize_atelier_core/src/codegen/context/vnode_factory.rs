@@ -49,6 +49,7 @@ impl CodegenContext {
             merge_props,
             component_name,
             experimental_self_component: experimental_options.self_component,
+            untracked_children: false,
             no_slotted,
             development: true,
             pure: false,

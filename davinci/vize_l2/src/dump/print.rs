@@ -226,7 +226,10 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &Op, depth: usize, mode: Style) -> 
         }
         Op::Interpolation(interpolation) => {
             indent(w, depth)?;
-            w.write_str("ui.interpolation ")?;
+            w.write_str(match interpolation.role {
+                crate::op::InterpolationRole::TemplateText => "ui.interpolation ",
+                crate::op::InterpolationRole::JsxChild => "ui.jsx-child ",
+            })?;
             print_expr(w, &interpolation.expression, mode)?;
             end_line(w, interpolation.span, mode)
         }

@@ -121,6 +121,7 @@ fn every_op<'a>(allocator: &'a Allocator) -> Vec<'a, Op<'a>> {
             )),
             Op::Interpolation(Box::new_in(
                 InterpolationOp {
+                    role: vize_l2::op::InterpolationRole::TemplateText,
                     expression: expr,
                     span,
                 },

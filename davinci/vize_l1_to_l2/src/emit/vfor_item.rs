@@ -47,7 +47,11 @@ fn emit_block(
         cx.buf.use_create_element_block();
         cx.buf.push("(");
         cx.buf.push(Buf::open_block_alias());
-        cx.buf.push("(), ");
+        cx.buf.push(if cx.untracked_children {
+            "(true), "
+        } else {
+            "(), "
+        });
         cx.with_static_vnode_hoist(true, |cx| {
             vnode::emit_call(
                 cx,

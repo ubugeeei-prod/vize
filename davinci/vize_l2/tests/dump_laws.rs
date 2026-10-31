@@ -116,6 +116,7 @@ fn hand_built() -> Page {
                         Branch {
                             condition: None,
                             ops: vec![Op::Interpolation(Interpolation {
+                                role: vize_l2::op::InterpolationRole::TemplateText,
                                 expression: opaque(
                                     OpaqueReason::NestingRefused,
                                     "((((x))))",
@@ -161,6 +162,7 @@ fn hand_built() -> Page {
                         }),
                     ],
                     fallback: vec![Op::Interpolation(Interpolation {
+                        role: vize_l2::op::InterpolationRole::TemplateText,
                         expression: Expr::Foreign {
                             dialect: String::from("moonbit"),
                             source: String::from("count + 1"),
@@ -318,6 +320,7 @@ fn every_opaque_reason_spelling_round_trips() {
             .iter()
             .map(|(reason, _)| {
                 Op::Interpolation(Interpolation {
+                    role: vize_l2::op::InterpolationRole::TemplateText,
                     expression: opaque(*reason, "x", 1, 2),
                     span: Span::new(0, 3),
                 })

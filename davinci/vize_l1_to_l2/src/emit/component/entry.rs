@@ -55,7 +55,11 @@ fn emit_block(
         cx.buf.use_create_block();
         cx.buf.push("(");
         cx.buf.push(Buf::open_block_alias());
-        cx.buf.push("(), ");
+        cx.buf.push(if cx.untracked_children {
+            "(true), "
+        } else {
+            "(), "
+        });
         emit_call(
             cx, component, /* block */ true, if_key, for_item, id, position,
         )?;

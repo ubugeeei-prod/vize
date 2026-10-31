@@ -55,6 +55,7 @@ fn tree(base: u32) -> Page {
                     span: span(12, 27),
                 }),
                 Op::Interpolation(Interpolation {
+                    role: vize_l2::op::InterpolationRole::TemplateText,
                     expression: Expr::Js {
                         source: String::from("[l2-dump-v2]"),
                         span: span(27, 42),
@@ -66,6 +67,7 @@ fn tree(base: u32) -> Page {
                     span: span(42, 60),
                 }),
                 Op::Interpolation(Interpolation {
+                    role: vize_l2::op::InterpolationRole::TemplateText,
                     expression: Expr::Foreign {
                         dialect: String::from("md"),
                         source: String::from("[disegno]"),
@@ -74,6 +76,7 @@ fn tree(base: u32) -> Page {
                     span: span(60, 78),
                 }),
                 Op::Interpolation(Interpolation {
+                    role: vize_l2::op::InterpolationRole::TemplateText,
                     expression: Expr::Opaque {
                         reason: OpaqueReason::MultiStatement,
                         source: String::from("[s2-provenance-folio]"),

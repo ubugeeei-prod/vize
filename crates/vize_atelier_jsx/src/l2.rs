@@ -12,7 +12,8 @@ use vize_l0::{Allocator, Box, Vec};
 use vize_l1_to_l2::lower::{LoweringFeatures, OpFamily};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{
-    Attribute, BindOp, BindingOp, DynamicName, InterpolationOp, OnOp, Op, Region, TextOp,
+    Attribute, BindOp, BindingOp, DynamicName, InterpolationOp, InterpolationRole, OnOp, Op,
+    Region, TextOp,
 };
 use vize_l2::scope::{ScopeFacts, ScopeTag};
 use vize_relief::{ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode};
@@ -147,8 +148,27 @@ fn lower_child<'a>(
             let expression = lower_expression(allocator, &interpolation.content)?;
             Ok(Op::Interpolation(Box::new_in(
                 InterpolationOp {
+                    role: vize_l2::op::InterpolationRole::TemplateText,
                     expression,
                     span: interpolation.loc.span,
+                },
+                &allocator,
+            )))
+        }
+        TemplateChildNode::CompoundExpression(compound) => {
+            let [vize_relief::CompoundExpressionChild::Simple(expression)] =
+                compound.children.as_slice()
+            else {
+                return Err(L2Refusal::TransformedChild);
+            };
+            let expression =
+                ExprRef::parse_js_in(allocator, expression.content, expression.loc.span);
+            cx.observe(OpFamily::JsxChild);
+            Ok(Op::Interpolation(Box::new_in(
+                InterpolationOp {
+                    expression,
+                    role: InterpolationRole::JsxChild,
+                    span: compound.loc.span,
                 },
                 &allocator,
             )))
@@ -158,7 +178,6 @@ fn lower_child<'a>(
         TemplateChildNode::For(for_node) => lower_for(allocator, source, for_node, node, cx),
         TemplateChildNode::IfBranch(_)
         | TemplateChildNode::TextCall(_)
-        | TemplateChildNode::CompoundExpression(_)
         | TemplateChildNode::Hoisted(_) => Err(L2Refusal::TransformedChild),
         TemplateChildNode::Comment(_) => Err(L2Refusal::UnsupportedChild),
     }

@@ -104,6 +104,7 @@ pub fn text(allocator: &Allocator) -> Op<'_> {
 pub fn interpolation(allocator: &Allocator) -> Op<'_> {
     Op::Interpolation(Box::new_in(
         InterpolationOp {
+            role: vize_l2::op::InterpolationRole::TemplateText,
             expression: expression(allocator),
             span: SPAN,
         },

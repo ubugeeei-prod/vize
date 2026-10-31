@@ -76,6 +76,7 @@ impl RootLowerer<'_, '_, '_, '_> {
             self.roots.push(LoweredRoot {
                 root,
                 l2,
+                vdom_value_children: retained.vdom_value_children,
                 mode,
                 component_name: self.current_name(),
                 component_setup: None,
@@ -314,6 +315,7 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
         self.roots.push(LoweredRoot {
             root,
             l2,
+            vdom_value_children: self.lowerer.take_vdom_value_children(),
             mode,
             component_name: self.current_name(),
             component_setup: self.current_setup_for_span(element.span),
@@ -334,6 +336,7 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
         self.roots.push(LoweredRoot {
             root,
             l2,
+            vdom_value_children: self.lowerer.take_vdom_value_children(),
             mode,
             component_name: self.current_name(),
             component_setup: self.current_setup_for_span(fragment.span),

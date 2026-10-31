@@ -104,7 +104,11 @@ fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out
     if vnode.is_block {
         out.push('(');
         out.push_str(ctx.vnode_helper(RuntimeHelper::OpenBlock));
-        out.push_str("(), ");
+        out.push_str(if ctx.untracked_children {
+            "(true), "
+        } else {
+            "(), "
+        });
         if vnode.is_component {
             out.push_str(ctx.vnode_helper(RuntimeHelper::CreateBlock));
         } else {

@@ -53,7 +53,11 @@ pub(super) fn emit_inner_fragment(
     cx.buf.use_fragment();
     cx.buf.push("(");
     cx.buf.push(Buf::open_block_alias());
-    cx.buf.push("(), ");
+    cx.buf.push(if cx.untracked_children {
+        "(true), "
+    } else {
+        "(), "
+    });
     cx.buf.push(Buf::create_element_block_alias());
     cx.buf.push("(");
     cx.buf.push(Buf::fragment_alias());

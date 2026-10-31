@@ -116,6 +116,8 @@ pub struct Text {
 pub struct Interpolation {
     /// The rendered expression.
     pub expression: Expr,
+    /// The producer-owned interpretation survives dump and replay.
+    pub role: crate::op::InterpolationRole,
     /// Source range.
     pub span: Span,
 }
@@ -241,6 +243,7 @@ fn own_op_guarded(op: &IrOp<'_>) -> Op {
         }),
         IrOp::Interpolation(interpolation) => Op::Interpolation(Interpolation {
             expression: own_expr(&interpolation.expression),
+            role: interpolation.role,
             span: interpolation.span,
         }),
         IrOp::Comment(comment) => Op::Comment(Comment {

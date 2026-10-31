@@ -32,6 +32,7 @@ pub(super) fn generate_with_sections_and_options(
     experimental_options: CodegenExperimentalOptions,
     no_slotted: bool,
     development: bool,
+    untracked_children: bool,
 ) -> CodegenResultWithSections {
     let mut ctx = CodegenContext::new_with_vnode_factory_merge_props_and_experimentals(
         options,
@@ -41,6 +42,7 @@ pub(super) fn generate_with_sections_and_options(
         no_slotted,
     );
     ctx.development = development;
+    ctx.untracked_children = untracked_children;
     ctx.source = match source_text {
         Some(text) => vize_l0::String::new(text),
         None => root.source.into(),
@@ -105,7 +107,11 @@ pub(super) fn generate_with_sections_and_options(
         ctx.use_helper(RuntimeHelper::Fragment);
         ctx.push("(");
         ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-        ctx.push("(), ");
+        ctx.push(if ctx.untracked_children {
+            "(true), "
+        } else {
+            "(), "
+        });
         ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
         ctx.push("(");
         ctx.push(ctx.helper(RuntimeHelper::Fragment));
