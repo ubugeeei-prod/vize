@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { createRequire } from "node:module";
 import { after, test } from "node:test";
 import {
   compiler as actualCompiler,
@@ -13,7 +12,10 @@ import {
   rootIfElseTextErrorDetails,
   type RootIfElseTextFixture,
 } from "./support/native-original-root-if-else-text-sfc-dom-runtime.ts";
-import { diagnosticValue } from "./support/native-original-for-constant-sfc-dom-observation.ts";
+import {
+  compileRootIfElseTextPrimary,
+  typescript as ts,
+} from "./support/native-original-root-if-else-text-sfc-dom-primary.ts";
 
 type ObjectValue = Record<string, unknown>;
 function object(value: unknown): asserts value is ObjectValue {
@@ -25,9 +27,6 @@ function readObject(raw: string): ObjectValue {
   return value;
 }
 const compiler = actualCompiler as typeof import("@vue/compiler-sfc");
-const ts = createRequire(new URL("../package.json", import.meta.url))(
-  "typescript",
-) as typeof import("typescript");
 const inputRaw = fs.readFileSync(
   new URL(
     "../../crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_text_inputs_vue_3_5_35.json",
@@ -36,6 +35,26 @@ const inputRaw = fs.readFileSync(
   "utf8",
 );
 const pack = readObject(inputRaw);
+const goldens = readObject(
+  fs.readFileSync(
+    new URL(
+      "../../crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_text_sfc_vue_3_5_35.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+);
+assert.equal(goldens.schema, "vize.native-sfc.original-root-if-else-text-complete-goldens");
+assert.equal(goldens.inputHash, hash(inputRaw));
+assert.equal(goldens.filename, pack.filename);
+for (const field of ["compiler", "runtime", "typescript"])
+  assert.deepEqual(goldens[field], pack[field]);
+const nativeGoldens = goldens.native;
+const primaryGoldens = goldens.primary;
+const runtimeGoldens = goldens.runtimeResults;
+object(nativeGoldens);
+object(primaryGoldens);
+object(runtimeGoldens);
 const modes = ["development", "production"] as const;
 const mode = process.env.NODE_ENV ?? "development";
 assert(mode === "development" || mode === "production");
@@ -57,6 +76,10 @@ for (const fixture of fixtures.slice(0, 2)) {
   assert.equal(successor.oracleGitBlob, "88c13a550551258e704f32b5312478aa581af0a4");
 }
 assert.equal(new Set(fixtures.map((fixture) => fixture.id)).size, 6);
+const expectedPrimary = primaryGoldens[mode];
+const expectedRuntime = runtimeGoldens[mode];
+assert(Array.isArray(expectedPrimary) && expectedPrimary.length === fixtures.length);
+assert(Array.isArray(expectedRuntime) && expectedRuntime.length === fixtures.length);
 const capturePath = process.env.VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_CAPTURE;
 const requireCapture =
   process.env.VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_REQUIRE_CAPTURE === "1";
@@ -77,120 +100,13 @@ const primaryRows = new Map<string, ReturnType<typeof compilePrimary>>();
 const primaryAttempts: ObjectValue[] = [];
 const runtimeAttempts: ObjectValue[] = [];
 const captureObservation: ObjectValue = { state: "not-validated", sourceCapture: captured };
+let nativeGoldenComparisonPerformed = false;
+let nativeGoldensMatched = false;
+let primaryGoldenMatches = 0;
+let runtimeGoldenMatches = 0;
 
 function compilePrimary(fixture: RootIfElseTextFixture, attempt: ObjectValue) {
-  const observed: ObjectValue = {};
-  attempt.compilerObservations = observed;
-  const parsed = compiler.parse(fixture.source, { filename });
-  Object.assign(observed, {
-    parseErrors: parsed.errors,
-    descriptorDiagnosticOnly: diagnosticValue(parsed.descriptor),
-  });
-  assert.deepEqual(parsed.errors, []);
-  assert.equal(parsed.descriptor.script, null);
-  const setup = parsed.descriptor.scriptSetup;
-  const template = parsed.descriptor.template;
-  assert(setup && template);
-  assert.equal(setup.content, fixture.script);
-  assert.equal(template.content, fixture.template);
-  const script = compiler.compileScript(parsed.descriptor, {
-    id: fixture.id,
-    genDefaultAs: "_sfc_main",
-  });
-  // Keep the complete returned code/map/bindings before any comparison.
-  Object.assign(observed, {
-    script: script.content,
-    scriptMap: script.map,
-    bindings: script.bindings,
-  });
-  assert.deepEqual(Object.keys(script.bindings ?? {}), fixture.bindings);
-  const render = compiler.compileTemplate({
-    source: fixture.template,
-    filename,
-    id: fixture.id,
-    compilerOptions: {
-      sourceMap: true,
-      mode: "module",
-      hoistStatic: false,
-      prefixIdentifiers: true,
-      comments: true,
-      bindingMetadata: script.bindings,
-      cacheHandlers: false,
-    },
-  });
-  Object.assign(observed, {
-    render: render.code,
-    renderMap: render.map,
-    renderErrors: render.errors,
-    renderTips: render.tips,
-  });
-  assert.deepEqual(render.errors, []);
-  assert.equal(render.code.split("export function render").length, 2);
-  const originalModule =
-    script.content +
-    "\n;\n" +
-    render.code.replace("export function render", "function render") +
-    "\n_sfc_main.render = render\nexport default _sfc_main\n";
-  observed.originalModule = originalModule;
-  let runtimeModule = originalModule;
-  let transpilation: unknown = null;
-  if (setup.lang === "ts") {
-    const result = ts.transpileModule(originalModule, {
-      fileName: "OriginalRootIfElseText.ts",
-      reportDiagnostics: true,
-      compilerOptions: {
-        target: ts.ScriptTarget.ESNext,
-        module: ts.ModuleKind.ESNext,
-        newLine: ts.NewLineKind.LineFeed,
-      },
-    });
-    // TS6's exact three-field result drops only its undefined sourceMapText.
-    observed.transpilationOwnKeys = Reflect.ownKeys(result);
-    const { sourceMapText, ...capturedResult } = result;
-    transpilation = { version: ts.version, ...capturedResult };
-    observed.transpilation = transpilation;
-    assert.deepEqual(result.diagnostics, []);
-    assert.deepEqual(Reflect.ownKeys(result), ["outputText", "diagnostics", "sourceMapText"]);
-    assert.equal(sourceMapText, undefined);
-    runtimeModule = result.outputText;
-  }
-  const scriptMapRaw = JSON.stringify(script.map);
-  const renderMapRaw = JSON.stringify(render.map);
-  assert(typeof scriptMapRaw === "string");
-  assert(typeof renderMapRaw === "string");
-  // MagicString's SourceMap owns exactly these six fields; its public JSON
-  // omits only the verified undefined file. Keep the raw map bytes above.
-  assert(script.map);
-  assert.deepEqual(Reflect.ownKeys(script.map), [
-    "version",
-    "file",
-    "sources",
-    "sourcesContent",
-    "names",
-    "mappings",
-  ]);
-  const { file: scriptMapFile, ...scriptMapWire } = script.map;
-  assert.equal(scriptMapFile, undefined);
-  observed.scriptMap = scriptMapWire;
-  return {
-    id: fixture.id,
-    mode,
-    source: fixture.source,
-    sourceHash: hash(fixture.source),
-    parseErrors: parsed.errors,
-    script: script.content,
-    scriptMap: JSON.parse(scriptMapRaw) as unknown,
-    scriptMapRaw,
-    bindings: script.bindings,
-    render: render.code,
-    renderMap: JSON.parse(renderMapRaw) as unknown,
-    renderMapRaw,
-    renderErrors: render.errors,
-    renderTips: render.tips,
-    originalModule,
-    runtimeModule,
-    transpilation,
-  };
+  return compileRootIfElseTextPrimary(fixture, attempt, filename, mode);
 }
 
 test("six original adjacent If/Else inputs pin providers and twelve genuine mode-major Rust rows", () => {
@@ -297,10 +213,14 @@ test("six original adjacent If/Else inputs pin providers and twelve genuine mode
       [...nativeRows.keys()],
       fixtures.map((fixture) => fixture.id),
     );
-    assert.equal(captured.qualification, "observed-unqualified-current-oracles-pending");
-    assert.equal(captured.nativeGoldenComparisonPerformed, false);
+    assert.equal(captured.qualification, "current-complete-native-goldens-matched");
+    assert.equal(captured.nativeGoldenComparisonPerformed, true);
     assert.deepEqual(captured.failures, []);
-    captureObservation.state = "observed-source-bound-current-oracles-pending";
+    nativeGoldenComparisonPerformed = true;
+    for (const field of ["fixtures", "custody", "attempts"])
+      assert.deepEqual(captured[field], nativeGoldens[field], `whole native ${field}`);
+    nativeGoldensMatched = true;
+    captureObservation.state = "complete-native-goldens-matched";
   } catch (error) {
     Object.assign(captureObservation, {
       state: "failed",
@@ -318,6 +238,8 @@ for (const fixture of fixtures) {
       const primary = compilePrimary(fixture, attempt);
       primaryRows.set(fixture.id, primary);
       Object.assign(attempt, { state: "compiled", primary });
+      assert.deepEqual(attempt, expectedPrimary[fixtures.indexOf(fixture)]);
+      primaryGoldenMatches++;
     } catch (error) {
       Object.assign(attempt, { state: "failed", error: rootIfElseTextErrorDetails(error) });
       throw error;
@@ -390,6 +312,8 @@ for (const fixture of fixtures) {
       if (failures.length) throw failures[0]!.error;
       assert.deepEqual(native, reference);
       attempt.state = "matched";
+      assert.deepEqual(attempt, expectedRuntime[fixtures.indexOf(fixture)]);
+      runtimeGoldenMatches++;
     } catch (error) {
       Object.assign(attempt, { state: "failed", error: rootIfElseTextErrorDetails(error) });
       throw error;
@@ -409,8 +333,15 @@ after(() => {
     qualification:
       !captured && primaryComplete && !requireCapture
         ? "official-primary-only-native-not-executed"
-        : "observed-unqualified-current-oracles-pending",
-    nativeGoldenComparisonPerformed: false,
+        : nativeGoldensMatched &&
+            primaryGoldenMatches === fixtures.length &&
+            runtimeGoldenMatches === fixtures.length
+          ? "complete-current-oracles-matched"
+          : "failed-current-complete-oracles",
+    nativeGoldenComparisonPerformed,
+    nativeGoldensMatched,
+    primaryGoldenMatches,
+    runtimeGoldenMatches,
     sourceRevision: process.env.GITHUB_SHA ?? null,
     runId: process.env.GITHUB_RUN_ID ?? null,
     runAttempt: process.env.GITHUB_RUN_ATTEMPT ?? null,
@@ -456,8 +387,11 @@ after(() => {
     );
   assert.equal(primaryRows.size, fixtures.length, "all whole official primary outputs retained");
   assert(primaryComplete);
+  assert.equal(primaryGoldenMatches, fixtures.length);
   if (requireCapture || captured) {
-    assert.equal(captureObservation.state, "observed-source-bound-current-oracles-pending");
+    assert.equal(captureObservation.state, "complete-native-goldens-matched");
+    assert(nativeGoldenComparisonPerformed && nativeGoldensMatched);
+    assert.equal(runtimeGoldenMatches, fixtures.length);
     assert.equal(runtimeAttempts.length, fixtures.length);
     assert(
       runtimeMatched,

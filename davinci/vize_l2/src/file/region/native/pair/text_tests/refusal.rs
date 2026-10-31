@@ -65,13 +65,25 @@ fn each_branch_still_refuses_non_bare_unowned_or_mixed_original_bodies() {
             ));
             assert!(conditional.original.is_none());
             assert!(conditional.else_input().is_some());
-            for row in rows {
+            let rejected_construct = match body {
+                "prefix{{message}}"
+                | "{{message}}suffix"
+                | "{{message}}{{message}}"
+                | "<i>{{message}}</i>" => "{{message}}",
+                original => original,
+            };
+            let expected_constructs = if first {
+                [rejected_construct, "{{message}}"]
+            } else {
+                ["{{message}}", rejected_construct]
+            };
+            for (index, row) in rows.iter().enumerate() {
                 assert!(core::ptr::eq(
                     row.input().operand().syntax().source().authored_root(),
                     source.as_str()
                 ));
                 let construct = row.input().operand().full_span().slice(&source);
-                assert!(construct.starts_with("{{") && construct.ends_with("}}"));
+                assert_eq!(construct, *expected_constructs.get(index).unwrap());
             }
         }
     }

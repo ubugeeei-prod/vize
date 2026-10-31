@@ -56,6 +56,7 @@ test("actual selected setup consumers require source-built whole-module runtime 
     "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_text_sfc_vue_3_5_35.json",
     "tests/tooling/native-original-root-if-else-text-sfc-dom-reference.test.ts",
     "tests/tooling/support/native-original-root-if-else-text-sfc-dom-runtime.ts",
+    "tests/tooling/support/native-original-root-if-else-text-sfc-dom-primary.ts",
     "davinci/vize_l3/src/decision/dom/build/for_head/value.rs",
   ])
     assert(nativeSetupCaptureRequired([path]), path);
@@ -218,6 +219,7 @@ test("individual For resolver, DOM collector and writer changes keep mandatory a
     "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_text_sfc_vue_3_5_35.json",
     "tests/tooling/native-original-root-if-else-text-sfc-dom-reference.test.ts",
     "tests/tooling/support/native-original-root-if-else-text-sfc-dom-runtime.ts",
+    "tests/tooling/support/native-original-root-if-else-text-sfc-dom-primary.ts",
     "davinci/vize_l4/src/expr.rs",
     "davinci/vize_l4/src/expr/vue.rs",
   ]) {
@@ -252,6 +254,7 @@ test("individual For resolver, DOM collector and writer changes keep mandatory a
     "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_text_inputs_unrelated.json",
     "tests/tooling/native-original-root-if-else-text-sfc-dom-reference_unrelated.test.ts",
     "tests/tooling/support/native-original-root-if-else-text-sfc-dom-runtime_unrelated.ts",
+    "tests/tooling/support/native-original-root-if-else-text-sfc-dom-primary_unrelated.ts",
     "docs/davinci/decisions/2026-10-04-original-for-alias-body-dom-proposal.md",
     "docs/davinci/decisions/2026-10-04-original-for-primitive-dom-proposal.md",
   ]) {
