@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import fs from "node:fs";
+import { expectedRefFactoryScriptErrors } from "../../tools/benchmarks/scripts/ref-factory-native-qualification.ts";
 import { readRefFactoryAuthority } from "../../tools/benchmarks/scripts/ref-factory-authority.ts";
 import {
   compareFactoryPacket,
@@ -9,6 +11,47 @@ import {
 } from "../../tools/benchmarks/scripts/ref-factory-parity.ts";
 
 const oldFactory = "  " + readRefFactoryAuthority().declaration.wholeUtf8;
+
+test("owned script negatives retain complete concise JSON messages and exact authored coordinates", () => {
+  const probe = fs.readFileSync(
+    "tests/_fixtures/differential/typechecker/shared-ref-factory/Probe.vue.txt",
+    "utf8",
+  );
+  assert.deepEqual(expectedRefFactoryScriptErrors(probe, null), []);
+  assert.deepEqual(
+    expectedRefFactoryScriptErrors(
+      probe.replace("const numeric: number", "const numeric: string"),
+      "numeric",
+    ),
+    [
+      {
+        file: "src/Probe.vue",
+        line: 9,
+        column: 7,
+        code: 2322,
+        message: "Type 'number' is not assignable to type 'string'.",
+      },
+    ],
+  );
+  assert.deepEqual(expectedRefFactoryScriptErrors(probe, "noAny"), [
+    {
+      file: "src/Probe.vue",
+      line: 8,
+      column: 7,
+      code: 2322,
+      message: "Type 'true' is not assignable to type 'false'.",
+    },
+  ]);
+  const declaration = "const numeric: number = child.value!.current()";
+  assert.equal(probe.split(declaration).length, 2);
+  for (const foreign of [
+    probe.replace(declaration, ""),
+    probe + "\n" + declaration,
+    probe.replace(declaration, "") + "\n" + declaration,
+  ]) {
+    assert.throws(() => expectedRefFactoryScriptErrors(foreign, "numeric"));
+  }
+});
 function packet(factory: string, importDelta = 0): FactoryPacket {
   const beginning = "// 雪🌸\n";
   const prefix = beginning + "x".repeat(9600 - Buffer.byteLength(beginning));

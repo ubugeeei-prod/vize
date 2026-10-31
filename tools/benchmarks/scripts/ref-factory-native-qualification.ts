@@ -8,6 +8,30 @@ import { packet, isExecutableFactory, type CliResult } from "./canon-instance-di
 import { readRefFactoryAuthority } from "./ref-factory-authority.ts";
 import { factoryCodeEdits } from "./ref-factory-parity.ts";
 
+/** These pinned declarations are script diagnostics, whose JSON has no template context suffix. */
+export function expectedRefFactoryScriptErrors(probe: string, kind: "numeric" | "noAny" | null) {
+  if (kind === null) return [];
+  const lines = probe.split("\n");
+  const declarations = lines.flatMap((text, index) =>
+    text.startsWith(`const ${kind}:`) ? [index] : [],
+  );
+  assert.equal(declarations.length, 1);
+  const scriptEnd = lines.indexOf("</script>");
+  assert(scriptEnd > declarations[0], "the negative must stay in the authored script block");
+  return [
+    {
+      file: "src/Probe.vue",
+      line: declarations[0] + 1,
+      column: 7,
+      code: 2322,
+      message:
+        kind === "numeric"
+          ? "Type 'number' is not assignable to type 'string'."
+          : "Type 'true' is not assignable to type 'false'.",
+    },
+  ];
+}
+
 export async function qualifyRefFactory(
   provider: string,
   baseline: string,
@@ -189,20 +213,7 @@ export async function qualifyRefFactory(
         code,
         message,
       }));
-      const line = errorKind
-        ? probe.split("\n").findIndex((text) => text.startsWith(`const ${errorKind}:`)) + 1
-        : 0;
-      const wanted = errorKind
-        ? [
-            {
-              file: "src/Probe.vue",
-              line,
-              column: 7,
-              code: 2322,
-              message: `${errorKind === "numeric" ? "Type 'number' is not assignable to type 'string'." : "Type 'true' is not assignable to type 'false'."} (source: ${probe.split("\n")[line - 1].trim()})`,
-            },
-          ]
-        : [];
+      const wanted = expectedRefFactoryScriptErrors(probe, errorKind);
       assert.deepEqual(actual, wanted, `${name}/${role}: full owned native diagnostic vector`);
       rows.push({
         name,
