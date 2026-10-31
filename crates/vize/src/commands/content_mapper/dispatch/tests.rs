@@ -35,7 +35,7 @@ fn result_frames_preserve_recursive_legacy_field_order() {
     let body = r#"{"id":7,"jsonrpc":"2.0","result":{"diagnostics":[],"extension":".tsx","mappings":[[1,2,3,4,5,6]],"opaque":{"alpha":1,"zeta":2},"text":"雪🌸"}}"#;
     let mut expected = format!("Content-Length: {}\r\n\r\n", body.len()).into_bytes();
     expected.extend_from_slice(body.as_bytes());
-    assert_eq!(super::encode_result(&json!(7), &packet).unwrap(), expected);
+    assert_eq!(super::encode_result(&json!(7), packet).unwrap(), expected);
 }
 
 fn bounded_plan(

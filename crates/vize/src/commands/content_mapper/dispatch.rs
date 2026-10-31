@@ -291,7 +291,7 @@ fn initialize(id: Value, params: Value, initialized: &mut bool) -> io::Result<Ve
     *initialized = true;
     encode_result(
         &id,
-        &json!({"positionEncoding": "utf-8", "diagnosticSource": "vize"}),
+        json!({"positionEncoding": "utf-8", "diagnosticSource": "vize"}),
     )
 }
 
@@ -306,7 +306,7 @@ fn open_project(id: Value, params: Value, projects: &mut ProjectRegistry) -> io:
     match resolve_open_project(&params) {
         Ok((settings, result)) => {
             projects.open(params.project_handle, settings);
-            encode_result(&id, &result)
+            encode_result(&id, result)
         }
         Err(error) => {
             projects.close(params.project_handle.as_str());
@@ -325,7 +325,7 @@ fn close_project(id: Value, params: Value, projects: &mut ProjectRegistry) -> io
         }
     };
     projects.close(params.project_handle.as_str());
-    encode_result(&id, &Value::Null)
+    encode_result(&id, Value::Null)
 }
 
 fn dispatch_transform(
@@ -366,7 +366,7 @@ fn transform_frame(job: &TransformJob) -> io::Result<Vec<u8>> {
         job.settings.transform_options,
         job.settings.typed_router_root.as_deref(),
     ) {
-        Ok(result) => encode_result(&job.id, &result),
+        Ok(result) => encode_result(&job.id, result),
         Err(error) => {
             let message = cstr!("Transform failed: {error}");
             encode_error(&job.id, -32603, &message)
@@ -374,9 +374,11 @@ fn transform_frame(job: &TransformJob) -> io::Result<Vec<u8>> {
     }
 }
 
-fn encode_result(id: &Value, result: &impl Serialize) -> io::Result<Vec<u8>> {
+fn encode_result(id: &Value, result: impl Serialize) -> io::Result<Vec<u8>> {
     // The original server's json! envelope recursively ordered every object
     // through Value. Preserve opaque nested fields as well as envelope keys.
+    // Consume the original packet so its large text/maps are dropped by
+    // to_value before the escaped wire buffer is allocated.
     let result = serde_json::to_value(result).map_err(io::Error::other)?;
     #[derive(Serialize)]
     struct Envelope<'a> {
