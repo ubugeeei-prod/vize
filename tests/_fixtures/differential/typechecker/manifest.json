@@ -11183,7 +11183,7 @@
       "id": "typechecker/project-session-retirement-11168/crlf-both-repaired",
       "state": "active",
       "targets": [
-        "project-session"
+        "batch"
       ],
       "test": "content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs",
       "sourceRevision": "ccea9b862fb20b3dab9e2f04903a22bb503cab3e",
