@@ -1,80 +1,84 @@
-name: Current-source LSP baseline
+name: Focused Windows overlay producer byte law
 
-# Finite, manually approved RPC baseline. Ordinary PR checks run pure controls.
 on:
   workflow_dispatch:
     inputs:
-      source_sha:
-        description: Exact reviewed source SHA (must equal the dispatched ref)
+      workflow_ref:
+        description: Exact reviewed H, parent corrected producer source C2
         required: true
         type: string
-
-permissions:
-  contents: read
-
+permissions: { contents: read }
 concurrency:
-  group: lsp-current-baseline-${{ inputs.source_sha }}
+  group: windows-overlay-producer-${{ github.run_id }}
   cancel-in-progress: false
-
 env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "16"
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-
 jobs:
-  misskey:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
+  exact-windows-law:
+    runs-on: blacksmith-32vcpu-windows-2025
+    timeout-minutes: 45
     env:
-      VIZE_BASELINE_EXPECTED_SOURCE: ${{ inputs.source_sha }}
-      VIZE_PERF_BUDGET_SCALE: "1"
-      RAYON_NUM_THREADS: "4"
+      SOURCE_SHA: 587b2d94249dcd1cb12402adca85f07d59f19d50
+      WORKFLOW_SHA: ${{ inputs.workflow_ref }}
+      EXECUTED_WORKFLOW_SHA: ${{ github.workflow_sha }}
     steps:
+      - name: Keep original Git bytes on Windows
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git config --global core.autocrlf false
+          if ($LASTEXITCODE -ne 0) { throw 'Git byte policy failed' }
+          "EVIDENCE=$env:RUNNER_TEMP/windows-overlay-producer-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "CARGO_TARGET_DIR=$env:RUNNER_TEMP/windows-overlay-producer-build-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ inputs.source_sha }}
+          ref: 587b2d94249dcd1cb12402adca85f07d59f19d50
+          fetch-depth: 3
           persist-credentials: false
-      - name: Refuse a stale or different dispatch source
-        shell: bash
-        run: |
-          set -euo pipefail
-          [[ "$VIZE_BASELINE_EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
-          test "$(git rev-parse HEAD)" = "$VIZE_BASELINE_EXPECTED_SOURCE"
-          test "$GITHUB_SHA" = "$VIZE_BASELINE_EXPECTED_SOURCE"
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0" }
+      - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        with: { arch: amd64 }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with:
-          node-version-file: package.json
-          cache: true
-          run-install: false
-      - name: Install locked JavaScript and native TypeScript dependencies
-        run: vp install --frozen-lockfile --prefer-offline
-      - name: Hydrate only the pinned Misskey fixture
-        run: git submodule update --init --depth 1 tests/_fixtures/_git/misskey
-      - name: Install repository Rust toolchain
+          toolchain: "1.99.1"
+          components: clippy, rust-src, rustfmt
+          targets: wasm32-unknown-unknown, wasm32-wasip2
+      - name: Bind literal source and controller, without reusing a target
+        shell: pwsh
         run: |
-          rustup toolchain install || rustup show active-toolchain
-          cargo --version
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: lsp-current-baseline
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Build and receipt the exact current source server
+          $ErrorActionPreference = 'Stop'
+          if ($env:SOURCE_SHA -notmatch '^[a-f0-9]{40}$') { throw 'corrected source is not filled' }
+          if ($env:WORKFLOW_SHA -notmatch '^[a-f0-9]{40}$') { throw 'exact controller SHA required' }
+          if ($env:EXECUTED_WORKFLOW_SHA -ne $env:WORKFLOW_SHA) { throw 'workflow substitution' }
+          if ((git rev-parse HEAD).Trim() -ne $env:SOURCE_SHA) { throw 'source substitution' }
+          if (Test-Path $env:CARGO_TARGET_DIR) { throw 'target must be initially absent' }
+          if (Test-Path $env:EVIDENCE) { throw 'evidence must be initially absent' }
+          New-Item -ItemType Directory -Path $env:EVIDENCE | Out-Null
+          git fetch --no-tags --depth=2 origin $env:WORKFLOW_SHA
+          if ($LASTEXITCODE -ne 0) { throw 'controller object fetch failed' }
+      - name: Stage only the exact controller blob outside the source checkout
+        shell: cmd
+        run: git show %WORKFLOW_SHA%:.github/actions/windows-overlay-producer/run.ts > "%EVIDENCE%\run.ts"
+      - name: Validate finite controller refusals
+        shell: pwsh
         run: |
-          cargo build --profile ci -p vize
-          node tests/differential/build-receipt.ts
-      - name: Qualify pure observation and refusal laws
-        run: node --test tests/tooling/lsp-current-baseline*.test.ts tests/tooling/lsp-session-capture.test.ts
-      - name: Measure three serial fresh sessions with all original checks
-        run: node tests/performance/lsp-current-baseline.ts
+          node "$env:EVIDENCE/run.ts" --controls > "$env:EVIDENCE/controls.stdout" 2> "$env:EVIDENCE/controls.stderr"
+          if ($LASTEXITCODE -ne 0) { throw 'pure controller controls failed' }
+      - name: Build one actual Windows library image and execute only the exact law
+        shell: pwsh
+        run: |
+          node "$env:EVIDENCE/run.ts"
+          if ($LASTEXITCODE -ne 0) { throw 'Windows producer law failed; evidence retained' }
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
+        if: ${{ always() }}
         with:
-          name: lsp-current-baseline-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.source_sha }}
+          name: windows-overlay-producer-${{ github.run_attempt }}
           path: |
-            target/vize-tests/lsp-current-baseline/
-            target/differential/lsp-sessions/
+            ${{ runner.temp }}/windows-overlay-producer-${{ github.run_id }}-${{ github.run_attempt }}/
+            !${{ runner.temp }}/windows-overlay-producer-${{ github.run_id }}-${{ github.run_attempt }}/**/*.exe
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 30
