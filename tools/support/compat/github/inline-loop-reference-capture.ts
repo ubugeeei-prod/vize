@@ -88,7 +88,10 @@ async function authenticate(): Promise<void> {
   assert.equal(run.conclusion, "success");
   assert.equal(job.id, producer.job);
   assert.equal(job.run_id, producer.run);
-  assert.equal(job.name, "Affected tooling CLI / Build original full-suite CLI and SFC oracle");
+  assert.equal(
+    job.name,
+    "PR source checks / Affected tooling CLI / Build original full-suite CLI and SFC oracle",
+  );
   assert.equal(job.status, "completed");
   assert.equal(job.conclusion, "success");
   save("authenticated.json", { producer, controller: process.env.SOURCE_SHA });
@@ -181,6 +184,13 @@ function capture(): void {
       sha256: "dc0443da0ad6467f2baed054dcb0ddcc3a999a64108fd0e6d88d6f7c12b8ca8a",
     },
   ];
+  const observations: Array<{
+    control: (typeof controls)[number];
+    output: Buffer | null;
+    error: Error | undefined;
+    status: number | null;
+    signal: NodeJS.Signals | null;
+  }> = [];
   for (const control of controls) {
     const input = fs.readFileSync(path.join(root, control.file));
     assert.equal(sha(input), control.sha256);
@@ -213,9 +223,21 @@ function capture(): void {
       wholeJsonBase64: output?.toString("base64") ?? null,
     };
     save(`${control.id}.json`, packet);
-    assert.equal(result.error, undefined);
-    assert.equal(result.status, 0);
-    assert.equal(result.signal, null);
+    assert.equal(sha(fs.readFileSync(image)), imageSha256);
+    assert.deepEqual(fs.readFileSync(path.join(workspace, "Layout.vue")), input);
+    observations.push({
+      control,
+      output,
+      error: result.error,
+      status: result.status,
+      signal: result.signal,
+    });
+  }
+  // Both process packets exist before any process-status or result-shape assertion.
+  for (const { control, output, error, status, signal } of observations) {
+    assert.equal(error, undefined);
+    assert.equal(status, 0);
+    assert.equal(signal, null);
     assert.ok(output);
     const whole = record(JSON.parse(output.toString("utf8")));
     assert.deepEqual(Object.keys(whole), [
@@ -237,8 +259,6 @@ function capture(): void {
     const code = whole.code;
     assert.ok(typeof code === "string" && code.length > 0);
     fs.writeFileSync(path.join(evidence, `${control.id}.module.expected.txt`), code);
-    assert.equal(sha(fs.readFileSync(image)), imageSha256);
-    assert.deepEqual(fs.readFileSync(path.join(workspace, "Layout.vue")), input);
   }
   save("receipt.json", {
     controller: process.env.SOURCE_SHA,
