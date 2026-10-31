@@ -390,12 +390,21 @@ fn actual_native_old_and_private_roots_preserve_complete_configured_overlay_answ
             .unwrap();
             let support_uri = path_to_file_uri(&root.join("src/support.ts"));
             assert_eq!(fs::read(root.join("tsconfig.json")).unwrap(), config);
-            comparisons.push((label, old, private, relocated, before, after, support_uri));
+            comparisons.push((
+                work,
+                label,
+                old,
+                private,
+                relocated,
+                before,
+                after,
+                support_uri,
+            ));
         }
     }
     // Capture every rootDir/composite role before any cross-role assertion.
     assert_eq!(comparisons.len(), 4);
-    for (label, old, private, relocated, before, after, support_uri) in comparisons {
+    for (_work, label, old, private, relocated, before, after, support_uri) in comparisons {
         assert_eq!(
             before, after,
             "private role changed the complete authored inventory: {label}"
