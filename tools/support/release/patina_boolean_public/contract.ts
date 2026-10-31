@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { asRecord, asString, parseJson, type JsonRecord } from "../../json-value.ts";
+import { asArray, asRecord, asString, parseJson, type JsonRecord } from "../../json-value.ts";
 import { sha256 } from "../../config/windows_consumer/common.ts";
 
 export const requiredMerge = "87d4e6a22631aa9d0ca28c9226e3c912e38b628d";
@@ -57,6 +57,51 @@ export function assertReport(original: JsonRecord, phase: Phase, stdout: Buffer)
     expected,
     "complete ordered original report: " + phase,
   );
+}
+
+/** Finite text semantics only; preserve complete raw bytes, timing and framing separately. */
+export function assertOriginalPlain(
+  original: JsonRecord,
+  phase: Phase,
+  stdout: Buffer,
+  stderr: Buffer,
+): void {
+  assert.equal(
+    stderr.length,
+    0,
+    "original lint must not emit an unexpected launcher/runtime error",
+  );
+  const expected = asRecord(
+    asArray(
+      phase === "original-no-provider"
+        ? original.expectedNoProviderReport
+        : original.expectedNullableReport,
+    )[0],
+  );
+  const diagnostic = asRecord(asArray(expected.messages)[0]);
+  const message = asString(diagnostic.message);
+  if (phase !== "original-no-provider")
+    assert(asString(original.reportedExpected).includes(message));
+  const view = stdout.toString("utf8").replace(/\u001b\[[0-?]*[ -/]*[@-~]/gu, "");
+  assert.deepEqual(
+    [...view.matchAll(/\[vize:([^\]]+)\]/gu)].map((row) => row[1]),
+    [diagnostic.ruleId],
+    "one original finding, never an unexpected Runtime or extra diagnostic",
+  );
+  const escaped = message.split(" ").map((word) => word.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"));
+  assert(
+    new RegExp(escaped.join("[ \\t\\r\\n│]+"), "u").test(view),
+    "complete original finding title; only graphical continuation wrapping allowed",
+  );
+  const summaries = view
+    .split(/\r?\n/u)
+    .map((line) => line.trim())
+    .filter((line) =>
+      /^(?:\d+ errors?(?:, \d+ warnings?)?|\d+ warnings?|No problems found) in \d+ file(?:s|\(s\))?$/u.test(
+        line,
+      ),
+    );
+  assert.deepEqual(summaries, ["1 error in 1 file"], "complete original error/warning/file counts");
 }
 export function originalFiles(original: JsonRecord): readonly (readonly [string, string])[] {
   const files = Object.entries(asRecord(original.files)).map(

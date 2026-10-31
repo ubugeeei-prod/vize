@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 import { asArray, asRecord, asString } from "../../tools/support/json-value.ts";
 import { assertAncestry } from "../../tools/support/release/patina_boolean_public/authority.ts";
 import {
   assertHost,
   assertJournalPid,
+  assertOriginalPlain,
   assertReport,
   assertTextImage,
   descendants,
@@ -15,8 +18,77 @@ import {
   rejectOverrides,
   requiredMerge,
 } from "../../tools/support/release/patina_boolean_public/contract.ts";
+import { verifyJournal } from "../../tools/support/release/editor_vite_stub/custody.ts";
 
 const original = readOriginal();
+test("11147 original plain lint rejects Runtime-at-exit1 and extra findings while retaining graphical framing", () => {
+  const raw = Buffer.from(asString(original.reportedExpected) + "Linted 1 files in 7.1234ms\n");
+  for (const phase of ["stable-user-provider", "reported-tsrs"] as const)
+    assertOriginalPlain(original, phase, raw, Buffer.alloc(0));
+  const wrapped = raw
+    .toString()
+    .replace("[vize:", "\u001b[31m[vize:")
+    .replace("Unexpected nullable number", "Unexpected nullable\n  │ number");
+  assertOriginalPlain(original, "reported-tsrs", Buffer.from(wrapped), Buffer.alloc(0));
+  for (const wrong of [
+    raw.toString().replace("strict-boolean-expressions", "corsa-runtime"),
+    raw.toString().replace("Unexpected nullable number", "Unexpected string"),
+    raw.toString().replace("1 error in 1 file", "1 warning in 1 file"),
+    raw.toString().replace("1 error in 1 file", "2 errors in 1 file"),
+    raw.toString() + "× [vize:type/corsa-runtime] unexpected\n",
+  ])
+    assert.throws(
+      () => assertOriginalPlain(original, "reported-tsrs", Buffer.from(wrong), Buffer.alloc(0)),
+      assert.AssertionError,
+    );
+  assert.throws(
+    () => assertOriginalPlain(original, "reported-tsrs", raw, Buffer.from("launcher error")),
+    /unexpected launcher\/runtime error/u,
+  );
+});
+
+test("11147 Rust error exit requires no Node exit hook, retaining one native return and independent PID", () => {
+  const source = readFileSync(
+    new URL("../../crates/vize/src/commands/lint.rs", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /if total_errors > 0 \{\s*std::process::exit\(1\);/u);
+  const scratch = mkdtempSync(join(tmpdir(), "patina11147-journal-pure-"));
+  const journal = join(scratch, "native.ndjson");
+  const identity = { binary: { path: "/inert/public/vize.node", sha256: "a".repeat(64) } };
+  const events = [
+    { event: "initialized", nativePath: identity.binary.path, sha256: identity.binary.sha256 },
+    {
+      event: "attempt",
+      expectedNative: true,
+      actualPath: identity.binary.path,
+      sha256: identity.binary.sha256,
+    },
+    {
+      event: "returned",
+      expectedNative: true,
+      actualPath: identity.binary.path,
+      sha256: identity.binary.sha256,
+    },
+  ].map((row) => ({ schema: "vize-public-native-custody-event-v1", pid: 30, ...row }));
+  const write = (rows: unknown[]) =>
+    writeFileSync(journal, rows.map((row) => JSON.stringify(row)).join("\n") + "\n");
+  try {
+    write(events);
+    verifyJournal(journal, identity, null);
+    assertJournalPid(readFileSync(journal), 30);
+    assert.throws(() => verifyJournal(journal, identity, 1), assert.AssertionError);
+    write([
+      ...events,
+      { schema: "vize-public-native-custody-event-v1", pid: 30, event: "exit", code: 1 },
+    ]);
+    assert.throws(() => verifyJournal(journal, identity, null), assert.AssertionError);
+    write(events.slice(0, 1));
+    assert.throws(() => verifyJournal(journal, identity, null), assert.AssertionError);
+  } finally {
+    rmSync(scratch, { recursive: true });
+  }
+});
 test("11147 whole original authored bytes and complete report remain pinned", () => {
   const files = originalFiles(original);
   assert.equal(files.length, 3);

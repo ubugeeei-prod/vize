@@ -12,6 +12,7 @@ import { identity, install, provider } from "./install.ts";
 import {
   assertHost,
   assertJournalPid,
+  assertOriginalPlain,
   assertReport,
   originalFiles,
   readOriginal,
@@ -128,7 +129,8 @@ export async function main(args: readonly string[]): Promise<void> {
       root,
       npx.env,
     );
-    completed(originalRun, 1, false);
+    completed(originalRun, 1);
+    assertOriginalPlain(original, phase, originalRun.stdout, originalRun.stderr);
     record.json(phase + ".npx-cache.json", npxCacheSnapshot(npx.cache));
     const custody = observed(root, installed, record, phase + "-json-cli");
     const argv = [
@@ -153,7 +155,9 @@ export async function main(args: readonly string[]): Promise<void> {
         )
       : capture(record, phase + "-complete-report", argv, root, custody.env);
     completed(report, 1);
-    verifyJournal(custody.journal, installed, report.status);
+    // lint.rs flushes then Rust process::exit(1), bypassing Node's exit hooks.
+    // The independently captured process status remains exactly1 above.
+    verifyJournal(custody.journal, installed, null);
     assertJournalPid(readFileSync(custody.journal), report.pid);
     assertReport(original, phase, report.stdout);
     if (phase === "stable-user-provider") stableRaw = report.stdout;
@@ -184,6 +188,10 @@ export async function main(args: readonly string[]): Promise<void> {
       completeReportSha256: sha256(report.stdout),
       selectedExecutable: executable ?? null,
       nativeJournal: custody.journal,
+      nativeJournalExitContract:
+        "Rust error exit1 bypasses Node exit hooks; zero Node exit events, actual captured process status1",
+      plainContract:
+        "One correct complete finding title and one-error/one-file counts; raw framing/timing retained without a universal text-byte equivalence claim",
     });
   }
   record.json("qualification.json", {
