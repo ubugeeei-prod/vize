@@ -187,6 +187,48 @@ test("compiler parsing keeps complete continuation lines and refuses unrelated o
   );
   assert.throws(() => diagnostics(Buffer.from([255]), "/project"));
 });
+test("whole compiler continuations preserve trailing spaces and reject blank or unterminated lines", () => {
+  const mapper = expectedMapper(version),
+    cli = asArray(reference().cli);
+  const render = (rows: ReturnType<typeof expectedMapper>) =>
+    rows
+      .flatMap((row) => [
+        `${row.file}(${row.line},${row.column}): error TS${row.code}: ${row.message}`,
+        ...asArray(row.continuation).map(String),
+      ])
+      .join("\n") + "\n";
+  const raw = render(mapper);
+  assertOriginalVectors(
+    version,
+    diagnostics(Buffer.from(raw), "/project"),
+    cli,
+  );
+  const finalHeaderSpace = raw.slice(0, -1) + " \n";
+  assert.throws(() =>
+    assertOriginalVectors(
+      version,
+      diagnostics(Buffer.from(finalHeaderSpace), "/project"),
+      cli,
+    ),
+  );
+  const changed = structuredClone(mapper),
+    debt = changed.find((row) => row.code === 2741)!;
+  debt.continuation = asArray(debt.continuation).map(
+    (line) => String(line) + " ",
+  );
+  assert.throws(() =>
+    assertOriginalVectors(
+      version,
+      diagnostics(Buffer.from(render(changed)), "/project"),
+      cli,
+    ),
+  );
+  assert.throws(() =>
+    diagnostics(Buffer.from(raw.replace("\n", "\n\n")), "/project"),
+  );
+  assert.throws(() => diagnostics(Buffer.from(raw + "\n"), "/project"));
+  assert.throws(() => diagnostics(Buffer.from(raw.slice(0, -1)), "/project"));
+});
 test("CLI admission requires all 54 distinct files and complete virtual payloads", () => {
   const ids = asArray(reference().caseIds).map(String);
   const files = ids

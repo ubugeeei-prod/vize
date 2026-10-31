@@ -26,7 +26,12 @@ export type Diagnostic = {
 export function diagnostics(stdout: Buffer, project: string): Diagnostic[] {
   const text = new TextDecoder("utf-8", { fatal: true }).decode(stdout);
   const rows: Diagnostic[] = [];
-  for (const line of text.trimEnd().split("\n").filter(Boolean)) {
+  if (!text) return rows;
+  assert.ok(
+    text.endsWith("\n"),
+    "compiler output must retain its terminal newline",
+  );
+  for (const line of text.slice(0, -1).split("\n")) {
     const match = /^(.*?)\((\d+),(\d+)\): error TS(\d+): (.*)$/u.exec(line);
     if (match)
       rows.push({
