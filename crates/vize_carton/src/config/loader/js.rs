@@ -142,7 +142,8 @@ pub(super) fn evaluate_with_node(
     compile_cache: Option<&Path>,
     explicit_vite_config: bool,
 ) -> Result<CachedEvaluation, Box<dyn std::error::Error>> {
-    let vite_runtime = runtime_source::vite_runtime();
+    let vite_runtime = runtime_source::vite_runtime()
+        .map_err(|message| IoError::new(ErrorKind::InvalidData, message))?;
     let script = [
         vite_runtime.as_str(),
         include_str!("module-runtime.mjs"),

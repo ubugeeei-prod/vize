@@ -23,7 +23,7 @@ fn complete_product_sources_and_native_assembly_keep_their_exact_postimages() {
         "b6be222c3d0f68112e7e3d52e801cf757827b12ad6465d5cb1c754f998f0a98f"
     );
     assert_eq!(
-        digest(vite_runtime().as_bytes()),
+        digest(vite_runtime().unwrap().as_bytes()),
         "c8dad1baecba626f18b08eacd89236a7667e19c214dddb7b4dc7d559269efca5"
     );
 }
@@ -32,7 +32,7 @@ fn complete_product_sources_and_native_assembly_keep_their_exact_postimages() {
 fn private_native_module_executes_the_same_sixteen_complete_original_controls() {
     let controls: serde_json::Value = serde_json::from_str(CONTROLS).unwrap();
     assert_eq!(controls["rows"].as_array().unwrap().len(), 16);
-    let mut script = vite_runtime();
+    let mut script = vite_runtime().unwrap();
     script.push_str("\nconst controls = ");
     script.push_str(CONTROLS);
     script.push_str(r#";
@@ -42,6 +42,15 @@ for (const row of controls.rows) {
   try { outcome = {kind: "returned", value: await projectViteConfigSource(structuredClone(row.input))}; }
   catch (error) { outcome = {kind: "threw", error: {name: error.name, message: error.message}}; }
   rows.push({...row, outcome});
+}
+
+#[test]
+fn missing_or_duplicate_owned_imports_are_refused_before_node_execution() {
+    let source = super::super::VITE_RUNTIME;
+    let missing = source.replacen(super::VALIDATION_IMPORT, "", 1);
+    assert_eq!(super::assemble(&missing),Err("missing owned validator import in the product runtime"));
+    let duplicate = [source,super::VALIDATION_IMPORT].concat();
+    assert_eq!(super::assemble(&duplicate),Err("duplicate owned validator import in the product runtime"));
 }
 process.stdout.write(JSON.stringify(rows));
 "#);

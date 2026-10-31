@@ -16,7 +16,7 @@ assert.equal(original.length, packet.producer.bytes);
 assert.equal(hash(original), "3efc312a8430dac0e331dc823fd3fd134f59c694404b3283da0eb851b6663de0");
 assert.equal(hash(original), packet.producer.sha256);
 const legacy = (await import("data:text/javascript;base64," + original.toString("base64"))) as {
-  projectViteConfigSource(value: unknown): Promise<unknown>;
+  projectViteConfigSource(this: void, value: unknown): Promise<unknown>;
 };
 async function outcome(project: (value: unknown) => Promise<unknown>, value: unknown) {
   try {
