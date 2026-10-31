@@ -11,6 +11,7 @@ import { verifyPublicProvider } from "../public-provider.ts";
 import {
   cachedArchive,
   checkSources,
+  completedProducer,
   image,
   lockEntry,
   read,
@@ -79,20 +80,7 @@ write(path.join(proof, "tag-source.json"), {
 });
 const run = await githubSnapshot("actions/runs/" + producerRun);
 write(path.join(proof, "producer-run.json"), run);
-const facts = run.value as {
-  id: number;
-  head_sha: string;
-  head_branch: string;
-  path: string;
-  event: string;
-  run_attempt: number;
-  repository: { full_name: string };
-};
-assert.equal(String(facts.id), producerRun);
-assert.equal(facts.repository.full_name, "ubugeeei-prod/vize");
-assert.equal(facts.head_branch, "main");
-assert.equal(facts.path, ".github/workflows/release.yml");
-assert.equal(facts.event, "workflow_dispatch");
+const facts = completedProducer(run.value, producerRun);
 const produced = await readProducedCandidate({
   version,
   runId: producerRun,

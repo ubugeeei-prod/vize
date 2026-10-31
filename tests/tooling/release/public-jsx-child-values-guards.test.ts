@@ -10,6 +10,7 @@ import { writeTarGz } from "../../../tools/support/archive/tar.ts";
 import {
   cachedArchive,
   checkSources,
+  completedProducer,
   lockEntry,
   read,
   request,
@@ -27,6 +28,32 @@ const environment = {
     "ubugeeei-prod/vize/.github/workflows/public-jsx-child-values.yml@refs/heads/main",
 };
 const candidate = "4e07a16e9807e4f711a649bbe38759c8a9f61933";
+test("only an actually completed successful original Release producer is admitted", () => {
+  const facts = {
+    id: 123,
+    head_sha: candidate,
+    head_branch: "main",
+    path: ".github/workflows/release.yml",
+    event: "workflow_dispatch",
+    run_attempt: 1,
+    repository: { full_name: "ubugeeei-prod/vize" },
+    status: "completed",
+    conclusion: "success",
+  };
+  assert.deepEqual(completedProducer(facts, "123"), facts);
+  for (const changed of [
+    { status: "queued", conclusion: null },
+    { status: "in_progress", conclusion: null },
+    { conclusion: "failure" },
+    { conclusion: "cancelled" },
+    { conclusion: "neutral" },
+    { id: 124 },
+    { head_branch: "feature" },
+    { head_sha: candidate.slice(0, 12) },
+    { run_attempt: 0 },
+  ])
+    assert.throws(() => completedProducer({ ...facts, ...changed }, "123"));
+});
 test("public admission requires full authority and actual main-only dispatch context", () => {
   request("0.999.0", candidate, "123", environment);
   for (const changed of [

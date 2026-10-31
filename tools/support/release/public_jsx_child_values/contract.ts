@@ -23,6 +23,31 @@ export interface Custody {
   pins: Record<string, string>;
   referenceDependencies: Record<string, string>;
 }
+export interface ProducerFacts {
+  id: number;
+  head_sha: string;
+  head_branch: string;
+  path: string;
+  event: string;
+  run_attempt: number;
+  repository: { full_name: string };
+  status: string;
+  conclusion: string;
+}
+export function completedProducer(value: unknown, run: string): ProducerFacts {
+  assert(value && typeof value === "object");
+  const facts = value as ProducerFacts;
+  assert.equal(String(facts.id), run);
+  assert.equal(facts.repository.full_name, "ubugeeei-prod/vize");
+  assert.equal(facts.head_branch, "main");
+  assert.equal(facts.path, ".github/workflows/release.yml");
+  assert.equal(facts.event, "workflow_dispatch");
+  assert.equal(facts.status, "completed");
+  assert.equal(facts.conclusion, "success");
+  assert.match(facts.head_sha, /^[0-9a-f]{40}$/);
+  assert(Number.isSafeInteger(facts.run_attempt) && facts.run_attempt > 0);
+  return facts;
+}
 export const sha256 = (bytes: Uint8Array): string =>
   createHash("sha256").update(bytes).digest("hex");
 export const image = (file: string): Image => {
