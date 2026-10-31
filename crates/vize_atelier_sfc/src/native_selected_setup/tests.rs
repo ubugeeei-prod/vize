@@ -17,6 +17,7 @@ mod original_for_key;
 mod original_for_value;
 mod original_root_if;
 mod original_root_if_else;
+mod original_root_if_else_text;
 mod original_root_if_text;
 
 fn text<'a>(value: &'a Value, key: &str) -> Result<&'a str, String> {
