@@ -122,12 +122,10 @@ fn normalizer_flags_are_visible_in_current_cli_help() {
     let project = tempfile::tempdir().unwrap();
     let output = run(project.path(), &["fmt", "--help"]);
     assert_success(&output);
-    let help = std::str::from_utf8(&output.stdout).unwrap();
-    for flag in [
-        "--normalize-inline-styles",
-        "--normalize-v-for-parens",
-        "--reindent-preprocessor-styles",
-    ] {
-        assert!(help.contains(flag), "missing {flag}: {help}");
-    }
+    let snapshot = include_str!("../../../src/snapshots/vize__cli__tests__cli_fmt_help.snap");
+    let (_, help) = snapshot.split_once("\n---\n").unwrap();
+    // The unit oracle renders the standalone subcommand; the real process
+    // also names the parent executable in its usage line.
+    let expected = help.replacen("\nUsage: fmt ", "\nUsage: vize fmt ", 1);
+    assert_eq!(std::str::from_utf8(&output.stdout).unwrap(), expected);
 }
