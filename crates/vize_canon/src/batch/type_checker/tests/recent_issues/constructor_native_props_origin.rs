@@ -164,14 +164,22 @@ fn current_native_instance_props_declaration_origins() {
             let client = session.client().clone();
             let lease = session.snapshot_lease();
             let project = session.project().clone();
-            let mut result = query::observe(
-                &client,
-                &lease,
-                &project,
-                &generated.virtual_path,
-                generated.content.as_str(),
-                &mut calls,
+            calls.push(
+                json!({"label":"explicitProjectConfig","expectedConfig":config_name,
+                "actualProject":project}),
             );
+            let mut result = if project.config_file_name != config_name {
+                Err("native project does not own the requested generated config".into())
+            } else {
+                query::observe(
+                    &client,
+                    &lease,
+                    &project,
+                    &generated.virtual_path,
+                    generated.content.as_str(),
+                    &mut calls,
+                )
+            };
             let current = std::sync::Arc::ptr_eq(&lease, &session.snapshot_lease())
                 && session.project() == &project;
             calls.push(json!({"label":"sameOwnerAfterQueries","current":current,
