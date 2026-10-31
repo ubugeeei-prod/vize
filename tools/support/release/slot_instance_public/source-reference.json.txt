@@ -1,0 +1,4857 @@
+{
+  "schema": "vize.slotInstance.sourceReference.v1",
+  "role": "frozen source declaration consumer reference; never installed-public credit",
+  "sourceHead": "b49a611f45085d4262ac04a45eee46124ea2ca07",
+  "executionMerge": "3cad194d5495c291c16bbcf8865fb049332f8018",
+  "run": 41214477772,
+  "artifact": 13046654538,
+  "sourceReceiptSha256": "e14555e1a9f5758d0a29582a35c25d3f9d0ca118c9c2beddde8d810b41b20da5",
+  "proofSha256": "1dae36a73d06b93dcff0696fac1165cd00622cfc7a5cac2c4a2f22e2f735d533",
+  "typescript": "6.0.3",
+  "sourceCells": [
+    {
+      "role": "before",
+      "mode": "esm"
+    },
+    {
+      "role": "before",
+      "mode": "commonjs"
+    },
+    {
+      "role": "before",
+      "mode": "direct"
+    },
+    {
+      "role": "head",
+      "mode": "esm"
+    },
+    {
+      "role": "head",
+      "mode": "commonjs"
+    },
+    {
+      "role": "head",
+      "mode": "direct"
+    }
+  ],
+  "sourceModeRowsAndExportsWhollyEqual": true,
+  "roles": {
+    "before": {
+      "rows": [
+        {
+          "name": "Result_TwoFirstAny",
+          "display": "{ $slots: any; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Result_TwoLastUnknown",
+          "display": "{ $slots: unknown; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Result_NineFirstAny",
+          "display": "{ $slots: any; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Result_SeventeenFirstUnknown",
+          "display": "{ $slots: unknown; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Result_NineLastAny",
+          "display": "{ $slots: any; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Result_DefaultZero",
+          "display": "{ $slots: { default: (props: { value: string; }) => void; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Result_MixedGenericNeverFirst",
+          "display": "{ $slots: any; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Result_MixedGenericNeverLast",
+          "display": "{ $slots: any; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "WholeSlots_TwoFirstAny",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "any"
+        },
+        {
+          "name": "WholeNoAny_TwoFirstAny",
+          "display": "true",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "true"
+        },
+        {
+          "name": "WholePayload_TwoFirstAny",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "error"
+        },
+        {
+          "name": "WholePayloadAny_TwoFirstAny",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "error"
+        },
+        {
+          "name": "WholeSlots_TwoLastUnknown",
+          "display": "unknown",
+          "flags": 2,
+          "any": false,
+          "intrinsic": "unknown"
+        },
+        {
+          "name": "WholeNoAny_TwoLastUnknown",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholePayload_TwoLastUnknown",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "any"
+        },
+        {
+          "name": "WholePayloadAny_TwoLastUnknown",
+          "display": "true",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "true"
+        },
+        {
+          "name": "WholeSlots_NineFirstAny",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "any"
+        },
+        {
+          "name": "WholeNoAny_NineFirstAny",
+          "display": "true",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "true"
+        },
+        {
+          "name": "WholePayload_NineFirstAny",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "error"
+        },
+        {
+          "name": "WholePayloadAny_NineFirstAny",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "error"
+        },
+        {
+          "name": "WholeSlots_SeventeenFirstUnknown",
+          "display": "unknown",
+          "flags": 2,
+          "any": false,
+          "intrinsic": "unknown"
+        },
+        {
+          "name": "WholeNoAny_SeventeenFirstUnknown",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholePayload_SeventeenFirstUnknown",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "any"
+        },
+        {
+          "name": "WholePayloadAny_SeventeenFirstUnknown",
+          "display": "true",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "true"
+        },
+        {
+          "name": "WholeSlots_NineLastAny",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "any"
+        },
+        {
+          "name": "WholeNoAny_NineLastAny",
+          "display": "true",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "true"
+        },
+        {
+          "name": "WholePayload_NineLastAny",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "error"
+        },
+        {
+          "name": "WholePayloadAny_NineLastAny",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "error"
+        },
+        {
+          "name": "WholeSlots_DefaultZero",
+          "display": "{ default: (props: { value: string; }) => void; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "WholeNoAny_DefaultZero",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholePayload_DefaultZero",
+          "display": "{ value: string; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "WholePayloadAny_DefaultZero",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholeSlots_MixedGenericNeverFirst",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "any"
+        },
+        {
+          "name": "WholeNoAny_MixedGenericNeverFirst",
+          "display": "true",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "true"
+        },
+        {
+          "name": "WholePayload_MixedGenericNeverFirst",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "error"
+        },
+        {
+          "name": "WholePayloadAny_MixedGenericNeverFirst",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "error"
+        },
+        {
+          "name": "WholeSlots_MixedGenericNeverLast",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "any"
+        },
+        {
+          "name": "WholeNoAny_MixedGenericNeverLast",
+          "display": "true",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "true"
+        },
+        {
+          "name": "WholePayload_MixedGenericNeverLast",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "error"
+        },
+        {
+          "name": "WholePayloadAny_MixedGenericNeverLast",
+          "display": "any",
+          "flags": 1,
+          "any": true,
+          "intrinsic": "error"
+        }
+      ],
+      "exports": [
+        {
+          "name": "__vizeFunctionalSlots",
+          "type": false,
+          "value": true,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "FunctionDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "R",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": [
+                "<P, C, R>(component: (props: P, context: C, ...args: any[]) => R): (props: P) => \"__ctx\" extends keyof R ? NonNullable<R[\"__ctx\"]> extends { slots: infer S; } ? S : any : NonNullable<C> extends { slots: infer S; } ? S : any"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "__vizeConstructorEmitProps",
+          "type": false,
+          "value": true,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "FunctionDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "E",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": [
+                "<P, E>(component: new (props: P, ...args: any[]) => { $emit: E; }): (props: P) => __EmitProps<E>"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "$IsUnion",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__U",
+                  "constraint": null,
+                  "default": "T"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$WidenTemplateRef",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotHostSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$NativeSlotsFactory",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotsFactory",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$HasSlotResolver",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$DirectSlotConstructor",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructor",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructorArgumentLists",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructorHasArguments",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructorWithoutArguments",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructorWithArguments",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructorArgs",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructorInstance",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "Z",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotHostSelector",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SilentAny",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$RegisteredSlotProvider",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "G",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "K",
+                  "constraint": "string | number | symbol",
+                  "default": null
+                },
+                {
+                  "name": "F",
+                  "constraint": "string | number | symbol",
+                  "default": "K"
+                },
+                {
+                  "name": "L",
+                  "constraint": "string | number | symbol",
+                  "default": "F"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$NamedSlotPayload",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "S",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "N",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotPayload",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "S",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "N",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": "$RegisteredSlotProvider<any, never>"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "__EmitProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitRequiredKeys",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitRequiredFields",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitFiniteFields",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitFallthrough",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "F",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitOwnedKeys",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitInput",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "F",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "O",
+                  "constraint": "PropertyKey",
+                  "default": null
+                },
+                {
+                  "name": "A",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ConstructorEmitPropsFactory",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "F",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "O",
+                  "constraint": "PropertyKey",
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$NativeEmitPropsFactory",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitPropsFactory",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "IsAny",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "ComponentGlobalHtmlAttrs",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ComponentNavigationProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitListeners",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$IsGeneratedComponent",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$HasFallthroughProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$FallthroughProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$RequiredFallthroughProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__F",
+                  "constraint": null,
+                  "default": "$FallthroughProps<C>"
+                },
+                {
+                  "name": "__K",
+                  "constraint": null,
+                  "default": "$RequiredKeys<__F>"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ComponentCheckProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$PublicProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$InstanceRawProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$StaticRawProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$HasInstanceRawProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$HasStaticRawProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ComponentRawProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__P",
+                  "constraint": null,
+                  "default": "$HasInstanceRawProps<C> extends true\n    ? $InstanceRawProps<C>\n    : $HasStaticRawProps<C> extends true\n      ? $StaticRawProps<C>\n      : $PublicProps<C>"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$HasRawProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$FallthroughValue",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "K",
+                  "constraint": "PropertyKey",
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EventName",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "K",
+                  "constraint": "string",
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$KebabEventAliases",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "E",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ComponentEvents",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$IsLibraryGenericExport",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$PropChecker",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$PropValue",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "K",
+                  "constraint": "PropertyKey",
+                  "default": null
+                },
+                {
+                  "name": "F",
+                  "constraint": null,
+                  "default": "unknown"
+                },
+                {
+                  "name": "__V",
+                  "constraint": null,
+                  "default": "P extends unknown ? (K extends keyof P ? P[K] : never) : never"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$InvalidFallthroughSpreadKeys",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "F",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "A",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$FallthroughSpreadGuard",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "A",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__K",
+                  "constraint": null,
+                  "default": "$InvalidFallthroughSpreadKeys<P, $FallthroughProps<C>, A>"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$FallthroughSpreadChecker",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$CallableProp",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$PropsResolver",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ResolvedContextProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$PropsSelector",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "R",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$MissingProp",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ResolvedPropEntry",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "R",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "K",
+                  "constraint": "PropertyKey",
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SelectedProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "R",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "A",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ResolvedProp",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "R",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "A",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "K",
+                  "constraint": "PropertyKey",
+                  "default": null
+                },
+                {
+                  "name": "F",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__S",
+                  "constraint": null,
+                  "default": "$SelectedProps<R, A>"
+                },
+                {
+                  "name": "__E",
+                  "constraint": null,
+                  "default": "$ResolvedPropEntry<__S, K>"
+                },
+                {
+                  "name": "__A",
+                  "constraint": null,
+                  "default": "$ResolvedPropEntry<R, K>"
+                },
+                {
+                  "name": "__P",
+                  "constraint": null,
+                  "default": "Extract<__E, { value: unknown }>"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ComponentRefCallback",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$StructuralSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmptyVueNavigationSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$NativeNavigationSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$NavigationSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$RequiredSlotKeys",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "__S",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$MissingRequiredSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "__S",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__P",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$RequiredSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "__S",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__P",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotChildren",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "__S",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__K",
+                  "constraint": "PropertyKey",
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ProvidedSlotChildren",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "__T",
+                  "constraint": "unknown[]",
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        }
+      ],
+      "preservationRows": [
+        {
+          "name": "Preserve_C_2_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_2_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_2_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_2_first",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_2_first",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_2_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_2_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (): Typed<string>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_2_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_2_last",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_2_last",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_8_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_8_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_8_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_8_first",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_8_first",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_8_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_8_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (): Typed<string>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_8_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_8_last",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_8_last",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_9_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_9_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_9_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_9_first",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_9_first",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_9_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_9_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (): Typed<string>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_9_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_9_last",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_9_last",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_17_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (props: { kind: \"brand8\"; value: number; }): Typed<number>; new (props: { kind: \"brand9\"; value: number; }): Typed<number>; new (props: { kind: \"brand10\"; value: number; }): Typed<number>; new (props: { kind: \"brand11\"; value: number; }): Typed<number>; new (props: { kind: \"brand12\"; value: number; }): Typed<number>; new (props: { kind: \"brand13\"; value: number; }): Typed<number>; new (props: { kind: \"brand14\"; value: number; }): Typed<number>; new (props: { kind: \"brand15\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_17_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (props: { kind: \"brand8\"; value: number; }): Typed<number>; new (props: { kind: \"brand9\"; value: number; }): Typed<number>; new (props: { kind: \"brand10\"; value: number; }): Typed<number>; new (props: { kind: \"brand11\"; value: number; }): Typed<number>; new (props: { kind: \"brand12\"; value: number; }): Typed<number>; new (props: { kind: \"brand13\"; value: number; }): Typed<number>; new (props: { kind: \"brand14\"; value: number; }): Typed<number>; new (props: { kind: \"brand15\"; value: number; }): Typed<number>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_17_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (props: { kind: \"brand8\"; value: number; }): Typed<number>; new (props: { kind: \"brand9\"; value: number; }): Typed<number>; new (props: { kind: \"brand10\"; value: number; }): Typed<number>; new (props: { kind: \"brand11\"; value: number; }): Typed<number>; new (props: { kind: \"brand12\"; value: number; }): Typed<number>; new (props: { kind: \"brand13\"; value: number; }): Typed<number>; new (props: { kind: \"brand14\"; value: number; }): Typed<number>; new (props: { kind: \"brand15\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_17_first",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_17_first",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_17_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (props: { kind: \"brand8\"; value: number; }): Typed<number>; new (props: { kind: \"brand9\"; value: number; }): Typed<number>; new (props: { kind: \"brand10\"; value: number; }): Typed<number>; new (props: { kind: \"brand11\"; value: number; }): Typed<number>; new (props: { kind: \"brand12\"; value: number; }): Typed<number>; new (props: { kind: \"brand13\"; value: number; }): Typed<number>; new (props: { kind: \"brand14\"; value: number; }): Typed<number>; new (props: { kind: \"brand15\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_17_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (props: { kind: \"brand8\"; value: number; }): Typed<number>; new (props: { kind: \"brand9\"; value: number; }): Typed<number>; new (props: { kind: \"brand10\"; value: number; }): Typed<number>; new (props: { kind: \"brand11\"; value: number; }): Typed<number>; new (props: { kind: \"brand12\"; value: number; }): Typed<number>; new (props: { kind: \"brand13\"; value: number; }): Typed<number>; new (props: { kind: \"brand14\"; value: number; }): Typed<number>; new (props: { kind: \"brand15\"; value: number; }): Typed<number>; new (): Typed<string>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_17_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (props: { kind: \"brand8\"; value: number; }): Typed<number>; new (props: { kind: \"brand9\"; value: number; }): Typed<number>; new (props: { kind: \"brand10\"; value: number; }): Typed<number>; new (props: { kind: \"brand11\"; value: number; }): Typed<number>; new (props: { kind: \"brand12\"; value: number; }): Typed<number>; new (props: { kind: \"brand13\"; value: number; }): Typed<number>; new (props: { kind: \"brand14\"; value: number; }): Typed<number>; new (props: { kind: \"brand15\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_17_last",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_17_last",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonC_any",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: any; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWithout_any",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: any; }; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWith_any",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: any; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonArgs_any",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonHost_any",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: any; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonC_unknown",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: unknown; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWithout_unknown",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: unknown; }; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWith_unknown",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: unknown; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonArgs_unknown",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonHost_unknown",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: unknown; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonC_never",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: never; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWithout_never",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: never; }; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWith_never",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: never; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonArgs_never",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonHost_never",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: never; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonC_string",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: string; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWithout_string",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: string; }; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWith_string",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: string; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonArgs_string",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonHost_string",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: string; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        }
+      ],
+      "sdk": [
+        {
+          "file": "virtual-ts.d.ts",
+          "bytes": 17156,
+          "sha256": "0aadc144db9c92c203751ecf77f86ba84217ec3241e88bc0b0b8168265b94b28"
+        },
+        {
+          "file": "virtual-ts.d.mts",
+          "bytes": 17156,
+          "sha256": "0aadc144db9c92c203751ecf77f86ba84217ec3241e88bc0b0b8168265b94b28"
+        },
+        {
+          "file": "virtual-ts.d.cts",
+          "bytes": 17156,
+          "sha256": "0aadc144db9c92c203751ecf77f86ba84217ec3241e88bc0b0b8168265b94b28"
+        },
+        {
+          "file": "content-mapper-helpers.d.ts",
+          "bytes": 1109,
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "file": "content-mapper-helpers.d.mts",
+          "bytes": 1109,
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "file": "content-mapper-helpers.d.cts",
+          "bytes": 1109,
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "file": "generated/content-mapper-types.d.ts",
+          "bytes": 11202,
+          "sha256": "7457fd86aafb4b2a5b1edbddedf538a45a072517645dd0ece2fd4c074a0f632e"
+        },
+        {
+          "file": "virtual-ts-globals.d.ts",
+          "bytes": 18966,
+          "sha256": "d647737ea035f166c94c131013af3265a3a33783dbad307b2eb3c6d558fc476a"
+        },
+        {
+          "file": "virtual-ts-patterns.d.ts",
+          "bytes": 12522,
+          "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
+        }
+      ],
+      "modes": {
+        "esm": {
+          "targetMessages": [
+            "proof.mts(12,44): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.mts(24,45): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.mts(36,44): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.mts(48,55): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.mts(54,54): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.mts(55,36): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+            "proof.mts(12,44): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.mts(24,45): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.mts(36,44): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.mts(48,55): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.mts(54,54): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.mts(55,36): error TS2322: Type 'number' is not assignable to type 'string'.\n"
+          ],
+          "preservationMessages": [
+            "proof.mts(92,7): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+            "proof.mts(92,7): error TS2322: Type 'string' is not assignable to type 'number'.\n"
+          ]
+        },
+        "commonjs": {
+          "targetMessages": [
+            "proof.cts(12,44): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.cts(24,45): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.cts(36,44): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.cts(48,55): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.cts(54,54): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.cts(55,36): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+            "proof.cts(12,44): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.cts(24,45): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.cts(36,44): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.cts(48,55): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.cts(54,54): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.cts(55,36): error TS2322: Type 'number' is not assignable to type 'string'.\n"
+          ],
+          "preservationMessages": [
+            "proof.cts(92,7): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+            "proof.cts(92,7): error TS2322: Type 'string' is not assignable to type 'number'.\n"
+          ]
+        },
+        "direct": {
+          "targetMessages": [
+            "proof.ts(12,44): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.ts(24,45): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.ts(36,44): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.ts(48,55): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.ts(54,54): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.ts(55,36): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+            "proof.ts(12,44): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.ts(24,45): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.ts(36,44): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.ts(48,55): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.ts(54,54): error TS2344: Type 'true' does not satisfy the constraint 'false'.\nproof.ts(55,36): error TS2322: Type 'number' is not assignable to type 'string'.\n"
+          ],
+          "preservationMessages": [
+            "proof.ts(92,7): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+            "proof.ts(92,7): error TS2322: Type 'string' is not assignable to type 'number'.\n"
+          ]
+        }
+      }
+    },
+    "head": {
+      "rows": [
+        {
+          "name": "Result_TwoFirstAny",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "Result_TwoLastUnknown",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "Result_NineFirstAny",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "Result_SeventeenFirstUnknown",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "Result_NineLastAny",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "Result_DefaultZero",
+          "display": "{ $slots: { default: (props: { value: string; }) => void; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Result_MixedGenericNeverFirst",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "Result_MixedGenericNeverLast",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "WholeSlots_TwoFirstAny",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "WholeNoAny_TwoFirstAny",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholePayload_TwoFirstAny",
+          "display": "unknown",
+          "flags": 2,
+          "any": false,
+          "intrinsic": "unknown"
+        },
+        {
+          "name": "WholePayloadAny_TwoFirstAny",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholeSlots_TwoLastUnknown",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "WholeNoAny_TwoLastUnknown",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholePayload_TwoLastUnknown",
+          "display": "unknown",
+          "flags": 2,
+          "any": false,
+          "intrinsic": "unknown"
+        },
+        {
+          "name": "WholePayloadAny_TwoLastUnknown",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholeSlots_NineFirstAny",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "WholeNoAny_NineFirstAny",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholePayload_NineFirstAny",
+          "display": "unknown",
+          "flags": 2,
+          "any": false,
+          "intrinsic": "unknown"
+        },
+        {
+          "name": "WholePayloadAny_NineFirstAny",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholeSlots_SeventeenFirstUnknown",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "WholeNoAny_SeventeenFirstUnknown",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholePayload_SeventeenFirstUnknown",
+          "display": "unknown",
+          "flags": 2,
+          "any": false,
+          "intrinsic": "unknown"
+        },
+        {
+          "name": "WholePayloadAny_SeventeenFirstUnknown",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholeSlots_NineLastAny",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "WholeNoAny_NineLastAny",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholePayload_NineLastAny",
+          "display": "unknown",
+          "flags": 2,
+          "any": false,
+          "intrinsic": "unknown"
+        },
+        {
+          "name": "WholePayloadAny_NineLastAny",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholeSlots_DefaultZero",
+          "display": "{ default: (props: { value: string; }) => void; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "WholeNoAny_DefaultZero",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholePayload_DefaultZero",
+          "display": "{ value: string; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "WholePayloadAny_DefaultZero",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholeSlots_MixedGenericNeverFirst",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "WholeNoAny_MixedGenericNeverFirst",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholePayload_MixedGenericNeverFirst",
+          "display": "unknown",
+          "flags": 2,
+          "any": false,
+          "intrinsic": "unknown"
+        },
+        {
+          "name": "WholePayloadAny_MixedGenericNeverFirst",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholeSlots_MixedGenericNeverLast",
+          "display": "never",
+          "flags": 262144,
+          "any": false,
+          "intrinsic": "never"
+        },
+        {
+          "name": "WholeNoAny_MixedGenericNeverLast",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        },
+        {
+          "name": "WholePayload_MixedGenericNeverLast",
+          "display": "unknown",
+          "flags": 2,
+          "any": false,
+          "intrinsic": "unknown"
+        },
+        {
+          "name": "WholePayloadAny_MixedGenericNeverLast",
+          "display": "false",
+          "flags": 8192,
+          "any": false,
+          "intrinsic": "false"
+        }
+      ],
+      "exports": [
+        {
+          "name": "__vizeFunctionalSlots",
+          "type": false,
+          "value": true,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "FunctionDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "R",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": [
+                "<P, C, R>(component: (props: P, context: C, ...args: any[]) => R): (props: P) => \"__ctx\" extends keyof R ? NonNullable<R[\"__ctx\"]> extends { slots: infer S; } ? S : any : NonNullable<C> extends { slots: infer S; } ? S : any"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "__vizeConstructorEmitProps",
+          "type": false,
+          "value": true,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "FunctionDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "E",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": [
+                "<P, E>(component: new (props: P, ...args: any[]) => { $emit: E; }): (props: P) => __EmitProps<E>"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "$IsUnion",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__U",
+                  "constraint": null,
+                  "default": "T"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$WidenTemplateRef",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotHostSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$NativeSlotsFactory",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotsFactory",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$HasSlotResolver",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$DirectSlotConstructor",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructor",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructorArgumentLists",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructorHasArguments",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructorWithoutArguments",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructorWithArguments",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructorArgs",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotConstructorInstance",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "Z",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotHostSelector",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SilentAny",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$RegisteredSlotProvider",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "G",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "K",
+                  "constraint": "string | number | symbol",
+                  "default": null
+                },
+                {
+                  "name": "F",
+                  "constraint": "string | number | symbol",
+                  "default": "K"
+                },
+                {
+                  "name": "L",
+                  "constraint": "string | number | symbol",
+                  "default": "F"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$NamedSlotPayload",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "S",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "N",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotPayload",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "S",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "N",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": "$RegisteredSlotProvider<any, never>"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "__EmitProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitRequiredKeys",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitRequiredFields",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitFiniteFields",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitFallthrough",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "F",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitOwnedKeys",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitInput",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "F",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "O",
+                  "constraint": "PropertyKey",
+                  "default": null
+                },
+                {
+                  "name": "A",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ConstructorEmitPropsFactory",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "F",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "O",
+                  "constraint": "PropertyKey",
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$NativeEmitPropsFactory",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitPropsFactory",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "IsAny",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "ComponentGlobalHtmlAttrs",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ComponentNavigationProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmitListeners",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$IsGeneratedComponent",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$HasFallthroughProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$FallthroughProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$RequiredFallthroughProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__F",
+                  "constraint": null,
+                  "default": "$FallthroughProps<C>"
+                },
+                {
+                  "name": "__K",
+                  "constraint": null,
+                  "default": "$RequiredKeys<__F>"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ComponentCheckProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$PublicProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$InstanceRawProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$StaticRawProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$HasInstanceRawProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$HasStaticRawProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ComponentRawProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__P",
+                  "constraint": null,
+                  "default": "$HasInstanceRawProps<C> extends true\n    ? $InstanceRawProps<C>\n    : $HasStaticRawProps<C> extends true\n      ? $StaticRawProps<C>\n      : $PublicProps<C>"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$HasRawProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$FallthroughValue",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "K",
+                  "constraint": "PropertyKey",
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EventName",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "K",
+                  "constraint": "string",
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$KebabEventAliases",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "E",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ComponentEvents",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$IsLibraryGenericExport",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$PropChecker",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$PropValue",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "K",
+                  "constraint": "PropertyKey",
+                  "default": null
+                },
+                {
+                  "name": "F",
+                  "constraint": null,
+                  "default": "unknown"
+                },
+                {
+                  "name": "__V",
+                  "constraint": null,
+                  "default": "P extends unknown ? (K extends keyof P ? P[K] : never) : never"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$InvalidFallthroughSpreadKeys",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "F",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "A",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$FallthroughSpreadGuard",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "A",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__K",
+                  "constraint": null,
+                  "default": "$InvalidFallthroughSpreadKeys<P, $FallthroughProps<C>, A>"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$FallthroughSpreadChecker",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "P",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$CallableProp",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "T",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$PropsResolver",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ResolvedContextProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$PropsSelector",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "R",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$MissingProp",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ResolvedPropEntry",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "R",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "K",
+                  "constraint": "PropertyKey",
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SelectedProps",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "R",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "A",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ResolvedProp",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "R",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "A",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "K",
+                  "constraint": "PropertyKey",
+                  "default": null
+                },
+                {
+                  "name": "F",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__S",
+                  "constraint": null,
+                  "default": "$SelectedProps<R, A>"
+                },
+                {
+                  "name": "__E",
+                  "constraint": null,
+                  "default": "$ResolvedPropEntry<__S, K>"
+                },
+                {
+                  "name": "__A",
+                  "constraint": null,
+                  "default": "$ResolvedPropEntry<R, K>"
+                },
+                {
+                  "name": "__P",
+                  "constraint": null,
+                  "default": "Extract<__E, { value: unknown }>"
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ComponentRefCallback",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$StructuralSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$EmptyVueNavigationSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$NativeNavigationSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$NavigationSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "C",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$RequiredSlotKeys",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "__S",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$MissingRequiredSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "__S",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__P",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$RequiredSlots",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "__S",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__P",
+                  "constraint": null,
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$SlotChildren",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "__S",
+                  "constraint": null,
+                  "default": null
+                },
+                {
+                  "name": "__K",
+                  "constraint": "PropertyKey",
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        },
+        {
+          "name": "$ProvidedSlotChildren",
+          "type": true,
+          "value": false,
+          "namespace": false,
+          "declarations": [
+            {
+              "kind": "TypeAliasDeclaration",
+              "parameters": [
+                {
+                  "name": "__T",
+                  "constraint": "unknown[]",
+                  "default": null
+                }
+              ],
+              "signatures": []
+            }
+          ]
+        }
+      ],
+      "preservationRows": [
+        {
+          "name": "Preserve_C_2_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_2_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_2_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_2_first",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_2_first",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_2_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_2_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (): Typed<string>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_2_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_2_last",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_2_last",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_8_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_8_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_8_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_8_first",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_8_first",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_8_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_8_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (): Typed<string>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_8_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_8_last",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_8_last",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_9_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_9_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_9_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_9_first",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_9_first",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_9_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_9_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (): Typed<string>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_9_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_9_last",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_9_last",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_17_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (props: { kind: \"brand8\"; value: number; }): Typed<number>; new (props: { kind: \"brand9\"; value: number; }): Typed<number>; new (props: { kind: \"brand10\"; value: number; }): Typed<number>; new (props: { kind: \"brand11\"; value: number; }): Typed<number>; new (props: { kind: \"brand12\"; value: number; }): Typed<number>; new (props: { kind: \"brand13\"; value: number; }): Typed<number>; new (props: { kind: \"brand14\"; value: number; }): Typed<number>; new (props: { kind: \"brand15\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_17_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (props: { kind: \"brand8\"; value: number; }): Typed<number>; new (props: { kind: \"brand9\"; value: number; }): Typed<number>; new (props: { kind: \"brand10\"; value: number; }): Typed<number>; new (props: { kind: \"brand11\"; value: number; }): Typed<number>; new (props: { kind: \"brand12\"; value: number; }): Typed<number>; new (props: { kind: \"brand13\"; value: number; }): Typed<number>; new (props: { kind: \"brand14\"; value: number; }): Typed<number>; new (props: { kind: \"brand15\"; value: number; }): Typed<number>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_17_first",
+          "display": "{ new (): Typed<string>; new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (props: { kind: \"brand8\"; value: number; }): Typed<number>; new (props: { kind: \"brand9\"; value: number; }): Typed<number>; new (props: { kind: \"brand10\"; value: number; }): Typed<number>; new (props: { kind: \"brand11\"; value: number; }): Typed<number>; new (props: { kind: \"brand12\"; value: number; }): Typed<number>; new (props: { kind: \"brand13\"; value: number; }): Typed<number>; new (props: { kind: \"brand14\"; value: number; }): Typed<number>; new (props: { kind: \"brand15\"; value: number; }): Typed<number>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_17_first",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_17_first",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_C_17_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (props: { kind: \"brand8\"; value: number; }): Typed<number>; new (props: { kind: \"brand9\"; value: number; }): Typed<number>; new (props: { kind: \"brand10\"; value: number; }): Typed<number>; new (props: { kind: \"brand11\"; value: number; }): Typed<number>; new (props: { kind: \"brand12\"; value: number; }): Typed<number>; new (props: { kind: \"brand13\"; value: number; }): Typed<number>; new (props: { kind: \"brand14\"; value: number; }): Typed<number>; new (props: { kind: \"brand15\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Without_17_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (props: { kind: \"brand8\"; value: number; }): Typed<number>; new (props: { kind: \"brand9\"; value: number; }): Typed<number>; new (props: { kind: \"brand10\"; value: number; }): Typed<number>; new (props: { kind: \"brand11\"; value: number; }): Typed<number>; new (props: { kind: \"brand12\"; value: number; }): Typed<number>; new (props: { kind: \"brand13\"; value: number; }): Typed<number>; new (props: { kind: \"brand14\"; value: number; }): Typed<number>; new (props: { kind: \"brand15\"; value: number; }): Typed<number>; new (): Typed<string>; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_With_17_last",
+          "display": "{ new (props: { kind: \"brand0\"; value: number; }): Typed<number>; new (props: { kind: \"brand1\"; value: number; }): Typed<number>; new (props: { kind: \"brand2\"; value: number; }): Typed<number>; new (props: { kind: \"brand3\"; value: number; }): Typed<number>; new (props: { kind: \"brand4\"; value: number; }): Typed<number>; new (props: { kind: \"brand5\"; value: number; }): Typed<number>; new (props: { kind: \"brand6\"; value: number; }): Typed<number>; new (props: { kind: \"brand7\"; value: number; }): Typed<number>; new (props: { kind: \"brand8\"; value: number; }): Typed<number>; new (props: { kind: \"brand9\"; value: number; }): Typed<number>; new (props: { kind: \"brand10\"; value: number; }): Typed<number>; new (props: { kind: \"brand11\"; value: number; }): Typed<number>; new (props: { kind: \"brand12\"; value: number; }): Typed<number>; new (props: { kind: \"brand13\"; value: number; }): Typed<number>; new (props: { kind: \"brand14\"; value: number; }): Typed<number>; new (props: { kind: \"brand15\"; value: number; }): Typed<number>; new (): Typed<string>; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Args_17_last",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_Result_17_last",
+          "display": "Typed<number>",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonC_any",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: any; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWithout_any",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: any; }; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWith_any",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: any; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonArgs_any",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonHost_any",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: any; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonC_unknown",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: unknown; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWithout_unknown",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: unknown; }; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWith_unknown",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: unknown; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonArgs_unknown",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonHost_unknown",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: unknown; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonC_never",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: never; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWithout_never",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: never; }; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWith_never",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: never; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonArgs_never",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonHost_never",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: never; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonC_string",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: string; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWithout_string",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: string; }; } & (new () => { $slots: never; })",
+          "flags": 268435456,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonWith_string",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: string; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonArgs_string",
+          "display": "[]",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        },
+        {
+          "name": "Preserve_PoisonHost_string",
+          "display": "{ new (): never; new (props: { value: number; }): { $slots: string; }; }",
+          "flags": 1048576,
+          "any": false,
+          "intrinsic": null
+        }
+      ],
+      "sdk": [
+        {
+          "file": "virtual-ts.d.ts",
+          "bytes": 15334,
+          "sha256": "d5e5eee803afd4fdb74912647d453322d36ce476daef487012eb1eca25f750df"
+        },
+        {
+          "file": "virtual-ts.d.mts",
+          "bytes": 15334,
+          "sha256": "d5e5eee803afd4fdb74912647d453322d36ce476daef487012eb1eca25f750df"
+        },
+        {
+          "file": "virtual-ts.d.cts",
+          "bytes": 15334,
+          "sha256": "d5e5eee803afd4fdb74912647d453322d36ce476daef487012eb1eca25f750df"
+        },
+        {
+          "file": "content-mapper-helpers.d.ts",
+          "bytes": 1109,
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "file": "content-mapper-helpers.d.mts",
+          "bytes": 1109,
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "file": "content-mapper-helpers.d.cts",
+          "bytes": 1109,
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "file": "generated/content-mapper-types.d.ts",
+          "bytes": 11202,
+          "sha256": "7457fd86aafb4b2a5b1edbddedf538a45a072517645dd0ece2fd4c074a0f632e"
+        },
+        {
+          "file": "virtual-ts-globals.d.ts",
+          "bytes": 18966,
+          "sha256": "d647737ea035f166c94c131013af3265a3a33783dbad307b2eb3c6d558fc476a"
+        },
+        {
+          "file": "virtual-ts-patterns.d.ts",
+          "bytes": 12522,
+          "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
+        },
+        {
+          "file": "virtual-ts-slots.d.ts",
+          "bytes": 4134,
+          "sha256": "3b2f3387f8e720bdffd4ed864b74af6fa19895a89ba6f2f64151fd8dd98bdf9f"
+        }
+      ],
+      "modes": {
+        "esm": {
+          "targetMessages": [
+            "proof.mts(55,36): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+            "proof.mts(55,36): error TS2322: Type 'number' is not assignable to type 'string'.\n"
+          ],
+          "preservationMessages": [
+            "proof.mts(92,7): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+            "proof.mts(92,7): error TS2322: Type 'string' is not assignable to type 'number'.\n"
+          ]
+        },
+        "commonjs": {
+          "targetMessages": [
+            "proof.cts(55,36): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+            "proof.cts(55,36): error TS2322: Type 'number' is not assignable to type 'string'.\n"
+          ],
+          "preservationMessages": [
+            "proof.cts(92,7): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+            "proof.cts(92,7): error TS2322: Type 'string' is not assignable to type 'number'.\n"
+          ]
+        },
+        "direct": {
+          "targetMessages": [
+            "proof.ts(55,36): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+            "proof.ts(55,36): error TS2322: Type 'number' is not assignable to type 'string'.\n"
+          ],
+          "preservationMessages": [
+            "proof.ts(92,7): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+            "proof.ts(92,7): error TS2322: Type 'string' is not assignable to type 'number'.\n"
+          ]
+        }
+      }
+    }
+  }
+}

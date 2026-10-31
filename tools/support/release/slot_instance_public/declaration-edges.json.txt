@@ -1,0 +1,204 @@
+{
+  "before": [
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-globals.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "-32OCBq/virtual-ts.d.ts",
+      "target": "-32OCBq/virtual-ts-globals.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-patterns.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "-32OCBq/virtual-ts.d.ts",
+      "target": "-32OCBq/virtual-ts-patterns.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-globals.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "-32OCBq/virtual-ts.d.mts",
+      "target": "-32OCBq/virtual-ts-globals.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-patterns.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "-32OCBq/virtual-ts.d.mts",
+      "target": "-32OCBq/virtual-ts-patterns.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-globals.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "-32OCBq/virtual-ts.d.cts",
+      "target": "-32OCBq/virtual-ts-globals.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-patterns.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "-32OCBq/virtual-ts.d.cts",
+      "target": "-32OCBq/virtual-ts-patterns.d.ts"
+    },
+    {
+      "kind": "type-export",
+      "specifier": "./generated/content-mapper-types.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "-32OCBq/content-mapper-helpers.d.ts",
+      "target": "-32OCBq/generated/content-mapper-types.d.ts"
+    },
+    {
+      "kind": "type-export",
+      "specifier": "./generated/content-mapper-types.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "-32OCBq/content-mapper-helpers.d.mts",
+      "target": "-32OCBq/generated/content-mapper-types.d.ts"
+    },
+    {
+      "kind": "type-export",
+      "specifier": "./generated/content-mapper-types.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "-32OCBq/content-mapper-helpers.d.cts",
+      "target": "-32OCBq/generated/content-mapper-types.d.ts"
+    }
+  ],
+  "head": [
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-globals.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "virtual-ts.d.ts",
+      "target": "virtual-ts-globals.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-patterns.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "virtual-ts.d.ts",
+      "target": "virtual-ts-patterns.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-slots.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "virtual-ts.d.ts",
+      "target": "virtual-ts-slots.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-globals.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "virtual-ts.d.mts",
+      "target": "virtual-ts-globals.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-patterns.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "virtual-ts.d.mts",
+      "target": "virtual-ts-patterns.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-slots.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "virtual-ts.d.mts",
+      "target": "virtual-ts-slots.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-globals.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "virtual-ts.d.cts",
+      "target": "virtual-ts-globals.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-patterns.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "virtual-ts.d.cts",
+      "target": "virtual-ts-patterns.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./virtual-ts-slots.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "virtual-ts.d.cts",
+      "target": "virtual-ts-slots.d.ts"
+    },
+    {
+      "kind": "type-export",
+      "specifier": "./generated/content-mapper-types.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "content-mapper-helpers.d.ts",
+      "target": "generated/content-mapper-types.d.ts"
+    },
+    {
+      "kind": "type-export",
+      "specifier": "./generated/content-mapper-types.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "content-mapper-helpers.d.mts",
+      "target": "generated/content-mapper-types.d.ts"
+    },
+    {
+      "kind": "type-export",
+      "specifier": "./generated/content-mapper-types.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "content-mapper-helpers.d.cts",
+      "target": "generated/content-mapper-types.d.ts"
+    },
+    {
+      "kind": "type-import",
+      "specifier": "./generated/content-mapper-types.js",
+      "attributes": {
+        "resolution-mode": "import"
+      },
+      "from": "virtual-ts-slots.d.ts",
+      "target": "generated/content-mapper-types.d.ts"
+    }
+  ]
+}
