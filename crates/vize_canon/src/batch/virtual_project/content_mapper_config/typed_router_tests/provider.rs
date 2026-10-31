@@ -2,6 +2,9 @@
 
 use std::path::{Path, PathBuf};
 
+use oxc_ast::ast::{Expression, Statement};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use serde_json::json;
 use sha2::{Digest, Sha256};
 
@@ -75,12 +78,34 @@ fn transform(root: &Path, config: &ContentMapperProjectConfiguration) -> Content
 }
 
 fn page_call(output: &ContentMapperTransform) -> &str {
-    output
-        .text
-        .lines()
-        .map(str::trim)
-        .find(|line| line.starts_with("definePage"))
-        .unwrap()
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = Parser::new(&allocator, &output.text, SourceType::tsx()).parse();
+    assert_eq!(parsed.panicked, false);
+    assert_eq!(parsed.diagnostics.len(), 0);
+    let calls = parsed
+        .program
+        .body
+        .iter()
+        .filter_map(|statement| {
+            let Statement::ExpressionStatement(statement) = statement else {
+                return None;
+            };
+            let Expression::CallExpression(call) = &statement.expression else {
+                return None;
+            };
+            if !matches!(&call.callee, Expression::Identifier(name) if name.name == "definePage") {
+                return None;
+            }
+            Some(
+                output
+                    .text
+                    .get(call.span.start as usize..call.span.end as usize)
+                    .unwrap(),
+            )
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(calls.len(), 1);
+    calls[0]
 }
 
 fn expected_watch(root: &Path, entry: &str) -> Vec<vize_l0::String> {
