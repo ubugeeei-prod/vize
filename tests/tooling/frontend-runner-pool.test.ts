@@ -91,7 +91,9 @@ function restoreCoverageBeforeRuntimeProvisioning(job: Job) {
       "Verify source coverage summary",
     ],
   ] as const) {
-    const matches = steps.flatMap((step, index) => (step.name === expected.name ? [index] : []));
+    const matches: number[] = steps.flatMap((step, index) =>
+      step.name === expected.name ? [index] : [],
+    );
     assert.equal(matches.length, 1, "exactly one reviewed provider step is required");
     const index = matches[0];
     assert.deepEqual(steps[index], expected);
