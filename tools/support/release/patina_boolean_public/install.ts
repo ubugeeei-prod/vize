@@ -123,6 +123,7 @@ export function install(
         "add",
         "-D",
         "--save-exact",
+        "--registry=https://registry.npmjs.org",
         "vize@" + version,
         "@vizejs/vite-plugin@" + version,
         "vite-plus@0.3.0",
@@ -183,10 +184,36 @@ export function provider(root: string, phase: Phase, record: Recorder): string |
     executable = realpathSync(join(platform, "tsrs"));
   }
   assert(inside(root, packageRoot) && inside(root, executable));
+  const packages = phase === "stable-user-provider" ? [stable] : ["tsrs", "@tsrs/darwin-arm64"];
+  const version = phase === "stable-user-provider" ? "7.0.2" : "0.20.1-ts7.1.0-beta";
+  const lock = readFileSync(join(root, "pnpm-lock.yaml"), "utf8");
+  const origins = packages.map((name) => {
+    const result = record.run(
+      phase + "-provider-registry-" + name.replaceAll(/[@/]/gu, "-"),
+      npmArgv(
+        "view",
+        name + "@" + version,
+        "dist",
+        "--json",
+        "--registry=https://registry.npmjs.org",
+      ),
+      root,
+    );
+    success(result);
+    const dist = asRecord(parseJson(result.stdout));
+    assert.equal(new URL(asString(dist.tarball)).origin, "https://registry.npmjs.org");
+    assert.match(asString(dist.integrity), /^sha512-[A-Za-z0-9+/]+={0,2}$/u);
+    assert(
+      lock.includes(asString(dist.integrity)),
+      "selected provider public SRI must be in the actual pnpm lock: " + name,
+    );
+    return { name, version, dist };
+  });
   record.json(phase + ".provider.json", {
     executable,
     image: digest(executable),
     packageRoot,
+    origins,
     selection:
       "Prospective expected image only; actual ps/lsof observation is separately mandatory.",
   });

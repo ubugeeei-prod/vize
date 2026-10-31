@@ -54,7 +54,14 @@ export async function main(args: readonly string[]): Promise<void> {
       success(
         record.run(
           "install-explicit-stable-user-provider",
-          [...pnpm, "add", "-D", "--save-exact", "@typescript/typescript-darwin-arm64@7.0.2"],
+          [
+            ...pnpm,
+            "add",
+            "-D",
+            "--save-exact",
+            "--registry=https://registry.npmjs.org",
+            "@typescript/typescript-darwin-arm64@7.0.2",
+          ],
           root,
           process.env,
           600_000,
@@ -73,7 +80,14 @@ export async function main(args: readonly string[]): Promise<void> {
       success(
         record.run(
           "install-original-tsrs",
-          [...pnpm, "add", "-D", "--save-exact", "tsrs@0.20.1-ts7.1.0-beta"],
+          [
+            ...pnpm,
+            "add",
+            "-D",
+            "--save-exact",
+            "--registry=https://registry.npmjs.org",
+            "tsrs@0.20.1-ts7.1.0-beta",
+          ],
           root,
           process.env,
           600_000,
