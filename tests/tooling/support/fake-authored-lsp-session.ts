@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import type { PublishDiagnosticsParams } from "./lsp/protocol.ts";
 
@@ -60,7 +60,10 @@ export class FakeAuthoredLspSession {
   notify(method: string, params: unknown): void {
     if (method === "workspace/didCreateFiles" || method === "workspace/didDeleteFiles") {
       const uri = (params as { files: Array<{ uri: string }> }).files[0]!.uri;
-      if (method === "workspace/didDeleteFiles") {
+      if (
+        method === "workspace/didDeleteFiles" &&
+        uri === pathToFileURL(path.join(this.workspace, this.lifecycle.renamedFile)).href
+      ) {
         this.fileDeleted = true;
         this.staleDeletedDependencyDiagnosticsPending = this.emitStaleDeletedDependencyDiagnostics;
       }
@@ -141,7 +144,7 @@ export class FakeAuthoredLspSession {
     }
     if (method === "textDocument/documentSymbol") return null;
     if (method === "textDocument/definition") return this.componentDefinition(uri);
-    if (method === "textDocument/completion") return this.componentCompletion();
+    if (method === "textDocument/completion") return this.componentCompletion(uri);
     throw new Error(`unexpected request ${method}`);
   }
 
@@ -224,12 +227,15 @@ export class FakeAuthoredLspSession {
       : null;
   }
 
-  private componentCompletion(): Array<{ label: string }> {
-    const child = [...this.documents.entries()].find(([candidate]) =>
-      candidate.endsWith("/FeatureChild.vue"),
-    )?.[1];
+  private componentCompletion(importerUri: string): Array<{ label: string }> {
+    const source = this.documents.get(importerUri)?.text ?? "";
+    const specifier = /import\s+\w+\s+from\s+['"]([^'"]+\.vue)['"]/.exec(source)?.[1];
+    assert.ok(specifier);
+    const childUri = new URL(specifier, importerUri).href;
+    const child =
+      this.documents.get(childUri)?.text ?? fs.readFileSync(fileURLToPath(childUri), "utf8");
     const labels = ["v-if", "active"];
-    if (child?.text.includes("vizeOracleProbe")) labels.push("vize-oracle-probe");
+    if (child.includes("vizeOracleProbe")) labels.push("vize-oracle-probe");
     return labels.map((label) => ({ label }));
   }
 

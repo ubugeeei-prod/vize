@@ -34,6 +34,7 @@ export { assertOracleFilesAreInCorpus } from "./real-project-lsp-authored-oracle
 import type { AuthoredLspExerciseEvidence, LspAuthoredOracle } from "./real-project-lsp-report.ts";
 import { authoredAnchorEvidence } from "./real-project-lsp-report-authored.ts";
 import { exerciseAuthoredFileLifecycle } from "./real-project-lsp-file-lifecycle.ts";
+import { exerciseAuthoredImporterOverlay } from "./real-project-lsp-importer-overlay.ts";
 
 const diagnosticsTimeoutMs = 120_000;
 
@@ -254,6 +255,22 @@ export async function exerciseAuthoredLspOracle(
     );
     const changedContainsProbe = changedLabels.includes(probe);
     assert.ok(changedContainsProbe, "completion must observe an unsaved dependency edit");
+    const importerOverlayVersion = await exerciseAuthoredImporterOverlay(
+      session,
+      workspaceDir,
+      oracle,
+      {
+        importer: importerDocument,
+        dependency: childDocument,
+        changedDependencySource: changedChildSource,
+        tagRange,
+        completionPosition,
+        baselineLabels,
+        changedLabels,
+        initialVersion: importerSettledVersion,
+      },
+      timeoutMs,
+    );
 
     const repairedChildVersion = changedChildVersion + 1;
     change(session, childDocument.uri, childDocument.source, repairedChildVersion);
@@ -285,7 +302,7 @@ export async function exerciseAuthoredLspOracle(
     // lint-only publish. Recompute the unchanged importer immediately before
     // the create/rename/delete lifecycle so the final repair is compared
     // against the server's settled baseline for that exact source.
-    const lifecycleImporterVersion = importerSettledVersion + 1;
+    const lifecycleImporterVersion = importerOverlayVersion + 1;
     change(session, importerDocument.uri, importerDocument.source, lifecycleImporterVersion);
     const lifecycleImporterDiagnostics = await waitForDiagnostics(
       session,
