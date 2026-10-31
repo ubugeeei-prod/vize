@@ -1,6 +1,7 @@
 import { definePlugin, defineRule, type Diagnostic } from "@oxlint/plugins";
 import { getRuleOptions } from "./rule-options.js";
 import { vOnEventHyphenationSchema } from "./v-on-event-options.js";
+import { attributeHyphenationSchema } from "./attribute-options.js";
 import { collectActiveRule, getActiveRuleDiagnostics } from "./active-rule-collection.js";
 
 import { getPatinaRules } from "./binding.js";
@@ -201,7 +202,7 @@ function ruleOptionsSchema(ruleName: string): unknown[] {
     case "vue/v-on-event-hyphenation":
       return [vOnEventHyphenationSchema()];
     case "vue/attribute-hyphenation":
-      return [{ enum: ["always", "never"] }];
+      return attributeHyphenationSchema();
     case "vue/v-on-style":
       return [{ enum: ["shorthand", "longform"] }];
     case "vue/v-slot-style":

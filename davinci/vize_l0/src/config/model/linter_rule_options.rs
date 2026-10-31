@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::String;
 
+mod attribute_hyphenation;
 mod casing;
 mod component_registration;
 mod content_directives;
@@ -33,6 +34,7 @@ mod v_slot_style;
 mod valid_v_on;
 mod valid_v_slot;
 
+pub use attribute_hyphenation::{AttributeHyphenationConfig, AttributeHyphenationOptions};
 pub use casing::{
     ComponentNameInTemplateCasingOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
     TemplateComponentNameCasing,
@@ -200,7 +202,7 @@ pub struct ConfigLintRuleOptions {
     v_slot_style: Option<VSlotStyle>,
     /// Options for `vue/attribute-hyphenation`.
     #[serde(rename = "vue/attribute-hyphenation")]
-    attribute_hyphenation: Option<HyphenationStyle>,
+    attribute_hyphenation: Option<AttributeHyphenationConfig>,
     #[serde(rename = "vue/valid-v-on", skip_serializing_if = "Option::is_none")]
     valid_v_on: Option<valid_v_on::ValidVOnOptions>,
     #[serde(rename = "vue/valid-v-slot", skip_serializing_if = "Option::is_none")]
@@ -392,6 +394,15 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn attribute_hyphenation(&self) -> Option<HyphenationStyle> {
         self.attribute_hyphenation
+            .as_ref()
+            .map(AttributeHyphenationConfig::style)
+    }
+
+    /// Additional literal attribute-name substrings; an empty object resets the custom list.
+    pub fn attribute_hyphenation_ignore(&self) -> Option<&[String]> {
+        self.attribute_hyphenation
+            .as_ref()
+            .and_then(AttributeHyphenationConfig::ignore)
     }
 
     /// Configured design-token primitive values for

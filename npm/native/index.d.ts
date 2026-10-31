@@ -1142,6 +1142,8 @@ export interface PatinaLintOptionsNapi {
   vOnEventHyphenationAutofix?: boolean;
   /** Style for `vue/attribute-hyphenation`: "always" or "never" */
   attributeHyphenation?: string;
+  /** Additional case-sensitive literal attribute-name substrings to ignore. */
+  attributeHyphenationIgnore?: string[];
   /** CLI-compatible `linter.ruleOptions` encoded as JSON. */
   ruleOptionsJson?: string;
 }

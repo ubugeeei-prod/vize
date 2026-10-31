@@ -313,6 +313,19 @@ impl Linter {
         self
     }
 
+    /// Configure additional literal exemptions while retaining the rule's built-in defaults.
+    #[inline]
+    pub fn with_attribute_hyphenation_options(
+        mut self,
+        style: HyphenationStyle,
+        ignore: Vec<vize_l0::String>,
+    ) -> Self {
+        let mut rule = AttributeHyphenation::new(style);
+        rule.ignore.extend(ignore);
+        self.registry.replace(Box::new(rule));
+        self
+    }
+
     /// Configure `script/custom-event-name-casing`.
     #[inline]
     pub fn with_custom_event_name_casing(mut self, casing: EventNameCasing) -> Self {

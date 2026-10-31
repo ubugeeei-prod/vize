@@ -6,6 +6,7 @@ import {
   optionalBooleanField,
 } from "./plugin-option-guards.js";
 import { isVOnEventHyphenationOptions } from "./v-on-event-options.js";
+import { getAttributeHyphenationOptions } from "./attribute-options.js";
 import type {
   ComponentNameInTemplateCasingOption,
   CustomEventNameCasingOption,
@@ -110,10 +111,7 @@ export function getRuleOptions(
       }
       break;
     case "vue/attribute-hyphenation":
-      if (isHyphenationStyle(firstOption)) {
-        return { attributeHyphenation: firstOption };
-      }
-      break;
+      return getAttributeHyphenationOptions(options);
     case "script/define-props-destructuring":
     case "html/no-empty-palpable-content":
     case "type/strict-boolean-expressions":
