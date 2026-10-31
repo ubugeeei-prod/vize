@@ -17,9 +17,9 @@ const PATHS: [&str; 9] = [
     "npm/cli/content-mapper-helpers.d.cts",
     "npm/cli/generated/content-mapper-types.d.ts",
 ];
-const REFERENCES: [&str; 2] = [
-    "/// <reference path=\"./virtual-ts-globals.d.ts\" />",
-    "/// <reference path=\"./virtual-ts-patterns.d.ts\" />",
+const WIRING: [&str; 2] = [
+    "import type {} from \"./virtual-ts-globals.js\" with { \"resolution-mode\": \"import\" };",
+    "import type {} from \"./virtual-ts-patterns.js\" with { \"resolution-mode\": \"import\" };",
 ];
 
 fn metadata(update: &Value) {
@@ -27,7 +27,7 @@ fn metadata(update: &Value) {
     assert_eq!(update["kind"], "exact-public-declaration-layout-inverse");
     assert_eq!(
         update["sourceRevision"],
-        "fb1b0f057813a5ff501d819d83a7aa70f62722de"
+        "89b3bd1594ba2012b1c3fabd9cd0535d943a2b71"
     );
     assert_eq!(
         update["beforeSourceRevision"],
@@ -37,7 +37,7 @@ fn metadata(update: &Value) {
     assert_eq!(update["physicalFilesRole"], "actual-current-public-package");
     assert_eq!(update["reconstructedEntriesArePhysical"], false);
     assert_eq!(update["frozenConstructorRecordSha256"], FROZEN);
-    assert_eq!(update["references"], json!(REFERENCES));
+    assert_eq!(update["wiring"], json!([[0, WIRING[0]], [1, WIRING[1]]]));
     let files = update["files"].as_array().unwrap();
     assert_eq!(files.len(), PATHS.len());
     for (file, path) in files.iter().zip(PATHS) {
@@ -64,7 +64,7 @@ fn load() -> Value {
     let bytes = fs::read(support::corpus().join(RECORD)).unwrap();
     assert_eq!(
         support::hash(&bytes),
-        "20f134bc147e1b9833925904e8813112be54098c9a54d5113c0ed0a081e20417"
+        "fa2f6b2369276268c1c4be5ccdc68e5053a732166e8ad42198e77a2daccd7cdc"
     );
     let update = serde_json::from_slice(&bytes).unwrap();
     metadata(&update);
@@ -89,12 +89,16 @@ fn authenticate(bodies: &[String], update: &Value) {
         );
         assert_eq!(body, file["wholeUtf8"].as_str().unwrap());
     }
-    let prefix = format!("{}\n", REFERENCES.join("\n"));
     for entry in &bodies[..3] {
-        assert!(entry.starts_with(prefix.as_str()));
-        for reference in REFERENCES {
-            assert_eq!(entry.matches(reference).count(), 1);
-        }
+        let wiring = entry
+            .lines()
+            .enumerate()
+            .filter(|(_, line)| {
+                let line = line.trim_start();
+                line.starts_with("import ") || line.starts_with("/// <reference ")
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(wiring, [(0, WIRING[0]), (1, WIRING[1])]);
     }
 }
 
@@ -193,14 +197,14 @@ mod tests {
                 );
             }
         }
-        let ordered = REFERENCES.join("\n");
-        let reversed = REFERENCES.into_iter().rev().collect::<Vec<_>>().join("\n");
+        let ordered = WIRING.join("\n");
+        let reversed = WIRING.into_iter().rev().collect::<Vec<_>>().join("\n");
         for index in 0..3 {
             for changed in [
                 bodies[index].replacen(ordered.as_str(), reversed.as_str(), 1),
-                bodies[index].replacen(REFERENCES[0], "", 1),
-                format!("{}\n{}", REFERENCES[0], bodies[index]),
-                bodies[index].replacen("virtual-ts-globals.d.ts", "unreviewed.d.ts", 1),
+                bodies[index].replacen(WIRING[0], "", 1),
+                format!("{}\n{}", WIRING[0], bodies[index]),
+                bodies[index].replacen("virtual-ts-globals.js", "unreviewed.js", 1),
             ] {
                 let mut mutated = bodies.clone();
                 mutated[index] = changed;

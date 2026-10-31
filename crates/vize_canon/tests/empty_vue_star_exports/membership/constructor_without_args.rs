@@ -75,11 +75,15 @@ pub(super) fn load() -> Value {
 
 pub(super) fn read_current(path: &str, record: &Value) -> String {
     assert_eq!(record["path"], path);
-    if PATHS[2..].contains(&path) {
-        public_layout::read(path, record)
-    } else {
-        assert!(PATHS[..2].contains(&path));
-        fs::read_to_string(support::repository().join(path)).unwrap()
+    let selected = PATHS.map(|candidate| candidate == path);
+    let role = selected.iter().position(|selected| *selected).unwrap();
+    let mut expected = [false; 5];
+    expected[role] = true;
+    assert_eq!(selected, expected);
+    match role {
+        0 | 1 => fs::read_to_string(support::repository().join(path)).unwrap(),
+        2..=4 => public_layout::read(path, record),
+        _ => unreachable!("the complete five-path inventory selects the read role"),
     }
 }
 
