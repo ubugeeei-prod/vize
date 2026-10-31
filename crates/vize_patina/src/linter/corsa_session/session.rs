@@ -85,22 +85,27 @@ impl CorsaTypeAwareSession {
         let config_path_wire = path_to_wire(&config_path);
         let virtual_file_wire = path_to_wire(&virtual_file_path);
         let api_mode = api_mode_for_executable(&executable);
-        let session = profile!(
-            "patina.corsa_session.spawn",
-            block_on(ProjectSession::spawn(
-                vize_canon::corsa_profile::with_request_profiling(
-                    configure(
-                        ApiSpawnConfig::new(executable.clone())
-                            .with_mode(api_mode)
-                            .with_cwd(&session_root)
-                    ),
-                    vize_canon::corsa_profile::RequestOrigin::Patina
+        let (session, metadata) = profile!("patina.corsa_session.spawn", {
+            let config = vize_canon::corsa_profile::with_request_profiling(
+                configure(
+                    ApiSpawnConfig::new(executable.clone())
+                        .with_mode(api_mode)
+                        .with_cwd(&session_root),
                 ),
+                vize_canon::corsa_profile::RequestOrigin::Patina,
+            );
+            let (config, metadata) = super::startup_metadata::attach(config, filename);
+            let session = block_on(ProjectSession::spawn(
+                config,
                 config_path_wire.as_str(),
                 Some(virtual_file_wire.as_str().into()),
-            ))
-        )
-        .map_err(|error| {
+            ));
+            (session, metadata)
+        });
+        if let Some(metadata) = metadata {
+            metadata.finish(session.is_ok());
+        }
+        let session = session.map_err(|error| {
             compact_error(
                 "Failed to start corsa type-aware session",
                 error.to_compact_string().as_str(),

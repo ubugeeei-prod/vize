@@ -8,6 +8,7 @@ mod errors;
 mod paths;
 mod probe;
 mod session;
+mod startup_metadata;
 mod virtual_documents;
 mod vue_dependencies;
 

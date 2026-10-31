@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { lintPatinaSfc } from "@vizejs/native";
+import { startupProvider } from "./source-quality/startup-metadata.ts";
 import {
   formatSfcLintResults,
   lintSfcFiles as lintFiles,
@@ -16,6 +17,7 @@ const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const corsaExecutable = process.platform === "win32" ? "tsc.exe" : "tsc";
 const corsaPackageName = `typescript-${process.platform}-${process.arch}`;
 const workspaceCorsaPath = resolveWorkspaceCorsaPath();
+startupProvider(workspaceCorsaPath);
 
 const lintCoreSfc: SfcLintFunction = (source, options) =>
   lintPatinaSfc(source, {

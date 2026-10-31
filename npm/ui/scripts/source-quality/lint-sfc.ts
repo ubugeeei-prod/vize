@@ -3,6 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { availableParallelism } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
+import { flushStartupWorker, startupInput, startupParent } from "./startup-metadata.ts";
 
 interface SfcDiagnostic {
   readonly rule?: unknown;
@@ -61,21 +62,27 @@ export async function lintSfcFiles(
   const files = sorted.filter((_, position) => position % shard.total === shard.index);
   const results: LintedFile[] = [];
 
-  for (const filename of files) {
-    const source = await readFile(filename, "utf8");
-    const raw = lint(source, {
-      filename,
-      preset: "opinionated",
-      typeAware: true,
-      helpLevel: "short",
-    }) as SfcLintResult;
-    const diagnostics = Array.isArray(raw.diagnostics)
-      ? raw.diagnostics.filter(isSfcDiagnostic)
-      : [];
-    results.push({
-      filename: path.relative(process.cwd(), filename),
-      diagnostics,
-    });
+  try {
+    for (const [ordinal, filename] of files.entries()) {
+      const source = await readFile(filename, "utf8");
+      const raw = startupInput(filename, source, ordinal, shard, () =>
+        lint(source, {
+          filename,
+          preset: "opinionated",
+          typeAware: true,
+          helpLevel: "short",
+        }),
+      ) as SfcLintResult;
+      const diagnostics = Array.isArray(raw.diagnostics)
+        ? raw.diagnostics.filter(isSfcDiagnostic)
+        : [];
+      results.push({
+        filename: path.relative(process.cwd(), filename),
+        diagnostics,
+      });
+    }
+  } finally {
+    flushStartupWorker();
   }
 
   return results;
@@ -107,21 +114,30 @@ const shardVariable = "VIZE_UI_SFC_LINT_SHARD";
 // Each file's type-aware lint is synchronous and mostly waits on Corsa, so the
 // CLI re-runs its own script over disjoint shards and merges them in path order.
 async function lintInShards(): Promise<readonly LintedFile[]> {
-  const total = Math.min(8, availableParallelism());
-  const shards = await Promise.all(
-    Array.from({ length: total }, async (_, index) => {
-      const { stdout } = await promisify(execFile)(
-        process.execPath,
-        [...process.execArgv, ...process.argv.slice(1)],
-        {
-          env: { ...process.env, [shardVariable]: `${index}/${total}` },
-          maxBuffer: 256 * 1024 * 1024,
-        },
-      );
-      return JSON.parse(stdout) as LintedFile[];
-    }),
-  );
-  return shards.flat().sort((left, right) => (left.filename < right.filename ? -1 : 1));
+  const finish = startupParent();
+  let outcome = "returned";
+  try {
+    const total = Math.min(8, availableParallelism());
+    const shards = await Promise.all(
+      Array.from({ length: total }, async (_, index) => {
+        const { stdout } = await promisify(execFile)(
+          process.execPath,
+          [...process.execArgv, ...process.argv.slice(1)],
+          {
+            env: { ...process.env, [shardVariable]: `${index}/${total}` },
+            maxBuffer: 256 * 1024 * 1024,
+          },
+        );
+        return JSON.parse(stdout) as LintedFile[];
+      }),
+    );
+    return shards.flat().sort((left, right) => (left.filename < right.filename ? -1 : 1));
+  } catch (error) {
+    outcome = "threw";
+    throw error;
+  } finally {
+    finish?.(outcome);
+  }
 }
 
 /**
