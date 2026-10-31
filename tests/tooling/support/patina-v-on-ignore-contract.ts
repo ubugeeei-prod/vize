@@ -93,7 +93,7 @@ export function referenceBytes(row: IgnoreCase | InvalidCase): unknown {
 export function referenceOptions(policy: unknown): unknown[] {
   if (policy === null) return [];
   if (typeof policy === "string") return [policy];
-  assert.ok(policy !== null && typeof policy === "object" && !Array.isArray(policy));
+  assert.ok(typeof policy === "object" && !Array.isArray(policy));
   const record = policy as Record<string, unknown>;
   const { style: _style, ...payload } = record;
   return [Object.hasOwn(record, "style") ? record.style : "always", payload];
