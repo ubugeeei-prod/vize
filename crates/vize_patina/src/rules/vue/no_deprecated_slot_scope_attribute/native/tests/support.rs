@@ -1,6 +1,5 @@
 use crate::{HelpLevel, LintResult, Linter, Locale, RuleRegistry, Severity};
 use serde_json::{Value, json};
-use vize_carton::i18n::translator;
 
 pub const RULE: &str = "vue/no-deprecated-slot-scope-attribute";
 pub const MESSAGE: &str =
@@ -43,19 +42,27 @@ pub fn expected(
     locale: Locale,
     help: HelpLevel,
 ) -> Value {
-    let message = translator().get(locale, "vue/no-deprecated-slot-scope-attribute.message");
-    let full_help = translator().get(locale, "vue/no-deprecated-slot-scope-attribute.help");
-    if locale == Locale::En {
-        assert_eq!(message.as_ref(), MESSAGE);
-        assert_eq!(full_help.as_ref(), HELP);
-    }
+    // Exact independent catalogue vectors for the three finite locale controls.
+    // Expected output needs no additional host-runtime translator dependency.
+    let (message, full_help) = match locale {
+        Locale::En => (MESSAGE, HELP),
+        Locale::Ja => (
+            "`slot-scope` 属性は Vue 2.6 で非推奨となり Vue 3 で削除されました",
+            "代わりに `v-slot` を使用してください（例: `<template v-slot=\"props\">`）。",
+        ),
+        Locale::Zh => (
+            "`slot-scope` 属性在 Vue 2.6 中已弃用，并在 Vue 3 中移除",
+            "请改用 `v-slot`（例如 `<template v-slot=\"props\">`）。",
+        ),
+        _ => panic!("unprovided test locale"),
+    };
     let diagnostics: Vec<_> = starts
         .iter()
         .map(|start| {
             json!({
-                "rule_name": RULE, "severity": severity, "message": message.as_ref(),
+                "rule_name": RULE, "severity": severity, "message": message,
                 "start": start, "end": start + 10,
-                "help": help.process(full_help.as_ref()).map(|help| help.to_string()),
+                "help": help.process(full_help).map(|help| help.to_string()),
                 "labels": [], "fix": null,
             })
         })
