@@ -1,6 +1,7 @@
 use super::*;
 use crate::{ide::IdeContext, server::ServerState};
 
+mod fairness;
 mod uncached;
 
 const SOURCE: &str = "<script setup lang=\"ts\">const alpha = 1; const beta = 2; void outside;</script>\n<template>{{ alpha }}</template>";

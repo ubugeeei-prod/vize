@@ -15,6 +15,9 @@ use vize_l0::String as CompactString;
 
 use super::Occurrence;
 
+mod registry;
+use registry::Registry;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Mode {
     Standard,
@@ -160,10 +163,26 @@ impl Owner {
         entry.revision = Some(self.revision);
         entry.lease = entry
             .charge()
-            .and_then(|bytes| self.cell.budget.lease(bytes));
+            .and_then(|bytes| self.cell.budget.admit(bytes));
         let entry = Arc::new(entry);
         if entry.lease.is_some() {
             *self.cell.entry.lock() = Some(Arc::clone(&entry));
+            let registered = self
+                .cell
+                .budget
+                .registry
+                .lock()
+                .register(&self.cell, &entry);
+            if !registered {
+                // A refused registration must not leave an untracked slot.
+                let mut cached = self.cell.entry.lock();
+                if cached
+                    .as_ref()
+                    .is_some_and(|current| Arc::ptr_eq(current, &entry))
+                {
+                    *cached = None;
+                }
+            }
         }
         entry
     }
@@ -263,6 +282,7 @@ impl Entry {
 struct Budget {
     entries: AtomicUsize,
     known_bytes: AtomicUsize,
+    registry: Mutex<Registry>,
 }
 const MAX_ENTRIES: usize = 2;
 const MAX_KNOWN_BYTES: usize = 4 * 1024 * 1024;
@@ -271,6 +291,22 @@ fn budget() -> &'static Arc<Budget> {
     BUDGET.get_or_init(|| Arc::new(Budget::default()))
 }
 impl Budget {
+    fn admit(self: &Arc<Self>, bytes: usize) -> Option<Lease> {
+        if bytes > MAX_KNOWN_BYTES {
+            return None;
+        }
+        if let Some(lease) = self.lease(bytes) {
+            return Some(lease);
+        }
+        // Clone only bounded weak identities, releasing the registry before
+        // any cell lock or Entry drop. Active and retired readers keep leases.
+        let publications = self.registry.lock().snapshot();
+        if Registry::evict_oldest_idle(publications) {
+            return self.lease(bytes);
+        }
+        None
+    }
+
     fn lease(self: &Arc<Self>, bytes: usize) -> Option<Lease> {
         self.entries
             .try_update(Ordering::AcqRel, Ordering::Acquire, |current| {
