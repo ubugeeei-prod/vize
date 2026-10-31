@@ -67,3 +67,57 @@ Object.assign(props.items, [])
 </script>"#;
     assert_eq!(mutation_count(source), 1);
 }
+
+#[test]
+fn lint_cli_honors_vize_script_aliases_in_plain_modules_and_sfc_setup() {
+    let project = tempfile::tempdir().unwrap();
+    crate::support::vite_config::write(
+        project.path(),
+        r#"{"linter":{"preset":"incremental","rules":{"script/no-restricted-globals":"error"}}}"#,
+    );
+    let sources = [
+        (
+            "a.ts",
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/vize-script-suppressions-11150/a.ts.txt"
+            ),
+        ),
+        (
+            "d.ts",
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/vize-script-suppressions-11150/d.ts.txt"
+            ),
+        ),
+        (
+            "e.vue",
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/vize-script-suppressions-11150/e.vue.txt"
+            ),
+        ),
+    ];
+    for (filename, source) in sources {
+        fs::write(project.path().join(filename), source).unwrap();
+        let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+            .current_dir(project.path())
+            .args(["lint", "--format", "json", filename])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(0), "{filename}: {output:?}");
+        assert_eq!(output.stderr, Vec::<u8>::new(), "{filename}: {output:?}");
+        let actual: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(
+            actual,
+            serde_json::json!([{
+                "file": filename,
+                "messages": [],
+                "errorCount": 0,
+                "warningCount": 0,
+            }]),
+            "{filename}: {output:?}"
+        );
+        assert_eq!(
+            fs::read_to_string(project.path().join(filename)).unwrap(),
+            source
+        );
+    }
+}

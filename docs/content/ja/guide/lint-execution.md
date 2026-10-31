@@ -46,6 +46,16 @@ CLI とエディタで共有する場合は、これらのキーを `vue.linter`
 警告数の上限を指定しない場合は、警告だけで実行を失敗とはしません。
 `0` を指定すると、警告が一つでも残っている場合に失敗します。負の値は指定できません。
 
+単独の JavaScript/TypeScript ファイルと SFC の script ブロックでは、
+`// vize-disable-next-line script/rule-name`、行末の
+`// vize-disable-line script/rule-name`、または
+`/* vize-disable script/rule-name */` から `/* vize-enable script/rule-name */`
+までの範囲で抑制できます。ルール名を省略するとすべてのルールが対象になり、
+複数のルールはカンマで区切ります。Oxlint の未使用ディレクティブのチェックと併用できます。
+文字列、テンプレートリテラル、正規表現の中のマーカーは抑制として扱いません。
+テンプレートのコメントは従来の `eslint-` / `oxlint-` 構文を使います。
+CSS の `vize-disable` コメントの動作と、Vize コメントを未使用として報告しない動作は変わりません。
+
 Vite+ の Lint タスクには、対象のパスと `--fix` を渡せます。
 Vize 固有のオプションは、Oxlint に渡すのではなく `lint.vue` に指定してください。
 たとえば `vp run lint -- src` を実行すると、それぞれの設定を使って両方の Lint が実行されます。
