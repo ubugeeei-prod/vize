@@ -13,14 +13,17 @@ use support::compile;
 const ORIGINAL: &str = include_str!(
     "../../../tests/_fixtures/differential/compiler/inline-for-ref-shadow-11210/Layout.vue.txt"
 );
+const EXPECTED_INPUT_SHA256: &[u8] = &[
+    0xac, 0x78, 0xdd, 0xf1, 0x88, 0xe8, 0x91, 0x63, 0x51, 0x73, 0x83, 0xbc, 0x2d, 0xc4, 0x57, 0xc9,
+    0x3d, 0xe7, 0x2b, 0x85, 0xda, 0x49, 0xa6, 0x43, 0x75, 0x8a, 0x78, 0x2d, 0xa3, 0x0b, 0x3f, 0xc8,
+];
 
 #[test]
 fn original_inline_loop_uses_plain_alias_but_keeps_outer_model_ref() {
     assert_eq!(ORIGINAL.len(), 316);
-    assert_eq!(
-        vize_l0::cstr!("{:x}", Sha256::digest(ORIGINAL.as_bytes())).as_str(),
-        "ac78ddf188e89163517383bc2dc457c93de72b85da49a643758a782da30b3fc8"
-    );
+    let digest = Sha256::digest(ORIGINAL.as_bytes());
+    let observed: &[u8] = digest.as_ref();
+    assert_eq!(observed, EXPECTED_INPUT_SHA256);
     let facts = compile("original-inline", ORIGINAL, true, false);
     assert_eq!(facts.aliases, ["visibility"]);
     assert_eq!(facts.sources, ["noteVisibilities"]);
