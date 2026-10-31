@@ -1,8 +1,8 @@
 //! Original ordinary static attributes must exhaust before an Element body.
 
 use super::super::{
-    NativeVisibility, attribute_value::PreparedAttributes, for_head::ObservedFor,
-    handler::ObservedHandler,
+    NativeVisibility, attribute_value::PreparedAttributes, conditional::ObservedConditional,
+    for_head::ObservedFor, handler::ObservedHandler,
 };
 use crate::artifact::RegionBuilder;
 use crate::file::region::FileRegion;
@@ -13,7 +13,7 @@ use vize_l0::Vec;
 use vize_l1::{
     dialect::vue3::VueDirectives,
     markup::{
-        NativeAttribute, NativeElement, NativeTemplateComponent,
+        NativeAttribute, NativeConditionKind, NativeElement, NativeTemplateComponent,
         directive::{DirectivePrefix, DirectiveSyntax},
     },
 };
@@ -23,6 +23,7 @@ pub(in crate::file::region::native) struct Header<'a> {
     pub(super) values: PreparedAttributes<'a>,
     pub(super) handlers: alloc::vec::Vec<ObservedHandler<'a>>,
     pub(super) for_head: Option<ObservedFor>,
+    pub(super) conditional: Option<ObservedConditional>,
 }
 
 pub(super) fn construct<'a: 'b, 'b, R>(
@@ -37,6 +38,7 @@ where
     let mut attributes = Vec::new_in(&original.component().allocator());
     let mut handlers: alloc::vec::Vec<ObservedHandler<'a>> = alloc::vec::Vec::new();
     let mut for_head = None;
+    let mut conditional = None;
     // One actual full header iterator. Only its normal end permits the Element
     // factory and original callback; pending owners remain parked on refusal.
     for (ordinal, attribute) in original.attributes().enumerate() {
@@ -97,15 +99,37 @@ where
                 }
                 for_head = Some(observed);
             }
+            Ok(Some(directive))
+                if directive.prefix == DirectivePrefix::Full
+                    && directive.name.slice(block.root_source()) == "if" =>
+            {
+                let head = selected
+                    .observe_attribute_head(attribute.reborrow())
+                    .map_err(|_| Kind::UnsupportedChild)?;
+                if head.condition_kind() != Some(NativeConditionKind::If) {
+                    return Err(Kind::UnsupportedChild);
+                }
+                let observed = region.observe_conditional(selected, &head)?;
+                if conditional.is_some() {
+                    return Err(Kind::UnsupportedChild);
+                }
+                conditional = Some(observed);
+            }
             Ok(Some(_)) | Err(_) => return Err(Kind::UnsupportedChild),
         }
     }
     let values = region.prepare_attribute_storage(value_start, attributes.as_slice())?;
+    if conditional.is_some()
+        && (!attributes.is_empty() || !handlers.is_empty() || for_head.is_some())
+    {
+        return Err(Kind::UnsupportedChild);
+    }
     Ok(Header {
         values,
         attributes,
         handlers,
         for_head,
+        conditional,
     })
 }
 
@@ -124,7 +148,7 @@ impl<'a> Header<'a> {
         'a: 'b,
         R: DerefMut<Target = RegionBuilder<'b, 'a>>,
     {
-        if self.for_head.is_some() {
+        if self.for_head.is_some() || self.conditional.is_some() {
             return Err(Kind::InvalidEvent);
         }
         for handler in &self.handlers {
