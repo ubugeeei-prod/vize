@@ -28,7 +28,9 @@ fn twelve_whole_original_root_if_else_text_components_and_raw_maps_are_captured(
     let mut custody = Vec::new();
     let mut attempts = Vec::new();
     let mut failures = Vec::new();
-    refusal::whole_public_output_rejects_late_second_body_failures()?;
+    if let Err(error) = refusal::whole_public_output_rejects_late_second_body_failures() {
+        failures.push(error);
+    }
     for (mode, mode_name) in [
         (DomMode::Development, "development"),
         (DomMode::Production, "production"),
@@ -306,6 +308,12 @@ fn twelve_whole_original_root_if_else_text_components_and_raw_maps_are_captured(
                                     && declaration.name.as_str() == name
                                     && occurrence.name == name
                                     && text_read.kind() == expected_kind
+                                    && text_row.value()
+                                        == if dynamic {
+                                            vize_l3::decision::dom::ValueKind::FileDependent
+                                        } else {
+                                            vize_l3::decision::dom::ValueKind::LiteralConstant
+                                        }
                                     && (text_binding.id() == binding.id())
                                         == (name == text(fixture, "conditionBinding")?)
                                     && matches!(group.nodes.as_slice(), [actual] if *actual == text_node)
