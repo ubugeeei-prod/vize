@@ -7,7 +7,7 @@ use crate::codegen::context::CodegenContext;
 use crate::codegen::expression::scope_prefix::strip_scope_prefixes_for_slot_params;
 use crate::steps::v_slot::{collect_slots, has_v_slot};
 use crate::{
-    CompoundExpressionChild, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode,
+    CompoundExpressionChild, ElementNode, ExpressionNode, PropNode, TemplateChildNode,
     TextCallContent,
 };
 use oxc_ast_visit::Visit;
