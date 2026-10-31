@@ -5,6 +5,9 @@ use vize_croquis::macros::MacroTracker;
 
 use super::WorkspaceSymbolsService;
 
+#[cfg(test)]
+mod projection_tests;
+
 impl WorkspaceSymbolsService {
     pub(super) fn collect_vue_specific_symbols(
         uri: &Url,
@@ -18,7 +21,7 @@ impl WorkspaceSymbolsService {
         };
         match allocator {
             Some(allocator) => {
-                let macros = vize_croquis::script_parser::parse_workspace_contracts_in(
+                let macros = vize_croquis::script_parser::parse_workspace_symbol_contracts_in(
                     allocator,
                     &script_setup.content,
                 );
@@ -127,6 +130,7 @@ impl WorkspaceSymbolsService {
 /// inventory executes the same corpus without adding a second discovery path.
 #[cfg(test)]
 pub(super) fn assert_contract_packet_parity() {
+    projection_tests::assert_projection_packet_parity();
     let scripts = [
         "const ordinary = 1; function reset() {}",
         "const model = defineModel<string>('title');",

@@ -46,7 +46,7 @@ pub use value_binding_origins::ValueBindingOrigins;
 pub(crate) use value_binding_origins::component_binding_reference;
 
 #[doc(hidden)]
-pub use contracts::parse_workspace_contracts_in;
+pub use contracts::{parse_workspace_contracts_in, parse_workspace_symbol_contracts_in};
 pub use define_art::parse_define_art;
 pub use module_exports::AuthoredModuleExport;
 pub(crate) use module_exports::ModuleExportCapture;

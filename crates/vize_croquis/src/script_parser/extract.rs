@@ -13,6 +13,7 @@ mod reactivity;
 mod runtime_objects;
 mod slots;
 mod with_defaults;
+mod workspace_contracts;
 
 pub use common::{extract_call_expression, get_binding_type_from_kind};
 pub(in crate::script_parser) use emits::extract_runtime_emit_payload_type;
@@ -41,3 +42,4 @@ pub(in crate::script_parser) use runtime_objects::record_static_runtime_object_l
 pub(in crate::script_parser) use with_defaults::{
     invalidate_default_expression, invalidate_default_objects,
 };
+pub(in crate::script_parser) use workspace_contracts::workspace_symbol_contracts;
