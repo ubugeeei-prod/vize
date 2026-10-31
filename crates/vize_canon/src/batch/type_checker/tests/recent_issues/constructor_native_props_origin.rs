@@ -4,15 +4,20 @@
     reason = "the SDK returns owned standard strings"
 )]
 
+#[cfg(unix)]
 use crate::batch::BatchTypeChecker;
+#[cfg(unix)]
 use corsa::{
     api::{ApiMode, ApiSpawnConfig, ProjectSession},
     runtime::block_on,
 };
+#[cfg(unix)]
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
+#[cfg(unix)]
 use std::{fs, path::Path};
 
+#[cfg(unix)]
 mod query;
 
 // Exact private case from frozen a8 original27/58; also retained by the 3bd capture.
@@ -79,6 +84,7 @@ fn sha256(bytes: &[u8]) -> String {
         .collect()
 }
 
+#[cfg(unix)]
 fn image(path: &Path) -> Value {
     let bytes = fs::read(path).expect("probe-owned file remains readable");
     json!({"path":path,"bytes":bytes.len(),"sha256":sha256(&bytes)})
