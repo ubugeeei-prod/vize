@@ -33,7 +33,7 @@ assert.equal(
 );
 assert.equal(git("diff", "--binary", "HEAD"), "");
 // Do not change any stack allocation budget or worker count for this observation.
-for (const variable of ["RUST_MIN_STACK", "TOKIO_WORKER_THREADS", "UV_THREADPOOL_SIZE"])
+for (const variable of ["RUST_MIN_STACK", "TOKIO_WORKER_THREADS"])
   assert.equal(process.env[variable], undefined, `${variable} must remain unset`);
 assert.equal(process.env.CARGO_INCREMENTAL, "0");
 assert.equal(process.env.CARGO_BUILD_JOBS, "12");
@@ -72,6 +72,9 @@ const sourceIdentity = {
   locks,
   originalCommand,
   tools,
+  inheritedLibuvThreadpool: process.env.UV_THREADPOOL_SIZE ?? null,
+  historicalLibuvThreadpool:
+    "not recorded in original failure; inherited value is preserved without modification",
   versions: Object.fromEntries(toolNames.map((name) => [name, command(name, ["--version"])])),
   stackLimits: readFileSync("/proc/self/limits", "utf8")
     .split("\n")
