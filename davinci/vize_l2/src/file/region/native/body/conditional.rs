@@ -9,7 +9,7 @@ use crate::lang::js::NativeTemplateIssueKind as Kind;
 use crate::op::Namespace;
 use core::ops::DerefMut;
 use vize_l0::{Span, id::NodeId};
-use vize_l1::markup::{NativeChild, NativeElement, NativeTemplateComponent, SurfaceChild};
+use vize_l1::markup::{NativeElement, NativeTemplateComponent, SurfaceChild};
 
 pub(super) fn construct<'a: 'b, 'b, R>(
     original: NativeElement<'_, 'a>,
