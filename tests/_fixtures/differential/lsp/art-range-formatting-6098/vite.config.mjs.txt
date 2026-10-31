@@ -1,0 +1,1 @@
+export default { vue: { formatter: { preset: "documentation" } } };
