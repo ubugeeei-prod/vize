@@ -119,15 +119,10 @@ void test("jsx: a .jsx Vue component compiles to VDOM render code", async (t) =>
     jsxMode: "vdom",
     sourceMap: false,
   });
-  t.assert.deepEqual(nativeDto.errors, []);
-  t.assert.deepEqual(nativeDto.warnings, []);
   const reference = compileJsxModule(filename, source, { jsxMode: "vdom", sourceMap: false });
   const loaded = Array.from(stats.compilation.modules).find(
     (module) => "resource" in module && module.resource === filename,
   );
-  t.assert.ok(loaded);
-  t.assert.equal(loaded.originalSource()?.source().toString(), reference.code);
-  t.assert.equal(nativeDto.code, reference.code);
   const bundle = bundleSource(stats);
   const snapshotValue = normalizeSnapshot(bundle);
   const directory = process.env.VIZE_RSPACK_JSX_CAPTURE ?? stats.compilation.outputOptions.path;
@@ -143,7 +138,7 @@ void test("jsx: a .jsx Vue component compiles to VDOM render code", async (t) =>
         mapOwnProperty: Object.hasOwn(nativeDto, "map"),
         mapIsUndefined: nativeDto.map === undefined,
         reference,
-        loadedModule: loaded.originalSource()?.source().toString(),
+        loadedModule: loaded?.originalSource()?.source().toString(),
         stats: stats.toJson({ all: false, modules: true, providedExports: true }),
         bundle,
         snapshotValue,
@@ -153,6 +148,11 @@ void test("jsx: a .jsx Vue component compiles to VDOM render code", async (t) =>
       2,
     ) + "\n",
   );
+  t.assert.deepEqual(nativeDto.errors, []);
+  t.assert.deepEqual(nativeDto.warnings, []);
+  t.assert.ok(loaded);
+  t.assert.equal(loaded.originalSource()?.source().toString(), reference.code);
+  t.assert.equal(nativeDto.code, reference.code);
   t.assert.snapshot(snapshotValue);
 });
 

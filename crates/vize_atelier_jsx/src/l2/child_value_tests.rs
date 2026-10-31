@@ -110,7 +110,7 @@ fn babel_compat_retains_unmarked_raw_compounds_without_native_role_or_scope_fact
     assert!(!lowered.has_errors());
     let root = &lowered.roots[0];
     assert!(!root.vdom_value_children);
-    assert!(matches!(root.l2, Err(L2Refusal::TransformedChild)));
+    assert!(matches!(root.l2.as_ref(), Err(L2Refusal::TransformedChild)));
     let TemplateChildNode::Element(element) = &root.root.children[0] else {
         panic!("original element")
     };

@@ -66,3 +66,26 @@ test("both genuine pre-review and head browser packets remain mandatory", () => 
     /vdom-child-review-browser\.ts "\$RUNNER_TEMP\/jsx-authored-native\/vdom-review\/base\.json" "\$RUNNER_TEMP\/jsx-authored-native\/vdom-review\/head\.json"/,
   );
 });
+
+test("Rspack complete captures retain the original group environment and every actual fallback output", () => {
+  const source = fs.readFileSync(
+    new URL("../../.github/workflows/pr-js-checks.yml", import.meta.url),
+    "utf8",
+  );
+  const group = source
+    .split("      - name: Test JS package group\n")[1]!
+    .split("\n      - name:")[0]!;
+  assert.doesNotMatch(group, /VIZE_RSPACK_JSX_CAPTURE/);
+  const capture = source
+    .split("      - name: Preserve complete Rspack JSX producer and bundle\n")[1]!
+    .split("\n      - name:")[0]!;
+  for (const path of [
+    "jsx-vapor/authored-vapor-bundle.json",
+    "jsx-vdom/native-vdom-bundle.json",
+    "jsx-vdom-module/native-vdom-module.json",
+    "jsx-vdom-map/native-vdom-map.json",
+  ])
+    assert.ok(capture.includes("target/vize-tests/test-output/rspack-vize-plugin/" + path));
+  assert.match(capture, /!cancelled\(\)/);
+  assert.match(capture, /if-no-files-found: error/);
+});
