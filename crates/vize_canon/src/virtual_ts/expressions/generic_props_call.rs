@@ -9,6 +9,7 @@ use super::super::helpers::to_safe_identifier_fragment;
 use super::super::scope::{append_chained_vif_guard_close, append_chained_vif_guard_open};
 use super::super::types::VizeMapping;
 use super::component_props::ComponentPropSource;
+use super::constructor_instance;
 use super::props_literal::{append_inference_props_literal, append_props_literal};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::String;
@@ -184,13 +185,29 @@ pub(crate) fn generate_slot_host_binding(
     (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
 ) {
     let mut discarded = Vec::new();
+    let captured = constructor_instance::root_slot_scope(source_context.scopes, usage)
+        .map(|_| constructor_instance::instance_pair_name(binding_name, source_context.scopes));
     if usage.vif_guard.is_some() {
         append!(
             *ts,
             "{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n"
         );
     }
-    if hoist_shared_preamble {
+    if let Some(pair) = &captured {
+        constructor_instance::append_capture_open(ts, pair, indent);
+        let constructor = crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR
+            .select(hoist_shared_preamble);
+        let without_arguments =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITHOUT_ARGUMENTS
+                .select(hoist_shared_preamble);
+        let with_arguments =
+            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITH_ARGUMENTS
+                .select(hoist_shared_preamble);
+        append!(
+            *ts,
+            "new (undefined as unknown as {without_arguments}<{constructor}<typeof {component_ref}>>)(), new (undefined as unknown as {with_arguments}<{constructor}<typeof {component_ref}>>)(",
+        );
+    } else if hoist_shared_preamble {
         let slot_host_selector =
             crate::virtual_ts::helpers::shared_types::SLOT_HOST_SELECTOR.select(true);
         let slot_constructor =
@@ -231,7 +248,24 @@ pub(crate) fn generate_slot_host_binding(
     if usage.vif_guard.is_some() {
         ts.push_str(" : (undefined as unknown as never)");
     }
-    if hoist_shared_preamble {
+    if let Some(pair) = &captured {
+        let constructor = crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR
+            .select(hoist_shared_preamble);
+        let args = crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_ARGS
+            .select(hoist_shared_preamble);
+        append!(
+            *ts,
+            ", ...([] as unknown as {args}<{constructor}<typeof {component_ref}>>))",
+        );
+        constructor_instance::append_slot_selection(
+            ts,
+            pair,
+            binding_name,
+            component_ref,
+            indent,
+            hoist_shared_preamble,
+        );
+    } else if hoist_shared_preamble {
         let slot_constructor =
             crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR.select(true);
         let slot_constructor_args =
