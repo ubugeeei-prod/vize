@@ -274,5 +274,6 @@ fn original_literal_numeric_and_dynamic_refusals_do_not_publish_an_if_query() {
     }
 }
 
+mod interpolation;
 mod interruption;
 mod refusal;
