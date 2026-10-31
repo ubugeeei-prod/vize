@@ -21,7 +21,7 @@ export const overrideNames = [
   "TSRS_PATH",
   "TSRS_EXECUTABLE",
 ] as const;
-export type Phase = "original-no-provider" | "stable-user-provider" | "reported-tsrs";
+export type Phase = "original-default-provider" | "stable-user-provider" | "reported-tsrs";
 
 export function readOriginal(
   file = new URL(
@@ -49,13 +49,9 @@ export function assertHost(
   assert.equal(node, "v26.6.0", "Node26 patch pinned explicitly, not specified by reporter");
 }
 export function assertReport(original: JsonRecord, phase: Phase, stdout: Buffer): void {
-  const expected =
-    phase === "original-no-provider"
-      ? original.expectedNoProviderReport
-      : original.expectedNullableReport;
   assert.deepEqual(
     parseJson(stdout.toString("utf8")),
-    expected,
+    original.expectedNullableReport,
     "complete ordered original report: " + phase,
   );
 }
@@ -72,17 +68,13 @@ export function assertOriginalPlain(
     0,
     "original lint must not emit an unexpected launcher/runtime error",
   );
-  const expected = asRecord(
-    asArray(
-      phase === "original-no-provider"
-        ? original.expectedNoProviderReport
-        : original.expectedNullableReport,
-    )[0],
-  );
+  const expected = asRecord(asArray(original.expectedNullableReport)[0]);
   const diagnostic = asRecord(asArray(expected.messages)[0]);
   const message = asString(diagnostic.message);
-  if (phase !== "original-no-provider")
-    assert(asString(original.reportedExpected).includes(message));
+  assert(
+    asString(original.reportedExpected).includes(message),
+    "original reported finding: " + phase,
+  );
   const view = stripVTControlCharacters(stdout.toString("utf8"));
   assert.deepEqual(
     [...view.matchAll(/\[vize:([^\]]+)\]/gu)].map((row) => row[1]),
@@ -160,7 +152,7 @@ export function descendants(raw: string, parent: number): ProcessRow[] {
 export function assertTextImage(raw: string, pid: number, path: string): void {
   assert.ok(path.startsWith("/"));
   const lines = raw.trimEnd().split("\n");
-  assert.equal(lines[0], "p" + pid, "lsof identity belongs to the observed descendant PID");
+  assert.equal(lines[0], "p" + pid, "lsof identity belongs to the observed owned PID");
   assert.equal(lines.filter((line) => line.startsWith("p")).length, 1);
   assert(
     lines.includes("n" + path),
