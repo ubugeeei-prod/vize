@@ -1,0 +1,15 @@
+[
+  {
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 14,
+        "character": 0
+      }
+    },
+    "newText": "<script setup lang=\"ts\">\nimport { computed } from \"vue\";\nimport { useRoute } from \"vue-router\";\n\nimport { formatName } from \"./format\";\nimport type { User } from \"./types\";\n\nconst props = defineProps<{ user: User }>();\nconst route = useRoute();\nconst name = computed(() => formatName(props.user, route.path));\n</script>\n\n<template>\n  <p>{{ name }}</p>\n</template>\n"
+  }
+]
