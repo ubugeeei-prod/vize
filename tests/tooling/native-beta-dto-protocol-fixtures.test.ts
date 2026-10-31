@@ -88,6 +88,15 @@ void test("typed producers retain historical bytes and only the exact registered
   );
   assert.equal(current.currentSplitLogRegistration, "before-stable-split-watch-log-41152849787");
   assert.equal(current.currentTerminalRegistration, "before-stable-terminal-stderr-41156819864");
+  assert.equal(
+    current.currentMixedEofRegistration,
+    "before-stable-unproven-eof-return-41171790405",
+  );
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentMixedEofRegistration === null),
+  );
   assert(
     custody
       .filter((entry) => entry !== current)
@@ -148,6 +157,8 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/native-io.ts",
     "tests/tooling/support/native-beta-dto/execve-handoff.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
+    "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
+    "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
     ...["client.bin", "server.bin", "identity.json"].map(
       (name) =>
         "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/" +
@@ -182,6 +193,8 @@ void test("current observer successor requires its exact bounded runtime and act
   for (const path of [
     "tests/tooling/support/native-beta-dto/native-io.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
+    "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
+    "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
   ])
     assert.throws(() =>
       validate([row], [], {

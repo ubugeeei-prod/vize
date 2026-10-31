@@ -2,11 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import {
-  observeStableSplitWatchLog,
-  requireCandidateStableStderr,
-  verifyNativeRelations,
-} from "./stable-watcher-boundary.ts";
+import { requireCandidateStableStderr, verifyNativeRelations } from "./stable-watcher-boundary.ts";
 import { verifyBetaAttachedRoute } from "./beta-attached-route.ts";
 import type { Packet, Syscall, StreamPair, Provider, Source, Receipt } from "./audit-wire-types.ts";
 import {
@@ -16,6 +12,7 @@ import {
   requireSingleTerminalStderrRole,
 } from "./native-io.ts";
 import { observeTerminalStableStderr } from "./terminal-stderr.ts";
+import { observeHistoricalSplitWatchLog } from "./stable-watcher-mixed.ts";
 
 const root = process.env.VIZE_NATIVE_DTO_CAPTURE!;
 const load = (name: string): unknown => JSON.parse(fs.readFileSync(path.join(root, name), "utf8"));
@@ -73,7 +70,7 @@ const key = (value: unknown) => {
 const watcherBoundaryObservations: NonNullable<ReturnType<typeof verifyNativeRelations>>[] = [];
 const splitWatchLogObservations: Array<{
   nativeOwner: number;
-  observation: ReturnType<typeof observeStableSplitWatchLog>;
+  observation: ReturnType<typeof observeHistoricalSplitWatchLog>;
 }> = [];
 const terminalStderrObservations: Array<{
   nativeOwner: number;
@@ -417,7 +414,7 @@ if (baseline) {
         assert.equal(receipt.registrationRefusals, 0);
         splitWatchLogObservations.push({
           nativeOwner: receipt.nativeOwner,
-          observation: observeStableSplitWatchLog(
+          observation: observeHistoricalSplitWatchLog(
             receipt.streams.find((row) => row.fd === 0)!.client!.packets,
             receipt.streams.find((row) => row.fd === 1)!.server!.packets,
             {
@@ -430,6 +427,7 @@ if (baseline) {
             },
             records.filter((row) => owner(row.tid) === receipt.nativeOwner),
             eofReads.filter((row) => owner(row.tid) === receipt.nativeOwner && row.fd === 0),
+            terminal,
           ),
         });
       } else if (bytes.length) requireStableWatcherShutdown(bytes);
@@ -439,6 +437,7 @@ if (baseline) {
   }
 }
 assert.ok(splitWatchLogObservations.length <= 1, "one historical split watch log observation only");
+const unprovenEofOrder = splitWatchLogObservations.some((row) => !row.observation.registrationPass);
 save("stable-split-watch-log-observation.json", splitWatchLogObservations);
 if (terminalStderrObservations.length)
   requireSingleTerminalStderrRole(
@@ -456,7 +455,9 @@ const disposition = {
       ? terminalStderrObservations.length
         ? "baseline-observation-unobserved-terminal-stderr"
         : splitWatchLogObservations.length
-          ? "baseline-observation-split-watch-log"
+          ? unprovenEofOrder
+            ? "baseline-observation-unproven-eof-return"
+            : "baseline-observation-split-watch-log"
           : registrationRefusals === 1
             ? "baseline-observation-known-post-shutdown-registration-refusal"
             : "baseline-observation-registration-acknowledged"
@@ -472,9 +473,12 @@ const disposition = {
     registrationRefusals === 0 &&
     splitWatchLogObservations.length === 0 &&
     terminalStderrObservations.length === 0,
-  registrationPass: registrationRefusals === 0,
+  registrationPass: registrationRefusals === 0 && !unprovenEofOrder,
   nativeOwners: receipts.length,
   allFramesClosed: true,
+  ...(unprovenEofOrder
+    ? { nativeQualification: false, observedRegistrationAcknowledged: registrationRefusals === 0 }
+    : {}),
   ...(terminalStderrObservations.length
     ? { stderrOutputComplete: false, rawIOComplete: false, nativeQualification: false }
     : {}),

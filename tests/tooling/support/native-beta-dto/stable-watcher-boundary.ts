@@ -233,56 +233,15 @@ export function verifyNativeRelations(
 }
 
 import { requireCompletedBefore, type NativeTimedObservation } from "./native-io.ts";
-export interface WatcherTimedIo extends NativeTimedObservation {
-  op: string;
-  fd: number;
-  data: Uint8Array;
-}
+import { micros, timedPackets, type WatcherTimedIo } from "./stable-watcher-timing.ts";
+export { micros };
+export type { WatcherTimedIo };
 export function requireCandidateStableStderr(bytes: Uint8Array) {
   assert.equal(bytes.byteLength, 0, "Candidate stable stderr must be empty");
 }
-export const micros = (value: string) => {
-  assert.match(value, /^[0-9]+\.[0-9]{6}$/u, "whole syscall timestamp required");
-  return BigInt(value.replace(".", ""));
-};
-function timedPackets(io: readonly WatcherTimedIo[], op: string, fd: number) {
-  const chunks = io
-    .filter((row) => row.op === op && row.fd === fd)
-    .sort((a, b) => a.at.localeCompare(b.at) || a.tid - b.tid || a.line - b.line);
-  const raw = Buffer.concat(chunks.map((row) => Buffer.from(row.data)));
-  let offset = 0;
-  const packets: Array<{ packet: Packet; at: string; parts: NativeTimedObservation[] }> = [];
-  while (offset < raw.length) {
-    const marker = raw.indexOf("\r\n\r\n", offset);
-    assert.ok(marker >= 0, "complete timed native header required");
-    const header = raw.subarray(offset, marker).toString("ascii");
-    assert.match(header, /^Content-Length: [0-9]+$/u);
-    const end = marker + 4 + Number(header.slice("Content-Length: ".length));
-    assert.ok(end <= raw.length, "complete timed native body required");
-    let bytes = 0;
-    const parts = chunks.filter((row) => {
-      const begin = bytes;
-      bytes += row.data.length;
-      return begin < end && bytes > offset;
-    });
-    packets.push({
-      packet: object(JSON.parse(raw.subarray(marker + 4, end).toString("utf8"))),
-      at: parts.at(-1)!.at,
-      parts: parts.map(({ at, tid, line, startedLine, completion }) => ({
-        at,
-        tid,
-        line,
-        startedLine,
-        completion,
-      })),
-    });
-    offset = end;
-  }
-  return packets;
-}
 
 /** One historical log split across protocol stdout and post-EOF stderr. */
-export function stableWatchActor(
+export function stableWatchContext(
   client: readonly unknown[],
   server: readonly unknown[],
   context: WatcherContext,
@@ -433,7 +392,6 @@ export function stableWatchActor(
   const stderr = io
     .filter((row) => row.op === "write" && row.fd === 2)
     .sort((a, b) => a.at.localeCompare(b.at) || a.tid - b.tid || a.line - b.line);
-  for (const row of stderr) requireCompletedBefore(eof, row);
   return {
     context,
     project,
@@ -450,6 +408,13 @@ export function stableWatchActor(
     eof,
     stderr,
   };
+}
+
+/** Strict default: every stderr attempt must follow observed EOF completion. */
+export function stableWatchActor(...args: Parameters<typeof stableWatchContext>) {
+  const actor = stableWatchContext(...args);
+  for (const row of actor.stderr) requireCompletedBefore(actor.eof, row);
+  return actor;
 }
 
 export function observeStableSplitWatchLog(

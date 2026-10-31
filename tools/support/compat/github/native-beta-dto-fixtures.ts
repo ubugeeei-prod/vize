@@ -87,6 +87,13 @@ const watcherSuccessor = {
   id: "before-stable-post-shutdown-observation-41099824102",
   splitLogId: "before-stable-split-watch-log-41152849787",
   terminalId: "before-stable-terminal-stderr-41156819864",
+  mixedEofId: "before-stable-unproven-eof-return-41171790405",
+  timingPath: "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
+  timingSha256: "c023dcf8b0e937a01d224bb9829ecbcea948e848e207825688c10e3c175301fc",
+  timingRuntimeSha256: "e525777159da6ce60bbbcbe84f70ad6ae62c8f8e425ecedbeb59620dd29eed1f",
+  mixedPath: "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
+  mixedSha256: "3e17e772b1bef8c3536c32b257bbc47696976c3575f2ed48c07bcc1780d954a0",
+  mixedRuntimeSha256: "b37485edbffdbd73f01d26aea09b984102b3777952d340730ba8cf66079562a3",
   ioPath: "tests/tooling/support/native-beta-dto/native-io.ts",
   ioSha256: "d4a8ac3d4ce7c2d38a53bc64aaf02a7f0b86b870a0b10b8174e0fb48739c8b54",
   ioRuntimeSha256: "ba488b82755d55e3230b5ebc7a75cef432d0279e31d8b817bc6ef675571b1036",
@@ -96,11 +103,11 @@ const watcherSuccessor = {
   terminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
   terminalSha256: "83b167d4146f812255b01a946ead297693bad85cdf904817e4207a2bf1c97c35",
   terminalRuntimeSha256: "2ed2edfda0877fa9a4b1093242f8501c5fb2ce834dfaf39ff478edfa9da18013",
-  auditRuntimeSha256: "ff7db54ce23d5d58f1b3138409459bc099351cf0d6294f1b4041300604b38a08",
+  auditRuntimeSha256: "fb00143272e89c9834ae2c1ee6c1a62636f26096e98e4b0691154f88ac437bcc",
   typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
   typesSha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
-  helperRuntimeSha256: "41dae1bd87d7dfa9a1807950eb37944ffaca2eba703b9710a0b48f69c48e25bb",
+  helperRuntimeSha256: "13977fbeee879ea518ca8abc2329dea34919edcf984102133192f4386014fe7a",
   routeId: "configured-startup-beta-semantic-route-41108828160",
   routePath: "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
   routeRuntimeSha256: "c577043a694e0254b9be7b4505cb49531e527431be332c3343b814f3c4d2ae40",
@@ -162,6 +169,16 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
         sha(Buffer.from(runtime(route))) ===
           watcherSuccessor.routeRuntimeSha256, "missing or changed registered beta semantic route runtime");
       for (const [path, physical, executable] of [
+        [
+          watcherSuccessor.timingPath,
+          watcherSuccessor.timingSha256,
+          watcherSuccessor.timingRuntimeSha256,
+        ],
+        [
+          watcherSuccessor.mixedPath,
+          watcherSuccessor.mixedSha256,
+          watcherSuccessor.mixedRuntimeSha256,
+        ],
         [watcherSuccessor.ioPath, watcherSuccessor.ioSha256, watcherSuccessor.ioRuntimeSha256],
         [
           watcherSuccessor.handoffPath,
@@ -197,6 +214,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       currentRuntimeRegistration: index === 3 ? watcherSuccessor.id : null,
       currentSplitLogRegistration: index === 3 ? watcherSuccessor.splitLogId : null,
       currentTerminalRegistration: index === 3 ? watcherSuccessor.terminalId : null,
+      currentMixedEofRegistration: index === 3 ? watcherSuccessor.mixedEofId : null,
       currentRouteRegistration: index === 3 ? watcherSuccessor.routeId : null,
       currentTypeDependency,
     };
