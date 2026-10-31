@@ -2,7 +2,7 @@ import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { isAbsolute, relative } from "node:path";
 
-import { isSupportVueFile, normalizePath } from "./typecheck-divergence-input.mjs";
+import { isSupportVueFile, normalizePath } from "./typecheck-divergence-input.ts";
 
 /**
  * Prove that the diagnostic comparator ran over the same Vue corpus on both
