@@ -41,7 +41,10 @@ fn objects_default_to_always_and_preserve_literal_order_case_and_boundaries() {
         empty.attribute_hyphenation(),
         Some(HyphenationStyle::Always)
     );
-    assert_eq!(empty.attribute_hyphenation_ignore(), Some([].as_slice()));
+    assert_eq!(
+        empty.attribute_hyphenation_ignore(),
+        Some(&[] as &[crate::String])
+    );
 }
 
 #[test]

@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { vueConfigOptions } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
+import {
+  vueConfigOptions,
+  mergeVueConfigOptions,
+} from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
 import { corpus, root, rule } from "./support/patina-attribute-ignore-contract.ts";
 
 test("canonical attribute style and custom-ignore policies roundtrip without mutation", () => {
@@ -50,4 +53,35 @@ test("published schema/types/PKL declare the attribute option while keeping the 
       ),
     );
   }
+});
+
+test("attribute policy overlays reset the entire inherited policy while preserving peer configuration", () => {
+  const base = {
+    compiler: { sourceMap: true },
+    linter: {
+      rules: { [rule]: "warn" },
+      ruleOptions: {
+        [rule]: { style: "never", ignore: ["inherited"] },
+        "vue/v-bind-style": "longform",
+      },
+    },
+  };
+  const before = structuredClone(base);
+  for (const policy of [{}, { ignore: [] }, "always"]) {
+    const own = { linter: { ruleOptions: { [rule]: policy } } };
+    const ownBefore = structuredClone(own);
+    assert.deepEqual(mergeVueConfigOptions(base, own), {
+      compiler: base.compiler,
+      linter: {
+        rules: base.linter.rules,
+        ruleOptions: { [rule]: policy, "vue/v-bind-style": "longform" },
+      },
+    });
+    assert.deepEqual(own, ownBefore);
+  }
+  assert.deepEqual(
+    mergeVueConfigOptions(base, { linter: { ruleOptions: { [rule]: undefined } } }),
+    base,
+  );
+  assert.deepEqual(base, before);
 });
