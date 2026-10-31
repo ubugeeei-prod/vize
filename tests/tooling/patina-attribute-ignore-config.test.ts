@@ -46,11 +46,19 @@ test("published schema/types/PKL declare the attribute option while keeping the 
   assert.equal(option.oneOf[1].properties.ignore.uniqueItems, true);
   for (const file of ["npm/cli/pkl/LinterConfig.pkl", "npm/cli/pkl/vize.pkl"]) {
     const value = fs.readFileSync(path.join(root, file), "utf8");
-    assert(value.includes("class AttributeHyphenationOptions {"));
-    assert(
-      value.includes(
-        "`vue/attribute-hyphenation`: (HyphenationStyle|AttributeHyphenationOptions)? = null",
-      ),
+    const declaration = /^class\s+AttributeHyphenationOptions\s*\{([\s\S]*?)^\}/mu.exec(value);
+    assert(declaration);
+    const tokens = (source: string) =>
+      source.match(/"(?:\\.|[^"\\])*"|`[^`]*`|[A-Za-z_][\w-]*|[^\s]/gu);
+    assert.deepEqual(
+      tokens(declaration[1]!),
+      tokens('style: HyphenationStyle = "always" ignore: Listing<String> = new Listing {}'),
+    );
+    const entry = /`vue\/attribute-hyphenation`\s*:\s*([\s\S]*?=\s*null)/u.exec(value);
+    assert(entry);
+    assert.deepEqual(
+      tokens(entry[1]!),
+      tokens("(HyphenationStyle|AttributeHyphenationOptions)? = null"),
     );
   }
 });

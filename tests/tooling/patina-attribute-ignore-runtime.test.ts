@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 import { test } from "node:test";
 import { projectViteConfigSource } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
-import { directory, hash } from "./support/patina-attribute-ignore-contract.ts";
+import { directory, hash, root, rule } from "./support/patina-attribute-ignore-contract.ts";
 
 const bytes = fs.readFileSync(path.join(directory, "runtime-controls.original.json"));
 assert.equal(hash(bytes), "96711d8ae2e3d73365ed768b3acff4334bf0d241cbf13764f4a95102a076a5fa");
@@ -33,4 +34,62 @@ test("extracted runtime keeps sixteen whole original enum, union and scoped outc
     assert.deepEqual(await outcome(legacy.projectViteConfigSource, row.input), row.outcome, row.id);
     assert.deepEqual(await outcome(projectViteConfigSource, row.input), row.outcome, row.id);
   }
+});
+
+test("current runtime refuses invalid attribute objects and projects an authored Vite+ object policy", async () => {
+  for (const policy of [
+    { ignore: [""] },
+    { ignore: ["a:exit"] },
+    { ignore: ["x", "x"] },
+    { ignore: [], unknown: true },
+  ]) {
+    assert.deepEqual(
+      await outcome(projectViteConfigSource, {
+        vue: { linter: { ruleOptions: { [rule]: policy } } },
+      }),
+      {
+        kind: "threw",
+        error: {
+          name: "TypeError",
+          message: `vue.linter.ruleOptions.${rule}: must match one documented native option type`,
+        },
+      },
+    );
+  }
+  const policy = { style: "never", ignore: ["active"] };
+  const input = {
+    vue: {
+      lint: {
+        jsPlugins: ["oxlint-plugin-vize"],
+        plugins: ["vue"],
+        settings: {},
+        rules: { [`vize/${rule}`]: ["warn", policy] },
+      },
+    },
+  };
+  const before = structuredClone(input);
+  assert.deepEqual(await outcome(projectViteConfigSource, input), {
+    kind: "returned",
+    value: {
+      typeChecker: { jsxTypecheck: true },
+      linter: { rules: { [rule]: "warn" }, ruleOptions: { [rule]: policy } },
+    },
+  });
+  assert.deepEqual(input, before);
+});
+
+test("Git keeps byte-qualified native runtime sources LF even with autocrlf enabled", () => {
+  const files = [
+    "crates/vize_carton/src/config/loader/vite-runtime.mjs",
+    "crates/vize_carton/src/config/loader/vite-runtime-validation.js",
+  ];
+  const actual = execFileSync(
+    "git",
+    ["-c", "core.autocrlf=true", "check-attr", "-z", "text", "eol", "--", ...files],
+    { cwd: root, encoding: "utf8" },
+  );
+  assert.deepEqual(
+    actual.split("\0"),
+    files.flatMap((file) => [file, "text", "set", file, "eol", "lf"]).concat(""),
+  );
 });
