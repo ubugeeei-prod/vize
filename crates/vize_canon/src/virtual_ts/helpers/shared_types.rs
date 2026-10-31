@@ -62,6 +62,7 @@ shared_type_refs! {
     SLOT_CONSTRUCTOR_ARGS => ("$SlotConstructorArgs", "$SlotConstructorArgs"),
     SLOT_HOST_SELECTOR => ("$SlotHostSelector", "$SlotHostSelector"),
     SLOT_PAYLOAD => ("$SlotPayload", "$SlotPayload"),
+    REGISTERED_SLOT_PROVIDER => ("$RegisteredSlotProvider", "$RegisteredSlotProvider"),
     EMIT_OWNED_KEYS => ("$EmitOwnedKeys", "$EmitOwnedKeys"),
     EMIT_PROPS_FACTORY => ("$EmitPropsFactory", "$EmitPropsFactory"),
     EMIT_PROPS => ("__EmitProps", "__EmitProps"),

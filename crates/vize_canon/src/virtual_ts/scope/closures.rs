@@ -288,6 +288,7 @@ pub(super) fn emit_scope_closures(
     for scope in summary.scopes.iter() {
         let scope_id = scope.id.as_u32();
         let ctx = ScopeGenContext {
+            component_binding_check: options.component_binding_check,
             inference_prelude: None,
             summary,
             virtual_ts_options,

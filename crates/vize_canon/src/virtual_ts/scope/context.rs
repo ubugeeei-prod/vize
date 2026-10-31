@@ -89,9 +89,11 @@ pub(crate) struct ComponentBindingCheck<'a> {
     pub(crate) globals: GlobalComponentCheck,
     /// Normalized PascalCase filename stem.
     pub(crate) self_component_name: Option<&'a str>,
+    /// Exact registry keys retained by the global stub emitter, per authored usage.
+    pub(crate) registry_slots: Option<&'a FxHashMap<u32, [String; 3]>>,
 }
 
-impl ComponentBindingCheck<'_> {
+impl<'a> ComponentBindingCheck<'a> {
     pub(crate) fn is_self(self, name: &str) -> bool {
         self.self_component_name
             .is_some_and(|own| own == vize_carton::capitalize(&vize_carton::camelize(name)))
@@ -100,11 +102,16 @@ impl ComponentBindingCheck<'_> {
     pub(crate) fn allows(self, name: &str) -> bool {
         self.globals.allows(name) || self.is_self(name)
     }
+
+    pub(crate) fn registry_slot_provider(self, usage: u32) -> Option<&'a [String; 3]> {
+        self.registry_slots?.get(&usage)
+    }
 }
 
 /// Context for recursive scope generation, bundling shared parameters.
 #[derive(Clone, Copy)]
 pub(crate) struct ScopeGenContext<'a, 'template> {
+    pub(crate) component_binding_check: ComponentBindingCheck<'a>,
     pub(super) inference_prelude: Option<&'a RefCell<super::root_owner_packets::RootOwnerBuffer>>,
     pub(crate) summary: &'a Croquis,
     pub(crate) virtual_ts_options: &'a VirtualTsOptions,
@@ -176,6 +183,7 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
 
 /// Context for recursive component prop checks inside v-for scopes.
 pub(crate) struct VForPropsContext<'a, 'template> {
+    pub(crate) component_binding_check: ComponentBindingCheck<'a>,
     pub(crate) summary: &'a Croquis,
     pub(crate) options: &'a VirtualTsOptions,
     pub(crate) template_ast: Option<&'a vize_relief::RootNode<'template>>,

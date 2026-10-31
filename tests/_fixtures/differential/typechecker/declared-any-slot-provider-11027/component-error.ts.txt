@@ -1,0 +1,3 @@
+// @ts-ignore Independent unresolved-type control; it must retain its own error identity.
+export declare const WitnessChild: typeof MissingComponent;
+export default WitnessChild;

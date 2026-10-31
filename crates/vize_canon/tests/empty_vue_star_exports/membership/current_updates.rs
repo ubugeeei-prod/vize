@@ -201,8 +201,8 @@ fn apply_slot_factory_union(manifest: &mut Value, members: &mut [Value]) {
             constructor_without_args::previous(&body, &constructor["declarations"][index]);
         inverse_slot_factory_union(&previous, declaration);
     }
-    let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-    let previous = constructor_without_args::previous(current, &constructor["helper"]);
+    let current = constructor_without_args::prior_preamble();
+    let previous = constructor_without_args::previous(&current, &constructor["helper"]);
     inverse_slot_factory_union(&previous, &update["helper"]);
     let helper = members.get_mut(82).unwrap();
     assert_eq!(*helper, update["before"]);
@@ -225,7 +225,7 @@ fn slot_factory_union_postimage_rejects_unrelated_or_missing_bytes() {
     let update = slot_factory_union();
     let constructor = constructor_without_args::load();
     let current = constructor_without_args::previous(
-        vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        &constructor_without_args::prior_preamble(),
         &constructor["helper"],
     );
     inverse_slot_factory_union(&current, &update["helper"]);

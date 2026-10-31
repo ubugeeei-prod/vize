@@ -1,10 +1,8 @@
-use vize_carton::{CompactString, FxHashSet, String, camelize, capitalize, cstr};
+use vize_carton::{CompactString, FxHashSet, String, cstr};
 use vize_croquis::Croquis;
 use vize_croquis::macros::DEFINE_ART;
 
-use crate::virtual_ts::component_reference::{
-    component_reference_alias, contains_compact_name, has_type_only_component_candidate,
-};
+use crate::virtual_ts::component_reference::contains_compact_name;
 
 use super::super::types::VirtualTsOptions;
 use super::imports::extract_declared_name;
@@ -67,6 +65,7 @@ fn emit_stubs(
         if let Some(name) = name
             && let Some(alias) = component_alias_for_type_only_auto_import(
                 summary,
+                options,
                 syntactic_type_only_imported_names,
                 name,
             )
@@ -82,26 +81,19 @@ fn emit_stubs(
 
 fn component_alias_for_type_only_auto_import(
     summary: &Croquis,
+    options: &VirtualTsOptions,
     syntactic_type_only_imported_names: &FxHashSet<CompactString>,
     name: &str,
 ) -> Option<String> {
     if !contains_compact_name(syntactic_type_only_imported_names, name) {
         return None;
     }
-    vize_croquis::facts::used_component_name_list(summary)
-        .iter()
-        .find(|component| {
-            let component_name = component.as_str();
-            has_type_only_component_candidate(syntactic_type_only_imported_names, component_name)
-                && component_name_matches(component_name, name)
-        })
-        .map(|component| component_reference_alias(component.as_str()))
-}
-
-fn component_name_matches(template_name: &str, binding_name: &str) -> bool {
-    let camel_name = camelize(template_name);
-    let pascal_name = capitalize(camel_name.as_str());
-    [template_name, camel_name.as_str(), pascal_name.as_str()].contains(&binding_name)
+    crate::virtual_ts::component_aliases::auto_import_alias(
+        summary,
+        options,
+        syntactic_type_only_imported_names,
+        name,
+    )
 }
 
 fn rewrite_declared_name(stub: &str, name: &str, alias: &str) -> Option<String> {

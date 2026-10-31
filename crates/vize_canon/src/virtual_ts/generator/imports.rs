@@ -14,6 +14,32 @@ use vize_carton::cstr;
 use vize_carton::{CompactString, FxHashSet, String};
 use vize_croquis::Croquis;
 
+use super::super::types::VirtualTsOptions;
+
+pub(super) fn collect_component_imported_names<'a>(
+    summary: &Croquis,
+    script_content: Option<&'a str>,
+    options: &VirtualTsOptions,
+    global_components_enabled: bool,
+    type_only: &FxHashSet<CompactString>,
+) -> FxHashSet<&'a str> {
+    // The template-scope unwrap set also needs it: an auto-import already
+    // imported by a plain `<script>` must not gain a second shadow.
+    let needed = !options.auto_import_stubs.is_empty()
+        || !options.auto_import_bindings.is_empty()
+        || (global_components_enabled
+            && !vize_croquis::facts::component_usage_list(summary).is_empty())
+        || super::super::component_aliases::needs_imported_names(summary, type_only);
+    if needed {
+        vize_carton::profile!(
+            "canon.virtual_ts.extract_imported_names",
+            collect_imported_names(summary, script_content)
+        )
+    } else {
+        FxHashSet::default()
+    }
+}
+
 pub(super) fn emit_reference_path_directives(ts: &mut String, paths: &[String]) {
     super::super::reference_paths::emit(ts, paths);
 }

@@ -17,13 +17,10 @@ const SLOT_RESOLVER_HELPERS: &str =
 /// (`v-for="(_, name) in $slots"` with `#[name]="props"`) would otherwise hand
 /// every consumer the union of all host payloads and reject each named slot.
 ///
-/// An untyped host (an unresolved tag, an `any` component) yields an *error
-/// type* rather than a declared `any`. Both leave the payload unchecked, but
-/// TypeScript never reports on values derived from an error type, where a
-/// declared `any` still fails a `never` parameter. `vue-tsc` resolves an
-/// unknown tag through a missing registry key, so its payloads are silent in
-/// exactly this way. The component itself stays `any`: listener and prop
-/// checks rely on conditional types an error type would collapse.
+/// A declared `any` provider retains regular `any`, so authored conditional
+/// type witnesses still report errors. A compiler error-any provider retains
+/// its own intrinsic identity instead of receiving a fabricated replacement.
+/// Missing registry providers keep their framework-compatible silent fallback.
 const SLOT_PAYLOAD_HELPER: &str = include_str!("../../helpers/declarations/slot-payload.d.ts.txt");
 
 /// Emit helpers only when a component owns an authored slot scope. Keeping

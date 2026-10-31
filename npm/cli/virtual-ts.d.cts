@@ -110,8 +110,23 @@ export type $SlotHostSelector<C> = [$DirectSlotConstructor<C>] extends [never]
   ? <S>(instance: unknown, slots: S) => S
   : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
 
-// @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
+// @ts-ignore A missing provider keeps its framework error-any fallback.
 type $SilentAny = {}["__vizeSilentAny"];
+export type $RegisteredSlotProvider<
+  G,
+  K extends string | number | symbol,
+  F extends string | number | symbol = K,
+  L extends string | number | symbol = F,
+> =
+  $IsAny<G> extends true
+    ? $SilentAny
+    : K extends keyof G
+      ? G[K]
+      : F extends keyof G
+        ? G[F]
+        : L extends keyof G
+          ? G[L]
+          : $SilentAny;
 type $NamedSlotPayload<S, N> = {
   [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any
     ? P
@@ -121,9 +136,11 @@ type $NamedSlotPayload<S, N> = {
     ? any
     : P
   : any;
-export type $SlotPayload<S, N> =
+export type $SlotPayload<S, N, C = $RegisteredSlotProvider<any, never>> =
   $IsAny<S> extends true
-    ? $SilentAny
+    ? $IsAny<C> extends true
+      ? C
+      : any
     : string extends N
       ? string extends keyof S
         ? $NamedSlotPayload<S, N>
