@@ -14046,6 +14046,32 @@
           "sha256": "7f361282a17865effeb4b497721c8b077edf8232e79ef0600cba87796267fb55"
         }
       ]
+    },
+    {
+      "id": "typechecker/protocol/logical-workspace-overlay-revision-11145",
+      "state": "active",
+      "adapter": "logical-editor-revision-protocol-v1",
+      "targets": [
+        "native-diagnostic-dto",
+        "logical-workspace-revision"
+      ],
+      "inputs": [
+        {
+          "path": "logical-workspace-overlay-revision-11145/input.json",
+          "sha256": "4659fc88d76ee98c9f0ddc74f6450ecc80b720be9b3ab4a0335bf8f2a2050c58"
+        },
+        {
+          "path": "logical-workspace-overlay-revision-11145/source-authority.json",
+          "sha256": "c3950279205ac4939b10c019c5e10e55632ed336f06fd3f46bc4a8085f7ab3dd"
+        }
+      ],
+      "tests": [
+        {
+          "selector": "lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
+          "sha256": "c75ef79c388eb5aee6c93115150196c42aecb75d638ead10dab1a1b94872ca61"
+        }
+      ]
     }
   ],
   "languageProjectCases": [

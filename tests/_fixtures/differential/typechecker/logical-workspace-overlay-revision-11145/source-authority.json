@@ -1,0 +1,125 @@
+{
+  "schema": "vize.logical-workspace-protocol-authority",
+  "version": 1,
+  "id": "typechecker/protocol/logical-workspace-overlay-revision-11145",
+  "nativeAdmission": false,
+  "production": {
+    "beforeRevision": "e361d3873712eb11db018827713b1434be898261",
+    "afterRevision": "7508c93edbf6cffed1ef081b9de73d7142af57de",
+    "files": [
+      {
+        "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response.rs",
+        "beforeSha256": "a6e466261f9df2c9b79eae3c4558615849a4b06565a4e81c01107eab973fb7f1",
+        "afterSha256": "a6e466261f9df2c9b79eae3c4558615849a4b06565a4e81c01107eab973fb7f1",
+        "changed": false,
+        "beforeBytes": 17257,
+        "afterBytes": 17257
+      },
+      {
+        "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response/location.rs",
+        "beforeSha256": "5980489fa2841b5fd147e3f2a46418bb7f181ec5ad6a70890cba49e316bf67a5",
+        "afterSha256": "5980489fa2841b5fd147e3f2a46418bb7f181ec5ad6a70890cba49e316bf67a5",
+        "changed": false,
+        "beforeBytes": 4706,
+        "afterBytes": 4706
+      },
+      {
+        "path": "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics.rs",
+        "beforeSha256": "e1fca87600ab65ed61c6726828501795267e5104880c4473b769dd3452a57e20",
+        "afterSha256": "e1fca87600ab65ed61c6726828501795267e5104880c4473b769dd3452a57e20",
+        "changed": false,
+        "beforeBytes": 6766,
+        "afterBytes": 6766
+      },
+      {
+        "path": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol.rs",
+        "beforeSha256": "82770f11c1f108a14c4ce13d07035cd3ce1af30bb6666164a437bd85229fe7f5",
+        "afterSha256": "82770f11c1f108a14c4ce13d07035cd3ce1af30bb6666164a437bd85229fe7f5",
+        "changed": false,
+        "beforeBytes": 6776,
+        "afterBytes": 6776
+      },
+      {
+        "path": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/protocol9.rs",
+        "beforeSha256": "b709f334ca25aa503778f7d5fb4bdfb7859d064813599b69314401e3ff546e73",
+        "afterSha256": "b709f334ca25aa503778f7d5fb4bdfb7859d064813599b69314401e3ff546e73",
+        "changed": false,
+        "beforeBytes": 4716,
+        "afterBytes": 4716
+      },
+      {
+        "path": "crates/vize_canon/src/lsp_client/session/capabilities.rs",
+        "beforeSha256": "bb3c3b9c16fb8d5f704346d70ac774af9fd50cf588cc2cb11d9fb3fc68cf2225",
+        "afterSha256": "7f2ef7ceddc5ddc3137137629d15afbc8fdf576ce19b1fbae2ded86f893bbfcb",
+        "changed": true,
+        "beforeBytes": 3032,
+        "afterBytes": 3300
+      },
+      {
+        "path": "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs",
+        "beforeSha256": "6f06efdc6cd759b462afdd05135abd1938e897097d9aa05377e39b1443660590",
+        "afterSha256": "6f06efdc6cd759b462afdd05135abd1938e897097d9aa05377e39b1443660590",
+        "changed": false,
+        "beforeBytes": 9301,
+        "afterBytes": 9301
+      },
+      {
+        "path": "crates/vize_canon/src/lsp_client/diagnostics/batch.rs",
+        "beforeSha256": "9a9d768b9d8a622b90a831bcba3c3949c480ab450c81c097dc839da4d692fd98",
+        "afterSha256": "9a9d768b9d8a622b90a831bcba3c3949c480ab450c81c097dc839da4d692fd98",
+        "changed": false,
+        "beforeBytes": 1581,
+        "afterBytes": 1581
+      }
+    ]
+  },
+  "consumer": {
+    "revision": "3c2a0b2804ffd2fa179ac7f507a39b04515e2735",
+    "observer": {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
+      "bytes": 22392,
+      "sha256": "c75ef79c388eb5aee6c93115150196c42aecb75d638ead10dab1a1b94872ca61"
+    },
+    "helper": {
+      "path": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs",
+      "bytes": 6097,
+      "sha256": "9bc79324540fd1b37f649f102fa2ed90a09aaf53eca1765f799cb6bc1fe88d40"
+    },
+    "corePrefix": {
+      "bytes": 12150,
+      "sha256": "0296148dfdc04af9edd12d86eea13c8a09f8ecd71fd2e37bb0922d6c8b303d9e"
+    },
+    "input": {
+      "path": "tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/input.json",
+      "bytes": 1108,
+      "sha256": "4659fc88d76ee98c9f0ddc74f6450ecc80b720be9b3ab4a0335bf8f2a2050c58"
+    },
+    "receipt": "attached.observerInputDependencies"
+  },
+  "nativeRoles": [
+    {
+      "role": "before",
+      "source": "13fa41356d075047a229f580014b637d3bbeb57f",
+      "sdk": "7.0.2",
+      "sha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4"
+    },
+    {
+      "role": "before",
+      "source": "13fa41356d075047a229f580014b637d3bbeb57f",
+      "sdk": "7.1.0-beta",
+      "sha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70"
+    },
+    {
+      "role": "after",
+      "source": "selected-after-source",
+      "sdk": "7.0.2",
+      "sha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4"
+    },
+    {
+      "role": "after",
+      "source": "selected-after-source",
+      "sdk": "7.1.0-beta",
+      "sha256": "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70"
+    }
+  ]
+}

@@ -22,6 +22,10 @@ import {
   newNativeBetaDtoProtocolCases,
 } from "./native-beta-dto-fixtures.ts";
 import { currentNativeBetaDtoObserver } from "./native-beta-dto-observer-successor.ts";
+import {
+  LOGICAL_WORKSPACE_PROTOCOL_ID,
+  newLogicalWorkspaceProtocolCases,
+} from "./native-beta-logical-workspace-fixtures.ts";
 
 import { knownCompilerCssSource } from "../../../../tests/differential/compiler-css-api-registry.ts";
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
@@ -300,10 +304,21 @@ function checkProduct(
             readFile,
           )
         : { sources: new Set<string>(), evidence: null };
+    const logical =
+      product === "typechecker"
+        ? newLogicalWorkspaceProtocolCases(
+            protocolPartition(before?.protocolCases, LOGICAL_WORKSPACE_PROTOCOL_ID, true),
+            protocolPartition(manifest.protocolCases, LOGICAL_WORKSPACE_PROTOCOL_ID, true),
+            readFile,
+          )
+        : { ids: [] as string[], sources: new Set<string>() };
     const dtoRequired =
       product === "typechecker" &&
       canonPaths.some(
-        (path) => nativeBetaDtoProtocolSource(path) && !currentObserver.sources.has(path),
+        (path) =>
+          nativeBetaDtoProtocolSource(path) &&
+          !currentObserver.sources.has(path) &&
+          !logical.sources.has(path),
       );
     const runtime = newNativeRuntimeCases(
       product,
@@ -321,6 +336,7 @@ function checkProduct(
               !runtime.sources.has(path) &&
               !languageProject.sources.has(path) &&
               !currentObserver.sources.has(path) &&
+              !logical.sources.has(path) &&
               !(dtoRegistered && nativeBetaDtoProtocolSource(path)) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
@@ -328,8 +344,16 @@ function checkProduct(
     const protocols =
       product === "typechecker"
         ? newNativeShutdownProtocolCases(
-            protocolPartition(before?.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
-            protocolPartition(manifest.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
+            protocolPartition(
+              protocolPartition(before?.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
+              LOGICAL_WORKSPACE_PROTOCOL_ID,
+              false,
+            ),
+            protocolPartition(
+              protocolPartition(manifest.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
+              LOGICAL_WORKSPACE_PROTOCOL_ID,
+              false,
+            ),
             readFile,
           )
         : [];
@@ -380,6 +404,7 @@ function checkProduct(
         ...jsxIds,
         ...languageProject.ids,
         ...dtoProtocols,
+        ...logical.ids,
       ],
       ...(currentObserver.evidence ? { currentObserverSuccessor: currentObserver.evidence } : {}),
     };
