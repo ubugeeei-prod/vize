@@ -120,7 +120,7 @@ fn unused_native_declared_foreign_and_typed_refs_do_not_gain_a_factory() {
 }
 
 #[test]
-fn authored_factory_named_types_remain_in_their_original_scope() {
+fn authored_module_factory_types_do_not_capture_the_local_forwarder() {
     let script = "import Child from './Child.vue'\nimport { useTemplateRef } from 'vue'\ntype $RefInstanceFactory = 'authored'\nconst child = useTemplateRef('child')\n";
     for hoisted in [false, true] {
         let code = generate(script, r#"<Child ref="child" :value="1" />"#, hoisted);
@@ -129,12 +129,12 @@ fn authored_factory_named_types_remain_in_their_original_scope() {
                 .filter(|line| line.trim_start().starts_with("type $RefInstanceFactory"))
                 .collect::<Vec<_>>(),
             vec![
+                "type $RefInstanceFactory = 'authored'".into(),
                 if hoisted {
                     FORWARD.trim_end().into()
                 } else {
                     format!("  {}", FACTORY.trim_end())
                 },
-                "  type $RefInstanceFactory = 'authored'".into()
             ],
         );
     }
