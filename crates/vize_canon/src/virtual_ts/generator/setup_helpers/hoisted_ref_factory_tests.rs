@@ -4,13 +4,19 @@ use crate::virtual_ts::{
     helpers::SHARED_PREAMBLE_DTS,
     scope::{REF_INSTANCE_HELPERS, REF_INSTANCE_HELPERS_HOISTED},
 };
+use oxc_ast::ast::{
+    Function, TSModuleDeclaration, TSModuleDeclarationName, TSTypeAliasDeclaration,
+};
+use oxc_ast_visit::{Visit, walk};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
+use oxc_syntax::scope::ScopeFlags;
 use vize_carton::{Allocator, String, cstr};
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 const FACTORY: &str = include_str!("../../helpers/declarations/ref-instance-factory.d.ts.txt");
 const FORWARD: &str =
     "  type $RefInstanceFactory<_C> = import(\"vize:virtual-ts\").$RefInstanceFactory<_C>;\n";
-const FACTORY_PREFIX: &str = "  type $RefInstanceFactory<_C> = ";
 
 fn generate(script: &str, template: &str, hoisted: bool) -> String {
     let allocator = Allocator::new();
@@ -33,10 +39,54 @@ fn generate(script: &str, template: &str, hoisted: bool) -> String {
     .code
 }
 
-fn factory_lines(code: &str) -> Vec<&str> {
-    code.lines()
-        .filter(|line| line.starts_with(FACTORY_PREFIX))
-        .collect()
+fn aliases<'s>(code: &'s str, name: &str) -> Vec<(std::string::String, &'s str)> {
+    struct Declarations<'s, 'n> {
+        source: &'s str,
+        name: &'n str,
+        owners: Vec<std::string::String>,
+        whole: Vec<(std::string::String, &'s str)>,
+    }
+    impl<'a> Visit<'a> for Declarations<'_, '_> {
+        fn visit_ts_type_alias_declaration(&mut self, declaration: &TSTypeAliasDeclaration<'a>) {
+            if declaration.id.name.as_str() == self.name {
+                self.whole.push((
+                    self.owners.join("/"),
+                    &self.source[declaration.span.start as usize..declaration.span.end as usize],
+                ));
+            }
+            walk::walk_ts_type_alias_declaration(self, declaration);
+        }
+        fn visit_function(&mut self, function: &Function<'a>, flags: ScopeFlags) {
+            let name = function
+                .id
+                .as_ref()
+                .map_or("<anonymous>", |id| id.name.as_str());
+            self.owners.push(cstr!("function:{name}").to_string());
+            walk::walk_function(self, function, flags);
+            self.owners.pop();
+        }
+        fn visit_ts_module_declaration(&mut self, module: &TSModuleDeclaration<'a>) {
+            let name = match &module.id {
+                TSModuleDeclarationName::Identifier(id) => id.name.as_str(),
+                TSModuleDeclarationName::StringLiteral(literal) => literal.value.as_str(),
+            };
+            self.owners.push(cstr!("module:{name}").to_string());
+            walk::walk_ts_module_declaration(self, module);
+            self.owners.pop();
+        }
+    }
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, code, SourceType::ts()).parse();
+    assert!(!parsed.panicked);
+    assert_eq!(parsed.diagnostics.len(), 0, "{:?}", parsed.diagnostics);
+    let mut declarations = Declarations {
+        source: code,
+        name,
+        owners: Vec::new(),
+        whole: Vec::new(),
+    };
+    declarations.visit_program(&parsed.program);
+    declarations.whole
 }
 
 #[test]
@@ -54,11 +104,8 @@ fn sharing_changes_only_the_factory_body_in_the_local_helper_block() {
         REF_INSTANCE_HELPERS,
     );
     assert_eq!(
-        SHARED_PREAMBLE_DTS
-            .lines()
-            .filter(|line| line.starts_with("export type $RefInstanceFactory<"))
-            .collect::<Vec<_>>(),
-        vec![cstr!("export {}", FACTORY.trim_end())],
+        aliases(SHARED_PREAMBLE_DTS, "$RefInstanceFactory"),
+        vec![("module:vize:virtual-ts".to_owned(), FACTORY.trim_end())],
     );
 }
 
@@ -69,19 +116,20 @@ fn instantiated_component_refs_select_the_forwarder_only_in_hoisted_programs() {
     for hoisted in [false, true] {
         let code = generate(script, template, hoisted);
         let expected = if hoisted {
-            FORWARD.trim_end().into()
+            FORWARD.trim()
         } else {
-            cstr!("  {}", FACTORY.trim_end())
+            FACTORY.trim_end()
         };
-        assert_eq!(factory_lines(&code), vec![expected.as_str()]);
         assert_eq!(
-            code.lines()
-                .filter(|line| line.starts_with("  type $TemplateRefInstance<"))
-                .collect::<Vec<_>>(),
-            REF_INSTANCE_HELPERS
-                .lines()
-                .filter(|line| line.starts_with("  type $TemplateRefInstance<"))
-                .collect::<Vec<_>>(),
+            aliases(&code, "$RefInstanceFactory"),
+            vec![("function:__setup".to_owned(), expected)]
+        );
+        let instance = aliases(REF_INSTANCE_HELPERS, "$TemplateRefInstance");
+        assert_eq!(instance.len(), 1);
+        assert_eq!(instance[0].0, "");
+        assert_eq!(
+            aliases(&code, "$TemplateRefInstance"),
+            vec![("function:__setup".to_owned(), instance[0].1)],
         );
     }
 }
@@ -112,8 +160,8 @@ fn unused_native_declared_foreign_and_typed_refs_do_not_gain_a_factory() {
     ] {
         for hoisted in [false, true] {
             assert_eq!(
-                factory_lines(&generate(script, template, hoisted)),
-                Vec::<&str>::new()
+                aliases(&generate(script, template, hoisted), "$RefInstanceFactory"),
+                Vec::<(std::string::String, &str)>::new()
             );
         }
     }
@@ -124,17 +172,19 @@ fn authored_module_factory_types_do_not_capture_the_local_forwarder() {
     let script = "import Child from './Child.vue'\nimport { useTemplateRef } from 'vue'\ntype $RefInstanceFactory = 'authored'\nconst child = useTemplateRef('child')\n";
     for hoisted in [false, true] {
         let code = generate(script, r#"<Child ref="child" :value="1" />"#, hoisted);
+        let expected = if hoisted {
+            FORWARD.trim()
+        } else {
+            FACTORY.trim_end()
+        };
         assert_eq!(
-            code.lines()
-                .filter(|line| line.trim_start().starts_with("type $RefInstanceFactory"))
-                .collect::<Vec<_>>(),
+            aliases(&code, "$RefInstanceFactory"),
             vec![
-                "type $RefInstanceFactory = 'authored'".into(),
-                if hoisted {
-                    FORWARD.trim_end().into()
-                } else {
-                    cstr!("  {}", FACTORY.trim_end())
-                },
+                (
+                    std::string::String::new(),
+                    "type $RefInstanceFactory = 'authored'"
+                ),
+                ("function:__setup".to_owned(), expected),
             ],
         );
     }
@@ -165,11 +215,17 @@ fn batch_ref_factory_uses_pinned_generic_and_dom_inputs() {
         .register_paths(&[child.clone(), probe.clone()])
         .unwrap();
     assert_eq!(
-        factory_lines(&project.find_by_original(&child).unwrap().content),
-        Vec::<&str>::new()
+        aliases(
+            &project.find_by_original(&child).unwrap().content,
+            "$RefInstanceFactory"
+        ),
+        Vec::<(std::string::String, &str)>::new()
     );
     assert_eq!(
-        factory_lines(&project.find_by_original(&probe).unwrap().content),
-        vec![FORWARD.trim_end()]
+        aliases(
+            &project.find_by_original(&probe).unwrap().content,
+            "$RefInstanceFactory"
+        ),
+        vec![("function:__setup".to_owned(), FORWARD.trim())]
     );
 }

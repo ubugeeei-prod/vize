@@ -128,7 +128,7 @@ function vector<T>(
   outside: (value: T) => T,
 ) {
   assert(old.length > 0);
-  const result: T[] = new Array(point(old.length - 1, edits) + 1),
+  const result = Array.from<T>({ length: point(old.length - 1, edits) + 1 }),
     visited = new Set<number>();
   const put = (index: number, value: T) => {
     safe(index);
