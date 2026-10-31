@@ -19,11 +19,14 @@ impl Registry {
     pub(super) fn register(&mut self, cell: &Arc<Cell>, entry: &Arc<Entry>) -> bool {
         // At most MAX_ENTRIES live entries hold leases process-wide. Remove
         // expired identities while preserving the order of live publications.
-        let mut live = std::array::from_fn(|_| None);
+        let mut live: [Option<Publication>; MAX_ENTRIES] = std::array::from_fn(|_| None);
         let mut count = 0;
         for row in self.rows.iter().flatten() {
             if row.entry.strong_count() != 0 {
-                live[count] = Some(row.clone());
+                let Some(slot) = live.get_mut(count) else {
+                    return false;
+                };
+                *slot = Some(row.clone());
                 count += 1;
             }
         }
