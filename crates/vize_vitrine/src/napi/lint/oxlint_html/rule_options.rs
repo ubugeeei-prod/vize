@@ -119,10 +119,12 @@ pub(super) fn parse_rule_option(
                         .map(|entry| entry.as_str().to_owned())
                         .collect(),
                 );
+                options.v_on_event_hyphenation_autofix = Some(value.autofix);
             } else {
                 options.v_on_event_hyphenation =
                     Some(string_enum(payload, &["always", "never"], name)?.to_owned());
                 options.v_on_event_hyphenation_ignore = None;
+                options.v_on_event_hyphenation_autofix = None;
             }
         }
         "vue/attribute-hyphenation" => {
@@ -155,9 +157,12 @@ pub(super) fn apply_rule_options(
         linter,
         options.v_on_event_hyphenation.as_deref(),
         options.v_on_event_hyphenation_ignore.as_deref(),
+        options.v_on_event_hyphenation_autofix,
     )
 }
 
+#[cfg(test)]
+mod event_autofix;
 #[cfg(test)]
 mod event_ignore;
 

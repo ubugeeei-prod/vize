@@ -53,7 +53,8 @@ fn malformed_oxlint_objects_do_not_partially_replace_the_previous_policy() {
         json!({ "ignore": ["row:exit"] }),
         json!({ "ignore": [false] }),
         json!({ "style": null }),
-        json!({ "autofix": true }),
+        json!({ "autofix": "true" }),
+        json!({ "autofix": null }),
     ] {
         assert!(parse_rule_option(RULE, Some(&invalid), &mut options).is_err());
         assert_eq!(options.v_on_event_hyphenation.as_deref(), Some("never"));

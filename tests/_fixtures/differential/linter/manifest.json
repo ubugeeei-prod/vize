@@ -3106,6 +3106,162 @@
       }
     },
     {
+      "id": "linter/v-on-event-autofix-6097",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "v-on-event-autofix-6097",
+        "files": [
+          {
+            "path": "FinalSigma.vue.txt",
+            "role": "authored-event-autofix-input",
+            "sha256": "02ebcfe0a065379e81326d2b72801e5fc9e244e66f2a41f07390204bb1f4a2e8"
+          },
+          {
+            "path": "LocaleMenu.vue.txt",
+            "role": "authored-event-autofix-input",
+            "sha256": "431cdc5f87aa51a64da55275db5fe94fbb8d623190855469d8dd2a94100ae78a"
+          },
+          {
+            "path": "Modifiers.vue.txt",
+            "role": "authored-event-autofix-input",
+            "sha256": "345ba4b93c16e50daff62382cb68886e6c63ac6c59bfbb3357d44155f330068e"
+          },
+          {
+            "path": "Unicode.vue.txt",
+            "role": "authored-event-autofix-input",
+            "sha256": "9fc3bc6ec85c00fb3247101871846279cacfaca116bb4a146bad23d486c4bfd0"
+          },
+          {
+            "path": "cases.json",
+            "role": "pinned-autofix-corpus",
+            "sha256": "c077afcd6f6cacc74a3f18cc6fefe3b2c5ec4182706fbf15d2eeec839df39662"
+          },
+          {
+            "path": "reference/FinalSigma.vue.always-true.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "242aa84ca3dc9fbc8e16c26158f7185e46a8728f7ef15abee5e98b180d569218"
+          },
+          {
+            "path": "reference/LocaleMenu.vue.always-false.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "5cdf653c3a96bc3f54b3a93302d8fa58f6d8417f8f429269e06572cbfd2700ef"
+          },
+          {
+            "path": "reference/LocaleMenu.vue.always-true-ignore.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "7432dcbb4b4b5533a1c12d9bea92659cf9580a3f5618c5dcdd8ea7e88613f274"
+          },
+          {
+            "path": "reference/LocaleMenu.vue.always-true.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "aba830f4753529d5aa6ea8f2abfa00074eb45991cfebe77cd9f22f043e44b8a6"
+          },
+          {
+            "path": "reference/LocaleMenu.vue.default.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "5cdf653c3a96bc3f54b3a93302d8fa58f6d8417f8f429269e06572cbfd2700ef"
+          },
+          {
+            "path": "reference/LocaleMenu.vue.never-default.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "e6d28d8074b29f76e5902ebfaf05f4cffd4c5138b6c9649b9ffa00cf1b0da3b7"
+          },
+          {
+            "path": "reference/LocaleMenu.vue.never-false.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "e6d28d8074b29f76e5902ebfaf05f4cffd4c5138b6c9649b9ffa00cf1b0da3b7"
+          },
+          {
+            "path": "reference/LocaleMenu.vue.never-true.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "95275014a481941b803ed0e8370512efeb24cd237edb4e02c68e31bf8ae8756a"
+          },
+          {
+            "path": "reference/Modifiers.vue.always-false.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "d8b1c3baa924d8559fc7b2d29bf421ed0c1a017ab4375183de4d13f6c64d6c68"
+          },
+          {
+            "path": "reference/Modifiers.vue.always-true-ignore.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "e18805f48e79ed70828c219a98329f02d8366f3b1292854a19dcdeb29c274f2e"
+          },
+          {
+            "path": "reference/Modifiers.vue.always-true.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "f6fc16935b51ee4fd554eddc2e82869120f48fad04b6b95154832c990bf03198"
+          },
+          {
+            "path": "reference/Modifiers.vue.default.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "d8b1c3baa924d8559fc7b2d29bf421ed0c1a017ab4375183de4d13f6c64d6c68"
+          },
+          {
+            "path": "reference/Modifiers.vue.never-default.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "8de4b4761295bfb567a8760be33281279c55126db96575420c98ed64280e0134"
+          },
+          {
+            "path": "reference/Modifiers.vue.never-false.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "8de4b4761295bfb567a8760be33281279c55126db96575420c98ed64280e0134"
+          },
+          {
+            "path": "reference/Modifiers.vue.never-true.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "dafe409cc653cb78b76b4ea00cb53220ea88b64c6cb075aca54975baad18b076"
+          },
+          {
+            "path": "reference/Unicode.vue.always-false.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "da6b7258ec4254df384ce59a6d05b91160c621440088033a7275f1398b3d1ec8"
+          },
+          {
+            "path": "reference/Unicode.vue.always-true-ignore.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "2e7090e05437e91b647d52455090b5e5c015a6f3ea39a01cc91815a5ef0139c5"
+          },
+          {
+            "path": "reference/Unicode.vue.always-true.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "ea84374ff97e0a8b1509bebeb8d5268736e46a0aba9f5ab54e60909a488a6939"
+          },
+          {
+            "path": "reference/Unicode.vue.default.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "da6b7258ec4254df384ce59a6d05b91160c621440088033a7275f1398b3d1ec8"
+          },
+          {
+            "path": "reference/Unicode.vue.never-default.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "bb5f6b52546189f117a988b0bc69605c8791ae4abef6e6512c45cba8489cf612"
+          },
+          {
+            "path": "reference/Unicode.vue.never-false.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "bb5f6b52546189f117a988b0bc69605c8791ae4abef6e6512c45cba8489cf612"
+          },
+          {
+            "path": "reference/Unicode.vue.never-true.json",
+            "role": "independent-whole-eslint-fix-reference",
+            "sha256": "863f73959f358bf2b8a1fefe4d3fb2bc2812561f27f646c2a963e5503e51ec3e"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "Pinned original and boundary inputs are consumed by whole native, CLI, NAPI and independent reference controls; no adapter admission or universal Unicode fixed-point claim"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/v-on-event-ignore-6097",
       "state": "active",
       "targets": ["lint"],

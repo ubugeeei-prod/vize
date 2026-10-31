@@ -22,6 +22,7 @@ fn style_strings_and_objects_preserve_the_original_style_getter() {
         let expected = VOnEventHyphenationOptions {
             style,
             ignore: ignore.into_iter().map(Into::into).collect(),
+            autofix: false,
         };
         assert_eq!(value.v_on_event_hyphenation_options(), Some(expected));
     }
@@ -40,7 +41,8 @@ fn ignores_require_unique_nonblank_strings_without_the_reserved_suffix() {
         json!({ "ignore": ["\u{feff}"] }),
         json!({ "ignore": ["row:exit"] }),
         json!({ "ignore": ["row", "row"] }),
-        json!({ "autofix": true }),
+        json!({ "autofix": "true" }),
+        json!({ "autofix": null }),
         json!({ "ignoreTags": [] }),
     ] {
         assert!(
@@ -92,6 +94,7 @@ fn later_layers_replace_the_complete_policy_including_an_explicit_empty_reset() 
         Some(VOnEventHyphenationOptions {
             style: HyphenationStyle::Always,
             ignore: vec!["row".into()],
+            autofix: false,
         })
     );
     base.merge_from(&options(json!({})));
@@ -105,6 +108,32 @@ fn later_layers_replace_the_complete_policy_including_an_explicit_empty_reset() 
         Some(VOnEventHyphenationOptions {
             style: HyphenationStyle::Never,
             ignore: vec![],
+            autofix: false,
         })
     );
+}
+
+#[test]
+fn autofix_is_an_opt_in_boolean_and_complete_policy_resets_keep_it_false() {
+    let mut base = options(json!({ "style": "never", "autofix": true, "ignore": ["row"] }));
+    base.merge_from(&ConfigLintRuleOptions::default());
+    assert!(base.v_on_event_hyphenation_options().unwrap().autofix);
+    for value in [
+        json!({}),
+        json!("never"),
+        json!({ "ignore": [] }),
+        json!({ "autofix": false }),
+    ] {
+        let mut reset = base.clone();
+        reset.merge_from(&options(value));
+        assert!(!reset.v_on_event_hyphenation_options().unwrap().autofix);
+    }
+    for value in [
+        json!({ "autofix": "true" }),
+        json!({ "autofix": 1 }),
+        json!({ "autofix": null }),
+        json!({ "autofixTypo": true }),
+    ] {
+        assert!(serde_json::from_value::<VOnEventHyphenationOptions>(value).is_err());
+    }
 }

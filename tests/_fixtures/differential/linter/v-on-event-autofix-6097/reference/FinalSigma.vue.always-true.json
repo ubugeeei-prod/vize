@@ -1,0 +1,32 @@
+{
+  "messages": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@AΣ.once' must be hyphenated.",
+      "line": 3,
+      "column": 13,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 31,
+      "fix": {
+        "range": [
+          74,
+          76
+        ],
+        "text": "aς"
+      }
+    }
+  ],
+  "fixResult": {
+    "fixed": true,
+    "messages": [],
+    "output": "<template>\n  <!-- 雪🌸 precedes the exact argument range. -->\n  <MyWidget @aς.once=\"handler\" />\n</template>\n"
+  },
+  "requery": [],
+  "secondFixResult": {
+    "fixed": false,
+    "messages": [],
+    "output": "<template>\n  <!-- 雪🌸 precedes the exact argument range. -->\n  <MyWidget @aς.once=\"handler\" />\n</template>\n"
+  }
+}

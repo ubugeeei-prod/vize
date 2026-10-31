@@ -1,0 +1,218 @@
+{
+  "messages": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@update:modelValue.once' must be hyphenated.",
+      "line": 3,
+      "column": 13,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 44
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event 'v-on:rowClick.stop' must be hyphenated.",
+      "line": 3,
+      "column": 45,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 69
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@node_Expand' must be hyphenated.",
+      "line": 3,
+      "column": 70,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 92
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@vue:beforeMount.capture' must be hyphenated.",
+      "line": 3,
+      "column": 93,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 124
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@shapeMove' must be hyphenated.",
+      "line": 4,
+      "column": 73,
+      "messageId": "mustBeHyphenated",
+      "endLine": 4,
+      "endColumn": 91
+    }
+  ],
+  "fixResult": {
+    "fixed": false,
+    "messages": [
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@update:modelValue.once' must be hyphenated.",
+        "line": 3,
+        "column": 13,
+        "messageId": "mustBeHyphenated",
+        "endLine": 3,
+        "endColumn": 44
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event 'v-on:rowClick.stop' must be hyphenated.",
+        "line": 3,
+        "column": 45,
+        "messageId": "mustBeHyphenated",
+        "endLine": 3,
+        "endColumn": 69
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@node_Expand' must be hyphenated.",
+        "line": 3,
+        "column": 70,
+        "messageId": "mustBeHyphenated",
+        "endLine": 3,
+        "endColumn": 92
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@vue:beforeMount.capture' must be hyphenated.",
+        "line": 3,
+        "column": 93,
+        "messageId": "mustBeHyphenated",
+        "endLine": 3,
+        "endColumn": 124
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@shapeMove' must be hyphenated.",
+        "line": 4,
+        "column": 73,
+        "messageId": "mustBeHyphenated",
+        "endLine": 4,
+        "endColumn": 91
+      }
+    ],
+    "output": "<template>\n  <!-- 雪🌸 precedes all ranges. -->\n  <MyWidget @update:modelValue.once=\"value\" v-on:rowClick.stop=\"row\" @node_Expand=\"blocked\" @vue:beforeMount.capture=\"hook\" @close-window.once=\"close\" @[dynamicEvent].once=\"dynamic\" v-on=\"listeners\" />\n  <div @rowClick=\"native\" /><svg><circle @rowClick=\"native\" /><MyWidget @shapeMove=\"shape\" /></svg>\n</template>\n"
+  },
+  "requery": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@update:modelValue.once' must be hyphenated.",
+      "line": 3,
+      "column": 13,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 44
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event 'v-on:rowClick.stop' must be hyphenated.",
+      "line": 3,
+      "column": 45,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 69
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@node_Expand' must be hyphenated.",
+      "line": 3,
+      "column": 70,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 92
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@vue:beforeMount.capture' must be hyphenated.",
+      "line": 3,
+      "column": 93,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 124
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@shapeMove' must be hyphenated.",
+      "line": 4,
+      "column": 73,
+      "messageId": "mustBeHyphenated",
+      "endLine": 4,
+      "endColumn": 91
+    }
+  ],
+  "secondFixResult": {
+    "fixed": false,
+    "messages": [
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@update:modelValue.once' must be hyphenated.",
+        "line": 3,
+        "column": 13,
+        "messageId": "mustBeHyphenated",
+        "endLine": 3,
+        "endColumn": 44
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event 'v-on:rowClick.stop' must be hyphenated.",
+        "line": 3,
+        "column": 45,
+        "messageId": "mustBeHyphenated",
+        "endLine": 3,
+        "endColumn": 69
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@node_Expand' must be hyphenated.",
+        "line": 3,
+        "column": 70,
+        "messageId": "mustBeHyphenated",
+        "endLine": 3,
+        "endColumn": 92
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@vue:beforeMount.capture' must be hyphenated.",
+        "line": 3,
+        "column": 93,
+        "messageId": "mustBeHyphenated",
+        "endLine": 3,
+        "endColumn": 124
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@shapeMove' must be hyphenated.",
+        "line": 4,
+        "column": 73,
+        "messageId": "mustBeHyphenated",
+        "endLine": 4,
+        "endColumn": 91
+      }
+    ],
+    "output": "<template>\n  <!-- 雪🌸 precedes all ranges. -->\n  <MyWidget @update:modelValue.once=\"value\" v-on:rowClick.stop=\"row\" @node_Expand=\"blocked\" @vue:beforeMount.capture=\"hook\" @close-window.once=\"close\" @[dynamicEvent].once=\"dynamic\" v-on=\"listeners\" />\n  <div @rowClick=\"native\" /><svg><circle @rowClick=\"native\" /><MyWidget @shapeMove=\"shape\" /></svg>\n</template>\n"
+  }
+}

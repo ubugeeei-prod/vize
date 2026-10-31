@@ -115,6 +115,10 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
               uniqueItems = true
               default = new Listing {}
             }
+            ["autofix"] = new JsonSchema {
+              type = "boolean"
+              default = false
+            }
           }
           additionalProperties = false
         }

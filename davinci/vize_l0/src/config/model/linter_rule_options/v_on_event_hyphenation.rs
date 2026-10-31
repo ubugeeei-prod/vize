@@ -36,6 +36,7 @@ impl VOnEventHyphenationConfig {
 pub struct VOnEventHyphenationOptions {
     pub style: HyphenationStyle,
     pub ignore: Vec<String>,
+    pub autofix: bool,
 }
 
 impl Default for VOnEventHyphenationOptions {
@@ -43,6 +44,7 @@ impl Default for VOnEventHyphenationOptions {
         Self {
             style: HyphenationStyle::Always,
             ignore: Vec::new(),
+            autofix: false,
         }
     }
 }
@@ -70,6 +72,7 @@ impl VOnEventHyphenationOptions {
 struct RawOptions {
     style: HyphenationStyle,
     ignore: Vec<String>,
+    autofix: bool,
 }
 
 impl Default for RawOptions {
@@ -77,6 +80,7 @@ impl Default for RawOptions {
         Self {
             style: HyphenationStyle::Always,
             ignore: Vec::new(),
+            autofix: false,
         }
     }
 }
@@ -88,6 +92,7 @@ impl TryFrom<RawOptions> for VOnEventHyphenationOptions {
         let options = Self {
             style: raw.style,
             ignore: raw.ignore,
+            autofix: raw.autofix,
         };
         options.validate()?;
         Ok(options)

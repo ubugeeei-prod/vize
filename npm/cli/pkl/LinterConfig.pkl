@@ -155,6 +155,7 @@ class DefineMacrosOrderOptions {
 class VOnEventHyphenationOptions {
   style: HyphenationStyle = "always"
   ignore: Listing<String> = new Listing {}
+  autofix: Boolean = false
 }
 
 class ValidVOnOptions {

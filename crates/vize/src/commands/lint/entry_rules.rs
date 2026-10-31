@@ -177,9 +177,10 @@ impl ResolvedLinterRuleGroups {
                         .with_mustache_interpolation_spacing(mustache_interpolation_spacing(style));
                 }
                 if let Some(options) = rule_options.v_on_event_hyphenation_options() {
-                    linter = linter.with_v_on_event_hyphenation_options(
+                    linter = linter.with_v_on_event_hyphenation_policy(
                         v_on_event_hyphenation_style(options.style),
                         options.ignore,
+                        options.autofix,
                     );
                 }
                 if let Some(style) = rule_options.v_on_style() {

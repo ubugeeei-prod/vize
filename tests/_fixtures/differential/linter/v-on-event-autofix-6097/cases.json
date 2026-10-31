@@ -1,0 +1,474 @@
+{
+  "schema": "vize.patina.event-autofix-independent-reference.v1",
+  "providers": {
+    "eslint": "10.4.1",
+    "eslint-plugin-vue": "10.9.2",
+    "vue-eslint-parser": "10.4.1",
+    "@typescript-eslint/parser": "8.65.0"
+  },
+  "ruleSource": {
+    "sha256": "f91e547b8e0275dac03081fab804190e619fe87ee376302b50814f929c503849",
+    "official": "https://raw.githubusercontent.com/vuejs/eslint-plugin-vue/v10.9.2/lib/rules/v-on-event-hyphenation.ts"
+  },
+  "casingSha256": "911df4eed3c7d75afac7c6df4a13527d104afdbbd43821993c2b4ece6108f44c",
+  "original": {
+    "base": "056f2682b2359d5adacdb74587516fb9acada9e7",
+    "path": "tests/_fixtures/differential/linter/v-on-hyphenation-suggestion-10822/LocaleMenu.vue.txt",
+    "sha256": "431cdc5f87aa51a64da55275db5fe94fbb8d623190855469d8dd2a94100ae78a"
+  },
+  "cases": [
+    {
+      "id": "LocaleMenu.vue/default",
+      "file": "LocaleMenu.vue.txt",
+      "options": [],
+      "sourceSha256": "431cdc5f87aa51a64da55275db5fe94fbb8d623190855469d8dd2a94100ae78a",
+      "reference": {
+        "file": "reference/LocaleMenu.vue.default.json",
+        "sha256": "5cdf653c3a96bc3f54b3a93302d8fa58f6d8417f8f429269e06572cbfd2700ef",
+        "lines": 299
+      },
+      "findings": 7,
+      "fixed": false,
+      "remaining": 7,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "LocaleMenu.vue/always-false",
+      "file": "LocaleMenu.vue.txt",
+      "options": [
+        "always",
+        {
+          "autofix": false
+        }
+      ],
+      "sourceSha256": "431cdc5f87aa51a64da55275db5fe94fbb8d623190855469d8dd2a94100ae78a",
+      "reference": {
+        "file": "reference/LocaleMenu.vue.always-false.json",
+        "sha256": "5cdf653c3a96bc3f54b3a93302d8fa58f6d8417f8f429269e06572cbfd2700ef",
+        "lines": 299
+      },
+      "findings": 7,
+      "fixed": false,
+      "remaining": 7,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "LocaleMenu.vue/always-true",
+      "file": "LocaleMenu.vue.txt",
+      "options": [
+        "always",
+        {
+          "autofix": true
+        }
+      ],
+      "sourceSha256": "431cdc5f87aa51a64da55275db5fe94fbb8d623190855469d8dd2a94100ae78a",
+      "reference": {
+        "file": "reference/LocaleMenu.vue.always-true.json",
+        "sha256": "aba830f4753529d5aa6ea8f2abfa00074eb45991cfebe77cd9f22f043e44b8a6",
+        "lines": 161
+      },
+      "findings": 7,
+      "fixed": true,
+      "remaining": 1,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "LocaleMenu.vue/never-default",
+      "file": "LocaleMenu.vue.txt",
+      "options": [
+        "never"
+      ],
+      "sourceSha256": "431cdc5f87aa51a64da55275db5fe94fbb8d623190855469d8dd2a94100ae78a",
+      "reference": {
+        "file": "reference/LocaleMenu.vue.never-default.json",
+        "sha256": "e6d28d8074b29f76e5902ebfaf05f4cffd4c5138b6c9649b9ffa00cf1b0da3b7",
+        "lines": 59
+      },
+      "findings": 1,
+      "fixed": false,
+      "remaining": 1,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "LocaleMenu.vue/never-false",
+      "file": "LocaleMenu.vue.txt",
+      "options": [
+        "never",
+        {
+          "autofix": false
+        }
+      ],
+      "sourceSha256": "431cdc5f87aa51a64da55275db5fe94fbb8d623190855469d8dd2a94100ae78a",
+      "reference": {
+        "file": "reference/LocaleMenu.vue.never-false.json",
+        "sha256": "e6d28d8074b29f76e5902ebfaf05f4cffd4c5138b6c9649b9ffa00cf1b0da3b7",
+        "lines": 59
+      },
+      "findings": 1,
+      "fixed": false,
+      "remaining": 1,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "LocaleMenu.vue/never-true",
+      "file": "LocaleMenu.vue.txt",
+      "options": [
+        "never",
+        {
+          "autofix": true
+        }
+      ],
+      "sourceSha256": "431cdc5f87aa51a64da55275db5fe94fbb8d623190855469d8dd2a94100ae78a",
+      "reference": {
+        "file": "reference/LocaleMenu.vue.never-true.json",
+        "sha256": "95275014a481941b803ed0e8370512efeb24cd237edb4e02c68e31bf8ae8756a",
+        "lines": 33
+      },
+      "findings": 1,
+      "fixed": true,
+      "remaining": 0,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "LocaleMenu.vue/always-true-ignore",
+      "file": "LocaleMenu.vue.txt",
+      "options": [
+        "always",
+        {
+          "autofix": true,
+          "ignore": [
+            "update:"
+          ]
+        }
+      ],
+      "sourceSha256": "431cdc5f87aa51a64da55275db5fe94fbb8d623190855469d8dd2a94100ae78a",
+      "reference": {
+        "file": "reference/LocaleMenu.vue.always-true-ignore.json",
+        "sha256": "7432dcbb4b4b5533a1c12d9bea92659cf9580a3f5618c5dcdd8ea7e88613f274",
+        "lines": 144
+      },
+      "findings": 6,
+      "fixed": true,
+      "remaining": 1,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Modifiers.vue/default",
+      "file": "Modifiers.vue.txt",
+      "options": [],
+      "sourceSha256": "345ba4b93c16e50daff62382cb68886e6c63ac6c59bfbb3357d44155f330068e",
+      "reference": {
+        "file": "reference/Modifiers.vue.default.json",
+        "sha256": "d8b1c3baa924d8559fc7b2d29bf421ed0c1a017ab4375183de4d13f6c64d6c68",
+        "lines": 219
+      },
+      "findings": 5,
+      "fixed": false,
+      "remaining": 5,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Modifiers.vue/always-false",
+      "file": "Modifiers.vue.txt",
+      "options": [
+        "always",
+        {
+          "autofix": false
+        }
+      ],
+      "sourceSha256": "345ba4b93c16e50daff62382cb68886e6c63ac6c59bfbb3357d44155f330068e",
+      "reference": {
+        "file": "reference/Modifiers.vue.always-false.json",
+        "sha256": "d8b1c3baa924d8559fc7b2d29bf421ed0c1a017ab4375183de4d13f6c64d6c68",
+        "lines": 219
+      },
+      "findings": 5,
+      "fixed": false,
+      "remaining": 5,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Modifiers.vue/always-true",
+      "file": "Modifiers.vue.txt",
+      "options": [
+        "always",
+        {
+          "autofix": true
+        }
+      ],
+      "sourceSha256": "345ba4b93c16e50daff62382cb68886e6c63ac6c59bfbb3357d44155f330068e",
+      "reference": {
+        "file": "reference/Modifiers.vue.always-true.json",
+        "sha256": "f6fc16935b51ee4fd554eddc2e82869120f48fad04b6b95154832c990bf03198",
+        "lines": 127
+      },
+      "findings": 5,
+      "fixed": true,
+      "remaining": 1,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Modifiers.vue/never-default",
+      "file": "Modifiers.vue.txt",
+      "options": [
+        "never"
+      ],
+      "sourceSha256": "345ba4b93c16e50daff62382cb68886e6c63ac6c59bfbb3357d44155f330068e",
+      "reference": {
+        "file": "reference/Modifiers.vue.never-default.json",
+        "sha256": "8de4b4761295bfb567a8760be33281279c55126db96575420c98ed64280e0134",
+        "lines": 59
+      },
+      "findings": 1,
+      "fixed": false,
+      "remaining": 1,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Modifiers.vue/never-false",
+      "file": "Modifiers.vue.txt",
+      "options": [
+        "never",
+        {
+          "autofix": false
+        }
+      ],
+      "sourceSha256": "345ba4b93c16e50daff62382cb68886e6c63ac6c59bfbb3357d44155f330068e",
+      "reference": {
+        "file": "reference/Modifiers.vue.never-false.json",
+        "sha256": "8de4b4761295bfb567a8760be33281279c55126db96575420c98ed64280e0134",
+        "lines": 59
+      },
+      "findings": 1,
+      "fixed": false,
+      "remaining": 1,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Modifiers.vue/never-true",
+      "file": "Modifiers.vue.txt",
+      "options": [
+        "never",
+        {
+          "autofix": true
+        }
+      ],
+      "sourceSha256": "345ba4b93c16e50daff62382cb68886e6c63ac6c59bfbb3357d44155f330068e",
+      "reference": {
+        "file": "reference/Modifiers.vue.never-true.json",
+        "sha256": "dafe409cc653cb78b76b4ea00cb53220ea88b64c6cb075aca54975baad18b076",
+        "lines": 33
+      },
+      "findings": 1,
+      "fixed": true,
+      "remaining": 0,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Modifiers.vue/always-true-ignore",
+      "file": "Modifiers.vue.txt",
+      "options": [
+        "always",
+        {
+          "autofix": true,
+          "ignore": [
+            "update:"
+          ]
+        }
+      ],
+      "sourceSha256": "345ba4b93c16e50daff62382cb68886e6c63ac6c59bfbb3357d44155f330068e",
+      "reference": {
+        "file": "reference/Modifiers.vue.always-true-ignore.json",
+        "sha256": "e18805f48e79ed70828c219a98329f02d8366f3b1292854a19dcdeb29c274f2e",
+        "lines": 110
+      },
+      "findings": 4,
+      "fixed": true,
+      "remaining": 1,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Unicode.vue/default",
+      "file": "Unicode.vue.txt",
+      "options": [],
+      "sourceSha256": "9fc3bc6ec85c00fb3247101871846279cacfaca116bb4a146bad23d486c4bfd0",
+      "reference": {
+        "file": "reference/Unicode.vue.default.json",
+        "sha256": "da6b7258ec4254df384ce59a6d05b91160c621440088033a7275f1398b3d1ec8",
+        "lines": 219
+      },
+      "findings": 5,
+      "fixed": false,
+      "remaining": 5,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Unicode.vue/always-false",
+      "file": "Unicode.vue.txt",
+      "options": [
+        "always",
+        {
+          "autofix": false
+        }
+      ],
+      "sourceSha256": "9fc3bc6ec85c00fb3247101871846279cacfaca116bb4a146bad23d486c4bfd0",
+      "reference": {
+        "file": "reference/Unicode.vue.always-false.json",
+        "sha256": "da6b7258ec4254df384ce59a6d05b91160c621440088033a7275f1398b3d1ec8",
+        "lines": 219
+      },
+      "findings": 5,
+      "fixed": false,
+      "remaining": 5,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Unicode.vue/always-true",
+      "file": "Unicode.vue.txt",
+      "options": [
+        "always",
+        {
+          "autofix": true
+        }
+      ],
+      "sourceSha256": "9fc3bc6ec85c00fb3247101871846279cacfaca116bb4a146bad23d486c4bfd0",
+      "reference": {
+        "file": "reference/Unicode.vue.always-true.json",
+        "sha256": "ea84374ff97e0a8b1509bebeb8d5268736e46a0aba9f5ab54e60909a488a6939",
+        "lines": 127
+      },
+      "findings": 5,
+      "fixed": true,
+      "remaining": 1,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Unicode.vue/never-default",
+      "file": "Unicode.vue.txt",
+      "options": [
+        "never"
+      ],
+      "sourceSha256": "9fc3bc6ec85c00fb3247101871846279cacfaca116bb4a146bad23d486c4bfd0",
+      "reference": {
+        "file": "reference/Unicode.vue.never-default.json",
+        "sha256": "bb5f6b52546189f117a988b0bc69605c8791ae4abef6e6512c45cba8489cf612",
+        "lines": 139
+      },
+      "findings": 3,
+      "fixed": false,
+      "remaining": 3,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Unicode.vue/never-false",
+      "file": "Unicode.vue.txt",
+      "options": [
+        "never",
+        {
+          "autofix": false
+        }
+      ],
+      "sourceSha256": "9fc3bc6ec85c00fb3247101871846279cacfaca116bb4a146bad23d486c4bfd0",
+      "reference": {
+        "file": "reference/Unicode.vue.never-false.json",
+        "sha256": "bb5f6b52546189f117a988b0bc69605c8791ae4abef6e6512c45cba8489cf612",
+        "lines": 139
+      },
+      "findings": 3,
+      "fixed": false,
+      "remaining": 3,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "Unicode.vue/never-true",
+      "file": "Unicode.vue.txt",
+      "options": [
+        "never",
+        {
+          "autofix": true
+        }
+      ],
+      "sourceSha256": "9fc3bc6ec85c00fb3247101871846279cacfaca116bb4a146bad23d486c4bfd0",
+      "reference": {
+        "file": "reference/Unicode.vue.never-true.json",
+        "sha256": "863f73959f358bf2b8a1fefe4d3fb2bc2812561f27f646c2a963e5503e51ec3e",
+        "lines": 172
+      },
+      "findings": 3,
+      "fixed": true,
+      "remaining": 2,
+      "secondFixed": true,
+      "outputStable": true
+    },
+    {
+      "id": "Unicode.vue/always-true-ignore",
+      "file": "Unicode.vue.txt",
+      "options": [
+        "always",
+        {
+          "autofix": true,
+          "ignore": [
+            "update:"
+          ]
+        }
+      ],
+      "sourceSha256": "9fc3bc6ec85c00fb3247101871846279cacfaca116bb4a146bad23d486c4bfd0",
+      "reference": {
+        "file": "reference/Unicode.vue.always-true-ignore.json",
+        "sha256": "2e7090e05437e91b647d52455090b5e5c015a6f3ea39a01cc91815a5ef0139c5",
+        "lines": 110
+      },
+      "findings": 4,
+      "fixed": true,
+      "remaining": 1,
+      "secondFixed": false,
+      "outputStable": true
+    },
+    {
+      "id": "FinalSigma.vue/always-true",
+      "file": "FinalSigma.vue.txt",
+      "options": [
+        "always",
+        {
+          "autofix": true
+        }
+      ],
+      "sourceSha256": "02ebcfe0a065379e81326d2b72801e5fc9e244e66f2a41f07390204bb1f4a2e8",
+      "reference": {
+        "file": "reference/FinalSigma.vue.always-true.json",
+        "sha256": "242aa84ca3dc9fbc8e16c26158f7185e46a8728f7ef15abee5e98b180d569218",
+        "lines": 33
+      },
+      "findings": 1,
+      "fixed": true,
+      "remaining": 0,
+      "secondFixed": false,
+      "outputStable": true
+    }
+  ],
+  "capture": {
+    "node": "v24.14.0",
+    "nativeProductExecuted": false,
+    "installedPackage": false
+  },
+  "limits": "Whole official verify/verifyAndFix/requery/secondFixResult preserved. Unicode never-mode may retain a diagnostic and repeated identity fix; no universal fixed-point claim or Vize acceptance follows."
+}

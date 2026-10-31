@@ -10,7 +10,8 @@ title: "vue/v-on-event-hyphenation"
 
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
+自動修正: `autofix: true` のときに利用できます。`_` を含む名前は手動で修正してください
+
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: [型付きオプションと既定値](../options.md)を参照してください。
 

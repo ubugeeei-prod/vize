@@ -35,11 +35,13 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::{CompactString, is_html_tag, is_math_ml_tag, is_svg_tag};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, Namespace, PropNode};
 
+mod autofix;
+
 static META: RuleMeta = RuleMeta {
     name: "vue/v-on-event-hyphenation",
     description: "Enforce hyphenation of custom event names in v-on on components",
     category: RuleCategory::Recommended,
-    fixable: false,
+    fixable: true,
     default_severity: Severity::Warning,
 };
 
@@ -58,6 +60,7 @@ pub enum VOnEventHyphenationStyle {
 pub struct VOnEventHyphenation {
     style: VOnEventHyphenationStyle,
     ignore: Vec<CompactString>,
+    autofix: bool,
 }
 
 impl VOnEventHyphenation {
@@ -67,7 +70,17 @@ impl VOnEventHyphenation {
 
     /// Exempt static event names containing a configured literal substring.
     pub fn with_ignore(style: VOnEventHyphenationStyle, ignore: Vec<CompactString>) -> Self {
-        Self { style, ignore }
+        Self {
+            style,
+            ignore,
+            autofix: false,
+        }
+    }
+
+    /// Explicitly opt into argument-only edits; omission preserves diagnostics only.
+    pub fn with_autofix(mut self, autofix: bool) -> Self {
+        self.autofix = autofix;
+        self
     }
 
     /// Whether `element` receives custom events rather than native DOM events.
@@ -135,10 +148,11 @@ impl Rule for VOnEventHyphenation {
 
         // Read the static event-name argument. Dynamic arguments (`@[evt]`)
         // and object syntax (`v-on="..."`) cannot be checked statically.
-        let event_name = match &directive.arg {
-            Some(ExpressionNode::Simple(s)) if s.is_static => s.content,
+        let argument = match &directive.arg {
+            Some(ExpressionNode::Simple(s)) if s.is_static => s,
             _ => return,
         };
+        let event_name = argument.content;
         if self
             .ignore
             .iter()
@@ -155,13 +169,19 @@ impl Rule for VOnEventHyphenation {
                 }
 
                 let hyphenated = kebab_case(event_name);
-                ctx.warn_with_help(
-                    ctx.t_fmt(
-                        "vue/v-on-event-hyphenation.message",
-                        &[("name", hyphenated.as_str())],
-                    ),
+                let message = ctx.t_fmt(
+                    "vue/v-on-event-hyphenation.message",
+                    &[("name", hyphenated.as_str())],
+                );
+                let help = ctx.t("vue/v-on-event-hyphenation.help");
+                autofix::report(
+                    ctx,
                     &directive.loc,
-                    ctx.t("vue/v-on-event-hyphenation.help"),
+                    &argument.loc,
+                    message,
+                    help,
+                    hyphenated,
+                    self.autofix && !event_name.contains('_'),
                 );
             }
             VOnEventHyphenationStyle::Never => {
@@ -169,13 +189,25 @@ impl Rule for VOnEventHyphenation {
                     return;
                 }
 
-                ctx.warn_with_help(
-                    ctx.t_fmt(
-                        "vue/v-on-event-hyphenation.message_never",
-                        &[("name", event_name)],
-                    ),
+                let message = ctx.t_fmt(
+                    "vue/v-on-event-hyphenation.message_never",
+                    &[("name", event_name)],
+                );
+                let help = ctx.t("vue/v-on-event-hyphenation.help_never");
+                let enabled = self.autofix && !event_name.contains('_');
+                let replacement = if enabled {
+                    autofix::camel_case(event_name)
+                } else {
+                    CompactString::default()
+                };
+                autofix::report(
+                    ctx,
                     &directive.loc,
-                    ctx.t("vue/v-on-event-hyphenation.help_never"),
+                    &argument.loc,
+                    message,
+                    help,
+                    replacement,
+                    enabled,
                 );
             }
         }
@@ -193,9 +225,11 @@ fn kebab_case(name: &str) -> CompactString {
             kebab.push('-');
         }
         after_word = character.is_ascii_alphanumeric();
-        kebab.extend(character.to_lowercase());
+        kebab.push(character);
     }
-    kebab
+    // Lowercase the complete rewritten string, as the pinned JS converter does.
+    // Per-character lowering loses contextual forms such as Greek final sigma.
+    kebab.as_str().to_lowercase().into()
 }
 
 #[cfg(test)]
@@ -359,6 +393,7 @@ mod tests {
             ("my_event", "my-event"),
             ("XMLHttp", "x-m-l-http"),
             ("item2Click", "item2-click"),
+            ("AΣ", "aς"),
         ] {
             assert_eq!(super::kebab_case(name), kebab, "{name}");
         }

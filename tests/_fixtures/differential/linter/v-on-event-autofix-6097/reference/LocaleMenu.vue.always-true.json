@@ -1,0 +1,160 @@
+{
+  "messages": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@Change' must be hyphenated.",
+      "line": 3,
+      "column": 15,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 33,
+      "fix": {
+        "range": [
+          65,
+          71
+        ],
+        "text": "change"
+      }
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@dropdownVisibleChange' must be hyphenated.",
+      "line": 3,
+      "column": 34,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 65,
+      "fix": {
+        "range": [
+          84,
+          105
+        ],
+        "text": "dropdown-visible-change"
+      }
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@update:modelValue' must be hyphenated.",
+      "line": 4,
+      "column": 14,
+      "messageId": "mustBeHyphenated",
+      "endLine": 4,
+      "endColumn": 42,
+      "fix": {
+        "range": [
+          132,
+          149
+        ],
+        "text": "update:model-value"
+      }
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@pressEnter' must be hyphenated.",
+      "line": 4,
+      "column": 43,
+      "messageId": "mustBeHyphenated",
+      "endLine": 4,
+      "endColumn": 65,
+      "fix": {
+        "range": [
+          161,
+          171
+        ],
+        "text": "press-enter"
+      }
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event 'v-on:node_Expand' must be hyphenated.",
+      "line": 5,
+      "column": 13,
+      "messageId": "mustBeHyphenated",
+      "endLine": 5,
+      "endColumn": 40
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@XMLParsed' must be hyphenated.",
+      "line": 5,
+      "column": 41,
+      "messageId": "mustBeHyphenated",
+      "endLine": 5,
+      "endColumn": 62,
+      "fix": {
+        "range": [
+          227,
+          236
+        ],
+        "text": "x-m-l-parsed"
+      }
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@vue:beforeMount' must be hyphenated.",
+      "line": 6,
+      "column": 14,
+      "messageId": "mustBeHyphenated",
+      "endLine": 6,
+      "endColumn": 40,
+      "fix": {
+        "range": [
+          265,
+          280
+        ],
+        "text": "vue:before-mount"
+      }
+    }
+  ],
+  "fixResult": {
+    "fixed": true,
+    "messages": [
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event 'v-on:node_Expand' must be hyphenated.",
+        "line": 5,
+        "column": 13,
+        "messageId": "mustBeHyphenated",
+        "endLine": 5,
+        "endColumn": 40
+      }
+    ],
+    "output": "<template>\n  <a-config-provider :locale=\"locale\">\n    <a-select @change=\"onLocale\" @dropdown-visible-change=\"onOpen\" />\n    <a-input @update:model-value=\"onInput\" @press-enter=\"onSubmit\" />\n    <a-tree v-on:node_Expand=\"onExpand\" @x-m-l-parsed=\"onParsed\" />\n    <a-modal @vue:before-mount=\"onMount\" @vue:unmounted=\"onUnmount\" @after-close=\"onClose\" />\n    <button @Click=\"onClick\" />\n  </a-config-provider>\n</template>\n\n<script setup lang=\"ts\">\nconst locale = undefined;\nfunction onLocale() {}\nfunction onOpen() {}\nfunction onInput() {}\nfunction onSubmit() {}\nfunction onExpand() {}\nfunction onParsed() {}\nfunction onMount() {}\nfunction onUnmount() {}\nfunction onClose() {}\nfunction onClick() {}\n</script>\n"
+  },
+  "requery": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event 'v-on:node_Expand' must be hyphenated.",
+      "line": 5,
+      "column": 13,
+      "messageId": "mustBeHyphenated",
+      "endLine": 5,
+      "endColumn": 40
+    }
+  ],
+  "secondFixResult": {
+    "fixed": false,
+    "messages": [
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event 'v-on:node_Expand' must be hyphenated.",
+        "line": 5,
+        "column": 13,
+        "messageId": "mustBeHyphenated",
+        "endLine": 5,
+        "endColumn": 40
+      }
+    ],
+    "output": "<template>\n  <a-config-provider :locale=\"locale\">\n    <a-select @change=\"onLocale\" @dropdown-visible-change=\"onOpen\" />\n    <a-input @update:model-value=\"onInput\" @press-enter=\"onSubmit\" />\n    <a-tree v-on:node_Expand=\"onExpand\" @x-m-l-parsed=\"onParsed\" />\n    <a-modal @vue:before-mount=\"onMount\" @vue:unmounted=\"onUnmount\" @after-close=\"onClose\" />\n    <button @Click=\"onClick\" />\n  </a-config-provider>\n</template>\n\n<script setup lang=\"ts\">\nconst locale = undefined;\nfunction onLocale() {}\nfunction onOpen() {}\nfunction onInput() {}\nfunction onSubmit() {}\nfunction onExpand() {}\nfunction onParsed() {}\nfunction onMount() {}\nfunction onUnmount() {}\nfunction onClose() {}\nfunction onClick() {}\n</script>\n"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "messages": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@after-close' can't be hyphenated.",
+      "line": 6,
+      "column": 68,
+      "messageId": "cannotBeHyphenated",
+      "endLine": 6,
+      "endColumn": 90,
+      "fix": {
+        "range": [
+          319,
+          330
+        ],
+        "text": "afterClose"
+      }
+    }
+  ],
+  "fixResult": {
+    "fixed": true,
+    "messages": [],
+    "output": "<template>\n  <a-config-provider :locale=\"locale\">\n    <a-select @Change=\"onLocale\" @dropdownVisibleChange=\"onOpen\" />\n    <a-input @update:modelValue=\"onInput\" @pressEnter=\"onSubmit\" />\n    <a-tree v-on:node_Expand=\"onExpand\" @XMLParsed=\"onParsed\" />\n    <a-modal @vue:beforeMount=\"onMount\" @vue:unmounted=\"onUnmount\" @afterClose=\"onClose\" />\n    <button @Click=\"onClick\" />\n  </a-config-provider>\n</template>\n\n<script setup lang=\"ts\">\nconst locale = undefined;\nfunction onLocale() {}\nfunction onOpen() {}\nfunction onInput() {}\nfunction onSubmit() {}\nfunction onExpand() {}\nfunction onParsed() {}\nfunction onMount() {}\nfunction onUnmount() {}\nfunction onClose() {}\nfunction onClick() {}\n</script>\n"
+  },
+  "requery": [],
+  "secondFixResult": {
+    "fixed": false,
+    "messages": [],
+    "output": "<template>\n  <a-config-provider :locale=\"locale\">\n    <a-select @Change=\"onLocale\" @dropdownVisibleChange=\"onOpen\" />\n    <a-input @update:modelValue=\"onInput\" @pressEnter=\"onSubmit\" />\n    <a-tree v-on:node_Expand=\"onExpand\" @XMLParsed=\"onParsed\" />\n    <a-modal @vue:beforeMount=\"onMount\" @vue:unmounted=\"onUnmount\" @afterClose=\"onClose\" />\n    <button @Click=\"onClick\" />\n  </a-config-provider>\n</template>\n\n<script setup lang=\"ts\">\nconst locale = undefined;\nfunction onLocale() {}\nfunction onOpen() {}\nfunction onInput() {}\nfunction onSubmit() {}\nfunction onExpand() {}\nfunction onParsed() {}\nfunction onMount() {}\nfunction onUnmount() {}\nfunction onClose() {}\nfunction onClick() {}\n</script>\n"
+  }
+}

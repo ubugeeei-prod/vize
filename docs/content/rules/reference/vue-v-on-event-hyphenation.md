@@ -10,7 +10,8 @@ Enforce hyphenation of custom event names in v-on on components
 
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Automatic fix: None; review the suggested change  
+Automatic fix: Available when `autofix: true`; names containing `_` require manual changes
+
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: See [typed options and defaults](../options.md).
 
