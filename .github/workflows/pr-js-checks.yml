@@ -28,6 +28,7 @@ jobs:
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       CARGO_BUILD_JOBS: "12"
+      VIZE_RSPACK_JSX_CAPTURE: ${{ runner.temp }}/jsx-rspack-child-values-6890
     steps:
       - name: Explain documentation-only skip
         if: ${{ !(inputs.run-js && matrix.group != 'none') }}
@@ -63,6 +64,14 @@ jobs:
         if: ${{ (inputs.run-js && matrix.group != 'none') }}
         env: { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" }
         run: node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"
+      - name: Preserve complete Rspack JSX producer and bundle
+        if: ${{ !cancelled() && inputs.run-js && matrix.group == 'builders' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: jsx-rspack-child-values-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/jsx-rspack-child-values-6890
+          if-no-files-found: error
+          retention-days: 14
       - name: Preserve public native formatter evidence
         if: ${{ !cancelled() && (inputs.run-js && matrix.group != 'none') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

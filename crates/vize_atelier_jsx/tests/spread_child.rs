@@ -129,6 +129,12 @@ fn spread_modules_render_update_and_hydrate_like_babel() {
 #[test]
 fn vapor_and_ssr_report_the_spread_instead_of_emitting_client_blocks() {
     let source = "const A = () => <div>{...items}</div>;";
+    assert_eq!(
+        source,
+        include_str!(
+            "../../../tests/_fixtures/differential/compiler/jsx-child-values-6890/rejected-spread.jsx.txt"
+        )
+    );
     let message = "spread children (`{...items}`) are only supported in VDOM output; Vapor and SSR stringify the value instead of spreading it";
 
     let allocator = Allocator::new();

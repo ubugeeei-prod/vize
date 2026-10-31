@@ -104,7 +104,8 @@ pub fn compile_to_vapor(
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for mut lowered_root in lowered.roots {
-        reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
+        let rejected_spread =
+            reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
         components.push(compile_root_to_vapor(
             allocator,
             lowered_root,
@@ -112,6 +113,7 @@ pub fn compile_to_vapor(
             &options,
             source,
             &mut diagnostics,
+            !rejected_spread,
         ));
     }
 
@@ -130,6 +132,7 @@ pub(crate) fn compile_root_to_vapor(
     options: &VaporCompileOptions,
     source: &str,
     diagnostics: &mut Vec<JsxDiagnostic>,
+    jsx_children: bool,
 ) -> VaporComponent {
     compile_root_to_vapor_with_origins(
         allocator,
@@ -140,6 +143,7 @@ pub(crate) fn compile_root_to_vapor(
         diagnostics,
         None,
         false,
+        jsx_children,
     )
     .0
 }
@@ -157,6 +161,7 @@ pub(crate) fn compile_root_to_vapor_with_origins(
     diagnostics: &mut Vec<JsxDiagnostic>,
     bindings: Option<&vize_atelier_core::BindingMetadata>,
     source_map: bool,
+    jsx_children: bool,
 ) -> (VaporComponent, crate::emission::RootSourceMap) {
     if options.ssr {
         let ssr = crate::ssr::compile_lowered_root_to_ssr(
@@ -220,7 +225,7 @@ pub(crate) fn compile_root_to_vapor_with_origins(
         scoped_style.as_ref().map(|style| style.scope_id.as_str()),
         VaporGenerateOptions { jsx_closure: true },
         VaporGenerateExperimentalOptions {
-            jsx_children: true,
+            jsx_children,
             source_map,
             source_map_filename: Some("module.tsx"),
             ..Default::default()
