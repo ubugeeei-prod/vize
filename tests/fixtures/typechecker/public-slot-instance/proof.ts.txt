@@ -1,0 +1,95 @@
+import type { $SlotConstructor, $SlotConstructorWithoutArguments, $SlotConstructorWithArguments, $SlotConstructorArgs, $SlotConstructorInstance, $SlotHostSelector, $SlotsFactory, $SlotPayload } from "vize/virtual-ts";
+declare function __vizeSlotConstructorInstance<C>(): <Z, P>(withoutArguments: Z, withArguments: P) => $SlotConstructorInstance<C, Z, P>;
+export {};
+type $IsAny<T> = 0 extends (1 & T) ? true:false;
+type SlotsOf<I> = I extends {$slots:infer S}?S:never;
+type RequireNotAny<T extends false> = T;
+declare const Original_TwoFirstAny: {new():never;new(props:{value?:number}):{$slots:any}};
+type C_TwoFirstAny = $SlotConstructor<typeof Original_TwoFirstAny>;
+const Z_TwoFirstAny=new(undefined as unknown as $SlotConstructorWithoutArguments<C_TwoFirstAny>)();
+const P_TwoFirstAny=new(undefined as unknown as $SlotConstructorWithArguments<C_TwoFirstAny>)({value:123},...([] as unknown as $SlotConstructorArgs<C_TwoFirstAny>));
+const Result_TwoFirstAny=__vizeSlotConstructorInstance<C_TwoFirstAny>()(Z_TwoFirstAny,P_TwoFirstAny);
+type AssertNoAny_TwoFirstAny=RequireNotAny<$IsAny<SlotsOf<typeof Result_TwoFirstAny>>>;
+declare const Original_TwoLastUnknown: {new(props:{value?:number}):{$slots:unknown};new():never};
+type C_TwoLastUnknown = $SlotConstructor<typeof Original_TwoLastUnknown>;
+const Z_TwoLastUnknown=new(undefined as unknown as $SlotConstructorWithoutArguments<C_TwoLastUnknown>)();
+const P_TwoLastUnknown=new(undefined as unknown as $SlotConstructorWithArguments<C_TwoLastUnknown>)({value:123},...([] as unknown as $SlotConstructorArgs<C_TwoLastUnknown>));
+const Result_TwoLastUnknown=__vizeSlotConstructorInstance<C_TwoLastUnknown>()(Z_TwoLastUnknown,P_TwoLastUnknown);
+type AssertNoAny_TwoLastUnknown=RequireNotAny<$IsAny<SlotsOf<typeof Result_TwoLastUnknown>>>;
+declare const Original_NineFirstAny: {new():never;new(props:{kind:'brand0';value?:number}):{$slots:any};new(props:{kind:'brand1';value?:number}):{$slots:any};new(props:{kind:'brand2';value?:number}):{$slots:any};new(props:{kind:'brand3';value?:number}):{$slots:any};new(props:{kind:'brand4';value?:number}):{$slots:any};new(props:{kind:'brand5';value?:number}):{$slots:any};new(props:{kind:'brand6';value?:number}):{$slots:any};new(props:{kind:'brand7';value?:number}):{$slots:any};};
+type C_NineFirstAny = $SlotConstructor<typeof Original_NineFirstAny>;
+const Z_NineFirstAny=new(undefined as unknown as $SlotConstructorWithoutArguments<C_NineFirstAny>)();
+const P_NineFirstAny=new(undefined as unknown as $SlotConstructorWithArguments<C_NineFirstAny>)({kind:'brand0' as const,value:123},...([] as unknown as $SlotConstructorArgs<C_NineFirstAny>));
+const Result_NineFirstAny=__vizeSlotConstructorInstance<C_NineFirstAny>()(Z_NineFirstAny,P_NineFirstAny);
+type AssertNoAny_NineFirstAny=RequireNotAny<$IsAny<SlotsOf<typeof Result_NineFirstAny>>>;
+declare const Original_SeventeenFirstUnknown: {new():never;new(props:{kind:'brand0';value?:number}):{$slots:unknown};new(props:{kind:'brand1';value?:number}):{$slots:unknown};new(props:{kind:'brand2';value?:number}):{$slots:unknown};new(props:{kind:'brand3';value?:number}):{$slots:unknown};new(props:{kind:'brand4';value?:number}):{$slots:unknown};new(props:{kind:'brand5';value?:number}):{$slots:unknown};new(props:{kind:'brand6';value?:number}):{$slots:unknown};new(props:{kind:'brand7';value?:number}):{$slots:unknown};new(props:{kind:'brand8';value?:number}):{$slots:unknown};new(props:{kind:'brand9';value?:number}):{$slots:unknown};new(props:{kind:'brand10';value?:number}):{$slots:unknown};new(props:{kind:'brand11';value?:number}):{$slots:unknown};new(props:{kind:'brand12';value?:number}):{$slots:unknown};new(props:{kind:'brand13';value?:number}):{$slots:unknown};new(props:{kind:'brand14';value?:number}):{$slots:unknown};new(props:{kind:'brand15';value?:number}):{$slots:unknown};};
+type C_SeventeenFirstUnknown = $SlotConstructor<typeof Original_SeventeenFirstUnknown>;
+const Z_SeventeenFirstUnknown=new(undefined as unknown as $SlotConstructorWithoutArguments<C_SeventeenFirstUnknown>)();
+const P_SeventeenFirstUnknown=new(undefined as unknown as $SlotConstructorWithArguments<C_SeventeenFirstUnknown>)({kind:'brand0' as const,value:123},...([] as unknown as $SlotConstructorArgs<C_SeventeenFirstUnknown>));
+const Result_SeventeenFirstUnknown=__vizeSlotConstructorInstance<C_SeventeenFirstUnknown>()(Z_SeventeenFirstUnknown,P_SeventeenFirstUnknown);
+type AssertNoAny_SeventeenFirstUnknown=RequireNotAny<$IsAny<SlotsOf<typeof Result_SeventeenFirstUnknown>>>;
+declare const Original_NineLastAny: {new(props:{kind:'brand0';value?:number}):{$slots:any};new(props:{kind:'brand1';value?:number}):{$slots:any};new(props:{kind:'brand2';value?:number}):{$slots:any};new(props:{kind:'brand3';value?:number}):{$slots:any};new(props:{kind:'brand4';value?:number}):{$slots:any};new(props:{kind:'brand5';value?:number}):{$slots:any};new(props:{kind:'brand6';value?:number}):{$slots:any};new(props:{kind:'brand7';value?:number}):{$slots:any};new():never;};
+type C_NineLastAny = $SlotConstructor<typeof Original_NineLastAny>;
+const Z_NineLastAny=new(undefined as unknown as $SlotConstructorWithoutArguments<C_NineLastAny>)();
+const P_NineLastAny=new(undefined as unknown as $SlotConstructorWithArguments<C_NineLastAny>)({kind:'brand0' as const,value:123},...([] as unknown as $SlotConstructorArgs<C_NineLastAny>));
+const Result_NineLastAny=__vizeSlotConstructorInstance<C_NineLastAny>()(Z_NineLastAny,P_NineLastAny);
+type AssertNoAny_NineLastAny=RequireNotAny<$IsAny<SlotsOf<typeof Result_NineLastAny>>>;
+declare const Original_DefaultZero: new<T=string>()=>{$slots:{default:(props:{value:T})=>void}};
+type C_DefaultZero = $SlotConstructor<typeof Original_DefaultZero>;
+const Z_DefaultZero=new(undefined as unknown as $SlotConstructorWithoutArguments<C_DefaultZero>)();
+const P_DefaultZero=new(undefined as unknown as $SlotConstructorWithArguments<C_DefaultZero>)({value:123},...([] as unknown as $SlotConstructorArgs<C_DefaultZero>));
+const Result_DefaultZero=__vizeSlotConstructorInstance<C_DefaultZero>()(Z_DefaultZero,P_DefaultZero);
+type AssertNoAny_DefaultZero=RequireNotAny<$IsAny<SlotsOf<typeof Result_DefaultZero>>>;
+declare const Original_MixedGenericNeverFirst: {new<T=never>():T;new(props:{value?:number}):{$slots:any}};
+type C_MixedGenericNeverFirst = $SlotConstructor<typeof Original_MixedGenericNeverFirst>;
+const Z_MixedGenericNeverFirst=new(undefined as unknown as $SlotConstructorWithoutArguments<C_MixedGenericNeverFirst>)();
+const P_MixedGenericNeverFirst=new(undefined as unknown as $SlotConstructorWithArguments<C_MixedGenericNeverFirst>)({value:123},...([] as unknown as $SlotConstructorArgs<C_MixedGenericNeverFirst>));
+const Result_MixedGenericNeverFirst=__vizeSlotConstructorInstance<C_MixedGenericNeverFirst>()(Z_MixedGenericNeverFirst,P_MixedGenericNeverFirst);
+type AssertNoAny_MixedGenericNeverFirst=RequireNotAny<$IsAny<SlotsOf<typeof Result_MixedGenericNeverFirst>>>;
+declare const Original_MixedGenericNeverLast: {new(props:{value?:number}):{$slots:any};new<T=never>():T};
+type C_MixedGenericNeverLast = $SlotConstructor<typeof Original_MixedGenericNeverLast>;
+const Z_MixedGenericNeverLast=new(undefined as unknown as $SlotConstructorWithoutArguments<C_MixedGenericNeverLast>)();
+const P_MixedGenericNeverLast=new(undefined as unknown as $SlotConstructorWithArguments<C_MixedGenericNeverLast>)({value:123},...([] as unknown as $SlotConstructorArgs<C_MixedGenericNeverLast>));
+const Result_MixedGenericNeverLast=__vizeSlotConstructorInstance<C_MixedGenericNeverLast>()(Z_MixedGenericNeverLast,P_MixedGenericNeverLast);
+type AssertNoAny_MixedGenericNeverLast=RequireNotAny<$IsAny<SlotsOf<typeof Result_MixedGenericNeverLast>>>;
+Result_DefaultZero.$slots.default({value:123});
+
+const WholeSlots_TwoFirstAny = (undefined as unknown as $SlotHostSelector<typeof Original_TwoFirstAny>)(Result_TwoFirstAny, (undefined as unknown as $SlotsFactory<typeof Original_TwoFirstAny>)(Original_TwoFirstAny)({value:123}));
+type WholeNoAny_TwoFirstAny = $IsAny<typeof WholeSlots_TwoFirstAny>;
+type WholePayload_TwoFirstAny = $SlotPayload<typeof WholeSlots_TwoFirstAny, "default">;
+type WholePayloadAny_TwoFirstAny = $IsAny<WholePayload_TwoFirstAny>;
+
+const WholeSlots_TwoLastUnknown = (undefined as unknown as $SlotHostSelector<typeof Original_TwoLastUnknown>)(Result_TwoLastUnknown, (undefined as unknown as $SlotsFactory<typeof Original_TwoLastUnknown>)(Original_TwoLastUnknown)({value:123}));
+type WholeNoAny_TwoLastUnknown = $IsAny<typeof WholeSlots_TwoLastUnknown>;
+type WholePayload_TwoLastUnknown = $SlotPayload<typeof WholeSlots_TwoLastUnknown, "default">;
+type WholePayloadAny_TwoLastUnknown = $IsAny<WholePayload_TwoLastUnknown>;
+
+const WholeSlots_NineFirstAny = (undefined as unknown as $SlotHostSelector<typeof Original_NineFirstAny>)(Result_NineFirstAny, (undefined as unknown as $SlotsFactory<typeof Original_NineFirstAny>)(Original_NineFirstAny)({value:123}));
+type WholeNoAny_NineFirstAny = $IsAny<typeof WholeSlots_NineFirstAny>;
+type WholePayload_NineFirstAny = $SlotPayload<typeof WholeSlots_NineFirstAny, "default">;
+type WholePayloadAny_NineFirstAny = $IsAny<WholePayload_NineFirstAny>;
+
+const WholeSlots_SeventeenFirstUnknown = (undefined as unknown as $SlotHostSelector<typeof Original_SeventeenFirstUnknown>)(Result_SeventeenFirstUnknown, (undefined as unknown as $SlotsFactory<typeof Original_SeventeenFirstUnknown>)(Original_SeventeenFirstUnknown)({value:123}));
+type WholeNoAny_SeventeenFirstUnknown = $IsAny<typeof WholeSlots_SeventeenFirstUnknown>;
+type WholePayload_SeventeenFirstUnknown = $SlotPayload<typeof WholeSlots_SeventeenFirstUnknown, "default">;
+type WholePayloadAny_SeventeenFirstUnknown = $IsAny<WholePayload_SeventeenFirstUnknown>;
+
+const WholeSlots_NineLastAny = (undefined as unknown as $SlotHostSelector<typeof Original_NineLastAny>)(Result_NineLastAny, (undefined as unknown as $SlotsFactory<typeof Original_NineLastAny>)(Original_NineLastAny)({value:123}));
+type WholeNoAny_NineLastAny = $IsAny<typeof WholeSlots_NineLastAny>;
+type WholePayload_NineLastAny = $SlotPayload<typeof WholeSlots_NineLastAny, "default">;
+type WholePayloadAny_NineLastAny = $IsAny<WholePayload_NineLastAny>;
+
+const WholeSlots_DefaultZero = (undefined as unknown as $SlotHostSelector<typeof Original_DefaultZero>)(Result_DefaultZero, (undefined as unknown as $SlotsFactory<typeof Original_DefaultZero>)(Original_DefaultZero)({value:123}));
+type WholeNoAny_DefaultZero = $IsAny<typeof WholeSlots_DefaultZero>;
+type WholePayload_DefaultZero = $SlotPayload<typeof WholeSlots_DefaultZero, "default">;
+type WholePayloadAny_DefaultZero = $IsAny<WholePayload_DefaultZero>;
+
+const WholeSlots_MixedGenericNeverFirst = (undefined as unknown as $SlotHostSelector<typeof Original_MixedGenericNeverFirst>)(Result_MixedGenericNeverFirst, (undefined as unknown as $SlotsFactory<typeof Original_MixedGenericNeverFirst>)(Original_MixedGenericNeverFirst)({value:123}));
+type WholeNoAny_MixedGenericNeverFirst = $IsAny<typeof WholeSlots_MixedGenericNeverFirst>;
+type WholePayload_MixedGenericNeverFirst = $SlotPayload<typeof WholeSlots_MixedGenericNeverFirst, "default">;
+type WholePayloadAny_MixedGenericNeverFirst = $IsAny<WholePayload_MixedGenericNeverFirst>;
+
+const WholeSlots_MixedGenericNeverLast = (undefined as unknown as $SlotHostSelector<typeof Original_MixedGenericNeverLast>)(Result_MixedGenericNeverLast, (undefined as unknown as $SlotsFactory<typeof Original_MixedGenericNeverLast>)(Original_MixedGenericNeverLast)({value:123}));
+type WholeNoAny_MixedGenericNeverLast = $IsAny<typeof WholeSlots_MixedGenericNeverLast>;
+type WholePayload_MixedGenericNeverLast = $SlotPayload<typeof WholeSlots_MixedGenericNeverLast, "default">;
+type WholePayloadAny_MixedGenericNeverLast = $IsAny<WholePayload_MixedGenericNeverLast>;

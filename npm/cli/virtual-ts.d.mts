@@ -25,15 +25,8 @@ export type $WidenTemplateRef<T> =
               : T
             : T;
 
-export type $SlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S }
-  ? NonNullable<__S>
-  : C extends { new (): { $slots: infer __S } }
-    ? __S
-    : C extends (props: any, context: infer __Ctx, ...args: any[]) => any
-      ? NonNullable<__Ctx> extends { slots: infer __S }
-        ? __S
-        : any
-      : unknown;
+import type * as __vizeSlotTypes from "./virtual-ts-slots.js" with { "resolution-mode": "import" };
+export type $SlotHostSlots<C> = __vizeSlotTypes.$SlotHostSlots<C>;
 declare function __vizeFunctionalSlots<P, C, R>(
   component: (props: P, context: C, ...args: any[]) => R,
 ): (
@@ -45,70 +38,19 @@ declare function __vizeFunctionalSlots<P, C, R>(
   : NonNullable<C> extends { slots: infer S }
     ? S
     : any;
-type $NativeSlotsFactory<C> = [C] extends [new (...args: any[]) => any]
-  ? (component: C) => (props: any) => $SlotHostSlots<C>
-  : C extends (...args: any[]) => any
-    ? typeof __vizeFunctionalSlots
-    : (component: C) => (props: any) => $SlotHostSlots<C>;
-export type $SlotsFactory<C> =
-  $IsAny<C> extends true
-    ? (component: C) => (props: any) => any
-    : [C] extends [{ __vizeResolveSlots?: infer F }]
-      ? F extends (...args: any[]) => any
-        ? (component: C) => F
-        : $NativeSlotsFactory<C>
-      : [C] extends [{ readonly __vizeComponentMarker: true }]
-        ? (component: C) => (props: any) => $SlotHostSlots<C>
-        : $NativeSlotsFactory<C>;
-type $HasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F }
-  ? F extends (...args: any[]) => any
-    ? true
-    : false
-  : false;
-type $DirectSlotConstructor<C> =
-  $IsAny<C> extends true
-    ? never
-    : $HasSlotResolver<C> extends true
-      ? never
-      : C extends { readonly __vizeComponentMarker: true }
-        ? never
-        : C extends new (...args: any[]) => { $slots: any }
-          ? C
-          : never;
-export type $SlotConstructor<C> = [$DirectSlotConstructor<C>] extends [never]
-  ? new (props: any, ...args: any[]) => { $slots: never }
-  : $DirectSlotConstructor<C>;
-type $SlotConstructorArgumentLists<C> = C extends {
-  new (...args: infer A1): any;
-  new (...args: infer A2): any;
-  new (...args: infer A3): any;
-  new (...args: infer A4): any;
-  new (...args: infer A5): any;
-  new (...args: infer A6): any;
-  new (...args: infer A7): any;
-  new (...args: infer A8): any;
-}
-  ? A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8
-  : C extends new (...args: infer A) => any
-    ? A
-    : [unknown];
-type $SlotConstructorHasArguments<C> =
-  $SlotConstructorArgumentLists<C> extends infer A ? (A extends [] ? never : true) : never;
-export type $SlotConstructorWithoutArguments<C> = C extends new () => any
-  ? C & ([$SlotConstructorHasArguments<C>] extends [never] ? unknown : new () => { $slots: never })
-  : new () => { $slots: never };
-export type $SlotConstructorWithArguments<C> = [$SlotConstructorHasArguments<C>] extends [never]
-  ? new (props: any, ...args: any[]) => { $slots: never }
-  : C;
-export type $SlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any
-  ? { [K in keyof A]: any }
-  : [];
-export type $SlotConstructorInstance<C, Z, P> = [$SlotConstructorHasArguments<C>] extends [never]
-  ? Z
-  : P;
-export type $SlotHostSelector<C> = [$DirectSlotConstructor<C>] extends [never]
-  ? <S>(instance: unknown, slots: S) => S
-  : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
+type $NativeSlotsFactory<C> = __vizeSlotTypes.$NativeSlotsFactory<C>;
+export type $SlotsFactory<C> = __vizeSlotTypes.$SlotsFactory<C>;
+type $HasSlotResolver<C> = __vizeSlotTypes.$HasSlotResolver<C>;
+type $DirectSlotConstructor<C> = __vizeSlotTypes.$DirectSlotConstructor<C>;
+export type $SlotConstructor<C> = __vizeSlotTypes.$SlotConstructor<C>;
+type $SlotConstructorArgumentLists<C> = __vizeSlotTypes.$SlotConstructorArgumentLists<C>;
+type $SlotConstructorHasArguments<C> = __vizeSlotTypes.$SlotConstructorHasArguments<C>;
+export type $SlotConstructorWithoutArguments<C> =
+  __vizeSlotTypes.$SlotConstructorWithoutArguments<C>;
+export type $SlotConstructorWithArguments<C> = __vizeSlotTypes.$SlotConstructorWithArguments<C>;
+export type $SlotConstructorArgs<C> = __vizeSlotTypes.$SlotConstructorArgs<C>;
+export type $SlotConstructorInstance<C, Z, P> = __vizeSlotTypes.$SlotConstructorInstance<C, Z, P>;
+export type $SlotHostSelector<C> = __vizeSlotTypes.$SlotHostSelector<C>;
 
 // @ts-ignore A missing provider keeps its framework error-any fallback.
 type $SilentAny = {}["__vizeSilentAny"];

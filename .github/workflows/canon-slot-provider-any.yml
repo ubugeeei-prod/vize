@@ -20,6 +20,15 @@ on:
       - npm/cli/virtual-ts.d.*
       - npm/cli/virtual-ts-globals.d.ts
       - npm/cli/virtual-ts-patterns.d.ts
+      - npm/cli/virtual-ts-slots.d.ts
+      - npm/cli/package.json
+      - npm/cli/content-mapper-helpers.d.*
+      - npm/cli/generated/content-mapper-types.d.ts
+      - tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/slot-provider-payload-update-11027.json
+      - npm/cli/scripts/generate-content-mapper-types.ts
+      - tests/tooling/content-mapper-shared-types.test.ts
+      - tests/tooling/support/public-slot-*.ts
+      - tests/fixtures/typechecker/public-slot-instance/**
       - npm/cli/scripts/*slot*.ts
       - tests/_fixtures/differential/typechecker/declared-any-slot-provider-11027/**
       - tests/_fixtures/differential/typechecker/registered-slot-provider-11027/**
@@ -101,6 +110,15 @@ jobs:
           JS
           npm install --ignore-scripts --no-audit --no-fund
           cp package.json package-lock.json "$RUNNER_TEMP/slot-provider-any/"
+      - name: Compare actual source declaration consumers against the frozen C3 preimage
+        run: |
+          set -euo pipefail
+          test ! -e npm/cli/node_modules
+          ln -s "$RUNNER_TEMP/slot-provider-reference/node_modules" npm/cli/node_modules
+          native=$(node --input-type=module -e 'import {pathToFileURL} from "node:url"; const {default: get} = await import(pathToFileURL(process.argv[1]).href); console.log(get());' "$RUNNER_TEMP/slot-provider-reference/node_modules/typescript-native/lib/getExePath.js")
+          VIZE_PUBLIC_SLOT_NATIVE="$native" VIZE_PUBLIC_SLOT_RECEIPT="$RUNNER_TEMP/slot-provider-any/public-instance.json" \
+            node --test --test-name-pattern='public Instance retains' tests/tooling/content-mapper-shared-types.test.ts \
+            > "$RUNNER_TEMP/slot-provider-any/public-instance.stdout" 2> "$RUNNER_TEMP/slot-provider-any/public-instance.stderr"
       - name: Query intrinsic Any identities and compare complete production diagnostics
         run: |
           set -euo pipefail
