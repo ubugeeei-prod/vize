@@ -15,7 +15,7 @@ import {
   replacePackageJsonVersion,
 } from "./preparation.ts";
 import { releaseReadmePaths, replaceReadmeVersionReferences } from "./readmes.ts";
-import { updateWorkspaceManifestVersions } from "./versions.ts";
+import { isReleaseVersion, updateWorkspaceManifestVersions } from "./versions.ts";
 
 /** Lockfile packages whose version is the workspace version. */
 function isOwnedCrate(name: string): boolean {
@@ -77,6 +77,10 @@ async function stampTargets(): Promise<Array<[string, Rewrite, boolean]>> {
  * change; the npm CLI manifest must end up at `next` as a final consistency check.
  */
 export async function stampVersion(current: string, next: string): Promise<boolean> {
+  if (!isReleaseVersion(next)) {
+    writeStderr(`Invalid release target version: ${JSON.stringify(next)}\n`);
+    return false;
+  }
   for (const [path, rewrite, required] of await stampTargets()) {
     const before = readFileToString(path);
     if (before === null) {

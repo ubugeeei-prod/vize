@@ -53,7 +53,11 @@ jobs:
         run: node tools/support/github/release-platforms.ts github-output v0.0.0
       - id: next
         name: Read the version the next release stamps
-        run: echo "version=$(node tools/support/release/release/main.ts next)" >> "$GITHUB_OUTPUT"
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node tools/support/release/release/main.ts next)
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
   cli:
     name: Cache CLI - ${{ matrix.settings.target }}
     needs: plan
