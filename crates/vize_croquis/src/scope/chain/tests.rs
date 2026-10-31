@@ -11,6 +11,7 @@ use insta::assert_snapshot;
 use vize_carton::{append, smallvec};
 
 mod empty_visible;
+mod event_handler;
 
 #[test]
 fn test_scope_chain_basic() {
@@ -108,27 +109,6 @@ fn test_v_slot_scope() {
 
     assert!(chain.is_defined("item"));
     assert!(chain.is_defined("index"));
-}
-
-#[test]
-fn test_event_handler_scope() {
-    let mut chain = ScopeChain::new();
-
-    chain.enter_event_handler_scope(
-        EventHandlerScopeData {
-            event_name: CompactString::new("click"),
-            event_name_is_dynamic: false,
-            has_implicit_event: true,
-            param_names: vize_carton::smallvec![],
-            handler_expression: None,
-            target_component: None,
-        },
-        0,
-        50,
-    );
-
-    // $event should be available
-    assert!(chain.is_defined("$event"));
 }
 
 #[test]
