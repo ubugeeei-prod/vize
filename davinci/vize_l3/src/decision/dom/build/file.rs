@@ -62,18 +62,18 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             let script = binding.declaration().is_some_and(|declaration| {
                 declaration.namespace == Namespace::Value && declaration.name == occurrence.name
             });
-            let original_value = if script {
+            let original_alias = if script {
                 None
             } else {
-                self.for_value(resolution, expression, occurrence, binding)
+                self.for_alias(resolution, expression, occurrence, binding)
             };
-            if !script && original_value.is_none() {
+            if !script && original_alias.is_none() {
                 self.reject(node, expression.span, DomUnsupported::FileBinding);
                 return None;
             }
             if R::RECORD {
                 let Some(kind) =
-                    original_value.or_else(|| self.reads.classify(occurrence, binding))
+                    original_alias.or_else(|| self.reads.classify(occurrence, binding))
                 else {
                     self.reject(node, expression.span, DomUnsupported::VueReadAccess);
                     return None;
@@ -87,7 +87,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         }
         if self.in_original_for_body()
             && !(expression.ast.is_identifier_reference()
-                && matches!(reads.as_slice(), [read] if read.kind == VueReadKind::ForValue))
+                && matches!(reads.as_slice(), [read] if matches!(read.kind, VueReadKind::ForValue | VueReadKind::ForKey)))
         {
             self.reject(node, expression.span, DomUnsupported::ForBody);
             return None;

@@ -1,0 +1,158 @@
+{
+  "schema": "vize.native-sfc.original-for-key-inputs",
+  "filename": "OriginalForKey雪🌸.vue",
+  "compiler": {
+    "version": "3.5.35"
+  },
+  "runtime": {
+    "version": "3.5.35"
+  },
+  "typescript": {
+    "version": "6.0.3"
+  },
+  "qualification": "input-only; no native code, source-map or primary capture credit",
+  "fixtures": [
+    {
+      "id": "mutable-count-key",
+      "source": "<script setup>let count=2</script><template><i v-for='(item, position) in count'>{{position}}</i></template>",
+      "script": "let count=2",
+      "template": "<i v-for='(item, position) in count'>{{position}}</i>",
+      "bindings": ["count"],
+      "immutableBindings": [],
+      "updates": {
+        "count": 3
+      },
+      "forKeyRuntime": {
+        "tag": "i",
+        "initial": ["0", "1"],
+        "updated": ["0", "1", "2"]
+      }
+    },
+    {
+      "id": "ts-unicode-key",
+      "source": "\r\n<script setup lang=\"ts\">var count:number=3</script>\r\n<template><b v-for='(項目,位置) in count'>{{位置}}</b></template>\r\n",
+      "script": "var count:number=3",
+      "template": "<b v-for='(項目,位置) in count'>{{位置}}</b>",
+      "bindings": ["count"],
+      "immutableBindings": [],
+      "updates": {
+        "count": 1
+      },
+      "forKeyRuntime": {
+        "tag": "b",
+        "initial": ["0", "1", "2"],
+        "updated": ["0"]
+      }
+    },
+    {
+      "id": "string-unit-key",
+      "source": "<script setup>let text=\"a🌸\"</script><template><i v-for='(letter, n) in text'>{{n}}</i></template>",
+      "script": "let text=\"a🌸\"",
+      "template": "<i v-for='(letter, n) in text'>{{n}}</i>",
+      "bindings": ["text"],
+      "immutableBindings": [],
+      "updates": {
+        "text": "雪"
+      },
+      "forKeyRuntime": {
+        "tag": "i",
+        "initial": ["0", "1", "2"],
+        "updated": ["0"]
+      }
+    },
+    {
+      "id": "key-shadows-collection",
+      "source": "<script setup>let count=2</script><template><i v-for='(item, count) in count'>{{count}}</i></template>",
+      "script": "let count=2",
+      "template": "<i v-for='(item, count) in count'>{{count}}</i>",
+      "bindings": ["count"],
+      "immutableBindings": [],
+      "updates": {
+        "count": 4
+      },
+      "forKeyRuntime": {
+        "tag": "i",
+        "initial": ["0", "1"],
+        "updated": ["0", "1", "2", "3"]
+      }
+    },
+    {
+      "id": "role-not-spelling",
+      "source": "<script setup>let count=2</script><template><i v-for='(index, value) in count'>{{value}}</i></template>",
+      "script": "let count=2",
+      "template": "<i v-for='(index, value) in count'>{{value}}</i>",
+      "bindings": ["count"],
+      "immutableBindings": [],
+      "updates": {
+        "count": 0
+      },
+      "forKeyRuntime": {
+        "tag": "i",
+        "initial": ["0", "1"],
+        "updated": []
+      }
+    },
+    {
+      "id": "constant-key",
+      "source": "<script setup>const count=3</script><template><i v-for='(item, key) in count'>{{key}}</i></template>",
+      "script": "const count=3",
+      "template": "<i v-for='(item, key) in count'>{{key}}</i>",
+      "bindings": ["count"],
+      "immutableBindings": ["count"],
+      "updates": {},
+      "forKeyRuntime": {
+        "tag": "i",
+        "initial": ["0", "1", "2"],
+        "updated": ["0", "1", "2"]
+      }
+    },
+    {
+      "id": "null-key",
+      "source": "<script setup>let count=null</script><template><i v-for='(item, key) in count'>{{key}}</i></template>",
+      "script": "let count=null",
+      "template": "<i v-for='(item, key) in count'>{{key}}</i>",
+      "bindings": ["count"],
+      "immutableBindings": [],
+      "updates": {
+        "count": 2
+      },
+      "forKeyRuntime": {
+        "tag": "i",
+        "initial": [],
+        "updated": ["0", "1"]
+      }
+    },
+    {
+      "id": "false-key",
+      "source": "<script setup>let count=false</script><template><i v-for='(item, key) in count'>{{key}}</i></template>",
+      "script": "let count=false",
+      "template": "<i v-for='(item, key) in count'>{{key}}</i>",
+      "bindings": ["count"],
+      "immutableBindings": [],
+      "updates": {
+        "count": 1
+      },
+      "forKeyRuntime": {
+        "tag": "i",
+        "initial": [],
+        "updated": ["0"]
+      }
+    },
+    {
+      "id": "plain-helper-key",
+      "source": "<script setup>let count=2</script><template><i v-for='(renderList, Fragment) in count'>{{Fragment}}</i></template>",
+      "script": "let count=2",
+      "template": "<i v-for='(renderList, Fragment) in count'>{{Fragment}}</i>",
+      "bindings": ["count"],
+      "immutableBindings": [],
+      "updates": {
+        "count": 1
+      },
+      "forKeyRuntime": {
+        "tag": "i",
+        "initial": ["0", "1"],
+        "updated": ["0"]
+      }
+    }
+  ]
+}
