@@ -31,23 +31,23 @@ impl CorsaProjectClient {
         executable: &str,
         cwd: PathBuf,
         root_path: Option<PathBuf>,
-        temp_dir: Option<PathBuf>,
+        owned_storage: Option<Arc<super::session_storage::SessionStorage>>,
     ) -> Result<Self, String> {
-        Self::spawn_initialized_client_with_config(executable, cwd, root_path, temp_dir, None)
+        Self::spawn_initialized_client_with_config(executable, cwd, root_path, owned_storage, None)
     }
 
     pub(super) fn spawn_initialized_client_with_config(
         executable: &str,
         cwd: PathBuf,
         root_path: Option<PathBuf>,
-        temp_dir: Option<PathBuf>,
+        owned_storage: Option<Arc<super::session_storage::SessionStorage>>,
         config_path: Option<&Path>,
     ) -> Result<Self, String> {
         Self::spawn_initialized_client_with_transport(
             executable,
             cwd,
             root_path,
-            temp_dir,
+            owned_storage,
             config_path,
             false,
         )
@@ -57,12 +57,15 @@ impl CorsaProjectClient {
         executable: &str,
         cwd: PathBuf,
         root_path: Option<PathBuf>,
-        temp_dir: Option<PathBuf>,
+        owned_storage: Option<Arc<super::session_storage::SessionStorage>>,
         config_path: Option<&Path>,
         shared_editor_transport: bool,
     ) -> Result<Self, String> {
         let project_root = root_path.as_deref().unwrap_or(&cwd);
-        let overlay_storage = Arc::new(super::session_storage::SessionStorage::new(project_root)?);
+        let overlay_storage = match owned_storage {
+            Some(storage) => storage,
+            None => Arc::new(super::session_storage::SessionStorage::new(project_root)?),
+        };
         let explicit_project_config = config_path.map(Path::to_path_buf);
         let config_path = selected_workspace_config(project_root, config_path);
         let shared = shared_editor_transport
@@ -109,7 +112,6 @@ impl CorsaProjectClient {
             document_texts: Default::default(),
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
-            temp_dir,
             overlay_storage,
             editor_lsp,
             shared_editor_transport_requested: shared_editor_transport,

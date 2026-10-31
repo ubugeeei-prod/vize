@@ -2,11 +2,7 @@ use super::{
     CorsaProjectClient,
     bootstrap::resolve_corsa_executable,
     language_id::for_uri as language_id_for_uri,
-    lifecycle_setup::{
-        cleanup_stale_sessions, install_node_modules_link, write_session_meta,
-        write_shared_helper_decls, write_temp_tsconfig, write_vue_module_stubs,
-    },
-    paths::resolve_temp_dir_base,
+    lifecycle_setup::{write_shared_helper_decls, write_temp_tsconfig, write_vue_module_stubs},
     session::{materialize_session_document, uri_document_identifier},
     session_paths::build_session_document_uri,
     virtual_overlay,
@@ -16,10 +12,7 @@ use corsa::{
     api::{FileChangeSummary, FileChanges, OverlayChanges, OverlayUpdate},
     runtime::block_on,
 };
-use std::{
-    path::PathBuf,
-    sync::atomic::{AtomicUsize, Ordering},
-};
+use std::{path::PathBuf, sync::Arc};
 use vize_l0::{String, cstr};
 
 use crate::file_uri::path_to_file_uri;
@@ -51,36 +44,37 @@ impl CorsaProjectClient {
             .or_else(|| std::env::current_dir().ok())
             .and_then(|path| path.canonicalize().ok());
 
-        static NEXT_CLIENT_ID: AtomicUsize = AtomicUsize::new(0);
-
-        let client_id = NEXT_CLIENT_ID.fetch_add(1, Ordering::Relaxed);
-        let temp_dir_base = resolve_temp_dir_base(project_root.as_deref());
-        let temp_dir_path = temp_dir_base.join(&*cstr!("{}-{}", std::process::id(), client_id));
-
-        cleanup_stale_sessions(&temp_dir_base);
-        let _ = std::fs::remove_dir_all(&temp_dir_path);
-        std::fs::create_dir_all(&temp_dir_path)
+        let authored = project_root
+            .as_deref()
+            .ok_or_else(|| cstr!("Failed to resolve Corsa working directory"))?;
+        let storage = Arc::new(super::session_storage::SessionStorage::new(authored)?);
+        // The scratch project and any materialized fallback share one owner.
+        // Keeping their roots distinct preserves the existing URI mapping.
+        let temp_dir_path = storage.root().join("scratch");
+        std::fs::create_dir(&temp_dir_path)
             .map_err(|e| cstr!("Failed to create Corsa session directory: {e}"))?;
 
-        write_session_meta(&temp_dir_path)?;
-        install_node_modules_link(project_root.as_deref(), &temp_dir_path);
         write_vue_module_stubs(&temp_dir_path)?;
         write_shared_helper_decls(&temp_dir_path)?;
         write_temp_tsconfig(&temp_dir_path)?;
 
-        let temp_root = temp_dir_path.canonicalize().ok();
-        let temp_dir = Some(temp_dir_path.clone());
+        let temp_root = Some(temp_dir_path.clone());
         if shared_editor_transport {
             Self::spawn_initialized_client_with_transport(
                 executable.as_str(),
                 temp_dir_path,
                 temp_root,
-                temp_dir,
+                Some(storage),
                 None,
                 true,
             )
         } else {
-            Self::spawn_initialized_client(executable.as_str(), temp_dir_path, temp_root, temp_dir)
+            Self::spawn_initialized_client(
+                executable.as_str(),
+                temp_dir_path,
+                temp_root,
+                Some(storage),
+            )
         }
     }
 
@@ -332,9 +326,6 @@ fn vue_virtual_document_uris(source_paths: &[PathBuf]) -> Vec<String> {
 impl Drop for CorsaProjectClient {
     fn drop(&mut self) {
         let _ = self.shutdown();
-        if let Some(ref dir) = self.temp_dir {
-            let _ = std::fs::remove_dir_all(dir);
-        }
     }
 }
 

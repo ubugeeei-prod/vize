@@ -1,8 +1,7 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::{
-    bootstrap::resolve_corsa_executable, paths::resolve_temp_dir_base,
-    session::materialize_session_document, session_paths::build_session_document_uri,
-    utils::convert_diagnostics,
+    bootstrap::resolve_corsa_executable, session::materialize_session_document,
+    session_paths::build_session_document_uri, utils::convert_diagnostics,
 };
 use crate::file_uri::path_to_file_uri;
 use lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range};
@@ -28,7 +27,7 @@ fn unique_case_dir(name: &str) -> PathBuf {
 }
 
 #[test]
-fn resolves_temp_dir_under_package_root_when_node_modules_exists() {
+fn private_scratch_storage_resolves_package_dependencies_without_package_writes() {
     let case_dir = unique_case_dir("package-root");
     let source_dir = case_dir.join("playground").join("src").join("shared");
     let node_modules_vue = case_dir.join("playground").join("node_modules").join("vue");
@@ -37,22 +36,21 @@ fn resolves_temp_dir_under_package_root_when_node_modules_exists() {
     fs::create_dir_all(&source_dir).unwrap();
     fs::create_dir_all(&node_modules_vue).unwrap();
 
-    let resolved = resolve_temp_dir_base(Some(&source_dir));
-
+    let storage = super::session_storage::SessionStorage::new(&source_dir).unwrap();
+    assert!(!storage.root().starts_with(&case_dir));
+    let linked = storage.root().parent().unwrap().join("node_modules/vue");
     assert_eq!(
-        resolved,
-        case_dir
-            .join("playground")
-            .join("node_modules")
-            .join(".vize")
-            .join("corsa")
+        linked.canonicalize().unwrap(),
+        node_modules_vue.canonicalize().unwrap()
     );
+    assert!(!node_modules_vue.parent().unwrap().join(".vize").exists());
+    drop(storage);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
 
 #[test]
-fn falls_back_to_nearest_available_node_modules_root() {
+fn private_scratch_storage_resolves_ancestor_dependencies_without_workspace_writes() {
     let case_dir = unique_case_dir("fallback");
     let workspace_root = case_dir.join("workspace");
     let source_dir = workspace_root.join("playground").join("src").join("shared");
@@ -62,16 +60,15 @@ fn falls_back_to_nearest_available_node_modules_root() {
     fs::create_dir_all(&source_dir).unwrap();
     fs::create_dir_all(&node_modules_vue).unwrap();
 
-    let resolved = resolve_temp_dir_base(Some(&source_dir));
-
+    let storage = super::session_storage::SessionStorage::new(&source_dir).unwrap();
+    assert!(!storage.root().starts_with(&workspace_root));
+    let linked = storage.root().parent().unwrap().join("node_modules/vue");
     assert_eq!(
-        resolved,
-        workspace_root
-            .join("node_modules")
-            .join(".vize")
-            .join("corsa")
+        linked.canonicalize().unwrap(),
+        node_modules_vue.canonicalize().unwrap()
     );
-    assert!(!resolved.starts_with(&source_dir));
+    assert!(!workspace_root.join("node_modules/.vize").exists());
+    drop(storage);
 
     let _ = fs::remove_dir_all(&case_dir);
 }

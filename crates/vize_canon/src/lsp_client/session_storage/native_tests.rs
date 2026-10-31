@@ -60,7 +60,10 @@ fn original_storage_policy(root: &Path) -> SessionStorage {
     let mut storage = SessionStorage::new(root).unwrap();
     // Exactly the original ordinary-workspace storage path. This control
     // changes only physical placement, using the same native image and API.
-    storage.root = root.join("node_modules/.vize/corsa-overlay");
+    storage.root = crate::file_uri::file_uri_to_path(&path_to_file_uri(
+        &root.join("node_modules/.vize/corsa-overlay"),
+    ))
+    .unwrap();
     fs::create_dir_all(&storage.root).unwrap();
     storage
 }

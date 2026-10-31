@@ -135,8 +135,8 @@ fn default_native_overlay_preserves_the_whole_linked_installation_and_authored_p
             && message["params"]["uri"].as_str() == Some(uri.as_str())
             && message["params"]["version"] == 1
     });
-    lsp.send(json!({"jsonrpc":"2.0","id":2,"method":"textDocument/diagnostic","params":{"textDocument":{"uri":uri}}}));
-    let diagnostics = lsp.recv_response(2);
+    lsp.send(json!({"jsonrpc":"2.0","id":2,"method":"textDocument/foldingRange","params":{"textDocument":{"uri":uri}}}));
+    let folding = lsp.recv_response(2);
     lsp.send(json!({"jsonrpc":"2.0","id":3,"method":"shutdown"}));
     let shutdown = lsp.recv_response(3);
     lsp.send(json!({"jsonrpc":"2.0","method":"exit"}));
@@ -144,7 +144,7 @@ fn default_native_overlay_preserves_the_whole_linked_installation_and_authored_p
     let project_after = inventory(&project);
     let installed_after = inventory(&installed);
     let terminal = lsp.terminal_evidence();
-    let record = json!({"source":std::env::var("EXPECTED_SOURCE").unwrap(),"scope":"ordinary source CLI, real native provider, unchanged cwd/rootUri, default log override unset; not public-package acceptance","firstCLI":{"path":env!("CARGO_BIN_EXE_vize"),"sha256":cli_hash},"native":{"path":native,"sha256":hash(&fs::read(&native).unwrap())},"rootUri":file_uri(&project),"cwd":project,"logOverride":null,"cache":{"XDG_CACHE_HOME":cache,"LOCALAPPDATA":cache},"initialized":initialized,"publication":publication,"diagnostics":diagnostics,"shutdown":shutdown,"terminal":terminal,"projectBefore":retained_inventory(&project_before),"projectAfter":retained_inventory(&project_after),"installedBefore":retained_inventory(&installed_before),"installedAfter":retained_inventory(&installed_after)});
+    let record = json!({"source":std::env::var("EXPECTED_SOURCE").unwrap(),"scope":"ordinary source CLI, real native provider, unchanged cwd/rootUri, default log override unset; not public-package acceptance","firstCLI":{"path":env!("CARGO_BIN_EXE_vize"),"sha256":cli_hash},"native":{"path":native,"sha256":hash(&fs::read(&native).unwrap())},"rootUri":file_uri(&project),"cwd":project,"logOverride":null,"cache":{"XDG_CACHE_HOME":cache,"LOCALAPPDATA":cache},"initialized":initialized,"publication":publication,"folding":folding,"shutdown":shutdown,"terminal":terminal,"projectBefore":retained_inventory(&project_before),"projectAfter":retained_inventory(&project_after),"installedBefore":retained_inventory(&installed_before),"installedAfter":retained_inventory(&installed_after)});
     let file = fs::OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -155,9 +155,11 @@ fn default_native_overlay_preserves_the_whole_linked_installation_and_authored_p
         publication,
         json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"uri":uri,"version":1,"diagnostics":[]}})
     );
-    assert_eq!(diagnostics.get("error"), None);
-    assert_eq!(diagnostics["result"]["kind"], "full");
-    assert_eq!(diagnostics["result"]["items"], json!([]));
+    let expected: Value = serde_json::from_str(include_str!(
+        "../../../../tests/_fixtures/differential/lsp/default-log-installation-custody-11145/response.expected.json"
+    ))
+    .unwrap();
+    assert_eq!(folding, json!({"jsonrpc":"2.0","id":2,"result":expected}));
     assert_eq!(shutdown, json!({"jsonrpc":"2.0","id":3,"result":null}));
     assert_eq!(status.code(), Some(0));
     assert_eq!(

@@ -62,8 +62,6 @@ pub struct CorsaProjectClient {
     session_document_uris: FxHashMap<String, String>,
     /// Reverse mapping used to translate API responses back to caller-facing URIs.
     external_document_uris: FxHashMap<String, String>,
-    /// Temporary directory for tsconfig.json (cleaned up on drop).
-    temp_dir: Option<PathBuf>,
     /// Private materialization storage, dropped after native owners retire.
     overlay_storage: Arc<session_storage::SessionStorage>,
     /// Lazily spawned `--lsp --stdio` session answering editor requests the
@@ -119,7 +117,6 @@ impl CorsaProjectClient {
             document_texts: Default::default(),
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
-            temp_dir: None,
             editor_lsp: None,
             shared_editor_transport_requested: false,
             shared_editor_transport: false,

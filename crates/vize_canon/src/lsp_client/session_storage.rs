@@ -39,6 +39,12 @@ impl SessionStorage {
             .tempdir_in(base)
             .map_err(|error| cstr!("Failed to create private Corsa storage: {error}"))?;
         let root = directory.path().join("project");
+        // Document URIs use the normal Windows spelling, without a verbatim
+        // prefix. Keep the owned boundary in that same physical spelling so
+        // strict component checks accept only its exact URI-derived members.
+        #[cfg(windows)]
+        let root = crate::file_uri::file_uri_to_path(&crate::file_uri::path_to_file_uri(&root))
+            .ok_or_else(|| cstr!("Failed to derive private Corsa mirror path"))?;
         fs::create_dir(&root)
             .map_err(|error| cstr!("Failed to create private Corsa mirror: {error}"))?;
         if let Some(source) = find_node_modules_with_vue(project_root) {
