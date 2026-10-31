@@ -1,0 +1,126 @@
+name: Published computed event names
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/published-computed-event-names.yml
+      - tools/support/release/computed_event_names.ts
+      - tools/support/release/computed_event_custody.ts
+      - tools/support/release/computed_event_release.ts
+      - tests/tooling/release/computed-event-names.test.ts
+      - tests/tooling/release/computed-event-module-custody.test.ts
+      - tests/tooling/release/computed-event-release.test.ts
+      - tests/_fixtures/differential/typechecker/dynamic-component-event-names-11140/**
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: Observe the frozen broken release or accept the first containing public release
+        type: choice
+        options: [before, after]
+        default: after
+      version:
+        description: Exact public version (before requires 0.608.0)
+        type: string
+        required: true
+      release_run:
+        description: Successful official Release workflow run for that version
+        type: string
+        required: true
+
+permissions: { contents: read }
+concurrency:
+  group: published-computed-events-${{ github.event.pull_request.number || github.ref }}-${{ inputs.phase || 'before' }}-${{ inputs.version || '0.608.0' }}
+  cancel-in-progress: false
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  PUBLIC_PHASE: ${{ inputs.phase || 'before' }}
+  PUBLIC_VERSION: ${{ inputs.version || '0.608.0' }}
+  PUBLIC_RELEASE_RUN: ${{ inputs.release_run || '40957122960' }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+defaults:
+  run: { shell: bash }
+
+jobs:
+  contracts:
+    name: Exact diagnostics and public release custody controls
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.13.0", package-manager-cache: false }
+      - name: Require frozen inputs, complete output vectors and authentic release identities
+        run: node --test tests/tooling/release/computed-event-names.test.ts tests/tooling/release/computed-event-release.test.ts
+
+  release-identity:
+    name: Authenticate the public release and integrated fix
+    if: github.repository == 'ubugeeei-prod/vize'
+    needs: contracts
+    permissions: { contents: read, actions: read }
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.13.0", package-manager-cache: false }
+      - name: Retain official producer, immutable tag and main integration evidence
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_EVIDENCE: ${{ runner.temp }}/computed-event-release.json
+        run: >-
+          node tools/support/release/computed_event_release.ts
+          --phase "$PUBLIC_PHASE" --version "$PUBLIC_VERSION"
+          --release-run "$PUBLIC_RELEASE_RUN" --out "$RELEASE_EVIDENCE"
+      - name: Retain the public release admission receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: computed-event-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/computed-event-release.json
+          if-no-files-found: error
+          retention-days: 90
+
+  public-consumer:
+    name: Original public tsrs consumer (${{ matrix.os }})
+    needs: [contracts, release-identity]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: Windows, runner: blacksmith-32vcpu-windows-2025 }
+          - { os: Linux, runner: blacksmith-8vcpu-ubuntu-2404 }
+          - {
+              os: macOS,
+              runner: "${{ vars.VIZE_RELEASE_MACOS_RUNNER || 'blacksmith-12vcpu-macos-15' }}",
+            }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    steps:
+      - name: Preserve the frozen reporter bytes on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.13.0", package-manager-cache: false }
+      - name: Require process and filesystem controls on the consumer host
+        run: node --test tests/tooling/release/computed-event-names.test.ts
+      - name: Install the public mapper and run exact original, negative and repair cases
+        env:
+          CONSUMER_EVIDENCE: ${{ runner.temp }}/computed-event-consumer
+        run: >-
+          node tools/support/release/computed_event_names.ts
+          --phase "$PUBLIC_PHASE" --version "$PUBLIC_VERSION"
+          --out "$CONSUMER_EVIDENCE"
+      - name: Retain raw processes, package lock and native identities
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: computed-event-consumer-${{ matrix.os }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/computed-event-consumer/**
+            !${{ runner.temp }}/computed-event-consumer/**/node_modules/**
+          if-no-files-found: error
+          retention-days: 90
