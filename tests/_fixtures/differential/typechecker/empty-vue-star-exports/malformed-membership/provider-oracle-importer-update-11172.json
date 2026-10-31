@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-oracle-importer-successor",
+  "sourceRevision": "d92d0147eedb6ba5d959f5c31743df0b58f2e731",
+  "sourceTree": "32e8b0934e6730cac7053e89bcd9bfcb9ba51bad",
+  "previousProviderRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-peer-update-20261031.json",
+    "sha256": "ad428607e450f807b15e9301d429fcbee7fe67729b52130f2d7e63c2f0cf1e0f"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1150350,
+    "sha256": "5f88503038bba641044f11b3a0cf9e0c27d83dd87ba2565c96c7be7d44cf7b3f",
+    "gitBlob": "be4ebdfc4ae1cdfb927e62311827c2a787aee9dd"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1150435,
+    "sha256": "bc0ff0b8a3b617d02c86d27540ba3046fe55ef5d41c2e9179dec155caaf5c38c",
+    "gitBlob": "ad3e7f2e0100c4de76d93110f7c114a3d0288450"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1877,
+    "sha256": "703095a422cfc630a5d29ef5f4a5230b1c853c6013b8e8080809643cc5b4c6a0",
+    "gitBlob": "87b6e3c9788ffc6a4c9578e53a39b951cbbb5d8e"
+  },
+  "oracleImporter": {
+    "path": "tests/tooling/jsx-vapor-oracle/package.json",
+    "bytes": 430,
+    "sha256": "fabbaf1c1271fcc08277cffaa9369d14bbdda8efd9a951d36310cd997ff6825d",
+    "gitBlob": "58999e2819fc06008dccc75f1810a0a543485769"
+  },
+  "insertion": {
+    "offset": 68490,
+    "precedingUtf8": "  tests/tooling/jsx-vapor-oracle:\n    devDependencies:\n      '@babel/core':\n        specifier: catalog:babel-jsx-oracle\n        version: 7.29.0(supports-color@10.2.2)\n",
+    "addedUtf8": "      '@playwright/test':\n        specifier: catalog:testing\n        version: 1.62.1\n"
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Only three literal lock lines register the already resolved Playwright 1.62.1 catalog dependency for the existing JSX oracle importer. Deleting those bytes reconstructs the complete frozen qualification lock. Root package, packages, peer contexts, provider roster, all bodies and native membership controls retain their prior authority. Fresh native execution must qualify the current graph; this record gives source provenance only."
+}

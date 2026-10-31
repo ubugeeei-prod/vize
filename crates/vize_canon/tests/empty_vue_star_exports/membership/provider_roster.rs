@@ -4,6 +4,8 @@ use super::{Checked, Roots, support};
 use serde_json::{Value, json};
 use std::{fs, path::Path};
 
+mod qualification_graph;
+
 fn load() -> Value {
     let bytes =
         fs::read(support::corpus().join("malformed-membership/provider-peer-update-20261031.json"))
@@ -75,10 +77,13 @@ pub(super) fn apply(manifest: &mut Value, members: &mut Vec<Value>) {
     let record = load();
     let lock = fs::read(support::repository().join("pnpm-lock.yaml")).unwrap();
     let package = fs::read(support::repository().join("package.json")).unwrap();
-    final_graph(&record, &lock, &package)
+    let qualification = qualification_graph::authorize(&record, &lock, &package)
         .expect("the captured graph is never a substitute for the reviewed final graph");
     *members = successor(members, &record).expect("only the six complete declared paths relocate");
     manifest["provenance"]["currentProviderRoster"] = record;
+    if let Some(qualification) = qualification {
+        manifest["provenance"]["currentProviderQualificationGraph"] = qualification;
+    }
 }
 
 pub(super) fn validate(packet: &Value, roots: &Roots, record: &Value) {
