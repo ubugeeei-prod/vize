@@ -74,3 +74,31 @@ runs:
           !target/differential/**/node_modules/**
         if-no-files-found: ignore
         retention-days: 7
+    - name: Retain failed instance-global qualification observations
+      # Keep the original failed result and every raw packet for diagnosis.
+      if: ${{ failure() && hashFiles('target/differential/instance-globals-10617/processes.json') != '' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: instance-globals-tooling-${{ inputs.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          target/differential/instance-globals-10617/
+          target/ci/vize.differential-build.json
+          target/ci/vize.source-build.json
+          target/ci/vize.source-use.json
+          !target/differential/instance-globals-10617/**/node_modules/**
+          !target/differential/instance-globals-10617/**/.cache/**
+          !target/differential/instance-globals-10617/**/cache/**
+          !target/differential/instance-globals-10617/**/*.tgz
+          !target/differential/instance-globals-10617/**/*.zip
+          !target/differential/instance-globals-10617/**/*.tar
+          !target/differential/instance-globals-10617/**/*.tar.gz
+          !target/differential/instance-globals-10617/**/*.node
+          !target/differential/instance-globals-10617/**/*.so
+          !target/differential/instance-globals-10617/**/*.dylib
+          !target/differential/instance-globals-10617/**/*.dll
+          !target/differential/instance-globals-10617/**/*.exe
+          !target/differential/instance-globals-10617/**/vize
+          !target/differential/instance-globals-10617/**/tsgo
+          !target/differential/instance-globals-10617/**/tsc
+        if-no-files-found: error
+        retention-days: 7
