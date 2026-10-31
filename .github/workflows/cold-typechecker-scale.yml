@@ -6,6 +6,11 @@ on:
         description: Immutable 40-hex baseline commit distinct from the dispatched source
         type: string
         required: true
+      mode:
+        description: Full comparison or focused same-source phase/allocation baseline
+        type: choice
+        options: [full, phase-baseline]
+        default: full
       sfcs:
         description: Vue SFC count plus the complete authored package dependency graph
         type: choice
@@ -31,6 +36,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   profile:
+    if: github.event_name != 'workflow_dispatch' || inputs.mode != 'phase-baseline'
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 90
     env:
@@ -84,7 +90,7 @@ jobs:
           node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --base-receipt "$RUNNER_TEMP/cold-scale/builds/normal-base.json" --head-receipt "$RUNNER_TEMP/cold-scale/builds/normal-head.json" --receipt "$RUNNER_TEMP/cold-scale/builds/normal-pair.json"
       - name: Compare fresh processes and independent authored diagnostic controls
         run: |
-          bench_cpu_set=$(python3 -c 'import os; print(",".join(map(str, sorted(os.sched_getaffinity(0))[:8])))')
+          bench_cpu_set=$(node tools/benchmarks/scripts/cold-typechecker-scale-affinity.ts)
           for round in 1 2 3; do
             order='base head'
             if [[ "$round" == 2 ]]; then order='head base'; fi
@@ -111,7 +117,7 @@ jobs:
       - name: Capture paired Rust allocation spans without CPU sampling overhead
         timeout-minutes: 10
         run: |
-          bench_cpu_set=$(python3 -c 'import os; print(",".join(map(str, sorted(os.sched_getaffinity(0))[:8])))')
+          bench_cpu_set=$(node tools/benchmarks/scripts/cold-typechecker-scale-affinity.ts)
           for source in base head; do
             taskset -c "$bench_cpu_set" node tools/benchmarks/scripts/cold-typechecker-scale.ts --provider "$RUNNER_TEMP/provider" --files "$VIZE_BENCH_FILES" --tool profile --binary "$RUNNER_TEMP/vize-profile-$source" --out "$RUNNER_TEMP/cold-scale/profile-$source"
           done
@@ -122,7 +128,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends linux-tools-generic llvm
           sudo sysctl -w kernel.perf_event_paranoid=0
-          bench_cpu_set=$(python3 -c 'import os; print(",".join(map(str, sorted(os.sched_getaffinity(0))[:8])))')
+          bench_cpu_set=$(node tools/benchmarks/scripts/cold-typechecker-scale-affinity.ts)
           perf_bin=""
           for bench_perf_candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
             if [[ -x "$bench_perf_candidate" ]]; then perf_bin="$bench_perf_candidate"; break; fi
@@ -153,4 +159,65 @@ jobs:
         with:
           name: cold-typechecker-scale-${{ github.sha }}
           path: ${{ runner.temp }}/cold-scale-evidence.tgz
+          retention-days: 14
+  phase-baseline:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'phase-baseline'
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 60
+    env:
+      BASE_SHA: ${{ inputs.base_sha }}
+      BENCH_EVENT: ${{ github.event_name }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      GOMAXPROCS: "8"
+      RAYON_NUM_THREADS: "8"
+      CARGO_BUILD_JOBS: "8"
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false, fetch-depth: 2 }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Select the immutable production source and existing complete 2500-SFC corpus
+        run: |
+          set -euo pipefail
+          [[ "${{ inputs.sfcs }}" == 2500 ]]
+          node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --select-baseline --receipt "$RUNNER_TEMP/cold-phase/baseline-selection.json"
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA"
+          git worktree add --detach "$RUNNER_TEMP/cold-phase-source" "$BASE_SHA"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/cold-phase/driver.txt"
+      - name: Install the unchanged cold-scale comparison providers once
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/provider"
+          cd "$RUNNER_TEMP/provider"
+          cat > package.json <<'JSON'
+          {"private":true,"dependencies":{"vize":"0.596.0","@vizejs/native":"0.596.0","vue":"3.6.0-rc.13","typescript":"6.0.3","typescript-native":"npm:typescript@7.1.0-beta","vue-tsc":"3.3.13"}}
+          JSON
+          npm install --ignore-scripts --no-audit --no-fund
+          cp package.json package-lock.json "$RUNNER_TEMP/cold-phase/"
+      - name: Build only normal and allocation-instrumented images of that same source
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/cold-phase-source" --target-dir "$RUNNER_TEMP/cold-phase-builds/normal" --binary "$RUNNER_TEMP/cold-phase/binaries/normal/vize" --receipt "$RUNNER_TEMP/cold-phase/builds/normal.json" --role normal-baseline
+          node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/cold-phase-source" --target-dir "$RUNNER_TEMP/cold-phase-builds/allocation" --binary "$RUNNER_TEMP/cold-phase/binaries/allocation/vize" --receipt "$RUNNER_TEMP/cold-phase/builds/allocation.json" --role allocation-baseline --allocation
+      - name: Capture balanced A/A noise, all diagnostic controls and one allocation profile
+        run: |
+          set -euo pipefail
+          export VIZE_BENCH_CPU_SET=$(node tools/benchmarks/scripts/cold-typechecker-scale-affinity.ts)
+          taskset -c "$VIZE_BENCH_CPU_SET" node tools/benchmarks/scripts/cold-typechecker-scale-phase-baseline.ts --provider "$RUNNER_TEMP/provider" --out "$RUNNER_TEMP/cold-phase/observations" --source "$BASE_SHA" --normal "$RUNNER_TEMP/cold-phase/builds/normal.json" --allocation "$RUNNER_TEMP/cold-phase/builds/allocation.json"
+      - name: Preserve raw phase evidence without traversing workspace links or copying executables
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/cold-phase"
+          tar --exclude='*/project' --exclude='*/xdg-cache' --exclude='*/tmp' --exclude='*/binaries' -czf "$RUNNER_TEMP/cold-phase-evidence.tgz" -C "$RUNNER_TEMP" cold-phase
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: cold-typechecker-phase-baseline-${{ inputs.base_sha }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/cold-phase-evidence.tgz
           retention-days: 14
