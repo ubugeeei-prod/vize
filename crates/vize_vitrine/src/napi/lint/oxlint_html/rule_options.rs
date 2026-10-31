@@ -186,6 +186,47 @@ mod tests {
     use serde_json::json;
 
     #[test]
+    fn expose_last_projects_both_boolean_values_without_losing_the_order() {
+        for enabled in [false, true] {
+            let mut options = PatinaLintOptionsNapi::default();
+            parse_rule_option(
+                "script/define-macros-order",
+                Some(&json!({"order":["defineOptions"],"defineExposeLast":enabled})),
+                &mut options,
+            )
+            .unwrap();
+            let projected = options.define_macros_order.unwrap();
+            assert_eq!(projected.order, Some(vec!["defineOptions".into()]));
+            assert_eq!(projected.define_expose_last, Some(enabled));
+        }
+    }
+
+    #[test]
+    fn malformed_expose_last_policies_leave_the_previous_complete_policy_untouched() {
+        for payload in [
+            json!({"defineExposeLast":"true"}),
+            json!({"defineExposeLast":null}),
+            json!({"defineExposeLastTypo":true}),
+            json!({"defineExposeLast":true,"order":["defineExpose"]}),
+        ] {
+            let mut options = PatinaLintOptionsNapi::default();
+            parse_rule_option(
+                "script/define-macros-order",
+                Some(&json!({"order":["defineOptions"],"defineExposeLast":true})),
+                &mut options,
+            )
+            .unwrap();
+            assert!(
+                parse_rule_option("script/define-macros-order", Some(&payload), &mut options)
+                    .is_err()
+            );
+            let retained = options.define_macros_order.unwrap();
+            assert_eq!(retained.order, Some(vec!["defineOptions".into()]));
+            assert_eq!(retained.define_expose_last, Some(true));
+        }
+    }
+
+    #[test]
     fn seven_schema_families_accept_authored_payloads() {
         let mut options = PatinaLintOptionsNapi::default();
         for (name, payload) in [

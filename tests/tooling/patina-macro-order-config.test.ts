@@ -258,8 +258,11 @@ test("macro order JSON options preserve complete invalid-policy errors", () => {
     const json = JSON.stringify({ [rule]: options });
     return { reason, json, outcome: observe("invalid:" + reason, row, { ruleOptionsJson: json }) };
   });
-  const json = JSON.stringify({ [rule]: { defineExposeLast: true } });
-  const unknown = observe("unexposed-define-expose-last", row, { ruleOptionsJson: json });
+  const supported = observe("supported-define-expose-last", row, {
+    ruleOptionsJson: JSON.stringify({ [rule]: { defineExposeLast: true } }),
+  });
+  const json = JSON.stringify({ [rule]: { defineExposeLastTypo: true } });
+  const unknown = observe("unknown-define-expose-last-typo", row, { ruleOptionsJson: json });
   const repair = corpus.cases[1]!;
   const repaired = observe("valid-policy-after-refusals", repair, {
     ruleOptionsJson: optionsJson(repair),
@@ -274,13 +277,14 @@ test("macro order JSON options preserve complete invalid-policy errors", () => {
       },
     });
   }
-  const column = json.indexOf('"defineExposeLast"') + '"defineExposeLast"'.length;
+  assert.deepEqual(supported, returned(nativeExpected(row)));
+  const column = json.indexOf('"defineExposeLastTypo"') + '"defineExposeLastTypo"'.length;
   assert.deepEqual(unknown, {
     kind: "threw",
     error: {
       name: "Error",
       code: "InvalidArg",
-      message: `Invalid Patina rule options: unknown field \`defineExposeLast\`, expected \`order\` at line 1 column ${column}`,
+      message: `Invalid Patina rule options: unknown field \`defineExposeLastTypo\`, expected \`order\` or \`defineExposeLast\` at line 1 column ${column}`,
     },
   });
   assert.deepEqual(repaired, returned(nativeExpected(repair)));

@@ -17,6 +17,7 @@ export const hash = (value: string | Buffer) => createHash("sha256").update(valu
 
 export interface MacroOptions {
   order?: string[];
+  defineExposeLast?: boolean;
 }
 export interface Finding {
   message: string;

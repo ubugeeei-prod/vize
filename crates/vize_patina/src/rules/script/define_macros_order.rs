@@ -6,7 +6,7 @@
 //! must be the first statements of `<script setup>`, after imports, type
 //! declarations, enums and exports. The default order is `defineProps` and then
 //! `defineEmits`; other macros count as ordinary statements unless configured.
-//! Like the upstream rule, it reports at most one statement per block.
+//! Prefix order reports at most once; `defineExposeLast` adds a setup-only last check.
 //!
 //! A macro statement is a top-level expression statement or variable declaration
 //! whose value is (possibly through `withDefaults(...)`) a call to the macro.
