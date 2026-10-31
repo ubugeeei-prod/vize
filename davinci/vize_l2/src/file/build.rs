@@ -36,6 +36,7 @@ pub(crate) struct Facts<'a> {
     pub native_interpolation_failures: Vec<super::NativeFileInterpolationFailure<'a>>,
     pub native_interpolation_nodes: SideTable<usize>,
     pub native_text_values: Vec<super::NativeFileTextValue<'a>>,
+    pub conditional_storage: Option<Box<super::conditional::ConditionalStorage<'a>>>,
     names: Vec<Names>,
 }
 
@@ -131,6 +132,7 @@ impl<'a> Facts<'a> {
             native_interpolation_failures: Vec::new(),
             native_interpolation_nodes: SideTable::new(),
             native_text_values: Vec::new(),
+            conditional_storage: None,
             names: alloc::vec![Names::default()],
         }
     }
@@ -219,6 +221,7 @@ impl<'a> Facts<'a> {
             namespace: site.namespace,
             kind: site.kind,
             initializer: site.initializer,
+            boolean_initializer: None,
             import_source: site.import_source,
             imported_name: site.imported_name,
             direct_program: site.direct_program,

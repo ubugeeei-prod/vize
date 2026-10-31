@@ -198,12 +198,19 @@ pub struct Declaration {
     pub namespace: Namespace,
     pub kind: DeclarationKind,
     pub initializer: InitializerKind,
+    pub(crate) boolean_initializer: Option<bool>,
     pub import_source: Option<String>,
     pub imported_name: Option<String>,
     pub(crate) direct_program: bool,
 }
 
 impl Declaration {
+    /// Exact BooleanLiteral value recorded by the original Program declaration event.
+    #[must_use]
+    pub const fn boolean_initializer(&self) -> Option<bool> {
+        self.boolean_initializer
+    }
+
     /// The original statement event was directly in the admitted Program body.
     #[must_use]
     pub fn is_direct_program(&self) -> bool {
