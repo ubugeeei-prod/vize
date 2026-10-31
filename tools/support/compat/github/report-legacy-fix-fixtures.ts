@@ -25,6 +25,7 @@ import {
 import { knownCompilerCssSource } from "../../../../tests/differential/compiler-css-api-registry.ts";
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
 import { newVaporStyleApiCases } from "./vapor-style-api-fixtures.ts";
+import { newJsxChildApiCases } from "./jsx-child-api-fixtures.ts";
 
 /** PRs opened before this (just after the gate merged) stay report-only. */
 export const GATE_SINCE = "2026-10-20T06:00:00Z";
@@ -83,6 +84,7 @@ interface Manifest {
   runtimeCases?: unknown;
   cssApiCases?: unknown;
   vaporStyleApiCases?: unknown;
+  jsxChildApiCases?: unknown;
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
@@ -334,8 +336,18 @@ function checkProduct(
       vaporIds.length > 0 &&
       compilerPaths.length > 0 &&
       compilerPaths.every((path) => vaporStyle.sources.has(path));
+    const jsxChild =
+      product === "compiler"
+        ? newJsxChildApiCases(before?.jsxChildApiCases, manifest.jsxChildApiCases, readFile)
+        : { ids: [] as string[], sources: new Set<string>() };
+    const jsxIds = compilerPaths.some((path) => jsxChild.sources.has(path)) ? jsxChild.ids : [];
+    const jsxOnly =
+      product === "compiler" &&
+      jsxIds.length > 0 &&
+      compilerPaths.length > 0 &&
+      compilerPaths.every((path) => jsxChild.sources.has(path));
     const registered =
-      (cssOnly || vaporOnly || !batchRequired || cases.length > 0) &&
+      (cssOnly || vaporOnly || jsxOnly || !batchRequired || cases.length > 0) &&
       (!protocolRequired || protocols.length > 0) &&
       (!dtoRequired || dtoRegistered);
     return {
@@ -347,6 +359,7 @@ function checkProduct(
         ...runtime.ids,
         ...cssApi,
         ...vaporIds,
+        ...jsxIds,
         ...languageProject.ids,
         ...dtoProtocols,
       ],

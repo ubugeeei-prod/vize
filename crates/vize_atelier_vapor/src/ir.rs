@@ -123,6 +123,8 @@ pub enum OperationNode<'a> {
     SetDynamicProps(SetDynamicPropsIRNode<'a>),
     SetMergedProps(SetMergedPropsIRNode<'a>),
     SetText(SetTextIRNode<'a>),
+    /// JSX intrinsic children normalize DOM blocks; template text stays SetText.
+    SetJsxChildren(SetJsxChildrenIRNode<'a>),
     SetEvent(SetEventIRNode<'a>),
     SetHtml(SetHtmlIRNode<'a>),
     SetTemplateRef(SetTemplateRefIRNode<'a>),
@@ -186,6 +188,13 @@ pub struct SetTextIRNode<'a> {
     pub element: usize,
     pub is_element: bool,
     pub values: Vec<'a, Box<'a, SimpleExpressionNode<'a>>>,
+}
+
+/// A JSX child run owns its anchor and one reactive normalization scope.
+#[derive(Debug)]
+pub struct SetJsxChildrenIRNode<'a> {
+    pub text: SetTextIRNode<'a>,
+    pub once: bool,
 }
 
 /// Set event operation

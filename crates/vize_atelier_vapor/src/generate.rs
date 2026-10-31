@@ -264,8 +264,12 @@ fn returned_root_operation_id(op: &OperationNode<'_>) -> Option<usize> {
 }
 
 fn maybe_generate_text_ref(ctx: &mut GenerateContext, op: &OperationNode<'_>) {
-    if let OperationNode::SetText(set_text) = op
-        && !set_text.is_element
+    let set_text = match op {
+        OperationNode::SetText(text) => text,
+        OperationNode::SetJsxChildren(children) => &children.text,
+        _ => return,
+    };
+    if !set_text.is_element
         && !ctx.standalone_text_elements.contains(&set_text.element)
         && !ctx.text_nodes.contains_key(&set_text.element)
     {

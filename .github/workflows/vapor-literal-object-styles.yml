@@ -11,6 +11,9 @@ on:
       - "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/**"
       - "tests/_helpers/vapor-ssr-expose-successor.ts"
       - "tests/tooling/support/vapor-style-authored-transition.ts"
+      - "tests/tooling/support/jsx-child-style-successors.ts"
+      - "tests/tooling/jsx-child-style-successors.test.ts"
+      - "tests/_fixtures/differential/jsx/child-values-6890-style-successors.json"
       - "tests/tooling/vapor-style-authored-transition.test.ts"
       - "tests/tooling/vapor-ssr-expose-successor.test.ts"
       - "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/ssr-expose-successor-10923/**"
@@ -79,10 +82,11 @@ jobs:
           sha256sum "$observer" "$baseline/$observer" > "$RUNNER_TEMP/vapor-literal-styles/observer.sha256"
       - name: Compare complete packets and explicit authored module successors
         run: |
+          node --test tests/tooling/jsx-child-style-successors.test.ts
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import fs from 'node:fs';
-          import { assertAuthoredStylePackets, assertPreservedStylePacket } from './tests/tooling/support/vapor-style-authored-transition.ts';
+          import { assertChildStylePackets, assertChildPreservedStylePacket } from './tests/tooling/support/jsx-child-style-successors.ts';
           import { assertVaporSfcExposeTransition } from './tests/_helpers/vapor-ssr-expose-successor.ts';
           import { assertComposedVaporSfcStylePackets } from './tests/tooling/support/vapor-style-successor-composition.ts';
           const directory = `${process.env.RUNNER_TEMP}/vapor-literal-styles`;
@@ -91,19 +95,19 @@ jobs:
           assert.equal(head.length, 180); assert.equal(base.length, head.length);
           const originalHead=JSON.parse(fs.readFileSync('tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/observed-head.json'));
           assert.equal(originalHead.length,head.length);
-          assertAuthoredStylePackets('main',head);
-          head.forEach((row,index)=>assertPreservedStylePacket('main',index,originalHead[index].output,row.output));
+          const childOutputSuccessors=assertChildStylePackets('main',head);
+          head.forEach((row,index)=>assertChildPreservedStylePacket('main',index,originalHead[index].output,row.output));
           const beforeCase=JSON.parse(fs.readFileSync(`${directory}/base-attribute-case.json`));
           const afterCase=JSON.parse(fs.readFileSync(`${directory}/head-attribute-case.json`));
           assert.equal(beforeCase.length,48);assert.equal(afterCase.length,48);
-          assertAuthoredStylePackets('attribute-case',afterCase);
-          afterCase.forEach((row,index)=>{const previous=beforeCase[index];for(const key of ['id','family','source','standalone','retained','mapped'])assert.deepEqual(row[key],previous[key]);assertPreservedStylePacket('attribute-case',index,previous.output,row.output);});
+          assertChildStylePackets('attribute-case',afterCase);
+          afterCase.forEach((row,index)=>{const previous=beforeCase[index];for(const key of ['id','family','source','standalone','retained','mapped'])assert.deepEqual(row[key],previous[key]);assertChildPreservedStylePacket('attribute-case',index,previous.output,row.output);});
           let changed = 0;
           for (let index=0; index<head.length; index++) {
             const current=head[index], previous=base[index];
             for (const key of ['id','family','source','retained','mapped','mode','ssr','standalone','fold']) assert.deepEqual(current[key], previous[key]);
             assert.ok(current.expressionReparses <= previous.expressionReparses, `no new expression parsing ${index}`);
-            if (!current.fold) assertPreservedStylePacket('main',index,previous.output,current.output);
+            if (!current.fold) assertChildPreservedStylePacket('main',index,previous.output,current.output);
             else {
               assert.notDeepEqual(current.output, previous.output, `real fold must alter the full packet ${index}`);
               changed++;
@@ -115,20 +119,20 @@ jobs:
           const beforeReview=JSON.parse(fs.readFileSync(`${directory}/base-review.json`));
           const afterReview=JSON.parse(fs.readFileSync(`${directory}/head-review.json`));
           assert.equal(beforeReview.length,48); assert.equal(afterReview.length,48);
-          assertAuthoredStylePackets('review',afterReview);
-          afterReview.forEach((row,index)=>{const previous=beforeReview[index];for(const key of ['id','family','source','standalone','retained','mapped','fold'])assert.deepEqual(row[key],previous[key]);if(row.fold)assert.notDeepEqual(row.output,previous.output);else assertPreservedStylePacket('review',index,previous.output,row.output);});
+          assertChildStylePackets('review',afterReview);
+          afterReview.forEach((row,index)=>{const previous=beforeReview[index];for(const key of ['id','family','source','standalone','retained','mapped','fold'])assert.deepEqual(row[key],previous[key]);if(row.fold)assert.notDeepEqual(row.output,previous.output);else assertChildPreservedStylePacket('review',index,previous.output,row.output);});
           const beforePriority=JSON.parse(fs.readFileSync(`${directory}/base-priority.json`));
           const afterPriority=JSON.parse(fs.readFileSync(`${directory}/head-priority.json`));
           assert.equal(beforePriority.length,48);assert.equal(afterPriority.length,48);
-          assertAuthoredStylePackets('priority',afterPriority);
-          afterPriority.forEach((row,index)=>{const previous=beforePriority[index];for(const key of ['id','family','source','standalone','retained','mapped','fold'])assert.deepEqual(row[key],previous[key]);if(row.fold)assert.notDeepEqual(row.output,previous.output);else assertPreservedStylePacket('priority',index,previous.output,row.output);assert.ok(row.expressionReparses<=previous.expressionReparses);});
+          assertChildStylePackets('priority',afterPriority);
+          afterPriority.forEach((row,index)=>{const previous=beforePriority[index];for(const key of ['id','family','source','standalone','retained','mapped','fold'])assert.deepEqual(row[key],previous[key]);if(row.fold)assert.notDeepEqual(row.output,previous.output);else assertChildPreservedStylePacket('priority',index,previous.output,row.output);assert.ok(row.expressionReparses<=previous.expressionReparses);});
           const beforeSfc=JSON.parse(fs.readFileSync(`${directory}/base-sfc.json`));
           const afterSfc=JSON.parse(fs.readFileSync(`${directory}/head-sfc.json`));
           assert.equal(beforeSfc.length,4);assert.equal(afterSfc.length,4);
-          assertAuthoredStylePackets('sfc',afterSfc);
+          assertChildStylePackets('sfc',afterSfc);
           assertVaporSfcExposeTransition(beforeSfc,afterSfc);
           assertComposedVaporSfcStylePackets(beforeSfc,afterSfc);
-          afterSfc.forEach((row,index)=>{const previous=beforeSfc[index];for(const key of ['source','vapor','ssr','fold'])assert.deepEqual(row[key],previous[key]);if(row.fold)assert.notDeepEqual(row.output,previous.output);else assertPreservedStylePacket('sfc',index,previous.output,row.output);});
+          afterSfc.forEach((row,index)=>{const previous=beforeSfc[index];for(const key of ['source','vapor','ssr','fold'])assert.deepEqual(row[key],previous[key]);if(row.fold)assert.notDeepEqual(row.output,previous.output);else assertChildPreservedStylePacket('sfc',index,previous.output,row.output);});
           const beforeProfile=JSON.parse(fs.readFileSync(`${directory}/base-profile.json`));
           const afterProfile=JSON.parse(fs.readFileSync(`${directory}/head-profile.json`));
           assert.equal(beforeProfile.length,24); assert.equal(afterProfile.length,24);
@@ -139,8 +143,8 @@ jobs:
             assert.equal(row.samplesNs.length,9); assert.equal(previous.samplesNs.length,9);
             return {id:row.id,family:row.family,mode:row.mode,ssr:row.ssr,standalone:row.standalone,retained:row.retained,baseMedianNs:median(previous.samplesNs),headMedianNs:median(row.samplesNs),ratio:median(row.samplesNs)/median(previous.samplesNs),baseArenaBytes:previous.arenaBytes,headArenaBytes:row.arenaBytes,baseExpressionReparses:previous.expressionReparses,headExpressionReparses:row.expressionReparses};
           });
-          fs.writeFileSync(`${directory}/measurement.json`,JSON.stringify({scope:'CI source full-compile observer including parsing/lowering/codegen/JSON; arena used bytes excludes owned heap; report only',measurements},null,2)+'\n');
-          fs.writeFileSync(`${directory}/comparison.json`,JSON.stringify({scope:'source-only; complete raw outputs; explicit authored module successors preserve all other facets; no browser or published artifact credit',rows:head.length,styleFoldChanges:changed,styleConservativeRows:head.length-changed,authoredModuleSuccessors:28,historicalOutputsUnchanged:152},null,2)+'\n');
+          fs.writeFileSync(`${directory}/measurement.json`,JSON.stringify({scope:'CI source full-compile observer including parsing/lowering/codegen/JSON; arena used bytes excludes owned heap; changed-work timings descriptive only',performanceQualified:false,equivalentWorkTiming:false,measurements},null,2)+'\n');
+          fs.writeFileSync(`${directory}/comparison.json`,JSON.stringify({scope:'source-only; complete raw outputs; explicit authored module successors preserve all other facets; no browser or published artifact credit',rows:head.length,styleFoldChanges:changed,styleConservativeRows:head.length-changed,childOutputSuccessors,runtimeQualified:false,performanceQualified:false},null,2)+'\n');
           JS
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()

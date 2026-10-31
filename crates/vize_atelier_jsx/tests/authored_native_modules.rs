@@ -119,7 +119,7 @@ fn owned_native_arrows_keep_whole_modules_and_exact_composed_origins() {
             .expect("capture");
     }
     let expected: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/_fixtures/differential/jsx/authored-native-modules-10700/mapped-roots.json"
+        "../../../tests/_fixtures/differential/jsx/authored-native-modules-10700/mapped-roots.child-values-6890.inert-template.json"
     ))
     .expect("frozen complete source packet");
     let whole_outputs = packets
@@ -205,7 +205,7 @@ fn native_module_admission_is_owned_by_ast_not_enclosing_name_spelling() {
         .expect("capture");
     }
     let expected: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/_fixtures/differential/jsx/authored-native-modules-10700/admission.json"
+        "../../../tests/_fixtures/differential/jsx/authored-native-modules-10700/admission.child-values-6890.inert-template.json"
     ))
     .expect("frozen admission packet");
     assert_eq!(actual, expected);

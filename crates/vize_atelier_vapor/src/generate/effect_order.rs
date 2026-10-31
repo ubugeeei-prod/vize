@@ -41,8 +41,10 @@ pub(super) struct EffectOrder<'b, 'a> {
 impl<'b, 'a> EffectOrder<'b, 'a> {
     pub(super) fn new(block: &'b BlockIRNode<'a>) -> Self {
         let inserts = !block.effect.is_empty()
-            && (block.operation.iter())
-                .any(|op| insertion(op).is_some_and(|(_, parent, _)| parent.is_some()));
+            && (block.operation.iter()).any(|op| {
+                matches!(op, OperationNode::SetJsxChildren(_))
+                    || insertion(op).is_some_and(|(_, parent, _)| parent.is_some())
+            });
         let mut order = Self {
             block,
             places: Places::Empty,
@@ -150,6 +152,10 @@ impl<'b, 'a> EffectOrder<'b, 'a> {
     fn insertion_key(&self, op: &OperationNode<'_>) -> Option<Key> {
         if self.places.slots().is_empty() {
             return None;
+        }
+        if let OperationNode::SetJsxChildren(children) = op {
+            let place = self.place(children.text.element)?;
+            return Some((place.root, 4 * u64::from(place.rank) + 1));
         }
         let (_, parent, anchor) = insertion(op)?;
         let parent = parent?;

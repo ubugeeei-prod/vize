@@ -1,0 +1,46 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+assertion_line: 319
+expression: "compile_output_summary(MIXED_MODES, &output)"
+---
+CompileOutputSummary {
+    diagnostics: [],
+    components: [
+        RenderComponentSummary {
+            name: Some(
+                "DefaultMode",
+            ),
+            mode: "Vdom",
+            preamble: Some(
+                "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            ),
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"main\", null, \"default\"))\n}",
+            templates: [],
+            scoped_style: None,
+        },
+        RenderComponentSummary {
+            name: Some(
+                "VaporOnly",
+            ),
+            mode: "Vapor",
+            preamble: None,
+            code: "import { insert as _insert, txt as _txt, VaporFragment as _VaporFragment, EffectScope as _EffectScope, isFragment as _isFragment, remove as _remove, isVaporComponent as _isVaporComponent, createTextNode as _createTextNode, renderEffect as _renderEffect, template as _template } from 'vue';\n\n/*\n * Node normalization adapted from @vue-jsx-vapor/runtime 3.2.26.\n * MIT License\n * Copyright (c) 2023 zhiyuanzmj <https://github.com/zhiyuanzmj>\n *\n * Permission is hereby granted, free of charge, to any person obtaining a copy\n * of this software and associated documentation files (the \"Software\"), to deal\n * in the Software without restriction, including without limitation the rights\n * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n * copies of the Software, and to permit persons to whom the Software is\n * furnished to do so, subject to the following conditions:\n *\n * The above copyright notice and this permission notice shall be included in all\n * copies or substantial portions of the Software.\n *\n * THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n * SOFTWARE.\n */\nfunction _vizeJsxFragment(nodes, anchor, dom) {\n  const fragment = new _VaporFragment(nodes);\n  fragment.anchor = anchor || dom.document.createTextNode(\"\");\n  return fragment;\n}\nfunction _vizeJsxBlock(value, anchor, dom) {\n  if (value instanceof dom.Node || _isFragment(value)) return value;\n  if (_isVaporComponent(value)) return _vizeJsxFragment(value, anchor, dom);\n  if (dom.Array.isArray(value)) return _vizeJsxFragment(value.map(item => _vizeJsxBlock(item, void 0, dom)), anchor, dom);\n  const text = value == null || typeof value === \"boolean\" ? \"\" : dom.String(value);\n  if (anchor) {\n    anchor.textContent = text;\n    return anchor;\n  }\n  return dom.document.createTextNode(text);\n}\nfunction _vizeJsxUpdate(current, value, anchor, dom) {\n  anchor = anchor || (current instanceof dom.Node && current.nodeType === 3 ? current : void 0);\n  const node = _vizeJsxBlock(value, anchor, dom);\n  if (current) {\n    if (_isFragment(current)) {\n      if (current.anchor && current.anchor.parentNode) {\n        _remove(current.nodes, current.anchor.parentNode);\n        _insert(node, current.anchor.parentNode, current.anchor);\n        if (!anchor) current.anchor.parentNode.removeChild(current.anchor);\n        if (current.scope) current.scope.stop();\n      }\n    } else if (current instanceof dom.Node) {\n      if (current.nodeType === 3 && (!(node instanceof dom.Node) || node.nodeType !== 3)) current.textContent = \"\";\n      if (_isFragment(node) && current.parentNode) {\n        _insert(node, current.parentNode, current);\n        if (!anchor || current.nodeType !== 3) current.parentNode.removeChild(current);\n      } else if (node instanceof dom.Node) {\n        if (current.nodeType === 3 && node.nodeType === 3) {\n          current.textContent = node.textContent;\n          return current;\n        }\n        if (current.parentNode) current.parentNode.replaceChild(node, current);\n      }\n    }\n  }\n  return node;\n}\nfunction _vizeJsxChildren(anchor, values, once = false) {\n  const document = anchor.ownerDocument;\n  const realmAnchor = document && document.defaultView ? anchor : _createTextNode();\n  const view = realmAnchor.ownerDocument && realmAnchor.ownerDocument.defaultView;\n  if (!view || typeof view.Node !== \"function\" || typeof view.Array !== \"function\" || typeof view.Array.isArray !== \"function\" || typeof view.String !== \"function\" || !(anchor instanceof view.Node) || anchor.nodeType !== 3) {\n    throw \"Vize JSX child anchor has no owned DOM text realm\";\n  }\n  const dom = { document, Node: view.Node, Array: view.Array, String: view.String };\n  const nodes = [];\n  const scopes = [];\n  for (const [index, value] of values.entries()) {\n    const target = index === values.length - 1 ? anchor : void 0;\n    const update = () => {\n      if (scopes[index]) scopes[index].stop();\n      scopes[index] = new _EffectScope();\n      nodes[index] = scopes[index].run(() => _vizeJsxUpdate(nodes[index], typeof value === \"function\" ? value() : value, target, dom));\n    };\n    if (typeof value === \"function\" && !once) _renderEffect(update);\n    else update();\n  }\n  if (anchor.parentNode) _insert(nodes, anchor.parentNode, anchor);\n}\nconst t0 = _template(\"<section> </section>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _vizeJsxChildren(x0, [() => (message)])\n  return n0\n}\n",
+            templates: [
+                "<section> </section>",
+            ],
+            scoped_style: None,
+        },
+        RenderComponentSummary {
+            name: Some(
+                "VdomOnly",
+            ),
+            mode: "Vdom",
+            preamble: Some(
+                "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            ),
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"aside\", null, _toDisplayString(count), 1 /* TEXT */))\n}",
+            templates: [],
+            scoped_style: None,
+        },
+    ],
+}

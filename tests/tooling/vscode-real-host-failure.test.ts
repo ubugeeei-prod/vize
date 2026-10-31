@@ -14,11 +14,12 @@ test("real host failure preserves full log and controlled source bytes before cl
   const log = Buffer.from("whole watched event\nwhole refusal stamp\n");
   const source = Buffer.from("<template>é\r\n<div>全体</div></template>\n");
   const config = Buffer.from("export default { vue: { languageServer: { hover: false } } };\n");
-  fs.mkdirSync(path.join(workspace, "node_modules", ".vize"), {
+  fs.mkdirSync(path.join(workspace, ".vize"), {
     recursive: true,
   });
+  fs.mkdirSync(path.join(workspace, "node_modules"));
   fs.mkdirSync(path.join(workspace, "src"));
-  fs.writeFileSync(path.join(workspace, "node_modules", ".vize", "lsp.log"), log);
+  fs.writeFileSync(path.join(workspace, ".vize", "lsp.log"), log);
   fs.writeFileSync(path.join(workspace, "src", "Scenario.vue"), source);
   fs.writeFileSync(path.join(workspace, "vite.config.mjs"), config);
   fs.writeFileSync(path.join(workspace, "node_modules", "unrelated-large-file"), "not evidence");
@@ -26,16 +27,13 @@ test("real host failure preserves full log and controlled source bytes before cl
     const error = new Error("Content modified");
     const result = retainRealHostFailure(workspace, destination, error);
     fs.rmSync(workspace, { force: true, recursive: true });
-    assert.deepEqual(
-      fs.readFileSync(path.join(destination, "node_modules/.vize/lsp.log.txt")),
-      log,
-    );
+    assert.deepEqual(fs.readFileSync(path.join(destination, ".vize/lsp.log.txt")), log);
     assert.deepEqual(fs.readFileSync(path.join(destination, "src/Scenario.vue.txt")), source);
     assert.deepEqual(fs.readFileSync(path.join(destination, "vite.config.mjs.txt")), config);
     assert.deepEqual(result.captured, [
       {
-        file: "node_modules/.vize/lsp.log",
-        output: "node_modules/.vize/lsp.log.txt",
+        file: ".vize/lsp.log",
+        output: ".vize/lsp.log.txt",
         bytes: log.length,
         sha256: crypto.createHash("sha256").update(log).digest("hex"),
       },

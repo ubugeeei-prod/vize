@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import {
   mkdtempSync,
   mkdirSync,
@@ -9,8 +10,9 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, toNamespacedPath } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import { Recorder, sha256, success } from "../../tools/support/config/windows_consumer/common.ts";
 import {
   inventory,
@@ -47,6 +49,24 @@ function fixture(run: (root: string) => void): void {
     rmSync(root, { recursive: true, force: true });
   }
 }
+test("public default logging rejects every explicit override before installs or host admission", () => {
+  const entry = fileURLToPath(
+    new URL("../../tools/support/release/editor_vite_stub/run.ts", import.meta.url),
+  );
+  for (const value of ["", "relative.log", join(tmpdir(), "explicit-lsp.log")]) {
+    const packet = spawnSync(process.execPath, [entry], {
+      env: { ...process.env, VIZE_LSP_LOG_FILE: value },
+      encoding: "utf8",
+    });
+    assert.equal(packet.status, 1);
+    assert.equal(packet.signal, null);
+    assert.equal(packet.error, undefined);
+    assert.match(
+      packet.stderr,
+      /public default logging requires VIZE_LSP_LOG_FILE to remain unset/,
+    );
+  }
+});
 test("full installation inventory detects same-size byte mutation and link-only retargeting", () =>
   fixture((root) => {
     mkdirSync(join(root, "pkg"));
@@ -306,6 +326,27 @@ test("declared cache transitions retain full bytes and reject package edits, for
       ],
       evaluation: { config: {}, complete: true, watchDependencies: [], dependencies: [] },
     };
+    if (process.platform === "win32") {
+      const config = toNamespacedPath(key.config);
+      assert.notEqual(config, key.config, "exercise the actual native namespace spelling");
+      const native = {
+        ...value,
+        key: { ...key, config },
+        inputs: [[config, ...value.inputs[0].slice(1)]],
+      };
+      validateCacheBytes(Buffer.from(JSON.stringify([native])), root, version);
+      assert.throws(() =>
+        validateCacheBytes(
+          Buffer.from(
+            JSON.stringify([
+              { ...native, key: { ...key, config: toNamespacedPath(join(root, "foreign.ts")) } },
+            ]),
+          ),
+          root,
+          version,
+        ),
+      );
+    }
     const directory = join(modules, ".vize/config-cache");
     mkdirSync(directory, { recursive: true });
     const cache = join(directory, "1234567890abcdef.json");

@@ -58,9 +58,10 @@ fn vapor_parity_matrix_snapshot() {
         ),
     ];
 
-    insta::assert_snapshot!(snapshot_cases(&cases, |source| {
-        vapor_code(source, JsxLang::Jsx, false)
-    }));
+    insta::assert_snapshot!(
+        "vapor_parity_matrix_snapshot_child_values_6890",
+        snapshot_cases(&cases, |source| { vapor_code(source, JsxLang::Jsx, false) })
+    );
 }
 
 #[test]

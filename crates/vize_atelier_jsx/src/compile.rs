@@ -236,9 +236,8 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
             JsxComponent::Ssr(component)
         } else {
             let mode = resolved_mode;
-            if mode == JsxOutputMode::Vapor {
-                reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
-            }
+            let rejected_spread = mode == JsxOutputMode::Vapor
+                && reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
             // Compat mode is a vdom-only contract: `@vue/babel-plugin-jsx` has
             // no Vapor output shape to be compatible with. Diagnose rather than
             // silently ignore the request, and keep compiling so the caller
@@ -277,6 +276,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
                         &mut diagnostics,
                         bindings.as_ref(),
                         config.vdom.source_map,
+                        !rejected_spread,
                     );
                     origin = map;
                     JsxComponent::Vapor(component)

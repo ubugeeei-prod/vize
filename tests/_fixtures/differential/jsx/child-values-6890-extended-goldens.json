@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "source": "394586a4476aad7c34c9fd4008a44b5bebab5e0f",
+  "capture": {
+    "run": 41190509054,
+    "artifact": 13038961164,
+    "sha256": "2f0b0afed09f69952c3479e5a92642922226312bc8fd401af88eeae89903f07d"
+  },
+  "qualification": {
+    "runtime": false,
+    "wholeCorpusQualified": false,
+    "issue6890Complete": false
+  },
+  "records": [
+    {
+      "target": "vapor",
+      "test": "vapor_codegen_matrix",
+      "previous": "crates/vize_atelier_jsx/tests/snapshots/vapor__vapor_codegen_matrix.snap",
+      "previousSha256": "1f23ac268375efb7b2ed988f05146e0ad6e0e53bba11f8df0563ce5782cd6a41",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/vapor__vapor_codegen_matrix_child_values_6890.snap",
+      "successorSha256": "d45e6bafb50923d6da623f147239b51e61a13664118d34f0e2e5c72a0416b7c8",
+      "changedIndices": [
+        2,
+        3,
+        6
+      ],
+      "runtime": false
+    },
+    {
+      "target": "parity_vapor",
+      "test": "vapor_parity_matrix_snapshot",
+      "previous": "crates/vize_atelier_jsx/tests/snapshots/parity_vapor__vapor_parity_matrix_snapshot.snap",
+      "previousSha256": "2a1de1521e730979268ed5d99ae1fa18c420914e6191a1a79f92d13445d150c4",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/parity_vapor__vapor_parity_matrix_snapshot_child_values_6890.snap",
+      "successorSha256": "6011a028a89670ab017c41451e6b07e88e9c2bcad4a23a0e9512f342e09927f5",
+      "changedIndices": [
+        9,
+        10,
+        11
+      ],
+      "runtime": false
+    },
+    {
+      "target": "parity_tsx",
+      "test": "tsx_vapor_codegen_matrix",
+      "previous": "crates/vize_atelier_jsx/tests/snapshots/parity_tsx__tsx_vapor_codegen_matrix.snap",
+      "previousSha256": "8e285f6392064911b712c26ab468a391b0b62dce4e1a59188fea1f23498c92de",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/parity_tsx__tsx_vapor_codegen_matrix_child_values_6890.snap",
+      "successorSha256": "a44a740faf5f347e0b300e03c43f7a3f0c9cf6ebd397714dacb7e08be0ea81b6",
+      "changedIndices": [
+        0
+      ],
+      "runtime": false
+    },
+    {
+      "target": "ordered_spread_props",
+      "test": "ordered_object_source_modules_and_templates_are_complete",
+      "previous": "crates/vize_atelier_jsx/tests/snapshots/ordered_spread_props__ordered_object_source_modules_and_templates_are_complete.snap",
+      "previousSha256": "2efcc840228775d71b5bb4e5a520c8496f14a570cc9c882d787598209863b932",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/ordered_spread_props__ordered_object_source_modules_and_templates_are_complete_child_values_6890.snap",
+      "successorSha256": "5f28fb9370fd2ab8317a6843a6b27ac1d20629a85708f119a4ecdb8c3347e972",
+      "changedIndices": [
+        4
+      ],
+      "runtime": false
+    }
+  ]
+}

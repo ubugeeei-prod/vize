@@ -170,23 +170,24 @@ void test("jsx: a vapor .jsx component compiles to template render code", async 
     ["default"],
     "the bundle exposes the authored component export",
   );
-  if (process.env.VIZE_RSPACK_JSX_CAPTURE) {
-    fs.mkdirSync(process.env.VIZE_RSPACK_JSX_CAPTURE, { recursive: true });
-    fs.writeFileSync(
-      path.join(process.env.VIZE_RSPACK_JSX_CAPTURE, "authored-vapor-bundle.json"),
-      JSON.stringify(
-        {
-          source,
-          entry,
-          reference,
-          loadedModule: module.originalSource()?.source().toString(),
-          stats: info,
-          bundle: bundleSource(stats),
-        },
-        null,
-        2,
-      ) + "\n",
-    );
-  }
+  const captureDirectory =
+    process.env.VIZE_RSPACK_JSX_CAPTURE ?? stats.compilation.outputOptions.path;
+  if (!captureDirectory) throw new Error("Rspack must expose its real compiled output directory");
+  fs.mkdirSync(captureDirectory, { recursive: true });
+  fs.writeFileSync(
+    path.join(captureDirectory, "authored-vapor-bundle.json"),
+    JSON.stringify(
+      {
+        source,
+        entry,
+        reference,
+        loadedModule: module.originalSource()?.source().toString(),
+        stats: info,
+        bundle: bundleSource(stats),
+      },
+      null,
+      2,
+    ) + "\n",
+  );
   t.assert.snapshot(normalizeSnapshot(bundleSource(stats)));
 });

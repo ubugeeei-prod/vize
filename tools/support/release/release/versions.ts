@@ -15,6 +15,19 @@ interface Version {
   prereleaseNum: number | null;
 }
 
+/** Stamp only canonical release versions; bump parsing retains its legacy input semantics. */
+export function isReleaseVersion(value: string): boolean {
+  const match =
+    /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/.exec(
+      value,
+    );
+  if (match === null || match[0] !== value) return false;
+  return (match[4]?.split(".") ?? []).every(
+    (identifier) =>
+      !/^[0-9]+$/.test(identifier) || identifier === "0" || !identifier.startsWith("0"),
+  );
+}
+
 export async function isGitIgnored(target: string): Promise<boolean> {
   return (await run("git", ["check-ignore", "-q", target])) === 0;
 }

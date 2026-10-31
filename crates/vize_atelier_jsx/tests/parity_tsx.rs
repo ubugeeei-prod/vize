@@ -41,9 +41,10 @@ fn tsx_vapor_codegen_matrix() {
         "const A = (): JSX.Element => <span>{label}</span>;",
     )];
 
-    insta::assert_snapshot!(snapshot_cases(&cases, |source| {
-        vapor_code(source, JsxLang::Tsx, false)
-    }));
+    insta::assert_snapshot!(
+        "tsx_vapor_codegen_matrix_child_values_6890",
+        snapshot_cases(&cases, |source| { vapor_code(source, JsxLang::Tsx, false) })
+    );
 }
 
 #[test]

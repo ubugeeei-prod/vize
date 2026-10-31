@@ -12,6 +12,8 @@ use crate::support::lsp_process;
 
 use lsp_process::{LspProcess, file_uri};
 
+mod logging;
+
 #[test]
 fn lsp_exit_notification_terminates_process_while_stdin_stays_open() {
     let project = tempfile::tempdir().unwrap();

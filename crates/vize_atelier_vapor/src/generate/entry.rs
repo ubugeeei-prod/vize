@@ -38,6 +38,10 @@ pub struct VaporGenerateOptions {
 /// source-compatible.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct VaporGenerateExperimentalOptions<'a> {
+    /// Normalize intrinsic JSX child values while lowering a host-supplied root.
+    /// Already-lowered IR carries explicit operation kinds. Closure identifier
+    /// resolution alone retains the caller's existing template semantics.
+    pub jsx_children: bool,
     /// Current SFC component name for experimental `<Self>` resolution.
     pub component_name: Option<&'a str>,
     /// Treat the reserved `<Self>` tag as a reference to the current SFC.
@@ -248,6 +252,9 @@ pub(crate) fn generate_vapor_with_spans_and_runtime(
     let capacity = imports.len() + template_code.len() + delegate_code.len() + 1 + ctx.out.len();
     let mut document = EmitDocument::with_capacity(capacity, spans.is_some());
     document.push_str(&imports);
+    if ctx.jsx_children {
+        document.push_str(super::operations::jsx_children::RUNTIME);
+    }
     document.push_spanned(&template_code);
     if !delegate_code.is_empty() {
         document.push_str(&delegate_code);

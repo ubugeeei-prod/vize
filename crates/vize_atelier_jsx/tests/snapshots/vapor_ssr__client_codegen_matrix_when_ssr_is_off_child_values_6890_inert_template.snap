@@ -1,0 +1,268 @@
+---
+source: crates/vize_atelier_jsx/tests/vapor_ssr.rs
+assertion_line: 105
+expression: "snapshot_cases(&cases, |source| { vapor_code(source, JsxLang::Jsx, false) })"
+---
+## static dynamic interpolation
+### source
+const A = () => <div id={x} class="box">{msg}</div>;
+### output
+import { insert as _insert, txt as _txt, setProp as _setProp, VaporFragment as _VaporFragment, EffectScope as _EffectScope, isFragment as _isFragment, remove as _remove, isVaporComponent as _isVaporComponent, createTextNode as _createTextNode, renderEffect as _renderEffect, template as _template } from 'vue';
+
+/*
+ * Node normalization adapted from @vue-jsx-vapor/runtime 3.2.26.
+ * MIT License
+ * Copyright (c) 2023 zhiyuanzmj <https://github.com/zhiyuanzmj>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+function _vizeJsxFragment(nodes, anchor, dom) {
+  const fragment = new _VaporFragment(nodes);
+  fragment.anchor = anchor || dom.document.createTextNode("");
+  return fragment;
+}
+function _vizeJsxBlock(value, anchor, dom) {
+  if (value instanceof dom.Node || _isFragment(value)) return value;
+  if (_isVaporComponent(value)) return _vizeJsxFragment(value, anchor, dom);
+  if (dom.Array.isArray(value)) return _vizeJsxFragment(value.map(item => _vizeJsxBlock(item, void 0, dom)), anchor, dom);
+  const text = value == null || typeof value === "boolean" ? "" : dom.String(value);
+  if (anchor) {
+    anchor.textContent = text;
+    return anchor;
+  }
+  return dom.document.createTextNode(text);
+}
+function _vizeJsxUpdate(current, value, anchor, dom) {
+  anchor = anchor || (current instanceof dom.Node && current.nodeType === 3 ? current : void 0);
+  const node = _vizeJsxBlock(value, anchor, dom);
+  if (current) {
+    if (_isFragment(current)) {
+      if (current.anchor && current.anchor.parentNode) {
+        _remove(current.nodes, current.anchor.parentNode);
+        _insert(node, current.anchor.parentNode, current.anchor);
+        if (!anchor) current.anchor.parentNode.removeChild(current.anchor);
+        if (current.scope) current.scope.stop();
+      }
+    } else if (current instanceof dom.Node) {
+      if (current.nodeType === 3 && (!(node instanceof dom.Node) || node.nodeType !== 3)) current.textContent = "";
+      if (_isFragment(node) && current.parentNode) {
+        _insert(node, current.parentNode, current);
+        if (!anchor || current.nodeType !== 3) current.parentNode.removeChild(current);
+      } else if (node instanceof dom.Node) {
+        if (current.nodeType === 3 && node.nodeType === 3) {
+          current.textContent = node.textContent;
+          return current;
+        }
+        if (current.parentNode) current.parentNode.replaceChild(node, current);
+      }
+    }
+  }
+  return node;
+}
+function _vizeJsxChildren(anchor, values, once = false) {
+  const document = anchor.ownerDocument;
+  const realmAnchor = document && document.defaultView ? anchor : _createTextNode();
+  const view = realmAnchor.ownerDocument && realmAnchor.ownerDocument.defaultView;
+  if (!view || typeof view.Node !== "function" || typeof view.Array !== "function" || typeof view.Array.isArray !== "function" || typeof view.String !== "function" || !(anchor instanceof view.Node) || anchor.nodeType !== 3) {
+    throw "Vize JSX child anchor has no owned DOM text realm";
+  }
+  const dom = { document, Node: view.Node, Array: view.Array, String: view.String };
+  const nodes = [];
+  const scopes = [];
+  for (const [index, value] of values.entries()) {
+    const target = index === values.length - 1 ? anchor : void 0;
+    const update = () => {
+      if (scopes[index]) scopes[index].stop();
+      scopes[index] = new _EffectScope();
+      nodes[index] = scopes[index].run(() => _vizeJsxUpdate(nodes[index], typeof value === "function" ? value() : value, target, dom));
+    };
+    if (typeof value === "function" && !once) _renderEffect(update);
+    else update();
+  }
+  if (anchor.parentNode) _insert(nodes, anchor.parentNode, anchor);
+}
+const t0 = _template("<div class=\"box\"> </div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => _setProp(n0, "id", x))
+  _vizeJsxChildren(x0, [() => (msg)])
+  return n0
+}
+
+
+## ternary
+### source
+const A = () => <div>{cond ? <span>a</span> : <em>b</em>}</div>;
+### output
+import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<span>a</span>", true)
+const t1 = _template("<em>b</em>", true)
+const t2 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n0 = t2()
+  _setInsertionState(n0)
+  const n1 = _createIf(() => (cond), () => {
+    const n3 = t0()
+    return n3
+  }, () => {
+    const n5 = t1()
+    return n5
+  }, 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */)
+  return n0
+}
+
+
+## map
+### source
+const A = () => <ul>{items.map((i) => <li>{i}</li>)}</ul>;
+### output
+import { insert as _insert, txt as _txt, VaporFragment as _VaporFragment, EffectScope as _EffectScope, isFragment as _isFragment, remove as _remove, isVaporComponent as _isVaporComponent, createTextNode as _createTextNode, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+
+/*
+ * Node normalization adapted from @vue-jsx-vapor/runtime 3.2.26.
+ * MIT License
+ * Copyright (c) 2023 zhiyuanzmj <https://github.com/zhiyuanzmj>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+function _vizeJsxFragment(nodes, anchor, dom) {
+  const fragment = new _VaporFragment(nodes);
+  fragment.anchor = anchor || dom.document.createTextNode("");
+  return fragment;
+}
+function _vizeJsxBlock(value, anchor, dom) {
+  if (value instanceof dom.Node || _isFragment(value)) return value;
+  if (_isVaporComponent(value)) return _vizeJsxFragment(value, anchor, dom);
+  if (dom.Array.isArray(value)) return _vizeJsxFragment(value.map(item => _vizeJsxBlock(item, void 0, dom)), anchor, dom);
+  const text = value == null || typeof value === "boolean" ? "" : dom.String(value);
+  if (anchor) {
+    anchor.textContent = text;
+    return anchor;
+  }
+  return dom.document.createTextNode(text);
+}
+function _vizeJsxUpdate(current, value, anchor, dom) {
+  anchor = anchor || (current instanceof dom.Node && current.nodeType === 3 ? current : void 0);
+  const node = _vizeJsxBlock(value, anchor, dom);
+  if (current) {
+    if (_isFragment(current)) {
+      if (current.anchor && current.anchor.parentNode) {
+        _remove(current.nodes, current.anchor.parentNode);
+        _insert(node, current.anchor.parentNode, current.anchor);
+        if (!anchor) current.anchor.parentNode.removeChild(current.anchor);
+        if (current.scope) current.scope.stop();
+      }
+    } else if (current instanceof dom.Node) {
+      if (current.nodeType === 3 && (!(node instanceof dom.Node) || node.nodeType !== 3)) current.textContent = "";
+      if (_isFragment(node) && current.parentNode) {
+        _insert(node, current.parentNode, current);
+        if (!anchor || current.nodeType !== 3) current.parentNode.removeChild(current);
+      } else if (node instanceof dom.Node) {
+        if (current.nodeType === 3 && node.nodeType === 3) {
+          current.textContent = node.textContent;
+          return current;
+        }
+        if (current.parentNode) current.parentNode.replaceChild(node, current);
+      }
+    }
+  }
+  return node;
+}
+function _vizeJsxChildren(anchor, values, once = false) {
+  const document = anchor.ownerDocument;
+  const realmAnchor = document && document.defaultView ? anchor : _createTextNode();
+  const view = realmAnchor.ownerDocument && realmAnchor.ownerDocument.defaultView;
+  if (!view || typeof view.Node !== "function" || typeof view.Array !== "function" || typeof view.Array.isArray !== "function" || typeof view.String !== "function" || !(anchor instanceof view.Node) || anchor.nodeType !== 3) {
+    throw "Vize JSX child anchor has no owned DOM text realm";
+  }
+  const dom = { document, Node: view.Node, Array: view.Array, String: view.String };
+  const nodes = [];
+  const scopes = [];
+  for (const [index, value] of values.entries()) {
+    const target = index === values.length - 1 ? anchor : void 0;
+    const update = () => {
+      if (scopes[index]) scopes[index].stop();
+      scopes[index] = new _EffectScope();
+      nodes[index] = scopes[index].run(() => _vizeJsxUpdate(nodes[index], typeof value === "function" ? value() : value, target, dom));
+    };
+    if (typeof value === "function" && !once) _renderEffect(update);
+    else update();
+  }
+  if (anchor.parentNode) _insert(nodes, anchor.parentNode, anchor);
+}
+const t0 = _template("<li> </li>")
+const t1 = _template("<ul></ul>", true)
+
+export function render(_ctx) {
+  const n0 = t1()
+  _setInsertionState(n0)
+  const n1 = _createFor(() => (items), (_for_item0) => {
+    const n3 = t0()
+    const x3 = _txt(n3)
+    _vizeJsxChildren(x3, [() => (_for_item0.value)])
+    return n3
+  }, undefined, 9 /* FAST_REMOVE, IS_SINGLE_NODE */)
+  return n0
+}
+
+
+## nested ternary
+### source
+const A = () => <div>{a ? <p>A</p> : b ? <em>B</em> : <span>C</span>}</div>;
+### output
+import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<p>A</p>", true)
+const t1 = _template("<em>B</em>", true)
+const t2 = _template("<span>C</span>", true)
+const t3 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n0 = t3()
+  _setInsertionState(n0)
+  const n1 = _createIf(() => (a), () => {
+    const n3 = t0()
+    return n3
+  }, () => _createIf(() => (b), () => {
+    const n5 = t1()
+    return n5
+  }, () => {
+    const n8 = t2()
+    return n8
+  }, 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */), 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */)
+  return n0
+}

@@ -1285,6 +1285,42 @@
       }
     },
     {
+      "id": "lsp/regression/default-log-installation-custody-11145",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "default-log-installation-custody-11145",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "d423cb62ecd4cc1fc89a9287b33d95e2fb17f9703e77de1d5b439ef0b270943d"
+          }
+        ]
+      },
+      "case": {
+        "path": "default-log-installation-custody-11145/case.json",
+        "sha256": "5e7253274b71111ad3f96c247314c906355b11ec010a26654d9ad30b7dc3c894"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false,
+        "ecosystem": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/document-symbol-outline-myswitch",
       "state": "active",
       "targets": ["stdio"],

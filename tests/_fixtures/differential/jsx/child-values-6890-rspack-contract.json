@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "issue": 6890,
+  "previous": "npm/builder/rspack/src/__snapshots__/jsx.test.ts.snap",
+  "previousSha256": "ea414d6cdfcb2442efa5c2bf711cef11c57eb8b419784b2ed30e240abad04a9f",
+  "successor": "npm/builder/rspack/src/__snapshots__/jsx.test.ts.child-values-6890.snap",
+  "successorSha256": "b87755a7c9fa7c2b50e2c1410d475ac93748118d90fde29e57d493465cc171fd",
+  "changedKey": "jsx: a vapor .jsx component compiles to template render code 1",
+  "unchangedKeys": [
+    "jsx: a .jsx <style scoped> block emits scope-rewritten CSS into the bundle 1",
+    "jsx: a .jsx Vue component compiles to VDOM render code 1"
+  ],
+  "inputs": [
+    {
+      "path": "npm/builder/rspack/src/test/fixtures/jsx-vapor/App.jsx",
+      "sha256": "cb90141f2c7dc3cbaf83a28e75c021f3a21b80a050bafeeb888475c290d4fa4a"
+    },
+    {
+      "path": "npm/builder/rspack/src/test/fixtures/jsx-vapor/entry.ts",
+      "sha256": "d1054dd134915f10a60c7f57f79149ea55a089fda13083a9f0272cc9684adf33"
+    }
+  ],
+  "capture": {
+    "run": 41189466700,
+    "job": 124503239433,
+    "prHead": "7ff58e84ed3e9f4dcd617ef3527e1ace091338d9",
+    "executionMerge": "9e6a574a040973511d2369e79d977dbb7a067463",
+    "failedJobLogSha256": "ee1504280fd1f09e826c88f7b474161372a2ca18c8b8d596075cdd77561a2157"
+  },
+  "qualification": {
+    "runtime": false,
+    "nativeHandled": 0,
+    "wholeCorpusQualified": false,
+    "issue6890Complete": false
+  }
+}

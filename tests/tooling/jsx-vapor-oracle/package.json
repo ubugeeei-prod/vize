@@ -4,6 +4,7 @@
   "type": "module",
   "devDependencies": {
     "@babel/core": "catalog:babel-jsx-oracle",
+    "@playwright/test": "catalog:testing",
     "@types/babel__core": "catalog:babel-jsx-oracle",
     "@vue/babel-plugin-jsx": "catalog:babel-jsx-oracle",
     "happy-dom": "catalog:testing",

@@ -61,6 +61,7 @@
 
 pub mod document;
 pub mod ide;
+mod logging;
 pub mod runtime;
 pub mod server;
 #[cfg(feature = "experimental-source-folding")]
@@ -89,51 +90,13 @@ pub use virtual_code::{VirtualCodeGenerator, VirtualDocuments};
 use futures::future::{Either, select};
 use tower_lsp::Server;
 
-/// Initialize file-based logging to node_modules/.vize/lsp.log
-fn init_file_logging() {
-    use std::fs::{OpenOptions, create_dir_all};
-    use std::sync::Once;
-    use tracing_subscriber::fmt::writer::MakeWriterExt;
-
-    static INIT: Once = Once::new();
-
-    INIT.call_once(|| {
-        let log_dir = std::env::current_dir()
-            .ok()
-            .map(|p| p.join("node_modules/.vize"))
-            .unwrap_or_else(|| std::path::PathBuf::from(".").join("node_modules/.vize"));
-
-        let _ = create_dir_all(&log_dir);
-
-        let log_path = log_dir.join("lsp.log");
-
-        // Try to open log file, fall back to stderr. Internal-error reporting
-        // is off: when an editor closes the server's stderr pipe (Neovim's
-        // default exit does, right after `shutdown`), tracing-subscriber would
-        // `eprintln!` about the failed log write, and that panics.
-        if let Ok(file) = OpenOptions::new().create(true).append(true).open(&log_path) {
-            tracing_subscriber::fmt()
-                .with_writer(file.and(std::io::stderr))
-                .with_ansi(false)
-                .log_internal_errors(false)
-                .init();
-        } else {
-            tracing_subscriber::fmt()
-                .with_writer(std::io::stderr)
-                .with_ansi(false)
-                .log_internal_errors(false)
-                .init();
-        }
-    });
-}
-
 /// Start the LSP server using stdio transport.
 ///
 /// This is the main entry point for the language server.
 /// It creates a tower-lsp service and starts serving on stdin/stdout.
 pub async fn serve() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // Initialize tracing for logging to file
-    init_file_logging();
+    logging::init();
 
     tracing::info!("Starting vize_maestro LSP server");
 

@@ -130,3 +130,6 @@ tests/_fixtures/differential/typechecker/constructor-props-correlation-11023/ove
 
 # Public import controls retain authored Unicode and CRLF bytes.
 tests/_fixtures/differential/lint/public-vue-imports-8090/CrlfUnicode.vue.fixture -text whitespace=cr-at-eol
+
+# Qualification source records retain the exact reviewed file bytes.
+tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-oracle-importer-update-11172.json -text

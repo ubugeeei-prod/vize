@@ -69,6 +69,9 @@ void test("LSP manifest binds original complete contracts and every original req
     "html-element-hover-documentation/responses.expected.json",
     "code-action-utf16-original/response.expected.json",
     "rename-utf16-original/response.expected.json",
+    "default-log-installation-custody-11145/App.vue.txt",
+    "default-log-installation-custody-11145/case.json",
+    "default-log-installation-custody-11145/response.expected.json",
   ]) {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "lsp-manifest-law-"));
     try {
@@ -78,6 +81,42 @@ void test("LSP manifest binds original complete contracts and every original req
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
+  }
+});
+
+void test("default-log registration preserves the original input and complete region packets", () => {
+  const fixture = fixtureById("lsp/regression/default-log-installation-custody-11145");
+  const original = JSON.parse(
+    fs.readFileSync(
+      path.join(
+        root,
+        "tests/_fixtures/differential/typechecker/editor-vite-stub-11145/project.json",
+      ),
+      "utf8",
+    ),
+  );
+  assert.equal(fixture.files[0].bytes.toString("utf8"), original.files["src/app.vue"]);
+  assert.deepEqual(fixture.requests, [
+    {
+      params: {},
+      result: [
+        { startLine: 4, endLine: 5, kind: "region", collapsedText: "template" },
+        { startLine: 0, endLine: 1, kind: "region", collapsedText: "script setup" },
+      ],
+    },
+  ]);
+  const expected = [{ requestId: 2, state: "equal" }];
+  assert.deepEqual(inspectLspObservation(fixture, referenceObservation(fixture)), expected);
+  for (const mutation of ["order", "optional-field", "closing-tag"]) {
+    const observation = referenceObservation(fixture);
+    rewriteFrames(observation, "server", (messages) => {
+      const reply = messages.find((message) => message.id === 2)!;
+      const regions = resultArray(reply) as Array<Record<string, unknown>>;
+      if (mutation === "order") regions.reverse();
+      else if (mutation === "optional-field") regions[0].startCharacter = 0;
+      else regions[0].endLine = 6;
+    });
+    assert.notDeepEqual(inspectLspObservation(fixture, observation), expected);
   }
 });
 

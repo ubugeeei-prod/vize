@@ -18,15 +18,18 @@ pub(crate) const SPREAD_BLOCK_CLOSE: &str = "], -2 /* BAIL */))";
 
 const SPREAD_CHILD_UNSUPPORTED: &str = "spread children (`{...items}`) are only supported in VDOM output; Vapor and SSR stringify the value instead of spreading it";
 
-/// Replace every spread-child block in `root` and report each one.
+/// Replace every spread-child block in `root`, report each one, and indicate
+/// whether the already-rejected root must retain its stringification contract.
 pub(crate) fn reject_spread_children<'a>(
     allocator: &'a vize_l0::Allocator,
     root: &mut RootNode<'a>,
     diagnostics: &mut Vec<JsxDiagnostic>,
-) {
+) -> bool {
+    let previous_diagnostics = diagnostics.len();
     for child in root.children.iter_mut() {
         visit(allocator, child, diagnostics);
     }
+    diagnostics.len() != previous_diagnostics
 }
 
 fn visit<'a>(
