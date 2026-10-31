@@ -240,7 +240,7 @@ if (mode === "build") {
       identify(path.join(provider, "package-lock.json")).sha256 ===
       "404c0044722de82488d559210af047bda408b5f353d74b8e333c512d15375cc7",
   });
-  const tscDiagnostics = (stdout: Buffer) => {
+  const tscDiagnostics = (stdout: Buffer, project: string) => {
     const text = stdout.toString(),
       diagnostics: {
         file: string;
@@ -254,7 +254,7 @@ if (mode === "build") {
       const match = /^(.*?)\((\d+),(\d+)\): error TS(\d+): (.*)$/u.exec(line);
       if (match)
         diagnostics.push({
-          file: match[1].replaceAll("\\", "/"),
+          file: path.relative(project, path.resolve(project, match[1])).replaceAll("\\", "/"),
           line: +match[2],
           column: +match[3],
           code: +match[4],
@@ -285,11 +285,14 @@ if (mode === "build") {
     [vueTsc, "--pretty", "false", "--project", "tsconfig.json"],
     publicProject,
   );
-  const officialDiagnostics = tscDiagnostics(official.stdout);
+  const officialDiagnostics = tscDiagnostics(official.stdout, publicProject);
   const headers = (diagnostics: ReturnType<typeof tscDiagnostics>) =>
     diagnostics.map(({ continuation: _continuation, ...diagnostic }) => diagnostic);
   assert.equal(h.status, 2);
-  assert.deepEqual(headers(tscDiagnostics(h.stdout)), inputs.historical.hDiagnostics);
+  assert.deepEqual(
+    headers(tscDiagnostics(h.stdout, publicProject)),
+    inputs.historical.hDiagnostics,
+  );
   assert.equal(official.status, officialDiagnostics.length ? 2 : 0);
   for (const row of inputs.historical.byCase)
     assert.deepEqual(
@@ -324,7 +327,7 @@ if (mode === "build") {
       ],
       project,
     );
-    const mapperDiagnostics = tscDiagnostics(mapper.stdout);
+    const mapperDiagnostics = tscDiagnostics(mapper.stdout, project);
     assert.equal(mapper.status, mapperDiagnostics.length ? 2 : 0);
     const cli = run(
       output,
@@ -408,7 +411,7 @@ if (mode === "build") {
     manifest: inputs.manifest,
     cases: 27,
     files: 58,
-    stockH: { status: h.status, diagnostics: tscDiagnostics(h.stdout) },
+    stockH: { status: h.status, diagnostics: tscDiagnostics(h.stdout, publicProject) },
     official: { status: official.status, diagnostics: officialDiagnostics },
     routes,
     byCase,
