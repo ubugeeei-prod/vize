@@ -183,16 +183,7 @@ impl<'f, 'a> FileForHead<'f, 'a> {
     /// Their dense hygiene tag is distinct from the File's lexical ScopeId.
     #[must_use]
     pub fn scope_facts(self) -> Option<&'f crate::scope::ScopeFacts> {
-        if self
-            .file
-            .facts
-            .for_heads
-            .get(self.id.node())?
-            .original
-            .is_none()
-        {
-            return None;
-        }
+        let _ = self.file.facts.for_heads.get(self.id.node())?.original?;
         self.file.artifact().scopes().get(self.id.node())
     }
     #[must_use]
