@@ -16,7 +16,6 @@ on:
       - tests/tooling/patina-boolean-public.test.ts
       - tests/tooling/fixtures/patina-boolean-public-original.json
       - tests/_fixtures/differential/linter/native-boolean-tsrs-11147/App.vue.txt
-      - crates/vize/src/commands/lint.rs
   workflow_dispatch:
     inputs:
       version:
