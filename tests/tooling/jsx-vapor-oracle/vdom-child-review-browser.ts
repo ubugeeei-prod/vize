@@ -324,9 +324,9 @@ try {
     assert.deepEqual(
       old.phases.map((phase, i) => JSON.stringify(phase) === JSON.stringify(reference.phases[i])),
       after.cases[index]!.kind === "sequence"
-        ? Array(10).fill(false)
+        ? Array(10).fill(true)
         : after.cases[index]!.optimizedParent
-          ? [true, false, false, false, false, false, false, false, false, true]
+          ? [false, true, false, true, true, true, true, false, false, false]
           : Array(10).fill(true),
       "preserve actual old Chromium failure",
     );

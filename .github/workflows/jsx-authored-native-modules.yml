@@ -153,13 +153,19 @@ jobs:
           git worktree add --detach "$baseline" 18ebd0556f55fc1fff4b7a993efa752bdabc7232
           cp "$observer" "$baseline/$observer"
           cmp "$observer" "$baseline/$observer"
+          ir_observer=davinci/vize_l4/tests/jsx_child_values.rs
+          cp "$ir_observer" "$baseline/$ir_observer"
+          cmp "$ir_observer" "$baseline/$ir_observer"
           git -C "$baseline" diff --exit-code -- crates/*/src davinci/*/src
           git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$directory/base-source.txt"
-          sha256sum "$observer" "$baseline/$observer" tests/tooling/jsx-vapor-oracle/{vdom-child-review.ts,vdom-child-review-browser.ts,runtime.ts} tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json > "$directory/observer.sha256"
+          sha256sum "$observer" "$baseline/$observer" "$ir_observer" "$baseline/$ir_observer" tests/tooling/jsx-vapor-oracle/{vdom-child-review.ts,vdom-child-review-browser.ts,vdom-child-ir.ts,runtime.ts} tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json > "$directory/observer.sha256"
           status=0
           VIZE_JSX_VDOM_REVIEW_CAPTURE="$directory/head.json" cargo test --locked --profile ci -p vize_atelier_jsx --test vdom_child_review > "$directory/head.stdout" 2> "$directory/head.stderr" || status=1
           (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-vdom-review-base-target" VIZE_JSX_VDOM_REVIEW_CAPTURE="$directory/base.json" cargo test --locked --profile ci -p vize_atelier_jsx --test vdom_child_review) > "$directory/base.stdout" 2> "$directory/base.stderr" || status=1
           node tests/tooling/jsx-vapor-oracle/vdom-child-review.ts "$directory/base.json" "$directory/head.json" "$directory/node.json" > "$directory/node.stdout" 2> "$directory/node.stderr" || status=1
+          VIZE_JSX_RAW_IR_CAPTURE="$directory/head-ir.json" cargo test --locked --profile ci -p vize_l4 --test jsx_child_values > "$directory/head-ir.stdout" 2> "$directory/head-ir.stderr" || status=1
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-vdom-review-base-target" VIZE_JSX_RAW_IR_CAPTURE="$directory/base-ir.json" cargo test --locked --profile ci -p vize_l4 --test jsx_child_values) > "$directory/base-ir.stdout" 2> "$directory/base-ir.stderr" || status=1
+          node tests/tooling/jsx-vapor-oracle/vdom-child-ir.ts "$directory/base-ir.json" "$directory/head-ir.json" "$directory/ir-ast.json" > "$directory/ir-ast.stdout" 2> "$directory/ir-ast.stderr" || status=1
           exit "$status"
       - name: Complete native module and source-map oracles
         if: always()

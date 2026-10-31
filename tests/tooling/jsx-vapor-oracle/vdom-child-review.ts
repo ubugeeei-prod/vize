@@ -14,6 +14,8 @@ type Item = {
   functionName: string;
   diagnostics: unknown[];
   optimizedParent: boolean;
+  map: string | null;
+  components: { map: string | null }[];
 };
 type Packet = {
   original: {
@@ -240,6 +242,24 @@ try {
       "optimizedParent",
     ] as const)
       assert.deepEqual(item[key], old[key]);
+    if (item.mapped) {
+      const verifyMetadata = (oldEncoded: string | null, newEncoded: string | null) => {
+        assert.ok(oldEncoded && newEncoded);
+        const previous = JSON.parse(oldEncoded),
+          current = JSON.parse(newEncoded);
+        const keys = ["file", "mappings", "names", "sources", "sourcesContent", "version"];
+        assert.deepEqual(Object.keys(previous).sort(), keys);
+        assert.deepEqual(Object.keys(current).sort(), keys);
+        for (const key of ["file", "names", "sources", "sourcesContent", "version"])
+          assert.deepEqual(current[key], previous[key]);
+        assert.deepEqual(current.sourcesContent, [item.source]);
+      };
+      verifyMetadata(old.map, item.map);
+      assert.equal(old.components.length, item.components.length);
+      item.components.forEach((component, i) =>
+        verifyMetadata(old.components[i]!.map, component.map),
+      );
+    }
     const reference = transformSync(item.source, {
       configFile: false,
       babelrc: false,
@@ -284,9 +304,9 @@ try {
     assert.deepEqual(
       result.beforeMatchesBabel,
       item.kind === "sequence"
-        ? Array(10).fill(false)
+        ? Array(10).fill(true)
         : item.optimizedParent
-          ? [true, false, false, false, false, false, false, false, false, true]
+          ? [false, true, false, true, true, true, true, false, false, false]
           : Array(10).fill(true),
       "retain exact genuine pre-review regression",
     );

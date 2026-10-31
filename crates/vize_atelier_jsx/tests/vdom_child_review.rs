@@ -116,8 +116,17 @@ fn complete_review_sources_and_genuine_authored_maps() {
             "{code}"
         );
         if case["mapped"] == true {
-            let generated = code.rfind("state.value").expect("actual expression");
-            let authored = source.rfind("state.value").expect("authored expression");
+            let needle = if case["kind"] == "sequence" {
+                "(state.record"
+            } else {
+                "state.value"
+            };
+            let generated = code
+                .rfind(needle)
+                .expect("actual complete expression start");
+            let authored = source
+                .rfind(needle)
+                .expect("authored complete expression start");
             assert!(
                 case["tokens"]
                     .as_array()
