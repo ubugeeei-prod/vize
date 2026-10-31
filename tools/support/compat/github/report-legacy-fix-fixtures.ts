@@ -21,6 +21,7 @@ import {
   nativeBetaDtoProtocolSource,
   newNativeBetaDtoProtocolCases,
 } from "./native-beta-dto-fixtures.ts";
+import { currentNativeBetaDtoObserver } from "./native-beta-dto-observer-successor.ts";
 
 import { knownCompilerCssSource } from "../../../../tests/differential/compiler-css-api-registry.ts";
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
@@ -45,6 +46,9 @@ export interface ProductReport {
   state: ProductState;
   cases: string[];
   reason?: string;
+  currentObserverSuccessor?: NonNullable<
+    ReturnType<typeof currentNativeBetaDtoObserver>["evidence"]
+  >;
 }
 
 export interface LegacyFixReport {
@@ -287,7 +291,20 @@ function checkProduct(
           )
         : [];
     const dtoRegistered = dtoProtocols.includes(NATIVE_BETA_DTO_PROTOCOL_ID);
-    const dtoRequired = product === "typechecker" && canonPaths.some(nativeBetaDtoProtocolSource);
+    const currentObserver =
+      product === "typechecker"
+        ? currentNativeBetaDtoObserver(
+            canonPaths,
+            protocolPartition(before?.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, true),
+            protocolPartition(manifest.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, true),
+            readFile,
+          )
+        : { sources: new Set<string>(), evidence: null };
+    const dtoRequired =
+      product === "typechecker" &&
+      canonPaths.some(
+        (path) => nativeBetaDtoProtocolSource(path) && !currentObserver.sources.has(path),
+      );
     const runtime = newNativeRuntimeCases(
       product,
       before?.runtimeCases,
@@ -303,6 +320,7 @@ function checkProduct(
             (path) =>
               !runtime.sources.has(path) &&
               !languageProject.sources.has(path) &&
+              !currentObserver.sources.has(path) &&
               !(dtoRegistered && nativeBetaDtoProtocolSource(path)) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
@@ -363,6 +381,7 @@ function checkProduct(
         ...languageProject.ids,
         ...dtoProtocols,
       ],
+      ...(currentObserver.evidence ? { currentObserverSuccessor: currentObserver.evidence } : {}),
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };

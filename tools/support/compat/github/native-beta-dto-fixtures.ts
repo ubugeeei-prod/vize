@@ -260,6 +260,13 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
 export function nativeBetaDtoProtocolSource(path: string): boolean {
   return scope.has(path);
 }
+export function nativeBetaDtoObserverBoundary() {
+  return {
+    production: [...production],
+    inputs: inputs.map((path) => fixtureRoot + path),
+    observers: [tests[3]!.source, currentObserverHelperPath],
+  };
+}
 function frames(data: Buffer): Record<string, unknown>[] {
   const rows: Record<string, unknown>[] = [];
   let offset = 0;
