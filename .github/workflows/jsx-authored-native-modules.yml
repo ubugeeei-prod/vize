@@ -12,6 +12,8 @@ on:
       - "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/**"
       - "tests/tooling/jsx-authored-module-fixture-custody.test.ts"
       - "tests/tooling/jsx-child-golden-custody.test.ts"
+      - "tests/tooling/jsx-child-profile-contract.test.ts"
+      - "tests/tooling/support/jsx-child-profile-contract.ts"
       - "tests/tooling/support/jsx-authored-custody.ts"
       - "tests/tooling/jsx-vapor-oracle/**"
       - "tests/tooling/support/jsx-falsy-and-runtime.mjs"
@@ -112,6 +114,7 @@ jobs:
           sha256sum "$stability_oracle" "$stable_base/$stability_oracle" > "$RUNNER_TEMP/jsx-authored-native/stability-oracle.sha256"
       - name: Verify measured contracts and source counters
         run: |
+          node tests/tooling/support/jsx-child-profile-contract.ts verify "$RUNNER_TEMP/jsx-authored-native"
           python3 - <<'PYCODE'
           import json, os, statistics
           from pathlib import Path
@@ -171,12 +174,12 @@ jobs:
           for previous,current in zip(stability_base,head):
             for field in ['source','ssr','map','iterationsPerSample']: assert previous[field]==current[field]
             changed=current['source'].startswith('const Child={};') and not current['ssr']
-            if not changed: assert previous['output']==current['output'], 'all conservative/default paths keep complete code and maps'
             assert not previous['output']['diagnostics'] and not current['output']['diagnostics']
             before=statistics.median(previous['samplesNs']); after=statistics.median(current['samplesNs'])
             stable_rows.append({'source':current['source'],'ssr':current['ssr'],'map':current['map'],'intentionalStaticValueChange':changed,'baseMedianNs':before,'headMedianNs':after,'ratio':after/before,'counters':current['counters']})
-          (directory/'stability-comparison.json').write_text(json.dumps({'scope':'literal guarded664 source versus head; complete conservative outputs equal, actual immutable static-value code/map change isolated','rows':stable_rows},indent=2)+'\n')
+          (directory/'stability-comparison.json').write_text(json.dumps({'scope':'literal guarded664 source versus head; exact generated-output transitions are verified separately and raw timings are descriptive','rows':stable_rows},indent=2)+'\n')
           PYCODE
+          node tests/tooling/support/jsx-child-profile-contract.ts report "$RUNNER_TEMP/jsx-authored-native"
       - name: Existing JSX library contracts
         if: always()
         env: { INSTA_UPDATE: new }
@@ -226,7 +229,7 @@ jobs:
           cargo test --locked --profile ci -p vize_vitrine --no-default-features --features wasm --lib wasm::jsx::tests::
       - name: Verify complete native fixture and historical custody
         if: always()
-        run: node --test tests/tooling/jsx-authored-module-fixture-custody.test.ts tests/tooling/jsx-child-golden-custody.test.ts tests/tooling/vapor-third-party-reports.test.mjs
+        run: node --test tests/tooling/jsx-authored-module-fixture-custody.test.ts tests/tooling/jsx-child-golden-custody.test.ts tests/tooling/jsx-child-profile-contract.test.ts tests/tooling/vapor-third-party-reports.test.mjs
       - name: Capture whole native fixture packets and genuine runtime traces
         if: always()
         env:
