@@ -24,6 +24,7 @@ impl CorsaProjectClient {
         // the stale API nor the editor may publish them as an accepted view.
         self.logical_api_reset_pending = self.has_project_session();
         self.logical_workspace_overlays = true;
+        self.retire_original_diagnosing_session()?;
         self.retain_logical_workspace_revision()?;
         Ok(true)
     }
@@ -181,5 +182,27 @@ mod tests {
         assert_eq!(client.ensure_project_transport(), Err(first));
         assert!(client.logical_api_reset_pending);
         assert!(client.logical_workspace_overlays);
+    }
+    #[cfg(windows)]
+    #[test]
+    fn canonical_root_and_file_uri_spelling_preserve_the_original_overlay_attempt() {
+        // Keep the fixture alive independently of its canonical spelling.
+        let work = tempfile::tempdir().unwrap();
+        let root = work.path().canonicalize().unwrap();
+        std::fs::write(root.join("App.vue"), "<template />").unwrap();
+        let uri = path_to_file_uri(&root.join("App.vue.ts"));
+        let storage = root.join("owned-overlay");
+        assert_eq!(
+            crate::lsp_client::session_paths::build_session_document_uri(
+                &uri, &root, &storage, true
+            ),
+            uri
+        );
+        assert!(
+            !crate::lsp_client::session_paths::is_within_project_namespace(
+                &root.with_file_name("other-project").join("App.vue.ts"),
+                &root
+            )
+        );
     }
 }

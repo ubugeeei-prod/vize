@@ -72,7 +72,10 @@ impl CorsaProjectClient {
                 || self.supports_overlay_api()
                 || (self.project_root.join("__vize_vue_modules.d.ts").is_file()
                     && file_uri_to_path(uri).is_some_and(|path| {
-                        path.starts_with(&self.project_root) && path.is_file()
+                        crate::lsp_client::session_paths::is_within_project_namespace(
+                            &path,
+                            &self.project_root,
+                        ) && path.is_file()
                     })))
     }
 }

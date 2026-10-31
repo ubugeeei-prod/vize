@@ -66,9 +66,19 @@ fn run(root: &Path, native: &Path, policy: logical_control::Policy, capture: &Pa
         client.authored_workspace = false;
         client.overlay_storage = Arc::new(original_storage_policy(root));
     }
-    client
-        .did_open_batch_fast(&[(&virtual_uri, MAIN), (&support_uri, SUPPORT)])
-        .unwrap();
+    let opened = client.did_open_batch_fast(&[(&virtual_uri, MAIN), (&support_uri, SUPPORT)]);
+    retain(
+        capture,
+        policy.label(),
+        "startup",
+        "result",
+        &json!({"opened":opened,
+        "cwd":client.cwd,"projectRoot":client.project_root,"logicalUri":virtual_uri,
+        "materialized":client.materialized_project_session,"logical":client.logical_workspace_overlays,
+        "hasProjectSession":client.has_project_session(),"supportsOverlayApi":client.supports_overlay_api(),"overlayApiDisabledByTypedFailure":client.overlay_api_disabled,
+        "attachedSemanticApi":client.can_use_attached_semantic_api()}),
+    );
+    opened.unwrap();
     let naturally_materialized = client.materialized_project_session;
     if old_policy && !naturally_materialized {
         client.activate_materialized_project_session().unwrap();

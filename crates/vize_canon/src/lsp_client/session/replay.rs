@@ -68,10 +68,10 @@ impl CorsaProjectClient {
         else {
             return Ok(false);
         };
-        if !paths
-            .iter()
-            .all(|path| path.starts_with(&self.project_root) && path.is_file())
-        {
+        if !paths.iter().all(|path| {
+            crate::lsp_client::session_paths::is_within_project_namespace(path, &self.project_root)
+                && path.is_file()
+        }) {
             return Ok(false);
         }
         let mut summary = FileChangeSummary::default();

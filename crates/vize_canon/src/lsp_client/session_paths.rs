@@ -17,7 +17,7 @@ pub(super) fn build_session_document_uri(
     // `*.html.ts`) can also stay there when Corsa overlay support is confirmed;
     // otherwise materialize them under the session overlay root so imports
     // never point at non-existent workspace files.
-    if external_path.starts_with(project_root)
+    if is_within_project_namespace(&external_path, project_root)
         && (external_path.exists()
             || (overlay_confirmed && virtual_overlay::target_exists(&external_path)))
     {
@@ -29,6 +29,15 @@ pub(super) fn build_session_document_uri(
         project_root,
         overlay_root,
     ))
+}
+
+/// Compare the same logical file namespace used by protocol URIs. Windows
+/// canonical roots may use a verbatim prefix while their file URIs do not.
+/// This does not resolve another file or change the authored cwd/config path.
+pub(super) fn is_within_project_namespace(path: &Path, root: &Path) -> bool {
+    let path = file_uri_to_path(&path_to_file_uri(path));
+    let root = file_uri_to_path(&path_to_file_uri(root));
+    matches!((path, root), (Some(path), Some(root)) if path.starts_with(root))
 }
 
 pub(super) fn build_materialized_session_document_uri(

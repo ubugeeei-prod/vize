@@ -81,7 +81,14 @@ pub(super) fn run_disk(
     ] {
         fs::write(root.join("src/support.ts"), text).unwrap();
         let packet = crate::lsp_client::editor_lsp::logical_disk_control::run(
-            native, root, &uri, main, capture, phase,
+            native,
+            root,
+            &uri,
+            main,
+            capture,
+            phase,
+            (2, 32),
+            &root.join("src/support.ts"),
         );
         rows.push(packet.unwrap());
     }

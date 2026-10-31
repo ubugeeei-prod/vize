@@ -76,6 +76,8 @@ pub(crate) fn run() {
     corsa::runtime::block_on(async {
         bridge.spawn().await.unwrap();
         let mut rows = Vec::new();
+        let disk_capture = capture.join("disk-control");
+        fs::create_dir(&disk_capture).unwrap();
         for (phase, overlay) in [
             ("valid", Some("export const value = 1;\n")),
             ("dependency-error", Some("export const value = 'bad';\n")),
@@ -105,13 +107,23 @@ pub(crate) fn run() {
                 "code":document.code,"preRewriteCode":document.pre_rewrite_code,
                 "sessionProjectRoot":document.session_project_root,
                 "dependencies":document.dependencies.iter().map(|dependency| json!({"sourcePath":dependency.source_path,"requestUri":dependency.request_uri,"code":dependency.code})).collect::<Vec<_>>()});
-            let diagnostics = bridge.get_diagnostics(&document.request_uri).await;
+            let query_uri = document.request_uri.clone();
+            let diagnostics =
+                bridge
+                    .with_client(move |client| {
+                        client.request_diagnostics_full(&query_uri)
+                .map(|fetch| json!({"usedCache":fetch.used_cache,"items":fetch.diagnostics}))
+                .map_err(CorsaBridgeError::CommunicationError)
+                    })
+                    .await;
             packet["diagnosticsResult"] = match &diagnostics {
                 Ok(value) => json!({"Ok":value}),
                 Err(error) => json!({"Err":cstr!("{error}")}),
             };
             save(&capture, phase, "diagnostics", &packet);
             let diagnostics = diagnostics.unwrap();
+            assert_eq!(diagnostics["usedCache"], false);
+            let diagnostics = diagnostics["items"].clone();
             let query_byte =
                 document.code.find("checked: number = value").unwrap() + "checked: number = ".len();
             let (line, character) = position(&document.code, query_byte);
@@ -203,27 +215,70 @@ pub(crate) fn run() {
                 native_path.file_name().unwrap().to_str(),
                 Some(expected_name.as_str())
             );
-            let helpers = generated_root.join("__vize_helpers.d.ts");
-            let helper_bytes = fs::read(&helpers);
+            let physical_code = fs::read(&native_path).unwrap();
+            assert_eq!(physical_code, document.code.as_bytes());
+            let assets = [
+                (
+                    "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt",
+                    include_str!("../virtual_ts/helpers/declarations/core-types.d.ts.txt"),
+                ),
+                (
+                    "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt",
+                    include_str!("../virtual_ts/helpers/declarations/vue3-types.d.ts.txt"),
+                ),
+            ];
+            let helpers: Vec<_> = assets.iter().map(|(path, text)| {
+                let start = document.code.find(*text).expect("whole inline producer asset required");
+                assert_eq!(document.code.matches(*text).count(), 1);
+                assert_eq!(document.code.get(start..start+text.len()), Some(*text));
+                json!({"mode":"inline-producer-asset","producerPath":path,"bytes":text.len(),
+                    "sha256":Sha256::digest(text.as_bytes()).iter().map(|byte|cstr!("{byte:02x}")).collect::<String>(),
+                    "startByte":start,"endByte":start+text.len(),"text":text})
+            }).collect();
             packet["generatedAuthority"] = json!({"selectedConfigPath":selected,
-                "selectedConfigText":fs::read_to_string(&selected).unwrap(),
-                "helpersPath":helpers,"helpers":helper_bytes.as_ref().map(|bytes| json!({"bytes":bytes.len(),"sha256":Sha256::digest(bytes).iter().map(|byte| cstr!("{byte:02x}")).collect::<String>(),"text":std::str::from_utf8(bytes).unwrap()})).map_err(|error|cstr!("{error}"))});
+                "selectedConfigText":fs::read_to_string(&selected).unwrap(),"helpers":helpers,
+                "physicalGeneratedFile":{"path":native_path,"bytes":physical_code.len(),"sha256":Sha256::digest(&physical_code).iter().map(|byte|cstr!("{byte:02x}")).collect::<String>()}});
             save(&capture, phase, "generated-authority", &packet);
-            helper_bytes.unwrap();
+            let disk = crate::lsp_client::editor_lsp::logical_disk_control::run(
+                &native,
+                generated_root,
+                &document.request_uri,
+                &document.code,
+                &disk_capture,
+                phase,
+                (line, character),
+                &source_member.materialized_path,
+            );
+            packet["independentDiskResult"] = match &disk {
+                Ok(value) => json!({"Ok":value}),
+                Err(error) => json!({"Err":error}),
+            };
+            save(&capture, phase, "independent-disk", &packet);
+            let disk = disk.unwrap();
             assert_eq!(fs::read(&host).unwrap(), source.as_bytes());
             assert_eq!(fs::read(&support).unwrap(), b"export const value = 1;\n");
             assert_eq!(fs::read(root.join("tsconfig.json")).unwrap(), config);
-            let expected = if phase == "dependency-error" {
-                let start = position(
-                    &document.code,
-                    document.code.find("checked: number").unwrap(),
-                );
-                json!([{"range":{"start":{"line":start.0,"character":start.1},"end":{"line":start.0,"character":start.1+7}},
-                    "severity":1,"code":2322,"source":"ts","message":"Type 'string' is not assignable to type 'number'.","relatedInformation":null}])
+            let checked = position(
+                &document.code,
+                document.code.find("checked: number").unwrap(),
+            );
+            let range = json!({"start":{"line":checked.0,"character":checked.1},"end":{"line":checked.0,"character":checked.1+7}});
+            let errors: Vec<_> = diagnostics
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter(|diagnostic| diagnostic["code"] == 2322 && diagnostic["range"] == range)
+                .cloned()
+                .collect();
+            let expected_error = if phase == "dependency-error" {
+                json!([{"range":range,"severity":1,"code":2322,"source":"ts",
+                    "message":"Type 'string' is not assignable to type 'number'."}])
             } else {
                 json!([])
             };
-            rows.push((packet, serde_json::to_value(diagnostics).unwrap(), expected));
+            packet["checkingWitness"] = json!({"actual":errors,"expected":expected_error});
+            save(&capture, phase, "checking-witness", &packet);
+            rows.push((packet, diagnostics, disk));
         }
         let shutdown = bridge.shutdown().await;
         save(
@@ -238,11 +293,17 @@ pub(crate) fn run() {
             .map(|(packet, _, _)| packet["phase"].clone())
             .collect::<Vec<_>>();
         let mut matched = 0;
-        for (packet, actual, expected) in rows {
+        for (packet, actual, disk) in rows {
             assert_eq!(
-                actual, expected,
-                "whole Vue-only native packet mismatch: {}",
+                actual, disk["diagnostics"],
+                "whole Vue-only diagnostics mismatch: {}",
                 packet["phase"]
+            );
+            assert_eq!(packet["hoverResult"]["Ok"], disk["hover"]);
+            assert_eq!(packet["definitionResult"]["Ok"], disk["definition"]);
+            assert_eq!(
+                packet["checkingWitness"]["actual"],
+                packet["checkingWitness"]["expected"]
             );
             matched += 1;
         }

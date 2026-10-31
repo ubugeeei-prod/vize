@@ -79,7 +79,9 @@ pub(super) fn delete_file_changes(
 
 fn missing_from_disk(uri: &str, project_root: &Path) -> bool {
     external_document_path(uri).is_some_and(|path| {
-        path.starts_with(project_root) && !path.exists() && target_exists(&path)
+        super::session_paths::is_within_project_namespace(&path, project_root)
+            && !path.exists()
+            && target_exists(&path)
     })
 }
 

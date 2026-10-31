@@ -26,7 +26,9 @@ impl CorsaProjectClient {
         let Some(path) = file_uri_to_path(uri) else {
             return Ok(false);
         };
-        if !path.starts_with(&self.project_root) || !path.is_file() {
+        if !crate::lsp_client::session_paths::is_within_project_namespace(&path, &self.project_root)
+            || !path.is_file()
+        {
             return Ok(false);
         }
         let previous = std::fs::read_to_string(&path).ok();

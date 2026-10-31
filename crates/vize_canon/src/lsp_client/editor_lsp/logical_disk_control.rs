@@ -6,17 +6,19 @@ use serde_json::{Value, json};
 use std::{fs, path::Path};
 use vize_l0::{String, cstr};
 
-pub(in crate::lsp_client) fn run(
+pub(crate) fn run(
     executable: &Path,
     root: &Path,
     uri: &str,
     main: &str,
     capture: &Path,
     phase: &str,
+    query: (u32, u32),
+    dependency: &Path,
 ) -> Result<Value, String> {
     let mut packet = json!({"phase":phase,"root":root,"uri":uri,"main":main,
         "scope":"fresh standard LSP; physical dependency reads without a support overlay",
-        "supportDisk":fs::read_to_string(root.join("src/support.ts")).unwrap(),
+        "dependencyPhysicalPath":dependency,"supportDisk":fs::read_to_string(dependency).unwrap(),
         "authoredConfig":serde_json::from_slice::<Value>(&fs::read(root.join("tsconfig.json")).unwrap()).unwrap()});
     let save = |packet: &Value, stage: &str| -> Result<(), String> {
         let path = capture.join(cstr!("logical-disk-control-{phase}-{stage}.json").as_str());
@@ -45,11 +47,11 @@ pub(in crate::lsp_client) fn run(
         else {
             return Err(cstr!("Whole native disk diagnostic report required"));
         };
-        let hover = editor.hover(uri, 2, 32);
+        let hover = editor.hover(uri, query.0, query.1);
         packet["hoverResult"] = serde_json::to_value(&hover).unwrap();
         save(&packet, "hover")?;
         let hover = hover?;
-        let definition = editor.definition(uri, 2, 32);
+        let definition = editor.definition(uri, query.0, query.1);
         packet["definitionResult"] = serde_json::to_value(&definition).unwrap();
         save(&packet, "definition")?;
         let definition = definition?;

@@ -40,7 +40,7 @@ mod file_rename;
 mod implementation;
 mod inlay_hint;
 #[cfg(test)]
-pub(in crate::lsp_client) mod logical_disk_control;
+pub(crate) mod logical_disk_control;
 mod materialized;
 mod native_shutdown;
 mod native_vue;
