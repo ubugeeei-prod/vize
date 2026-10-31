@@ -161,12 +161,16 @@ fn original_ten_values_and_maps_preserve_real_vdom_child_semantics() {
             .collect();
         let generated = code.rfind("state.value").expect("actual authored read");
         let authored_read = authored.rfind("state.value").expect("authored expression");
-        assert!(
-            tokens.contains(&(
-                position(code, generated),
-                position(&authored, authored_read)
-            )),
-            "the raw expression retains its genuine authored coordinate: {tokens:?}"
+        let generated_position = position(code, generated);
+        let exact_anchors: Vec<_> = tokens
+            .iter()
+            .filter(|(destination, _)| *destination == generated_position)
+            .copied()
+            .collect();
+        assert_eq!(
+            exact_anchors,
+            [(generated_position, position(&authored, authored_read))],
+            "the same original raw expression has exactly one token at its genuine authored coordinate: {tokens:?}"
         );
         for (mapped_flag, module) in [(false, plain), (true, mapped)] {
             let packet = json!({"original":original,"vapor":vapor,"vdom":module,"shadowedSource":shadowed,"shadowedVapor":shadowed_vapor});

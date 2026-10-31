@@ -127,15 +127,23 @@ fn complete_review_sources_and_genuine_authored_maps() {
             let authored = source
                 .rfind(needle)
                 .expect("authored complete expression start");
-            assert!(
-                case["tokens"]
-                    .as_array()
-                    .expect("map tokens")
-                    .contains(&json!([
-                        position(code, generated),
-                        position(source, authored)
-                    ])),
-                "authored expression byte ownership is retained: {case}"
+            let generated_position = position(code, generated);
+            let map = SourceMap::from_json_string(case["map"].as_str().expect("map"))
+                .expect("decoded map");
+            let exact_anchors: Vec<_> = map
+                .get_source_view_tokens()
+                .filter(|token| (token.get_dst_line(), token.get_dst_col()) == generated_position)
+                .map(|token| {
+                    (
+                        (token.get_dst_line(), token.get_dst_col()),
+                        (token.get_src_line(), token.get_src_col()),
+                    )
+                })
+                .collect();
+            assert_eq!(
+                exact_anchors,
+                [(generated_position, position(source, authored))],
+                "the complete original expression has exactly one token at the same authored byte coordinate: {case}"
             );
         }
     }
