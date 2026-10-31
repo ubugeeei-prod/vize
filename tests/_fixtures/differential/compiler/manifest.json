@@ -2596,7 +2596,7 @@
         },
         {
           "path": "tests/tooling/jsx-vapor-oracle/child-browser.ts",
-          "sha256": "7e4242809756fde10185b306c3e6015314b10b30aca558607fd99bff1f646b08"
+          "sha256": "055f401b4e6c23a46945e8937e32eda947892d321752f3bb2d9576fe1fa4069d"
         }
       ],
       "sources": [

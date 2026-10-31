@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const JSX_CHILD_API_CASE_ID = "compiler/jsx/child-values-6890";
-export const JSX_CHILD_ADMITTED_REVISION = "7248f9e40629e7ab3052f3a59ea041a9d8072b3e";
+export const JSX_CHILD_ADMITTED_REVISION = "e58e31a1eb77cdff90debafce306d70b2db53069";
 const approvedSources = [
   {
     path: "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vapor_child_values_6890.snap",
@@ -120,7 +120,7 @@ const approvedWitnesses = [
   },
   {
     path: "tests/tooling/jsx-vapor-oracle/child-browser.ts",
-    sha256: "7e4242809756fde10185b306c3e6015314b10b30aca558607fd99bff1f646b08",
+    sha256: "055f401b4e6c23a46945e8937e32eda947892d321752f3bb2d9576fe1fa4069d",
   },
 ] as const;
 const qualification = {
