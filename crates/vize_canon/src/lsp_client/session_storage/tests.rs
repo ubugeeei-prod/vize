@@ -14,7 +14,17 @@ fn private_owners_are_unique_and_drop_only_their_own_complete_mirror() {
     let first = SessionStorage::new(project.path()).unwrap();
     let second = SessionStorage::new(project.path()).unwrap();
     assert_ne!(first.root(), second.root());
-    assert!(!first.root().starts_with(project.path()));
+    assert_eq!(
+        first
+            .root()
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .canonicalize()
+            .unwrap(),
+        std::env::temp_dir().canonicalize().unwrap()
+    );
     let retained = second.root().join("source.ts");
     write_owned_file(second.root(), &retained, b"second owner").unwrap();
     let removed = first.root().to_path_buf();
@@ -75,7 +85,8 @@ fn document_mappings_cannot_escape_the_private_namespace() {
         )
         .unwrap();
         let path = file_uri_to_path(&mapped).unwrap();
-        assert!(path.starts_with(storage.root()));
+        let relative = path.strip_prefix(storage.root()).unwrap();
+        assert_eq!(storage.root().join(relative), path);
         assert!(
             !path
                 .components()
@@ -106,8 +117,12 @@ fn drive_prefixes_and_unc_paths_remain_private_and_distinct() {
         )
         .unwrap();
         let path = file_uri_to_path(&uri).unwrap();
-        assert!(path.starts_with(storage.root()));
-        assert!(!mapped.contains(&path));
+        let relative = path.strip_prefix(storage.root()).unwrap();
+        assert_eq!(storage.root().join(relative), path);
+        assert_eq!(
+            mapped.iter().filter(|previous| **previous == path).count(),
+            0
+        );
         write_owned_file(storage.root(), &path, b"private Windows member").unwrap();
         mapped.push(path);
     }

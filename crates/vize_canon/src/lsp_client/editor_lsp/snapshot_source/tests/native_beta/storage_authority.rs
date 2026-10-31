@@ -20,10 +20,11 @@ pub(super) fn capture(
     let files: Vec<_> = documents.iter().map(|(external, expected)| {
         let mapped = client.session_document_uri(external);
         let path = file_uri_to_path(&mapped).unwrap();
-        assert!(path.starts_with(&root));
+        let relative = path.strip_prefix(&root).unwrap();
+        assert_eq!(root.join(relative), path);
         let bytes = fs::read(&path).unwrap();
         assert_eq!(bytes, expected.as_bytes());
-        json!({"externalUri":external,"mappedUri":mapped,"relativePath":path.strip_prefix(&root).unwrap(),"bytes":bytes.len(),"sha256":hash(&bytes)})
+        json!({"externalUri":external,"mappedUri":mapped,"relativePath":relative,"bytes":bytes.len(),"sha256":hash(&bytes)})
     }).collect();
     let config_path = root.join("tsconfig.json");
     let config_bytes = fs::read(&config_path).unwrap();

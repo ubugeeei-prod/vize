@@ -26,6 +26,24 @@ fn unique_case_dir(name: &str) -> PathBuf {
         ))
 }
 
+fn assert_private_storage_base(storage: &super::session_storage::SessionStorage) {
+    assert_eq!(
+        storage.root().file_name(),
+        Some(std::ffi::OsStr::new("project"))
+    );
+    assert_eq!(
+        storage
+            .root()
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .canonicalize()
+            .unwrap(),
+        std::env::temp_dir().canonicalize().unwrap()
+    );
+}
+
 #[test]
 fn private_scratch_storage_resolves_package_dependencies_without_package_writes() {
     let case_dir = unique_case_dir("package-root");
@@ -37,7 +55,7 @@ fn private_scratch_storage_resolves_package_dependencies_without_package_writes(
     fs::create_dir_all(&node_modules_vue).unwrap();
 
     let storage = super::session_storage::SessionStorage::new(&source_dir).unwrap();
-    assert!(!storage.root().starts_with(&case_dir));
+    assert_private_storage_base(&storage);
     let linked = storage.root().parent().unwrap().join("node_modules/vue");
     assert_eq!(
         linked.canonicalize().unwrap(),
@@ -61,7 +79,7 @@ fn private_scratch_storage_resolves_ancestor_dependencies_without_workspace_writ
     fs::create_dir_all(&node_modules_vue).unwrap();
 
     let storage = super::session_storage::SessionStorage::new(&source_dir).unwrap();
-    assert!(!storage.root().starts_with(&workspace_root));
+    assert_private_storage_base(&storage);
     let linked = storage.root().parent().unwrap().join("node_modules/vue");
     assert_eq!(
         linked.canonicalize().unwrap(),
@@ -83,18 +101,11 @@ fn overlay_documents_materialize_in_the_owned_private_root() {
     let external_uri = "file:///external/App.vue.setup.ts";
     let document_uri =
         build_session_document_uri(external_uri, &project_root, storage.root(), false);
-    let test_output_fragment = PathBuf::from("target")
-        .join("vize-tests")
-        .to_string_lossy()
-        .replace('\\', "/");
-
-    assert!(
-        crate::file_uri::file_uri_to_path(&document_uri)
-            .unwrap()
-            .starts_with(storage.root())
+    assert_eq!(
+        document_uri,
+        path_to_file_uri(&storage.root().join("external/App.vue.setup.ts"))
     );
-    assert!(!storage.root().starts_with(&project_root));
-    assert!(!document_uri.contains(test_output_fragment.as_str()));
+    assert_private_storage_base(&storage);
 }
 
 #[test]
@@ -112,18 +123,11 @@ fn internal_vize_sessions_use_their_independent_owned_root() {
     let external_uri = "file:///external/App.vue.setup.ts";
     let document_uri =
         build_session_document_uri(external_uri, &project_root, storage.root(), false);
-    let test_output_fragment = PathBuf::from("target")
-        .join("vize-tests")
-        .to_string_lossy()
-        .replace('\\', "/");
-
-    assert!(
-        crate::file_uri::file_uri_to_path(&document_uri)
-            .unwrap()
-            .starts_with(storage.root())
+    assert_eq!(
+        document_uri,
+        path_to_file_uri(&storage.root().join("external/App.vue.setup.ts"))
     );
-    assert!(!storage.root().starts_with(&project_root));
-    assert!(!document_uri.contains(test_output_fragment.as_str()));
+    assert_private_storage_base(&storage);
 }
 
 #[test]
@@ -206,10 +210,8 @@ fn keeps_encoded_vue_virtual_overlay_uri_at_real_path_inside_project() {
 
     let virtual_path = components.join("Button.vue.ts");
     let uri = path_to_file_uri(&virtual_path);
-    assert!(
-        uri.contains("%3D"),
-        "test workspace path must exercise file URI encoding: {uri}"
-    );
+    let encoded_component = cstr!("vize-canon-session-uri-eq%3D{}-{nonce}", std::process::id());
+    assert_eq!(uri.rsplit('/').nth(3), Some(encoded_component.as_str()));
 
     let storage = super::session_storage::SessionStorage::new(&project).unwrap();
     let mapped = build_session_document_uri(&uri, &project, storage.root(), true);
@@ -229,11 +231,9 @@ fn keeps_encoded_vue_virtual_overlay_uri_at_real_path_inside_project() {
         mapped_without_overlay, uri,
         "without overlay support, virtual mirrors must move into the session overlay root"
     );
-    assert!(
-        crate::file_uri::file_uri_to_path(&mapped_without_overlay)
-            .unwrap()
-            .starts_with(storage.root()),
-        "unexpected materialized overlay URI: {mapped_without_overlay}"
+    assert_eq!(
+        mapped_without_overlay,
+        path_to_file_uri(&storage.root().join("src/components/Button.vue.ts"))
     );
     assert!(!virtual_path.exists());
 

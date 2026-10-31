@@ -100,7 +100,14 @@ impl Peer {
                     }
                     "release" => {
                         let handle = params["handle"].as_str().unwrap().to_owned();
-                        assert!(!released.contains(&handle), "double release");
+                        assert_eq!(
+                            released
+                                .iter()
+                                .filter(|released| *released == &handle)
+                                .count(),
+                            0,
+                            "double release"
+                        );
                         released.push(handle);
                         Value::Null
                     }

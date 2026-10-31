@@ -191,14 +191,19 @@ fn positive_answers(packet: &Value, support_uri: &str) {
             row["phase"] == "dependency-error",
             "checking must observe the dirty dependency and its repair/close"
         );
-        assert!(!row["hover"].is_null());
-        assert!(row["hover"].to_string().contains("value"));
-        let targets = row["definition"].as_array().unwrap();
-        assert!(!targets.is_empty());
-        assert!(
-            targets
-                .iter()
-                .all(|target| target["uri"] == support_uri || target["targetUri"] == support_uri)
+        let value_type = match row["phase"].as_str().unwrap() {
+            "valid" | "dependency-close" => "1",
+            "dependency-error" => "\"bad\"",
+            "dependency-repair" => "2",
+            phase => panic!("unexpected phase: {phase}"),
+        };
+        assert_eq!(
+            row["hover"],
+            json!({"contents":{"kind":"markdown","value":vize_l0::cstr!("```typescript\n(alias) const value: {value_type}\n```\n")},"range":{"start":{"line":2,"character":31},"end":{"line":2,"character":36}}})
+        );
+        assert_eq!(
+            row["definition"],
+            json!([{"uri":support_uri,"range":{"start":{"line":0,"character":13},"end":{"line":0,"character":18}}}])
         );
     }
 }
