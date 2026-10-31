@@ -17,7 +17,7 @@ import {
   requireNoUnknownNativeWrites,
   requireSingleTerminalStderrRole,
 } from "./native-io.ts";
-import { observeTerminalStableStderr } from "./terminal-stderr.ts";
+import { observeHistoricalTerminalStderr } from "./terminal-stderr-unavailable.ts";
 import { observeHistoricalSplitWatchLog } from "./stable-watcher-mixed.ts";
 
 const root = process.env.VIZE_NATIVE_DTO_CAPTURE!;
@@ -96,7 +96,7 @@ const splitWatchLogObservations: Array<{
 }> = [];
 const terminalStderrObservations: Array<{
   nativeOwner: number;
-  observation: ReturnType<typeof observeTerminalStableStderr>;
+  observation: ReturnType<typeof observeHistoricalTerminalStderr>;
 }> = [];
 function relations(
   client: Packet[],
@@ -396,7 +396,7 @@ if (baseline) {
       assert.equal(receipt.registrationRefusals, 0);
       terminalStderrObservations.push({
         nativeOwner: receipt.nativeOwner,
-        observation: observeTerminalStableStderr(
+        observation: observeHistoricalTerminalStderr(
           receipt.streams.find((row) => row.fd === 0)!.client!.packets,
           receipt.streams.find((row) => row.fd === 1)!.server!.packets,
           watcherContext(),
@@ -437,6 +437,9 @@ if (terminalStderrObservations.length)
     native.map((row) => nativeOwnerTerminalState(trace, row.pid)),
   );
 save("terminal-stderr-observation.json", terminalStderrObservations);
+const terminalBeforeExitRequest = terminalStderrObservations.some(
+  (row) => !row.observation.registrationPass,
+);
 const lateRoot = watcherBoundaryObservations.some(
   (row) => row.boundary === "post-shutdown-root-and-sdk-program-files",
 );
@@ -448,7 +451,9 @@ const disposition = {
     ? "baseline-observation-known-dto-refusal"
     : stableRegistrationBaseline
       ? terminalStderrObservations.length
-        ? "baseline-observation-unobserved-terminal-stderr"
+        ? terminalBeforeExitRequest
+          ? "baseline-observation-unavailable-stderr-before-exit-request"
+          : "baseline-observation-unobserved-terminal-stderr"
         : splitWatchLogObservations.length
           ? unprovenEofOrder
             ? "baseline-observation-unproven-eof-return"
@@ -471,12 +476,13 @@ const disposition = {
     registrationRefusals === 0 &&
     splitWatchLogObservations.length === 0 &&
     terminalStderrObservations.length === 0,
-  registrationPass: registrationRefusals === 0 && !unprovenEofOrder,
+  registrationPass: registrationRefusals === 0 && !unprovenEofOrder && !terminalBeforeExitRequest,
   nativeOwners: receipts.length,
   allFramesClosed: true,
   ...(unprovenEofOrder
     ? { nativeQualification: false, observedRegistrationAcknowledged: registrationRefusals === 0 }
     : {}),
+  ...(terminalBeforeExitRequest ? { observedRootRegistrationAcknowledged: true } : {}),
   ...(terminalStderrObservations.length
     ? { stderrOutputComplete: false, rawIOComplete: false, nativeQualification: false }
     : {}),
