@@ -21,6 +21,7 @@ function unresolved({ item }: $SlotPayload<any, 'default'>) { expectNumber(slotR
 function openTyped({ item }: $SlotPayload<any, 'default', new () => { $slots: any }>) { expectNumber(slotReport(item)); }
 function typed({ item }: $SlotPayload<{ default(props: { item: number }): unknown }, 'default', typeof WitnessChild>) { expectNumber(slotReport(item)); }
 function broad({ item }: $SlotPayload<{ default(props: { item: number }): unknown }, string>) { expectNumber(slotReport(item)); }
+function typedErrorSlots({ item }: $SlotPayload<ErrorProvider, 'default', new () => { $slots: ErrorProvider }>) { expectNumber(slotReport(item)); }
 `;
 
 for (const variant of ["embedded", "shared", "published"] as const) {
@@ -65,6 +66,7 @@ for (const variant of ["embedded", "shared", "published"] as const) {
         { display: "any", any: true, intrinsicName: "any" },
         { display: "number", any: false, intrinsicName: "number" },
         { display: "any", any: true, intrinsicName: "any" },
+        { display: "any", any: true, intrinsicName: "error" },
       ],
     );
     assert.deepEqual(
@@ -78,6 +80,7 @@ for (const variant of ["embedded", "shared", "published"] as const) {
         { display: '"any"', any: false, intrinsicName: null },
         { display: '"number"', any: false, intrinsicName: null },
         { display: '"any"', any: false, intrinsicName: null },
+        { display: "any", any: true, intrinsicName: "error" },
       ],
     );
     const diagnostics = observation.diagnostics.filter((row) => row.file === observation.file);
