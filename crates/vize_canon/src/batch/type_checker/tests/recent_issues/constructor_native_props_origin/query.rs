@@ -62,6 +62,7 @@ pub(super) fn observe(
     project: &ProjectResponse,
     generated_path: &Path,
     generated: &str,
+    expected_component: &str,
     calls: &mut Vec<Value>,
 ) -> Result<Value, String> {
     if snapshot
@@ -183,6 +184,7 @@ pub(super) fn observe(
         return Err("component module declaration is outside this native project".into());
     }
     let component = source(api, snapshot, project, component_path.as_str(), calls)?;
+    exact_component_source(&component, expected_component)?;
     let vue_position = position(&component, "'vue'")? + 1;
     let vue = required(
         record(
@@ -242,6 +244,15 @@ pub(super) fn observe(
     )
 }
 
+fn exact_component_source(actual: &str, expected: &str) -> Result<(), String> {
+    if actual != expected {
+        return Err(
+            "native snapshot component source differs from the complete frozen input".into(),
+        );
+    }
+    Ok(())
+}
+
 fn property(
     api: &ApiClient,
     snapshot: &ManagedSnapshot,
@@ -294,7 +305,7 @@ fn source(
 }
 
 #[test]
-fn declaration_identity_refuses_empty_duplicate_or_foreign_preferred_nodes() {
+fn origin_evidence_refuses_invalid_declarations_or_component_text() {
     let mut symbol = SymbolResponse {
         id: "test".into(),
         name: "$props".into(),
@@ -321,4 +332,10 @@ fn declaration_identity_refuses_empty_duplicate_or_foreign_preferred_nodes() {
     );
     symbol.value_declaration = Some(node.clone());
     assert_eq!(declarations(&symbol), Ok(BTreeSet::from([node])));
+    let authored = "import type { ComponentPublicInstance } from 'vue';\n";
+    assert_eq!(exact_component_source(authored, authored), Ok(()));
+    assert_eq!(
+        exact_component_source(&authored.replace('\n', "\r\n"), authored),
+        Err("native snapshot component source differs from the complete frozen input".into())
+    );
 }

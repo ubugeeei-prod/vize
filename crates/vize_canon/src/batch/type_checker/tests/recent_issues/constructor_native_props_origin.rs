@@ -177,6 +177,7 @@ fn current_native_instance_props_declaration_origins() {
                     &project,
                     &generated.virtual_path,
                     generated.content.as_str(),
+                    COMPONENT,
                     &mut calls,
                 )
             };
