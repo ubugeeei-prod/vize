@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { cleanEnvironment, inventory, readAuthority, sha256 } from "./patina-project-batch-lib.mjs";
+import { assertPlainTypeRuntimeCounts } from "./patina-plain-type-runtime-counts.ts";
 
 export const TEST_PARENT = "crates/vize_patina/src/linter/native_type_aware/plain_module_tests.rs";
 export const TEST_CHILD =
@@ -91,8 +92,7 @@ export function verifyPackets(bytes, inputs) {
       "filename",
       "warning_count",
     ]);
-    assert.equal(row.actual.error_count, 0);
-    assert.equal(row.actual.warning_count, row.actual.diagnostics.length);
+    assertPlainTypeRuntimeCounts(row);
     const rule =
       row.case === "active"
         ? `type/${row.kind === "promise" ? "no-floating-promises" : "no-reactivity-loss"}`

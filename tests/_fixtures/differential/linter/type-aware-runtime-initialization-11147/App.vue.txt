@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ user?: { name: string }; count: number | null }>();
+</script>
+
+<template>
+  <p v-if="count">{{ count }}</p>
+  <p v-if="user">{{ user.name }}</p>
+</template>

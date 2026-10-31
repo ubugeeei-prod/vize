@@ -17,6 +17,10 @@ fn warning(rule: &str, message: &str, help: &str, start: usize, end: usize) -> V
     json!({"rule_name":rule,"severity":"warning","message":message,"start":start,"end":end,"help":help,"labels":[],"fix":null})
 }
 
+fn initialization_error(message: &str) -> Value {
+    json!({"rule_name":"type/corsa-runtime","severity":"error","message":message,"start":0,"end":0,"help":"Requested type-aware lint could not initialize its native runtime. Check the reported failure, install a compatible native TypeScript runtime, or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.","labels":[],"fix":null})
+}
+
 fn capture(version: &Value, packets: &[Value]) {
     if let Some(directory) = std::env::var_os("VIZE_PLAIN_TYPE_PACKETS_CAPTURE_DIR") {
         let directory = PathBuf::from(directory);
@@ -158,20 +162,15 @@ fn conditional_plain_type_packets_are_complete() {
                     )]
                 }
             } else if case == "unavailable" {
-                vec![warning(
-                    "type/corsa-runtime",
-                    &format!(
-                        "Configured Corsa executable does not exist: {} (from configuration)",
-                        missing.display()
-                    ),
-                    "Type-aware lint rules were skipped because the native compiler could not be started. Install a native TypeScript runtime in this project or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH` to its executable.",
-                    0,
-                    0,
-                )]
+                vec![initialization_error(&format!(
+                    "Configured Corsa executable does not exist: {} (from configuration)",
+                    missing.display()
+                ))]
             } else {
                 Vec::new()
             };
-            let expected = json!({"filename":filename,"error_count":0,"warning_count":diagnostics.len(),"diagnostics":diagnostics});
+            let errors = usize::from(case == "unavailable");
+            let expected = json!({"filename":filename,"error_count":errors,"warning_count":diagnostics.len()-errors,"diagnostics":diagnostics});
             let actual = complete(&result);
             packets.push(json!({"kind":kind,"case":case,"source":current,"expected":expected,"actual":actual}));
             capture(&package["version"], &packets);
