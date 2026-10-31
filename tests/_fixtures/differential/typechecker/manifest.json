@@ -11066,7 +11066,7 @@
         "batch"
       ],
       "test": "batch::type_checker::tests::recent_issues::generic_constructor_slots::correlated_props::constructor_props_follow_each_usage_in_both_overload_orders",
-      "sourceRevision": "48a2faf7089523ab6522b111c87a3ad8390af463",
+      "sourceRevision": "f102e287fe4f735adb46f20fcd74cb14ffc9b564",
       "inputs": [
         {
           "file": "src/components.ts",
