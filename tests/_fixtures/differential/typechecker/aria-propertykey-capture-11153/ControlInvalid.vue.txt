@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import { defineComponent } from 'vue';
+
+const Child = defineComponent({ props: { ariaLabel: { type: String, required: true }, size: [String, Number] }, setup: () => () => null });
+</script>
+<template><Child aria-label="ok" :size="false" /></template>

@@ -63,7 +63,10 @@ test("one Linux Node 24 row runs the packed Nuxt LSP release graph", () => {
   const release = parse(readRepoFile(".github", "workflows", "release.yml")) as {
     env: Record<string, string>;
   };
-  assert.equal(native.env.RELEASE_JS_PACKAGES, release.env.RELEASE_JS_PACKAGES);
+  assert.deepEqual(native.env.RELEASE_JS_PACKAGES.split(" "), [
+    ...release.env.RELEASE_JS_PACKAGES.split(" "),
+    "npm/babel",
+  ]);
 
   const steps = native.jobs["fresh-install-smoke"].steps;
   const selected =

@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 11153,
+  "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+  "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "reported-alias",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Probe.vue",
+          "source": "Reported.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "reported-control",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Probe.vue",
+          "source": "Control.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "alias-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Probe.vue",
+          "source": "AliasValid.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "alias-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Probe.vue",
+          "source": "AliasInvalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Probe.vue",
+          "line": 6,
+          "column": 35,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'false' is not assignable to type 'string | number | undefined'."
+        }
+      ]
+    },
+    {
+      "id": "control-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Probe.vue",
+          "source": "ControlValid.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "control-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Probe.vue",
+          "source": "ControlInvalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Probe.vue",
+          "line": 6,
+          "column": 35,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'false' is not assignable to type 'string | number | undefined'."
+        }
+      ]
+    }
+  ]
+}

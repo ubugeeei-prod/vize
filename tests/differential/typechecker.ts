@@ -8,6 +8,16 @@ import {
   validateResultEnvelope,
 } from "./harness.mjs";
 
+import {
+  artDisplayPack,
+  selectArtDiagnosticAuthority,
+  type ArtDiagnosticAuthority,
+} from "./typechecker-art-display.ts";
+import {
+  listenerEventPack,
+  selectListenerEventAuthority,
+  type ListenerDiagnosticAuthority,
+} from "./typechecker-listener-events.ts";
 import { packCases, TYPECHECKER_TESTS, sourceRevisions } from "./typechecker-registry.ts";
 import {
   typecheckerDialectCoverage,
@@ -41,6 +51,7 @@ export type TypecheckerCase = {
   inputs: Array<Artifact & { file: string }>;
   dialectCoverage: DialectCoverage;
   diagnostics: Diagnostic[];
+  diagnosticAuthority?: ArtDiagnosticAuthority | ListenerDiagnosticAuthority;
 };
 type Pack = {
   version: number;
@@ -225,7 +236,16 @@ export function loadTypecheckerManifest(manifestPath: string) {
       "missing, duplicated or reordered historical projects",
     );
   }
-  return { ...loaded, cases };
+  return {
+    ...loaded,
+    cases: cases.map((fixture) =>
+      fixture.pack === artDisplayPack
+        ? selectArtDiagnosticAuthority(root, fixture)
+        : fixture.pack === listenerEventPack
+          ? selectListenerEventAuthority(root, fixture)
+          : fixture,
+    ),
+  };
 }
 
 function relativePath(input: string) {
@@ -411,6 +431,9 @@ function capturedReport(
       target: "batch",
       legacy: {
         state: "matched-reference",
+        ...(fixture.diagnosticAuthority
+          ? { diagnosticAuthority: fixture.diagnosticAuthority }
+          : {}),
         matchedContract,
         unbaselinedFields,
         observation: observed,

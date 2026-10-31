@@ -13,7 +13,8 @@ const app = stylePreprocessorsApp;
 const qualifiedWidenTemplateRef = 'import("vize:virtual-ts").$WidenTemplateRef';
 const currentReceipt = {
   helperHoistProvenance: "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
-  snapshotSha256: "8b116c0f795115e2e0f6648e79194119d61519d86601bc85b5b9fe3d32834450",
+  // Exact source packet successor: #11153 / Actions 41097013703, artifact 12996064001.
+  snapshotSha256: "0f560b76bb240cc46613c033043ae3ff689f627abd1a4123e5028b1d463c717d",
   widenHelperFiles: [
     "src/CssModuleScss.vue",
     "src/LessStyle.vue",

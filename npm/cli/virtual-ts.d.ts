@@ -844,11 +844,11 @@ type $NativeSlotsFactory<C> = [C] extends [new (...args: any[]) => any]
 export type $SlotsFactory<C> =
   $IsAny<C> extends true
     ? (component: C) => (props: any) => any
-    : C extends { __vizeResolveSlots?: infer F }
+    : [C] extends [{ __vizeResolveSlots?: infer F }]
       ? F extends (...args: any[]) => any
         ? (component: C) => F
         : $NativeSlotsFactory<C>
-      : C extends { readonly __vizeComponentMarker: true }
+      : [C] extends [{ readonly __vizeComponentMarker: true }]
         ? (component: C) => (props: any) => $SlotHostSlots<C>
         : $NativeSlotsFactory<C>;
 type $HasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F }
@@ -885,8 +885,8 @@ type $SlotConstructorArgumentLists<C> = C extends {
     : [unknown];
 type $SlotConstructorHasArguments<C> =
   $SlotConstructorArgumentLists<C> extends infer A ? (A extends [] ? never : true) : never;
-export type $SlotConstructorWithoutArguments<C> = [$SlotConstructorHasArguments<C>] extends [never]
-  ? C
+export type $SlotConstructorWithoutArguments<C> = C extends new () => any
+  ? C & ([$SlotConstructorHasArguments<C>] extends [never] ? unknown : new () => { $slots: never })
   : new () => { $slots: never };
 export type $SlotConstructorWithArguments<C> = [$SlotConstructorHasArguments<C>] extends [never]
   ? new (props: any, ...args: any[]) => { $slots: never }

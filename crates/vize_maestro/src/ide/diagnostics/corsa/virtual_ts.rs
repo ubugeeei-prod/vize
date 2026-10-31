@@ -48,6 +48,7 @@ impl DiagnosticService {
                 options_api,
                 legacy_vue2,
                 preserve_event_navigation: true,
+                configured_global_template_ref: false,
                 dialect: Default::default(),
                 preserve_missing_vue_diagnostics: false,
                 experimental_patterned_template: false,

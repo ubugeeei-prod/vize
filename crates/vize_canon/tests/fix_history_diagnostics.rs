@@ -11,8 +11,10 @@ mod support {
     pub(crate) mod fix_history_reference_paths;
     pub(crate) mod fix_history_router_provider;
     pub(crate) mod fix_history_runner;
+    pub(crate) mod fix_history_zero_argument;
 }
 mod aria_kebab_prop_11048;
+mod aria_propertykey_capture_11153;
 mod content_mapper_template_callback_listener_11023;
 mod content_mapper_vue_generic_11051;
 mod fix_history_cases;
@@ -22,24 +24,7 @@ use support::fix_history_runner::native_fixture_runtime_disabled;
 
 #[test]
 fn contextual_prop_anchors_preserve_authored_diagnostics() {
-    check_pack(
-        "contextual-prop-anchors-10661",
-        "contextual_prop_anchors_preserve_authored_diagnostics",
-        "da6d833de40c8a084022d0229beaeec25a92eb41",
-        Some(10661),
-        &[
-            "original-from",
-            "all-keyword-props",
-            "authored-contextual-locals",
-            "authored-prop-shadow-imports",
-            "reactive-prop-destructure",
-            "const-enum-import",
-            "unicode-identities",
-            "authored-ts2552-retained",
-            "non-colliding-keyword-props",
-            "authored-undefined-shadow",
-        ],
-    );
+    fix_history_cases::contextual_prop_anchors::contextual_prop_anchors();
 }
 
 #[test]
@@ -1310,5 +1295,17 @@ fn unknown_component_slots_preserve_authored_type_diagnostics() {
             "slot-string",
             "unicode-crlf-unknown",
         ],
+    );
+}
+
+#[test]
+fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
+    fix_history_cases::nuxt_pattern_emit_10195::check();
+}
+
+#[test]
+fn zero_argument_slot_constructors_preserve_mapper_and_authored_diagnostics() {
+    support::fix_history_zero_argument::check(
+        support::fix_history_runner::WorkspaceCapturePolicy { record: true },
     );
 }

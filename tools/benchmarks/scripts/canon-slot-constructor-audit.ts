@@ -60,11 +60,18 @@ function offset(value: unknown, field: string): number {
   return value;
 }
 
+export function canonicalMappedGenerated(source: string): string {
+  return source.replace(
+    /(\bconst __vize_required_slots_\d+\s*:\s*)\$RequiredSlots<\$SlotContract_(\d+),/gu,
+    "$1__VizeRequiredSlots<__VizeSlotContract_$2,",
+  );
+}
+
 function mappingContract(result: Record<string, unknown>) {
   const source = text(result);
   return tuples(result.mappings).map(
     ([generated, length, original, originalLength, kind, features]) => ({
-      generated: bytes(source, generated, generated + length),
+      generated: canonicalMappedGenerated(bytes(source, generated, generated + length)),
       original,
       originalLength,
       kind,
@@ -203,6 +210,13 @@ export function native(stdout: Buffer, status: number | null, project: string): 
   return rows;
 }
 
+const contentMapperHelperDeclarations = [
+  "content-mapper-helpers.d.ts",
+  "content-mapper-helpers.d.mts",
+  "content-mapper-helpers.d.cts",
+  "generated/content-mapper-types.d.ts",
+] as const;
+
 function materializeSdk(project: string, provider: string, binary: string | null) {
   const modules = path.join(project, "node_modules");
   fs.mkdirSync(modules);
@@ -212,8 +226,19 @@ function materializeSdk(project: string, provider: string, binary: string | null
   const source = path.join(provider, "node_modules/vize"),
     target = path.join(modules, "vize");
   fs.mkdirSync(target);
-  for (const name of fs.readdirSync(source))
-    if (name !== "package.json") fs.symlinkSync(path.join(source, name), path.join(target, name));
+  const declarationRoots = new Set(
+    contentMapperHelperDeclarations.map((name) => name.split("/", 1)[0]),
+  );
+  for (const name of fs.readdirSync(source)) {
+    if (name === "package.json") continue;
+    if (!declarationRoots.has(name))
+      fs.symlinkSync(path.join(source, name), path.join(target, name));
+  }
+  for (const name of contentMapperHelperDeclarations) {
+    const destination = path.join(target, name);
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.copyFileSync(path.join(source, name), destination);
+  }
   const manifest = jsonValue(fs.readFileSync(path.join(source, "package.json"), "utf8"));
   assert.ok(
     isRecord(manifest) &&
@@ -233,7 +258,7 @@ export function installedSdk(project: string, provider: string) {
   materializeSdk(project, provider, null);
 }
 
-export function selectSdk(project: string, binary: string) {
+export function selectSdk(project: string, binary: string, declarations?: string) {
   const file = path.join(project, "node_modules/vize/package.json"),
     value = jsonValue(fs.readFileSync(file, "utf8"));
   assert.ok(
@@ -241,4 +266,10 @@ export function selectSdk(project: string, binary: string) {
   );
   value.typescript.contentMapper.exec = [binary, "content-mapper"];
   save(file, value);
+  if (declarations)
+    for (const name of contentMapperHelperDeclarations) {
+      const destination = path.join(project, "node_modules/vize", name);
+      fs.mkdirSync(path.dirname(destination), { recursive: true });
+      fs.copyFileSync(path.join(declarations, name), destination);
+    }
 }

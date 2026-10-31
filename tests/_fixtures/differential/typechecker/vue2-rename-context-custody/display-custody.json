@@ -1,0 +1,33 @@
+{
+  "schema": "vize.vue2RenameDisplayCustody",
+  "version": 1,
+  "sourceRevision": "09cc1727c687fa2baa30ecd1dcab854ec72ca597",
+  "producer": {
+    "workflowRun": 41112686389,
+    "job": 124258822990,
+    "artifactId": 13003633335,
+    "artifact": "vue2-editor-context-09cc1727c687fa2baa30ecd1dcab854ec72ca597-41112686389",
+    "artifactSha256": "f480ea7bf1635fbef9bec683882afeb0b000b36db7ab515e12051f27dd2b783c",
+    "recipe": "cargo build --profile ci -p vize --features legacy",
+    "binarySha256": "1caa99ba176467b6f05ac78977dcda933741c4e79d1e7f1264f7638100bd560c",
+    "jobLogSha256": "0b149f9344c6cf0885732e4376b141c4e77683a98f1799c41522e52dc9c2f90d"
+  },
+  "displaySourceRevision": "32d80c319cfb413194ac934e160451a357643e38",
+  "previous": {
+    "path": "successor.json",
+    "sha256": "83f580c929b91a3ded1ff3c61cc53b39e61b030c14f46518c82c7dffdbfbb7dd"
+  },
+  "successor": {
+    "path": "display-successor.json",
+    "sha256": "afc64c945a0295389696d3530f0d12bf0561a4e1970e1d3300a6d6e05001eca9"
+  },
+  "changes": [
+    {
+      "phase": "dataKey",
+      "fileIndex": 0,
+      "diagnosticIndex": 1,
+      "before": "error:50:14 [TS2339] Property 'list' does not exist on type '__VizeThis'.",
+      "after": "error:50:14 [TS2339] Property 'list' does not exist on type '$This'."
+    }
+  ]
+}

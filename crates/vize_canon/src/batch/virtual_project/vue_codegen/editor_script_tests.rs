@@ -25,6 +25,7 @@ fn generate(source: &str, editor: bool) -> GeneratedVueFile {
             check_options: Default::default(),
             typed_router: None,
             preserve_unused_diagnostics: false,
+            configured_global_template_ref: false,
             options_api: false,
             preserve_authored_component: false,
             preserve_script_on_template_error: editor,

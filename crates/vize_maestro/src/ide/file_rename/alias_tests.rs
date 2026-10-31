@@ -187,7 +187,7 @@ fn nuxt_alias_rename_edits_use_the_open_importer_buffer() {
           "newText": "~/components/list/$OracleRenamedResult.vue",
           "range": {
             "end": {
-              "character": 60,
+              "character": 55,
               "line": 1
             },
             "start": {
@@ -250,7 +250,7 @@ fn nuxt_alias_rename_edits_work_before_generated_tsconfig_exists() {
           "newText": "~/components/list/$OracleRenamedResult.vue",
           "range": {
             "end": {
-              "character": 60,
+              "character": 55,
               "line": 1
             },
             "start": {

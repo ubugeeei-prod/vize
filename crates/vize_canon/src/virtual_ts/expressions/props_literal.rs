@@ -23,7 +23,7 @@ use vize_croquis::{
 use vize_l0::ts;
 
 mod prop_entry;
-pub(crate) use prop_entry::entry_sub_spans as prop_entry_sub_spans;
+pub(crate) use prop_entry::entry_sub_spans_with_synthetic_value_gaps as prop_entry_sub_spans_with_synthetic_value_gaps;
 #[cfg(feature = "native")]
 pub(crate) use prop_entry::key_sub_spans;
 pub(crate) const NAMED_PROP_DIAGNOSTIC_MARKER: &str = "@ts-ignore Named prop diagnostics";
@@ -128,6 +128,7 @@ pub(crate) fn append_props_literal(
             ts,
             mappings,
             prop,
+            usage.name.as_str(),
             template_binding_access,
             source_context,
             expr_indent,

@@ -25,7 +25,7 @@ function originalRegistry(): Registry {
   const raw = fs.readFileSync(path.join(commonCorpus, "real-project-before.json"));
   assert.equal(
     createHash("sha256").update(raw).digest("hex"),
-    "cfce6418b777f0668063c424ae74c74f4b223147046abf3f69e0ff4effb3c8c5",
+    "079384221ac0e38cbc0a9930b0c46cc6102b4f47dd903b9ae4f6e51e8dd4472a",
   );
   return JSON.parse(raw.toString()) as Registry;
 }

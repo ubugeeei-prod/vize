@@ -4,7 +4,6 @@
 
 use super::fix_history_contract::{Diagnostic, Pack};
 use super::fix_history_normalization::normalize_generated_check_ordinals;
-use super::fix_history_observation as observation;
 use super::fix_history_paths::{link_vue, safe_relative};
 use std::path::Path;
 use vize_canon::{
@@ -17,12 +16,37 @@ pub(crate) fn native_fixture_runtime_disabled() -> bool {
     std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some()
 }
 
+mod art_native_display;
+mod capture;
+mod required_listener_events;
+pub(crate) use capture::WorkspaceCapturePolicy;
+
 pub(crate) fn check_pack(
     name: &str,
     test: &str,
     regression: &str,
     historical_issue: Option<u32>,
     case_ids: &[&str],
+) {
+    check_pack_with_capture_policy(
+        name,
+        test,
+        regression,
+        historical_issue,
+        case_ids,
+        WorkspaceCapturePolicy { record: true },
+    );
+}
+
+/// Dedicated admission executes every assertion; only the selected canonical
+/// executable owns the full-workspace observation receipt.
+pub(crate) fn check_pack_with_capture_policy(
+    name: &str,
+    test: &str,
+    regression: &str,
+    historical_issue: Option<u32>,
+    case_ids: &[&str],
+    capture_policy: WorkspaceCapturePolicy,
 ) {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let fixtures = root
@@ -44,7 +68,9 @@ pub(crate) fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
-            "aria-kebab-prop-11048" | "component-tag-aliases-11020" => regression,
+            "aria-kebab-prop-11048"
+            | "aria-propertykey-capture-11153"
+            | "component-tag-aliases-11020" => regression,
             "content-mapper-template-callback-listener-11023" => regression,
             "content-mapper-vue-generic-11051" => regression,
             "unknown-component-slot-payload-11027" => regression,
@@ -208,7 +234,7 @@ pub(crate) fn check_pack(
         pack.project_options,
         (name == "authored-unused-symbols").then(|| serde_json::json!({"vuePackage":"absent"}))
     );
-    let mut capture = observation::Capture::from_environment();
+    let mut capture = capture_policy.capture(name, test);
     for case in pack.cases {
         let project = tempfile::tempdir().expect("a project must be created");
         let uses_router_provider = matches!(
@@ -440,6 +466,16 @@ pub(crate) fn check_pack(
             (
                 normalize_generated_check_ordinals(&actual),
                 normalize_generated_check_ordinals(&case.diagnostics),
+            )
+        } else if name == "art-variant-implicit-component-9854" {
+            (
+                actual.clone(),
+                art_native_display::expected(&fixtures, &fixture_pack, &case),
+            )
+        } else if name == "component-listener-prop-duplicate-10397" {
+            (
+                actual.clone(),
+                required_listener_events::expected(&fixtures, &fixture_pack, &case),
             )
         } else {
             (actual.clone(), case.diagnostics.clone())

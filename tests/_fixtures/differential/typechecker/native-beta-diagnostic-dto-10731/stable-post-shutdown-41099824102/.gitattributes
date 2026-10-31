@@ -1,0 +1,3 @@
+# Exact native LSP frames retain their original Content-Length CRLF delimiters.
+client.bin -text whitespace=cr-at-eol
+server.bin -text whitespace=cr-at-eol

@@ -193,7 +193,7 @@ fn build_dts_emits_declarations_alongside_compiled_js() {
         snapshot_path => "snapshots"
     }, {
         insta::assert_snapshot!(
-            "build_dts_emits_declarations_alongside_compiled_js",
+            "build_dts_emits_declarations_alongside_compiled_js_slot_reexport",
             serde_json::to_string_pretty(&snapshot).unwrap()
         );
     });

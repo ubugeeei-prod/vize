@@ -1,5 +1,6 @@
 // One closed API/SourceFile ABI registration, outside authored-language rates.
 import { createHash } from "node:crypto";
+import { stripTypeScriptTypes } from "node:module";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";
@@ -65,9 +66,50 @@ const producerFiles = [
   "tests/tooling/support/native-beta-dto/audit-wire.mjs",
   "tests/tooling/support/native-beta-dto/run-source.mjs",
 ];
+// Keep the historical source-pairs authority unchanged. Current owned tooling
+// is strictly typed; these exact archival bytes authenticate its erased runtime.
+const producerOriginalRoot = `${fixtureRoot}native-beta-diagnostic-dto-10731/producer-originals/`;
+const producerHashes = [
+  "881a9d76c6910b4dbbad3eecf443f7cefa32afb7869580687116d4ddc737c8ad",
+  "e168dec0d8f5b7bbf83d5bc2938224473e5909e8513b05627ffbb4f5f6c38e14",
+  "cb3c4b64797b47d4473900e1ead922b8597e3dd2504a4fe5d4c119c20029b1fb",
+  "e6920284a12b5b07af0502233b06a97ff2745061d5040d2e9b4d34f74290dbd5",
+  "b0a69848f88a5ead7b5674bc1658d00b9c93685eb04edadc0909eb7cee135445",
+];
 const before = "13fa41356d075047a229f580014b637d3bbeb57f";
 const betaCommit = "3e9236361fa97a9e6c685f4833ac457ae2d8c50a";
 const sha = (value: Buffer) => createHash("sha256").update(value).digest("hex");
+const runtime = (source: Buffer) =>
+  stripTypeScriptTypes(source.toString("utf8"), { mode: "transform" });
+// One explicit current observer successor. This does not rewrite the original
+// producer identity or equate the distinct root and SDK watcher registrations.
+const watcherSuccessor = {
+  id: "before-stable-post-shutdown-observation-41099824102",
+  splitLogId: "before-stable-split-watch-log-41152849787",
+  terminalId: "before-stable-terminal-stderr-41156819864",
+  ioPath: "tests/tooling/support/native-beta-dto/native-io.ts",
+  ioSha256: "d4a8ac3d4ce7c2d38a53bc64aaf02a7f0b86b870a0b10b8174e0fb48739c8b54",
+  ioRuntimeSha256: "ba488b82755d55e3230b5ebc7a75cef432d0279e31d8b817bc6ef675571b1036",
+  handoffPath: "tests/tooling/support/native-beta-dto/execve-handoff.ts",
+  handoffSha256: "9c40b14722ee5e1b70f8343ad37bc9f093d474bb99c69da1ea9d12eb29f6218f",
+  handoffRuntimeSha256: "6a12c1726bd7829b6023613041cb2c28ce4c49bd0d906053d406932a4db188d0",
+  terminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
+  terminalSha256: "83b167d4146f812255b01a946ead297693bad85cdf904817e4207a2bf1c97c35",
+  terminalRuntimeSha256: "2ed2edfda0877fa9a4b1093242f8501c5fb2ce834dfaf39ff478edfa9da18013",
+  auditRuntimeSha256: "ff7db54ce23d5d58f1b3138409459bc099351cf0d6294f1b4041300604b38a08",
+  typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
+  typesSha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
+  helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
+  helperRuntimeSha256: "41dae1bd87d7dfa9a1807950eb37944ffaca2eba703b9710a0b48f69c48e25bb",
+  routeId: "configured-startup-beta-semantic-route-41108828160",
+  routePath: "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
+  routeRuntimeSha256: "c577043a694e0254b9be7b4505cb49531e527431be332c3343b814f3c4d2ae40",
+  actualFiles: [
+    ["client.bin", "cd11915afee013a728a287098714d5db70e8719867bd596a1c4721ca5a876c13"],
+    ["server.bin", "47cc76661e039b28a3e7056d3d2b07d6d4c6da31440166c2e490b76f78079f73"],
+    ["identity.json", "990dc13e94623891b8781a37ea05fa96b61c3fb168e6d7e7bef0a2ef265cf05a"],
+  ],
+};
 function require(value: unknown, message: string): asserts value {
   if (!value) throw new Error(`invalid native beta DTO protocol case: ${message}`);
 }
@@ -87,6 +129,78 @@ function pinned(
   const data = read(side, path);
   require(data !== null && sha(data) === hash, `missing or changed ${side} file: ${path}`);
   return data;
+}
+export function nativeBetaDtoProducerCustody(read: ReadFile) {
+  return producerFiles.map((originalPath, index) => {
+    const archivedPath = producerOriginalRoot + originalPath.split("/").at(-1) + ".txt";
+    const original = pinned(read, archivedPath, producerHashes[index]);
+    const currentPath = index === 0 ? originalPath : originalPath.replace(/\.mjs$/u, ".ts");
+    const current = read("head", currentPath);
+    require(current !== null, `missing current typed producer: ${currentPath}`);
+    let currentTypeDependency: { path: string; sha256: string } | null = null;
+    if (index === 0) {
+      let transitioned = original.toString("utf8");
+      for (const file of producerFiles.slice(1)) {
+        require(transitioned.split(file).length === 2, "one exact producer workflow path required");
+        transitioned = transitioned.replace(file, file.replace(/\.mjs$/u, ".ts"));
+      }
+      require(current.equals(
+        Buffer.from(transitioned),
+      ), "workflow changed beyond four typed producer paths");
+    } else if (index === 3) {
+      const types = pinned(read, watcherSuccessor.typesPath, watcherSuccessor.typesSha256);
+      require(runtime(types) === "", "audit type dependency must erase completely");
+      currentTypeDependency = { path: watcherSuccessor.typesPath, sha256: sha(types) };
+      require(sha(Buffer.from(runtime(current))) ===
+        watcherSuccessor.auditRuntimeSha256, "unregistered current watcher observer runtime");
+      const helper = read("head", watcherSuccessor.helperPath);
+      require(helper !== null &&
+        sha(Buffer.from(runtime(helper))) ===
+          watcherSuccessor.helperRuntimeSha256, "missing or changed registered watcher boundary runtime");
+      const route = read("head", watcherSuccessor.routePath);
+      require(route !== null &&
+        sha(Buffer.from(runtime(route))) ===
+          watcherSuccessor.routeRuntimeSha256, "missing or changed registered beta semantic route runtime");
+      for (const [path, physical, executable] of [
+        [watcherSuccessor.ioPath, watcherSuccessor.ioSha256, watcherSuccessor.ioRuntimeSha256],
+        [
+          watcherSuccessor.handoffPath,
+          watcherSuccessor.handoffSha256,
+          watcherSuccessor.handoffRuntimeSha256,
+        ],
+        [
+          watcherSuccessor.terminalPath,
+          watcherSuccessor.terminalSha256,
+          watcherSuccessor.terminalRuntimeSha256,
+        ],
+      ]) {
+        const dependency = pinned(read, path, physical);
+        require(sha(Buffer.from(runtime(dependency))) ===
+          executable, "unregistered terminal IO dependency runtime");
+      }
+      for (const [name, hash] of watcherSuccessor.actualFiles)
+        pinned(
+          read,
+          `${fixtureRoot}native-beta-diagnostic-dto-10731/stable-post-shutdown-41099824102/${name}`,
+          hash,
+        );
+    } else {
+      require(runtime(current) ===
+        runtime(original), `typed producer executable changed: ${currentPath}`);
+    }
+    return {
+      historicalPath: originalPath,
+      archivedPath,
+      historicalSha256: sha(original),
+      currentPath,
+      currentSha256: sha(current),
+      currentRuntimeRegistration: index === 3 ? watcherSuccessor.id : null,
+      currentSplitLogRegistration: index === 3 ? watcherSuccessor.splitLogId : null,
+      currentTerminalRegistration: index === 3 ? watcherSuccessor.terminalId : null,
+      currentRouteRegistration: index === 3 ? watcherSuccessor.routeId : null,
+      currentTypeDependency,
+    };
+  });
 }
 export function nativeBetaDtoProtocolSource(path: string): boolean {
   return scope.has(path);
@@ -201,8 +315,9 @@ export function newNativeBetaDtoProtocolCases(
     for (const [index, path] of producerFiles.entries()) {
       const entry = object(pairs.producerFiles[index], ["path", "sha256"]);
       require(entry.path === path, "unregistered four-role producer authority");
-      pinned(read, path, entry.sha256);
+      require(entry.sha256 === producerHashes[index], "historical producer hash differs");
     }
+    nativeBetaDtoProducerCustody(read);
     require(Array.isArray(row.tests) &&
       row.tests.length === tests.length, "all required protocol/source selectors required");
     for (const [index, expected] of tests.entries()) {
@@ -250,8 +365,8 @@ export function newNativeBetaDtoProtocolCases(
       "version: 7.1.0-beta",
       before,
       tests[3]!.selector,
-      "run-source.mjs",
-      "audit-wire.mjs",
+      "run-source.ts",
+      "audit-wire.ts",
     ])
       require(job.includes(marker), `missing actual four-role producer: ${marker}`);
     return [NATIVE_BETA_DTO_PROTOCOL_ID];

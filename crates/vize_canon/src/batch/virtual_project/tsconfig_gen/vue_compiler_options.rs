@@ -49,6 +49,22 @@ pub fn snapshot_tsconfig_vue_compiler_options(
 }
 
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+pub(in crate::batch::virtual_project) fn configures_global_template_ref(
+    options: &Map<std::string::String, Value>,
+) -> bool {
+    options
+        .get("composables")
+        .and_then(Value::as_object)
+        .and_then(|composables| composables.get("useTemplateRef"))
+        .and_then(Value::as_array)
+        .is_some_and(|names| {
+            names
+                .iter()
+                .any(|name| name.as_str() == Some("useTemplateRef"))
+        })
+}
+
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub(in crate::batch::virtual_project) fn vue_target_from_options(
     project_root: &Path,
     tsconfig_path: &Path,
@@ -195,6 +211,8 @@ impl VirtualProject {
             || load_vue_compiler_options(path.as_deref()).ok(),
             |snapshot| Some(snapshot.vue_options.clone()),
         );
+        self.configured_global_template_ref =
+            options.as_ref().is_some_and(configures_global_template_ref);
         super::super::typed_router::refresh(self, options.as_ref(), path.as_deref());
         self.virtual_ts_check_options.check_unknown_props = if path.is_none() {
             true

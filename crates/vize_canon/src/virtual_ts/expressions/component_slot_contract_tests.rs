@@ -23,16 +23,22 @@ fn define_slots_exports_static_slot_marker_for_parents() {
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-    assert!(
+    assert_eq!(
         output
             .code
-            .contains("readonly __vizeSlots?: Partial<Slots>;"),
+            .matches("readonly __vizeSlots?: Partial<$Slots>;")
+            .count(),
+        1,
         "defineSlots must expose optional parent-provided slots without losing payload types:\n{}",
         output.code
     );
-    assert!(
-        output.code.contains("export type Slots = $Slots;"),
-        "Slots must be a local alias; a type-only re-export is TS2304 at Partial<Slots>:\n{}",
+    assert_eq!(
+        output
+            .code
+            .matches("export type { $Slots as Slots };")
+            .count(),
+        1,
+        "Slots must be a public re-export without introducing a colliding local binding:\n{}",
         output.code
     );
 }

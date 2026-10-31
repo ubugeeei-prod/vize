@@ -29,6 +29,7 @@ use crate::virtual_ts::generator::setup_scope::define_props_type_requires_setup_
 use crate::virtual_ts::generic_parameters::GenericParameters;
 
 mod opaque_defaults;
+mod runtime_boolean;
 mod type_shape;
 
 use opaque_defaults::{generate_opaque_defaults_capture, opaque_defaults_props_type_ref};
@@ -74,16 +75,17 @@ impl TemplatePropsModel {
 
         let (mut defaulted_prop_names, undefined_default_names) =
             collect_with_defaults_default_names(summary);
+        defaulted_prop_names.extend(runtime_boolean::resolved_runtime_boolean_names(summary));
         // Imported runtime props and type-based defaults retain their resolved
         // names separately from authored values, so a raw `undefined` expression
         // cannot acquire the imported resolver's default-presence facts.
         for prop in props {
-            if prop
-                .default_value
-                .as_deref()
-                .is_some_and(|value| value.trim() != "undefined")
-            {
-                defaulted_prop_names.insert(prop.name.as_str().into());
+            if let Some(value) = prop.default_value.as_deref() {
+                if value.trim() == "undefined" {
+                    defaulted_prop_names.remove(prop.name.as_str());
+                } else {
+                    defaulted_prop_names.insert(prop.name.as_str().into());
+                }
             }
         }
         for model in models {

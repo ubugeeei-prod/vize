@@ -8,15 +8,18 @@ pub(super) fn emit_args(
     prop_listener_args: &str,
     is_any: &str,
 ) {
+    // A native root does not close an undeclared component event surface.
+    // Test finite keys only after narrowing that root: generated Vue options
+    // have a string index, and authored conditional exports need the narrowing.
     append!(
         *ts,
         "{indent}type {fallthrough_args} = typeof {component_ref} extends {{ readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F }}\n",
     );
     append!(
         *ts,
-        "{indent}  ? {is_any}<__F> extends true ? unknown[] : NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[]\n",
+        "{indent}  ? \"__vizeEmitProps\" extends keyof {{ [__K in keyof typeof {component_ref} as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown }} ? {is_any}<__F> extends true ? unknown[] : NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[]\n",
     );
-    append!(*ts, "{indent}  : unknown[];\n");
+    append!(*ts, "{indent}  : unknown[] : unknown[];\n");
 }
 
 #[expect(
@@ -35,7 +38,7 @@ pub(super) fn emit_return(
 ) {
     append!(
         *ts,
-        "{indent}type {native_return} = typeof {component_ref} extends {{ readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F }} ? {is_any}<__F> extends true ? any : NonNullable<__F> extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any;\n",
+        "{indent}type {native_return} = typeof {component_ref} extends {{ readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F }} ? \"__vizeEmitProps\" extends keyof {{ [__K in keyof typeof {component_ref} as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown }} ? {is_any}<__F> extends true ? any : NonNullable<__F> extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : any;\n",
     );
     append!(
         *ts,

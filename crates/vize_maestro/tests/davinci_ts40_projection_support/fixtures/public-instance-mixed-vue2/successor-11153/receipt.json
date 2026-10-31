@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "pullRequest": 11153,
+  "observation": {
+    "rawProductRevision": "5071276bac3be94bac938b77736dea0501fed0f5",
+    "testedMerge": "5d25c9a261a3cf16bc54c3d952d362df99b1dcf0",
+    "run": 41041182538,
+    "job": 124014218612,
+    "artifact": 12970068711,
+    "packetPath": "packets/vue2-native-event/canon/text.ts",
+    "packetBytes": 11544,
+    "packetSha256": "f27c02e9f79ece593e6d0305596244f046e2aff5a6f794f383c44e4e2b813876"
+  },
+  "predecessor": {
+    "path": "successor-11142/projection-record.txt",
+    "bytes": 2325,
+    "sha256": "900764f49362116010e2649fee0d0757df0f30a430cb9d7760b3a4fff63ccd57"
+  },
+  "successor": {
+    "path": "successor-11153/projection-record.txt",
+    "bytes": 2325,
+    "sha256": "a6d58d20c6fdf1afefbd846d872655effaa3c477fa3b27dfafa99587dbc2d583"
+  },
+  "delta": {
+    "generatedTextBytesPerProjection": 5,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "scope": "The frozen 205-file mixed-Vue custody and all earlier successors remain byte-identical. This receipt authenticates PR #11153's collision-safe public Slots re-export in the legacy-feature projection at the exact head and tested merge; mapping, diagnostic and authored-hit counts stayed fixed."
+}

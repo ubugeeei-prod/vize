@@ -20,6 +20,11 @@ on:
         description: Exact reviewed source commit
         required: true
         type: string
+      capture-only:
+        description: Retain discovery observations without qualification credit
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -143,17 +148,20 @@ jobs:
           writeFileSync(`${process.env.RUNNER_TEMP}/instance-globals-10617/source-host.json`, JSON.stringify(receipt,null,2)+'\n');
           JS
           tar -C "$RUNNER_TEMP" -czf "$RUNNER_TEMP/instance-globals-10617/source-host.tar.gz" instance-globals-source-host
-      - name: Capture real consumer packets with explicit discovery status
+      - name: Check complete consumer packets with an explicit capture-only override
         env:
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
           VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
           VIZE_TEST_GLOBALS_REQUIRED: "1"
-          VIZE_TEST_GLOBALS_DISCOVERY: "1"
+          VIZE_TEST_GLOBALS_DISCOVERY: ${{ github.event_name == 'workflow_dispatch' && inputs.capture-only && '1' || '0' }}
           VIZE_TEST_GLOBALS_SOURCE_HOST: ${{ runner.temp }}/instance-globals-source-host/tsgo
           VIZE_TEST_GLOBALS_SOURCE_HOST_RECEIPT: ${{ runner.temp }}/instance-globals-10617/source-host.json
           VIZE_TEST_GLOBALS_HOST_MATRIX_REQUIRED: "1"
           VIZE_TEST_GLOBALS_OUTPUT: ${{ runner.temp }}/instance-globals-10617/consumer
-        run: vp node --test --test-concurrency=1 tests/tooling/content-mapper-instance-globals-10617.test.ts
+        run: >-
+          vp node --test --test-concurrency=1
+          tests/tooling/content-mapper-instance-globals-packet-authority.test.ts
+          tests/tooling/content-mapper-instance-globals-10617.test.ts
       - name: Retain complete packets, generated code and format discoveries
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

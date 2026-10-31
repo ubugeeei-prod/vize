@@ -90,6 +90,18 @@ fn public_instance_slot_packets_remain_authenticated() {
         exact_successor,
         external_successor,
     );
+    let collision_safe_receipt =
+        include_str!("fixtures/public-instance-options-api-slots/successor-11153/receipt.json");
+    let collision_safe_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11153/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        collision_safe_receipt,
+        "cd58fde4a43fbb181c31f21f2b2c56d80dcd504b943e2370350b1db5894474f0",
+        11153,
+        external_successor,
+        collision_safe_successor,
+    );
     let matrix = load_matrix();
     let fixture = matrix
         .fixtures
@@ -98,7 +110,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        external_successor
+        collision_safe_successor
     );
 }
 
@@ -152,7 +164,20 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             successor,
             latest_successor,
         );
-        assert_eq!(capture_fixture(fixture).render().as_str(), latest_successor);
+        let collision_safe_successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-11153/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!("fixtures/public-instance-mixed-vue2/successor-11153/receipt.json"),
+            "84c1c49f0874cb1cb0b3d5227af293e378cfd72be2957232c46dbed7a38aa00e",
+            11153,
+            latest_successor,
+            collision_safe_successor,
+        );
+        assert_eq!(
+            capture_fixture(fixture).render().as_str(),
+            collision_safe_successor
+        );
     }
 }
 
@@ -186,6 +211,56 @@ fn authenticate_successor_receipt(
         receipt["successor"]["sha256"].as_str(),
         Some(successor_sha.as_str())
     );
+    for (field, section) in [
+        ("canonGeneratedTextBytes", "[canon]\n"),
+        ("contentMapperGeneratedTextBytes", "[content-mapper]\n"),
+        ("maestroGeneratedTextBytes", "[maestro]\n"),
+    ] {
+        if let Some(expected) = receipt["delta"][field].as_i64() {
+            assert_eq!(
+                expected,
+                generated_text_bytes(successor, section)
+                    - generated_text_bytes(predecessor, section),
+                "{field} must equal the authenticated predecessor-to-successor delta"
+            );
+        }
+    }
+    if let Some(expected) = receipt["delta"]["generatedTextBytesPerProjection"].as_i64() {
+        for section in ["[canon]\n", "[content-mapper]\n", "[maestro]\n"] {
+            assert_eq!(
+                expected,
+                generated_text_bytes(successor, section)
+                    - generated_text_bytes(predecessor, section),
+                "generatedTextBytesPerProjection must match {section}"
+            );
+        }
+    }
+    if receipt["delta"]["canonAndContentMapperUnchanged"].as_bool() == Some(true) {
+        for section in ["[canon]\n", "[content-mapper]\n"] {
+            assert_eq!(
+                generated_text_record(successor, section),
+                generated_text_record(predecessor, section),
+                "canonAndContentMapperUnchanged must hold for {section}"
+            );
+        }
+    }
+}
+
+fn generated_text_record<'a>(record: &'a str, section: &str) -> &'a str {
+    let section = record.split_once(section).expect("projection section").1;
+    section
+        .lines()
+        .find_map(|line| line.strip_prefix("text="))
+        .expect("generated text record")
+}
+
+fn generated_text_bytes(record: &str, section: &str) -> i64 {
+    generated_text_record(record, section)
+        .split_once(':')
+        .expect("generated text byte/hash separator")
+        .0
+        .parse()
+        .expect("generated text byte count")
 }
 
 fn authenticate_packets(

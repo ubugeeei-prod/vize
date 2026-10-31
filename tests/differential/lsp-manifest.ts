@@ -116,6 +116,20 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = loadBindingOccurrences(packRoot, data, expected);
     } else if (data.id === "lsp/fix-history/document-link-module-resolution-original") {
       requests = loadModuleResolutionLinks(data, expected);
+    } else if (data.method === "workspace/symbol") {
+      assert(Array.isArray(expected) && expected.length === 2);
+      requests = expected.map((value: unknown) => {
+        assert(value !== null && typeof value === "object");
+        assert("params" in value && "result" in value);
+        const params = value.params;
+        assert(params !== null && typeof params === "object" && "query" in params);
+        assert.deepEqual(Object.keys(params), ["query"]);
+        assert.equal(typeof params.query, "string");
+        assert(value.result === null || Array.isArray(value.result));
+        return { params: { query: params.query }, result: value.result };
+      });
+      assert(Array.isArray(requests[0].result) && requests[0].result.length > 0);
+      assert.equal(requests[1].result, null);
     } else if (data.method === "textDocument/documentLink") {
       assert(
         Array.isArray(expected) && expected.length === 3,

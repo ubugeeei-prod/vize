@@ -1,5 +1,7 @@
 //! The real Content Mapper host must preserve generic constructor slots (#10416).
 
+mod zero_witness;
+
 use std::path::PathBuf;
 use vize_l0::cstr;
 

@@ -3,8 +3,13 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   assertHostCase,
+  assertMapperCase,
   type AdditionalHost,
 } from "./content-mapper-instance-globals-hosts-10617.ts";
+import {
+  assertReceiverNativeCase,
+  hasReceiverNativeExpectation,
+} from "./content-mapper-instance-globals-receiver-native-10617.ts";
 import {
   assertReceiverSymbols,
   type ReceiverProgram,
@@ -149,15 +154,15 @@ export function runReceiverPlanControls(
             assert.ok(expected);
             assert.deepEqual(exactProcess(context), exactProcess(expected));
           }
-          assertHostCase(
-            entry.source,
-            entry,
-            context,
-            after,
-            cli,
-            JSON.parse(files.get("project/tsconfig.json.txt")!).compilerOptions,
-            hostLabel,
-          );
+          const compilerOptions = JSON.parse(
+            files.get("project/tsconfig.json.txt")!,
+          ).compilerOptions;
+          if (hasReceiverNativeExpectation(entry.id)) {
+            assertMapperCase(entry.source, entry, context, after, hostLabel);
+            assertReceiverNativeCase(entry.source, entry, context, cli, compilerOptions, hostLabel);
+          } else {
+            assertHostCase(entry.source, entry, context, after, cli, compilerOptions, hostLabel);
+          }
         },
       });
     }

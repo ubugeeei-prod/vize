@@ -1,0 +1,367 @@
+{
+  "schema": "vize.vue2DiagnosticDisplayCustody",
+  "version": 1,
+  "sourceRevision": "bdd1a5c3ede92fcc252839965ee00f108681928e",
+  "producer": {
+    "workflowRun": 41101082471,
+    "job": 124218273561,
+    "artifactId": 12998523533,
+    "artifact": "vue-parity-snapshot-differences",
+    "artifactSha256": "bfa98790150c2b090fac619e59e81048ba7d92a79c20745f50c6c0471ef61040",
+    "recipe": "cargo build --profile ci -p vize --features legacy",
+    "binarySha256": "1edb7770e5dc828e3a7259f9d5de5cddba509d63d5d45316717a9d9e3060b14f"
+  },
+  "previous": {
+    "path": "tests/snapshots/check/__snapshots__/vue2-elm-context-check.snap",
+    "sha256": "478e366358a67bffca96b2329c07ec74750b202819d1449e3831c32db7fbe3dd"
+  },
+  "successor": {
+    "path": "tests/snapshots/check/__snapshots__/vue2-elm-display-check.snap",
+    "sha256": "663f90741037634caac9c483c5e78089f597a117f25f333b50747e7ed7732482"
+  },
+  "fileCount": 61,
+  "diagnosticCount": 408,
+  "changedFileCount": 33,
+  "changedDiagnosticCount": 170,
+  "display": {
+    "before": "type '__VizeThis'",
+    "after": "type '$This'"
+  },
+  "changes": [
+    {
+      "file": "src/components/common/alertTip.vue",
+      "diagnosticIndices": [
+        0
+      ]
+    },
+    {
+      "file": "src/components/common/buyCart.vue",
+      "diagnosticIndices": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "file": "src/components/common/computeTime.vue",
+      "diagnosticIndices": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "file": "src/components/footer/footGuide.vue",
+      "diagnosticIndices": [
+        4
+      ]
+    },
+    {
+      "file": "src/page/benefit/benefit.vue",
+      "diagnosticIndices": [
+        1,
+        2
+      ]
+    },
+    {
+      "file": "src/page/benefit/children/exchange.vue",
+      "diagnosticIndices": [
+        1
+      ]
+    },
+    {
+      "file": "src/page/benefit/children/hbHistory.vue",
+      "diagnosticIndices": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "file": "src/page/city/city.vue",
+      "diagnosticIndices": [
+        0
+      ]
+    },
+    {
+      "file": "src/page/confirmOrder/children/children/addAddress.vue",
+      "diagnosticIndices": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "file": "src/page/confirmOrder/children/children/children/searchAddress.vue",
+      "diagnosticIndices": [
+        1,
+        2
+      ]
+    },
+    {
+      "file": "src/page/confirmOrder/children/chooseAddress.vue",
+      "diagnosticIndices": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "file": "src/page/confirmOrder/children/invoice.vue",
+      "diagnosticIndices": [
+        1,
+        2
+      ]
+    },
+    {
+      "file": "src/page/confirmOrder/children/payment.vue",
+      "diagnosticIndices": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    {
+      "file": "src/page/confirmOrder/children/remark.vue",
+      "diagnosticIndices": [
+        1,
+        2
+      ]
+    },
+    {
+      "file": "src/page/confirmOrder/children/userValidation.vue",
+      "diagnosticIndices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "file": "src/page/confirmOrder/confirmOrder.vue",
+      "diagnosticIndices": [
+        11,
+        12,
+        13,
+        14,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39
+      ]
+    },
+    {
+      "file": "src/page/food/food.vue",
+      "diagnosticIndices": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ]
+    },
+    {
+      "file": "src/page/forget/forget.vue",
+      "diagnosticIndices": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "file": "src/page/login/login.vue",
+      "diagnosticIndices": [
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "file": "src/page/order/children/orderDetail.vue",
+      "diagnosticIndices": [
+        18,
+        19,
+        20,
+        21,
+        22
+      ]
+    },
+    {
+      "file": "src/page/order/order.vue",
+      "diagnosticIndices": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "file": "src/page/profile/children/children/address.vue",
+      "diagnosticIndices": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "file": "src/page/profile/children/children/children/add.vue",
+      "diagnosticIndices": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "file": "src/page/profile/children/children/children/children/addDetail.vue",
+      "diagnosticIndices": [
+        1,
+        2
+      ]
+    },
+    {
+      "file": "src/page/profile/children/children/setusername.vue",
+      "diagnosticIndices": [
+        1,
+        2
+      ]
+    },
+    {
+      "file": "src/page/profile/children/info.vue",
+      "diagnosticIndices": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11
+      ]
+    },
+    {
+      "file": "src/page/profile/profile.vue",
+      "diagnosticIndices": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    {
+      "file": "src/page/service/children/questionDetail.vue",
+      "diagnosticIndices": [
+        4
+      ]
+    },
+    {
+      "file": "src/page/service/service.vue",
+      "diagnosticIndices": [
+        1,
+        2
+      ]
+    },
+    {
+      "file": "src/page/shop/children/children/shopSafe.vue",
+      "diagnosticIndices": [
+        26,
+        27
+      ]
+    },
+    {
+      "file": "src/page/shop/shop.vue",
+      "diagnosticIndices": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ]
+    },
+    {
+      "file": "src/page/vipcard/children/useCart.vue",
+      "diagnosticIndices": [
+        2
+      ]
+    },
+    {
+      "file": "src/page/vipcard/vipcard.vue",
+      "diagnosticIndices": [
+        3,
+        4,
+        5
+      ]
+    }
+  ]
+}

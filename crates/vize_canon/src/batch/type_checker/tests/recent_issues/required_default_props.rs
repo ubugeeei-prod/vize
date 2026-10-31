@@ -167,12 +167,17 @@ fn defaulted_required_props_follow_the_published_instance_props() {
             (
                 "src/Invalid.vue".into(),
                 Some(2345),
-                "13:4: Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<string, unknown>>'.\nProperty '\"flag\"' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'.".into()
+                "13:4: Argument of type '{ title: string; spreadFlag: true; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<string, unknown>>'.\nProperty '\"flag\"' is missing in type '{ title: string; spreadFlag: true; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly spreadFlag: boolean; readonly overriddenLabel?: string | undefined; readonly helperLabel?: string | undefined; readonly title: string; }'.".into()
             ),
             (
                 "src/Invalid.vue".into(),
                 Some(2345),
                 "15:4: Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<string, unknown>>'.\nProperty '\"flag\"' is missing in type '{ title: string; }' but required in type '{ readonly title: string; readonly label?: string | undefined; readonly flag: boolean; }'.".into()
+            ),
+            (
+                "src/SetupChild.vue".into(),
+                None,
+                "9:20: Vue compile error [SCRIPT_SETUP_MACRO_SCOPE]: `defineProps()` in <script setup> cannot reference locally declared variable `sharedBoolean` because its arguments are hoisted outside setup(). Move the initialization to a normal <script> block or import it from another module.".into()
             ),
         ]
     );

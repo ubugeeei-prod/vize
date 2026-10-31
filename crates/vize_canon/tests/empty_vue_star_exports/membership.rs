@@ -7,6 +7,10 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
+mod constructor_without_args;
+mod current_updates;
+mod provider_roster;
+
 type Roots = [(&'static str, PathBuf); 3];
 type Checked<T> = Result<T, &'static str>;
 
@@ -17,7 +21,7 @@ struct Member {
     sha256: String,
 }
 
-fn expected() -> (Value, Value) {
+fn expected(current_providers: bool) -> (Value, Value) {
     let path = support::corpus().join("malformed-membership/manifest.json");
     let bytes = fs::read(path).unwrap();
     assert_eq!(
@@ -64,6 +68,9 @@ fn expected() -> (Value, Value) {
         members.extend(entries);
     }
     assert_eq!(members.len(), 86);
+    if current_providers {
+        provider_roster::apply(&mut manifest, &mut members);
+    }
     // Authenticate the original ordered reference unchanged, then retain each
     // declared source-owned helper postimage as separate provenance.
     let update =
@@ -232,6 +239,7 @@ fn expected() -> (Value, Value) {
         *slot_member = update["after"].clone();
     }
     manifest["provenance"]["currentSlotOutletAliasUpdate"] = slot_update;
+    current_updates::apply(&mut manifest, &mut members);
     (manifest, json!(members))
 }
 
@@ -394,9 +402,14 @@ pub(super) fn validate(packet: &Value, files: &Value) -> Value {
         packet["wholeNativeLoadedFileListingPartition"]["kind"],
         "single-malformed-case-syntax-prefix"
     );
-    let (manifest, expected) = expected();
+    let (manifest, expected) = expected(true);
     let roots = roots(packet)
         .expect("only actual validated native/project/authenticated shared provider roots");
+    provider_roster::validate(
+        packet,
+        &roots,
+        &manifest["provenance"]["currentProviderRoster"],
+    );
     let members =
         captured(files).expect("every actual captured body must have matching length and SHA256");
     let actual = compare(&roots, &members, &expected)
@@ -409,7 +422,7 @@ pub(super) fn validate(packet: &Value, files: &Value) -> Value {
 /// Exercise the actual normalizer/comparator with captured triplets and model roots.
 /// This parser control has zero native, provider or actual loaded-file credit.
 pub(super) fn controls() {
-    let (_, expected) = expected();
+    let (_, expected) = expected(false);
     let temporary = tempfile::tempdir().unwrap();
     let base = temporary.path().canonicalize().unwrap();
     let providers = base.join("node_modules/.pnpm");

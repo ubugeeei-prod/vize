@@ -36,6 +36,25 @@ function changeClaim(fixture: Fixture, change: (coverage: Record<string, unknown
 export const dialectReadiness = {
   preRunChanges: [
     (fixture: Fixture) => {
+      const cases = fixture.raw["rust-suites"]["vize_canon::fix_history_diagnostics"].testcases;
+      const name = TYPECHECKER_TESTS["content-mapper-nuxt-emit-10195"];
+      cases[`fix_history_cases::nuxt_pattern_emit_10195::${name}`] = cases[name];
+      delete cases[name];
+    },
+    (fixture: Fixture) => {
+      const suites = fixture.raw["rust-suites"] as Record<string, Record<string, unknown>>;
+      const canonical = suites["vize_canon::fix_history_diagnostics"];
+      const cases = canonical.testcases as Record<string, unknown>;
+      const name = TYPECHECKER_TESTS["zero-argument-slot-constructor-11013"];
+      suites["vize_canon::zero_argument_slot_constructor_diagnostics"] = {
+        ...canonical,
+        "binary-id": "vize_canon::zero_argument_slot_constructor_diagnostics",
+        "binary-name": "zero_argument_slot_constructor_diagnostics",
+        testcases: { [name]: cases[name] },
+      };
+      delete cases[name];
+    },
+    (fixture: Fixture) => {
       delete fixture.raw["rust-suites"]["vize_canon::fix_history_diagnostics"].testcases[test];
     },
     (fixture: Fixture) => {

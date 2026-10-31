@@ -64,11 +64,52 @@ function context(event: string, dependencies: string, cancelled: boolean) {
   };
 }
 
-test("only the seven named functional runner selectors change", () => {
+const providerStep = {
+  name: "Provision the locked Full Rust native runtime",
+  run: "node tools/support/compat/github/full-rust-runtime.ts",
+};
+const providerArtifact = {
+  name: "Retain source coverage native runtime provider",
+  if: "${{ always() }}",
+  uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+  with: {
+    name: "source-coverage-native-runtime-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}",
+    path: "target/nextest/full/native-runtime-provider.json",
+    "if-no-files-found": "warn",
+    "retention-days": 14,
+  },
+};
+
+function restoreCoverageBeforeRuntimeProvisioning(job: Job) {
+  const steps = job.steps;
+  assert(steps);
+  for (const [expected, before, after] of [
+    [providerStep, "Install cargo-llvm-cov", "Source coverage report"],
+    [
+      providerArtifact,
+      "Retain raw source coverage native syntax packets",
+      "Verify source coverage summary",
+    ],
+  ] as const) {
+    const matches: number[] = steps.flatMap((step, index) =>
+      step.name === expected.name ? [index] : [],
+    );
+    assert.equal(matches.length, 1, "exactly one reviewed provider step is required");
+    const index = matches[0];
+    assert.deepEqual(steps[index], expected);
+    assert.equal(steps[index - 1]?.name, before);
+    assert.equal(steps[index + 1]?.name, after);
+    steps.splice(index, 1);
+  }
+}
+
+test("the seven runner selectors and exact runtime steps preserve every original job", () => {
   let changed = 0,
     protectedJobs = 0;
   for (const { specification, before, after } of workflows) {
     const restored = structuredClone(after);
+    if (specification.name === "check")
+      restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
     for (const id of specification.jobs) {
       const original = before.jobs[id],
         updated = after.jobs[id],
@@ -82,7 +123,7 @@ test("only the seven named functional runner selectors change", () => {
     }
     for (const [id, job] of Object.entries(before.jobs)) {
       if (!specification.jobs.some((selected) => selected === id)) {
-        assert.deepEqual(after.jobs[id], job, specification.name + "/" + id);
+        assert.deepEqual(restored.jobs[id], job, specification.name + "/" + id);
         protectedJobs += 1;
       }
     }
@@ -97,6 +138,36 @@ test("only the seven named functional runner selectors change", () => {
   }
   assert.equal(changed, 7);
   assert.equal(protectedJobs, 25);
+});
+
+test("source coverage refuses unknown provider mutations while retaining the archived workflow", () => {
+  const current = workflows.find((entry) => entry.specification.name === "check")?.after.jobs[
+    "source-coverage"
+  ];
+  assert(current);
+  for (const mutate of [
+    (job: Job) => job.steps?.push(structuredClone(providerStep)),
+    (job: Job) => job.steps?.push(structuredClone(providerArtifact)),
+    (job: Job) => {
+      const step = job.steps?.find((step) => step.name === providerStep.name);
+      assert(step);
+      step.run = "node unreviewed-provider.ts";
+    },
+    (job: Job) => {
+      const step = job.steps?.find((step) => step.name === providerArtifact.name);
+      assert(step);
+      step.if = "${{ success() }}";
+    },
+    (job: Job) => {
+      const index = job.steps?.findIndex((step) => step.name === providerStep.name);
+      assert(index != null && index >= 0 && job.steps);
+      job.steps.splice(index, 1);
+    },
+  ]) {
+    const changed = structuredClone(current);
+    mutate(changed);
+    assert.throws(() => restoreCoverageBeforeRuntimeProvisioning(changed), assert.AssertionError);
+  }
 });
 
 test("all existing frontend job and step truth tables stay identical", () => {

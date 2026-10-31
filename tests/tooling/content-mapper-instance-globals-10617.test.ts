@@ -9,13 +9,15 @@ import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 import { runCopyAndCollisionControls } from "./support/content-mapper-instance-globals-copies-10617.ts";
 import { runReceiverPlanControls } from "./support/content-mapper-instance-globals-receiver-plan-10617.ts";
 import {
+  hasCompleteHostMatrix,
+  hasCompletePacketQualification,
+  selectPacketGoldens,
+} from "./support/content-mapper-instance-globals-packets-10617.ts";
+import {
   assertDiagnosticPrefixGeometry,
   assertPrefixGeometryMutations,
 } from "./support/content-mapper-instance-globals-geometry-10617.ts";
-import {
-  assertProfileComparatorNegatives,
-  runRewriteProfileControls,
-} from "./support/content-mapper-instance-globals-profiles-10617.ts";
+import { runRewriteProfileControls } from "./support/content-mapper-instance-globals-profiles-10617.ts";
 import {
   admitAdditionalHosts,
   assertHostCase,
@@ -28,7 +30,6 @@ import {
   assertWholeTransform,
   assertTransformEnvelope,
   fullPacketMutations,
-  type PacketGoldens,
   compilerRows,
   decodeFrames,
   expectedHost,
@@ -42,7 +43,7 @@ import {
 } from "./support/content-mapper-instance-globals-10617.ts";
 
 test("10617 retains the original reported files, exact beta host and closed framing", () => {
-  const { files, cases } = readGlobalsFixture();
+  const { authority, files, cases } = readGlobalsFixture();
   assert.equal(
     cases.find(({ id }) => id === "original")!.source,
     files.get("project/src/Globals.vue.txt"),
@@ -55,8 +56,8 @@ test("10617 retains the original reported files, exact beta host and closed fram
   const packet = { jsonrpc: "2.0", id: 1, result: { text: "日本語🍣\r\n", mappings: [] } };
   assert.deepEqual(decodeFrames(frame(packet).toString()), [packet]);
   assert.throws(() => decodeFrames(frame(packet).subarray(0, -1).toString()));
-  if (files.has("source-packets.json")) {
-    const golden = JSON.parse(files.get("source-packets.json")!) as PacketGoldens;
+  const golden = selectPacketGoldens(authority, files, cases);
+  if (golden) {
     assert.equal(golden.schema, "vize.instance-global-complete-transforms");
     fullPacketMutations(
       golden.packets[0].result,
@@ -71,11 +72,6 @@ test("10617 retains the original reported files, exact beta host and closed fram
     assert.throws(() => assertTransformEnvelope({ ...response, jsonrpc: "1.0" }, 3));
   }
 });
-
-test(
-  "profile controls reject hidden parsing, cache scope collapse and truncated evidence",
-  assertProfileComparatorNegatives,
-);
 
 await test(
   "real beta mapper rejects undeclared instance globals without widening declared or lexical owners",
@@ -107,9 +103,7 @@ await test(
       },
     });
     const { authority, files, cases } = readGlobalsFixture();
-    const golden = files.has("source-packets.json")
-      ? (JSON.parse(files.get("source-packets.json")!) as PacketGoldens)
-      : undefined;
+    const golden = selectPacketGoldens(authority, files, cases);
     const published = path.join(output, "published"),
       reference = path.join(output, "reference"),
       source = path.join(output, "source");
@@ -364,7 +358,6 @@ await test(
                   });
                   if (publicPacket.status === 0 && sourcePacket.status !== 0)
                     throw new Error("new Options API own-dollar regression");
-                  return "discovery-unqualified";
                 }
                 assertHostCase(
                   content,
@@ -407,7 +400,6 @@ await test(
                 });
                 if (before.status === 0 && after.status !== 0)
                   throw new Error("new Options API own-dollar regression");
-                return "discovery-unqualified";
               }
               assertHostCase(
                 content,
@@ -551,8 +543,7 @@ await test(
       });
       const outcomes = checks.map(({ id: label, run: check }) => {
         try {
-          const state = check();
-          return { id: label, outcome: state ?? "pass" };
+          return { id: label, outcome: check() ?? "pass" };
         } catch (error) {
           return { id: label, outcome: "gap", detail: String(error) };
         }
@@ -576,12 +567,18 @@ await test(
       for (const check of faithful) check();
       const discoveryOnly = process.env.VIZE_TEST_GLOBALS_DISCOVERY === "1";
       const failures = outcomes.filter(({ outcome }) => outcome === "gap");
-      const wholePacketQualification =
-        !discoveryOnly &&
-        golden?.complete === true &&
-        golden.packets.length === sourceCases.length &&
-        failures.length === 0;
-      const hostMatrixQualification = wholePacketQualification && hostMatrix.sourceHostAdmitted;
+      const wholePacketQualification = hasCompletePacketQualification({
+        discoveryOnly,
+        golden,
+        outcomes,
+        sourceCases,
+        additionalHostIds: hostMatrix.hosts.map(({ id }) => id),
+      });
+      const hostMatrixQualification = hasCompleteHostMatrix(
+        wholePacketQualification,
+        hostMatrix.sourceHostAdmitted,
+        hostMatrix.hosts.map(({ id }) => id),
+      );
       fs.writeFileSync(
         path.join(output, "qualification.json"),
         `${JSON.stringify({ status: discoveryOnly ? "discovery-only; no acceptance credit" : wholePacketQualification ? "qualified" : "unqualified", fullPacketQualification: wholePacketQualification, hostMatrixQualification, hostMatrixRequired: hostMatrix.required, outcomes }, null, 2)}\n`,

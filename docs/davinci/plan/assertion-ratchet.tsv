@@ -150,7 +150,6 @@ crates/vize_canon/src/batch/type_checker/tests/scan/incremental.rs	2
 crates/vize_canon/src/batch/type_checker/tests/scan/incremental/config_hmr.rs	2
 crates/vize_canon/src/batch/type_checker/tests/tsgo_project_session.rs	1
 crates/vize_canon/src/batch/type_checker/tests/tsx_sfc.rs	2
-crates/vize_canon/src/batch/virtual_project/content_mapper/directive_tests.rs	1
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests.rs	10
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/models.rs	7
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/navigation.rs	6
@@ -235,12 +234,11 @@ crates/vize_canon/src/tests/slot_scope.rs	2
 crates/vize_canon/src/type_only_import_anchors.rs	2
 crates/vize_canon/src/virtual_ts/class_component_props_tests.rs	14
 crates/vize_canon/src/virtual_ts/define_emits_usage_tests.rs	10
-crates/vize_canon/src/virtual_ts/dynamic_component_names_tests.rs	8
 crates/vize_canon/src/virtual_ts/event_handler_tests.rs	7
 crates/vize_canon/src/virtual_ts/expressions/component_props_tests.rs	13
 crates/vize_canon/src/virtual_ts/expressions/component_props_tests/define_model_modifiers.rs	4
 crates/vize_canon/src/virtual_ts/expressions/component_props_tests/dynamic_component_props.rs	7
-crates/vize_canon/src/virtual_ts/expressions/component_slot_contract_tests.rs	9
+crates/vize_canon/src/virtual_ts/expressions/component_slot_contract_tests.rs	8
 crates/vize_canon/src/virtual_ts/expressions/directive_values_tests.rs	10
 crates/vize_canon/src/virtual_ts/expressions/native_props_tests.rs	7
 crates/vize_canon/src/virtual_ts/expressions/prop_name_casing_tests.rs	6
@@ -249,14 +247,14 @@ crates/vize_canon/src/virtual_ts/generator/global_components/tests.rs	9
 crates/vize_canon/src/virtual_ts/generator/global_components/tests/dynamic_props.rs	14
 crates/vize_canon/src/virtual_ts/generator/script_module/plain_exports/tests.rs	7
 crates/vize_canon/src/virtual_ts/interface_extends_tests.rs	1
-crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs	22
+crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs	21
 crates/vize_canon/src/virtual_ts/mapping/tests.rs	2
 crates/vize_canon/src/virtual_ts/public_instance_guard_tests.rs	12
 crates/vize_canon/src/virtual_ts/strict_template_global_enum_tests.rs	2
 crates/vize_canon/src/virtual_ts/strict_template_global_fallback_tests.rs	3
 crates/vize_canon/src/virtual_ts/strict_template_globals_tests.rs	27
 crates/vize_canon/src/virtual_ts/strict_template_scope_tests.rs	4
-crates/vize_canon/src/virtual_ts/tests.rs	94
+crates/vize_canon/src/virtual_ts/tests.rs	89
 crates/vize_canon/src/virtual_ts/tests/auto_import_shadowing.rs	12
 crates/vize_canon/src/virtual_ts/tests/component_navigation.rs	7
 crates/vize_canon/src/virtual_ts/tests/define_props_scope.rs	21
@@ -265,7 +263,7 @@ crates/vize_canon/src/virtual_ts/tests/generic_module_type_exports.rs	12
 crates/vize_canon/src/virtual_ts/tests/legacy_nuxt2_page_context.rs	13
 crates/vize_canon/src/virtual_ts/tests/model_update_payload.rs	26
 crates/vize_canon/src/virtual_ts/tests/no_check_template_bindings.rs	23
-crates/vize_canon/src/virtual_ts/tests/options_api_instance.rs	17
+crates/vize_canon/src/virtual_ts/tests/options_api_instance.rs	16
 crates/vize_canon/src/virtual_ts/tests/options_api_props_spread.rs	19
 crates/vize_canon/src/virtual_ts/tests/options_api_setup_spread.rs	5
 crates/vize_canon/src/virtual_ts/tests/options_api_this_bridge.rs	8

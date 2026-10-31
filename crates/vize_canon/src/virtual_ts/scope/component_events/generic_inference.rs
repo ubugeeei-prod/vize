@@ -9,8 +9,9 @@ use crate::virtual_ts::{
 
 use crate::virtual_ts::expressions::{
     ComponentPropSource, append_props_literal, append_spread_value,
-    callback_parameters_on_ignored_line, generated_prop_span, map_rewritten_template_binding,
-    prop_entry_sub_spans, prop_value_source_range,
+    callback_parameters_on_ignored_line_with_ranges, generated_prop_span,
+    map_rewritten_template_binding, prop_entry_sub_spans_with_synthetic_value_gaps,
+    prop_value_source_range,
 };
 use crate::virtual_ts::types::VizeMapping;
 
@@ -235,18 +236,24 @@ pub(super) fn generate_inferred_emit_args(
                 let key_end = ts.len();
                 ts.push_str(": ");
                 let value_start = ts.len();
-                let owned;
-                let value = if is_inline_callback_prop(prop) {
-                    let value = generated_value.text.trim_start();
-                    owned = if generated_value.omits_tail() {
-                        None
-                    } else {
-                        callback_parameters_on_ignored_line(value)
-                    };
-                    owned.as_ref().map_or(value, |owned| owned.as_str())
+                let inline_callback = is_inline_callback_prop(prop);
+                let raw_value = if inline_callback {
+                    generated_value.text.trim_start()
                 } else {
                     generated_value.text.as_str()
                 };
+                let owned = if inline_callback {
+                    if generated_value.omits_tail() {
+                        None
+                    } else {
+                        callback_parameters_on_ignored_line_with_ranges(raw_value)
+                    }
+                } else {
+                    None
+                };
+                let value = owned
+                    .as_ref()
+                    .map_or(raw_value, |owned| owned.text.as_str());
                 ts.push_str(value);
                 let entry_end = if generated_value.omits_tail() {
                     generated_value.mapped_limit(value_start)
@@ -258,11 +265,14 @@ pub(super) fn generate_inferred_emit_args(
                     gen_range: entry_start..entry_end,
                     src_range: (ctx.source_context.offset + prop.start) as usize
                         ..(ctx.source_context.offset + prop.end) as usize,
-                    sub_spans: prop_entry_sub_spans(
+                    sub_spans: prop_entry_sub_spans_with_synthetic_value_gaps(
                         ctx.source_context,
                         prop,
                         entry_start..key_end,
                         value_start..entry_end,
+                        owned
+                            .as_ref()
+                            .map_or(&[], |rewrite| rewrite.synthetic_ranges.as_slice()),
                     ),
                 });
                 ctx.source_context.inference_only().record_prop_projection(

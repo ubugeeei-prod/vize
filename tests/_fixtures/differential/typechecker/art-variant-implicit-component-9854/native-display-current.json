@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 9854,
+  "regressionCommit": "f07065df35d25bc76f355e5f106c80dbefa922b5",
+  "sourceRevision": "c4ee353b79611126138a82fb68ae187dd171ef70",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "implicit-and-explicit-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/MyCard.vue",
+          "source": "src/MyCard.vue.txt"
+        },
+        {
+          "file": "src/MyCard.art.vue",
+          "source": "src/MyCard.art.vue.txt"
+        },
+        {
+          "file": "src/MyCardExplicit.art.vue",
+          "source": "src/MyCardExplicit.art.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/MyCard.art.vue",
+          "line": 5,
+          "column": 34,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/MyCard.art.vue",
+          "line": 6,
+          "column": 28,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ elevated: true; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 671 more ...; zoomAndPan?: unknown...'.\nProperty 'title' is missing in type '{ elevated: true; }' but required in type '{ readonly title: string; readonly elevated?: boolean | undefined; }'."
+        },
+        {
+          "file": "src/MyCardExplicit.art.vue",
+          "line": 6,
+          "column": 34,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/MyCardExplicit.art.vue",
+          "line": 7,
+          "column": 28,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ elevated: true; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 671 more ...; zoomAndPan?: unknown...'.\nProperty 'title' is missing in type '{ elevated: true; }' but required in type '{ readonly title: string; readonly elevated?: boolean | undefined; }'."
+        }
+      ]
+    },
+    {
+      "id": "implicit-subject-avoids-unknown-global-diagnostics",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/MyCard.vue",
+          "source": "src/MyCard.vue.txt"
+        },
+        {
+          "file": "src/MyCardValid.art.vue",
+          "source": "src/MyCardValid.art.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

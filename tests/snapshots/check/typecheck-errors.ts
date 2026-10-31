@@ -48,7 +48,8 @@ const currentReceipt = {
     "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
   slotAliasProvenance: "#11064 / c2ee0878fec5d53edb7c30e10f374e37ab256f02",
   slotCallFiles: ["src/DefineSlotsError.vue"],
-  snapshotSha256: "a2b925a525c0bf8add628fa6b2ad3b92f6b7932df641cfd62bc7cf7829be0495",
+  // Exact source packet successor: #11153 / Actions 41097013703, artifact 12996064001.
+  snapshotSha256: "bf2513812218645cc69333732bec578706d6a960870650dc8bbdcd4569821872",
   warningCount: 0,
   widenHelperFiles: [
     "src/DefineExposeError.vue",

@@ -74,7 +74,7 @@
     "productionChanged": false
   },
   "summary": {
-    "coreDiagnosticCount": 212,
+    "coreDiagnosticCount": 211,
     "bareDiagnosticCount": 11,
     "diagnosticMetadataChanges": 0
   },
@@ -3199,22 +3199,6 @@
       "sourceSha256": "8561a6aa309b088a6b1fa1c1377360fa6cfbc806eb6405fa50ab2b4d8cde6c1c",
       "diagnostics": [
         {
-          "rule_name": "script/no-reserved-keys",
-          "severity": "error",
-          "message": "Reserved key '$data'",
-          "start": 123,
-          "end": 128,
-          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
-          "labels": [
-            {
-              "message": "props key starts with reserved '$'",
-              "start": 123,
-              "end": 128
-            }
-          ],
-          "fix": null
-        },
-        {
           "rule_name": "script/no-reserved-props",
           "severity": "error",
           "message": "Prop name '$custom' is reserved.",
@@ -3297,15 +3281,15 @@
         {
           "rule_name": "script/no-reserved-props",
           "severity": "error",
-          "message": "Prop name '$data' is reserved.",
+          "message": "Prop name '$$data' is reserved.",
           "start": 123,
-          "end": 128,
+          "end": 129,
           "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. Rename this prop to something else.",
           "labels": [
             {
               "message": "reserved prop name",
               "start": 123,
-              "end": 128
+              "end": 129
             }
           ],
           "fix": null

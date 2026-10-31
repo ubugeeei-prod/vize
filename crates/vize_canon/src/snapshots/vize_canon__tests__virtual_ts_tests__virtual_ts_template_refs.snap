@@ -164,7 +164,7 @@ __setup();
 
 export type Emits = {};
 type $Slots = {};
-export type Slots = $Slots;
+export type { $Slots as Slots };
 
 // ========== Default Export ==========
 type $ComponentInstance = {

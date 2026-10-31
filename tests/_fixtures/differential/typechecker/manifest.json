@@ -283,6 +283,288 @@
       }
     },
     {
+      "id": "typechecker/aria-propertykey-capture-11153/reported-alias",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-propertykey-capture-11153",
+      "case": "reported-alias",
+      "test": "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
+      "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "packReference": {
+        "path": "aria-propertykey-capture-11153/cases.json",
+        "sha256": "74ea52977bba0c9ebf183f5b7af752197e7467f239088b041c56b84c240ad067"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-propertykey-capture-11153/tsconfig.json.txt",
+          "sha256": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "aria-propertykey-capture-11153/Reported.vue.txt",
+          "sha256": "02f19182f0867674f4944ef65f4a1c068da2d946465b1fb05c9c03d979302c14"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/aria-propertykey-capture-11153/reported-control",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-propertykey-capture-11153",
+      "case": "reported-control",
+      "test": "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
+      "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "packReference": {
+        "path": "aria-propertykey-capture-11153/cases.json",
+        "sha256": "74ea52977bba0c9ebf183f5b7af752197e7467f239088b041c56b84c240ad067"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-propertykey-capture-11153/tsconfig.json.txt",
+          "sha256": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "aria-propertykey-capture-11153/Control.vue.txt",
+          "sha256": "132ca3d4f2483630520ade2c3c5b717891dfd5bba6466a84765a6f26e7f16cf3"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/aria-propertykey-capture-11153/alias-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-propertykey-capture-11153",
+      "case": "alias-valid",
+      "test": "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
+      "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "packReference": {
+        "path": "aria-propertykey-capture-11153/cases.json",
+        "sha256": "74ea52977bba0c9ebf183f5b7af752197e7467f239088b041c56b84c240ad067"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-propertykey-capture-11153/tsconfig.json.txt",
+          "sha256": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "aria-propertykey-capture-11153/AliasValid.vue.txt",
+          "sha256": "668dc66f234c3f7c75df3699015c876d90530c024111e9f221861baf519190f3"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/aria-propertykey-capture-11153/alias-invalid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-propertykey-capture-11153",
+      "case": "alias-invalid",
+      "test": "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
+      "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "packReference": {
+        "path": "aria-propertykey-capture-11153/cases.json",
+        "sha256": "74ea52977bba0c9ebf183f5b7af752197e7467f239088b041c56b84c240ad067"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-propertykey-capture-11153/tsconfig.json.txt",
+          "sha256": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "aria-propertykey-capture-11153/AliasInvalid.vue.txt",
+          "sha256": "7c23c4cba829ae78e08d3c29042f351ab3acca15572ee9a1b456bb09ad1a639f"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/aria-propertykey-capture-11153/control-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-propertykey-capture-11153",
+      "case": "control-valid",
+      "test": "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
+      "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "packReference": {
+        "path": "aria-propertykey-capture-11153/cases.json",
+        "sha256": "74ea52977bba0c9ebf183f5b7af752197e7467f239088b041c56b84c240ad067"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-propertykey-capture-11153/tsconfig.json.txt",
+          "sha256": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "aria-propertykey-capture-11153/ControlValid.vue.txt",
+          "sha256": "9dfeedafc8dc5ef967a284396b8784f963cea937b10f444b964bd6373a90f3b3"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/aria-propertykey-capture-11153/control-invalid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "aria-propertykey-capture-11153",
+      "case": "control-invalid",
+      "test": "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
+      "regressionCommit": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
+      "packReference": {
+        "path": "aria-propertykey-capture-11153/cases.json",
+        "sha256": "74ea52977bba0c9ebf183f5b7af752197e7467f239088b041c56b84c240ad067"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "aria-propertykey-capture-11153/tsconfig.json.txt",
+          "sha256": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+        },
+        {
+          "file": "src/Probe.vue",
+          "path": "aria-propertykey-capture-11153/ControlInvalid.vue.txt",
+          "sha256": "862c9396f98a0710dc271b7aa077dffaa0f3024ba43878d1055adeac39d520ef"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/art-variant-implicit-component-9854/implicit-and-explicit-props",
       "state": "active",
       "targets": [
@@ -299,7 +581,7 @@
       "sourceRevision": "f07065df35d25bc76f355e5f106c80dbefa922b5",
       "packReference": {
         "path": "art-variant-implicit-component-9854/cases.json",
-        "sha256": "ec7cede788c18e7a3f53ca47a32a0833d1940936240b2855a9a5e0563c6f8ac2"
+        "sha256": "bdf1c89cf693d30a0c5778ae10f7fb207f1a867242b7c1f490d40eac4c692834"
       },
       "inputs": [
         {
@@ -356,7 +638,7 @@
       "sourceRevision": "f07065df35d25bc76f355e5f106c80dbefa922b5",
       "packReference": {
         "path": "art-variant-implicit-component-9854/cases.json",
-        "sha256": "ec7cede788c18e7a3f53ca47a32a0833d1940936240b2855a9a5e0563c6f8ac2"
+        "sha256": "bdf1c89cf693d30a0c5778ae10f7fb207f1a867242b7c1f490d40eac4c692834"
       },
       "inputs": [
         {
@@ -1731,7 +2013,7 @@
       "sourceRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
       "packReference": {
         "path": "component-listener-prop-duplicate-10397/cases.json",
-        "sha256": "bfbf5c62ed1bae381225af9138a2318fc2d60cea08bd2fc7199d8b649bd17629"
+        "sha256": "7b2175e25db8e5924133ff31d4ade064341d10bff923eeb002256d63277c210c"
       },
       "inputs": [
         {
@@ -1784,7 +2066,7 @@
       "sourceRevision": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
       "packReference": {
         "path": "component-render-h-props-9855/cases.json",
-        "sha256": "7af47e597b3a59aefd63a5667f30cc31285192ad46424b6ee5d1e375e73af5f9"
+        "sha256": "fa04ff67ae9fa30cfdea5f30a5c8ba9618b28c1d6cea1c26edb33e639c8602d1"
       },
       "inputs": [
         {
@@ -2144,7 +2426,7 @@
       "sourceRevision": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
       "packReference": {
         "path": "content-mapper-diagnostics-10187/cases.json",
-        "sha256": "1e1e44344bfbc5764e45d1c89df8e08c248dbbaec2624a72138effc56f4b7154"
+        "sha256": "a98b924f856c5c1380b00e61adceba6e4d9c3aab3e06f0a953c2f722c968e924"
       },
       "inputs": [
         {
@@ -2865,7 +3147,7 @@
       "sourceRevision": "d295b324299c549063fab385b7f308c71ac014e0",
       "packReference": {
         "path": "content-mapper-musea-art-10186/cases.json",
-        "sha256": "224c85945869f758713d6e410f015cfb1cd3a53ba1adcca45abbcf8b7d4196f9"
+        "sha256": "095eb74ba440062aa257747ac492f83a8287f83517a1194f17a139a87cb38c8a"
       },
       "inputs": [
         {
@@ -2970,7 +3252,7 @@
       "sourceRevision": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
       "packReference": {
         "path": "content-mapper-nuxt-emit-10195/cases.json",
-        "sha256": "320014f80b3c04bd79dd919c603479ada059f9061219c5e45c91e6b81f197961"
+        "sha256": "c12ba56e47edce66ef144af75bf87c6b871593216689a905349888d25cf67638"
       },
       "inputs": [
         {
@@ -3027,7 +3309,7 @@
       "sourceRevision": "369f01b50d8fe6e3b0996cc9a90eecf422dbdd3b",
       "packReference": {
         "path": "content-mapper-nuxt-emit-10195/cases.json",
-        "sha256": "320014f80b3c04bd79dd919c603479ada059f9061219c5e45c91e6b81f197961"
+        "sha256": "c12ba56e47edce66ef144af75bf87c6b871593216689a905349888d25cf67638"
       },
       "inputs": [
         {
@@ -5317,7 +5599,7 @@
       "sourceRevision": "5b5ca8272070fffb67152c1ccb20644abe11c62d",
       "packReference": {
         "path": "experimental-router-props-10579/cases.json",
-        "sha256": "2732a093db7e4b0b35656f8bfde5e1e91f8b52e7c531416c033e5060d8b5581c"
+        "sha256": "5e974620b1a11c5e47d791fb6b6618f41e1b14b69737f61409d71c84924e0082"
       },
       "inputs": [
         {
@@ -5389,7 +5671,7 @@
       "sourceRevision": "5b5ca8272070fffb67152c1ccb20644abe11c62d",
       "packReference": {
         "path": "experimental-router-props-10579/cases.json",
-        "sha256": "2732a093db7e4b0b35656f8bfde5e1e91f8b52e7c531416c033e5060d8b5581c"
+        "sha256": "5e974620b1a11c5e47d791fb6b6618f41e1b14b69737f61409d71c84924e0082"
       },
       "inputs": [
         {
@@ -6468,7 +6750,7 @@
       "sourceRevision": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
       "packReference": {
         "path": "misskey-generated-inference-9516/cases.json",
-        "sha256": "a6c8ceb8169e865f2aeef5e47cc35df9480e025a1e6e7c683a27bd7845279142"
+        "sha256": "1593755adba322f2a7532fd1d2ecee15e6307a710b1c226bcdb4d033d9c79070"
       },
       "inputs": [
         {
@@ -6535,7 +6817,7 @@
       "sourceRevision": "cf6c83ab16fb7f20f84f0d51112090bbce89c74a",
       "packReference": {
         "path": "misskey-generated-inference-9516/cases.json",
-        "sha256": "a6c8ceb8169e865f2aeef5e47cc35df9480e025a1e6e7c683a27bd7845279142"
+        "sha256": "1593755adba322f2a7532fd1d2ecee15e6307a710b1c226bcdb4d033d9c79070"
       },
       "inputs": [
         {
@@ -9456,7 +9738,7 @@
       "regressionCommit": "f3a26b0e30c98b135a9e897c3584526eb0a2b96d",
       "packReference": {
         "path": "required-props-edges/cases.json",
-        "sha256": "ae630791d6eb5e32daaba1cc8b9c8c6b82a29fbaba027fac8216b1d18145a854"
+        "sha256": "d018f21b657a11d81dd4e53be169fddd484f965b88ce475d9a20828ec22c852b"
       },
       "inputs": [
         {
@@ -11037,7 +11319,7 @@
       "sourceRevision": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
       "packReference": {
         "path": "undeclared-instance-globals-10617/cases.json",
-        "sha256": "10e8d405f576c1f5105ba131f06ccf89c3a2045ead43c2c96bebd381bc956544"
+        "sha256": "0c725a9404a04dd4ddf53703e4159e209af54affc72bac4eb09c588be9f5a93a"
       },
       "inputs": [
         {
@@ -11107,7 +11389,7 @@
       "sourceRevision": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
       "packReference": {
         "path": "undeclared-instance-globals-10617/cases.json",
-        "sha256": "10e8d405f576c1f5105ba131f06ccf89c3a2045ead43c2c96bebd381bc956544"
+        "sha256": "0c725a9404a04dd4ddf53703e4159e209af54affc72bac4eb09c588be9f5a93a"
       },
       "inputs": [
         {
@@ -11160,7 +11442,7 @@
       "sourceRevision": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
       "packReference": {
         "path": "undeclared-instance-globals-10617/cases.json",
-        "sha256": "10e8d405f576c1f5105ba131f06ccf89c3a2045ead43c2c96bebd381bc956544"
+        "sha256": "0c725a9404a04dd4ddf53703e4159e209af54affc72bac4eb09c588be9f5a93a"
       },
       "inputs": [
         {
@@ -11246,7 +11528,7 @@
       "sourceRevision": "175dfd8a641fb7f06d60176d0a784e80e8c12e84",
       "packReference": {
         "path": "undeclared-instance-globals-10617/cases.json",
-        "sha256": "10e8d405f576c1f5105ba131f06ccf89c3a2045ead43c2c96bebd381bc956544"
+        "sha256": "0c725a9404a04dd4ddf53703e4159e209af54affc72bac4eb09c588be9f5a93a"
       },
       "inputs": [
         {

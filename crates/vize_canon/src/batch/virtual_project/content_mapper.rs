@@ -165,6 +165,7 @@ fn transform_with_diagnostic_ownership(
             check_options: transform_options.virtual_ts_check_options(),
             typed_router: typed_router_root.map(super::typed_router::Config::files_only),
             preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
+            configured_global_template_ref: transform_options.configured_global_template_ref,
             options_api: transform_options.options_api(),
             preserve_authored_component: true,
             preserve_script_on_template_error: true,

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "pullRequest": 11153,
+  "observation": {
+    "rawProductRevision": "5071276bac3be94bac938b77736dea0501fed0f5",
+    "testedMerge": "5d25c9a261a3cf16bc54c3d952d362df99b1dcf0",
+    "run": 41041182538,
+    "job": 124014219076,
+    "artifact": 12969729591,
+    "legacyJob": 124014218612,
+    "legacyArtifact": 12970068711,
+    "packetPath": "packets/options-api-slots/canon/text.ts",
+    "packetBytes": 18840,
+    "packetSha256": "f8bdddbb2a95697e26df276ed41de883bf92e8371da221fe2e0475b9e74b4814"
+  },
+  "predecessor": {
+    "path": "successor-11148/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "f51490f618a58a82d71b5bb84e1e75699fcbb6b695341a7d5db2f0fbea47abb2"
+  },
+  "successor": {
+    "path": "successor-11153/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "d324f048533f7b0ba09a1928a401a0b0aadb2a2bf0c5490f21b106a9c936e027"
+  },
+  "delta": {
+    "generatedTextBytesPerProjection": 6,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "scope": "The frozen 194-file custody and all earlier successors remain byte-identical. This receipt authenticates PR #11153's collision-safe public Slots re-export at the exact head and tested merge; default and legacy artifacts produced identical records, and only generated coordinates and their derived hashes moved."
+}

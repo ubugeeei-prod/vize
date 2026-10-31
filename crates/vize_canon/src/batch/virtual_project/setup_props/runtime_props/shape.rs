@@ -33,6 +33,7 @@ pub(super) fn resolve_runtime_prop_options<'a>(
             required: false,
             default_relaxes_required: false,
             defaulted: runtime_call_name(expr).is_some_and(|name| name.ends_with("WithDefault")),
+            plain_boolean: false,
         };
     };
     let mut options = RuntimePropOptionsState::default();
@@ -44,6 +45,7 @@ pub(super) fn resolve_runtime_prop_options<'a>(
         defaulted: options.has_default == Some(true)
             || options.declares_boolean == Some(true)
             || options.has_resolved_default_marker,
+        plain_boolean: options.plain_boolean == Some(true),
     }
 }
 
@@ -51,6 +53,7 @@ pub(super) struct ResolvedRuntimePropOptions {
     pub(super) required: bool,
     pub(super) default_relaxes_required: bool,
     pub(super) defaulted: bool,
+    pub(super) plain_boolean: bool,
 }
 
 #[derive(Debug)]

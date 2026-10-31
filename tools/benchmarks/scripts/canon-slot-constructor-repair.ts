@@ -5,6 +5,10 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { slotCases } from "./canon-slot-constructor-cases.ts";
 import { captureSlotPacket } from "./canon-slot-constructor-protocol.ts";
+import {
+  assertAuthoredNativeDiagnostics,
+  assertCliDiagnosticContract,
+} from "./canon-slot-constructor-display.ts";
 import { identify, hash, run, save } from "./canon-instance-directives-io.ts";
 import { packet, isRecord } from "./canon-instance-directives-model.ts";
 import {
@@ -30,6 +34,7 @@ import {
 const realProjectFixture = path.resolve(
   "tests/_fixtures/differential/typechecker/zero-argument-slot-constructor-11013/real-project",
 );
+const headSdkDeclarations = path.resolve("npm/cli");
 const realProjectFiles = [
   ["QSplitter.ts.txt", "src/components/QSplitter.ts"],
   ["SongEditor.vue.txt", "src/components/Song/SongEditor.vue"],
@@ -198,7 +203,7 @@ function captureRealProject(provider: string, head: string, checker: string, out
     expectedScreenshotMultiset,
     "the published Corsa surface must reproduce both exact screenshot paths and TS2554 messages",
   );
-  selectSdk(project, head);
+  selectSdk(project, head, headSdkDeclarations);
   const repaired = execute("head");
   assert.deepEqual(repaired, [], "the repaired real project must have no virtual-only diagnostics");
   const receipt = {
@@ -316,7 +321,7 @@ async function main() {
         ["head", head],
       ]) {
         assert.ok(role && binary);
-        selectSdk(project, binary);
+        selectSdk(project, binary, role === "head" ? headSdkDeclarations : undefined);
         const out = path.join(root, role),
           env = {
             ...process.env,
@@ -370,11 +375,7 @@ async function main() {
       const sourceLines = row.source.split(/\r\n|[\r\n\u2028\u2029]/u).length,
         authored = (rows: Row[]) => rows.filter((diagnostic) => diagnostic.line <= sourceLines),
         generated = (rows: Row[]) => rows.filter((diagnostic) => diagnostic.line > sourceLines);
-      assert.deepEqual(
-        authored(h.native),
-        authored(b.native),
-        "every authored native diagnostic stays exact",
-      );
+      assertAuthoredNativeDiagnostics(row, authored(b.native), authored(h.native));
       assert.ok(
         h.native.every((diagnostic) => diagnostic.code !== 2554),
         "the repaired constructor call must not report TS2554",
@@ -407,11 +408,7 @@ async function main() {
       } else {
         assert.deepEqual(headGenerated, [], "the repair must add no generated diagnostics");
       }
-      assert.deepEqual(
-        cliContract(h.cli),
-        cliContract(b.cli),
-        "whole public CLI diagnostics and project metadata stay exact",
-      );
+      assertCliDiagnosticContract(row, cliContract(b.cli), cliContract(h.cli));
       if (row.requiresAuthoredError) {
         assert.ok(
           h.native.some((d) => d.line <= row.source.split("\n").length),
@@ -421,7 +418,7 @@ async function main() {
         assert.ok(original);
         fs.writeFileSync(path.join(project, "component.ts"), original.component);
         fs.writeFileSync(path.join(project, "src/Tiny.vue"), original.source);
-        selectSdk(project, head);
+        selectSdk(project, head, headSdkDeclarations);
         const repaired = run(
           path.join(root, "repair"),
           "mapper",
@@ -484,7 +481,12 @@ async function main() {
     passed: failures.length === 0,
     timingUsable: false,
   });
-  assert.equal(failures.length, 0, "no constructor argument or slot precision failure may survive");
+  assert.equal(
+    failures.length,
+    0,
+    "no constructor argument or slot precision failure may survive:\n" +
+      JSON.stringify(failures, null, 2),
+  );
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url))
   await main();

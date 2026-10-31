@@ -81,6 +81,42 @@ void test("LSP manifest binds original complete contracts and every original req
   }
 });
 
+void test("workspace symbol queries retain their complete present and absent responses", () => {
+  const fixture = fixtureById("lsp/fix-history/workspace-symbol-qualification-11153");
+  assert.deepEqual(
+    fixture.requests.map((request) => request.params),
+    [{ query: "QualifiedSymbols" }, { query: "QualifiedSymbols-missing" }],
+  );
+  const expected = [
+    { requestId: 2, state: "equal" },
+    { requestId: 3, state: "equal" },
+  ];
+  assert.deepEqual(inspectLspObservation(fixture, referenceObservation(fixture)), expected);
+  for (const mutate of ["query", "extra-document", "present-location", "missing-result"]) {
+    const observation = referenceObservation(fixture);
+    rewriteFrames(
+      observation,
+      mutate === "query" || mutate === "extra-document" ? "client" : "server",
+      (messages) => {
+        const message = messages.find(
+          (message) => message.id === (mutate === "missing-result" ? 3 : 2),
+        );
+        assert(message);
+        if (mutate === "query") message.params = { query: "wrong" };
+        else if (mutate === "extra-document")
+          message.params = { ...message.params, textDocument: { uri: "file:///wrong" } };
+        else if (mutate === "present-location") message.result = [];
+        else message.result = [];
+      },
+    );
+    if (mutate === "query" || mutate === "extra-document") {
+      assert.throws(() => inspectLspObservation(fixture, observation));
+    } else {
+      assert.notDeepEqual(inspectLspObservation(fixture, observation), expected);
+    }
+  }
+});
+
 void test("configured initial diagnostics reject missing codes, messages and UTF16 ranges", () => {
   const fixture = fixtureById("lsp/regression/unused-disable-config-10930");
   assert.deepEqual(inspectLspObservation(fixture, referenceObservation(fixture)), [

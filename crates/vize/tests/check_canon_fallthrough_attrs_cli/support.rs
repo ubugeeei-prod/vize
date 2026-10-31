@@ -224,12 +224,30 @@ fn canonicalize_component_check_props_tail(diagnostic: &str) -> String {
         return diagnostic.to_owned();
     };
     let tail_start = args_start + comma + ", ".len();
-    let Some(end) = diagnostic[tail_start..].find(END) else {
+    let tail = &diagnostic[tail_start..];
+    // Corsa can truncate this large type before its closing `>`. Preserve the
+    // diagnostic and authored source, applying the same existing tail policy
+    // only at the explicit truncated-type/source boundary.
+    let boundary = tail.find(END).map(|end| (end, false)).or_else(|| {
+        if !diagnostic[..start]
+            .contains("[TS2353] Object literal may only specify known properties, and ")
+            || !diagnostic[..start].ends_with("does not exist in type '")
+            || !tail.starts_with("$PublicComponentAttrs & {")
+            || !diagnostic.ends_with(')')
+        {
+            return None;
+        }
+        tail.find("...'. (source: ").map(|end| (end + 3, true))
+    });
+    let Some((end, truncated)) = boundary else {
         return diagnostic.to_owned();
     };
     let mut normalized = String::with_capacity(diagnostic.len());
     normalized.push_str(&diagnostic[..tail_start]);
     normalized.push_str("$CheckTail");
+    if truncated {
+        normalized.push('>');
+    }
     normalized.push_str(&diagnostic[tail_start + end..]);
     normalized
 }
@@ -291,6 +309,59 @@ pub(super) fn assert_error_diagnostics(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn truncated_component_tail_keeps_the_complete_diagnostic_contract() {
+        let actual = r#"error:4:29 [TS2353] Object literal may only specify known properties, and '"depressed"' does not exist in type '$ComponentCheckProps<Props, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; 'accent-height'?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 671 more ...; zoomAndPan?: unknown...'. (source: <template><Child title="ok" depressed="x" class="card" style="color: red" /></template>)"#;
+        let expected = r#"error:4:29 [TS2353] Object literal may only specify known properties, and '"depressed"' does not exist in type '$ComponentCheckProps<Props, $CheckTail>'. (source: <template><Child title="ok" depressed="x" class="card" style="color: red" /></template>)"#;
+        let control = r#"error:5:17 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Child :count="value" />)"#;
+        let report = serde_json::json!({
+            "files": [{ "diagnostics": [actual, control] }]
+        });
+        assert_eq!(
+            diagnostics(&report),
+            [expected, control]
+                .map(canonicalize_property_quote_style)
+                .to_vec()
+        );
+    }
+
+    #[test]
+    fn component_tail_display_normalization_requires_a_known_boundary() {
+        let complete = "error:4:29 [TS2353] Unknown prop in '$ComponentCheckProps<OwnProps, NativeAttrs>'. (source: <Child bad />)";
+        let expected = "error:4:29 [TS2353] Unknown prop in '$ComponentCheckProps<OwnProps, $CheckTail>'. (source: <Child bad />)";
+        assert_eq!(canonicalize_component_check_props_tail(complete), expected);
+        for untouched in [
+            "error:4:29 [TS2353] Unknown prop in '$ComponentCheckProps<OwnProps, NativeAttrs...'.",
+            "error:4:29 [TS2353] Unknown prop in '$OtherProps<OwnProps, NativeAttrs...'. (source: <Child bad />)",
+            "error:4:29 [TS2353] Unknown prop in '$ComponentCheckProps<OwnProps>'. (source: <Child bad />)",
+        ] {
+            assert_eq!(
+                canonicalize_component_check_props_tail(untouched),
+                untouched
+            );
+        }
+        let captured_shape = "error:4:29 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '$ComponentCheckProps<Props, $PublicComponentAttrs & { abbr?: unknown...'. (source: <Child depressed />)";
+        let mut unexpected_suffix = captured_shape.to_owned();
+        unexpected_suffix.push_str(" unexpected suffix");
+        let spoofed_source_marker = captured_shape.replace("[TS2353]", "[TS2322]").replace(
+            "(source: ",
+            "(source: [TS2353] Object literal may only specify known properties, and ",
+        );
+        for untouched in [
+            captured_shape.replace("[TS2353]", "[TS2322]"),
+            captured_shape.replace("$PublicComponentAttrs & {", "ArbitraryAttrs & {"),
+            captured_shape.replace("does not exist in type", "is not assignable to type"),
+            captured_shape.replace("...'. (source: ", "...'. "),
+            unexpected_suffix,
+            spoofed_source_marker,
+        ] {
+            assert_eq!(
+                canonicalize_component_check_props_tail(&untouched),
+                untouched
+            );
+        }
+    }
 
     fn package_dir(name: &str, package_json: &str) -> PathBuf {
         let dir = workspace_root()

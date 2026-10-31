@@ -205,7 +205,7 @@ mod tests {
         analyzer.analyze_script_setup(source);
         let summary = analyzer.finish();
         (
-            SetupHelperPlan::collect(&summary, Some(source), true),
+            SetupHelperPlan::collect(&summary, Some(source), true, false),
             summary,
         )
     }
@@ -250,7 +250,7 @@ fire(key, true);
                 ),
             ]
         );
-        let disabled = SetupHelperPlan::collect(&summary, Some(source), false);
+        let disabled = SetupHelperPlan::collect(&summary, Some(source), false, false);
         let mut generated = String::default();
         let mut mappings = Vec::new();
         disabled.emit_event_navigation(&mut generated, &mut mappings, &summary, None, &|offset| {
@@ -284,7 +284,7 @@ fire(key, true);
         let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
         analyzer.analyze_script_setup_with_generic_jsx(source, Some("T"));
         let summary = analyzer.finish();
-        let plan = SetupHelperPlan::collect(&summary, Some(source), true);
+        let plan = SetupHelperPlan::collect(&summary, Some(source), true, false);
         let mut generated = String::default();
         let mut mappings = Vec::new();
         let generic = crate::virtual_ts::generic_parameters::GenericParameters::parse("T");

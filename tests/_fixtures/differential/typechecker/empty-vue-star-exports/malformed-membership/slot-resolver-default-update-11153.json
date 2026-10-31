@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "pullRequest": 11153,
+  "sourceRevision": "06180e7d273c72d507dc2590d6eb5518455ea457",
+  "testedMerge": "1087711502f84c72430d269c0a1f529164f52dd5",
+  "observedRun": 41065960975,
+  "observedJob": 124098349503,
+  "artifact": 12983250250,
+  "artifactArchiveSha256": "e3d8aa526f2fc0eb975fe20fadb7f1223a674390b673af8600f0f668be8c5766",
+  "extractedPacketSha256": "1c3c2d1153012c2da6159e089cb89ffeffce0812ec619c343a6cd3b11bf8a7ef",
+  "scope": "complete ordered malformed-project membership after preserving generic slot constructor defaults",
+  "proof": "The failed exact roster named entry 82. The retained whole packet independently authenticates all 86 ordered file bodies; only __vize_helpers.d.ts changed from the previously authenticated postimage.",
+  "entry": 82,
+  "before": [
+    "project/__vize_helpers.d.ts",
+    43470,
+    "059518f45e1cd4f94ddf4da02d8916ae8eacc2e563fd44bf4d773d7674c6d1b9"
+  ],
+  "after": [
+    "project/__vize_helpers.d.ts",
+    43526,
+    "ce42f8bde09b50b0ba5ee280eade2a0c02f7c75d5b5cc244075a6405c693716a"
+  ],
+  "deltaBytes": 56
+}

@@ -220,13 +220,18 @@ pub(super) fn emit_emits_type(
             }
             for model in models {
                 let event_name = cstr!("update:{}", model.name);
-                if fields
-                    .iter()
-                    .any(|(name, _)| name.as_str() == event_name.as_str())
+                let payload = cstr!("[value: {}]", model_update_payload(generic_param, model));
+                if let Some((_, existing)) = fields
+                    .iter_mut()
+                    .find(|(name, _)| name.as_str() == event_name.as_str())
                 {
-                    continue;
+                    // Template `$emit` inference records only the expression's
+                    // value type. The model declaration owns the public event
+                    // shape, which must remain a tuple for `__EmitShape`.
+                    *existing = payload;
+                } else {
+                    fields.push((event_name, payload));
                 }
-                fields.push((event_name, model_update_payload(generic_param, model)));
             }
             ts! { &mut *ts =>
                 export type Emits #emits_generic_suffix = {

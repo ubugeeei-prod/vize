@@ -54,7 +54,7 @@ const heuristicMarkers = ["_Script binding_", "_Template binding from script_"];
 const typecheckUnavailableHint = {
   code: "typecheck-unavailable",
   message:
-    "Type checking is unavailable in this workspace. Make sure `tsconfig.json` exists. Install `typescript@^7` or configure `typeChecker.corsaPath`; see https://vizejs.dev/guide/static-analysis.",
+    "Type checking is unavailable in this workspace. Make sure `tsconfig.json` exists. Provide a native TypeScript compiler, for example `typescript-native@npm:typescript@7.1.0-beta`, or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH`; see https://vizejs.dev/guide/static-analysis.",
   range: {
     start: { line: 0, character: 0 },
     end: { line: 0, character: 0 },

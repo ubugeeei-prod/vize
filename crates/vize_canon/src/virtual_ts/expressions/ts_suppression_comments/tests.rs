@@ -40,7 +40,9 @@ fn generic_constraints_use_ast_bounds_and_preserve_nested_types() {
             "<T extends () => unknown>(   value: T ) => value",
         ),
         (
-            r#"<T extends Promise<() => { value: ["=>", `${string}-${`${number}`}`] }>>(\n  value: T\n): (() => T) /* => */ => value"#,
+            r#"<T extends Promise<() => { value: ["=>", `${string}-${`${number}`}`] }>>(
+  value: T
+): (() => T) /* => */ => value"#,
             r#"<T extends Promise<() => { value: ["=>", `${string}-${`${number}`}`] }>>(   value: T ): (() => T) /* => */ => value"#,
         ),
         (
