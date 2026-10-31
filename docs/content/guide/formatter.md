@@ -118,6 +118,7 @@ The same options are available as CLI flags:
 | `--bracket-same-line`              | Keeps a multi-line tag's `>` on its final attribute line.     |
 | `--end-of-line`                    | Chooses `lf`, `crlf`, `cr` or source-detected `auto`.          |
 | `--no-semi`                        | Omits semicolons at the ends of statements.                   |
+| `--semi[=true\|false]`             | Overrides the configured semicolon policy in either direction. |
 | `--sort-attributes`                | Sorts attributes in the template and on block tags.           |
 | `--attribute-sort-order`           | Chooses `alphabetical` or `as-written` within priority groups. |
 | `--single-attribute-per-line`      | Puts each attribute on its own line.                          |
@@ -129,6 +130,10 @@ The same options are available as CLI flags:
 | `--normalize-inline-styles`       | Lays out plain static `style` declarations on one line. |
 | `--normalize-v-for-parens`        | Wraps multiple `v-for` aliases in parentheses.         |
 | `--reindent-preprocessor-styles`  | Re-indents SCSS and Less blocks by nesting depth.      |
+
+`--semi` means `--semi=true`; `--semi=false` and the existing `--no-semi`
+omit semicolons. Without either flag, the configured value stays in effect.
+Passing `--semi` together with `--no-semi` is an argument error.
 
 Each of these guides covers one setting in detail:
 
