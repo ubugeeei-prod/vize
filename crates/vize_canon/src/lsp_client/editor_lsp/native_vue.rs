@@ -17,6 +17,9 @@ use vize_l0::cstr;
 
 mod filesystem;
 
+#[cfg(all(test, unix))]
+mod logical_probe;
+
 impl CorsaProjectClient {
     pub(crate) fn native_vue_diagnostics(
         &mut self,
