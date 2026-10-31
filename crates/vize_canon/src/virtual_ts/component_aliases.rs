@@ -130,7 +130,7 @@ impl Aliases {
         let mut generated = FxHashMap::<String, String>::default();
         for identity in identities {
             let existing = existing_reference(identity.as_str(), type_only);
-            if reference_counts[existing.as_str()] == 1
+            if reference_counts.get(existing.as_str()) == Some(&1)
                 && !existing_reserved.contains(existing.as_str())
             {
                 generated.insert(identity, existing);

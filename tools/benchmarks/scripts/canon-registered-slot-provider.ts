@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { slotProviderTypes } from "../../../tests/tooling/support/canon-slot-provider-types.ts";
 import { captureSlotPacket } from "./canon-slot-constructor-protocol.ts";
 import { native } from "./canon-slot-constructor-audit.ts";
-import { packet } from "./canon-instance-directives-model.ts";
+import { slotCliPacket } from "./canon-slot-provider-cli.ts";
 import { identify, hash, run, save } from "./canon-instance-directives-io.ts";
 import { sourceSdk, expected } from "./canon-slot-provider-any.ts";
 
@@ -170,6 +170,7 @@ async function main() {
         "--format",
         "json",
         "--show-virtual-ts",
+        "--quiet",
         "--tsconfig",
         "tsconfig.json",
         "--corsa-path",
@@ -193,10 +194,10 @@ async function main() {
       project,
       env,
     );
-    for (const process of [mapper, cli, framework])
+    for (const process of [mapper, framework])
       assert.equal(process.stderr.length, 0, "complete stderr must remain empty");
     const mapperRows = native(mapper.stdout, mapper.status, project),
-      cliRows = packet(cli.stdout, cli.status, project).diagnostics.map(
+      cliRows = slotCliPacket(cli, project).diagnostics.map(
         ({ file, line, column, code, message }) => ({ file, line, column, code, message }),
       ),
       frameworkRows = native(framework.stdout, framework.status, project);
