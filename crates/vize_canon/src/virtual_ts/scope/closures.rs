@@ -423,6 +423,7 @@ pub(super) fn emit_scope_closures(
             &super::ref_instances::RefInstanceContext {
                 summary,
                 options: virtual_ts_options,
+                hoist_shared_preamble: options.hoist_shared_preamble,
                 syntactic_type_only_imported_names: options.syntactic_type_only_imported_names,
                 template_binding_access,
                 template_offset,

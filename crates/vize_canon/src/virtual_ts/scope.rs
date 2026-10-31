@@ -56,7 +56,9 @@ pub(crate) use dynamic_component::is_owned_named_dynamic_component;
 pub(crate) use forwarded_roots::{FORWARDED_RETURN_KEY, FORWARDED_ROOT_HELPERS, SLOTS_RETURN_KEY};
 pub(crate) use globals::{is_declared_template_context_name, is_template_instance_global_name};
 pub(crate) use inline_callback_classifier::is_direct_inline_function_prop_value;
-pub(crate) use ref_instances::{REF_INSTANCE_HELPERS, REFS_RETURN_KEY, instantiated_ref_starts};
+pub(crate) use ref_instances::{
+    REF_INSTANCE_HELPERS, REF_INSTANCE_HELPERS_HOISTED, REFS_RETURN_KEY, instantiated_ref_starts,
+};
 pub(crate) use slot_scope::emit_slot_payload_helpers;
 pub(crate) use vif_guard::append_ignored_vif_guard_open;
 pub(crate) use vif_guard::remove_enclosing_vif_guard_prefix;

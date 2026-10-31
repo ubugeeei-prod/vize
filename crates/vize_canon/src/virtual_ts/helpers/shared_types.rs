@@ -32,6 +32,7 @@ macro_rules! shared_type_refs {
 
 shared_type_refs! {
     IS_ANY => ("$IsAny", "IsAny"),
+    REF_INSTANCE_FACTORY => ("$RefInstanceFactory", "$RefInstanceFactory"),
     COMPONENT_NAVIGATION_PROPS => ("$ComponentNavigationProps", "$ComponentNavigationProps"),
     EMIT_LISTENERS => ("$EmitListeners", "$EmitListeners"),
     REQUIRED_FALLTHROUGH_PROPS => ("$RequiredFallthroughProps", "$RequiredFallthroughProps"),

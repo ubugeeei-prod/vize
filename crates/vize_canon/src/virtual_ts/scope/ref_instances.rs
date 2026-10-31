@@ -18,7 +18,7 @@ use vize_l0::ts;
 use crate::virtual_ts::{
     component_reference::resolved_component_binding_reference,
     expressions::{generated_prop_value, rewrite_reserved_template_binding},
-    helpers::to_camel_case,
+    helpers::{shared_types::REF_INSTANCE_FACTORY, to_camel_case},
     template_binding_access::TemplateBindingAccess,
     types::VirtualTsOptions,
 };
@@ -35,7 +35,21 @@ pub(crate) const REFS_RETURN_KEY: &str = "__vizeRefs";
 /// with a `config` computed from `chart.value` would otherwise make `chart`
 /// depend on itself for every component, not only for the generic ones whose
 /// instance really is a function of their props.
-pub(crate) const REF_INSTANCE_HELPERS: &str = "  type $RefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends { __vizeResolveRef?: infer _F } ? _F extends (...args: any[]) => any ? (component: _C) => _F : (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\n  type $TemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? $TemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C>;\n";
+macro_rules! template_ref_instance_helper {
+    () => {
+        "  type $TemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? $TemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C>;\n"
+    };
+}
+
+pub(crate) const REF_INSTANCE_HELPERS: &str = concat!(
+    "  ",
+    include_str!("../helpers/declarations/ref-instance-factory.d.ts.txt"),
+    template_ref_instance_helper!()
+);
+
+// The provider-sensitive instance helper remains local. Hoisted call sites
+// reference the shared factory directly without a per-scope generic alias.
+pub(crate) const REF_INSTANCE_HELPERS_HOISTED: &str = template_ref_instance_helper!();
 
 /// Template-relative starts of the component usages whose ref is instantiated:
 /// a static `ref` next to at least one bound prop, outside every slot scope.
@@ -79,6 +93,7 @@ fn enclosing_loops<'a>(summary: &'a Croquis, usage: &ComponentUsage) -> Option<V
 pub(super) struct RefInstanceContext<'a> {
     pub(super) summary: &'a Croquis,
     pub(super) options: &'a VirtualTsOptions,
+    pub(super) hoist_shared_preamble: bool,
     pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(super) template_binding_access: &'a TemplateBindingAccess<'a>,
     pub(super) template_offset: u32,
@@ -245,13 +260,14 @@ fn emit_ref_call(
     indent: &str,
     name: &str,
 ) {
+    let factory = REF_INSTANCE_FACTORY.select(ctx.hoist_shared_preamble);
     append!(
         *ts,
         "{indent}// @ts-ignore Inference-only call; the usage's mapped prop checks own diagnostics.\n"
     );
     append!(
         *ts,
-        "{indent}var {name} = (undefined as unknown as $RefInstanceFactory<typeof {component}>)({component})({{\n"
+        "{indent}var {name} = (undefined as unknown as {factory}<typeof {component}>)({component})({{\n"
     );
     let mut emitted = FxHashSet::default();
     for prop in &usage.props {
@@ -297,7 +313,7 @@ fn with_guard(
 
 #[cfg(test)]
 mod tests {
-    use super::{REF_INSTANCE_HELPERS, instantiated_ref_starts};
+    use super::{REF_INSTANCE_HELPERS, REF_INSTANCE_HELPERS_HOISTED, instantiated_ref_starts};
     use vize_carton::Allocator;
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
@@ -346,5 +362,34 @@ mod tests {
             1,
             "{REF_INSTANCE_HELPERS}",
         );
+    }
+
+    #[test]
+    fn standalone_factory_and_instance_helper_bytes_remain_exact() {
+        const BEFORE: &str = "  type $RefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends { __vizeResolveRef?: infer _F } ? _F extends (...args: any[]) => any ? (component: _C) => _F : (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\n  type $TemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? $TemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C>;\n";
+        assert_eq!(REF_INSTANCE_HELPERS, BEFORE);
+        assert_eq!(REF_INSTANCE_HELPERS.len(), 840);
+        assert_eq!(
+            [
+                "  ",
+                include_str!("../helpers/declarations/ref-instance-factory.d.ts.txt"),
+                REF_INSTANCE_HELPERS_HOISTED,
+            ]
+            .concat(),
+            BEFORE
+        );
+    }
+
+    #[test]
+    fn factory_reference_selects_local_or_qualified_type_without_an_alias() {
+        assert_eq!(
+            super::REF_INSTANCE_FACTORY.select(false),
+            "$RefInstanceFactory"
+        );
+        assert_eq!(
+            super::REF_INSTANCE_FACTORY.select(true),
+            "import(\"vize:virtual-ts\").$RefInstanceFactory"
+        );
+        assert_eq!(REF_INSTANCE_HELPERS_HOISTED.len(), 442);
     }
 }
