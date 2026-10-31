@@ -45,6 +45,18 @@ fn existing_reference(name: &str, type_only: &FxHashSet<CompactString>) -> Strin
     }
 }
 
+pub(super) fn needs_imported_names(
+    summary: &Croquis,
+    type_only: &FxHashSet<CompactString>,
+) -> bool {
+    vize_croquis::facts::used_component_name_list(summary)
+        .iter()
+        .any(|name| {
+            has_type_only_component_candidate(type_only, name)
+                || to_safe_identifier(name).as_str() != name.as_str()
+        })
+}
+
 impl Aliases {
     fn new(
         summary: &Croquis,

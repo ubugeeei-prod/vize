@@ -310,11 +310,21 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let options_api_props = options_api
         .then(|| script_content.and_then(find_options_api_props))
         .flatten();
+    let syntactic_type_only_imported_names = syntactic_type_only_imported_names(
+        summary,
+        &global_components,
+        options_api_props.is_some(),
+        script_content,
+    );
     // The template-scope unwrap set also needs it: an auto-import already
     // imported by a plain `<script>` must not gain a second shadow.
     let needs_imported_names = !options.auto_import_stubs.is_empty()
         || !options.auto_import_bindings.is_empty()
-        || (global_components.enabled() && !component_usage_list(summary).is_empty());
+        || (global_components.enabled() && !component_usage_list(summary).is_empty())
+        || super::component_aliases::needs_imported_names(
+            summary,
+            &syntactic_type_only_imported_names,
+        );
     let imported_names: FxHashSet<&str> = if needs_imported_names {
         profile!(
             "canon.virtual_ts.extract_imported_names",
@@ -323,12 +333,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     } else {
         FxHashSet::default()
     };
-    let syntactic_type_only_imported_names = syntactic_type_only_imported_names(
-        summary,
-        &global_components,
-        options_api_props.is_some(),
-        script_content,
-    );
     let _component_aliases = super::component_aliases::cache_aliases(
         summary,
         options,

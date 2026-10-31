@@ -162,3 +162,17 @@ fn nested_alias_plans_restore_the_actual_projection_owner() {
         "$Component_A_x2d_b__"
     );
 }
+
+#[test]
+fn plain_script_import_inventory_reserves_unsafe_fallback_names() {
+    let summary = summary("", "<a-b />");
+    let options = VirtualTsOptions::default();
+    let type_only = FxHashSet::default();
+    assert!(super::needs_imported_names(&summary, &type_only));
+    let imported = FxHashSet::from_iter(["a_b", "$Component_a_x2d_b"]);
+    let _aliases = cache_aliases(&summary, &options, &type_only, &imported);
+    assert_eq!(
+        reference(&summary, &options, &type_only, "a-b"),
+        "$Component_a_x2d_b__"
+    );
+}
