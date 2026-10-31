@@ -98,6 +98,22 @@
       "path": "receiver-plan-independent-packets.json",
       "bytes": 4129,
       "sha256": "f82f962f4c744e6f5f46e1e2358040db74d55d15eee320ac5ab683da8997c952"
+    },
+    {
+      "path": "source-packets-current-b66e208809ed.json",
+      "bytes": 374925,
+      "sha256": "7598cf0bdb64b0d30fd74367cf61ae60123a3c92e77848a10e3ff95f1941f5a6"
+    },
+    {
+      "path": "source-packets-current-b66e208809ed-provenance.json",
+      "bytes": 451108,
+      "sha256": "3a8e12f5737832a26f324661b40be68af3f2e0f4201d7a66a52cb9ea95bdf419"
+    },
+    {
+      "path": "CURRENT.md",
+      "bytes": 3660,
+      "sha256": "bfbe6751df220fa0fc3d844a34c736020f34de461413e680333be56e084bf352"
     }
-  ]
+  ],
+  "currentSourcePackets": "source-packets-current-b66e208809ed.json"
 }

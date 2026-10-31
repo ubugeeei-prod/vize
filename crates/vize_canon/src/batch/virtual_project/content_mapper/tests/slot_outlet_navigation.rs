@@ -163,10 +163,8 @@ defineSlots<{
 "#;
     let result = generate_vue_content_mapper_transform(Path::new("SlotProvider.vue"), source)
         .expect("transform");
-    let generated = generated_text_range(
-        &result.text,
-        "(undefined as unknown as $Slots)['header']",
-    );
+    let generated =
+        generated_text_range(&result.text, "(undefined as unknown as $Slots)['header']");
 
     assert!(
         !result

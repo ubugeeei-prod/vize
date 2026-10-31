@@ -16,10 +16,16 @@ pub(super) fn has_callback_parser_candidate(value: &str) -> bool {
 
 pub(super) const BRANCH_IGNORE: &str = "// @ts-ignore Inference-only callback branch.\n";
 
+pub(super) struct RewrittenCallbackBranches {
+    pub(super) text: String,
+    /// Generated-only byte ranges in `text` inserted by this rewrite.
+    pub(super) synthetic_ranges: Vec<Range<usize>>,
+}
+
 pub(super) enum CallbackLineRewrite {
     NotApplicable,
     Preserve,
-    Rewritten(String),
+    Rewritten(RewrittenCallbackBranches),
 }
 
 pub(super) fn rewrite_callback_branches(value: &str) -> CallbackLineRewrite {
@@ -38,7 +44,7 @@ pub(super) fn rewrite_callback_branches(value: &str) -> CallbackLineRewrite {
     }) {
         return CallbackLineRewrite::Preserve;
     }
-    rewrite_ranges(value, &ranges).map_or(
+    rewrite_ranges_with_synthetic_ranges(value, &ranges).map_or(
         CallbackLineRewrite::Preserve,
         CallbackLineRewrite::Rewritten,
     )
@@ -56,9 +62,11 @@ fn direct_callback_prefix_ranges(value: &str) -> Option<Vec<Range<usize>>> {
         return None;
     }
     ranges.sort_unstable_by_key(|range| range.start);
-    (!ranges
-        .windows(2)
-        .any(|ranges| ranges[0].end > ranges[1].start))
+    (!ranges.windows(2).any(|pair| {
+        pair.first()
+            .zip(pair.get(1))
+            .is_some_and(|(left, right)| left.end > right.start)
+    }))
     .then_some(ranges)
 }
 
@@ -107,9 +115,18 @@ fn collect_ranges(
     }
 }
 
+#[cfg(test)]
 pub(super) fn rewrite_ranges(value: &str, ranges: &[Range<usize>]) -> Option<String> {
+    rewrite_ranges_with_synthetic_ranges(value, ranges).map(|rewrite| rewrite.text)
+}
+
+fn rewrite_ranges_with_synthetic_ranges(
+    value: &str,
+    ranges: &[Range<usize>],
+) -> Option<RewrittenCallbackBranches> {
     let inserted = ranges.len().checked_mul(BRANCH_IGNORE.len())?;
     let mut output = String::with_capacity(value.len().checked_add(inserted)?);
+    let mut synthetic_ranges = Vec::with_capacity(ranges.len());
     let mut copied = 0usize;
     for range in ranges {
         if copied > range.start || range.start > range.end {
@@ -120,14 +137,19 @@ pub(super) fn rewrite_ranges(value: &str, ranges: &[Range<usize>]) -> Option<Str
             return None;
         }
         output.push_str(value.get(copied..range.start)?);
+        let synthetic_start = output.len();
         output.push_str(BRANCH_IGNORE);
+        synthetic_ranges.push(synthetic_start..output.len());
         for ch in prefix.chars() {
             output.push(if matches!(ch, '\n' | '\r') { ' ' } else { ch });
         }
         copied = range.end;
     }
     output.push_str(value.get(copied..)?);
-    Some(output)
+    Some(RewrittenCallbackBranches {
+        text: output,
+        synthetic_ranges,
+    })
 }
 
 /// A newline in a literal changes its value; one in a line comment terminates
@@ -138,7 +160,7 @@ fn safe_to_collapse(prefix: &str) -> bool {
 
 fn safe_prefix(prefix: &str) -> Option<bool> {
     let bytes = prefix.as_bytes();
-    let (mut index, mut quote, mut escaped) = (0usize, None, false);
+    let mut index = 0usize;
     let (mut line_comment, mut block_comment) = (false, false);
     while let Some(&current) = bytes.get(index) {
         let next = index.checked_add(1);
@@ -155,17 +177,6 @@ fn safe_prefix(prefix: &str) -> Option<bool> {
                 index = after;
                 continue;
             }
-        } else if let Some(delimiter) = quote {
-            if matches!(current, b'\n' | b'\r') {
-                return Some(false);
-            }
-            if escaped {
-                escaped = false;
-            } else if current == b'\\' {
-                escaped = true;
-            } else if current == delimiter {
-                quote = None;
-            }
         } else if current == b'/' && next.and_then(|next| bytes.get(next)) == Some(&b'/') {
             line_comment = true;
             index = next.and_then(|next| next.checked_add(1))?;
@@ -174,12 +185,93 @@ fn safe_prefix(prefix: &str) -> Option<bool> {
             block_comment = true;
             index = next.and_then(|next| next.checked_add(1))?;
             continue;
-        } else if matches!(current, b'\'' | b'"' | b'`') {
-            quote = Some(current);
+        } else if matches!(current, b'\'' | b'"') {
+            index = skip_quoted(bytes, index, current)?;
+            continue;
+        } else if current == b'`' {
+            index = skip_template(bytes, index)?;
+            continue;
         }
         index = index.checked_add(1)?;
     }
-    Some(!line_comment && !block_comment && quote.is_none() && !escaped)
+    Some(!line_comment && !block_comment)
+}
+
+fn skip_quoted(bytes: &[u8], mut index: usize, delimiter: u8) -> Option<usize> {
+    index = index.checked_add(1)?;
+    while let Some(&current) = bytes.get(index) {
+        if matches!(current, b'\n' | b'\r') {
+            return None;
+        }
+        if current == b'\\' {
+            index = index.checked_add(2)?;
+        } else if current == delimiter {
+            return index.checked_add(1);
+        } else {
+            index = index.checked_add(1)?;
+        }
+    }
+    None
+}
+
+fn skip_template(bytes: &[u8], mut index: usize) -> Option<usize> {
+    index = index.checked_add(1)?;
+    while let Some(&current) = bytes.get(index) {
+        if matches!(current, b'\n' | b'\r') {
+            return None;
+        }
+        if current == b'\\' {
+            index = index.checked_add(2)?;
+        } else if current == b'`' {
+            return index.checked_add(1);
+        } else if current == b'$' && bytes.get(index.checked_add(1)?) == Some(&b'{') {
+            index = skip_template_expression(bytes, index.checked_add(2)?, 1)?;
+        } else {
+            index = index.checked_add(1)?;
+        }
+    }
+    None
+}
+
+fn skip_template_expression(bytes: &[u8], mut index: usize, mut depth: usize) -> Option<usize> {
+    let (mut line_comment, mut block_comment) = (false, false);
+    while let Some(&current) = bytes.get(index) {
+        let next = index.checked_add(1)?;
+        if line_comment {
+            if matches!(current, b'\n' | b'\r') {
+                return None;
+            }
+        } else if block_comment {
+            if current == b'*' && bytes.get(next) == Some(&b'/') {
+                block_comment = false;
+                index = next.checked_add(1)?;
+                continue;
+            }
+        } else if current == b'/' && bytes.get(next) == Some(&b'/') {
+            line_comment = true;
+            index = next.checked_add(1)?;
+            continue;
+        } else if current == b'/' && bytes.get(next) == Some(&b'*') {
+            block_comment = true;
+            index = next.checked_add(1)?;
+            continue;
+        } else if matches!(current, b'\'' | b'"') {
+            index = skip_quoted(bytes, index, current)?;
+            continue;
+        } else if current == b'`' {
+            index = skip_template(bytes, index)?;
+            continue;
+        } else if current == b'{' {
+            depth = depth.checked_add(1)?;
+        } else if current == b'}' {
+            depth = depth.checked_sub(1)?;
+            if depth == 0 {
+                return index.checked_add(1);
+            }
+        }
+        index = index.checked_add(1)?;
+    }
+    None
 }
 
 fn last_structural_arrow(value: &str, start: usize, end: usize) -> Option<usize> {

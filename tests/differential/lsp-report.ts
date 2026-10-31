@@ -124,7 +124,12 @@ export function inspectLspObservation(
       jsonrpc: "2.0",
       id,
       method: request.method ?? fixture.data.method,
-      params: { textDocument: { uri: entryUri }, ...request.params },
+      params: {
+        ...((request.method ?? fixture.data.method) === "workspace/symbol"
+          ? {}
+          : { textDocument: { uri: entryUri } }),
+        ...request.params,
+      },
     });
     const response = uniqueResponse(server, id);
     if (opensDocument) {

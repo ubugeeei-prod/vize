@@ -115,10 +115,8 @@ fn candidate(value: &str) -> Option<CandidateGate> {
                 separator_depth = Some(parenthesis_depth);
             }
             expression_start = true;
-        } else if current == b':' && separator_depth == Some(parenthesis_depth) {
-            expression_start = true;
         } else {
-            expression_start = false;
+            expression_start = current == b':' && separator_depth == Some(parenthesis_depth);
         }
         index = index.checked_add(1)?;
     }

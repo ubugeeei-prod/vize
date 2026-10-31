@@ -53,3 +53,11 @@ after record. This records the existing harness routing and the reviewed
 default-generator transition; it does not claim Vue 2 diagnostic parity for
 Maestro's default Vue 3 route. Actual legacy Canon generation is unchanged in
 this fixture.
+
+The successor chain preserves the accumulated shared-helper projection without
+rewriting those historical packets. `successor-11142` records exact PR head
+`82ffbf5c4bad122ab36e10fcb8af90af81a0b5f2` and tested merge
+`dc5fcd349d7674d2323c80433721c2b9c6f4ad14`, captured by
+[run 41004444313](https://github.com/ubugeeei-prod/vize/actions/runs/41004444313)
+and
+[legacy artifact 12954414175](https://github.com/ubugeeei-prod/vize/actions/runs/41004444313/artifacts/12954414175).

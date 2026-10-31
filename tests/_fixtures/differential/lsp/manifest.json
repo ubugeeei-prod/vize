@@ -731,6 +731,47 @@
       }
     },
     {
+      "id": "lsp/fix-history/workspace-symbol-qualification-11153",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "workspace-symbol-qualification-11153",
+        "files": [
+          {
+            "path": "QualifiedSymbols.vue.txt",
+            "sha256": "9ec788b977c9a5c34c45c1bcb244564b738256ac4af3feeccb4a50bc139d6363"
+          }
+        ]
+      },
+      "case": {
+        "path": "workspace-symbol-qualification-11153/case.json",
+        "sha256": "b4041079b49063ec0381c2e21b047635d5c1e8382a6b87f5b8f6364e304e923b"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false,
+        "ecosystem": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/art-script-navigation-10593",
       "state": "active",
       "targets": [
@@ -2483,6 +2524,53 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "js"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/required-default-props-11148",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "required-default-props-11148",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "e52cdb532aa11bf8da2adc90aabc72a315ab613e4b34616ada4b8bd32f9dc509"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "146b7df38282ea1720bb6e4f16ed57902c527358ad1df12bfa542e3aa588a952"
+          },
+          {
+            "path": "shared.ts.txt",
+            "sha256": "9b72cc938c54c92ad20cb0fbafbb7346de8c2cb49a16c106055da398b911092f"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "b6a08547ffda4a5fa53ae5a1d367c9261a1c4b8b6f91e7db6202088101460965"
+          }
+        ]
+      },
+      "case": {
+        "path": "required-default-props-11148/case.json",
+        "sha256": "6fc24af850fe0efc11ada80b8d5e927541f9eef6791e260a7d19e5834093c33d"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "LSP manifest pinned authored sources"
           }
         ]

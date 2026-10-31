@@ -1,0 +1,39 @@
+diff --git a/lib/common/fileOperations.js b/lib/common/fileOperations.js
+index 3580894..856a803 100644
+--- a/lib/common/fileOperations.js
++++ b/lib/common/fileOperations.js
+@@ -66,7 +66,7 @@ class FileOperationFeature {
+         }
+         const minimatchFilter = data.registerOptions.filters.map((filter) => {
+             const matcher = new minimatch.Minimatch(filter.pattern.glob, FileOperationFeature.asMinimatchOptions(filter.pattern.options));
+-            if (!matcher.makeRe()) {
++            if (matcher.set.length === 0) {
+                 throw new Error(`Invalid pattern ${filter.pattern.glob}!`);
+             }
+             return { scheme: filter.scheme, matcher, kind: filter.pattern.matches };
+diff --git a/lib/common/notebook.js b/lib/common/notebook.js
+index 63edaee..1b9c355 100644
+--- a/lib/common/notebook.js
++++ b/lib/common/notebook.js
+@@ -275,7 +275,7 @@ var $NotebookDocumentFilter;
+         }
+         if (filter.pattern !== undefined) {
+             const matcher = new minimatch.Minimatch(filter.pattern, { noext: true });
+-            if (!matcher.makeRe()) {
++            if (matcher.set.length === 0) {
+                 return false;
+             }
+             if (!matcher.match(uri.fsPath)) {
+diff --git a/lib/common/diagnostic.js b/lib/common/diagnostic.js
+index 1c4a34f..2ade83b 100644
+--- a/lib/common/diagnostic.js
++++ b/lib/common/diagnostic.js
+@@ -611,7 +611,7 @@ class DiagnosticFeatureProviderImpl {
+                 }
+                 if (filter.pattern !== undefined) {
+                     const matcher = new minimatch.Minimatch(filter.pattern, { noext: true });
+-                    if (!matcher.makeRe()) {
++                    if (matcher.set.length === 0) {
+                         return false;
+                     }
+                     if (!matcher.match(resource.fsPath)) {

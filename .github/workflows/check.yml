@@ -346,6 +346,8 @@ jobs:
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: cargo-llvm-cov,cargo-nextest@0.9.146
+      - name: Provision the locked Full Rust native runtime
+        run: node tools/support/compat/github/full-rust-runtime.ts
       - name: Source coverage report
         env:
           VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ runner.temp }}/source-coverage-native-syntax
@@ -357,6 +359,14 @@ jobs:
           name: source-coverage-native-syntax-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/source-coverage-native-syntax/
           if-no-files-found: warn
+      - name: Retain source coverage native runtime provider
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: source-coverage-native-runtime-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/nextest/full/native-runtime-provider.json
+          if-no-files-found: warn
+          retention-days: 14
       - name: Verify source coverage summary
         run: test -s target/llvm-cov/source-summary.json
       - name: Upload source coverage summary

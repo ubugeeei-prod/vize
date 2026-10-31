@@ -24,8 +24,14 @@ impl SetupHelperPlan {
         summary: &Croquis,
         source: Option<&str>,
         preserve_event_navigation: bool,
+        configured_global_template_ref: bool,
     ) -> Self {
-        shadowed_helpers(summary, source, preserve_event_navigation)
+        shadowed_helpers(
+            summary,
+            source,
+            preserve_event_navigation,
+            configured_global_template_ref,
+        )
     }
 
     #[cfg(feature = "native")]
@@ -137,6 +143,7 @@ fn shadowed_helpers(
     summary: &Croquis,
     source: Option<&str>,
     preserve_event_navigation: bool,
+    configured_global_template_ref: bool,
 ) -> SetupHelperPlan {
     let mut plan = SetupHelperPlan {
         shadowed: FxHashSet::default(),
@@ -191,7 +198,12 @@ fn shadowed_helpers(
         }
     }
     if plan.active_template_ref {
-        plan.template_refs = TemplateRefUsage::collect(&parsed.program, scoping, source);
+        plan.template_refs = TemplateRefUsage::collect(
+            &parsed.program,
+            scoping,
+            source,
+            configured_global_template_ref,
+        );
     }
     plan.macro_results = super::macro_results::collect(&parsed.program, &plan.shadowed, summary);
     if preserve_event_navigation && parsed.diagnostics.is_empty() && built.diagnostics.is_empty() {
@@ -233,8 +245,12 @@ mod template_ref_fallback_tests {
             "function nested() { useTemplateRe\\u0066<unknown>('missing'); }",
             "const target = useTemplateRef<unknown>(",
         ] {
-            let plan =
-                SetupHelperPlan::collect(&vize_croquis::Croquis::default(), Some(source), false);
+            let plan = SetupHelperPlan::collect(
+                &vize_croquis::Croquis::default(),
+                Some(source),
+                false,
+                false,
+            );
             for hoisted in [false, true] {
                 let mut generated = String::default();
                 emit(&mut generated, &plan, hoisted, false, false);
@@ -266,6 +282,7 @@ mod template_ref_fallback_tests {
         let plan = SetupHelperPlan::collect(
             &vize_croquis::Croquis::default(),
             Some("const count = 1;"),
+            false,
             false,
         );
         let mut generated = String::default();

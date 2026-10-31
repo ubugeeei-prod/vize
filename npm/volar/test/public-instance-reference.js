@@ -15,7 +15,7 @@ const changes = [
   ["musea-delete-import-diagnostics", 2, "unknownStoryBinding", 247],
 ];
 
-export function publicInstanceReference(packets) {
+export function historicalPublicInstanceReference(packets) {
   const out = structuredClone(packets);
   for (const [packetName, index, name, start] of changes) {
     const packet = out.find((row) => row.name === packetName);
@@ -27,6 +27,21 @@ export function publicInstanceReference(packets) {
     assert.equal(diagnostic.length, name.length);
     assert.equal(diagnostic.file.text.slice(start, start + name.length), name);
     diagnostic.code = 2339;
+    diagnostic.messageText = `Property '${name}' does not exist on type '__VizeTemplateInstance'.`;
+  }
+  return out;
+}
+
+// This source-owned display successor has no new native-capture credit. The
+// original26/38 native packet archives retain their complete historical bytes.
+export function publicInstanceReference(packets) {
+  const out = historicalPublicInstanceReference(packets);
+  for (const [packetName, index, name] of changes) {
+    const diagnostic = out.find((row) => row.name === packetName).result[index];
+    assert.equal(
+      diagnostic.messageText,
+      `Property '${name}' does not exist on type '__VizeTemplateInstance'.`,
+    );
     diagnostic.messageText = `Property '${name}' does not exist on type '$TemplateInstance'.`;
   }
   return out;

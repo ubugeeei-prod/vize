@@ -30,17 +30,77 @@ fn public_instance_slot_packets_remain_authenticated() {
         predecessor,
         historical_successor,
     );
-    let current_receipt =
+    let previous_receipt =
         include_str!("fixtures/public-instance-options-api-slots/successor-11069/receipt.json");
-    let current_successor = include_str!(
+    let previous_successor = include_str!(
         "fixtures/public-instance-options-api-slots/successor-11069/projection-record.txt"
     );
     authenticate_successor_receipt(
-        current_receipt,
+        previous_receipt,
         "afc2f211f4b841b1385f09924a3593dadad1fb280b694d233250639a7020be7f",
         11069,
         historical_successor,
+        previous_successor,
+    );
+    let current_receipt =
+        include_str!("fixtures/public-instance-options-api-slots/successor-11142/receipt.json");
+    let current_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11142/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        current_receipt,
+        "d3eae1337abcc6904773256c46069a9745ffc2e533a79b2c8ad186d433e412e7",
+        11142,
+        previous_successor,
         current_successor,
+    );
+    let latest_receipt =
+        include_str!("fixtures/public-instance-options-api-slots/successor-11142-2/receipt.json");
+    let latest_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11142-2/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        latest_receipt,
+        "682ce848022ce787fbc10c787fef3d23e3f1ee384ce185c50e4889e7488910b1",
+        11142,
+        current_successor,
+        latest_successor,
+    );
+    let exact_receipt =
+        include_str!("fixtures/public-instance-options-api-slots/successor-11142-3/receipt.json");
+    let exact_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11142-3/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        exact_receipt,
+        "62f509940ffb70ccb90868f53c74a3a8e69fe4452d4b8072967e4b1bb5c2c51d",
+        11142,
+        latest_successor,
+        exact_successor,
+    );
+    let external_receipt =
+        include_str!("fixtures/public-instance-options-api-slots/successor-11148/receipt.json");
+    let external_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11148/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        external_receipt,
+        "e2a6dd88ae954c9ff77bb969fa8ebc4ce562850972a2a29b10b1c42d943e7555",
+        11148,
+        exact_successor,
+        external_successor,
+    );
+    let collision_safe_receipt =
+        include_str!("fixtures/public-instance-options-api-slots/successor-11153/receipt.json");
+    let collision_safe_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-11153/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        collision_safe_receipt,
+        "cd58fde4a43fbb181c31f21f2b2c56d80dcd504b943e2370350b1db5894474f0",
+        11153,
+        external_successor,
+        collision_safe_successor,
     );
     let matrix = load_matrix();
     let fixture = matrix
@@ -50,7 +110,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        current_successor
+        collision_safe_successor
     );
 }
 
@@ -94,7 +154,30 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             predecessor,
             successor,
         );
-        assert_eq!(capture_fixture(fixture).render().as_str(), successor);
+        let latest_successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-11142/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!("fixtures/public-instance-mixed-vue2/successor-11142/receipt.json"),
+            "ac91a6f06d1d22359daf89c5ccea8076a60bd9ab637951ccfd76f0fb45cbf253",
+            11142,
+            successor,
+            latest_successor,
+        );
+        let collision_safe_successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-11153/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!("fixtures/public-instance-mixed-vue2/successor-11153/receipt.json"),
+            "84c1c49f0874cb1cb0b3d5227af293e378cfd72be2957232c46dbed7a38aa00e",
+            11153,
+            latest_successor,
+            collision_safe_successor,
+        );
+        assert_eq!(
+            capture_fixture(fixture).render().as_str(),
+            collision_safe_successor
+        );
     }
 }
 
@@ -128,6 +211,56 @@ fn authenticate_successor_receipt(
         receipt["successor"]["sha256"].as_str(),
         Some(successor_sha.as_str())
     );
+    for (field, section) in [
+        ("canonGeneratedTextBytes", "[canon]\n"),
+        ("contentMapperGeneratedTextBytes", "[content-mapper]\n"),
+        ("maestroGeneratedTextBytes", "[maestro]\n"),
+    ] {
+        if let Some(expected) = receipt["delta"][field].as_i64() {
+            assert_eq!(
+                expected,
+                generated_text_bytes(successor, section)
+                    - generated_text_bytes(predecessor, section),
+                "{field} must equal the authenticated predecessor-to-successor delta"
+            );
+        }
+    }
+    if let Some(expected) = receipt["delta"]["generatedTextBytesPerProjection"].as_i64() {
+        for section in ["[canon]\n", "[content-mapper]\n", "[maestro]\n"] {
+            assert_eq!(
+                expected,
+                generated_text_bytes(successor, section)
+                    - generated_text_bytes(predecessor, section),
+                "generatedTextBytesPerProjection must match {section}"
+            );
+        }
+    }
+    if receipt["delta"]["canonAndContentMapperUnchanged"].as_bool() == Some(true) {
+        for section in ["[canon]\n", "[content-mapper]\n"] {
+            assert_eq!(
+                generated_text_record(successor, section),
+                generated_text_record(predecessor, section),
+                "canonAndContentMapperUnchanged must hold for {section}"
+            );
+        }
+    }
+}
+
+fn generated_text_record<'a>(record: &'a str, section: &str) -> &'a str {
+    let section = record.split_once(section).expect("projection section").1;
+    section
+        .lines()
+        .find_map(|line| line.strip_prefix("text="))
+        .expect("generated text record")
+}
+
+fn generated_text_bytes(record: &str, section: &str) -> i64 {
+    generated_text_record(record, section)
+        .split_once(':')
+        .expect("generated text byte/hash separator")
+        .0
+        .parse()
+        .expect("generated text byte count")
 }
 
 fn authenticate_packets(

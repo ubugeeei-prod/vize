@@ -422,6 +422,7 @@ mod tests {
         analysis.scopes.enter_event_handler_scope(
             EventHandlerScopeData {
                 event_name: CompactString::new(event_name),
+                event_name_is_dynamic: false,
                 has_implicit_event: false,
                 param_names: Default::default(),
                 handler_expression: Some(CompactString::new("onSave")),

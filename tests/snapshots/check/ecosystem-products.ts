@@ -1,6 +1,7 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ecosystemProductsApp, requireVizeAndCorsaBins } from "../../_helpers/apps.ts";
@@ -41,7 +42,13 @@ const currentReceipt = {
     "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
   slotFallbackProvenance: "#11064 / c2ee0878fec5d53edb7c30e10f374e37ab256f02",
   slotFallbackFiles: [],
-  snapshotSha256: "e9d32f824e414d040439ffe8d6775d20ddcfeada8baf3f9210b2bd314e1769e9",
+  // Whole packet observed with #11153 / c647f8af136, local leased CLI 37ded2f2052.
+  // Prior packet f3bfea0213d0c612b3f700d96b8918add8ec06e99bda5842428dd78985cbb9e5
+  // was observed with 197682982b4 / CLI 73ddcc7cfc8 and remains historical.
+  // Prior Linux packet e0d7fd37fead28615939040a3e13dc11b8ecd4209252f99abeb29f8e9657a5f4
+  // and earlier ffd237083004fd1a5eb9b5c8b517ce16c05de9a211310f6aafdc379f1be97dc3 remain historical.
+  // Only eight native-event alias pairs change; Actions must qualify the latest head.
+  snapshotSha256: "8b36860739cc363cda440deb29464652fd37df3f09e86e0f145e7d09150eef0c",
   warningCount: 0,
   widenHelperFiles: [
     "src/ComposablesAndRouting.vue",
@@ -60,21 +67,27 @@ const retiredSlotFallbackFiles = [
   "src/UiLibraries.vue",
 ] as const;
 const componentAriaHelper =
+  "function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T>(raw: R, camel: C, value: T): { readonly [K in R | C]: T extends undefined ? never : T };\n" +
+  "  function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T, E>(raw: R, camel: C, value: T, _expected: E): { readonly [K in R | C]: T extends E ? T extends undefined ? never : T : E extends undefined ? never : E };\n" +
+  "  function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T, E = unknown>(raw: R, camel: C, value: T, _expected?: E): { readonly [K in R | C]: T extends E ? T extends undefined ? never : T : E extends undefined ? never : E } { return { [raw]: value, [camel]: value } as unknown as { readonly [K in R | C]: T extends E ? T extends undefined ? never : T : E extends undefined ? never : E }; }";
+const retiredComponentAriaHelpers = [
   "function __vizeComponentAriaPropValue<const T>(value: T): " +
-  "T extends undefined ? never : T { return value as (T extends undefined ? never : T); }";
-const retiredComponentAriaHelper =
+    "T extends undefined ? never : T { return value as (T extends undefined ? never : T); }",
   "function __vizeComponentAriaPropValue<const T>(value: T): " +
-  "__VizeNotUndefined<T> { return value as __VizeNotUndefined<T>; }";
+    "__VizeNotUndefined<T> { return value as __VizeNotUndefined<T>; }",
+] as const;
 const ariaPropReceipts = [
   {
     file: "src/PrimeVueOptionsApi.vue",
     priorProperty: '"aria-label": `${selectedAction.label} search`,',
-    property: '"ariaLabel": __vizeComponentAriaPropValue(`${selectedAction.label} search`),',
+    property:
+      '...__vizeComponentAriaPropEntries("aria-label", "ariaLabel", `${selectedAction.label} search`, (undefined as unknown as __InputText_0_prop_aria_label)),',
   },
   {
     file: "src/UiLibraries.vue",
     priorProperty: '"aria-label": "PrimeVue input",',
-    property: '"ariaLabel": __vizeComponentAriaPropValue("PrimeVue input"),',
+    property:
+      '...__vizeComponentAriaPropEntries("aria-label", "ariaLabel", "PrimeVue input", (undefined as unknown as __InputText_16_prop_aria_label)),',
   },
 ] as const;
 
@@ -120,6 +133,11 @@ describe(`${app.name} check (type checker)`, () => {
         timeoutMs: 300_000,
       }),
     );
+    // Keep the complete source output even if an earlier contract guard fails.
+    // The existing Vue-parity artifact retains this exact packet for review.
+    const prettyOutput = stringifyDiagnosticSnapshot(parsed, checkConfig.cwd);
+    fs.mkdirSync(SNAPSHOT_DIR, { recursive: true });
+    fs.writeFileSync(path.join(SNAPSHOT_DIR, `${app.name}-check.snap.actual`), prettyOutput);
     console.log(`fileCount=${parsed.fileCount}, errorCount=${parsed.errorCount}`);
     assert.ok(parsed.fileCount > 0, "fileCount should be > 0");
     assert.deepEqual(
@@ -207,20 +225,22 @@ describe(`${app.name} check (type checker)`, () => {
       const virtualTs =
         parsed.files.find((candidate) => candidate.file === receipt.file)?.virtualTs ?? "";
       assert.equal(count(virtualTs, componentAriaHelper), 1, `${receipt.file} must own one helper`);
-      assert.equal(
-        count(virtualTs, retiredComponentAriaHelper),
-        0,
-        `${receipt.file} must not restore the capturable helper signature`,
-      );
+      for (const retired of retiredComponentAriaHelpers) {
+        assert.equal(
+          count(virtualTs, retired),
+          0,
+          `${receipt.file} must not restore a retired ARIA value helper`,
+        );
+      }
       assert.equal(
         count(virtualTs, "T extends undefined ? never : T"),
-        2,
+        4,
         `${receipt.file} must retain the collision-proof narrowing contract`,
       );
       assert.equal(
         count(virtualTs, receipt.property),
         1,
-        `${receipt.file} must use the camel prop`,
+        `${receipt.file} must retain the raw and camel prop witness`,
       );
       assert.equal(
         count(virtualTs, receipt.priorProperty),
@@ -229,7 +249,6 @@ describe(`${app.name} check (type checker)`, () => {
       );
     }
 
-    const prettyOutput = stringifyDiagnosticSnapshot(parsed, checkConfig.cwd);
     assertSnapshot(SNAPSHOT_DIR, `${app.name}-check`, prettyOutput);
     assert.equal(
       sha256(prettyOutput),

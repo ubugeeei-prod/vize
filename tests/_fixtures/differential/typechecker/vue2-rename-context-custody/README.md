@@ -1,7 +1,9 @@
 # Vue 2 edit-cycle diagnostic context custody
 
-The two live Vue 2 editor suites now consume `successor.json` as complete CLI
-expectations. They retain their original exact LSP publications, authored ranges,
+The legacy dialect editor suite consumes `successor.json` as complete CLI
+expectations. The data-key-only suite consumes the explicit `display-successor.json`
+that preserves that packet and changes only its script diagnostic type display.
+They retain their original exact LSP publications, authored ranges,
 three dialect configurations, data-key-only case, clean/broken/restored cycle and
 source restoration checks. No diagnostic text is stripped before comparison.
 
@@ -31,3 +33,14 @@ gains the source context introduced in #10335; the script diagnostic is unchange
 
 The separate Pinia presentation-contract difference is not calibrated here.
 Compatibility comparator, ledger, ratchet, shared minimum and budgets are unchanged.
+
+The later generated-type display change in #11045 is recorded separately in
+`display-custody.json`: only `dataKey.files[0].diagnostics[1]` changes from
+`type '__VizeThis'` to `type '$This'`. All earlier packets, custody hashes, source
+archives and licenses remain byte-identical. The complete current CLI packet was
+observed at source `09cc1727c687fa2baa30ecd1dcab854ec72ca597` in
+[edit-cycle Actions41112686389](https://github.com/ubugeeei-prod/vize/actions/runs/41112686389/job/124258822990).
+The build receipt and complete LSP session wires are retained in artifact13003633335;
+the whole CLI comparison and exact display difference are in the job log whose
+SHA256 is pinned in the display receipt. This is a reviewed finite display
+successor, with no runtime normalization of diagnostic messages or ranges.

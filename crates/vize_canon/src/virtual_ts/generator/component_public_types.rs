@@ -19,6 +19,7 @@ pub(super) fn emit_slots_type(
     mut mappings: MacroTypeMappings<'_>,
     generic_injection: Option<&(String, Vec<String>)>,
     export_slots: bool,
+    authored_slots_binding: bool,
     inferred_slots: bool,
 ) -> bool {
     let slots_type_args = summary
@@ -64,18 +65,35 @@ pub(super) fn emit_slots_type(
         false
     };
     if export_slots {
-        if is_generic {
-            // Call sites instantiate `$Slots<...>`. The re-export does not bind
-            // `Slots` locally, and nothing in this module names it bare.
-            ts! { &mut *ts => export type { $Slots as Slots }; }
+        if authored_slots_binding {
+            // The authored binding is already the public contract named by
+            // `defineSlots<Slots>()`. Export that binding instead of declaring
+            // a second `Slots` alias in the same type namespace.
+            ts! { &mut *ts => export type { Slots }; }
         } else {
-            // `export type { $Slots as Slots }` does not bind `Slots` in this
-            // module. The component contract writes `Partial<Slots>` so an
-            // unknown slot names the public alias (#10902) without TS2304 (#11137).
-            ts! { &mut *ts => export type Slots = $Slots; }
+            // Re-export without introducing a module-local `Slots` binding.
+            // The component marker consumes `$Slots` directly, so an unrelated
+            // authored alias or value-only import named `Slots` cannot collide
+            // with or replace the generated contract.
+            ts! { &mut *ts => export type { $Slots as Slots }; }
         }
     }
     is_generic
+}
+
+/// Whether a module-level authored `Slots` binding is the actual
+/// `defineSlots` contract. A same-named declaration is not sufficient: inline
+/// slot contracts and setup-local aliases that depend on setup values must use
+/// the generated `$Slots` alias.
+pub(super) fn uses_module_scoped_authored_slots_binding(summary: &Croquis) -> bool {
+    summary
+        .macros
+        .define_slots()
+        .and_then(|call| call.type_args.as_deref())
+        .is_some_and(|args| {
+            inner_type_of(args).trim() == "Slots"
+                && !super::setup_scope::define_slots_type_requires_setup_scope(summary)
+        })
 }
 
 /// Emit the module-scope `export type Exposed` alias (for `InstanceType` and

@@ -43,6 +43,7 @@ impl VirtualProject {
             tsconfig_path: None,
             compiler_configuration: None,
             preserve_unused_diagnostics: false,
+            configured_global_template_ref: false,
             source_policy: Default::default(),
             alias_rewrite_policy: Default::default(),
             virtual_ts_options: VirtualTsOptions::default(),
@@ -112,6 +113,10 @@ impl VirtualProject {
         project.alias_rewrite_policy = project.resolve_alias_rewrite_policy();
         project.refresh_vue_compiler_options();
         Ok(project)
+    }
+
+    pub(crate) fn configured_global_template_ref(&self) -> bool {
+        self.configured_global_template_ref
     }
 
     /// Register a supported file path.
@@ -217,6 +222,7 @@ impl VirtualProject {
             virtual_ts_check_options: self.virtual_ts_check_options,
             typed_router: self.typed_router.config(),
             preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
+            configured_global_template_ref: self.configured_global_template_ref,
             options_api: self.options_api,
             legacy_vue2: self.legacy_vue2,
             jsx_typecheck: self.jsx_typecheck,
@@ -283,6 +289,7 @@ impl VirtualProject {
             virtual_ts_check_options: self.virtual_ts_check_options,
             typed_router: self.typed_router.config(),
             preserve_unused_diagnostics,
+            configured_global_template_ref: self.configured_global_template_ref,
             options_api: self.options_api,
             legacy_vue2: self.legacy_vue2,
             jsx_typecheck: self.jsx_typecheck,
@@ -344,6 +351,7 @@ impl VirtualProject {
                 virtual_ts_check_options: self.virtual_ts_check_options,
                 typed_router: self.typed_router.config(),
                 preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
+                configured_global_template_ref: self.configured_global_template_ref,
                 options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
                 jsx_typecheck: self.jsx_typecheck,

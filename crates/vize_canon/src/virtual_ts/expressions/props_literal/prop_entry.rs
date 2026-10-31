@@ -1,11 +1,15 @@
 use crate::virtual_ts::expressions::component_prop_bindings::merged_class_binding_value;
-use crate::virtual_ts::expressions::component_props::ComponentPropSource;
+use crate::virtual_ts::expressions::component_props::{
+    ComponentPropSource, has_per_prop_value_check,
+};
 use crate::virtual_ts::expressions::map_rewritten_template_binding;
 use crate::virtual_ts::expressions::prop_sources::{
     PropSpan, append_prop_value, generated_prop_span, prop_name_source_range,
     prop_value_source_range,
 };
-use crate::virtual_ts::helpers::{component_aria_prop_keys, component_prop_key};
+use crate::virtual_ts::helpers::{
+    component_aria_prop_keys, component_prop_key, to_safe_identifier_fragment,
+};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 use vize_carton::{FxHashSet, String, append};
@@ -27,6 +31,7 @@ pub(super) fn append_prop_entry<'p>(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     prop: &PassedProp,
+    component_name: &str,
     template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
@@ -117,6 +122,20 @@ pub(super) fn append_prop_entry<'p>(
     ts.push_str(if aria_present_value { ", " } else { ": " });
     let value_gen_range = append_prop_value(ts, generated_value.text.as_str());
     if aria_present_value {
+        // Only the mapped diagnostic call may reuse the contract already
+        // checked above. Raw inference copies must retain their exact value.
+        if has_per_prop_value_check(prop)
+            && !inline_callback
+            && !source_context.is_inference_only()
+            && let Some(idx) = source_context.aria_value_contract_index
+        {
+            let component = to_safe_identifier_fragment(component_name);
+            let name = to_safe_identifier_fragment(prop.name.as_str());
+            append!(
+                *ts,
+                ", (undefined as unknown as __{component}_{idx}_prop_{name})",
+            );
+        }
         ts.push(')');
     }
     let entry_gen_end = if generated_value.omits_tail() {
@@ -247,6 +266,65 @@ pub(crate) fn entry_sub_spans(
     spans
 }
 
+/// Refine a rewritten prop value around generated-only insertions.
+///
+/// The caller supplies ranges relative to `value_gen_range`. If the authored
+/// and generated lengths cannot be authenticated after removing those gaps,
+/// retain only the key mappings instead of publishing a false value map.
+pub(crate) fn entry_sub_spans_with_synthetic_value_gaps(
+    source_context: ComponentPropSource<'_>,
+    prop: &PassedProp,
+    key_gen_range: std::ops::Range<usize>,
+    value_gen_range: std::ops::Range<usize>,
+    synthetic_ranges: &[std::ops::Range<usize>],
+) -> Vec<VizeSubSpan> {
+    if synthetic_ranges.is_empty() {
+        return entry_sub_spans(source_context, prop, key_gen_range, value_gen_range);
+    }
+    let Some(name_src_range) = prop_name_source_range(source_context, prop) else {
+        return Vec::new();
+    };
+    let Some(value_src_range) = prop_value_source_range(source_context, prop) else {
+        return Vec::new();
+    };
+    let synthetic_len = synthetic_ranges
+        .iter()
+        .try_fold(0usize, |total, range| total.checked_add(range.len()));
+    if synthetic_len.and_then(|length| value_gen_range.len().checked_sub(length))
+        != Some(value_src_range.len())
+        || synthetic_ranges
+            .windows(2)
+            .any(|ranges| matches!(ranges, [left, right] if left.end > right.start))
+        || synthetic_ranges
+            .last()
+            .is_some_and(|range| range.end > value_gen_range.len())
+    {
+        return key_sub_spans(key_gen_range, name_src_range);
+    }
+
+    let mut spans = key_sub_spans(key_gen_range, name_src_range);
+    let (mut generated_cursor, mut source_cursor) = (0usize, value_src_range.start);
+    for gap in synthetic_ranges {
+        if generated_cursor < gap.start {
+            let length = gap.start - generated_cursor;
+            spans.push(VizeSubSpan {
+                gen_range: value_gen_range.start + generated_cursor
+                    ..value_gen_range.start + gap.start,
+                src_range: source_cursor..source_cursor + length,
+            });
+            source_cursor += length;
+        }
+        generated_cursor = gap.end;
+    }
+    if generated_cursor < value_gen_range.len() {
+        spans.push(VizeSubSpan {
+            gen_range: value_gen_range.start + generated_cursor..value_gen_range.end,
+            src_range: source_cursor..value_src_range.end,
+        });
+    }
+    spans
+}
+
 pub(crate) fn key_sub_spans(
     generated: std::ops::Range<usize>,
     source: std::ops::Range<usize>,
@@ -263,4 +341,99 @@ pub(crate) fn key_sub_spans(
             src_range: source,
         },
     ]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{entry_sub_spans_with_synthetic_value_gaps, key_sub_spans};
+    use crate::virtual_ts::expressions::component_props::ComponentPropSource;
+    use crate::virtual_ts::types::VizeSubSpan;
+    use vize_croquis::{ScopeChain, croquis::PassedProp};
+
+    fn fixture() -> (&'static str, PassedProp, ScopeChain) {
+        let template = "雪:entry=\"abcdef\"";
+        (
+            template,
+            PassedProp {
+                name: "entry".into(),
+                name_is_dynamic: false,
+                value: Some("abcdef".into()),
+                start: "雪".len() as u32,
+                end: template.len() as u32,
+                is_dynamic: true,
+            },
+            ScopeChain::default(),
+        )
+    }
+
+    fn spans(
+        synthetic: &[std::ops::Range<usize>],
+        generated: std::ops::Range<usize>,
+    ) -> (Vec<VizeSubSpan>, Vec<VizeSubSpan>, std::ops::Range<usize>) {
+        let (template, prop, scopes) = fixture();
+        let offset = 10usize;
+        let name = template.find("entry").unwrap();
+        let value = template.find("abcdef").unwrap();
+        let keys = key_sub_spans(20..27, offset + name..offset + name + "entry".len());
+        let actual = entry_sub_spans_with_synthetic_value_gaps(
+            ComponentPropSource::new(Some(template), offset as u32, &scopes),
+            &prop,
+            20..27,
+            generated,
+            synthetic,
+        );
+        (
+            actual,
+            keys,
+            offset + value..offset + value + "abcdef".len(),
+        )
+    }
+
+    #[test]
+    fn synthetic_value_gaps_preserve_only_contiguous_authored_bytes() {
+        let (actual, mut expected, source) = spans(std::slice::from_ref(&(3..5)), 100..108);
+        expected.extend([
+            VizeSubSpan {
+                gen_range: 100..103,
+                src_range: source.start..source.start + 3,
+            },
+            VizeSubSpan {
+                gen_range: 105..108,
+                src_range: source.start + 3..source.end,
+            },
+        ]);
+        assert_eq!(actual, expected);
+
+        let (leading, mut expected, source) = spans(std::slice::from_ref(&(0..2)), 100..108);
+        expected.push(VizeSubSpan {
+            gen_range: 102..108,
+            src_range: source,
+        });
+        assert_eq!(
+            leading, expected,
+            "a leading gap must not emit an empty span"
+        );
+
+        let (trailing, mut expected, source) = spans(std::slice::from_ref(&(6..8)), 100..108);
+        expected.push(VizeSubSpan {
+            gen_range: 100..106,
+            src_range: source,
+        });
+        assert_eq!(
+            trailing, expected,
+            "a trailing gap must not emit an empty span"
+        );
+    }
+
+    #[test]
+    fn unauthenticated_synthetic_gaps_fall_back_to_key_spans() {
+        for (gaps, generated) in [
+            (vec![2..4, 3..5], 100..110),
+            (std::iter::once(7..9).collect(), 100..108),
+            (std::iter::once(3..5).collect(), 100..109),
+        ] {
+            let (actual, keys, _) = spans(&gaps, generated);
+            assert_eq!(actual, keys);
+        }
+    }
 }

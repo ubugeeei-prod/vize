@@ -137,7 +137,7 @@ fn typescript_six_can_coexist_with_a_declared_preview_runtime() {
 }
 
 #[test]
-fn unlinked_store_and_vize_owned_runtime_need_explicit_selection() {
+fn bundled_vize_runtime_is_selected_but_an_unlinked_store_needs_explicit_selection() {
     let suffix = platform_suffix();
     let temp = TempDir::new().unwrap();
     let install = temp.path().join("install");
@@ -164,7 +164,14 @@ fn unlinked_store_and_vize_owned_runtime_need_explicit_selection() {
             .join("lib/tsc"),
     );
 
-    assert_eq!(discover_in_walk(std::slice::from_ref(&project)), None);
+    let owned_binary = owned
+        .join("node_modules/@typescript")
+        .join(&*crate::cstr!("typescript-{suffix}"))
+        .join("lib/tsc");
+    assert_eq!(
+        discover_in_walk(std::slice::from_ref(&project)),
+        Some(owned_binary.canonicalize().unwrap())
+    );
     assert_eq!(
         resolve(Some(&unlinked), Some(&project), &[]).unwrap(),
         unlinked.canonicalize().unwrap()

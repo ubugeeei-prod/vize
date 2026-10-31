@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/tests.rs
+assertion_line: 37
 expression: value
 ---
 /// <reference lib="es2022" />
@@ -84,7 +85,8 @@ type $NativeElement<Tag extends PropertyKey> = Tag extends keyof $NativeElements
 type $NativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
 declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: $NativeElementProp<$NativeElement<__Tag>, __Prop>): void;
 type $ComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<$ComponentAttrCamel<__T>>}` : S;
-type $ComponentNativeAttrNames = { [K in keyof $NativeElements & string]: keyof $NativeElements[K] }[keyof $NativeElements & string] & string;
+type $ComponentNativeElementNames = Extract<keyof $NativeElements, string>;
+type $ComponentNativeAttrNames = { [K in $ComponentNativeElementNames]: Extract<keyof $NativeElements[K], string> }[$ComponentNativeElementNames];
 type $ComponentGlobalHtmlAttrs = $IsAny<$NativeElements> extends true ? {} : { [K in $ComponentNativeAttrNames as K | $ComponentAttrCamel<K>]?: unknown } & { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };
 declare function __vizeComponentGlobalHtmlAttrs(value: $ComponentGlobalHtmlAttrs): void;
 declare function __vForList<const T>(source: T): T extends number ? [item: number, key: number][] : T extends string ? [item: string, key: number][] : T extends readonly any[] ? (T extends readonly (infer U)[] ? [item: U, key: number] : never)[] : T extends Iterable<any> ? (T extends Iterable<infer U> ? [item: U, key: number] : never)[] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number][];type $DirectiveHook<D, H = Extract<D[keyof D & ('created' | 'beforeMount' | 'mounted' | 'beforeUpdate' | 'updated' | 'beforeUnmount' | 'unmounted')], (...args: any[]) => any>> = D extends (...args: any[]) => any ? D : [H] extends [never] ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }, ...args: any[]) => void : H;
@@ -103,7 +105,7 @@ declare function __vizeDirectiveTail<F extends (...args: any[]) => any>(hook: F)
 type $SlotHostSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : C extends (props: any, context: infer __Ctx, ...args: any[]) => any ? NonNullable<__Ctx> extends { slots: infer __S } ? __S : any : unknown;
 declare function __vizeFunctionalSlots<P, C, R>(component: (props: P, context: C, ...args: any[]) => R): (props: P) => "__ctx" extends keyof R ? NonNullable<R["__ctx"]> extends { slots: infer S } ? S : any : NonNullable<C> extends { slots: infer S } ? S : any;
 type $NativeSlotsFactory<C> = [C] extends [new (...args: any[]) => any] ? (component: C) => (props: any) => $SlotHostSlots<C> : C extends (...args: any[]) => any ? typeof __vizeFunctionalSlots : (component: C) => (props: any) => $SlotHostSlots<C>;
-type $SlotsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeSlotsFactory<C> : C extends { readonly __vizeComponentMarker: true } ? (component: C) => (props: any) => $SlotHostSlots<C> : $NativeSlotsFactory<C>;
+type $SlotsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => any : [C] extends [{ __vizeResolveSlots?: infer F }] ? F extends (...args: any[]) => any ? (component: C) => F : $NativeSlotsFactory<C> : [C] extends [{ readonly __vizeComponentMarker: true }] ? (component: C) => (props: any) => $SlotHostSlots<C> : $NativeSlotsFactory<C>;
 type $HasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? true : false : false;
 type $DirectSlotConstructor<C> = $IsAny<C> extends true ? never : $HasSlotResolver<C> extends true ? never : C extends { readonly __vizeComponentMarker: true } ? never : C extends new (...args: any[]) => { $slots: any } ? C : never;
 type $SlotConstructor<C> = [$DirectSlotConstructor<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : $DirectSlotConstructor<C>;
@@ -117,10 +119,13 @@ type $SlotConstructor<C> = [$DirectSlotConstructor<C>] extends [never] ? new (pr
 // library constructors with a context tail still run.
 type $SlotConstructorArgumentLists<C> = C extends { new (...args: infer A1): any; new (...args: infer A2): any; new (...args: infer A3): any; new (...args: infer A4): any; new (...args: infer A5): any; new (...args: infer A6): any; new (...args: infer A7): any; new (...args: infer A8): any } ? A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 : C extends new (...args: infer A) => any ? A : [unknown];
 type $SlotConstructorHasArguments<C> = $SlotConstructorArgumentLists<C> extends infer A ? A extends [] ? never : true : never;
-type $SlotConstructorWithoutArguments<C> = [$SlotConstructorHasArguments<C>] extends [never] ? C : new () => { $slots: never };
+type $SlotConstructorWithoutArguments<C> = C extends new () => any ? C & ([$SlotConstructorHasArguments<C>] extends [never] ? unknown : new () => { $slots: never }) : new () => { $slots: never };
 type $SlotConstructorWithArguments<C> = [$SlotConstructorHasArguments<C>] extends [never] ? new (props: any, ...args: any[]) => { $slots: never } : C;
 type $SlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any ? { [K in keyof A]: any } : [];
-type $SlotConstructorInstance<C, Z, P> = [$SlotConstructorHasArguments<C>] extends [never] ? Z : P;
+type $SlotContractIsUsable<S> = $IsAny<S> extends true ? false : unknown extends S ? false : [S] extends [never] ? false : true;
+type $SlotContractHasKeys<S> = [keyof S] extends [never] ? false : true;
+type $SlotConstructorFallback<C, Z, P> = $SlotContractIsUsable<$SlotHostSlots<C>> extends true ? { $slots: $SlotHostSlots<C> } : Z extends unknown ? P extends unknown ? { $slots: any } : never : never;
+type $SlotConstructorInstance<C, Z, P> = [$SlotConstructorHasArguments<C>] extends [never] ? Z : P extends { $slots: infer S } ? $SlotContractIsUsable<S> extends true ? $SlotContractHasKeys<S> extends true ? P : $SlotConstructorFallback<C, Z, P> : $SlotConstructorFallback<C, Z, P> : $SlotConstructorFallback<C, Z, P>;
 declare function __vizeSlotConstructorInstance<C>(): <Z, P>(withoutArguments: Z, withArguments: P) => $SlotConstructorInstance<C, Z, P>;
 type $SlotHostSelector<C> = [$DirectSlotConstructor<C>] extends [never] ? <S>(instance: unknown, slots: S) => S : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
 // @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
@@ -154,7 +159,7 @@ function __setup() {
   // User setup code
   const items = ['a', 'b']
   
-  // @vize-map: 19812:19842 -> 0:59
+  // @vize-map: 19821:19851 -> 0:59
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -271,7 +276,7 @@ __setup();
 
 export type Emits = {};
 type $Slots = {};
-export type Slots = $Slots;
+export type { $Slots as Slots };
 
 // ========== Default Export ==========
 type $ComponentInstance = {

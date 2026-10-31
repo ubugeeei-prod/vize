@@ -224,6 +224,10 @@ pub struct VirtualProject {
     /// Whether the effective tsconfig asks TypeScript to report unused symbols.
     preserve_unused_diagnostics: bool,
 
+    /// The effective Vue config explicitly owns the ambient `useTemplateRef`.
+    /// Imported bindings are authenticated from their source syntax instead.
+    configured_global_template_ref: bool,
+
     /// Effective TypeScript source membership and JavaScript diagnostic policy.
     source_policy: SourceFilePolicy,
 

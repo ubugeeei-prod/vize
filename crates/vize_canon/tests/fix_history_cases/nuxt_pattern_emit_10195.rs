@@ -1,7 +1,6 @@
 use crate::support::fix_history_runner::check_pack;
 
-#[test]
-fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
+pub(crate) fn check() {
     check_pack(
         "content-mapper-nuxt-emit-10195",
         "content_mapper_preserves_emit_with_nuxt_pattern_injections",

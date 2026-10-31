@@ -1,0 +1,11 @@
+<script setup lang="ts">
+defineProps({
+  label: { type: String, default: '', required: true },
+  flag: { type: Boolean, default: false, required: true },
+  title: { type: String, required: true },
+})
+</script>
+
+<template>
+  <span :title="title">{{ label.toUpperCase() }} {{ flag }}</span>
+</template>

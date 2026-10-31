@@ -21,8 +21,10 @@ mod options_api_props_spread;
 mod options_api_setup_spread;
 mod options_api_this_bridge;
 mod public_instance_refs;
+mod required_default_props;
 mod slot_component_bindings;
 mod slot_outlet_spread;
+mod template_context_exact;
 mod template_ref_unwrap;
 mod unused_refs;
 mod vif_chain;
@@ -36,25 +38,9 @@ fn assert_virtual_ts_snapshot(name: &str, value: &str) {
     });
 }
 #[test]
-fn test_vue_setup_helpers_use_runtime_macro_types() {
-    assert_virtual_ts_snapshot("virtual_ts_vue_setup_helpers", VUE_SETUP_HELPERS);
-}
-#[test]
 fn test_vue_template_context() {
     let ctx = template_context(&VirtualTsOptions::default(), VueVersion::V3);
     assert_virtual_ts_snapshot("virtual_ts_vue_template_context", ctx.as_str());
-}
-
-#[test]
-fn test_vue_template_context_v3_default_is_unchanged() {
-    // The default Vue 3 dialect must emit the exact same context as the
-    // dialect-unaware default — no Vue 2-only members leak into Vue 3.
-    let v3 = template_context(&VirtualTsOptions::default(), VueVersion::V3);
-    assert!(!v3.contains("$listeners"));
-    assert!(!v3.contains("$children"));
-    assert!(!v3.contains("$scopedSlots"));
-    assert!(!v3.contains("$createElement"));
-    assert!(!v3.contains("Vue 2 instance members"));
 }
 
 #[test]
@@ -679,9 +665,15 @@ fn test_unknown_pascal_component_props_use_the_ambient_fallback() {
         &VirtualTsOptions::default(),
     );
 
-    assert!(output.code.contains(
-        "declare const AutoCard: $GlobalComponent<\"AutoCard\"> & $GlobalComponentFallback;"
-    ));
+    assert_eq!(
+        output
+            .code
+            .matches(
+                "declare const AutoCard: $GlobalComponent<\"AutoCard\"> & $GlobalComponentFallback;"
+            )
+            .count(),
+        1
+    );
     assert!(output.code.contains("type __AutoCard_Props_0"));
     assert!(output.code.contains("__AutoCard_Check_0"));
 }
@@ -734,7 +726,13 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
     );
 
     assert!(!configured_output.code.contains("__ctx.$t"));
-    assert!(!configured_output.code.contains("$InstanceGlobal<'$t'>"));
+    assert_eq!(
+        configured_output
+            .code
+            .matches("$InstanceGlobal<'$t'>")
+            .count(),
+        0
+    );
     assert!(
         configured_output
             .code

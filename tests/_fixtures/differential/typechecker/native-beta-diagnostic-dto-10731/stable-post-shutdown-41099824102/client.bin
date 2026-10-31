@@ -1,0 +1,15 @@
+Content-Length: 956
+
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{"textDocument":{"completion":{"completionItem":{"documentationFormat":["markdown","plaintext"]}},"diagnostic":{"dynamicRegistration":false,"relatedDocumentSupport":true,"relatedInformation":true},"hover":{"contentFormat":["markdown","plaintext"]},"signatureHelp":{"signatureInformation":{"documentationFormat":["markdown","plaintext"]}}},"workspace":{"diagnostic":{"refreshSupport":true},"didChangeWatchedFiles":{"dynamicRegistration":true,"relativePatternSupport":true}}},"initializationOptions":{"userPreferences":{"inlayHints":{"variableTypes":{"enabled":true}},"tsserver":{"automaticTypeAcquisition":{"enabled":false}}}},"processId":19098,"rootPath":"/tmp/.tmpP3tMZe/node_modules/.vize/corsa-overlay","rootUri":"file:///tmp/.tmpP3tMZe/node_modules/.vize/corsa-overlay","workspaceFolders":[{"name":"corsa-overlay","uri":"file:///tmp/.tmpP3tMZe/node_modules/.vize/corsa-overlay"}]}}Content-Length: 52
+
+{"jsonrpc":"2.0","method":"initialized","params":{}}Content-Length: 42
+
+{"jsonrpc":"2.0","id":"ts1","result":null}Content-Length: 75
+
+{"jsonrpc":"2.0","id":2,"method":"custom/initializeAPISession","params":{}}Content-Length: 121
+
+{"jsonrpc":"2.0","id":3,"method":"custom/projectInfo","params":{"textDocument":{"uri":"file:///tmp/.tmpP3tMZe/main.ts"}}}Content-Length: 44
+
+{"jsonrpc":"2.0","id":4,"method":"shutdown"}Content-Length: 42
+
+{"jsonrpc":"2.0","id":"ts2","result":null}

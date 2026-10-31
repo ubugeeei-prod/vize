@@ -9,6 +9,8 @@ export const TYPECHECKER_TESTS = {
   "allow-importing-ts-extensions-9890": "authored_ts_extensions_report_ts5097_by_default",
   "aria-kebab-prop-11048":
     "aria_kebab_prop_11048::declared_kebab_aria_props_preserve_batch_diagnostics",
+  "aria-propertykey-capture-11153":
+    "aria_propertykey_capture_11153::authored_propertykey_alias_preserves_batch_diagnostics",
   "art-variant-implicit-component-9854":
     "implicit_art_component_reports_the_same_prop_errors_as_an_explicit_import",
   "authored-unused-symbols": "authored_unused_symbols_preserve_complete_original_diagnostics",
@@ -117,6 +119,7 @@ export const TYPECHECKER_TESTS = {
   "relative-sibling-storage-10934":
     "relative_sibling_imports_preserve_complete_package_diagnostics",
   "reopen-repaired-diagnostics-10730": "repaired_dependency_buffer_keeps_its_own_diagnostics",
+  "required-default-props": "defaulted_required_props_stay_optional_for_the_parent",
   "required-props-edges": "required_props_keep_exact_unicode_diagnostics",
   "reserved-expression-shapes": "reserved_prop_shapes_preserve_literal_and_member_diagnostics",
   "runtime-props-report-10100-10101": "runtime_props_reports_10100_10101_retain_expected_types",
@@ -152,6 +155,7 @@ const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
 export const sourceRevisions = {
   "allow-importing-ts-extensions-9890": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
   "aria-kebab-prop-11048": "65b38273c8713a724f42f0bb63a2aef7cc6daae4",
+  "aria-propertykey-capture-11153": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
   "art-variant-implicit-component-9854": "f07065df35d25bc76f355e5f106c80dbefa922b5",
   "authored-unused-symbols": "cd7156d28386e072953476fdbc354a963758dc89",
   "cache-maintenance-9860": "4714c0f264dedffaa81377df9545fbfa9514a64e",
@@ -230,6 +234,7 @@ export const sourceRevisions = {
   "reactive-props-destructure-10008": "f276e4d59cdaf765fd7d3f14eb3d679f5b685f98",
   "relative-sibling-storage-10934": "cb9c06d2b879da6b47a0a2f783d9a5f324776585",
   "reopen-repaired-diagnostics-10730": "9403195279c75693aea30f097bf996cb83dd9729",
+  "required-default-props": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
   "required-props-edges": originalFixtureRevision,
   "reserved-expression-shapes": originalFixtureRevision,
   "runtime-props-report-10100-10101": "5dfe002a9467d152c8545693df33def3aa5f3bf7",

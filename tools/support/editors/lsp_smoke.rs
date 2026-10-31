@@ -20,16 +20,51 @@ pub struct LspSession {
 
 impl LspSession {
     pub fn spawn(repo_root: &Path) -> Result<Self, String> {
+        Self::spawn_with_environment(repo_root, None)
+    }
+
+    /// Provision the fixture's selected backend without replacing caller choices.
+    pub fn spawn_with_runtime(repo_root: &Path, runtime: &Path) -> Result<Self, String> {
+        let explicit = [
+            "CORSA_PATH",
+            "CORSA_EXECUTABLE",
+            "TSGO_PATH",
+            "TSGO_EXECUTABLE",
+            "TSRS_PATH",
+            "TSRS_EXECUTABLE",
+        ]
+        .iter()
+        .any(|name| std::env::var_os(name).is_some_and(|value| !value.is_empty()));
+        let runtime = if explicit {
+            None
+        } else {
+            let runtime = runtime
+                .canonicalize()
+                .map_err(|error| format!("cannot resolve fixture native runtime: {error}"))?;
+            if !runtime.is_file() {
+                return Err("fixture native runtime is not a file".into());
+            }
+            Some(runtime)
+        };
+        Self::spawn_with_environment(repo_root, runtime.as_deref())
+    }
+
+    fn spawn_with_environment(repo_root: &Path, runtime: Option<&Path>) -> Result<Self, String> {
         let server = match std::env::var("VIZE_LSP_BIN") {
             Ok(path) => std::path::PathBuf::from(path),
             Err(_) => editor_e2e::resolve_real_server_path(repo_root)?,
         };
-        let mut child = Command::new(server)
+        let mut command = Command::new(server);
+        command
             .arg("lsp")
             .current_dir(repo_root)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .stderr(Stdio::inherit())
+            .stderr(Stdio::inherit());
+        if let Some(runtime) = runtime {
+            command.env("CORSA_PATH", runtime);
+        }
+        let mut child = command
             .spawn()
             .map_err(|error| format!("failed to spawn vize lsp: {error}"))?;
         let stdin = child

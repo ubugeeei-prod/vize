@@ -10,23 +10,11 @@ mod support {
     pub(crate) mod fix_history_reference_paths;
     pub(crate) mod fix_history_router_provider;
     pub(crate) mod fix_history_runner;
+    pub(crate) mod fix_history_zero_argument;
 }
-use support::fix_history_runner::check_pack;
+use support::fix_history_runner::WorkspaceCapturePolicy;
 
 #[test]
 fn zero_argument_slot_constructors_preserve_mapper_and_authored_diagnostics() {
-    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
-        return;
-    }
-    check_pack(
-        "zero-argument-slot-constructor-11013",
-        "zero_argument_slot_constructors_preserve_mapper_and_authored_diagnostics",
-        "a95d0aad73c8403767a507f8f0768dd0ffb265c7",
-        Some(11013),
-        &[
-            "zero-argument-valid",
-            "generic-default-zero-valid",
-            "slot-string-invalid",
-        ],
-    );
+    support::fix_history_zero_argument::check(WorkspaceCapturePolicy { record: false });
 }

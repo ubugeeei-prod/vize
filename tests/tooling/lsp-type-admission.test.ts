@@ -46,6 +46,9 @@ test("LSP type evidence and unique ref mutations survive open, change, and repai
         lib: ["ES2024", "DOM"],
         types: [],
       },
+      vueCompilerOptions: {
+        composables: { useTemplateRef: ["useTemplateRef"] },
+      },
       include: ["*.vue", "*.ts"],
     }),
   );

@@ -40,7 +40,7 @@ const sha = (body: Buffer | string) => createHash("sha256").update(body).digest(
 const table = fs.readFileSync(new URL("authored-prop-reference-contracts.json", import.meta.url));
 assert.equal(
   sha(table),
-  "c2f1593ac9752cd214feaba3c044ee4bf4b0818be2a0b579a2e2d12a55f5498c",
+  "d012d1e4dfc6d7c1248b25177d062573c9e6fe816d8fa27628c92d480370847d",
   "complete fixed two-case source authority",
 );
 const contracts = (JSON.parse(table.toString()) as { contracts: Contract[] }).contracts;

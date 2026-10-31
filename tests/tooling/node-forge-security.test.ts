@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -17,7 +16,6 @@ import {
   assertForgePackage,
   assertListhenPackage,
   assertNoDirectForge,
-  assertRemediatedReport,
   patchHash,
   patchPath,
   verifyPatchFile,
@@ -31,33 +29,30 @@ const lock = YAML.parseAllDocuments(
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "vize-node-forge-laws-"));
 after(() => fs.rmSync(scratch, { recursive: true, force: true }));
 
-test("patch is bound to its actual bytes and both lock documents retain registry identity", () => {
+test("the retired backport stays immutable while the lock binds upstream registry identity", () => {
   verifyPatchFile(root);
   assertForgeLock(workspace, lock);
 });
 
-test("changed registry, patch, version, graph, aliases or direct importer reject recognition", () => {
-  const legacy = structuredClone(lock);
-  legacy.patchedDependencies["node-forge@1.4.0"] = { hash: patchHash, path: patchPath };
-  assertForgeLock(workspace, legacy);
+test("changed registry, version, graph, aliases or direct importer reject recognition", () => {
   for (const mutate of [
     (next: typeof lock) => {
-      next.packages["node-forge@1.4.0"].resolution.integrity += "x";
+      next.packages["node-forge@1.4.1"].resolution.integrity += "x";
     },
     (next: typeof lock) => {
-      next.patchedDependencies["node-forge@1.4.0"].hash = "wrong";
+      next.overrides["node-forge"] = "1.4.0";
     },
     (next: typeof lock) => {
-      next.snapshots["unreviewed@1.0.0"] = { dependencies: { "node-forge": "1.4.0" } };
+      next.snapshots["unreviewed@1.0.0"] = { dependencies: { "node-forge": "1.4.1" } };
     },
     (next: typeof lock) => {
-      next.snapshots["unreviewed@1.0.0"] = { dependencies: { renamed: "node-forge@1.4.0" } };
+      next.snapshots["unreviewed@1.0.0"] = { dependencies: { renamed: "node-forge@1.4.1" } };
     },
     (next: typeof lock) => {
       next.snapshots["unreviewed@1.0.0"] = { dependencies: { renamed: "listhen@1.10.1" } };
     },
     (next: typeof lock) => {
-      next.importers["."].dependencies = { "node-forge": { specifier: "1.4.0", version: "1.4.0" } };
+      next.importers["."].dependencies = { "node-forge": { specifier: "1.4.1", version: "1.4.1" } };
     },
     (next: typeof lock) => {
       next.importers["."].dependencies = { listhen: { specifier: "1.10.1", version: "1.10.1" } };
@@ -74,46 +69,45 @@ test("changed registry, patch, version, graph, aliases or direct importer reject
     },
     (next: typeof lock) => {
       next.importers["."].dependencies = {
-        renamed: { specifier: "npm:node-forge", version: "node-forge@1.4.0" },
+        renamed: { specifier: "npm:node-forge", version: "node-forge@1.4.1" },
       };
     },
     (next: typeof lock) => {
       next.importers["."].dependencies = {
-        renamed: { specifier: "*", version: "node-forge@1.4.0" },
+        renamed: { specifier: "*", version: "node-forge@1.4.1" },
       };
     },
     (next: typeof lock) => {
-      next.packages["node-forge@1.4.1"] = next.packages["node-forge@1.4.0"];
+      next.packages["node-forge@1.4.0"] = next.packages["node-forge@1.4.1"];
+    },
+    (next: typeof lock) => {
+      next.snapshots["node-forge@1.4.1(patch_hash=" + patchHash + ")"] = {};
     },
   ]) {
-    const next = structuredClone(legacy);
+    const next = structuredClone(lock);
     mutate(next);
     assert.throws(() => assertForgeLock(workspace, next));
   }
   assert.throws(() => assertForgeLock({ ...workspace, audit: { ignore: [advisoryId] } }, lock));
-});
-
-test("actual pnpm scalar and old record require the identical source hash and path", () => {
-  const scalar = structuredClone(lock);
-  scalar.patchedDependencies["node-forge@1.4.0"] = patchHash;
-  assertForgeLock(workspace, scalar);
-  for (const patch of [
-    "wrong",
-    undefined,
-    { hash: "wrong", path: patchPath },
-    { hash: patchHash, path: "elsewhere" },
-    { hash: patchHash, path: patchPath, extra: true },
-  ]) {
-    const next = structuredClone(lock);
-    next.patchedDependencies["node-forge@1.4.0"] = patch;
-    assert.throws(() => assertForgeLock(workspace, next));
-  }
   const changedWorkspace = structuredClone(workspace);
-  changedWorkspace.patchedDependencies["node-forge@1.4.0"] = "elsewhere";
-  assert.throws(() => assertForgeLock(changedWorkspace, scalar));
+  changedWorkspace.overrides["node-forge"] = "1.4.0";
+  assert.throws(() => assertForgeLock(changedWorkspace, lock));
 });
 
-test("missing or changed patch cannot attest remediation", () => {
+test("no old or new Forge patch registration can inherit the upstream proof", () => {
+  for (const version of ["1.4.0", "1.4.1", "1.4.2"]) {
+    for (const patch of [patchHash, { hash: patchHash, path: patchPath }]) {
+      const next = structuredClone(lock);
+      next.patchedDependencies["node-forge@" + version] = patch;
+      assert.throws(() => assertForgeLock(workspace, next));
+    }
+    const next = structuredClone(workspace);
+    next.patchedDependencies["node-forge@" + version] = patchPath;
+    assert.throws(() => assertForgeLock(next, lock));
+  }
+});
+
+test("missing or changed historical patch cannot attest its preserved bytes", () => {
   assert.throws(() => verifyPatchFile(scratch), /ENOENT/);
   fs.mkdirSync(path.join(scratch, "patches"));
   fs.writeFileSync(
@@ -148,69 +142,24 @@ function report() {
   };
 }
 
-test("publication of the upstream fix retains the exact backport attestation boundary", () => {
-  const original = report();
-  const withPatchedVersion = (patched_versions: unknown) => ({
-    ...original,
-    advisories: {
-      "1130000": { ...original.advisories["1130000"], patched_versions },
-    },
-  });
-  assertRemediatedReport(withPatchedVersion(">=1.4.1"));
-  for (const range of [">=1.4.0", ">=1.4.2", "*", "", undefined, 1])
-    assert.throws(() => assertRemediatedReport(withPatchedVersion(range)));
-});
-
-test("only the one exact version-based advisory permits source attestation", () => {
-  assertRemediatedReport(report());
-  for (const mutate of [
-    (value: ReturnType<typeof report>) => {
-      value.advisories["1130000"].github_advisory_id = "GHSA-new";
-    },
-    (value: ReturnType<typeof report>) => {
-      value.advisories["1130000"].module_name = "other";
-    },
-    (value: ReturnType<typeof report>) => {
-      value.advisories["1130000"].findings[0].version = "1.4.1";
-    },
-    (value: ReturnType<typeof report>) => {
-      value.advisories["1130000"].findings[0].paths = [".>unknown>node-forge"];
-    },
-    (value: ReturnType<typeof report>) => {
-      value.metadata.vulnerabilities.moderate = 1;
-    },
-    (value: ReturnType<typeof report>) => {
-      value.metadata.vulnerabilities.critical = 1;
-    },
-    (value: ReturnType<typeof report>) => {
-      value.advisories["another"] = value.advisories["1130000"];
-    },
-  ]) {
-    const value = report();
-    mutate(value);
-    assert.throws(() => assertRemediatedReport(value));
-  }
-  assert.throws(() => assertRemediatedReport({ error: "registry failed" }));
+test("the former advisory exception no longer permits severe audit findings", () => {
   assert.throws(() => assertCleanReport(report()));
   assertCleanReport({
     advisories: {},
     metadata: { vulnerabilities: { info: 0, low: 2, moderate: 0, high: 0, critical: 0 } },
   });
-  const withLow = report();
-  const low = {
-    ...withLow.advisories["1130000"],
-    severity: "low",
-    github_advisory_id: "synthetic-low-control",
-  };
-  withLow.advisories["synthetic-low-control"] = low;
-  withLow.metadata.vulnerabilities.low = 1;
-  assertRemediatedReport(withLow);
+  const low = { severity: "low", github_advisory_id: "synthetic-low-control" };
   assertCleanReport({
-    advisories: { "synthetic-low-control": low },
+    advisories: { low },
     metadata: { vulnerabilities: { info: 0, low: 1, moderate: 0, high: 0, critical: 0 } },
   });
-  withLow.metadata.vulnerabilities.low = 0;
-  assert.throws(() => assertRemediatedReport(withLow));
+  assert.throws(() =>
+    assertCleanReport({
+      advisories: { low },
+      metadata: { vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 0 } },
+    }),
+  );
+  assert.throws(() => assertCleanReport({ error: "registry failed" }));
 });
 
 test("a direct or browser-distribution consumer does not inherit the Node listhen proof", () => {
@@ -247,7 +196,7 @@ test("a direct or browser-distribution consumer does not inherit the Node listhe
 
 function installedForge(): string {
   const store = path.join(root, "node_modules/.pnpm");
-  const entry = fs.readdirSync(store).find((name) => name.startsWith("node-forge@1.4.0"));
+  const entry = fs.readdirSync(store).find((name) => name.startsWith("node-forge@1.4.1"));
   assert.ok(entry, "real installed Forge required");
   return fs.realpathSync(path.join(store, entry, "node_modules/node-forge"));
 }
@@ -291,59 +240,47 @@ test("only four observed pnpm launchers vary while all listhen source files rema
   assert.throws(() => assertListhenPackage(packageRoot));
 });
 
-test("real source patch rejects original and partial repairs while retaining RSA, X509 and PKCS12", () => {
-  const originalHash = "fd4740238145ec26470eb3f06a627c72039538ce1307dbdce40521f94dfd0a50";
-  const candidateHash = "bb2c61cef273c89aaedb9c865173f5330d76917024ff1c2c1d39ffd5be01cc2d";
-  const originalCondition = "            obj.value.length !== 2) {";
-  const completeCondition =
-    "            obj.value.length !== 2 ||\n            obj.value[0].value.length !==\n              (('parameters' in capture) ? 2 : 1) ||\n            ('parameters' in capture && capture.parameters !== '')) {";
-  const oidOriginal = "          var oid = asn1.derToOid(capture.algorithmIdentifier);";
-  const oidComplete =
-    oidOriginal +
-    "\n          if(asn1.oidToDer(oid).getBytes() !== capture.algorithmIdentifier) {\n            throw new Error(\n              'ASN.1 object does not contain a valid RSASSA-PKCS1-v1_5 ' +\n              'DigestInfo value.');\n          }";
+test("upstream canonical DER rejects original and partial repairs while retaining RSA, X509 and PKCS12", () => {
+  const candidateHash = "6632e195295ce76f6bb9131ee770dcd6cc1ee4ffac7906302208b00faf95a87f";
   const packageRoot = path.join(scratch, "node-forge");
   fs.cpSync(installedForge(), packageRoot, { recursive: true });
   const rsaFile = path.join(packageRoot, "lib/rsa.js");
-  let original = fs.readFileSync(rsaFile, "utf8");
-  if (createHash("sha256").update(original).digest("hex") === candidateHash) {
-    original = original
-      .replace(completeCondition, originalCondition)
-      .replace(oidComplete, oidOriginal);
-    fs.writeFileSync(rsaFile, original);
-  }
-  assert.equal(createHash("sha256").update(original).digest("hex"), originalHash);
-  assert.throws(() => assertForgePackage(packageRoot), /unpatched or modified/);
-  assert.throws(() => verifyForgeSecurity(loadFresh(packageRoot)), /Missing expected exception/);
-  const applied = spawnSync("git", ["apply", path.join(root, patchPath)], {
-    cwd: packageRoot,
-    encoding: "utf8",
-  });
-  assert.equal(applied.status, 0, applied.stderr);
   const candidate = fs.readFileSync(rsaFile, "utf8");
   assert.equal(createHash("sha256").update(candidate).digest("hex"), candidateHash);
   assertForgePackage(packageRoot);
   verifyForgeSecurity(loadFresh(packageRoot));
-  for (const partial of [
-    candidate.replace(oidComplete, oidOriginal),
-    candidate
-      .replace(
-        completeCondition,
-        completeCondition.replace(
-          " ||\n            ('parameters' in capture && capture.parameters !== '')",
-          "",
-        ),
-      )
-      .replace(oidComplete, oidOriginal),
-    candidate + "\n",
-  ]) {
+  const canonicalStart = candidate.indexOf("          // require a canonical DER DigestInfo");
+  const canonicalEnd = candidate.indexOf("          // compare the given digest", canonicalStart);
+  assert.ok(canonicalStart >= 0 && canonicalEnd > canonicalStart);
+  assert.equal(
+    candidate.indexOf("          // require a canonical DER DigestInfo", canonicalStart + 1),
+    -1,
+  );
+  const withoutCanonical = candidate.slice(0, canonicalStart) + candidate.slice(canonicalEnd);
+  const originalCondition = "            obj.value.length !== 2) {";
+  assert.equal(withoutCanonical.split(originalCondition).length, 2);
+  const nestedOnly = withoutCanonical.replace(
+    originalCondition,
+    "            obj.value.length !== 2 ||\n            obj.value[0].value.length !==\n" +
+      "              (('parameters' in capture) ? 2 : 1) ||\n" +
+      "            ('parameters' in capture && capture.parameters !== '')) {",
+  );
+  const oidOriginal = "          var oid = asn1.derToOid(capture.algorithmIdentifier);";
+  assert.equal(withoutCanonical.split(oidOriginal).length, 2);
+  const oidOnly = withoutCanonical.replace(
+    oidOriginal,
+    oidOriginal +
+      "\n          if(asn1.oidToDer(oid).getBytes() !== capture.algorithmIdentifier) {\n" +
+      "            throw new Error('DigestInfo value');\n          }",
+  );
+  for (const partial of [withoutCanonical, nestedOnly, oidOnly, candidate + "\n"]) {
     fs.writeFileSync(rsaFile, partial);
-    assert.throws(() => assertForgePackage(packageRoot), /unpatched or modified/);
-    if (!partial.endsWith("\n\n")) {
+    assert.throws(() => assertForgePackage(packageRoot), /unreviewed or modified/);
+    if (partial !== candidate + "\n")
       assert.throws(
         () => verifyForgeSecurity(loadFresh(packageRoot)),
         /Missing expected exception/,
       );
-    }
   }
   fs.writeFileSync(rsaFile, candidate);
   assertForgePackage(packageRoot);

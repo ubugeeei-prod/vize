@@ -1,86 +1,78 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { assertSourceRemediatedReport } from "../../tools/support/security/npm-audit-findings.ts";
+import { assertCleanAuditReport } from "../../tools/support/security/npm-audit-findings.ts";
 import { advisoryId } from "../../tools/support/security/node-forge-proof.ts";
 
-function fixture(): any {
-  const entry = (id: string, name: string, version: string, trail: string) => ({
-    github_advisory_id: id,
-    module_name: name,
-    severity: "high",
-    url: "https://github.com/advisories/" + id,
-    vulnerable_versions: "<=" + version,
-    patched_versions: null,
-    findings: [{ version, dev: false, bundled: false, optional: false, paths: [trail] }],
-  });
+function fixture() {
   return {
     advisories: {
-      forge: entry(advisoryId, "node-forge", "1.4.0", "nuxt>listhen>node-forge"),
       low: { severity: "low", github_advisory_id: "visible-low" },
-    },
-    metadata: { vulnerabilities: { info: 0, low: 1, moderate: 0, high: 1, critical: 0 } },
+    } as Record<string, Record<string, unknown>>,
+    metadata: { vulnerabilities: { info: 0, low: 1, moderate: 0, high: 0, critical: 0 } },
   };
 }
-test("the source-remediated finding retains visible below-threshold entries", () => {
-  const report = fixture(),
-    before = structuredClone(report);
-  assert.deepEqual(assertSourceRemediatedReport(report, 1), [advisoryId]);
+
+test("a successful clean audit retains visible below-threshold entries", () => {
+  const report = fixture();
+  const before = structuredClone(report);
+  assertCleanAuditReport(report, 0);
   assert.deepEqual(report, before);
-  const publishedRepair = fixture();
-  publishedRepair.advisories.forge.patched_versions = ">=1.4.1";
-  const publishedBefore = structuredClone(publishedRepair);
-  assert.deepEqual(assertSourceRemediatedReport(publishedRepair, 1), [advisoryId]);
-  assert.deepEqual(publishedRepair, publishedBefore);
-  const clean = fixture();
-  delete clean.advisories.forge;
-  clean.metadata.vulnerabilities.high = 0;
-  assert.deepEqual(assertSourceRemediatedReport(clean, 0), []);
-  assert.equal(clean.advisories.low.github_advisory_id, "visible-low");
 });
-test("unknown severe findings, missing entries, changed identity/path and process errors remain fatal", () => {
-  const mutations = [
-    (r: any) => {
-      r.advisories.unknown = { severity: "moderate" };
-      r.metadata.vulnerabilities.moderate = 1;
+
+test("even the former Forge exception and published repair metadata remain fatal", () => {
+  for (const patched of [null, ">=1.4.1"]) {
+    const report = fixture();
+    report.advisories.forge = {
+      github_advisory_id: advisoryId,
+      module_name: "node-forge",
+      severity: "high",
+      url: "https://github.com/advisories/" + advisoryId,
+      vulnerable_versions: "<=1.4.0",
+      patched_versions: patched,
+      findings: [
+        {
+          version: "1.4.0",
+          dev: false,
+          bundled: false,
+          optional: false,
+          paths: ["nuxt>listhen>node-forge"],
+        },
+      ],
+    };
+    report.metadata.vulnerabilities.high = 1;
+    for (const status of [0, 1]) assert.throws(() => assertCleanAuditReport(report, status));
+  }
+});
+
+test("unknown severe findings, missing entries, inconsistent counts and process errors remain fatal", () => {
+  const mutations: ((report: ReturnType<typeof fixture>) => void)[] = [
+    (report) => {
+      report.advisories.unknown = { severity: "moderate" };
+      report.metadata.vulnerabilities.moderate = 1;
     },
-    (r: any) => {
-      r.advisories.forge.github_advisory_id = "unknown";
+    (report) => {
+      report.metadata.vulnerabilities.high = 1;
     },
-    (r: any) => {
-      delete r.advisories.forge;
+    (report) => {
+      report.advisories.unknown = { severity: "critical" };
+      report.metadata.vulnerabilities.critical = 1;
     },
-    (r: any) => {
-      r.metadata.vulnerabilities.high = 2;
+    (report) => {
+      report.advisories.unknown = { severity: "unrecognized" };
     },
-    (r: any) => {
-      r.advisories.forge.severity = "critical";
-      r.metadata.vulnerabilities.high = 0;
-      r.metadata.vulnerabilities.critical = 1;
+    (report) => {
+      report.metadata.vulnerabilities.low = 0;
     },
-    (r: any) => {
-      r.advisories.forge.findings[0].version = "1.3.0";
-    },
-    (r: any) => {
-      r.advisories.forge.findings[0].paths = ["new>node-forge"];
-    },
-    (r: any) => {
-      r.advisories.forge.patched_versions = ">=1.4.2";
-    },
-    (r: any) => {
-      r.advisories.forge.findings[0].dev = true;
-    },
-    (r: any) => {
-      r.metadata.vulnerabilities.low = 0;
-    },
-    (r: any) => {
-      r.error = { code: "registry failure" };
+    (report) => {
+      report.metadata.vulnerabilities.high = -1;
     },
   ];
   for (const mutate of mutations) {
     const report = fixture();
     mutate(report);
-    assert.throws(() => assertSourceRemediatedReport(report, 1));
+    assert.throws(() => assertCleanAuditReport(report, 0));
   }
-  assert.throws(() => assertSourceRemediatedReport(fixture(), 0));
-  assert.throws(() => assertSourceRemediatedReport(fixture(), 2));
+  for (const status of [1, 2, -1]) assert.throws(() => assertCleanAuditReport(fixture(), status));
+  assert.throws(() => assertCleanAuditReport({ ...fixture(), error: "registry failure" }, 0));
+  assert.throws(() => assertCleanAuditReport({ error: "registry failure" }, 0));
 });

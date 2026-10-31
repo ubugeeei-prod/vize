@@ -171,9 +171,13 @@ function moveToDetail(item: Manager) {
     let template = r#"<DataTable @click:row="moveToDetail" />"#;
 
     let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
+    assert_eq!(
+        legacy.matches("$Vue2LooseEventArg<__A[0]>").count(),
+        1,
+        "legacy Vue 2 broad Object component event payloads should have one loose argument:\n{legacy}"
+    );
     assert!(
-        legacy.contains("$Vue2LooseEventArg<__A[0]>")
-            && legacy.contains("$Vue2LooseEmitArgs<__DataTable_"),
+        legacy.contains("$Vue2LooseEmitArgs<__DataTable_"),
         "legacy Vue 2 broad Object component event payloads should be loosened:\n{legacy}"
     );
 }
@@ -313,8 +317,9 @@ fn vue2_instance_members_are_declared_once() {
     }
 
     let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
-    assert!(
-        standard.contains("void (__ctx.$listeners);"),
+    assert_eq!(
+        standard.matches("void (__ctx.$listeners);").count(),
+        1,
         "Vue 3 should still resolve $listeners through the instance-global form:\n{standard}"
     );
 }

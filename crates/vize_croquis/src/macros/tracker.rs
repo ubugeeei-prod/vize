@@ -85,6 +85,31 @@ impl MacroTracker {
         &self.props
     }
 
+    /// Refine an analyzer placeholder without replacing authored metadata.
+    ///
+    /// Batch resolution can follow local runtime-prop spreads that the syntax
+    /// analyzer deliberately leaves as `unknown`. The resolver may sharpen
+    /// that type, but must not overwrite the authored required/default facts.
+    #[inline]
+    pub fn refine_unknown_prop_type(&mut self, name: &str, prop_type: &str) -> bool {
+        let Some(prop) = self
+            .props
+            .iter_mut()
+            .find(|prop| prop.name.as_str() == name)
+        else {
+            return false;
+        };
+        if prop_type != "unknown"
+            && prop
+                .prop_type
+                .as_deref()
+                .is_none_or(|current| current == "unknown")
+        {
+            prop.prop_type = Some(prop_type.into());
+        }
+        true
+    }
+
     /// Get a prop's written declaration range, relative to its script block.
     #[inline]
     pub fn prop_declaration(&self, name: &str) -> Option<(u32, u32)> {

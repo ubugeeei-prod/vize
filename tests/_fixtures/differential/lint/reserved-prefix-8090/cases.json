@@ -9836,7 +9836,7 @@
     {
       "id": "lookalikes-props",
       "filename": "LookalikesProps.vue",
-      "source": "<script lang=\"ts\">\nexport default { props: { $custom: Number, $dataExtra: Number, $Emit: Number, $host: Number, $: Number, $data: Number, _private: Number, _$data: Number } }\n</script>\n",
+      "source": "<script lang=\"ts\">\nexport default { props: { $custom: Number, $dataExtra: Number, $Emit: Number, $host: Number, $: Number, $$data: Number, _private: Number, _$data: Number } }\n</script>\n",
       "sourceSha256": "8561a6aa309b088a6b1fa1c1377360fa6cfbc806eb6405fa50ab2b4d8cde6c1c",
       "rationale": "Arbitrary dollar names and exact-name lookalikes are valid; underscore has special reservation only in data.",
       "members": [
@@ -9882,8 +9882,8 @@
         },
         {
           "group": "props",
-          "name": "$data",
-          "rawKey": "$data",
+          "name": "$$data",
+          "rawKey": "$$data",
           "start": 123,
           "end": 129,
           "descriptorSupported": true
@@ -9989,7 +9989,7 @@
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
-          "message": "Reserved key '$data'",
+          "message": "Reserved key '$$data'",
           "start": 123,
           "end": 129,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
@@ -10119,7 +10119,7 @@
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
-          "message": "Reserved key '$data'",
+          "message": "Reserved key '$$data'",
           "start": 123,
           "end": 129,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
@@ -10172,7 +10172,7 @@
     {
       "id": "lookalikes-data",
       "filename": "LookalikesData.vue",
-      "source": "<script lang=\"ts\">\nexport default { data() { return { $custom: 0, $dataExtra: 0, $Emit: 0, $host: 0, $: 0, $data: 0, _private: 0, _$data: 0 } } }\n</script>\n",
+      "source": "<script lang=\"ts\">\nexport default { data() { return { $custom: 0, $dataExtra: 0, $Emit: 0, $host: 0, $: 0, $$data: 0, _private: 0, _$data: 0 } } }\n</script>\n",
       "sourceSha256": "a51c8a776b8f992fbdf2a396437161444f612e4edc8d765476378b61a8cdfb60",
       "rationale": "Arbitrary dollar names and exact-name lookalikes are valid; underscore has special reservation only in data.",
       "members": [
@@ -10218,8 +10218,8 @@
         },
         {
           "group": "data",
-          "name": "$data",
-          "rawKey": "$data",
+          "name": "$$data",
+          "rawKey": "$$data",
           "start": 107,
           "end": 113,
           "descriptorSupported": true
@@ -10325,7 +10325,7 @@
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
-          "message": "Reserved key '$data'",
+          "message": "Reserved key '$$data'",
           "start": 107,
           "end": 113,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
@@ -10455,7 +10455,7 @@
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
-          "message": "Reserved key '$data'",
+          "message": "Reserved key '$$data'",
           "start": 107,
           "end": 113,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
@@ -10564,7 +10564,7 @@
     {
       "id": "lookalikes-computed",
       "filename": "LookalikesComputed.vue",
-      "source": "<script lang=\"ts\">\nexport default { computed: { $custom() { return 0 }, $dataExtra() { return 0 }, $Emit() { return 0 }, $host() { return 0 }, $() { return 0 }, $data() { return 0 }, _private() { return 0 }, _$data() { return 0 } } }\n</script>\n",
+      "source": "<script lang=\"ts\">\nexport default { computed: { $custom() { return 0 }, $dataExtra() { return 0 }, $Emit() { return 0 }, $host() { return 0 }, $() { return 0 }, $$data() { return 0 }, _private() { return 0 }, _$data() { return 0 } } }\n</script>\n",
       "sourceSha256": "403cdb6f633aaccee26c2916b10ba62ab85e466b9f87e6e6e0de3a7a3868a2d8",
       "rationale": "Arbitrary dollar names and exact-name lookalikes are valid; underscore has special reservation only in data.",
       "members": [
@@ -10610,8 +10610,8 @@
         },
         {
           "group": "computed",
-          "name": "$data",
-          "rawKey": "$data",
+          "name": "$$data",
+          "rawKey": "$$data",
           "start": 161,
           "end": 167,
           "descriptorSupported": true
@@ -10717,7 +10717,7 @@
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
-          "message": "Reserved key '$data'",
+          "message": "Reserved key '$$data'",
           "start": 161,
           "end": 167,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
@@ -10847,7 +10847,7 @@
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
-          "message": "Reserved key '$data'",
+          "message": "Reserved key '$$data'",
           "start": 161,
           "end": 167,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
@@ -10900,7 +10900,7 @@
     {
       "id": "lookalikes-methods",
       "filename": "LookalikesMethods.vue",
-      "source": "<script lang=\"ts\">\nexport default { methods: { $custom() { return 0 }, $dataExtra() { return 0 }, $Emit() { return 0 }, $host() { return 0 }, $() { return 0 }, $data() { return 0 }, _private() { return 0 }, _$data() { return 0 } } }\n</script>\n",
+      "source": "<script lang=\"ts\">\nexport default { methods: { $custom() { return 0 }, $dataExtra() { return 0 }, $Emit() { return 0 }, $host() { return 0 }, $() { return 0 }, $$data() { return 0 }, _private() { return 0 }, _$data() { return 0 } } }\n</script>\n",
       "sourceSha256": "5ced2cc917b6ef6528014d56153fed70060b9114da7af66c8ae572fd080e49c7",
       "rationale": "Arbitrary dollar names and exact-name lookalikes are valid; underscore has special reservation only in data.",
       "members": [
@@ -10946,8 +10946,8 @@
         },
         {
           "group": "methods",
-          "name": "$data",
-          "rawKey": "$data",
+          "name": "$$data",
+          "rawKey": "$$data",
           "start": 160,
           "end": 166,
           "descriptorSupported": true
@@ -11053,7 +11053,7 @@
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
-          "message": "Reserved key '$data'",
+          "message": "Reserved key '$$data'",
           "start": 160,
           "end": 166,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
@@ -11183,7 +11183,7 @@
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
-          "message": "Reserved key '$data'",
+          "message": "Reserved key '$$data'",
           "start": 160,
           "end": 166,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
@@ -11236,7 +11236,7 @@
     {
       "id": "lookalikes-setup",
       "filename": "LookalikesSetup.vue",
-      "source": "<script lang=\"ts\">\nexport default { setup() { return { $custom: 0, $dataExtra: 0, $Emit: 0, $host: 0, $: 0, $data: 0, _private: 0, _$data: 0 } } }\n</script>\n",
+      "source": "<script lang=\"ts\">\nexport default { setup() { return { $custom: 0, $dataExtra: 0, $Emit: 0, $host: 0, $: 0, $$data: 0, _private: 0, _$data: 0 } } }\n</script>\n",
       "sourceSha256": "0a5783d9096878abb47976f658d9bd17f273df107855431141d2716d2b30a08a",
       "rationale": "Arbitrary dollar names and exact-name lookalikes are valid; underscore has special reservation only in data.",
       "members": [
@@ -11282,8 +11282,8 @@
         },
         {
           "group": "setup",
-          "name": "$data",
-          "rawKey": "$data",
+          "name": "$$data",
+          "rawKey": "$$data",
           "start": 108,
           "end": 114,
           "descriptorSupported": true
@@ -11389,7 +11389,7 @@
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
-          "message": "Reserved key '$data'",
+          "message": "Reserved key '$$data'",
           "start": 108,
           "end": 114,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
@@ -11519,7 +11519,7 @@
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
-          "message": "Reserved key '$data'",
+          "message": "Reserved key '$$data'",
           "start": 108,
           "end": 114,
           "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",

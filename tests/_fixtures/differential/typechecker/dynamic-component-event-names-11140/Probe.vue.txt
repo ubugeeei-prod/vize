@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Child from "./Child.vue";
+
+const Events = { POINTER_DOWN: "pointerdown", POINTER_UP: "pointerup" } as const;
+const pressed = ref(false);
+</script>
+
+<template>
+  <Child
+    @[`${Events.POINTER_DOWN}`]="pressed = true"
+    @[`${Events.POINTER_UP}`]="pressed = false"
+  />
+</template>

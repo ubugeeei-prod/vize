@@ -84,7 +84,8 @@ type $NativeElement<Tag extends PropertyKey> = Tag extends keyof $NativeElements
 type $NativeElementProp<Element, Prop extends PropertyKey> = Prop extends keyof Element ? Element[Prop] : unknown;
 declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop extends PropertyKey>(value: $NativeElementProp<$NativeElement<__Tag>, __Prop>): void;
 type $ComponentAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<$ComponentAttrCamel<__T>>}` : S;
-type $ComponentNativeAttrNames = { [K in keyof $NativeElements & string]: keyof $NativeElements[K] }[keyof $NativeElements & string] & string;
+type $ComponentNativeElementNames = Extract<keyof $NativeElements, string>;
+type $ComponentNativeAttrNames = { [K in $ComponentNativeElementNames]: Extract<keyof $NativeElements[K], string> }[$ComponentNativeElementNames];
 type $ComponentGlobalHtmlAttrs = $IsAny<$NativeElements> extends true ? {} : { [K in $ComponentNativeAttrNames as K | $ComponentAttrCamel<K>]?: unknown } & { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown };
 declare function __vizeComponentGlobalHtmlAttrs(value: $ComponentGlobalHtmlAttrs): void;
 declare function __vForList<const T>(source: T): T extends number ? [item: number, key: number][] : T extends string ? [item: string, key: number][] : T extends readonly any[] ? (T extends readonly (infer U)[] ? [item: U, key: number] : never)[] : T extends Iterable<any> ? (T extends Iterable<infer U> ? [item: U, key: number] : never)[] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number][];type $DirectiveHook<D, H = Extract<D[keyof D & ('created' | 'beforeMount' | 'mounted' | 'beforeUpdate' | 'updated' | 'beforeUnmount' | 'unmounted')], (...args: any[]) => any>> = D extends (...args: any[]) => any ? D : [H] extends [never] ? (el: unknown, binding: { value?: unknown; arg?: unknown; modifiers?: unknown }, ...args: any[]) => void : H;
@@ -141,7 +142,7 @@ function __setup<T extends string = 'a'>() {
     if (value !== undefined) emit("update:value", value);
   }
   
-  // @vize-map: 15531:15858 -> 0:292
+  // @vize-map: 15016:15343 -> 0:292
 
 
   // Setup-scoped props type artifact
@@ -251,5 +252,6 @@ type $VueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { __vizeCheck: <T extends string = 'a'>(props: Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & $ComponentGlobalHtmlAttrs & Record<string, unknown>) => void; __vizeResolveProps?: <T extends string = 'a'>(props: Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & $ComponentGlobalHtmlAttrs & Record<string, unknown>) => Props<T>; __vizeResolveSlots?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => $Slots<T>; __vizeResolveRef?: $GenericRefResolver; __vizeEmitProps?: $StaticEmitProps; __vizeResolveEmitProps?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props<string>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<$NativeElement<"button">>; } & $GenericComponent;
+declare const __vize_component__: { __vizeCheck: <T extends string = 'a'>(props: Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & $ComponentGlobalHtmlAttrs & Record<string, unknown>) => void; __vizeResolveProps?: <T extends string = 'a'>(props: Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & $ComponentGlobalHtmlAttrs & Record<string, unknown>) => Props<T>; __vizeResolveSlots?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => $Slots<T>; __vizeResolveRef?: $GenericRefResolver; __vizeEmitProps?: $StaticEmitProps; __vizeResolveEmitProps?: <T extends string = 'a'>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>;
+ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props<string>; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<$NativeElement<"button">>; } & $GenericComponent;
 export default __vize_component__;

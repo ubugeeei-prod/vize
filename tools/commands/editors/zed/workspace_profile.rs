@@ -57,14 +57,6 @@ pub fn run(repo_root: &Path) -> Result<(), String> {
             // This helper-created runtime config is not part of either report.
             fs::remove_file(workspace.join("vite.config.js")).map_err(|error| error.to_string())?;
             let runtime = editor_e2e::resolve_corsa_path(repo_root)?;
-            let runtime_link = workspace.join("node_modules/.bin/tsgo");
-            fs::create_dir_all(runtime_link.parent().unwrap())
-                .map_err(|error| error.to_string())?;
-            #[cfg(unix)]
-            std::os::unix::fs::symlink(runtime, runtime_link).map_err(|error| error.to_string())?;
-            #[cfg(windows)]
-            fs::copy(runtime, workspace.join("node_modules/.bin/tsgo.exe"))
-                .map_err(|error| error.to_string())?;
             let project = case["projectDirectory"]
                 .as_str()
                 .map(|directory| workspace.join(directory))
@@ -102,7 +94,7 @@ pub fn run(repo_root: &Path) -> Result<(), String> {
             fs::write(&document, &source).map_err(|error| error.to_string())?;
             let options = case["initializationOptions"].clone();
             let uri = file_url(&document)?;
-            let mut session = LspSession::spawn(repo_root)?;
+            let mut session = LspSession::spawn_with_runtime(repo_root, &runtime)?;
             let result = (|| {
                 let initialization = session.initialize(&workspace, options.clone())?;
                 for (provider, expected, presence) in [

@@ -185,7 +185,9 @@ export function normalizeDependencySections(
       if (typeof optional.get(name) === "string") continue;
       const version = catalogVersions.get(`corsa-runtime\u0000${name}`);
       if (version === undefined) {
-        unresolved.push(`Missing catalog version for ${name} from corsa-runtime in optionalDependencies`);
+        unresolved.push(
+          `Missing catalog version for ${name} from corsa-runtime in optionalDependencies`,
+        );
       } else {
         optional.set(name, version);
       }

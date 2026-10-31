@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "contract": "complete-native-batch-authored-start-vector-v1",
+  "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+  "cases": [
+    {
+      "source": "Reported.vue.txt",
+      "diagnostics": []
+    },
+    {
+      "source": "Control.vue.txt",
+      "diagnostics": []
+    },
+    {
+      "source": "AliasValid.vue.txt",
+      "diagnostics": []
+    },
+    {
+      "source": "AliasInvalid.vue.txt",
+      "diagnostics": [
+        [
+          "src/Probe.vue",
+          2322,
+          "6:35:error Type 'false' is not assignable to type 'string | number | undefined'."
+        ]
+      ]
+    },
+    {
+      "source": "ControlValid.vue.txt",
+      "diagnostics": []
+    },
+    {
+      "source": "ControlInvalid.vue.txt",
+      "diagnostics": [
+        [
+          "src/Probe.vue",
+          2322,
+          "6:35:error Type 'false' is not assignable to type 'string | number | undefined'."
+        ]
+      ]
+    }
+  ]
+}

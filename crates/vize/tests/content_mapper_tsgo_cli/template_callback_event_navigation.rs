@@ -208,7 +208,7 @@ fn multiline_callback_skips_nested_function_type_arrow_for_suppression() {
 }
 
 #[test]
-fn multiline_generic_callback_branches_keep_contextual_parameters() {
+fn multiline_generic_callback_branches_preserve_authored_parameter_errors_through_repairs() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
         eprintln!("skipping generic callback branch conformance: {TSGO_ENV} is not set");
         return;
@@ -222,18 +222,53 @@ fn multiline_generic_callback_branches_keep_contextual_parameters() {
         .tempdir_in(cases_root)
         .unwrap();
     std::fs::write(project.path().join("Foo.vue"), GENERIC_BRANCH_CHILD).unwrap();
-    std::fs::write(project.path().join("parent.vue"), GENERIC_BRANCH_PARENT).unwrap();
     std::fs::write(project.path().join("tsconfig.json"), CONFIG).unwrap();
     install_mapper_manifest(project.path());
     install_vue_package(project.path());
 
-    let output = check_project(&tsgo, project.path(), "tsconfig.json");
-    assert_eq!(
-        output.status.code(),
-        Some(0),
-        "sequence, wrapper and conditional callback branches must keep contextual typing\n{}",
-        output_text(&output)
+    // These explicit generic arrows leave their authored parameters untyped.
+    // TypeScript and vue-tsc report the same four TS7006 errors: inference-only
+    // copies must add no errors, while the mapped authored owners retain them.
+    let expected = concat!(
+        "parent.vue(11,7): error TS7006: Parameter 'value' implicitly has an 'any' type.\n",
+        "parent.vue(17,9): error TS7006: Parameter 'value' implicitly has an 'any' type.\n",
+        "parent.vue(24,11): error TS7006: Parameter 'value' implicitly has an 'any' type.\n",
+        "parent.vue(28,11): error TS7006: Parameter 'value' implicitly has an 'any' type.\n",
     );
-    assert_eq!(output.stdout, b"", "{}", output_text(&output));
-    assert_eq!(output.stderr, b"", "{}", output_text(&output));
+    let mut repaired = GENERIC_BRANCH_PARENT.to_owned();
+    for (before, after) in [
+        ("\n      value) => value)", "\n      value: T) => value)"),
+        ("\n        value) => value", "\n        value: T) => value"),
+        ("\n          value) => {", "\n          value: T) => {"),
+        (
+            "\n          value) => value",
+            "\n          value: U) => value",
+        ),
+    ] {
+        assert_eq!(repaired.matches(before).count(), 1);
+        repaired = repaired.replace(before, after);
+    }
+
+    for (state, source, expected) in [
+        ("original-invalid", GENERIC_BRANCH_PARENT, expected),
+        ("typed-repair", repaired.as_str(), ""),
+        ("invalid-again", GENERIC_BRANCH_PARENT, expected),
+        ("repaired-again", repaired.as_str(), ""),
+    ] {
+        std::fs::write(project.path().join("parent.vue"), source).unwrap();
+        let output = check_project(&tsgo, project.path(), "tsconfig.json");
+        assert_eq!(
+            output.status.code(),
+            Some(if expected.is_empty() { 0 } else { 2 }),
+            "{state}: sequence, wrapper and conditional callback branches retain only authored diagnostics\n{}",
+            output_text(&output)
+        );
+        assert_eq!(
+            output.stdout,
+            expected.as_bytes(),
+            "{state}: {}",
+            output_text(&output)
+        );
+        assert_eq!(output.stderr, b"", "{state}: {}", output_text(&output));
+    }
 }

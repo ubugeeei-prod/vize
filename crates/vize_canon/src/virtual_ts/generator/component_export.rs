@@ -171,13 +171,6 @@ pub(super) fn emit_default_export_declaration(
     // partial so parent payload inference remains exact without turning an
     // omitted slot into a component-usage error.
     if let Some(slots_ref) = static_slots_ref {
-        // The public `Slots` alias is already exported. Naming it here keeps
-        // an unknown slot diagnostic from printing `Partial<$Slots>`.
-        let slots_ref = if slots_ref == "$Slots" {
-            "Slots"
-        } else {
-            slots_ref
-        };
         append!(
             component_contract_fields,
             " readonly __vizeSlots?: Partial<{slots_ref}>;"

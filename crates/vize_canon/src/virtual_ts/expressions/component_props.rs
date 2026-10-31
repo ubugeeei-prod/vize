@@ -29,6 +29,11 @@ pub(super) fn is_checkable_prop(prop: &PassedProp) -> bool {
     !prop.name_is_dynamic && prop.name.as_str() != "key" && prop.name.as_str() != "ref"
 }
 
+pub(super) fn has_per_prop_value_check(prop: &PassedProp) -> bool {
+    (is_checkable_prop(prop) || crate::virtual_ts::scope::is_inline_ref_callback_prop(prop))
+        && prop.value.is_some()
+}
+
 #[derive(Clone, Copy)]
 pub(crate) struct ComponentPropSource<'a> {
     pub(crate) template: Option<&'a str>,
@@ -37,6 +42,7 @@ pub(crate) struct ComponentPropSource<'a> {
     pub(crate) model_modifiers: Option<&'a super::model_modifiers::ModelModifierBindings>,
     pub(crate) diagnostic_ownership:
         Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
+    pub(crate) aria_value_contract_index: Option<usize>,
     inference_only: bool,
     inert: bool,
     expected_packet: bool,
@@ -55,6 +61,7 @@ impl<'a> ComponentPropSource<'a> {
             scopes,
             model_modifiers: None,
             diagnostic_ownership: None,
+            aria_value_contract_index: None,
             inference_only: false,
             inert: false,
             expected_packet: false,
@@ -85,6 +92,7 @@ impl<'a> ComponentPropSource<'a> {
             scopes: self.scopes,
             model_modifiers: self.model_modifiers,
             diagnostic_ownership: ownership,
+            aria_value_contract_index: self.aria_value_contract_index,
             inference_only: self.inference_only,
             inert: self.inert,
             expected_packet: self.expected_packet,
@@ -315,7 +323,7 @@ pub(crate) fn generate_component_prop_checks(
         // Static attribute values are checked exactly like dynamic bindings:
         // a static `msg="text"` must still satisfy the child's prop type
         // (vue-tsc reports TS2322 here; skipping them was a false negative).
-        if prop.value.is_some() {
+        if has_per_prop_value_check(prop) {
             let prop_src_start = (source_context.offset + prop.start) as usize;
             let prop_src_end = (source_context.offset + prop.end) as usize;
             let value_src_range = prop_value_source_range(source_context, prop);

@@ -33,8 +33,7 @@ fn installed_vize_package_enables_shared_component_attribute_helpers() {
         "{text}"
     );
     assert_eq!(
-        text.matches("type $ComponentNativeAttrNames =")
-            .count(),
+        text.matches("type $ComponentNativeAttrNames =").count(),
         0,
         "{text}"
     );
@@ -73,8 +72,7 @@ fn mismatched_project_and_helper_vue_packages_keep_transforms_self_contained() {
         "{text}"
     );
     assert_eq!(
-        text.matches("type $ComponentNativeAttrNames =")
-            .count(),
+        text.matches("type $ComponentNativeAttrNames =").count(),
         1,
         "{text}"
     );
@@ -144,6 +142,8 @@ fn installed_virtual_module_points_helpers_at_the_package() {
             "generated/content-mapper-types.d.ts",
             "generated/content-mapper-types.d.ts",
         ),
+        ("virtual-ts-globals.d.ts", "virtual-ts-globals.d.ts"),
+        ("virtual-ts-patterns.d.ts", "virtual-ts-patterns.d.ts"),
         ("virtual-ts.d.ts", "virtual-ts.d.ts"),
     ] {
         std::fs::copy(package_source.join(source), package.join(target)).unwrap();
@@ -157,8 +157,10 @@ fn installed_virtual_module_points_helpers_at_the_package() {
         transform_request(3, "<template><main /></template>"),
     ]));
     let text = responses[2]["result"]["text"].as_str().unwrap();
-    assert!(
-        text.contains("import type {} from \"vize/virtual-ts\";"),
+    assert_eq!(
+        text.matches("import type {} from \"vize/virtual-ts\";")
+            .count(),
+        1,
         "{text}"
     );
     assert_eq!(text.matches("vize:virtual-ts").count(), 0, "{text}");

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
-import contextPackets from "../../_fixtures/differential/typechecker/vue2-rename-context-custody/successor.json" with { type: "json" };
+import contextPackets from "../../_fixtures/differential/typechecker/vue2-rename-context-custody/display-successor.json" with { type: "json" };
 import { withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 import {
   type CheckReport,

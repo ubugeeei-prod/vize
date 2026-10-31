@@ -12,14 +12,14 @@ import { assertNoPackageConsumers, protectedModule } from "./node-forge-consumer
 export const advisoryId = "GHSA-86w9-cpqp-85rv";
 export const patchPath = "patches/node-forge@1.4.0.patch";
 export const patchHash = "8877267668e88fba4baeb2b574509e2d13a9cff4170179473cb808be833d2b1b";
-export const rsaHash = "bb2c61cef273c89aaedb9c865173f5330d76917024ff1c2c1d39ffd5be01cc2d";
-const forgeHash = "da8f76d490bd09144144e40a7cfea386b36750bf5d500f8b7eb6785087805aaa";
+export const rsaHash = "6632e195295ce76f6bb9131ee770dcd6cc1ee4ffac7906302208b00faf95a87f";
+const forgeHash = "e14fd9f01d2b55c47c76db2c790f5396e6c737a066baf02cdaabfc179b8c3413";
 const listhenHash = "9e1fc5a27ba0c408bad0ec59d376ba8bb1b7b27ff2cd451ed437b69331b84979";
 const forgeIntegrity =
-  "sha512-LarFH0+6VfriEhqMMcLX2F7SwSXeWwnEAJEsYm5QKWchiVYVvJyV9v7UDvUv+w5HO23ZpQTXDv/GxdDdMyOuoQ==";
+  "sha512-w5/MfWaeMrpR/5ba6fZyAUTLSuE6aYz7H/3cYrqwZEmf5eQS3IaaLgJt4MBv7HglGFWmV22K8h4U18RJQmw/ow==";
 const listhenIntegrity =
   "sha512-6nt/86SkqUQSLW1ofz8MxC6RhRMqOl3ONISe6qqvJ3xj09aJWQx6DhgSZpugs3PX4PXdOas/WD6A9jx6J2N19A==";
-const forgeRef = "1.4.0(patch_hash=" + patchHash + ")";
+const forgeRef = "1.4.1";
 const listhenRef = "1.10.1(@parcel/watcher@2.5.6)(srvx@0.11.15)";
 
 function record(value: unknown): Record<string, unknown> {
@@ -30,18 +30,20 @@ function record(value: unknown): Record<string, unknown> {
 export function assertForgeLock(workspaceValue: unknown, lockValue: unknown): void {
   const workspace = record(workspaceValue);
   assert.ok(!workspace.audit, "workspace audit suppression is outside this proof");
-  assert.equal(record(workspace.overrides)["node-forge"], "1.4.0");
-  assert.equal(record(workspace.patchedDependencies)["node-forge@1.4.0"], patchPath);
+  assert.equal(record(workspace.overrides)["node-forge"], forgeRef);
   const lock = record(lockValue);
-  assert.equal(record(lock.overrides)["node-forge"], "1.4.0");
-  // pnpm 12 installation canonicalizes the old hash/path record to a hash.
-  // The workspace declaration above still binds both forms to the same path.
-  const patch = record(lock.patchedDependencies)["node-forge@1.4.0"];
-  if (typeof patch === "string") assert.equal(patch, patchHash);
-  else assert.deepEqual(patch, { hash: patchHash, path: patchPath });
+  assert.equal(record(lock.overrides)["node-forge"], forgeRef);
+  for (const value of [workspace, lock])
+    assert.deepEqual(
+      Object.keys(record(value.patchedDependencies ?? {})).filter((key) =>
+        key.startsWith("node-forge@"),
+      ),
+      [],
+      "upstream Forge must not carry an active local patch",
+    );
   const packages = record(lock.packages);
   const forgeKeys = Object.keys(packages).filter((key) => key.startsWith("node-forge@"));
-  assert.deepEqual(forgeKeys, ["node-forge@1.4.0"]);
+  assert.deepEqual(forgeKeys, ["node-forge@" + forgeRef]);
   assert.deepEqual(record(packages[forgeKeys[0]]).resolution, { integrity: forgeIntegrity });
   assert.deepEqual(record(packages["listhen@1.10.1"]).resolution, { integrity: listhenIntegrity });
   const snapshots = record(lock.snapshots);
@@ -58,7 +60,7 @@ export function assertForgeLock(workspaceValue: unknown, lockValue: unknown): vo
         assert.equal(typeof ref, "string");
         if (name === "node-forge" || /(?:^|:)node-forge@/.test(String(ref))) {
           assert.equal(name, "node-forge", "new aliased Forge consumer");
-          assert.equal(ref, forgeRef, "unpatched Forge edge");
+          assert.equal(ref, forgeRef, "unreviewed Forge edge");
           forgeEdges.push(owner);
         }
         if (name === "listhen" || /(?:^|:)listhen@/.test(String(ref))) {
@@ -115,38 +117,6 @@ function auditEntries(value: unknown): {
   return { actionable, counts };
 }
 
-export function assertRemediatedReport(value: unknown): void {
-  const { actionable, counts } = auditEntries(value);
-  assert.equal(actionable.length, 1, "unexpected moderate-or-higher advisory set");
-  const advisory = actionable[0];
-  assert.equal(advisory.github_advisory_id, advisoryId);
-  assert.equal(advisory.module_name, "node-forge");
-  assert.equal(advisory.severity, "high");
-  assert.equal(advisory.url, "https://github.com/advisories/" + advisoryId);
-  assert.equal(advisory.vulnerable_versions, "<=1.4.0");
-  // npm may advertise the upstream repair before every advisory mirror updates.
-  // The attested 1.4.0 backport is still bound to its exact source and exploit laws.
-  assert.ok(advisory.patched_versions === null || advisory.patched_versions === ">=1.4.1");
-  assert.ok(Array.isArray(advisory.findings) && advisory.findings.length > 0);
-  for (const findingValue of advisory.findings) {
-    const finding = record(findingValue);
-    assert.equal(finding.version, "1.4.0");
-    assert.equal(finding.dev, false);
-    assert.equal(finding.bundled, false);
-    assert.equal(typeof finding.optional, "boolean");
-    assert.ok(Array.isArray(finding.paths) && finding.paths.length > 0);
-    for (const trail of finding.paths) {
-      assert.ok(
-        typeof trail === "string" && trail.endsWith(">listhen>node-forge"),
-        "new Forge consumer",
-      );
-    }
-  }
-  assert.equal(counts.high, 1);
-  assert.equal(counts.moderate, 0);
-  assert.equal(counts.critical, 0);
-}
-
 export function assertCleanReport(value: unknown): void {
   const { actionable, counts } = auditEntries(value);
   assert.equal(actionable.length, 0);
@@ -201,6 +171,8 @@ export function assertNoDirectForge(source: string): void {
 }
 
 export function verifyPatchFile(root: string): void {
+  // Preserve the retired 1.4.0 backport as immutable historical evidence.
+  // Active installation identity is the unpatched upstream 1.4.1 package.
   assert.equal(
     createHash("sha256")
       .update(fs.readFileSync(path.join(root, patchPath)))
@@ -216,9 +188,9 @@ export function assertForgePackage(packageRoot: string): void {
     JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")),
   );
   assert.equal(manifest.name, "node-forge");
-  assert.equal(manifest.version, "1.4.0");
+  assert.equal(manifest.version, forgeRef);
   assert.equal(manifest.main, "lib/index.js");
-  assert.equal(packageDigest(packageRoot), forgeHash, "unpatched or modified Forge source");
+  assert.equal(packageDigest(packageRoot), forgeHash, "unreviewed or modified Forge source");
   assert.equal(
     createHash("sha256")
       .update(fs.readFileSync(path.join(packageRoot, "lib/rsa.js")))
@@ -230,7 +202,7 @@ export function assertForgePackage(packageRoot: string): void {
 
 export function verifyInstalledForge(root: string): {
   instances: number;
-  patch: string;
+  version: string;
   rsa: string;
 } {
   const workspaceDocument = YAML.parseDocument(
@@ -267,7 +239,7 @@ export function verifyInstalledForge(root: string): {
       JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")),
     );
     assert.equal(manifest.name, name);
-    assert.equal(manifest.version, name === "node-forge" ? "1.4.0" : "1.10.1");
+    assert.equal(manifest.version, name === "node-forge" ? forgeRef : "1.10.1");
     if (name === "listhen") {
       assertListhenPackage(packageRoot);
       const dependencyRoot = path.dirname(require.resolve("node-forge/package.json"));
@@ -281,5 +253,5 @@ export function verifyInstalledForge(root: string): {
     assertForgePackage(packageRoot);
     verifyForgeSecurity(require(packageRoot));
   }
-  return { instances: instances.size, patch: patchHash, rsa: rsaHash };
+  return { instances: instances.size, version: forgeRef, rsa: rsaHash };
 }

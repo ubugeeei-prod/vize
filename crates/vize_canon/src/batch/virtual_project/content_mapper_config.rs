@@ -147,6 +147,8 @@ impl ContentMapperTransformOptions {
             .get("strictCssModules")
             .and_then(Value::as_bool)
             .unwrap_or(false);
+        self.configured_global_template_ref =
+            super::tsconfig_gen::vue_compiler_options::configures_global_template_ref(options);
         let (target, manifest) =
             super::tsconfig_gen::vue_compiler_options::vue_target_from_options_with_dependencies(
                 config_file_name.parent().unwrap_or(Path::new(".")),

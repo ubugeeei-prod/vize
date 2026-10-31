@@ -1,0 +1,307 @@
+{
+  "schema": "vize.languageclient-minimatch-finite-baseline",
+  "version": 1,
+  "provenance": {
+    "clientVersion": "9.0.1",
+    "clientRegistrySRI": "sha512-JZiimVdvimEuHh5olxhxkht09m3JzUGwggb5eRUkzzJhZ2KjCN0nh55VfiED9oez9DyF8/fz1g1iBV3h+0Z2EA==",
+    "matcherVersion": "5.1.9",
+    "matcherEntrypointSha256": "1339bca8b70e33847860daa8fc3ccfa62487e143670da01a3b718d40d5fd424f",
+    "node": "v24.14.0",
+    "completeCaptureSha256": "ca4f27dafb5e7338f713861a4c052e7b4412ba386c6e0518943fad89751a7b6e",
+    "executedDriverSha256": "693aec1131858957e1aefd587dc6c20122bb23d3b7b46de1d7cb111a0b1b2e40"
+  },
+  "cases": [
+    {
+      "id": "vue-dot-and-nonmatch",
+      "expected": {
+        "file": {
+          "selected": [0, 2],
+          "subscriptions": 1
+        },
+        "notebook": [
+          {
+            "value": true
+          },
+          {
+            "value": false
+          },
+          {
+            "value": false
+          }
+        ],
+        "diagnostic": [
+          {
+            "value": true
+          },
+          {
+            "value": false
+          },
+          {
+            "value": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "ignore-case-file-operations",
+      "expected": {
+        "file": {
+          "selected": [0],
+          "subscriptions": 1
+        },
+        "notebook": [
+          {
+            "value": false
+          },
+          {
+            "value": false
+          }
+        ],
+        "diagnostic": [
+          {
+            "value": false
+          },
+          {
+            "value": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "extglob-options-noext",
+      "expected": {
+        "file": {
+          "selected": [0, 1],
+          "subscriptions": 1
+        },
+        "notebook": [
+          {
+            "value": false
+          },
+          {
+            "value": false
+          },
+          {
+            "value": true
+          }
+        ],
+        "diagnostic": [
+          {
+            "value": false
+          },
+          {
+            "value": false
+          },
+          {
+            "value": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "windows-path-normalization",
+      "expected": {
+        "file": {
+          "selected": [0],
+          "subscriptions": 1
+        },
+        "notebook": [
+          {
+            "value": false
+          },
+          {
+            "value": false
+          }
+        ],
+        "diagnostic": [
+          {
+            "value": false
+          },
+          {
+            "value": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "scheme-refusal",
+      "expected": {
+        "file": {
+          "selected": [],
+          "subscriptions": 1
+        },
+        "notebook": [
+          {
+            "value": false
+          }
+        ],
+        "diagnostic": [
+          {
+            "value": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "empty-pattern-refusal",
+      "expected": {
+        "file": {
+          "error": "Error",
+          "message": "Invalid pattern !"
+        },
+        "notebook": [
+          {
+            "value": false
+          },
+          {
+            "value": false
+          }
+        ],
+        "diagnostic": [
+          {
+            "value": false
+          },
+          {
+            "value": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "comment-pattern-refusal",
+      "expected": {
+        "file": {
+          "error": "Error",
+          "message": "Invalid pattern #*.vue!"
+        },
+        "notebook": [
+          {
+            "value": false
+          },
+          {
+            "value": false
+          }
+        ],
+        "diagnostic": [
+          {
+            "value": false
+          },
+          {
+            "value": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "unterminated-class-is-literal",
+      "expected": {
+        "file": {
+          "selected": [0],
+          "subscriptions": 1
+        },
+        "notebook": [
+          {
+            "value": true
+          },
+          {
+            "value": false
+          }
+        ],
+        "diagnostic": [
+          {
+            "value": true
+          },
+          {
+            "value": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "unterminated-brace-is-literal",
+      "expected": {
+        "file": {
+          "selected": [0],
+          "subscriptions": 1
+        },
+        "notebook": [
+          {
+            "value": true
+          },
+          {
+            "value": false
+          }
+        ],
+        "diagnostic": [
+          {
+            "value": true
+          },
+          {
+            "value": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "malformed-number",
+      "expected": {
+        "file": {
+          "error": "TypeError",
+          "message": "invalid pattern"
+        },
+        "notebook": [
+          {
+            "error": "TypeError",
+            "message": "invalid pattern"
+          }
+        ],
+        "diagnostic": [
+          {
+            "value": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "malformed-null",
+      "expected": {
+        "file": {
+          "error": "TypeError",
+          "message": "invalid pattern"
+        },
+        "notebook": [
+          {
+            "error": "TypeError",
+            "message": "invalid pattern"
+          }
+        ],
+        "diagnostic": [
+          {
+            "value": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "pattern-length-limit",
+      "expected": {
+        "file": {
+          "error": "TypeError",
+          "message": "pattern is too long"
+        },
+        "notebook": [
+          {
+            "error": "TypeError",
+            "message": "pattern is too long"
+          }
+        ],
+        "diagnostic": [
+          {
+            "error": "TypeError",
+            "message": "pattern is too long"
+          }
+        ]
+      }
+    }
+  ]
+}

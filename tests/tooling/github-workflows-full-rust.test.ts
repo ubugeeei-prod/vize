@@ -40,6 +40,25 @@ const producerNames = [
 ];
 const report = check.jobs["full-rust-report"];
 const use = (job: Job, action: string) => job.steps.find((step) => step.uses?.startsWith(action));
+const runtimeStep = {
+  name: "Provision the locked Full Rust native runtime",
+  run: "node tools/support/compat/github/full-rust-runtime.ts",
+};
+
+function restoreBeforeRuntimeProvisioning(job: Job) {
+  const matches = job.steps.flatMap((step, index) =>
+    step.name === runtimeStep.name ? [index] : [],
+  );
+  assert.equal(matches.length, 1, "exactly one reviewed native runtime step is required");
+  const index = matches[0];
+  assert.deepEqual(job.steps[index], runtimeStep);
+  assert.equal(job.steps[index - 1]?.name, "Install full-workspace nextest");
+  assert.equal(
+    job.steps[index + 1]?.name,
+    "Run the original test profile for same-source comparison",
+  );
+  job.steps.splice(index, 1);
+}
 
 void test("full workspace shares the seeded compiler, linker, target path and ci profile", () => {
   const producer = seed.jobs["rust-pr-target-seed"];
@@ -236,6 +255,9 @@ void test("full-only extraction preserves all seventeen complete original job ob
   });
   delete original["nuxt-module-qualification"];
   const workspace = original["full-rust-workspace"];
+  // The explicit checkout provider extends both full profiles; verify its
+  // complete object and exact position before checking the immutable baseline.
+  restoreBeforeRuntimeProvisioning(workspace);
   assert.deepEqual(workspace.outputs, {
     "producer-attempt": "${{ steps.workspace.outputs.producer-attempt }}",
   });
@@ -302,4 +324,32 @@ void test("full-only extraction preserves all seventeen complete original job ob
     createHash("sha256").update(JSON.stringify(original)).digest("hex"),
     "4de63c3d229c90269a69631d840c4b31cdc27290eedb5a11fc9775755c91cd1e",
   );
+});
+
+void test("the reviewed Full Rust runtime successor rejects missing, moved and altered steps", () => {
+  for (const mutate of [
+    (job: Job) =>
+      job.steps.splice(
+        job.steps.findIndex((step) => step.name === runtimeStep.name),
+        1,
+      ),
+    (job: Job) => job.steps.push(structuredClone(runtimeStep)),
+    (job: Job) => {
+      const index = job.steps.findIndex((step) => step.name === runtimeStep.name);
+      job.steps[index] = { ...runtimeStep, run: "node unreviewed-provider.ts" };
+    },
+    (job: Job) => {
+      const index = job.steps.findIndex((step) => step.name === runtimeStep.name);
+      job.steps[index] = { ...runtimeStep, "continue-on-error": true };
+    },
+    (job: Job) => {
+      const index = job.steps.findIndex((step) => step.name === runtimeStep.name);
+      job.steps.splice(index, 1);
+      job.steps.push(structuredClone(runtimeStep));
+    },
+  ]) {
+    const changed = structuredClone(workspace);
+    mutate(changed);
+    assert.throws(() => restoreBeforeRuntimeProvisioning(changed), assert.AssertionError);
+  }
 });

@@ -10,6 +10,7 @@ pub(crate) const ERROR_COMPONENT_STUB: &str =
 use std::ops::Range;
 
 mod dom_events;
+pub(crate) mod hygiene;
 mod preamble;
 pub(crate) mod setup_macros;
 pub(crate) mod shared_types;

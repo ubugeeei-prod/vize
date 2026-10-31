@@ -4,6 +4,7 @@ import path from "node:path";
 import { resolveVizeLaunchCommand, type VerifiedLspLaunch } from "./launch.ts";
 import { root } from "./paths.ts";
 import { verifyPublishedLaunch, type VerifiedPublishedLspLaunch } from "./published-launch.ts";
+import { sourceLspRuntimeEnvironment } from "./runtime-environment.ts";
 
 export type BoundLspSession = {
   repoRoot: string;
@@ -75,7 +76,11 @@ export function spawnLspSessionProcess(
     ? undefined
     : newBaselineObserver(repoRoot, verified as VerifiedLspLaunch | undefined, resolveLaunchMs);
   baseline?.beforeSpawn();
-  const child = spawn(command, args, { cwd: repoRoot, stdio: ["pipe", "pipe", "pipe"] });
+  const child = spawn(command, args, {
+    cwd: repoRoot,
+    env: published ? process.env : sourceLspRuntimeEnvironment(repoRoot),
+    stdio: ["pipe", "pipe", "pipe"],
+  });
   if (baseline) {
     baselines.set(child, baseline);
     baseline.attach(child);

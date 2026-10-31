@@ -17,8 +17,7 @@ const unknownUsesPublicInstance: true = null as unknown as $IsUnknown<unknown>;
 const anyIsAuthoredInput: false = null as unknown as $IsUnknown<any>;
 const neverIsAuthoredInput: false = null as unknown as $IsUnknown<never>;
 const objectIsAuthoredInput: false = null as unknown as $IsUnknown<{}>;
-const anyInstanceInferenceUsesPublicInstance: true =
-  null as unknown as $UsePublicInstance<any>;
+const anyInstanceInferenceUsesPublicInstance: true = null as unknown as $UsePublicInstance<any>;
 type PublicInstance = InstanceType<typeof Public>;
 declare const instance: PublicInstance;
 // @ts-expect-error Vue strict emits/slots are not an unconstrained ComponentPublicInstance

@@ -55,22 +55,22 @@ fn an_optional_model_update_payload_carries_undefined() {
 }
 
 #[test]
-fn required_and_defaulted_models_keep_the_bare_payload() {
+fn required_and_defaulted_models_keep_the_bare_tuple_payload() {
     let required = emits_of("const model = defineModel<string>({ required: true })\nvoid model;\n");
     assert!(
-        required.contains("\"update:modelValue\": [value: string]"),
+        required.ends_with("\"update:modelValue\": [value: string]"),
         "required model keeps the bare payload:\n{required}"
     );
     let defaulted =
         emits_of("const model = defineModel<string>({ default: \"x\" })\nvoid model;\n");
     assert!(
-        defaulted.contains("\"update:modelValue\": [value: string]"),
+        defaulted.ends_with("\"update:modelValue\": [value: string]"),
         "defaulted model keeps the bare payload:\n{defaulted}"
     );
 }
 
 #[test]
-fn an_untyped_model_keeps_the_bare_unknown_payload() {
+fn an_untyped_model_keeps_the_unknown_tuple_payload() {
     let emits = emits_of("const model = defineModel()\nvoid model;\n");
     assert!(
         emits.contains("\"update:modelValue\": [value: unknown]"),
@@ -277,7 +277,7 @@ fn runtime_emits_carry_the_same_payload() {
         "const emit = defineEmits([\"change\"])\nconst model = defineModel<string>({ required: true })\nvoid emit;\nvoid model;\n",
     );
     assert!(
-        required.contains("(event: \"update:modelValue\", value: string) => void"),
+        required.ends_with("(event: \"update:modelValue\", value: string) => void)"),
         "runtime emits keep the bare payload for a required model:\n{required}"
     );
 }

@@ -18,7 +18,7 @@ pub(super) fn publish_content_mapper_text(
     mappings: &mut [VizeMapping],
     semantic_links: &mut [VizeSemanticLink],
     prop_default_key_links: &mut [VizeSemanticLink],
-    mut generic_copies: Option<&mut GenericCopies>,
+    generic_copies: Option<&mut GenericCopies>,
     diagnostic_ownership: Option<&DiagnosticOwnershipCollector>,
     share_virtual_module: bool,
 ) {
@@ -27,7 +27,7 @@ pub(super) fn publish_content_mapper_text(
         mappings,
         semantic_links,
         prop_default_key_links,
-        generic_copies.as_deref_mut(),
+        generic_copies,
         diagnostic_ownership,
     );
     if !share_virtual_module {
@@ -139,6 +139,10 @@ fn publicize_generated_diagnostic_helpers(
     }
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "all generated coordinate families must shift in one atomic operation"
+)]
 fn note_public_name_growth(
     mappings: &mut [VizeMapping],
     authored_ranges: &mut [Range<usize>],

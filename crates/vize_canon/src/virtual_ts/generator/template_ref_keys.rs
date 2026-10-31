@@ -34,6 +34,7 @@ mod lines;
 pub(super) struct TemplateRefUsage {
     calls: Vec<InferredCall>,
     helper: String,
+    configured_global: bool,
 }
 
 pub(super) struct TemplateRefKeyChecks<'a> {
@@ -55,7 +56,12 @@ struct InferredCall {
 impl TemplateRefUsage {
     /// Reuse setup-helper parsing and resolved symbols. Typed calls and calls
     /// inside functions retain Vue's own signature and never read the registry.
-    pub(super) fn collect(program: &Program<'_>, scoping: &Scoping, script: &str) -> Self {
+    pub(super) fn collect(
+        program: &Program<'_>,
+        scoping: &Scoping,
+        script: &str,
+        configured_global: bool,
+    ) -> Self {
         let mut collector = Collector {
             script,
             scoping,
@@ -74,6 +80,7 @@ impl TemplateRefUsage {
                 helper_name(scoping)
             },
             calls: collector.calls,
+            configured_global,
         }
     }
 

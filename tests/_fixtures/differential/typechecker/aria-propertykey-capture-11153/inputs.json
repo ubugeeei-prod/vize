@@ -1,0 +1,22 @@
+{
+  "scope": "Original observed PropertyKey alias counterexample plus distinct size valid/invalid controls; no historical input rewritten",
+  "baseline": "baseline-observation.json",
+  "nativeContract": "complete-native-batch-authored-start-vector-v1",
+  "missingFields": [
+    "end",
+    "relatedInformation",
+    "raw backend diagnostics"
+  ],
+  "inputs": {
+    "AliasInvalid.vue.txt": "7c23c4cba829ae78e08d3c29042f351ab3acca15572ee9a1b456bb09ad1a639f",
+    "AliasValid.vue.txt": "668dc66f234c3f7c75df3699015c876d90530c024111e9f221861baf519190f3",
+    "Control.vue.txt": "132ca3d4f2483630520ade2c3c5b717891dfd5bba6466a84765a6f26e7f16cf3",
+    "ControlInvalid.vue.txt": "862c9396f98a0710dc271b7aa077dffaa0f3024ba43878d1055adeac39d520ef",
+    "ControlValid.vue.txt": "9dfeedafc8dc5ef967a284396b8784f963cea937b10f444b964bd6373a90f3b3",
+    "Reported.vue.txt": "02f19182f0867674f4944ef65f4a1c068da2d946465b1fb05c9c03d979302c14",
+    "baseline-observation.json": "e153eba2a333465e154f3c2633009b5692c33c0503f97a4b0ff3aa764325a74b",
+    "expected.json": "1703f532ea1f3435f380c8b92b64a85e8f4107caaa48f399e05e7b2bbab199b6",
+    "tsconfig.json.txt": "dc7dbf60d7193d3c67dd1fd5c74791a4a8efaf212ba21b71a9bab50c1843e60d"
+  },
+  "sourceRevision": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038"
+}

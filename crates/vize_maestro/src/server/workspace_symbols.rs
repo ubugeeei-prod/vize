@@ -64,3 +64,6 @@ async fn yield_to_pending_cancellation() {
     })
     .await;
 }
+
+#[cfg(test)]
+mod tests;

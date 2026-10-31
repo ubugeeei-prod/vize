@@ -166,8 +166,8 @@ const maybe = undefined as string | undefined
                 String::from(concat!(
                     "13:4:error Argument of type '{}' is not assignable to parameter of type ",
                     "'$ComponentCheckProps<Props, $FallthroughAttrs>'.\n",
-                    "Property '\"aria-label\"' is missing in type '{}' but required in type ",
-                    "'{ readonly \"aria-label\": string; }'.",
+                    "Property ''aria-label'' is missing in type '{}' but required in type ",
+                    "'{ readonly 'aria-label': string; }'.",
                 )),
             ),
         ],

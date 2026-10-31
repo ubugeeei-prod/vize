@@ -68,7 +68,7 @@ type $AuthoredInstance = $AuthoredComponent extends abstract new (...args: any[]
 
 export type Emits = {};
 type $Slots = {};
-export type Slots = $Slots;
+export type { $Slots as Slots };
 
 // ========== Default Export ==========
 type $ComponentInstance = Omit<$AuthoredInstance, '$props' | '$emit' | '$slots'> & {
@@ -103,5 +103,5 @@ type $VueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: $AuthoredComponent extends object ? { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, {}>; } & $AuthoredComponent & $ComponentConstructor & $VueComponentOptions : $AuthoredComponent;
+declare const __vize_component__: $AuthoredComponent extends object ? { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, {}>; } & $AuthoredComponent & $ComponentConstructor & $VueComponentOptions : $AuthoredComponent;
 export default __vize_component__;

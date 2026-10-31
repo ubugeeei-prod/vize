@@ -1468,7 +1468,7 @@ describe('e2e: Transition', () => {
         await click('#toggleBtn')
 
         expect(
-          await page().$eval('#container .test', nodes =>
+          await page().$$eval('#container .test', nodes =>
             nodes.map(node => node.className),
           ),
         ).toStrictEqual(['test test-enter-from test-enter-active'])

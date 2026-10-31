@@ -22,6 +22,7 @@ pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord
             legacy_vue2: fixture.legacy_vue2,
             experimental_patterned_template: false,
             preserve_event_navigation: true,
+            configured_global_template_ref: false,
             dialect: Default::default(),
             preserve_missing_vue_diagnostics: true,
         },

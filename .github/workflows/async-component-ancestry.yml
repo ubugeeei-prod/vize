@@ -111,10 +111,14 @@ jobs:
               parent = spec["parent"]
               delta = json.loads(subprocess.check_output([
                   "node", "qualification/tools/support/cross_file/async_component/feature-delta.ts",
-                  parent, spec["feature"], spec["feature"], "--", "crates", "davinci", "Cargo.toml", "Cargo.lock",
+                  parent, spec["feature"], landed_feature, landed_merge, head,
+                  "--", "crates", "davinci", "Cargo.toml", "Cargo.lock",
               ], text=True))
-              assert delta["selectedParent"] == parent
-              assert delta["selectedFeature"] == spec["feature"]
+              assert delta["historicalParent"] == parent
+              assert delta["historicalFeature"] == spec["feature"]
+              assert delta["landedFeature"] == landed_feature
+              assert delta["landedMerge"] == landed_merge
+              assert delta["head"] == head
               changed = delta["changed"]
               assert sorted(changed) == sorted(spec["changed"]), changed
               previous = {p: subprocess.check_output(["git", "show", parent + ":" + p]) for p in paths}

@@ -22,7 +22,11 @@ impl TemplateRefUsage {
         // Structural equality with `typeof import('vue').useTemplateRef` is not
         // ownership. A separately declared ambient with the same signature must
         // keep its own return type. Value imports use the registry helper.
-        append!(*ts, "  type {name}IsVue = false;\n");
-        append!(*ts, "  type {name}Global = {name}Source;\n");
+        append!(*ts, "  type {name}IsVue = {};\n", self.configured_global);
+        if self.configured_global {
+            append!(*ts, "  type {name}Global = $UseTemplateRef;\n");
+        } else {
+            append!(*ts, "  type {name}Global = {name}Source;\n");
+        }
     }
 }

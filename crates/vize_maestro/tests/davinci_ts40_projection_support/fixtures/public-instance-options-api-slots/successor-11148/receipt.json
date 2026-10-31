@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "pullRequest": 11148,
+  "observation": {
+    "rawProductRevision": "829b8ad1be67e53a6697173a990ef52f23ea4d25",
+    "testedMerge": "67b0cef50d830cb0f45d37735ee3018cfdd13964",
+    "run": 41007193207,
+    "job": 123904662692,
+    "artifact": 12955747270,
+    "legacyJob": 123904662645,
+    "legacyArtifact": 12955624159,
+    "pendingSnapshotPath": "pending-snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+    "pendingSnapshotBytes": 2350,
+    "pendingSnapshotSha256": "5b90538dc2b207a569dfb3a2f9dbc874ab98949d6f9bbe8814c74ee9f3b16857"
+  },
+  "predecessor": {
+    "path": "successor-11142-3/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "faed80e700e1420c47573eeeec626ff9cfe3f4acee4968dd7c670a7e54d61b9b"
+  },
+  "successor": {
+    "path": "successor-11148/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "f51490f618a58a82d71b5bb84e1e75699fcbb6b695341a7d5db2f0fbea47abb2"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 85,
+    "contentMapperGeneratedTextBytes": 85,
+    "maestroGeneratedTextBytes": 0,
+    "mappingCountsUnchanged": true,
+    "diagnosticCountsUnchanged": true,
+    "authoredHitCountsUnchanged": true
+  },
+  "scope": "The frozen 194-file custody and earlier successors remain byte-identical. This receipt authenticates PR #11148's exact defaulted-required Options API helper expansion: default and legacy runs produced identical records, all packet counts stayed fixed, and only generated coordinates and their derived hashes moved."
+}

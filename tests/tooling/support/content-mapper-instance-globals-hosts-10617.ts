@@ -178,6 +178,17 @@ export function assertHostCase(
   compilerOptions: unknown,
   label: string,
 ) {
+  assertMapperCase(content, entry, context, after, label);
+  assertNativeCase(content, entry, context, cli, compilerOptions, label);
+}
+
+export function assertMapperCase(
+  content: string,
+  entry: GlobalCase,
+  context: Packet,
+  after: Packet,
+  label: string,
+) {
   const rows = compilerRows(context.stdout);
   assert.deepEqual(
     {
@@ -205,7 +216,6 @@ export function assertHostCase(
     { status: expected ? 2 : 0, signal: null, error: null, stdout: expected, stderr: "" },
     label,
   );
-  assertNativeCase(content, entry, context, cli, compilerOptions, label);
 }
 
 export function assertNativeCase(

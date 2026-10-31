@@ -10,6 +10,8 @@ import {
   callbackSetupReferencePrefix,
   type SourceSpan,
 } from "./callback-owner-projects.ts";
+import { assertPreservedCallbackPacket } from "./callback-owner-packet-parity.ts";
+export { assertPreservedCallbackPacket } from "./callback-owner-packet-parity.ts";
 
 type Observation = {
   argv: string[];
@@ -29,6 +31,7 @@ type Diagnostic = {
   message: string;
   continuation: string[];
 };
+
 const header = "<!-- 日本 🧭 -->";
 const digest = (source: string) => createHash("sha256").update(source).digest("hex");
 
@@ -174,7 +177,7 @@ export function auditCallbackOwners(directory: string) {
   let qualified = 0,
     preserved = 0,
     frontiers = 0,
-    mapperFrontiers = 0;
+    resolvedMapperFrontiers = 0;
   for (const row of rows) {
     const project = projects.find((project) => row.id.startsWith(`${project.id}-`));
     assert.ok(project);
@@ -246,11 +249,8 @@ export function auditCallbackOwners(directory: string) {
       processPacket(row.observations[`${side}-mapper`], [0, 2]);
     }
     if (project.comparison === "complete-before-head-packets") {
-      assert.deepEqual(
-        candidate,
-        before,
-        `${row.id}: all unsupported transform fields stay identical`,
-      );
+      assert.equal(candidate.length, before.length);
+      before.forEach((packet, index) => assertPreservedCallbackPacket(packet, candidate[index]));
       assert.equal(
         row.observations["candidate-check"].stdout,
         row.observations["baseline-check"].stdout,
@@ -364,29 +364,29 @@ export function auditCallbackOwners(directory: string) {
       })
       .join("");
     if (project.mapperFrontier) {
-      // The native packet is reference-exact. The mapper EXPECT interval is a
-      // separate, pre-existing defect; it must keep its complete before packet.
-      assert.notEqual(mapper.stdout, expectedMapper);
+      // These historical #10871 controls now match the independent reference.
+      // Keep the exact PR-base packet as well: fixing EXPECT ownership must
+      // never hide the foreign interpolation or make the unused EXPECT used.
       assert.equal(
-        withoutMapperIdentity(mapper.stdout),
-        withoutMapperIdentity(row.observations["baseline-mapper"].stdout),
+        row.observations["baseline-mapper"].stdout,
+        expectedMapper,
+        `${row.id}: complete resolved EXPECT packet from the authenticated PR base`,
       );
-      assert.equal(mapper.status, row.observations["baseline-mapper"].status);
-      mapperFrontiers++;
-      outcomes.push({
-        id: row.id,
-        completeNativePacket: true,
-        mapperIssue: project.mapperFrontier,
-      });
-      continue;
+      assert.equal(row.observations["baseline-mapper"].status, authored.length ? 2 : 0);
+      resolvedMapperFrontiers++;
     }
     assert.equal(mapper.stdout, expectedMapper, `${row.id}: complete same-SDK mapped stdout`);
     assert.equal(mapper.status, authored.length ? 2 : 0);
     qualified++;
-    outcomes.push({ id: row.id, referenceQualified: true, completeNativeAndMapperPackets: true });
+    outcomes.push({
+      id: row.id,
+      referenceQualified: true,
+      completeNativeAndMapperPackets: true,
+      ...(project.mapperFrontier ? { resolvedMapperIssue: project.mapperFrontier } : {}),
+    });
   }
-  assert.equal(qualified, 36);
-  assert.equal(mapperFrontiers, 4);
+  assert.equal(qualified, 40);
+  assert.equal(resolvedMapperFrontiers, 4);
   assert.equal(preserved, 44);
   assert.equal(frontiers, 8);
   const report = {
@@ -398,8 +398,21 @@ export function auditCallbackOwners(directory: string) {
     qualifiedReferenceProjects: qualified,
     unchangedUnsupportedProjects: preserved,
     explicitlyUnqualified10739Projects: frontiers,
-    nativeOnly10871Projects: mapperFrontiers,
+    referenceQualified10871Projects: resolvedMapperFrontiers,
     wholeCorpusQualified: false,
+    packetCertificateFiles: [
+      "./callback-owner-audit.ts",
+      "./callback-owner-packet-parity.ts",
+      "./callback-owner-projects.ts",
+      "./constructor-projection-parity.ts",
+      "../../../../tests/tooling/support/lsp/installed-alias-replay/frames.ts",
+      "../../../../crates/vize_canon/src/virtual_ts/scope/component_events/native_fallthrough.rs",
+    ].map((file) => ({
+      file,
+      sha256: createHash("sha256")
+        .update(fs.readFileSync(new URL(file, import.meta.url)))
+        .digest("hex"),
+    })),
     outcomes,
   };
   fs.writeFileSync(

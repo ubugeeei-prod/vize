@@ -50,6 +50,13 @@ fn expected_canonical_watch(path: &Path) -> vize_l0::String {
     text.into()
 }
 
+fn template_ref_helper_lines(content: &str) -> Vec<&str> {
+    content
+        .lines()
+        .filter(|line| line.strip_prefix("  type __vizeInferRef").is_some())
+        .collect()
+}
+
 #[test]
 fn inferred_identity_retains_the_complete_sha256_digest() {
     let configuration = load(Path::new(""));
@@ -83,6 +90,37 @@ fn configured_defaults_and_inferred_defaults_remain_distinct() {
         expected_watches(directory.path(), &[])
     );
     assert_ne!(configured.config_identity, inferred.config_identity);
+}
+
+#[test]
+fn configured_template_ref_composable_reaches_the_mapper_projection() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("tsconfig.json");
+    std::fs::write(
+        &path,
+        r#"{"vueCompilerOptions":{"composables":{"useTemplateRef":["useTemplateRef"]}}}"#,
+    )
+    .unwrap();
+    let configuration = load(&path);
+    assert!(
+        configuration
+            .transform_options
+            .configured_global_template_ref
+    );
+    let transformed = generate_vue_content_mapper_transform_with_options(
+        Path::new("App.vue"),
+        "<script setup lang=\"ts\">\nconst target = useTemplateRef('target');\n</script>\n<template><button ref=\"target\" /></template>\n",
+        configuration.transform_options,
+    )
+    .unwrap();
+    assert_eq!(
+        template_ref_helper_lines(&transformed.text),
+        [
+            "  type __vizeInferRefSource = typeof useTemplateRef;",
+            "  type __vizeInferRefIsVue = true;",
+            "  type __vizeInferRefGlobal = $UseTemplateRef;",
+        ]
+    );
 }
 
 #[test]

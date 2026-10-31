@@ -91,6 +91,7 @@ pub use mapping::{
 };
 pub use pattern_diagnostics::is_unreachable_pattern_diagnostic;
 pub use semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
+pub(crate) use types::RESOLVED_RUNTIME_DEFAULT;
 #[cfg(feature = "native")]
 pub(crate) use types::{CSS_MODULE_GLOBAL_MARKER, TYPED_ROUTE_GLOBAL_MARKER};
 pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput};

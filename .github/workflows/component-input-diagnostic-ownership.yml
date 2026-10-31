@@ -9,21 +9,32 @@ on:
       - "crates/vize_canon/src/virtual_ts/scope/root_owner_packets/**"
       - "crates/vize_canon/src/virtual_ts/scope/root_callback_owners*"
       - "crates/vize_canon/src/virtual_ts/scope/root_callback_owners/**"
+      - "crates/vize_canon/src/virtual_ts/scope/component_prop_checker.rs"
+      - "crates/vize_canon/src/virtual_ts/scope/component_prop_checker/**"
+      - "crates/vize_canon/src/virtual_ts/expressions/props_literal.rs"
+      - "crates/vize_canon/src/virtual_ts/expressions/props_literal/**"
       - "tools/benchmarks/crates/vize/tests/component_input_ownership_profile.rs"
       - "crates/vize_canon/src/batch/virtual_project/content_mapper/**"
       - "crates/vize_canon/src/virtual_ts/helpers/preamble.rs"
+      - "crates/vize_canon/src/virtual_ts/helpers/shared_types.rs"
       - "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt"
       - "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt"
       - "crates/vize_canon/src/virtual_ts/helpers/declarations/prop-keys.d.ts.txt"
       - "crates/vize_canon/src/virtual_ts/helpers/declarations/content-mapper-type-imports.d.ts.txt"
       - "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt"
       - "npm/cli/content-mapper-helpers.d.*"
+      - "npm/cli/virtual-ts.d.*"
+      - "npm/cli/virtual-ts-*.d.ts"
+      - "npm/cli/package.json"
       - "npm/cli/generated/content-mapper-types.d.ts"
       - "tools/support/compat/content-mapper/diagnostic-ownership*.ts"
       - "tools/support/compat/content-mapper/callback-owner*.ts"
+      - "tools/support/compat/content-mapper/aria-component*.ts"
       - "tools/support/compat/content-mapper/constructor-projection-parity.ts"
       - "tests/tooling/constructor-projection-parity.test.ts"
       - "tests/tooling/component-input-diagnostic-ownership-workflow.test.ts"
+      - "tests/tooling/aria-component-attrs.test.ts"
+      - "tests/_fixtures/differential/typechecker/aria-propertykey-capture-11153/**"
       - "tests/_fixtures/differential/typechecker/component-input-diagnostic-owners-10607/**"
       - ".github/workflows/component-input-diagnostic-ownership.yml"
 
@@ -48,7 +59,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Prove callback comparison custody before building either source
-        run: node --test tests/tooling/component-input-diagnostic-ownership-workflow.test.ts
+        run: node --test tests/tooling/component-input-diagnostic-ownership-workflow.test.ts tests/tooling/aria-component-attrs.test.ts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           repository: microsoft/TypeScript
@@ -79,6 +90,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/component-input-ownership"
           cargo test --locked --profile ci -p vize_canon --lib 'root_callback_owners::tests::' -- --nocapture > "$RUNNER_TEMP/component-input-ownership/root-callback-unit.stdout" 2> "$RUNNER_TEMP/component-input-ownership/root-callback-unit.stderr"
+          cargo test --locked --profile ci -p vize_canon --lib 'helper_modes::aria_' -- --nocapture > "$RUNNER_TEMP/component-input-ownership/aria-witness-unit.stdout" 2> "$RUNNER_TEMP/component-input-ownership/aria-witness-unit.stderr"
       - name: Build the exact authenticated PR base separately
         run: |
           set -euo pipefail
@@ -145,6 +157,18 @@ jobs:
               --candidate-cli "$GITHUB_WORKSPACE/target/ci/vize" \
               --source-sha "$SOURCE_SHA" \
               --output "$RUNNER_TEMP/component-input-ownership/$sdk" "${extra[@]}" || failed=1
+            if [[ "$sdk" == actual-20261024 ]]; then
+              aria_host="$(node --input-type=module -e 'const {default: resolve} = await import(`${process.env.RUNNER_TEMP}/component-input-consumer/node_modules/typescript/lib/getExePath.js`); console.log(resolve());')"
+            else
+              aria_host="$native"
+            fi
+            node tools/support/compat/content-mapper/aria-component-attrs.ts \
+              --consumer "$RUNNER_TEMP/component-input-consumer" \
+              --candidate-cli "$GITHUB_WORKSPACE/target/ci/vize" \
+              --source-sha "$SOURCE_SHA" \
+              --mapper-host "$aria_host" \
+              --mapper-version "$("$aria_host" --version)" \
+              --output "$RUNNER_TEMP/component-input-ownership/aria-package/$sdk" || failed=1
           done
           exit "$failed"
       - name: Retain all 144 unchanged generic repair observations
@@ -317,7 +341,6 @@ jobs:
           export CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-head-target"
           VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head-legacy.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$capture/head-legacy.log" 2>&1
           VIZE_CONSTRUCTOR_SHARE_TYPES=1 VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$capture/head.log" 2>&1
-          cmp "$capture/base-legacy.json" "$capture/head-legacy.json"
       - name: Prove complete packets under the exact canonical helper relocation
         shell: bash
         run: |

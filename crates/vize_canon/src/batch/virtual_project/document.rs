@@ -37,6 +37,7 @@ pub struct VueDocumentVirtualTsOptions {
     pub legacy_vue2: bool,
     pub experimental_patterned_template: bool,
     pub preserve_event_navigation: bool,
+    pub configured_global_template_ref: bool,
     pub dialect: vize_carton::config::VueVersion,
     pub preserve_missing_vue_diagnostics: bool,
 }
@@ -48,6 +49,7 @@ impl Default for VueDocumentVirtualTsOptions {
             legacy_vue2: false,
             experimental_patterned_template: false,
             preserve_event_navigation: false,
+            configured_global_template_ref: false,
             dialect: vize_carton::config::VueVersion::default(),
             preserve_missing_vue_diagnostics: true,
         }
@@ -137,6 +139,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
             check_options: VirtualTsCheckOptions::default(),
             typed_router: None,
             preserve_unused_diagnostics: false,
+            configured_global_template_ref: document_options.configured_global_template_ref,
             options_api: document_options.options_api,
             preserve_authored_component: false,
             preserve_script_on_template_error: true,
@@ -191,4 +194,51 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
         source_type,
         virtual_suffix: if use_tsx_virtual { ".tsx" } else { ".ts" },
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn single_document_generation_retains_configured_template_ref_authority() {
+        let source = "<script setup lang=\"ts\">\nconst target = useTemplateRef('target');\n</script>\n<template><button ref=\"target\" /></template>\n";
+        for (configured, expected) in [
+            (
+                true,
+                [
+                    "  type __vizeInferRefSource = typeof useTemplateRef;",
+                    "  type __vizeInferRefIsVue = true;",
+                    "  type __vizeInferRefGlobal = $UseTemplateRef;",
+                ],
+            ),
+            (
+                false,
+                [
+                    "  type __vizeInferRefSource = typeof useTemplateRef;",
+                    "  type __vizeInferRefIsVue = false;",
+                    "  type __vizeInferRefGlobal = __vizeInferRefSource;",
+                ],
+            ),
+        ] {
+            let document = generate_vue_document_virtual_ts_with_options(
+                Path::new("App.vue"),
+                source,
+                &VirtualTsOptions::default(),
+                &ImportRewriter::new(),
+                false,
+                VueDocumentVirtualTsOptions {
+                    configured_global_template_ref: configured,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            let actual = document
+                .pre_rewrite_code
+                .lines()
+                .filter(|line| line.strip_prefix("  type __vizeInferRef").is_some())
+                .collect::<Vec<_>>();
+            assert_eq!(actual, expected, "{}", document.pre_rewrite_code);
+        }
+    }
 }

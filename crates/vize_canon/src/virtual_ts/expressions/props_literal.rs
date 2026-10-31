@@ -23,7 +23,7 @@ use vize_croquis::{
 use vize_l0::ts;
 
 mod prop_entry;
-pub(crate) use prop_entry::entry_sub_spans as prop_entry_sub_spans;
+pub(crate) use prop_entry::entry_sub_spans_with_synthetic_value_gaps as prop_entry_sub_spans_with_synthetic_value_gaps;
 #[cfg(feature = "native")]
 pub(crate) use prop_entry::key_sub_spans;
 pub(crate) const NAMED_PROP_DIAGNOSTIC_MARKER: &str = "@ts-ignore Named prop diagnostics";
@@ -53,6 +53,10 @@ pub(crate) fn append_inference_props_literal(
 /// source order (last binding wins), exactly as an object literal does.
 /// Spreading first unconditionally would check `1` for the `count` of
 /// `:count="1" v-bind="bag"`, a key the runtime takes from `bag` instead.
+#[expect(
+    clippy::redundant_closure_call,
+    reason = "the ts! interpolation closure gives the emitted block a named writer"
+)]
 pub(crate) fn append_props_literal(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -124,6 +128,7 @@ pub(crate) fn append_props_literal(
             ts,
             mappings,
             prop,
+            usage.name.as_str(),
             template_binding_access,
             source_context,
             expr_indent,

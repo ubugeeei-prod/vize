@@ -71,6 +71,12 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
             .iter()
             .any(|prop| !prop.name_is_dynamic && is_component_aria_prop_name(prop.name.as_str()))
     });
+    // A phantom expected type belongs only to the diagnostic literal. An
+    // incompatible value is already rejected by its per-prop assignment;
+    // keeping that contract here prevents a second whole-argument TS2345.
+    // Assignable values and raw inference copies retain their exact T.
+    // `PropertyKey` is a capturable authored alias. The keyword constraint
+    // keeps literal raw/camel keys intact even when the SFC shadows that name.
     if needs_aria_prop_value && hoist_shared_preamble {
         // Vue camelizes `aria-label` onto a declared `ariaLabel` prop, while
         // vue-tsc's default `htmlAttributes: ['aria-*']` lets an optional
@@ -80,7 +86,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
         // authored module alias named `$NotUndefined` is otherwise the
         // nearest lexical declaration and can capture this generated helper.
         ts.push_str(
-            "  function __vizeComponentAriaPropValue<const T>(value: T): T extends undefined ? never : T { return value as (T extends undefined ? never : T); }\n",
+            "  function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T>(raw: R, camel: C, value: T): { readonly [K in R | C]: T extends undefined ? never : T };\n  function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T, E>(raw: R, camel: C, value: T, _expected: E): { readonly [K in R | C]: T extends E ? T extends undefined ? never : T : E extends undefined ? never : E };\n  function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T, E = unknown>(raw: R, camel: C, value: T, _expected?: E): { readonly [K in R | C]: T extends E ? T extends undefined ? never : T : E extends undefined ? never : E } { return { [raw]: value, [camel]: value } as unknown as { readonly [K in R | C]: T extends E ? T extends undefined ? never : T : E extends undefined ? never : E }; }\n",
         );
     }
     if hoist_shared_preamble {
@@ -103,7 +109,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
         // props remain present, generic inference retains the authored value
         // type, and wrong values are still diagnosed once (#11048, #9658).
         ts.push_str(
-            "  function __vizeComponentAriaPropEntries<const R extends PropertyKey, const C extends PropertyKey, const T>(raw: R, camel: C, value: T): { readonly [K in R | C]: $NotUndefined<T> } { return { [raw]: value, [camel]: value } as unknown as { readonly [K in R | C]: $NotUndefined<T> }; }\n",
+            "  function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T>(raw: R, camel: C, value: T): { readonly [K in R | C]: $NotUndefined<T> };\n  function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T, E>(raw: R, camel: C, value: T, _expected: E): { readonly [K in R | C]: $NotUndefined<T extends E ? T : E> };\n  function __vizeComponentAriaPropEntries<const R extends keyof any, const C extends keyof any, const T, E = unknown>(raw: R, camel: C, value: T, _expected?: E): { readonly [K in R | C]: $NotUndefined<T extends E ? T : E> } { return { [raw]: value, [camel]: value } as unknown as { readonly [K in R | C]: $NotUndefined<T extends E ? T : E> }; }\n",
         );
     }
     ts.push_str(

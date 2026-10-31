@@ -4,6 +4,15 @@ on:
     paths:
       - .github/workflows/unicode-prop-projection.yml
       - tools/support/compat/github/unicode-prop-projection-custody.mjs
+      - tools/support/compat/content-mapper/constructor-projection-parity.ts
+      - tests/tooling/constructor-projection-parity.test.ts
+      - tests/tooling/unicode-prop-projection-custody.test.ts
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/prop-keys.d.ts.txt
+      - crates/vize_canon/src/virtual_ts/component_prop_helpers.txt
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/component-global-attributes.d.ts.txt
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/content-mapper-type-imports.d.ts.txt
       - crates/vize_canon/src/virtual_ts/props/mappings.rs
       - crates/vize_canon/src/virtual_ts/props/mappings/**
       - crates/vize_canon/src/virtual_ts/props/template_model.rs
@@ -106,6 +115,8 @@ jobs:
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
+      - name: Validate the shared certificate and Unicode custody refusal controls
+        run: node --test tests/tooling/constructor-projection-parity.test.ts tests/tooling/unicode-prop-projection-custody.test.ts
       - name: Compile and run both roles in initially absent isolated targets
         run: node tools/support/compat/github/unicode-prop-projection-custody.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

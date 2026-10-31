@@ -11,7 +11,7 @@ assert.ok(fixture);
 const nuxtPackage = path.join(root, "npm/framework/nuxt/package.json");
 const requireNuxt = createRequire(nuxtPackage);
 const runtimeManifest = requireNuxt.resolve("nuxt/package.json");
-assert.equal(JSON.parse(fs.readFileSync(runtimeManifest)).version, "4.6.2");
+assert.equal(JSON.parse(fs.readFileSync(runtimeManifest)).version, "4.6.3");
 const requireRuntime = createRequire(runtimeManifest);
 const { resolveModulePath } = await import(pathToFileURL(requireRuntime.resolve("exsolve")).href);
 const esm = (name, from) => resolveModulePath(name, { from, conditions: ["node", "import"] });
@@ -30,7 +30,7 @@ const manifest = (require, name) => {
   }
   throw new Error(`missing actual package manifest: ${name}`);
 };
-assert.equal(manifest(createRequire(nuxtEntry), "@nuxt/kit").version, "4.6.2");
+assert.equal(manifest(createRequire(nuxtEntry), "@nuxt/kit").version, "4.6.3");
 const devtoolsManifest = JSON.parse(
   fs.readFileSync(new URL("../package.json", pathToFileURL(devtoolsEntry))),
 );

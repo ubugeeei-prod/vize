@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
+  "sourceRevision": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "defaulted-required-props-accept-omission-and-undefined",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsChild.vue",
+          "source": "src/OptionsChild.vue.txt"
+        },
+        {
+          "file": "src/SetupChild.vue",
+          "source": "src/SetupChild.vue.txt"
+        },
+        {
+          "file": "src/shared.ts",
+          "source": "src/shared.ts.txt"
+        },
+        {
+          "file": "src/SpreadChild.vue",
+          "source": "src/SpreadChild.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "src/Valid.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "required-props-without-default-stay-required",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsChild.vue",
+          "source": "src/OptionsChild.vue.txt"
+        },
+        {
+          "file": "src/SetupChild.vue",
+          "source": "src/SetupChild.vue.txt"
+        },
+        {
+          "file": "src/shared.ts",
+          "source": "src/shared.ts.txt"
+        },
+        {
+          "file": "src/SpreadChild.vue",
+          "source": "src/SpreadChild.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "src/Invalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 10,
+          "column": 18,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | undefined' is not assignable to type 'string'.\nType 'undefined' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 11,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<__OptionsChild_CheckProps_0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 676 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\nProperty 'flag' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 12,
+          "column": 16,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | undefined' is not assignable to type 'string'.\nType 'undefined' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 13,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 671 more ...; zoomAndPan?: unknown...'.\nProperty '\"flag\"' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 14,
+          "column": 17,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | undefined' is not assignable to type 'string'.\nType 'undefined' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 15,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 671 more ...; zoomAndPan?: unknown...'.\nProperty '\"flag\"' is missing in type '{ title: string; }' but required in type '{ readonly title: string; readonly label?: string | undefined; readonly flag: boolean; }'."
+        }
+      ]
+    }
+  ]
+}

@@ -168,45 +168,8 @@ fn form_events_and_callback_inference_keep_one_binding_ownership_role() {
                     &format!(":schema=\"schema\"{callback}"),
                 )
                 .replace('\n', newline);
-            let mut before = packet("Form.art.vue", &source, false);
+            let before = packet("Form.art.vue", &source, false);
             let after = packet("Form.art.vue", &source, true);
-            if !callback.is_empty() {
-                // The old text-based policy hid these three canonical callbacks.
-                // Restore precisely those diagnostic owners before comparing the
-                // remaining complete packet and independently enumerated echoes.
-                for index in 0..3 {
-                    let statement = format!(
-                        "  const __vize_prop_check_{index}_validate_form_field_on: $ResolvedProp<typeof __vize_resolved_GenericForm_props_{index}, typeof __vize_selected_GenericForm_props_{index}, 'validateFormFieldOn', __GenericForm_{index}_prop_validate_form_field_on> = (field) => !!field;\n"
-                    );
-                    let start = before["text"].as_str().unwrap().find(&statement).unwrap();
-                    let end = start + statement.len();
-                    let rows = before["diagnosticDirectives"]["directives"]
-                        .as_array_mut()
-                        .unwrap();
-                    let position = rows
-                        .iter()
-                        .position(|row| row[2] == start && row[3] == end)
-                        .expect("one prior canonical callback ignore");
-                    let removed: [usize; 6] =
-                        serde_json::from_value(rows.remove(position)).unwrap();
-                    assert_eq!(removed[4..], [0, 0]);
-                    assert_eq!(
-                        source.get(removed[0]..removed[0] + removed[1]),
-                        Some(callback.trim_start())
-                    );
-                    assert!(
-                        after["diagnosticDirectives"]["directives"]
-                            .as_array()
-                            .unwrap()
-                            .iter()
-                            .all(|row| {
-                                row[3].as_u64().unwrap() as usize <= start
-                                    || row[2].as_u64().unwrap() as usize >= end
-                            }),
-                        "canonical callback diagnostics remain visible"
-                    );
-                }
-            }
             let echoes = added_echoes(&before, &after);
             assert!(!echoes.is_empty());
             let fields = [
@@ -310,6 +273,7 @@ fn inline_callback_copies_stay_ignored_and_never_hide_the_canonical_check() {
                         "ignored",
                         "ignored",
                         "const __vize_prop_check_0_pick: $ResolvedProp<typeof __vize_resolved_Comp_props_0, typeof __vize_selected_Comp_props_0, 'pick', __Comp_0_prop_pick> = ",
+                        "ignored",
                     ],
                     "{text}"
                 );

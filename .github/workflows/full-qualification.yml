@@ -162,6 +162,8 @@ jobs:
       - name: Install full-workspace nextest
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with: { tool: cargo-nextest@0.9.146 }
+      - name: Provision the locked Full Rust native runtime
+        run: node tools/support/compat/github/full-rust-runtime.ts
       - name: Run the original test profile for same-source comparison
         if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.compare-rust-test-profile }}
         run: node tools/support/compat/github/run-rust-workspace-tests.ts --cargo-profile test --output target/nextest/full/workspace-reference-timing.json

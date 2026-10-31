@@ -6,7 +6,7 @@ mod plain_exports;
 
 use super::imports::{IdentifierUsage, collect_identifier_usage};
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Declaration, Statement};
+use oxc_ast::ast::{Declaration, ImportDeclarationSpecifier, Statement};
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet};
 use vize_croquis::script_parser::parse_program_for_analysis;
@@ -22,6 +22,7 @@ pub(super) use plain_exports::{
 pub(super) struct ScriptModulePlan {
     pub(super) spans: Vec<(u32, u32)>,
     pub(super) exported_types: FxHashSet<CompactString>,
+    pub(super) bound_types: FxHashSet<CompactString>,
     pub(super) identifier_usage: IdentifierUsage,
 }
 
@@ -53,6 +54,7 @@ pub(super) fn collect_script_module_plan(
 ) -> ScriptModulePlan {
     let mut spans = Vec::new();
     let mut exported_types = FxHashSet::default();
+    let mut bound_types = FxHashSet::default();
     let allocator = Allocator::default();
     let parsed = parse_program_for_analysis(&allocator, script, SourceType::ts().with_module(true));
     let parsed = if parsed.panicked {
@@ -73,6 +75,38 @@ pub(super) fn collect_script_module_plan(
     }
 
     for statement in &parsed.program.body {
+        match statement {
+            Statement::ImportDeclaration(import) => {
+                bound_types.extend(import.specifiers.iter().flatten().map(|specifier| {
+                    CompactString::from(match specifier {
+                        ImportDeclarationSpecifier::ImportSpecifier(specifier) => {
+                            specifier.local.name.as_str()
+                        }
+                        ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
+                            specifier.local.name.as_str()
+                        }
+                        ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                            specifier.local.name.as_str()
+                        }
+                    })
+                }));
+            }
+            Statement::TSTypeAliasDeclaration(declaration) => {
+                bound_types.insert(declaration.id.name.as_str().into());
+            }
+            Statement::TSInterfaceDeclaration(declaration) => {
+                bound_types.insert(declaration.id.name.as_str().into());
+            }
+            Statement::TSEnumDeclaration(declaration) => {
+                bound_types.insert(declaration.id.name.as_str().into());
+            }
+            Statement::ClassDeclaration(declaration) => {
+                if let Some(id) = &declaration.id {
+                    bound_types.insert(id.name.as_str().into());
+                }
+            }
+            _ => {}
+        }
         if let Statement::ExportNamedDeclaration(export) = statement {
             exported_types.extend(
                 export
@@ -100,6 +134,7 @@ pub(super) fn collect_script_module_plan(
                 });
             if let Some(name) = declared {
                 exported_types.insert(name.into());
+                bound_types.insert(name.into());
             }
         }
         match statement {
@@ -119,6 +154,7 @@ pub(super) fn collect_script_module_plan(
     ScriptModulePlan {
         spans: include_leading_ts_directive_comments(script, spans),
         exported_types,
+        bound_types,
         identifier_usage: collect_identifier_usage(&parsed.program),
     }
 }
