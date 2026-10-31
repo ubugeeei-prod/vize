@@ -234,11 +234,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
                 Op::Element(element) => self.element(id, element, fact, None),
                 Op::If(owner) => self.conditional(id, owner),
                 Op::OriginalFor(original) => self.original_for(id, original, fact),
-                Op::Interpolation(child)
-                    if child.role == vize_l2::op::InterpolationRole::JsxChild =>
-                {
-                    self.expression(id, child.expression)
-                }
+                Op::JsxChildValue(child) => self.expression(id, child.expression),
                 Op::Comment(comment) => {
                     helper(&mut self.writer, self.vocabulary, self.helpers.comment);
                     self.writer.push("(");

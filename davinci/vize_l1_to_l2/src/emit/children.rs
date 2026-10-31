@@ -8,7 +8,7 @@ pub(super) use slot_text::{emit_slot_text_child, emit_slot_text_run};
 use vize_l0::Span;
 use vize_l0::id::NodeId;
 use vize_l2::expr::{ExprRef, JsExpr, OpaqueReason};
-use vize_l2::op::{CommentOp, InterpolationOp, InterpolationRole, Op, Region};
+use vize_l2::op::{CommentOp, InterpolationOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
@@ -37,6 +37,7 @@ pub(super) fn emit_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), 
             }
             Op::Element(_)
             | Op::Component(_)
+            | Op::JsxChildValue(_)
             | Op::Comment(_)
             | Op::If(_)
             | Op::For(_)
@@ -66,9 +67,6 @@ pub(super) fn children_need_text_flag(cx: &EmitCx<'_>, children: &Region<'_>) ->
         let id = walk.mint();
         match op {
             Op::Interpolation(interp) => {
-                if interp.role == InterpolationRole::JsxChild {
-                    return false;
-                }
                 any_interp = true;
                 all_constant &= interpolation_is_constant(cx, interp, id);
             }
@@ -115,9 +113,6 @@ pub(super) fn emit_interpolation(
     interp: &InterpolationOp<'_>,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
-    if interp.role == InterpolationRole::JsxChild {
-        return emit_jsx_child(cx, interp);
-    }
     match interp.expression {
         ExprRef::Js(js) if cx.prefixing() => {
             emit_prefixed_to_display_string(cx, js, Site::Expression)

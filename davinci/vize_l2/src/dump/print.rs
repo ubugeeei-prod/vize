@@ -224,11 +224,12 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &Op, depth: usize, mode: Style) -> 
             quoted(w, text.content.as_str())?;
             end_line(w, text.span, mode)
         }
-        Op::Interpolation(interpolation) => {
+        Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
             indent(w, depth)?;
-            w.write_str(match interpolation.role {
-                crate::op::InterpolationRole::TemplateText => "ui.interpolation ",
-                crate::op::InterpolationRole::JsxChild => "ui.jsx-child ",
+            w.write_str(if matches!(op, Op::JsxChildValue(_)) {
+                "ui.jsx-child "
+            } else {
+                "ui.interpolation "
             })?;
             print_expr(w, &interpolation.expression, mode)?;
             end_line(w, interpolation.span, mode)

@@ -96,7 +96,7 @@ fn op_has_transition(op: &Op<'_>) -> bool {
         Op::For(for_op) => region_has_transition(&for_op.region),
         Op::OriginalFor(for_op) => region_has_transition(&for_op.region),
         Op::Slot(slot) => region_has_transition(&slot.fallback),
-        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
+        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => false,
     }
 }
 
@@ -114,7 +114,7 @@ fn op_has_transition_group(op: &Op<'_>) -> bool {
         Op::For(for_op) => region_has_transition_group(&for_op.region),
         Op::OriginalFor(for_op) => region_has_transition_group(&for_op.region),
         Op::Slot(slot) => region_has_transition_group(&slot.fallback),
-        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
+        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => false,
     }
 }
 
@@ -182,7 +182,7 @@ fn first_op_slot_order_marker(op: &Op<'_>) -> Option<SlotOrderMarker> {
             .find_map(|branch| first_slot_order_marker(&branch.region)),
         Op::For(for_op) => first_slot_order_marker(&for_op.region),
         Op::OriginalFor(for_op) => first_slot_order_marker(&for_op.region),
-        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => None,
+        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => None,
     }
 }
 
@@ -195,9 +195,12 @@ pub(super) fn op_is_direct_slot_carrier(op: &Op<'_>) -> bool {
             .any(|branch| direct_slot_carrier_precedes_slot_outlet(&branch.region)),
         Op::For(for_op) => direct_slot_carrier_precedes_slot_outlet(&for_op.region),
         Op::OriginalFor(for_op) => direct_slot_carrier_precedes_slot_outlet(&for_op.region),
-        Op::Component(_) | Op::Slot(_) | Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {
-            false
-        }
+        Op::Component(_)
+        | Op::Slot(_)
+        | Op::Text(_)
+        | Op::Interpolation(_)
+        | Op::JsxChildValue(_)
+        | Op::Comment(_) => false,
     }
 }
 
@@ -222,7 +225,11 @@ fn op_has_direct_slot_carrier(op: &Op<'_>) -> bool {
             .any(|branch| region_has_direct_slot_carrier(&branch.region)),
         Op::For(for_op) => region_has_direct_slot_carrier(&for_op.region),
         Op::OriginalFor(for_op) => region_has_direct_slot_carrier(&for_op.region),
-        Op::Slot(_) | Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
+        Op::Slot(_)
+        | Op::Text(_)
+        | Op::Interpolation(_)
+        | Op::JsxChildValue(_)
+        | Op::Comment(_) => false,
     }
 }
 
@@ -239,7 +246,11 @@ fn component_tree_has_slot_carrier(region: &Region<'_>) -> bool {
             .any(|branch| component_tree_has_slot_carrier(&branch.region)),
         Op::For(for_op) => component_tree_has_slot_carrier(&for_op.region),
         Op::OriginalFor(for_op) => component_tree_has_slot_carrier(&for_op.region),
-        Op::Slot(_) | Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
+        Op::Slot(_)
+        | Op::Text(_)
+        | Op::Interpolation(_)
+        | Op::JsxChildValue(_)
+        | Op::Comment(_) => false,
     })
 }
 
@@ -258,6 +269,6 @@ fn op_has_slot_outlet(op: &Op<'_>) -> bool {
         Op::For(for_op) => has_slot_outlet(&for_op.region),
         Op::OriginalFor(for_op) => has_slot_outlet(&for_op.region),
         Op::Slot(_) => true,
-        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
+        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => false,
     }
 }

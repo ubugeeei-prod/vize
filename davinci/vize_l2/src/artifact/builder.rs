@@ -102,11 +102,7 @@ impl<'a> Builder<'a> {
         check::expression(self.parts.source, id, expression, span)?;
         self.mint();
         self.push(Op::Interpolation(Box::new_in(
-            InterpolationOp {
-                role: crate::op::InterpolationRole::TemplateText,
-                expression,
-                span,
-            },
+            InterpolationOp { expression, span },
             &self.allocator,
         )));
         Ok(id)

@@ -38,6 +38,8 @@ pub enum Op {
     Text(Text),
     /// `ui.interpolation`.
     Interpolation(Interpolation),
+    /// `ui.jsx-child`.
+    JsxChildValue(Interpolation),
     /// `ui.comment`.
     Comment(Comment),
     /// `ui.if`.
@@ -116,8 +118,6 @@ pub struct Text {
 pub struct Interpolation {
     /// The rendered expression.
     pub expression: Expr,
-    /// The producer-owned interpretation survives dump and replay.
-    pub role: crate::op::InterpolationRole,
     /// Source range.
     pub span: Span,
 }
@@ -243,8 +243,11 @@ fn own_op_guarded(op: &IrOp<'_>) -> Op {
         }),
         IrOp::Interpolation(interpolation) => Op::Interpolation(Interpolation {
             expression: own_expr(&interpolation.expression),
-            role: interpolation.role,
             span: interpolation.span,
+        }),
+        IrOp::JsxChildValue(child) => Op::JsxChildValue(Interpolation {
+            expression: own_expr(&child.expression),
+            span: child.span,
         }),
         IrOp::Comment(comment) => Op::Comment(Comment {
             content: String::from(comment.content),
@@ -315,7 +318,7 @@ fn count_op_guarded(op: &Op) -> u64 {
             1 + component.bindings.len() as u64
                 + component.children.iter().map(count_op).sum::<u64>()
         }
-        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => 1,
+        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => 1,
         Op::If(if_op) => {
             1 + if_op
                 .branches

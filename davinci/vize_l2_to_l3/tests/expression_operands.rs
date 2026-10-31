@@ -37,7 +37,6 @@ fn lowering_copies_expression_classification_without_reinterpreting_source() {
         for expression in expressions {
             ops.push(Op::Interpolation(Box::new_in(
                 InterpolationOp {
-                    role: vize_l2::op::InterpolationRole::TemplateText,
                     expression,
                     span: expression.span(),
                 },

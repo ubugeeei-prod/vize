@@ -58,7 +58,6 @@ fn retained_js_carrier_and_ast_are_the_original_once_parsed_payload() {
         &a,
         [Op::Interpolation(Box::new_in(
             InterpolationOp {
-                role: crate::op::InterpolationRole::TemplateText,
                 expression: ExprRef::Js(js),
                 span: Span::new(0, 9),
             },

@@ -1,5 +1,5 @@
 use vize_l0::ensure_sufficient_stack;
-use vize_l2::op::{InterpolationRole, Op};
+use vize_l2::op::Op;
 
 use super::super::{EmitCx, EmitError, UnsupportedReason as Reason};
 
@@ -62,9 +62,7 @@ pub(in crate::emit) fn emit_array_child(
                 super::super::children::emit_comment_vnode(cx, comment);
                 Ok(())
             }
-            Op::Interpolation(child) if child.role == InterpolationRole::JsxChild => {
-                super::super::children::emit_jsx_child(cx, child)
-            }
+            Op::JsxChildValue(child) => super::super::children::emit_jsx_child(cx, child),
             Op::Text(_) | Op::Interpolation(_) => {
                 Err(EmitError::unsupported_op(Reason::ArrayChildTextRun, op))
             }

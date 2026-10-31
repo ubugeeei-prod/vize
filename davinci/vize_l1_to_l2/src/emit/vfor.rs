@@ -126,21 +126,19 @@ fn emit_for_scoped(
         _ => "FRAGMENT",
     };
 
-    cx.buf.use_open_block();
-    cx.buf.use_create_element_block();
+    cx.use_open_block();
+    cx.use_element_block();
     cx.buf.use_fragment();
     cx.buf.use_render_list();
     // The memo slot this loop may take prints after the whole callback,
     // so its ordering key is the start of the `renderList` construct.
     let construct_start = cx.buf.code.len();
     cx.buf.push("(");
-    cx.buf.push(Buf::open_block_alias());
-    if stable && !cx.untracked_children {
-        cx.buf.push("(), ");
-    } else {
-        cx.buf.push("(true), ");
+    if !cx.untracked_children {
+        cx.buf.push(Buf::open_block_alias());
+        cx.buf.push(if stable { "(), " } else { "(true), " });
     }
-    cx.buf.push(Buf::create_element_block_alias());
+    cx.buf.push(cx.element_block_alias());
     cx.buf.push("(");
     cx.buf.push(Buf::fragment_alias());
     if let Some(key) = fragment_key {

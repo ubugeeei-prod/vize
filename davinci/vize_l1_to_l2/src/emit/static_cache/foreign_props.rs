@@ -102,7 +102,7 @@ pub(super) fn region_has_non_branch_foreign_props_hoist(
                     return true;
                 }
             }
-            Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
+            Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}
         }
     }
     false

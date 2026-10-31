@@ -92,11 +92,7 @@ fn lower_interpolation<'a>(cx: &mut Cx<'a>, node: &Interpolation<'a>, out: &mut 
         span,
     );
     out.push(Op::Interpolation(Box::new_in(
-        InterpolationOp {
-            role: vize_l2::op::InterpolationRole::TemplateText,
-            expression,
-            span,
-        },
+        InterpolationOp { expression, span },
         &cx.allocator,
     )));
 }

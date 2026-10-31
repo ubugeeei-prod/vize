@@ -249,6 +249,7 @@ impl<'a> L2ElementOp<'a> {
             Op::Slot(slot) => Some(Self::Slot(slot)),
             Op::Text(_)
             | Op::Interpolation(_)
+            | Op::JsxChildValue(_)
             | Op::Comment(_)
             | Op::If(_)
             | Op::For(_)

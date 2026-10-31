@@ -45,7 +45,6 @@ fn interpolation<'a>(arena: &'a Allocator, source: &'a str, authored: &'a str) -
     let expression_span = expression.span();
     Op::Interpolation(Box::new_in(
         InterpolationOp {
-            role: vize_l2::op::InterpolationRole::TemplateText,
             expression,
             span: Span::new(expression_span.start - 2, expression_span.end + 2),
         },

@@ -39,7 +39,7 @@ fn visit_region_guarded(
                 visit_nested(walk, &component.children.ops, inner, facts);
             }
             Op::Text(_) | Op::Comment(_) => {}
-            Op::Interpolation(interpolation) => {
+            Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
                 score(interpolation.expression, id, depth, facts);
             }
             Op::If(if_op) => visit_if(walk, if_op, id, depth, facts),

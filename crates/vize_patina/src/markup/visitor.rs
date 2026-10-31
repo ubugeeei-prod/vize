@@ -133,7 +133,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                     self.visit_element(MarkupElement::from_l2(element, doc));
                 }
                 Op::Text(text) => self.text(children::text_node(doc, text)),
-                Op::Interpolation(interpolation) => {
+                Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
                     children::walk_interpolation(doc, interpolation, &mut |node| match node {
                         MarkupNode::Text(text) => self.text(text),
                         MarkupNode::Interpolation(range) => self.interpolation(range),

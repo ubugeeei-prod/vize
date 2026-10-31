@@ -86,6 +86,10 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
 
 fn emit_unique(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     match op {
+        Op::JsxChildValue(child) => {
+            let _id = cx.walk.mint();
+            super::children::emit_jsx_child(cx, child)
+        }
         Op::Text(_) => emit_create_text_vnode(cx, core::slice::from_ref(op)),
         Op::Interpolation(interp) => {
             let id = cx.walk.mint();
@@ -124,17 +128,15 @@ fn emit_unique(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
 }
 
 fn emit_fragment(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError> {
-    cx.buf.use_open_block();
-    cx.buf.use_create_element_block();
+    cx.use_open_block();
+    cx.use_element_block();
     cx.buf.use_fragment();
     cx.buf.push("(");
-    cx.buf.push(Buf::open_block_alias());
-    cx.buf.push(if cx.untracked_children {
-        "(true), "
-    } else {
-        "(), "
-    });
-    cx.buf.push(Buf::create_element_block_alias());
+    if !cx.untracked_children {
+        cx.buf.push(Buf::open_block_alias());
+        cx.buf.push("(), ");
+    }
+    cx.buf.push(cx.element_block_alias());
     cx.buf.push("(");
     cx.buf.push(Buf::fragment_alias());
     cx.buf.push(", null, [");
@@ -194,6 +196,11 @@ fn emit_units(cx: &mut EmitCx<'_>, op: &Op<'_>, first: &mut bool) -> Result<(), 
             emit_create_text_vnode(cx, core::slice::from_ref(op))
         }
         Op::Interpolation(interp) => emit_interp(cx, interp, first),
+        Op::JsxChildValue(child) => {
+            start_item(cx, first);
+            let _id = cx.walk.mint();
+            super::children::emit_jsx_child(cx, child)
+        }
         Op::Comment(comment) => {
             start_item(cx, first);
             let _id = cx.walk.mint();

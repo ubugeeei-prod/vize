@@ -34,6 +34,7 @@ fn op_keyword(op: &Op<'_>) -> &'static str {
         Op::Component(_) => "ui.component",
         Op::Text(_) => "ui.text",
         Op::Interpolation(_) => "ui.interpolation",
+        Op::JsxChildValue(_) => "ui.jsx-child",
         Op::Comment(_) => "ui.comment",
         Op::If(_) => "ui.if",
         Op::For(_) | Op::OriginalFor(_) => "ui.for",
@@ -121,7 +122,13 @@ fn every_op<'a>(allocator: &'a Allocator) -> Vec<'a, Op<'a>> {
             )),
             Op::Interpolation(Box::new_in(
                 InterpolationOp {
-                    role: vize_l2::op::InterpolationRole::TemplateText,
+                    expression: expr,
+                    span,
+                },
+                &allocator,
+            )),
+            Op::JsxChildValue(Box::new_in(
+                InterpolationOp {
                     expression: expr,
                     span,
                 },
@@ -291,6 +298,7 @@ fn every_region_op_variant_is_matched_without_a_wildcard() {
             "ui.component",
             "ui.text",
             "ui.interpolation",
+            "ui.jsx-child",
             "ui.comment",
             "ui.if",
             "ui.for",

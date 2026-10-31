@@ -79,6 +79,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             Op::Component(_) => (Levels::DYNAMIC, Some(BindingOwner::Component), None),
             Op::Text(_) => (Levels::STATIC, None, None),
             Op::Interpolation(_) => (Levels::DYNAMIC_TEXT, None, None),
+            Op::JsxChildValue(_) => (Levels::DYNAMIC, None, None),
             Op::Comment(_) => (Levels::DYNAMIC, None, None),
             Op::If(_) => (Levels::DYNAMIC, None, Some(ControlKind::Conditional)),
             Op::For(_) | Op::OriginalFor(_) => (Levels::DYNAMIC, None, Some(ControlKind::Loop)),

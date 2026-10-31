@@ -91,12 +91,10 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
                     ctx.use_helper(RuntimeHelper::Fragment);
                     ctx.push("(");
-                    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-                    ctx.push(if ctx.untracked_children {
-                        "(true), "
-                    } else {
-                        "(), "
-                    });
+                    if !ctx.untracked_children {
+                        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+                        ctx.push("(), ");
+                    }
                     ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push("(");
                     ctx.push(ctx.helper(RuntimeHelper::Fragment));
@@ -173,12 +171,10 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 // Dynamic list: wrap in block
                 ctx.use_helper(RuntimeHelper::OpenBlock);
                 ctx.push("(");
-                ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-                ctx.push(if ctx.untracked_children {
-                    "(true), "
-                } else {
-                    "(), "
-                });
+                if !ctx.untracked_children {
+                    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+                    ctx.push("(), ");
+                }
 
                 if is_component {
                     // Component: use createBlock

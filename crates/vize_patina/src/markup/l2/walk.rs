@@ -89,7 +89,7 @@ fn walk_region<'a>(
                 let step = scope_region(doc, for_op.span, &for_op.region.ops);
                 walk_step(doc, step, enter, exit);
             }
-            Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
+            Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}
         }
     }
 }

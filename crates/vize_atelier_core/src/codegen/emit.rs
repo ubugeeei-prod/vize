@@ -106,12 +106,10 @@ pub(super) fn generate_with_sections_and_options(
         ctx.use_helper(RuntimeHelper::CreateElementBlock);
         ctx.use_helper(RuntimeHelper::Fragment);
         ctx.push("(");
-        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-        ctx.push(if ctx.untracked_children {
-            "(true), "
-        } else {
-            "(), "
-        });
+        if !ctx.untracked_children {
+            ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+            ctx.push("(), ");
+        }
         ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
         ctx.push("(");
         ctx.push(ctx.helper(RuntimeHelper::Fragment));
@@ -166,6 +164,14 @@ pub(super) fn generate_with_sections_and_options(
         "atelier.codegen.collect_hoist_helpers",
         collect_hoist_helpers(root, &mut all_helpers)
     );
+    all_helpers.retain_mut(|helper| {
+        if let Some(effective) = ctx.child_value_helper(*helper) {
+            *helper = effective;
+            true
+        } else {
+            false
+        }
+    });
     all_helpers.retain(|helper| ctx.should_import_helper(*helper));
     all_helper_bits = retain_unique_helpers(&mut all_helpers);
 

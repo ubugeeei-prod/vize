@@ -82,7 +82,6 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
                             ops: ArenaVec::from_iter_in(
                                 [Op::Interpolation(Box::new_in(
                                     InterpolationOp {
-                                        role: vize_l2::op::InterpolationRole::TemplateText,
                                         expression: opaque(
                                             allocator,
                                             OpaqueReason::NestingRefused,
@@ -167,7 +166,6 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
     ));
     let foreign = Op::Interpolation(Box::new_in(
         InterpolationOp {
-            role: vize_l2::op::InterpolationRole::TemplateText,
             expression: ExprRef::Foreign(allocator.alloc(ForeignExpr {
                 dialect: "moonbit",
                 source: "count + 1",

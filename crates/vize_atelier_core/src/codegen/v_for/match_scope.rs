@@ -62,12 +62,10 @@ pub(crate) fn generate_scope_body(ctx: &mut CodegenContext, children: &[Template
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
             ctx.use_helper(RuntimeHelper::Fragment);
             ctx.push("(");
-            ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-            ctx.push(if ctx.untracked_children {
-                "(true), "
-            } else {
-                "(), "
-            });
+            if !ctx.untracked_children {
+                ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+                ctx.push("(), ");
+            }
             ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
             ctx.push("(");
             ctx.push(ctx.helper(RuntimeHelper::Fragment));

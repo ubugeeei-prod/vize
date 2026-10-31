@@ -219,12 +219,16 @@ pub(crate) fn debug_assert_text_family_gaps(ops: &[Op<'_>]) {
         };
         let prev_end = match prev {
             Op::Text(text) => text.span.end,
-            Op::Interpolation(interpolation) => interpolation.span.end,
+            Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
+                interpolation.span.end
+            }
             _ => continue,
         };
         let next_start = match next {
             Op::Text(text) => text.span.start,
-            Op::Interpolation(interpolation) => interpolation.span.start,
+            Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
+                interpolation.span.start
+            }
             _ => continue,
         };
         debug_assert!(

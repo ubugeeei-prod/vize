@@ -170,7 +170,7 @@ fn visit_region_guarded<R: RemarkSink>(
                 nested: true,
                 native: true,
             },
-            Op::Comment(_) => Contribution {
+            Op::JsxChildValue(_) | Op::Comment(_) => Contribution {
                 level: ChildLevel::Dynamic,
                 nested: false,
                 native: true,

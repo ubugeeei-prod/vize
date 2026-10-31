@@ -101,7 +101,7 @@ fn regions<'s, 'a>(
                     bindings(walk, &component.bindings, id, span, visit)?;
                     regions(walk, &component.children.ops, Some(id), Some(span), visit)?;
                 }
-                Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
+                Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}
                 Op::If(if_op) => {
                     for branch in &if_op.branches {
                         regions(walk, &branch.region.ops, Some(id), Some(branch.span), visit)?;

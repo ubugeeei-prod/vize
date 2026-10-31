@@ -37,7 +37,7 @@ fn op_forwards(op: &Op<'_>) -> bool {
             .any(|branch| has_forwarded_outlet(&branch.region)),
         Op::For(for_op) => has_forwarded_outlet(&for_op.region),
         Op::OriginalFor(for_op) => has_forwarded_outlet(&for_op.region),
-        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
+        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => false,
     }
 }
 
@@ -390,6 +390,6 @@ fn skip_op(cx: &mut EmitCx<'_>, op: &Op<'_>) {
             cx.walk.skip(slot.bindings.len());
             skip_region(cx, &slot.fallback);
         }
-        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
+        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}
     }
 }

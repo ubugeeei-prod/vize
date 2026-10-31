@@ -53,6 +53,7 @@ mod budget;
 mod buf;
 mod builtin;
 mod cache_slots;
+mod child_values;
 mod children;
 mod component;
 mod constant_expr;

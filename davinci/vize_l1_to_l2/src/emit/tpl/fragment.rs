@@ -48,17 +48,15 @@ pub(super) fn emit_inner_fragment(
     class: Option<&WrapperClass>,
     mode: ChildMode,
 ) -> Result<(), EmitError> {
-    cx.buf.use_open_block();
-    cx.buf.use_create_element_block();
+    cx.use_open_block();
+    cx.use_element_block();
     cx.buf.use_fragment();
     cx.buf.push("(");
-    cx.buf.push(Buf::open_block_alias());
-    cx.buf.push(if cx.untracked_children {
-        "(true), "
-    } else {
-        "(), "
-    });
-    cx.buf.push(Buf::create_element_block_alias());
+    if !cx.untracked_children {
+        cx.buf.push(Buf::open_block_alias());
+        cx.buf.push("(), ");
+    }
+    cx.buf.push(cx.element_block_alias());
     cx.buf.push("(");
     cx.buf.push(Buf::fragment_alias());
     emit_fragment_props(cx, key, attributes, class)?;

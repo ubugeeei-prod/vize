@@ -35,7 +35,6 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
         [
             Op::Interpolation(Box::new_in(
                 InterpolationOp {
-                    role: vize_l2::op::InterpolationRole::TemplateText,
                     expression: ExprRef::Js(retained),
                     span: Span::new(0, 32),
                 },
@@ -43,7 +42,6 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
             )),
             Op::Interpolation(Box::new_in(
                 InterpolationOp {
-                    role: vize_l2::op::InterpolationRole::TemplateText,
                     expression: ExprRef::Opaque(escape),
                     span: Span::new(34, 46),
                 },
@@ -109,7 +107,6 @@ fn a_printed_folio_replays_across_an_arena_reset() {
         [
             Op::Interpolation(Box::new_in(
                 InterpolationOp {
-                    role: vize_l2::op::InterpolationRole::TemplateText,
                     expression: ExprRef::Js(loaded),
                     span: Span::new(0, 32),
                 },
@@ -117,7 +114,6 @@ fn a_printed_folio_replays_across_an_arena_reset() {
             )),
             Op::Interpolation(Box::new_in(
                 InterpolationOp {
-                    role: vize_l2::op::InterpolationRole::TemplateText,
                     expression: ExprRef::Opaque(allocator.alloc(OpaqueExpr {
                         reason: OpaqueReason::MultiStatement,
                         source: "a++; b++",

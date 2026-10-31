@@ -37,15 +37,13 @@ pub(super) fn emit_unique_element(
     }
     super::memo::emit_cached(cx, &element.bindings, |cx| {
         directive::wrap_element(cx, element, |cx| {
-            cx.buf.use_open_block();
-            cx.buf.use_create_element_block();
+            cx.use_open_block();
+            cx.use_element_block();
             cx.buf.push("(");
-            cx.buf.push(Buf::open_block_alias());
-            cx.buf.push(if cx.untracked_children {
-                "(true), "
-            } else {
-                "(), "
-            });
+            if !cx.untracked_children {
+                cx.buf.push(Buf::open_block_alias());
+                cx.buf.push("(), ");
+            }
             emit_call(
                 cx,
                 element,
@@ -69,15 +67,13 @@ fn emit_block(
     hoist: (bool, Option<NodeId>, PropHoistPosition),
 ) -> Result<(), EmitError> {
     directive::wrap_element(cx, element, |cx| {
-        cx.buf.use_open_block();
-        cx.buf.use_create_element_block();
+        cx.use_open_block();
+        cx.use_element_block();
         cx.buf.push("(");
-        cx.buf.push(Buf::open_block_alias());
-        cx.buf.push(if cx.untracked_children {
-            "(true), "
-        } else {
-            "(), "
-        });
+        if !cx.untracked_children {
+            cx.buf.push(Buf::open_block_alias());
+            cx.buf.push("(), ");
+        }
         emit_call(cx, element, true, if_key, hoist, for_item, false)?;
         cx.buf.push(")");
         Ok(())
@@ -199,7 +195,7 @@ pub(super) fn emit_call(
         super::props_object::check_hoist_gap(&element.attributes, &element.bindings)?;
     }
     let alias = if block {
-        Buf::create_element_block_alias()
+        cx.element_block_alias()
     } else {
         Buf::create_element_vnode_alias()
     };

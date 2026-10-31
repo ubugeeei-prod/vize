@@ -331,7 +331,9 @@ impl CodegenContext {
     /// Track a helper for preamble generation
     #[inline]
     pub fn use_helper(&mut self, helper: RuntimeHelper) {
-        self.used_helpers.add(helper);
+        if let Some(helper) = self.child_value_helper(helper) {
+            self.used_helpers.add(helper);
+        }
     }
 
     /// Push string to buffer (alias for `push`, compatible with `appends!`/`append!` macros)

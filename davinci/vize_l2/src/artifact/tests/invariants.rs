@@ -30,7 +30,6 @@ fn child_and_expression_ranges_must_stay_in_their_source_owner() {
         &a,
         [Op::Interpolation(Box::new_in(
             InterpolationOp {
-                role: crate::op::InterpolationRole::TemplateText,
                 expression: opaque(&a, Span::new(1, 3)),
                 span: Span::new(0, 2),
             },
@@ -186,7 +185,6 @@ fn retained_js_root_uses_its_own_text_coordinates_without_reparsing() {
         &a,
         [Op::Interpolation(Box::new_in(
             InterpolationOp {
-                role: crate::op::InterpolationRole::TemplateText,
                 expression: ExprRef::Js(malformed),
                 span: Span::new(0, 1),
             },

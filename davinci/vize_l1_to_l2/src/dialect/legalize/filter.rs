@@ -82,6 +82,9 @@ fn rewrite_ops<'a>(
                     facts,
                 );
             }
+            Op::JsxChildValue(child) => {
+                rewrite_expr(allocator, &mut child.expression, &mut facts.filters);
+            }
             Op::Interpolation(interp) => {
                 rewrite_expr(allocator, &mut interp.expression, &mut facts.filters);
                 compound::rewrite(allocator, source, id, interp, texts, &mut facts.filters);
