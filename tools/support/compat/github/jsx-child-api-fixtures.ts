@@ -4,8 +4,13 @@ import { createHash } from "node:crypto";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const JSX_CHILD_API_CASE_ID = "compiler/jsx/child-values-6890";
-export const JSX_CHILD_ADMITTED_REVISION = "e58e31a1eb77cdff90debafce306d70b2db53069";
+export const JSX_CHILD_ADMITTED_REVISION = "f3ba538391bb6b5be2c8506008ccf853e4aecc1a";
 const approvedSources = [
+  {
+    path: "crates/vize_atelier_jsx/src/compile.rs",
+    beforeSha256: "0546c2e45f16a9b9c5cd1349905ed2e7bab37bd75f66e2ea07ec4c563e99bdb6",
+    afterSha256: "2917dedcc374de54055399e5b5b7207df15101310425766d92dea78ed838bbb6",
+  },
   {
     path: "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vapor_child_values_6890.snap",
     beforeSha256: null,
@@ -22,9 +27,14 @@ const approvedSources = [
     afterSha256: "5238eb92bd1f299b8d8b9365fa98d99a7fc71e5e72fd0e2eae956da19b471280",
   },
   {
+    path: "crates/vize_atelier_jsx/src/spread_children.rs",
+    beforeSha256: "02df4c7de0bfef2265fdc02d03139641cf7d5134eed65b554ba5f136697d4265",
+    afterSha256: "e6a9d935b230816319b4c12e6608fca642dc4ab2e870fefc2dabf1f2b263efc8",
+  },
+  {
     path: "crates/vize_atelier_jsx/src/vapor.rs",
     beforeSha256: "4b72d49e61447e7a292ce62f8bdeebe4d6a382b18e2509c0f5b0af24c66e662f",
-    afterSha256: "2147fea9725274a8e341f31a0944144c4779649b4676bd507340204923edeefe",
+    afterSha256: "e7c655a675661c8db2cdb9919bab0e63e396f402d51ec0a7f8efae0fcc62f273",
   },
   {
     path: "crates/vize_atelier_vapor/src/compile/inner.rs",
@@ -104,6 +114,10 @@ const approvedInputs = [
     path: "tests/_fixtures/differential/compiler/jsx-child-values-6890/browser-before-f7c306d.json",
     sha256: "47106a01b905c1036ad8c0b79c80928b967b799b0f03a1f91dbd5439a41b0a71",
   },
+  {
+    path: "tests/_fixtures/differential/compiler/jsx-child-values-6890/rejected-spread.jsx.txt",
+    sha256: "ae82ba0cb7d56386f68ff05fdcb54e407c6f0708c73b51fa3c9540b65876bfbb",
+  },
 ] as const;
 const approvedWitnesses = [
   {
@@ -116,11 +130,15 @@ const approvedWitnesses = [
   },
   {
     path: ".github/workflows/jsx-authored-native-modules.yml",
-    sha256: "80708451d633182b954e32c1c76c666e4e254e78aa3bdd8b10f01ffb394634e0",
+    sha256: "3fc99398d3ede7e986be57a4ad1e723610afe330609a1a0d4ec79445fc7cef39",
   },
   {
     path: "tests/tooling/jsx-vapor-oracle/child-browser.ts",
     sha256: "055f401b4e6c23a46945e8937e32eda947892d321752f3bb2d9576fe1fa4069d",
+  },
+  {
+    path: "crates/vize_atelier_jsx/tests/spread_child.rs",
+    sha256: "b0f58eb035941487bbc387628139f87613226c42d577074aec868d1f2c2d07a7",
   },
 ] as const;
 const qualification = {
@@ -226,6 +244,12 @@ export function newJsxChildApiCases(
     assert(producer.includes("tests/tooling/jsx-vapor-oracle/child-values.ts"));
     const workflow = read("head", approvedWitnesses[2].path)!.toString("utf8");
     assert(workflow.includes("vue_jsx_vapor_compat_oracle dynamic_child_values"));
+    assert(workflow.includes("ordered_spread_props spread_child"));
+    const refusal = read("head", approvedWitnesses[4].path)!.toString("utf8");
+    assert(
+      refusal.includes("fn vapor_and_ssr_report_the_spread_instead_of_emitting_client_blocks("),
+    );
+    assert(refusal.includes("/jsx-child-values-6890/rejected-spread.jsx.txt"));
     result.ids.push(row.id);
     for (const source of approvedSources) result.sources.add(source.path);
   }
