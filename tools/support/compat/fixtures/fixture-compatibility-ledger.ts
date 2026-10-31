@@ -143,6 +143,8 @@ export function createCompatibilityContext(rootDir = moduleRoot): CompatibilityC
     .trim()
     .split("\n")
     .map((line) => lastField(line, /\s+/))
+    // Match the gitlink query below: upstream profiling sources are not fixtures.
+    .filter((fixturePath) => fixturePath.startsWith("tests/_fixtures/_git/"))
     .sort(compareCodepoints);
   const gitlinkPaths = execFileSync("git", ["ls-files", "-s", "tests/_fixtures/_git"], {
     cwd: rootDir,
