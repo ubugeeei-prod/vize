@@ -1,0 +1,112 @@
+name: Canon slot provider ownership
+on:
+  pull_request:
+    paths:
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/*slot*.txt
+      - crates/vize_canon/src/virtual_ts/helpers/shared_types.rs
+      - crates/vize_canon/src/virtual_ts/component_aliases*
+      - crates/vize_canon/src/virtual_ts/component_aliases/**
+      - crates/vize_canon/src/virtual_ts/component_reference.rs
+      - crates/vize_canon/src/virtual_ts/generator.rs
+      - crates/vize_canon/src/virtual_ts/generator/**
+      - crates/vize_canon/src/virtual_ts/scope/context.rs
+      - crates/vize_canon/src/virtual_ts/scope/closures.rs
+      - crates/vize_canon/src/virtual_ts/scope/component_props.rs
+      - crates/vize_canon/src/virtual_ts/scope/slot_scope.rs
+      - crates/vize_canon/src/virtual_ts/scope/slot_scope/**
+      - crates/vize_canon/tests/fix_history_diagnostics.rs
+      - tests/differential/typechecker-registry.ts
+      - tests/_fixtures/differential/typechecker/manifest.json
+      - npm/cli/virtual-ts.d.*
+      - npm/cli/virtual-ts-globals.d.ts
+      - npm/cli/virtual-ts-patterns.d.ts
+      - npm/cli/scripts/*slot*.ts
+      - tests/_fixtures/differential/typechecker/declared-any-slot-provider-11027/**
+      - tests/_fixtures/differential/typechecker/registered-slot-provider-11027/**
+      - tests/_fixtures/typechecker/slot-provider-owners-11027/**
+      - tests/tooling/canon-registered-slot-provider.test.ts
+      - tests/tooling/canon-slot-provider-any.test.ts
+      - tests/tooling/support/canon-slot-provider-types.ts
+      - tools/benchmarks/scripts/canon-slot-provider-any.ts
+      - tools/benchmarks/scripts/canon-registered-slot-provider.ts
+      - tools/benchmarks/scripts/canon-slot-provider-collisions.ts
+      - .github/workflows/canon-slot-provider-any.yml
+  workflow_dispatch:
+    inputs:
+      expected-source-sha:
+        description: Exact source revision to qualify
+        required: true
+        type: string
+permissions: { contents: read }
+concurrency:
+  group: slot-provider-any-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  source-cli:
+    uses: ./.github/workflows/full-source-cli.yml
+  admission:
+    needs: source-cli
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      NODE_DISABLE_COMPILE_CACHE: "1"
+      GOMAXPROCS: "2"
+      RAYON_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { fetch-depth: 2, persist-credentials: false }
+      - name: Admit the exact reviewed source
+        env:
+          SOURCE_EVENT: ${{ github.event_name }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          if [[ "$SOURCE_EVENT" == workflow_dispatch ]]; then
+            [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+            test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"
+          else
+            test "$SOURCE_EVENT" = pull_request
+            [[ "$PR_HEAD" =~ ^[0-9a-f]{40}$ ]]
+            test "$(git rev-parse HEAD^2)" = "$PR_HEAD"
+          fi
+          git diff --exit-code HEAD
+          mkdir "$RUNNER_TEMP/slot-provider-any"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/slot-provider-any/source.txt"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - uses: ./.github/actions/restore-source-cli
+        with: { producer: "${{ toJSON(needs.source-cli.outputs) }}" }
+      - name: Install pinned independent framework and native compilers
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/slot-provider-reference"
+          cd "$RUNNER_TEMP/slot-provider-reference"
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          fs.writeFileSync('package.json', JSON.stringify({private:true,type:'module',dependencies:{vize:'0.608.0','@vizejs/native':'0.608.0',vue:'3.5.42',typescript:'6.0.3','typescript-native':'npm:typescript@7.1.0-beta','vue-tsc':'3.3.13'},overrides:{'@vue/compiler-dom':'3.5.42','@vue/compiler-core':'3.5.42','@vue/compiler-sfc':'3.5.42','@vue/shared':'3.5.42'}}));
+          JS
+          npm install --ignore-scripts --no-audit --no-fund
+          cp package.json package-lock.json "$RUNNER_TEMP/slot-provider-any/"
+      - name: Query intrinsic Any identities and compare complete production diagnostics
+        run: |
+          set -euo pipefail
+          mkdir -p tests/node_modules
+          ln -s "$RUNNER_TEMP/slot-provider-reference/node_modules/typescript" tests/node_modules/typescript
+          ln -s "$RUNNER_TEMP/slot-provider-reference/node_modules/vue" tests/node_modules/vue
+          node --test tests/tooling/canon-slot-provider-any.test.ts tests/tooling/canon-registered-slot-provider.test.ts
+          node tools/benchmarks/scripts/canon-slot-provider-any.ts "$RUNNER_TEMP/slot-provider-reference" "$GITHUB_WORKSPACE/target/ci/vize" "$RUNNER_TEMP/slot-provider-any/proof"
+          node tools/benchmarks/scripts/canon-registered-slot-provider.ts "$RUNNER_TEMP/slot-provider-reference" "$GITHUB_WORKSPACE/target/ci/vize" "$RUNNER_TEMP/slot-provider-any/registered-proof"
+          node tools/benchmarks/scripts/canon-slot-provider-collisions.ts "$RUNNER_TEMP/slot-provider-reference" "$GITHUB_WORKSPACE/target/ci/vize" "$RUNNER_TEMP/slot-provider-any/collision-proof"
+      - name: Preserve raw protocol, diagnostics, type queries and source custody
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/slot-provider-any"
+          tar --exclude=project --exclude=node_modules --exclude=tmp --exclude=cache -czf "$RUNNER_TEMP/slot-provider-any.tgz" -C "$RUNNER_TEMP" slot-provider-any
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: slot-provider-any-${{ github.sha }}
+          path: ${{ runner.temp }}/slot-provider-any.tgz
+          retention-days: 14
