@@ -37,6 +37,14 @@ struct Peer {
 
 impl Peer {
     fn start(expected_releases: usize) -> Self {
+        Self::start_with_project(expected_releases, None, false)
+    }
+
+    fn start_with_project(
+        expected_releases: usize,
+        project_config: Option<std::path::PathBuf>,
+        finish_on_release: bool,
+    ) -> Self {
         let directory = tempfile::tempdir().unwrap();
         let path = directory.path().join("initial.sock");
         let listener = UnixListener::bind(&path).unwrap();
@@ -53,6 +61,13 @@ impl Peer {
             let mut pending: Option<RequestId> = None;
             let mut released = Vec::new();
             let mut finished = false;
+            let project_response = || {
+                let mut response = project();
+                if let Some(config) = &project_config {
+                    response["configFileName"] = json!(config);
+                }
+                response
+            };
             loop {
                 let body = match read_frame(&mut reader) {
                     Ok(body) => body,
@@ -68,9 +83,9 @@ impl Peer {
                     }
                     "updateSnapshot" => {
                         generation += 1;
-                        json!({"snapshot":if generation == 1 { OLD } else { NEW },"projects":[project()],"changes":{"changedProjects":{},"removedProjects":[]}})
+                        json!({"snapshot":if generation == 1 { OLD } else { NEW },"projects":[project_response()],"changes":{"changedProjects":{},"removedProjects":[]}})
                     }
-                    "getDefaultProjectForFile" => project(),
+                    "getDefaultProjectForFile" => project_response(),
                     "getDiagnosticsForFile" => {
                         assert_eq!(params["file"], *expected_file.lock().unwrap());
                         assert_eq!(params["project"], "p./workspace/tsconfig.json");
@@ -114,7 +129,7 @@ impl Peer {
                     method => panic!("unexpected initial API peer method: {method}"),
                 };
                 respond(&mut writer, id, result);
-                if finished && released.len() == expected_releases {
+                if (finished || finish_on_release) && released.len() == expected_releases {
                     return released;
                 }
             }
@@ -202,18 +217,25 @@ fn respond(writer: &mut impl std::io::Write, id: RequestId, result: Value) {
 
 #[test]
 fn refused_materialized_refresh_retires_the_session_before_later_access() {
-    let peer = Peer::start(2);
-    let bridge = peer.bridge();
     let directory = tempfile::tempdir().unwrap();
     let config = directory.path().join("tsconfig.json");
+    let foreign = directory.path().join("foreign.json");
     let member = directory.path().join("member.ts");
     std::fs::write(&config, "{}").unwrap();
+    std::fs::write(&foreign, "{}").unwrap();
     std::fs::write(&member, "export const value = 1;").unwrap();
     let member = crate::file_uri::path_to_file_uri(&member);
+    let peer = Peer::start_with_project(2, Some(foreign), true);
+    let bridge = peer.bridge();
     block_on(bridge.with_client(move |client| {
         assert!(client.project_session_for_test().is_some());
         let result = client.refresh_materialized_for_test(config, member);
-        assert!(result.is_err());
+        assert_eq!(
+            result,
+            Err(vize_l0::cstr!(
+                "Preferred materialized Corsa member did not retain its exact configured project"
+            ))
+        );
         assert!(client.project_session_for_test().is_none());
         Ok(())
     }))
