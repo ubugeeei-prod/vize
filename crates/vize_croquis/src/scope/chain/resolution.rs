@@ -25,12 +25,11 @@ impl ScopeChain {
             }
             visited.push(id);
 
-            // SAFETY: the queue is seeded with `self.current` and only extended
-            // with parent ids stored inside scopes owned by this chain. Scope ids
-            // are never synthesized from user input, so every queued id indexes
-            // `self.scopes`. This keeps lexical lookup branch-light in the
-            // compiler's busiest semantic-analysis loop.
-            let scope = unsafe { self.scopes.raw.get_unchecked(id.as_u32() as usize) };
+            // Safe callers can construct ids and edit public Scope::parents.
+            // Ignore absent parents, as the mutable and visibility walks do.
+            let Some(scope) = self.scopes.get(id) else {
+                continue;
+            };
             if let Some(binding) = scope.get_binding(name) {
                 return Some((id, binding));
             }
@@ -138,11 +137,17 @@ impl ScopeChain {
     }
 
     /// Calculate the depth of a scope (distance from root via primary parent chain)
+    /// Stop before a repeated handle when public parents form a cycle.
     #[inline]
     pub fn depth(&self, id: ScopeId) -> u32 {
         let mut depth = 0u32;
+        let mut visited: SmallVec<[ScopeId; 8]> = smallvec![id];
         let mut current_id = self.get_scope(id).and_then(|s| s.parent());
         while let Some(pid) = current_id {
+            if visited.contains(&pid) {
+                break;
+            }
+            visited.push(pid);
             depth += 1;
             current_id = self.get_scope(pid).and_then(|s| s.parent());
         }

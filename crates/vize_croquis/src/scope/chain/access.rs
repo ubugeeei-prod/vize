@@ -14,10 +14,11 @@ impl ScopeChain {
     #[inline]
     pub fn current_scope(&self) -> &Scope {
         // SAFETY: `current` is initialized to `ROOT`, and every scope transition
-        // writes an id returned by `push_scope`/`enter_scope`, both of which append
-        // to `self.scopes` before exposing the id. Exiting a scope moves to a
-        // stored parent id, never an arbitrary index. This unchecked access is on
-        // every identifier lookup path, so we keep the invariant centralized here.
+        // either appends before selecting a new slot or validates a public id in
+        // `set_current` (including an externally edited parent in `exit_scope`).
+        // Safe accessors expose individual Scope values, never the storage Vec;
+        // changing Scope::id/parents cannot remove the current physical slot.
+        // This unchecked access remains on every identifier lookup path.
         unsafe {
             self.scopes
                 .raw

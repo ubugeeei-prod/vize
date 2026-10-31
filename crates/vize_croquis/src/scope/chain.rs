@@ -457,8 +457,15 @@ impl ScopeChain {
     }
 
     /// Set the current scope directly (used for switching between sibling scopes)
+    ///
+    /// # Panics
+    /// Panics before changing the current scope if the handle is out of range.
     #[inline]
     pub fn set_current(&mut self, id: ScopeId) {
+        assert!(
+            self.scopes.get(id).is_some(),
+            "scope handle is out of range"
+        );
         self.current = id;
     }
 
