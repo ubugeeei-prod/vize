@@ -2,10 +2,13 @@
 
 use super::NativeVisibility;
 use crate::artifact::RegionBuilder;
-use crate::file::region::FileRegion;
+use crate::file::build::ScopedResolution;
+use crate::file::region::{FileRegion, TemplatePolicy};
 use crate::file::{NativeFileConditional, NativeFileConditionalState};
 use crate::lang::js::{NativeConditionalInput, NativeTemplateIssueKind as Kind};
+use crate::resolution::Usage;
 use core::ops::DerefMut;
+use vize_l0::{Span, id::NodeId};
 use vize_l1::markup::{NativeAttributeHead, NativeConditionKind, NativeTemplateComponent};
 
 pub(super) struct ObservedConditional {
@@ -50,6 +53,7 @@ where
                 scope: self.scope,
                 binding: None,
                 original: None,
+                otherwise: None,
             });
         #[cfg(test)]
         tests::after_park();
@@ -67,5 +71,62 @@ where
             return Err(Kind::UnsupportedChild);
         }
         Ok(ObservedConditional { index })
+    }
+
+    /// The same original Boolean proof and real If mint for both root shapes.
+    pub(super) fn mint_conditional(&mut self, index: usize, span: Span) -> Result<NodeId, Kind> {
+        let expression = self
+            .facts
+            .native_conditionals()
+            .get(index)
+            .and_then(|record| record.input.expression())
+            .ok_or(Kind::InvalidEvent)?;
+        let table = self.resolve(expression, span).map_err(Kind::Artifact)?;
+        let [occurrence] = table.occurrences() else {
+            return Err(Kind::UnsupportedChild);
+        };
+        let declaration = self
+            .facts
+            .declarations
+            .get(occurrence.binding.index() as usize)
+            .ok_or(Kind::UnsupportedChild)?;
+        if occurrence.usage != Usage::Read
+            || declaration.id != occurrence.binding
+            || declaration.scope != self.scope
+            || !self.policy.visible(declaration)
+            || declaration.boolean_initializer().is_none()
+            || declaration.name.as_str() != occurrence.name
+            || expression.source != occurrence.name
+        {
+            return Err(Kind::UnsupportedChild);
+        }
+        let binding = occurrence.binding;
+        let record = self
+            .facts
+            .native_conditionals()
+            .get(index)
+            .ok_or(Kind::InvalidEvent)?;
+        if record.scope != self.scope || !record.input.matches_expression(expression) {
+            return Err(Kind::InvalidEvent);
+        }
+        let node = self
+            .region
+            .begin_native_if(&record.input, span)
+            .map_err(Kind::Artifact)?;
+        self.facts.expressions.insert(
+            node,
+            ScopedResolution {
+                scope: self.scope,
+                table,
+            },
+        );
+        self.facts
+            .native_conditionals_mut()
+            .get_mut(index)
+            .ok_or(Kind::InvalidEvent)?
+            .binding = Some(binding);
+        #[cfg(test)]
+        tests::after_mint();
+        Ok(node)
     }
 }

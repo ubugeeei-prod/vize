@@ -80,6 +80,13 @@ fn element<'a: 'b, 'b, R>(
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
 {
+    let span = element_span(&original)?;
+    let header = header::construct(&original, selected, region)?;
+    element_prepared(original, selected, span, header, region)
+}
+
+/// Same original geometry gate for the ordinary and paired root receivers.
+pub(super) fn element_span(original: &NativeElement<'_, '_>) -> Result<Span, Kind> {
     let surface = original.surface();
     let tag = surface.tag();
     // No caller tag, namespace, attribute list or body enters this route.
@@ -116,8 +123,19 @@ where
         _ => return Err(Kind::UnsupportedChild),
     }
     .ok_or(Kind::InvalidEvent)?;
-    let span = Span::new(opening.start, ending.end);
-    let mut header = header::construct(&original, selected, region)?;
+    Ok(Span::new(opening.start, ending.end))
+}
+
+pub(super) fn element_prepared<'a: 'b, 'b, R>(
+    original: NativeElement<'_, 'a>,
+    selected: &NativeTemplateComponent<'a>,
+    span: Span,
+    mut header: header::Header<'a>,
+    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+) -> Result<NodeId, Kind>
+where
+    R: DerefMut<Target = RegionBuilder<'b, 'a>>,
+{
     if let Some(observed) = header.conditional.take() {
         return conditional::construct(original, selected, span, header, observed, region);
     }

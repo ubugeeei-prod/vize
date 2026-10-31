@@ -30,6 +30,27 @@ impl<'a> Builder<'a> {
                 native_if = Some(core::ptr::NonNull::from(owner.as_ref()));
                 Op::If(owner)
             }
+            Owner::NativeIfElse {
+                condition,
+                first,
+                first_span,
+                else_span,
+            } => {
+                let mut branches = vize_l0::Vec::new_in(&self.allocator);
+                branches.push(crate::op::IfBranch {
+                    condition: Some(crate::expr::ExprRef::Js(condition)),
+                    region: first,
+                    span: first_span,
+                });
+                branches.push(crate::op::IfBranch {
+                    condition: None,
+                    region: children,
+                    span: else_span,
+                });
+                let owner = Box::new_in(crate::op::IfOp { branches, span }, &self.allocator);
+                native_if = Some(core::ptr::NonNull::from(owner.as_ref()));
+                Op::If(owner)
+            }
             Owner::OriginalFor(id) => {
                 let owner = Box::new_in(
                     crate::op::OriginalForOp {

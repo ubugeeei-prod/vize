@@ -19,17 +19,40 @@ use vize_l1::{
 };
 
 pub(in crate::file::region::native) struct Header<'a> {
-    pub(super) attributes: Vec<'a, Attribute<'a>>,
-    pub(super) values: PreparedAttributes<'a>,
-    pub(super) handlers: alloc::vec::Vec<ObservedHandler<'a>>,
-    pub(super) for_head: Option<ObservedFor>,
-    pub(super) conditional: Option<ObservedConditional>,
+    pub(in crate::file::region::native) attributes: Vec<'a, Attribute<'a>>,
+    pub(in crate::file::region::native) values: PreparedAttributes<'a>,
+    pub(in crate::file::region::native) handlers: alloc::vec::Vec<ObservedHandler<'a>>,
+    pub(in crate::file::region::native) for_head: Option<ObservedFor>,
+    pub(in crate::file::region::native) conditional: Option<ObservedConditional>,
 }
 
 pub(super) fn construct<'a: 'b, 'b, R>(
     original: &NativeElement<'_, 'a>,
     selected: &NativeTemplateComponent<'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+) -> Result<Header<'a>, Kind>
+where
+    R: DerefMut<Target = RegionBuilder<'b, 'a>>,
+{
+    construct_with_policy(original, selected, region, false)
+}
+
+pub(in crate::file::region::native) fn construct_for_pair<'a: 'b, 'b, R>(
+    original: &NativeElement<'_, 'a>,
+    selected: &NativeTemplateComponent<'a>,
+    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+) -> Result<Header<'a>, Kind>
+where
+    R: DerefMut<Target = RegionBuilder<'b, 'a>>,
+{
+    construct_with_policy(original, selected, region, true)
+}
+
+fn construct_with_policy<'a: 'b, 'b, R>(
+    original: &NativeElement<'_, 'a>,
+    selected: &NativeTemplateComponent<'a>,
+    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    paired: bool,
 ) -> Result<Header<'a>, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -119,7 +142,8 @@ where
         }
     }
     let values = region.prepare_attribute_storage(value_start, attributes.as_slice())?;
-    if conditional.is_some()
+    if !paired
+        && conditional.is_some()
         && (!attributes.is_empty() || !handlers.is_empty() || for_head.is_some())
     {
         return Err(Kind::UnsupportedChild);
@@ -134,9 +158,9 @@ where
 }
 
 pub(in crate::file::region::native) struct ReadyHeader<'a> {
-    pub(super) attributes: Vec<'a, Attribute<'a>>,
-    pub(super) values: PreparedAttributes<'a>,
-    pub(super) handlers: alloc::vec::Vec<ObservedHandler<'a>>,
+    pub(in crate::file::region::native) attributes: Vec<'a, Attribute<'a>>,
+    pub(in crate::file::region::native) values: PreparedAttributes<'a>,
+    pub(in crate::file::region::native) handlers: alloc::vec::Vec<ObservedHandler<'a>>,
 }
 
 impl<'a> Header<'a> {
