@@ -39,8 +39,10 @@ fn constructor_props_follow_each_usage_in_both_overload_orders() {
             ),
             (
                 String::from("src/Invalid.vue"),
-                Some(2339),
-                String::from("6:55:error Property 'toFixed' does not exist on type 'string'."),
+                Some(2551),
+                String::from(
+                    "6:55:error Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+                ),
             ),
         ]),
         "each usage must keep its exact numeric/string slots and props, including generic constructors",

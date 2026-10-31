@@ -45,7 +45,10 @@ test("casing source adapter uses the complete current declarations and preserves
         fs.readFileSync(path.join(project, "node_modules/vize", file)),
         execFileSync("git", ["show", `${revision}:npm/cli/${file}`], { cwd: sourceRoot }),
       );
-      assert.equal(fs.lstatSync(installed.path).isSymbolicLink(), false);
+      assert.equal(
+        fs.lstatSync(path.join(project, "node_modules/vize", file)).isSymbolicLink(),
+        false,
+      );
       assert.deepEqual(
         { bytes: installed.bytes, sha256: installed.sha256 },
         { bytes: source.bytes, sha256: source.sha256 },

@@ -289,8 +289,6 @@ fn generate_usage_declarations(
             shared.canonical_idx,
         );
     } else {
-        let is_any =
-            crate::virtual_ts::helpers::shared_types::IS_ANY.select(ctx.hoist_shared_preamble);
         let pair = constructor_instance::root_slot_scope(
             &summary.scopes,
             usage,
@@ -302,14 +300,11 @@ fn generate_usage_declarations(
                 &summary.scopes,
             )
         });
-        let raw_props = constructor_instance::usage_raw_props(
+        constructor_instance::append_usage_props(
+            ts,
             component_ref.as_str(),
             pair.as_deref(),
             ctx.hoist_shared_preamble,
-        );
-        append!(
-            *ts,
-            "typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {raw_props} : Record<string, unknown>) : {raw_props};\n",
         );
     }
 

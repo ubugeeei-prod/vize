@@ -4,6 +4,7 @@ on:
     paths:
       - crates/vize_canon/src/virtual_ts/expressions/generic_props_call.rs
       - crates/vize_canon/src/virtual_ts/expressions/constructor_instance.rs
+      - crates/vize_canon/src/virtual_ts/scope/component_props.rs
       - crates/vize_canon/src/batch/type_checker/tests/recent_issues/generic_constructor_slots/correlated_props.rs
       - tests/_fixtures/differential/typechecker/constructor-props-correlation-11023/**
       - crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-resolver.d.ts.txt
@@ -85,6 +86,7 @@ jobs:
           }
           run_exact_test tuple-tests --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::slot_component_bindings::slot_constructor_calls_adapt_the_first_argument_without_replacing_the_signature
           run_exact_test hoisted-owner --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::slot_component_bindings::hoisted_slot_constructor_branches_keep_the_component_owner
+          run_exact_test root-capture-scope --locked --profile ci-opt -p vize_canon --lib virtual_ts::expressions::constructor_instance::tests::constructor_capture_requires_props_and_a_root_slot_candidate
           run_exact_test scoped-slots-snapshot --locked --profile ci-opt -p vize_canon --lib tests::virtual_ts_tests::snapshot_virtual_ts_scoped_slots
           run_exact_test scoped-slot-expressions --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::test_scoped_slot_expressions
           run_exact_test reserved-props-snapshot --locked --profile ci-opt -p vize_canon --lib virtual_ts::tests::test_reserved_prop_and_hyphenated_slot_names

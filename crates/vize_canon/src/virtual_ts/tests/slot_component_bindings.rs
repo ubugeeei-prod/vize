@@ -1,6 +1,8 @@
 use super::generate_virtual_ts_with_offsets;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
+mod hoisted_owner;
+
 const TEMPLATE: &str =
     r#"<el-badge><template #content="{ value }">{{ value.missing }}</template></el-badge>"#;
 const SLOT_RESOLVER_DECLARATIONS: &str =
@@ -381,7 +383,10 @@ fn empty_v_slot_expression_keeps_the_slot_function_parseable() {
 #[test]
 fn hoisted_slot_constructor_branches_keep_the_component_owner() {
     let allocator = vize_carton::Allocator::new();
-    let (root, _) = vize_armature::parse(&allocator, TEMPLATE);
+    let (root, _) = vize_armature::parse(
+        &allocator,
+        r#"<el-badge :value="1"><template #content="{ value }">{{ value.missing }}</template></el-badge>"#,
+    );
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
@@ -418,16 +423,7 @@ fn hoisted_slot_constructor_branches_keep_the_component_owner() {
             "the hoisted helper module must export {helper}",
         );
     }
-    let selector = format!(
-        "  const __vize_slot_host_1 = (undefined as unknown as import(\"vize:virtual-ts\").$SlotHostSelector<typeof el_badge>)((undefined as unknown as import(\"vize:virtual-ts\").$SlotConstructorInstance<{constructor}, typeof __vize_slot_host_1_instances.withoutArguments, typeof __vize_slot_host_1_instances.withArguments>), (undefined as unknown as import(\"vize:virtual-ts\").$SlotsFactory<typeof el_badge>)(el_badge)({{",
-    );
-    assert_eq!(
-        code.lines()
-            .filter(|line| line.trim_start().starts_with("const __vize_slot_host_1 = "))
-            .collect::<Vec<_>>(),
-        vec![selector.as_str()],
-        "the complete branch selector must retain its owner and both actual constructor results",
-    );
+    hoisted_owner::assert_selector(&code, constructor);
     assert_eq!(
         crate::virtual_ts::helpers::SHARED_PREAMBLE_DTS
             .matches("export type $SlotConstructorInstance<")
