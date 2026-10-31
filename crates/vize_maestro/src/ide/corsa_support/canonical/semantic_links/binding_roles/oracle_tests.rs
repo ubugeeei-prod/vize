@@ -5,6 +5,7 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::Url;
+use vize_l0::{String, cstr};
 
 use super::setup_binding_ranges;
 use crate::{ide::IdeContext, server::ServerState};
@@ -139,18 +140,16 @@ fn binding_identifier_visitation_preserves_semantic_range_vectors() {
             let attribute = if lang.is_empty() {
                 String::new()
             } else {
-                format!(" lang=\"{lang}\"")
+                cstr!(" lang=\"{lang}\"")
             };
             for (prefix, preamble) in ["", "<template><p>雪🌸</p></template>\n"]
                 .iter()
                 .enumerate()
             {
                 for (newline, separator) in ["\n", "\r\n"].iter().enumerate() {
-                    let source =
-                        format!("{preamble}<script setup{attribute}>\n{script}\n</script>")
-                            .replace('\n', separator);
-                    let label =
-                        format!("case={case}/lang={lang}/prefix={prefix}/newline={newline}");
+                    let source = cstr!("{preamble}<script setup{attribute}>\n{script}\n</script>")
+                        .replace('\n', separator);
+                    let label = cstr!("case={case}/lang={lang}/prefix={prefix}/newline={newline}");
                     let ranges = paired(&state, &uri, &source, &label);
                     compared += 1;
                     nonempty += usize::from(!ranges.is_empty());
@@ -204,8 +203,8 @@ fn binding_identifier_visitation_preserves_semantic_range_vectors() {
         ),
     ];
     for (index, (script, names)) in anchors.iter().enumerate() {
-        let source = format!("<script setup lang=\"ts\">{script}</script>");
-        let ranges = paired(&state, &uri, &source, &format!("anchor={index}"));
+        let source = cstr!("<script setup lang=\"ts\">{script}</script>");
+        let ranges = paired(&state, &uri, &source, &cstr!("anchor={index}"));
         let actual = ranges
             .iter()
             .map(|range| source.get(range.clone()).expect("authored byte span"))
@@ -224,7 +223,7 @@ fn binding_identifier_visitation_preserves_semantic_range_vectors() {
     .iter()
     .enumerate()
     {
-        assert!(paired(&state, &uri, source, &format!("negative={index}")).is_empty());
+        assert!(paired(&state, &uri, source, &cstr!("negative={index}")).is_empty());
     }
     let other = Url::parse("file:///workspace/BindingRanges.ts").expect("URI");
     assert!(
