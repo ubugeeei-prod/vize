@@ -115,14 +115,18 @@ test("both public Pkl entrypoints validate declared prop casing policies", () =>
     },
   ];
   try {
-    for (const entrypoint of ["vize.pkl", "VizeConfig.pkl"]) {
+    for (const { entrypoint, types } of [
+      { entrypoint: "vize.pkl", types: "vize.pkl" },
+      { entrypoint: "VizeConfig.pkl", types: "LinterConfig.pkl" },
+    ]) {
       for (const policy of policies) {
         const input = path.join(directory, `${entrypoint}-${policy.name}.pkl`);
         const source = [
           `amends ${JSON.stringify(pathToFileURL(path.join(root, "npm/cli/pkl", entrypoint)).href)}`,
-          "linter = new {",
-          "  ruleOptions = new {",
-          "    `vue/prop-name-casing` = new {",
+          `import ${JSON.stringify(pathToFileURL(path.join(root, "npm/cli/pkl", types)).href)} as Types`,
+          "linter = new Types.LinterConfig {",
+          "  ruleOptions = new Types.LintRuleOptions {",
+          "    `vue/prop-name-casing` = new Types.PropNameCasingOptions {",
           `      ${policy.source}`,
           "    }",
           "  }",
