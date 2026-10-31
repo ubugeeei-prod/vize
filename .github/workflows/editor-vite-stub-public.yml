@@ -1,0 +1,90 @@
+name: Public editor installation custody
+on:
+  pull_request:
+    paths:
+      - .github/workflows/editor-vite-stub-public.yml
+      - tools/support/release/editor_vite_stub/**
+      - tests/tooling/editor-vite-stub-public.test.ts
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact containing public version selected by the release owner
+        required: true
+        type: string
+      source_sha:
+        description: Exact immutable public tag commit containing PR 11158
+        required: true
+        type: string
+      authority_blob:
+        description: Git blob of genuine producer receipt bytes and public package SRI origins
+        required: true
+        type: string
+permissions: { contents: read }
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+concurrency:
+  group: editor-install-custody-${{ github.event.pull_request.number || inputs.version || github.ref }}
+  cancel-in-progress: false
+defaults:
+  run: { shell: bash }
+jobs:
+  controls:
+    name: Custody falsification controls (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: Windows, runner: windows-2025-vs2026 }
+          - { os: Linux, runner: blacksmith-8vcpu-ubuntu-2404 }
+          - { os: macOS, runner: macos-15 }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    steps:
+      - name: Preserve original Git bytes
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.6.0", package-manager-cache: false }
+      - name: Require full byte and link mutation detection and original fixture custody
+        run: node --test tests/tooling/editor-vite-stub-public.test.ts
+  published:
+    if: github.event_name == 'workflow_dispatch'
+    name: Exact public CLI and editor (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: Windows, runner: windows-2025-vs2026 }
+          - { os: Linux, runner: blacksmith-8vcpu-ubuntu-2404 }
+          - { os: macOS, runner: macos-15 }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PUBLIC_VERSION: ${{ inputs.version }}
+      PUBLIC_SOURCE: ${{ inputs.source_sha }}
+      AUTHORITY_BLOB: ${{ inputs.authority_blob }}
+    steps:
+      - name: Preserve original Git bytes
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.6.0", package-manager-cache: false }
+      - name: Verify the original fluent config and installed public native editor without external writes
+        run: node tools/support/release/editor_vite_stub/run.ts "$PUBLIC_VERSION" "$PUBLIC_SOURCE" "$AUTHORITY_BLOB" "$RUNNER_TEMP/editor-install-custody"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: editor-install-custody-${{ matrix.os }}-${{ inputs.version }}
+          path: |
+            ${{ runner.temp }}/editor-install-custody/*.json
+            ${{ runner.temp }}/editor-install-custody/*.stdout
+            ${{ runner.temp }}/editor-install-custody/*.stderr
+            ${{ runner.temp }}/editor-install-custody/*.ndjson
+            ${{ runner.temp }}/editor-install-custody/*.yaml
+            ${{ runner.temp }}/editor-install-custody/lsp/
+          if-no-files-found: error
