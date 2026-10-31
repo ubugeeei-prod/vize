@@ -6,6 +6,24 @@ on:
       - .github/workflows/published-slot-provider.yml
       - tools/support/release/slot_provider_public/**
       - tests/tooling/release/slot-provider-public.test.ts
+      - tools/support/release/constructor_original27_public/**
+      - tools/support/release/computed_event_custody.ts
+      - tools/support/release/computed_event_names.ts
+      - tools/support/release/computed_event_release.ts
+      - tools/support/release/editor_vite_stub/custody.ts
+      - tools/support/release/public_install/native-custody.cjs
+      - tools/support/release/release/quota/**
+      - tools/support/release/release/quota_ownership.ts
+      - tools/support/config/windows_consumer/common.ts
+      - tools/support/json-value.ts
+      - tools/benchmarks/scripts/canon-instance-directives-model.ts
+      - tools/benchmarks/scripts/canon-instance-directives-cases.ts
+      - tools/benchmarks/scripts/canon-slot-constructor-protocol.ts
+      - tools/support/archive/zip.ts
+      - tests/_fixtures/differential/typechecker/unknown-component-slot-payload-11027/**
+      - tests/_fixtures/differential/typechecker/declared-any-slot-provider-11027/**
+      - tests/_fixtures/typechecker/slot-provider-owners-11027/**
+      - tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/slot-provider-payload-update-11027.json
   workflow_dispatch:
     inputs:
       version:

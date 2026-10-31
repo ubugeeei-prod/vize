@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, matchesGlob, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   loadFixtures,
@@ -33,6 +33,36 @@ import { hook } from "../../../tools/support/release/editor_vite_stub/custody.ts
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const fixtures = loadFixtures(root);
+test("workflow contract trigger covers real local imports, hook URLs and every pinned input", () => {
+  const workflow = readFileSync(
+    join(root, ".github/workflows/published-slot-provider.yml"),
+    "utf8",
+  );
+  const block = workflow.split("    paths:\n")[1].split("  workflow_dispatch:")[0];
+  const patterns = [...block.matchAll(/^\s*-\s+(.+)$/gmu)].map((match) => match[1]);
+  const covered = (name: string) => patterns.some((pattern) => matchesGlob(name, pattern));
+  const pending = ["tests/tooling/release/slot-provider-public.test.ts"];
+  const seen = new Set<string>();
+  for (let index = 0; index < pending.length; index++) {
+    const name = pending[index];
+    if (seen.has(name)) continue;
+    seen.add(name);
+    assert.ok(covered(name), "missing PR trigger for local dependency: " + name);
+    const text = readFileSync(join(root, name), "utf8");
+    for (const match of text.matchAll(/(?:from\s+|import\(\s*|new URL\(\s*)["'](\.[^"']+)["']/gu)) {
+      const target = resolve(root, dirname(name), match[1]);
+      if (target.includes("/node_modules/") || !/\.(?:ts|cts|mts|js|cjs|mjs)$/u.test(target))
+        continue;
+      if (existsSync(target)) pending.push(relative(root, target).replaceAll("\\", "/"));
+    }
+  }
+  for (const name of Object.keys(fixturePins))
+    assert.ok(covered(name), "missing PR trigger for frozen input: " + name);
+  assert.ok(
+    seen.has("tools/support/release/public_install/native-custody.cjs"),
+    "the hook is a real runtime URL dependency",
+  );
+});
 const stage = (population: string, id: string) => {
   const row = fixtures.stages.find((row) => row.population === population && row.id === id);
   assert.ok(row);
