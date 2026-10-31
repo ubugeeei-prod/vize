@@ -10,6 +10,7 @@ on:
       - tools/support/archive/tar.ts
       - tools/support/archive/zip.ts
       - tests/tooling/release/public-jsx-child-values-guards.test.ts
+      - tests/tooling/release/public-jsx-child-values-workflow.test.ts
       - tests/tooling/jsx-vapor-oracle/**
       - tests/_fixtures/differential/compiler/jsx-child-values-6890/**
       - tests/_fixtures/differential/jsx/child-values-6890-reference-conflict.json
