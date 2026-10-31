@@ -148,7 +148,10 @@ fn symlinked_vue_prefers_its_installed_runtime_namespace() {
     let real_namespace = store.join("node_modules").join("@vue");
     create_package(&real_namespace, "runtime-dom");
     std::fs::create_dir_all(project.join("node_modules")).unwrap();
+    #[cfg(unix)]
     std::os::unix::fs::symlink(&real_vue, project.join("node_modules/vue")).unwrap();
+    #[cfg(windows)]
+    std::os::windows::fs::symlink_dir(&real_vue, project.join("node_modules/vue")).unwrap();
     create_package(&project, "node_modules/@vue/runtime-dom");
 
     with_test_env_overrides(
