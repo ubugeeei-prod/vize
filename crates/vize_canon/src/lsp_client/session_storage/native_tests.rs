@@ -9,7 +9,7 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{fs, path::Path, path::PathBuf, process::Command, sync::Arc};
 
-const MAIN: &str = "import { value } from './support';\nimport type { Ref } from 'vue';\nexport const checked: number = value;\nexport declare const kind: Ref<number>;\nimport { value as aliasValue } from '@/support';\nexport const aliasChecked: number = aliasValue;\nexport declare const marker: FixtureMarker;\n";
+const MAIN: &str = "import { value } from './support';\nimport type { Ref } from 'vue';\nexport const checked: number = value;\nexport declare const kind: Ref<number>;\nimport { value as aliasValue } from '@/support';\nexport const aliasChecked: number = aliasValue;\nexport declare const marker: FixtureMarker;\nimport { value as extensionValue } from './support.ts';\nexport const extensionChecked: number = extensionValue;\n";
 const SUPPORT: &str = "export const value = 1;\n";
 
 fn hash(bytes: &[u8]) -> vize_l0::String {
