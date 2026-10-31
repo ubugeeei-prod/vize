@@ -98,7 +98,28 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
       type = "string"
       enum = new Listing { "always"; "never" }
     }
-    ["vue/v-on-event-hyphenation"] = ConfigArtifactDefinitions.hyphenationStyleDef
+    ["vue/v-on-event-hyphenation"] = new JsonSchema {
+      oneOf = new Listing {
+        ConfigArtifactDefinitions.hyphenationStyleDef
+        new JsonSchema {
+          type = "object"
+          properties {
+            ["style"] = new JsonSchema {
+              type = "string"
+              enum = new Listing { "always"; "never" }
+              default = "always"
+            }
+            ["ignore"] = new JsonSchema {
+              type = "array"
+              items = new JsonSchema { type = "string"; pattern = #"^(?!\s*$)(?![\s\S]*:exit$)"# }
+              uniqueItems = true
+              default = new Listing {}
+            }
+          }
+          additionalProperties = false
+        }
+      }
+    }
     ["vue/v-bind-style"] = new JsonSchema {
       type = "string"
       enum = new Listing { "shorthand"; "longform" }

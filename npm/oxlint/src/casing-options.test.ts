@@ -299,4 +299,41 @@ assert.equal(
   1,
 );
 
+const eventSource = fs.readFileSync(
+  path.join(
+    workspaceRoot,
+    "tests/_fixtures/differential/linter/v-on-event-ignore-6097/ColorPalette.vue.txt",
+  ),
+  "utf8",
+);
+const eventPath = path.join(fixtureDir, "EventIgnore.vue");
+fs.writeFileSync(eventPath, eventSource);
+function eventFindings(options: "always" | { ignore: string[] }) {
+  fs.writeFileSync(
+    configPath,
+    JSON.stringify({
+      jsPlugins: [pluginEntry],
+      settings: { vize: { helpLevel: "full", preset: "incremental" } },
+      rules: { "vize/vue/v-on-event-hyphenation": ["warn", options] },
+    }),
+  );
+  const result = runOxlint(["--config", configPath, "--format", "json", eventPath]);
+  assert.equal(result.exitCode, 0, result.output);
+  const payload = JSON.parse(result.output) as {
+    diagnostics: Array<{ code: string; message: string }>;
+  };
+  assert.ok(
+    payload.diagnostics.every((finding) => finding.code === "vize(vue/v-on-event-hyphenation)"),
+  );
+  assert.equal(fs.readFileSync(eventPath, "utf8"), eventSource);
+  return payload.diagnostics;
+}
+const eventOriginal = eventFindings("always");
+assert.equal(eventOriginal.length, 2);
+assert.match(eventOriginal[0]!.message, /update:model-value/u);
+assert.match(eventOriginal[1]!.message, /row-click/u);
+assert.deepEqual(eventFindings({ ignore: ["update:"] }), eventOriginal.slice(1));
+assert.deepEqual(eventFindings({ ignore: [] }), eventOriginal);
+assert.deepEqual(eventFindings({ ignore: ["Update:"] }), eventOriginal);
+assert.deepEqual(eventFindings({ ignore: ["update:*"] }), eventOriginal);
 console.log("✅ oxlint-plugin-vize casing option tests passed!");

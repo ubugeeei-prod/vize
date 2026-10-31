@@ -318,7 +318,12 @@ export interface LintRuleOptions {
         avoidEscape?: boolean;
       };
   "vue/mustache-interpolation-spacing"?: "always" | "never";
-  "vue/v-on-event-hyphenation"?: "always" | "never";
+  "vue/v-on-event-hyphenation"?:
+    | ("always" | "never")
+    | {
+        style?: "always" | "never";
+        ignore?: string[];
+      };
   "vue/v-bind-style"?: "shorthand" | "longform";
   "vue/v-on-style"?: "shorthand" | "longform";
   "vue/v-slot-style"?:

@@ -107,11 +107,12 @@ impl Linter {
                 }
             });
         }
-        if let Some(value) = options.v_on_event_hyphenation() {
-            self = self.with_v_on_event_hyphenation(match value {
+        if let Some(value) = options.v_on_event_hyphenation_options() {
+            let style = match value.style {
                 ConfigHyphenationStyle::Always => VOnEventHyphenationStyle::Always,
                 ConfigHyphenationStyle::Never => VOnEventHyphenationStyle::Never,
-            });
+            };
+            self = self.with_v_on_event_hyphenation_options(style, value.ignore);
         }
         if let Some(value) = options.v_on_style() {
             self = self.with_v_on_style(match value {

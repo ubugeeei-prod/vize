@@ -6,7 +6,7 @@ use vize_l0::{String, cstr};
 use super::super::lint_options::{
     DefineMacrosOrderOptionsNapi, HtmlSelfClosingHtmlOptionsNapi, HtmlSelfClosingOptionsNapi,
     NoMutatingPropsOptionsNapi, PatinaLintOptionsNapi, SfcElementOrderOptionsNapi,
-    configure_patina_rule_options,
+    configure_patina_event_ignore, configure_patina_rule_options,
 };
 
 /// The caller owns catalog validation and tuple arity; omission keeps defaults.
@@ -105,8 +105,25 @@ pub(super) fn parse_rule_option(
             options.html_self_closing = Some(parse_html_self_closing(payload)?);
         }
         "vue/v-on-event-hyphenation" => {
-            options.v_on_event_hyphenation =
-                Some(string_enum(payload, &["always", "never"], name)?.to_owned());
+            if payload.is_object() {
+                let value: vize_l0::config::VOnEventHyphenationOptions =
+                    serde_json::from_value(payload.clone()).map_err(|error| cstr!("{error}"))?;
+                options.v_on_event_hyphenation = Some(match value.style {
+                    vize_l0::config::HyphenationStyle::Always => "always".to_owned(),
+                    vize_l0::config::HyphenationStyle::Never => "never".to_owned(),
+                });
+                options.v_on_event_hyphenation_ignore = Some(
+                    value
+                        .ignore
+                        .into_iter()
+                        .map(|entry| entry.as_str().to_owned())
+                        .collect(),
+                );
+            } else {
+                options.v_on_event_hyphenation =
+                    Some(string_enum(payload, &["always", "never"], name)?.to_owned());
+                options.v_on_event_hyphenation_ignore = None;
+            }
         }
         "vue/attribute-hyphenation" => {
             options.attribute_hyphenation =
@@ -123,7 +140,7 @@ pub(super) fn apply_rule_options(
     linter: vize_patina::Linter,
     options: PatinaLintOptionsNapi,
 ) -> vize_patina::Linter {
-    configure_patina_rule_options(
+    let linter = configure_patina_rule_options(
         linter,
         options.component_name_in_template_casing.as_deref(),
         options.custom_event_name_casing.as_deref(),
@@ -133,8 +150,16 @@ pub(super) fn apply_rule_options(
         options.html_self_closing,
         options.v_on_event_hyphenation.as_deref(),
         options.attribute_hyphenation.as_deref(),
+    );
+    configure_patina_event_ignore(
+        linter,
+        options.v_on_event_hyphenation.as_deref(),
+        options.v_on_event_hyphenation_ignore.as_deref(),
     )
 }
+
+#[cfg(test)]
+mod event_ignore;
 
 fn strict_object<'a>(value: &'a Value, keys: &[&str]) -> Result<&'a Value, String> {
     let object = value

@@ -5,6 +5,7 @@ import {
   optionField,
   optionalBooleanField,
 } from "./plugin-option-guards.js";
+import { isVOnEventHyphenationOptions } from "./v-on-event-options.js";
 import type {
   ComponentNameInTemplateCasingOption,
   CustomEventNameCasingOption,
@@ -90,6 +91,8 @@ export function getRuleOptions(
       if (isHyphenationStyle(firstOption)) {
         return { vOnEventHyphenation: firstOption };
       }
+      if (isRecord(firstOption) && isVOnEventHyphenationOptions(firstOption))
+        return cliRuleOptions(ruleName, firstOption);
       break;
     case "vue/v-on-style":
       if (isVOnStyle(firstOption)) {

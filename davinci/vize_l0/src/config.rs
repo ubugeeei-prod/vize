@@ -23,7 +23,7 @@ pub use model::{
     ResolvedLinterConfigWithConfigRuleOptions, RestrictedGlobal, RestrictedMember,
     SfcElementOrderGroup, SfcElementOrderOptions, SortImportsConfig, SortImportsSetting,
     StrictBooleanExpressionsOptions, TemplateComponentNameCasing, TrailingComma, TypeCheckerConfig,
-    VBindStyle, VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue,
-    VSlotUniformStyle, VizeConfig, VueVersion,
+    VBindStyle, VOnEventHyphenationConfig, VOnEventHyphenationOptions, VOnStyle, VSlotNamedStyle,
+    VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle, VizeConfig, VueVersion,
 };
 pub use normalize::normalize_public_config_value;

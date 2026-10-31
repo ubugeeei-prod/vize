@@ -73,6 +73,8 @@ pub struct PatinaLintOptionsNapi {
     pub html_self_closing: Option<HtmlSelfClosingOptionsNapi>,
     /// Style for `vue/v-on-event-hyphenation`: "always" or "never"
     pub v_on_event_hyphenation: Option<String>,
+    /// Case-sensitive literal event-name substrings to exempt.
+    pub v_on_event_hyphenation_ignore: Option<Vec<String>>,
     /// Style for `vue/attribute-hyphenation`: "always" or "never"
     pub attribute_hyphenation: Option<String>,
     /// CLI-compatible `linter.ruleOptions` encoded as JSON.
@@ -233,6 +235,30 @@ pub(super) fn configure_patina_rule_options(
         linter = linter.with_attribute_hyphenation(style);
     }
     linter
+}
+
+pub(super) fn validate_event_hyphenation_ignore(ignore: &[String]) -> Result<(), &'static str> {
+    vize_l0::config::VOnEventHyphenationOptions {
+        ignore: ignore.iter().map(|entry| entry.as_str().into()).collect(),
+        ..Default::default()
+    }
+    .validate()
+}
+
+pub(super) fn configure_patina_event_ignore(
+    linter: vize_patina::Linter,
+    style: Option<&str>,
+    ignore: Option<&[String]>,
+) -> vize_patina::Linter {
+    match ignore {
+        Some(ignore) => linter.with_v_on_event_hyphenation_options(
+            style
+                .and_then(v_on_event_hyphenation_style)
+                .unwrap_or_default(),
+            ignore.iter().map(|entry| entry.as_str().into()).collect(),
+        ),
+        None => linter,
+    }
 }
 
 fn define_macros_order_from_option(

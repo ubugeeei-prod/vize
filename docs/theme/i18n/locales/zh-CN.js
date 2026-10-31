@@ -61,6 +61,7 @@
       "/rules/all": "全部规则",
       "/rules/options": "规则选项",
       "/rules/options-vue": "选项：Vue",
+      "/rules/options-events": "选项：事件",
       "/rules/options-props": "选项：Props",
       "/rules/options-script": "选项：脚本",
       "/rules/options-type": "选项：类型",

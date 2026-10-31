@@ -1,4 +1,5 @@
 import type { OxlintHtmlOptions, OxlintHtmlOutcome } from "@vizejs/native";
+import type { VOnEventHyphenationOptions } from "./v-on-event-options.js";
 
 export interface PatinaPosition {
   line: number;
@@ -162,7 +163,7 @@ export interface VizeRuleOptions {
   "vue/html-self-closing"?: HtmlSelfClosingOption;
   "vue/html-quotes"?: HtmlQuotesConfig;
   "vue/mustache-interpolation-spacing"?: MustacheInterpolationSpacingStyle;
-  "vue/v-on-event-hyphenation"?: HyphenationStyle;
+  "vue/v-on-event-hyphenation"?: HyphenationStyle | VOnEventHyphenationOptions;
   "vue/v-bind-style"?: VBindStyle;
   "vue/v-on-style"?: VOnStyle;
   "vue/v-slot-style"?: VSlotStyle;

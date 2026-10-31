@@ -4,7 +4,7 @@ export function isViteConfigFile(filePath: string): boolean;
 export function projectConfigDefaults(): { typeChecker: { jsxTypecheck: boolean } };
 /** Validated canonical selection; no source or legacy callback evaluation. */
 export function vueConfigOptions<T extends { vue?: unknown }>(source: T): T["vue"] | undefined;
-/** Canonical leaves replace arrays and retain explicit false; undefined stays absent. */
+/** Canonical arrays and each rule policy replace; explicit false wins and undefined stays absent. */
 export function mergeVueConfigOptions<T>(base: T | undefined, own: T | undefined): T | undefined;
 /** Project an already evaluated Vite source, resolving only its legacy native export. */
 export function projectViteConfigSource(
