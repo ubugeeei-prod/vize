@@ -10,7 +10,9 @@ mod support;
 use sha2::{Digest, Sha256};
 use support::compile;
 
-const ORIGINAL: &str = include_str!("fixtures/inline-for-ref-shadow-11210/original.vue.txt");
+const ORIGINAL: &str = include_str!(
+    "../../../tests/_fixtures/differential/compiler/inline-for-ref-shadow-11210/Layout.vue.txt"
+);
 
 #[test]
 fn original_inline_loop_uses_plain_alias_but_keeps_outer_model_ref() {
