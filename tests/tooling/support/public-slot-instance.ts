@@ -30,6 +30,7 @@ const failures = [
 ];
 const unknownControls = ["TwoLastUnknown", "SeventeenFirstUnknown"];
 const hash = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
+const inputBytes = (utf8: string) => ({ utf8, bytes: Buffer.byteLength(utf8), sha256: hash(utf8) });
 type Row = { name: string; display: string; flags: number; any: boolean; intrinsic: string | null };
 function typeRows(file: string, preservation = false) {
   const program = ts.createProgram([file], {
@@ -184,6 +185,8 @@ export function verifyPublicSlotInstance(root: string) {
     mode: string;
     rows: Row[];
     sdk: object[];
+    consumerPackage: object;
+    sdkPackage: object;
     processes: object[];
     repair: object | null;
     preservation: { sourceUtf8: string; rows: Row[]; processes: object[]; repair: object[] };
@@ -198,6 +201,8 @@ export function verifyPublicSlotInstance(root: string) {
         const cwd = path.join(directory, role, mode),
           pkg = path.join(cwd, "node_modules/vize");
         mkdirSync(pkg, { recursive: true });
+        const consumerPackage = inputBytes(JSON.stringify({ private: true, type: "module" }));
+        writeFileSync(path.join(cwd, "package.json"), consumerPackage.utf8);
         const currentManifest = readFileSync(path.join(root, "npm/cli/package.json"), "utf8");
         const oldManifest = currentManifest.replace('\n    "virtual-ts-slots.d.ts",', "");
         assert.notEqual(oldManifest, currentManifest);
@@ -205,10 +210,8 @@ export function verifyPublicSlotInstance(root: string) {
           hash(oldManifest),
           "6d4cddbdcd51ccb049a695688b5896294ad6aa23abb812f867e6bf6bd0b50d36",
         );
-        writeFileSync(
-          path.join(pkg, "package.json"),
-          role === "before" ? oldManifest : currentManifest,
-        );
+        const sdkPackage = inputBytes(role === "before" ? oldManifest : currentManifest);
+        writeFileSync(path.join(pkg, "package.json"), sdkPackage.utf8);
         symlinkSync(path.join(root, "npm/cli/node_modules"), path.join(pkg, "node_modules"), "dir");
         const sdk = Object.entries(preimages).map(([file, sha256]) => {
           const current = readFileSync(path.join(root, "npm/cli", file), "utf8");
@@ -273,6 +276,8 @@ export function verifyPublicSlotInstance(root: string) {
               sourceSha256: hash(readFileSync(target)),
               sourceUtf8: readFileSync(target, "utf8"),
               sdk,
+              consumerPackage,
+              sdkPackage,
             };
             assert.equal(output.error, undefined);
             assert.equal(output.signal, null);
@@ -343,6 +348,8 @@ export function verifyPublicSlotInstance(root: string) {
           role,
           mode,
           sdk,
+          consumerPackage,
+          sdkPackage,
           processes: processResult,
           repair,
           rows,
