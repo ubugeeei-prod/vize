@@ -125,15 +125,20 @@ impl Rule for VBindStyle {
 
 fn property_shorthand_fix(source: &str, directive: &DirectiveNode<'_>) -> Option<Fix> {
     let start = directive.loc.span.start;
-    let raw_name = directive.raw_name?;
-    let raw_end = start.checked_add(u32::try_from(raw_name.len()).ok()?)?;
-    if !raw_name.starts_with('.') || source.get(start as usize..raw_end as usize)? != raw_name {
+    let prefix_end = start.checked_add(1)?;
+    // The finalized public parser retains the spelling prefix, not the full
+    // authored head. Argument/modifier spans retain the remaining head bytes.
+    if directive.raw_name != Some(".")
+        || source.get(start as usize..prefix_end as usize) != Some(".")
+    {
         return None;
     }
     // The parser also supplies a synthetic leading `prop` modifier for `.foo`.
     // Only a modifier whose exact authored bytes are `prop` is already written.
     let explicit_prop = directive.modifiers.iter().any(|modifier| {
         modifier.content == "prop"
+            && modifier.loc.span.start >= prefix_end
+            && modifier.loc.span.end <= directive.loc.span.end
             && source.get(modifier.loc.span.start as usize..modifier.loc.span.end as usize)
                 == Some("prop")
     });
@@ -148,7 +153,7 @@ fn property_shorthand_fix(source: &str, directive: &DirectiveNode<'_>) -> Option
             return None;
         }
         if !argument.is_static
-            && (!raw_name.starts_with(".[")
+            && (source.get(start as usize..start as usize + 2) != Some(".[")
                 || source.as_bytes().get(argument.loc.span.end as usize) != Some(&b']'))
         {
             return None;
@@ -158,7 +163,7 @@ fn property_shorthand_fix(source: &str, directive: &DirectiveNode<'_>) -> Option
             .span
             .end
             .checked_add(u32::from(!argument.is_static))?;
-        if end > raw_end {
+        if end > directive.loc.span.end {
             return None;
         }
         let argument = source.get(start.checked_add(1)? as usize..end as usize)?;
@@ -253,16 +258,25 @@ mod tests {
 
     #[test]
     fn prop_shorthand_matches_shorthand_and_requires_explicit_longform() {
-        let source = r#"<a .title="t"></a>"#;
-        assert_eq!(
-            create_linter_shorthand()
-                .lint_template(source, "test.vue")
-                .warning_count,
-            0
-        );
-        assert_eq!(
-            fixed(&create_linter_longform(), source),
-            r#"<a v-bind:title.prop="t"></a>"#
-        );
+        for (linter, warnings) in [
+            (create_linter_shorthand(), 0),
+            (create_linter_longform(), 1),
+        ] {
+            let result = linter.lint_template(r#"<a .title="t"></a>"#, "test.vue");
+            assert_eq!(result.warning_count, warnings);
+            if warnings == 1 {
+                let [diagnostic] = result.diagnostics.as_slice() else {
+                    panic!("one complete property-shorthand diagnostic")
+                };
+                assert_eq!(
+                    diagnostic
+                        .fix
+                        .as_ref()
+                        .unwrap()
+                        .apply(r#"<a .title="t"></a>"#),
+                    r#"<a v-bind:title.prop="t"></a>"#
+                );
+            }
+        }
     }
 }

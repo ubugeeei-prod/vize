@@ -26,6 +26,7 @@ const packets: unknown[] = [];
 let binding: Binding | undefined;
 let nativeBuild: unknown;
 let complete = false;
+let completedTests = 0;
 function object(value: unknown): asserts value is Record<string, unknown> {
   assert.ok(value !== null && typeof value === "object" && !Array.isArray(value));
 }
@@ -155,6 +156,7 @@ test("property shorthand reaches nine whole public vectors, exact independent fi
       row.id,
     );
   }
+  completedTests += 1;
 });
 
 test("longform options preserve disabled selection, no-fix output and strict invalid/reset controls", () => {
@@ -178,6 +180,7 @@ test("longform options preserve disabled selection, no-fix output and strict inv
   });
   assert.deepEqual(reset, { kind: "returned", value: clean() });
   assert.equal(packets.length, 31);
-  complete = true;
+  completedTests += 1;
+  complete = completedTests === 2;
   persist();
 });
