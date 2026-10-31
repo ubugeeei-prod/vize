@@ -41,6 +41,7 @@ use payload::find_slot_host;
 
 /// Everything the payload type needs that differs between the two emitters.
 struct SlotPayloadContext<'a> {
+    component_binding_check: super::context::ComponentBindingCheck<'a>,
     summary: &'a Croquis,
     options: &'a VirtualTsOptions,
     syntactic_type_only_imported_names: &'a FxHashSet<vize_carton::CompactString>,
@@ -105,9 +106,23 @@ fn slot_payload_type(
     // A real value binding can be declared `any` or be a compiler error type
     // from an unresolved import. Pass that exact type through the payload
     // helper; inventing an error type for both hides authored slot diagnostics.
-    // Registry fallbacks keep the existing missing-provider policy.
+    // Registry owners retain the exact declared entry; absent keys keep the
+    // existing missing-provider policy.
     let provider = if has_provider_value {
         cstr!(", typeof {component_ref}")
+    } else if let Some(keys) = host.as_ref().and_then(|usage| {
+        ctx.component_binding_check
+            .registry_slot_provider(usage.start)
+    }) {
+        let registered = crate::virtual_ts::helpers::shared_types::REGISTERED_SLOT_PROVIDER
+            .select(ctx.hoist_shared_preamble);
+        let mut provider = cstr!(", {registered}<import(\"vue\").GlobalComponents");
+        for key in keys {
+            provider.push_str(", ");
+            crate::virtual_ts::helpers::push_ts_string_literal(&mut provider, key);
+        }
+        provider.push('>');
+        provider
     } else {
         String::default()
     };
@@ -154,6 +169,7 @@ pub(super) fn generate_v_slot_scope(
     let props_type = slot_payload_type(
         ts,
         &SlotPayloadContext {
+            component_binding_check: ctx.component_binding_check,
             summary: ctx.summary,
             options: ctx.virtual_ts_options,
             syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
@@ -259,6 +275,7 @@ pub(super) fn generate_v_slot_props_scope(
     let props_type = slot_payload_type(
         ts,
         &SlotPayloadContext {
+            component_binding_check: ctx.component_binding_check,
             summary: ctx.summary,
             options: ctx.options,
             syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,

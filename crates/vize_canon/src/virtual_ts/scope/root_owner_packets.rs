@@ -278,6 +278,7 @@ mod tests {
                     component_binding_check: ComponentBindingCheck {
                         globals: GlobalComponentCheck::None,
                         self_component_name: None,
+                        registry_slots: None,
                     },
                     legacy_vue2: false,
                     options_api: false,

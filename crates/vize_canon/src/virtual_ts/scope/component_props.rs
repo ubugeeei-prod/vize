@@ -186,6 +186,7 @@ pub(super) fn generate_component_props(
             continue;
         }
         let props_ctx = VForPropsContext {
+            component_binding_check: ctx.component_binding_check,
             summary,
             options: ctx.options,
             template_ast: ctx.template_ast,

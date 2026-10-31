@@ -1,4 +1,5 @@
 // @ts-ignore A missing provider keeps its framework error-any fallback.
 type $SilentAny = {}["__vizeSilentAny"];
+type $RegisteredSlotProvider<__G, __K extends string | number | symbol, __F extends string | number | symbol = __K, __L extends string | number | symbol = __F> = $IsAny<__G> extends true ? $SilentAny : __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : __L extends keyof __G ? __G[__L] : $SilentAny;
 type $NamedSlotPayload<__S, __N> = { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
-type $SlotPayload<__S, __N, __C = $SilentAny> = $IsAny<__S> extends true ? $IsAny<__C> extends true ? __C : any : string extends __N ? string extends keyof __S ? $NamedSlotPayload<__S, __N> : any : $NamedSlotPayload<__S, __N>;
+type $SlotPayload<__S, __N, __C = $RegisteredSlotProvider<any, never>> = $IsAny<__S> extends true ? $IsAny<__C> extends true ? __C : any : string extends __N ? string extends keyof __S ? $NamedSlotPayload<__S, __N> : any : $NamedSlotPayload<__S, __N>;
