@@ -22,6 +22,13 @@ on:
       - tests/_fixtures/differential/typechecker/manifest.json
       - tests/_fixtures/differential/typechecker/zero-argument-slot-constructor-11013/**
       - tools/benchmarks/scripts/canon-slot-constructor-*.ts
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/ref-instance-factory.d.ts.txt
+      - crates/vize_canon/src/virtual_ts/scope/ref_instances.rs
+      - crates/vize_canon/src/virtual_ts/generator/setup_helpers.rs
+      - crates/vize_canon/tests/direct_ref_factory_projection.rs
+      - tests/_fixtures/differential/typechecker/direct-ref-factory/**
+      - tools/benchmarks/scripts/direct-ref-factory-*.ts
+      - tests/tooling/direct-ref-factory-parity.test.ts
       - tools/support/compat/content-mapper/constructor-original27-current.ts
       - tests/tooling/constructor-original27-current.test.ts
       - .github/workflows/canon-slot-constructor.yml
@@ -47,6 +54,8 @@ jobs:
       RAYON_NUM_THREADS: "2"
       NODE_DISABLE_COMPILE_CACHE: "1"
       PR_HEAD: ${{ github.event.pull_request.head.sha }}
+      PR_BASE: ${{ github.event.pull_request.base.sha }}
+      DIRECT_FACTORY_INSERTION: "false"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { fetch-depth: 2, persist-credentials: false }
@@ -139,6 +148,63 @@ jobs:
           (evidence/'package.json').write_bytes((provider/'package.json').read_bytes())
           (evidence/'package-lock.json').write_bytes(lock_bytes)
           PY
+      - name: Select the direct factory introduction qualification
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          asset=crates/vize_canon/src/virtual_ts/helpers/declarations/ref-instance-factory.d.ts.txt
+          [[ "$PR_BASE" =~ ^[a-f0-9]{40}$ ]]
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$PR_BASE"
+          if [[ -f "$asset" ]] && ! git cat-file -e "$PR_BASE:$asset" 2>/dev/null; then
+            echo DIRECT_FACTORY_INSERTION=true >> "$GITHUB_ENV"
+          fi
+      - name: Validate finite direct factory refusal controls
+        if: env.DIRECT_FACTORY_INSERTION == 'true'
+        env:
+          VIZE_DIRECT_FACTORY_TYPESCRIPT: ${{ runner.temp }}/slot-provider/node_modules/typescript/lib/typescript.js
+        run: node --test tests/tooling/direct-ref-factory-parity.test.ts
+      - name: Seal the clean actual base CLI before the test-only observer import
+        if: env.DIRECT_FACTORY_INSERTION == 'true'
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/slot-evidence/direct-ref-factory"
+          baseline="$RUNNER_TEMP/direct-factory-base"
+          mkdir "$evidence"
+          git worktree add --detach "$baseline" "$PR_BASE"
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/direct-factory-base-target" cargo build --locked --profile ci-opt -p vize --bin vize --message-format=json) > "$evidence/base-cargo.jsonl" 2> "$evidence/base-cargo.stderr"
+          node tools/benchmarks/scripts/direct-ref-factory-source.ts seal "$baseline" "$PR_BASE" "$evidence/base-cargo.jsonl" "$RUNNER_TEMP/direct-factory-base-image" "$evidence/base-build.json"
+      - name: Capture default and hoisted packets with one identical external observer
+        if: env.DIRECT_FACTORY_INSERTION == 'true'
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/slot-evidence/direct-ref-factory"
+          baseline="$RUNNER_TEMP/direct-factory-base"
+          observer=crates/vize_canon/tests/direct_ref_factory_projection.rs
+          [[ ! -e "$baseline/$observer" ]]
+          cp "$observer" "$baseline/$observer"
+          git -C "$baseline" status --porcelain --untracked-files=all > "$evidence/base-after-observer-copy.status"
+          export VIZE_DIRECT_FACTORY_FIXTURE="$GITHUB_WORKSPACE/tests/_fixtures/differential/typechecker/direct-ref-factory"
+          for role in base head; do
+            source="$GITHUB_WORKSPACE"
+            target="$RUNNER_TEMP/slot-head-target"
+            if [[ "$role" == base ]]; then source="$baseline"; target="$RUNNER_TEMP/direct-factory-base-target"; fi
+            (cd "$source" && VIZE_DIRECT_FACTORY_CAPTURE="$evidence/$role-projection.json" CARGO_TARGET_DIR="$target" cargo test --locked --profile ci-opt -p vize_canon --test direct_ref_factory_projection dual_generic_refs_preserve_import_hygiene_and_both_projection_modes -- --exact --nocapture) > "$evidence/$role-observer.stdout" 2> "$evidence/$role-observer.stderr"
+            grep -Fxq 'running 1 test' "$evidence/$role-observer.stdout"
+            grep -Fq 'test result: ok. 1 passed; 0 failed; 0 ignored;' "$evidence/$role-observer.stdout"
+          done
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/slot-head-target"
+          for name in standalone_factory_and_instance_helper_bytes_remain_exact factory_reference_selects_local_or_qualified_type_without_an_alias; do
+            cargo test --locked --profile ci-opt -p vize_canon --lib "virtual_ts::scope::ref_instances::tests::$name" -- --exact --nocapture > "$evidence/$name.stdout" 2> "$evidence/$name.stderr"
+            grep -Fxq 'running 1 test' "$evidence/$name.stdout"
+            grep -Fq 'test result: ok. 1 passed; 0 failed; 0 ignored;' "$evidence/$name.stdout"
+          done
+      - name: Require both source images on the pinned consumers and whole 4323-file population
+        if: env.DIRECT_FACTORY_INSERTION == 'true'
+        env:
+          VIZE_DIRECT_FACTORY_TYPESCRIPT: ${{ runner.temp }}/slot-provider/node_modules/typescript/lib/typescript.js
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/direct-ref-factory-qualification.ts qualify "$RUNNER_TEMP/direct-factory-base" "$GITHUB_WORKSPACE" "$RUNNER_TEMP/slot-provider" "$RUNNER_TEMP/slot-evidence/direct-ref-factory"
       - name: Require the pinned batch diagnostic fixture through the native provider
         run: |
           set -euo pipefail
