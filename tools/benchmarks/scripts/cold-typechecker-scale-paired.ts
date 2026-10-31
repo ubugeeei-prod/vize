@@ -17,7 +17,10 @@ import { coldScalePacketView } from "./cold-typechecker-scale-packet.ts";
 import { linuxPeakRss } from "./cold-typechecker-scale-phase-baseline.ts";
 import { pairedColdStatistics } from "./cold-typechecker-scale-paired-stats.ts";
 import { verifyColdScaleBuildPair } from "./cold-typechecker-scale-build.ts";
-import { refFactoryComparison } from "./cold-typechecker-scale-ref-factory.ts";
+import {
+  refFactoryComparison,
+  verifyRefFactoryDebug,
+} from "./cold-typechecker-scale-ref-factory.ts";
 import {
   prepareNativeForwarder,
   collectNativePreflight,
@@ -135,22 +138,11 @@ export async function pairedColdComparison(options: {
     verifyColdDiagnostics(captured.stdout.toString(), "cli", files, false);
     const value: unknown = JSON.parse(captured.stdout.toString());
     if (factory) {
-      const packet = value as { files: { file: string; virtualTs?: string | null }[] };
       const helper =
         role === "base"
           ? factory.canonicalPreamble.beforeWholeUtf8
           : factory.canonicalPreamble.afterWholeUtf8;
-      const stderr =
-        `\n=== __vize_helpers.d.ts ===\n${helper}\n` +
-        packet.files
-          .filter((file) => typeof file.virtualTs === "string")
-          .map((file) => `\n=== ${resolve(corpus.app, file.file)} ===\n${file.virtualTs}\n`)
-          .join("");
-      assert.deepEqual(
-        captured.stderr,
-        Buffer.from(stderr),
-        "complete raw debug output must equal the role's helper and every complete code body",
-      );
+      verifyRefFactoryDebug(captured.stderr, value, helper, corpus.app);
     }
     if (completeOutput === undefined) completeOutput = value;
     else if (factory)

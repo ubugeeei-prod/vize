@@ -8,6 +8,7 @@ import ts from "typescript";
 import {
   compareRefFactoryResults,
   refFactoryComparison,
+  verifyRefFactoryDebug,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-ref-factory.ts";
 import {
   factoryCodeEdits,
@@ -17,6 +18,47 @@ import {
 const oldFactory =
   "  type $RefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends { __vizeResolveRef?: infer _F } ? _F extends (...args: any[]) => any ? (component: _C) => _F : (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\n";
 const hash = (text: string) => createHash("sha256").update(text).digest("hex");
+test("debug bytes follow original absolute paths without changing JSON order or accepting unknown output", () => {
+  const cwd = "/sealed/project/apps/web",
+    helper = "// helper\n";
+  const value = {
+    programs: [{}],
+    files: [
+      { file: "../../packages/pkg/index.ts", virtualTs: "export const dependency=1;\n" },
+      { file: "src/Control.vue", virtualTs: "export const component=1;\n" },
+    ],
+  };
+  const saved = structuredClone(value);
+  const actual = Buffer.from(
+    `\n=== __vize_helpers.d.ts ===\n${helper}\n\n=== /sealed/project/apps/web/src/Control.vue ===\nexport const component=1;\n\n\n=== /sealed/project/packages/pkg/index.ts ===\nexport const dependency=1;\n\n`,
+  );
+  verifyRefFactoryDebug(actual, value, helper, cwd);
+  assert.deepEqual(value, saved);
+  assert.throws(
+    () =>
+      verifyRefFactoryDebug(
+        Buffer.concat([actual, Buffer.from("unknown output\n")]),
+        value,
+        helper,
+        cwd,
+      ),
+    /whole debug byte mismatch/u,
+  );
+  assert.throws(
+    () => verifyRefFactoryDebug(actual, { ...value, programs: [{}, {}] }, helper, cwd),
+    /one-program/u,
+  );
+  assert.throws(
+    () =>
+      verifyRefFactoryDebug(
+        actual,
+        { ...value, files: value.files.map((file) => ({ ...file, virtualTs: "changed\n" })) },
+        helper,
+        cwd,
+      ),
+    /whole debug byte mismatch/u,
+  );
+});
 function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-factory-pair-")),
     app = path.join(root, "apps/web");

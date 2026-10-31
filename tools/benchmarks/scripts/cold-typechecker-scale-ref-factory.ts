@@ -57,6 +57,33 @@ function packet(value: unknown): CliPacket {
   return result;
 }
 
+/** Source output.rs prints absolute-path order; JSON separately sorts displayed paths. */
+export function verifyRefFactoryDebug(stderr: Buffer, value: unknown, helper: string, cwd: string) {
+  const result = packet(value);
+  assert(
+    Array.isArray(result.programs) && result.programs.length === 1,
+    "only the one-program cold corpus is admitted",
+  );
+  const expected = Buffer.from(
+    `\n=== __vize_helpers.d.ts ===\n${helper}\n` +
+      result.files
+        .filter((file) => typeof file.virtualTs === "string")
+        .toSorted((left, right) =>
+          Buffer.compare(
+            Buffer.from(path.resolve(cwd, left.file)),
+            Buffer.from(path.resolve(cwd, right.file)),
+          ),
+        )
+        .map((file) => `\n=== ${path.resolve(cwd, file.file)} ===\n${file.virtualTs}\n`)
+        .join(""),
+  );
+  assert.equal(
+    stderr.equals(expected),
+    true,
+    `whole debug byte mismatch: actual ${stderr.length}/${hash(stderr)}, expected ${expected.length}/${hash(expected)}`,
+  );
+}
+
 function moduleSpecifiers(typescript: typeof ts, text: string, file: string) {
   const source = typescript.createSourceFile(
     file,
@@ -229,6 +256,9 @@ export async function refFactoryComparison(baseRoot: string, headRoot: string, p
     "crates/vize_carton/src/corsa_resolver.rs",
     "crates/vize_canon/src/batch/executor/cli.rs",
     "crates/vize_canon/src/batch/executor/option_probe.rs",
+    "crates/vize/src/commands/check/runner/output.rs",
+    "crates/vize/src/commands/check/runner/output/json.rs",
+    "crates/vize_canon/src/batch/virtual_project/mapping.rs",
   ].map((file) => {
     const base = fs.readFileSync(path.join(baseRoot, file)),
       head = fs.readFileSync(path.join(headRoot, file));
