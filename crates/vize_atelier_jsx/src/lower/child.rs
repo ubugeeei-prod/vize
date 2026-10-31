@@ -193,6 +193,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         let expression = self.dyn_simple_expr(expression_span);
         let mut compound =
             CompoundExpressionNode::new(self.bump(), self.mapper().location(container_span));
+        compound.is_jsx_child_value = true;
         compound
             .children
             .push(CompoundExpressionChild::Simple(expression));

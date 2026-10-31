@@ -156,6 +156,9 @@ fn lower_child<'a>(
             )))
         }
         TemplateChildNode::CompoundExpression(compound) => {
+            if !compound.is_jsx_child_value {
+                return Err(L2Refusal::TransformedChild);
+            }
             let [vize_relief::CompoundExpressionChild::Simple(expression)] =
                 compound.children.as_slice()
             else {
