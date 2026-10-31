@@ -35,6 +35,10 @@ Vite+ では `fmt.sortImports` を Vue のフォーマットにも自動的に�
 `vue.formatter.sortImports` で上書きでき、`false` を指定すると Vue だけ並べ替えを無効にできます。
 Oxfmt には、元の設定がそのまま渡ります。
 
+エディターのドキュメント全体のフォーマットや保存時のフォーマットにも、同じ規則を適用します。
+範囲フォーマットでは、選択した script ブロック内の import だけを並べ替え、ほかのブロックやタグは変更しません。
+入力時のフォーマットはインデントだけを調整し、入力中に import の順序を変更しません。
+
 指定できるオプションは `groups`、`customGroups`、`internalPattern`、`order`、
 `ignoreCase`、`newlinesBetween`、`partitionByNewline`、`partitionByComment`、`sortSideEffects` です。
 グループの各項目には、名前、名前の配列、または `{ newlinesBetween: boolean }` による境界を指定できます。
