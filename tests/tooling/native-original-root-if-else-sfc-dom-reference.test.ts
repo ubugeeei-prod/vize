@@ -164,7 +164,7 @@ function compilePrimary(fixture: RootIfElseFixture, attempt: ObjectValue) {
         newLine: ts.NewLineKind.LineFeed,
       },
     });
-    // TS6's one known undefined sourceMapText is the entire JSON adaptation.
+    // TS6's exact three-field result drops only its undefined sourceMapText.
     observed.transpilationOwnKeys = Reflect.ownKeys(result);
     const { sourceMapText, ...capturedResult } = result;
     transpilation = { version: ts.version, ...capturedResult };
@@ -178,6 +178,20 @@ function compilePrimary(fixture: RootIfElseFixture, attempt: ObjectValue) {
   const renderMapRaw = JSON.stringify(render.map);
   assert(typeof scriptMapRaw === "string");
   assert(typeof renderMapRaw === "string");
+  // MagicString's SourceMap owns exactly these six fields; its public JSON
+  // omits only the verified undefined file. Keep the raw map bytes above.
+  assert(script.map);
+  assert.deepEqual(Reflect.ownKeys(script.map), [
+    "version",
+    "file",
+    "sources",
+    "sourcesContent",
+    "names",
+    "mappings",
+  ]);
+  const { file: scriptMapFile, ...scriptMapWire } = script.map;
+  assert.equal(scriptMapFile, undefined);
+  observed.scriptMap = scriptMapWire;
   return {
     id: fixture.id,
     mode,
