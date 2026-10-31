@@ -178,7 +178,7 @@ const {
             <div v-if="bindings.length === 0" class="empty-state">No bindings detected</div>
 
             <template v-else>
-              <div v-for="(group, key) in bindingsBySource" :key="key" class="source-group">
+              <div v-for="(group, key) in bindingsBySource" :key class="source-group">
                 <div class="source-header">
                   <span :class="['source-indicator', getSourceClass(String(key))]"></span>
                   <span class="source-name">{{ getSourceLabel(String(key)) }}</span>
