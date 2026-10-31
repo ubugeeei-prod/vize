@@ -193,7 +193,10 @@ fn apply_slot_factory_union(manifest: &mut Value, members: &mut [Value]) {
     assert_eq!(declarations.len(), paths.len());
     for (index, (declaration, expected_path)) in declarations.iter().zip(paths).enumerate() {
         assert_eq!(declaration["path"], expected_path);
-        let body = fs::read_to_string(support::repository().join(expected_path)).unwrap();
+        let body = constructor_without_args::read_current(
+            expected_path,
+            &constructor["declarations"][index],
+        );
         let previous =
             constructor_without_args::previous(&body, &constructor["declarations"][index]);
         inverse_slot_factory_union(&previous, declaration);

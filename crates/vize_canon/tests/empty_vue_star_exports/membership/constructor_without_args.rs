@@ -3,6 +3,8 @@ use super::support;
 use serde_json::{Value, json};
 use std::fs;
 
+mod public_layout;
+
 const RECORD: &str = "malformed-membership/constructor-without-args-update-20261031.json";
 const PATHS: [&str; 5] = [
     "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-resolver.d.ts.txt",
@@ -61,7 +63,7 @@ pub(super) fn load() -> Value {
     for ((record, path), delta) in declarations.iter().zip(PATHS).zip([94, 94, 68, 68, 68]) {
         assert_eq!(record["path"], path);
         assert_eq!(record["deltaBytes"], delta);
-        let body = fs::read_to_string(support::repository().join(path)).unwrap();
+        let body = read_current(path, record);
         previous(&body, record);
     }
     previous(
@@ -69,6 +71,16 @@ pub(super) fn load() -> Value {
         &update["helper"],
     );
     update
+}
+
+pub(super) fn read_current(path: &str, record: &Value) -> String {
+    assert_eq!(record["path"], path);
+    if PATHS[2..].contains(&path) {
+        public_layout::read(path, record)
+    } else {
+        assert!(PATHS[..2].contains(&path));
+        fs::read_to_string(support::repository().join(path)).unwrap()
+    }
 }
 
 /// Exact whole bodies authenticate both sides; only the recorded alias may differ.
@@ -112,6 +124,7 @@ pub(super) fn apply(manifest: &mut Value, members: &mut [Value], update: Value) 
     );
     *helper = update["after"].clone();
     manifest["provenance"]["currentConstructorWithoutArgumentsUpdate"] = update;
+    public_layout::retain_provenance(manifest);
 }
 
 #[test]
