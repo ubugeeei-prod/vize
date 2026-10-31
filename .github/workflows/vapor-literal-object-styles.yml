@@ -13,6 +13,9 @@ on:
       - "tests/tooling/support/vapor-style-authored-transition.ts"
       - "tests/tooling/support/jsx-child-style-successors.ts"
       - "tests/tooling/jsx-child-style-successors.test.ts"
+      - "tests/tooling/jsx-vdom-child-style-successors.test.ts"
+      - "tests/tooling/support/jsx-vdom-child-style-successors.ts"
+      - "tests/_fixtures/differential/jsx/child-values-6890-vdom-style-successors.json"
       - "tests/_fixtures/differential/jsx/child-values-6890-style-successors.json"
       - "tests/tooling/vapor-style-authored-transition.test.ts"
       - "tests/tooling/vapor-ssr-expose-successor.test.ts"
@@ -82,11 +85,11 @@ jobs:
           sha256sum "$observer" "$baseline/$observer" > "$RUNNER_TEMP/vapor-literal-styles/observer.sha256"
       - name: Compare complete packets and explicit authored module successors
         run: |
-          node --test tests/tooling/jsx-child-style-successors.test.ts
+          node --test tests/tooling/jsx-child-style-successors.test.ts tests/tooling/jsx-vdom-child-style-successors.test.ts
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import fs from 'node:fs';
-          import { assertChildStylePackets, assertChildPreservedStylePacket } from './tests/tooling/support/jsx-child-style-successors.ts';
+          import { assertVdomChildStylePackets as assertChildStylePackets, assertVdomChildPreservedStylePacket as assertChildPreservedStylePacket } from './tests/tooling/support/jsx-vdom-child-style-successors.ts';
           import { assertVaporSfcExposeTransition } from './tests/_helpers/vapor-ssr-expose-successor.ts';
           import { assertComposedVaporSfcStylePackets } from './tests/tooling/support/vapor-style-successor-composition.ts';
           const directory = `${process.env.RUNNER_TEMP}/vapor-literal-styles`;
@@ -144,7 +147,7 @@ jobs:
             return {id:row.id,family:row.family,mode:row.mode,ssr:row.ssr,standalone:row.standalone,retained:row.retained,baseMedianNs:median(previous.samplesNs),headMedianNs:median(row.samplesNs),ratio:median(row.samplesNs)/median(previous.samplesNs),baseArenaBytes:previous.arenaBytes,headArenaBytes:row.arenaBytes,baseExpressionReparses:previous.expressionReparses,headExpressionReparses:row.expressionReparses};
           });
           fs.writeFileSync(`${directory}/measurement.json`,JSON.stringify({scope:'CI source full-compile observer including parsing/lowering/codegen/JSON; arena used bytes excludes owned heap; changed-work timings descriptive only',performanceQualified:false,equivalentWorkTiming:false,measurements},null,2)+'\n');
-          fs.writeFileSync(`${directory}/comparison.json`,JSON.stringify({scope:'source-only; complete raw outputs; explicit authored module successors preserve all other facets; no browser or published artifact credit',rows:head.length,styleFoldChanges:changed,styleConservativeRows:head.length-changed,childOutputSuccessors,runtimeQualified:false,performanceQualified:false},null,2)+'\n');
+          fs.writeFileSync(`${directory}/comparison.json`,JSON.stringify({scope:'source-only; complete raw outputs; explicit authored module successors preserve all other facets; no browser or published artifact credit',rows:head.length,styleFoldChanges:changed,styleConservativeRows:head.length-changed,childOutputSuccessors,vaporChildOutputSuccessors:30,vdomChildOutputSuccessors:12,runtimeQualified:false,performanceQualified:false},null,2)+'\n');
           JS
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()

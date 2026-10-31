@@ -433,9 +433,10 @@ pub(super) fn emit_slots(
         cx.buf.push(spread.as_str());
     } else {
         let forwarded = super::outlet::has_forwarded_outlet(children);
-        if forwarded && cx.slot_param_depth == 0 && !cx.in_v_for {
+        if forwarded && cx.slot_param_depth == 0 && !cx.in_v_for && !cx.untracked_children {
             cx.buf.push("_: 3 /* FORWARDED */");
-        } else if cx.in_v_for
+        } else if cx.untracked_children
+            || cx.in_v_for
             || has_dynamic_names(facts)
             || captures_scope
             || (forwarded && cx.slot_param_depth > 0)

@@ -189,7 +189,8 @@ pub(super) fn emit_call(
     if array && children_need_text_flag(cx, &component.children) {
         flag |= 1;
     }
-    if (cx.in_v_for && has_slots)
+    if (cx.untracked_children && has_slots)
+        || (cx.in_v_for && has_slots)
         || dynamic_names
         || captures_scope
         || builtin::always_dynamic_slots(component.name)

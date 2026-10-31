@@ -155,7 +155,15 @@ pub(super) fn emit_jsx_child(
     child: &InterpolationOp<'_>,
 ) -> Result<(), EmitError> {
     let expression = cx.prefixed_expr(&child.expression, Site::Expression)?;
+    let grouped = matches!(child.expression, ExprRef::Js(js)
+        if matches!(js.ast.get_inner_expression(), oxc_ast::ast::Expression::SequenceExpression(_)));
+    if grouped {
+        cx.buf.push("(");
+    }
     cx.buf.push(expression.as_str());
+    if grouped {
+        cx.buf.push(")");
+    }
     Ok(())
 }
 

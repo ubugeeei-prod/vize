@@ -48,7 +48,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
                         self.retain_nested_typecheck_roots(expression);
                     }
                     self.pending_vdom_value_children = true;
-                    out.push(self.raw_expression_child(expression.span(), container.span));
+                    out.push(self.raw_expression_child(expression, container.span));
                 }
                 out
             }
@@ -187,13 +187,19 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// out of the public relief node surface.
     pub(crate) fn raw_expression_child(
         &self,
-        expression_span: oxc_span::Span,
+        authored: &JSXExpression<'_>,
         container_span: oxc_span::Span,
     ) -> TemplateChildNode<'a> {
-        let expression = self.dyn_simple_expr(expression_span);
+        let expression = self.dyn_simple_expr(authored.span());
         let mut compound =
             CompoundExpressionNode::new(self.bump(), self.mapper().location(container_span));
         compound.is_jsx_child_value = true;
+        compound.jsx_child_needs_grouping = authored.as_expression().is_some_and(|expression| {
+            matches!(
+                expression.get_inner_expression(),
+                oxc_ast::ast::Expression::SequenceExpression(_)
+            )
+        });
         compound
             .children
             .push(CompoundExpressionChild::Simple(expression));
