@@ -89,6 +89,7 @@ fn wait_for_peer(gate: &(Mutex<usize>, Condvar)) -> bool {
 fn failure_message(failure: TypeAwareFailure) -> String {
     match failure {
         TypeAwareFailure::Runtime(message)
+        | TypeAwareFailure::Query(message)
         | TypeAwareFailure::ProjectConfiguration { message, .. } => message,
     }
 }

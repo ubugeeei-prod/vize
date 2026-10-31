@@ -5,6 +5,8 @@
 use crate::support::corsa_path;
 use crate::support::corsa_requirement;
 mod lsp;
+#[cfg(unix)]
+mod project_runtime;
 use crate::support::lsp_process;
 use crate::support::vite_config;
 use serde_json::{Value, json};

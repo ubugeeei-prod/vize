@@ -2013,6 +2013,47 @@
       }
     },
     {
+      "id": "linter/native-boolean-tsrs-11147",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "native-boolean-tsrs-11147",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "e92dc00e1ded2148f96978f7afab4fa4ef0b9dfd67206926a4953a2e6aa2c1b9"
+          },
+          {
+            "path": "conditions.ts.txt",
+            "role": "authored-protocol-source",
+            "sha256": "b3897f1d2d567116f0f40162f8eceb324d25c8fd68438c562360a1f67716d845"
+          },
+          {
+            "path": "conditions-tsrs9.bin",
+            "role": "actual-native-protocol9-packet",
+            "sha256": "e5241f4f5fccbe7199cbe274c3e16b5263c91a24a83194a7141bd343a896c851"
+          },
+          {
+            "path": "conditions-tsrs9.json",
+            "role": "same-snapshot-native-types-and-provider",
+            "sha256": "7f537713b294ce4943dbbbc7774e235304caa8e2610893c4e8af942bca03c925"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/native-canonical-image-alt-10563",
       "state": "active",
       "targets": ["lint"],

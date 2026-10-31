@@ -46,6 +46,7 @@ pub(in crate::linter) fn escape_specifier(value: &str, quote: u8) -> String {
 
 pub(crate) struct CorsaTypeAwareSession {
     session: ProjectSession,
+    executable: PathBuf,
     project_root: PathBuf,
     tsconfig_path: Option<PathBuf>,
     session_root: PathBuf,
@@ -62,6 +63,15 @@ pub(crate) struct CorsaTypeAwareSession {
     #[cfg(test)]
     last_refresh: virtual_documents::RefreshCounts,
     closed: bool,
+}
+
+impl CorsaTypeAwareSession {
+    pub(in crate::linter) fn query_error(&self, message: &str) -> String {
+        vize_l0::cstr!(
+            "Native TypeScript runtime {} failed: {message}",
+            self.executable.display()
+        )
+    }
 }
 
 impl Drop for CorsaTypeAwareSession {
