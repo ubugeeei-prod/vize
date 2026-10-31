@@ -423,17 +423,21 @@ fn attached_overlay_packets(
         assert_eq!(std::fs::read(&support_path).unwrap(), SUPPORT.as_bytes());
     }
     // The dependency-close row above proves the original on-disk fallback.
-    // Reopen those exact bytes before switching to a materialized project: that
-    // project deliberately replays current editor buffers, so this independent
-    // virtual-file probe must carry its relative dependency with it.
+    // Reopen those exact bytes for the complete retained revision. The historical
+    // before source materializes it; the current source keeps logical names.
+    // Both must carry the original relative dependency without changing disk.
     client.did_open(&support_uri, SUPPORT).unwrap();
-    // No original disk file: the batch must exercise a mapped identity.
+    // No original disk file: observe the actual source-owned identity policy.
     let virtual_path = root.join("Virtual.vue.ts");
     let virtual_uri = path_to_file_uri(&virtual_path);
     const VIRTUAL: &str = "export const bad: number = \"x\";\r\n";
     client.did_open(&virtual_uri, VIRTUAL).unwrap();
     let mapped_virtual = client.session_document_uri(&virtual_uri);
-    assert_ne!(mapped_virtual, virtual_uri);
+    if std::env::var("VIZE_NATIVE_DTO_ROLE").unwrap() == "before" {
+        assert_ne!(mapped_virtual, virtual_uri);
+    } else {
+        assert_eq!(mapped_virtual, virtual_uri);
+    }
     let documents = FxHashMap::from_iter([
         (main_uri.clone(), MAIN.into()),
         (virtual_uri.clone(), VIRTUAL.into()),
@@ -481,7 +485,7 @@ fn attached_overlay_packets(
     client.did_close(&main_uri).unwrap();
     assert!(client.hover_raw(&main_uri, 2, 31).unwrap().is_none());
     client.shutdown().unwrap();
-    let result = json!({"scope":"attached editor; dependency close verified before a self-contained materialized virtual batch",
+    let result = json!({"scope":"attached editor; dependency close and whole source-selected virtual revision",
         "root":root,"mainUri":main_uri,"supportUri":support_uri,"config":std::str::from_utf8(config).unwrap(),"rows":rows,
         "materializedBatch":{"virtualUri":virtual_uri,"mappedUri":mapped_virtual,"source":VIRTUAL,"nativePull":virtual_pull,"selected":whole_batch,"storageAuthority":storage_authority}});
     std::fs::write(

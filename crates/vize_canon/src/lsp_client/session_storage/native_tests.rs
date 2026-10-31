@@ -1,4 +1,4 @@
-//! Same-image old physical-policy control; never an old-source binary claim.
+//! Same-image old policy and authored logical-disk controls; no old binary credit.
 
 use super::SessionStorage;
 use crate::{
@@ -11,6 +11,8 @@ use std::{fs, path::Path, path::PathBuf, process::Command, sync::Arc};
 
 const MAIN: &str = "import { value } from './support';\nimport type { Ref } from 'vue';\nexport const checked: number = value;\nexport declare const kind: Ref<number>;\nimport { value as aliasValue } from '@/support';\nexport const aliasChecked: number = aliasValue;\nexport declare const marker: FixtureMarker;\nimport { value as extensionValue } from './support.ts';\nexport const extensionChecked: number = extensionValue;\n";
 const SUPPORT: &str = "export const value = 1;\n";
+
+mod logical_control;
 
 fn hash(bytes: &[u8]) -> vize_l0::String {
     Sha256::digest(bytes)
@@ -78,35 +80,40 @@ fn retain(capture: &Path, policy: &str, phase: &str, stage: &str, value: &Value)
     serde_json::to_writer_pretty(file, value).unwrap();
 }
 
-fn run(root: &Path, native: &Path, old_policy: bool, capture: &Path) -> Value {
+fn run(root: &Path, native: &Path, policy: logical_control::Policy, capture: &Path) -> Value {
+    let old_policy = policy == logical_control::Policy::Original;
+    policy.prepare(root, MAIN);
     let virtual_uri = path_to_file_uri(&root.join("src/App.vue.ts"));
     let support_uri = path_to_file_uri(&root.join("src/support.ts"));
     let mut client = CorsaProjectClient::new_for_editor_workspace(native.to_str(), root).unwrap();
     if old_policy {
+        client.authored_workspace = false;
         client.overlay_storage = Arc::new(original_storage_policy(root));
     }
     client
         .did_open_batch_fast(&[(&virtual_uri, MAIN), (&support_uri, SUPPORT)])
         .unwrap();
     let naturally_materialized = client.materialized_project_session;
-    if !naturally_materialized {
+    if old_policy && !naturally_materialized {
         client.activate_materialized_project_session().unwrap();
     }
-    assert!(client.materialized_project_session);
+    assert_eq!(client.materialized_project_session, old_policy);
     assert_eq!(client.cwd, root);
     assert_eq!(client.project_root, root);
-    let materialized_root = client.overlay_storage.root().to_path_buf();
+    let materialized_root = client.editor_lsp_project_root();
+    let private_storage = client.overlay_storage.root().to_path_buf();
     let generated_config = fs::read(materialized_root.join("tsconfig.json")).unwrap();
     let parsed: Value = serde_json::from_slice(&generated_config).unwrap();
-    assert_eq!(
-        parsed["extends"],
-        path_to_typescript_name(&root.join("tsconfig.json")).as_str()
-    );
-    assert_eq!(
-        parsed["compilerOptions"],
-        json!({"allowImportingTsExtensions":true,"noEmit":true})
-    );
-    let policy = if old_policy { "original" } else { "private" };
+    if old_policy {
+        assert_eq!(
+            parsed["extends"],
+            path_to_typescript_name(&root.join("tsconfig.json")).as_str()
+        );
+        assert_eq!(
+            parsed["compilerOptions"],
+            json!({"allowImportingTsExtensions":true,"noEmit":true})
+        );
+    }
     let mut rows = Vec::new();
     for (phase, text) in [
         ("valid", SUPPORT),
@@ -114,6 +121,7 @@ fn run(root: &Path, native: &Path, old_policy: bool, capture: &Path) -> Value {
         ("dependency-repair", "export const value = 2;\n"),
         ("dependency-close", SUPPORT),
     ] {
+        policy.write_dependency(root, text);
         let synchronization = if phase == "dependency-close" {
             client.did_close(&support_uri)
         } else {
@@ -121,7 +129,7 @@ fn run(root: &Path, native: &Path, old_policy: bool, capture: &Path) -> Value {
         };
         retain(
             capture,
-            policy,
+            policy.label(),
             phase,
             "sync",
             &json!({"phase":phase,"synchronization":synchronization,"materializedRoot":materialized_root,"project":client.session.as_ref().map(|session| session.project())}),
@@ -142,7 +150,7 @@ fn run(root: &Path, native: &Path, old_policy: bool, capture: &Path) -> Value {
                 .as_ref()
                 .map(|session| session.project().clone())
         );
-        retain(capture, policy, phase, "diagnostics", &prefix);
+        retain(capture, policy.label(), phase, "diagnostics", &prefix);
         let diagnostics = diagnostics.unwrap();
         let hover = client.hover_raw(&virtual_uri, 2, 32);
         prefix["hoverResult"] = serde_json::to_value(&hover).unwrap();
@@ -152,7 +160,7 @@ fn run(root: &Path, native: &Path, old_policy: bool, capture: &Path) -> Value {
                 .as_ref()
                 .map(|session| session.project().clone())
         );
-        retain(capture, policy, phase, "hover", &prefix);
+        retain(capture, policy.label(), phase, "hover", &prefix);
         let hover = hover.unwrap();
         let definition = client.definition_raw(&virtual_uri, 2, 32);
         prefix["definitionResult"] = serde_json::to_value(&definition).unwrap();
@@ -162,19 +170,26 @@ fn run(root: &Path, native: &Path, old_policy: bool, capture: &Path) -> Value {
                 .as_ref()
                 .map(|session| session.project().clone())
         );
-        retain(capture, policy, phase, "definition", &prefix);
+        retain(capture, policy.label(), phase, "definition", &prefix);
         let definition = definition.unwrap();
-        rows.push(json!({"phase":phase,"diagnostics":diagnostics["items"],"hover":hover,"definition":definition,"project":project}));
+        prefix["diagnosingConfiguration"] =
+            serde_json::to_value(client.logical_configuration_for_test(&virtual_uri)).unwrap();
+        retain(capture, policy.label(), phase, "configuration", &prefix);
+        rows.push(json!({"phase":phase,"diagnostics":diagnostics["items"],"hover":hover,"definition":definition,"project":project,"diagnosingConfiguration":prefix["diagnosingConfiguration"]}));
         assert_eq!(diagnostics["usedCache"], false);
         assert_eq!(
             fs::read(root.join("src/support.ts")).unwrap(),
-            SUPPORT.as_bytes()
+            if policy == logical_control::Policy::Disk {
+                text.as_bytes()
+            } else {
+                SUPPORT.as_bytes()
+            }
         );
     }
     let shutdown = client.shutdown();
     retain(
         capture,
-        policy,
+        policy.label(),
         "shutdown",
         "result",
         &json!({"shutdown":shutdown,"rows":rows,"materializedRoot":materialized_root,"generatedConfig":parsed}),
@@ -182,9 +197,10 @@ fn run(root: &Path, native: &Path, old_policy: bool, capture: &Path) -> Value {
     shutdown.unwrap();
     drop(client);
     if !old_policy {
-        assert!(!materialized_root.exists());
+        assert!(!private_storage.exists());
     }
-    json!({"policy":if old_policy {"original-physical-root-control"} else {"private-session-owner"},"naturallyMaterialized":naturally_materialized,"materializedRoot":materialized_root,"generatedConfig":parsed,"rows":rows,"shutdown":"complete"})
+    policy.finish(root, SUPPORT);
+    json!({"policy":policy.label(),"naturallyMaterialized":naturally_materialized,"materializedRoot":materialized_root,"generatedConfig":parsed,"rows":rows,"shutdown":"complete"})
 }
 
 fn positive_answers(packet: &Value, support_uri: &str) {
@@ -415,13 +431,28 @@ fn actual_native_old_and_private_roots_preserve_complete_configured_overlay_answ
             );
             let phase_capture = capture.join(label.as_str());
             fs::create_dir(&phase_capture).unwrap();
-            let old = run(&root, &native, true, &phase_capture);
+            let old = run(
+                &root,
+                &native,
+                logical_control::Policy::Original,
+                &phase_capture,
+            );
             fs::remove_dir_all(root.join("node_modules/.vize")).unwrap();
+            let disk = run(
+                &root,
+                &native,
+                logical_control::Policy::Disk,
+                &phase_capture,
+            );
             let before = inventory(&root);
-            let private = run(&root, &native, false, &phase_capture);
+            let private = run(
+                &root,
+                &native,
+                logical_control::Policy::Logical,
+                &phase_capture,
+            );
             let after = inventory(&root);
-            let (relocated, substitutions) = relocated_messages(&old, &private);
-            let retained = json!({"rootDir":root_dir,"composite":composite,"authoredConfig":serde_json::from_slice::<Value>(&config).unwrap(),"originalPhysicalPolicy":old,"privateOwner":private,"authoredBefore":before,"authoredAfter":after,"comparison":{"scope":"only exact single-quoted physical mirror paths inside diagnostic message fields relocate; all other keys, values, diagnostic codes, counts and order remain exact","originalRowsAtPrivateRoot":relocated,"substitutions":substitutions}});
+            let retained = json!({"rootDir":root_dir,"composite":composite,"authoredConfig":serde_json::from_slice::<Value>(&config).unwrap(),"originalPhysicalPolicy":old,"logicalDiskControl":disk,"logicalOverlay":private,"authoredBefore":before,"authoredAfter":after,"comparison":{"scope":"complete native logical-disk vs unsaved-logical packets, unchanged authored config; original physical-policy packets retained without filtering or acceptance transfer"}});
             fs::write(
                 capture.join(vize_l0::cstr!("{label}.json").as_str()),
                 serde_json::to_vec_pretty(&retained).unwrap(),
@@ -429,30 +460,24 @@ fn actual_native_old_and_private_roots_preserve_complete_configured_overlay_answ
             .unwrap();
             let support_uri = path_to_file_uri(&root.join("src/support.ts"));
             assert_eq!(fs::read(root.join("tsconfig.json")).unwrap(), config);
-            comparisons.push((
-                work,
-                label,
-                old,
-                private,
-                relocated,
-                before,
-                after,
-                support_uri,
-            ));
+            comparisons.push((work, label, old, private, disk, before, after, support_uri));
         }
     }
     // Capture every rootDir/composite role before any cross-role assertion.
     assert_eq!(comparisons.len(), 4);
-    for (_work, label, old, private, relocated, before, after, support_uri) in comparisons {
+    for (_work, label, old, private, disk, before, after, support_uri) in comparisons {
         assert_eq!(
             before, after,
             "private role changed the complete authored inventory: {label}"
         );
+        logical_control::assert_configuration(&disk);
+        logical_control::assert_configuration(&private);
         positive_answers(&old, &support_uri);
+        positive_answers(&disk, &support_uri);
         positive_answers(&private, &support_uri);
         assert_eq!(old["rows"].as_array().unwrap().len(), 4);
         assert_eq!(private["rows"].as_array().unwrap().len(), 4);
-        for (old, private) in relocated
+        for (old, private) in disk["rows"]
             .as_array()
             .unwrap()
             .iter()

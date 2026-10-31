@@ -60,6 +60,11 @@ function libraryExecution(capture: string): void {
       "crates/vize_canon/src/lsp_client/session/close/tests.rs",
       "lsp_client::session::close::tests::",
     ],
+    [
+      "logical",
+      "crates/vize_canon/src/lsp_client/session/logical.rs",
+      "lsp_client::session::logical::tests::",
+    ],
     ...(process.platform === "linux"
       ? [
           [

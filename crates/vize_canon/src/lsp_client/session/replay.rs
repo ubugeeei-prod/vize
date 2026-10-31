@@ -24,6 +24,9 @@ impl CorsaProjectClient {
         if self.synchronize_existing_canon_project_documents(documents)? {
             return Ok(());
         }
+        if self.try_logical_workspace_overlays()? {
+            return Ok(());
+        }
         self.activate_materialized_project_session()?;
         let mut summary = FileChangeSummary::default();
         for (uri, content) in documents {

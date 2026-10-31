@@ -42,12 +42,10 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        if !self.document_texts.contains_key(uri) {
-            return Ok(None);
-        }
         let phase = crate::corsa_bridge::preparation_trace::Phase::start("editor_hover", 1);
-        let result =
-            self.request_with_editor_lsp_recovery(|session| session.hover(uri, line, character));
+        let result = self.request_with_editor_lsp_query_recovery(uri, |session| {
+            session.hover(uri, line, character)
+        });
         if result.is_ok() {
             phase.finish();
         }
@@ -60,10 +58,9 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        if !self.document_texts.contains_key(uri) {
-            return Ok(None);
-        }
-        self.request_with_editor_lsp_recovery(|session| session.completion(uri, line, character))
+        self.request_with_editor_lsp_query_recovery(uri, |session| {
+            session.completion(uri, line, character)
+        })
     }
 
     pub(in crate::lsp_client) fn definition_via_editor_lsp(
@@ -72,10 +69,9 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        if !self.document_texts.contains_key(uri) {
-            return Ok(None);
-        }
-        self.request_with_editor_lsp_recovery(|session| session.definition(uri, line, character))
+        self.request_with_editor_lsp_query_recovery(uri, |session| {
+            session.definition(uri, line, character)
+        })
     }
 
     pub(in crate::lsp_client) fn type_definition_via_editor_lsp(
@@ -84,10 +80,7 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        if !self.document_texts.contains_key(uri) {
-            return Ok(None);
-        }
-        self.request_with_editor_lsp_recovery(|session| {
+        self.request_with_editor_lsp_query_recovery(uri, |session| {
             session.type_definition(uri, line, character)
         })
     }
@@ -98,10 +91,9 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        if !self.document_texts.contains_key(uri) {
-            return Ok(None);
-        }
-        self.request_with_editor_lsp_recovery(|session| session.declaration(uri, line, character))
+        self.request_with_editor_lsp_query_recovery(uri, |session| {
+            session.declaration(uri, line, character)
+        })
     }
 
     pub(in crate::lsp_client) fn implementation_via_editor_lsp(
@@ -110,10 +102,7 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        if !self.document_texts.contains_key(uri) {
-            return Ok(None);
-        }
-        self.request_with_editor_lsp_recovery(|session| {
+        self.request_with_editor_lsp_query_recovery(uri, |session| {
             session.implementation(uri, line, character)
         })
     }
@@ -124,10 +113,7 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        if !self.document_texts.contains_key(uri) {
-            return Ok(None);
-        }
-        self.request_with_editor_lsp_recovery(|session| {
+        self.request_with_editor_lsp_query_recovery(uri, |session| {
             session.prepare_call_hierarchy(uri, line, character)
         })
     }
@@ -157,10 +143,7 @@ impl CorsaProjectClient {
         character: u32,
         include_declaration: bool,
     ) -> Result<Option<Value>, String> {
-        if !self.document_texts.contains_key(uri) {
-            return Ok(None);
-        }
-        self.request_with_editor_lsp_recovery(|session| {
+        self.request_with_editor_lsp_query_recovery(uri, |session| {
             session.references(uri, line, character, include_declaration)
         })
     }
@@ -171,10 +154,7 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        if !self.document_texts.contains_key(uri) {
-            return Ok(None);
-        }
-        self.request_with_editor_lsp_recovery(|session| {
+        self.request_with_editor_lsp_query_recovery(uri, |session| {
             session.prepare_rename(uri, line, character)
         })
     }
@@ -186,10 +166,7 @@ impl CorsaProjectClient {
         character: u32,
         new_name: &str,
     ) -> Result<Option<Value>, String> {
-        if !self.document_texts.contains_key(uri) {
-            return Ok(None);
-        }
-        self.request_with_editor_lsp_recovery(|session| {
+        self.request_with_editor_lsp_query_recovery(uri, |session| {
             session.rename(uri, line, character, new_name)
         })
     }
@@ -201,10 +178,7 @@ impl CorsaProjectClient {
         character: u32,
         context: Option<Value>,
     ) -> Result<Option<Value>, String> {
-        if !self.document_texts.contains_key(uri) {
-            return Ok(None);
-        }
-        self.request_with_editor_lsp_recovery(|session| {
+        self.request_with_editor_lsp_query_recovery(uri, |session| {
             session.signature_help(uri, line, character, context.clone())
         })
     }
@@ -222,6 +196,30 @@ impl CorsaProjectClient {
         self.request_with_editor_lsp_documents_recovery(documents, |session| {
             session.diagnostics(document_uri)
         })
+    }
+
+    fn request_with_editor_lsp_query_recovery(
+        &mut self,
+        uri: &str,
+        request: impl FnMut(&mut EditorLspSession) -> Result<Option<Value>, String>,
+    ) -> Result<Option<Value>, String> {
+        if self.document_texts.contains_key(uri) {
+            return self.request_with_editor_lsp_recovery(request);
+        }
+        // An unchanged, closed importer may depend on this live unsaved graph.
+        // Include its real bytes in a request-local view, without retaining a
+        // new caller overlay or borrowing a stale independent API snapshot.
+        if self.logical_workspace_overlays && !self.document_texts.is_empty() {
+            let path = crate::file_uri::file_uri_to_path(uri)
+                .ok_or_else(|| cstr!("Closed logical Corsa query requires a file URI: {uri}"))?;
+            let text = std::fs::read_to_string(path).map_err(|error| {
+                cstr!("Failed to read closed logical Corsa query {uri}: {error}")
+            })?;
+            let mut documents = self.document_texts.clone();
+            documents.insert(uri.into(), text.into());
+            return self.request_with_editor_lsp_documents_recovery(&documents, request);
+        }
+        Ok(None)
     }
 
     /// Execute an idempotent editor query and rebuild the reusable LSP session
@@ -267,6 +265,7 @@ impl CorsaProjectClient {
     }
 
     pub(super) fn editor_lsp_session(&mut self) -> Result<&mut EditorLspSession, String> {
+        self.validate_logical_workspace_documents(&self.document_texts)?;
         self.ensure_editor_transport()?;
         let session = self
             .editor_lsp
@@ -283,6 +282,7 @@ impl CorsaProjectClient {
         &mut self,
         documents: &FxHashMap<String, String>,
     ) -> Result<&mut EditorLspSession, String> {
+        self.validate_logical_workspace_documents(documents)?;
         let keep_dirty_after_sync = !document_maps_equal(documents, &self.document_texts);
         self.ensure_editor_transport()?;
         let session = self
@@ -294,6 +294,21 @@ impl CorsaProjectClient {
             self.editor_lsp_documents_dirty = keep_dirty_after_sync;
         }
         Ok(session)
+    }
+
+    #[cfg(test)]
+    pub(in crate::lsp_client) fn logical_configuration_for_test(
+        &mut self,
+        uri: &str,
+    ) -> Result<PathBuf, String> {
+        self.editor_lsp_session()?
+            .diagnosing_configuration(uri)
+            .map_err(|error| match error {
+                super::project_identity::ProjectIdentityError::Communication(error) => error,
+                super::project_identity::ProjectIdentityError::Unconfigured => {
+                    cstr!("The actual diagnosing LSP has no configured project for {uri}")
+                }
+            })
     }
 
     pub(in crate::lsp_client) fn editor_lsp_project_root(&self) -> PathBuf {

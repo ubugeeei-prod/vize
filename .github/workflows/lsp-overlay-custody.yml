@@ -65,7 +65,7 @@ jobs:
           # receipt separately retains the actual PR event/merge SHA.
           node --input-type=module -e 'import assert from "node:assert/strict"; for (const name of ["CORSA_PATH","CORSA_EXECUTABLE","TSGO_PATH","TSGO_EXECUTABLE","TSRS_PATH","TSRS_EXECUTABLE"]) assert.ok(!process.env[name], `ambient ${name} refused`);'
           GITHUB_SHA="$EXPECTED_SOURCE" vp exec node tools/support/compat/github/full-rust-runtime.ts
-      - name: Exercise real native old and private physical policies with unchanged options
+      - name: Exercise native authored logical namespace and retained physical policy controls
         env:
           VIZE_PRIVATE_OVERLAY_CAPTURE: ${{ runner.temp }}/lsp-overlay-custody
           EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha }}
@@ -79,6 +79,7 @@ jobs:
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::session_storage:: --no-run --message-format=json > "$VIZE_PRIVATE_OVERLAY_CAPTURE/build.jsonl" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/build.stderr"
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::session_storage::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/storage.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/storage.stderr"
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::session::close::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/close.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/close.stderr"
+          cargo test --locked --profile ci -p vize_canon --lib lsp_client::session::logical::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/logical.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/logical.stderr"
           if [ "$RUNNER_OS" = Linux ]; then
             cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::bridge::initial_diagnostics::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stderr"
           fi

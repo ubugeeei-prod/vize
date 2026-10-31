@@ -24,6 +24,7 @@ mod bootstrap;
 mod canon_document;
 mod capabilities;
 mod close;
+mod logical;
 mod replay;
 pub(super) use bootstrap::{
     ProjectSessionSpawnError, api_mode_for_executable, spawn_project_session,
@@ -68,11 +69,15 @@ impl CorsaProjectClient {
             self.editor_lsp_documents_dirty = true;
         }
 
+        if self.logical_workspace_overlays {
+            return self.retain_logical_workspace_revision();
+        }
         if self.materialized_project_session {
             return self.sync_materialized_overlay_document(uri, content);
         }
 
         if !self.has_project_session() {
+            self.try_logical_workspace_overlays()?;
             return Ok(());
         }
 
@@ -139,6 +144,9 @@ impl CorsaProjectClient {
         uri: &str,
         content: &str,
     ) -> Result<(), String> {
+        if self.try_logical_workspace_overlays()? {
+            return Ok(());
+        }
         self.activate_materialized_project_session()?;
         let document_uri = self
             .materialized_session_document_uri(uri)
@@ -153,6 +161,9 @@ impl CorsaProjectClient {
     }
 
     pub(super) fn delete_overlay_document(&mut self, uri: &str) -> Result<(), String> {
+        if self.logical_workspace_overlays {
+            return self.close_logical_workspace_document(uri);
+        }
         let document_uri = self
             .session_document_uris
             .get(uri)
@@ -225,6 +236,9 @@ impl CorsaProjectClient {
     }
 
     pub(super) fn session_document_uri(&mut self, uri: &str) -> String {
+        if self.logical_workspace_overlays {
+            return self.remember_session_document_uri(uri, uri.into());
+        }
         if let Some(mapped) = self.session_document_uris.get(uri) {
             return mapped.clone();
         }

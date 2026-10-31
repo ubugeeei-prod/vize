@@ -118,6 +118,8 @@ impl CorsaProjectClient {
             self.explicit_project_config = Some(config_path);
         }
         self.materialized_project_session = false;
+        self.authored_workspace = false;
+        self.logical_workspace_overlays = false;
         self.clear_workspace_project_overlays();
         self.session_document_uris.clear();
         self.external_document_uris.clear();

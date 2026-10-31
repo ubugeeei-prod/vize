@@ -396,7 +396,7 @@ impl CorsaProjectClient {
                     && file_uri_to_path(uri.as_str()).is_none_or(|path| !path.exists())
             })
         {
-            self.activate_materialized_project_session()?;
+            self.activate_editor_overlay_fallback()?;
         }
 
         let (documents, document_pairs) = self.editor_lsp_diagnostic_documents(uris)?;

@@ -49,6 +49,10 @@ pub struct CorsaProjectClient {
     capabilities: Arc<CapabilitiesResponse>,
     overlay_api_disabled: bool,
     materialized_project_session: bool,
+    /// Authored workspace overlays may use their original logical LSP names.
+    authored_workspace: bool,
+    /// This live revision has no owning API overlay; semantic requests use LSP.
+    logical_workspace_overlays: bool,
     project_root: PathBuf,
     /// Explicit Batch configuration, retained across editor fallback/retries.
     explicit_project_config: Option<PathBuf>,
@@ -121,6 +125,8 @@ impl CorsaProjectClient {
             capabilities: Arc::new(Default::default()),
             overlay_api_disabled: false,
             materialized_project_session: false,
+            authored_workspace: false,
+            logical_workspace_overlays: false,
             overlay_storage: Arc::new(session_storage::SessionStorage::new(&project_root).unwrap()),
             project_root,
             explicit_project_config: None,

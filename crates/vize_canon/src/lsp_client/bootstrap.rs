@@ -62,6 +62,7 @@ impl CorsaProjectClient {
         shared_editor_transport: bool,
     ) -> Result<Self, String> {
         let project_root = root_path.as_deref().unwrap_or(&cwd);
+        let authored_workspace = owned_storage.is_none();
         let overlay_storage = match owned_storage {
             Some(storage) => storage,
             None => Arc::new(super::session_storage::SessionStorage::new(project_root)?),
@@ -106,6 +107,8 @@ impl CorsaProjectClient {
             capabilities,
             overlay_api_disabled: false,
             materialized_project_session: false,
+            authored_workspace,
+            logical_workspace_overlays: false,
             project_root: project_root.to_path_buf(),
             explicit_project_config,
             materialized_project_preference: None,

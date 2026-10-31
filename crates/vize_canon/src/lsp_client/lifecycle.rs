@@ -132,6 +132,14 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
+        if self.logical_workspace_overlays {
+            for (uri, content) in documents {
+                self.clear_document_state(uri);
+                self.document_texts.insert((*uri).into(), (*content).into());
+            }
+            return self.retain_logical_workspace_revision();
+        }
+
         if !self.has_project_session() {
             for (uri, content) in documents {
                 self.clear_document_state(uri);
@@ -144,6 +152,7 @@ impl CorsaProjectClient {
                     }
                 }
             }
+            self.try_logical_workspace_overlays()?;
             return Ok(());
         }
 

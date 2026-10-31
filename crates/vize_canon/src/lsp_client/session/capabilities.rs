@@ -65,7 +65,8 @@ impl CorsaProjectClient {
     }
 
     pub(in crate::lsp_client) fn can_use_api_for_uri(&self, uri: &str) -> bool {
-        self.can_use_attached_semantic_api()
+        !(self.logical_workspace_overlays && !self.document_texts.is_empty())
+            && self.can_use_attached_semantic_api()
             && (!self.document_texts.contains_key(uri)
                 || self.supports_overlay_api()
                 || (self.project_root.join("__vize_vue_modules.d.ts").is_file()
