@@ -5,7 +5,7 @@ Impeto owns the flat operation stream, explicit regions, state edges, effect
 scopes, and the decisions that DOM, VDOM, Vapor, and SSR must not rediscover in
 separate emitters.
 
-This page is the human reference for the 16 stable operation mnemonics. The
+This page is the human reference for the 17 stable operation mnemonics. The
 normative executable companion is the Lean package in `tests/formal/impeto/`, which
 parses the same L3 Folio text and records the first VDOM/Vapor trace labels.
 Folio remains the concrete interchange syntax; see
@@ -56,11 +56,17 @@ for fact/schedule edges that are not DOM order.
 | `l3.get-text-child`    | Resolve an existing text child reference.                            | `get-text-child`      | `get-text-child`       | Structural reference op; it should not invent dynamic work by itself.                          |
 | `l3.child-ref`         | Resolve the first child anchor/reference for a region owner.         | `child-ref`           | `child-ref`            | Structural reference op used by backend scheduling and insertion.                              |
 | `l3.next-ref`          | Resolve the next sibling anchor/reference.                           | `next-ref`            | `next-ref`             | Structural reference op used when stable insertion points matter.                              |
+| `l3.set-child-value`   | Normalize an opaque JSX child value through the owning backend.      | `normalize-child-value` | `child-value-effect` | Appended stable tag 16; existing tags 0 through 15 keep their original meaning. |
 
 The VDOM and Vapor labels above are intentionally small observations, not code
 generation byte strings. They are the trace vocabulary used by the first Lean
 reference runner so semantic drift appears before optional passes rewrite or
 schedule the op stream.
+
+`set-child-value` carries the explicit JSX child role, currently minted only by
+the Native client VDOM producer. It does not replace template interpolation or
+`v-text`. The labels describe the symbolic reference trace; they do not grant
+runtime admission to a backend or qualify the separate Vapor reference conflict.
 
 ## L2 Lowering Commitments
 
@@ -75,6 +81,7 @@ can read canonical partition decisions without traversing L3 ops.
 | Component                                                      | `l3.create-component`  |
 | Text                                                           | `l3.set-text`          |
 | Interpolation                                                  | `l3.set-text`          |
+| JsxChildValue                                                  | `l3.set-child-value`   |
 | Comment                                                        | `l3.insert-node`       |
 | If                                                             | `l3.if`                |
 | For                                                            | `l3.for`               |

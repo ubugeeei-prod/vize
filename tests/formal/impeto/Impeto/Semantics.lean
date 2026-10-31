@@ -33,7 +33,6 @@ def interpretVDom : OpKind -> String
   | .setProp => "patch-prop"
   | .setDynamicProps => "patch-dynamic-props"
   | .setText => "set-text"
-  | .setChildValue => "normalize-child-value"
   | .setEvent => "patch-event"
   | .setHtml => "set-html"
   | .setTemplateRef => "set-template-ref"
@@ -47,12 +46,12 @@ def interpretVDom : OpKind -> String
   | .getTextChild => "get-text-child"
   | .childRef => "child-ref"
   | .nextRef => "next-ref"
+  | .setChildValue => "normalize-child-value"
 
 def interpretVapor : OpKind -> String
   | .setProp => "assign-prop"
   | .setDynamicProps => "assign-dynamic-props"
   | .setText => "text-effect"
-  | .setChildValue => "child-value-effect"
   | .setEvent => "listen"
   | .setHtml => "html-effect"
   | .setTemplateRef => "template-ref"
@@ -66,6 +65,7 @@ def interpretVapor : OpKind -> String
   | .getTextChild => "get-text-child"
   | .childRef => "child-ref"
   | .nextRef => "next-ref"
+  | .setChildValue => "child-value-effect"
 
 def interpret (backend : Backend) (op : Op) : TraceEvent :=
   let label :=
