@@ -321,7 +321,6 @@ export async function executeRootIfComponent(
     retainFailure(error, "runtime-failure");
   } finally {
     if (!unmountAttempted) {
-      unmountAttempted = true;
       try {
         try {
           record("failure-cleanup-before-unmount");
