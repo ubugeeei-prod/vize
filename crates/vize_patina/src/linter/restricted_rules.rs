@@ -250,9 +250,20 @@ impl Linter {
 
     /// Configure `vue/v-on-event-hyphenation`.
     #[inline]
-    pub fn with_v_on_event_hyphenation(mut self, style: VOnEventHyphenationStyle) -> Self {
-        self.registry
-            .replace(Box::new(VOnEventHyphenation::new(style)));
+    pub fn with_v_on_event_hyphenation(self, style: VOnEventHyphenationStyle) -> Self {
+        self.with_v_on_event_hyphenation_options(style, Vec::new())
+    }
+
+    /// Configure style and literal exemptions without enabling an unselected rule.
+    pub fn with_v_on_event_hyphenation_options(
+        mut self,
+        style: VOnEventHyphenationStyle,
+        ignore: Vec<String>,
+    ) -> Self {
+        if self.registry.has_rule("vue/v-on-event-hyphenation") {
+            self.registry
+                .replace(Box::new(VOnEventHyphenation::with_ignore(style, ignore)));
+        }
         self
     }
 

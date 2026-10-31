@@ -23,9 +23,10 @@ mod oxlint_html;
 mod oxlint_html_binding;
 mod rule_metadata;
 use lint_options::{
-    LintOptionsNapi, LintResultNapi, PatinaLintOptionsNapi, configure_patina_rule_options,
-    configure_type_aware_lint, create_patina_linter, patina_help_level_from_option,
-    patina_locale_from_option, patina_preset_from_option,
+    LintOptionsNapi, LintResultNapi, PatinaLintOptionsNapi, configure_patina_event_ignore,
+    configure_patina_rule_options, configure_type_aware_lint, create_patina_linter,
+    patina_help_level_from_option, patina_locale_from_option, patina_preset_from_option,
+    validate_event_hyphenation_ignore,
 };
 pub use oxlint_html_binding::dto::{
     OxlintHtmlCompleted, OxlintHtmlDiagnostic, OxlintHtmlFile, OxlintHtmlLabel, OxlintHtmlOptions,
@@ -87,6 +88,20 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
                 format!("Invalid Patina rule options: {error}"),
             )
         })?;
+    let event_ignore = if rule_options
+        .as_ref()
+        .is_some_and(|options| options.v_on_event_hyphenation_options().is_some())
+    {
+        // Canonical JSON owns the complete rule policy, including {} resets.
+        None
+    } else {
+        let ignore = opts.v_on_event_hyphenation_ignore.as_deref();
+        if let Some(ignore) = ignore {
+            validate_event_hyphenation_ignore(ignore)
+                .map_err(|message| Error::new(Status::InvalidArg, message.to_owned()))?;
+        }
+        ignore
+    };
     let define_macros_order = if rule_options
         .as_ref()
         .is_some_and(|options| options.define_macros_order().is_some())
@@ -122,6 +137,7 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
         v_on_event_hyphenation,
         attribute_hyphenation,
     );
+    let linter = configure_patina_event_ignore(linter, v_on_event_hyphenation, event_ignore);
     let linter = match rule_options.as_ref() {
         Some(options) => linter.with_config_rule_options(options),
         None => linter,
