@@ -7,6 +7,7 @@ import {
   storageObserverPath,
   storageObserverSha256,
   commonObserverSha256,
+  assertImageServerInfo,
 } from "./support/native-beta-dto/beta-attached-route.ts";
 import { requireCandidateStableStderr } from "./support/native-beta-dto/stable-watcher-boundary.ts";
 import {
@@ -49,7 +50,7 @@ function fixture() {
           {
             jsonrpc: "2.0",
             id: 1,
-            result: { serverInfo: { name: "typescript-go", version: "7.1.0-beta" } },
+            result: { serverInfo: { name: "typescript", version: "7.1.0-beta" } },
           },
           { jsonrpc: "2.0", id: 2, result: { configFilePath: root + "/tsconfig.json" } },
           { jsonrpc: "2.0", id: 3, result: { kind: "full", items: [] } },
@@ -82,7 +83,36 @@ test("source getter, physical files and exact generated config bind the current 
   stable.context.sdkVersion = "7.0.2";
   stable.context.sdkSha256 = "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4";
   stable.owners[0]!.server[0]!.result.serverInfo!.version = "7.0.2";
+  stable.owners[0]!.server[0]!.result.serverInfo!.name = "typescript-go";
   assert.equal(verify(stable).materializedRoot, stable.root);
+});
+
+test("server identity is one exact image/version/name tuple with no fallback labels", () => {
+  const beta = fixture().context;
+  const stable = {
+    sdkVersion: "7.0.2",
+    sdkSha256: "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+  };
+  assertImageServerInfo({ name: "typescript", version: "7.1.0-beta" }, beta);
+  assertImageServerInfo({ name: "typescript-go", version: "7.0.2" }, stable);
+  for (const value of [
+    { name: "typescript-go", version: "7.1.0-beta" },
+    { name: "typescript", version: "7.0.2" },
+    { name: "future", version: "7.1.0-beta" },
+    { name: "typescript", version: "7.1.0-beta", extra: true },
+  ])
+    assert.throws(() => assertImageServerInfo(value, beta));
+  assert.throws(() => assertImageServerInfo({ name: "typescript", version: "7.0.2" }, stable));
+  for (const sdkSha256 of [stable.sdkSha256, "0".repeat(64)])
+    assert.throws(() =>
+      assertImageServerInfo({ name: "typescript", version: "7.1.0-beta" }, { ...beta, sdkSha256 }),
+    );
+  assert.throws(() =>
+    assertImageServerInfo(
+      { name: "typescript", version: "future" },
+      { ...beta, sdkVersion: "future" },
+    ),
+  );
 });
 
 test("wrong source, role, owner, path, URI, physical contents or config cannot grant authority", () => {

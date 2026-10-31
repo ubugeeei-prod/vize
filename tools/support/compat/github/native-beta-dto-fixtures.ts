@@ -121,7 +121,7 @@ const watcherSuccessor = {
   helperRuntimeSha256: "13977fbeee879ea518ca8abc2329dea34919edcf984102133192f4386014fe7a",
   routeId: "configured-startup-beta-semantic-route-41108828160",
   routePath: "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
-  routeRuntimeSha256: "a0147de18a1415523e0453fe2e44858d5e0c30e284da6e1e3f88ea9a4ef3fde4",
+  routeRuntimeSha256: "46709718b137de0f1ed3009f099b62685e2e08ce6ebaf62bf57ee7afd2bed4c1",
   actualFiles: [
     ["client.bin", "cd11915afee013a728a287098714d5db70e8719867bd596a1c4721ca5a876c13"],
     ["server.bin", "47cc76661e039b28a3e7056d3d2b07d6d4c6da31440166c2e490b76f78079f73"],

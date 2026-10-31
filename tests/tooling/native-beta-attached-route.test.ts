@@ -67,7 +67,7 @@ function fixture() {
   server.push({
     jsonrpc: "2.0",
     id: -1,
-    result: { serverInfo: { name: "typescript-go", version: "7.1.0-beta" } },
+    result: { serverInfo: { name: "typescript", version: "7.1.0-beta" } },
   });
   client.push({
     jsonrpc: "2.0",

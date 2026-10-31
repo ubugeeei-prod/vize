@@ -43,6 +43,28 @@ const mainText =
 const supportText = "export const value = 1;\r\n";
 const virtualText = 'export const bad: number = "x";\r\n';
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
+/** Exact authenticated native image tuples own their distinct server labels. */
+export function assertImageServerInfo(
+  value: unknown,
+  context: Pick<WatcherContext, "sdkVersion" | "sdkSha256">,
+) {
+  let name: string;
+  if (context.sdkVersion === "7.0.2") {
+    assert.equal(
+      context.sdkSha256,
+      "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+    );
+    name = "typescript-go";
+  } else {
+    assert.equal(context.sdkVersion, "7.1.0-beta");
+    assert.equal(
+      context.sdkSha256,
+      "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+    );
+    name = "typescript";
+  }
+  assert.deepEqual(value, { name, version: context.sdkVersion });
+}
 function object(value: unknown): Packet {
   assert.ok(value && typeof value === "object" && !Array.isArray(value));
   return value as Packet;
@@ -206,10 +228,7 @@ export function verifyAfterAttachedStorage(
     );
     assert.equal(initializedReplies.length, 1);
     assert.equal("error" in initializedReplies[0]!, false);
-    assert.deepEqual(object(initializedReplies[0]!.result).serverInfo, {
-      name: "typescript-go",
-      version: context.sdkVersion,
-    });
+    assertImageServerInfo(object(initializedReplies[0]!.result).serverInfo, context);
     for (const request of client) {
       if (
         semanticMethods.includes(String(request.method)) ||
