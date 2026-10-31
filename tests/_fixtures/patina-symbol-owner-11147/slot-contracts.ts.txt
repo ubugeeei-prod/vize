@@ -1,0 +1,1 @@
+export type SlotFormatter = (value: number | null) => { label: string };

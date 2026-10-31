@@ -16,6 +16,12 @@ const INLINE: &str =
     include_str!("../../../tests/_fixtures/patina-symbol-owner-11147/Inline.vue.txt");
 const FOREIGN: &str =
     include_str!("../../../tests/_fixtures/patina-symbol-owner-11147/Foreign.vue.txt");
+const SLOT_CONTRACT: &str =
+    include_str!("../../../tests/_fixtures/patina-symbol-owner-11147/slot-contracts.ts.txt");
+const SLOT_INLINE: &str =
+    include_str!("../../../tests/_fixtures/patina-symbol-owner-11147/SlotInline.vue.txt");
+const SLOT_FOREIGN: &str =
+    include_str!("../../../tests/_fixtures/patina-symbol-owner-11147/SlotForeign.vue.txt");
 
 pub(super) fn record(dir: &Path, name: &str, value: &Value) {
     fs::write(
@@ -85,6 +91,15 @@ fn same_connection_foreign_callable_probe() {
     ] {
         if std::panic::catch_unwind(|| public_cli::collect(&evidence, &provider, name, source))
             .is_err()
+        {
+            failed_cases.push(format!("cli-{name}"));
+        }
+    }
+    for (name, source) in [("slot-inline", SLOT_INLINE), ("slot-foreign", SLOT_FOREIGN)] {
+        if std::panic::catch_unwind(|| {
+            public_cli::collect_with_contract(&evidence, &provider, name, source, SLOT_CONTRACT)
+        })
+        .is_err()
         {
             failed_cases.push(format!("cli-{name}"));
         }

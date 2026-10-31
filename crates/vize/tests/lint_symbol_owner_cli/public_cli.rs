@@ -4,6 +4,16 @@ use std::{fs, path::Path, process::Command};
 use vize_l0::ToCompactString;
 
 pub(super) fn collect(dir: &Path, provider: &Path, variant: &str, source: &str) {
+    collect_with_contract(dir, provider, variant, source, CONTRACT);
+}
+
+pub(super) fn collect_with_contract(
+    dir: &Path,
+    provider: &Path,
+    variant: &str,
+    source: &str,
+    contract: &str,
+) {
     let project = tempfile::tempdir().expect("isolated SFC project");
     let root = project.path();
     let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -12,7 +22,7 @@ pub(super) fn collect(dir: &Path, provider: &Path, variant: &str, source: &str) 
         .parent()
         .unwrap();
     fs::write(root.join("Card.vue"), source).unwrap();
-    fs::write(root.join("contracts.ts"), CONTRACT).unwrap();
+    fs::write(root.join("contracts.ts"), contract).unwrap();
     fs::write(root.join("package.json"), r#"{"type":"module"}"#).unwrap();
     let tsconfig = r#"{"compilerOptions":{"strict":true,"target":"ESNext","module":"ESNext","moduleResolution":"bundler","noEmit":true},"include":["*.ts","*.vue"]}"#;
     fs::write(root.join("tsconfig.json"), tsconfig).unwrap();
@@ -45,7 +55,7 @@ pub(super) fn collect(dir: &Path, provider: &Path, variant: &str, source: &str) 
         dir,
         &format!("cli-{variant}.json"),
         &json!({
-            "source":{"Card.vue":source,"contracts.ts":CONTRACT,"tsconfig.json":tsconfig,"vite.config.mjs":config},
+            "source":{"Card.vue":source,"contracts.ts":contract,"tsconfig.json":tsconfig,"vite.config.mjs":config},
             "provider":provider,"vuePackage":serde_json::from_slice::<Value>(&fs::read(vue.join("package.json")).unwrap()).unwrap(),
             "status":output.status.code(),"statusDebug":format!("{:?}",output.status),
             "stdoutBytes":output.stdout,"stderrBytes":output.stderr,
@@ -105,7 +115,7 @@ pub(super) fn collect(dir: &Path, provider: &Path, variant: &str, source: &str) 
     assert_eq!(fs::read_to_string(root.join("Card.vue")).unwrap(), source);
     assert_eq!(
         fs::read_to_string(root.join("contracts.ts")).unwrap(),
-        CONTRACT
+        contract
     );
     assert_eq!(
         fs::read_to_string(root.join("vite.config.mjs")).unwrap(),

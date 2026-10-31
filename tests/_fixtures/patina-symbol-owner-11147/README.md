@@ -23,3 +23,13 @@ re-thrown through the collector's failing status; both providers are attempted
 and the workflow retains a failing aggregate status. No memo limit, production
 query, error classifier or fallback is changed. No 620-file generator, parallel
 or edit widening is included in this first causal pair.
+
+The follow-up adds only one two-file public CLI pair: `SlotInline.vue.txt` and
+`SlotForeign.vue.txt` use the same object-return callable in
+`<slot v-bind="formatter(count)" />`. Unlike ordinary interpolation, this slot
+outlet spread is retargeted to `TemplateQueryKind::CallReturn`, whose driver
+loads signatures. Each runtime project still contains only `Card.vue` and
+`contracts.ts` as code files. The original native pair and all three original
+CLI variants remain unchanged and execute before the additional pair. All
+complete CLI packets are retained under distinct `cli-slot-*` names. This
+collector result alone cannot establish the reported 620-SFC failure or a fix.

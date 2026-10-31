@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import type { SlotFormatter } from './contracts';
+const formatter: SlotFormatter = (value) => ({ label: String(value ?? '') });
+defineProps<{ user?: { name: string }; count: number | null }>();
+</script>
+
+<template>
+  <p v-if="count">{{ count }}</p>
+  <p v-if="user">{{ user.name }}</p>
+  <slot v-bind="formatter(count)" />
+</template>
