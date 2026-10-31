@@ -10,7 +10,10 @@ import {
   NATIVE_APIS,
   validateNativeContract,
 } from "../differential/linter-native.ts";
-import { ORIGINAL_REF_WIRES } from "../differential/linter-sfc-contract.ts";
+import {
+  ORIGINAL_REF_WIRES,
+  ORIGINAL_SLOT_ATTRIBUTE_WIRE,
+} from "../differential/linter-sfc-contract.ts";
 import { sha256 } from "../differential/harness.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -86,7 +89,7 @@ void test("all current SFC wires have the complete bounded transition and old pa
         detail: "UnsupportedVueVersion { requested: V2 }",
       },
     ],
-    ["current-api/slot-compat-vue3", missing("vue/no-deprecated-slot-attribute")],
+    ["current-api/slot-compat-vue3", null],
     ["current-api/shorthand-compat-vue3", missing("vue/prefer-props-shorthand")],
     ["current-api/next-tick-unspecified", missing("script/no-next-tick")],
     [
@@ -138,6 +141,10 @@ void test("all current SFC wires have the complete bounded transition and old pa
   assert.deepEqual(actual, expected);
   for (const wire of ORIGINAL_REF_WIRES)
     assert.deepEqual(JSON.parse(row(`current-api/${wire.id}`).input), wire);
+  assert.deepEqual(
+    JSON.parse(row("current-api/slot-compat-vue3").input),
+    ORIGINAL_SLOT_ATTRIBUTE_WIRE,
+  );
   assert.deepEqual(expectedNativeReason(row("static-class/utf8-crlf-sfc")), {
     api: "--native-static-class",
     entry: "sfc",
@@ -227,6 +234,52 @@ void test("handled string packets cannot rewrite any original source/options/his
   }
 });
 
+void test("only the complete original slot wire can claim the retained handled observation", () => {
+  const fixture = row("current-api/slot-compat-vue3");
+  const original = JSON.parse(fixture.input);
+  const handled = packet({ state: "handled", observation: fixture.expected.toString() });
+  assert.equal(expectedNativeReason(fixture), null);
+  assert.deepEqual(decodeNativeOutcome(handled, fixture), {
+    state: "handled",
+    observation: fixture.expected.toString(),
+  });
+  const changes: Record<string, unknown> = {
+    id: "unregistered-slot-attribute",
+    history: "0".repeat(40),
+    source: `${original.source}\n`,
+    filename: "Other.vue",
+    entry: "template",
+    rule: "vue/prefer-props-shorthand",
+    vue_version: null,
+    vapor: false,
+    diagnostics: 0,
+    fixes: 1,
+  };
+  assert.deepEqual(Object.keys(changes).sort(), Object.keys(original).sort());
+  for (const [field, value] of Object.entries(changes)) {
+    const changed = { ...original, [field]: value };
+    assert.throws(
+      () => decodeNativeOutcome(handled, { ...fixture, input: packet(changed) }),
+      `changed original field: ${field}`,
+    );
+    const missingField = { ...original };
+    delete missingField[field];
+    assert.throws(
+      () => decodeNativeOutcome(handled, { ...fixture, input: packet(missingField) }),
+      `missing original field: ${field}`,
+    );
+  }
+  assert.throws(() =>
+    decodeNativeOutcome(handled, {
+      ...fixture,
+      input: packet({ ...original, unreviewed: true }),
+    }),
+  );
+  assert.throws(() =>
+    decodeNativeOutcome(packet({ state: "unsupported", reason: missing(original.rule) }), fixture),
+  );
+});
+
 function probes() {
   const values = [
     {
@@ -241,9 +294,12 @@ function probes() {
     },
     {
       schema: "vize.linter-native-observer",
-      version: 2,
+      version: 3,
       apis: NATIVE_APIS,
-      owners: { template: "NativeLintComponent", sfc: "NativeSfcLintOwner" },
+      owners: {
+        template: "NativeLintComponent",
+        sfc: { setup: "NativeSfcLintOwner", template: "NativeSfcTemplateOwner" },
+      },
       entries: ["template", "sfc"],
       wholeOutput: "Case+Observation",
       fallback: false,
@@ -283,6 +339,12 @@ void test("recomputed probe hashes cannot hide old versions, wrong original owne
     [
       1,
       (v: any) => {
+        v.version = 2;
+      },
+    ],
+    [
+      1,
+      (v: any) => {
         delete v.owners.sfc;
       },
     ],
@@ -290,6 +352,24 @@ void test("recomputed probe hashes cannot hide old versions, wrong original owne
       1,
       (v: any) => {
         v.owners.sfc = "NativeTemplateFile";
+      },
+    ],
+    [
+      1,
+      (v: any) => {
+        v.owners.sfc = "NativeSfcLintOwner";
+      },
+    ],
+    [
+      1,
+      (v: any) => {
+        v.owners.sfc.setup = "NativeSfcTemplateOwner";
+      },
+    ],
+    [
+      1,
+      (v: any) => {
+        delete v.owners.sfc.template;
       },
     ],
     [

@@ -36,9 +36,12 @@ export function validateNativeContract(receipt: any) {
   assert.equal(nativeProbe.sha256, sha256(nativeBytes));
   assert.deepEqual(JSON.parse(nativeBytes.toString()), {
     schema: "vize.linter-native-observer",
-    version: 2,
+    version: 3,
     apis: NATIVE_APIS,
-    owners: { template: "NativeLintComponent", sfc: "NativeSfcLintOwner" },
+    owners: {
+      template: "NativeLintComponent",
+      sfc: { setup: "NativeSfcLintOwner", template: "NativeSfcTemplateOwner" },
+    },
     entries: ["template", "sfc"],
     wholeOutput: "Case+Observation",
     fallback: false,
@@ -104,7 +107,7 @@ export function decodeNativeOutcome(bytes: Buffer, fixture: any) {
   }
   assert.deepEqual(Object.keys(outcome).sort(), ["reason", "state"]);
   const expected = expectedNativeReason(fixture);
-  assert(expected, "the ten pinned admissible originals require whole output, not refusal");
+  assert(expected, "pinned admissible originals require whole output, not refusal");
   assert.deepEqual(
     outcome.reason,
     expected,

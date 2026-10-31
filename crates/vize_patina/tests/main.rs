@@ -61,6 +61,7 @@ mod native_header_rules;
 mod native_inline_style;
 mod native_lint_tag;
 mod native_no_v_html;
+mod native_sfc_template_lint;
 mod native_syntax_img_alt;
 mod native_template_element_callbacks;
 mod native_template_lint;

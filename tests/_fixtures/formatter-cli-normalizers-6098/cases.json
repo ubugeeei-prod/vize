@@ -1,0 +1,56 @@
+[
+  {
+    "id": "inline-static-and-dynamic",
+    "option": "normalizeInlineStyles",
+    "source": "<template>\n  <div style=\"color:red;top:0;\" :style=\"{ a: 1 }\">a</div>\n</template>\n",
+    "normalized": "<template>\n  <div style=\"color: red; top: 0\" :style=\"{ a: 1 }\">a</div>\n</template>\n"
+  },
+  {
+    "id": "inline-quoted-semicolon",
+    "option": "normalizeInlineStyles",
+    "source": "<template>\n  <div style=\"background:url('a;b.png'); COLOR:Red\"></div>\n</template>\n",
+    "normalized": "<template>\n  <div style=\"background: url('a;b.png'); color: Red\"></div>\n</template>\n"
+  },
+  {
+    "id": "inline-comment-control",
+    "option": "normalizeInlineStyles",
+    "source": "<template>\n  <div style=\"color:red; /* keep */ top:0\"></div>\n</template>\n",
+    "normalized": "<template>\n  <div style=\"color:red; /* keep */ top:0\"></div>\n</template>\n"
+  },
+  {
+    "id": "v-for-alias-and-destructuring",
+    "option": "normalizeVForParens",
+    "source": "<template>\n  <ul>\n    <li v-for=\"item, i in items\" :key=\"i\">{{ item }}</li>\n    <li v-for=\"{ a, b } of pairs\" :key=\"a\">{{ b }}</li>\n    <Input v-for=\"x in xs\" :key=\"x\"></Input>\n  </ul>\n</template>\n",
+    "normalized": "<template>\n  <ul>\n    <li v-for=\"(item, i) in items\" :key=\"i\">{{ item }}</li>\n    <li v-for=\"{ a, b } of pairs\" :key=\"a\">{{ b }}</li>\n    <Input v-for=\"x in xs\" :key=\"x\"></Input>\n  </ul>\n</template>\n"
+  },
+  {
+    "id": "v-for-of-and-parenthesized",
+    "option": "normalizeVForParens",
+    "source": "<template>\n  <ul>\n    <li v-for=\"value, key of entries\" :key=\"key\">{{ value }}</li>\n    <li v-for=\"(value, key, i) in object\" :key=\"i\">{{ value }}</li>\n  </ul>\n</template>\n",
+    "normalized": "<template>\n  <ul>\n    <li v-for=\"(value, key) of entries\" :key=\"key\">{{ value }}</li>\n    <li v-for=\"(value, key, i) in object\" :key=\"i\">{{ value }}</li>\n  </ul>\n</template>\n"
+  },
+  {
+    "id": "scss-nested-comments-and-strings",
+    "option": "reindentPreprocessorStyles",
+    "source": "<style lang=\"scss\">\n.a {\n\tcolor: red;\n\n\n\t// braces { } stay comments\n\t&:hover {\n\t\tcontent: \"}\";\n\t\tcolor: blue;\n\t}\n}\n</style>\n",
+    "normalized": "<style lang=\"scss\">\n.a {\n  color: red;\n\n  // braces { } stay comments\n  &:hover {\n    content: \"}\";\n    color: blue;\n  }\n}\n</style>\n"
+  },
+  {
+    "id": "less-nested-comments-and-strings",
+    "option": "reindentPreprocessorStyles",
+    "source": "<style lang=\"less\">\n.a {\n\tcolor: red;\n\n\n\t// braces { } stay comments\n\t&:hover {\n\t\tcontent: \"}\";\n\t\tcolor: blue;\n\t}\n}\n</style>\n",
+    "normalized": "<style lang=\"less\">\n.a {\n  color: red;\n\n  // braces { } stay comments\n  &:hover {\n    content: \"}\";\n    color: blue;\n  }\n}\n</style>\n"
+  },
+  {
+    "id": "sass-preservation-control",
+    "option": "reindentPreprocessorStyles",
+    "source": "<style lang=\"sass\">\n.a\n\tcolor: red\n</style>\n",
+    "normalized": "<style lang=\"sass\">\n.a\n\tcolor: red\n</style>\n"
+  },
+  {
+    "id": "unbalanced-scss-control",
+    "option": "reindentPreprocessorStyles",
+    "source": "<style lang=\"scss\">\n.a {\n\tcolor: red;\n</style>\n",
+    "normalized": "<style lang=\"scss\">\n.a {\n\tcolor: red;\n</style>\n"
+  }
+]

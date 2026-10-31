@@ -10,55 +10,19 @@ import {
   callbackSetupReferencePrefix,
   type SourceSpan,
 } from "./callback-owner-projects.ts";
+import {
+  assertDynamicEventArgumentReference,
+  diagnostics,
+  processPacket,
+  type Observation,
+} from "./callback-owner-reference.ts";
 import { assertPreservedCallbackPacket } from "./callback-owner-packet-parity.ts";
 export { assertPreservedCallbackPacket } from "./callback-owner-packet-parity.ts";
 
-type Observation = {
-  argv: string[];
-  cwd: string;
-  status: number | null;
-  signal: string | null;
-  error: unknown;
-  stdout: string;
-  stderr: string;
-};
 type Row = { id: string; files: Record<string, string>; observations: Record<string, Observation> };
-type Diagnostic = {
-  file: string;
-  line: number;
-  column: number;
-  code: number;
-  message: string;
-  continuation: string[];
-};
-
 const header = "<!-- 日本 🧭 -->";
 const digest = (source: string) => createHash("sha256").update(source).digest("hex");
 
-/** Every output line must belong to one diagnostic; no messages are filtered. */
-function diagnostics(output: string): Diagnostic[] {
-  const rows: Diagnostic[] = [];
-  if (!output) return rows;
-  assert.ok(output.endsWith("\n"));
-  for (const line of output.slice(0, -1).split("\n")) {
-    const match = /^(.*)\((\d+),(\d+)\): error TS(\d+): (.*)$/u.exec(line);
-    if (match) {
-      rows.push({
-        file: match[1],
-        line: Number(match[2]),
-        column: Number(match[3]),
-        code: Number(match[4]),
-        message: match[5],
-        continuation: [],
-      });
-    } else {
-      const previous = rows.at(-1);
-      assert.ok(previous && /^\s+/u.test(line), `unclassified compiler output: ${line}`);
-      previous.continuation.push(line);
-    }
-  }
-  return rows;
-}
 /** The CLI names a binding only inside the first start tag of a line. */
 function firstTagEnd(line: string): number {
   let quote = "";
@@ -74,12 +38,6 @@ function firstTagEnd(line: string): number {
 /** Each side names its own source build; only that producer identity may differ. */
 function withoutMapperIdentity(stdout: string): string {
   return stdout.replaceAll(/vize@0\.0\.0-source-[0-9a-f]{40}/gu, "vize@<source>");
-}
-function processPacket(packet: Observation, statuses: number[]) {
-  assert.equal(packet.error, null);
-  assert.equal(packet.signal, null);
-  assert.equal(packet.stderr, "");
-  assert.ok(packet.status !== null && statuses.includes(packet.status));
 }
 function transforms(packet: Observation): Record<string, unknown>[] {
   processPacket(packet, [0]);
@@ -176,6 +134,8 @@ export function auditCallbackOwners(directory: string) {
   assert.deepEqual(inventory.ids, planned);
   let qualified = 0,
     preserved = 0,
+    preservedPackets = 0,
+    resolvedDynamicArguments = 0,
     frontiers = 0,
     resolvedMapperFrontiers = 0;
   for (const row of rows) {
@@ -207,7 +167,16 @@ export function auditCallbackOwners(directory: string) {
     assert.equal(control.originalModuleSourceSha256, digest(project.reference.source));
     processPacket(row.observations.reference, [0, 2]);
     processPacket(row.observations["native-reference"], [0, 1]);
-    const expected = project.reference.expectedRoles;
+    const dynamicMutation =
+      project.id === "callback-owner-unsupported-dynamic-event-argument-mutation";
+    if (dynamicMutation) {
+      assert.equal(project.authoredBindings.length, 1);
+      assert.equal(project.reference.bindings.length, 1);
+      assert.equal(project.expected.expectation, null);
+    }
+    const expected = dynamicMutation
+      ? [{ role: "callback-assignment" as const, code: 2322, span: project.reference.bindings[0] }]
+      : project.reference.expectedRoles;
     const actual = diagnostics(row.observations.reference.stdout);
     const nativeReference = diagnostics(row.observations["native-reference"].stdout);
     if (expected) {
@@ -238,6 +207,12 @@ export function auditCallbackOwners(directory: string) {
       );
       assert.equal(row.observations["native-reference"].status, nativeReference.length ? 1 : 0);
     }
+    if (dynamicMutation)
+      assertDynamicEventArgumentReference(
+        row.observations.reference,
+        row.observations["native-reference"],
+        at(project.reference.bindings[0], project.reference.source, reference, referenceVariant),
+      );
     const before = transforms(row.observations["baseline-protocol"]);
     const candidate = transforms(row.observations["candidate-protocol"]);
     const bindings = project.authoredBindings.map(({ value }) =>
@@ -248,9 +223,16 @@ export function auditCallbackOwners(directory: string) {
       processPacket(row.observations[`${side}-check`], [0, 1]);
       processPacket(row.observations[`${side}-mapper`], [0, 2]);
     }
-    if (project.comparison === "complete-before-head-packets") {
+    if (project.comparison === "complete-before-head-packets" && !dynamicMutation) {
       assert.equal(candidate.length, before.length);
-      before.forEach((packet, index) => assertPreservedCallbackPacket(packet, candidate[index]));
+      before.forEach((packet, index) =>
+        assertPreservedCallbackPacket(
+          packet,
+          candidate[index],
+          index === 0 ? row.files["src/Comp.vue"] : parent,
+        ),
+      );
+      preservedPackets += before.length;
       assert.equal(
         row.observations["candidate-check"].stdout,
         row.observations["baseline-check"].stdout,
@@ -275,6 +257,24 @@ export function auditCallbackOwners(directory: string) {
       });
       continue;
     }
+    if (dynamicMutation) {
+      // Keep the original child packet law. Only the parent's repaired computed
+      // name is admitted by the independent typed reference, with all before raw retained.
+      assertPreservedCallbackPacket(before[0], candidate[0], row.files["src/Comp.vue"]);
+      preservedPackets++;
+      assert.deepEqual(Object.keys(candidate[1]).sort(), [
+        "diagnostics",
+        "extension",
+        "mappings",
+        "text",
+      ]);
+      assert.deepEqual(candidate[1].diagnostics, []);
+      assert.equal(candidate[1].extension, ".tsx");
+      mappingGeometry(candidate[1], parent, [
+        at(project.authoredBindings[0].name, original, parent, parentVariant),
+      ]);
+      resolvedDynamicArguments++;
+    }
     if (project.qualification === "known-10739-frontier") {
       assert.equal(
         row.observations["candidate-check"].stdout,
@@ -295,8 +295,16 @@ export function auditCallbackOwners(directory: string) {
       });
       continue;
     }
-    assert.ok(expected && project.expected.diagnostics);
-    const roles = [...project.expected.diagnostics];
+    assert.ok(expected && (dynamicMutation || project.expected.diagnostics));
+    const roles = dynamicMutation
+      ? [
+          {
+            role: "callback-assignment" as const,
+            code: 2322,
+            span: project.authoredBindings[0].name,
+          },
+        ]
+      : [...project.expected.diagnostics!];
     if (project.expected.expectation?.state === "unused")
       roles.unshift({
         role: "unused-expectation",
@@ -382,12 +390,22 @@ export function auditCallbackOwners(directory: string) {
       id: row.id,
       referenceQualified: true,
       completeNativeAndMapperPackets: true,
+      ...(dynamicMutation
+        ? {
+            resolvedReferenceIssue: 11140,
+            preservedChildPacket: true,
+            before: row.observations["baseline-check"],
+            beforeMapper: row.observations["baseline-mapper"],
+          }
+        : {}),
       ...(project.mapperFrontier ? { resolvedMapperIssue: project.mapperFrontier } : {}),
     });
   }
-  assert.equal(qualified, 40);
+  assert.equal(qualified, 44);
   assert.equal(resolvedMapperFrontiers, 4);
-  assert.equal(preserved, 44);
+  assert.equal(preserved, 40);
+  assert.equal(preservedPackets, 84);
+  assert.equal(resolvedDynamicArguments, 4);
   assert.equal(frontiers, 8);
   const report = {
     source: providers.sourceSha,
@@ -397,16 +415,21 @@ export function auditCallbackOwners(directory: string) {
     completeObservedCommands: inventory.executedProcesses,
     qualifiedReferenceProjects: qualified,
     unchangedUnsupportedProjects: preserved,
+    completePreservedPackets: preservedPackets,
+    referenceQualified11140Projects: resolvedDynamicArguments,
     explicitlyUnqualified10739Projects: frontiers,
     referenceQualified10871Projects: resolvedMapperFrontiers,
     wholeCorpusQualified: false,
     packetCertificateFiles: [
       "./callback-owner-audit.ts",
+      "./callback-owner-reference.ts",
       "./callback-owner-packet-parity.ts",
       "./callback-owner-projects.ts",
       "./constructor-projection-parity.ts",
       "../../../../tests/tooling/support/lsp/installed-alias-replay/frames.ts",
       "../../../../crates/vize_canon/src/virtual_ts/scope/component_events/native_fallthrough.rs",
+      "../../../../crates/vize_canon/src/virtual_ts/helpers/declarations/component-global-attributes.d.ts.txt",
+      "../../../../crates/vize_canon/src/virtual_ts/scope/event_scope.rs",
     ].map((file) => ({
       file,
       sha256: createHash("sha256")

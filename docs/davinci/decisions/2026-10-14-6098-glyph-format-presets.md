@@ -135,6 +135,13 @@ defaults and profile assignments are unchanged. CLI witnesses pin complete
 true/false outputs, both quote preferences, comment and escape controls, and
 three-pass fixed points.
 
+The remaining direct CLI booleans are
+`--normalize-inline-styles[=false]`, `--normalize-v-for-parens[=false]`, and
+`--reindent-preprocessor-styles[=false]`. They project the existing typed
+options after config and preset selection. Their CLI matrix pins complete
+enabled/disabled output, explicit overrides, config-only behavior and three-pass
+fixed points, with dynamic/comment/destructuring/Sass/unbalanced-block controls.
+
 ## Script quote option parity
 
 The existing `jsxSingleQuote` boolean and `quoteProps` enum now have direct CLI

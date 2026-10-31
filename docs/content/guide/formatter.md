@@ -126,6 +126,9 @@ The same options are available as CLI flags:
 | `--normalize-directive-shorthands` | Turns `v-bind:`, `v-on:` and `v-slot:` into `:`, `@` and `#`. |
 | `--sort-blocks`                    | Toggles canonical SFC block ordering.                         |
 | `--normalize-css-quotes`          | Re-quotes CSS, SCSS and Less strings with the string quote preference. |
+| `--normalize-inline-styles`       | Lays out plain static `style` declarations on one line. |
+| `--normalize-v-for-parens`        | Wraps multiple `v-for` aliases in parentheses.         |
+| `--reindent-preprocessor-styles`  | Re-indents SCSS and Less blocks by nesting depth.      |
 
 Each of these guides covers one setting in detail:
 
@@ -179,6 +182,14 @@ CSS quote normalization also has the direct CLI override
 `--normalize-css-quotes[=false]`. Its explicit value applies after config and
 the selected preset. It follows `--single-quote`, keeps comments unchanged,
 and retains the other quote when that avoids additional escapes.
+
+The remaining normalizers also have direct overrides:
+`--normalize-inline-styles[=false]`, `--normalize-v-for-parens[=false]`, and
+`--reindent-preprocessor-styles[=false]`. Explicit values apply after config
+and presets. Inline-style normalization keeps dynamic styles and non-plain
+declaration lists unchanged. Alias normalization keeps destructuring and single
+aliases. Preprocessor indentation preserves tokens and leaves Sass and
+unbalanced blocks unchanged.
 
 Void-element closure is also available as the direct CLI override
 `--self-close-void-elements[=false]`. An explicit value applies after config

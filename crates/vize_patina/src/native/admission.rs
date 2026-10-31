@@ -7,7 +7,7 @@ use super::{
     attribute, header, header_rules,
     template::{
         NativeTemplateAttribute, NativeTemplateAttributeProfile, NativeTemplateElement,
-        NativeTemplateLintRefusal as Refusal,
+        NativeTemplateLintRefusal as Refusal, NativeTemplateTextProfile,
     },
 };
 
@@ -62,6 +62,25 @@ pub(in crate::native) fn children<'o, 'a>(
     component: &'o NativeComponent<'a>,
     children: NativeChildren<'o, 'a>,
     profile: NativeTemplateAttributeProfile,
+    visit_element: &mut impl FnMut(&NativeTemplateElement<'o, 'a>) -> Result<(), Refusal>,
+) -> Result<(), Refusal> {
+    // Preserve the existing bare-template/setup hosts' exact checked-text
+    // behavior. Only the distinct template-only SFC host freezes and supplies
+    // a new configured callback intersection below.
+    children_with_text_profile(
+        component,
+        children,
+        profile,
+        NativeTemplateTextProfile::LiteralText,
+        visit_element,
+    )
+}
+
+pub(in crate::native) fn children_with_text_profile<'o, 'a>(
+    component: &'o NativeComponent<'a>,
+    children: NativeChildren<'o, 'a>,
+    profile: NativeTemplateAttributeProfile,
+    text_profile: NativeTemplateTextProfile,
     visit_element: &mut impl FnMut(&NativeTemplateElement<'o, 'a>) -> Result<(), Refusal>,
 ) -> Result<(), Refusal> {
     for child in children {
@@ -134,13 +153,26 @@ pub(in crate::native) fn children<'o, 'a>(
                     // Retained header storage is bounded by the largest header,
                     // including possible SmallVec spill, not by ancestor depth.
                     drop(view);
-                    self::children(component, children, profile, visit_element)
+                    self::children_with_text_profile(
+                        component,
+                        children,
+                        profile,
+                        text_profile,
+                        visit_element,
+                    )
                 }
                 SurfaceChild::Text(token) => {
                     let span = checked_token(component, token)?;
                     // Unterminated native interpolation can be original Text.
                     // Text custody alone cannot certify the legacy parser result.
-                    if token.text.contains("{{") || token.text.contains('<') {
+                    if token.text.contains("{{")
+                        || token.text.contains('<')
+                        || (text_profile == NativeTemplateTextProfile::WhitespaceOnly
+                            && !token
+                                .text
+                                .bytes()
+                                .all(|byte| matches!(byte, b' ' | b'\t' | b'\r' | b'\n' | 12)))
+                    {
                         return Err(Refusal::UnsupportedText { span });
                     }
                     Ok(())

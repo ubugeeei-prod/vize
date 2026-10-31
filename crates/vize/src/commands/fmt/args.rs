@@ -108,6 +108,15 @@ pub struct FmtArgs {
     /// Normalize CSS, SCSS and Less string quotes using the string quote preference
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub normalize_css_quotes: Option<bool>,
+    /// Normalize plain static style attributes as one-line CSS declarations
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
+    pub normalize_inline_styles: Option<bool>,
+    /// Parenthesize multiple v-for aliases
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
+    pub normalize_v_for_parens: Option<bool>,
+    /// Re-indent SCSS and Less block contents by nesting depth
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
+    pub reindent_preprocessor_styles: Option<bool>,
     /// Apply a named set of defaults before the flags above
     #[arg(long, value_enum)]
     pub preset: Option<FmtPreset>,

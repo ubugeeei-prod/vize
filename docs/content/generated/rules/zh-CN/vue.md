@@ -1540,7 +1540,7 @@ v-slot:header 使用当前指令显式选择 header 插槽。
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L41) · [全部规则](all.md)
 
 ### `vue/no-deprecated-slot-scope-attribute`
 

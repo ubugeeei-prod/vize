@@ -146,6 +146,15 @@ pub(super) fn build_format_options(
     if let Some(v) = args.normalize_css_quotes {
         opts.normalize_css_quotes = v;
     }
+    if let Some(v) = args.normalize_inline_styles {
+        opts.normalize_inline_styles = v;
+    }
+    if let Some(v) = args.normalize_v_for_parens {
+        opts.normalize_v_for_parens = v;
+    }
+    if let Some(v) = args.reindent_preprocessor_styles {
+        opts.reindent_preprocessor_styles = v;
+    }
     opts.skip_script_stabilization = !args.write;
     (
         opts,

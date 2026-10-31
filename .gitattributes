@@ -50,6 +50,10 @@ tests/_fixtures/differential/typechecker/split-script-original/**/*.txt -text wh
 tests/_fixtures/differential/typechecker/v-for-source-original/**/*.txt -text whitespace=-blank-at-eol
 tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/** -text
 
+# Preserve the original plain-TypeScript reference worker's authored CRLF bytes.
+tests/_fixtures/differential/typechecker/project-session-retirement-11168/probe.ts.txt -text whitespace=cr-at-eol
+tests/_fixtures/differential/typechecker/project-session-retirement-11168/tsconfig.json.txt -text
+
 # Immutable formatter regressions include literal CRLF/CRCRLF output bytes.
 tests/_fixtures/differential/formatter/sfc-vue*/** -text whitespace=-blank-at-eol
 

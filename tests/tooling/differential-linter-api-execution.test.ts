@@ -45,11 +45,11 @@ void test("shared linter corpus retains every complete actual public observation
       legacyMatches: plannedCases,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: plannedCases - 10,
+      nativeUnsupported: plannedCases - 11,
       nativeFailures: 0,
-      nativeHandled: 10,
-      nativeEquivalent: 10,
-      pairedComparisons: 10,
+      nativeHandled: 11,
+      nativeEquivalent: 11,
+      pairedComparisons: 11,
     },
     JSON.stringify(report.rows, null, 2),
   );
@@ -67,9 +67,9 @@ void test("shared linter corpus retains every complete actual public observation
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
   assert.deepEqual(acceptance.total, {
     planned: plannedCases,
-    nativeHandled: 10,
-    nativeEquivalent: 10,
-    unsupported: plannedCases - 10,
+    nativeHandled: 11,
+    nativeEquivalent: 11,
+    unsupported: plannedCases - 11,
     legacyBacked: 0,
     unverified: 0,
   });
@@ -80,9 +80,11 @@ void test("shared linter corpus retains every complete actual public observation
       .filter(
         (fixture: any) =>
           fixture.id.startsWith("linter/component-name/") ||
-          ["linter/current-api/ref-string-untyped", "linter/current-api/ref-string-typed"].includes(
-            fixture.id,
-          ),
+          [
+            "linter/current-api/ref-string-untyped",
+            "linter/current-api/ref-string-typed",
+            "linter/current-api/slot-compat-vue3",
+          ].includes(fixture.id),
       )
       .map((fixture: any) => fixture.id)
       .sort(),
