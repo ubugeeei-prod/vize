@@ -4,7 +4,11 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { asArray, asRecord, readJsonRecord } from "../../../tools/support/json-value.ts";
-import { type DeclarationGraph } from "../../../tools/support/release/computed_event_custody.ts";
+import {
+  assertCustody,
+  fileImage,
+  type DeclarationGraph,
+} from "../../../tools/support/release/computed_event_custody.ts";
 import {
   assertLockedPackage,
   validateCapsule,
@@ -26,6 +30,7 @@ import {
 } from "../../../tools/support/release/slot_instance_public/observe.ts";
 import { providerManifest } from "../../../tools/support/release/slot_instance_public/install.ts";
 import { assertJournalPid } from "../../../tools/support/release/slot_instance_public/process.ts";
+import { mergeImages } from "../../../tools/support/release/slot_instance_public/libraries.ts";
 
 const sha = (raw: Buffer) => createHash("sha256").update(raw).digest("hex");
 const edgeFile = fileURLToPath(
@@ -35,6 +40,19 @@ const edgeFile = fileURLToPath(
   ),
 );
 const edges = readJsonRecord(edgeFile);
+test("overlapping library and program-input snapshots retain every unique file and reject changes", () => {
+  const first = { path: "/owned/typescript/lib/typescript.js", bytes: 10, sha256: "a".repeat(64) };
+  const second = { path: "/owned/vize/virtual-ts.d.ts", bytes: 20, sha256: "b".repeat(64) };
+  assert.deepEqual(mergeImages([first, second, { ...first }, { ...second }]), [first, second]);
+  assert.throws(() => mergeImages([first, { ...first, bytes: 11 }]));
+  assert.throws(() => mergeImages([first, { ...first, sha256: "c".repeat(64) }]));
+  const actual = fileImage(fileURLToPath(import.meta.url));
+  assert.throws(
+    () => assertCustody([actual, actual]),
+    "the original duplicate-path failure is real",
+  );
+  assertCustody(mergeImages([actual, { ...actual }]));
+});
 test("C12 nine and C13 ten remain exact separate source/version/edge roles", () => {
   for (const role of ["before", "head"] as const) {
     const profile = profiles[role],

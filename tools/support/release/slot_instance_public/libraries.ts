@@ -42,3 +42,15 @@ export function libraryImages(modules: string) {
 export function libraryVersion(name: string) {
   return name === "typescript" ? "6.0.3" : name === "typescript-native" ? "7.1.0-beta" : "3.5.42";
 }
+
+/** Overlapping observations must agree; never let a later hash replace an earlier one. */
+export function mergeImages(images: readonly FileImage[]) {
+  const unique = new Map<string, FileImage>();
+  for (const image of images) {
+    const previous = unique.get(image.path);
+    if (previous)
+      assert.deepEqual(image, previous, "the same physical input changed between observations");
+    else unique.set(image.path, image);
+  }
+  return [...unique.values()];
+}

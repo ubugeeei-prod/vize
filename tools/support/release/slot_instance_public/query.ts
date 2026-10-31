@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { realpathSync } from "node:fs";
 import type ts from "../../../../npm/cli/node_modules/typescript/lib/typescript.js";
 import { assertCustody, fileImage, inside } from "../computed_event_custody.ts";
+import { mergeImages } from "./libraries.ts";
 
 /** The API object comes from this role's installed TypeScript, never the workspace. */
 export function query(
@@ -92,17 +93,19 @@ export function query(
           }),
         };
       });
-  const inputs = program.getSourceFiles().map((item) => {
-    const filename = realpathSync(item.fileName);
-    assert.ok(
-      inside(project, filename) || inside(installation, filename),
-      "compiler input escaped the owned project and installed libraries",
-    );
-    const image = fileImage(filename);
-    // The actual program text and the physical bytes must describe the same input.
-    assert.equal(api.sys.readFile(filename), item.text);
-    return image;
-  });
+  const inputs = mergeImages(
+    program.getSourceFiles().map((item) => {
+      const filename = realpathSync(item.fileName);
+      assert.ok(
+        inside(project, filename) || inside(installation, filename),
+        "compiler input escaped the owned project and installed libraries",
+      );
+      const image = fileImage(filename);
+      // The actual program text and the physical bytes must describe the same input.
+      assert.equal(api.sys.readFile(filename), item.text);
+      return image;
+    }),
+  );
   assertCustody(inputs);
   return { rows, exports, module: module.name, inputs };
 }

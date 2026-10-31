@@ -9,6 +9,7 @@ import { assertProcess, assertRows, expected, modes, type Mode, type Role } from
 import type { install } from "./install.ts";
 import { capture } from "./process.ts";
 import { query } from "./query.ts";
+import { mergeImages } from "./libraries.ts";
 
 export function replaceOnce(source: string, before: string, after: string) {
   assert.equal(source.split(before).length, 2, "exactly one owned repair location");
@@ -143,8 +144,10 @@ export function observe(
     assert.equal(readFileSync(join(project, "package.json"), "utf8"), packageBytes);
     assert.equal(readFileSync(join(project, "tsconfig.json"), "utf8"), config);
     assertCustody(
-      [...targetQuery.inputs, ...preservationQuery.inputs].filter(
-        (image) => image.path !== realpathSync(target),
+      mergeImages(
+        [...targetQuery.inputs, ...preservationQuery.inputs].filter(
+          (image) => image.path !== realpathSync(target),
+        ),
       ),
     );
     assertCustody(installed.images);

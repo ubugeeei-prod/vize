@@ -16,7 +16,7 @@ import { hook, observed, verifyJournal } from "../editor_vite_stub/custody.ts";
 import { authenticate, assertLockedPackage, validateNative } from "./authority.ts";
 import { assertGraph, profiles, type Role } from "./contract.ts";
 import { assertJournalPid, capture } from "./process.ts";
-import { libraryImages, libraryVersion } from "./libraries.ts";
+import { libraryImages, libraryVersion, mergeImages } from "./libraries.ts";
 
 export function providerManifest(role: Role) {
   const vueNames = [
@@ -213,7 +213,7 @@ export async function install(
   verifyJournal(journal.journal, { binary }, cliVersion.status);
   assertJournalPid(readFileSync(journal.journal, "utf8"), cliVersion.pid);
   assert.ok(cliVersion.stdout.includes(version));
-  const images = [
+  const images = mergeImages([
     fileImage(join(root, "package.json")),
     fileImage(join(root, "package-lock.json")),
     fileImage(cliPackage.file),
@@ -236,7 +236,7 @@ export async function install(
     ),
     ...graph.files,
     ...libraries.files,
-  ];
+  ]);
   assertCustody(images);
   record.json("installed-identity.json", {
     role,
