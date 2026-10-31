@@ -267,27 +267,37 @@ test("raw streams and failed process metadata survive oracle rejection", () => {
   }
 });
 
-test("the real CLI retains a failed receipt when a source override is refused", () => {
+test("the real CLI retains a failed receipt for each isolated runtime override", () => {
   const directory = mkdtempSync(path.join(tmpdir(), "vize-computed-refusal-"));
   try {
-    const output = path.join(directory, "refused");
     const harness = fileURLToPath(
       new URL("../../../tools/support/release/computed_event_names.ts", import.meta.url),
     );
-    const result = captureProcess(
-      directory,
-      "refusal",
-      process.execPath,
-      [harness, "--version", "0.608.0", "--out", output],
-      directory,
-      { ...process.env, TSRS_BINARY: path.join(directory, "source-checker") },
+    const environment = Object.fromEntries(
+      Object.entries(process.env).filter(
+        ([name]) => !/^(?:NODE_OPTIONS$|NODE_PATH$|VIZE_|NAPI_RS_|TSRS_|CORSA_)/iu.test(name),
+      ),
     );
-    assert.equal(result.status, 1);
-    const receipt = JSON.parse(readFileSync(path.join(output, "receipt.json"), "utf8"));
-    assert.equal(receipt.status, "FAILED");
-    assert.equal(receipt.accepted, false);
-    assert.match(receipt.error.message, /runtime override: TSRS_BINARY/u);
-    assert.equal(existsSync(path.join(output, "consumer")), false, "refuse before installation");
+    for (const [key, value] of [
+      ["NODE_OPTIONS", "--no-warnings"],
+      ["TSRS_BINARY", path.join(directory, "source-checker")],
+    ]) {
+      const output = path.join(directory, key);
+      const result = captureProcess(
+        directory,
+        key.toLowerCase().replaceAll("_", "-"),
+        process.execPath,
+        [harness, "--version", "0.608.0", "--out", output],
+        directory,
+        { ...environment, [key]: value },
+      );
+      assert.equal(result.status, 1);
+      const receipt = JSON.parse(readFileSync(path.join(output, "receipt.json"), "utf8"));
+      assert.equal(receipt.status, "FAILED");
+      assert.equal(receipt.accepted, false);
+      assert.match(receipt.error.message, new RegExp(`runtime override: ${key}$`, "u"));
+      assert.equal(existsSync(path.join(output, "consumer")), false, "refuse before installation");
+    }
   } finally {
     rmSync(directory, { recursive: true });
   }
