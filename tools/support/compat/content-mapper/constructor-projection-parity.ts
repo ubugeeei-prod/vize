@@ -283,13 +283,14 @@ function relocationEdits(
       label: "helper prefix",
     });
   if (!assets.baseNativeAttributes.equals(assets.headNativeAttributes)) {
-    const aliasStart = uniqueOffset(before, Buffer.from(previousNativeAttributeAliases));
-    certifiedEdits.push({
-      start: aliasStart,
-      end: aliasStart + Buffer.byteLength(previousNativeAttributeAliases),
-      replacement: Buffer.from(currentNativeAttributeAliases),
-      label: "native attribute alias",
-    });
+    const transition = certifiedTransition(
+      before,
+      after,
+      previousNativeAttributeAliases,
+      currentNativeAttributeAliases,
+      "native attribute alias",
+    );
+    if (transition) certifiedEdits.push(transition);
   }
   for (const transition of [
     certifiedTransition(before, after, previousSlotsExport, currentSlotsExport, "Slots export"),

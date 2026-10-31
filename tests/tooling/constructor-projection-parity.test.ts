@@ -68,6 +68,134 @@ function fixture(selectedAssets: Assets = assets) {
   };
 }
 
+function nativeMigrationAssets(): Assets {
+  return {
+    ...assets,
+    baseNativeAttributes: Buffer.from(
+      assets.baseNativeAttributes
+        .toString()
+        .replace(currentNativeAttributeAliases, previousNativeAttributeAliases),
+    ),
+  };
+}
+
+function virtualPacket(packet: ReturnType<typeof fixture>["base"]) {
+  return {
+    virtual_ts: packet.text,
+    virtual_ts_mappings: packet.mappings.map(([start, length, source, sourceLength]) => ({
+      generated: { start, end: start + length },
+      authored: { start: source, end: source + sourceLength },
+      subSpans: [],
+    })),
+    virtual_ts_semantic_links: packet.semanticLinks.map((link) => ({
+      source: { start: link.sourceStart, end: link.sourceStart + link.sourceLength },
+      target: { start: link.targetStart, end: link.targetStart + link.targetLength },
+      kind: link.kind,
+    })),
+    diagnostics: packet.diagnostics,
+    opaque: { producer: "unchanged" },
+  };
+}
+
+test("native alias migration applies only where each mapper or virtual packet emits it", () => {
+  const migratedAssets = nativeMigrationAssets();
+  const previous = migratedAssets.baseNativeAttributes,
+    current = migratedAssets.headNativeAttributes,
+    absent = Buffer.alloc(0);
+  for (const [before, after, edits] of [
+    [absent, absent, 2],
+    [previous, previous, 2],
+    [current, current, 2],
+    [previous, current, 3],
+  ] as const) {
+    const pair = fixture({
+      ...migratedAssets,
+      baseNativeAttributes: before,
+      headNativeAttributes: after,
+    });
+    const mapper = relocatePacket(pair.base, pair.head, pair.source, migratedAssets);
+    const virtual = relocateVirtualPacket(
+      virtualPacket(pair.base),
+      virtualPacket(pair.head),
+      pair.source,
+      migratedAssets,
+      migratedAssets.imported,
+    );
+    assert.equal(mapper.edits.length, edits);
+    assert.deepEqual(virtual, mapper);
+  }
+});
+
+test("native alias inventory cannot add, remove, duplicate or alter either packet", () => {
+  const migratedAssets = nativeMigrationAssets();
+  const previous = migratedAssets.baseNativeAttributes.toString(),
+    current = migratedAssets.headNativeAttributes.toString();
+  for (const [before, after] of [
+    ["", current],
+    [previous, ""],
+    [current, ""],
+    [current, previous],
+    [previous + previous, current],
+    [previous, current + current],
+    [current + current, current + current],
+    [previous, current.replace("Extract<", "Awaited<")],
+    ["", current.replace("Extract<", "Awaited<")],
+  ]) {
+    const pair = fixture({
+      ...migratedAssets,
+      baseNativeAttributes: Buffer.from(before),
+      headNativeAttributes: Buffer.from(after),
+    });
+    assert.throws(() => relocatePacket(pair.base, pair.head, pair.source, migratedAssets));
+    assert.throws(() =>
+      relocateVirtualPacket(
+        virtualPacket(pair.base),
+        virtualPacket(pair.head),
+        pair.source,
+        migratedAssets,
+        migratedAssets.imported,
+      ),
+    );
+  }
+});
+
+test("native alias migration retains both packet range and complete diagnostic guards", () => {
+  const migratedAssets = nativeMigrationAssets();
+  for (const mutation of ["generated-range", "authored-range", "diagnostic"]) {
+    const pair = fixture(migratedAssets);
+    if (mutation === "generated-range") {
+      for (const [packet, alias] of [
+        [pair.base, previousNativeAttributeAliases],
+        [pair.head, currentNativeAttributeAliases],
+      ] as const) {
+        const start = bytes(packet.text.slice(0, packet.text.indexOf(alias)));
+        packet.mappings.push([start - 1, 2, 0, 1, 1, 0]);
+      }
+    } else if (mutation === "authored-range") {
+      pair.base.mappings[1][2] = bytes(pair.source) + 1;
+      pair.head.mappings[1][2] = bytes(pair.source) + 1;
+    } else pair.head.diagnostics[0].messageText = "changed";
+    const message =
+      mutation === "generated-range"
+        ? /certified replacement/
+        : mutation === "authored-range"
+          ? /exceeds/
+          : /complete.*packet/;
+    assert.throws(() => relocatePacket(pair.base, pair.head, pair.source, migratedAssets), message);
+    assert.throws(
+      () =>
+        relocateVirtualPacket(
+          virtualPacket(pair.base),
+          virtualPacket(pair.head),
+          pair.source,
+          migratedAssets,
+          migratedAssets.imported,
+        ),
+      message,
+    );
+  }
+});
+
 test("certified helper and self-described coordinates preserve complete packets", () => {
   const { source, base, head } = fixture();
   const proof = relocatePacket(base, head, source, assets);
