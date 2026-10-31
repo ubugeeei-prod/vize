@@ -38,6 +38,26 @@ impl NativeTemplateAttributeProfile {
     }
 }
 
+/// Original literal text is admitted only when every configured callback in
+/// the template-only SFC host offers that capability. This does not establish
+/// interpolation, comment suppression, text decoding or runtime semantics.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum NativeTemplateTextProfile {
+    #[default]
+    WhitespaceOnly,
+    LiteralText,
+}
+
+impl NativeTemplateTextProfile {
+    pub(in crate::native) fn intersect(self, other: Self) -> Self {
+        if self == Self::LiteralText && other == Self::LiteralText {
+            Self::LiteralText
+        } else {
+            Self::WhitespaceOnly
+        }
+    }
+}
+
 /// No partial findings or silent omission can turn an unsupported input clean.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NativeTemplateLintRefusal {

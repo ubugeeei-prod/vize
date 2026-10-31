@@ -36,6 +36,8 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, SourceLocation};
 
+mod native;
+
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-slot-attribute",
     description: "Disallow the deprecated `slot` attribute",
@@ -50,6 +52,12 @@ pub struct NoDeprecatedSlotAttribute;
 impl Rule for NoDeprecatedSlotAttribute {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_native_sfc_template_rule(
+        &self,
+    ) -> Option<&dyn crate::native::sfc::NativeSfcTemplateRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

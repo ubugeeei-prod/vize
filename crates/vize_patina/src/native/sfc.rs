@@ -18,11 +18,13 @@ mod context;
 mod driver;
 mod envelope;
 mod owner;
+mod template;
 #[cfg(test)]
 mod tests;
 
 pub use context::NativeSfcLintContext;
 pub use owner::{NativeSfcLintOwner, NativeSfcSetup};
+pub use template::{NativeSfcTemplateLintContext, NativeSfcTemplateOwner, NativeSfcTemplateRule};
 
 /// Real original evidence; an error never returns pending product findings.
 #[derive(Debug, Clone, PartialEq, Eq)]

@@ -44,6 +44,46 @@ pub(super) fn check(descriptor: &DescriptorObservation<'_>) -> Result<(), Refusa
     whitespace(root, Span::new(end, root.whole_block().span().end))
 }
 
+/// A separate original envelope; the setup host's two-block contract above is
+/// unchanged. No script, style, custom block, src or template attribute is
+/// supplied by this first template-only capability.
+pub(super) fn check_template_only(descriptor: &DescriptorObservation<'_>) -> Result<(), Refusal> {
+    let admitted = descriptor.admitted().map_err(|error| Refusal::Descriptor {
+        issues: error.issues().to_vec(),
+        errors: error.errors().to_vec(),
+    })?;
+    let root = admitted.root();
+    let blocks = &descriptor.container().blocks;
+    let template = admitted.template().ok_or(Refusal::UnsupportedEnvelope {
+        span: root.whole_block().span(),
+    })?;
+    if blocks.len() != 1
+        || admitted.ordinary().is_some()
+        || admitted.setup().is_some()
+        || admitted.styles().len() != 0
+        || template.container_index() != 0
+    {
+        return Err(Refusal::UnsupportedEnvelope {
+            span: root.whole_block().span(),
+        });
+    }
+    let block = blocks.first().ok_or(Refusal::SourceMismatch)?;
+    if !block.attrs.is_empty() {
+        return Err(Refusal::UnsupportedEnvelope {
+            span: block.open_tag,
+        });
+    }
+    whitespace(root, Span::new(0, block.open_tag.start))?;
+    check_block(root, block)?;
+    whitespace(
+        root,
+        Span::new(
+            block.close_tag.ok_or(Refusal::SourceMismatch)?.end,
+            root.whole_block().span().end,
+        ),
+    )
+}
+
 fn whitespace(root: SourceRoot<'_>, span: Span) -> Result<(), Refusal> {
     let text = root
         .source()
