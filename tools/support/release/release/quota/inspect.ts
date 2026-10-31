@@ -53,7 +53,8 @@ export function inspectCrateQuota(
     numbers = new Set<string>();
   const versions: HistoryVersion[] = [];
   let total: number | null = null,
-    previous = Infinity;
+    previous = Infinity,
+    previousPageSize = 0;
   for (const snapshot of snapshots) {
     requireValue(
       expected !== null && snapshot.url === expected && !urls.has(snapshot.url),
@@ -61,6 +62,15 @@ export function inspectCrateQuota(
     );
     urls.add(snapshot.url);
     const decoded = page(snapshot, now);
+    if (decoded.terminal) {
+      requireValue(
+        total !== null && total > 0 && total === versions.length && previousPageSize === PAGE_SIZE,
+        "terminal seek page requires an already complete full-page history",
+      );
+      // Preserve the enumerated total without changing the API's reported zero or raw evidence.
+      expected = decoded.next;
+      continue;
+    }
     requireValue(total === null || total === decoded.total, "history total changed during read");
     total = decoded.total;
     for (const value of decoded.rows) {
@@ -72,6 +82,7 @@ export function inspectCrateQuota(
       previous = row.timestamp;
       versions.push(row);
     }
+    previousPageSize = decoded.rows.length;
     expected = decoded.next;
   }
   requireValue(expected === null && total === versions.length, "entire history not enumerated");
