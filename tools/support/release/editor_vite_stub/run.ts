@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdirSync, realpathSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { Recorder } from "../../config/windows_consumer/common.ts";
 import { authenticate } from "./authority.ts";
@@ -7,6 +8,11 @@ import { install } from "./install.ts";
 import { configAcceptance } from "./config.ts";
 import { editorAcceptance } from "./editor.ts";
 
+assert.equal(
+  process.env.VIZE_LSP_LOG_FILE,
+  undefined,
+  "public default logging requires VIZE_LSP_LOG_FILE to remain unset",
+);
 assert.equal(
   process.env.GITHUB_ACTIONS,
   "true",
@@ -34,6 +40,16 @@ const [version, source, blob, output] = process.argv.slice(2);
 assert.ok(version && source && blob && output);
 mkdirSync(output, { recursive: false });
 const record = new Recorder(realpathSync(output));
+record.json("default-logging-environment.json", {
+  logFileOverride: null,
+  osHome: homedir(),
+  cacheEnvironment: Object.fromEntries(
+    ["HOME", "XDG_CACHE_HOME", "LOCALAPPDATA", "APPDATA", "USERPROFILE"].map((name) => [
+      name,
+      process.env[name] ?? null,
+    ]),
+  ),
+});
 const authority = authenticate(version, source, blob, record);
 const project = join(record.root, "consumer"),
   tooling = join(record.root, "package-manager");
