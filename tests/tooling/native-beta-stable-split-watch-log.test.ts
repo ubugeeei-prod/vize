@@ -109,7 +109,13 @@ function splitLogFixture() {
     "1 paths ineligible for watching\n",
     "errors updating watches: [failed to register file watcher: context canceled failed to register file watcher: context canceled]\n",
   ].map((text, index) => ({ at: at(10 + index), data: Buffer.from(text) }));
-  return { context, client, server, stderr, eof: [at(9)] };
+  return {
+    context,
+    client,
+    server,
+    stderr,
+    eof: [{ at: at(9), tid: 3, line: 0, completion: { returnedAt: at(9), returnedBy: null } }],
+  };
 }
 function splitLog(
   f: ReturnType<typeof splitLogFixture>,
@@ -138,6 +144,7 @@ function splitLog(
     })),
     ...f.stderr.map((row, line) => ({ ...row, op: "write", fd: 2, tid: 3, line })),
   ];
+  for (const row of io) row.completion = { returnedAt: row.at, returnedBy: null };
   mutateIo?.(io);
   return observeStableSplitWatchLog(
     f.client.map((row) => row.packet),
@@ -167,6 +174,15 @@ test("a complete split watch log is only a historical baseline observation", () 
     result.stderrWrites.map((row) => Buffer.from(row.hex, "hex")),
     f.stderr.map((row) => row.data),
   );
+});
+
+test("split-watch semantics retain bytes independently of successful write partition", () => {
+  const f = splitLogFixture();
+  f.stderr = [{ at: f.stderr[0]!.at, data: Buffer.concat(f.stderr.map((row) => row.data)) }];
+  const result = splitLog(f);
+  assert.equal(result.stderrWrites.length, 1);
+  assert.equal(result.candidateFunctionalPass, false);
+  assert.deepEqual(Buffer.from(result.stderrWrites[0]!.hex, "hex"), f.stderr[0]!.data);
 });
 
 test("split logs reject wrong actors, payloads, timing, incomplete streams and unmatched requests", () => {
@@ -283,7 +299,8 @@ test("split logs reject wrong actors, payloads, timing, incomplete streams and u
     [
       "EOF before ACK",
       (f) => {
-        f.eof[0] = f.server[2]!.at;
+        f.eof[0]!.at = f.server[2]!.at;
+        f.eof[0]!.completion.returnedAt = f.server[2]!.at;
       },
     ],
     [
@@ -307,13 +324,13 @@ test("split logs reject wrong actors, payloads, timing, incomplete streams and u
     [
       "extra request",
       (f) => {
-        f.client.push({ packet: { jsonrpc: "2.0", id: 99, method: "other" }, at: f.eof[0]! });
+        f.client.push({ packet: { jsonrpc: "2.0", id: 99, method: "other" }, at: f.eof[0]!.at });
       },
     ],
     [
       "standard exit notification",
       (f) => {
-        f.client.push({ packet: { jsonrpc: "2.0", method: "exit" }, at: f.eof[0]! });
+        f.client.push({ packet: { jsonrpc: "2.0", method: "exit" }, at: f.eof[0]!.at });
       },
     ],
   ];

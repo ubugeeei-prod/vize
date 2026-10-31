@@ -232,18 +232,16 @@ export function verifyNativeRelations(
   };
 }
 
-export interface WatcherTimedIo {
-  at: string;
+import { requireCompletedBefore, type NativeTimedObservation } from "./native-io.ts";
+export interface WatcherTimedIo extends NativeTimedObservation {
   op: string;
   fd: number;
-  tid: number;
-  line: number;
   data: Uint8Array;
 }
 export function requireCandidateStableStderr(bytes: Uint8Array) {
   assert.equal(bytes.byteLength, 0, "Candidate stable stderr must be empty");
 }
-const micros = (value: string) => {
+export const micros = (value: string) => {
   assert.match(value, /^[0-9]+\.[0-9]{6}$/u, "whole syscall timestamp required");
   return BigInt(value.replace(".", ""));
 };
@@ -253,7 +251,7 @@ function timedPackets(io: readonly WatcherTimedIo[], op: string, fd: number) {
     .sort((a, b) => a.at.localeCompare(b.at) || a.tid - b.tid || a.line - b.line);
   const raw = Buffer.concat(chunks.map((row) => Buffer.from(row.data)));
   let offset = 0;
-  const packets: Array<{ packet: Packet; at: string }> = [];
+  const packets: Array<{ packet: Packet; at: string; parts: NativeTimedObservation[] }> = [];
   while (offset < raw.length) {
     const marker = raw.indexOf("\r\n\r\n", offset);
     assert.ok(marker >= 0, "complete timed native header required");
@@ -262,10 +260,21 @@ function timedPackets(io: readonly WatcherTimedIo[], op: string, fd: number) {
     const end = marker + 4 + Number(header.slice("Content-Length: ".length));
     assert.ok(end <= raw.length, "complete timed native body required");
     let bytes = 0;
-    const chunk = chunks.find((row) => (bytes += row.data.length) >= end)!;
+    const parts = chunks.filter((row) => {
+      const begin = bytes;
+      bytes += row.data.length;
+      return begin < end && bytes > offset;
+    });
     packets.push({
       packet: object(JSON.parse(raw.subarray(marker + 4, end).toString("utf8"))),
-      at: chunk.at,
+      at: parts.at(-1)!.at,
+      parts: parts.map(({ at, tid, line, startedLine, completion }) => ({
+        at,
+        tid,
+        line,
+        startedLine,
+        completion,
+      })),
     });
     offset = end;
   }
@@ -273,12 +282,12 @@ function timedPackets(io: readonly WatcherTimedIo[], op: string, fd: number) {
 }
 
 /** One historical log split across protocol stdout and post-EOF stderr. */
-export function observeStableSplitWatchLog(
+export function stableWatchActor(
   client: readonly unknown[],
   server: readonly unknown[],
   context: WatcherContext,
   io: readonly WatcherTimedIo[],
-  eofTimes: readonly string[],
+  eofReads: readonly NativeTimedObservation[],
 ) {
   assert.equal(context.role, "before", "split watch log is a baseline observation only");
   assert.equal(context.source, historicalSource);
@@ -365,8 +374,8 @@ export function observeStableSplitWatchLog(
     micros(initialized.at) < micros(projectReply.at) &&
       micros(projectReply.at) < micros(shutdownAck.at),
   );
-  const eofAt = one([...eofTimes], "one owned native stdin EOF required");
-  assert.ok(micros(shutdownAck.at) < micros(eofAt));
+  const eof = one([...eofReads], "one owned native stdin EOF required");
+  for (const part of shutdownAck.parts) requireCompletedBefore(part, eof);
   const header = one(
     output.filter(
       (row) =>
@@ -384,7 +393,10 @@ export function observeStableSplitWatchLog(
       message: `Added new watch: root files for ${config} watcher 6.0`,
     },
   });
-  assert.ok(micros(eofAt) < micros(header.at));
+  assert.ok(
+    micros(eof.at) < micros(header.at),
+    "header entry follows EOF entry, not its unobserved return",
+  );
   const watcher = one(
     output.filter(
       (row) =>
@@ -416,29 +428,18 @@ export function observeStableSplitWatchLog(
   );
   assert.equal(watcherAck.packet.result, null);
   closed(watcherAck.packet, ["jsonrpc", "id", "result"]);
-  assert.ok(micros(watcher.at) < micros(watcherAck.at) && micros(watcherAck.at) < micros(eofAt));
+  assert.ok(micros(watcher.at) < micros(watcherAck.at));
+  for (const part of watcherAck.parts) requireCompletedBefore(part, eof);
   const stderr = io
     .filter((row) => row.op === "write" && row.fd === 2)
     .sort((a, b) => a.at.localeCompare(b.at) || a.tid - b.tid || a.line - b.line);
-  const expected = [
-    `\t${project}/**/*\n`,
-    "\n",
-    "1 paths ineligible for watching\n",
-    "errors updating watches: [failed to register file watcher: context canceled failed to register file watcher: context canceled]\n",
-  ];
-  assert.deepEqual(
-    stderr.map((row) => Buffer.from(row.data)),
-    expected.map((row) => Buffer.from(row)),
-  );
-  for (const row of stderr)
-    assert.ok(micros(eofAt) < micros(row.at), "each stderr write must follow owned native EOF");
+  for (const row of stderr) requireCompletedBefore(eof, row);
   return {
-    schema: "vize.nativeStableWatcher.splitWatchLogObservation.v1",
     context,
-    nativeQualification: false,
-    candidateFunctionalPass: false,
-    lifecyclePass: false,
-    registrationPass: true,
+    project,
+    config,
+    input,
+    output,
     header,
     projectInfo,
     projectReply,
@@ -446,9 +447,44 @@ export function observeStableSplitWatchLog(
     shutdownAck,
     watcher,
     watcherAck,
-    nativeStdinEofAt: eofAt,
-    stderrWrites: stderr.map((row) => ({
+    eof,
+    stderr,
+  };
+}
+
+export function observeStableSplitWatchLog(
+  client: readonly unknown[],
+  server: readonly unknown[],
+  context: WatcherContext,
+  io: readonly WatcherTimedIo[],
+  eofReads: readonly NativeTimedObservation[],
+) {
+  const actor = stableWatchActor(client, server, context, io, eofReads);
+  const expected =
+    `\t${actor.project}/**/*\n\n1 paths ineligible for watching\n` +
+    "errors updating watches: [failed to register file watcher: context canceled failed to register file watcher: context canceled]\n";
+  assert.deepEqual(
+    Buffer.concat(actor.stderr.map((row) => Buffer.from(row.data))),
+    Buffer.from(expected),
+  );
+  return {
+    schema: "vize.nativeStableWatcher.splitWatchLogObservation.v1",
+    context,
+    nativeQualification: false,
+    candidateFunctionalPass: false,
+    lifecyclePass: false,
+    registrationPass: true,
+    header: actor.header,
+    projectInfo: actor.projectInfo,
+    projectReply: actor.projectReply,
+    shutdown: actor.shutdown,
+    shutdownAck: actor.shutdownAck,
+    watcher: actor.watcher,
+    watcherAck: actor.watcherAck,
+    nativeStdinEof: actor.eof,
+    stderrWrites: actor.stderr.map((row) => ({
       at: row.at,
+      completion: row.completion,
       tid: row.tid,
       line: row.line,
       hex: Buffer.from(row.data).toString("hex"),

@@ -87,6 +87,12 @@ void test("typed producers retain historical bytes and only the exact registered
     "configured-startup-beta-semantic-route-41108828160",
   );
   assert.equal(current.currentSplitLogRegistration, "before-stable-split-watch-log-41152849787");
+  assert.equal(current.currentTerminalRegistration, "before-stable-terminal-stderr-41156819864");
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentTerminalRegistration === null),
+  );
   assert(
     custody
       .filter((entry) => entry !== current)
@@ -139,6 +145,8 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
     "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
+    "tests/tooling/support/native-beta-dto/native-io.ts",
+    "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
     ...["client.bin", "server.bin", "identity.json"].map(
       (name) =>
         "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/" +
@@ -170,6 +178,18 @@ void test("current observer successor requires its exact bounded runtime and act
   ])
     assert.throws(() => validate([row], [], { [types]: Buffer.from(mutation) }));
   const route = "tests/tooling/support/native-beta-dto/beta-attached-route.ts";
+  for (const path of [
+    "tests/tooling/support/native-beta-dto/native-io.ts",
+    "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
+  ])
+    assert.throws(() =>
+      validate([row], [], {
+        [path]: Buffer.concat([
+          fs.readFileSync(path),
+          Buffer.from("\ntype ChangedContract = unknown;\n"),
+        ]),
+      }),
+    );
   assert.throws(() =>
     validate([row], [], {
       [route]: Buffer.from(

@@ -86,11 +86,18 @@ const runtime = (source: Buffer) =>
 const watcherSuccessor = {
   id: "before-stable-post-shutdown-observation-41099824102",
   splitLogId: "before-stable-split-watch-log-41152849787",
-  auditRuntimeSha256: "cc9db627d84973fbaab2794550079754e81fe7c75b21e0adead802f93b2f759d",
+  terminalId: "before-stable-terminal-stderr-41156819864",
+  ioPath: "tests/tooling/support/native-beta-dto/native-io.ts",
+  ioSha256: "77a6440bc9da8a899fa3a39223b879a960bb89bf7fdf63289e4cafc3d04303e0",
+  ioRuntimeSha256: "edab52799b4f83a7726fbbacf9176d1cfab57e8d557cd5ed34462b8c974960cf",
+  terminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
+  terminalSha256: "83b167d4146f812255b01a946ead297693bad85cdf904817e4207a2bf1c97c35",
+  terminalRuntimeSha256: "2ed2edfda0877fa9a4b1093242f8501c5fb2ce834dfaf39ff478edfa9da18013",
+  auditRuntimeSha256: "4469b3610fbd9c148a9ec3c35669cd789839ac7d407dc5de6a32df4d81322235",
   typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
   typesSha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
-  helperRuntimeSha256: "1f67480f2ebbba6b10951245434a3b736cb8918c3066dc05b795b2441e25ef33",
+  helperRuntimeSha256: "41dae1bd87d7dfa9a1807950eb37944ffaca2eba703b9710a0b48f69c48e25bb",
   routeId: "configured-startup-beta-semantic-route-41108828160",
   routePath: "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
   routeRuntimeSha256: "c577043a694e0254b9be7b4505cb49531e527431be332c3343b814f3c4d2ae40",
@@ -151,6 +158,18 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       require(route !== null &&
         sha(Buffer.from(runtime(route))) ===
           watcherSuccessor.routeRuntimeSha256, "missing or changed registered beta semantic route runtime");
+      for (const [path, physical, executable] of [
+        [watcherSuccessor.ioPath, watcherSuccessor.ioSha256, watcherSuccessor.ioRuntimeSha256],
+        [
+          watcherSuccessor.terminalPath,
+          watcherSuccessor.terminalSha256,
+          watcherSuccessor.terminalRuntimeSha256,
+        ],
+      ]) {
+        const dependency = pinned(read, path, physical);
+        require(sha(Buffer.from(runtime(dependency))) ===
+          executable, "unregistered terminal IO dependency runtime");
+      }
       for (const [name, hash] of watcherSuccessor.actualFiles)
         pinned(
           read,
@@ -169,6 +188,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       currentSha256: sha(current),
       currentRuntimeRegistration: index === 3 ? watcherSuccessor.id : null,
       currentSplitLogRegistration: index === 3 ? watcherSuccessor.splitLogId : null,
+      currentTerminalRegistration: index === 3 ? watcherSuccessor.terminalId : null,
       currentRouteRegistration: index === 3 ? watcherSuccessor.routeId : null,
       currentTypeDependency,
     };

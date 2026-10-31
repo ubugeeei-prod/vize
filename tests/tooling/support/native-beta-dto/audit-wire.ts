@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { createInterface } from "node:readline";
 import {
   observeStableSplitWatchLog,
   requireCandidateStableStderr,
@@ -10,6 +9,13 @@ import {
 } from "./stable-watcher-boundary.ts";
 import { verifyBetaAttachedRoute } from "./beta-attached-route.ts";
 import type { Packet, Syscall, StreamPair, Provider, Source, Receipt } from "./audit-wire-types.ts";
+import {
+  readNativeTrace,
+  nativeOwnerTerminalState,
+  requireNoUnknownNativeWrites,
+  requireSingleTerminalStderrRole,
+} from "./native-io.ts";
+import { observeTerminalStableStderr } from "./terminal-stderr.ts";
 
 const root = process.env.VIZE_NATIVE_DTO_CAPTURE!;
 const load = (name: string): unknown => JSON.parse(fs.readFileSync(path.join(root, name), "utf8"));
@@ -22,78 +28,8 @@ assert.equal(source.sdkVersion, provider.version);
 assert.equal(source.sdkSha256, provider.executableSha256);
 assert.equal(source.source, process.env.VIZE_NATIVE_DTO_SOURCE_SHA);
 assert.equal(source.rows.length, 3);
-const files = fs
-  .readdirSync(root)
-  .filter((file) => /^syscalls\.\d+$/.test(file))
-  .sort();
-assert(files.length, "Actual native syscalls required");
-const threads = new Map<number, number>();
-const leaders: Array<{ pid: number; argvObservation: string; lsp: boolean }> = [];
-const exits = new Map<number, number>();
-const records: Syscall[] = [];
-const eofReads: Array<{ tid: number; fd: number; at: string }> = [];
-const unhex = (value: string) => Buffer.from(value.replaceAll("\\x", ""), "hex");
-for (const file of files) {
-  const tid = Number(file.split(".").at(-1));
-  let pending: string | undefined;
-  let lineNumber = 0;
-  const lines = createInterface({
-    input: fs.createReadStream(path.join(root, file)),
-    crlfDelay: Infinity,
-  });
-  for await (const original of lines) {
-    lineNumber += 1;
-    let line = original;
-    if (line.includes("<unfinished ...>")) {
-      assert.equal(pending, undefined, "Unobserved nested syscall");
-      pending = line.replace("<unfinished ...>", "");
-      continue;
-    }
-    if (line.includes("resumed>")) {
-      assert(pending, "Resumed syscall has no observed start");
-      line = pending + line.slice(line.indexOf("resumed>") + "resumed>".length);
-      pending = undefined;
-    }
-    const exit = /\+\+\+ exited with (\d+) \+\+\+/.exec(line);
-    if (exit) exits.set(tid, Number(exit[1]));
-    if (line.includes("execve(") && line.endsWith("= 0")) {
-      const decoded = line.replace(/(?:\\x[0-9a-f]{2})+/g, (value) =>
-        unhex(value).toString("utf8"),
-      );
-      if (decoded.includes(provider.executable))
-        leaders.push({ pid: tid, argvObservation: decoded, lsp: decoded.includes("--lsp") });
-    }
-    const child = /clone(?:3)?\(.*\)\s+=\s+(\d+)$/.exec(line);
-    if (child && line.includes("CLONE_THREAD")) threads.set(Number(child[1]), tid);
-    const call =
-      /^([0-9]+\.[0-9]+) (read|write)\((\d+), "((?:\\x[0-9a-f]{2})*)", [0-9]+\)\s+=\s+(\d+)/.exec(
-        line,
-      );
-    const vector = /^([0-9]+\.[0-9]+) (readv|writev)\((\d+), (.*)\)\s+=\s+(\d+)/.exec(line);
-    if (!call && !vector) continue;
-    const [, at, operation, fd, encoded, count] = (call ?? vector)!;
-    const data = call
-      ? unhex(encoded)
-      : Buffer.concat(
-          [...encoded.matchAll(/iov_base="((?:\\x[0-9a-f]{2})*)"/g)].map((match) =>
-            unhex(match[1]),
-          ),
-        );
-    assert(data.length >= Number(count), `${file}:${lineNumber}: truncated successful syscall`);
-    if (Number(count) === 0 && operation === "read") eofReads.push({ tid, fd: Number(fd), at });
-    if (Number(count))
-      records.push({
-        at,
-        op: operation.replace(/v$/, ""),
-        fd: Number(fd),
-        tid,
-        data: data.subarray(0, Number(count)),
-        file,
-        line: lineNumber,
-      });
-  }
-  // An unfinished blocking read at process exit carries no returned bytes.
-}
+const trace = await readNativeTrace(root, provider.executable);
+const { threads, leaders, exits, records, eofReads } = trace;
 const native = leaders.filter((entry) => entry.lsp).sort((a, b) => a.pid - b.pid);
 assert(native.length >= 2, "Separate owned-API and attached-editor native scopes required");
 function owner(value: number): number {
@@ -137,6 +73,10 @@ const watcherBoundaryObservations: NonNullable<ReturnType<typeof verifyNativeRel
 const splitWatchLogObservations: Array<{
   nativeOwner: number;
   observation: ReturnType<typeof observeStableSplitWatchLog>;
+}> = [];
+const terminalStderrObservations: Array<{
+  nativeOwner: number;
+  observation: ReturnType<typeof observeTerminalStableStderr>;
 }> = [];
 function relations(
   client: Packet[],
@@ -378,6 +318,10 @@ save("closed-full-wire.json", {
   leaders,
   owners: receipts,
 });
+save(
+  "native-io-terminal-states.json",
+  native.map((row) => nativeOwnerTerminalState(trace, row.pid)),
+);
 function requireStableWatcherShutdown(bytes: Buffer) {
   const watch =
     /^Added new watch: root files for (\/tmp\/[^\n]+)\/tsconfig\.json watcher 6\.0\n\t\1\/\*\*\/\*\n\n/u.exec(
@@ -401,6 +345,9 @@ function requireStableWatcherShutdown(bytes: Buffer) {
 // The immutable beta baseline is an expected-refusal observation. This never
 // grants functional or lifecycle PASS to its DTO refusal or standard-exit error.
 const baseline = source.role === "before" && provider.version === "7.1.0-beta";
+if (!stableRegistrationBaseline)
+  for (const row of native)
+    requireNoUnknownNativeWrites(nativeOwnerTerminalState(trace, row.pid).unknownWrites);
 if (baseline) {
   assert(
     source.rows.every(
@@ -439,6 +386,30 @@ if (baseline) {
     }
     assert.equal(receipt.nativeExit, 0, "Actual candidate/control native owner must exit cleanly");
     const bytes = fs.readFileSync(path.join(root, receipt.stderr.file));
+    const terminal = nativeOwnerTerminalState(trace, receipt.nativeOwner);
+    if (terminal.unknownWrites.length) {
+      assert.ok(stableRegistrationBaseline, "Unknown native writes refuse current qualification");
+      assert.equal(receipt.registrationRefusals, 0);
+      terminalStderrObservations.push({
+        nativeOwner: receipt.nativeOwner,
+        observation: observeTerminalStableStderr(
+          receipt.streams.find((row) => row.fd === 0)!.client!.packets,
+          receipt.streams.find((row) => row.fd === 1)!.server!.packets,
+          {
+            source: source.source,
+            role: source.role,
+            sdkVersion: provider.version,
+            sdkSha256: provider.executableSha256,
+            sdkExecutable: provider.executable,
+            projectRoots: [source.root, source.attached.root],
+          },
+          records.filter((row) => owner(row.tid) === receipt.nativeOwner),
+          eofReads.filter((row) => owner(row.tid) === receipt.nativeOwner && row.fd === 0),
+          terminal,
+        ),
+      });
+      continue;
+    }
     if (provider.version === "7.0.2") {
       if (source.role === "after") requireCandidateStableStderr(bytes);
       else if (stableRegistrationBaseline && bytes[0] === 0x09) {
@@ -457,9 +428,7 @@ if (baseline) {
               projectRoots: [source.root, source.attached.root],
             },
             records.filter((row) => owner(row.tid) === receipt.nativeOwner),
-            eofReads
-              .filter((row) => owner(row.tid) === receipt.nativeOwner && row.fd === 0)
-              .map((row) => row.at),
+            eofReads.filter((row) => owner(row.tid) === receipt.nativeOwner && row.fd === 0),
           ),
         });
       } else if (bytes.length) requireStableWatcherShutdown(bytes);
@@ -470,6 +439,12 @@ if (baseline) {
 }
 assert.ok(splitWatchLogObservations.length <= 1, "one historical split watch log observation only");
 save("stable-split-watch-log-observation.json", splitWatchLogObservations);
+if (terminalStderrObservations.length)
+  requireSingleTerminalStderrRole(
+    terminalStderrObservations.map((row) => row.nativeOwner),
+    native.map((row) => nativeOwnerTerminalState(trace, row.pid)),
+  );
+save("terminal-stderr-observation.json", terminalStderrObservations);
 const disposition = {
   source: source.source,
   role: source.role,
@@ -477,19 +452,31 @@ const disposition = {
   roleKind: baseline
     ? "baseline-observation-known-dto-refusal"
     : stableRegistrationBaseline
-      ? splitWatchLogObservations.length
-        ? "baseline-observation-split-watch-log"
-        : registrationRefusals === 1
-          ? "baseline-observation-known-post-shutdown-registration-refusal"
-          : "baseline-observation-registration-acknowledged"
+      ? terminalStderrObservations.length
+        ? "baseline-observation-unobserved-terminal-stderr"
+        : splitWatchLogObservations.length
+          ? "baseline-observation-split-watch-log"
+          : registrationRefusals === 1
+            ? "baseline-observation-known-post-shutdown-registration-refusal"
+            : "baseline-observation-registration-acknowledged"
       : "functional-source-control",
   observerCompleted: true,
   dtoFunctionalPass:
-    !baseline && registrationRefusals === 0 && splitWatchLogObservations.length === 0,
-  lifecyclePass: !baseline && registrationRefusals === 0 && splitWatchLogObservations.length === 0,
+    !baseline &&
+    registrationRefusals === 0 &&
+    splitWatchLogObservations.length === 0 &&
+    terminalStderrObservations.length === 0,
+  lifecyclePass:
+    !baseline &&
+    registrationRefusals === 0 &&
+    splitWatchLogObservations.length === 0 &&
+    terminalStderrObservations.length === 0,
   registrationPass: registrationRefusals === 0,
   nativeOwners: receipts.length,
   allFramesClosed: true,
+  ...(terminalStderrObservations.length
+    ? { stderrOutputComplete: false, rawIOComplete: false, nativeQualification: false }
+    : {}),
 };
 save("role-disposition.json", disposition);
 console.log(JSON.stringify(disposition));
