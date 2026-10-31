@@ -168,7 +168,7 @@ pub use mustache_interpolation_spacing::{
 pub use no_multi_spaces::NoMultiSpaces;
 pub use no_multiple_template_root::NoMultipleTemplateRoot;
 pub use no_static_inline_styles::NoStaticInlineStyles;
-pub use prop_name_casing::PropNameCasing;
+pub use prop_name_casing::{PropNameCasing, PropNameCasingOption};
 pub use v_on_style::{VOnStyle, VOnStyleOption};
 pub use v_slot_style::{VSlotStyle, VSlotStyleOption};
 

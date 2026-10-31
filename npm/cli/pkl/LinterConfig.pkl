@@ -8,6 +8,7 @@ typealias RuleCategory = "correctness"|"suspicious"|"style"|"perf"|"a11y"|"secur
 typealias LintPreset = "general-recommended" | "general_recommended" | "generalRecommended" | "happy-path" | "happy_path" | "happy" | "default" | "recommended" | "opinionated" | "strict" | "all" | "essential" | "incremental" | "ecosystem" | "nuxt"
 typealias TemplateComponentNameCasing = "PascalCase"|"kebab-case"
 typealias CustomEventNameCasing = "camelCase"|"kebab-case"
+typealias PropNameCasingStyle = "camelCase"|"snake_case"
 typealias HtmlSelfClosingStyle = "always"|"never"|"any"
 typealias HtmlQuoteStyle = "double"|"single"
 typealias MustacheInterpolationSpacingStyle = "always"|"never"
@@ -60,6 +61,11 @@ class ComponentNameInTemplateCasingOptions {
 /// Options for `script/custom-event-name-casing`.
 class CustomEventNameCasingOptions {
   casing: CustomEventNameCasing = "camelCase"
+}
+
+/// Casing of the component's own declared props, without an automatic rename.
+class PropNameCasingOptions {
+  casing: PropNameCasingStyle = "camelCase"
 }
 
 class RequireComponentRegistrationOptions {
@@ -161,6 +167,7 @@ class LintRuleOptions {
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
   `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
+  `vue/prop-name-casing`: PropNameCasingOptions? = null
   `vue/no-mutating-props`: NoMutatingPropsOptions? = null
   `vue/require-component-registration`: RequireComponentRegistrationOptions? = null
   `vue/sfc-element-order`: SfcElementOrderOptions? = null

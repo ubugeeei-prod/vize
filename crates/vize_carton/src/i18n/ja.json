@@ -348,6 +348,7 @@
   "vue/v-slot-style.help": "**省略記法:** `<template #header>` (デフォルト)\n**完全記法:** `<template v-slot:header>`\n\n一貫したスタイルを選択してください。",
   "vue/prop-name-casing.description": "宣言されたprop名のケーシングを強制する",
   "vue/prop-name-casing.message": "prop \"{name}\" は {casing} ではありません",
+  "vue/prop-name-casing.help_snake": "propの宣言にはsnake_caseを使用してください（テンプレート側はkebab-caseのままで構いません）:\n```vue\n<!-- 悪い例 -->\ndefineProps({ myProp: String })\n\n<!-- 良い例 -->\ndefineProps({ my_prop: String })\n```",
   "vue/prop-name-casing.help": "propの宣言にはcamelCaseを使用してください（テンプレート側はkebab-caseのままで構いません）:\n```vue\n<!-- 悪い例 -->\ndefineProps({ 'my-prop': String })\n\n<!-- 良い例 -->\ndefineProps({ myProp: String })\n```",
   "vue/html-quotes.description": "HTML属性の引用符スタイルを強制する",
   "vue/html-quotes.message_double": "シングルクォートではなくダブルクォートを使用してください",

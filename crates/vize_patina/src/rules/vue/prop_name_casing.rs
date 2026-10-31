@@ -106,7 +106,10 @@ impl Rule for PropNameCasing {
                     ("casing", self.casing.label()),
                 ],
             );
-            let help = ctx.t("vue/prop-name-casing.help");
+            let help = ctx.t(match self.casing {
+                PropNameCasingOption::CamelCase => "vue/prop-name-casing.help",
+                PropNameCasingOption::SnakeCase => "vue/prop-name-casing.help_snake",
+            });
             ctx.report_in_sfc(
                 LintDiagnostic::warn(META.name, message, declaration.start, declaration.end)
                     .with_help(help),
