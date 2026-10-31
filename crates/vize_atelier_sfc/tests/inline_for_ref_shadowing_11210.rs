@@ -13,6 +13,9 @@ use support::compile;
 const ORIGINAL: &str = include_str!(
     "../../../tests/_fixtures/differential/compiler/inline-for-ref-shadow-11210/Layout.vue.txt"
 );
+const RENAMED: &str = include_str!(
+    "../../../tests/_fixtures/differential/compiler/inline-for-ref-shadow-11210/renamed.vue.txt"
+);
 const EXPECTED_INPUT_SHA256: &[u8] = &[
     0xac, 0x78, 0xdd, 0xf1, 0x88, 0xe8, 0x91, 0x63, 0x51, 0x73, 0x83, 0xbc, 0x2d, 0xc4, 0x57, 0xc9,
     0x3d, 0xe7, 0x2b, 0x85, 0xda, 0x49, 0xa6, 0x43, 0x75, 0x8a, 0x78, 0x2d, 0xa3, 0x0b, 0x3f, 0xc8,
@@ -58,7 +61,7 @@ fn renaming_only_the_loop_alias_keeps_the_same_outer_model() {
         .replace(":key=\"visibility\"", ":key=\"option\"")
         .replace(":value=\"visibility\"", ":value=\"option\"")
         .replace("{{ visibility }}", "{{ option }}");
-    assert!(renamed.contains("v-model=\"visibility\""));
+    assert_eq!(renamed, RENAMED);
     let facts = compile("renamed-inline", &renamed, true, false);
     assert_eq!(facts.aliases, ["option"]);
     assert_eq!(facts.alias_references, 3);

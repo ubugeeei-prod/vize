@@ -49,11 +49,12 @@ fn compile(binding_type: BindingType) -> vize_l0::String {
 fn metadata_refs_are_unwrapped_only_outside_the_loop_alias_scope() {
     let code = compile(BindingType::SetupRef);
     println!("inline-alias-ref-complete-code {code}");
-    assert_eq!(code.matches("visibility.value").count(), 2, "{code}");
-    assert!(!code.contains("_unref(visibility)"), "{code}");
-    assert!(code.contains("key: visibility"), "{code}");
-    assert!(code.contains("value: visibility"), "{code}");
-    assert!(code.contains("_toDisplayString(visibility)"), "{code}");
+    assert_eq!(
+        code.as_str(),
+        include_str!(
+            "../../../tests/_fixtures/differential/compiler/inline-for-ref-shadow-11210/core-metadata-ref.expected.txt"
+        )
+    );
 }
 
 #[test]
@@ -61,10 +62,11 @@ fn metadata_maybe_refs_are_unwrapped_only_outside_the_loop_alias_scope() {
     for binding in [BindingType::SetupLet, BindingType::SetupMaybeRef] {
         let code = compile(binding);
         println!("inline-alias-maybe-ref-complete-code {binding:?} {code}");
-        assert_eq!(code.matches("_unref(visibility)").count(), 2, "{code}");
-        assert!(!code.contains("visibility.value"), "{code}");
-        assert!(code.contains("key: visibility"), "{code}");
-        assert!(code.contains("value: visibility"), "{code}");
-        assert!(code.contains("_toDisplayString(visibility)"), "{code}");
+        assert_eq!(
+            code.as_str(),
+            include_str!(
+                "../../../tests/_fixtures/differential/compiler/inline-for-ref-shadow-11210/core-metadata-maybe-ref.expected.txt"
+            )
+        );
     }
 }

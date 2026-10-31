@@ -1,0 +1,12 @@
+
+<script setup>
+import { ref } from 'vue'
+const visibility = ref('public')
+const noteVisibilities = ['public', 'home']
+</script>
+<template>
+  <select v-model="visibility">
+    <option v-for="option in noteVisibilities"
+      :key="option" :value="option">{{ option }}</option>
+  </select>
+</template>
