@@ -210,17 +210,18 @@ fn non_bare_or_unowned_if_text_is_refused_with_whole_original_input_custody() {
         ));
         assert!(conditional.original.is_none());
         assert_eq!(rejected.scopes().len(), 2);
+        let expected_construct = match body {
+            "{{message}}suffix" | "{{message}}{{message}}" => "{{message}}",
+            _ => body,
+        };
         for row in rejected.native_interpolations() {
             assert!(core::ptr::eq(
                 row.input().operand().syntax().source().authored_root(),
                 source.as_str()
             ));
-            assert!(
-                row.input()
-                    .operand()
-                    .full_span()
-                    .slice(&source)
-                    .starts_with("{{")
+            assert_eq!(
+                row.input().operand().full_span().slice(&source),
+                expected_construct
             );
         }
     }
