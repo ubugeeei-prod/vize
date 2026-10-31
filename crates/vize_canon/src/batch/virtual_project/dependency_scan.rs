@@ -285,6 +285,8 @@ impl VirtualProject {
                         "canon.dependency_scan.occurrences.cached.source_bytes",
                         virtual_content.len()
                     );
+                    #[cfg(feature = "profiling")]
+                    facts.observe_dependency_parse(&virtual_content, source_type);
                     vize_carton::micro_span!(
                         "canon.dependency_scan.occurrences.cached",
                         facts.collect_occurrences(&virtual_content, source_type)
