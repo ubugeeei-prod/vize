@@ -162,9 +162,13 @@ test("only an admitted exact third-host roster acquires matrix qualification", (
   assert.equal(hasCompleteHostMatrix(true, false, ["official-nightly", "pinned-source"]), false);
 });
 
-test("CURRENT binds all eighty unmodified SDK7 results to the independent review", () => {
+test("the previous eighty SDK7 results remain bound to their immutable review", () => {
   const { authority, files, cases } = readGlobalsFixture();
-  const golden = selectPacketGoldens(authority, files, cases)!;
+  const golden = selectPacketGoldens(
+    { ...authority, currentSourcePackets: "source-packets-current-b66e208809ed.json" },
+    files,
+    cases,
+  )!;
   assert.equal(golden.complete, true);
   assert.equal(golden.packets.length, 80);
   const provenance = JSON.parse(files.get(golden.provenance as string)!);
@@ -201,4 +205,108 @@ test("CURRENT binds all eighty unmodified SDK7 results to the independent review
     assert.equal(sha(JSON.stringify(packet.result)), reviewed[index]!.allFieldSerializationSha256);
     assert.equal(sha(packet.result.text), reviewed[index]!.textSha256);
   }
+});
+
+test("CURRENT retains all eighty actual SDK9 packets without captured qualification credit", () => {
+  const { authority, files, cases } = readGlobalsFixture();
+  const golden = selectPacketGoldens(authority, files, cases)!;
+  const previous = selectPacketGoldens(
+    { ...authority, currentSourcePackets: "source-packets-current-b66e208809ed.json" },
+    files,
+    cases,
+  )!;
+  const provenance = JSON.parse(files.get(golden.provenance as string)!);
+  assert.equal(golden.complete, true);
+  assert.equal(golden.packets.length, 80);
+  assert.equal(provenance.producer.sourceRevision, "4543862023a083a299c32761f702b2a6717c56e3");
+  assert.equal(provenance.producer.sourceTree, "0f1122911d3b9bba9077338256d516e8d9e59f9f");
+  assert.equal(provenance.producer.sourcePackageDeclarationFiles, 9);
+  assert.equal(provenance.sourceAdapter.helperFiles.length, 9);
+  assert.equal(provenance.capturedQualification.status, "unqualified");
+  assert.equal(provenance.capturedQualification.fullPacketQualification, false);
+  assert.equal(provenance.capturedQualification.hostMatrixQualification, false);
+  assert.equal(provenance.strictQualificationClaim, false);
+  assert.equal(provenance.nativeAcceptanceCredit, false);
+  const changed = [
+    "lf/slot-shadow",
+    "lf/mixed-slot-scope",
+    "crlf-unicode/slot-shadow",
+    "crlf-unicode/mixed-slot-scope",
+  ];
+  const outcomes = provenance.capturedQualification.outcomes as Array<{
+    id: string;
+    outcome: string;
+  }>;
+  assert.equal(outcomes.length, 499);
+  assert.deepEqual(
+    outcomes.filter((row) => row.outcome !== "pass").map((row) => row.id),
+    changed.map((label) => `whole-packet/${label}`),
+  );
+  const inputs = provenance.sourceInputs as Array<{
+    label: string;
+    utf8: string;
+    sha256: string;
+  }>;
+  assert.equal(inputs.length, 80);
+  const observedChanges: string[] = [];
+  for (const [index, packet] of golden.packets.entries()) {
+    const entry = cases[index % 40]!;
+    const source =
+      index < 40
+        ? entry.source
+        : entry.source.replace("{{ ", '{{ "日本語🍣" + ').replaceAll("\n", "\r\n");
+    assert.equal(packet.sourceSha256, sha(source));
+    assert.equal(packet.globalsSha256, sha(entry.globals));
+    assert.deepEqual(inputs[index], {
+      label: packet.label,
+      bytes: Buffer.byteLength(source),
+      sha256: sha(source),
+      utf8: source,
+    });
+    const old = previous.packets[index]!.result;
+    if (JSON.stringify(old) === JSON.stringify(packet.result)) continue;
+    observedChanges.push(packet.label);
+    const calls = [
+      ...old.text.matchAll(
+        /import\("vize\/virtual-ts"\)\.\$SlotPayload<typeof __vize_slot_(props_)?host_([0-9]+), "default">/gu,
+      ),
+    ];
+    assert.equal(calls.length, 2);
+    assert.deepEqual(
+      calls.map((call) => call[1] ?? ""),
+      ["", "props_"],
+    );
+    assert.equal(calls[0]![2], calls[1]![2]);
+    const before = Buffer.from(old.text),
+      after = Buffer.from(packet.result.text),
+      insertion = Buffer.from(", typeof Child"),
+      positions = calls.map(
+        (call) => Buffer.byteLength(old.text.slice(0, call.index)) + Buffer.byteLength(call[0]) - 1,
+      );
+    let text = before;
+    for (const position of positions.toReversed())
+      text = Buffer.concat([text.subarray(0, position), insertion, text.subarray(position)]);
+    assert.equal(text.equals(after), true, "entire text has only two source-owned arguments");
+    const point = (value: number) =>
+      value + positions.filter((position) => position <= value).length * insertion.length;
+    const mappings = old.mappings.map((mapping) => {
+      const start = mapping[0]!,
+        end = start + mapping[1]!;
+      for (const position of positions)
+        assert.ok(
+          end <= position || start >= position,
+          "mapped content cannot overlap scaffolding",
+        );
+      const nextStart = point(start),
+        nextEnd = point(end);
+      assert.equal(before.subarray(start, end).equals(after.subarray(nextStart, nextEnd)), true);
+      return [nextStart, nextEnd - nextStart, ...mapping.slice(2)];
+    });
+    assert.equal(
+      JSON.stringify({ ...old, text: packet.result.text, mappings }),
+      JSON.stringify(packet.result),
+      "all opaque fields, diagnostics, directives, semantic links and authored ranges remain exact",
+    );
+  }
+  assert.deepEqual(observedChanges, changed);
 });
