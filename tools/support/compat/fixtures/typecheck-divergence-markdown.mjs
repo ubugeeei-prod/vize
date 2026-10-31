@@ -1,4 +1,4 @@
-import { describeClassification } from "./typecheck-divergence-budget.mjs";
+import { describeClassification } from "./typecheck-divergence-budget.ts";
 
 /**
  * The human-readable half of a divergence run, split out of

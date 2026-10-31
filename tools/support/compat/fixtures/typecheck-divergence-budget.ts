@@ -24,23 +24,70 @@
  * An unrecognised value is rejected rather than treated as "do not enforce", so
  * a typo cannot silently disarm the gate.
  */
-const budgetModes = ["enforce", "record-only"];
+const budgetModes = ["enforce", "record-only"] as const;
+export type BudgetMode = (typeof budgetModes)[number];
 
-export function parseBudgetMode(value) {
-  if (!budgetModes.includes(value)) {
+interface BudgetLimits {
+  readonly maxFalsePositiveRatio: number;
+  readonly maxFalseNegativeRatio: number;
+}
+
+interface DivergenceSummary {
+  readonly falsePositiveRatio: number;
+  readonly falseNegativeRatio: number;
+  readonly falsePositiveCount: number;
+  readonly falseNegativeCount: number;
+  readonly sharedCount: number;
+  readonly messageMismatchCount: number;
+  readonly documentedDifferenceCount: number;
+  readonly vizeDiagnosticCount: number;
+  readonly baselineDiagnosticCount: number;
+}
+
+interface ReasonEvidence {
+  readonly unusableReason?: string | null;
+}
+
+interface AmbientEvidence extends ReasonEvidence {
+  readonly verdict: string;
+}
+
+interface MutationEvidence extends ReasonEvidence {
+  readonly verdict: string;
+  readonly passed: boolean;
+}
+
+export interface TypecheckBudget extends BudgetLimits {
+  readonly falsePositivePassed: boolean;
+  readonly falseNegativePassed: boolean;
+  readonly unusableReason: string | null;
+  readonly verdict: "unusable" | "passed" | "breached";
+  readonly passed: boolean;
+}
+
+export interface BudgetArtifact {
+  readonly project: string;
+  readonly budget: TypecheckBudget;
+  readonly baseline: { readonly coverage: { readonly sharedVueFileCount: number } };
+  readonly divergence: { readonly summary: DivergenceSummary };
+}
+
+export function parseBudgetMode(value: unknown): BudgetMode {
+  const mode = budgetModes.find((candidate) => candidate === value);
+  if (mode === undefined) {
     throw new Error(`--budget-mode must be one of: ${budgetModes.join(", ")}`);
   }
-  return value;
+  return mode;
 }
 
 export function evaluateBudget(
-  performance,
-  summary,
-  coverage,
-  configuration,
-  mutationOracle,
-  ambient,
-) {
+  performance: BudgetLimits,
+  summary: DivergenceSummary,
+  coverage: ReasonEvidence,
+  configuration: ReasonEvidence,
+  mutationOracle: MutationEvidence | null | undefined,
+  ambient: AmbientEvidence | null | undefined,
+): TypecheckBudget {
   const falsePositivePassed = summary.falsePositiveRatio <= performance.maxFalsePositiveRatio;
   const falseNegativePassed = summary.falseNegativeRatio <= performance.maxFalseNegativeRatio;
   // Configuration first: it is the *cause* a coverage or mapping failure would
@@ -76,12 +123,14 @@ export function evaluateBudget(
  * it exists to catch is invisible in every other field of the artifact, so a
  * caller that forgets to pass it must fail rather than inherit a silent pass.
  */
-function ambientUnusableReason(ambient) {
+function ambientUnusableReason(ambient: AmbientEvidence | null | undefined): string | null {
   if (ambient?.verdict === "isolated" && ambient.unusableReason == null) return null;
   return ambient?.unusableReason ?? "baseline ambient environment evidence is missing";
 }
 
-function mutationOracleUnusableReason(mutationOracle) {
+function mutationOracleUnusableReason(
+  mutationOracle: MutationEvidence | null | undefined,
+): string | null {
   if (mutationOracle?.passed === true && mutationOracle.verdict === "passed") return null;
   return mutationOracle?.unusableReason ?? "seeded mutation oracle evidence is missing";
 }
@@ -94,7 +143,7 @@ function mutationOracleUnusableReason(mutationOracle) {
  * common, which signals a file or position mapping defect rather than a useful
  * 100% FP/FN score.
  */
-function diagnosticMappingUnusableReason(summary) {
+function diagnosticMappingUnusableReason(summary: DivergenceSummary): string | null {
   const overlap =
     summary.sharedCount + summary.messageMismatchCount + summary.documentedDifferenceCount;
   if (overlap > 0) return null;
@@ -118,7 +167,10 @@ function diagnosticMappingUnusableReason(summary) {
  * Either way this runs after artifacts are written, so a breach is uploaded and
  * reviewable — the run fails with the evidence attached, not instead of it.
  */
-export function assertBudgetPassed(artifact, budgetMode = "enforce") {
+export function assertBudgetPassed(
+  artifact: BudgetArtifact,
+  budgetMode: unknown = "enforce",
+): void {
   // Validated before the passed-verdict return, so an unrecognised mode is
   // rejected on every run rather than only on the runs that breach.
   const mode = parseBudgetMode(budgetMode);
@@ -126,14 +178,17 @@ export function assertBudgetPassed(artifact, budgetMode = "enforce") {
   if (failures.length > 0) throw new Error(failures.join("\n"));
 }
 
-export function assertBudgetsPassed(artifacts, budgetMode = "enforce") {
+export function assertBudgetsPassed(
+  artifacts: readonly BudgetArtifact[],
+  budgetMode: unknown = "enforce",
+): void {
   const mode = parseBudgetMode(budgetMode);
   const failures = collectBudgetFailures(artifacts, mode);
   if (failures.length > 0) throw new Error(failures.join("\n"));
 }
 
-function collectBudgetFailures(artifacts, mode) {
-  const failures = [];
+function collectBudgetFailures(artifacts: readonly BudgetArtifact[], mode: BudgetMode): string[] {
+  const failures: string[] = [];
   for (const artifact of artifacts) {
     const detail = budgetFailureDetail(artifact);
     if (detail == null) continue;
@@ -145,7 +200,7 @@ function collectBudgetFailures(artifacts, mode) {
   return failures;
 }
 
-function budgetFailureDetail(artifact) {
+function budgetFailureDetail(artifact: BudgetArtifact): string | null {
   const budget = artifact.budget;
   if (budget.verdict === "passed") return null;
   return `${
@@ -169,7 +224,7 @@ function budgetFailureDetail(artifact) {
  * was not stated. So state it, on the failure and in the step summary, and say
  * what the usable case rests on rather than leaving it implied.
  */
-export function describeClassification(artifact) {
+export function describeClassification(artifact: BudgetArtifact): string {
   const budget = artifact.budget;
   if (budget.verdict === "unusable") {
     return "instrument failure, the vue-tsc baseline did not measure Vize";
@@ -184,10 +239,10 @@ export function describeClassification(artifact) {
   );
 }
 
-function describeBreaches(artifact) {
+function describeBreaches(artifact: BudgetArtifact): string[] {
   const budget = artifact.budget;
   const summary = artifact.divergence.summary;
-  const breaches = [];
+  const breaches: string[] = [];
   if (!budget.falsePositivePassed) {
     breaches.push(
       `${summary.falsePositiveCount} false positives (ratio ${summary.falsePositiveRatio}) exceed maxFalsePositiveRatio ${budget.maxFalsePositiveRatio}`,

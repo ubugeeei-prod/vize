@@ -14,13 +14,13 @@ import { typecheckSourceTsconfig } from "./tool-matrix-command.ts";
 import { runVueTscBaseline } from "./typecheck-baseline-run.mjs";
 import { evaluateVueProgramCoverage } from "./typecheck-baseline-coverage.mjs";
 import { runTypecheckCommand } from "./typecheck-command-runner.mjs";
-import { assertBudgetsPassed, evaluateBudget } from "./typecheck-divergence-budget.mjs";
+import { assertBudgetsPassed, evaluateBudget } from "./typecheck-divergence-budget.ts";
 import { renderMarkdown } from "./typecheck-divergence-markdown.mjs";
 import {
   createSeededMutationOracle,
   readAndValidateDependencyPreparation,
 } from "./typecheck-divergence-provenance.mjs";
-import { parseArgs } from "./typecheck-divergence-report-args.mjs";
+import { parseArgs } from "./typecheck-divergence-report-args.ts";
 import {
   readAndValidateSummary,
   readAndValidateVizeRun,
