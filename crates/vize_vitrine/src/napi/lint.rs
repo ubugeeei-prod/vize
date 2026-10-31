@@ -63,6 +63,11 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
     use vize_patina::{LspEmitter, Severity};
 
     let opts = options.unwrap_or_default();
+    if let Some(options) = opts.define_macros_order.as_ref() {
+        options
+            .validate()
+            .map_err(|message| Error::new(Status::InvalidArg, message.to_owned()))?;
+    }
     let filename = opts.filename.unwrap_or_else(|| "anonymous.vue".to_string());
     let locale = patina_locale_from_option(opts.locale.as_deref());
     let help_level = patina_help_level_from_option(opts.help_level.as_deref());

@@ -149,6 +149,7 @@ class DefinePropsDestructuringOptions {
 /// Options for `script/define-macros-order`.
 class DefineMacrosOrderOptions {
   order: Listing<String> = new Listing { "defineProps"; "defineEmits" }
+  defineExposeLast: Boolean = false
 }
 
 class ValidVOnOptions {

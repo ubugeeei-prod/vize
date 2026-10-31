@@ -41,7 +41,7 @@ pub(super) fn parse_rule_option(
             options.no_mutating_props = Some(NoMutatingPropsOptionsNapi { shallow_only });
         }
         "script/define-macros-order" => {
-            let object = strict_object(payload, &["order"])?;
+            let object = strict_object(payload, &["order", "defineExposeLast"])?;
             let order = object
                 .get("order")
                 .map(|value| {
@@ -62,7 +62,20 @@ pub(super) fn parse_rule_option(
                     Ok(order)
                 })
                 .transpose()?;
-            options.define_macros_order = Some(DefineMacrosOrderOptionsNapi { order });
+            let define_expose_last = object
+                .get("defineExposeLast")
+                .map(|value| {
+                    value
+                        .as_bool()
+                        .ok_or_else(|| cstr!("defineExposeLast must be a boolean"))
+                })
+                .transpose()?;
+            let value = DefineMacrosOrderOptionsNapi {
+                order,
+                define_expose_last,
+            };
+            value.validate().map_err(|message| cstr!("{message}"))?;
+            options.define_macros_order = Some(value);
         }
         "vue/sfc-element-order" => {
             let object = strict_object(payload, &["order"])?;

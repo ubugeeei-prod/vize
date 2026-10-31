@@ -956,6 +956,7 @@ export interface NoMutatingPropsOptionsNapi {
 /** Define-macros-order options for NAPI */
 export interface DefineMacrosOrderOptionsNapi {
   order?: Array<string>;
+  defineExposeLast?: boolean;
 }
 
 export declare function normalizeViteCssModuleFilename(filename: string): string;

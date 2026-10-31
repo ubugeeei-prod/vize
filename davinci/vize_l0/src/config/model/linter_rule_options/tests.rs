@@ -149,6 +149,7 @@ fn define_macros_order_options_validate_and_merge() {
                 "defineEmits".into(),
                 "defineSlots".into(),
             ],
+            define_expose_last: false,
         })
     );
 

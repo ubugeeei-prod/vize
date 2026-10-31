@@ -91,6 +91,21 @@ pub struct NoMutatingPropsOptionsNapi {
 #[derive(Default)]
 pub struct DefineMacrosOrderOptionsNapi {
     pub order: Option<Vec<String>>,
+    pub define_expose_last: Option<bool>,
+}
+
+impl DefineMacrosOrderOptionsNapi {
+    pub(super) fn validate(&self) -> Result<(), &'static str> {
+        if self.define_expose_last.unwrap_or(false)
+            && self
+                .order
+                .as_ref()
+                .is_some_and(|order| order.iter().any(|name| name == "defineExpose"))
+        {
+            return Err(vize_l0::config::DefineMacrosOrderOptions::EXPOSE_LAST_CONFLICT);
+        }
+        Ok(())
+    }
 }
 
 /// SFC element order options for NAPI
@@ -228,6 +243,7 @@ fn define_macros_order_from_option(
             .order
             .map(|order| order.into_iter().map(Into::into).collect())
             .unwrap_or_else(|| vize_l0::config::DefineMacrosOrderOptions::default().order),
+        define_expose_last: options.define_expose_last.unwrap_or(false),
     }
 }
 

@@ -35,7 +35,7 @@
 //! const value = ref(0)
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{Expression, Program, Statement};
 use oxc_span::{GetSpan, Span};
@@ -55,11 +55,11 @@ pub struct DefineMacrosOrder;
 
 impl DefineMacrosOrder {
     pub fn configured(options: vize_l0::config::DefineMacrosOrderOptions) -> impl ScriptRule {
-        ConfiguredDefineMacrosOrder(options.order)
+        ConfiguredDefineMacrosOrder(options)
     }
 }
 
-struct ConfiguredDefineMacrosOrder(Vec<vize_l0::String>);
+struct ConfiguredDefineMacrosOrder(vize_l0::config::DefineMacrosOrderOptions);
 
 impl ScriptRule for DefineMacrosOrder {
     fn meta(&self) -> &'static ScriptRuleMeta {
@@ -78,7 +78,7 @@ impl ScriptRule for DefineMacrosOrder {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        check(program, offset, result, &DEFAULT_MACRO_ORDER);
+        check(program, offset, result, &DEFAULT_MACRO_ORDER, false);
     }
 }
 
@@ -95,12 +95,34 @@ impl ScriptRule for ConfiguredDefineMacrosOrder {
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let order = self.0.iter().map(|name| name.as_str()).collect::<Vec<_>>();
-        check(program, offset, result, &order);
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        let order = self
+            .0
+            .order
+            .iter()
+            .map(|name| name.as_str())
+            .collect::<Vec<_>>();
+        check(
+            program,
+            offset,
+            result,
+            &order,
+            self.0.define_expose_last && sfc.is_sfc && sfc.is_script_setup,
+        );
     }
 }
 
@@ -109,8 +131,29 @@ fn check<'a>(
     offset: usize,
     result: &mut ScriptLintResult,
     macro_order: &[&str],
+    define_expose_last: bool,
 ) {
     let body = &program.body;
+    // Upstream emits this suggestion-only finding before the ordinary order
+    // finding. Trailing type/import/empty statements still occupy the last slot.
+    if define_expose_last
+        && let Some(index) = body.iter().rposition(is_define_expose_statement)
+        && index + 1 < body.len()
+    {
+        let span = body[index].span();
+        let start = offset as u32 + span.start;
+        let end = offset as u32 + span.end;
+        result.add_diagnostic(
+            LintDiagnostic::warn(
+                META.name,
+                "`defineExpose` should be the last statement in `<script setup>`.",
+                start,
+                end,
+            )
+            .with_label("compiler macro should be last", start, end)
+            .with_help("Put `defineExpose` as the last statement in `<script setup>`."),
+        );
+    }
     let first = body
         .iter()
         .position(|statement| !is_skipped_statement(statement))
@@ -150,6 +193,21 @@ fn check<'a>(
             report(statement.span(), offset, message, result);
             return;
         }
+    }
+}
+
+fn is_define_expose_statement(statement: &Statement<'_>) -> bool {
+    let direct = |expression: &Expression<'_>| {
+        matches!(expression, Expression::CallExpression(call)
+            if matches!(&call.callee, Expression::Identifier(name) if name.name == "defineExpose"))
+    };
+    match statement {
+        Statement::ExpressionStatement(statement) => direct(&statement.expression),
+        Statement::VariableDeclaration(declaration) if !declaration.declare => declaration
+            .declarations
+            .iter()
+            .any(|value| value.init.as_ref().is_some_and(direct)),
+        _ => false,
     }
 }
 
