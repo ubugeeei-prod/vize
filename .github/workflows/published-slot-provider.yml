@@ -1,0 +1,103 @@
+name: Published slot provider controls
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/published-slot-provider.yml
+      - tools/support/release/slot_provider_public/**
+      - tests/tooling/release/slot-provider-public.test.ts
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact historical containing version 0.616.0
+        type: string
+        required: true
+      release_run:
+        description: Successful official Release producer run
+        type: string
+        required: true
+      authority_blob:
+        description: Immutable authenticated producer receipt and npm SRI capsule Git blob
+        type: string
+        required: true
+
+permissions: { contents: read }
+concurrency:
+  group: published-slot-provider-${{ github.event.pull_request.number || github.ref }}-${{ inputs.version || 'contracts' }}
+  cancel-in-progress: false
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_DISABLE_COMPILE_CACHE: "1"
+defaults:
+  run: { shell: bash }
+
+jobs:
+  contracts:
+    name: Frozen populations and public custody refusal controls
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Check complete vectors and refusal controls without installed products
+        run: node --test tests/tooling/release/slot-provider-public.test.ts
+
+  installed-public:
+    name: Original10 and separate38 Linux public slot provider stages
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
+    needs: contracts
+    permissions: { contents: read, actions: read }
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - name: Obtain immutable b06 fixtures separately from installed products
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: b06a78673f41df01fe29d02bcb42b6b30073e451
+          path: .slot-provider-fixtures
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /tests/_fixtures/differential/typechecker/unknown-component-slot-payload-11027/
+            /tests/_fixtures/differential/typechecker/declared-any-slot-provider-11027/
+            /tests/_fixtures/typechecker/slot-provider-owners-11027/
+            /tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/slot-provider-payload-update-11027.json
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Isolate immutable fixture inputs
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "$GITHUB_SHA" ]]
+          [[ "$(git -C .slot-provider-fixtures rev-parse HEAD)" == "b06a78673f41df01fe29d02bcb42b6b30073e451" ]]
+          git -C .slot-provider-fixtures diff --exit-code
+          mv .slot-provider-fixtures "$RUNNER_TEMP/slot-provider-fixtures"
+      - name: Fresh exact historical public package without source SDK substitutions
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PUBLIC_VERSION: ${{ inputs.version }}
+          RELEASE_RUN: ${{ inputs.release_run }}
+          AUTHORITY_BLOB: ${{ inputs.authority_blob }}
+        run: >-
+          node tools/support/release/slot_provider_public/run.ts
+          "$PUBLIC_VERSION" "$RELEASE_RUN" "$AUTHORITY_BLOB"
+          "$RUNNER_TEMP/slot-provider-fixtures" "$RUNNER_TEMP/slot-provider-public"
+      - name: Preserve every raw failure, input, VTS and installed SDK image
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ -d "$RUNNER_TEMP/slot-provider-public" ]]; then
+            tar --exclude=node_modules --exclude=registry-installation -czf "$RUNNER_TEMP/slot-provider-public-raw.tgz" -C "$RUNNER_TEMP" slot-provider-public
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: slot-provider-installed-public-${{ inputs.version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/slot-provider-public-raw.tgz
+          if-no-files-found: error
+          retention-days: 90
