@@ -315,7 +315,9 @@ jobs:
         run: |
           set -euo pipefail
           export VIZE_BENCH_CPU_SET=$(node tools/benchmarks/scripts/cold-typechecker-scale-affinity.ts)
+          export VIZE_VTS_SOURCE_CENSUS_PATH="$RUNNER_TEMP/cold-phase/generated-source-census.json"
           taskset -c "$VIZE_BENCH_CPU_SET" node tools/benchmarks/scripts/cold-typechecker-scale-phase-baseline.ts --provider "$RUNNER_TEMP/provider" --out "$RUNNER_TEMP/cold-phase/observations" --source "$BASE_SHA" --normal "$RUNNER_TEMP/cold-phase/builds/normal.json" --allocation "$RUNNER_TEMP/cold-phase/builds/allocation.json"
+          test -s "$VIZE_VTS_SOURCE_CENSUS_PATH"
       - name: Preserve raw phase evidence without traversing workspace links or copying executables
         if: always()
         run: |
