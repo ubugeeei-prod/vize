@@ -61,6 +61,8 @@ pub struct FormatOptionsNapi {
     /// Choose the order of attributes within each Vue priority group.
     #[napi(ts_type = "'alphabetical' | 'as-written'")]
     pub attribute_sort_order: Option<String>,
+    /// Custom attribute priority groups within order-safe static attribute runs.
+    pub attribute_groups: Option<Vec<Vec<String>>>,
     pub single_attribute_per_line: Option<bool>,
     /// Indent the contents of `<script>` and `<style>` blocks.
     pub vue_indent_script_and_style: Option<bool>,
@@ -188,6 +190,14 @@ fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
                 ));
             }
         };
+    }
+    if let Some(groups) = opts.attribute_groups {
+        options.attribute_groups = Some(
+            groups
+                .into_iter()
+                .map(|group| group.into_iter().map(Into::into).collect())
+                .collect(),
+        );
     }
     if let Some(value) = opts.single_attribute_per_line {
         options.single_attribute_per_line = value;
