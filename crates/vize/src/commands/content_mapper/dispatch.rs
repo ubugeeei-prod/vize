@@ -82,6 +82,14 @@ impl WriteProgress {
 }
 
 pub(super) fn serve<R: BufRead, W: Write + Send>(reader: &mut R, writer: &mut W) -> io::Result<()> {
+    serve_with_worker_stack(reader, writer, TRANSFORM_WORKER_STACK_BYTES)
+}
+
+fn serve_with_worker_stack<R: BufRead, W: Write + Send>(
+    reader: &mut R,
+    writer: &mut W,
+    stack_bytes: usize,
+) -> io::Result<()> {
     let write_error = Mutex::new(None::<io::Error>);
     let progress = WriteProgress::new();
     let (job_tx, job_rx) = mpsc::channel::<TransformJob>();
@@ -102,9 +110,17 @@ pub(super) fn serve<R: BufRead, W: Write + Send>(reader: &mut R, writer: &mut W)
         for _ in 0..workers {
             let jobs = &job_rx;
             let done = done_tx.clone();
-            thread::Builder::new()
-                .stack_size(TRANSFORM_WORKER_STACK_BYTES)
-                .spawn_scoped(scope, move || worker(jobs, done))?;
+            if let Err(error) = thread::Builder::new()
+                .stack_size(stack_bytes)
+                .spawn_scoped(scope, move || worker(jobs, done))
+            {
+                // Scoped threads must see EOF before their automatic join.
+                // Returning early with these senders alive deadlocks both
+                // the writer and any workers that were already started.
+                drop(job_tx);
+                drop(done_tx);
+                return Err(error);
+            }
         }
         let read = read_loop(reader, &job_tx, &done_tx, &progress);
         drop(job_tx);
@@ -345,4 +361,26 @@ fn encode_frame(value: &impl Serialize) -> io::Result<Vec<u8>> {
     write!(&mut frame, "Content-Length: {}\r\n\r\n", body.len())?;
     frame.extend_from_slice(&body);
     Ok(frame)
+}
+
+#[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
+mod tests {
+    use std::io::Cursor;
+    use std::sync::mpsc;
+    use std::thread;
+    use std::time::Duration;
+
+    #[test]
+    fn worker_spawn_failure_drops_channels_before_scoped_join() {
+        let (done, result) = mpsc::channel();
+        thread::spawn(move || {
+            let observed = super::serve_with_worker_stack(
+                &mut Cursor::new(Vec::<u8>::new()),
+                &mut Vec::new(),
+                isize::MAX as usize / 2,
+            );
+            let _ = done.send(observed.is_err());
+        });
+        assert_eq!(result.recv_timeout(Duration::from_secs(5)), Ok(true));
+    }
 }
