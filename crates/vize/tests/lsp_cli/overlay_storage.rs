@@ -17,6 +17,13 @@ enum Entry {
     Link(PathBuf),
 }
 
+fn hash(bytes: &[u8]) -> vize_l0::String {
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| vize_l0::cstr!("{byte:02x}"))
+        .collect()
+}
+
 fn inventory(root: &Path) -> BTreeMap<PathBuf, Entry> {
     fn visit(root: &Path, current: &Path, result: &mut BTreeMap<PathBuf, Entry>) {
         for entry in fs::read_dir(current).unwrap().map(Result::unwrap) {
@@ -49,11 +56,15 @@ fn link(source: &Path, target: &Path) {
 }
 
 fn retained_inventory(rows: &BTreeMap<PathBuf, Entry>) -> Vec<Value> {
-    rows.iter().map(|(path, entry)| match entry {
-        Entry::Directory => json!({"path":path,"kind":"directory"}),
-        Entry::Link(target) => json!({"path":path,"kind":"link","target":target}),
-        Entry::File(bytes) => json!({"path":path,"kind":"file","bytes":bytes.len(),"sha256":vize_l0::cstr!("{:x}",Sha256::digest(bytes))}),
-    }).collect()
+    rows.iter()
+        .map(|(path, entry)| match entry {
+            Entry::Directory => json!({"path":path,"kind":"directory"}),
+            Entry::Link(target) => json!({"path":path,"kind":"link","target":target}),
+            Entry::File(bytes) => {
+                json!({"path":path,"kind":"file","bytes":bytes.len(),"sha256":hash(bytes)})
+            }
+        })
+        .collect()
 }
 
 #[test]
@@ -94,10 +105,7 @@ fn default_native_overlay_preserves_the_whole_linked_installation_and_authored_p
     fs::write(&app, source).unwrap();
     let project_before = inventory(&project);
     let installed_before = inventory(&installed);
-    let cli_hash = vize_l0::cstr!(
-        "{:x}",
-        Sha256::digest(fs::read(env!("CARGO_BIN_EXE_vize")).unwrap())
-    );
+    let cli_hash = hash(&fs::read(env!("CARGO_BIN_EXE_vize")).unwrap());
     assert_eq!(
         cli_hash.as_str(),
         std::env::var("VIZE_OVERLAY_EXPECTED_CLI_SHA").unwrap()
@@ -136,7 +144,7 @@ fn default_native_overlay_preserves_the_whole_linked_installation_and_authored_p
     let project_after = inventory(&project);
     let installed_after = inventory(&installed);
     let terminal = lsp.terminal_evidence();
-    let record = json!({"source":std::env::var("EXPECTED_SOURCE").unwrap(),"scope":"ordinary source CLI, real native provider, unchanged cwd/rootUri, default log override unset; not public-package acceptance","firstCLI":{"path":env!("CARGO_BIN_EXE_vize"),"sha256":cli_hash},"native":{"path":native,"sha256":vize_l0::cstr!("{:x}",Sha256::digest(fs::read(&native).unwrap()))},"rootUri":file_uri(&project),"cwd":project,"logOverride":null,"cache":{"XDG_CACHE_HOME":cache,"LOCALAPPDATA":cache},"initialized":initialized,"publication":publication,"diagnostics":diagnostics,"shutdown":shutdown,"terminal":terminal,"projectBefore":retained_inventory(&project_before),"projectAfter":retained_inventory(&project_after),"installedBefore":retained_inventory(&installed_before),"installedAfter":retained_inventory(&installed_after)});
+    let record = json!({"source":std::env::var("EXPECTED_SOURCE").unwrap(),"scope":"ordinary source CLI, real native provider, unchanged cwd/rootUri, default log override unset; not public-package acceptance","firstCLI":{"path":env!("CARGO_BIN_EXE_vize"),"sha256":cli_hash},"native":{"path":native,"sha256":hash(&fs::read(&native).unwrap())},"rootUri":file_uri(&project),"cwd":project,"logOverride":null,"cache":{"XDG_CACHE_HOME":cache,"LOCALAPPDATA":cache},"initialized":initialized,"publication":publication,"diagnostics":diagnostics,"shutdown":shutdown,"terminal":terminal,"projectBefore":retained_inventory(&project_before),"projectAfter":retained_inventory(&project_after),"installedBefore":retained_inventory(&installed_before),"installedAfter":retained_inventory(&installed_after)});
     let file = fs::OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -153,10 +161,7 @@ fn default_native_overlay_preserves_the_whole_linked_installation_and_authored_p
     assert_eq!(shutdown, json!({"jsonrpc":"2.0","id":3,"result":null}));
     assert_eq!(status.code(), Some(0));
     assert_eq!(
-        vize_l0::cstr!(
-            "{:x}",
-            Sha256::digest(fs::read(env!("CARGO_BIN_EXE_vize")).unwrap())
-        ),
+        hash(&fs::read(env!("CARGO_BIN_EXE_vize")).unwrap()),
         cli_hash
     );
     assert_eq!(project_before, project_after);

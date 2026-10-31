@@ -10,7 +10,10 @@ const MAIN: &str = "import { value } from './support';\nimport type { Ref } from
 const SUPPORT: &str = "export const value = 1;\n";
 
 fn hash(bytes: &[u8]) -> vize_l0::String {
-    vize_l0::cstr!("{:x}", Sha256::digest(bytes))
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| vize_l0::cstr!("{byte:02x}"))
+        .collect()
 }
 
 fn inventory(root: &Path) -> Vec<Value> {

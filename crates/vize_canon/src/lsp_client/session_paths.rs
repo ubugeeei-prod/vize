@@ -74,13 +74,11 @@ fn materialized_session_path(
         match component {
             Component::Prefix(prefix) => {
                 use sha2::Digest as _;
-                session_path.push(
-                    vize_l0::cstr!(
-                        "__prefix_{:x}",
-                        sha2::Sha256::digest(prefix.as_os_str().as_encoded_bytes())
-                    )
-                    .as_str(),
-                );
+                let digest: String = sha2::Sha256::digest(prefix.as_os_str().as_encoded_bytes())
+                    .iter()
+                    .map(|byte| vize_l0::cstr!("{byte:02x}"))
+                    .collect();
+                session_path.push(vize_l0::cstr!("__prefix_{digest}").as_str());
             }
             Component::RootDir | Component::CurDir => {}
             Component::ParentDir => session_path.push("__parent__"),
