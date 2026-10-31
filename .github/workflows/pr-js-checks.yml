@@ -61,9 +61,7 @@ jobs:
         run: node tools/support/compat/github/install-js-checks.ts "$VIZE_JS_PACKAGE_GROUP"
       - name: Test JS package group
         if: ${{ (inputs.run-js && matrix.group != 'none') }}
-        env:
-          VIZE_JS_PACKAGE_GROUP: ${{ matrix.group }}
-          VIZE_RSPACK_JSX_CAPTURE: ${{ runner.temp }}/jsx-rspack-child-values-6890
+        env: { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" }
         run: node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"
       - name: Preserve complete Rspack JSX producer and bundle
         if: ${{ !cancelled() && inputs.run-js && matrix.group == 'builders' }}
