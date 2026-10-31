@@ -15,18 +15,10 @@ impl TemplateRefUsage {
         if self.calls.iter().all(|call| call.imported) {
             return;
         }
-        // The source callee is retained in the mapped expression. An absent
-        // runtime import is diagnosed there; this unowned lookup cannot create
-        // an ambient value or make a missing name valid.
-        append!(*ts, "  type {name}Source = typeof useTemplateRef;\n");
-        // Structural equality with `typeof import('vue').useTemplateRef` is not
-        // ownership. A separately declared ambient with the same signature must
-        // keep its own return type. Value imports use the registry helper.
-        append!(*ts, "  type {name}IsVue = {};\n", self.configured_global);
-        if self.configured_global {
-            append!(*ts, "  type {name}Global = $UseTemplateRef;\n");
-        } else {
-            append!(*ts, "  type {name}Global = {name}Source;\n");
-        }
+        // Collection admits globals only with explicit Vue ownership. Retain
+        // their mapped callee so a missing value is diagnosed at the authored
+        // call, without a second lookup in an unmapped helper declaration.
+        append!(*ts, "  type {name}IsVue = true;\n");
+        append!(*ts, "  type {name}Global = $UseTemplateRef;\n");
     }
 }
