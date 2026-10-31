@@ -136,3 +136,4 @@ tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-member
 tests/_fixtures/differential/typechecker/ambient-template-ref-10980/*.txt -text
 # Preserve the separately frozen literal public #10980 issue inputs.
 tests/fixtures/release/ambient-template-ref-public-10980/*.txt -text
+tests/fixtures/release/slot-instance-public/c12-version-exit.json -text

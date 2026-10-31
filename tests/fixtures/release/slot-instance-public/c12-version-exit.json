@@ -1,0 +1,94 @@
+{
+  "schema": "vize.slot-instance-public-version-exit",
+  "version": 1,
+  "origin": {
+    "run": 41232805299,
+    "job": 124630384717,
+    "observer": "274777b2b18a8e43280a109cfbc4bb2a7286ee00",
+    "artifact": 13054151876,
+    "artifactSha256": "75122fd01ccd70dadb175cf58ae0e3b8d1bff49174fab2dd7f11de069a4d780c"
+  },
+  "role": "before",
+  "profile": {
+    "version": "0.620.0",
+    "source": "e361d3873712eb11db018827713b1434be898261",
+    "candidate": "5695be444d8e5d889d2337fc8e22a974458b93ea",
+    "run": "41216373606",
+    "declarations": 9,
+    "edges": 9
+  },
+  "sourcesEqualAcrossRoles": [
+    {
+      "path": "npm/cli/bin/vize",
+      "bytes": 46,
+      "sha256": "c468a9fe05d3f46520392ed4bdbccf1ff9b323308f9aa23cca0b507b829a6f54"
+    },
+    {
+      "path": "npm/cli/src/cli.ts",
+      "bytes": 844,
+      "sha256": "29a5b4f7eb6d4be3682f2bd6e5157b75d712b0e8f23c081d60d3ec26f855dfdb"
+    },
+    {
+      "path": "crates/vize_vitrine/src/napi/cli.rs",
+      "bytes": 438,
+      "sha256": "4428a34892d9e1939f09b2c3a60ce247d838d113c32e285a99a7623fb58bcffc"
+    },
+    {
+      "path": "crates/vize/src/cli.rs",
+      "bytes": 10345,
+      "sha256": "b6aefa02049829679d88d81b86878c66eaef29f73b63b441249decd3723e30bc"
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 128805,
+      "sha256": "519fabcc3dd6e10c993829ebeab497c39264bcec68454acb7f0d07f54d5e9104"
+    }
+  ],
+  "context": {
+    "root": "/home/runner/_work/_temp/slot-instance-public/before/registry-installation",
+    "cli": "/home/runner/_work/_temp/slot-instance-public/before/registry-installation/node_modules/vize/bin/vize",
+    "node": "/opt/hostedtoolcache/node/24.14.0/x64/bin/node",
+    "hook": "/home/runner/_work/vize/vize/tools/support/release/public_install/native-custody.cjs",
+    "binary": {
+      "path": "/home/runner/_work/_temp/slot-instance-public/before/registry-installation/node_modules/@vizejs/native-linux-x64-gnu/vize-vitrine.linux-x64-gnu.node",
+      "bytes": 79193306,
+      "sha256": "51455ae85a3d7842304d2a5d3f02ef7468e4d257e2ec86c5ed2bdeb78f053399"
+    }
+  },
+  "packet": {
+    "label": "installed-cli-version",
+    "argv": [
+      "/opt/hostedtoolcache/node/24.14.0/x64/bin/node",
+      "--require",
+      "/home/runner/_work/vize/vize/tools/support/release/public_install/native-custody.cjs",
+      "/home/runner/_work/_temp/slot-instance-public/before/registry-installation/node_modules/vize/bin/vize",
+      "--version"
+    ],
+    "cwd": "/home/runner/_work/_temp/slot-instance-public/before/registry-installation",
+    "pid": 3864,
+    "status": 0,
+    "signal": null,
+    "error": null,
+    "stdout": "vize 0.620.0\n",
+    "stderr": "",
+    "raw": {
+      "stdout": {
+        "bytes": 13,
+        "sha256": "aebee17e36c5c4003e2d1aeb9d9b1f690d78dc6da1364fb4af0afda4d5b82468"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  "journal": "{\"schema\":\"vize-public-native-custody-event-v1\",\"pid\":3864,\"event\":\"initialized\",\"installRoot\":\"/home/runner/_work/_temp/slot-instance-public/before/registry-installation\",\"nativePath\":\"/home/runner/_work/_temp/slot-instance-public/before/registry-installation/node_modules/@vizejs/native-linux-x64-gnu/vize-vitrine.linux-x64-gnu.node\",\"sha256\":\"51455ae85a3d7842304d2a5d3f02ef7468e4d257e2ec86c5ed2bdeb78f053399\",\"node\":\"/opt/hostedtoolcache/node/24.14.0/x64/bin/node\",\"argv\":[\"/opt/hostedtoolcache/node/24.14.0/x64/bin/node\",\"/home/runner/_work/_temp/slot-instance-public/before/registry-installation/node_modules/vize/bin/vize\",\"--version\"]}\n{\"schema\":\"vize-public-native-custody-event-v1\",\"pid\":3864,\"event\":\"attempt\",\"actualPath\":\"/home/runner/_work/_temp/slot-instance-public/before/registry-installation/node_modules/@vizejs/native-linux-x64-gnu/vize-vitrine.linux-x64-gnu.node\",\"sha256\":\"51455ae85a3d7842304d2a5d3f02ef7468e4d257e2ec86c5ed2bdeb78f053399\",\"expectedNative\":true,\"corsaPath\":\"\"}\n{\"schema\":\"vize-public-native-custody-event-v1\",\"pid\":3864,\"event\":\"returned\",\"actualPath\":\"/home/runner/_work/_temp/slot-instance-public/before/registry-installation/node_modules/@vizejs/native-linux-x64-gnu/vize-vitrine.linux-x64-gnu.node\",\"sha256\":\"51455ae85a3d7842304d2a5d3f02ef7468e4d257e2ec86c5ed2bdeb78f053399\",\"expectedNative\":true,\"corsaPath\":\"\"}\n",
+  "journalSha256": "6c4076d325374f15d92a315075bc69870020ea56bb43b5299f474d40e1868750",
+  "raw": {
+    "processSha256": "67f2827ebdde6a428923a9f74d22d43916c10268d1aea02b92d5e514e9f2c2e9",
+    "stdoutSha256": "aebee17e36c5c4003e2d1aeb9d9b1f690d78dc6da1364fb4af0afda4d5b82468",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "semanticProcessesReached": 0,
+  "headRoleReached": false
+}
