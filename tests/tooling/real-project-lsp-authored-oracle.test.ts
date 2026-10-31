@@ -54,7 +54,7 @@ test("real-project LSP exercises authored binding and component boundary feature
     assert.equal(result.fileLifecycle.deletedDefinition.count, 0);
     assert.equal(result.fileLifecycle.deletedImporterDiagnostics.count, 1);
     assert.equal(result.fileLifecycle.restoredDefinition.count, 1);
-    assertOrderedEvents(session.events, [
+    const orderedEvents = [
       ["textDocument/didOpen:1:Binding.vue", "textDocument/publishDiagnostics:1:Binding.vue"],
       ["textDocument/didOpen:1:FeatureChild.vue", "textDocument/didChange:2:FeatureChild.vue"],
       [
@@ -64,12 +64,30 @@ test("real-project LSP exercises authored binding and component boundary feature
       ["textDocument/didChange:2:FeatureParent.vue", "workspace/didCreateFiles"],
       ["workspace/didCreateFiles", "workspace/symbol"],
       ["workspace/willRenameFiles", "workspace/didRenameFiles"],
-      ["workspace/didDeleteFiles", "textDocument/publishDiagnostics:7:FeatureParent.vue"],
-      ["workspace/didDeleteFiles", "textDocument/didChange:8:FeatureParent.vue"],
+      [
+        "workspace/didDeleteFiles:$OracleRenamedFeatureChild.vue",
+        "textDocument/publishDiagnostics:7:FeatureParent.vue",
+      ],
+      [
+        "workspace/didDeleteFiles:$OracleRenamedFeatureChild.vue",
+        "textDocument/didChange:8:FeatureParent.vue",
+      ],
       ["textDocument/didChange:8:FeatureParent.vue", "textDocument/didClose:FeatureParent.vue"],
       ["textDocument/didClose:FeatureParent.vue", "textDocument/didClose:FeatureChild.vue"],
       ["textDocument/didClose:FeatureChild.vue", "textDocument/didClose:Binding.vue"],
-    ]);
+    ] as const;
+    assertOrderedEvents(session.events, orderedEvents);
+    const withoutLifecycleDeletion = session.events.filter(
+      (event) => !event.startsWith("workspace/didDeleteFiles:$OracleRenamedFeatureChild.vue"),
+    );
+    assert.ok(
+      withoutLifecycleDeletion.includes("workspace/didDeleteFiles:$OracleFeatureChild.vue"),
+      "the mutant must retain the earlier overlay deletion",
+    );
+    assert.throws(
+      () => assertOrderedEvents(withoutLifecycleDeletion, orderedEvents),
+      /missing event: workspace\/didDeleteFiles:\$OracleRenamedFeatureChild\.vue/,
+    );
     assert.deepEqual(session.openFiles, []);
   } finally {
     fs.rmSync(workspace, { recursive: true, force: true });
