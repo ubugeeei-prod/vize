@@ -1,0 +1,262 @@
+{
+  "version": 1,
+  "kind": "exact-provider-roster-path-successor",
+  "capturedSource": "9151df72f6120b54047ada953c91a4ba0be84f44",
+  "capturedExecutionMerge": "7a76e62a14a61dcac43d53d67351c67748ffe615",
+  "capturedTree": "879c1018fe44b5ddd62acc4880cefd04da4d4d37",
+  "observedRun": 41156820032,
+  "observedJob": 124405446845,
+  "artifact": 13025960404,
+  "artifactArchiveSha256": "3fcad3eb71e54d86ca586971c175554f390751ed54b5905cd97d5ba229c89a82",
+  "wholePacketSha256": "5d0792839dec9b42c5152735c98dfc7185450cf8d33e0c819e2f5551266beae1",
+  "capturedLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1149848,
+    "sha256": "272a2a61e440bdbeede76737ee495c111da3ab3573a513bd7a260a12ce0c061e",
+    "gitBlob": "856a7a382b2d75baf1455ba217c95ce47eda6c42"
+  },
+  "capturedPackage": {
+    "path": "package.json",
+    "bytes": 1877,
+    "sha256": "703095a422cfc630a5d29ef5f4a5230b1c853c6013b8e8080809643cc5b4c6a0",
+    "gitBlob": "87b6e3c9788ffc6a4c9578e53a39b951cbbb5d8e"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1150350,
+    "sha256": "5f88503038bba641044f11b3a0cf9e0c27d83dd87ba2565c96c7be7d44cf7b3f",
+    "gitBlob": "be4ebdfc4ae1cdfb927e62311827c2a787aee9dd"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1877,
+    "sha256": "703095a422cfc630a5d29ef5f4a5230b1c853c6013b8e8080809643cc5b4c6a0",
+    "gitBlob": "87b6e3c9788ffc6a4c9578e53a39b951cbbb5d8e"
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Only six exact provider path labels change. The observed9151/a6c9/captured272 packets are historical evidence. Final lock/package file blobs are prospective qualification inputs, not an observed installed provider graph; fresh exact-head native execution must match every current file and provider.",
+  "wholeBeforeRosterSha256": "13aab9f444d54acfd48d5e26fb29bf0da13f4b99e9954b5a55cac59e2bca58dd",
+  "wholeAfterRosterSha256": "be8c7cca5e5861c07a7563d49c13ac2517fc1772f5a757c6e2d7064ab663f227",
+  "observedCurrentBeforeRosterSha256": "d8a5c9548fd28431d089c1d4d87a75386ad09fda33a7db51d0319ce7eaebad12",
+  "observedCurrentAfterRosterSha256": "d71e5e9d5014e48d363e8cb149ae90eaf54a63847f6c8ace2e88970985594250",
+  "fullObservation": {
+    "source": "9151df72f6120b54047ada953c91a4ba0be84f44",
+    "tree": "879c1018fe44b5ddd62acc4880cefd04da4d4d37",
+    "run": 41156830428,
+    "job": 124405372749,
+    "artifact": 13025337706,
+    "artifactArchiveSha256": "88d4fcb1173de1da28e6002cef6542828ac6b1933d4b718e566ce76529c946e5",
+    "wholePacketSha256": "073b5249d979f7465fa9efcbacb1ca9e2b863922bf5746bfb65e3fc64945163f",
+    "all86WholeUtf8BodiesAndRootedTripletsEqualPr": true,
+    "all5ProviderBodiesManifestsAndRolesEqualPr": true,
+    "nativeAcceptanceCredit": false
+  },
+  "observedNativeExecutableSha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+  "providerRoles": [
+    {
+      "role": {
+        "authenticObservedPath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/dist/vite/client.d.ts",
+        "body": {
+          "bytes": 5177,
+          "relativeBlob": "blobs/c8da07c75bdc3ff36752f3f33f2beb000a78a02aced96ce70ca6e807072eb913.json",
+          "sha256": "c8da07c75bdc3ff36752f3f33f2beb000a78a02aced96ce70ca6e807072eb913"
+        },
+        "declaredBy": [
+          "exports",
+          "./client",
+          "types"
+        ],
+        "id": "vite-client-types",
+        "packageAlias": "vite",
+        "relativePath": "dist/vite/client.d.ts"
+      },
+      "manifestRelativePath": "@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/package.json",
+      "manifest": {
+        "name": "@voidzero-dev/vite-plus-core",
+        "version": "0.1.24",
+        "bytes": 5780,
+        "sha256": "f8384e17dcf188e8777341fe973e07556f56c6f70ba09f09ee1d092070f090aa"
+      }
+    },
+    {
+      "role": {
+        "authenticObservedPath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/package.json",
+        "body": {
+          "bytes": 5780,
+          "relativeBlob": "blobs/f8384e17dcf188e8777341fe973e07556f56c6f70ba09f09ee1d092070f090aa.json",
+          "sha256": "f8384e17dcf188e8777341fe973e07556f56c6f70ba09f09ee1d092070f090aa"
+        },
+        "id": "vite-manifest",
+        "packageAlias": "vite",
+        "relativePath": "package.json"
+      },
+      "manifestRelativePath": "@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/package.json",
+      "manifest": {
+        "name": "@voidzero-dev/vite-plus-core",
+        "version": "0.1.24",
+        "bytes": 5780,
+        "sha256": "f8384e17dcf188e8777341fe973e07556f56c6f70ba09f09ee1d092070f090aa"
+      }
+    },
+    {
+      "role": {
+        "body": {
+          "bytes": 507,
+          "relativeBlob": "blobs/cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0.json",
+          "sha256": "cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0"
+        },
+        "declaredBy": [
+          "exports",
+          ".",
+          "import",
+          "types"
+        ],
+        "id": "vue-import-types",
+        "independentSourceRead": {
+          "bytes": 507,
+          "observedPath": "/Users/ubugeeei/Library/Caches/vize/canon/projects/a4cc3e20b0d347f158e7eb410e090c957cc32f74794980dd5ab3738c7780112a/node_modules/vue/dist/vue.d.mts",
+          "oldNativeLoadedCredit": false,
+          "packageManifestSHA256": "cee6c3f39c78ad85415fa0afbfd19fd3f9fdee0f04d92f1d33ce1fcc3ad757b9",
+          "sha256": "cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0"
+        },
+        "packageAlias": "vue",
+        "relativePath": "dist/vue.d.mts"
+      },
+      "manifestRelativePath": "vue@3.6.0-beta.10_typescript@6.0.3/node_modules/vue/package.json",
+      "manifest": {
+        "name": "vue",
+        "version": "3.6.0-beta.10",
+        "bytes": 2881,
+        "sha256": "cee6c3f39c78ad85415fa0afbfd19fd3f9fdee0f04d92f1d33ce1fcc3ad757b9"
+      }
+    },
+    {
+      "role": {
+        "authenticObservedPath": "/Users/ubugeeei/Library/Caches/vize/canon/projects/a4cc3e20b0d347f158e7eb410e090c957cc32f74794980dd5ab3738c7780112a/node_modules/vue/package.json",
+        "body": {
+          "bytes": 2881,
+          "relativeBlob": "blobs/cee6c3f39c78ad85415fa0afbfd19fd3f9fdee0f04d92f1d33ce1fcc3ad757b9.json",
+          "sha256": "cee6c3f39c78ad85415fa0afbfd19fd3f9fdee0f04d92f1d33ce1fcc3ad757b9"
+        },
+        "id": "vue-manifest",
+        "packageAlias": "vue",
+        "relativePath": "package.json"
+      },
+      "manifestRelativePath": "vue@3.6.0-beta.10_typescript@6.0.3/node_modules/vue/package.json",
+      "manifest": {
+        "name": "vue",
+        "version": "3.6.0-beta.10",
+        "bytes": 2881,
+        "sha256": "cee6c3f39c78ad85415fa0afbfd19fd3f9fdee0f04d92f1d33ce1fcc3ad757b9"
+      }
+    },
+    {
+      "role": {
+        "authenticObservedPath": "/Users/ubugeeei/Library/Caches/vize/canon/projects/a4cc3e20b0d347f158e7eb410e090c957cc32f74794980dd5ab3738c7780112a/node_modules/vue/dist/vue.d.ts",
+        "body": {
+          "bytes": 507,
+          "relativeBlob": "blobs/cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0.json",
+          "sha256": "cbc939cd9351f7e21a265536da5d5a0ad132a555b43687e64819722761f4dfd0"
+        },
+        "declaredBy": [
+          "exports",
+          ".",
+          "require",
+          "types"
+        ],
+        "id": "vue-require-types",
+        "packageAlias": "vue",
+        "relativePath": "dist/vue.d.ts"
+      },
+      "manifestRelativePath": "vue@3.6.0-beta.10_typescript@6.0.3/node_modules/vue/package.json",
+      "manifest": {
+        "name": "vue",
+        "version": "3.6.0-beta.10",
+        "bytes": 2881,
+        "sha256": "cee6c3f39c78ad85415fa0afbfd19fd3f9fdee0f04d92f1d33ce1fcc3ad757b9"
+      }
+    }
+  ],
+  "changes": [
+    {
+      "entry": 76,
+      "before": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/hmrPayload.d.ts",
+        1398,
+        "3b89216a7e38a454985ad17bb2ff85792837dc812f2a89fa5f60ad0a2e216fa7"
+      ],
+      "after": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/hmrPayload.d.ts",
+        1398,
+        "3b89216a7e38a454985ad17bb2ff85792837dc812f2a89fa5f60ad0a2e216fa7"
+      ]
+    },
+    {
+      "entry": 77,
+      "before": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/customEvent.d.ts",
+        1970,
+        "de4a612aa8f1704af486f701e21993c786ba7d8cfed55fffa6684026aea2346e"
+      ],
+      "after": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/customEvent.d.ts",
+        1970,
+        "de4a612aa8f1704af486f701e21993c786ba7d8cfed55fffa6684026aea2346e"
+      ]
+    },
+    {
+      "entry": 78,
+      "before": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/hot.d.ts",
+        1063,
+        "4e003c868b0d8f8ad200b96cbc653e18e513fa23e1c19c4fe3cc25d4394efc47"
+      ],
+      "after": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/hot.d.ts",
+        1063,
+        "4e003c868b0d8f8ad200b96cbc653e18e513fa23e1c19c4fe3cc25d4394efc47"
+      ]
+    },
+    {
+      "entry": 79,
+      "before": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/importGlob.d.ts",
+        2291,
+        "59f8dc89b9e724a6a667f52cdf4b90b6816ae6c9842ce176d38fcc973669009e"
+      ],
+      "after": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/importGlob.d.ts",
+        2291,
+        "59f8dc89b9e724a6a667f52cdf4b90b6816ae6c9842ce176d38fcc973669009e"
+      ]
+    },
+    {
+      "entry": 80,
+      "before": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/importMeta.d.ts",
+        884,
+        "72429cda84a47f092a3bf777bbc4ece9dda492fe0f02324aa7f197f3800089c6"
+      ],
+      "after": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/importMeta.d.ts",
+        884,
+        "72429cda84a47f092a3bf777bbc4ece9dda492fe0f02324aa7f197f3800089c6"
+      ]
+    },
+    {
+      "entry": 81,
+      "before": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_28053986ce44d27c9f2b7b250e1bd5a3/node_modules/@voidzero-dev/vite-plus-core/dist/vite/client.d.ts",
+        5177,
+        "c8da07c75bdc3ff36752f3f33f2beb000a78a02aced96ce70ca6e807072eb913"
+      ],
+      "after": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/dist/vite/client.d.ts",
+        5177,
+        "c8da07c75bdc3ff36752f3f33f2beb000a78a02aced96ce70ca6e807072eb913"
+      ]
+    }
+  ],
+  "independentBodyProofSha256": "fec2e67167da46cae9d8e551674d42d09ec65a32f73658753ead6a3f6d8410eb",
+  "independentProviderProofSha256": "32f5601e6405aeee78e54d7535897b29ee096c3880b3dcdc7b7b5a14249176ae"
+}
