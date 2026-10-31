@@ -1,6 +1,8 @@
 //! Shared fixture installation and process assertions for Content Mapper conformance.
 
-use super::{Command, CompactString, Output, Path, PathBuf, VUE_ENV, cstr, json};
+use super::{Command, CompactString, Output, Path, PathBuf, TSGO_ENV, VUE_ENV, cstr, json};
+
+mod ambient_template_ref;
 
 pub(super) fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))

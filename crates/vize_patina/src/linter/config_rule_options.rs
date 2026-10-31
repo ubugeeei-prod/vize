@@ -33,6 +33,9 @@ impl Linter {
         if let Some(value) = options.define_props_destructuring() {
             self = self.with_define_props_destructuring(value);
         }
+        if let Some(value) = options.define_macros_order() {
+            self = self.with_define_macros_order(value);
+        }
         if let Some(value) = options.component_name_in_template_casing_options() {
             self = self.with_component_name_in_template_casing_policy(
                 component_casing(value.casing),
@@ -182,6 +185,9 @@ fn self_closing_style(value: ConfigSelfClosingStyle) -> HtmlSelfClosingStyle {
         ConfigSelfClosingStyle::Any => HtmlSelfClosingStyle::Any,
     }
 }
+
+#[cfg(test)]
+mod macro_order;
 
 #[cfg(test)]
 mod tests {

@@ -152,6 +152,14 @@ Use `order` to choose which compiler macros must appear first in `<script setup>
 sequence. The default is `["defineProps", "defineEmits"]`. Macros omitted from the list behave
 like ordinary statements.
 
+The public `lintPatinaSfc` API accepts this policy through `ruleOptionsJson`. An entry there
+overrides the compatibility `defineMacrosOrder` option; an empty policy object restores the
+default order, while an omitted entry keeps the compatibility policy. Options alone do not
+enable an unselected rule.
+
+Patina currently reports macro-order diagnostics without text edits. The pinned ESLint rule
+can reorder statements; this configuration support does not add that fixer or `defineExposeLast`.
+
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 

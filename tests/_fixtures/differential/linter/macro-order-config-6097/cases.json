@@ -1,0 +1,173 @@
+{
+  "schema": "vize.patina.macro-order-config-6097",
+  "version": 1,
+  "provider": {
+    "eslint": "10.4.1",
+    "eslint-plugin-vue": "10.9.2",
+    "vue-eslint-parser": "10.4.1",
+    "@typescript-eslint/parser": "8.65.0"
+  },
+  "ruleSource": {
+    "path": "dist/rules/define-macros-order.js",
+    "sha256": "9b9aaf5b52c2e05b67597bb1c859fb10205e86ebb4e8878487a51bb0c3abfd66"
+  },
+  "provenance": {
+    "sourceRevision": "6cd169dba2c41daef87cf2a1eabe49a2fb470858",
+    "originalTests": "crates/vize_patina/src/rules/script/define_macros_order/tests.rs",
+    "originalTestFileSha256": "5569d9b8aeb6a367acdfdaf8576814590062ed062d5774f28c77e3dce563ffb0",
+    "sources": [
+      {
+        "file": "OptionsFirst.vue.txt",
+        "originalTest": "configured_order_accepts_define_options_first",
+        "sourceBytes": 253,
+        "sourceSha256": "aaca54682624a3b8aea3a3a75843cafc71d0bd7111f5a80cb0d2a892120c364f",
+        "originalScriptSha256": "6482cc4bd6c24bcd124de46c8ae718d793317e1a02fafcb68bf351c80e891aac"
+      },
+      {
+        "file": "EmitsFirst.vue.txt",
+        "originalTest": "emits_before_props",
+        "sourceBytes": 155,
+        "sourceSha256": "138c2e2411d2007ab235bde82542abbc0c32cce65e296df033605537c92023c6",
+        "originalScriptSha256": "ed2a993c4a6a5bcf643fa12f1409360e14347162faa25f7b515264fd87b0ac98"
+      }
+    ]
+  },
+  "limits": "Pinned ESLint fixes and suggestions are retained in full. Vize existing macro rule has no fixer; the JSON configuration route must preserve that honest null-fix contract.",
+  "cases": [
+    {
+      "id": "options-first-default",
+      "source": "OptionsFirst.vue.txt",
+      "options": null,
+      "statement": "const props = defineProps<{ label: string }>()",
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/define-macros-order",
+            "severity": 2,
+            "message": "defineProps should be placed at the top of `<script setup>` (after any potential import statements or type definitions).",
+            "line": 3,
+            "column": 1,
+            "messageId": "macrosNotAtTop",
+            "endLine": 3,
+            "endColumn": 47,
+            "fix": {
+              "range": [25, 154],
+              "text": "const props = defineProps<{ label: string }>()\nconst emit = defineEmits<{ select: [] }>()\ndefineOptions({ inheritAttrs: false })\n"
+            }
+          }
+        ],
+        "fixResult": {
+          "fixed": true,
+          "messages": [],
+          "output": "<script setup lang=\"ts\">\nconst props = defineProps<{ label: string }>()\nconst emit = defineEmits<{ select: [] }>()\ndefineOptions({ inheritAttrs: false })\ndefineSlots<{ default(): unknown }>()\nconst value = ref(0)\n</script>\n<template><span /></template>\n"
+        }
+      }
+    },
+    {
+      "id": "options-first-configured",
+      "source": "OptionsFirst.vue.txt",
+      "options": {
+        "order": ["defineOptions", "defineProps", "defineEmits", "defineSlots"]
+      },
+      "statement": null,
+      "reference": {
+        "messages": [],
+        "fixResult": {
+          "fixed": false,
+          "messages": [],
+          "output": "<script setup lang=\"ts\">\ndefineOptions({ inheritAttrs: false })\nconst props = defineProps<{ label: string }>()\nconst emit = defineEmits<{ select: [] }>()\ndefineSlots<{ default(): unknown }>()\nconst value = ref(0)\n</script>\n<template><span /></template>\n"
+        }
+      }
+    },
+    {
+      "id": "emits-first-default",
+      "source": "EmitsFirst.vue.txt",
+      "options": null,
+      "statement": "const props = defineProps<{ count: number }>()",
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/define-macros-order",
+            "severity": 2,
+            "message": "defineProps should be above defineEmits.",
+            "line": 3,
+            "column": 1,
+            "messageId": "macrosUnordered",
+            "endLine": 3,
+            "endColumn": 47,
+            "fix": {
+              "range": [25, 115],
+              "text": "const props = defineProps<{ count: number }>()\nconst emit = defineEmits<{ change: [] }>()\n"
+            }
+          }
+        ],
+        "fixResult": {
+          "fixed": true,
+          "messages": [],
+          "output": "<script setup lang=\"ts\">\nconst props = defineProps<{ count: number }>()\nconst emit = defineEmits<{ change: [] }>()\n</script>\n<template><span /></template>\n"
+        }
+      }
+    },
+    {
+      "id": "emits-first-reversed",
+      "source": "EmitsFirst.vue.txt",
+      "options": {
+        "order": ["defineEmits", "defineProps"]
+      },
+      "statement": null,
+      "reference": {
+        "messages": [],
+        "fixResult": {
+          "fixed": false,
+          "messages": [],
+          "output": "<script setup lang=\"ts\">\nconst emit = defineEmits<{ change: [] }>()\nconst props = defineProps<{ count: number }>()\n</script>\n<template><span /></template>\n"
+        }
+      }
+    },
+    {
+      "id": "options-first-empty-order",
+      "source": "OptionsFirst.vue.txt",
+      "options": {
+        "order": []
+      },
+      "statement": null,
+      "reference": {
+        "messages": [],
+        "fixResult": {
+          "fixed": false,
+          "messages": [],
+          "output": "<script setup lang=\"ts\">\ndefineOptions({ inheritAttrs: false })\nconst props = defineProps<{ label: string }>()\nconst emit = defineEmits<{ select: [] }>()\ndefineSlots<{ default(): unknown }>()\nconst value = ref(0)\n</script>\n<template><span /></template>\n"
+        }
+      }
+    },
+    {
+      "id": "emits-first-default-object",
+      "source": "EmitsFirst.vue.txt",
+      "options": {},
+      "statement": "const props = defineProps<{ count: number }>()",
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/define-macros-order",
+            "severity": 2,
+            "message": "defineProps should be above defineEmits.",
+            "line": 3,
+            "column": 1,
+            "messageId": "macrosUnordered",
+            "endLine": 3,
+            "endColumn": 47,
+            "fix": {
+              "range": [25, 115],
+              "text": "const props = defineProps<{ count: number }>()\nconst emit = defineEmits<{ change: [] }>()\n"
+            }
+          }
+        ],
+        "fixResult": {
+          "fixed": true,
+          "messages": [],
+          "output": "<script setup lang=\"ts\">\nconst props = defineProps<{ count: number }>()\nconst emit = defineEmits<{ change: [] }>()\n</script>\n<template><span /></template>\n"
+        }
+      }
+    }
+  ]
+}

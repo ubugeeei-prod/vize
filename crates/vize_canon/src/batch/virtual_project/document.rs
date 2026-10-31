@@ -203,24 +203,17 @@ mod tests {
     #[test]
     fn single_document_generation_retains_configured_template_ref_authority() {
         let source = "<script setup lang=\"ts\">\nconst target = useTemplateRef('target');\n</script>\n<template><button ref=\"target\" /></template>\n";
-        for (configured, expected) in [
+        let cases: [(bool, &[&str]); 2] = [
             (
                 true,
-                [
-                    "  type __vizeInferRefSource = typeof useTemplateRef;",
+                &[
                     "  type __vizeInferRefIsVue = true;",
                     "  type __vizeInferRefGlobal = $UseTemplateRef;",
                 ],
             ),
-            (
-                false,
-                [
-                    "  type __vizeInferRefSource = typeof useTemplateRef;",
-                    "  type __vizeInferRefIsVue = false;",
-                    "  type __vizeInferRefGlobal = __vizeInferRefSource;",
-                ],
-            ),
-        ] {
+            (false, &[]),
+        ];
+        for (configured, expected) in cases {
             let document = generate_vue_document_virtual_ts_with_options(
                 Path::new("App.vue"),
                 source,

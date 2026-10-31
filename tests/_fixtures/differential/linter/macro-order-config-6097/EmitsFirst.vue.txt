@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const emit = defineEmits<{ change: [] }>()
+const props = defineProps<{ count: number }>()
+</script>
+<template><span /></template>
