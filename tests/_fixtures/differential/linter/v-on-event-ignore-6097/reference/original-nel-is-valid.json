@@ -1,0 +1,72 @@
+{
+  "messages": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@update:modelValue' must be hyphenated.",
+      "line": 6,
+      "column": 7,
+      "messageId": "mustBeHyphenated",
+      "endLine": 6,
+      "endColumn": 44
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@rowClick' must be hyphenated.",
+      "line": 9,
+      "column": 30,
+      "messageId": "mustBeHyphenated",
+      "endLine": 9,
+      "endColumn": 62
+    }
+  ],
+  "fixResult": {
+    "fixed": false,
+    "messages": [
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@update:modelValue' must be hyphenated.",
+        "line": 6,
+        "column": 7,
+        "messageId": "mustBeHyphenated",
+        "endLine": 6,
+        "endColumn": 44
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@rowClick' must be hyphenated.",
+        "line": 9,
+        "column": 30,
+        "messageId": "mustBeHyphenated",
+        "endLine": 9,
+        "endColumn": 62
+      }
+    ],
+    "output": "<template>\n  <ul class=\"color-palette\" role=\"listbox\">\n    <va-color-indicator\n      v-for=\"color in palette\"\n      :key=\"color\"\n      @update:modelValue=\"selected = color\"\n    />\n    <va-color-indicator @update:model-value=\"selected = undefined\" />\n    <li is=\"vue:palette-row\" @rowClick=\"selected = undefined\" />\n    <li @myEvent=\"selected = undefined\" />\n  </ul>\n</template>\n\n<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\ndefineProps<{ palette: string[] }>()\nconst selected = ref<string | undefined>()\n</script>\n"
+  },
+  "requery": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@update:modelValue' must be hyphenated.",
+      "line": 6,
+      "column": 7,
+      "messageId": "mustBeHyphenated",
+      "endLine": 6,
+      "endColumn": 44
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@rowClick' must be hyphenated.",
+      "line": 9,
+      "column": 30,
+      "messageId": "mustBeHyphenated",
+      "endLine": 9,
+      "endColumn": 62
+    }
+  ]
+}

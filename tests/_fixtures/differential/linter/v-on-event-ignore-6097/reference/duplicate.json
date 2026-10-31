@@ -1,0 +1,16 @@
+{
+  "verify": {
+    "kind": "threw",
+    "error": {
+      "name": "Error",
+      "message": "Key \"rules\": Key \"vue/v-on-event-hyphenation\":\n\tValue [\"update:\",\"update:\"] should NOT have duplicate items (items ## 0 and 1 are identical).\n"
+    }
+  },
+  "verifyAndFix": {
+    "kind": "threw",
+    "error": {
+      "name": "Error",
+      "message": "Key \"rules\": Key \"vue/v-on-event-hyphenation\":\n\tValue [\"update:\",\"update:\"] should NOT have duplicate items (items ## 0 and 1 are identical).\n"
+    }
+  }
+}
