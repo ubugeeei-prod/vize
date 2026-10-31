@@ -1,0 +1,79 @@
+name: Published JSX child values
+on:
+  pull_request:
+    paths:
+      - .github/workflows/public-jsx-child-values.yml
+      - tools/support/release/public_jsx_child_values/**
+      - tools/support/release/public-provider.ts
+      - tools/support/release/release/quota/producer.ts
+      - tools/support/release/release/quota/http.ts
+      - tools/support/archive/tar.ts
+      - tools/support/archive/zip.ts
+      - tests/tooling/release/public-jsx-child-values-guards.test.ts
+      - tests/tooling/jsx-vapor-oracle/**
+      - tests/_fixtures/differential/compiler/jsx-child-values-6890/**
+      - tests/_fixtures/differential/jsx/child-values-6890-reference-conflict.json
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact genuine published native version containing PR11172
+        required: true
+        type: string
+      candidate:
+        description: Exact immutable public release tag commit
+        required: true
+        type: string
+      producer_run:
+        description: Original main Release run that actually created the candidate
+        required: true
+        type: string
+permissions: { contents: read, actions: read }
+concurrency:
+  group: public-jsx-child-values-${{ github.event.pull_request.number || inputs.version || github.ref }}
+  cancel-in-progress: false
+jobs:
+  controls:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Pure admission and archive mutation controls only
+        run: node --test tests/tooling/release/public-jsx-child-values-guards.test.ts
+  installed-public:
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      PUBLIC_VERSION: ${{ inputs.version }}
+      PUBLIC_CANDIDATE: ${{ inputs.candidate }}
+      PUBLIC_PRODUCER_RUN: ${{ inputs.producer_run }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Authenticate the producer and fresh public native package
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
+        run: node tools/support/release/public_jsx_child_values/bootstrap.ts "$PUBLIC_VERSION" "$PUBLIC_CANDIDATE" "$PUBLIC_PRODUCER_RUN" "$RUNNER_TEMP/public-jsx-child-values"
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install genuine Chromium from the exact original Playwright pin
+        run: vize-ci-apt-retry "$RUNNER_TEMP/public-jsx-child-values/oracle/node_modules/.bin/playwright" install chromium --with-deps
+      - name: Execute unchanged full original Node and Chromium routes
+        run: env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN node tools/support/release/public_jsx_child_values/run.ts "$RUNNER_TEMP/public-jsx-child-values"
+      - name: Retain complete public custody, results, inputs and failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: public-jsx-child-values-${{ inputs.version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/public-jsx-child-values/proof
+            ${{ runner.temp }}/public-jsx-child-values/runtime
+            ${{ runner.temp }}/public-jsx-child-values/oracle/tests
+            ${{ runner.temp }}/public-jsx-child-values/consumer/package*.json
+            ${{ runner.temp }}/public-jsx-child-values/oracle/package*.json
+          if-no-files-found: error
+          retention-days: 30
