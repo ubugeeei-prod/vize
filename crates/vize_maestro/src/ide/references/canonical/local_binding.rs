@@ -1,6 +1,35 @@
 //! Native shorthand object bindings also refer to the source property.
 
+use oxc_ast::AstKind;
 use oxc_ast::ast::{BindingPattern, Program, Statement};
+use oxc_ast_visit::Visit;
+
+/// Rename's initial private surface deliberately excludes every nested scope,
+/// property/member identity, and shorthand transaction. References retain their
+/// original, independent top-level pattern policy below.
+pub(super) fn rename_hazard(program: &Program<'_>) -> bool {
+    let mut visitor = RenameHazard(false);
+    visitor.visit_program(program);
+    visitor.0
+}
+
+struct RenameHazard(bool);
+
+impl<'a> Visit<'a> for RenameHazard {
+    fn enter_node(&mut self, kind: AstKind<'a>) {
+        match kind {
+            AstKind::Function(_)
+            | AstKind::ArrowFunctionExpression(_)
+            | AstKind::Class(_)
+            | AstKind::ComputedMemberExpression(_)
+            | AstKind::StaticMemberExpression(_)
+            | AstKind::PrivateFieldExpression(_) => self.0 = true,
+            AstKind::ObjectProperty(property) => self.0 |= property.shorthand || property.computed,
+            AstKind::BindingProperty(property) => self.0 |= property.shorthand || property.computed,
+            _ => {}
+        }
+    }
+}
 
 pub(super) fn property_linked(program: &Program<'_>, name: &str) -> bool {
     program.body.iter().any(|statement| {

@@ -138,6 +138,11 @@ fn analyze_projection(
 }
 
 fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrence>> {
+    let entry = resolve_entry(ctx)?;
+    select(ctx, new_name, &entry)
+}
+
+fn resolve_entry(ctx: &IdeContext<'_>) -> Option<std::sync::Arc<snapshot::Entry>> {
     if crate::ide::template_scope::needs_structural_pattern_navigation(ctx) {
         return None;
     }
@@ -162,7 +167,7 @@ fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrenc
             )),
         }
     };
-    select(ctx, new_name, &entry)
+    Some(entry)
 }
 
 fn select(
@@ -241,9 +246,51 @@ pub(in crate::ide) fn rename(
     ctx: &IdeContext<'_>,
     new_name: &str,
 ) -> Option<Vec<tower_lsp::lsp_types::TextEdit>> {
+    render_rename(ctx, new_name, || resolve(ctx, Some(new_name)))
+}
+
+/// Prove the selected lexical/link component contains this exact authored
+/// top-level declaration, using the same Entry and full guard as ordinary rename.
+#[cfg(feature = "native")]
+pub(in crate::ide) fn private_setup_rename(
+    ctx: &IdeContext<'_>,
+    new_name: &str,
+    name: &str,
+    declaration: (usize, usize),
+) -> Option<Vec<tower_lsp::lsp_types::TextEdit>> {
+    let entry = resolve_entry(ctx)?;
+    let mut declarations = entry
+        .facts
+        .occurrences
+        .iter()
+        .filter(|occurrence| occurrence.declaration && occurrence.authored == Some(declaration))
+        .map(|occurrence| occurrence.symbol);
+    let symbol = declarations.next()?;
+    if declarations.any(|other| other != symbol) || entry.facts.scoping.symbol_name(symbol) != name
+    {
+        return None;
+    }
+    let selected = select(ctx, Some(new_name), &entry)?;
+    // select starts from the actual cursor symbols and closes only explicit
+    // generator links. A same-spelling shadow cannot supply this declaration.
+    if !selected.iter().any(|occurrence| {
+        occurrence.symbol == symbol
+            && occurrence.declaration
+            && occurrence.authored == Some(declaration)
+    }) {
+        return None;
+    }
+    render_rename(ctx, new_name, || Some(selected))
+}
+
+fn render_rename(
+    ctx: &IdeContext<'_>,
+    new_name: &str,
+    resolve_entries: impl FnOnce() -> Option<Vec<Occurrence>>,
+) -> Option<Vec<tower_lsp::lsp_types::TextEdit>> {
     let mut changes = std::collections::BTreeMap::new();
     let shorthands = template::shorthands(ctx)?;
-    for entry in resolve(ctx, Some(new_name))? {
+    for entry in resolve_entries()? {
         let mut span = entry.authored?;
         let original = ctx.content.get(span.0..span.1)?;
         let text = if let Some(directive) = shorthands.get(&span) {

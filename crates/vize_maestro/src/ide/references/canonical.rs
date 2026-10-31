@@ -1,3 +1,4 @@
+use oxc_ast::ast::{BindingPattern, Statement, VariableDeclarationKind};
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::Location;
 use vize_canon::CorsaBridge;
@@ -12,6 +13,114 @@ use crate::ide::{IdeContext, corsa_support};
 mod local_binding;
 #[cfg(test)]
 mod private_tests;
+
+/// Unlike the name-based reference gate, rename needs an exact declaration
+/// which the structural selector must prove belongs to this cursor's symbol.
+pub(super) fn private_setup_rename_declaration(
+    ctx: &IdeContext<'_>,
+) -> Option<(vize_l0::String, (usize, usize))> {
+    if corsa_support::is_component_attribute_query(ctx)
+        || ctx.uri.path().ends_with(".art.vue")
+        || ctx.state.legacy_vue2_enabled()
+        || ctx.state.patterned_template_enabled()
+        || !matches!(
+            ctx.block_type,
+            Some(
+                crate::virtual_code::BlockType::ScriptSetup
+                    | crate::virtual_code::BlockType::Template
+            )
+        )
+        || ctx
+            .virtual_docs
+            .as_ref()
+            .is_some_and(|documents| documents.art_templates.iter().any(Option::is_some))
+    {
+        return None;
+    }
+    let descriptor = ctx.descriptor()?;
+    let setup = descriptor.script_setup.as_ref()?;
+    let template = descriptor.template.as_ref()?;
+    if descriptor.script.is_some()
+        || !descriptor.styles.is_empty()
+        || !descriptor.custom_blocks.is_empty()
+        || setup.src.is_some()
+        || setup.attrs.contains_key("generic")
+        || template.src.is_some()
+        || template.lang.as_deref().is_some_and(|lang| lang != "html")
+        || ctx.content.get(setup.loc.start..setup.loc.end)? != setup.content.as_ref()
+    {
+        return None;
+    }
+    let source_type = match setup.lang.as_deref() {
+        Some("ts") => SourceType::ts(),
+        None | Some("js") => SourceType::mjs(),
+        _ => return None,
+    };
+    let name = ReferencesService::get_word_at_offset(&ctx.content, ctx.offset)?;
+    if crate::ide::definition::helpers::find_import_path(ctx, &name).is_some() {
+        return None;
+    }
+    let allocator = Allocator::default();
+    let parsed = vize_croquis::script_parser::parse_program_for_analysis(
+        &allocator,
+        &setup.content,
+        source_type,
+    );
+    if parsed.panicked
+        || !parsed.diagnostics.is_empty()
+        || local_binding::rename_hazard(&parsed.program)
+    {
+        return None;
+    }
+    let mut declaration = None;
+    for statement in &parsed.program.body {
+        let variables = match statement {
+            Statement::VariableDeclaration(variables) => variables,
+            Statement::ImportDeclaration(_)
+            | Statement::ExpressionStatement(_)
+            | Statement::EmptyStatement(_) => continue,
+            // Exported, function, class, namespace and type declarations keep
+            // their existing project-aware route in this first private slice.
+            _ => return None,
+        };
+        for variable in &variables.declarations {
+            let BindingPattern::BindingIdentifier(id) = &variable.id else {
+                return None;
+            };
+            if id.name != name.as_str() {
+                continue;
+            }
+            if variables.kind != VariableDeclarationKind::Const
+                || variables.declare
+                || variable.init.is_none()
+                || declaration.is_some()
+            {
+                return None;
+            }
+            declaration = Some((
+                setup.loc.start.checked_add(id.span.start as usize)?,
+                setup.loc.start.checked_add(id.span.end as usize)?,
+            ));
+        }
+    }
+    let declaration = declaration?;
+    if ctx.content.get(declaration.0..declaration.1)? != name.as_str() {
+        return None;
+    }
+    let mut drawer = Drawer::with_options(DrawerOptions::full());
+    drawer.analyze_script_setup_program(&parsed.program, &setup.content, None);
+    let croquis = drawer.finish();
+    if !croquis.macros.all_calls().is_empty()
+        || croquis.macros.has_top_level_await()
+        || !matches!(
+            croquis.get_binding_type(&name),
+            Some(binding) if is_setup_local(binding) || binding == BindingType::LiteralConst
+        )
+    {
+        return None;
+    }
+    Some((name.into(), declaration))
+}
 
 /// A proven private setup symbol has no workspace reference identity. Reuse
 /// lexical symbols and generator links instead of starting native name search.
