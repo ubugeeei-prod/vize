@@ -85,6 +85,23 @@ fn packet(result: &LintResult) -> Value {
     })
 }
 
+// Existing Vize diagnostics quote macro names; the pinned ESLint messages do not.
+fn native_message(case: &Case) -> &'static str {
+    let (reference, native) = match case.id.as_str() {
+        "options-first-default" => (
+            "defineProps should be placed at the top of `<script setup>` (after any potential import statements or type definitions).",
+            "`defineProps` should be placed at the top of `<script setup>` (after any potential import statements or type definitions).",
+        ),
+        "emits-first-default" | "emits-first-default-object" => (
+            "defineProps should be above defineEmits.",
+            "`defineProps` should be above `defineEmits`.",
+        ),
+        other => panic!("unknown macro finding: {other}"),
+    };
+    assert_eq!(case.reference.messages[0].message.as_str(), reference);
+    native
+}
+
 fn expected(case: &Case) -> Value {
     let source = source(case);
     let diagnostics = match &case.statement {
@@ -100,7 +117,7 @@ fn expected(case: &Case) -> Value {
             vec![json!({
                 "rule_name": RULE,
                 "severity": "warning",
-                "message": case.reference.messages[0].message.as_str(),
+                "message": native_message(case),
                 "start": start,
                 "end": end,
                 "help": HELP,

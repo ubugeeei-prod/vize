@@ -252,20 +252,30 @@ test("macro order JSON options preserve complete invalid-policy errors", () => {
     },
     { options: { order: [""] }, reason: "macro names in order must not be empty" },
   ];
-  for (const { options, reason } of errors) {
+  // Capture every refusal and the following valid query before comparing any
+  // result, so one changed error position cannot hide the remaining controls.
+  const observations = errors.map(({ options, reason }) => {
     const json = JSON.stringify({ [rule]: options });
-    assert.deepEqual(observe("invalid:" + reason, row, { ruleOptionsJson: json }), {
+    return { reason, json, outcome: observe("invalid:" + reason, row, { ruleOptionsJson: json }) };
+  });
+  const json = JSON.stringify({ [rule]: { defineExposeLast: true } });
+  const unknown = observe("unexposed-define-expose-last", row, { ruleOptionsJson: json });
+  const repair = corpus.cases[1]!;
+  const repaired = observe("valid-policy-after-refusals", repair, {
+    ruleOptionsJson: optionsJson(repair),
+  });
+  for (const { reason, json, outcome } of observations) {
+    assert.deepEqual(outcome, {
       kind: "threw",
       error: {
         name: "Error",
         code: "InvalidArg",
-        message: `Invalid Patina rule options: ${reason} at line 1 column ${json.indexOf("]") + 1}`,
+        message: `Invalid Patina rule options: ${reason} at line 1 column ${json.indexOf("}") + 1}`,
       },
     });
   }
-  const json = JSON.stringify({ [rule]: { defineExposeLast: true } });
   const column = json.indexOf('"defineExposeLast"') + '"defineExposeLast"'.length;
-  assert.deepEqual(observe("unexposed-define-expose-last", row, { ruleOptionsJson: json }), {
+  assert.deepEqual(unknown, {
     kind: "threw",
     error: {
       name: "Error",
@@ -273,10 +283,6 @@ test("macro order JSON options preserve complete invalid-policy errors", () => {
       message: `Invalid Patina rule options: unknown field \`defineExposeLast\`, expected \`order\` at line 1 column ${column}`,
     },
   });
-  const repair = corpus.cases[1]!;
-  assert.deepEqual(
-    observe("valid-policy-after-refusals", repair, { ruleOptionsJson: optionsJson(repair) }),
-    returned(nativeExpected(repair)),
-  );
+  assert.deepEqual(repaired, returned(nativeExpected(repair)));
   complete();
 });

@@ -71,6 +71,30 @@ function position(source: string, offset: number) {
   return { line: lines.length, column: lines.at(-1)!.length + 1, offset };
 }
 
+// Preserve both complete messages: Vize has always quoted macro names, while
+// the independently captured ESLint presentation uses unquoted names.
+function nativeMessage(row: MacroCase) {
+  let reference: string;
+  let native: string;
+  switch (row.id) {
+    case "options-first-default":
+      reference =
+        "defineProps should be placed at the top of `<script setup>` (after any potential import statements or type definitions).";
+      native =
+        "`defineProps` should be placed at the top of `<script setup>` (after any potential import statements or type definitions).";
+      break;
+    case "emits-first-default":
+    case "emits-first-default-object":
+      reference = "defineProps should be above defineEmits.";
+      native = "`defineProps` should be above `defineEmits`.";
+      break;
+    default:
+      throw new Error(`unknown macro finding: ${row.id}`);
+  }
+  assert.equal(row.reference.messages[0]!.message, reference);
+  return native;
+}
+
 // Complete current public NAPI shape. Rust companions also check its labels,
 // which this existing public NAPI format does not expose.
 export function nativeExpected(row: MacroCase, includeFixes = true) {
@@ -86,7 +110,7 @@ export function nativeExpected(row: MacroCase, includeFixes = true) {
     diagnostics.push({
       rule,
       severity: "warning",
-      message: row.reference.messages[0]!.message,
+      message: nativeMessage(row),
       location: { start: position(source, start), end: position(source, end) },
       help,
       ...(includeFixes ? { fix: null } : {}),
