@@ -99,12 +99,12 @@ fn valid_distinct_registry_tags_keep_two_providers_in_both_source_orders() {
 fn generated_names_cannot_capture_script_or_template_locals() {
     for (script, template) in [
         (
-            "import type { AB } from './component'; const $Component_A_x2d_b = 1; void $Component_A_x2d_b;",
+            "import type { AB } from './component'; const $Component_A_b = 1; const $Component_A_x2d_b = 1; void $Component_A_b; void $Component_A_x2d_b;",
             "<A-b v-slot=\"{ item }\">{{ item }}</A-b>",
         ),
         (
             "import type { AB } from './component';",
-            "<template v-for=\"$Component_A_x2d_b in [1]\"><A-b v-slot=\"{ item }\">{{ item }}</A-b></template>",
+            "<template v-for=\"$Component_A_b in [1]\"><template v-for=\"$Component_A_x2d_b in [1]\"><A-b v-slot=\"{ item }\">{{ item }}</A-b></template></template>",
         ),
     ] {
         let code = generate(script, template, &Default::default());
@@ -138,7 +138,7 @@ fn repeated_type_only_tags_share_the_actual_auto_import_declaration() {
 #[test]
 fn nested_alias_plans_restore_the_actual_projection_owner() {
     let outer = summary(
-        "import type { AB } from './component'; const $Component_A_x2d_b = 1;",
+        "import type { AB } from './component'; const $Component_A_b = 1; const $Component_A_x2d_b = 1;",
         "<A-b />",
     );
     let inner = summary("import type { AB } from './component';", "<A-b />");
@@ -154,7 +154,7 @@ fn nested_alias_plans_restore_the_actual_projection_owner() {
         let _inner = cache_aliases(&inner, &options, &type_only, &imported);
         assert_eq!(
             reference(&inner, &options, &type_only, "A-b"),
-            "$Component_A_x2d_b"
+            "$Component_A_b"
         );
     }
     assert_eq!(

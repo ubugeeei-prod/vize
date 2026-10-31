@@ -9,7 +9,7 @@ use vize_croquis::Croquis;
 
 use super::component_reference::{contains_compact_name, has_type_only_component_candidate};
 use super::generator::extract_declared_name;
-use super::helpers::to_safe_identifier;
+use super::helpers::{to_safe_identifier, to_safe_identifier_fragment};
 use super::types::VirtualTsOptions;
 
 #[derive(Default)]
@@ -35,6 +35,14 @@ fn fragment(name: &str) -> String {
 fn candidates(name: &str) -> [String; 3] {
     let camel = camelize(name);
     [capitalize(camel.as_str()), camel, String::from(name)]
+}
+
+fn existing_reference(name: &str, type_only: &FxHashSet<CompactString>) -> String {
+    if has_type_only_component_candidate(type_only, name) {
+        cstr!("$Component_{}", to_safe_identifier_fragment(name))
+    } else {
+        to_safe_identifier(name)
+    }
 }
 
 impl Aliases {
@@ -97,8 +105,25 @@ impl Aliases {
         );
         let mut identities: Vec<_> = identities.into_iter().collect();
         identities.sort_unstable_by(|left, right| left.as_str().cmp(right.as_str()));
+        let mut reference_counts = FxHashMap::<String, usize>::default();
+        for identity in &identities {
+            *reference_counts
+                .entry(existing_reference(identity, type_only))
+                .or_default() += 1;
+        }
+        // Reserve every existing candidate before allocating an escaped name:
+        // source order cannot let it capture another owner's retained alias.
+        let existing_reserved = reserved.clone();
+        reserved.extend(reference_counts.keys().cloned());
         let mut generated = FxHashMap::<String, String>::default();
         for identity in identities {
+            let existing = existing_reference(identity.as_str(), type_only);
+            if reference_counts[existing.as_str()] == 1
+                && !existing_reserved.contains(existing.as_str())
+            {
+                generated.insert(identity, existing);
+                continue;
+            }
             let mut reference = cstr!("$Component_{}", fragment(identity.as_str()));
             // Encoded fragments end in at most one underscore, so a pair is
             // outside the encoded-name language and cannot merge two owners.
@@ -213,7 +238,7 @@ pub(super) fn reference(
             .references
             .get(name)
             .cloned()
-            .unwrap_or_else(|| to_safe_identifier(name))
+            .unwrap_or_else(|| existing_reference(name, type_only))
     })
 }
 
