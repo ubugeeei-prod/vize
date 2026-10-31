@@ -37,7 +37,11 @@ pub(crate) fn emit_event_inference_helpers(
             ts.push_str(EMIT_PROPS.select(hoist_shared_preamble));
             ts.push_str(LEGACY_EMIT_INFERENCE_HELPERS_SUFFIX);
         } else {
-            ts.push_str(EMIT_INFERENCE_HELPERS);
+            crate::virtual_ts::helpers::hygiene::emit_inference_helpers(
+                ts,
+                summary,
+                EMIT_INFERENCE_HELPERS,
+            );
         }
     }
     needed

@@ -53,14 +53,25 @@ fn emit_embedded_helpers(
     if !super::legacy_vue2::needs_legacy_vue2_helpers(legacy_vue2, dialect)
         && let Some(module) = external_component_attrs_module
     {
-        ts.push_str(match module {
+        let helpers = match module {
             ComponentHelperModule::Attributes => {
                 crate::virtual_ts::helpers::LEGACY_CONTENT_MAPPER_TYPE_HELPERS
             }
             ComponentHelperModule::Types => crate::virtual_ts::helpers::CONTENT_MAPPER_TYPE_HELPERS,
-        });
+        };
+        crate::virtual_ts::helpers::hygiene::emit_type_helpers(
+            ts,
+            summary,
+            helpers,
+            matches!(module, ComponentHelperModule::Types),
+        );
     } else {
-        ts.push_str(super::legacy_vue2::vue_type_helpers(legacy_vue2, dialect));
+        crate::virtual_ts::helpers::hygiene::emit_type_helpers(
+            ts,
+            summary,
+            super::legacy_vue2::vue_type_helpers(legacy_vue2, dialect),
+            false,
+        );
     }
     if summary
         .scopes
