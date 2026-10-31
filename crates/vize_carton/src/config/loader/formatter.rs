@@ -45,7 +45,7 @@ fn snapshot(loaded: LoadedRawConfig) -> LoadedFormatterSnapshot {
     let compiler_whitespace = loaded.config.compiler_whitespace();
     let sort_imports = loaded.config.formatter_sort_imports().cloned();
     let formatter_profile = loaded.config.formatter_profile().clone();
-    let mut ignores = loaded.config.entry_ignores();
+    let mut ignores = loaded.config.formatter_entry_ignores();
     ignores.extend(
         loaded
             .config

@@ -3,6 +3,8 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use crate::support::vite_config;
 
+mod scoped_entry_ignores;
+
 use std::{
     fs,
     path::Path,

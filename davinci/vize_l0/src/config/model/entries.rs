@@ -1,6 +1,6 @@
 //! Per-entry linter scopes derived from `entries[]`.
 
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 
 use super::linter_rule_options::{ConfigLintRuleOptions, LintRuleOptions};
 use super::{
@@ -9,14 +9,56 @@ use super::{
 };
 use crate::String;
 
-#[derive(Debug, Clone, Default, Deserialize)]
-#[serde(default, rename_all = "camelCase")]
+#[derive(Debug, Clone, Default)]
 pub(crate) struct RawConfigEntry {
     pub base_path: Option<String>,
     pub files: Option<Vec<String>>,
     pub ignores: Option<Vec<String>>,
     pub compiler: RawCompilerConfig,
     pub linter: RawLinterConfig,
+    settings_authored: bool,
+}
+
+impl RawConfigEntry {
+    /// Selection-only entries affect discovery; an override only scopes its settings.
+    pub(crate) fn is_discovery_ignore(&self) -> bool {
+        !self.settings_authored
+    }
+}
+
+impl<'de> Deserialize<'de> for RawConfigEntry {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Default, Deserialize)]
+        #[serde(default, rename_all = "camelCase")]
+        struct Entry {
+            base_path: Option<String>,
+            files: Option<Vec<String>>,
+            ignores: Option<Vec<String>>,
+            #[serde(deserialize_with = "present_entry_setting")]
+            compiler: Option<RawCompilerConfig>,
+            #[serde(deserialize_with = "present_entry_setting")]
+            linter: Option<RawLinterConfig>,
+        }
+        let entry = Entry::deserialize(deserializer)?;
+        let settings_authored = entry.compiler.is_some() || entry.linter.is_some();
+        Ok(Self {
+            base_path: entry.base_path,
+            files: entry.files,
+            ignores: entry.ignores,
+            compiler: entry.compiler.unwrap_or_default(),
+            linter: entry.linter.unwrap_or_default(),
+            settings_authored,
+        })
+    }
+}
+
+/// Retain presence even for `{}` while preserving the existing rejection of `null`.
+fn present_entry_setting<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    T::deserialize(deserializer).map(Some)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

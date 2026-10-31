@@ -103,6 +103,40 @@ fn malformed_vite_settings_fail_closed_before_formatter_writes() {
 }
 
 #[test]
+fn formatter_snapshot_retains_entry_scope_through_vite_root_projection() {
+    let project = tempfile::tempdir().unwrap();
+    std::fs::write(
+        project.path().join("vite.config.mjs"),
+        r#"export default {root:'app',vue:{
+            ignores:['global/**'],formatter:{ignorePatterns:['fmt/**']},
+            entries:[
+                {basePath:'packages/ui',ignores:['generated/**']},
+                {files:['src/**/*.vue'],ignores:['src/**/*.story.vue'],
+                 linter:{rules:{'vue/require-scoped-style':'off'}}},
+                {ignores:['empty-linter/**'],linter:{}}
+            ]
+        }};"#,
+    )
+    .unwrap();
+    let snapshot = try_load_formatter_snapshot(Some(project.path())).unwrap();
+    let root = project.path().canonicalize().unwrap().join("app");
+    let entry_root = root.join("packages/ui");
+    assert_eq!(snapshot.project_root.as_deref(), Some(root.as_path()));
+    assert_eq!(
+        snapshot
+            .ignores
+            .iter()
+            .map(|ignore| (ignore.base_path.as_deref(), ignore.pattern.as_str()))
+            .collect::<Vec<_>>(),
+        [
+            (root.to_str(), "global/**"),
+            (entry_root.to_str(), "generated/**"),
+            (root.to_str(), "fmt/**"),
+        ]
+    );
+}
+
+#[test]
 fn automatic_discovery_has_package_boundaries_but_explicit_roots_stay_shallow() {
     let project = tempfile::tempdir().unwrap();
     let package = project.path().join("packages/app");

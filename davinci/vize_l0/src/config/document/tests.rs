@@ -2,6 +2,85 @@ use super::ConfigDocument;
 use crate::config::{LintRuleSeverity, VueVersion};
 
 #[test]
+fn formatter_entry_ignores_exclude_override_filters_from_discovery() {
+    let document: ConfigDocument = serde_json::from_str(
+        r#"{
+            "ignores": ["global/**", "!global/keep.vue"],
+            "entries": [
+                {"name":"generated", "basePath":"日本語/🎨", "ignores":["**", "!keep.vue"]},
+                {"files":["src/**/*.vue"], "ignores":["selection/**"]},
+                {"files":["src/**/*.vue"], "ignores":["scoped-file/**"], "linter":{}},
+                {"ignores":["scoped-lint/**"], "linter":{"rules":{"vue/no-v-html":"off"}}},
+                {"ignores":["empty-lint/**"], "linter":{}},
+                {"ignores":["default-lint/**"], "linter":{"enabled":true}},
+                {"ignores":["scoped-compiler/**"], "compiler":{"vapor":false}},
+                {"ignores":["empty-compiler/**"], "compiler":{}},
+                {"files":[], "ignores":["empty-files/**"]}
+            ]
+        }"#,
+    )
+    .unwrap();
+    let ignores = document.formatter_entry_ignores();
+    assert_eq!(
+        ignores
+            .iter()
+            .map(|ignore| (ignore.base_path.as_deref(), ignore.pattern.as_str()))
+            .collect::<Vec<_>>(),
+        [
+            (None, "global/**"),
+            (None, "!global/keep.vue"),
+            (Some("日本語/🎨"), "**"),
+            (Some("日本語/🎨"), "!keep.vue"),
+            (None, "selection/**"),
+            (None, "empty-files/**"),
+        ]
+    );
+    assert_eq!(document.clone().formatter_entry_ignores(), ignores);
+    // Other products retain the published flattened projection in this slice.
+    assert_eq!(
+        document
+            .entry_ignores()
+            .iter()
+            .map(|ignore| ignore.pattern.as_str())
+            .collect::<Vec<_>>(),
+        [
+            "global/**",
+            "!global/keep.vue",
+            "**",
+            "!keep.vue",
+            "selection/**",
+            "scoped-file/**",
+            "scoped-lint/**",
+            "empty-lint/**",
+            "default-lint/**",
+            "scoped-compiler/**",
+            "empty-compiler/**",
+            "empty-files/**",
+        ]
+    );
+    let plan = document.linter_plan();
+    assert_eq!(plan.entries.len(), 1);
+    assert_eq!(plan.entries[0].files, None);
+    assert_eq!(plan.entries[0].ignores, ["scoped-lint/**"]);
+    assert_eq!(
+        plan.entries[0].rules,
+        crate::FxHashMap::from_iter([("vue/no-v-html".into(), LintRuleSeverity::Off)])
+    );
+}
+
+#[test]
+fn entry_override_presence_preserves_invalid_null_rejection() {
+    for setting in ["compiler", "linter"] {
+        assert!(
+            serde_json::from_value::<ConfigDocument>(serde_json::json!({
+                "entries": [{"ignores":["**"], (setting): null}]
+            }))
+            .is_err()
+        );
+    }
+}
+
+#[test]
 fn formatter_exclusions_are_ordered_and_do_not_change_global_ignores() {
     for key in ["formatter", "fmt"] {
         let document: ConfigDocument = serde_json::from_value(serde_json::json!({

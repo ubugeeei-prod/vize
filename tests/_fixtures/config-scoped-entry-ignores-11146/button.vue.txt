@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const label = "ok";
+</script>
+
+<template>
+  <button>{{ label }}</button>
+</template>
