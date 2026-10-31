@@ -82,7 +82,7 @@ export function readZipEntry(archive: Uint8Array, entry: ZipEntry): Buffer {
   let data: Buffer;
   if (entry.method === stored) data = Buffer.from(compressed);
   else if (entry.method === deflated)
-    data = inflateRawSync(compressed, { maxOutputLength: entry.size });
+    data = inflateRawSync(compressed, { maxOutputLength: Math.max(1, entry.size) });
   else throw new Error(`unsupported zip compression ${entry.method}: ${entry.name}`);
   if (data.length !== entry.size) throw new Error(`zip member size mismatch: ${entry.name}`);
   if (crc32(data) !== entry.crc32) throw new Error(`bad CRC-32 for zip member: ${entry.name}`);
