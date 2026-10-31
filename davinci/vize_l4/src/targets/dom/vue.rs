@@ -14,7 +14,7 @@ use vize_l3::decision::{
 };
 
 use super::expression::ExpressionWriter;
-use super::{DomError, DomErrorKind, encode};
+use super::{DomError, DomErrorKind, DomMode, encode, encode_with_mode};
 use crate::expr::{
     AccessError, AccessProvider, AccessSpelling, EmitError, EmitErrorKind, write_expression,
 };
@@ -65,7 +65,15 @@ pub fn emit_vue<L: LinkSink>(
 pub fn emit_selected_setup_template<L: LinkSink>(
     analysis: &NativeSelectedSetupDomAnalysis<'_, '_, '_>,
 ) -> Result<Writer<L>, DomError> {
-    encode(
+    emit_selected_setup_template_with_mode(analysis, DomMode::Development)
+}
+
+/// Consume the same sealed owner with an explicit runtime comment mode.
+pub fn emit_selected_setup_template_with_mode<L: LinkSink>(
+    analysis: &NativeSelectedSetupDomAnalysis<'_, '_, '_>,
+    mode: DomMode,
+) -> Result<Writer<L>, DomError> {
+    encode_with_mode(
         analysis.artifact().source(),
         analysis.policy(),
         analysis.tables(),
@@ -73,6 +81,7 @@ pub fn emit_selected_setup_template<L: LinkSink>(
         VueExpressions {
             analysis: VueRows::Selected(analysis),
         },
+        mode,
     )
 }
 

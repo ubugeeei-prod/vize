@@ -1987,6 +1987,42 @@
       }
     },
     {
+      "id": "linter/macro-order-config-6097",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "macro-order-config-6097",
+        "files": [
+          {
+            "path": "OptionsFirst.vue.txt",
+            "role": "independently-authored-reproduction",
+            "sha256": "aaca54682624a3b8aea3a3a75843cafc71d0bd7111f5a80cb0d2a892120c364f"
+          },
+          {
+            "path": "EmitsFirst.vue.txt",
+            "role": "independently-authored-reproduction",
+            "sha256": "138c2e2411d2007ab235bde82542abbc0c32cce65e296df033605537c92023c6"
+          },
+          {
+            "path": "cases.json",
+            "role": "provenance-and-counterfactuals",
+            "sha256": "09b6e78f87682f110addbc1ee5451dced5799fe7e50661b745d1041320d39afa"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/mdi-remix-icons-10928",
       "state": "active",
       "targets": ["lint"],

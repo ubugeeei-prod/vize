@@ -11,6 +11,31 @@ pub(super) fn refusal<'a>(
     expression: &JsExpr<'a>,
     setup: bool,
 ) -> Option<DomRejection> {
+    if let Some(record) = file.native_conditional(node) {
+        let rejected = |reason| DomRejection {
+            node,
+            span: record.input().operand().value_span(),
+            reason,
+        };
+        if !setup
+            || !record.input().matches_expression(expression)
+            || !core::ptr::eq(
+                record.input().operand().syntax().source().authored_root(),
+                file.artifact().source(),
+            )
+        {
+            return Some(rejected(DomUnsupported::FileExpression));
+        }
+        return (!expression.ast.get_identifier_reference().is_some_and(|id| {
+            expression.ast_span_to_source(id.span).is_some_and(|span| {
+                expression
+                    .source
+                    .get(span.start as usize..span.end as usize)
+                    == Some(id.name.as_str())
+            })
+        }))
+        .then(|| rejected(DomUnsupported::Expression));
+    }
     // Only the normal private receiver's actual node/input association grants
     // selected origin. Other File routes retain their existing policy.
     let Some(record) = file.native_interpolation(node) else {

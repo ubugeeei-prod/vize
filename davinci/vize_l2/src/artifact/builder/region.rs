@@ -43,6 +43,19 @@ impl<'a> RegionBuilder<'_, 'a> {
     ) -> Result<NodeId, ArtifactError> {
         self.builder.begin_original_for(head, span)
     }
+    pub(crate) fn begin_native_if(
+        &mut self,
+        input: &crate::lang::js::NativeConditionalInput<'a>,
+        span: Span,
+    ) -> Result<NodeId, ArtifactError> {
+        self.builder.begin_native_if(input, span)
+    }
+    pub(crate) fn finish_native_if(
+        &mut self,
+        node: NodeId,
+    ) -> Result<core::ptr::NonNull<crate::op::IfOp<'a>>, ArtifactError> {
+        self.builder.finish_native_if(node)
+    }
     pub(crate) fn finish_original_for(
         &mut self,
         node: NodeId,
