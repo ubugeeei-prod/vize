@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { lstatSync, readFileSync, realpathSync } from "node:fs";
-import { join } from "node:path";
+import { join, toNamespacedPath } from "node:path";
 import { asArray, asRecord, asString } from "../../json-value.ts";
 import { Recorder } from "../../config/windows_consumer/common.ts";
 import { digest, inside, inventory } from "./filesystem.ts";
@@ -45,7 +45,11 @@ export function validateCacheBytes(raw: Buffer, root: string, version: string): 
     const key = exactKeys(entry.key, ["format", "version", "runtime", "config", "explicit"]);
     assert.equal(key.format, 1);
     assert.equal(key.version, version);
-    assert.equal(key.config, join(root, "vite.config.ts"));
+    const config = join(root, "vite.config.ts");
+    assert.ok(
+      key.config === config || key.config === toNamespacedPath(config),
+      "cache must name the exact authored config, including its native Windows spelling",
+    );
     assert.equal(key.explicit, false);
     u64(key, "runtime");
     for (const value of asArray(entry.env)) {

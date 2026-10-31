@@ -138,11 +138,9 @@ export async function editorAcceptance(
       "original authored host must be materialized",
     );
     for (const probe of probes) {
-      assert.deepEqual(
-        inventory(modules),
-        before,
-        "external installation changed before injection",
-      );
+      const observed = inventory(modules);
+      record.json("editor-" + probe.name + "-before-injection.json", observed);
+      assert.deepEqual(observed, before, "external installation changed before injection");
       const injected = injectLink(mirror, temporary, modules);
       const uri = pathToFileURL(probe.path).href;
       const diagnostics = await session.open(uri, probe.text);
@@ -186,6 +184,7 @@ export async function editorAcceptance(
   } finally {
     const receipt = await session.shutdown();
     record.json("editor-session.json", receipt);
+    record.json("editor-external-after-shutdown.json", inventory(modules));
     assert.equal(receipt.closed, true);
     assert.equal(receipt.exitCode, 0);
     assert.equal(receipt.signal, null);
