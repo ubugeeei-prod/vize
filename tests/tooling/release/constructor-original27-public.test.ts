@@ -16,6 +16,7 @@ import {
   cliPacket,
   diagnostics,
   expectedMapper,
+  repairExpected,
   reference,
   sourceReference,
 } from "../../../tools/support/release/constructor_original27_public/oracle.ts";
@@ -146,6 +147,44 @@ test("repair copy removes only its own authored error; bad and restored populati
     ),
   );
   assertOriginalVectors(version, mapper, cli); // Exact restored vector, no stateful waiver.
+});
+test("only the two complete known source-version continuation lines may be relabelled", () => {
+  const rows = structuredClone(asArray(reference().mapper));
+  const changed = structuredClone(rows),
+    debt = changed.map((row) => asRecord(row)).find((row) => row.code === 2741)!;
+  debt.continuation = asArray(debt.continuation).map((line) => asString(line) + " ");
+  assert.throws(() => expectedMapper(version, changed));
+  assert.throws(() =>
+    expectedMapper(
+      version,
+      rows.filter((row) => asRecord(row).code !== 2741),
+    ),
+  );
+  const added = structuredClone(rows);
+  asRecord(added[0]).continuation = asRecord(
+    rows.find((row) => asRecord(row).code === 2741),
+  ).continuation;
+  assert.throws(() => expectedMapper(version, added), /unexpected source-version continuation/);
+});
+test("repair derivation validates one complete original row before removing only that row", () => {
+  for (const role of ["mapper", "cli"] as const) {
+    const rows = role === "mapper" ? expectedMapper(version) : asArray(reference().cli);
+    const wrong = rows.find((row) => asRecord(row).file === "wrong-prop/src/Tiny.vue")!;
+    assert.equal(repairExpected(rows, role).length, rows.length - 1);
+    assert.throws(() => repairExpected([...rows, wrong], role), /exactly one/);
+    assert.throws(
+      () =>
+        repairExpected(
+          rows.filter((row) => row !== wrong),
+          role,
+        ),
+      /exactly one/,
+    );
+    const changed = structuredClone(rows),
+      at = rows.indexOf(wrong);
+    asRecord(changed[at]).message = "changed original diagnostic";
+    assert.throws(() => repairExpected(changed, role), /complete original repair row differs/);
+  }
 });
 test("compiler parsing keeps complete continuation lines and refuses unrelated output", () => {
   const rows = diagnostics(
