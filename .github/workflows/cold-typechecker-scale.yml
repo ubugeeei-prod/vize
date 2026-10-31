@@ -6,6 +6,11 @@ on:
         description: Immutable 40-hex baseline commit distinct from the dispatched source
         type: string
         required: true
+      mode:
+        description: Full comparison or one exact native command attribution capture
+        type: choice
+        options: [full, native-command-attribution]
+        default: full
       sfcs:
         description: Vue SFC count plus the complete authored package dependency graph
         type: choice
@@ -27,10 +32,11 @@ on:
       - tests/tooling/source-pmu-calibration.test.ts
 permissions: { contents: read }
 concurrency:
-  group: cold-typechecker-scale-${{ github.event.pull_request.number || github.ref }}
+  group: cold-typechecker-scale-${{ github.event.pull_request.number || github.ref }}${{ inputs.mode == 'native-command-attribution' && '-native-command-attribution' || '' }}
   cancel-in-progress: true
 jobs:
   profile:
+    if: github.event_name != 'workflow_dispatch' || inputs.mode != 'native-command-attribution'
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 90
     env:
@@ -153,4 +159,68 @@ jobs:
         with:
           name: cold-typechecker-scale-${{ github.sha }}
           path: ${{ runner.temp }}/cold-scale-evidence.tgz
+          retention-days: 14
+  native-command-attribution:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'native-command-attribution'
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    permissions: { contents: read, actions: read }
+    timeout-minutes: 30
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      GOMAXPROCS: "8"
+      RAYON_NUM_THREADS: "8"
+      CARGO_BUILD_JOBS: "8"
+      CARGO_INCREMENTAL: "0"
+      NATIVE_SOURCE: "597cffd9aa91f0b6e4ddf7f6ed4d71a18270a6ee"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false, fetch-depth: 2 }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Refuse custody mutation and partial-failure evidence loss
+        run: node --test tests/tooling/cold-typechecker-scale-native-command.test.ts
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Authenticate exact source and existing frozen provider graph
+        env:
+          {
+            GH_TOKEN: "${{ github.token }}",
+            REQUESTED_SOURCE: "${{ inputs.base_sha }}",
+            SFCS: "${{ inputs.sfcs }}",
+          }
+        run: |
+          set -euo pipefail
+          test "$REQUESTED_SOURCE" = "$NATIVE_SOURCE"
+          test "$SFCS" = 2500
+          mkdir "$RUNNER_TEMP/native-command-evidence" "$RUNNER_TEMP/native-command-seed" "$RUNNER_TEMP/native-command-provider"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/native-command-evidence/controller.txt"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/13039066890/zip > "$RUNNER_TEMP/native-command-seed.zip"
+          printf '%s\n' '1a2bf101c6511b8f37f455e51d2493041c853231ddf09ef260d24af822fba321  '"$RUNNER_TEMP/native-command-seed.zip" | sha256sum --check -
+          unzip -q "$RUNNER_TEMP/native-command-seed.zip" -d "$RUNNER_TEMP/native-command-seed"
+          tar -xzf "$RUNNER_TEMP/native-command-seed/cold-phase-evidence.tgz" -C "$RUNNER_TEMP/native-command-seed" cold-phase/package.json cold-phase/package-lock.json
+          cp "$RUNNER_TEMP/native-command-seed/cold-phase/package.json" "$RUNNER_TEMP/native-command-seed/cold-phase/package-lock.json" "$RUNNER_TEMP/native-command-provider/"
+          cd "$RUNNER_TEMP/native-command-provider"
+          npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build one actual source-sealed custody carrier
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$NATIVE_SOURCE"
+          git worktree add --detach "$RUNNER_TEMP/native-command-source" "$NATIVE_SOURCE"
+          node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/native-command-source" --target-dir "$RUNNER_TEMP/native-command-target" --binary "$RUNNER_TEMP/native-command-image/vize" --receipt "$RUNNER_TEMP/native-command-evidence/build.json" --role native-command-custody-untimed --observer-source-sha "$NATIVE_SOURCE"
+      - name: Capture one Vize invocation and replay its bare materialized native command once
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/cold-typechecker-scale-native-run.ts --provider "$RUNNER_TEMP/native-command-provider" --project "$RUNNER_TEMP/native-command-project" --out "$RUNNER_TEMP/native-command-evidence/capture" --binary "$RUNNER_TEMP/native-command-image/vize" --build "$RUNNER_TEMP/native-command-evidence/build.json"
+      - name: Preserve source text, raw observations and metadata without executable images
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/native-command-evidence"
+          tar --exclude='./capture/runtime' -czf "$RUNNER_TEMP/native-command-attribution.tgz" -C "$RUNNER_TEMP/native-command-evidence" .
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: native-command-attribution-${{ github.sha }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/native-command-attribution.tgz
           retention-days: 14
