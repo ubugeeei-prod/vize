@@ -11,6 +11,8 @@ on:
       - "crates/vize_canon/src/virtual_ts/scope/root_callback_owners/**"
       - "crates/vize_canon/src/virtual_ts/scope/component_prop_checker.rs"
       - "crates/vize_canon/src/virtual_ts/scope/component_prop_checker/**"
+      - "crates/vize_canon/src/virtual_ts/scope/component_events/native_fallthrough.rs"
+      - "crates/vize_canon/src/virtual_ts/scope/event_scope.rs"
       - "crates/vize_canon/src/virtual_ts/expressions/props_literal.rs"
       - "crates/vize_canon/src/virtual_ts/expressions/props_literal/**"
       - "tools/benchmarks/crates/vize/tests/component_input_ownership_profile.rs"
@@ -21,6 +23,7 @@ on:
       - "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt"
       - "crates/vize_canon/src/virtual_ts/helpers/declarations/prop-keys.d.ts.txt"
       - "crates/vize_canon/src/virtual_ts/helpers/declarations/content-mapper-type-imports.d.ts.txt"
+      - "crates/vize_canon/src/virtual_ts/helpers/declarations/component-global-attributes.d.ts.txt"
       - "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt"
       - "npm/cli/content-mapper-helpers.d.*"
       - "npm/cli/virtual-ts.d.*"
@@ -33,6 +36,7 @@ on:
       - "tools/support/compat/content-mapper/constructor-projection-parity.ts"
       - "tests/tooling/constructor-projection-parity.test.ts"
       - "tests/tooling/component-input-diagnostic-ownership-workflow.test.ts"
+      - "tests/tooling/callback-owner-certificate.test.ts"
       - "tests/tooling/aria-component-attrs.test.ts"
       - "tests/_fixtures/differential/typechecker/aria-propertykey-capture-11153/**"
       - "tests/_fixtures/differential/typechecker/component-input-diagnostic-owners-10607/**"
@@ -59,7 +63,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Prove callback comparison custody before building either source
-        run: node --test tests/tooling/component-input-diagnostic-ownership-workflow.test.ts tests/tooling/aria-component-attrs.test.ts
+        run: node --test tests/tooling/component-input-diagnostic-ownership-workflow.test.ts tests/tooling/callback-owner-certificate.test.ts tests/tooling/aria-component-attrs.test.ts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           repository: microsoft/TypeScript
