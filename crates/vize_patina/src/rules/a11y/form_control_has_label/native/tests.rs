@@ -203,9 +203,10 @@ fn duplicate_static_hidden_and_type_keep_whole_legacy_packets_but_refuse_native_
         } else {
             expected.diagnostics.first_mut().unwrap().end = u32::try_from(source.len()).unwrap();
         }
-        // The legacy parser intentionally retains both attributes and adds
-        // its complete recoverable warning before rule findings. Preserve it.
-        expected.diagnostics.insert(0, crate::LintDiagnostic::warn(
+        // The legacy parser retains both attributes and its full recoverable
+        // warning. merge_lint_results orders by (start,end), so the element's
+        // start-0 rule finding precedes the second attribute's parser warning.
+        expected.diagnostics.push(crate::LintDiagnostic::warn(
             "parser/template",
             format!("Duplicate attribute `{name}`. Keeping the repeated attribute so parsing can continue."),
             start, start + u32::try_from(name.len()).unwrap(),
@@ -254,7 +255,9 @@ fn empty_selects_refuse_at_their_own_header_without_losing_whole_legacy_findings
                 let mut select = original_diagnostic.clone();
                 select.message = "<select> elements must have an associated label".into();
                 select.start = u32::try_from(prefix.len()).unwrap();
-                select.end = u32::try_from(source.len()).unwrap();
+                // The ordinary markup facade reports the opening-tag range,
+                // not the complete nonvoid body (MarkupElement::range).
+                select.end = select.start + u32::try_from(markup.find('>').unwrap() + 1).unwrap();
                 expected.diagnostics.push(select);
             }
             expected.warning_count = expected.diagnostics.len();
