@@ -73,21 +73,19 @@ jobs:
         env: { CONTROLLER_SHA: "${{ github.workflow_sha }}" }
         run: |
           mkdir -p "$RUNNER_TEMP/ui-startup-attribution" "$RUNNER_TEMP/ui-startup-metadata"
-          node --input-type=module-typescript <<'TS'
-          import assert from 'node:assert/strict';
-          import { execFileSync } from 'node:child_process';
-          import { writeFileSync } from 'node:fs';
-          import { join } from 'node:path';
-          const git = (value: string): string => execFileSync('git', ['rev-parse', value], {encoding:'utf8'}).trim();
-          assert.equal(git('HEAD'), '5a2298c91c35bfbb75c414def021887f973bfe48');
-          assert.equal(git('HEAD^'), 'b59f739547a189f85acf862ea650c260e5a62680');
-          const receipt = {source:git('HEAD'), base:git('HEAD^'), tree:git('HEAD^{tree}'), controller:process.env.CONTROLLER_SHA, run:process.env.GITHUB_RUN_ID, attempt:process.env.GITHUB_RUN_ATTEMPT, node:process.version, scope:'one attribution run; not current shipping or public acceptance'};
-          writeFileSync(join(process.env.RUNNER_TEMP!, 'ui-startup-attribution/source.json'), JSON.stringify(receipt,null,2)+'\n', {flag:'wx'});
-          TS
+          git fetch --no-tags --depth=1 origin "$CONTROLLER_SHA"
+          for file in tools/support/compat/github/ui-startup-attribution.ts tests/tooling/ui-startup-attribution.test.ts; do
+            mkdir -p "$RUNNER_TEMP/ui-attribution-controller/$(dirname "$file")"
+            git show "$CONTROLLER_SHA:$file" > "$RUNNER_TEMP/ui-attribution-controller/$file"
+          done
+          node "$RUNNER_TEMP/ui-attribution-controller/tools/support/compat/github/ui-startup-attribution.ts" prepare "$RUNNER_TEMP/ui-startup-attribution"
       - name: Run the original native build and complete UI check once
         env:
           VIZE_UI_STARTUP_METADATA_DIR: ${{ runner.temp }}/ui-startup-metadata
         run: |
+          export GITHUB_SHA="$SOURCE_SHA"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          export NODE_OPTIONS="$NODE_OPTIONS --import=$RUNNER_TEMP/ui-startup-attribution/enable-observer.ts"
           set +e
           { vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check; } > "$RUNNER_TEMP/ui-startup-attribution/original.stdout" 2> "$RUNNER_TEMP/ui-startup-attribution/original.stderr"
           status=$?
@@ -97,7 +95,10 @@ jobs:
           exit "$status"
       - name: Check pure observer controls after the original outcome
         if: ${{ always() && !cancelled() }}
-        run: node --test tests/tooling/ui-startup-metadata.test.ts
+        run: node --test tests/tooling/ui-startup-metadata.test.ts "$RUNNER_TEMP/ui-attribution-controller/tests/tooling/ui-startup-attribution.test.ts"
+      - name: Validate observer completeness separately from the original UI gate
+        if: ${{ always() && !cancelled() }}
+        run: node "$RUNNER_TEMP/ui-attribution-controller/tools/support/compat/github/ui-startup-attribution.ts" validate "$RUNNER_TEMP/ui-startup-metadata" "$RUNNER_TEMP/ui-startup-attribution"
       - name: Preserve original status, streams and bounded startup metadata
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
