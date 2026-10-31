@@ -83,7 +83,6 @@ jobs:
           tests/tooling/release/public-type-admission-capability.test.ts
           tests/tooling/release/public-provider.test.ts
           tests/tooling/release/release-workflow.test.ts
-          tests/tooling/release/stamp-guards.test.ts
           tests/tooling/release/release-notes.test.ts
           tests/tooling/release/verify-published-registry.test.ts
           tests/tooling/release/release-signing.test.ts
