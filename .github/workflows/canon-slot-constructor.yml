@@ -47,6 +47,7 @@ jobs:
       NODE_DISABLE_COMPILE_CACHE: "1"
       PR_HEAD: ${{ github.event.pull_request.head.sha }}
       PR_BASE: ${{ github.event.pull_request.base.sha }}
+      REF_FACTORY_INSERTION: "false"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { fetch-depth: 2, persist-credentials: false }
@@ -138,6 +139,7 @@ jobs:
           (evidence/'package-lock.json').write_bytes(lock_bytes)
           PY
       - name: Select the bounded ref-factory insertion qualification
+        if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
           asset=crates/vize_canon/src/virtual_ts/helpers/declarations/ref-instance-factory.d.ts.txt
