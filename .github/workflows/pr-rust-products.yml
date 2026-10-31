@@ -78,6 +78,8 @@ jobs:
             runtime="$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc"
             test -x "$runtime"
             printf 'CORSA_PATH=%s\n' "$runtime" >> "$GITHUB_ENV"
+          fi
+          if [[ "$COHORT" == "typechecker" || "$COHORT" == "language-server" ]]; then
             # Insta's CI default writes no pending observations. NewFile retains
             # actual .snap.new bytes while every mismatch still fails the test.
             test "${INSTA_FORCE_PASS:-0}" = "0"
@@ -110,6 +112,15 @@ jobs:
         with:
           name: pending-canon-snapshots-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: crates/vize_canon/**/*.snap.new
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Retain genuine pending Maestro snapshot observations
+        # Pending observations never accept or hide the original failure.
+        if: ${{ failure() && matrix.cohort == 'language-server' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pending-maestro-snapshots-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: crates/vize_maestro/**/*.snap.new
           if-no-files-found: ignore
           retention-days: 7
       - name: Preserve actual Rust build units and fresh timing HTML
