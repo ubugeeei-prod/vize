@@ -4634,7 +4634,7 @@ Severidade padrão: `warning`
 Predefinições: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
-Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
+Opções: Consulte as [opções tipadas e os valores padrão](/rules/options.md).
 
 Verifica os nomes de props declaradas, e não o padrão de maiúsculas e minúsculas dos atributos passados a um filho.
 

@@ -67,6 +67,7 @@ pub(crate) fn format_on_type(
     )
 }
 
+#[cfg(test)]
 pub(crate) fn format_on_type_with_template_whitespace(
     content: &str,
     filename: &str,
@@ -75,14 +76,31 @@ pub(crate) fn format_on_type_with_template_whitespace(
     vue_version: vize_glyph::VueVersion,
     preserve_template_whitespace: bool,
 ) -> Option<Vec<TextEdit>> {
+    format_on_type_with_context(
+        content,
+        filename,
+        position,
+        &super::FormatterContext::without_sorting(options, preserve_template_whitespace),
+        vue_version,
+    )
+}
+
+pub(crate) fn format_on_type_with_context(
+    content: &str,
+    filename: &str,
+    position: Position,
+    context: &super::FormatterContext,
+    vue_version: vize_glyph::VueVersion,
+) -> Option<Vec<TextEdit>> {
     let line_start = position_to_offset(content, position.line, 0)?;
 
     let allocator = vize_glyph::Allocator::with_capacity(content.len());
-    let formatted =
-        vize_glyph::GlyphFormatter::new_with_vue_version(options, &allocator, vue_version)
-            .with_template_whitespace_preserved(preserve_template_whitespace)
-            .format(content)
-            .ok()?;
+    let formatted = context
+        .formatter(&allocator, vue_version)
+        // Import moves or added group spacing must not hide a later indent.
+        .with_sort_imports(None)
+        .format(content)
+        .ok()?;
     if !formatted.changed {
         return Some(Vec::new());
     }

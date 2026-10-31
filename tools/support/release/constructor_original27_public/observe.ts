@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { asArray, asRecord, parseJson } from "../../json-value.ts";
+import { asArray, asRecord, asString, parseJson } from "../../json-value.ts";
 import { Recorder } from "../../config/windows_consumer/common.ts";
 import {
   slotRequests,
@@ -12,6 +12,7 @@ import { assertCustody, assertDeclarationCustody } from "../computed_event_custo
 import { assertInputs, type Inputs, type OriginalRow } from "./fixtures.ts";
 import { capture, completed } from "./capture.ts";
 import { assertOriginalVectors, cliPacket, diagnostics, reference } from "./oracle.ts";
+import { verifyCliDebug, verifyNegativeCliJournal } from "./cli-output.ts";
 import type { install } from "./install.ts";
 
 type Installed = Awaited<ReturnType<typeof install>>;
@@ -118,8 +119,19 @@ export function observe(
     protocols: packets,
   });
   completed(mapper, 2); // The two generated TS2741 debts remain even in the repair control.
-  completed(cli, 1);
-  verifyJournal(journal.journal, identity(installed), cli.status);
+  completed(cli, 1, false);
+  const debug = verifyCliDebug(cli.stderr, displayed.result, project);
+  const nativeExit = verifyNegativeCliJournal(
+    journal.journal,
+    {
+      root: installed.root,
+      cli: installed.cli,
+      binary: installed.native,
+      token: asString(installed.token),
+    },
+    cli,
+  );
+  record.json(label + ".cli-output-contract.json", { debug, nativeExit });
   assertOriginalVectors(version, mapped, displayed.diagnostics, repaired);
   assert.deepEqual(assertInputs(project, files), inputs);
   assertCustody(installed.images);

@@ -1,0 +1,4 @@
+<script setup>
+defineProps({ authored_name: String, authoredName: String, stable: Number })
+</script>
+<template><Child unrelatedCamel="x" /></template>

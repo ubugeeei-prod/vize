@@ -590,6 +590,17 @@
           },
           "additionalProperties": false
         },
+        "vue/prop-name-casing": {
+          "type": "object",
+          "properties": {
+            "casing": {
+              "default": "camelCase",
+              "type": "string",
+              "enum": ["camelCase", "snake_case"]
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/no-mutating-props": {
           "type": "object",
           "properties": {

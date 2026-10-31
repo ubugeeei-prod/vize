@@ -257,11 +257,22 @@ void test("four source-inspected and one adapter-verified row exhaust measuremen
     ),
     { compiler: 0, formatter: 0, linter: 0, lsp: 0, typechecker: 0 },
   );
+  const compilerUnknownReadinessCases = 43;
+  const formatterUnknownReadinessCases = 25;
+  const linterUnknownReadinessCases = 116;
+  const lspUnknownReadinessCases = 74;
+  const typecheckerUnknownReadinessCases = 250;
   assert.deepEqual(
     Object.fromEntries(
       products.map((product) => [product, summaries[product].unknownReadinessCases]),
     ),
-    { compiler: 43, formatter: 25, linter: 115, lsp: 73, typechecker: 250 },
+    {
+      compiler: compilerUnknownReadinessCases,
+      formatter: formatterUnknownReadinessCases,
+      linter: linterUnknownReadinessCases,
+      lsp: lspUnknownReadinessCases,
+      typechecker: typecheckerUnknownReadinessCases,
+    },
   );
 });
 
