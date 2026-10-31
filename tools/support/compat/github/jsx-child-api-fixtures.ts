@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const JSX_CHILD_API_CASE_ID = "compiler/jsx/child-values-6890";
-export const JSX_CHILD_ADMITTED_REVISION = "6f967f0aa4ac125dcaf8c23b85f9a15dbf18bde2";
+export const JSX_CHILD_ADMITTED_REVISION = "7248f9e40629e7ab3052f3a59ea041a9d8072b3e";
 const approvedSources = [
   {
     path: "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vapor_child_values_6890.snap",
@@ -12,9 +12,14 @@ const approvedSources = [
     afterSha256: "ebd8f168c75566c4a9a4aa06cf66c66a14e238b8881e46c52e685949c279d96b",
   },
   {
+    path: "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vapor_child_values_6890_inert_template.snap",
+    beforeSha256: null,
+    afterSha256: "fba32aa893df329c258497e483a7a7dec7c0ce97664d6f3e276330ed4ce9b2d0",
+  },
+  {
     path: "crates/vize_atelier_jsx/src/compile/tests.rs",
     beforeSha256: "5c46a1972dcf2f6864d1837ca86ecdb2adf14dddb3baf200dcae1e52ae6b7724",
-    afterSha256: "34f93d9379e9620b06ba2a10cc8f88d319f3c406e429af9013f53c9c142fa2b3",
+    afterSha256: "5238eb92bd1f299b8d8b9365fa98d99a7fc71e5e72fd0e2eae956da19b471280",
   },
   {
     path: "crates/vize_atelier_jsx/src/vapor.rs",
@@ -103,7 +108,7 @@ const approvedInputs = [
 const approvedWitnesses = [
   {
     path: "crates/vize_atelier_jsx/tests/dynamic_child_values.rs",
-    sha256: "483b99f93314c55e099bb264a805fb2b4c2b78a05ffd7903c67430fc519ff938",
+    sha256: "f8202c0b48f78961f07b54c6967ff0adf219c5cfbe4d4907b454ee5544a53a0e",
   },
   {
     path: "tests/tooling/jsx-vapor-oracle/child-values.ts",
@@ -115,7 +120,7 @@ const approvedWitnesses = [
   },
   {
     path: "tests/tooling/jsx-vapor-oracle/child-browser.ts",
-    sha256: "a9e1944de454f690f599339e1da69036f23d0bfd39dea856dae39f5684026367",
+    sha256: "7e4242809756fde10185b306c3e6015314b10b30aca558607fd99bff1f646b08",
   },
 ] as const;
 const qualification = {
@@ -212,9 +217,10 @@ export function newJsxChildApiCases(
     assert(
       producer.includes("fn original_child_values_match_vapor_with_an_explicit_vnode_frontier("),
     );
+    assert(producer.includes("include_str!("));
     assert(
       producer.includes(
-        'include_str!("../../../tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json")',
+        "../../../tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json",
       ),
     );
     assert(producer.includes("tests/tooling/jsx-vapor-oracle/child-values.ts"));

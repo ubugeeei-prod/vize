@@ -68,7 +68,7 @@ test("original complete JSX input and real runtime consumer register only this f
   const actual = newJsxChildApiCases(undefined, rows, read);
   assert.deepEqual(actual.ids, [JSX_CHILD_API_CASE_ID]);
   assert.deepEqual([...actual.sources], paths);
-  assert.equal(actual.sources.size, 15);
+  assert.equal(actual.sources.size, 16);
   assert.deepEqual(rows[0].qualification, {
     originalPhases: 10,
     qualifiedVaporPhases: 9,
