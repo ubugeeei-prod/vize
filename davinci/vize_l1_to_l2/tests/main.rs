@@ -55,6 +55,7 @@ mod emit_vslots;
 mod hoist_pass;
 mod hoist_pass_remarks;
 mod hoist_pass_snapshot;
+mod if_facts_aliases;
 mod ir_contract_spans;
 mod legacy_lowering;
 mod legacy_pass;

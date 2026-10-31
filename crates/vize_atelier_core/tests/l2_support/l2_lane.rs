@@ -9,7 +9,8 @@
 use vize_l0::String;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
-use vize_l1_to_l2::pass::{BranchKeyKind, IfFacts, ModelFacts, SlotFacts, TextFacts};
+use vize_l1_to_l2::pass::{ModelFacts, SlotFacts, TextFacts};
+use vize_l2::analysis::if_facts::{BranchKeyKind, IfFacts};
 use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp, Page as L2Page};
 
 use super::slots::{POutlet, PUnit, has_slot_content, l2_outlet, l2_slot_active, l2_unit};
