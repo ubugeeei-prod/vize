@@ -3,9 +3,9 @@ use napi_derive::napi;
 use std::path::PathBuf;
 
 mod attribute_ignore;
-pub(super) use attribute_ignore::{
-    configure_patina_attribute_ignore, validate_attribute_hyphenation_ignore,
-};
+pub(super) use attribute_ignore::configure_patina_attribute_ignore;
+#[cfg(feature = "napi")]
+pub(super) use attribute_ignore::validate_attribute_hyphenation_ignore;
 
 /// Lint options for NAPI
 #[cfg_attr(feature = "napi", napi(object))]
