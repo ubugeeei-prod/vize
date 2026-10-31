@@ -56,6 +56,29 @@ pub(super) fn build_materialized_session_document_uri(
     )))
 }
 
+/// The generated config discovers `**/*` with no explicit excludes. Dot
+/// directories are not glob members, while `node_modules` remains eligible.
+pub(super) fn preferred_materialized_document<'a>(
+    uris: impl Iterator<Item = &'a String>,
+    overlay_root: &Path,
+) -> Option<String> {
+    uris.filter(|uri| {
+        file_uri_to_path(uri).is_some_and(|path| {
+            let Ok(relative) = path.strip_prefix(overlay_root) else {
+                return false;
+            };
+            path.is_file()
+                && relative.parent().is_some_and(|parent| {
+                    parent.components().all(|part| {
+                        matches!(part, Component::Normal(name) if !name.as_encoded_bytes().starts_with(b"."))
+                    })
+                })
+        })
+    })
+    .min()
+    .cloned()
+}
+
 fn materialized_session_path(
     external_path: &Path,
     project_root: &Path,

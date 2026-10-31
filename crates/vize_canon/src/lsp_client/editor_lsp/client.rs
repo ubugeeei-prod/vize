@@ -212,9 +212,15 @@ impl CorsaProjectClient {
         if self.logical_workspace_overlays && !self.document_texts.is_empty() {
             let path = crate::file_uri::file_uri_to_path(uri)
                 .ok_or_else(|| cstr!("Closed logical Corsa query requires a file URI: {uri}"))?;
-            let text = std::fs::read_to_string(path).map_err(|error| {
-                cstr!("Failed to read closed logical Corsa query {uri}: {error}")
-            })?;
+            let text = match std::fs::read_to_string(path) {
+                Ok(text) => text,
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+                Err(error) => {
+                    return Err(cstr!(
+                        "Failed to read closed logical Corsa query {uri}: {error}"
+                    ));
+                }
+            };
             let mut documents = self.document_texts.clone();
             documents.insert(uri.into(), text.into());
             return self.request_with_editor_lsp_documents_recovery(&documents, request);

@@ -6,6 +6,67 @@ use crate::{
 use std::{fs, path::Path};
 
 #[test]
+fn preferred_materialized_member_skips_hidden_directories_but_keeps_package_members() {
+    let project = tempfile::tempdir().unwrap();
+    let storage = SessionStorage::new(project.path()).unwrap();
+    let mut uris = Vec::new();
+    for name in [
+        ".nuxt/imports.d.ts",
+        "src/.generated/types.d.ts",
+        "src/z.ts",
+        "src/a.ts",
+        "node_modules/package/index.d.ts",
+    ] {
+        let path = storage.root().join(name);
+        write_owned_file(storage.root(), &path, b"export {};").unwrap();
+        uris.push(path_to_file_uri(&path));
+    }
+    fn select(uris: &[vize_l0::String], root: &Path) -> Option<vize_l0::String> {
+        crate::lsp_client::session_paths::preferred_materialized_document(uris.iter(), root)
+    }
+    let package = path_to_file_uri(&storage.root().join("node_modules/package/index.d.ts"));
+    assert_eq!(select(&uris, storage.root()), Some(package.clone()));
+    uris.reverse();
+    assert_eq!(select(&uris, storage.root()), Some(package));
+    let visible: Vec<_> = uris
+        .iter()
+        .filter(|uri| uri.contains("src/a.ts") || uri.contains("src/z.ts"))
+        .cloned()
+        .collect();
+    assert_eq!(
+        select(&visible, storage.root()),
+        Some(path_to_file_uri(&storage.root().join("src/a.ts")))
+    );
+    let rejected = [
+        path_to_file_uri(&storage.root().join(".nuxt/imports.d.ts")),
+        path_to_file_uri(&storage.root().join("src/.generated/types.d.ts")),
+        path_to_file_uri(&storage.root().join("missing.ts")),
+        path_to_file_uri(&project.path().join("outside.ts")),
+        "untitled://outside.ts".into(),
+    ];
+    fs::write(project.path().join("outside.ts"), "export {};").unwrap();
+    assert_eq!(select(&rejected, storage.root()), None);
+}
+
+#[test]
+fn scratch_project_is_an_owned_sibling_outside_the_materialized_include_scope() {
+    let project = tempfile::tempdir().unwrap();
+    let storage = SessionStorage::new(project.path()).unwrap();
+    let root = storage.root().to_path_buf();
+    let scratch = storage.create_scratch_root().unwrap();
+    assert_eq!(scratch.parent(), root.parent());
+    assert!(!scratch.starts_with(&root));
+    fs::write(scratch.join("__vize_vue_modules.d.ts"), "scratch only").unwrap();
+    write_owned_file(&root, &root.join("main.ts"), b"materialized only").unwrap();
+    assert!(!root.join("__vize_vue_modules.d.ts").exists());
+    assert!(!scratch.join("main.ts").exists());
+    assert_eq!(fs::read_dir(project.path()).unwrap().count(), 0);
+    drop(storage);
+    assert!(!root.exists());
+    assert!(!scratch.exists());
+}
+
+#[test]
 fn preferred_materialized_member_refuses_foreign_config_and_incomplete_membership() {
     let storage = SessionStorage::new(Path::new(env!("CARGO_MANIFEST_DIR"))).unwrap();
     let config = storage.root().join("tsconfig.json");

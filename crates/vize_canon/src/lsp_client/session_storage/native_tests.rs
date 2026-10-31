@@ -66,6 +66,12 @@ fn run(root: &Path, native: &Path, policy: logical_control::Policy, capture: &Pa
         client.authored_workspace = false;
         client.overlay_storage = Arc::new(original_storage_policy(root));
     }
+    let hidden_uri = path_to_file_uri(&root.join(".nuxt/imports.d.ts"));
+    if old_policy {
+        client
+            .document_texts
+            .insert(hidden_uri.clone(), "export {};".into());
+    }
     let opened = client.did_open_batch_fast(&[(&virtual_uri, MAIN), (&support_uri, SUPPORT)]);
     retain(
         capture,
@@ -76,12 +82,19 @@ fn run(root: &Path, native: &Path, policy: logical_control::Policy, capture: &Pa
         "cwd":client.cwd,"projectRoot":client.project_root,"logicalUri":virtual_uri,
         "materialized":client.materialized_project_session,"logical":client.logical_workspace_overlays,
         "hasProjectSession":client.has_project_session(),"supportsOverlayApi":client.supports_overlay_api(),"overlayApiDisabledByTypedFailure":client.overlay_api_disabled,
+        "materializedProjectPreference":client.materialized_project_preference,
         "attachedSemanticApi":client.can_use_attached_semantic_api()}),
     );
     opened.unwrap();
     let naturally_materialized = client.materialized_project_session;
     if old_policy && !naturally_materialized {
         client.activate_materialized_project_session().unwrap();
+    }
+    if old_policy {
+        assert_ne!(
+            client.materialized_project_preference.as_ref().unwrap().1,
+            client.session_document_uri(&hidden_uri)
+        );
     }
     assert_eq!(client.materialized_project_session, old_policy);
     assert_eq!(client.cwd, root);

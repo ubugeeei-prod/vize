@@ -100,6 +100,43 @@ mod tests {
     use crate::file_uri::path_to_file_uri;
 
     #[test]
+    fn missing_closed_logical_queries_preserve_empty_answers_without_spawning() {
+        let root = tempfile::tempdir().unwrap();
+        let mut client = CorsaProjectClient::empty_for_test(root.path().to_path_buf());
+        client.logical_workspace_overlays = true;
+        client.document_texts.insert(
+            path_to_file_uri(&root.path().join("open.ts")),
+            "export const value = 'dirty';".into(),
+        );
+        let before = client.document_texts.clone();
+        let missing = path_to_file_uri(&root.path().join("missing.ts"));
+        assert_eq!(client.hover_raw(&missing, 0, 0), Ok(None));
+        assert_eq!(client.definition_raw(&missing, 0, 0), Ok(None));
+        assert_eq!(client.references_raw(&missing, 0, 0, true), Ok(None));
+        assert_eq!(client.document_texts, before);
+        assert!(client.session.is_none());
+        assert!(client.editor_lsp.is_none());
+    }
+
+    #[test]
+    fn other_closed_logical_read_errors_retain_their_context_without_spawning() {
+        let root = tempfile::tempdir().unwrap();
+        let mut client = CorsaProjectClient::empty_for_test(root.path().to_path_buf());
+        client.logical_workspace_overlays = true;
+        client.document_texts.insert(
+            path_to_file_uri(&root.path().join("open.ts")),
+            "export {};".into(),
+        );
+        let directory = path_to_file_uri(root.path());
+        let error = client.hover_raw(&directory, 0, 0).unwrap_err();
+        let prefix = cstr!("Failed to read closed logical Corsa query {directory}:");
+        assert!(error.starts_with(prefix.as_str()));
+        assert_eq!(client.document_texts.len(), 1);
+        assert!(client.session.is_none());
+        assert!(client.editor_lsp.is_none());
+    }
+
+    #[test]
     fn logical_fallback_retains_all_owned_names_and_close_uses_unchanged_disk() {
         let root = tempfile::tempdir().unwrap();
         let disk = root.path().join("support.ts");

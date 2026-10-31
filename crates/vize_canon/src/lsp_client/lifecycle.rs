@@ -50,9 +50,7 @@ impl CorsaProjectClient {
         let storage = Arc::new(super::session_storage::SessionStorage::new(authored)?);
         // The scratch project and any materialized fallback share one owner.
         // Keeping their roots distinct preserves the existing URI mapping.
-        let temp_dir_path = storage.root().join("scratch");
-        std::fs::create_dir(&temp_dir_path)
-            .map_err(|e| cstr!("Failed to create Corsa session directory: {e}"))?;
+        let temp_dir_path = storage.create_scratch_root()?;
 
         write_vue_module_stubs(&temp_dir_path)?;
         write_shared_helper_decls(&temp_dir_path)?;

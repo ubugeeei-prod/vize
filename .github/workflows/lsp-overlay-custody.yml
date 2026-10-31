@@ -6,6 +6,8 @@ on:
     paths:
       - crates/vize_canon/src/lsp_client.rs
       - crates/vize_canon/src/lsp_client/**
+      - crates/vize_canon/src/corsa_bridge.rs
+      - crates/vize_canon/src/corsa_bridge/overlay_namespace_tests.rs
       - crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics/**
       - crates/vize_canon/src/corsa_bridge/vue_document/build.rs
       - crates/vize_canon/src/corsa_bridge/vue_document/build/tests.rs
@@ -14,6 +16,12 @@ on:
       - .github/workflows/lsp-overlay-custody.yml
       - .github/actions/lsp-overlay-custody/**
       - crates/vize/tests/lsp_cli/overlay_storage.rs
+      - crates/vize/tests/lsp_cli.rs
+      - crates/vize/tests/main.rs
+      - crates/vize/tests/support/**
+      - crates/vize/Cargo.toml
+      - tests/_fixtures/differential/typechecker/native-overlay-input-custody-11145/**
+      - tests/_fixtures/differential/lsp/default-log-installation-custody-11145/**
 
 permissions:
   contents: read

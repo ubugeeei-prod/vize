@@ -2,7 +2,7 @@ use super::{
     CorsaProjectClient,
     lifecycle_setup::{workspace_config_path, write_materialized_project_tsconfig},
     session::{ProjectSessionSpawnError, materialize_session_document, spawn_project_session},
-    session_paths::build_materialized_session_document_uri,
+    session_paths::{build_materialized_session_document_uri, preferred_materialized_document},
 };
 use crate::file_uri::file_uri_to_path;
 use std::{
@@ -177,12 +177,11 @@ impl CorsaProjectClient {
             }
             mappings.push((uri.clone(), document_uri));
         }
-        self.materialized_project_preference = mappings
-            .iter()
-            .map(|(_, uri)| uri)
-            .min()
-            .cloned()
-            .map(|uri| (config_path.clone(), uri));
+        self.materialized_project_preference = preferred_materialized_document(
+            mappings.iter().map(|(_, uri)| uri),
+            self.overlay_storage.root(),
+        )
+        .map(|uri| (config_path.clone(), uri));
         if self.has_project_session() {
             self.retire_project_session()?;
             let overlay_root = self.overlay_storage.root().to_path_buf();

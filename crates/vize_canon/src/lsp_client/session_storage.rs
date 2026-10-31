@@ -65,6 +65,19 @@ impl SessionStorage {
         &self.root
     }
 
+    pub(super) fn create_scratch_root(&self) -> Result<PathBuf, String> {
+        let owner = self
+            .root
+            .parent()
+            .ok_or_else(|| cstr!("Private Corsa storage has no owner directory"))?;
+        // This sibling shares the same lifetime and dependency lookup, but
+        // cannot enter the materialized project's recursive include glob.
+        let scratch = owner.join("scratch");
+        fs::create_dir(&scratch)
+            .map_err(|error| cstr!("Failed to create Corsa session directory: {error}"))?;
+        Ok(scratch)
+    }
+
     pub(super) fn observe_retirement(&self, result: &Result<(), String>) {
         if result.is_err() {
             self.retain_after_failed_shutdown();
