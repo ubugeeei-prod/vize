@@ -1,80 +1,239 @@
-name: Current-source LSP baseline
+name: Workspace contract demand requested-volume contrast (diagnostic only)
 
-# Finite, manually approved RPC baseline. Ordinary PR checks run pure controls.
+# Temporary existing dispatch path only. Never integrate this observation harness.
 on:
   workflow_dispatch:
     inputs:
-      source_sha:
-        description: Exact reviewed source SHA (must equal the dispatched ref)
+      workflow_ref:
+        description: Exact reviewed diagnostic workflow commit
         required: true
         type: string
-
-permissions:
-  contents: read
-
+permissions: { contents: read }
 concurrency:
-  group: lsp-current-baseline-${{ inputs.source_sha }}
+  group: workspace-contract-demand-observation-${{ github.run_id }}
   cancel-in-progress: false
-
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-
+  RAYON_NUM_THREADS: "4"
+  CARGO_INCREMENTAL: "0"
+  VIZE_PERF_BUDGET_SCALE: "1"
 jobs:
-  misskey:
+  observe:
+    name: Instrumented contract ${{ matrix.role }} (zero qualification credit)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - { role: full, source: dad0e36c1e0fb7e776661f68328b384b95cb829e }
+          - { role: demand, source: 3d67ef8e07a7c35f33b6fddbe6cd21d35355e961 }
     env:
-      VIZE_BASELINE_EXPECTED_SOURCE: ${{ inputs.source_sha }}
-      VIZE_PERF_BUDGET_SCALE: "1"
-      RAYON_NUM_THREADS: "4"
+      SOURCE_SHA: ${{ matrix.source }}
+      BASE_SOURCE_SHA: 1e05f92b5a7ff34ecbf6862d55ada8c2408ddb13
+      CANDIDATE_SOURCE_SHA: c1a8051f8f8767c5ac1cbb5cc0a7a6acfa24edba
+      CLEANUP_SOURCE_SHA: 527008c2c18b2a0eeb293f65a6a2e24383a4b91c
+      DEMAND_SOURCE_SHA: 3d67ef8e07a7c35f33b6fddbe6cd21d35355e961
+      FULL_SOURCE_SHA: dad0e36c1e0fb7e776661f68328b384b95cb829e
+      WORKFLOW_SHA: ${{ inputs.workflow_ref }}
+      EXECUTED_WORKFLOW_SHA: ${{ github.workflow_sha }}
+      ROLE: ${{ matrix.role }}
+      VIZE_LSP_BIN: target/ci/vize
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ inputs.source_sha }}
-          persist-credentials: false
-      - name: Refuse a stale or different dispatch source
+      - name: Refuse mutable or foreign observation authority
+        shell: bash
+        env:
+          RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]]
+          case "$ROLE" in
+            full) test "$SOURCE_SHA" = "$FULL_SOURCE_SHA" ;;
+            demand) test "$SOURCE_SHA" = "$DEMAND_SOURCE_SHA" ;;
+            *) echo "Foreign source role: $ROLE" >&2; exit 1 ;;
+          esac
+          test "$WORKFLOW_SHA" = "$EXECUTED_WORKFLOW_SHA"
+          test "$GITHUB_SHA" = "$WORKFLOW_SHA"
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$RUNNER_ENVIRONMENT" = self-hosted
+          test "$RUNNER_OS" = Linux
+          echo "EVIDENCE=$RUNNER_TEMP/misskey-contract-demand-$ROLE-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+          echo "CARGO_TARGET_DIR=$RUNNER_TEMP/misskey-contract-demand-build-$ROLE-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ env.SOURCE_SHA }}", fetch-depth: 1, persist-credentials: false }
+      - name: Bind finite candidate cleanup instrumentation and full-control source with absent outputs
         shell: bash
         run: |
           set -euo pipefail
-          [[ "$VIZE_BASELINE_EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
-          test "$(git rev-parse HEAD)" = "$VIZE_BASELINE_EXPECTED_SOURCE"
-          test "$GITHUB_SHA" = "$VIZE_BASELINE_EXPECTED_SOURCE"
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: package.json
-          cache: true
-          run-install: false
-      - name: Install locked JavaScript and native TypeScript dependencies
-        run: vp install --frozen-lockfile --prefer-offline
-      - name: Hydrate only the pinned Misskey fixture
-        run: git submodule update --init --depth 1 tests/_fixtures/_git/misskey
-      - name: Install repository Rust toolchain
+          mkdir -m 700 "$EVIDENCE"
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test ! -e "$CARGO_TARGET_DIR"
+          test ! -e target
+          mkdir -m 700 "$CARGO_TARGET_DIR"
+          ln -s "$CARGO_TARGET_DIR" target
+          git fetch --no-tags --depth=1 origin "$BASE_SOURCE_SHA"
+          git fetch --no-tags --depth=1 origin "$CANDIDATE_SOURCE_SHA"
+          git fetch --no-tags --depth=1 origin "$CLEANUP_SOURCE_SHA"
+          git fetch --no-tags --depth=1 origin "$DEMAND_SOURCE_SHA"
+          git fetch --no-tags --depth=1 origin "$FULL_SOURCE_SHA"
+          git fetch --no-tags --depth=1 origin "$WORKFLOW_SHA"
+          test "$(git cat-file -p "$CLEANUP_SOURCE_SHA" | sed -n 's/^parent //p')" = "$CANDIDATE_SOURCE_SHA"
+          test "$(git cat-file -p "$DEMAND_SOURCE_SHA" | sed -n 's/^parent //p')" = "$CLEANUP_SOURCE_SHA"
+          test "$(git cat-file -p "$FULL_SOURCE_SHA" | sed -n 's/^parent //p')" = "$DEMAND_SOURCE_SHA"
+          test "$(git cat-file -p "$WORKFLOW_SHA" | sed -n 's/^parent //p')" = "$FULL_SOURCE_SHA"
+          git diff --name-only "$BASE_SOURCE_SHA" "$CANDIDATE_SOURCE_SHA" > "$EVIDENCE/candidate-paths.txt"
+          printf '%s\n' \
+            crates/vize_croquis/src/script_parser.rs \
+            crates/vize_croquis/src/script_parser/contracts.rs \
+            crates/vize_croquis/src/script_parser/extract.rs \
+            crates/vize_croquis/src/script_parser/extract/workspace_contracts.rs \
+            crates/vize_croquis/src/script_parser/parse.rs \
+            crates/vize_maestro/src/ide/workspace_symbols.rs \
+            crates/vize_maestro/src/ide/workspace_symbols/contracts.rs \
+            crates/vize_maestro/src/ide/workspace_symbols/contracts/projection_tests.rs \
+            crates/vize_maestro/src/ide/workspace_symbols/sources.rs \
+            crates/vize_maestro/src/ide/workspace_symbols/tests.rs \
+            crates/vize_maestro/src/server/state/workspace_project_files/symbols.rs \
+            > "$EVIDENCE/allowed-candidate-paths.txt"
+          diff -u "$EVIDENCE/allowed-candidate-paths.txt" "$EVIDENCE/candidate-paths.txt"
+          git diff --exit-code "$BASE_SOURCE_SHA" "$CANDIDATE_SOURCE_SHA" -- \
+            tests tools Cargo.toml Cargo.lock package.json pnpm-lock.yaml pnpm-workspace.yaml \
+            .github/actions/check-vue-parity/action.yml
+          git diff --name-only "$CANDIDATE_SOURCE_SHA" "$CLEANUP_SOURCE_SHA" > "$EVIDENCE/cleanup-paths.txt"
+          printf '%s\n' crates/vize_maestro/src/ide/workspace_symbols/contracts/projection_tests.rs \
+            > "$EVIDENCE/allowed-cleanup-paths.txt"
+          diff -u "$EVIDENCE/allowed-cleanup-paths.txt" "$EVIDENCE/cleanup-paths.txt"
+          git diff "$CANDIDATE_SOURCE_SHA" "$CLEANUP_SOURCE_SHA" > "$EVIDENCE/cleanup-only-source.diff"
+          git diff --name-only "$CLEANUP_SOURCE_SHA" "$DEMAND_SOURCE_SHA" > "$EVIDENCE/instrumentation-paths.txt"
+          printf '%s\n' \
+            crates/vize_maestro/src/ide/workspace_symbols.rs \
+            crates/vize_maestro/src/ide/workspace_symbols/allocation_observation.rs \
+            crates/vize_maestro/src/server/state/workspace_project_files/symbols.rs \
+            > "$EVIDENCE/allowed-instrumentation-paths.txt"
+          diff -u "$EVIDENCE/allowed-instrumentation-paths.txt" "$EVIDENCE/instrumentation-paths.txt"
+          git diff "$CLEANUP_SOURCE_SHA" "$DEMAND_SOURCE_SHA" > "$EVIDENCE/instrumentation-only-source.diff"
+          git diff --name-only "$DEMAND_SOURCE_SHA" "$FULL_SOURCE_SHA" > "$EVIDENCE/full-control-paths.txt"
+          printf '%s\n' crates/vize_croquis/src/script_parser/contracts.rs > "$EVIDENCE/allowed-full-control-paths.txt"
+          diff -u "$EVIDENCE/allowed-full-control-paths.txt" "$EVIDENCE/full-control-paths.txt"
+          git diff "$DEMAND_SOURCE_SHA" "$FULL_SOURCE_SHA" > "$EVIDENCE/full-control-only-source.diff"
+          git diff --name-only "$FULL_SOURCE_SHA" "$WORKFLOW_SHA" > "$EVIDENCE/harness-only-paths.txt"
+          printf '%s\n' \
+            .github/actions/lsp-lifecycle-observation/README.md \
+            .github/actions/lsp-lifecycle-observation/controls/preload-controls.test.ts \
+            .github/actions/lsp-lifecycle-observation/controls/preload-fixture.ts \
+            .github/actions/lsp-lifecycle-observation/controls/proc-controls.test.ts \
+            .github/actions/lsp-lifecycle-observation/controls/proc-fixture.ts \
+            .github/actions/lsp-lifecycle-observation/controls/runtime-driver-controls.test.ts \
+            .github/actions/lsp-lifecycle-observation/controls/seam-controls.test.ts \
+            .github/actions/lsp-lifecycle-observation/custody.ts \
+            .github/actions/lsp-lifecycle-observation/observer.ts \
+            .github/actions/lsp-lifecycle-observation/preload.ts \
+            .github/actions/lsp-lifecycle-observation/proc-sampler.ts \
+            .github/actions/lsp-lifecycle-observation/runtime-driver.ts \
+            .github/actions/lsp-lifecycle-observation/types.ts \
+            .github/workflows/lsp-current-baseline.yml > "$EVIDENCE/allowed-harness-only-paths.txt"
+          diff -u "$EVIDENCE/allowed-harness-only-paths.txt" "$EVIDENCE/harness-only-paths.txt"
+          git diff --exit-code "$FULL_SOURCE_SHA" "$WORKFLOW_SHA" -- \
+            crates tests tools Cargo.toml Cargo.lock package.json pnpm-lock.yaml pnpm-workspace.yaml
+          git rev-parse HEAD HEAD^{tree} > "$EVIDENCE/source-and-tree.txt"
+          printf 'initially absent private outputs: %s\n' "$CARGO_TARGET_DIR" > "$EVIDENCE/build-output-absence.txt"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Install unchanged locked providers and pinned fixture inputs
+        shell: bash
         run: |
-          rustup toolchain install || rustup show active-toolchain
-          cargo --version
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: lsp-current-baseline
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Build and receipt the exact current source server
+          set -euo pipefail
+          vp install --frozen-lockfile --prefer-offline
+          git submodule update --init --depth 1 -- tests/_fixtures/_git/misskey tests/_fixtures/_git/vue-vben-admin
+          for fixture in misskey vue-vben-admin; do
+            fixture_path="tests/_fixtures/_git/$fixture"
+            expected=$(git ls-tree HEAD "$fixture_path" | awk '{print $3}')
+            test "$(git -C "$fixture_path" rev-parse HEAD)" = "$expected"
+            test -z "$(git -C "$fixture_path" status --porcelain --untracked-files=all)"
+            printf '%s %s\n' "$fixture" "$expected" >> "$EVIDENCE/fixture-gitlinks.txt"
+          done
+      - name: Build the explicitly instrumented legacy CLI with the same underlying allocator
+        shell: bash
         run: |
-          cargo build --profile ci -p vize
-          node tests/differential/build-receipt.ts
-      - name: Qualify pure observation and refusal laws
-        run: node --test tests/tooling/lsp-current-baseline*.test.ts tests/tooling/lsp-session-capture.test.ts
-      - name: Measure three serial fresh sessions with all original checks
-        run: node tests/performance/lsp-current-baseline.ts
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+          set -euo pipefail
+          test ! -e target/ci/vize
+          printf '%s\n' cargo build --profile ci -p vize --features \
+            legacy,profiling,vize_maestro/micro-profiling --message-format=json-render-diagnostics \
+            > "$EVIDENCE/source-build-argv.txt"
+          cargo build --profile ci -p vize --features legacy,profiling,vize_maestro/micro-profiling \
+            --message-format=json-render-diagnostics > "$EVIDENCE/source-build.jsonl"
+          sha256sum target/ci/vize > "$EVIDENCE/source-build-image.sha256"
+          test ! -e "$CARGO_TARGET_DIR/measured-build-vize"
+          cp target/ci/vize "$CARGO_TARGET_DIR/measured-build-vize"
+      - name: Verify original 848 plus 1440 projection packet pairs with all retained-data controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo test --profile ci -p vize_maestro --features legacy,micro-profiling \
+            --lib ide::workspace_symbols::tests::macro_declaration_range_targets_quoted_name_content \
+            -- --exact --nocapture > "$EVIDENCE/native-profile-test.stdout" 2> "$EVIDENCE/native-profile-test.stderr"
+          sha256sum target/ci/vize > "$EVIDENCE/native-test-image.sha256"
+          test ! -e "$CARGO_TARGET_DIR/native-profile-test-vize"
+          mv target/ci/vize "$CARGO_TARGET_DIR/native-profile-test-vize"
+          mv "$CARGO_TARGET_DIR/measured-build-vize" target/ci/vize
+          sha256sum --check "$EVIDENCE/source-build-image.sha256"
+      - name: Stage exact reviewed typed diagnostic helpers and controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -m 700 "$EVIDENCE/controls"
+          for helper in types observer proc-sampler preload runtime-driver custody; do
+            git show "$WORKFLOW_SHA:.github/actions/lsp-lifecycle-observation/$helper.ts" > "$EVIDENCE/$helper.ts"
+          done
+          for helper in seam-controls.test.ts proc-controls.test.ts proc-fixture.ts preload-controls.test.ts preload-fixture.ts runtime-driver-controls.test.ts; do
+            git show "$WORKFLOW_SHA:.github/actions/lsp-lifecycle-observation/controls/$helper" > "$EVIDENCE/controls/$helper"
+          done
+          sha256sum "$EVIDENCE/"*.ts "$EVIDENCE/controls/"*.ts > "$EVIDENCE/staged-helper-sha256.txt"
+      - name: Qualify only the diagnostic tooling with strict TypeScript and synthetic controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          compiler=node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/tsc.js
+          test -f "$compiler"
+          node "$compiler" --version > "$EVIDENCE/strict-tsc-version.txt"
+          node "$compiler" --ignoreConfig --strict --noEmit --noImplicitAny \
+            --noUncheckedIndexedAccess --exactOptionalPropertyTypes --erasableSyntaxOnly \
+            --allowImportingTsExtensions --target ES2022 --module ESNext --moduleResolution Bundler \
+            --esModuleInterop --skipLibCheck --types node --typeRoots "$GITHUB_WORKSPACE/node_modules/@types" \
+            "$EVIDENCE/"*.ts "$EVIDENCE/controls/"*.ts \
+            > "$EVIDENCE/strict-tsc.stdout" 2> "$EVIDENCE/strict-tsc.stderr"
+          node --test "$EVIDENCE/controls/"*.test.ts > "$EVIDENCE/synthetic-controls.stdout" 2> "$EVIDENCE/synthetic-controls.stderr"
+      - name: Record actual instrumented CLI Cargo features native VP Node and harness custody
+        shell: bash
+        run: |
+          node "$EVIDENCE/custody.ts" before
+          cat /proc/cpuinfo > "$EVIDENCE/cpuinfo.txt"
+      - name: Run original incremental setup then one profiled original churn with first-cycle observation
+        shell: bash
+        run: node "$EVIDENCE/runtime-driver.ts"
+      - name: Recheck immutable instrumented source images and original fixtures
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node "$EVIDENCE/custody.ts" after
+          test -z "$(git status --porcelain --untracked-files=no)"
+          for fixture in misskey vue-vben-admin; do
+            test -z "$(git -C tests/_fixtures/_git/$fixture status --porcelain --untracked-files=all)"
+          done
+      - name: Retain every original result and bounded diagnostic observation
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: lsp-current-baseline-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.source_sha }}
-          path: |
-            target/vize-tests/lsp-current-baseline/
-            target/differential/lsp-sessions/
+          name: contract-demand-diagnostic-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.source }}
+          path: ${{ runner.temp }}/misskey-contract-demand-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}/
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 14
