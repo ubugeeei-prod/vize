@@ -20,6 +20,7 @@ on:
             n8n-baseline,
             n8n-preparation,
             artifact-payload,
+            ui-startup-attribution,
           ]
         default: all
       artifact_id:
@@ -38,6 +39,75 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   CARGO_TERM_COLOR: always
 jobs:
+  ui-startup-attribution:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'ui-startup-attribution' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      CARGO_BUILD_JOBS: "12"
+      SOURCE_SHA: 5a2298c91c35bfbb75c414def021887f973bfe48
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: 5a2298c91c35bfbb75c414def021887f973bfe48, fetch-depth: 2 }
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, components: clippy }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: build-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install the original UI conformance dependency projection
+        env: { CONFORMANCE_GROUP: ui-conformance }
+        run: node tools/support/compat/github/install-js-checks.ts "$CONFORMANCE_GROUP"
+      - name: Record exact attribution source and controller
+        env: { CONTROLLER_SHA: "${{ github.workflow_sha }}" }
+        run: |
+          mkdir -p "$RUNNER_TEMP/ui-startup-attribution" "$RUNNER_TEMP/ui-startup-metadata"
+          node --input-type=module-typescript <<'TS'
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          import { writeFileSync } from 'node:fs';
+          import { join } from 'node:path';
+          const git = (value: string): string => execFileSync('git', ['rev-parse', value], {encoding:'utf8'}).trim();
+          assert.equal(git('HEAD'), '5a2298c91c35bfbb75c414def021887f973bfe48');
+          assert.equal(git('HEAD^'), 'b59f739547a189f85acf862ea650c260e5a62680');
+          const receipt = {source:git('HEAD'), base:git('HEAD^'), tree:git('HEAD^{tree}'), controller:process.env.CONTROLLER_SHA, run:process.env.GITHUB_RUN_ID, attempt:process.env.GITHUB_RUN_ATTEMPT, node:process.version, scope:'one attribution run; not current shipping or public acceptance'};
+          writeFileSync(join(process.env.RUNNER_TEMP!, 'ui-startup-attribution/source.json'), JSON.stringify(receipt,null,2)+'\n', {flag:'wx'});
+          TS
+      - name: Run the original native build and complete UI check once
+        env:
+          VIZE_UI_STARTUP_METADATA_DIR: ${{ runner.temp }}/ui-startup-metadata
+        run: |
+          set +e
+          { vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check; } > "$RUNNER_TEMP/ui-startup-attribution/original.stdout" 2> "$RUNNER_TEMP/ui-startup-attribution/original.stderr"
+          status=$?
+          printf '%s\n' "$status" > "$RUNNER_TEMP/ui-startup-attribution/original.status"
+          cat "$RUNNER_TEMP/ui-startup-attribution/original.stdout"
+          cat "$RUNNER_TEMP/ui-startup-attribution/original.stderr" >&2
+          exit "$status"
+      - name: Check pure observer controls after the original outcome
+        if: ${{ always() && !cancelled() }}
+        run: node --test tests/tooling/ui-startup-metadata.test.ts
+      - name: Preserve original status, streams and bounded startup metadata
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ui-startup-attribution-5a2298c-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/ui-startup-attribution/
+            ${{ runner.temp }}/ui-startup-metadata/
+          if-no-files-found: error
+          retention-days: 14
   release-builds:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'release-builds' }}
     uses: ./.github/workflows/release-build-cache.yml
