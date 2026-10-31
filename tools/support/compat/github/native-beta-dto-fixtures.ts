@@ -88,6 +88,10 @@ const watcherSuccessor = {
   splitLogId: "before-stable-split-watch-log-41152849787",
   terminalId: "before-stable-terminal-stderr-41156819864",
   mixedEofId: "before-stable-unproven-eof-return-41171790405",
+  lateRootId: "before-stable-late-root-program-41176048826",
+  lateRootPath: "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
+  lateRootSha256: "54f9dc3a48b041f12e2218964757ae6ef10fdcbcbbd32e07374a6c91708a8942",
+  lateRootRuntimeSha256: "c799fb044a7ba6d216ae5911f87da57cb19c7645448547148c2f6f3dcd0f4580",
   timingPath: "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
   timingSha256: "c023dcf8b0e937a01d224bb9829ecbcea948e848e207825688c10e3c175301fc",
   timingRuntimeSha256: "e525777159da6ce60bbbcbe84f70ad6ae62c8f8e425ecedbeb59620dd29eed1f",
@@ -103,7 +107,7 @@ const watcherSuccessor = {
   terminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
   terminalSha256: "83b167d4146f812255b01a946ead297693bad85cdf904817e4207a2bf1c97c35",
   terminalRuntimeSha256: "2ed2edfda0877fa9a4b1093242f8501c5fb2ce834dfaf39ff478edfa9da18013",
-  auditRuntimeSha256: "fb00143272e89c9834ae2c1ee6c1a62636f26096e98e4b0691154f88ac437bcc",
+  auditRuntimeSha256: "abe25f136fa1273c11d55f3c96ef784f4ead8f0be0109939d983ea93b2e37f13",
   typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
   typesSha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
@@ -170,6 +174,11 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
           watcherSuccessor.routeRuntimeSha256, "missing or changed registered beta semantic route runtime");
       for (const [path, physical, executable] of [
         [
+          watcherSuccessor.lateRootPath,
+          watcherSuccessor.lateRootSha256,
+          watcherSuccessor.lateRootRuntimeSha256,
+        ],
+        [
           watcherSuccessor.timingPath,
           watcherSuccessor.timingSha256,
           watcherSuccessor.timingRuntimeSha256,
@@ -215,6 +224,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       currentSplitLogRegistration: index === 3 ? watcherSuccessor.splitLogId : null,
       currentTerminalRegistration: index === 3 ? watcherSuccessor.terminalId : null,
       currentMixedEofRegistration: index === 3 ? watcherSuccessor.mixedEofId : null,
+      currentLateRootRegistration: index === 3 ? watcherSuccessor.lateRootId : null,
       currentRouteRegistration: index === 3 ? watcherSuccessor.routeId : null,
       currentTypeDependency,
     };
