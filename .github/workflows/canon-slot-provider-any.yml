@@ -21,6 +21,10 @@ on:
       - npm/cli/virtual-ts-globals.d.ts
       - npm/cli/virtual-ts-patterns.d.ts
       - npm/cli/virtual-ts-slots.d.ts
+      - npm/cli/package.json
+      - npm/cli/content-mapper-helpers.d.*
+      - npm/cli/generated/content-mapper-types.d.ts
+      - tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/slot-provider-payload-update-11027.json
       - npm/cli/scripts/generate-content-mapper-types.ts
       - tests/tooling/content-mapper-shared-types.test.ts
       - tests/tooling/support/public-slot-*.ts

@@ -1,0 +1,149 @@
+{
+  "name": "vize",
+  "version": "0.474.0",
+  "description": "Vize - High-performance Vue.js toolchain in Rust",
+  "keywords": [
+    "cli",
+    "compiler",
+    "formatter",
+    "linter",
+    "rust",
+    "vize",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/cli"
+  },
+  "bin": {
+    "vize": "bin/vize",
+    "vz": "bin/vize"
+  },
+  "files": [
+    "bin",
+    "content-mapper-helpers.d.cts",
+    "content-mapper-helpers.d.mts",
+    "content-mapper-helpers.d.ts",
+    "generated/content-mapper-types.d.ts",
+    "virtual-ts-globals.d.ts",
+    "virtual-ts-patterns.d.ts",
+    "virtual-ts.d.ts",
+    "virtual-ts.d.mts",
+    "virtual-ts.d.cts",
+    "dist",
+    "src",
+    "schemas",
+    "pkl"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    },
+    "./config": {
+      "import": "./dist/config.mjs",
+      "default": "./dist/config.mjs",
+      "types": "./dist/config.d.mts"
+    },
+    "./virtual-ts": {
+      "import": {
+        "types": "./virtual-ts.d.mts"
+      },
+      "require": {
+        "types": "./virtual-ts.d.cts"
+      },
+      "types": "./virtual-ts.d.ts"
+    },
+    "./content-mapper-helpers": {
+      "import": {
+        "types": "./content-mapper-helpers.d.mts"
+      },
+      "require": {
+        "types": "./content-mapper-helpers.d.cts"
+      },
+      "types": "./content-mapper-helpers.d.ts"
+    },
+    "./schemas/vize.config.schema.json": "./schemas/vize.config.schema.json",
+    "./pkl/vize.pkl": "./pkl/vize.pkl"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp run --workspace-root generate:rule-types && vp pack",
+    "check": "vp check src tests vite.config.ts",
+    "check:fix": "vp check --fix src tests vite.config.ts",
+    "fmt": "vp fmt --write src tests vite.config.ts",
+    "generate:rule-types": "vp run --workspace-root generate:rule-types",
+    "test": "vp pack && vp test run tests/config.test.ts tests/vite-project-config.test.ts tests/vite-module-config.test.ts tests/define-config.test.ts tests/corsa-runtime.test.ts tests/setup.test.ts tests/setup-oxlint-config.test.ts tests/init.test.ts tests/init-frameworks.test.ts tests/init-tsconfig.test.ts tests/init-prompt.test.ts tests/init-config-free.test.ts tests/init-workspace.test.ts"
+  },
+  "dependencies": {
+    "@vizejs/native": "workspace:*",
+    "oxc-transform": "catalog:oxc"
+  },
+  "devDependencies": {
+    "@pkl-community/pkl": "catalog:repo-tooling",
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable"
+  },
+  "peerDependencies": {
+    "@pkl-community/pkl": "catalog:repo-tooling",
+    "vue": ">=2.6.0 || >=3.6.0-0"
+  },
+  "peerDependenciesMeta": {
+    "@pkl-community/pkl": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  },
+  "typescript": {
+    "contentMapper": {
+      "compilerOptions": [
+        "checkJs",
+        "noUnusedLocals",
+        "rootDir",
+        "module",
+        "moduleResolution",
+        "resolvePackageJsonExports",
+        "customConditions",
+        "baseUrl",
+        "paths",
+        "moduleSuffixes",
+        "noDtsResolution",
+        "preserveSymlinks"
+      ],
+      "dynamicConfig": true,
+      "exec": [
+        "node",
+        "./bin/vize",
+        "content-mapper"
+      ]
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "alpha-supported",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}

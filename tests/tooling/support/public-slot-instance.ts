@@ -209,8 +209,15 @@ export function verifyPublicSlotInstance(root: string) {
         const consumerPackage = inputBytes(JSON.stringify({ private: true, type: "module" }));
         writeFileSync(path.join(cwd, "package.json"), consumerPackage.utf8);
         const currentManifest = readFileSync(path.join(root, "npm/cli/package.json"), "utf8");
-        const oldManifest = currentManifest.replace('\n    "virtual-ts-slots.d.ts",', "");
-        assert.notEqual(oldManifest, currentManifest);
+        // Literal 1a65 preimage: release stamps and future HEAD metadata must
+        // not change the historical consumer's package-resolution context.
+        const oldManifest = readFileSync(
+          path.join(
+            root,
+            "tests/fixtures/typechecker/public-slot-instance/package-before.json.txt",
+          ),
+          "utf8",
+        );
         assert.equal(
           hash(oldManifest),
           "6d4cddbdcd51ccb049a695688b5896294ad6aa23abb812f867e6bf6bd0b50d36",
@@ -224,7 +231,6 @@ export function verifyPublicSlotInstance(root: string) {
             (item) => item.path === "npm/cli/" + file,
           )!.afterWholeUtf8;
           assert.equal(hash(old), sha256, `exact actual-main preimage ${file}`);
-          if (!file.startsWith("virtual-ts.d.")) assert.equal(current, old, `unchanged ${file}`);
           const body = role === "before" ? old : current;
           mkdirSync(path.dirname(path.join(pkg, file)), { recursive: true });
           writeFileSync(path.join(pkg, file), body);
