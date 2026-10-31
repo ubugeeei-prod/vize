@@ -17,6 +17,9 @@ mod canonical;
 mod corsa_tests;
 mod script;
 pub(in crate::ide) mod structural;
+pub(crate) use structural::snapshot::{
+    Cell as StructuralSnapshotCell, Owner as StructuralSnapshotOwner,
+};
 mod template;
 
 #[cfg(feature = "native")]

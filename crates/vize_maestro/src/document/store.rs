@@ -5,6 +5,7 @@
     reason = "project owners share buffers and protocol consumers require std String"
 )]
 
+mod structural_navigation;
 mod uri_snapshot;
 
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
@@ -16,6 +17,7 @@ use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 use self::uri_snapshot::UriSnapshotCache;
 use super::DocumentText;
 use super::edit_cancel::EditCancellation;
+use crate::ide::references::StructuralSnapshotCell;
 use crate::utils::position_to_offset;
 
 /// Source of [`Document::revision`] stamps.
@@ -60,6 +62,7 @@ pub struct Document {
     /// `Arc` preserves that safety without flattening the same Rope once per
     /// hover, completion, navigation, or rename request.
     text_snapshot: OnceLock<Arc<String>>,
+    structural_snapshot: OnceLock<Arc<StructuralSnapshotCell>>,
 }
 
 impl Document {
@@ -76,6 +79,7 @@ impl Document {
             revision: next_revision(),
             petite_vue_detected: OnceLock::new(),
             text_snapshot,
+            structural_snapshot: OnceLock::new(),
         }
     }
 
@@ -148,6 +152,7 @@ impl Document {
         self.revision = next_revision();
         self.petite_vue_detected = OnceLock::new();
         self.text_snapshot = OnceLock::new();
+        self.structural_snapshot = OnceLock::new();
 
         if let Some(range) = change.range {
             // Incremental change
@@ -260,6 +265,7 @@ impl DocumentStore {
         };
 
         document.uri = new_uri.clone();
+        document.structural_snapshot = OnceLock::new();
         // A rename moves the same text to a new path. Overlay consumers key on
         // the path, so the entry they cached under the old URI must not be
         // mistaken for this one; a fresh stamp keeps the two unrelatable.
@@ -281,6 +287,7 @@ impl DocumentStore {
         document.revision = next_revision();
         document.petite_vue_detected = OnceLock::new();
         document.text_snapshot = OnceLock::new();
+        document.structural_snapshot = OnceLock::new();
         self.revision.fetch_add(1, Ordering::Release);
         Some(document)
     }
