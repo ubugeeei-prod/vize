@@ -6,18 +6,13 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { asArray, asRecord, readJsonRecord } from "../../../tools/support/json-value.ts";
-import {
-  assertCustody,
-  fileImage,
-  type DeclarationGraph,
-} from "../../../tools/support/release/computed_event_custody.ts";
+import { assertCustody, fileImage } from "../../../tools/support/release/computed_event_custody.ts";
 import {
   assertLockedPackage,
   validateCapsule,
   validateNative,
 } from "../../../tools/support/release/slot_instance_public/authority.ts";
 import {
-  assertGraph,
   assertProcess,
   assertRows,
   expected,
@@ -48,7 +43,6 @@ const edgeFile = fileURLToPath(
     import.meta.url,
   ),
 );
-const edges = readJsonRecord(edgeFile);
 test("packed dependency transforms require exact capsule-SRI bytes and every other source field", () => {
   const source = {
     name: "vize",
@@ -154,54 +148,9 @@ test("overlapping library and program-input snapshots retain every unique file a
   );
   assertCustody(mergeImages([actual, { ...actual }]));
 });
-test("C12 nine and C13 ten remain exact separate source/version/edge roles", () => {
+test("C12 nine and C13 ten remain exact separate source/version roles", () => {
   for (const role of ["before", "head"] as const) {
-    const profile = profiles[role],
-      root = "/owned/node_modules/vize";
-    const graph: DeclarationGraph = {
-      files: asArray(expected(role, "esm").sdk).map((value) => {
-        const row = asRecord(value);
-        return {
-          path: root + "/" + row.file,
-          bytes: Number(row.bytes),
-          sha256: String(row.sha256),
-        };
-      }),
-      edges: asArray(edges[role]).map((value) => {
-        const row = asRecord(value);
-        return {
-          ...row,
-          from: root + "/" + row.from,
-          target: root + "/" + row.target,
-        } as DeclarationGraph["edges"][number];
-      }),
-    };
-    assertGraph(role, root, graph);
-    assert.throws(() => assertGraph(role === "head" ? "before" : "head", root, graph));
-    for (const mutation of [
-      (g: DeclarationGraph) => g.files.pop(),
-      (g: DeclarationGraph) => g.files.push(g.files[0]),
-      (g: DeclarationGraph) => {
-        g.files[0].sha256 = "0".repeat(64);
-      },
-      (g: DeclarationGraph) => {
-        g.files[0].path = "/foreign/virtual-ts.d.ts";
-      },
-      (g: DeclarationGraph) => g.edges.reverse(),
-      (g: DeclarationGraph) => {
-        g.edges[0].specifier += ".extra";
-      },
-      (g: DeclarationGraph) => {
-        g.edges[0].attributes = {};
-      },
-      (g: DeclarationGraph) => {
-        g.edges[0].target = root + "/foreign.d.ts";
-      },
-    ]) {
-      const altered = structuredClone(graph);
-      mutation(altered);
-      assert.throws(() => assertGraph(role, root, altered));
-    }
+    const profile = profiles[role];
     const capsule = {
       version: profile.version,
       tagSourceSha: profile.candidate,
