@@ -188,6 +188,29 @@ impl InitializerKind {
     }
 }
 
+/// Original declaration placement and the exact BooleanLiteral observation share
+/// the existing provenance byte; neither fact requires per-binding side storage.
+#[derive(Debug, Clone, Copy)]
+#[repr(u8)]
+pub(crate) enum DeclarationOrigin {
+    Nested,
+    DirectProgram,
+    NestedBooleanFalse,
+    NestedBooleanTrue,
+    DirectProgramBooleanFalse,
+    DirectProgramBooleanTrue,
+}
+
+impl DeclarationOrigin {
+    pub(crate) const fn new(direct_program: bool) -> Self {
+        if direct_program {
+            Self::DirectProgram
+        } else {
+            Self::Nested
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Declaration {
     pub id: BindingId,
@@ -200,14 +223,43 @@ pub struct Declaration {
     pub initializer: InitializerKind,
     pub import_source: Option<String>,
     pub imported_name: Option<String>,
-    pub(crate) direct_program: bool,
+    pub(crate) origin: DeclarationOrigin,
 }
 
 impl Declaration {
+    /// Exact BooleanLiteral value recorded by the original Program declaration event.
+    #[must_use]
+    pub const fn boolean_initializer(&self) -> Option<bool> {
+        match self.origin {
+            DeclarationOrigin::NestedBooleanFalse
+            | DeclarationOrigin::DirectProgramBooleanFalse => Some(false),
+            DeclarationOrigin::NestedBooleanTrue | DeclarationOrigin::DirectProgramBooleanTrue => {
+                Some(true)
+            }
+            DeclarationOrigin::Nested | DeclarationOrigin::DirectProgram => None,
+        }
+    }
+
+    pub(crate) fn record_boolean_initializer(&mut self, value: Option<bool>) {
+        self.origin = match (self.is_direct_program(), value) {
+            (false, None) => DeclarationOrigin::Nested,
+            (true, None) => DeclarationOrigin::DirectProgram,
+            (false, Some(false)) => DeclarationOrigin::NestedBooleanFalse,
+            (false, Some(true)) => DeclarationOrigin::NestedBooleanTrue,
+            (true, Some(false)) => DeclarationOrigin::DirectProgramBooleanFalse,
+            (true, Some(true)) => DeclarationOrigin::DirectProgramBooleanTrue,
+        };
+    }
+
     /// The original statement event was directly in the admitted Program body.
     #[must_use]
     pub fn is_direct_program(&self) -> bool {
-        self.direct_program
+        matches!(
+            self.origin,
+            DeclarationOrigin::DirectProgram
+                | DeclarationOrigin::DirectProgramBooleanFalse
+                | DeclarationOrigin::DirectProgramBooleanTrue
+        )
     }
 
     #[must_use]

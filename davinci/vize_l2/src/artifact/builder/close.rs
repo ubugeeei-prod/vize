@@ -5,6 +5,7 @@ use crate::op::{ComponentOp, ElementOp, Op, Region};
 use vize_l0::Box;
 
 pub(super) struct ClosedFrame<'a> {
+    pub(super) native_if: Option<core::ptr::NonNull<crate::op::IfOp<'a>>>,
     pub(super) original_for: Option<core::ptr::NonNull<crate::op::OriginalForOp<'a>>>,
     pub(super) element: Option<ElementAllocation<'a>>,
 }
@@ -15,8 +16,20 @@ impl<'a> Builder<'a> {
         let bindings = frame.bindings;
         let span = frame.span;
         let mut original = None;
+        let mut native_if = None;
         let mut element = None;
         let op = match frame.owner {
+            Owner::NativeIf(condition) => {
+                let mut branches = vize_l0::Vec::new_in(&self.allocator);
+                branches.push(crate::op::IfBranch {
+                    condition: Some(crate::expr::ExprRef::Js(condition)),
+                    region: children,
+                    span,
+                });
+                let owner = Box::new_in(crate::op::IfOp { branches, span }, &self.allocator);
+                native_if = Some(core::ptr::NonNull::from(owner.as_ref()));
+                Op::If(owner)
+            }
             Owner::OriginalFor(id) => {
                 let owner = Box::new_in(
                     crate::op::OriginalForOp {
@@ -61,6 +74,7 @@ impl<'a> Builder<'a> {
         };
         self.push(op);
         ClosedFrame {
+            native_if,
             original_for: original,
             element,
         }

@@ -36,8 +36,17 @@ pub use output::{
     NativeTemplateDomOutput, NativeTemplateDomOutputError, NativeTemplateDomOutputFailure,
     emit_template_output,
 };
-pub use vue::{emit_selected_setup_template, emit_vue};
+pub use vue::{emit_selected_setup_template, emit_selected_setup_template_with_mode, emit_vue};
 use write::{Helpers, helper, quoted};
+
+/// Owns the observable runtime spelling of generated development comments.
+/// Existing emitters keep their development behavior unless explicitly selected.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum DomMode {
+    #[default]
+    Development,
+    Production,
+}
 
 /// A target refuses the actual node rather than emitting partial JavaScript.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -99,6 +108,24 @@ fn encode<'owner, 'arena, L: LinkSink>(
     facts: Option<&DomFacts<'owner, 'arena>>,
     expressions: impl ExpressionWriter,
 ) -> Result<Writer<L>, DomError> {
+    encode_with_mode(
+        source,
+        policy,
+        tables,
+        facts,
+        expressions,
+        DomMode::Development,
+    )
+}
+
+fn encode_with_mode<'owner, 'arena, L: LinkSink>(
+    source: &'arena str,
+    policy: TargetPolicy,
+    tables: &DecisionTables,
+    facts: Option<&DomFacts<'owner, 'arena>>,
+    expressions: impl ExpressionWriter,
+    mode: DomMode,
+) -> Result<Writer<L>, DomError> {
     let whole_source = Span::new(0, source.len() as u32);
     let failure = |kind| DomError {
         node: None,
@@ -118,6 +145,7 @@ fn encode<'owner, 'arena, L: LinkSink>(
         expressions,
         vocabulary,
         helpers,
+        mode,
         writer: Writer::with_capacity(source.len()),
     };
     if let Some(rejected) = facts.unsupported().first() {
@@ -159,6 +187,7 @@ struct Emitter<'s, 'owner, 'arena, E: ExpressionWriter, L: LinkSink> {
     expressions: E,
     vocabulary: &'static Vocabulary,
     helpers: Helpers,
+    mode: DomMode,
     writer: Writer<L>,
 }
 

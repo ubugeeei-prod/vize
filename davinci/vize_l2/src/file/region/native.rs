@@ -12,6 +12,7 @@ use vize_l1::markup::{NativeChild, NativeRootText, NativeTemplateComponent};
 
 mod attribute_value;
 mod body;
+mod conditional;
 mod for_body;
 mod for_head;
 #[cfg(test)]

@@ -12,6 +12,7 @@ use vize_l1::markup::{
     ElementClose, NativeChild, NativeElement, NativeTemplateComponent, SurfaceChild,
 };
 
+mod conditional;
 pub(super) mod header;
 
 pub(super) fn construct<'a: 'b, 'b, R>(
@@ -117,6 +118,9 @@ where
     .ok_or(Kind::InvalidEvent)?;
     let span = Span::new(opening.start, ending.end);
     let mut header = header::construct(&original, selected, region)?;
+    if let Some(observed) = header.conditional.take() {
+        return conditional::construct(original, selected, span, header, observed, region);
+    }
     if let Some(observed) = header.for_head.take() {
         return super::for_body::construct(original, selected, span, header, observed, region);
     }

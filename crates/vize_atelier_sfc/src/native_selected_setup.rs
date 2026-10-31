@@ -12,7 +12,7 @@ use vize_l4::{
         setup::{COMPONENT_BINDING, SetupEmitError, emit_selected_setup},
     },
     runtime::Runtime,
-    targets::dom::{DomError, emit_selected_setup_template},
+    targets::dom::{DomError, DomMode, emit_selected_setup_template_with_mode},
     write::{LinkSink, NoLinks, Recorded},
 };
 
@@ -107,6 +107,8 @@ impl<'a> NativeSelectedSetupSfcDomCompilation<'a> {
 /// Element with empty/static text or one bare current value-alias interpolation.
 /// A two-alias head requires one bare current key-alias interpolation and emits
 /// both original callback parameters in source order.
+/// One root If may read a direct setup BooleanLiteral binding and own one
+/// attribute-free native Element with empty/static text in the same File scope.
 /// Imports, wider TS, compound reads, outer handler accesses and
 /// nested/mixed-body For families remain
 /// precise lower/target refusals with no partial module.
@@ -116,11 +118,29 @@ pub fn compile_native_selected_setup_sfc_dom<'a>(
     source: &'a str,
     options: NativeSelectedSfcDomOptions<'_>,
 ) -> NativeSelectedSetupSfcDomCompilation<'a> {
+    compile_native_selected_setup_sfc_dom_with_mode(
+        allocator,
+        source,
+        options,
+        DomMode::Development,
+    )
+}
+
+/// Select genuine development or production runtime comment behavior while
+/// keeping the original setup/template owner and all existing source policies.
+/// The default entry retains its development spelling and options layout.
+#[must_use]
+pub fn compile_native_selected_setup_sfc_dom_with_mode<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: NativeSelectedSfcDomOptions<'_>,
+    mode: DomMode,
+) -> NativeSelectedSetupSfcDomCompilation<'a> {
     let observation = lower_selected_setup_sfc_native(allocator, source, options.descriptor);
     let result = if options.source_map {
-        emit::<Recorded>(&observation, options)
+        emit::<Recorded>(&observation, options, mode)
     } else {
-        emit::<NoLinks>(&observation, options)
+        emit::<NoLinks>(&observation, options, mode)
     };
     NativeSelectedSetupSfcDomCompilation {
         observation,
@@ -131,6 +151,7 @@ pub fn compile_native_selected_setup_sfc_dom<'a>(
 fn emit<L: LinkSink>(
     observation: &NativeSelectedSetupSfcObservation<'_>,
     options: NativeSelectedSfcDomOptions<'_>,
+    mode: DomMode,
 ) -> Result<NativeSelectedSfcDomOutput, NativeSelectedSetupSfcDomError> {
     let admitted = observation
         .admitted()
@@ -146,7 +167,7 @@ fn emit<L: LinkSink>(
             .map_err(NativeSelectedSetupSfcDomError::Setup)?,
     ));
     parts.render = Some(
-        emit_selected_setup_template::<L>(&analysis)
+        emit_selected_setup_template_with_mode::<L>(&analysis, mode)
             .map_err(NativeSelectedSetupSfcDomError::Dom)?,
     );
     parts.placement = RenderFunctionName::Render.placement();
