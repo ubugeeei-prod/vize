@@ -17,19 +17,11 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 import { test } from "node:test";
+import { nativeLoaderScript } from "./support/native-config-script.ts";
 
 const require = createRequire(import.meta.url);
 const vite = dirname(require.resolve("vite/package.json"));
-const loader = new URL("../../crates/vize_carton/src/config/loader/js.rs", import.meta.url);
-const rust = await readFile(loader, "utf8");
-const embedded =
-  (
-    await Promise.all(
-      [...rust.matchAll(/include_str!\("([^"]+)"\)/g)].map((match) =>
-        readFile(new URL(match[1], loader), "utf8"),
-      ),
-    )
-  ).join("") + [...rust.matchAll(/r#"([\s\S]*?)"#/g)][0][1];
+const embedded = await nativeLoaderScript();
 const cacheVariables = [
   "NODE_COMPILE_CACHE",
   "NODE_DISABLE_COMPILE_CACHE",

@@ -1,0 +1,3 @@
+file	spelling
+crates/vize_vitrine/src/napi/lint/oxlint_html/rule_options/event_autofix.rs	@row-click.once
+crates/vize_vitrine/src/napi/lint/oxlint_html/rule_options/event_autofix.rs	@rowClick.once
