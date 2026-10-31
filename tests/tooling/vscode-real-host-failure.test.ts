@@ -27,10 +27,7 @@ test("real host failure preserves full log and controlled source bytes before cl
     const error = new Error("Content modified");
     const result = retainRealHostFailure(workspace, destination, error);
     fs.rmSync(workspace, { force: true, recursive: true });
-    assert.deepEqual(
-      fs.readFileSync(path.join(destination, ".vize/lsp.log.txt")),
-      log,
-    );
+    assert.deepEqual(fs.readFileSync(path.join(destination, ".vize/lsp.log.txt")), log);
     assert.deepEqual(fs.readFileSync(path.join(destination, "src/Scenario.vue.txt")), source);
     assert.deepEqual(fs.readFileSync(path.join(destination, "vite.config.mjs.txt")), config);
     assert.deepEqual(result.captured, [
