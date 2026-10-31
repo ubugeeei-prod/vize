@@ -200,6 +200,47 @@ fn on_type_never_reorders_imports_and_only_removes_a_known_indent() {
 }
 
 #[test]
+fn on_type_keeps_unsorted_imports_and_corrects_a_later_indent() {
+    let project = crate::test_support::tempdir().unwrap();
+    let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();
+    let indented = SOURCE.replacen("const route =", "  const route =", 1);
+    let service = server_with(&uri, &indented, "vue");
+    let server = service.inner();
+    configure(
+        server,
+        project.path(),
+        serde_json::json!({ "sortImports": {
+            "groups": ["external", { "newlinesBetween": true }, "sibling"]
+        } }),
+    )
+    .unwrap();
+    let mut params = on_type_params(uri.clone());
+    params.text_document_position.position = Position::new(7, 3);
+    let edits = futures::executor::block_on(server.on_type_formatting(params.clone()))
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        edits,
+        vec![TextEdit {
+            range: Range::new(Position::new(7, 0), Position::new(7, 2)),
+            new_text: "".to_owned(),
+        }]
+    );
+    assert_eq!(
+        std::str::from_utf8(&apply(&indented, &edits).unwrap()).unwrap(),
+        SOURCE
+    );
+    server
+        .state
+        .documents
+        .open(uri, SOURCE.to_owned(), 2, "vue".to_owned());
+    assert_eq!(
+        futures::executor::block_on(server.on_type_formatting(params)).unwrap(),
+        Some(Vec::new())
+    );
+}
+
+#[test]
 fn invalid_sorting_refuses_every_handler_and_does_not_reuse_the_previous_policy() {
     let project = crate::test_support::tempdir().unwrap();
     let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();

@@ -97,6 +97,8 @@ pub(crate) fn format_on_type_with_context(
     let allocator = vize_glyph::Allocator::with_capacity(content.len());
     let formatted = context
         .formatter(&allocator, vue_version)
+        // Import moves or added group spacing must not hide a later indent.
+        .with_sort_imports(None)
         .format(content)
         .ok()?;
     if !formatted.changed {
