@@ -153,18 +153,13 @@ fn unknown_checks_follow_vue_compiler_options() {
 fn ambient_template_ref_ownership_requires_explicit_vue_configuration() {
     for enabled in [true, false] {
         let content = configured_global_template_ref_source(enabled);
-        let expected = if enabled {
-            [
-                "  type __vizeInferRefSource = typeof useTemplateRef;",
+        let expected: &[&str] = if enabled {
+            &[
                 "  type __vizeInferRefIsVue = true;",
                 "  type __vizeInferRefGlobal = $UseTemplateRef;",
             ]
         } else {
-            [
-                "  type __vizeInferRefSource = typeof useTemplateRef;",
-                "  type __vizeInferRefIsVue = false;",
-                "  type __vizeInferRefGlobal = __vizeInferRefSource;",
-            ]
+            &[]
         };
         assert_eq!(template_ref_helper_lines(&content), expected, "{content}");
     }

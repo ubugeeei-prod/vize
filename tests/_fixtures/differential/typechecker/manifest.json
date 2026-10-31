@@ -11040,11 +11040,23 @@
               "id": "typechecker/ambient-template-ref-10980",
               "state": "active",
               "targets": ["batch"],
+              "test": "content_mapper_tsgo_cli::support::ambient_template_ref::ambient_template_ref_retains_native_cli_and_mapper_errors_through_repairs",
+              "sourceRevision": "630f9c060e8e879a25402de099ed3931b6e42468",
               "inputs": [
                 {
                   "path": "ambient-template-ref-10980/Probe.vue.txt",
                   "sha256": "158a66cf752f4ba13fe3715e5a71b01a4d5f9fce9157468fb20086fd427c58b3",
                   "role": "regression-reproduction"
+                },
+                {
+                  "path": "ambient-template-ref-10980/global.d.ts.txt",
+                  "sha256": "6e0097d60f560ef938b1fcadda7dd7070747f652648ce79a469c6a128ed76b0f",
+                  "role": "declaration-provider"
+                },
+                {
+                  "path": "ambient-template-ref-10980/tsconfig.json.txt",
+                  "sha256": "d501b4e896f09fd67113d2c01d5dde76efa0baa352995785410fc02cadd12e17",
+                  "role": "project-configuration"
                 }
               ],
               "dialectCoverage": {
@@ -11054,7 +11066,7 @@
                   {
                     "kind": "source-inspection",
                     "dialects": ["vue3-sfc", "html-template", "ts"],
-                    "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+                    "selector": "ambient_template_ref_retains_native_cli_and_mapper_errors_through_repairs; original ambient contract, typed repair, restore, missing global and real Vue import on CLI and mapper"
                   }
                 ]
               }
