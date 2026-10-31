@@ -9,7 +9,7 @@ on:
       mode:
         description: Full comparison or focused same-source phase/allocation baseline
         type: choice
-        options: [full, phase-baseline, paired-comparison]
+        options: [full, phase-baseline, paired-comparison, package-root-units]
         default: full
       head_sha:
         description: Immutable production head for the focused paired comparison
@@ -230,7 +230,7 @@ jobs:
           path: ${{ runner.temp }}/cold-paired-evidence.tgz
           retention-days: 14
   package-root-units:
-    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'paired-comparison'
+    if: github.event_name == 'workflow_dispatch' && (inputs.mode == 'paired-comparison' || inputs.mode == 'package-root-units')
     strategy:
       fail-fast: false
       matrix: { os: [blacksmith-8vcpu-ubuntu-2404, windows-latest] }
@@ -257,6 +257,9 @@ jobs:
           cargo test --locked --profile ci -p vize_canon --lib batch::virtual_project::dependency_scan::package_roots::tests -- --nocapture > evidence/units.stdout 2> evidence/units.stderr
           grep -Fxq 'running 3 tests' evidence/units.stdout
           grep -Fq '3 passed; 0 failed; 0 ignored;' evidence/units.stdout
+          cargo test --locked --profile ci -p vize_canon --lib batch::runtime_deps::tests::symlinked_vue_prefers_its_installed_runtime_namespace -- --exact --nocapture > evidence/namespace.stdout 2> evidence/namespace.stderr
+          grep -Fxq 'running 1 test' evidence/namespace.stdout
+          grep -Fq '1 passed; 0 failed; 0 ignored;' evidence/namespace.stdout
           git diff --exit-code
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
