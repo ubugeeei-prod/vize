@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, realpathSync } from "node:fs";
-import { join } from "node:path";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   asArray,
@@ -12,7 +12,68 @@ import {
   type JsonRecord,
 } from "../../json-value.ts";
 import { npmArgv, Recorder, sha256, success } from "../../config/windows_consumer/common.ts";
-import { writeFixture } from "./filesystem.ts";
+import { digest, inside, writeFixture } from "./filesystem.ts";
+
+export function resolvePnpm(tools: string) {
+  const owner = realpathSync(tools),
+    root = realpathSync(join(owner, "node_modules/pnpm"));
+  assert.ok(inside(owner, root), "pnpm package escaped its fresh tooling installation");
+  const manifestPath = realpathSync(join(root, "package.json"));
+  assert.ok(inside(root, manifestPath) && statSync(manifestPath).isFile());
+  const manifest = readJsonRecord(manifestPath);
+  assert.equal(manifest.name, "pnpm");
+  assert.equal(manifest.version, "12.1.0");
+  const declared = asString(asRecord(manifest.bin).pnpm);
+  assert.ok(declared.length > 0);
+  const lexical = resolve(root, declared);
+  assert.ok(inside(root, lexical), "declared pnpm entry escaped its package");
+  const entry = realpathSync(lexical);
+  assert.ok(
+    inside(root, entry) && statSync(entry).isFile(),
+    "pnpm entry must be an owned regular file",
+  );
+  return {
+    argv: [entry],
+    package: {
+      root,
+      name: manifest.name,
+      version: manifest.version,
+      declared,
+      manifestPath,
+      manifest: digest(manifestPath),
+      entry: { path: entry, ...digest(entry) },
+    },
+  };
+}
+export function bootstrapPnpm(tools: string, record: Recorder): string[] {
+  mkdirSync(tools, { recursive: false });
+  success(
+    record.run(
+      "install-pnpm",
+      npmArgv(
+        "install",
+        "--prefix",
+        tools,
+        "--no-audit",
+        "--no-fund",
+        "--save-exact",
+        "pnpm@12.1.0",
+      ),
+      tools,
+    ),
+  );
+  const selected = resolvePnpm(tools);
+  record.json("pnpm-bootstrap-identity.json", selected);
+  copyFileSync(selected.package.manifestPath, join(record.root, "pnpm-package-manifest.json"));
+  copyFileSync(
+    join(tools, "package-lock.json"),
+    join(record.root, "pnpm-bootstrap-package-lock.json"),
+  );
+  const version = record.run("pnpm-version", [...selected.argv, "--version"], tools);
+  success(version);
+  assert.equal(version.stdout.trim(), "12.1.0");
+  return selected.argv;
+}
 
 export function install(
   root: string,
@@ -22,7 +83,6 @@ export function install(
   record: Recorder,
 ) {
   mkdirSync(root, { recursive: false });
-  mkdirSync(tools, { recursive: false });
   // Both originals are checked-in reported inputs; no reconstruction from expected output.
   const fixture = join(
     process.cwd(),
@@ -36,25 +96,7 @@ export function install(
   );
   writeFixture(root, original.files, (name) => !name.startsWith("node_modules/"));
   record.json("original-fixture.json", original);
-  const bootstrap = record.run(
-    "install-pnpm",
-    npmArgv(
-      "install",
-      "--prefix",
-      tools,
-      "--ignore-scripts",
-      "--no-audit",
-      "--no-fund",
-      "--save-exact",
-      "pnpm@12.1.0",
-    ),
-    tools,
-  );
-  success(bootstrap);
-  const pnpm = [process.execPath, join(tools, "node_modules/pnpm/bin/pnpm.cjs")];
-  const pmVersion = record.run("pnpm-version", [...pnpm, "--version"], root);
-  success(pmVersion);
-  assert.equal(pmVersion.stdout.trim(), "12.1.0");
+  const pnpm = bootstrapPnpm(tools, record);
   success(record.run("original-git-init", ["git", "init", "-q"], root));
   success(
     record.run(
