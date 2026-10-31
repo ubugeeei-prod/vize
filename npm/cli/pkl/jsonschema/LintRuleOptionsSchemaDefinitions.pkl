@@ -49,6 +49,17 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     ["script/no-restricted-members"] = new JsonSchema { `$ref` = "#/definitions/NoRestrictedMembersOptions" }
     ["vue/component-name-in-template-casing"] = componentNameInTemplateCasingOptionsDef
     ["script/custom-event-name-casing"] = ConfigArtifactDefinitions.customEventNameCasingOptionsDef
+    ["vue/prop-name-casing"] = new JsonSchema {
+      type = "object"
+      properties {
+        ["casing"] = new JsonSchema {
+          type = "string"
+          enum = new Listing { "camelCase"; "snake_case" }
+          default = "camelCase"
+        }
+      }
+      additionalProperties = false
+    }
     ["vue/no-mutating-props"] = ConfigArtifactDefinitions.noMutatingPropsOptionsDef
     ["vue/require-component-registration"] = new JsonSchema {
       type = "object"
