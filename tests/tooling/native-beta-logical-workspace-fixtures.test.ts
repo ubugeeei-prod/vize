@@ -53,6 +53,21 @@ function validate(rows: unknown = [row], previous: unknown = [], overrides: Over
   );
 }
 
+void test("logical compiled input retains exact bytes with either Git autocrlf checkout mode", () => {
+  const input = authority.consumer.input;
+  const original = execFileSync("git", ["cat-file", "blob", `HEAD:${input.path}`], { cwd: root });
+  assert.equal(original.length, 1108);
+  assert.equal(sha(original), input.sha256);
+  for (const mode of ["false", "true"]) {
+    const filtered = execFileSync(
+      "git",
+      ["-c", `core.autocrlf=${mode}`, "cat-file", "--filters", `HEAD:${input.path}`],
+      { cwd: root },
+    );
+    assert.deepEqual(filtered, original);
+  }
+});
+
 void test("logical registration consumes the actual pinned input and all eight source pairs without native admission", () => {
   const result = validate();
   assert.deepEqual(result.ids, [LOGICAL_WORKSPACE_PROTOCOL_ID]);

@@ -53,6 +53,7 @@ tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/** -text
 # Preserve the original plain-TypeScript reference worker's authored CRLF bytes.
 tests/_fixtures/differential/typechecker/project-session-retirement-11168/probe.ts.txt -text whitespace=cr-at-eol
 tests/_fixtures/differential/typechecker/project-session-retirement-11168/tsconfig.json.txt -text
+tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/input.json -text
 tests/_fixtures/differential/typechecker/router-mapper-capability-10579/Page.vue.txt -text
 
 # Immutable formatter regressions include literal CRLF/CRCRLF output bytes.
