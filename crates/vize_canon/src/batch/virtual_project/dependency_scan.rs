@@ -38,8 +38,10 @@ use super::setup_props::RuntimePropResolveCache;
 
 mod declaration_sources;
 use declaration_sources::source_backed;
+mod package_roots;
 mod references;
 mod resolution;
+use package_roots::PackageRoots;
 #[cfg(test)]
 use resolution::probe_candidates;
 use resolution::{
@@ -203,6 +205,7 @@ impl VirtualProject {
             .collect();
         // Importers share targets; each one costs a `realpath` and a `stat`.
         let mut canonical_keys: FxHashMap<PathBuf, Option<PathBuf>> = FxHashMap::default();
+        let mut package_roots = None;
 
         while let Some(importer) = queue.pop() {
             vize_carton::micro_count!("canon.dependency_scan.importers.popped", 1);
@@ -313,17 +316,20 @@ impl VirtualProject {
                         .into_iter()
                         .map(|specifier| (specifier, crate::PackageResolutionMode::Import, true)),
                 );
-            // Package-local edges only exist inside a package root that already
-            // contains this importer, so scan the route table once per importer
-            // instead of once per specifier (#4137).
-            let importer_package_roots = self
-                .package_routes
-                .values()
-                .filter_map(|binding| binding.route.as_ref())
-                .flat_map(crate::PackageRoute::all_routes)
-                .filter(|route| importer.starts_with(&route.package_root))
-                .map(|route| route.package_root.clone())
-                .collect::<Vec<_>>();
+            // Routes are stable for one walk. Collect their logical roots only
+            // when needed, then borrow matching importer ancestors instead of
+            // scanning and cloning every route again for every importer.
+            let importer_package_roots = package_roots
+                .get_or_insert_with(|| {
+                    PackageRoots::new(
+                        self.package_routes
+                            .values()
+                            .filter_map(|binding| binding.route.as_ref())
+                            .flat_map(crate::PackageRoute::all_routes)
+                            .map(|route| route.package_root.as_path()),
+                    )
+                })
+                .for_importer(&importer);
 
             for (specifier, mode, is_reference) in specifiers {
                 // Path references are always relative to the containing file,

@@ -100,6 +100,9 @@ fn eleven_whole_original_constant_for_components_and_raw_maps_are_captured() -> 
             require!(
                 row.accepts_original(original)
                     && core::ptr::eq(row.resolution(), resolution)
+                    && head
+                        .scope_facts()
+                        .is_some_and(|scope| core::ptr::eq(row.scope_facts(), scope))
                     && core::ptr::eq(read.occurrence(), resolution.collection_occurrence())
                     && read.occurrence().usage == Usage::Read
                     && read.kind() == VueReadKind::SetupConst,

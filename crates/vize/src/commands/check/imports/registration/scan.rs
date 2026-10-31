@@ -174,12 +174,14 @@ pub(super) fn source_needs_virtual_registration(
                     let lookup = match session.package_lookups.get(&lookup_key) {
                         Some(cached) => cached.clone(),
                         None => {
-                            let lookup = packages.lookup_with_context(
-                                dir,
-                                &specifier,
-                                source_options,
-                                context.clone(),
-                            );
+                            let lookup: super::super::cache::CachedPackageLookup = packages
+                                .lookup_with_context(
+                                    dir,
+                                    &specifier,
+                                    source_options,
+                                    context.clone(),
+                                )
+                                .into();
                             session.package_lookups.insert(lookup_key, lookup.clone());
                             lookup
                         }
@@ -236,7 +238,7 @@ pub(super) fn source_needs_virtual_registration(
                             reachability_inputs = Some(reachability.inputs);
                         }
                         if needs_shadow {
-                            binding_route = Some(route);
+                            binding_route = Some(route.as_ref().clone());
                         }
                     }
                     if needs_shadow || track_reachability || watchable_negative {

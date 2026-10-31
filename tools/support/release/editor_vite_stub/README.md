@@ -2,8 +2,19 @@
 
 `editor-vite-stub-public.yml` is an independent release-owner-dispatched acceptance
 route. It does not build a source SDK, publish, select a release version, or gate
-the existing release workflow. Pull requests run only the filesystem observer's
-falsification controls on Linux, macOS and Windows.
+the existing release workflow. Pull requests run the filesystem observer's
+falsification controls and an actual fresh pinned pnpm tooling-only bootstrap on
+Linux, macOS and Windows. No Vize product is installed by that control. The pnpm
+entry is selected only from the installed package's exact 12.1.0 manifest, with
+lexical/realpath ownership and regular-file checks, never a guessed extension.
+The isolated pnpm tooling install allows pnpm's required native preinstall; it
+executes only the resulting declared entry directly, without a Node wrapper.
+[pnpm 12.1.0's installer](https://github.com/pnpm/pnpm/blob/v12.1.0/pnpm/npm/pnpm/install.js)
+replaces placeholder files with the platform binary and rewrites Windows bin
+entries. The tooling npm lock, post-install manifest bytes, selected native entry
+hash and actual version output are retained. This does not change the public
+Vize installation or its complete acceptance assertions. Pure missing/version/
+escape controls never execute package code.
 
 The release owner supplies `version`, `source_sha` and `authority_blob` after the
 containing version is public. The workflow must run from `main`. Its authority

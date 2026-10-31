@@ -230,6 +230,12 @@ SFC 本体のインデントも、すべての直接フォーマッタ境界で�
 `--sort-attributes=false` を使います。
 
 SFC ブロックの順序も、各公開境界で同じように指定できます。
+Node の `formatSfc` は、設定と同じ文字列の二重配列 `attributeGroups` も受け取ります。
+例は `attributeGroups: [["data-*"], ["class"], ["*"]]` です。グループは静的属性の連続した範囲に適用され、
+動的バインディングや重複する静的属性の順序は保持されます。属性順を保持するプリセットでも並べ替えるには
+`sortAttributes: true` を指定します。空配列は静的属性を1つのグループにまとめ、
+`sortAttributes: false` は元の属性順をすべて保持します。
+
 `--sort-blocks[=false]` は、型付きの Node・設定オプション `sortBlocks` に
 対応します。CLI の明示値は設定と選択したプリセットより優先されます。`false` は
 ルートブロックの記述順を保ち、`true` は script、script setup、template、style、

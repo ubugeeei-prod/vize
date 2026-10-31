@@ -7,6 +7,7 @@ use vize_l2::{
     file::{BindingRef, FileArtifact, ScopeId},
     op::OriginalForOp,
     resolution::ForAliasDeclaration,
+    scope::{ScopeBinding, ScopeOrigin},
 };
 mod read;
 mod runtime;
@@ -79,6 +80,21 @@ fn join<'owner, 'arena>(
     if child.parent != Some(outer.id) {
         return Err(DomUnsupported::FileScope);
     }
+    let canonical_scope = head.scope_facts().ok_or(DomUnsupported::FileScope)?;
+    let value = resolution.value_declaration();
+    let canonical_bindings = match (
+        canonical_scope.bindings.as_slice(),
+        resolution.key_declaration(),
+    ) {
+        ([value_binding], None) => canonical_alias(value_binding, &value),
+        ([value_binding, key_binding], Some(key)) => {
+            canonical_alias(value_binding, &value) && canonical_alias(key_binding, &key)
+        }
+        _ => false,
+    };
+    if !canonical_bindings {
+        return Err(DomUnsupported::FileBinding);
+    }
     if !alias(
         head.value(),
         &resolution.value_declaration(),
@@ -103,8 +119,17 @@ fn join<'owner, 'arena>(
         original,
         resolution,
         collection,
+        scope: canonical_scope,
         read: None,
     })
+}
+
+fn canonical_alias(binding: &ScopeBinding, expected: &ForAliasDeclaration<'_, '_>) -> bool {
+    binding.name.as_str() == expected.fact().name()
+        && binding.origin
+            == (ScopeOrigin::Authored {
+                span: expected.authored_span(),
+            })
 }
 
 fn alias(

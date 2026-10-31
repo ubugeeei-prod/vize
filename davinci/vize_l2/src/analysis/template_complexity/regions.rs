@@ -136,7 +136,23 @@ fn visit_if(
 /// Score an owner's attached bindings (each minted in page order) and
 /// return the depth its children stand at: one deeper when the owner
 /// carries a scoped slot (rule `scoped-slot`), else `depth`.
+#[inline(always)]
 fn owner_bindings(
+    walk: &mut PageWalk,
+    bindings: &[BindingOp<'_>],
+    depth: u32,
+    facts: &mut ComplexityFacts,
+) -> u32 {
+    // Static owners have no attached ids or expressions to visit. Keep this
+    // branch in the caller instead of entering the full binding dispatcher.
+    if bindings.is_empty() {
+        depth
+    } else {
+        score_bindings(walk, bindings, depth, facts)
+    }
+}
+
+fn score_bindings(
     walk: &mut PageWalk,
     bindings: &[BindingOp<'_>],
     depth: u32,

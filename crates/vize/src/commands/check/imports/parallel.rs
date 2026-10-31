@@ -5,8 +5,7 @@ use std::path::{Path, PathBuf};
 
 use rayon::prelude::*;
 use vize_canon::{
-    PackageResolutionContext, PackageResolutionMode, PackageRouteLookup, PackageRouteResolver,
-    PackageSourceOptions,
+    PackageResolutionContext, PackageResolutionMode, PackageRouteResolver, PackageSourceOptions,
 };
 use vize_l0::{FxHashMap, FxHashSet, String};
 
@@ -167,7 +166,7 @@ fn next_wave(
             let Some(route) = session
                 .package_lookups
                 .get(&key)
-                .and_then(PackageRouteLookup::route)
+                .and_then(|lookup| lookup.route())
             else {
                 continue;
             };
@@ -418,7 +417,10 @@ fn resolve_package_misses(
         (key, lookup)
     });
     for (key, lookup) in resolved {
-        session.package_lookups.entry(key).or_insert(lookup);
+        session
+            .package_lookups
+            .entry(key)
+            .or_insert_with(|| lookup.into());
     }
 }
 
