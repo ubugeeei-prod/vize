@@ -187,15 +187,17 @@ test("equal revision contracts require all twenty complete original bytes to mat
     assert.equal(result.unchanged, 20);
     assert.equal(result.changed, 0);
   }
-  assert.throws(() =>
-    verifyPacketTransition(
-      bytes(document("runtime-error-v2")),
-      bytes(document("runtime-warning-v1")),
-      "runtime-error-v2",
-      "runtime-warning-v1",
-      inputs,
-      root,
-    ),
+  assert.throws(
+    () =>
+      verifyPacketTransition(
+        bytes(document("runtime-error-v2")),
+        bytes(document("runtime-warning-v1")),
+        "runtime-error-v2",
+        "runtime-warning-v1",
+        inputs,
+        root,
+      ),
+    /runtime error contract cannot regress to warning/u,
   );
 });
 
@@ -214,7 +216,9 @@ test("no positive or excluded cell can change its whole packet on either side", 
           inputs,
           root,
         ),
-      String(index),
+      index === 8 || index === 18
+        ? /complete after contract/u
+        : /entire original cell bytes changed/u,
     );
   }
 });
@@ -264,15 +268,17 @@ test("both unavailable contracts validate every original diagnostic field, not j
       const cell = after.packets[index]!;
       change(cell);
       cell.expected = structuredClone(cell.actual);
-      assert.throws(() =>
-        verifyPacketTransition(
-          bytes(document("runtime-warning-v1")),
-          bytes(after),
-          "runtime-warning-v1",
-          "runtime-error-v2",
-          inputs,
-          root,
-        ),
+      assert.throws(
+        () =>
+          verifyPacketTransition(
+            bytes(document("runtime-warning-v1")),
+            bytes(after),
+            "runtime-warning-v1",
+            "runtime-error-v2",
+            inputs,
+            root,
+          ),
+        /complete after contract/u,
       );
     }
 });
