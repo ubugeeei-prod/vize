@@ -179,6 +179,13 @@ impl<'f, 'a> FileForHead<'f, 'a> {
     pub fn enclosing_scope(self) -> Option<ScopeId> {
         Some(self.file.facts.for_heads.get(self.id.node())?.enclosing)
     }
+    /// Canonical binding facts minted beside this actual attached For node.
+    /// Their dense hygiene tag is distinct from the File's lexical ScopeId.
+    #[must_use]
+    pub fn scope_facts(self) -> Option<&'f crate::scope::ScopeFacts> {
+        let _ = self.file.facts.for_heads.get(self.id.node())?.original?;
+        self.file.artifact().scopes().get(self.id.node())
+    }
     #[must_use]
     pub fn accepts(self, original: &OriginalForOp<'a>) -> bool {
         self.file
