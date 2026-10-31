@@ -28,7 +28,9 @@ type MutationInput = {
   producerFiles: { sha256: string }[];
 };
 const before = "13fa41356d075047a229f580014b637d3bbeb57f";
-const candidate = "ce77ac02d1f611b3dd935cee983662ea63df7cb1";
+// Reachable main retains all eight exact afterSha256 blobs. The original
+// ce77 candidate provenance remains immutable in source-pairs.json.
+const historicalSnapshot = "e361d3873712eb11db018827713b1434be898261";
 const historicalProduction = new Set(nativeBetaDtoObserverBoundary().production);
 const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 function read(side: "base" | "head", path: string): Buffer | null {
@@ -37,7 +39,7 @@ function read(side: "base" | "head", path: string): Buffer | null {
     // Current producer/observer controls still read the actual working-tree bytes.
     return side === "head" && !historicalProduction.has(path)
       ? fs.readFileSync(path)
-      : execFileSync("git", ["show", `${side === "head" ? candidate : before}:${path}`], {
+      : execFileSync("git", ["show", `${side === "head" ? historicalSnapshot : before}:${path}`], {
           stdio: ["ignore", "pipe", "ignore"],
         });
   } catch {
