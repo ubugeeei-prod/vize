@@ -22,8 +22,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::String;
-use vize_relief::{DirectiveNode, ElementNode};
+use vize_l0::{String, cstr};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/v-bind-style",
@@ -77,8 +77,23 @@ impl Rule for VBindStyle {
             return;
         };
 
-        // Only the prefix changes, so arguments, modifiers and the value keep
-        // their authored text. `.prop` shorthand matches neither style.
+        if self.style == VBindStyleOption::Longform && text.starts_with('.') {
+            let mut diagnostic = LintDiagnostic::warn(
+                META.name,
+                "Expected 'v-bind:' instead of '.'.",
+                start,
+                directive.loc.span.end,
+            )
+            .with_help("Use `v-bind:attr.prop=\"value\"` instead of `.attr=\"value\"`");
+            if let Some(fix) = property_shorthand_fix(ctx.source, directive) {
+                diagnostic = diagnostic.with_fix(fix);
+            }
+            ctx.report(diagnostic);
+            return;
+        }
+
+        // The ordinary forms only change the prefix. Property shorthand also
+        // needs its implicit `.prop` semantics retained above.
         let (old, new, fix_message, message, help) = match self.style {
             VBindStyleOption::Shorthand if text.starts_with("v-bind:") => (
                 "v-bind:",
@@ -106,6 +121,53 @@ impl Rule for VBindStyle {
                 .with_fix(fix),
         );
     }
+}
+
+fn property_shorthand_fix(source: &str, directive: &DirectiveNode<'_>) -> Option<Fix> {
+    let start = directive.loc.span.start;
+    let raw_name = directive.raw_name?;
+    let raw_end = start.checked_add(u32::try_from(raw_name.len()).ok()?)?;
+    if !raw_name.starts_with('.') || source.get(start as usize..raw_end as usize)? != raw_name {
+        return None;
+    }
+    // The parser also supplies a synthetic leading `prop` modifier for `.foo`.
+    // Only a modifier whose exact authored bytes are `prop` is already written.
+    let explicit_prop = directive.modifiers.iter().any(|modifier| {
+        modifier.content == "prop"
+            && source.get(modifier.loc.span.start as usize..modifier.loc.span.end as usize)
+                == Some("prop")
+    });
+    let (end, replacement) = if explicit_prop {
+        (start.checked_add(1)?, String::from("v-bind:"))
+    } else {
+        let ExpressionNode::Simple(argument) = directive.arg.as_ref()? else {
+            return None;
+        };
+        let prefix = if argument.is_static { 1 } else { 2 };
+        if argument.loc.span.start != start.checked_add(prefix)? {
+            return None;
+        }
+        if !argument.is_static
+            && (!raw_name.starts_with(".[")
+                || source.as_bytes().get(argument.loc.span.end as usize) != Some(&b']'))
+        {
+            return None;
+        }
+        let end = argument
+            .loc
+            .span
+            .end
+            .checked_add(u32::from(!argument.is_static))?;
+        if end > raw_end {
+            return None;
+        }
+        let argument = source.get(start.checked_add(1)? as usize..end as usize)?;
+        (end, cstr!("v-bind:{argument}.prop"))
+    };
+    Some(Fix::new(
+        "Use longform syntax",
+        TextEdit::replace(start, end, replacement),
+    ))
 }
 
 #[cfg(test)]
@@ -190,10 +252,17 @@ mod tests {
     }
 
     #[test]
-    fn prop_shorthand_matches_neither_style() {
-        for linter in [create_linter_shorthand(), create_linter_longform()] {
-            let result = linter.lint_template(r#"<a .title="t"></a>"#, "test.vue");
-            assert_eq!(result.warning_count, 0);
-        }
+    fn prop_shorthand_matches_shorthand_and_requires_explicit_longform() {
+        let source = r#"<a .title="t"></a>"#;
+        assert_eq!(
+            create_linter_shorthand()
+                .lint_template(source, "test.vue")
+                .warning_count,
+            0
+        );
+        assert_eq!(
+            fixed(&create_linter_longform(), source),
+            r#"<a v-bind:title.prop="t"></a>"#
+        );
     }
 }

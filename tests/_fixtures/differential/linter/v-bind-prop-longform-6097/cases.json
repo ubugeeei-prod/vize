@@ -1,0 +1,391 @@
+{
+  "schema": "vize.patina.v-bind-prop-longform-6097",
+  "version": 1,
+  "provider": {
+    "eslint": "10.4.1",
+    "eslint-plugin-vue": "10.9.2",
+    "vue-eslint-parser": "10.4.1",
+    "@typescript-eslint/parser": "8.65.0"
+  },
+  "filename": "VBindProp.vue",
+  "ruleSource": {
+    "path": "dist/rules/v-bind-style.js",
+    "sha256": "a05fe2c33a42077e6c7e7ef54a99a78309f5af90721b2a5f87603359acc8a52d"
+  },
+  "originalUnit": {
+    "source": "a2eae573558c19b1279d80db6f17fd77b1a1e633",
+    "path": "crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs",
+    "test": "prop_shorthand_matches_neither_style",
+    "ruleFileSha256": "85db45bbc079f5ac80031d38f73bf6bbb74dfaaa53a4c34797f3db3707bf859e",
+    "tailSha256": "1ee5d3876d49ce8e0a278f3bf0673686f53095ffc912d6e529def35cc217152d",
+    "template": "<a .title=\"t\"></a>"
+  },
+  "files": [
+    {
+      "file": "Original.vue.txt",
+      "bytes": 40,
+      "sha256": "75c8e6b56baba055c15f17153083627217eea010bc90081f6289afc1ca99e0cf"
+    },
+    {
+      "file": "Explicit.vue.txt",
+      "bytes": 103,
+      "sha256": "e8e552065560542d8b2fe3703424188df896c28db4f9ed2905abce3f88801e1f"
+    },
+    {
+      "file": "Dynamic.vue.txt",
+      "bytes": 204,
+      "sha256": "e88ddaffc32e76876cc63ea44e7b0e7897466426742e35a36b6870bf0618f680"
+    },
+    {
+      "file": "Controls.vue.txt",
+      "bytes": 166,
+      "sha256": "6e11604d91c485826468569b6ce636208ad3eea518f629cb3cb5354cc293a078"
+    },
+    {
+      "file": "Colon.vue.txt",
+      "bytes": 45,
+      "sha256": "19fd8a8050283a870c02166857924ea342a5472b12d4df7352e8f3bae47647ff"
+    }
+  ],
+  "cases": [
+    {
+      "id": "original-default",
+      "file": "Original.vue.txt",
+      "style": null,
+      "sourceSha256": "75c8e6b56baba055c15f17153083627217eea010bc90081f6289afc1ca99e0cf",
+      "reference": {
+        "messages": [],
+        "fixResult": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template><a .title=\"t\"></a></template>\n"
+        },
+        "fixedRequery": [],
+        "fixedPoint": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template><a .title=\"t\"></a></template>\n"
+        }
+      }
+    },
+    {
+      "id": "original-shorthand",
+      "file": "Original.vue.txt",
+      "style": "shorthand",
+      "sourceSha256": "75c8e6b56baba055c15f17153083627217eea010bc90081f6289afc1ca99e0cf",
+      "reference": {
+        "messages": [],
+        "fixResult": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template><a .title=\"t\"></a></template>\n"
+        },
+        "fixedRequery": [],
+        "fixedPoint": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template><a .title=\"t\"></a></template>\n"
+        }
+      }
+    },
+    {
+      "id": "original-longform",
+      "file": "Original.vue.txt",
+      "style": "longform",
+      "sourceSha256": "75c8e6b56baba055c15f17153083627217eea010bc90081f6289afc1ca99e0cf",
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/v-bind-style",
+            "severity": 1,
+            "message": "Expected 'v-bind:' instead of '.'.",
+            "line": 1,
+            "column": 14,
+            "messageId": "expectedLonghandForProp",
+            "endLine": 1,
+            "endColumn": 24,
+            "fix": {
+              "range": [
+                13,
+                19
+              ],
+              "text": "v-bind:title.prop"
+            }
+          }
+        ],
+        "fixResult": {
+          "fixed": true,
+          "messages": [],
+          "output": "<template><a v-bind:title.prop=\"t\"></a></template>\n"
+        },
+        "fixedRequery": [],
+        "fixedPoint": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template><a v-bind:title.prop=\"t\"></a></template>\n"
+        }
+      }
+    },
+    {
+      "id": "explicit-prop-longform",
+      "file": "Explicit.vue.txt",
+      "style": "longform",
+      "sourceSha256": "e8e552065560542d8b2fe3703424188df896c28db4f9ed2905abce3f88801e1f",
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/v-bind-style",
+            "severity": 1,
+            "message": "Expected 'v-bind:' instead of '.'.",
+            "line": 2,
+            "column": 6,
+            "messageId": "expectedLonghandForProp",
+            "endLine": 2,
+            "endColumn": 21,
+            "fix": {
+              "range": [
+                16,
+                17
+              ],
+              "text": "v-bind:"
+            }
+          },
+          {
+            "ruleId": "vue/v-bind-style",
+            "severity": 1,
+            "message": "Expected 'v-bind:' instead of '.'.",
+            "line": 2,
+            "column": 22,
+            "messageId": "expectedLonghandForProp",
+            "endLine": 2,
+            "endColumn": 47,
+            "fix": {
+              "range": [
+                32,
+                33
+              ],
+              "text": "v-bind:"
+            }
+          },
+          {
+            "ruleId": "vue/v-bind-style",
+            "severity": 1,
+            "message": "Expected 'v-bind:' instead of '.'.",
+            "line": 3,
+            "column": 6,
+            "messageId": "expectedLonghandForProp",
+            "endLine": 3,
+            "endColumn": 27,
+            "fix": {
+              "range": [
+                66,
+                67
+              ],
+              "text": "v-bind:"
+            }
+          }
+        ],
+        "fixResult": {
+          "fixed": true,
+          "messages": [],
+          "output": "<template>\n  <a v-bind:title.prop=\"t\" v-bind:value.camel.prop='other' />\n  <a v-bind:title.prop.camel=\"t\" />\n</template>\n"
+        },
+        "fixedRequery": [],
+        "fixedPoint": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template>\n  <a v-bind:title.prop=\"t\" v-bind:value.camel.prop='other' />\n  <a v-bind:title.prop.camel=\"t\" />\n</template>\n"
+        }
+      }
+    },
+    {
+      "id": "implicit-dynamic-and-missing-value-longform",
+      "file": "Dynamic.vue.txt",
+      "style": "longform",
+      "sourceSha256": "e88ddaffc32e76876cc63ea44e7b0e7897466426742e35a36b6870bf0618f680",
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/v-bind-style",
+            "severity": 1,
+            "message": "Expected 'v-bind:' instead of '.'.",
+            "line": 3,
+            "column": 6,
+            "messageId": "expectedLonghandForProp",
+            "endLine": 3,
+            "endColumn": 52,
+            "fix": {
+              "range": [
+                83,
+                89
+              ],
+              "text": "v-bind:title.prop"
+            }
+          },
+          {
+            "ruleId": "vue/v-bind-style",
+            "severity": 1,
+            "message": "Expected 'v-bind:' instead of '.'.",
+            "line": 4,
+            "column": 6,
+            "messageId": "expectedLonghandForProp",
+            "endLine": 4,
+            "endColumn": 33,
+            "fix": {
+              "range": [
+                138,
+                151
+              ],
+              "text": "v-bind:[record.key].prop"
+            }
+          },
+          {
+            "ruleId": "vue/v-bind-style",
+            "severity": 1,
+            "message": "Expected 'v-bind:' instead of '.'.",
+            "line": 5,
+            "column": 6,
+            "messageId": "expectedLonghandForProp",
+            "endLine": 5,
+            "endColumn": 12,
+            "fix": {
+              "range": [
+                174,
+                180
+              ],
+              "text": "v-bind:title.prop"
+            }
+          }
+        ],
+        "fixResult": {
+          "fixed": true,
+          "messages": [],
+          "output": "<template>\n  <!-- 雪🌸: retain the comment, quotes and expression comment. -->\n  <a v-bind:title.prop.camel='format(\"雪🌸\", value /* keep */)' />\n  <a v-bind:[record.key].prop.camel=\"value\" />\n  <a v-bind:title.prop />\n</template>\n"
+        },
+        "fixedRequery": [],
+        "fixedPoint": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template>\n  <!-- 雪🌸: retain the comment, quotes and expression comment. -->\n  <a v-bind:title.prop.camel='format(\"雪🌸\", value /* keep */)' />\n  <a v-bind:[record.key].prop.camel=\"value\" />\n  <a v-bind:title.prop />\n</template>\n"
+        }
+      }
+    },
+    {
+      "id": "comment-v-pre-and-object-longform",
+      "file": "Controls.vue.txt",
+      "style": "longform",
+      "sourceSha256": "6e11604d91c485826468569b6ce636208ad3eea518f629cb3cb5354cc293a078",
+      "reference": {
+        "messages": [],
+        "fixResult": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template>\n  <!-- <a .title=\"commentOnly\"></a> -->\n  <div v-pre .title=\"literalOnly\">.title=\"textOnly\"</div>\n  <a v-bind=\"attrs\" v-bind:title.prop='t' />\n</template>\n"
+        },
+        "fixedRequery": [],
+        "fixedPoint": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template>\n  <!-- <a .title=\"commentOnly\"></a> -->\n  <div v-pre .title=\"literalOnly\">.title=\"textOnly\"</div>\n  <a v-bind=\"attrs\" v-bind:title.prop='t' />\n</template>\n"
+        }
+      }
+    },
+    {
+      "id": "comment-v-pre-and-object-default",
+      "file": "Controls.vue.txt",
+      "style": null,
+      "sourceSha256": "6e11604d91c485826468569b6ce636208ad3eea518f629cb3cb5354cc293a078",
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/v-bind-style",
+            "severity": 1,
+            "message": "Unexpected 'v-bind' before ':'.",
+            "line": 4,
+            "column": 21,
+            "messageId": "unexpectedLonghand",
+            "endLine": 4,
+            "endColumn": 42,
+            "fix": {
+              "range": [
+                129,
+                135
+              ],
+              "text": ""
+            }
+          }
+        ],
+        "fixResult": {
+          "fixed": true,
+          "messages": [],
+          "output": "<template>\n  <!-- <a .title=\"commentOnly\"></a> -->\n  <div v-pre .title=\"literalOnly\">.title=\"textOnly\"</div>\n  <a v-bind=\"attrs\" :title.prop='t' />\n</template>\n"
+        },
+        "fixedRequery": [],
+        "fixedPoint": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template>\n  <!-- <a .title=\"commentOnly\"></a> -->\n  <div v-pre .title=\"literalOnly\">.title=\"textOnly\"</div>\n  <a v-bind=\"attrs\" :title.prop='t' />\n</template>\n"
+        }
+      }
+    },
+    {
+      "id": "legacy-colon-longform",
+      "file": "Colon.vue.txt",
+      "style": "longform",
+      "sourceSha256": "19fd8a8050283a870c02166857924ea342a5472b12d4df7352e8f3bae47647ff",
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/v-bind-style",
+            "severity": 1,
+            "message": "Expected 'v-bind' before ':'.",
+            "line": 1,
+            "column": 14,
+            "messageId": "expectedLonghand",
+            "endLine": 1,
+            "endColumn": 29,
+            "fix": {
+              "range": [
+                13,
+                13
+              ],
+              "text": "v-bind"
+            }
+          }
+        ],
+        "fixResult": {
+          "fixed": true,
+          "messages": [],
+          "output": "<template><a v-bind:title.prop=\"t\"></a></template>\n"
+        },
+        "fixedRequery": [],
+        "fixedPoint": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template><a v-bind:title.prop=\"t\"></a></template>\n"
+        }
+      }
+    },
+    {
+      "id": "legacy-colon-default",
+      "file": "Colon.vue.txt",
+      "style": null,
+      "sourceSha256": "19fd8a8050283a870c02166857924ea342a5472b12d4df7352e8f3bae47647ff",
+      "reference": {
+        "messages": [],
+        "fixResult": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template><a :title.prop=\"t\"></a></template>\n"
+        },
+        "fixedRequery": [],
+        "fixedPoint": {
+          "fixed": false,
+          "messages": [],
+          "output": "<template><a :title.prop=\"t\"></a></template>\n"
+        }
+      }
+    }
+  ],
+  "limits": "Complete independent ESLint messages, merged fix ranges/text, automatic output and fixed point. Vize legacy colon/longhand presentation is retained separately; no whole-rule/native-product compatibility claim."
+}

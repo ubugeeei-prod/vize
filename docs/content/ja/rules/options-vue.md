@@ -374,8 +374,8 @@ export default defineConfig({
 
 バインディングディレクティブをどちらの形式で記述するかを指定します。既定の `shorthand` は
 `:class` を要求し、`longform` は `v-bind:class` を要求します。どちらの設定でも修正時に
-引数・修飾子・値を保持します。`v-bind="attrs"` のように対応する省略記法がないオブジェクト形式と
-`.prop` 省略記法は変更しません。
+引数・修飾子・値を保持します。longform は `.title` を `v-bind:title.prop` に修正し、明示的な
+修飾子とその順序を保持します。`v-bind="attrs"` のようなオブジェクト形式は変更しません。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
