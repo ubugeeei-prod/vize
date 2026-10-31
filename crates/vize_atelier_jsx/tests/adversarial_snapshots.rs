@@ -317,11 +317,11 @@ fn mode_aware_multi_component_snapshot() {
         "the complete mixed-mode module retains valid helper declarations"
     );
     insta::assert_debug_snapshot!(
-        "mode_aware_multi_component_summary_authored_native_10701_child_values_6890",
+        "mode_aware_multi_component_summary_authored_native_10701_child_values_6890_inert_template",
         compile_output_summary(MIXED_MODES, &output),
     );
     insta::assert_snapshot!(
-        "mode_aware_multi_component_module_authored_native_10701_child_values_6890",
+        "mode_aware_multi_component_module_authored_native_10701_child_values_6890_inert_template",
         output.module_code().as_str()
     );
 }
@@ -388,7 +388,7 @@ fn assert_vapor_snapshot(name: &str, source: &str, lang: JsxLang, options: Vapor
     let active = match name {
         "stateful_destructured_component"
         | "tsx_syntax_edges_root_fallthrough_8625"
-        | "fragment_whitespace_text" => format!("{name}_vapor_child_values_6890"),
+        | "fragment_whitespace_text" => format!("{name}_vapor_child_values_6890_inert_template"),
         _ => format!("{name}_vapor"),
     };
     insta::assert_debug_snapshot!(active, vapor_output_summary(source, &output));

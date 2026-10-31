@@ -14,6 +14,14 @@ type Contract = {
   existingStaticIndices: number[];
   qualification: { runtime: boolean; performance: boolean };
   rows: { index: number; source: string; ssr: boolean; map: boolean; before: Json; after: Json }[];
+  existingStaticRows: {
+    index: number;
+    source: string;
+    ssr: boolean;
+    map: boolean;
+    before: Json;
+    after: Json;
+  }[];
 };
 const hash = (bytes: Uint8Array | string) => createHash("sha256").update(bytes).digest("hex");
 const bytes = fs.readFileSync(
@@ -22,7 +30,7 @@ const bytes = fs.readFileSync(
     import.meta.url,
   ),
 );
-assert.equal(hash(bytes), "efa7850bff9c7f545fe8d50f27b58f57f239081c0b4016e89262b371af9e7a7b");
+assert.equal(hash(bytes), "2ec2184e237da0d2c7fb7e09a83fb3c23cb06fce2bdfde057daefb61c3bc4553");
 export const contract = JSON.parse(bytes.toString()) as Contract;
 assert.equal(contract.schema, 1);
 assert.equal(contract.originalRows, 16);
@@ -32,6 +40,10 @@ assert.deepEqual(contract.qualification, { runtime: false, performance: false })
 assert.deepEqual(
   contract.rows.map((row) => row.index),
   contract.childIndices,
+);
+assert.deepEqual(
+  contract.existingStaticRows.map((row) => row.index),
+  [12, 13],
 );
 
 export function verifyProfileOutputs(before: Row[], after: Row[]): number[] {
@@ -55,9 +67,14 @@ export function verifyProfileOutputs(before: Row[], after: Row[]): number[] {
     } else {
       const existingStatic = current.source.startsWith("const Child={};") && !current.ssr;
       assert.equal(existingStatic, contract.existingStaticIndices.includes(index));
-      // Preserve the original static-value experiment's exact finite exception.
-      // Every other old conservative/default output still requires byte equality.
-      if (!existingStatic) assert.deepEqual(previous.output, current.output);
+      if (existingStatic) {
+        const pinned = contract.existingStaticRows.find((row) => row.index === index);
+        assert(pinned, `missing exact static output at${index}`);
+        for (const key of ["source", "ssr", "map"] as const)
+          assert.equal(current[key], pinned[key]);
+        assert.deepEqual(previous.output, pinned.before);
+        assert.deepEqual(current.output, pinned.after);
+      } else assert.deepEqual(previous.output, current.output);
     }
   }
   assert.deepEqual(intentional, [0, 1, 8, 9]);

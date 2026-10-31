@@ -103,7 +103,7 @@ fn client_codegen_matrix_when_ssr_is_off() {
     ];
 
     insta::assert_snapshot!(
-        "client_codegen_matrix_when_ssr_is_off_child_values_6890",
+        "client_codegen_matrix_when_ssr_is_off_child_values_6890_inert_template",
         snapshot_cases(&cases, |source| { vapor_code(source, JsxLang::Jsx, false) })
     );
 }

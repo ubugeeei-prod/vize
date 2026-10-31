@@ -15,8 +15,9 @@ use std::{
 use vize_atelier_jsx::{JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx};
 use vize_l0::Allocator;
 
-const ORIGINAL: &str =
-    include_str!("../../../tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json");
+const ORIGINAL: &str = include_str!(
+    "../../../tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json"
+);
 
 fn compile(source: &str, mode: JsxOutputMode) -> Value {
     let allocator = Allocator::new();

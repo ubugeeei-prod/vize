@@ -48,7 +48,10 @@ fn typed_slot_runtime_output_and_metadata_remain_byte_exact() {
         match mode {
             JsxOutputMode::Vdom => insta::assert_debug_snapshot!("typed_slot_runtime_vdom", packet),
             JsxOutputMode::Vapor => {
-                insta::assert_debug_snapshot!("typed_slot_runtime_vapor_child_values_6890", packet)
+                insta::assert_debug_snapshot!(
+                    "typed_slot_runtime_vapor_child_values_6890_inert_template",
+                    packet
+                )
             }
         }
     }

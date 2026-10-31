@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "issue": 6890,
-  "source": "f7c306ddc05377bcaec46d502d995f30f525aa6b",
+  "source": "735d38e89d35573b5c12efa16b63fb91be31b7fc",
   "capture": {
-    "run": 41185002277,
+    "run": 41188284667,
     "attempt": 1,
-    "artifact": 13036597757,
-    "bytes": 294242,
-    "sha256": "9c54b3eff929142bf0a16c211f5eb5ba3b39a2ec721daa2b404d1aca8fef375a"
+    "artifact": 13037114422,
+    "bytes": 295837,
+    "sha256": "eeeb89ceff0b7abd83108850343936383523ffa73977918b724d19596a865ef5"
   },
   "scope": "complete generated-output successors; original inputs, semantic/diagnostic/token oracles and historical output records retained",
   "qualification": {
@@ -21,8 +21,8 @@
       "kind": "mapped-roots",
       "previous": "tests/_fixtures/differential/jsx/authored-native-modules-10700/mapped-roots.json",
       "previousSha256": "2bbfc6262f68ff176ce5a0a55eee3087bc9430a8814879e092332e221c9795d7",
-      "successor": "tests/_fixtures/differential/jsx/authored-native-modules-10700/mapped-roots.child-values-6890.json",
-      "successorSha256": "33c8848ada0d786ff8d91f22736bc785c6eb3bdb7f3c75f71655f62386821d4d",
+      "successor": "tests/_fixtures/differential/jsx/authored-native-modules-10700/mapped-roots.child-values-6890.inert-template.json",
+      "successorSha256": "fe067ba37ee1a5f0585893a3c8878cb98b3913e6fc6e7da4d2be317e3a16ed72",
       "captureMember": "packets.json",
       "changedPointers": [
         "/0/code",
@@ -38,8 +38,8 @@
       "kind": "admission",
       "previous": "tests/_fixtures/differential/jsx/authored-native-modules-10700/admission.json",
       "previousSha256": "80f7b6564d34b2971df3ba08872e63201e82a000e6991118f054b16080f60195",
-      "successor": "tests/_fixtures/differential/jsx/authored-native-modules-10700/admission.child-values-6890.json",
-      "successorSha256": "3cc8a65cec778d35fbe22f77392434215ec0adab20541574871a164485fa00b4",
+      "successor": "tests/_fixtures/differential/jsx/authored-native-modules-10700/admission.child-values-6890.inert-template.json",
+      "successorSha256": "cb4703f628cb52912c651788dd1f72d73e85d2f83ec4ec030c0e308ab8dc3d74",
       "captureMember": "admission.json",
       "changedPointers": [
         "/4/components/0/code",
@@ -62,8 +62,8 @@
       "sourceSha256": "8b46599f16d4ac31ed91677a729c9058087ebf2978fd5e62490d512db9e04b8f",
       "previous": "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/AfsStepperDialog.stories.vapor.static-values-10701.runtime.json.txt",
       "previousSha256": "d5c61bcc24ae548c59b1dca8aa2bb40c18f9193e0586e50ca16a4c9976553032",
-      "successor": "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/AfsStepperDialog.stories.vapor.child-values-6890.runtime.json.txt",
-      "successorSha256": "bdfa2b716c328385ac2c21defd56c09fd0a6e84858f8b4471a4e5d98236a2d16",
+      "successor": "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/AfsStepperDialog.stories.vapor.child-values-6890.inert-template.runtime.json.txt",
+      "successorSha256": "ad5bb0c855bf89ce3c4a7702087c491ac9b93f206531e84bdfbd83953e245974",
       "captureMember": "nested-packets.json",
       "changedPointers": [
         "/components/3/code",
@@ -78,8 +78,8 @@
       "sourceSha256": "b107ba38eab500483adb74742186eae4ea4791ee21f3ddbcadf0f3edafa22952",
       "previous": "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/native-nested-controls.vapor.authored-module-refusal-10701.runtime.json.txt",
       "previousSha256": "68160b419e195ac9bfdcd31aa0348c67b6dbcce87732ab869db8eb67f2ef5616",
-      "successor": "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/native-nested-controls.vapor.child-values-6890.runtime.json.txt",
-      "successorSha256": "181839aa27b06f374306841dbd5f8b72649f18e4eab334d503402935902adaf1",
+      "successor": "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/native-nested-controls.vapor.child-values-6890.inert-template.runtime.json.txt",
+      "successorSha256": "e156acc940146c8081bfbe24650cfe74a80a0f6dabbe271d01cc01bf71633cf6",
       "captureMember": "nested-packets.json",
       "changedPointers": [
         "/components/0/code"
@@ -91,64 +91,70 @@
       "kind": "snapshot",
       "previous": "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vapor.snap",
       "previousSha256": "7de2424c2d51ea7e3a764e1f8e85af27015e60482c4d6980ed4266975d638c12",
-      "successor": "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vapor_child_values_6890.snap",
-      "successorSha256": "ebd8f168c75566c4a9a4aa06cf66c66a14e238b8881e46c52e685949c279d96b",
-      "captureMember": "vize/vize/crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vapor.snap.new",
+      "successor": "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vapor_child_values_6890_inert_template.snap",
+      "successorSha256": "fba32aa893df329c258497e483a7a7dec7c0ce97664d6f3e276330ed4ce9b2d0",
+      "captureMember": "vize/vize/crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vapor_child_values_6890.snap.new",
       "runtime": false
     },
     {
       "kind": "snapshot",
       "previous": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__fragment_whitespace_text_vapor.snap",
       "previousSha256": "7710c98f75e08c4138b6c09a52290aedf13a8618829db1efcf7fc3d8e3b4306e",
-      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__fragment_whitespace_text_vapor_child_values_6890.snap",
-      "successorSha256": "5b012dce885ff2538fe2d72b4e82fd8db40f50ac0c75af9e9374a58f3d5f34e5",
-      "captureMember": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__fragment_whitespace_text_vapor.snap.new",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__fragment_whitespace_text_vapor_child_values_6890_inert_template.snap",
+      "successorSha256": "2725491c814633e18b6619c847ffe31f9daddf03d2dd4d85a903b238433f77cd",
+      "captureMember": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__fragment_whitespace_text_vapor_child_values_6890.snap.new",
       "runtime": false
     },
     {
       "kind": "snapshot",
       "previous": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_summary_authored_native_10701.snap",
       "previousSha256": "0f24139f60d333840d7c0e8850e2229b699b6f07b544de2cee343038d8bfbfa6",
-      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_summary_authored_native_10701_child_values_6890.snap",
-      "successorSha256": "bb02853bf9490385fb2905eaee901ad27ebae45640122a8430d6c6c0f126c612",
-      "captureMember": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_summary_authored_native_10701.snap.new",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_summary_authored_native_10701_child_values_6890_inert_template.snap",
+      "successorSha256": "e561baf17166ea5690acce87e624af8f2699629492d3dfccd7ced92c329703ae",
+      "captureMember": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_summary_authored_native_10701_child_values_6890.snap.new",
       "runtime": false
     },
     {
       "kind": "snapshot",
       "previous": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__stateful_destructured_component_vapor.snap",
       "previousSha256": "6524194bb858f46661b95ed406cf7077b66757e22099a652d73aebd4b9fe2542",
-      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__stateful_destructured_component_vapor_child_values_6890.snap",
-      "successorSha256": "32673e5338ba0e0d7cb1bdf2420ae1a998c30a353a4c006834934c8f000c2e44",
-      "captureMember": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__stateful_destructured_component_vapor.snap.new",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__stateful_destructured_component_vapor_child_values_6890_inert_template.snap",
+      "successorSha256": "1ac843fc25d9147ad320957899363a9db55abe3f5dee12941eeb4945b01045da",
+      "captureMember": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__stateful_destructured_component_vapor_child_values_6890.snap.new",
       "runtime": false
     },
     {
       "kind": "snapshot",
       "previous": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_root_fallthrough_8625_vapor.snap",
       "previousSha256": "2683e85e6e5e9a701f4c903d3070149121d5815d94c28ab6e6c9894f061de6e3",
-      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_root_fallthrough_8625_vapor_child_values_6890.snap",
-      "successorSha256": "8971a6bc727b8e6ae980716863dafbf463469fd366d1c995c239c4b3494ecb55",
-      "captureMember": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_root_fallthrough_8625_vapor.snap.new",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_root_fallthrough_8625_vapor_child_values_6890_inert_template.snap",
+      "successorSha256": "43eda32bab804cbbf697cc1bc0b3f08f38d5a6e3ad06ca56c286fb125a3f8590",
+      "captureMember": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_root_fallthrough_8625_vapor_child_values_6890.snap.new",
       "runtime": false
     },
     {
       "kind": "snapshot",
       "previous": "crates/vize_atelier_jsx/tests/snapshots/vapor_ssr__client_codegen_matrix_when_ssr_is_off.snap",
       "previousSha256": "8bdc9f8f30afbda82f23fe9e86c798f58c755bb62b4b6cfead189db1fd5af5f1",
-      "successor": "crates/vize_atelier_jsx/tests/snapshots/vapor_ssr__client_codegen_matrix_when_ssr_is_off_child_values_6890.snap",
-      "successorSha256": "98d210bde287b11c51c620e6ffc091374d224be7c46c4950d3062313b6eb8289",
-      "captureMember": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/vapor_ssr__client_codegen_matrix_when_ssr_is_off.snap.new",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/vapor_ssr__client_codegen_matrix_when_ssr_is_off_child_values_6890_inert_template.snap",
+      "successorSha256": "67ba6b3bd6a97be4510562ac8d25a77a947cd5f8e7a628b155a8d957fcbdc01a",
+      "captureMember": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/vapor_ssr__client_codegen_matrix_when_ssr_is_off_child_values_6890.snap.new",
       "runtime": false
     },
     {
       "kind": "snapshot",
       "previous": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_module_authored_native_10701.snap",
       "previousSha256": "267d44d76083393ace89ba2a267c0255428b1bbb5bbb3509e4eb771158d174a9",
-      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_module_authored_native_10701_child_values_6890.snap",
-      "successorSha256": "3d3103b7e534193a8bba2e38ce89791477ac3842dccf069e70d450e14fe02005",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__mode_aware_multi_component_module_authored_native_10701_child_values_6890_inert_template.snap",
+      "successorSha256": "03b3b642700b20ea80ad252f42f65247821629519f6086b27a604ddec8e9c117",
       "captureMember": "adversarial/mode_aware_multi_component.json#/module",
       "runtime": false
+    }
+  ],
+  "history": [
+    {
+      "path": "tests/_fixtures/differential/jsx/child-values-6890-golden-successors.f7c306d.json",
+      "sha256": "8ac88305e4ad75ba58a3bddda61ceefa93a5f6ce522d7edae6df90ea6a3895f9"
     }
   ]
 }

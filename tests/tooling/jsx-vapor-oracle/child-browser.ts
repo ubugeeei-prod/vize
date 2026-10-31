@@ -67,7 +67,11 @@ const server = createServer((request, response) => {
     response.end(
       '<script type="importmap">{"imports":{"vue":"/vue.js","vue-jsx-vapor":"/runtime.js","@vue-jsx-vapor/runtime":"/runtime.js"}}</script>',
     );
-  } else if (url.pathname === "/vue.js" || url.pathname === "/runtime.js") {
+  } else if (
+    url.pathname === "/vue.js" ||
+    url.pathname === "/runtime.js" ||
+    url.pathname === "/vue-jsx-vapor/vapor"
+  ) {
     response.setHeader("Content-Type", "text/javascript");
     response.end(url.pathname === "/vue.js" ? vue : runtime);
   } else if (subjects.has(url.pathname.slice(1, -3))) {
@@ -89,6 +93,7 @@ const raw: Record<string, unknown> = {
   original: input.original,
   beforeSource: "f7c306ddc05377bcaec46d502d995f30f525aa6b",
   browserVersion: browser.version(),
+  modules: Object.fromEntries(subjects),
   routes: {},
   wholeCorpusQualified: false,
   issue6890Complete: false,

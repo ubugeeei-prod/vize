@@ -90,7 +90,7 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
             )
             .unwrap();
             let expected_packet = if label == "vapor" {
-                format!("{name}.vapor.child-values-6890.runtime.json.txt")
+                format!("{name}.vapor.child-values-6890.inert-template.runtime.json.txt")
             } else {
                 previous_expected_packet.clone()
             };

@@ -13,7 +13,7 @@ function fixtures() {
     output: { code: "unchanged", diagnostics: [], map: null },
   }));
   const after = structuredClone(before);
-  for (const row of contract.rows) {
+  for (const row of [...contract.rows, ...contract.existingStaticRows]) {
     before[row.index] = {
       source: row.source,
       ssr: row.ssr,
@@ -41,6 +41,12 @@ test("child profile guard refuses unrelated outputs, diagnostics, inputs and bro
     },
     (rows: ReturnType<typeof fixtures>["after"]) => {
       rows[2].output.code += "foreign";
+    },
+    (rows: ReturnType<typeof fixtures>["after"]) => {
+      rows[12].output.code += "foreign";
+    },
+    (rows: ReturnType<typeof fixtures>["after"]) => {
+      rows[13].output.diagnostics.length = 1;
     },
     (rows: ReturnType<typeof fixtures>["after"]) => {
       rows[0].output.diagnostics.length = 1;
