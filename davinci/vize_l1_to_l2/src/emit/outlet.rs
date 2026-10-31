@@ -223,7 +223,7 @@ fn emit_fallback_units(
             start_fallback_item(cx, compact, first);
             emit_fallback_element(cx, op)
         }
-        Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
+        Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) | Op::JsxChildValue(_) => {
             start_fallback_item(cx, compact, first);
             emit_array_child(cx, op, false, false)
         }

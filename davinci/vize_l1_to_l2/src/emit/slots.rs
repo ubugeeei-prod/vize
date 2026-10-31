@@ -133,7 +133,7 @@ fn region_references_scope(scope: &PrefixScope<'_>, region: &Region<'_>) -> bool
                 bindings_reference_scope(scope, &component.bindings)
                     || region_references_scope(scope, &component.children)
             }
-            Op::Interpolation(interpolation) => {
+            Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
                 expression_references_scope(scope, interpolation.expression)
             }
             Op::If(if_op) => if_op.branches.iter().any(|branch| {

@@ -215,7 +215,10 @@ fn walk(
                     });
                 }
             }
-            DumpOp::Interpolation(interpolation) | DumpOp::JsxChildValue(interpolation) => {
+            DumpOp::JsxChildValue(_) => {
+                *next += 1;
+            }
+            DumpOp::Interpolation(interpolation) => {
                 let id = NodeId::from_index(*next);
                 *next += 1;
                 if state.rawtext_depth > 0 {

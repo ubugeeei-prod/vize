@@ -62,6 +62,49 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Original VDOM child values and parent block ownership before and after
+        env:
+          INSTA_UPDATE: new
+        run: |
+          set -euo pipefail
+          directory="$RUNNER_TEMP/jsx-authored-native/vdom-child-values"
+          mkdir -p "$directory"
+          test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
+          git rev-parse HEAD HEAD^{tree} > "$directory/head-source.txt"
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          baseline="$RUNNER_TEMP/jsx-vdom-values-base"
+          observer=crates/vize_atelier_jsx/tests/vdom_child_values.rs
+          git worktree add --detach "$baseline" "$BASE_SHA"
+          cp "$observer" "$baseline/$observer"
+          cmp "$observer" "$baseline/$observer"
+          git -C "$baseline" diff --exit-code -- crates/*/src davinci/*/src
+          git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$directory/base-source.txt"
+          sha256sum "$observer" "$baseline/$observer" tests/tooling/jsx-vapor-oracle/{child-values.ts,vdom-child-values.ts,runtime.ts} tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json > "$directory/observer.sha256"
+          status=0
+          cargo test --locked --profile ci -p vize_l2 --test op_family --test jsx_child_dump > "$directory/typed-ir.stdout" 2> "$directory/typed-ir.stderr" || status=1
+          VIZE_JSX_VDOM_CHILD_CAPTURE="$directory/head" cargo test --locked --profile ci -p vize_atelier_jsx --test vdom_child_values -- --nocapture > "$directory/head.stdout" 2> "$directory/head.stderr" || status=1
+          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-vdom-values-base-target" VIZE_JSX_VALUE_ORACLE_ROOT="$GITHUB_WORKSPACE" VIZE_JSX_VDOM_EXPECT_OLD=1 VIZE_JSX_VDOM_CHILD_CAPTURE="$directory/base" cargo test --locked --profile ci -p vize_atelier_jsx --test vdom_child_values -- --nocapture) > "$directory/base.stdout" 2> "$directory/base.stderr" || status=1
+          if test "$status" = 0; then
+            node --input-type=module - "$directory" <<'JSCODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const directory=process.argv[2];
+          const read=role=>JSON.parse(fs.readFileSync(path.join(directory,role,'complete.json'),'utf8'));
+          const before=read('base'),after=read('head');
+          assert.deepEqual(after.original,before.original);
+          assert.deepEqual(after.templates,before.templates,'complete ordinary template interpolation and v-text code/maps/diagnostics unchanged');
+          assert.equal(before.cases.length,4);assert.equal(after.cases.length,4);
+          for(let index=0;index<4;index++) {
+            const old=before.cases[index],current=after.cases[index];
+            assert.deepEqual(current.input.original,old.input.original);
+            for(const key of ['vapor','shadowedSource','shadowedVapor']) assert.deepEqual(current.input[key],old.input[key]);
+            for(const key of ['source','mapped','diagnostics','functionName']) assert.deepEqual(current.input.vdom[key],old.input.vdom[key]);
+          }
+          fs.writeFileSync(path.join(directory,'comparison.json'),JSON.stringify({originalPhases:10,originalSourceUnchanged:true,oldNativeVdomMatchesBabel:[true,true,true,true,true,false,false,false,false,true],newNativeVdomMatchesBabel:Array(10).fill(true),templateControlsWholeEqual:true,wholeCorpusQualified:false,issue6890Complete:false},null,2)+'\n');
+          JSCODE
+          fi
+          exit "$status"
       - name: Complete native module and source-map oracles
         env:
           VIZE_JSX_AUTHORED_NATIVE_CAPTURE: ${{ runner.temp }}/jsx-authored-native/packets.json
@@ -258,6 +301,9 @@ jobs:
       - uses: ./.github/actions/install-playwright-browsers
         if: always()
         with: { workspace: ./tests }
+      - name: Original VDOM values before and after in genuine Chromium
+        if: always()
+        run: node tests/tooling/jsx-vapor-oracle/vdom-child-browser.ts "$RUNNER_TEMP/jsx-authored-native/vdom-child-values/base/block-controls-input.json" "$RUNNER_TEMP/jsx-authored-native/vdom-child-values/head/block-controls-input.json" "$RUNNER_TEMP/jsx-authored-native/vdom-child-values/chromium.json"
       - name: Original child values and effect disposal in genuine Chromium
         if: always()
         run: node tests/tooling/jsx-vapor-oracle/child-browser.ts "$RUNNER_TEMP/jsx-authored-native/child-modules.json" "$RUNNER_TEMP/jsx-authored-native/child-browser.json"

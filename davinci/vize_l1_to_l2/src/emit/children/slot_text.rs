@@ -111,6 +111,7 @@ fn emit_slot_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitEr
             }
             Op::Element(_)
             | Op::Component(_)
+            | Op::JsxChildValue(_)
             | Op::Comment(_)
             | Op::If(_)
             | Op::For(_)

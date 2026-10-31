@@ -340,6 +340,8 @@ pub(super) fn simple_identifier<'a>(expr: &ExprRef<'a>) -> Option<&'a str> {
 }
 
 #[cfg(test)]
+mod child_value_tests;
+#[cfg(test)]
 mod control_flow_tests;
 #[cfg(test)]
 mod native_model_tests;
