@@ -19,7 +19,7 @@ export function isVOnEventHyphenationOptions(value: unknown): value is VOnEventH
         (entry, index) =>
           typeof entry === "string" &&
           !/^\s*$/u.test(entry) &&
-          !/:exit$/u.test(entry) &&
+          !entry.endsWith(":exit") &&
           ignore.indexOf(entry) === index,
       ))
   );

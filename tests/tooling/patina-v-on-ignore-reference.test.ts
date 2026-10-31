@@ -120,7 +120,7 @@ test("original whole ranges, restoration and literal JS string boundaries remain
   assert.deepEqual(expected(rowFor("original-restored-empty")), baseline);
   assert.deepEqual(expected(rowFor("original-literal-not-glob")), baseline);
   assert.deepEqual(expected(rowFor("original-case-sensitive")), baseline);
-  assert.equal(/:exit$/.test(":exit\n"), false);
+  assert.equal(":exit\n".endsWith(":exit"), false);
   assert.equal(/^\s*$/.test("\uFEFF"), true);
   assert.equal(/^\s*$/.test("\u0085"), false);
 });
