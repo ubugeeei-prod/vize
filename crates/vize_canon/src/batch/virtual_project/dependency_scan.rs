@@ -37,6 +37,7 @@ use super::VirtualProject;
 use super::setup_props::RuntimePropResolveCache;
 
 mod declaration_sources;
+mod import_facts;
 use declaration_sources::source_backed;
 mod package_roots;
 mod references;
@@ -105,24 +106,6 @@ impl VirtualProject {
             workspace_package_specifiers,
             Some(package_resolver),
             None,
-        )
-    }
-
-    /// Share only immutable syntax facts across one preparation's walks.
-    /// Resolution, registration and edge replacement still run on every walk.
-    pub(crate) fn register_reachable_dependencies_with_import_facts(
-        &mut self,
-        overlays: &FxHashMap<PathBuf, &str>,
-        workspace_package_specifiers: &[CompactString],
-        package_resolver: PackageResolver<'_>,
-        facts: &mut ModuleSpecifierFactsCache,
-    ) -> CorsaResult<()> {
-        self.register_reachable_dependencies_inner(
-            None,
-            overlays,
-            workspace_package_specifiers,
-            Some(package_resolver),
-            Some(facts),
         )
     }
 

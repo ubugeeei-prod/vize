@@ -190,14 +190,12 @@ pub(super) fn prepare_program(
     );
     checker.set_package_route_resolver(input.package_route_resolver);
     checker.set_package_routes(input.package_routes.iter().cloned());
-    checker
-        .scan_paths(input.files)
-        .map_err(|error| cstr!("{}", error))?;
-    if input.ensure_included_sources {
-        checker
-            .ensure_included_sources()
-            .map_err(|error| cstr!("{}", error))?;
-    }
+    let scan = if input.ensure_included_sources {
+        checker.scan_paths_with_included_sources(input.files)
+    } else {
+        checker.scan_paths(input.files)
+    };
+    scan.map_err(|error| cstr!("{}", error))?;
     checker
         .adopt_diagnostic_sources(input.reported_files.iter().cloned())
         .map_err(|error| cstr!("{}", error))?;

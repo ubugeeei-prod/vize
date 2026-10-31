@@ -11,12 +11,26 @@ use crate::batch::error::CorsaResult;
 
 impl VirtualProject {
     pub(crate) fn ensure_included_sources(&mut self) -> CorsaResult<()> {
+        self.ensure_included_sources_inner(None)
+    }
+
+    pub(crate) fn ensure_included_sources_with_import_facts(
+        &mut self,
+        facts: &mut crate::batch::ModuleSpecifierFactsCache,
+    ) -> CorsaResult<()> {
+        self.ensure_included_sources_inner(Some(facts))
+    }
+
+    fn ensure_included_sources_inner(
+        &mut self,
+        facts: Option<&mut crate::batch::ModuleSpecifierFactsCache>,
+    ) -> CorsaResult<()> {
         let Some(tsconfig) = self.resolved_tsconfig_path() else {
             return Ok(());
         };
         let included =
             super::tsconfig_gen::references::included_sources(&tsconfig, &self.project_root);
-        self.register_unregistered_sources(included)
+        self.register_unregistered_sources(included, facts)
     }
 
     pub(crate) fn adopt_diagnostic_sources(
@@ -32,12 +46,13 @@ impl VirtualProject {
                     && !path_contains_node_modules(path)
             })
             .collect();
-        self.register_unregistered_sources(accepted)
+        self.register_unregistered_sources(accepted, None)
     }
 
     fn register_unregistered_sources(
         &mut self,
         paths: impl IntoIterator<Item = PathBuf>,
+        facts: Option<&mut crate::batch::ModuleSpecifierFactsCache>,
     ) -> CorsaResult<()> {
         // A path registered verbatim is known without canonicalizing every key.
         let candidates: Vec<PathBuf> = paths
@@ -79,7 +94,10 @@ impl VirtualProject {
         let listed: Vec<PathBuf> = roots.into_iter().collect();
         self.set_declaration_roots(&listed);
         if self.register_canonical_paths_lenient(&missing) {
-            self.register_reachable_dependencies()?;
+            match facts {
+                Some(facts) => self.register_reachable_dependencies_with_facts(facts)?,
+                None => self.register_reachable_dependencies()?,
+            }
             self.finalize_package_routes()?;
         }
         Ok(())

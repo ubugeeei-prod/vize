@@ -202,6 +202,24 @@ impl BatchTypeChecker {
     /// and virtual-TS generation CPU-bound instead of serializing every file on
     /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
+        self.scan_paths_inner(paths, None)
+    }
+
+    /// Scan these roots, then register tsconfig include members in the same
+    /// order as scan_paths followed by ensure_included_sources. Repeated walks
+    /// share owned syntax facts only, released before this method returns.
+    pub fn scan_paths_with_included_sources(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
+        let mut facts = super::ModuleSpecifierFactsCache::default();
+        self.scan_paths_inner(paths, Some(&mut facts))?;
+        self.project
+            .ensure_included_sources_with_import_facts(&mut facts)
+    }
+
+    fn scan_paths_inner(
+        &mut self,
+        paths: &[PathBuf],
+        facts: Option<&mut super::ModuleSpecifierFactsCache>,
+    ) -> CorsaResult<()> {
         self.scope_initial_installed_sources(paths)?;
         let previous_sources = self.project.registered_original_paths_sorted();
         self.project.set_declaration_roots(paths);
@@ -210,7 +228,12 @@ impl BatchTypeChecker {
         // Out-of-root workspace files reachable through imports register too,
         // so their consumers keep real types instead of the ambient stub
         // (#3887).
-        self.project.register_reachable_dependencies()?;
+        match facts {
+            Some(facts) => self
+                .project
+                .register_reachable_dependencies_with_facts(facts)?,
+            None => self.project.register_reachable_dependencies()?,
+        }
         self.project.prune_unowned_sources(previous_sources);
         self.project.finalize_package_routes()?;
         self.scanned = true;
