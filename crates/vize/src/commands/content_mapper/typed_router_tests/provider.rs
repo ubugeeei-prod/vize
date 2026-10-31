@@ -12,6 +12,7 @@ use vize_canon::{
 use super::super::test_support::{exchange, frames, initialize_request};
 
 const CONFIG: &str = r#"{"compilerOptions":{"moduleResolution":"Bundler"},"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#;
+const BAD_CONFIG: &str = "{\"vueCompilerOptions\":";
 const PAGE: &str = "<script setup lang=\"ts\">\nimport { definePage } from 'vue-router/experimental'\nconst props = defineProps<{ extra?: string }>()\ndefinePage({ props: true })\nvoid props\n</script>\n<template>{{ id }}</template>";
 
 fn install(root: &Path, kind: &str) {
@@ -138,7 +139,7 @@ impl Write for ProviderEdits<'_> {
         self.responses += 1;
         match self.responses {
             2 => std::fs::remove_file(self.entry)?,
-            4 => std::fs::write(self.config, "{\"vueCompilerOptions\":")?,
+            4 => std::fs::write(self.config, BAD_CONFIG)?,
             7 => {
                 std::fs::write(self.config, CONFIG)?;
                 std::fs::write(self.entry, self.original)?;
@@ -163,6 +164,19 @@ fn provider_removal_reopen_and_failed_reload_never_reuse_stale_admission() {
     let disabled = expected(&root);
     assert_ne!(enabled, disabled);
     std::fs::write(&entry, &original).unwrap();
+    std::fs::write(&config, BAD_CONFIG).unwrap();
+    let invalid = ContentMapperProjectConfiguration::load_with_compiler_options(
+        &config,
+        json!({"rootDir":root,"moduleResolution":100})
+            .as_object()
+            .unwrap(),
+    )
+    .unwrap_err();
+    let rejected_reload = json!({"jsonrpc":"2.0","id":6,"error":{
+        "code":-32603,
+        "message":vize_l0::cstr!("Failed to load content mapper configuration: {invalid}")
+    }});
+    std::fs::write(&config, CONFIG).unwrap();
     let input = frames(&[
         initialize_request(),
         open(2, "page", &root),
@@ -196,7 +210,7 @@ fn provider_removal_reopen_and_failed_reload_never_reuse_stale_admission() {
         responses[4],
         json!({"jsonrpc":"2.0","id":5,"result":disabled})
     );
-    assert_eq!(responses[5]["error"]["code"], -32603);
+    assert_eq!(responses[5], rejected_reload);
     assert_eq!(
         responses[6],
         json!({"jsonrpc":"2.0","id":7,"error":{"code":-32602,"message":"Unknown content mapper project: page"}})
