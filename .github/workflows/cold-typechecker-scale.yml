@@ -9,8 +9,12 @@ on:
       mode:
         description: Full comparison or focused same-source phase/allocation baseline
         type: choice
-        options: [full, phase-baseline]
+        options: [full, phase-baseline, paired-comparison]
         default: full
+      head_sha:
+        description: Immutable production head for the focused paired comparison
+        type: string
+        default: ""
       sfcs:
         description: Vue SFC count plus the complete authored package dependency graph
         type: choice
@@ -36,7 +40,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   profile:
-    if: github.event_name != 'workflow_dispatch' || inputs.mode != 'phase-baseline'
+    if: github.event_name != 'workflow_dispatch' || inputs.mode == 'full'
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 90
     env:
@@ -159,6 +163,106 @@ jobs:
         with:
           name: cold-typechecker-scale-${{ github.sha }}
           path: ${{ runner.temp }}/cold-scale-evidence.tgz
+          retention-days: 14
+  paired-comparison:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'paired-comparison'
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 60
+    env:
+      BASE_SHA: ${{ inputs.base_sha }}
+      HEAD_SHA: ${{ inputs.head_sha }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      GOMAXPROCS: "8"
+      RAYON_NUM_THREADS: "8"
+      CARGO_BUILD_JOBS: "8"
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false, fetch-depth: 2 }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Select the exact source pair and unchanged complete 2500-SFC corpus
+        run: |
+          set -euo pipefail
+          [[ "${{ inputs.sfcs }}" == 2500 ]]
+          [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && "$HEAD_SHA" =~ ^[a-f0-9]{40}$ && "$BASE_SHA" != "$HEAD_SHA" ]]
+          mkdir "$RUNNER_TEMP/cold-paired"
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"
+          git worktree add --detach "$RUNNER_TEMP/cold-paired-base" "$BASE_SHA"
+          git worktree add --detach "$RUNNER_TEMP/cold-paired-head" "$HEAD_SHA"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/cold-paired/driver.txt"
+      - name: Install the unchanged comparison providers once for both sources
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/provider"
+          cd "$RUNNER_TEMP/provider"
+          cat > package.json <<'JSON'
+          {"private":true,"dependencies":{"vize":"0.596.0","@vizejs/native":"0.596.0","vue":"3.6.0-rc.13","typescript":"6.0.3","typescript-native":"npm:typescript@7.1.0-beta","vue-tsc":"3.3.13"}}
+          JSON
+          npm install --ignore-scripts --no-audit --no-fund
+          cp package.json package-lock.json "$RUNNER_TEMP/cold-paired/"
+      - name: Build only normal exact base and head images with equal compiler settings
+        run: |
+          set -euo pipefail
+          for role in base head; do
+            node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/cold-paired-$role" --target-dir "$RUNNER_TEMP/cold-paired-builds/$role" --binary "$RUNNER_TEMP/cold-paired/binaries/$role/vize" --receipt "$RUNNER_TEMP/cold-paired/builds/$role.json" --role "normal-$role"
+          done
+          node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --base-receipt "$RUNNER_TEMP/cold-paired/builds/base.json" --head-receipt "$RUNNER_TEMP/cold-paired/builds/head.json" --receipt "$RUNNER_TEMP/cold-paired/builds/pair.json"
+      - name: Require full emitted-code equality and all 40 balanced normal-command pairs
+        run: |
+          set -euo pipefail
+          export VIZE_BENCH_CPU_SET=$(node tools/benchmarks/scripts/cold-typechecker-scale-affinity.ts)
+          taskset -c "$VIZE_BENCH_CPU_SET" node tools/benchmarks/scripts/cold-typechecker-scale-paired.ts --provider "$RUNNER_TEMP/provider" --out "$RUNNER_TEMP/cold-paired/observations" --base "$RUNNER_TEMP/cold-paired/builds/base.json" --head "$RUNNER_TEMP/cold-paired/builds/head.json"
+      - name: Preserve every raw pair, control and source receipt without runtime caches
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/cold-paired"
+          tar --exclude='*/project' --exclude='*/xdg-cache' --exclude='*/tmp' --exclude='*/binaries' -czf "$RUNNER_TEMP/cold-paired-evidence.tgz" -C "$RUNNER_TEMP" cold-paired
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: cold-typechecker-paired-${{ inputs.head_sha }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/cold-paired-evidence.tgz
+          retention-days: 14
+  package-root-units:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'paired-comparison'
+    strategy:
+      fail-fast: false
+      matrix: { os: [blacksmith-8vcpu-ubuntu-2404, windows-latest] }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    env: { CARGO_BUILD_JOBS: "4", CARGO_INCREMENTAL: "0", HEAD_SHA: "${{ inputs.head_sha }}" }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ inputs.head_sha }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Execute every actual package membership unit for this platform
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
+          mkdir evidence
+          git rev-parse HEAD HEAD^{tree} > evidence/source.txt
+          rustc -Vv > evidence/rustc.txt
+          cargo test --locked --profile ci -p vize_canon --lib batch::virtual_project::dependency_scan::package_roots::tests -- --nocapture > evidence/units.stdout 2> evidence/units.stderr
+          grep -Fxq 'running 3 tests' evidence/units.stdout
+          grep -Fq '3 passed; 0 failed; 0 ignored;' evidence/units.stdout
+          git diff --exit-code
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: package-root-units-${{ runner.os }}-${{ inputs.head_sha }}-${{ github.run_id }}
+          path: evidence/
           retention-days: 14
   phase-baseline:
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'phase-baseline'
