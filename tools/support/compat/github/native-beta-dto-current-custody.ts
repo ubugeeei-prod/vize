@@ -1,5 +1,9 @@
 // Finite current producer authority. Historical archives and ABI identities remain separate.
 export const watcherSuccessor = {
+  inputPath:
+    "tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/input.json",
+  inputBytes: 1108,
+  inputSha256: "4659fc88d76ee98c9f0ddc74f6450ecc80b720be9b3ab4a0335bf8f2a2050c58",
   logicalPath: "tests/tooling/support/native-beta-dto/logical-revision.ts",
   logicalHash: "3bfd848e200a8ebdd5ec68bc7416efc6f5698e7a93226ff62110b338bad7eb37",
   logicalRuntime: "882d31d9b86f7dc2ca752ca06d1fc57c840a263a54d831f61c979c6e75177e15",
@@ -11,9 +15,9 @@ export const watcherSuccessor = {
   semanticRuntime: "a070a07cd8d22b4be135fee6b5ba3b257d47b923f0572bdefa89f3f3c117172e",
   storageId: "after-source-selected-logical-editor-revision",
   observerHistoricalSha256: "26eb21864007e6011c69d0a95e1be173fd586605a87400bdc3aacecb5cb31dc6",
-  observerCurrentSha256: "ef58d79d4bbac2ea3c7752c00ff1cb62f260664ecc0c481060ed0f65b411cc30",
-  storageObserverSha256: "e760076f8111d8d20c6e35574b79c4da01e2c6d96c7b068b35de82d9bb0c2804",
-  prepareRuntimeSha256: "4dcfc6179f8aabb1bcac8769545e0faa5a9f35e712caa239352186265c3f72b1",
+  observerCurrentSha256: "c75ef79c388eb5aee6c93115150196c42aecb75d638ead10dab1a1b94872ca61",
+  storageObserverSha256: "9bc79324540fd1b37f649f102fa2ed90a09aaf53eca1765f799cb6bc1fe88d40",
+  prepareRuntimeSha256: "7fb1462c0464d7f409cf4e1d34a2dc182cff11f70083b2b3c8e0611371a5e9de",
   id: "before-stable-post-shutdown-observation-41099824102",
   splitLogId: "before-stable-split-watch-log-41152849787",
   terminalId: "before-stable-terminal-stderr-41156819864",
@@ -42,7 +46,7 @@ export const watcherSuccessor = {
   terminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
   terminalSha256: "83b167d4146f812255b01a946ead297693bad85cdf904817e4207a2bf1c97c35",
   terminalRuntimeSha256: "2ed2edfda0877fa9a4b1093242f8501c5fb2ce834dfaf39ff478edfa9da18013",
-  auditRuntimeSha256: "9c0492d8abd71d600c3841e0278b7eb49e9001cbab7c126df1f5328fedcbaf14",
+  auditRuntimeSha256: "fb41b11f22468f525924522bc89c422c1dba876ab38cf944e3a2a956417a963a",
   typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
   typesSha256: "3904cfaf07e59b501c2361b65410877f22780bfdc365cedf74300bb6fb88d127",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
@@ -60,7 +64,7 @@ export const watcherSuccessor = {
   membershipSha256: "bf8807fdcd364dd4965184e4548bb9ceb113941aa53093ed7a31a82ac3d6842f",
   membershipRuntimeSha256: "dc9c18a373b36d366c1bf2887d02a6f83f10f26e72e63c7982c228b5a44c1010",
   routePath: "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
-  routeRuntimeSha256: "1798ac6c0c2eeb8a488878b69a8144e51749b1be041b19bf4166382cb2d476ee",
+  routeRuntimeSha256: "a6a64fdfd7a8d184da1babf770cfc9e18c9f0a6958fe4f0c26a2957945bb480e",
   actualFiles: [
     ["client.bin", "cd11915afee013a728a287098714d5db70e8719867bd596a1c4721ca5a876c13"],
     ["server.bin", "47cc76661e039b28a3e7056d3d2b07d6d4c6da31440166c2e490b76f78079f73"],

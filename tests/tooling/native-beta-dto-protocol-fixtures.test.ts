@@ -170,7 +170,7 @@ void test("typed producers retain historical bytes and only the exact registered
       selected
         ? {
             path: storage,
-            sha256: "e760076f8111d8d20c6e35574b79c4da01e2c6d96c7b068b35de82d9bb0c2804",
+            sha256: "9bc79324540fd1b37f649f102fa2ed90a09aaf53eca1765f799cb6bc1fe88d40",
           }
         : null,
     );
@@ -180,7 +180,17 @@ void test("typed producers retain historical bytes and only the exact registered
         ? {
             path: "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
             historicalSha256: "26eb21864007e6011c69d0a95e1be173fd586605a87400bdc3aacecb5cb31dc6",
-            currentSha256: "ef58d79d4bbac2ea3c7752c00ff1cb62f260664ecc0c481060ed0f65b411cc30",
+            currentSha256: "c75ef79c388eb5aee6c93115150196c42aecb75d638ead10dab1a1b94872ca61",
+          }
+        : null,
+    );
+    assert.deepEqual(
+      entry.currentInputDependency,
+      selected
+        ? {
+            path: "tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/input.json",
+            bytes: 1108,
+            sha256: "4659fc88d76ee98c9f0ddc74f6450ecc80b720be9b3ab4a0335bf8f2a2050c58",
           }
         : null,
     );
@@ -224,6 +234,10 @@ void test("typed producers retain historical bytes and only the exact registered
   );
 });
 void test("current observer successor requires its exact bounded runtime and actual raw packet authority", () => {
+  const input =
+    "tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/input.json";
+  assert.throws(() => validate([row], [], { [input]: null }));
+  assert.throws(() => validate([row], [], { [input]: Buffer.from("{}\n") }));
   for (const path of [
     "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",

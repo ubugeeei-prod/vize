@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { stripTypeScriptTypes } from "node:module";
 import { watcherSuccessor } from "./native-beta-dto-current-custody.ts";
 const currentAuthorityPath = "tools/support/compat/github/native-beta-dto-current-custody.ts";
-const currentAuthoritySha256 = "7e5a763c7683ec42b07d6689140b6bc1f4d707c6250a3956a38d2985dab0682e";
+const currentAuthoritySha256 = "2b30309b2fc97d0070c7cc644da7028518c5fb853bedefe2d8788934da0ef431";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";
@@ -117,6 +117,17 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
     const currentPath = index === 0 ? originalPath : originalPath.replace(/\.mjs$/u, ".ts");
     const current = read("head", currentPath);
     require(current !== null, `missing current typed producer: ${currentPath}`);
+    const currentInputDependency =
+      index === 1 || index === 3
+        ? {
+            path: watcherSuccessor.inputPath,
+            bytes: watcherSuccessor.inputBytes,
+            sha256: watcherSuccessor.inputSha256,
+          }
+        : null;
+    if (currentInputDependency)
+      require(pinned(read, currentInputDependency.path, currentInputDependency.sha256).length ===
+        currentInputDependency.bytes, "consumed observer input byte count differs");
     let currentTypeDependency: { path: string; sha256: string } | null = null;
     if (index === 0) {
       let transitioned = original.toString("utf8");
@@ -255,6 +266,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
             }
           : null,
       currentTypeDependency,
+      currentInputDependency,
     };
   });
 }
@@ -404,6 +416,16 @@ export function newNativeBetaDtoProtocolCases(
         ), "actual DTO pack is not consumed");
     }
     const actual = read("head", tests[3]!.source)?.toString("utf8") ?? "";
+    const phaseInput = object(
+      JSON.parse(
+        pinned(read, watcherSuccessor.inputPath, watcherSuccessor.inputSha256).toString("utf8"),
+      ),
+      ["schema", "id", "main", "support", "virtual", "configText", "phases"],
+    );
+    require(Array.isArray(phaseInput.phases), "complete consumed observer phases required");
+    const phaseIds = phaseInput.phases.map(
+      (row: unknown) => object(row, ["id", "support", "error", "closed"]).id,
+    );
     for (const marker of [
       "#[ignore",
       "native_diagnostics::read(",
@@ -425,9 +447,11 @@ export function newNativeBetaDtoProtocolCases(
       "whole_batch",
       "directCompletion",
     ])
-      require(actual.includes(
-        marker === "expected_refusal" ? "expect_refusal" : marker,
-      ), `missing actual observer authority: ${marker}`);
+      require(marker === "dependency-error" || marker === "dependency-close"
+        ? actual.includes('input["phases"]') && phaseIds.includes(marker)
+        : actual.includes(
+            marker === "expected_refusal" ? "expect_refusal" : marker,
+          ), `missing actual observer authority: ${marker}`);
     const job = read("head", workflow)?.toString("utf8") ?? "";
     for (const marker of [
       "role: [before, after]",

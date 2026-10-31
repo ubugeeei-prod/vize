@@ -18,9 +18,13 @@ export interface AttachedOwner {
 export const storageObserverPath =
   "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs";
 export const storageObserverSha256 =
-  "e760076f8111d8d20c6e35574b79c4da01e2c6d96c7b068b35de82d9bb0c2804";
+  "9bc79324540fd1b37f649f102fa2ed90a09aaf53eca1765f799cb6bc1fe88d40";
 export const commonObserverSha256 =
-  "ef58d79d4bbac2ea3c7752c00ff1cb62f260664ecc0c481060ed0f65b411cc30";
+  "c75ef79c388eb5aee6c93115150196c42aecb75d638ead10dab1a1b94872ca61";
+export const compiledInputPath =
+  "tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/input.json";
+export const compiledInputSha256 =
+  "4659fc88d76ee98c9f0ddc74f6450ecc80b720be9b3ab4a0335bf8f2a2050c58";
 const storageScope =
   "source getter and materialized file reads before close; no root inferred from observed RPC";
 const mainText =
@@ -97,6 +101,18 @@ export function verifyObserverDependencies(
   const row = closed(compiled[0], ["path", "sha256"]);
   assert.equal(row.path, storageObserverPath);
   assert.equal(row.sha256, storageObserverSha256);
+}
+/** Actual compiled fixture bytes are separate from the sole Rust helper identity. */
+export function verifyCompiledInput(compiled: unknown, prepared: unknown) {
+  assert.ok(Array.isArray(compiled) && Array.isArray(prepared));
+  assert.equal(compiled.length, 1);
+  assert.deepEqual(compiled, prepared, "compiled and prepared input bytes differ");
+  closed(compiled[0], ["path", "bytes", "sha256"]);
+  assert.deepEqual(compiled[0], {
+    path: compiledInputPath,
+    bytes: 1108,
+    sha256: compiledInputSha256,
+  });
 }
 
 /** Only the reviewed source getter and physical file reads grant current mirror identities. */

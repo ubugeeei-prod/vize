@@ -4,7 +4,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { requireCandidateStableStderr } from "./stable-watcher-boundary.ts";
 import { verifyHistoricalWatcherRelations } from "./stable-watcher-late-root.ts";
-import { attachedOwners, verifyObserverDependencies } from "./beta-attached-route.ts";
+import {
+  attachedOwners,
+  verifyObserverDependencies,
+  verifyCompiledInput,
+} from "./beta-attached-route.ts";
 import { verifyAfterLogicalRevision } from "./logical-revision.ts";
 import { verifyBetaLogicalRoute } from "./logical-attached-route.ts";
 import type { Packet, Syscall, StreamPair, Provider, Source, Receipt } from "./audit-wire-types.ts";
@@ -33,12 +37,14 @@ assert.equal(source.sdkVersion, provider.version);
 assert.equal(source.sdkSha256, provider.executableSha256);
 assert.equal(source.source, process.env.VIZE_NATIVE_DTO_SOURCE_SHA);
 assert.equal(source.rows.length, 3);
+const prepared = load("source-role.json") as Record<string, unknown>;
 verifyObserverDependencies(
   source.observerDependencies,
-  (load("source-role.json") as { harnessDependencies: unknown }).harnessDependencies,
+  prepared.harnessDependencies,
   source.observerSha256,
-  (load("source-role.json") as { harness: unknown }).harness,
+  prepared.harness,
 );
+verifyCompiledInput(source.attached.observerInputDependencies, prepared.observerInputDependencies);
 const watcherContext = () => ({
   source: source.source,
   role: source.role,
