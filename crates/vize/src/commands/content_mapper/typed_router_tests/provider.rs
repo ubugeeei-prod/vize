@@ -1,5 +1,6 @@
 //! Admitted same-version providers and failed reloads in the real mapper server.
 
+use std::fmt::Write as _;
 use std::io::{BufReader, Cursor, Write};
 use std::path::Path;
 
@@ -42,10 +43,11 @@ fn install(root: &Path, kind: &str) {
         let path = entry["path"].as_str().unwrap();
         let bytes = std::fs::read(fixture.join(kind).join(vize_l0::cstr!("{path}.txt"))).unwrap();
         assert_eq!(bytes.len() as u64, entry["bytes"].as_u64().unwrap());
-        assert_eq!(
-            vize_l0::cstr!("{:x}", Sha256::digest(&bytes)),
-            entry["sha256"].as_str().unwrap()
-        );
+        let mut hash = vize_l0::String::with_capacity(64);
+        for byte in Sha256::digest(&bytes).iter() {
+            write!(hash, "{byte:02x}").unwrap();
+        }
+        assert_eq!(hash, entry["sha256"].as_str().unwrap());
         let target = package.join(path);
         std::fs::create_dir_all(target.parent().unwrap()).unwrap();
         std::fs::write(target, bytes).unwrap();
@@ -88,7 +90,7 @@ fn expected(root: &Path) -> Value {
 #[test]
 fn same_process_same_version_router_providers_keep_complete_packets_isolated() {
     let directory = tempfile::tempdir().unwrap();
-    let root = vize_l0::path::canonicalize_non_verbatim(directory.path());
+    let root = vize_carton::path::canonicalize_non_verbatim(directory.path());
     let preview = root.join("preview");
     let published = root.join("published");
     for (project, kind) in [(&preview, "preview"), (&published, "published")] {
@@ -153,7 +155,7 @@ impl Write for ProviderEdits<'_> {
 #[test]
 fn provider_removal_reopen_and_failed_reload_never_reuse_stale_admission() {
     let directory = tempfile::tempdir().unwrap();
-    let root = vize_l0::path::canonicalize_non_verbatim(directory.path());
+    let root = vize_carton::path::canonicalize_non_verbatim(directory.path());
     let config = root.join("tsconfig.json");
     std::fs::write(&config, CONFIG).unwrap();
     install(&root, "preview");
