@@ -4,11 +4,12 @@
     reason = "complete authored inputs and output facts"
 )]
 
-#[path = "inline_for_ref_shadowing_11210/support.rs"]
-mod support;
+mod inline_for_ref_shadowing_11210 {
+    pub(super) mod support;
+}
 
+use inline_for_ref_shadowing_11210::support::compile;
 use sha2::{Digest, Sha256};
-use support::compile;
 
 const ORIGINAL: &str = include_str!(
     "../../../tests/_fixtures/differential/compiler/inline-for-ref-shadow-11210/Layout.vue.txt"
