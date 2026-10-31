@@ -1,0 +1,4 @@
+export {};
+declare global {
+  const useTemplateRef: <T = unknown, K extends string = string>(key: K) => Readonly<import('vue').ShallowRef<T | null>>;
+}
