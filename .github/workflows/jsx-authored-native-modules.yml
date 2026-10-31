@@ -9,10 +9,13 @@ on:
       - "crates/vize_vitrine/src/napi/jsx.rs"
       - "crates/vize_vitrine/src/wasm/jsx.rs"
       - "tests/_fixtures/differential/jsx/**"
+      - "tests/_fixtures/differential/compiler/jsx-child-values-6890/**"
+      - "tools/support/compat/github/jsx-child-api-fixtures.ts"
       - "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/**"
       - "tests/tooling/jsx-authored-module-fixture-custody.test.ts"
       - "tests/tooling/jsx-child-golden-custody.test.ts"
       - "tests/tooling/jsx-child-profile-contract.test.ts"
+      - "tests/tooling/jsx-child-api-fixtures.test.ts"
       - "tests/tooling/support/jsx-child-profile-contract.ts"
       - "tests/tooling/support/jsx-authored-custody.ts"
       - "tests/tooling/jsx-vapor-oracle/**"
@@ -229,7 +232,7 @@ jobs:
           cargo test --locked --profile ci -p vize_vitrine --no-default-features --features wasm --lib wasm::jsx::tests::
       - name: Verify complete native fixture and historical custody
         if: always()
-        run: node --test tests/tooling/jsx-authored-module-fixture-custody.test.ts tests/tooling/jsx-child-golden-custody.test.ts tests/tooling/jsx-child-profile-contract.test.ts tests/tooling/vapor-third-party-reports.test.mjs
+        run: node --test tests/tooling/jsx-authored-module-fixture-custody.test.ts tests/tooling/jsx-child-golden-custody.test.ts tests/tooling/jsx-child-profile-contract.test.ts tests/tooling/jsx-child-api-fixtures.test.ts tests/tooling/vapor-third-party-reports.test.mjs
       - name: Capture whole native fixture packets and genuine runtime traces
         if: always()
         env:
@@ -252,6 +255,12 @@ jobs:
           done
           VIZE_JSX_VAPOR_COMPAT_TRACE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/reference-metadata.json" node tests/tooling/jsx-vapor-oracle/oracle.mjs --reference > "$RUNNER_TEMP/jsx-authored-native/reference.stdout.json" 2> "$RUNNER_TEMP/jsx-authored-native/reference.stderr.log" || status=1
           exit "$status"
+      - uses: ./.github/actions/install-playwright-browsers
+        if: always()
+        with: { workspace: ./tests }
+      - name: Original child values and effect disposal in genuine Chromium
+        if: always()
+        run: node tests/tooling/jsx-vapor-oracle/child-browser.ts "$RUNNER_TEMP/jsx-authored-native/child-modules.json" "$RUNNER_TEMP/jsx-authored-native/child-browser.json"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

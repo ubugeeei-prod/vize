@@ -16,6 +16,7 @@ pub(super) fn generate(ctx: &mut GenerateContext<'_>, children: &SetJsxChildrenI
         "VaporFragment",
         "EffectScope",
         "renderEffect",
+        "createTextNode",
     ] {
         ctx.use_helper(helper);
     }
@@ -119,7 +120,8 @@ function _vizeJsxUpdate(current, value, anchor, dom) {
 }
 function _vizeJsxChildren(anchor, values, once = false) {
   const document = anchor.ownerDocument;
-  const view = document && document.defaultView;
+  const realmAnchor = document && document.defaultView ? anchor : _createTextNode();
+  const view = realmAnchor.ownerDocument && realmAnchor.ownerDocument.defaultView;
   if (!view || typeof view.Node !== "function" || typeof view.Array !== "function" || typeof view.Array.isArray !== "function" || typeof view.String !== "function" || !(anchor instanceof view.Node) || anchor.nodeType !== 3) {
     throw "Vize JSX child anchor has no owned DOM text realm";
   }

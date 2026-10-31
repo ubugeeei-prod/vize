@@ -347,7 +347,7 @@ assert.deepEqual(
   "authored Node/document/Array/String bindings cannot capture the DOM normalizer",
 );
 const receipt = {
-  originalPhases: 10,
+  originalPhases: actual.phases.length,
   qualifiedVaporPhases: qualified.length,
   qualifiedVaporIndices: qualified,
   referenceConflictPhases: 1,
@@ -358,11 +358,8 @@ const receipt = {
   ),
   wholeCorpusQualified: false,
   issue6890Complete: false,
-  unchangedMainOracleRows: 23,
-  originalDesiredVectorsUnchanged: true,
-  allFourCompleteRawRoutesRetained: true,
-  physicalNodeControls: 10,
-  authoredShadowingControls: 10,
+  physicalNodeControls: nodeActual.phases.length,
+  authoredShadowingControls: shadowedActual.phases.length,
 };
 capture.receipt = receipt;
 await window.happyDOM.close();
