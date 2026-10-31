@@ -185,7 +185,16 @@ const controls = [
     "super::corsa_session::validate_tsconfig(&project_root, tsconfig).err()",
     "None",
   ],
-  ["runtime failure", "native", ".map_err(TypeAwareFailure::Runtime)", ".map_err(ignore_runtime)"],
+  ["runtime failure", "native", "TypeAwareFailure::Runtime(error)", "ignore_runtime(error)"],
+  ["query failure", "native", "TypeAwareFailure::Query(error)", "TypeAwareFailure::Runtime(error)"],
+  ["query-free failure state", "native", "let mut queried = false;", "let mut queried = true;"],
+  ["query failure transition", "native", "queried = true;", "queried = false;"],
+  [
+    "selected runtime query context",
+    "native",
+    ".map_err(|error| session.query_error(&error))",
+    ".map_err(|error| error)",
+  ],
 ];
 for (const [name, key, before, after] of controls) {
   void test(`source contract rejects missing ${name}`, () => {

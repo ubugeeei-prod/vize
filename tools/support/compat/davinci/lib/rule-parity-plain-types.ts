@@ -284,7 +284,10 @@ export function derivePlainTypeDispatch(
     "validate_tsconfig(",
     "returnErr(TypeAwareFailure::ProjectConfiguration{message,report});",
     "CorsaTypeAwareSession::new_with_corsa_path(",
-    ".map_err(TypeAwareFailure::Runtime)",
+    "letmutqueried=false;linter.native_corsa.with_session(",
+    "|session|{debug_assert!(session.matches_source_file(filename,tsconfig.as_deref()));" +
+      "queried=true;profile!(,f(session)).map_err(|error|session.query_error(&error))},",
+    ".map_err(|error|{ifqueried{TypeAwareFailure::Query(error)}else{TypeAwareFailure::Runtime(error)}})",
   ]) {
     requireCode(session, token, "project validation or runtime failure handling changed");
   }
