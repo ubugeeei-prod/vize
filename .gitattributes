@@ -136,3 +136,6 @@ tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-member
 tests/_fixtures/differential/typechecker/ambient-template-ref-10980/*.txt -text
 # Preserve the separately frozen literal public #10980 issue inputs.
 tests/fixtures/release/ambient-template-ref-public-10980/*.txt -text
+
+# This included declaration preserves the platform-independent generated helper.
+crates/vize_canon/src/virtual_ts/helpers/declarations/ref-instance-factory.d.ts.txt text eol=lf
