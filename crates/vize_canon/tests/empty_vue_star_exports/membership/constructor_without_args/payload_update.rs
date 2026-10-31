@@ -102,8 +102,8 @@ fn previous(current: &str, record: &Value) -> String {
     previous
 }
 
-/// Only the eleven named files can be projected; every other source-cone
-/// member is read unchanged and remains subject to its existing frozen hash.
+/// Authenticate the factory source and public-entry inverses before the
+/// eleven-file C3 inverse; every other source-cone member keeps its frozen hash.
 pub(super) fn source_before(path: &str) -> String {
     let actual = fs::read_to_string(support::repository().join(path)).unwrap();
     let actual = ref_factory::source_before(path, &actual);
