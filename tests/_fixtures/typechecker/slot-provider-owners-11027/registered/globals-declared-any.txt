@@ -1,0 +1,3 @@
+import 'vue';
+declare module 'vue' { interface GlobalComponents { RegistryChild: any; } }
+export {};

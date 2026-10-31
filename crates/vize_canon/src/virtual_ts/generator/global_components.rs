@@ -1,10 +1,8 @@
-use vize_carton::{CompactString, FxHashSet, String, append, camelize, capitalize};
+use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, camelize, capitalize};
 use vize_croquis::{Croquis, ScopeData};
 
-use crate::virtual_ts::component_reference::{
-    component_reference_alias, contains_compact_name, has_type_only_component_candidate,
-};
-use crate::virtual_ts::helpers::{push_ts_string_literal, to_safe_identifier};
+use crate::virtual_ts::component_reference::{component_reference_alias, contains_compact_name};
+use crate::virtual_ts::helpers::push_ts_string_literal;
 use crate::virtual_ts::scope::{ComponentBindingCheck, GlobalComponentCheck};
 use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 
@@ -33,6 +31,8 @@ pub(super) struct GlobalComponentPlan<'a> {
     component_check: GlobalComponentCheck,
     self_component_name: Option<String>,
     template_ast: Option<&'a vize_relief::RootNode<'a>>,
+    legacy_vue2: bool,
+    registry_slots: FxHashMap<u32, [String; 3]>,
 }
 
 impl<'a> GlobalComponentPlan<'a> {
@@ -57,6 +57,8 @@ impl<'a> GlobalComponentPlan<'a> {
         Self {
             slot_component_names,
             template_ast,
+            legacy_vue2,
+            registry_slots: FxHashMap::default(),
             self_component_name: summary
                 .macros
                 .define_options_name()
@@ -90,6 +92,7 @@ impl<'a> GlobalComponentPlan<'a> {
         ComponentBindingCheck {
             globals: self.component_check,
             self_component_name: self.self_component_name.as_deref(),
+            registry_slots: Some(&self.registry_slots),
         }
     }
 
@@ -100,7 +103,7 @@ impl<'a> GlobalComponentPlan<'a> {
     }
 
     pub(super) fn emit(
-        &self,
+        &mut self,
         ts: &mut String,
         summary: &Croquis,
         options: &VirtualTsOptions,
@@ -150,6 +153,9 @@ impl<'a> GlobalComponentPlan<'a> {
             let camel_name = camelize(name);
             let pascal_name = capitalize(camel_name.as_str());
             let candidates = [name, camel_name.as_str(), pascal_name.as_str()];
+            // Vue resolves registry components in this exact order. Use the
+            // same selected provider for props and slot payload ownership.
+            let registry_keys = [pascal_name.as_str(), camel_name.as_str(), name];
             if candidates.iter().any(|candidate| {
                 (crate::virtual_ts::script_facts::contains_binding(summary, candidate)
                     && !contains_compact_name(syntactic_type_only_imported_names, candidate))
@@ -162,12 +168,12 @@ impl<'a> GlobalComponentPlan<'a> {
                 continue;
             }
 
-            let component_ref =
-                if has_type_only_component_candidate(syntactic_type_only_imported_names, name) {
-                    component_reference_alias(name)
-                } else {
-                    to_safe_identifier(name)
-                };
+            let component_ref = component_reference_alias(
+                summary,
+                options,
+                syntactic_type_only_imported_names,
+                name,
+            );
             let art_source = art_component_source(summary, name);
             if let Some(diagnostics) = diagnostics.as_mut().filter(|_| {
                 !is_self
@@ -182,7 +188,7 @@ impl<'a> GlobalComponentPlan<'a> {
                 crate::virtual_ts::helpers::push_ts_string_literal(ts, name);
                 let end = ts.len();
                 append!(*ts, ": __vize_global_component_{index} }} = {{}} as (");
-                for candidate in [pascal_name.as_str(), camel_name.as_str(), name] {
+                for candidate in registry_keys {
                     crate::virtual_ts::helpers::push_ts_string_literal(ts, candidate);
                     ts.push_str(" extends keyof import('vue').GlobalComponents ? { ");
                     crate::virtual_ts::helpers::push_ts_string_literal(ts, name);
@@ -196,17 +202,44 @@ impl<'a> GlobalComponentPlan<'a> {
                     sub_spans: Vec::new(),
                 });
             }
+            // Only the actual registry-stub branch can admit a registered
+            // slot provider. Retain this authored usage before deduplicating
+            // declarations; self/Art and template-owned dynamic values have
+            // their own owners even when they share a spelling with a key.
+            if !self.legacy_vue2
+                && !is_self
+                && art_source.is_none()
+                && !usage.slots.is_empty()
+                && !crate::virtual_ts::scope::is_owned_dynamic_component_alias(
+                    self.template_ast,
+                    usage,
+                )
+                && !crate::virtual_ts::scope::is_owned_named_dynamic_component(
+                    self.template_ast,
+                    usage,
+                )
+            {
+                self.registry_slots
+                    .insert(usage.start, registry_keys.map(String::from));
+            }
             if !emitted_refs.insert(component_ref.clone()) {
                 continue;
             }
 
             if !has_header {
-                ts.push_str(concat!(
-                    "\n// Global component stubs (vue module augmentations)\n",
-                    "type $GlobalComponent<__K extends PropertyKey, __F extends PropertyKey = __K, __G = import(\"vue\").GlobalComponents, ",
-                    "__C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : any> = unknown extends __C ? any : __C;\n",
-                    "type $GlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;\n",
-                ));
+                ts.push_str("\n// Global component stubs (vue module augmentations)\n");
+                ts.push_str(if self.legacy_vue2 {
+                    concat!(
+                        "type $GlobalComponent<__K extends PropertyKey, __F extends PropertyKey = __K, __G = import(\"vue\").GlobalComponents, ",
+                        "__C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : any> = unknown extends __C ? any : __C;\n",
+                    )
+                } else {
+                    concat!(
+                        "type $GlobalComponent<__K extends string | number | symbol, __F extends string | number | symbol = __K, __L extends string | number | symbol = __F, __G = import(\"vue\").GlobalComponents, ",
+                        "__C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : __L extends keyof __G ? __G[__L] : any> = unknown extends __C ? any : __C;\n",
+                    )
+                });
+                ts.push_str("type $GlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;\n");
                 has_header = true;
             }
 
@@ -223,12 +256,12 @@ impl<'a> GlobalComponentPlan<'a> {
                     "declare const {component_ref}: typeof import({source_literal}).default;\n"
                 );
             } else {
-                append_global_component_stub(
-                    ts,
-                    component_ref.as_str(),
-                    name,
-                    pascal_name.as_str(),
-                );
+                let keys = if self.legacy_vue2 {
+                    [name, pascal_name.as_str(), pascal_name.as_str()]
+                } else {
+                    registry_keys
+                };
+                append_global_component_stub(ts, component_ref.as_str(), keys);
             }
         }
     }
@@ -247,21 +280,20 @@ fn art_component_source<'a>(summary: &'a Croquis, usage_name: &str) -> Option<&'
     (usage_name == authored_name || usage_pascal == authored_pascal).then_some(source)
 }
 
-fn append_global_component_stub(
-    ts: &mut String,
-    component_ref: &str,
-    name: &str,
-    pascal_name: &str,
-) {
-    append!(
-        *ts,
-        "declare const {component_ref}: $GlobalComponent<\"{name}\""
-    );
-    if pascal_name == name {
-        ts.push_str("> & $GlobalComponentFallback;\n");
-    } else {
-        append!(*ts, ", \"{pascal_name}\"> & $GlobalComponentFallback;\n");
+fn append_global_component_stub(ts: &mut String, component_ref: &str, keys: [&str; 3]) {
+    append!(*ts, "declare const {component_ref}: $GlobalComponent<");
+    let mut previous = None;
+    for key in keys {
+        if previous == Some(key) {
+            continue;
+        }
+        if previous.is_some() {
+            ts.push_str(", ");
+        }
+        push_ts_string_literal(ts, key);
+        previous = Some(key);
     }
+    ts.push_str("> & $GlobalComponentFallback;\n");
 }
 
 #[cfg(test)]

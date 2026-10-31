@@ -2327,6 +2327,42 @@
       }
     },
     {
+      "id": "linter/prop-name-casing-options-6097",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "prop-name-casing-options-6097",
+        "files": [
+          {
+            "path": "Probe.vue.txt",
+            "role": "independently-authored-reproduction",
+            "sha256": "39de4482db4f0cc4619373d9fa7717db48877fbb6618626b2f52f4849b04f17b"
+          },
+          {
+            "path": "TemplateOnly.vue.txt",
+            "role": "independently-authored-reproduction",
+            "sha256": "41ebfae66c03bac7a1874842c6fe93134c34c97b2c554fbf71197fa9d4b483fb"
+          },
+          {
+            "path": "cases.json",
+            "role": "pinned-provider-expectations",
+            "sha256": "4b8e2215a31b6e77be3ac15c90c6199ae39096521f4774e61d60c8c5f0020633"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/pug-refusal-10428",
       "state": "active",
       "targets": ["lint"],

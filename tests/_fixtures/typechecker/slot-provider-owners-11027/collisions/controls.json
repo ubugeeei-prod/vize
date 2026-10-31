@@ -1,0 +1,144 @@
+{
+  "version": 1,
+  "authority": "independent-vue-tsc-3.3.13-typescript-6.0.3-vue-3.5.42",
+  "providerLockSha256": "d0302220f62d1525be9a7b79c2fbc55a034e2cdfdfadd59cb554ee3c45bd204d",
+  "sourceQualificationCredit": false,
+  "cases": [
+    {
+      "id": "ordinary-hyphen-first-AB-any",
+      "names": ["A-b", "A_b"],
+      "anyKey": "AB",
+      "typeOnly": false,
+      "sourceSha256": "b9d9a21da4f15012085d9c1dbb121ecec41c806ef1cb375516be1e1deb341b66",
+      "globalsSha256": "93ff41e13a82fa1f914179d53c5f947afd55c36773ada9f28b0c44fcb039c12a",
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 12,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "ordinary-hyphen-first-A_b-any",
+      "names": ["A-b", "A_b"],
+      "anyKey": "A_b",
+      "typeOnly": false,
+      "sourceSha256": "b9d9a21da4f15012085d9c1dbb121ecec41c806ef1cb375516be1e1deb341b66",
+      "globalsSha256": "386a2194f8bae06d93a2e45aa297f1a3f78123f510e50b15c93114cf992b5de2",
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 15,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "ordinary-underscore-first-AB-any",
+      "names": ["A_b", "A-b"],
+      "anyKey": "AB",
+      "typeOnly": false,
+      "sourceSha256": "0f69a56f757a232a13dbc720491f52f6d2a95da5cdd4268defd6baed86b806e4",
+      "globalsSha256": "93ff41e13a82fa1f914179d53c5f947afd55c36773ada9f28b0c44fcb039c12a",
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 15,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "ordinary-underscore-first-A_b-any",
+      "names": ["A_b", "A-b"],
+      "anyKey": "A_b",
+      "typeOnly": false,
+      "sourceSha256": "0f69a56f757a232a13dbc720491f52f6d2a95da5cdd4268defd6baed86b806e4",
+      "globalsSha256": "386a2194f8bae06d93a2e45aa297f1a3f78123f510e50b15c93114cf992b5de2",
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 12,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "type-only-hyphen-first-AB-any",
+      "names": ["A-b", "A_b"],
+      "anyKey": "AB",
+      "typeOnly": true,
+      "sourceSha256": "20b7cc9092beb9df2e39cf6755271359c6b859bbe02a9acf68b77615ee242259",
+      "globalsSha256": "93ff41e13a82fa1f914179d53c5f947afd55c36773ada9f28b0c44fcb039c12a",
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "type-only-hyphen-first-A_b-any",
+      "names": ["A-b", "A_b"],
+      "anyKey": "A_b",
+      "typeOnly": true,
+      "sourceSha256": "20b7cc9092beb9df2e39cf6755271359c6b859bbe02a9acf68b77615ee242259",
+      "globalsSha256": "386a2194f8bae06d93a2e45aa297f1a3f78123f510e50b15c93114cf992b5de2",
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 16,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "type-only-underscore-first-AB-any",
+      "names": ["A_b", "A-b"],
+      "anyKey": "AB",
+      "typeOnly": true,
+      "sourceSha256": "2348df7bbb8baf4ba893a90f12a26d89dc220246379fe583924ca9f73ddea9ae",
+      "globalsSha256": "93ff41e13a82fa1f914179d53c5f947afd55c36773ada9f28b0c44fcb039c12a",
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 16,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "type-only-underscore-first-A_b-any",
+      "names": ["A_b", "A-b"],
+      "anyKey": "A_b",
+      "typeOnly": true,
+      "sourceSha256": "2348df7bbb8baf4ba893a90f12a26d89dc220246379fe583924ca9f73ddea9ae",
+      "globalsSha256": "386a2194f8bae06d93a2e45aa297f1a3f78123f510e50b15c93114cf992b5de2",
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    }
+  ]
+}

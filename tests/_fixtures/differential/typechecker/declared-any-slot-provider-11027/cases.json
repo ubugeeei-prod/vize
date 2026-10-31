@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 11027,
+  "regressionCommit": "be8aa8108652c10b7eb02d963e8862fcae6b542c",
+  "sourceRevision": "be8aa8108652c10b7eb02d963e8862fcae6b542c",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "known",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-known.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "declared-any",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-any.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "error-any",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-error.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unknown",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-unknown.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    },
+    {
+      "id": "unresolved-tag",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-known.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "unresolved.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "repaired",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-known.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "source.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unicode-crlf-any",
+      "inputs": [
+        {
+          "file": "component.ts",
+          "source": "component-any.ts.txt"
+        },
+        {
+          "file": "src/Tiny.vue",
+          "source": "unicode-crlf.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Tiny.vue",
+          "line": 13,
+          "column": 56,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'."
+        }
+      ]
+    }
+  ]
+}

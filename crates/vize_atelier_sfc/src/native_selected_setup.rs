@@ -105,8 +105,10 @@ impl<'a> NativeSelectedSetupSfcDomCompilation<'a> {
 /// Direct normalized Identifier/primitive literal template roots are bounded
 /// reads. One root primitive original For may repeat an attribute-free native
 /// Element with empty/static text or one bare current value-alias interpolation.
+/// A two-alias head requires one bare current key-alias interpolation and emits
+/// both original callback parameters in source order.
 /// Imports, wider TS, compound reads, outer handler accesses and
-/// nested/other-alias-read For families remain
+/// nested/mixed-body For families remain
 /// precise lower/target refusals with no partial module.
 #[must_use]
 pub fn compile_native_selected_setup_sfc_dom<'a>(

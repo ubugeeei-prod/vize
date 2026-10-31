@@ -1,9 +1,22 @@
 import { resolve } from "node:path";
 
-import { parseBudgetMode } from "./typecheck-divergence-budget.mjs";
+import { type BudgetMode, parseBudgetMode } from "./typecheck-divergence-budget.ts";
 
-export function parseArgs(argv, { repoRoot, defaultRegistry }) {
-  const args = {
+interface ReportArgs {
+  budgetMode: BudgetMode;
+  registry: string;
+  reportDir: string | null;
+  shardCount: number;
+  shardIndex: number;
+  vizeBin: string | null;
+  vueTscBin: string | null;
+}
+
+export function parseArgs(
+  argv: readonly string[],
+  { repoRoot, defaultRegistry }: { repoRoot: string; defaultRegistry: string },
+): ReportArgs {
+  const args: ReportArgs = {
     budgetMode: "enforce",
     registry: defaultRegistry,
     reportDir: null,
@@ -14,9 +27,11 @@ export function parseArgs(argv, { repoRoot, defaultRegistry }) {
   };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    const value = () => {
-      if (argv[index + 1] == null) throw new Error(`${arg} requires a value`);
-      return argv[++index];
+    const value = (): string => {
+      const next = argv[index + 1];
+      if (next == null) throw new Error(`${arg} requires a value`);
+      index += 1;
+      return next;
     };
     if (arg === "--budget-mode") args.budgetMode = parseBudgetMode(value());
     else if (arg === "--registry") args.registry = resolve(repoRoot, value());
@@ -35,7 +50,7 @@ export function parseArgs(argv, { repoRoot, defaultRegistry }) {
   return args;
 }
 
-function integer(value, name, minimum) {
+function integer(value: string, name: string, minimum: number): number {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < minimum) {
     throw new Error(`${name} must be an integer >= ${minimum}`);

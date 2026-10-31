@@ -348,6 +348,7 @@
   "vue/v-slot-style.help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
   "vue/prop-name-casing.description": "Enforce a casing for declared prop names",
   "vue/prop-name-casing.message": "Prop \"{name}\" is not in {casing}",
+  "vue/prop-name-casing.help_snake": "Declare props in snake_case; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ myProp: String })\n\n<!-- Good -->\ndefineProps({ my_prop: String })\n```",
   "vue/prop-name-casing.help": "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
   "vue/html-quotes.description": "Enforce quotes style of HTML attributes",
   "vue/html-quotes.message_double": "Expected double quotes but found single quotes",

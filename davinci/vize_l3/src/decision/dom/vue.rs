@@ -21,6 +21,8 @@ pub enum VueReadKind {
     SetupLet,
     /// The current original For callback value in its genuine alias scope.
     ForValue,
+    /// The current original For callback key in its genuine alias scope.
+    ForKey,
 }
 
 /// One read retains the exact original resolver occurrence, including duplicates.

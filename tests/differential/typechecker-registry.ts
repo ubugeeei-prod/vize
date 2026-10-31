@@ -64,6 +64,8 @@ export const TYPECHECKER_TESTS = {
   "content-mapper-vue-generic-11051":
     "content_mapper_vue_generic_11051::content_mapper_vue_generic_preserves_explicit_type_arguments",
   "contextual-prop-anchors-10661": "contextual_prop_anchors_preserve_authored_diagnostics",
+  "declared-any-slot-provider-11027":
+    "fix_history_cases::declared_any_slot_provider_11027::declared_any_slot_providers_preserve_authored_errors_and_intrinsic_controls",
   "declared-prop-names-original": "declared_prop_names_preserve_complete_original_diagnostics",
   "dependency-probe-history-10936": "dependency_probe_histories_preserve_complete_diagnostics",
   "dynamic-component-union-listener-10026":
@@ -191,6 +193,7 @@ export const sourceRevisions = {
   "content-mapper-unknown-options-10218": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
   "content-mapper-vue-generic-11051": "dfc8b0e13c20ea7c8d46e555f70ffd7fe3e89a27",
   "contextual-prop-anchors-10661": "da6d833de40c8a084022d0229beaeec25a92eb41",
+  "declared-any-slot-provider-11027": "be8aa8108652c10b7eb02d963e8862fcae6b542c",
   "declared-prop-names-original": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
   "dependency-probe-history-10936": "1266cd3a014654bbdcf3378500b93447411b26d9",
   "dynamic-component-union-listener-10026": "0aafae7e41f1ac381d07fa9f0154084cc1e6f211",

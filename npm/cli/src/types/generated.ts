@@ -289,6 +289,9 @@ export interface LintRuleOptions {
   "script/custom-event-name-casing"?: {
     casing?: "camelCase" | "kebab-case";
   };
+  "vue/prop-name-casing"?: {
+    casing?: "camelCase" | "snake_case";
+  };
   "vue/no-mutating-props"?: {
     shallowOnly?: boolean;
   };

@@ -71,10 +71,12 @@ fn load() -> Value {
     update
 }
 
+// The new payload certificate authenticates real current physical bytes first;
+// this frozen layout consumes its exact pre-payload projection, not a new package.
 fn physical() -> Vec<String> {
     PATHS
         .iter()
-        .map(|path| fs::read_to_string(support::repository().join(path)).unwrap())
+        .map(|path| super::payload_update::source_before(path))
         .collect()
 }
 
