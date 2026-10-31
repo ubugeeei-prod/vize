@@ -9,8 +9,13 @@ const jsxSource = `const App = () => <div class="greeting">{message}</div>;\nexp
 const jsxVdomCompiled = compileJsxModule("/src/App.jsx", jsxSource, { vapor: false });
 assert.match(
   jsxVdomCompiled.code,
-  /_createElementBlock\("div"/,
-  "VDOM JSX compilation should emit the element block factory",
+  /_createElementVNode\("div", \{ class: "greeting" \}, \[\s+message\s+\]\)/,
+  "VDOM JSX compilation preserves the authored expression as a raw child value",
+);
+assert.doesNotMatch(
+  jsxVdomCompiled.code,
+  /_toDisplayString|_openBlock|_createElementBlock/,
+  "raw JSX child values use ordinary VNodes for normal Vue child diffing",
 );
 assert.deepEqual(
   jsxVdomCompiled.warnings,
@@ -166,9 +171,10 @@ const tsxCompiled = compileJsxModule(
 );
 assert.match(
   tsxCompiled.code,
-  /_createElementBlock\("span"|_createBlock|render/,
-  "TSX compilation should infer the tsx language from the .tsx filename and emit render code",
+  /_createElementVNode\("span", null, \[\s+props\.label\s+\]\)/,
+  "TSX compilation infers its language and retains the complete authored child expression",
 );
+assert.doesNotMatch(tsxCompiled.code, /_toDisplayString|_openBlock|_createElementBlock/);
 
 assert.throws(
   () => compileJsxModule("/src/Broken.jsx", `const Broken = () => <div>{;`, { vapor: false }),
