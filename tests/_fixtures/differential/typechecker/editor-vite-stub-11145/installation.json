@@ -1,0 +1,17 @@
+{
+  "schema": "vize.editor-runtime-installation-ownership",
+  "version": 1,
+  "files": {
+    "package.json": "{ \"name\": \"my-app\", \"private\": true, \"type\": \"module\" }\n",
+    "vite.config.ts": "import { defineConfig } from \"@vizejs/vite-plugin/vite-plus\";\n\nexport default defineConfig({}).withVue({});\n",
+    "src/app.vue": "<script setup lang=\"ts\">\nconst msg = \"hello\";\n</script>\n\n<template>\n  <p>{{ msg }}</p>\n</template>\n"
+  },
+  "sentinels": {
+    "node_modules/.modules.yaml": "layout: isolated\n",
+    "node_modules/.pnpm/retained/node_modules/pkg/index.js": "export const value = 7;\n"
+  },
+  "packageLink": {
+    "alias": "node_modules/pkg",
+    "target": "node_modules/.pnpm/retained/node_modules/pkg"
+  }
+}

@@ -224,3 +224,30 @@ test("a present empty nearest Vite cannot select the otherwise legitimate hoiste
     }
   });
 });
+
+test("source and packed APIs skip Canon's declaration-only Vite stub for project Vite+", async () => {
+  await project(async (root) => {
+    const modules = path.join(root, "node_modules");
+    const stub = path.join(modules, "vite");
+    fs.mkdirSync(stub, { recursive: true });
+    const manifest = '{"name":"vite","types":"client.d.ts"}';
+    const declaration =
+      "interface ImportMeta { readonly env: Record<string, string>; }\nexport {};\n";
+    fs.writeFileSync(path.join(stub, "package.json"), manifest);
+    fs.writeFileSync(path.join(stub, "client.d.ts"), declaration);
+    fs.symlinkSync(
+      path.dirname(require.resolve("vite-plus/package.json")),
+      path.join(modules, "vite-plus"),
+      "junction",
+    );
+    const packed = await import("../dist/config.mjs");
+    for (const load of [loadConfig, packed.loadConfig]) {
+      assert.equal((await load(root))?.formatter.singleQuote, true);
+    }
+    assert.equal(fs.readFileSync(path.join(stub, "package.json"), "utf8"), manifest);
+    assert.equal(fs.readFileSync(path.join(stub, "client.d.ts"), "utf8"), declaration);
+    assert.deepEqual(fs.readdirSync(modules).sort(), ["vite", "vite-plus"]);
+    for (const [name, source] of Object.entries(currentFiles))
+      assert.equal(fs.readFileSync(path.join(root, name), "utf8"), source);
+  }, false);
+});

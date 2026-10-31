@@ -1,0 +1,14 @@
+{
+  "schema": "vize.editor-vite-stub-reproduction",
+  "version": 1,
+  "issue": 11145,
+  "source": "https://github.com/ubugeeei-prod/vize/issues/11145",
+  "reportedVersion": "0.608.0",
+  "files": {
+    "package.json": "{ \"name\": \"my-app\", \"private\": true, \"type\": \"module\" }\n",
+    "vite.config.ts": "import { defineConfig } from \"@vizejs/vite-plugin/vite-plus\";\n\nexport default defineConfig({}).withVue({});\n",
+    "src/app.vue": "<script setup lang=\"ts\">\nconst msg = \"hello\";\n</script>\n\n<template>\n  <p>{{ msg }}</p>\n</template>\n",
+    "node_modules/vite/package.json": "{\n  \"name\": \"vite\",\n  \"types\": \"client.d.ts\"\n}\n",
+    "node_modules/vite/client.d.ts": "interface ImportMetaEnv {\n  readonly [key: string]: string | boolean | undefined;\n}\n\ninterface ImportMeta {\n  readonly env: ImportMetaEnv;\n}\n\nexport {};\n"
+  }
+}

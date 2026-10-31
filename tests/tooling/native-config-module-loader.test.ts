@@ -267,7 +267,7 @@ await test("Vite 7's real esbuild loader bundles the original module rather than
   }
 });
 
-await test("nearest present Vite owns loading while legitimate symlinks and hoisting retain one evaluation", async () => {
+await test("nearest runtime Vite owns loading while declaration-only packages, symlinks and hoisting retain one evaluation", async () => {
   for (const installation of ["empty", "types-only", "broken", "dangling", "symlink", "hoisted"]) {
     await project(async (directory) => {
       const nested = join(directory, "nested");
@@ -299,7 +299,7 @@ await test("nearest present Vite owns loading while legitimate symlinks and hois
           return {vue:{formatter:{printWidth:91}}};
         };export default wrapper;`;
       await writeFile(selected, authored);
-      if (["empty", "types-only", "broken", "dangling"].includes(installation)) {
+      if (["empty", "broken", "dangling"].includes(installation)) {
         await assert.rejects(importConfigModule(selected));
         await assert.rejects(access(counter));
       } else {
