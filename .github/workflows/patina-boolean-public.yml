@@ -51,6 +51,7 @@ jobs:
       - name: Check whole original inputs, reports, provider refusal and process custody
         run: node --test tests/tooling/patina-boolean-public.test.ts
   published:
+    needs: controls
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     name: Original macOS ARM64 Node26 public runtime role
     runs-on: blacksmith-12vcpu-macos-15
