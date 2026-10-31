@@ -54,33 +54,34 @@ const outputs = new Map([
 ]);
 
 // The checked-in virtual-ts exports predate the canonical zero-call policy.
-// Synchronize only this alias; all other public declarations remain byte-exact.
+// Synchronize this alias without replacing unrelated public declarations.
 const slotAlias = "$SlotConstructorWithoutArguments";
 const printer = ts.createPrinter({ removeComments: true });
-async function slotDeclaration(source: string, label: string, exported: boolean) {
+async function slotDeclaration(
+  source: string,
+  label: string,
+  exported: boolean,
+  alias = slotAlias,
+  parameters: readonly string[] = ["C"],
+) {
   const checked = await format("slot-resolver.d.ts", source, { printWidth: 100 });
   assert.deepEqual(checked.errors, [], `${label} must parse`);
   const parsed = ts.createSourceFile(label, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const matches: ts.TypeAliasDeclaration[] = [];
   function visit(node: ts.Node) {
-    if (ts.isTypeAliasDeclaration(node) && node.name.text === slotAlias) matches.push(node);
+    if (ts.isTypeAliasDeclaration(node) && node.name.text === alias) matches.push(node);
     ts.forEachChild(node, visit);
   }
   visit(parsed);
-  assert.equal(matches.length, 1, `${label} must declare exactly one ${slotAlias}`);
+  assert.equal(matches.length, 1, `${label} must declare exactly one ${alias}`);
   const declaration = matches[0]!;
-  assert.equal(declaration.typeParameters?.length, 1, `${label} must retain one type parameter`);
-  assert.equal(declaration.typeParameters?.[0]?.name.text, "C", `${label} must retain C`);
-  assert.equal(
-    declaration.typeParameters?.[0]?.constraint === undefined,
-    true,
-    `${label} must not constrain C`,
-  );
-  assert.equal(
-    declaration.typeParameters?.[0]?.default === undefined,
-    true,
-    `${label} must not default C`,
-  );
+  assert.equal(declaration.typeParameters?.length, parameters.length, `${label} parameter arity`);
+  for (const [index, parameter] of parameters.entries()) {
+    const actual: ts.TypeParameterDeclaration | undefined = declaration.typeParameters?.[index];
+    assert.equal(actual?.name.text, parameter, `${label} must retain ${parameter}`);
+    assert.equal(actual?.constraint, undefined, `${label} must not constrain ${parameter}`);
+    assert.equal(actual?.default, undefined, `${label} must not default ${parameter}`);
+  }
   assert.equal(
     declaration.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword) ??
       false,
@@ -149,6 +150,129 @@ for (const [relativePath, replacement] of await slotPayloadExports(root)) {
       publicSlot.code.trimEnd() +
       replacement.slice(current.declaration.end),
   );
+}
+// Instance needs the complete canonical private dependency closure. Keeping the
+// public selector's old `HasArguments ? P : Z` alone admits unusable any slots.
+const instanceAliases = [
+  ["$SlotContractIsUsable", ["S"], false],
+  ["$SlotContractHasKeys", ["S"], false],
+  ["$SlotConstructorFallback", ["C", "Z", "P"], false],
+  ["$SlotConstructorInstance", ["C", "Z", "P"], true],
+] as const;
+const embeddedSource = readFileSync(
+  path.join(root, helperRoot, "declarations/slot-resolver.d.ts.txt"),
+  "utf8",
+);
+const sharedSource = readFileSync(
+  path.join(root, helperRoot, "declarations/shared-slot-resolver.d.ts.txt"),
+  "utf8",
+);
+const instanceDeclarations = new Map<string, Awaited<ReturnType<typeof slotDeclaration>>>();
+for (const [alias, parameters, exported] of instanceAliases) {
+  const embedded = await slotDeclaration(
+    embeddedSource,
+    `embedded ${alias}`,
+    false,
+    alias,
+    parameters,
+  );
+  const shared = await slotDeclaration(
+    sharedSource,
+    `shared ${alias}`,
+    exported,
+    alias,
+    parameters,
+  );
+  assert.equal(embedded.rhs, shared.rhs, `${alias} canonical embedded/shared policy drifted`);
+  instanceDeclarations.set(alias, shared);
+}
+const instanceBlock = await format(
+  "virtual-ts.d.ts",
+  [...instanceDeclarations.values()]
+    .map(({ declaration, parsed }) => declaration.getText(parsed))
+    .join("\n") + "\n",
+  { printWidth: 100 },
+);
+assert.deepEqual(instanceBlock.errors, [], "public Instance closure must parse");
+const instanceAlias = "$SlotConstructorInstance";
+const instanceParameters = ["C", "Z", "P"];
+const previousInstance = await slotDeclaration(
+  `export type ${instanceAlias}<C, Z, P> = [$SlotConstructorHasArguments<C>] extends [never] ? Z : P;`,
+  "known previous public Instance",
+  true,
+  instanceAlias,
+  instanceParameters,
+);
+function bindingCount(parsed: ts.SourceFile, name: string) {
+  let count = 0;
+  function visit(node: ts.Node) {
+    if (
+      (ts.isTypeAliasDeclaration(node) ||
+        ts.isInterfaceDeclaration(node) ||
+        ts.isClassDeclaration(node) ||
+        ts.isFunctionDeclaration(node) ||
+        ts.isEnumDeclaration(node) ||
+        ts.isModuleDeclaration(node) ||
+        ts.isVariableDeclaration(node) ||
+        ts.isImportSpecifier(node) ||
+        ts.isImportClause(node) ||
+        ts.isNamespaceImport(node)) &&
+      node.name &&
+      ts.isIdentifier(node.name) &&
+      node.name.text === name
+    )
+      count += 1;
+    ts.forEachChild(node, visit);
+  }
+  visit(parsed);
+  return count;
+}
+for (const extension of ["ts", "mts", "cts"]) {
+  const relativePath = `npm/cli/virtual-ts.d.${extension}`;
+  const original = outputs.get(relativePath)!;
+  const current = await slotDeclaration(
+    original,
+    relativePath,
+    true,
+    instanceAlias,
+    instanceParameters,
+  );
+  assert.equal(
+    bindingCount(current.parsed, instanceAlias),
+    1,
+    `${relativePath} duplicate Instance binding`,
+  );
+  const counts = instanceAliases.slice(0, 3).map(([name]) => bindingCount(current.parsed, name));
+  if (counts.every((count) => count === 0)) {
+    assert.equal(
+      current.rhs,
+      previousInstance.rhs,
+      `${relativePath} unknown previous Instance policy`,
+    );
+    outputs.set(
+      relativePath,
+      original.slice(0, current.declaration.getStart(current.parsed)) +
+        instanceBlock.code.trimEnd() +
+        original.slice(current.declaration.end),
+    );
+  } else {
+    assert.deepEqual(counts, [1, 1, 1], `${relativePath} incomplete or duplicate Instance closure`);
+    const declarations = [];
+    for (const [alias, parameters, exported] of instanceAliases) {
+      const actual = await slotDeclaration(original, relativePath, exported, alias, parameters);
+      assert.equal(
+        actual.rhs,
+        instanceDeclarations.get(alias)!.rhs,
+        `${relativePath} ${alias} drifted`,
+      );
+      declarations.push(actual.declaration);
+    }
+    assert.equal(
+      original.slice(declarations[0]!.getStart(current.parsed), declarations[3]!.end),
+      instanceBlock.code.trimEnd(),
+      `${relativePath} Instance closure order or complete body drifted`,
+    );
+  }
 }
 // Refuse every malformed or unknown input before replacing any SDK copy.
 for (const [relativePath, contents] of outputs) {

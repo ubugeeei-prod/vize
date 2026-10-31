@@ -103,9 +103,26 @@ export type $SlotConstructorWithArguments<C> = [$SlotConstructorHasArguments<C>]
 export type $SlotConstructorArgs<C> = C extends new (props: any, ...args: infer A) => any
   ? { [K in keyof A]: any }
   : [];
+type $SlotContractIsUsable<S> =
+  $IsAny<S> extends true ? false : unknown extends S ? false : [S] extends [never] ? false : true;
+type $SlotContractHasKeys<S> = [keyof S] extends [never] ? false : true;
+type $SlotConstructorFallback<C, Z, P> =
+  $SlotContractIsUsable<$SlotHostSlots<C>> extends true
+    ? { $slots: $SlotHostSlots<C> }
+    : Z extends unknown
+      ? P extends unknown
+        ? { $slots: any }
+        : never
+      : never;
 export type $SlotConstructorInstance<C, Z, P> = [$SlotConstructorHasArguments<C>] extends [never]
   ? Z
-  : P;
+  : P extends { $slots: infer S }
+    ? $SlotContractIsUsable<S> extends true
+      ? $SlotContractHasKeys<S> extends true
+        ? P
+        : $SlotConstructorFallback<C, Z, P>
+      : $SlotConstructorFallback<C, Z, P>
+    : $SlotConstructorFallback<C, Z, P>;
 export type $SlotHostSelector<C> = [$DirectSlotConstructor<C>] extends [never]
   ? <S>(instance: unknown, slots: S) => S
   : <I extends { $slots: any }>(instance: I, slots: unknown) => I["$slots"];
