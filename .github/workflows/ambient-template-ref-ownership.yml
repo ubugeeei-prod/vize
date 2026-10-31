@@ -1,0 +1,77 @@
+name: Ambient template ref ownership
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/ambient-template-ref-ownership.yml
+      - crates/vize/tests/content_mapper_tsgo_cli/support.rs
+      - crates/vize/tests/content_mapper_tsgo_cli/support/ambient_template_ref.rs
+      - crates/vize_canon/src/virtual_ts/generator.rs
+      - crates/vize_canon/src/virtual_ts/generator/template_ref_keys.rs
+      - crates/vize_canon/src/virtual_ts/generator/template_ref_keys/**
+      - crates/vize_canon/src/virtual_ts/generator/setup_helpers/declarations.rs
+      - crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options.rs
+      - crates/vize_canon/src/batch/virtual_project/content_mapper_config.rs
+      - crates/vize_canon/src/batch/virtual_project/document.rs
+      - tests/_fixtures/differential/typechecker/ambient-template-ref-10980/**
+      - tools/support/compat/content-mapper/ambient-template-ref-oracle.ts
+permissions: { contents: read }
+concurrency:
+  group: ambient-template-ref-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  qualify:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          {
+            key: ambient-template-ref-ownership,
+            cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}",
+          }
+      - name: Install independent pinned framework and native providers
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          mkdir -p "$RUNNER_TEMP/ambient-ref-provider" "$RUNNER_TEMP/ambient-ref-evidence"
+          npm install --prefix "$RUNNER_TEMP/ambient-ref-provider" --ignore-scripts --no-audit --no-fund --save-exact vue@3.6.0-rc.13 vue-tsc@3.3.13 typescript@6.0.3 @typescript/typescript-linux-x64@7.1.0-beta
+          cp "$RUNNER_TEMP/ambient-ref-provider/package-lock.json" "$RUNNER_TEMP/ambient-ref-evidence/provider-lock.json"
+      - name: Qualify independent framework original and repair packets
+        run: node tools/support/compat/content-mapper/ambient-template-ref-oracle.ts --provider "$RUNNER_TEMP/ambient-ref-provider" --output "$RUNNER_TEMP/ambient-ref-evidence/framework" --source "$SOURCE_SHA"
+      - name: Qualify original native CLI and mapper ownership through repairs
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/ambient-ref-provider/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          VIZE_TEST_CONTENT_MAPPER_VUE: ${{ runner.temp }}/ambient-ref-provider/node_modules/vue
+          VIZE_AMBIENT_TEMPLATE_REF_CAPTURE: ${{ runner.temp }}/ambient-ref-evidence/source
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/ambient-ref-evidence"
+          sha256sum "$VIZE_TEST_CONTENT_MAPPER_TSGO" > "$evidence/native.sha256"
+          "$VIZE_TEST_CONTENT_MAPPER_TSGO" --version > "$evidence/native.version"
+          cargo test --locked --profile ci -p vize --test integration content_mapper_tsgo_cli::support::ambient_template_ref:: -- --nocapture --test-threads=1 > "$evidence/test.stdout" 2> "$evidence/test.stderr"
+          grep -Fxq 'running 1 test' "$evidence/test.stdout"
+          grep -Fq 'test result: ok. 1 passed; 0 failed; 0 ignored;' "$evidence/test.stdout"
+          sha256sum target/ci/vize > "$evidence/source-cli.sha256"
+          printf '%s\n' "$SOURCE_SHA" > "$evidence/source.sha"
+      - name: Preserve complete packets
+        if: always()
+        run: tar --exclude=node_modules -czf "$RUNNER_TEMP/ambient-ref-evidence.tgz" -C "$RUNNER_TEMP" ambient-ref-evidence
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: ambient-template-ref-${{ env.SOURCE_SHA }}
+          path: ${{ runner.temp }}/ambient-ref-evidence.tgz
+          retention-days: 14

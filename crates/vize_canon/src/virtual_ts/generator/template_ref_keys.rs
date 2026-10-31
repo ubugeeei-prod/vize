@@ -34,7 +34,6 @@ mod lines;
 pub(super) struct TemplateRefUsage {
     calls: Vec<InferredCall>,
     helper: String,
-    configured_global: bool,
 }
 
 pub(super) struct TemplateRefKeyChecks<'a> {
@@ -72,6 +71,12 @@ impl TemplateRefUsage {
             statement_start: 0,
         };
         collector.visit_program(program);
+        // An unresolved name can belong to an authored ambient declaration or
+        // be missing entirely. Only explicit Vue-global ownership admits its
+        // specialization; otherwise retain the original call and diagnostics.
+        collector
+            .calls
+            .retain(|call| call.imported || configured_global);
         collector.calls.sort_by_key(|call| call.callee.start);
         Self {
             helper: if collector.calls.is_empty() {
@@ -80,7 +85,6 @@ impl TemplateRefUsage {
                 helper_name(scoping)
             },
             calls: collector.calls,
-            configured_global,
         }
     }
 

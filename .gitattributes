@@ -133,8 +133,8 @@ tests/_fixtures/differential/lint/public-vue-imports-8090/CrlfUnicode.vue.fixtur
 
 # Qualification source records retain the exact reviewed file bytes.
 tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-oracle-importer-update-11172.json -text
-
 # Shared ref-factory qualification consumes these exact pinned checkout bytes.
 tests/_fixtures/differential/typechecker/shared-ref-factory/*.txt -text
 crates/vize_canon/src/virtual_ts/helpers/declarations/ref-instance-factory.d.ts.txt -text
 tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/ref-factory-update-20261031.json -text
+tests/_fixtures/differential/typechecker/ambient-template-ref-10980/*.txt -text
