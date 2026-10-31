@@ -69,10 +69,13 @@ try {
   const oracle = createRequire(workspace.resolve("@nuxt/eslint-config"));
   const Linter = asRecord(oracle("eslint")).Linter as new () => Host;
   const parser: unknown = oracle("vue-eslint-parser");
+  // The declared Nuxt consumer resolves ESLint 10.13.0 in the current lock.
+  // The frozen independent reference used 10.4.1; retain that separate authority.
+  const targetProviders = { eslint: "10.13.0", "vue-eslint-parser": "10.4.1" };
   const providers = Object.fromEntries(
-    ["eslint", "vue-eslint-parser"].map((name) => {
+    Object.entries(targetProviders).map(([name, targetVersion]) => {
       const version = asRecord(oracle(name + "/package.json")).version;
-      assert.equal(version, corpus.provider[name]);
+      assert.equal(version, targetVersion);
       return [name, { version, path: realpathSync(oracle.resolve(name + "/package.json")) }];
     }),
   );
@@ -82,6 +85,7 @@ try {
     receiptSha256: hash(receiptBytes),
     exportSha256: hash(readFileSync(new URL("../dist/eslint.mjs", import.meta.url))),
     providers,
+    referenceProviders: corpus.provider,
     sourceFiles: Object.fromEntries(
       ["eslint.ts", "rule-options.ts", "attribute-options.ts"].map((path) => [
         path,
