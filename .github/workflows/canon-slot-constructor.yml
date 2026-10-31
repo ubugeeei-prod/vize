@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - crates/vize_canon/src/virtual_ts/expressions/generic_props_call.rs
+      - crates/vize_canon/src/virtual_ts/expressions/constructor_instance.rs
+      - crates/vize_canon/src/batch/type_checker/tests/recent_issues/generic_constructor_slots/correlated_props.rs
+      - tests/_fixtures/differential/typechecker/constructor-props-correlation-11023/**
       - crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-resolver.d.ts.txt
       - crates/vize_canon/src/virtual_ts/helpers/declarations/slot-resolver.d.ts.txt
       - crates/vize_canon/src/virtual_ts/helpers/preamble.rs
@@ -133,6 +136,9 @@ jobs:
           [[ -f "$checker" ]]
           export CARGO_TARGET_DIR="$RUNNER_TEMP/slot-head-target"
           VIZE_TEST_REQUIRE_TSGO=1 CORSA_PATH="$checker" cargo test --locked --profile ci-opt -p vize_canon --test zero_argument_slot_constructor_diagnostics zero_argument_slot_constructors_preserve_mapper_and_authored_diagnostics -- --exact --nocapture > "$RUNNER_TEMP/slot-evidence/fix-history.stdout" 2> "$RUNNER_TEMP/slot-evidence/fix-history.stderr"
+          VIZE_TEST_REQUIRE_TSGO=1 CORSA_PATH="$checker" cargo test --locked --profile ci-opt -p vize_canon --lib batch::type_checker::tests::recent_issues::generic_constructor_slots::correlated_props::constructor_props_follow_each_usage_in_both_overload_orders -- --exact --nocapture > "$RUNNER_TEMP/slot-evidence/correlated-props.stdout" 2> "$RUNNER_TEMP/slot-evidence/correlated-props.stderr"
+          grep -Fxq 'running 1 test' "$RUNNER_TEMP/slot-evidence/correlated-props.stdout"
+          grep -Fq 'test result: ok. 1 passed; 0 failed; 0 ignored;' "$RUNNER_TEMP/slot-evidence/correlated-props.stdout"
           python3 - <<'PY'
           import hashlib, json, os, pathlib
           root=pathlib.Path(os.environ['RUNNER_TEMP'])/'slot-evidence'

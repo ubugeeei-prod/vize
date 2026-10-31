@@ -1,0 +1,19 @@
+import type { VNode } from 'vue';
+type Typed<T> = {
+  $props: { value: T };
+  $slots: { default: (props: { item: T }) => VNode[] };
+};
+export declare const LastZero: {
+  new(props: { value: number }): Typed<number>;
+  new(props: { value: string }): Typed<string>;
+  new(): Typed<boolean>;
+};
+export declare const FirstZero: {
+  new(): Typed<boolean>;
+  new(props: { value: string }): Typed<string>;
+  new(props: { value: number }): Typed<number>;
+};
+export declare const Generic: {
+  new<T>(props: { value: T }): Typed<T>;
+  new<T = boolean>(): Typed<T>;
+};
