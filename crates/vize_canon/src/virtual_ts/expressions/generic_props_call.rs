@@ -185,8 +185,9 @@ pub(crate) fn generate_slot_host_binding(
     (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
 ) {
     let mut discarded = Vec::new();
-    let captured = constructor_instance::root_slot_scope(source_context.scopes, usage)
-        .map(|_| constructor_instance::instance_pair_name(binding_name, source_context.scopes));
+    let captured =
+        constructor_instance::root_slot_scope(source_context.scopes, usage, hoist_shared_preamble)
+            .map(|_| constructor_instance::instance_pair_name(binding_name, source_context.scopes));
     if usage.vif_guard.is_some() {
         append!(
             *ts,

@@ -291,7 +291,12 @@ fn generate_usage_declarations(
     } else {
         let is_any =
             crate::virtual_ts::helpers::shared_types::IS_ANY.select(ctx.hoist_shared_preamble);
-        let pair = constructor_instance::root_slot_scope(&summary.scopes, usage).map(|scope| {
+        let pair = constructor_instance::root_slot_scope(
+            &summary.scopes,
+            usage,
+            ctx.hoist_shared_preamble,
+        )
+        .map(|scope| {
             constructor_instance::instance_pair_name(
                 vize_carton::cstr!("__vize_slot_host_{}", scope.id.as_u32()).as_str(),
                 &summary.scopes,
@@ -350,7 +355,13 @@ fn shared_component_contracts(
     let mut groups: FxHashMap<(String, String, bool), SharedComponentContract> =
         FxHashMap::default();
     for &(idx, usage) in usages {
-        if constructor_instance::root_slot_scope(&ctx.summary.scopes, usage).is_some() {
+        if constructor_instance::root_slot_scope(
+            &ctx.summary.scopes,
+            usage,
+            ctx.hoist_shared_preamble,
+        )
+        .is_some()
+        {
             continue;
         }
         let component_ref = ctx.explicit_generics.usage_reference(
@@ -382,7 +393,13 @@ fn shared_component_contracts(
 
     let mut contracts = FxHashMap::default();
     for &(idx, usage) in usages {
-        if constructor_instance::root_slot_scope(&ctx.summary.scopes, usage).is_some() {
+        if constructor_instance::root_slot_scope(
+            &ctx.summary.scopes,
+            usage,
+            ctx.hoist_shared_preamble,
+        )
+        .is_some()
+        {
             continue;
         }
         let component_ref = ctx.explicit_generics.usage_reference(

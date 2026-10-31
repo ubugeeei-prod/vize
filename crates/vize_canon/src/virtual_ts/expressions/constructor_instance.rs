@@ -7,13 +7,16 @@ use crate::virtual_ts::helpers::shared_types;
 use vize_carton::{String, append, cstr};
 use vize_croquis::{Scope, ScopeChain, ScopeData, ScopeKind, analysis::ComponentUsage};
 
-/// The first slice uses only slot witnesses already emitted in the root render
-/// block. A closure-local witness cannot be named by the root props aliases.
+/// The first slice uses project-shared helpers and slot witnesses already
+/// emitted in the root render block. The qualified helper names cannot capture
+/// an authored setup type alias; standalone helpers retain their existing path.
+/// A closure-local witness cannot be named by the root props aliases.
 pub(crate) fn root_slot_scope<'a>(
     scopes: &'a ScopeChain,
     usage: &ComponentUsage,
+    hoisted: bool,
 ) -> Option<&'a Scope> {
-    if usage.vif_guard.is_some() {
+    if !hoisted || usage.vif_guard.is_some() {
         return None;
     }
     let mut parent = Some(usage.scope_id);
