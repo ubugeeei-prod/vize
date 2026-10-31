@@ -1,4 +1,53 @@
-import { describeClassification } from "./typecheck-divergence-budget.ts";
+import { describeClassification, type BudgetArtifact } from "./typecheck-divergence-budget.ts";
+
+type MarkdownSummary = BudgetArtifact["divergence"]["summary"] & {
+  readonly vizeExcludedNonVueCount: number;
+  readonly baselineExcludedNonVueCount: number;
+  readonly baselineExcludedSupportVueCount: number;
+  readonly baselineExcludedProjectCount: number;
+  readonly baselineExcludedExternalCount: number;
+};
+
+interface MarkdownCoverage {
+  readonly vizeVueFileCount: number;
+  readonly baselineVueFileCount: number;
+  readonly sharedVueFileCount: number;
+  readonly missingVueFiles: readonly unknown[];
+  readonly unexpectedVueFiles: readonly unknown[];
+  readonly ignoredDependencyVueFileCount: number;
+  readonly ignoredSupportVueFileCount: number;
+}
+
+interface MarkdownAmbient {
+  readonly verdict: string;
+  readonly unusableReason?: string | null;
+  readonly vueRuntime: readonly {
+    readonly name: string;
+    readonly copies: readonly unknown[];
+  }[];
+}
+
+type MarkdownMutation =
+  | {
+      readonly passed: true;
+      readonly verdict: string;
+      readonly file: string;
+      readonly span: { readonly line: number; readonly column: number };
+    }
+  | { readonly passed?: false | null; readonly unusableReason?: string | null };
+
+export interface TypecheckMarkdownArtifact {
+  readonly project: string;
+  readonly evidence: { readonly commitSha: string };
+  readonly divergence: { readonly summary: MarkdownSummary; readonly sha256: string };
+  readonly baseline: {
+    readonly coverage: MarkdownCoverage;
+    readonly configuration: { readonly errorCount: number };
+    readonly ambient?: MarkdownAmbient | null;
+  };
+  readonly mutationOracle?: MarkdownMutation | null;
+  readonly budget: BudgetArtifact["budget"];
+}
 
 /**
  * The human-readable half of a divergence run, split out of
@@ -15,7 +64,7 @@ import { describeClassification } from "./typecheck-divergence-budget.ts";
  * not carry it: 568 false positives measured against a baseline that never
  * loaded and 39 measured against one that did read identically in this table.
  */
-export function renderMarkdown(artifact) {
+export function renderMarkdown(artifact: TypecheckMarkdownArtifact): string {
   const summary = artifact.divergence.summary;
   const coverage = artifact.baseline.coverage;
   return [
@@ -57,7 +106,7 @@ export function renderMarkdown(artifact) {
  * the number a reviewer of run 31979524200 needed and could not get: two copies
  * of `vue` in the program is why 894 "false negatives" were not Vize's.
  */
-function describeAmbient(ambient) {
+function describeAmbient(ambient: MarkdownAmbient | null | undefined): string {
   if (ambient == null) return "missing";
   const copies = ambient.vueRuntime
     .map((entry) => `${entry.name} ×${entry.copies.length}`)
@@ -68,11 +117,11 @@ function describeAmbient(ambient) {
     : `${ambient.verdict} (${ambient.unusableReason})`;
 }
 
-function describeVerdict(budget) {
+function describeVerdict(budget: BudgetArtifact["budget"]): string {
   return budget.unusableReason == null ? budget.verdict : `unusable (${budget.unusableReason})`;
 }
 
-function describeMutationOracle(mutationOracle) {
+function describeMutationOracle(mutationOracle: MarkdownMutation | null | undefined): string {
   if (mutationOracle?.passed === true) {
     return `${mutationOracle.verdict} (${mutationOracle.file}:${mutationOracle.span.line}:${mutationOracle.span.column})`;
   }

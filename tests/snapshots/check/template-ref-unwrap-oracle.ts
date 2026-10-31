@@ -12,7 +12,7 @@ import {
   symlinkVueTypes,
   type VizeCheckResult,
 } from "../../_helpers/realworld-typecheck.ts";
-import { withoutVizeSourceContext } from "../../../tools/support/compat/fixtures/typecheck-divergence-input.mjs";
+import { withoutVizeSourceContext } from "../../../tools/support/compat/fixtures/typecheck-divergence-input.ts";
 import { testOutputRoot } from "../../tooling/support/lsp/paths.ts";
 
 // Template ref unwrapping is provenance-independent (#4146): the same authored

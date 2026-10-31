@@ -15,7 +15,7 @@ import { runVueTscBaseline } from "./typecheck-baseline-run.mjs";
 import { evaluateVueProgramCoverage } from "./typecheck-baseline-coverage.mjs";
 import { runTypecheckCommand } from "./typecheck-command-runner.mjs";
 import { assertBudgetsPassed, evaluateBudget } from "./typecheck-divergence-budget.ts";
-import { renderMarkdown } from "./typecheck-divergence-markdown.mjs";
+import { renderMarkdown } from "./typecheck-divergence-markdown.ts";
 import {
   createSeededMutationOracle,
   readAndValidateDependencyPreparation,

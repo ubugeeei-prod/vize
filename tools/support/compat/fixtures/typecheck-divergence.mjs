@@ -6,7 +6,7 @@ import {
   collectVueTscDiagnostics,
   invalid,
   normalizePath,
-} from "./typecheck-divergence-input.mjs";
+} from "./typecheck-divergence-input.ts";
 
 /**
  * `documentedDifferences` is the reviewed ledger of expected vize-versus-vue-tsc
