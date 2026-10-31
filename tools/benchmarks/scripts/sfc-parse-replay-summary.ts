@@ -13,7 +13,7 @@ export interface ReplayObservation {
 export interface ReplayReport {
   baseSha: string;
   headSha: string;
-  runner: unknown;
+  runner: string | number;
   settings: typeof SETTINGS;
   observations: ReplayObservation[];
 }
