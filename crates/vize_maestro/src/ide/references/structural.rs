@@ -14,6 +14,8 @@ mod style;
 mod template;
 use oxc_syntax::symbol::SymbolId;
 use tower_lsp::lsp_types::{Location, Position, Range};
+#[cfg(feature = "native")]
+use vize_canon::corsa_bridge::EditorPreparationPhase;
 use vize_canon::sfc_typecheck::{
     SfcTypeCheckOptions, type_check_sfc, type_check_sfc_with_legacy_vue2,
     type_check_sfc_with_options_api,
@@ -54,20 +56,36 @@ fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrenc
     } else {
         type_check_sfc
     };
+    #[cfg(feature = "native")]
+    let generate_phase = EditorPreparationPhase::navigation("structural_generate", 1);
     let projection = generate(&ctx.content, &options);
+    #[cfg(feature = "native")]
+    generate_phase.finish();
     let code = projection.virtual_ts?;
+    #[cfg(feature = "native")]
+    let parse_phase = EditorPreparationPhase::navigation("structural_oxc_parse", 1);
     let allocator = Allocator::default();
     let mut parsed = Parser::new(&allocator, &code, SourceType::ts()).parse();
     if !parsed.diagnostics.is_empty() {
+        #[cfg(feature = "native")]
+        let retry_phase = EditorPreparationPhase::navigation("structural_oxc_tsx_retry", 1);
         parsed = Parser::new(&allocator, &code, SourceType::tsx()).parse();
+        #[cfg(feature = "native")]
+        retry_phase.finish();
     }
+    #[cfg(feature = "native")]
+    parse_phase.finish();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;
     }
+    #[cfg(feature = "native")]
+    let semantic_phase = EditorPreparationPhase::navigation("structural_semantic", 1);
     let semantic = SemanticBuilder::new()
         .with_build_nodes(true)
         .build(&parsed.program)
         .semantic;
+    #[cfg(feature = "native")]
+    semantic_phase.finish();
     let scoping = semantic.scoping();
     let mut occurrences: Vec<_> = semantic
         .nodes()

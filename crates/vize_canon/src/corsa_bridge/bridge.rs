@@ -228,11 +228,19 @@ impl CorsaBridge {
             return Err(CorsaBridgeError::NotInitialized);
         }
 
-        self.submit_ready_async(move |slot| match slot.as_mut() {
-            Some(client) => f(client),
-            None => Err(CorsaBridgeError::ProcessTerminated),
-        })
-        .await
+        let context = super::preparation_trace::Phase::context();
+        let phase = super::preparation_trace::Phase::navigation("navigation.bridge.wait", 1);
+        let result = self
+            .submit_ready_async(move |slot| {
+                let _entered = context.enter();
+                match slot.as_mut() {
+                    Some(client) => f(client),
+                    None => Err(CorsaBridgeError::ProcessTerminated),
+                }
+            })
+            .await;
+        phase.finish();
+        result
     }
 
     /// Run `f` against the session on the worker thread under the configured

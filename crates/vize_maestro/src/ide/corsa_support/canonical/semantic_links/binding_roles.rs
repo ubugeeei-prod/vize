@@ -25,7 +25,15 @@ pub(super) fn is_local_query(
     let mut contains = |uri: &Url, source: &str, offset: usize| {
         cache
             .entry(uri.clone())
-            .or_insert_with(|| setup_binding_ranges(ctx, uri, source))
+            .or_insert_with(|| {
+                let phase = vize_canon::corsa_bridge::EditorPreparationPhase::navigation(
+                    "setup_binding_ranges",
+                    1,
+                );
+                let ranges = setup_binding_ranges(ctx, uri, source);
+                phase.finish();
+                ranges
+            })
             .iter()
             .any(|range| range.contains(&offset))
     };

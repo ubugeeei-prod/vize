@@ -4,7 +4,7 @@ use tower_lsp::lsp_types::{
     DocumentChangeOperation, DocumentChanges, OneOf, PrepareRenameResponse, Range, TextEdit, Url,
     WorkspaceEdit,
 };
-use vize_canon::CorsaBridge;
+use vize_canon::{CorsaBridge, corsa_bridge::EditorPreparationPhase};
 use vize_l0::{FxHashSet, String, cstr};
 
 use crate::ide::{IdeContext, ReferencesService, corsa_support};
@@ -37,7 +37,12 @@ pub(in crate::ide::rename) async fn rename<'a>(
     bridge: Option<&CorsaBridge>,
 ) -> (CanonicalRename, corsa_support::RenameScope<'a>) {
     let mut scope = corsa_support::RenameScope::native(ctx);
-    let answer = match execute::rename_strict_inner(ctx, new_name, bridge, None, &mut scope).await {
+    let answer = match {
+        let phase = EditorPreparationPhase::navigation("rename_canonical", 1);
+        let result = execute::rename_strict_inner(ctx, new_name, bridge, None, &mut scope).await;
+        phase.finish();
+        result
+    } {
         Ok(Answer::Unavailable) | Err(_)
             if crate::ide::template_scope::needs_patterned_navigation(ctx) =>
         {
@@ -76,9 +81,13 @@ pub(super) async fn prepare_strict(
     let Some(bridge) = initialized_bridge(bridge) else {
         return Ok(Answer::Unavailable);
     };
-    let Some(document) = corsa_support::open_canonical_virtual_document_strict(ctx, bridge)
-        .await
-        .map_err(CanonicalFailure::FallbackBridge)?
+    let Some(document) = {
+        let phase = EditorPreparationPhase::navigation("prepare_canonical_open", 1);
+        let result = corsa_support::open_canonical_virtual_document_strict(ctx, bridge).await;
+        phase.finish();
+        result
+    }
+    .map_err(CanonicalFailure::FallbackBridge)?
     else {
         return Ok(Answer::Unavailable);
     };
@@ -94,10 +103,15 @@ pub(super) async fn prepare_strict(
             Answer::Unavailable
         });
     };
-    let response = bridge
-        .prepare_rename(&document.request_uri, line, character)
-        .await
-        .map_err(CanonicalFailure::FallbackBridge)?;
+    let response = {
+        let phase = EditorPreparationPhase::navigation("prepare_native_rpc", 1);
+        let result = bridge
+            .prepare_rename(&document.request_uri, line, character)
+            .await;
+        phase.finish();
+        result
+    }
+    .map_err(CanonicalFailure::FallbackBridge)?;
     let response = response
         .map(|response| {
             serde_json::from_value(response).map_err(|error| CanonicalFailure::InvalidResponse {
