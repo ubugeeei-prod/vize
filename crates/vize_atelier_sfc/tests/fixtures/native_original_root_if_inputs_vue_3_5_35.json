@@ -1,0 +1,165 @@
+{
+  "schema": "vize.native-sfc.original-root-if-inputs",
+  "filename": "OriginalRootIf雪🌸.vue",
+  "compiler": {
+    "version": "3.5.35"
+  },
+  "runtime": {
+    "version": "3.5.35"
+  },
+  "typescript": {
+    "version": "6.0.3"
+  },
+  "qualification": "input-only; no native code, source-map or primary capture credit",
+  "fixtures": [
+    {
+      "id": "mutable-true",
+      "source": "<script setup>let visible=true</script><template><p v-if=\"visible\">fixed</p></template>",
+      "script": "let visible=true",
+      "template": "<p v-if=\"visible\">fixed</p>",
+      "bindings": ["visible"],
+      "immutableBindings": [],
+      "updates": {
+        "visible": false
+      },
+      "ifRuntime": {
+        "tag": "p",
+        "text": "fixed",
+        "initial": true,
+        "updated": false
+      }
+    },
+    {
+      "id": "mutable-false",
+      "source": "<script setup>let visible=false</script><template><i v-if=\"visible\">yes</i></template>",
+      "script": "let visible=false",
+      "template": "<i v-if=\"visible\">yes</i>",
+      "bindings": ["visible"],
+      "immutableBindings": [],
+      "updates": {
+        "visible": true
+      },
+      "ifRuntime": {
+        "tag": "i",
+        "text": "yes",
+        "initial": false,
+        "updated": true
+      }
+    },
+    {
+      "id": "typescript-unicode",
+      "source": "\r\n<script setup lang=\"ts\">var 可視:boolean=true</script>\r\n<template><b v-if=\"可視\">雪🌸</b></template>\r\n",
+      "script": "var 可視:boolean=true",
+      "template": "<b v-if=\"可視\">雪🌸</b>",
+      "bindings": ["可視"],
+      "immutableBindings": [],
+      "updates": {
+        "可視": false
+      },
+      "ifRuntime": {
+        "tag": "b",
+        "text": "雪🌸",
+        "initial": true,
+        "updated": false
+      }
+    },
+    {
+      "id": "constant-true",
+      "source": "<script setup>const visible=true</script><template><span v-if=\"visible\">fixed</span></template>",
+      "script": "const visible=true",
+      "template": "<span v-if=\"visible\">fixed</span>",
+      "bindings": ["visible"],
+      "immutableBindings": ["visible"],
+      "updates": {},
+      "ifRuntime": {
+        "tag": "span",
+        "text": "fixed",
+        "initial": true,
+        "updated": true
+      }
+    },
+    {
+      "id": "constant-false-empty",
+      "source": "<script setup>const visible=false</script><template><p v-if=\"visible\"/></template>",
+      "script": "const visible=false",
+      "template": "<p v-if=\"visible\"/>",
+      "bindings": ["visible"],
+      "immutableBindings": ["visible"],
+      "updates": {},
+      "ifRuntime": {
+        "tag": "p",
+        "text": null,
+        "initial": false,
+        "updated": false
+      }
+    },
+    {
+      "id": "mutable-empty",
+      "source": "<script setup>let visible=true</script><template><div v-if=\"visible\"/></template>",
+      "script": "let visible=true",
+      "template": "<div v-if=\"visible\"/>",
+      "bindings": ["visible"],
+      "immutableBindings": [],
+      "updates": {
+        "visible": false
+      },
+      "ifRuntime": {
+        "tag": "div",
+        "text": null,
+        "initial": true,
+        "updated": false
+      }
+    },
+    {
+      "id": "key-named-binding",
+      "source": "<script setup>let key=false</script><template><span v-if=\"key\">hit</span></template>",
+      "script": "let key=false",
+      "template": "<span v-if=\"key\">hit</span>",
+      "bindings": ["key"],
+      "immutableBindings": [],
+      "updates": {
+        "key": true
+      },
+      "ifRuntime": {
+        "tag": "span",
+        "text": "hit",
+        "initial": false,
+        "updated": true
+      }
+    },
+    {
+      "id": "helper-named-binding",
+      "source": "<script setup>let createCommentVNode=true</script><template><section v-if=\"createCommentVNode\">ok</section></template>",
+      "script": "let createCommentVNode=true",
+      "template": "<section v-if=\"createCommentVNode\">ok</section>",
+      "bindings": ["createCommentVNode"],
+      "immutableBindings": [],
+      "updates": {
+        "createCommentVNode": false
+      },
+      "ifRuntime": {
+        "tag": "section",
+        "text": "ok",
+        "initial": true,
+        "updated": false
+      }
+    },
+    {
+      "id": "commented-unicode",
+      "source": "<script setup>let visible/* from 'vue' 雪🌸 */=false</script><template><i v-if=\"visible\">🌸</i></template>",
+      "script": "let visible/* from 'vue' 雪🌸 */=false",
+      "template": "<i v-if=\"visible\">🌸</i>",
+      "bindings": ["visible"],
+      "immutableBindings": [],
+      "updates": {
+        "visible": true
+      },
+      "ifRuntime": {
+        "tag": "i",
+        "text": "🌸",
+        "initial": false,
+        "updated": true
+      }
+    }
+  ]
+}

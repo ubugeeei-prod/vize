@@ -105,7 +105,7 @@ pub use native_selected::{
 };
 pub use native_selected_setup::{
     NativeSelectedSetupSfcDomCompilation, NativeSelectedSetupSfcDomError,
-    compile_native_selected_setup_sfc_dom,
+    compile_native_selected_setup_sfc_dom, compile_native_selected_setup_sfc_dom_with_mode,
 };
 pub use native_ssr::{
     NativeSsrSfcCompilation, NativeSsrSfcCompileError, NativeSsrSfcCompileOptions,
@@ -122,6 +122,7 @@ pub use types::{
     SfcDescriptor, SfcError, SfcMacroArtifact, SfcParseOptions, SfcScriptBlock, SfcStyleBlock,
     SfcTemplateBlock, StyleCompileOptions, TemplateCompileOptions,
 };
+pub use vize_l4::targets::dom::DomMode as NativeDomMode;
 
 // Re-export key types from dependencies
 pub use vize_atelier_core::CompilerError;

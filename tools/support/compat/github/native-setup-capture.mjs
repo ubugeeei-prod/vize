@@ -1,6 +1,8 @@
 // Actual native setup inputs qualify a source-built affected-PR capture.
 // Prose/ledger replays do not. Protected merge groups remain unconditional.
 export function nativeSetupCaptureRequired(paths) {
+  const rootIfInput =
+    /^(?:davinci\/vize_l2\/src\/(?:lang\/js\/conditional(?:\.rs$|\/)|artifact\/builder\/native_if\.rs$)|crates\/vize_atelier_sfc\/tests\/fixtures\/native_original_root_if_(?:inputs|sfc)_vue_3_5_35\.json$|tests\/tooling\/native-original-root-if-sfc-dom-reference\.test\.ts$|tests\/tooling\/support\/native-original-root-if-sfc-dom-runtime\.ts$)/;
   const staticClassInput =
     /^(?:davinci\/vize_l4\/(?:src\/targets(?:\.rs$|\/static_class\.rs$)|tests\/(?:native_dom_static_class\.rs$|fixtures\/native-dom-static-class-))|crates\/vize_atelier_sfc\/tests\/(?:native_selected_static_class\.rs$|fixtures\/native-selected-static-class-)|tests\/tooling\/native-(?:dom|selected)-static-class-reference\.test\.ts$)/;
   const selectedSfcInput =
@@ -14,6 +16,7 @@ export function nativeSetupCaptureRequired(paths) {
   return paths.some(
     (path) =>
       selectedSfcInput.test(path) ||
+      rootIfInput.test(path) ||
       path === "tests/tooling/support/native-static-class-primary.ts" ||
       staticClassInput.test(path) ||
       selectedSetupInput.test(path) ||

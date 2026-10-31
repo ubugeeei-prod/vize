@@ -19,6 +19,7 @@ struct Frame<'a> {
 }
 
 enum Owner<'a> {
+    NativeIf(&'a crate::expr::JsExpr<'a>),
     OriginalFor(crate::op::OriginalForId),
     Element {
         tag: &'a str,
@@ -36,6 +37,7 @@ mod close;
 mod element;
 pub(crate) use element::ElementAllocation;
 mod factory;
+mod native_if;
 mod original_for;
 mod region;
 mod text;

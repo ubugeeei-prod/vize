@@ -1,17 +1,20 @@
 //! Conditional syntax from checked branch identities and canonical root facts.
 
 use vize_l0::id::NodeId;
-use vize_l2::op::{IfOp, Op};
+use vize_l2::{
+    expr::ExprRef,
+    op::{IfOp, Op},
+};
 use vize_l3::decision::dom::ValueKind;
 use vize_l3::decision::dom::control::{
     ConditionalFallback, DomBlockEligibility, DomConditionalBranch,
 };
 
 use super::write::helper;
-use super::{DomError, DomErrorKind, Emitter, ExpressionWriter, LinkSink};
+use super::{DomError, DomErrorKind, DomMode, Emitter, ExpressionWriter, LinkSink};
 
-impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
-    pub(super) fn conditional(&mut self, id: NodeId, owner: &IfOp<'_>) -> Result<(), DomError> {
+impl<'owner, 'arena, E: ExpressionWriter, L: LinkSink> Emitter<'_, 'owner, 'arena, E, L> {
+    pub(super) fn conditional(&mut self, id: NodeId, owner: &IfOp<'arena>) -> Result<(), DomError> {
         let conditional = self
             .facts
             .conditional(id)
@@ -29,7 +32,11 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         let condition = first
             .owner()
             .condition
-            .filter(|_| first.condition() == Some(ValueKind::ContextDependent))
+            .filter(|expression| {
+                first
+                    .condition()
+                    .is_some_and(|value| self.condition_supported(id, owner, *expression, value))
+            })
             .ok_or_else(|| self.error(id, DomErrorKind::InvalidGrouping))?;
         self.writer.push("(");
         self.expression(id, condition)?;
@@ -47,16 +54,48 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
             self.conditional_branch(id, last)?;
         } else {
             helper(&mut self.writer, self.vocabulary, self.helpers.comment);
-            self.writer.push("(\"v-if\", true)");
+            self.writer.push(match self.mode {
+                DomMode::Development => "(\"v-if\", true)",
+                DomMode::Production => "(\"\", true)",
+            });
         }
         self.writer.deindent();
         Ok(())
     }
 
+    fn condition_supported(
+        &self,
+        id: NodeId,
+        owner: &IfOp<'arena>,
+        expression: ExprRef<'arena>,
+        value: ValueKind,
+    ) -> bool {
+        if value == ValueKind::ContextDependent {
+            return true;
+        }
+        if !matches!(value, ValueKind::FileDependent | ValueKind::LiteralConstant) {
+            return false;
+        }
+        let ExprRef::Js(expression) = expression else {
+            return false;
+        };
+        let Some(row) = self.facts.file_expression(id) else {
+            return false;
+        };
+        let resolution = row.resolution();
+        let Some(record) = resolution.file().native_conditional(id) else {
+            return false;
+        };
+        resolution.node() == id
+            && resolution.scope() == Some(record.scope())
+            && record.accepts(owner)
+            && record.input().matches_expression(expression)
+    }
+
     fn conditional_branch(
         &mut self,
         owner: NodeId,
-        branch: &DomConditionalBranch<'_, '_>,
+        branch: &DomConditionalBranch<'owner, 'arena>,
     ) -> Result<(), DomError> {
         let root = branch.root();
         let fact = self

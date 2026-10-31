@@ -16,10 +16,19 @@ pub(in crate::decision::dom) struct ConditionalFrame<'owner, 'arena> {
     cursor: usize,
     remaining: usize,
     admitted: bool,
+    first_condition: ValueKind,
 }
 
 impl<'owner, 'arena> ConditionalFrame<'owner, 'arena> {
     pub(in crate::decision::dom) fn new(owner: &'owner IfOp<'arena>, admitted: bool) -> Self {
+        Self::with_condition(owner, admitted, ValueKind::ContextDependent)
+    }
+
+    pub(in crate::decision::dom) fn with_condition(
+        owner: &'owner IfOp<'arena>,
+        admitted: bool,
+        first_condition: ValueKind,
+    ) -> Self {
         Self {
             owner,
             rows: Vec::new(),
@@ -29,6 +38,7 @@ impl<'owner, 'arena> ConditionalFrame<'owner, 'arena> {
                 .first()
                 .map_or(0, |branch| branch.region.ops.len()),
             admitted,
+            first_condition,
         }
     }
 
@@ -66,7 +76,7 @@ impl<'owner, 'arena> ConditionalFrame<'owner, 'arena> {
                         .map_err(|_| DecisionBuildError::InvalidTraversal { node: id })?,
                 ),
                 root: id,
-                condition: branch.condition.map(|_| ValueKind::ContextDependent),
+                condition: branch.condition.map(|_| self.first_condition),
                 block: DomBlockEligibility::NativeElement,
             });
         }
