@@ -22,13 +22,22 @@ on:
       - tests/_fixtures/differential/typechecker/manifest.json
       - tests/_fixtures/differential/typechecker/zero-argument-slot-constructor-11013/**
       - tools/benchmarks/scripts/canon-slot-constructor-*.ts
+      - tools/support/compat/content-mapper/constructor-original27-current.ts
+      - tests/tooling/constructor-original27-current.test.ts
       - .github/workflows/canon-slot-constructor.yml
+  workflow_dispatch:
+    inputs:
+      original27_source:
+        description: "Exact 40-hex source commit for an original27 current-source observation (no public qualification)"
+        required: true
+        type: string
 permissions: { contents: read }
 concurrency:
-  group: canon-slot-constructor-${{ github.event.pull_request.number }}
+  group: canon-slot-constructor-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 jobs:
   admission:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -43,6 +52,8 @@ jobs:
         with: { fetch-depth: 2, persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Validate current original27 observer refusal controls
+        run: node --test tests/tooling/constructor-original27-current.test.ts
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
@@ -167,4 +178,75 @@ jobs:
         with:
           name: slot-constructor-${{ github.sha }}
           path: ${{ runner.temp }}/slot-constructor-evidence.tgz
+          retention-days: 14
+
+  original27-current:
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CAPTURE_SOURCE: ${{ inputs.original27_source }}
+      CARGO_BUILD_JOBS: "4"
+      CARGO_INCREMENTAL: "0"
+      GOMAXPROCS: "2"
+      RAYON_NUM_THREADS: "2"
+      NODE_DISABLE_COMPILE_CACHE: "1"
+    steps:
+      - name: Require one literal source commit
+        run: '[[ "$CAPTURE_SOURCE" =~ ^[0-9a-f]{40}$ ]]'
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ inputs.original27_source }}
+          path: original27-source
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: a8ce1ec166a53b380e74dbf7189cc8578c80c676
+          path: original27-fixtures
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /tools/support/compat/content-mapper/constructor-overload-original27.ts
+            /tests/_fixtures/differential/typechecker/constructor-overload-11023-original27/
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Validate observer contracts
+        run: node --test tests/tooling/constructor-original27-current.test.ts
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Build the unchanged selected source and seal its CLI
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/original27-current-evidence"
+          mkdir "$evidence"
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/original27-current-target"
+          (cd original27-source && cargo build --locked --profile ci-opt -p vize --bin vize --message-format=json) > "$evidence/head-cargo.jsonl" 2> "$evidence/head-cargo.stderr"
+          node tools/support/compat/content-mapper/constructor-original27-current.ts build "$GITHUB_WORKSPACE/original27-source" "$CAPTURE_SOURCE" "$GITHUB_WORKSPACE/original27-fixtures" "$RUNNER_TEMP/original27-current-provider" "$evidence"
+      - name: Install the original provider without executing its published Vize
+        run: |
+          set -euo pipefail
+          provider="$RUNNER_TEMP/original27-current-provider"
+          mkdir "$provider"
+          cp original27-fixtures/tests/_fixtures/differential/typechecker/constructor-overload-11023-original27/provider-package.json "$provider/package.json"
+          npm install --prefix "$provider" --ignore-scripts --include=optional --no-audit --no-fund --registry=https://registry.npmjs.org > "$RUNNER_TEMP/original27-current-evidence/provider-install.stdout" 2> "$RUNNER_TEMP/original27-current-evidence/provider-install.stderr"
+      - name: Preserve both independent oracles, every current diagnostic and all27 mapper transactions
+        run: |
+          node tools/support/compat/content-mapper/constructor-original27-current.ts capture "$GITHUB_WORKSPACE/original27-source" "$CAPTURE_SOURCE" "$GITHUB_WORKSPACE/original27-fixtures" "$RUNNER_TEMP/original27-current-provider" "$RUNNER_TEMP/original27-current-evidence"
+      - name: Preserve complete raw failures and original authored inputs
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ -d "$RUNNER_TEMP/original27-current-evidence" ]]; then
+            tar --exclude=source-vize --exclude=node_modules -czf "$RUNNER_TEMP/original27-current.tgz" -C "$RUNNER_TEMP" original27-current-evidence
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: original27-current-${{ inputs.original27_source }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/original27-current.tgz
+          if-no-files-found: error
           retention-days: 14
