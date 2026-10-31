@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { stripVTControlCharacters } from "node:util";
 import { asArray, asRecord, asString, parseJson, type JsonRecord } from "../../json-value.ts";
 import { sha256 } from "../../config/windows_consumer/common.ts";
 
@@ -82,7 +83,7 @@ export function assertOriginalPlain(
   const message = asString(diagnostic.message);
   if (phase !== "original-no-provider")
     assert(asString(original.reportedExpected).includes(message));
-  const view = stdout.toString("utf8").replace(/\u001b\[[0-?]*[ -/]*[@-~]/gu, "");
+  const view = stripVTControlCharacters(stdout.toString("utf8"));
   assert.deepEqual(
     [...view.matchAll(/\[vize:([^\]]+)\]/gu)].map((row) => row[1]),
     [diagnostic.ruleId],
