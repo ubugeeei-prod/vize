@@ -1,4 +1,4 @@
-//! Current original callback value, without script provenance or another walk.
+//! Current original callback aliases, without script provenance or another walk.
 
 use super::super::{DomBuilder, DomExpressionFacts};
 use crate::decision::dom::vue::{VueReadKind, policy::FileReads};
@@ -12,7 +12,7 @@ use vize_l2::{
 impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>
 {
-    pub(in crate::decision::dom::build) fn for_value(
+    pub(in crate::decision::dom::build) fn for_alias(
         &self,
         resolution: FileResolution<'owner, 'arena>,
         expression: &JsExpr<'arena>,
@@ -41,16 +41,39 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             return None;
         }
         let row = self.facts.file_for_heads.get(*origin)?;
-        let expected = row.resolution().value_declaration();
         let head = row.head();
-        let alias = head.value()?;
+        let value = head.value()?;
+        let (expected, alias, canonical, role, kind) = if binding.id() == value.id() {
+            let [canonical, ..] = row.scope_facts().bindings.as_slice() else {
+                return None;
+            };
+            (
+                row.resolution().value_declaration(),
+                value,
+                canonical,
+                ForAliasRole::Value,
+                VueReadKind::ForValue,
+            )
+        } else {
+            let [_, canonical] = row.scope_facts().bindings.as_slice() else {
+                return None;
+            };
+            (
+                row.resolution().key_declaration()?,
+                head.key()?,
+                canonical,
+                ForAliasRole::Key,
+                VueReadKind::ForKey,
+            )
+        };
         let scope = head.scope()?;
         let identifier = expression.ast.get_identifier_reference()?;
         if !core::ptr::eq(resolution.file(), file)
             || !core::ptr::eq(binding.file(), file)
             || !row.accepts_original(original)
             || resolution.scope() != Some(scope)
-            || expected.fact().role() != ForAliasRole::Value
+            || expected.fact().role() != role
+            || !super::canonical_alias(canonical, &expected)
             || binding.id() != alias.id()
             || !binding.same_owner(alias)
             || occurrence.binding != binding.id()
@@ -66,9 +89,12 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         {
             return None;
         }
-        Some(VueReadKind::ForValue)
+        Some(kind)
     }
 }
+
+#[cfg(test)]
+mod key_tests;
 
 #[cfg(test)]
 mod tests {
@@ -164,20 +190,20 @@ mod tests {
             .unwrap();
         builder.enter(*body_node, body, None, &mut None).unwrap();
         assert_eq!(
-            builder.for_value(resolution, expression, occurrence, binding),
+            builder.for_alias(resolution, expression, occurrence, binding),
             Some(VueReadKind::ForValue)
         );
         assert_eq!(
-            builder.for_value(foreign_resolution, expression, occurrence, binding),
+            builder.for_alias(foreign_resolution, expression, occurrence, binding),
             None
         );
         assert_eq!(
-            builder.for_value(resolution, expression, occurrence, foreign_binding),
+            builder.for_alias(resolution, expression, occurrence, foreign_binding),
             None
         );
         let copied = *occurrence;
         assert_eq!(
-            builder.for_value(resolution, expression, &copied, binding),
+            builder.for_alias(resolution, expression, &copied, binding),
             None
         );
         let neutral = JsExpr {

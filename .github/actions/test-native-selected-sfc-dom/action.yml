@@ -91,6 +91,29 @@ runs:
         vp node --test tests/tooling/native-original-for-value-sfc-dom-reference.test.ts
         test -s "$VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_CAPTURE"
         test -s "$VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_RUNTIME_CAPTURE"
+    - name: Capture new original For key components and execute both primary runtime modes
+      shell: bash
+      env:
+        VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_CAPTURE: ${{ runner.temp }}/native-original-for-key-sfc-dom-capture.json
+        VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_REQUIRE_CAPTURE: "1"
+        VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_PRIMARY_CAPTURE: ${{ runner.temp }}/native-original-for-key-sfc-dom-primary
+        VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-original-for-key-sfc-dom-runtime
+      run: |
+        rust_status=0
+        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_for_key::nine_whole_original_key_sources_capture_real_bindings_and_maps -- --exact --nocapture || rust_status=$?
+        development_status=0
+        NODE_ENV=development vp node --test tests/tooling/native-original-for-key-sfc-dom-reference.test.ts || development_status=$?
+        production_status=0
+        NODE_ENV=production vp node --test tests/tooling/native-original-for-key-sfc-dom-reference.test.ts || production_status=$?
+        printf '{"rust":%s,"development":%s,"production":%s}\n' "$rust_status" "$development_status" "$production_status" > "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_CAPTURE}.statuses.json"
+        test "$rust_status" -eq 0
+        test "$development_status" -eq 0
+        test "$production_status" -eq 0
+        test -s "$VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_CAPTURE"
+        test -s "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_PRIMARY_CAPTURE}.development.json"
+        test -s "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_PRIMARY_CAPTURE}.production.json"
+        test -s "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_RUNTIME_CAPTURE}.development.json"
+        test -s "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_RUNTIME_CAPTURE}.production.json"
     - name: Capture and qualify original constant For components in both runtime modes
       shell: bash
       env:
@@ -140,6 +163,10 @@ runs:
           ${{ runner.temp }}/native-original-for-sfc-dom-runtime.json
           ${{ runner.temp }}/native-original-for-value-sfc-dom-capture.json
           ${{ runner.temp }}/native-original-for-value-sfc-dom-runtime.json
+          ${{ runner.temp }}/native-original-for-key-sfc-dom-capture.json
+          ${{ runner.temp }}/native-original-for-key-sfc-dom-capture.json.statuses.json
+          ${{ runner.temp }}/native-original-for-key-sfc-dom-primary.*.json
+          ${{ runner.temp }}/native-original-for-key-sfc-dom-runtime.*.json
           ${{ runner.temp }}/native-original-for-constant-sfc-dom-capture.json
           ${{ runner.temp }}/native-original-for-constant-sfc-dom-unqualified-attempts.json
           ${{ runner.temp }}/native-original-for-constant-sfc-dom-unqualified-attempts.json.statuses.json

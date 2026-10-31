@@ -25,7 +25,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             _ => return false,
         };
         let span = row.original().span;
-        if !self.frames.is_empty() || self.root_count != 1 || row.resolution().key().is_some() {
+        if !self.frames.is_empty() || self.root_count != 1 {
             self.reject(node, span, DomUnsupported::ForShape);
             return false;
         }
@@ -50,6 +50,14 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         if source.get(authored.start as usize..authored.end as usize) != Some(alias.fact().name()) {
             self.reject(node, authored, DomUnsupported::ForShape);
             return false;
+        }
+        if let Some(key) = row.resolution().key_declaration() {
+            let authored = key.authored_span();
+            if source.get(authored.start as usize..authored.end as usize) != Some(key.fact().name())
+            {
+                self.reject(node, authored, DomUnsupported::ForShape);
+                return false;
+            }
         }
         // Pinned transform order precedes the existing carrier's closure.
         self.demand(DomDependency::CollectionIteration);
@@ -89,7 +97,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
                 })
             }
             Op::Text(_) if !carrier => false,
-            // The original interpolation must still pass the same-scope value
+            // The original interpolation must still pass the same-scope alias
             // receipt and single-node closure below; this grants no outer read.
             Op::Interpolation(_) if !carrier && self.frames.len() == 2 => false,
             _ => {
@@ -110,6 +118,16 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         let stable = self.facts.file_for_heads.get(node).is_some_and(|row| {
             row.collection_read().map(|read| read.kind) == Some(VueReadKind::SetupConst)
         });
+        let key = self
+            .facts
+            .file_for_heads
+            .get(node)
+            .is_some_and(|row| row.resolution().key_declaration().is_some());
+        let kind = if key {
+            VueReadKind::ForKey
+        } else {
+            VueReadKind::ForValue
+        };
         // The direct Element already closed on this same walk; these are
         // existing table lookups, never another body or child traversal.
         let valid = match frame.children.as_slice() {
@@ -117,12 +135,12 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
                 fact.block_eligible != stable
                     && matches!(fact.op(), Op::Element(element) if element.attributes.is_empty())
                     && match &fact.children {
-                        DomChildren::Empty => true,
-                        DomChildren::Text(text) if !text.dynamic => true,
+                        DomChildren::Empty => !key,
+                        DomChildren::Text(text) if !text.dynamic => !key,
                         DomChildren::Text(text) => match text.nodes.as_slice() {
-                            [node] => self.facts.vue_expressions.get(*node).is_some_and(|row| {
-                                matches!(row.reads(), [read] if read.kind() == VueReadKind::ForValue)
-                            }),
+                            [node] => self.facts.vue_expressions.get(*node).is_some_and(
+                                |row| matches!(row.reads(), [read] if read.kind() == kind),
+                            ),
                             _ => false,
                         },
                         DomChildren::Array(_) => false,
@@ -135,7 +153,11 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             self.reject(
                 node,
                 NodeRef::Op(frame.node.op).span(),
-                DomUnsupported::ForBody,
+                if key {
+                    DomUnsupported::ForShape
+                } else {
+                    DomUnsupported::ForBody
+                },
             );
         }
     }
