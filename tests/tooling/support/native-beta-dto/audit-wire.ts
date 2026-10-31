@@ -4,12 +4,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { requireCandidateStableStderr } from "./stable-watcher-boundary.ts";
 import { verifyHistoricalWatcherRelations } from "./stable-watcher-late-root.ts";
-import {
-  attachedOwners,
-  verifyAfterAttachedStorage,
-  verifyBetaAttachedRoute,
-  verifyObserverDependencies,
-} from "./beta-attached-route.ts";
+import { attachedOwners, verifyObserverDependencies } from "./beta-attached-route.ts";
+import { verifyAfterLogicalRevision } from "./logical-revision.ts";
+import { verifyBetaLogicalRoute } from "./logical-attached-route.ts";
 import type { Packet, Syscall, StreamPair, Provider, Source, Receipt } from "./audit-wire-types.ts";
 import {
   readNativeTrace,
@@ -306,8 +303,8 @@ assert.equal(
 assert.equal(receipts[0].apiAttached, true, "The explicit owned scope must retain its API wire");
 if (source.role === "after")
   save(
-    "attached-storage-authority.json",
-    verifyAfterAttachedStorage(
+    "attached-logical-revision.json",
+    verifyAfterLogicalRevision(
       attachedOwners(receipts),
       watcherContext(),
       process.env.VIZE_NATIVE_DTO_SOURCE_SHA!,
@@ -323,7 +320,7 @@ if (provider.version === "7.1.0-beta") {
   else
     save(
       "beta-attached-semantic-route.json",
-      verifyBetaAttachedRoute(
+      verifyBetaLogicalRoute(
         attachedOwners(receipts),
         watcherContext(),
         process.env.VIZE_NATIVE_DTO_SOURCE_SHA!,

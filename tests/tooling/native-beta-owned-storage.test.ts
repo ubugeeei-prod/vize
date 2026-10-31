@@ -72,7 +72,7 @@ function fixture() {
 const verify = (value: ReturnType<typeof fixture>) =>
   verifyAfterAttachedStorage(value.owners, value.context, value.source, value.attached);
 
-test("source getter, physical files and exact generated config bind the current private mirror", () => {
+test("historical physical contract retains its source getter, exact files and generated config", () => {
   const value = fixture(),
     proof = verify(value);
   assert.equal(proof.materializedRoot, value.root);

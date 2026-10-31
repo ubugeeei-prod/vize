@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { isDeepStrictEqual } from "node:util";
-import { verifyNativeRelations, type WatcherContext } from "./stable-watcher-boundary.ts";
+import { pathToFileURL } from "node:url";
+import type { WatcherContext } from "./stable-watcher-boundary.ts";
+import { verifyBetaSemanticRoute, semanticMethods } from "./semantic-route.ts";
 import type { Receipt } from "./audit-wire-types.ts";
 import { verifyAttachedConfigurationMembership } from "./configuration-membership.ts";
 
@@ -15,28 +15,12 @@ export interface AttachedOwner {
   apiClient: readonly unknown[];
   apiServer: readonly unknown[];
 }
-const configurationMethods = new Set([
-  "initialize",
-  "parseConfigFile",
-  "createSnapshot",
-  "updateSnapshot",
-  "describeCapabilities",
-  "release",
-]);
-const semanticMethods = [
-  "textDocument/diagnostic",
-  "textDocument/hover",
-  "textDocument/references",
-  "textDocument/definition",
-  "textDocument/completion",
-  "textDocument/rename",
-];
 export const storageObserverPath =
   "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs";
 export const storageObserverSha256 =
-  "2332c307b0406c2dfaac421a1b4293321a0d6b71496aaf69382288622b96ac6d";
+  "e760076f8111d8d20c6e35574b79c4da01e2c6d96c7b068b35de82d9bb0c2804";
 export const commonObserverSha256 =
-  "f9fe37e13f4a566cc01daadfc48ebb96b1842d6f3215a4020312af41bcbb97e1";
+  "ef58d79d4bbac2ea3c7752c00ff1cb62f260664ecc0c481060ed0f65b411cc30";
 const storageScope =
   "source getter and materialized file reads before close; no root inferred from observed RPC";
 const mainText =
@@ -263,37 +247,6 @@ function id(value: unknown) {
   );
   return `${typeof value}:${value}`;
 }
-function canonical(value: unknown): string {
-  if (Array.isArray(value)) return "[" + value.map(canonical).join(",") + "]";
-  if (value !== null && typeof value === "object")
-    return (
-      "{" +
-      Object.entries(value)
-        .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
-        .map(([key, field]) => JSON.stringify(key) + ":" + canonical(field))
-        .join(",") +
-      "}"
-    );
-  assert.ok(
-    value === null ||
-      typeof value === "string" ||
-      typeof value === "boolean" ||
-      (typeof value === "number" && Number.isFinite(value)),
-  );
-  return JSON.stringify(value);
-}
-function sameCompletion(actual: unknown, expected: unknown): boolean {
-  const left = object(actual),
-    right = object(expected);
-  assert.ok(Array.isArray(left.items) && Array.isArray(right.items));
-  // Only Go's top-level item order varies. Keep every item field, nested array
-  // order, list metadata and duplicate count; retained raw packets stay intact.
-  return isDeepStrictEqual(
-    { ...left, items: left.items.map(canonical).sort() },
-    { ...right, items: right.items.map(canonical).sort() },
-  );
-}
-
 /** Configuration attachments do not attest which transport served semantics. */
 export function verifyBetaAttachedRoute(
   owners: readonly AttachedOwner[],
@@ -316,148 +269,15 @@ export function verifyBetaAttachedRoute(
     path.posix.isAbsolute(attachedRoot) && path.posix.normalize(attachedRoot) === attachedRoot,
   );
   const storage = verifyAfterAttachedStorage(owners, context, expectedSource, attachedValue);
-  assert.equal(storage.authoredRoot, attachedRoot);
-  const phases = sourceRows.map(object);
-  assert.deepEqual(
-    phases.map((row) => row.phase),
-    ["valid", "dependency-error", "dependency-repair", "dependency-close"],
-  );
-  for (const row of phases) {
-    assert.equal(row.apiEligible, false);
-    assert.equal(object(row.nativePull).kind, "full");
-    assert.deepEqual(object(row.selected).complete, object(row.nativePull).items);
-  }
-  const mainUris = new Set([
-    pathToFileURL(attachedRoot + "/main.ts").href,
-    pathToFileURL(storage.materializedRoot + "/main.ts").href,
-  ]);
-  const ownerIds = owners.map((owner) => owner.nativeOwner);
-  assert.ok(
-    ownerIds.length > 0 && ownerIds.every((owner) => Number.isSafeInteger(owner) && owner > 0),
-  );
-  assert.equal(new Set(ownerIds).size, ownerIds.length);
-  const evidence = owners.map((owner) => {
-    assert.equal(verifyNativeRelations(owner.client, owner.server, context), null);
-    assert.equal(verifyNativeRelations(owner.apiClient, owner.apiServer, context), null);
-    const apiRequests = owner.apiClient.map(object).filter((row) => "id" in row && "method" in row);
-    const configurationMembership = verifyAttachedConfigurationMembership(
-      owner,
-      context,
-      expectedSource,
-      storage,
-      attachedValue,
-    );
-    for (const request of apiRequests) {
-      assert.equal(typeof request.method, "string");
-      assert.ok(
-        configurationMethods.has(request.method as string) ||
-          configurationMembership.some((row) => row.request === request),
-        "attached beta API may only configure and own snapshots",
-      );
-    }
-    const replies = new Map(
-      owner.server
-        .map(object)
-        .filter((row) => "id" in row && !("method" in row))
-        .map((row) => [id(row.id), row]),
-    );
-    const calls = owner.client.map(object).filter((row) => {
-      if (!("method" in row)) return false;
-      assert.ok(typeof row.method === "string");
-      return semanticMethods.includes(row.method);
-    });
-    const packets = calls.map((request) => {
-      const uri = object(object(request.params).textDocument).uri;
-      assert.equal(typeof uri, "string");
-      const filename = fileURLToPath(uri as string);
-      assert.equal(pathToFileURL(filename).href, uri);
-      assert.ok(
-        storage.documentUris.includes(uri as string),
-        "semantic request belongs to another project",
-      );
-      const response = replies.get(id(request.id));
-      assert.ok(
-        response && "result" in response && !("error" in response),
-        "whole successful semantic LSP reply required",
-      );
-      return { request, response, uri };
-    });
-    const main = packets.filter((packet) => mainUris.has(packet.uri as string));
-    const counts = Object.fromEntries(
-      semanticMethods.map((method) => [
-        method,
-        main.filter((packet) => packet.request.method === method).length,
-      ]),
-    );
-    const complete = semanticMethods.every(
-      (method) => counts[method]! >= phases.length * (method === "textDocument/diagnostic" ? 3 : 2),
-    );
-    if (complete) {
-      const order = [
-        semanticMethods[0],
-        semanticMethods[0],
-        semanticMethods[0],
-        ...semanticMethods.slice(1).flatMap((method) => [method, method]),
-      ];
-      assert.equal(
-        main.length,
-        phases.length * order.length,
-        "complete distinct phase vectors required",
-      );
-      for (const [phaseIndex, phase] of phases.entries()) {
-        const packets = main.slice(phaseIndex * order.length, (phaseIndex + 1) * order.length);
-        assert.deepEqual(
-          packets.map((packet) => packet.request.method),
-          order,
-          "raw semantic phase ordering differs",
-        );
-        const expected = [
-          phase.nativePull,
-          phase.nativePull,
-          phase.nativePull,
-          phase.hover,
-          phase.hover,
-          phase.references,
-          phase.directReferences,
-          phase.definition,
-          phase.directDefinition,
-          phase.completion,
-          phase.directCompletion,
-          object(phase.rename).Ok,
-          phase.directRename,
-        ];
-        for (const [index, value] of expected.entries()) {
-          assert.notEqual(value, undefined, "complete retained source phase output required");
-          assert.ok(
-            order[index] === "textDocument/completion"
-              ? sameCompletion(packets[index]!.response.result, value)
-              : isDeepStrictEqual(packets[index]!.response.result, value),
-            `whole raw semantic result differs for phase ${phaseIndex}, query ${index}`,
-          );
-        }
-      }
-    }
-    return {
-      nativeOwner: owner.nativeOwner,
-      apiRequests,
-      apiResponses: owner.apiServer,
-      configurationMembership,
-      semanticPackets: packets,
-      counts,
-      complete,
-    };
-  });
-  assert.ok(
-    evidence.some((owner) => owner.complete),
-    "one native owner must serve all four phases through complete LSP query pairs",
-  );
-  return {
-    schema: "vize.nativeBetaAttached.semanticRoute.v1",
+  return verifyBetaSemanticRoute(
+    owners,
     context,
-    sourcePhases: sourceRows,
+    expectedSource,
+    attachedRoot,
+    sourceRows,
     storage,
-    owners: evidence,
-    scope:
-      "Complete semantic LSP pairs and configuration-only API pairs; an API attachment is not semantic-route evidence.",
-  };
+    storage.materializedRoot,
+    (owner) =>
+      verifyAttachedConfigurationMembership(owner, context, expectedSource, storage, attachedValue),
+  );
 }

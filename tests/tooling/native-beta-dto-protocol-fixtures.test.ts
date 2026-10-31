@@ -6,6 +6,7 @@ import { test } from "node:test";
 import {
   NATIVE_BETA_DTO_PROTOCOL_ID,
   nativeBetaDtoProducerCustody,
+  nativeBetaDtoObserverBoundary,
   nativeBetaDtoProtocolSource,
   newNativeBetaDtoProtocolCases,
 } from "../../tools/support/compat/github/native-beta-dto-fixtures.ts";
@@ -27,12 +28,18 @@ type MutationInput = {
   producerFiles: { sha256: string }[];
 };
 const before = "13fa41356d075047a229f580014b637d3bbeb57f";
+const candidate = "ce77ac02d1f611b3dd935cee983662ea63df7cb1";
+const historicalProduction = new Set(nativeBetaDtoObserverBoundary().production);
 const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 function read(side: "base" | "head", path: string): Buffer | null {
   try {
-    return side === "head"
+    // This synthetic initial registration consumes its frozen source-pair actor.
+    // Current producer/observer controls still read the actual working-tree bytes.
+    return side === "head" && !historicalProduction.has(path)
       ? fs.readFileSync(path)
-      : execFileSync("git", ["show", `${before}:${path}`], { stdio: ["ignore", "pipe", "ignore"] });
+      : execFileSync("git", ["show", `${side === "head" ? candidate : before}:${path}`], {
+          stdio: ["ignore", "pipe", "ignore"],
+        });
   } catch {
     return null;
   }
@@ -48,6 +55,12 @@ function validate(
 }
 void test("one closed DTO registration consumes actual ABI and four-role authority outside batch rates", () => {
   assert.deepEqual(validate(), [NATIVE_BETA_DTO_PROTOCOL_ID]);
+  const changed = "crates/vize_canon/src/lsp_client/session/capabilities.rs";
+  assert.notDeepEqual(fs.readFileSync(changed), read("head", changed));
+  assert.throws(
+    () => validate([row], [], { [changed]: fs.readFileSync(changed) }),
+    "today's changed ABI source cannot inherit the historical registration",
+  );
   const loaded = loadTypecheckerManifest(manifestPath);
   assert.equal(
     loaded.cases.length,
@@ -150,14 +163,14 @@ void test("typed producers retain historical bytes and only the exact registered
     const selected = /\/(?:prepare-role|audit-wire)\.ts$/u.test(entry.currentPath);
     assert.equal(
       entry.currentStorageRegistration,
-      selected ? "after-source-selected-owned-overlay-storage" : null,
+      selected ? "after-source-selected-logical-editor-revision" : null,
     );
     assert.deepEqual(
       entry.currentStorageObserverDependency,
       selected
         ? {
             path: storage,
-            sha256: "2332c307b0406c2dfaac421a1b4293321a0d6b71496aaf69382288622b96ac6d",
+            sha256: "e760076f8111d8d20c6e35574b79c4da01e2c6d96c7b068b35de82d9bb0c2804",
           }
         : null,
     );
@@ -167,7 +180,7 @@ void test("typed producers retain historical bytes and only the exact registered
         ? {
             path: "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
             historicalSha256: "26eb21864007e6011c69d0a95e1be173fd586605a87400bdc3aacecb5cb31dc6",
-            currentSha256: "f9fe37e13f4a566cc01daadfc48ebb96b1842d6f3215a4020312af41bcbb97e1",
+            currentSha256: "ef58d79d4bbac2ea3c7752c00ff1cb62f260664ecc0c481060ed0f65b411cc30",
           }
         : null,
     );
@@ -220,6 +233,10 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr-unavailable.ts",
     "tests/tooling/support/native-beta-dto/configuration-membership.ts",
+    "tests/tooling/support/native-beta-dto/semantic-route.ts",
+    "tests/tooling/support/native-beta-dto/logical-revision.ts",
+    "tests/tooling/support/native-beta-dto/logical-attached-route.ts",
+    "tools/support/compat/github/native-beta-dto-current-custody.ts",
     "tests/tooling/support/native-beta-dto/historical-root-watch-warning.ts",
     "tests/tooling/support/native-beta-dto/role-disposition.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
@@ -263,6 +280,10 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr-unavailable.ts",
     "tests/tooling/support/native-beta-dto/configuration-membership.ts",
+    "tests/tooling/support/native-beta-dto/semantic-route.ts",
+    "tests/tooling/support/native-beta-dto/logical-revision.ts",
+    "tests/tooling/support/native-beta-dto/logical-attached-route.ts",
+    "tools/support/compat/github/native-beta-dto-current-custody.ts",
     "tests/tooling/support/native-beta-dto/historical-root-watch-warning.ts",
     "tests/tooling/support/native-beta-dto/role-disposition.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",

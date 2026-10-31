@@ -1,6 +1,9 @@
 // One closed API/SourceFile ABI registration, outside authored-language rates.
 import { createHash } from "node:crypto";
 import { stripTypeScriptTypes } from "node:module";
+import { watcherSuccessor } from "./native-beta-dto-current-custody.ts";
+const currentAuthorityPath = "tools/support/compat/github/native-beta-dto-current-custody.ts";
+const currentAuthoritySha256 = "7e5a763c7683ec42b07d6689140b6bc1f4d707c6250a3956a38d2985dab0682e";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";
@@ -85,65 +88,7 @@ const runtime = (source: Buffer) =>
   stripTypeScriptTypes(source.toString("utf8"), { mode: "transform" });
 // One explicit current observer successor. This does not rewrite the original
 // producer identity or equate the distinct root and SDK watcher registrations.
-const watcherSuccessor = {
-  storageId: "after-source-selected-owned-overlay-storage",
-  observerHistoricalSha256: "26eb21864007e6011c69d0a95e1be173fd586605a87400bdc3aacecb5cb31dc6",
-  observerCurrentSha256: "f9fe37e13f4a566cc01daadfc48ebb96b1842d6f3215a4020312af41bcbb97e1",
-  storageObserverSha256: "2332c307b0406c2dfaac421a1b4293321a0d6b71496aaf69382288622b96ac6d",
-  prepareRuntimeSha256: "2af3d85b08c06b6ed3bd070c291634c35e6268b1ffa1b3c61f7091a00d673357",
-  id: "before-stable-post-shutdown-observation-41099824102",
-  splitLogId: "before-stable-split-watch-log-41152849787",
-  terminalId: "before-stable-terminal-stderr-41156819864",
-  unavailableTerminalId: "before-stable-unavailable-terminal-stderr-41208964081",
-  unavailableTerminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr-unavailable.ts",
-  unavailableTerminalSha256: "602e3a115036b6f0b80b68d6aaf670d4774bb1983937c152181deacc81beb45f",
-  unavailableTerminalRuntimeSha256:
-    "e1cde30655257ec8dbaa879e6b5db63a6fd09586fd948aa96ea5b9a187692866",
-  mixedEofId: "before-stable-unproven-eof-return-41171790405",
-  lateRootId: "before-stable-late-root-program-41176048826",
-  lateRootPath: "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
-  lateRootSha256: "54f9dc3a48b041f12e2218964757ae6ef10fdcbcbbd32e07374a6c91708a8942",
-  lateRootRuntimeSha256: "c799fb044a7ba6d216ae5911f87da57cb19c7645448547148c2f6f3dcd0f4580",
-  timingPath: "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
-  timingSha256: "c023dcf8b0e937a01d224bb9829ecbcea948e848e207825688c10e3c175301fc",
-  timingRuntimeSha256: "e525777159da6ce60bbbcbe84f70ad6ae62c8f8e425ecedbeb59620dd29eed1f",
-  mixedPath: "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
-  mixedSha256: "3e17e772b1bef8c3536c32b257bbc47696976c3575f2ed48c07bcc1780d954a0",
-  mixedRuntimeSha256: "b37485edbffdbd73f01d26aea09b984102b3777952d340730ba8cf66079562a3",
-  ioPath: "tests/tooling/support/native-beta-dto/native-io.ts",
-  ioSha256: "d4a8ac3d4ce7c2d38a53bc64aaf02a7f0b86b870a0b10b8174e0fb48739c8b54",
-  ioRuntimeSha256: "ba488b82755d55e3230b5ebc7a75cef432d0279e31d8b817bc6ef675571b1036",
-  handoffPath: "tests/tooling/support/native-beta-dto/execve-handoff.ts",
-  handoffSha256: "9c40b14722ee5e1b70f8343ad37bc9f093d474bb99c69da1ea9d12eb29f6218f",
-  handoffRuntimeSha256: "6a12c1726bd7829b6023613041cb2c28ce4c49bd0d906053d406932a4db188d0",
-  terminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
-  terminalSha256: "83b167d4146f812255b01a946ead297693bad85cdf904817e4207a2bf1c97c35",
-  terminalRuntimeSha256: "2ed2edfda0877fa9a4b1093242f8501c5fb2ce834dfaf39ff478edfa9da18013",
-  auditRuntimeSha256: "2f3d84cdfe78e11fd281ee58e953ae605cb4f402b392c2294ef3345942837da5",
-  typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
-  typesSha256: "3904cfaf07e59b501c2361b65410877f22780bfdc365cedf74300bb6fb88d127",
-  helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
-  helperRuntimeSha256: "13977fbeee879ea518ca8abc2329dea34919edcf984102133192f4386014fe7a",
-  routeId: "configured-startup-beta-semantic-route-41108828160",
-  rootWarningId: "before-stable-root-watch-warning-41214579457",
-  rootWarningPath: "tests/tooling/support/native-beta-dto/historical-root-watch-warning.ts",
-  rootWarningSha256: "8054de3b7f7a6efc0bf642ee4838f0269af0d4c15952d249ee45c3fb6239b797",
-  rootWarningRuntimeSha256: "f3c608b3b1af746ae51ff8076b2bf1741cc3e795760ab3374f6b3b14d884a6c9",
-  dispositionPath: "tests/tooling/support/native-beta-dto/role-disposition.ts",
-  dispositionSha256: "e452c9d551d70e2a4db2cd35ea78f3367b57ad2579b38c251b2b662963f3b8be",
-  dispositionRuntimeSha256: "e2a3940a91129b16b57012da37610cac689defbe2719f1b63a769bf1e281e731",
-  membershipId: "source-owned-config-membership-route-41214579457",
-  membershipPath: "tests/tooling/support/native-beta-dto/configuration-membership.ts",
-  membershipSha256: "bf8807fdcd364dd4965184e4548bb9ceb113941aa53093ed7a31a82ac3d6842f",
-  membershipRuntimeSha256: "dc9c18a373b36d366c1bf2887d02a6f83f10f26e72e63c7982c228b5a44c1010",
-  routePath: "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
-  routeRuntimeSha256: "1a49057ec014a49aec9899070f9aef5e4cee6b4254b21fea7b5b5f1b3ab10f95",
-  actualFiles: [
-    ["client.bin", "cd11915afee013a728a287098714d5db70e8719867bd596a1c4721ca5a876c13"],
-    ["server.bin", "47cc76661e039b28a3e7056d3d2b07d6d4c6da31440166c2e490b76f78079f73"],
-    ["identity.json", "990dc13e94623891b8781a37ea05fa96b61c3fb168e6d7e7bef0a2ef265cf05a"],
-  ],
-};
+
 function require(value: unknown, message: string): asserts value {
   if (!value) throw new Error(`invalid native beta DTO protocol case: ${message}`);
 }
@@ -165,6 +110,7 @@ function pinned(
   return data;
 }
 export function nativeBetaDtoProducerCustody(read: ReadFile) {
+  pinned(read, currentAuthorityPath, currentAuthoritySha256);
   return producerFiles.map((originalPath, index) => {
     const archivedPath = producerOriginalRoot + originalPath.split("/").at(-1) + ".txt";
     const original = pinned(read, archivedPath, producerHashes[index]);
@@ -223,6 +169,21 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
           watcherSuccessor.handoffPath,
           watcherSuccessor.handoffSha256,
           watcherSuccessor.handoffRuntimeSha256,
+        ],
+        [
+          watcherSuccessor.logicalPath,
+          watcherSuccessor.logicalHash,
+          watcherSuccessor.logicalRuntime,
+        ],
+        [
+          watcherSuccessor.logicalRoutePath,
+          watcherSuccessor.logicalRouteHash,
+          watcherSuccessor.logicalRouteRuntime,
+        ],
+        [
+          watcherSuccessor.semanticPath,
+          watcherSuccessor.semanticHash,
+          watcherSuccessor.semanticRuntime,
         ],
         [
           watcherSuccessor.rootWarningPath,

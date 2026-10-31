@@ -79,7 +79,7 @@ export function currentNativeBetaDtoObserver(
   for (const entry of currentObserver) {
     assert.deepEqual(entry.currentObserverIdentity, identity);
     assert.deepEqual(entry.currentStorageObserverDependency, dependency);
-    assert.equal(entry.currentStorageRegistration, "after-source-selected-owned-overlay-storage");
+    assert.equal(entry.currentStorageRegistration, "after-source-selected-logical-editor-revision");
   }
   assert.deepEqual(boundary.observers, [identity.path, dependency.path]);
   assert.ok(Array.isArray(row.tests) && row.tests.length === 5);
@@ -89,7 +89,7 @@ export function currentNativeBetaDtoObserver(
   return {
     sources: new Set(changed),
     evidence: {
-      registration: "after-source-selected-owned-overlay-storage" as const,
+      registration: "after-source-selected-logical-editor-revision" as const,
       sources: changed,
       historicalProtocol: NATIVE_BETA_DTO_PROTOCOL_ID,
       observer: identity,
