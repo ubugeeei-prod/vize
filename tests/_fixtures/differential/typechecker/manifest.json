@@ -13842,6 +13842,42 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/jsx-child-expression-control-6890",
+      "state": "active",
+      "targets": [
+        "projection"
+      ],
+      "inputs": {
+        "root": "jsx-child-expression-control-6890",
+        "files": [
+          {
+            "path": "template.html.txt",
+            "role": "neutral-expression-coordinate-regression-control",
+            "sha256": "0cc2ae68eb1888868cf06c3d4cd83e5b23b14d46b8db7bc15f99f94603b25ec3"
+          },
+          {
+            "path": "Original.jsx.txt",
+            "role": "neutral-expression-coordinate-regression-control",
+            "sha256": "2720f9a62e02121cb18705b4b94da2fd22c661fa8bc84b780e1319554663f7d9"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "html-template",
+              "jsx"
+            ],
+            "selector": "typed_child_value_projects_the_same_full_expression_and_span_as_template_text"
+          }
+        ]
+      }
     }
   ],
   "protocolCases": [

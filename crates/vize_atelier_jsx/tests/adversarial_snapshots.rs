@@ -317,11 +317,11 @@ fn mode_aware_multi_component_snapshot() {
         "the complete mixed-mode module retains valid helper declarations"
     );
     insta::assert_debug_snapshot!(
-        "mode_aware_multi_component_summary_authored_native_10701_child_values_6890_inert_template",
+        "mode_aware_multi_component_summary_authored_native_10701_child_values_6890_inert_template_vdom_child_values_6890",
         compile_output_summary(MIXED_MODES, &output),
     );
     insta::assert_snapshot!(
-        "mode_aware_multi_component_module_authored_native_10701_child_values_6890_inert_template",
+        "mode_aware_multi_component_module_authored_native_10701_child_values_6890_inert_template_vdom_child_values_6890",
         output.module_code().as_str()
     );
 }
@@ -378,7 +378,14 @@ fn assert_lower_snapshot(name: &str, source: &str, lang: JsxLang) {
 fn assert_vdom_snapshot(name: &str, source: &str, lang: JsxLang) {
     let bump = Allocator::new();
     let output = compile_to_vdom(&bump, source, lang, VdomCompileOptions::default());
-    insta::assert_debug_snapshot!(format!("{name}_vdom"), vdom_output_summary(source, &output));
+    let active = match name {
+        "directives_slots_svg_and_spreads"
+        | "fragment_whitespace_text"
+        | "stateful_destructured_component"
+        | "tsx_syntax_edges" => format!("{name}_vdom_vdom_child_values_6890"),
+        _ => format!("{name}_vdom"),
+    };
+    insta::assert_debug_snapshot!(active, vdom_output_summary(source, &output));
 }
 
 fn assert_vapor_snapshot(name: &str, source: &str, lang: JsxLang, options: VaporCompileOptions) {

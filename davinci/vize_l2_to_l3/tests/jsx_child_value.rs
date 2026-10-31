@@ -8,7 +8,8 @@ use vize_l3::{op::OpKind, operand::OperandRole, verify::verify};
 
 #[test]
 fn opaque_child_is_dynamic_and_keeps_its_semantic_role_and_authored_expression() {
-    let allocator = Allocator::new();
+    let owned = Allocator::new();
+    let allocator = &owned;
     let span = Span::new(0, 11);
     let root = Region {
         ops: Vec::from_iter_in(

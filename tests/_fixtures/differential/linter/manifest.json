@@ -3083,6 +3083,38 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/jsx-child-expression-control-6890",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "jsx-child-expression-control-6890",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "role": "neutral-expression-coordinate-regression-control",
+            "sha256": "dc0443da0ad6467f2baed054dcb0ddcc3a999a64108fd0e6d88d6f7c12b8ca8a"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
+            "selector": "ordinary_template_and_v_text_keep_the_complete_undefined_reference_diagnostic"
+          }
+        ]
+      }
     }
   ]
 }

@@ -46,7 +46,10 @@ fn typed_slot_runtime_output_and_metadata_remain_byte_exact() {
             &output.diagnostics,
         );
         match mode {
-            JsxOutputMode::Vdom => insta::assert_debug_snapshot!("typed_slot_runtime_vdom", packet),
+            JsxOutputMode::Vdom => insta::assert_debug_snapshot!(
+                "typed_slot_runtime_vdom_vdom_child_values_6890",
+                packet
+            ),
             JsxOutputMode::Vapor => {
                 insta::assert_debug_snapshot!(
                     "typed_slot_runtime_vapor_child_values_6890_inert_template",
@@ -68,7 +71,10 @@ fn module_code_prepends_merged_preamble_to_render_code() {
         &JsxCompileConfig::default(),
     );
     let module = out.module_code();
-    insta::assert_snapshot!(module);
+    insta::assert_snapshot!(
+        "module_code_prepends_merged_preamble_to_render_code_vdom_child_values_6890",
+        module
+    );
 }
 
 #[test]
@@ -85,7 +91,10 @@ fn source_map_covers_single_and_multiple_component_modules() {
     );
     assert_eq!(single.components.len(), 1);
     let map = single.source_map().expect("single component carries a map");
-    insta::assert_snapshot!(map);
+    insta::assert_snapshot!(
+        "source_map_covers_single_and_multiple_component_modules_vdom_child_values_6890",
+        map
+    );
 
     let multi = compile_jsx(
         &bump,
