@@ -207,12 +207,16 @@ void test(
       page.on("requestfailed", (request) => {
         requestFailures.push({ url: request.url(), error: request.failure()?.errorText ?? null });
       });
-      const navigation = await page.goto(gallery);
-      observations.navigation = {
-        url: page.url(),
-        status: navigation?.status() ?? null,
-        contentType: navigation?.headers()["content-type"] ?? null,
-      };
+      let navigation: Awaited<ReturnType<typeof page.goto>> = null;
+      try {
+        navigation = await page.goto(gallery);
+      } finally {
+        observations.navigation = {
+          url: page.url(),
+          status: navigation?.status() ?? null,
+          contentType: navigation?.headers()["content-type"] ?? null,
+        };
+      }
       await page.locator(".art-item").filter({ hasText: "Runtime Controls" }).first().click();
       await page.locator(".tab-btn").filter({ hasText: "Props" }).click();
       await page.getByRole("textbox", { name: "code", exact: true }).waitFor();
