@@ -23,7 +23,7 @@ on:
       - npm/cli/virtual-ts-slots.d.ts
       - npm/cli/scripts/generate-content-mapper-types.ts
       - tests/tooling/content-mapper-shared-types.test.ts
-      - tests/tooling/support/public-slot-instance*.ts
+      - tests/tooling/support/public-slot-*.ts
       - tests/fixtures/typechecker/public-slot-instance/**
       - npm/cli/scripts/*slot*.ts
       - tests/_fixtures/differential/typechecker/declared-any-slot-provider-11027/**

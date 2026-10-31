@@ -5,6 +5,10 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSyn
 import { tmpdir } from "node:os";
 import path from "node:path";
 import ts from "../../../npm/cli/node_modules/typescript/lib/typescript.js";
+import {
+  assertPublicSlotExportSurface,
+  publicSlotExportSurface,
+} from "./public-slot-export-surface.ts";
 
 const preimageSource = "1a65bbd5e95da036bd7e6a0fee7f8b214023a6b0";
 const preimages: Record<string, string> = {
@@ -67,7 +71,7 @@ function typeRows(file: string, preservation = false) {
   }
   visit(source);
   assert.equal(rows.length, preservation ? 60 : 40, "complete public type observation roster");
-  return rows;
+  return { rows, moduleExports: preservation ? null : publicSlotExportSurface(checker, source) };
 }
 
 function preservationSource(entry: string) {
@@ -184,6 +188,7 @@ export function verifyPublicSlotInstance(root: string) {
     role: string;
     mode: string;
     rows: Row[];
+    moduleExports: ReturnType<typeof publicSlotExportSurface>;
     sdk: object[];
     consumerPackage: object;
     sdkPackage: object;
@@ -287,7 +292,9 @@ export function verifyPublicSlotInstance(root: string) {
             return result;
           });
         const processResult = run(false),
-          rows = typeRows(target);
+          query = typeRows(target),
+          rows = query.rows;
+        assert.ok(query.moduleExports);
         let repair: object | null = null;
         if (role === "head") {
           const repaired = source.replace(
@@ -302,7 +309,7 @@ export function verifyPublicSlotInstance(root: string) {
           mode === "direct" ? "./node_modules/vize/virtual-ts.d.ts" : "vize/virtual-ts",
         );
         writeFileSync(target, preservation);
-        const preservationRows = typeRows(target, true);
+        const preservationRows = typeRows(target, true).rows;
         const preserveRun = (repaired: boolean) =>
           hosts.map((host) => {
             const argv = [...host.prefix, "--noEmit", "-p", "tsconfig.json", "--pretty", "false"];
@@ -353,6 +360,7 @@ export function verifyPublicSlotInstance(root: string) {
           processes: processResult,
           repair,
           rows,
+          moduleExports: query.moduleExports,
           preservation: {
             sourceUtf8: preservation,
             rows: preservationRows,
@@ -378,6 +386,10 @@ export function verifyPublicSlotInstance(root: string) {
     const before = observations.find((item) => item.role === "before")!.rows;
     const head = observations.find((item) => item.role === "head")!.rows;
     for (const mode of ["esm", "commonjs", "direct"]) {
+      assertPublicSlotExportSurface(
+        observations.find((item) => item.role === "head" && item.mode === mode)!.moduleExports,
+        observations.find((item) => item.role === "before" && item.mode === mode)!.moduleExports,
+      );
       const before = observations.find(
         (item) => item.role === "before" && item.mode === mode,
       )!.preservation;

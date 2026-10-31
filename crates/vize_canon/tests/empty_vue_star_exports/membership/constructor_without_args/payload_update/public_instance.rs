@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use std::fs;
 
 const RECORD: &str = "malformed-membership/public-slot-instance-update-11023.json";
-const RECORD_SHA: &str = "d71d1c6dc7f050a2aa1d6ee19b37ae9cc7ede393682ab4ce4df0e4083b36c71e";
+const RECORD_SHA: &str = "3f815c1abf70c0a93792e1b5c4c8fadef270cfbb3e8ebddd9f0d0a8280c25616";
 const C3_RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";
 const C3_SHA: &str = "0a71c5c21535e50d02df527e6c00267dfd8b44bfc0d63c37c49a55d67ab1166c";
 const PATHS: [&str; 10] = [
@@ -35,7 +35,7 @@ fn metadata(update: &Value) {
     assert_eq!(update["issue"], 11023);
     assert_eq!(
         update["sourceRevision"],
-        "ed08f2e7990dd0ee0f5d918829acb68ea66425f9"
+        "e387897241b695c9ac6c92fb1626438a006a35f7"
     );
     assert_eq!(
         update["beforeSourceRevision"],
@@ -55,6 +55,29 @@ fn metadata(update: &Value) {
         "unchanged-by-this-update-owned-by-existing-C3-adapter"
     );
     assert_eq!(update["frozenC3RecordSha256"], C3_SHA);
+    assert_eq!(
+        update["entryBridgeRole"],
+        "namespace-type-import-and-fourteen-forwarding-declarations-no-export-declaration"
+    );
+    assert_eq!(
+        update["reachableSlotDeclarations"],
+        json!([
+            "$SlotHostSlots",
+            "__vizeFunctionalSlots",
+            "$NativeSlotsFactory",
+            "$SlotsFactory",
+            "$HasSlotResolver",
+            "$DirectSlotConstructor",
+            "$SlotConstructor",
+            "$SlotConstructorArgumentLists",
+            "$SlotConstructorHasArguments",
+            "$SlotConstructorWithoutArguments",
+            "$SlotConstructorWithArguments",
+            "$SlotConstructorArgs",
+            "$SlotConstructorInstance",
+            "$SlotHostSelector"
+        ])
+    );
     assert!(update.get("logicalPreamble").is_none());
     assert_eq!(
         update["publicExports"],
@@ -262,8 +285,12 @@ mod tests {
         }
         for changed in [
             bodies[0].replace("./virtual-ts-slots.js", "./foreign-slots.js"),
-            bodies[0].replacen("$SlotHostSlots,", "$SlotsFactory,", 1),
-            bodies[0].replacen("$SlotHostSlots,", "", 1),
+            bodies[0].replacen("type $SlotHostSlots<C>", "type $SlotsFactory<C>", 1),
+            bodies[0].replacen(
+                "export type $SlotHostSlots<C> = __vizeSlotTypes.$SlotHostSlots<C>;\n",
+                "",
+                1,
+            ),
             bodies[0].replace(
                 "\"resolution-mode\": \"import\"",
                 "\"resolution-mode\": \"require\"",

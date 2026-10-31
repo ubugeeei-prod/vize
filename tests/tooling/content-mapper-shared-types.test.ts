@@ -334,6 +334,29 @@ for (const [name, file, mutate, reason] of [
     (source: string) => previousInstance(source).replace("  ? Z\n  : P;", "  ? Z\n  : P | Z;"),
     /unknown previous Instance policy/u,
   ],
+  [
+    "entry implicit export context",
+    publicFiles[0]!,
+    (source: string) => source + "\nexport {};\n",
+    /retains implicit exports/u,
+  ],
+  [
+    "forwarded private slot helper",
+    publicFiles[0]!,
+    (source: string) =>
+      source.replace(
+        "__vizeSlotTypes.$SlotConstructorHasArguments<C>",
+        "__vizeSlotTypes.$SlotConstructorArgs<C>",
+      ),
+    /forwarding declaration/u,
+  ],
+  [
+    "functional value signature",
+    publicFiles[0]!,
+    (source: string) =>
+      source.replace("component: (props: P, context: C,", "component: (props: P, context: P,"),
+    /forwarding declaration/u,
+  ],
 ] as const) {
   test(`Instance generation refuses ${name} before writing any SDK entry`, (t) => {
     const fixture = generatorFixture();
