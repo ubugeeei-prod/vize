@@ -8,13 +8,26 @@ fn nine_whole_original_key_sources_capture_real_bindings_and_maps() -> Result<()
         "../../../tests/fixtures/native_original_for_key_inputs_vue_3_5_35.json"
     ))
     .map_err(|error| cstr!("{error}"))?;
+    let goldens: Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/native_original_for_key_sfc_vue_3_5_35.json"
+    ))
+    .map_err(|error| cstr!("{error}"))?;
     let fixtures = pack["fixtures"].as_array().ok_or("fixtures")?;
     require!(fixtures.len() == 9, "nine new original key inputs");
     let mut captures = Vec::new();
     let mut custody = Vec::new();
     let mut attempts = Vec::new();
     let mut failures = Vec::new();
-    for fixture in fixtures {
+    if goldens["schema"] != "vize.native-sfc.original-for-key-complete-goldens" {
+        failures.push(cstr!("complete native golden schema"));
+    }
+    let native = &goldens["native"];
+    for field in ["fixtures", "custody", "attempts"] {
+        if native[field].as_array().map(Vec::len) != Some(fixtures.len()) {
+            failures.push(cstr!("complete native {field}: nine ordered rows"));
+        }
+    }
+    for (index, fixture) in fixtures.iter().enumerate() {
         let id = text(fixture, "id")?;
         let source = text(fixture, "source")?;
         let arena = Allocator::default();
@@ -130,14 +143,23 @@ fn nine_whole_original_key_sources_capture_real_bindings_and_maps() -> Result<()
                     && expression.resolution().scope() == head.scope(),
                 "{id}: actual current ForKey read and lexical scope"
             );
-            Ok((
-                serde_json::json!({"id":id,"source":source,"code":output.code(),"nativeMap":map,"nativeMapRaw":raw_map}),
-                serde_json::json!({"id":id,"node":head.id().node().index(),"scope":head.scope().ok_or("scope")?.index(),
+            let capture = serde_json::json!({"id":id,"source":source,"code":output.code(),"nativeMap":map,"nativeMapRaw":raw_map});
+            let owner = serde_json::json!({"id":id,"node":head.id().node().index(),"scope":head.scope().ok_or("scope")?.index(),
                     "enclosingScope":head.enclosing_scope().ok_or("parent")?.index(),"valueBinding":value.id().index(),
                     "keyBinding":key.id().index(),"keyName":key_original.fact().name(),
                     "keyAuthoredSpan":[key_original.authored_span().start,key_original.authored_span().end],
-                    "readKind":"ForKey","canonicalTag":row.scope_facts().tag.index()}),
-            ))
+                    "readKind":"ForKey","canonicalTag":row.scope_facts().tag.index()});
+            if native["fixtures"].get(index) != Some(&capture) {
+                failures.push(cstr!(
+                    "{id}: whole native code/raw-map capture golden mismatch"
+                ));
+            }
+            if native["custody"].get(index) != Some(&owner) {
+                failures.push(cstr!("{id}: whole native owner golden mismatch"));
+            }
+            // Keep the genuine current observations even on a golden mismatch.
+            // Only the final zero-failure verdict grants acceptance.
+            Ok((capture, owner))
         })();
         match validated {
             Ok((capture, owner)) => {
@@ -148,11 +170,18 @@ fn nine_whole_original_key_sources_capture_real_bindings_and_maps() -> Result<()
         }
     }
     let emitted = captures.len();
+    let attempts = Value::Array(attempts);
+    if native.get("attempts") != Some(&attempts) {
+        failures.push(cstr!("whole ordered mapped/plain attempt golden mismatch"));
+    }
+    let qualified = failures.is_empty() && emitted == 9;
     if let Some(path) = std::env::var_os("VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&serde_json::json!({
             "schema":"vize.native-sfc.original-for-key-capture", "adapter":"vize_atelier_sfc::compile_native_selected_setup_sfc_dom",
-            "qualification":"observed-unqualified-current-oracles-pending",
+            "nativeGoldenComparisonPerformed":true,
+            "qualification":if qualified { "current-complete-native-goldens-matched" } else { "failed-current-complete-native-goldens" },
             "sourceRevision":std::env::var("GITHUB_SHA").ok(),"fixtures":captures,"custody":custody,"attempts":attempts,
+            "failures":&failures,
         })).map_err(|error| cstr!("{error}"))?).map_err(|error| cstr!("{error}"))?;
     }
     require!(failures.is_empty(), "complete capture failed: {failures:?}");

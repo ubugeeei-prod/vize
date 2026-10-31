@@ -18,6 +18,18 @@ const inputRaw = fs.readFileSync(
   "utf8",
 );
 const pack = JSON.parse(inputRaw);
+const goldens = JSON.parse(
+  fs.readFileSync(
+    new URL(
+      "../../crates/vize_atelier_sfc/tests/fixtures/native_original_for_key_sfc_vue_3_5_35.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+);
+assert.equal(goldens.schema, "vize.native-sfc.original-for-key-complete-goldens");
+assert.equal(goldens.inputHash, hash(inputRaw));
+assert.equal(goldens.filename, pack.filename);
 const mode = process.env.NODE_ENV ?? "development";
 assert(mode === "development" || mode === "production", "only the two declared Vue modes");
 assert.equal(pack.schema, "vize.native-sfc.original-for-key-inputs");
@@ -42,6 +54,8 @@ const nativeRows = new Map<string, NativeRow>();
 const primaryRows = new Map<string, ReturnType<typeof compilePrimary>>();
 const primaryAttempts: unknown[] = [];
 const runtimeAttempts: unknown[] = [];
+let nativeGoldenComparisonPerformed = false;
+let nativeGoldensMatched = false;
 const errorRecord = (error: unknown) =>
   error instanceof Error
     ? { name: error.name, message: error.message, stack: error.stack }
@@ -119,7 +133,7 @@ function compilePrimary(fixture: ForKeyFixture) {
   };
 }
 
-test("nine new ForKey inputs pin official compiler versions without native golden claims", () => {
+test("nine original ForKey inputs use complete independently reviewed current oracles", () => {
   assert.equal(compiler.version, "3.5.35");
   assert.equal(runtime.version, "3.5.35");
   assert.equal(ts.version, "6.0.3");
@@ -130,6 +144,14 @@ test("nine new ForKey inputs pin official compiler versions without native golde
     pack.qualification,
     "input-only; no native code, source-map or primary capture credit",
   );
+  assert.deepEqual(goldens.compiler, pack.compiler);
+  assert.deepEqual(goldens.runtime, pack.runtime);
+  assert.deepEqual(goldens.typescript, pack.typescript);
+  assert.equal(goldens.native.fixtures.length, fixtures.length);
+  assert.equal(goldens.native.custody.length, fixtures.length);
+  assert.equal(goldens.native.attempts.length, fixtures.length);
+  assert.equal(goldens.primary[mode].length, fixtures.length);
+  assert.equal(goldens.runtimeResults[mode].length, fixtures.length);
   for (const fixture of fixtures) {
     for (const field of [
       "expectedCode",
@@ -150,9 +172,19 @@ test("nine new ForKey inputs pin official compiler versions without native golde
     assert(primaryPrefix && runtimePrefix, "hosted acceptance must retain both evidence prefixes");
   }
   if (!captured) return;
+  if (requireCapture) {
+    assert.equal(captured.sourceRevision, process.env.GITHUB_SHA);
+  }
   assert.equal(captured.schema, "vize.native-sfc.original-for-key-capture");
   assert.equal(captured.adapter, "vize_atelier_sfc::compile_native_selected_setup_sfc_dom");
-  assert.equal(captured.qualification, "observed-unqualified-current-oracles-pending");
+  assert.equal(captured.qualification, "current-complete-native-goldens-matched");
+  assert.equal(captured.nativeGoldenComparisonPerformed, true);
+  assert.deepEqual(captured.failures, []);
+  nativeGoldenComparisonPerformed = true;
+  assert.deepEqual(captured.fixtures, goldens.native.fixtures);
+  assert.deepEqual(captured.custody, goldens.native.custody);
+  assert.deepEqual(captured.attempts, goldens.native.attempts);
+  nativeGoldensMatched = true;
   assert(Array.isArray(captured.fixtures));
   assert.deepEqual(
     captured.fixtures.map((row: NativeRow) => row.id),
@@ -180,12 +212,14 @@ test("nine new ForKey inputs pin official compiler versions without native golde
   }
 });
 
-for (const fixture of fixtures) {
+for (const [index, fixture] of fixtures.entries()) {
   test(`${fixture.id}: retain the complete official Vue script, render and maps`, () => {
     try {
       const primary = compilePrimary(fixture);
       primaryRows.set(fixture.id, primary);
-      primaryAttempts.push({ id: fixture.id, state: "compiled", primary });
+      const result = { id: fixture.id, state: "compiled", primary };
+      primaryAttempts.push(result);
+      assert.deepEqual(result, goldens.primary[mode][index]);
     } catch (error) {
       primaryAttempts.push({ id: fixture.id, state: "failed", error: errorRecord(error) });
       throw error;
@@ -193,7 +227,7 @@ for (const fixture of fixtures) {
   });
 }
 
-for (const fixture of fixtures) {
+for (const [index, fixture] of fixtures.entries()) {
   test(`${fixture.id}: real native and official key components match through update and unmount`, async (t) => {
     if (!captured && !requireCapture) {
       t.skip("source-only tooling mode; no native capture or qualification credit");
@@ -219,6 +253,7 @@ for (const fixture of fixtures) {
       attempt.native = native;
       assert.deepEqual(native, reference);
       attempt.state = "matched";
+      assert.deepEqual(attempt, goldens.runtimeResults[mode][index]);
     } catch (error) {
       attempt.state = "failed";
       attempt.error = errorRecord(error);
@@ -228,10 +263,21 @@ for (const fixture of fixtures) {
 }
 
 after(() => {
+  const primaryMatched =
+    primaryAttempts.length === fixtures.length &&
+    primaryAttempts.every((attempt: any) => attempt.state === "compiled");
+  const runtimeMatched =
+    runtimeAttempts.length === fixtures.length &&
+    runtimeAttempts.every((attempt: any) => attempt.state === "matched");
   const common = {
     adapter: "vize_atelier_sfc::compile_native_selected_setup_sfc_dom",
-    qualification: "observed-unqualified-current-oracles-pending",
-    nativeGoldenComparisonPerformed: false,
+    qualification:
+      nativeGoldensMatched && primaryMatched && runtimeMatched
+        ? "complete-current-oracles-matched"
+        : !captured && primaryMatched
+          ? "official-primary-only-native-not-executed"
+          : "failed-current-complete-oracles",
+    nativeGoldenComparisonPerformed,
     mode,
     compiler: pack.compiler,
     runtime: pack.runtime,
