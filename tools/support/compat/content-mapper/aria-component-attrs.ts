@@ -15,6 +15,8 @@ import {
 } from "./aria-component-projects.ts";
 
 const packageFiles = [
+  "virtual-ts-globals.d.ts",
+  "virtual-ts-patterns.d.ts",
   "virtual-ts.d.ts",
   "virtual-ts.d.mts",
   "virtual-ts.d.cts",

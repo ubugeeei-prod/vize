@@ -121,6 +121,14 @@ fn zero_witnesses_preserve_native_overload_results_and_public_exports() {
             .unwrap();
             for (name, contents) in [
                 (
+                    "virtual-ts-globals.d.ts",
+                    include_str!("../../../../../npm/cli/virtual-ts-globals.d.ts"),
+                ),
+                (
+                    "virtual-ts-patterns.d.ts",
+                    include_str!("../../../../../npm/cli/virtual-ts-patterns.d.ts"),
+                ),
+                (
                     "virtual-ts.d.ts",
                     include_str!("../../../../../npm/cli/virtual-ts.d.ts"),
                 ),

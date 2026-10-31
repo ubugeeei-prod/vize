@@ -24,6 +24,7 @@ on:
       - "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt"
       - "npm/cli/content-mapper-helpers.d.*"
       - "npm/cli/virtual-ts.d.*"
+      - "npm/cli/virtual-ts-*.d.ts"
       - "npm/cli/package.json"
       - "npm/cli/generated/content-mapper-types.d.ts"
       - "tools/support/compat/content-mapper/diagnostic-ownership*.ts"

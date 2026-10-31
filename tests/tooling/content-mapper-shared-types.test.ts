@@ -39,25 +39,29 @@ test("shared mapper types are generated from the canonical standalone helper bod
 });
 
 test("ESM and CommonJS share exact helper types and observe the consumer Vue augmentation", () => {
-  const checked = spawnSync(
-    process.execPath,
-    [
-      path.join(root, "npm/cli/node_modules/typescript/bin/tsc"),
-      "--ignoreConfig",
-      "--noEmit",
-      "--strict",
-      "--target",
-      "ES2022",
-      "--module",
-      "Node16",
-      "--moduleResolution",
-      "Node16",
-      "npm/cli/tests/content-mapper-input.test-d.ts",
-      "npm/cli/tests/content-mapper-input.test-d.cts",
-    ],
-    { cwd: root, encoding: "utf8", timeout: 60_000 },
-  );
-  assert.equal(checked.status, 0, `${checked.stdout}${checked.stderr}`);
+  for (const input of [
+    "npm/cli/tests/content-mapper-input.test-d.ts",
+    "npm/cli/tests/content-mapper-input.test-d.cts",
+  ]) {
+    const checked = spawnSync(
+      process.execPath,
+      [
+        path.join(root, "npm/cli/node_modules/typescript/bin/tsc"),
+        "--ignoreConfig",
+        "--noEmit",
+        "--strict",
+        "--target",
+        "ES2022",
+        "--module",
+        "Node16",
+        "--moduleResolution",
+        "Node16",
+        input,
+      ],
+      { cwd: root, encoding: "utf8", timeout: 60_000 },
+    );
+    assert.equal(checked.status, 0, `${input}\n${checked.stdout}${checked.stderr}`);
+  }
 });
 
 const slotAlias = "$SlotConstructorWithoutArguments";
@@ -76,6 +80,8 @@ function generatorFixture() {
     "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
     "crates/vize_canon/src/virtual_ts/helpers/declarations/content-mapper-type-imports.d.ts.txt",
     "npm/cli/generated/content-mapper-types.d.ts",
+    "npm/cli/virtual-ts-globals.d.ts",
+    "npm/cli/virtual-ts-patterns.d.ts",
     embedded,
     shared,
     ...publicFiles,

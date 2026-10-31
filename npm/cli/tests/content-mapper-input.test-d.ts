@@ -8,6 +8,7 @@ import type {
   $UnownedComponentAttrs,
 } from "vize/content-mapper-helpers";
 import type { ComponentCustomProps } from "vue";
+import type { IsAny } from "vize/virtual-ts";
 
 declare module "vue" {
   interface ComponentCustomProps {
@@ -56,3 +57,9 @@ declaredProps.value = "changed";
 export type DoesNotWidenToAny = Expect<
   Equal<$IsAny<$ComponentInput<Props, {}, { id: number }>>, false>
 >;
+export type PublicAliasSeesSharedAmbient = Expect<Equal<IsAny<number>, false>>;
+export type SharedAmbientRemainsExact = Expect<Equal<__RuntimePropCtor<StringConstructor>, string>>;
+export type PatternAmbientRemainsAvailable = Expect<Equal<$Patterns.IsAny<any>, true>>;
+declare const ambientString: __RuntimePropCtor<StringConstructor>;
+// @ts-expect-error moving ambient declarations must preserve the string constraint.
+export const rejectsNumber: number = ambientString;
