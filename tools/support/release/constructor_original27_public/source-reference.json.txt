@@ -1,0 +1,500 @@
+{
+  "schema": "vize.original27.sourceReference.v1",
+  "source": "b7592b0211060bd63de0e98cb1684dd4ad8c52fe",
+  "summarySha256": "554c41998ebccfbcca7abb4da9e0f805a5b1507b374bbd38c148447e33142c9b",
+  "scope": "Source-only expected vectors; not public acceptance. Two generated TS2741 errors remain debt.",
+  "stockH": {
+    "status": 2,
+    "diagnostics": [
+      {
+        "file": "authored_h.ts",
+        "line": 19,
+        "column": 7,
+        "code": 2322,
+        "message": "Type '{ value: number; }' is not assignable to type 'Partial<{}> & Omit<{ readonly value: number; readonly internal: string; readonly render?: ((value: number) => string) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'.",
+        "continuation": [
+          "  Property 'internal' is missing in type '{ value: number; }' but required in type 'Omit<{ readonly value: number; readonly internal: string; readonly render?: ((value: number) => string) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'."
+        ]
+      }
+    ]
+  },
+  "official": {
+    "status": 2,
+    "diagnostics": [
+      {
+        "file": "callback-body/src/Tiny.vue",
+        "line": 12,
+        "column": 62,
+        "code": 2339,
+        "message": "Property 'missing' does not exist on type 'number'.",
+        "continuation": []
+      },
+      {
+        "file": "casing-camel-invalid/src/Tiny.vue",
+        "line": 12,
+        "column": 18,
+        "code": 2322,
+        "message": "Type 'string' is not assignable to type 'number'.",
+        "continuation": []
+      },
+      {
+        "file": "casing-kebab-invalid/src/Tiny.vue",
+        "line": 12,
+        "column": 19,
+        "code": 2322,
+        "message": "Type 'string' is not assignable to type 'number'.",
+        "continuation": []
+      },
+      {
+        "file": "casing-pascal-invalid/src/Tiny.vue",
+        "line": 12,
+        "column": 18,
+        "code": 2322,
+        "message": "Type 'string' is not assignable to type 'number'.",
+        "continuation": []
+      },
+      {
+        "file": "missing-required/src/Tiny.vue",
+        "line": 12,
+        "column": 4,
+        "code": 2345,
+        "message": "Argument of type '{}' is not assignable to parameter of type 'Partial<{}> & Omit<{ readonly value: number; readonly render?: ((value: number) => string) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'.",
+        "continuation": [
+          "  Property 'value' is missing in type '{}' but required in type 'Omit<{ readonly value: number; readonly render?: ((value: number) => string) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'."
+        ]
+      },
+      {
+        "file": "missing-symbol/src/Tiny.vue",
+        "line": 12,
+        "column": 25,
+        "code": 2339,
+        "message": "Property 'missing' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'.",
+        "continuation": []
+      },
+      {
+        "file": "readonly-prop/src/Tiny.vue",
+        "line": 11,
+        "column": 17,
+        "code": 2540,
+        "message": "Cannot assign to 'value' because it is a read-only property.",
+        "continuation": []
+      },
+      {
+        "file": "required-public-internal/src/Tiny.vue",
+        "line": 12,
+        "column": 4,
+        "code": 2345,
+        "message": "Argument of type '{ value: number; }' is not assignable to parameter of type 'Partial<{}> & Omit<{ readonly value: number; readonly internal: string; readonly render?: ((value: number) => string) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'.",
+        "continuation": [
+          "  Property 'internal' is missing in type '{ value: number; }' but required in type 'Omit<{ readonly value: number; readonly internal: string; readonly render?: ((value: number) => string) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'."
+        ]
+      },
+      {
+        "file": "slot-poison-any/src/Tiny.vue",
+        "line": 13,
+        "column": 51,
+        "code": 2345,
+        "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'.",
+        "continuation": []
+      },
+      {
+        "file": "slot-poison-never/src/Tiny.vue",
+        "line": 13,
+        "column": 51,
+        "code": 2345,
+        "message": "Argument of type '\"never\"' is not assignable to parameter of type '\"number\"'.",
+        "continuation": []
+      },
+      {
+        "file": "slot-poison-string/src/Tiny.vue",
+        "line": 13,
+        "column": 51,
+        "code": 2345,
+        "message": "Argument of type '\"other\"' is not assignable to parameter of type '\"number\"'.",
+        "continuation": []
+      },
+      {
+        "file": "slot-poison-unknown/src/Tiny.vue",
+        "line": 13,
+        "column": 51,
+        "code": 2345,
+        "message": "Argument of type '\"unknown\"' is not assignable to parameter of type '\"number\"'.",
+        "continuation": []
+      },
+      {
+        "file": "unknown-prop/src/Tiny.vue",
+        "line": 12,
+        "column": 29,
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'extra' does not exist in type 'Partial<{}> & Omit<{ readonly value: number; readonly render?: ((value: number) => string) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'.",
+        "continuation": []
+      },
+      {
+        "file": "wrong-prop/src/Tiny.vue",
+        "line": 12,
+        "column": 18,
+        "code": 2322,
+        "message": "Type 'string' is not assignable to type 'number'.",
+        "continuation": []
+      }
+    ]
+  },
+  "mapper": [
+    {
+      "file": "callback-body/src/Tiny.vue",
+      "line": 12,
+      "column": 62,
+      "code": 2339,
+      "message": "Property 'missing' does not exist on type 'number'.",
+      "continuation": []
+    },
+    {
+      "file": "casing-camel-invalid/src/Tiny.vue",
+      "line": 12,
+      "column": 18,
+      "code": 2322,
+      "message": "Type 'string' is not assignable to type 'number'.",
+      "continuation": []
+    },
+    {
+      "file": "casing-kebab-invalid/src/Tiny.vue",
+      "line": 12,
+      "column": 19,
+      "code": 2322,
+      "message": "Type 'string' is not assignable to type 'number'.",
+      "continuation": []
+    },
+    {
+      "file": "casing-pascal-invalid/src/Tiny.vue",
+      "line": 12,
+      "column": 18,
+      "code": 2322,
+      "message": "Type 'string' is not assignable to type 'number'.",
+      "continuation": []
+    },
+    {
+      "file": "constructor-public-props-discrepancy/src/Tiny.vue",
+      "line": 57,
+      "column": 495,
+      "code": 2741,
+      "message": "Property 'internal' is missing in type '{ value: number; }' but required in type '{ value: number; internal: string; }'.",
+      "continuation": [
+        "  This location is in virtual code produced by the content mapper 'vize@0.0.0-source-b7592b0211060bd63de0e98cb1684dd4ad8c52fe' and has no corresponding location in the original file."
+      ]
+    },
+    {
+      "file": "constructor-public-props-discrepancy/src/Tiny.vue",
+      "line": 108,
+      "column": 501,
+      "code": 2741,
+      "message": "Property 'internal' is missing in type '{ value: number; }' but required in type '{ value: number; internal: string; }'.",
+      "continuation": [
+        "  This location is in virtual code produced by the content mapper 'vize@0.0.0-source-b7592b0211060bd63de0e98cb1684dd4ad8c52fe' and has no corresponding location in the original file."
+      ]
+    },
+    {
+      "file": "missing-required/src/Tiny.vue",
+      "line": 12,
+      "column": 4,
+      "code": 2345,
+      "message": "Argument of type '{}' is not assignable to parameter of type '$ComponentCheckProps<__WitnessChild_CheckProps_0, VueTemplatePublicAttrsType & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; ... 677 more ...; zoomAndPan?: unknown; } & ...>'.",
+      "continuation": [
+        "  Property 'value' is missing in type '{}' but required in type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 9 more ...; readonly render?: ... | undefined; }'."
+      ]
+    },
+    {
+      "file": "missing-symbol/src/Tiny.vue",
+      "line": 12,
+      "column": 25,
+      "code": 2339,
+      "message": "Property 'missing' does not exist on type '$TemplateInstance'.",
+      "continuation": []
+    },
+    {
+      "file": "readonly-prop/src/Tiny.vue",
+      "line": 11,
+      "column": 17,
+      "code": 2540,
+      "message": "Cannot assign to 'value' because it is a read-only property.",
+      "continuation": []
+    },
+    {
+      "file": "required-public-internal/src/Tiny.vue",
+      "line": 12,
+      "column": 4,
+      "code": 2345,
+      "message": "Argument of type '{ value: number; }' is not assignable to parameter of type '$ComponentCheckProps<__WitnessChild_CheckProps_0, VueTemplatePublicAttrsType & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; ... 677 more ...; zoomAndPan?: unknown; } & ...>'.",
+      "continuation": [
+        "  Property 'internal' is missing in type '{ value: number; }' but required in type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 10 more ...; readonly render?: ... | undefined; }'."
+      ]
+    },
+    {
+      "file": "slot-poison-any/src/Tiny.vue",
+      "line": 13,
+      "column": 51,
+      "code": 2345,
+      "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'.",
+      "continuation": []
+    },
+    {
+      "file": "slot-poison-never/src/Tiny.vue",
+      "line": 13,
+      "column": 51,
+      "code": 2345,
+      "message": "Argument of type '\"never\"' is not assignable to parameter of type '\"number\"'.",
+      "continuation": []
+    },
+    {
+      "file": "slot-poison-string/src/Tiny.vue",
+      "line": 13,
+      "column": 51,
+      "code": 2345,
+      "message": "Argument of type '\"other\"' is not assignable to parameter of type '\"number\"'.",
+      "continuation": []
+    },
+    {
+      "file": "slot-poison-unknown/src/Tiny.vue",
+      "line": 13,
+      "column": 51,
+      "code": 2345,
+      "message": "Argument of type '\"unknown\"' is not assignable to parameter of type '\"number\"'.",
+      "continuation": []
+    },
+    {
+      "file": "unknown-prop/src/Tiny.vue",
+      "line": 12,
+      "column": 29,
+      "code": 2353,
+      "message": "Object literal may only specify known properties, and '\"extra\"' does not exist in type '$ComponentCheckProps<__WitnessChild_CheckProps_0, VueTemplatePublicAttrsType & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; ... 677 more ...; zoomAndPan?: unknown; } & ...>'.",
+      "continuation": []
+    },
+    {
+      "file": "wrong-prop/src/Tiny.vue",
+      "line": 12,
+      "column": 18,
+      "code": 2322,
+      "message": "Type 'string' is not assignable to type 'number'.",
+      "continuation": []
+    }
+  ],
+  "cli": [
+    {
+      "file": "callback-body/src/Tiny.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 62,
+      "code": 2339,
+      "message": "Property 'missing' does not exist on type 'number'. (source: <WitnessChild :value=\"1\" :render=\"(value: number) => value.missing\">; binding: 'render')",
+      "raw": "error:12:62 [TS2339] Property 'missing' does not exist on type 'number'. (source: <WitnessChild :value=\"1\" :render=\"(value: number) => value.missing\">; binding: 'render')"
+    },
+    {
+      "file": "casing-camel-invalid/src/Tiny.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 18,
+      "code": 2322,
+      "message": "Type 'string' is not assignable to type 'number'. (source: <witnessChild :value=\"'bad'\">; binding: 'value')",
+      "raw": "error:12:18 [TS2322] Type 'string' is not assignable to type 'number'. (source: <witnessChild :value=\"'bad'\">; binding: 'value')"
+    },
+    {
+      "file": "casing-kebab-invalid/src/Tiny.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 19,
+      "code": 2322,
+      "message": "Type 'string' is not assignable to type 'number'. (source: <witness-child :value=\"'bad'\">; binding: 'value')",
+      "raw": "error:12:19 [TS2322] Type 'string' is not assignable to type 'number'. (source: <witness-child :value=\"'bad'\">; binding: 'value')"
+    },
+    {
+      "file": "casing-pascal-invalid/src/Tiny.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 18,
+      "code": 2322,
+      "message": "Type 'string' is not assignable to type 'number'. (source: <WitnessChild :value=\"'bad'\">; binding: 'value')",
+      "raw": "error:12:18 [TS2322] Type 'string' is not assignable to type 'number'. (source: <WitnessChild :value=\"'bad'\">; binding: 'value')"
+    },
+    {
+      "file": "missing-required/src/Tiny.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 4,
+      "code": 2345,
+      "message": "Missing required prop `value`. (source: <WitnessChild>)",
+      "raw": "error:12:4 [TS2345] Missing required prop `value`. (source: <WitnessChild>)"
+    },
+    {
+      "file": "missing-symbol/src/Tiny.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 25,
+      "code": 2339,
+      "message": "Property 'missing' does not exist on the component instance. (source: <WitnessChild :value=\"missing\">; binding: 'value')",
+      "raw": "error:12:25 [TS2339] Property 'missing' does not exist on the component instance. (source: <WitnessChild :value=\"missing\">; binding: 'value')"
+    },
+    {
+      "file": "readonly-prop/src/Tiny.vue",
+      "severity": "error",
+      "line": 11,
+      "column": 17,
+      "code": 2540,
+      "message": "Cannot assign to 'value' because it is a read-only property.",
+      "raw": "error:11:17 [TS2540] Cannot assign to 'value' because it is a read-only property."
+    },
+    {
+      "file": "required-public-internal/src/Tiny.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 4,
+      "code": 2345,
+      "message": "Missing required prop `internal`. (source: <WitnessChild :value=\"1\">; binding: 'value')",
+      "raw": "error:12:4 [TS2345] Missing required prop `internal`. (source: <WitnessChild :value=\"1\">; binding: 'value')"
+    },
+    {
+      "file": "slot-poison-any/src/Tiny.vue",
+      "severity": "error",
+      "line": 13,
+      "column": 51,
+      "code": 2345,
+      "message": "Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)",
+      "raw": "error:13:51 [TS2345] Argument of type '\"any\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)"
+    },
+    {
+      "file": "slot-poison-never/src/Tiny.vue",
+      "severity": "error",
+      "line": 13,
+      "column": 51,
+      "code": 2345,
+      "message": "Argument of type '\"never\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)",
+      "raw": "error:13:51 [TS2345] Argument of type '\"never\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)"
+    },
+    {
+      "file": "slot-poison-string/src/Tiny.vue",
+      "severity": "error",
+      "line": 13,
+      "column": 51,
+      "code": 2345,
+      "message": "Argument of type '\"other\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)",
+      "raw": "error:13:51 [TS2345] Argument of type '\"other\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)"
+    },
+    {
+      "file": "slot-poison-unknown/src/Tiny.vue",
+      "severity": "error",
+      "line": 13,
+      "column": 51,
+      "code": 2345,
+      "message": "Argument of type '\"unknown\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)",
+      "raw": "error:13:51 [TS2345] Argument of type '\"unknown\"' is not assignable to parameter of type '\"number\"'. (source: <template #default=\"{ item }\">{{ expectNumber(slotReport(item)) }}</template>)"
+    },
+    {
+      "file": "unknown-prop/src/Tiny.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 29,
+      "code": 2353,
+      "message": "Object literal may only specify known properties, and '\"extra\"' does not exist in type '$ComponentCheckProps<__WitnessChild_CheckProps_0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 676 more ...; zoomAndPan?: unknown; } & ...>'. (source: <WitnessChild :value=\"1\" :extra=\"1\">; binding: 'extra')",
+      "raw": "error:12:29 [TS2353] Object literal may only specify known properties, and '\"extra\"' does not exist in type '$ComponentCheckProps<__WitnessChild_CheckProps_0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 676 more ...; zoomAndPan?: unknown; } & ...>'. (source: <WitnessChild :value=\"1\" :extra=\"1\">; binding: 'extra')"
+    },
+    {
+      "file": "wrong-prop/src/Tiny.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 18,
+      "code": 2322,
+      "message": "Type 'string' is not assignable to type 'number'. (source: <WitnessChild :value=\"'bad'\">; binding: 'value')",
+      "raw": "error:12:18 [TS2322] Type 'string' is not assignable to type 'number'. (source: <WitnessChild :value=\"'bad'\">; binding: 'value')"
+    }
+  ],
+  "sourceDeclarations": [
+    {
+      "file": "virtual-ts-globals.d.ts",
+      "bytes": 18966,
+      "sha256": "d647737ea035f166c94c131013af3265a3a33783dbad307b2eb3c6d558fc476a"
+    },
+    {
+      "file": "virtual-ts-patterns.d.ts",
+      "bytes": 12522,
+      "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
+    },
+    {
+      "file": "virtual-ts.d.ts",
+      "bytes": 16738,
+      "sha256": "3f436ccdd85bfb3602f06e0ed34335e1c52ecad61218b4593b0bbe40d845746a"
+    },
+    {
+      "file": "virtual-ts.d.mts",
+      "bytes": 16738,
+      "sha256": "3f436ccdd85bfb3602f06e0ed34335e1c52ecad61218b4593b0bbe40d845746a"
+    },
+    {
+      "file": "virtual-ts.d.cts",
+      "bytes": 16738,
+      "sha256": "3f436ccdd85bfb3602f06e0ed34335e1c52ecad61218b4593b0bbe40d845746a"
+    },
+    {
+      "file": "content-mapper-helpers.d.ts",
+      "bytes": 1109,
+      "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+    },
+    {
+      "file": "content-mapper-helpers.d.mts",
+      "bytes": 1109,
+      "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+    },
+    {
+      "file": "content-mapper-helpers.d.cts",
+      "bytes": 1109,
+      "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+    },
+    {
+      "file": "generated/content-mapper-types.d.ts",
+      "bytes": 11202,
+      "sha256": "7457fd86aafb4b2a5b1edbddedf538a45a072517645dd0ece2fd4c074a0f632e"
+    }
+  ],
+  "caseIds": [
+    "zero",
+    "optional",
+    "rest",
+    "generic-default-zero",
+    "generic-props",
+    "overload-last-zero",
+    "overload-first-zero",
+    "missing-required",
+    "wrong-prop",
+    "unknown-prop",
+    "callback-body",
+    "missing-symbol",
+    "readonly-prop",
+    "constructor-public-props-discrepancy",
+    "constructor-public-type-discrepancy",
+    "slot-poison-any",
+    "slot-poison-unknown",
+    "slot-poison-never",
+    "slot-poison-string",
+    "unicode-crlf",
+    "required-public-internal",
+    "casing-pascal-valid",
+    "casing-pascal-invalid",
+    "casing-camel-valid",
+    "casing-camel-invalid",
+    "casing-kebab-valid",
+    "casing-kebab-invalid"
+  ],
+  "authoredCases": [
+    "missing-required",
+    "wrong-prop",
+    "unknown-prop",
+    "callback-body",
+    "missing-symbol",
+    "readonly-prop",
+    "slot-poison-any",
+    "slot-poison-unknown",
+    "slot-poison-never",
+    "slot-poison-string",
+    "required-public-internal",
+    "casing-pascal-invalid",
+    "casing-camel-invalid",
+    "casing-kebab-invalid"
+  ]
+}
