@@ -56,6 +56,14 @@ jobs:
           git rev-parse HEAD > target/persistent-storage-evidence/source.sha
           rustc --version --verbose > target/persistent-storage-evidence/rustc.txt
           cp Cargo.lock target/persistent-storage-evidence/
+      - name: Select the required physical native provider
+        run: |
+          runtime="$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+          test -x "$runtime"
+          "$runtime" --version > target/persistent-storage-evidence/native-provider-version.txt
+          sha256sum "$runtime" > target/persistent-storage-evidence/native-provider.sha256
+          printf '%s\n' "$runtime" > target/persistent-storage-evidence/native-provider-path.txt
+          printf 'CORSA_PATH=%s\n' "$runtime" >> "$GITHUB_ENV"
       - name: Require native visibility and three-process storage acceptance
         run: |
           cargo nextest run -p vize --test integration --cargo-profile ci --profile full -E 'test(relative_sibling_sfc_keeps_package_storage_and_exact_repeated_diagnostics) | test(type_config_anchor_does_not_expose_app_modules_to_sibling_sources) | test(expanded_program_cache_redirect_stays_outside_authored_workspace)' --no-tests=fail
