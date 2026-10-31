@@ -40,7 +40,7 @@ pub(super) fn is_within_project_namespace(path: &Path, root: &Path) -> bool {
     }
     let path = file_uri_to_path(&path_to_file_uri(path));
     let root = file_uri_to_path(&path_to_file_uri(root));
-    matches!((path, root), (Some(path), Some(root)) if path.starts_with(root))
+    matches!((path, root), (Some(path), Some(root)) if path.starts_with(&root))
 }
 
 pub(super) fn build_materialized_session_document_uri(
