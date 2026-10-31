@@ -131,19 +131,13 @@ test("both public Pkl entrypoints validate declared prop casing policies", () =>
           "    }",
           "  }",
           "}",
+          "output {",
+          "  value = linter.ruleOptions.`vue/prop-name-casing`",
+          "}",
           "",
         ].join("\n");
         fs.writeFileSync(input, source);
-        const result = runPkl([
-          "eval",
-          "--project-dir",
-          "npm/cli/pkl",
-          "-f",
-          "json",
-          "-x",
-          "linter.ruleOptions.`vue/prop-name-casing`",
-          input,
-        ]);
+        const result = runPkl(["eval", "--project-dir", "npm/cli/pkl", "-f", "json", input]);
         console.log(
           "vize-prop-casing-pkl-packet",
           JSON.stringify({
