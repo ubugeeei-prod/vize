@@ -1,0 +1,5 @@
+<template>
+  <!-- <a .title="commentOnly"></a> -->
+  <div v-pre .title="literalOnly">.title="textOnly"</div>
+  <a v-bind="attrs" v-bind:title.prop='t' />
+</template>

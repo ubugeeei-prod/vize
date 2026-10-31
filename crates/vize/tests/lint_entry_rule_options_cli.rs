@@ -6,6 +6,7 @@ use crate::support::vite_config;
 use std::{fs, path::Path, process::Command};
 
 mod macro_groups;
+mod v_bind_prop;
 
 fn write_file(root: &Path, path: &str, content: &str) {
     let file_path = root.join(path);

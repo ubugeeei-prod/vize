@@ -348,8 +348,8 @@ Good:
 
 Use this option to choose the authored binding-directive spelling. The default `shorthand` style
 requires `:class`; `longform` requires `v-bind:class`. Both modes preserve arguments, modifiers,
-and values when applying a fix. Object syntax such as `v-bind="attrs"` and the `.prop` shorthand
-have no interchangeable form and are therefore left unchanged.
+and values when applying a fix. Longform also rewrites `.title` to `v-bind:title.prop`, retaining
+explicit modifiers and their order. Object syntax such as `v-bind="attrs"` is left unchanged.
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
