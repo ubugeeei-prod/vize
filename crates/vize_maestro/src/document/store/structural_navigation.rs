@@ -7,6 +7,16 @@ use super::DocumentStore;
 use crate::ide::references::StructuralSnapshotOwner;
 
 impl DocumentStore {
+    #[cfg(test)]
+    pub(crate) fn isolate_structural_snapshot(
+        &self,
+        uri: &Url,
+    ) -> Option<Arc<crate::ide::references::StructuralSnapshotCell>> {
+        let mut document = self.documents.get_mut(uri)?;
+        let cell = Arc::new(crate::ide::references::StructuralSnapshotCell::isolated());
+        document.structural_snapshot = std::sync::OnceLock::from(Arc::clone(&cell));
+        Some(cell)
+    }
     pub(crate) fn structural_snapshot_owner(
         &self,
         uri: &Url,
@@ -72,7 +82,7 @@ mod tests {
                 range_length: None,
                 text: changed
             }],
-            1
+            2
         ));
         assert!(store.structural_snapshot_owner(&uri, &source).is_none());
         let current = store.text_snapshot(&uri).unwrap();

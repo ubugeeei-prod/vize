@@ -188,8 +188,8 @@ fn select(
     loop {
         let before = selected.len();
         for link in &entry.projection.links {
-            let source = symbol_at(&occurrences, &link.source_range);
-            let target = symbol_at(&occurrences, &link.target_range);
+            let source = symbol_at(occurrences, &link.source_range);
+            let target = symbol_at(occurrences, &link.target_range);
             if let (Some(source), Some(target)) = (source, target)
                 && (selected.contains(&source) || selected.contains(&target))
             {

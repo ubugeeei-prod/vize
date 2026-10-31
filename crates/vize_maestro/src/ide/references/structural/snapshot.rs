@@ -59,14 +59,39 @@ pub(super) struct Entry {
 pub(crate) struct Cell {
     entry: Mutex<Option<Arc<Entry>>>,
     budget: Arc<Budget>,
+    #[cfg(test)]
+    hits: AtomicUsize,
 }
 
 impl Default for Cell {
     fn default() -> Self {
+        Self::new(Arc::clone(budget()))
+    }
+}
+
+impl Cell {
+    fn new(budget: Arc<Budget>) -> Self {
         Self {
             entry: Mutex::new(None),
-            budget: Arc::clone(budget()),
+            budget,
+            #[cfg(test)]
+            hits: AtomicUsize::new(0),
         }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn isolated() -> Self {
+        Self::new(Arc::new(Budget::default()))
+    }
+
+    #[cfg(test)]
+    pub(crate) fn hit_count(&self) -> usize {
+        self.hits.load(Ordering::Relaxed)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn retained(&self) -> bool {
+        self.entry.lock().is_some()
     }
 }
 
@@ -116,6 +141,8 @@ impl Owner {
             && Arc::ptr_eq(&entry.source, &self.source)
             && entry.projection == *projection
         {
+            #[cfg(test)]
+            self.cell.hits.fetch_add(1, Ordering::Relaxed);
             return Some(Arc::clone(entry));
         }
         // Retired readers own their Arc; they never revalidate another source.
@@ -246,13 +273,13 @@ fn budget() -> &'static Arc<Budget> {
 impl Budget {
     fn lease(self: &Arc<Self>, bytes: usize) -> Option<Lease> {
         self.entries
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+            .try_update(Ordering::AcqRel, Ordering::Acquire, |current| {
                 (current < MAX_ENTRIES).then(|| current + 1)
             })
             .ok()?;
         if self
             .known_bytes
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+            .try_update(Ordering::AcqRel, Ordering::Acquire, |current| {
                 current
                     .checked_add(bytes)
                     .filter(|next| *next <= MAX_KNOWN_BYTES)

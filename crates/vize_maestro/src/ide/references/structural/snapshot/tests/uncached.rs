@@ -8,12 +8,9 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::{SourceType, Span};
 
-#[path = "../../edits.rs"]
 mod edits;
 mod guard;
-#[path = "../../style.rs"]
 mod style;
-#[path = "../../template.rs"]
 mod template;
 use oxc_syntax::symbol::SymbolId;
 use tower_lsp::lsp_types::{Location, Position, Range};
@@ -248,4 +245,18 @@ pub(super) fn resolved_packet(
         "edit": edits::render(entry.edit, "__authored__", "__new__"),
         "symbol": vize_l0::cstr!("{:?}", entry.symbol).as_str(),
     })).collect()))
+}
+
+pub(super) fn symbol_names(code: &str) -> Vec<vize_l0::String> {
+    let allocator = Allocator::default();
+    let mut parsed = Parser::new(&allocator, code, SourceType::ts()).parse();
+    if !parsed.diagnostics.is_empty() {
+        parsed = Parser::new(&allocator, code, SourceType::tsx()).parse();
+    }
+    assert!(!parsed.panicked && parsed.diagnostics.is_empty());
+    let semantic = SemanticBuilder::new()
+        .with_build_nodes(true)
+        .build(&parsed.program)
+        .semantic;
+    semantic.scoping().symbol_names().map(Into::into).collect()
 }

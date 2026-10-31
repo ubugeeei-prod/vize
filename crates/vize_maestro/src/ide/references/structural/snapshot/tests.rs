@@ -7,10 +7,7 @@ const SOURCE: &str = "<script setup lang=\"ts\">const alpha = 1; const beta = 2;
 
 fn local_owner(ctx: &IdeContext<'_>, budget: Arc<Budget>) -> Owner {
     Owner::new(
-        Arc::new(Cell {
-            entry: Mutex::new(None),
-            budget,
-        }),
+        Arc::new(Cell::new(budget)),
         1,
         ctx.uri.clone(),
         Arc::clone(&ctx.content),
@@ -32,6 +29,15 @@ fn packet(ctx: &IdeContext<'_>, name: Option<&str>, entry: &Entry) -> Option<ser
     })).collect()))
 }
 
+fn warm<T: PartialEq + std::fmt::Debug>(cell: &Cell, expected: &T, query: impl FnOnce() -> T) -> T {
+    let before = cell.hit_count();
+    let retained = cell.retained();
+    let result = query();
+    assert_eq!(&result, expected);
+    assert_eq!(cell.hit_count() - before, usize::from(retained));
+    result
+}
+
 #[test]
 fn retained_facts_outlive_parser_arena_and_preserve_fresh_query_guards() {
     fn assert_send_sync<T: Send + Sync>() {}
@@ -42,6 +48,7 @@ fn retained_facts_outlive_parser_arena_and_preserve_fresh_query_guards() {
     let ctx = IdeContext::testing(&state, &uri, 0, SOURCE.into());
     let owner = local_owner(&ctx, Arc::new(Budget::default()));
     let entry = publish(&owner, &ctx);
+    let expected_names = uncached::symbol_names(&entry.projection.code);
     assert!(entry.lease.is_some());
     let projection = super::super::fresh_projection(&ctx).unwrap();
     let retained = owner.get(&projection).unwrap();
@@ -70,8 +77,8 @@ fn retained_facts_outlive_parser_arena_and_preserve_fresh_query_guards() {
     drop(ctx);
     drop(state);
     // Both original ASTs/arenas and the document/cache owner are gone.
-    let names: Vec<_> = entry.facts.scoping.symbol_names().collect();
-    assert!(names.contains(&"alpha") && names.contains(&"beta"));
+    let names: Vec<CompactString> = entry.facts.scoping.symbol_names().map(Into::into).collect();
+    assert_eq!(names, expected_names);
     assert!(
         entry
             .facts
@@ -96,44 +103,65 @@ fn retained_facts_outlive_parser_arena_and_preserve_fresh_query_guards() {
 
 #[test]
 fn every_projection_coordinate_and_policy_change_refuses_the_old_entry() {
+    #[derive(Clone, Copy, Debug)]
+    enum Mutation {
+        Filename,
+        Mode,
+        Patterned,
+        Code,
+        Mapping,
+        SubSpan,
+        Link,
+        Order,
+    }
     let state = ServerState::new();
     let uri = Url::parse("file:///workspace/Witness.vue").unwrap();
     let ctx = IdeContext::testing(&state, &uri, 0, SOURCE.into());
     let owner = local_owner(&ctx, Arc::new(Budget::default()));
-    for mutation in 0..8 {
+    for mutation in [
+        Mutation::Filename,
+        Mutation::Mode,
+        Mutation::Patterned,
+        Mutation::Code,
+        Mutation::Mapping,
+        Mutation::SubSpan,
+        Mutation::Link,
+        Mutation::Order,
+    ] {
         let entry = publish(&owner, &ctx);
         assert!(entry.lease.is_some());
         let mut changed = super::super::fresh_projection(&ctx).unwrap();
         match mutation {
-            0 => changed.filename.push_str(".other"),
-            1 => {
+            Mutation::Filename => changed.filename.push_str(".other"),
+            Mutation::Mode => {
                 changed.mode = if changed.mode == Mode::Standard {
                     Mode::LegacyVue2
                 } else {
                     Mode::Standard
                 }
             }
-            2 => changed.patterned = !changed.patterned,
-            3 => changed.code.push(' '),
-            4 => changed.mappings[0].src_range.start += 1,
-            5 => changed.mappings[0]
-                .sub_spans
-                .push(vize_canon::virtual_ts::mapping::VizeSubSpan {
-                    gen_range: 0..1,
-                    src_range: 1..2,
-                }),
-            6 => changed.links.push(VizeSemanticLink {
+            Mutation::Patterned => changed.patterned = !changed.patterned,
+            Mutation::Code => changed.code.push(' '),
+            Mutation::Mapping => changed.mappings[0].src_range.start += 1,
+            Mutation::SubSpan => {
+                changed.mappings[0]
+                    .sub_spans
+                    .push(vize_canon::virtual_ts::mapping::VizeSubSpan {
+                        gen_range: 0..1,
+                        src_range: 1..2,
+                    })
+            }
+            Mutation::Link => changed.links.push(VizeSemanticLink {
                 source_range: 0..1,
                 target_range: 1..2,
                 kind: vize_canon::virtual_ts::VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
             }),
-            7 => {
+            Mutation::Order => {
                 assert!(changed.mappings.len() > 1);
                 changed.mappings.reverse();
             }
-            _ => unreachable!(),
         }
-        assert!(owner.get(&changed).is_none(), "mutation {mutation}");
+        assert!(owner.get(&changed).is_none(), "mutation {mutation:?}");
         // Eviction did not discard a reader's previously owned facts.
         assert!(
             entry
@@ -231,7 +259,18 @@ fn enum_constant_storage_is_not_retained_by_the_cache() {
     let owner = local_owner(&ctx, Arc::new(Budget::default()));
     let mut projection = super::super::fresh_projection(&ctx).unwrap();
     projection.code = "enum E { A = 'x', B = A + A, C = B + B }; const alpha = E.C;".into();
-    let facts = super::super::analyze_projection(&ctx, &projection).unwrap();
+    let mut facts = super::super::analyze_projection(&ctx, &projection).unwrap();
+    // Production preserves enum_eval=false. Independently evaluate here to
+    // exercise admission of opaque constant storage without changing it.
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed =
+        oxc_parser::Parser::new(&allocator, &projection.code, oxc_span::SourceType::ts()).parse();
+    facts.scoping = oxc_semantic::SemanticBuilder::new()
+        .with_build_nodes(true)
+        .with_enum_eval(true)
+        .build(&parsed.program)
+        .semantic
+        .into_scoping();
     assert!(
         facts
             .scoping
@@ -310,6 +349,7 @@ fn authored_reference_rename_and_prepare_anchors_are_complete() {
     let state = ServerState::new();
     let uri = Url::parse("file:///workspace/Anchor.vue").unwrap();
     let ctx = IdeContext::testing(&state, &uri, source.find("alpha").unwrap(), source.into());
+    let cell = state.documents.isolate_structural_snapshot(&uri).unwrap();
     let ranges: Vec<_> = source
         .match_indices("alpha")
         .map(|(offset, _)| {
@@ -334,6 +374,12 @@ fn authored_reference_rename_and_prepare_anchors_are_complete() {
         })
         .collect();
     assert_eq!(super::super::references(&ctx, true), Some(expected.clone()));
+    assert_eq!(
+        warm(&cell, &Some(expected.clone()), || super::super::references(
+            &ctx, true
+        )),
+        Some(expected.clone())
+    );
     assert_eq!(uncached::references(&ctx, true), Some(expected));
     let edits: Vec<_> = ranges
         .iter()
@@ -343,9 +389,22 @@ fn authored_reference_rename_and_prepare_anchors_are_complete() {
         })
         .collect();
     assert_eq!(super::super::rename(&ctx, "renamed"), Some(edits.clone()));
+    assert_eq!(
+        warm(&cell, &Some(edits.clone()), || super::super::rename(
+            &ctx, "renamed"
+        )),
+        Some(edits.clone())
+    );
     assert_eq!(uncached::rename(&ctx, "renamed"), Some(edits));
     assert_eq!(super::super::prepare_rename(&ctx), Some(ranges[0]));
+    assert_eq!(
+        warm(&cell, &Some(ranges[0]), || super::super::prepare_rename(
+            &ctx
+        )),
+        Some(ranges[0])
+    );
     assert_eq!(uncached::prepare_rename(&ctx), Some(ranges[0]));
+    assert_eq!(cell.hit_count(), 5);
 }
 
 #[test]
@@ -372,6 +431,7 @@ fn full_reference_rename_and_prepare_packets_match_the_original_uncached_collect
             let state = ServerState::new();
             let uri = Url::parse("file:///workspace/Packet.vue").unwrap();
             let context = IdeContext::testing(&state, &uri, 0, source.clone());
+            let cell = state.documents.isolate_structural_snapshot(&uri).unwrap();
             for (slot, offset) in [
                 0,
                 source.find("alpha").unwrap(),
@@ -387,9 +447,11 @@ fn full_reference_rename_and_prepare_packets_match_the_original_uncached_collect
                     let original = uncached::references(&ctx, include);
                     let candidate = super::super::references(&ctx, include);
                     assert_eq!(candidate, original);
+                    let retained = cell.retained();
+                    let warm = warm(&cell, &original, || super::super::references(&ctx, include));
                     println!(
                         "structural-snapshot-oracle {}",
-                        serde_json::json!({"case":case,"newline":newline,"slot":slot,"method":"references","include":include,"original":original,"candidate":candidate})
+                        serde_json::json!({"case":case,"newline":newline,"slot":slot,"method":"references","include":include,"original":original,"candidate":candidate,"warm":warm,"warmHit":retained})
                     );
                     comparisons += 1;
                 }
@@ -397,18 +459,22 @@ fn full_reference_rename_and_prepare_packets_match_the_original_uncached_collect
                     let original = uncached::rename(&ctx, name);
                     let candidate = super::super::rename(&ctx, name);
                     assert_eq!(candidate, original);
+                    let retained = cell.retained();
+                    let warm = warm(&cell, &original, || super::super::rename(&ctx, name));
                     println!(
                         "structural-snapshot-oracle {}",
-                        serde_json::json!({"case":case,"newline":newline,"slot":slot,"method":"rename","name":name,"original":original,"candidate":candidate})
+                        serde_json::json!({"case":case,"newline":newline,"slot":slot,"method":"rename","name":name,"original":original,"candidate":candidate,"warm":warm,"warmHit":retained})
                     );
                     comparisons += 1;
                 }
                 let original = uncached::prepare_rename(&ctx);
                 let candidate = super::super::prepare_rename(&ctx);
                 assert_eq!(candidate, original);
+                let retained = cell.retained();
+                let warm = warm(&cell, &original, || super::super::prepare_rename(&ctx));
                 println!(
                     "structural-snapshot-oracle {}",
-                    serde_json::json!({"case":case,"newline":newline,"slot":slot,"method":"prepare","original":original,"candidate":candidate})
+                    serde_json::json!({"case":case,"newline":newline,"slot":slot,"method":"prepare","original":original,"candidate":candidate,"warm":warm,"warmHit":retained})
                 );
                 comparisons += 1;
             }
