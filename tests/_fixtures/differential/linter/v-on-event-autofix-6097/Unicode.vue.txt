@@ -1,0 +1,4 @@
+<template>
+  <!-- 雪🌸 exact UTF-16 fix ranges differ from UTF-8 bytes. -->
+  <MyWidget @Événement="one" @fooÉvent="two" @foo-évent="three" @foo-Évent="four" @foo_Évent="blocked" @xml--parsed="xml" @update:ModelValue.once="update" />
+</template>

@@ -1,0 +1,126 @@
+{
+  "messages": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@Événement' must be hyphenated.",
+      "line": 3,
+      "column": 13,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 29,
+      "fix": {
+        "range": [
+          88,
+          97
+        ],
+        "text": "événement"
+      }
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@fooÉvent' must be hyphenated.",
+      "line": 3,
+      "column": 30,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 45,
+      "fix": {
+        "range": [
+          105,
+          113
+        ],
+        "text": "fooévent"
+      }
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@foo-Évent' must be hyphenated.",
+      "line": 3,
+      "column": 65,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 82,
+      "fix": {
+        "range": [
+          140,
+          149
+        ],
+        "text": "foo-évent"
+      }
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@foo_Évent' must be hyphenated.",
+      "line": 3,
+      "column": 83,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 103
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@update:ModelValue.once' must be hyphenated.",
+      "line": 3,
+      "column": 123,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 155,
+      "fix": {
+        "range": [
+          198,
+          215
+        ],
+        "text": "update:model-value"
+      }
+    }
+  ],
+  "fixResult": {
+    "fixed": true,
+    "messages": [
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@foo_Évent' must be hyphenated.",
+        "line": 3,
+        "column": 83,
+        "messageId": "mustBeHyphenated",
+        "endLine": 3,
+        "endColumn": 103
+      }
+    ],
+    "output": "<template>\n  <!-- 雪🌸 exact UTF-16 fix ranges differ from UTF-8 bytes. -->\n  <MyWidget @événement=\"one\" @fooévent=\"two\" @foo-évent=\"three\" @foo-évent=\"four\" @foo_Évent=\"blocked\" @xml--parsed=\"xml\" @update:model-value.once=\"update\" />\n</template>\n"
+  },
+  "requery": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@foo_Évent' must be hyphenated.",
+      "line": 3,
+      "column": 83,
+      "messageId": "mustBeHyphenated",
+      "endLine": 3,
+      "endColumn": 103
+    }
+  ],
+  "secondFixResult": {
+    "fixed": false,
+    "messages": [
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@foo_Évent' must be hyphenated.",
+        "line": 3,
+        "column": 83,
+        "messageId": "mustBeHyphenated",
+        "endLine": 3,
+        "endColumn": 103
+      }
+    ],
+    "output": "<template>\n  <!-- 雪🌸 exact UTF-16 fix ranges differ from UTF-8 bytes. -->\n  <MyWidget @événement=\"one\" @fooévent=\"two\" @foo-évent=\"three\" @foo-évent=\"four\" @foo_Évent=\"blocked\" @xml--parsed=\"xml\" @update:model-value.once=\"update\" />\n</template>\n"
+  }
+}

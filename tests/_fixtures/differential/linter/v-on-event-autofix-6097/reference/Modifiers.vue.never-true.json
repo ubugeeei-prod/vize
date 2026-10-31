@@ -1,0 +1,32 @@
+{
+  "messages": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@close-window.once' can't be hyphenated.",
+      "line": 3,
+      "column": 125,
+      "messageId": "cannotBeHyphenated",
+      "endLine": 3,
+      "endColumn": 151,
+      "fix": {
+        "range": [
+          172,
+          184
+        ],
+        "text": "closeWindow"
+      }
+    }
+  ],
+  "fixResult": {
+    "fixed": true,
+    "messages": [],
+    "output": "<template>\n  <!-- 雪🌸 precedes all ranges. -->\n  <MyWidget @update:modelValue.once=\"value\" v-on:rowClick.stop=\"row\" @node_Expand=\"blocked\" @vue:beforeMount.capture=\"hook\" @closeWindow.once=\"close\" @[dynamicEvent].once=\"dynamic\" v-on=\"listeners\" />\n  <div @rowClick=\"native\" /><svg><circle @rowClick=\"native\" /><MyWidget @shapeMove=\"shape\" /></svg>\n</template>\n"
+  },
+  "requery": [],
+  "secondFixResult": {
+    "fixed": false,
+    "messages": [],
+    "output": "<template>\n  <!-- 雪🌸 precedes all ranges. -->\n  <MyWidget @update:modelValue.once=\"value\" v-on:rowClick.stop=\"row\" @node_Expand=\"blocked\" @vue:beforeMount.capture=\"hook\" @closeWindow.once=\"close\" @[dynamicEvent].once=\"dynamic\" v-on=\"listeners\" />\n  <div @rowClick=\"native\" /><svg><circle @rowClick=\"native\" /><MyWidget @shapeMove=\"shape\" /></svg>\n</template>\n"
+  }
+}

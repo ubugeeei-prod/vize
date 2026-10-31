@@ -1,0 +1,4 @@
+<template>
+  <!-- 雪🌸 precedes the exact argument range. -->
+  <MyWidget @AΣ.once="handler" />
+</template>

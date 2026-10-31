@@ -88,19 +88,19 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
                 format!("Invalid Patina rule options: {error}"),
             )
         })?;
-    let event_ignore = if rule_options
+    let (event_ignore, event_autofix) = if rule_options
         .as_ref()
         .is_some_and(|options| options.v_on_event_hyphenation_options().is_some())
     {
         // Canonical JSON owns the complete rule policy, including {} resets.
-        None
+        (None, None)
     } else {
         let ignore = opts.v_on_event_hyphenation_ignore.as_deref();
         if let Some(ignore) = ignore {
             validate_event_hyphenation_ignore(ignore)
                 .map_err(|message| Error::new(Status::InvalidArg, message.to_owned()))?;
         }
-        ignore
+        (ignore, opts.v_on_event_hyphenation_autofix)
     };
     let define_macros_order = if rule_options
         .as_ref()
@@ -137,7 +137,8 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
         v_on_event_hyphenation,
         attribute_hyphenation,
     );
-    let linter = configure_patina_event_ignore(linter, v_on_event_hyphenation, event_ignore);
+    let linter =
+        configure_patina_event_ignore(linter, v_on_event_hyphenation, event_ignore, event_autofix);
     let linter = match rule_options.as_ref() {
         Some(options) => linter.with_config_rule_options(options),
         None => linter,

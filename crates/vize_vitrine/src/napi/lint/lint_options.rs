@@ -75,6 +75,8 @@ pub struct PatinaLintOptionsNapi {
     pub v_on_event_hyphenation: Option<String>,
     /// Case-sensitive literal event-name substrings to exempt.
     pub v_on_event_hyphenation_ignore: Option<Vec<String>>,
+    /// Opt into static event-name fixes; omitted keeps diagnostics only.
+    pub v_on_event_hyphenation_autofix: Option<bool>,
     /// Style for `vue/attribute-hyphenation`: "always" or "never"
     pub attribute_hyphenation: Option<String>,
     /// CLI-compatible `linter.ruleOptions` encoded as JSON.
@@ -249,15 +251,21 @@ pub(super) fn configure_patina_event_ignore(
     linter: vize_patina::Linter,
     style: Option<&str>,
     ignore: Option<&[String]>,
+    autofix: Option<bool>,
 ) -> vize_patina::Linter {
-    match ignore {
-        Some(ignore) => linter.with_v_on_event_hyphenation_options(
+    match (ignore, autofix) {
+        (None, None) => linter,
+        (ignore, autofix) => linter.with_v_on_event_hyphenation_policy(
             style
                 .and_then(v_on_event_hyphenation_style)
                 .unwrap_or_default(),
-            ignore.iter().map(|entry| entry.as_str().into()).collect(),
+            ignore
+                .unwrap_or_default()
+                .iter()
+                .map(|entry| entry.as_str().into())
+                .collect(),
+            autofix.unwrap_or(false),
         ),
-        None => linter,
     }
 }
 

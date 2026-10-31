@@ -323,6 +323,7 @@ export interface LintRuleOptions {
     | {
         style?: "always" | "never";
         ignore?: string[];
+        autofix?: boolean;
       };
   "vue/v-bind-style"?: "shorthand" | "longform";
   "vue/v-on-style"?: "shorthand" | "longform";

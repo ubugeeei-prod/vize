@@ -185,6 +185,7 @@ class DefineMacrosOrderOptions {
 class VOnEventHyphenationOptions {
   style: HyphenationStyle = "always"
   ignore: Listing<String> = new Listing {}
+  autofix: Boolean = false
 }
 class LintRuleOptions {
   `script/define-macros-order`: DefineMacrosOrderOptions? = null

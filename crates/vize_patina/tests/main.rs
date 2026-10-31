@@ -105,6 +105,7 @@ mod unused_disable_directives;
 mod use_v_on_exact_conflicts;
 mod v_for_key_ownership;
 mod v_html_on_unknown_lowercase_components;
+mod v_on_event_autofix;
 mod v_on_hyphenation_suggestions;
 mod valid_v_slot_dynamic_bindings;
 mod valid_v_slot_dynamic_modifiers;

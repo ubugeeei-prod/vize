@@ -5574,10 +5574,14 @@ vp run lint
 
 [悪い例](#vue-v-on-event-hyphenation-bad) · [良い例](#vue-v-on-event-hyphenation-good)
 
-既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
+既定の重大度: `warning`
+
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+
+自動修正: 対応している診断で利用できます
+
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -5631,7 +5635,7 @@ vp run lint
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L38) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L40) · [全ルール](all.md)
 
 ### `vue/v-on-handler-style`
 

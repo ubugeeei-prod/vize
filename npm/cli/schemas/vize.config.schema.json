@@ -735,6 +735,10 @@
                     "pattern": "^(?!\\s*$)(?![\\s\\S]*:exit$)"
                   },
                   "uniqueItems": true
+                },
+                "autofix": {
+                  "default": false,
+                  "type": "boolean"
                 }
               },
               "additionalProperties": false

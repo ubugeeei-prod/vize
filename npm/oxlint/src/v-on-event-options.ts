@@ -3,14 +3,17 @@ import type { HyphenationStyle } from "./model.js";
 export interface VOnEventHyphenationOptions {
   style?: HyphenationStyle;
   ignore?: string[];
+  autofix?: boolean;
 }
 
 export function isVOnEventHyphenationOptions(value: unknown): value is VOnEventHyphenationOptions {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
-  if (!Object.keys(value).every((key) => key === "style" || key === "ignore")) return false;
+  if (!Object.keys(value).every((key) => key === "style" || key === "ignore" || key === "autofix"))
+    return false;
   const option = value as Record<string, unknown>;
   if (option.style !== undefined && option.style !== "always" && option.style !== "never")
     return false;
+  if (option.autofix !== undefined && typeof option.autofix !== "boolean") return false;
   const ignore = option.ignore;
   return (
     ignore === undefined ||
@@ -34,6 +37,7 @@ export function vOnEventHyphenationSchema(): Record<string, unknown> {
         type: "object",
         properties: {
           style: { enum: ["always", "never"] },
+          autofix: { type: "boolean" },
           ignore: {
             type: "array",
             uniqueItems: true,
