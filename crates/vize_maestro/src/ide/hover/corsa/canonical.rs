@@ -43,7 +43,13 @@ pub(super) async fn hover(
         tracing::info!(uri = %ctx.uri, "typed hover skipped: no initialized Corsa bridge");
         return None;
     };
-    let document = match corsa_support::open_canonical_virtual_document_strict(ctx, bridge).await {
+    let phase = vize_canon::corsa_bridge::EditorPreparationPhase::navigation(
+        "navigation.hover.canonical.open",
+        1,
+    );
+    let opened = corsa_support::open_canonical_virtual_document_strict(ctx, bridge).await;
+    phase.finish();
+    let document = match opened {
         Ok(Some(document)) => document,
         Ok(None) => {
             tracing::warn!(uri = %ctx.uri, "typed hover skipped: no canonical document for this URI");
@@ -60,7 +66,13 @@ pub(super) async fn hover(
         tracing::info!(uri = %ctx.uri, offset = ctx.offset, "typed hover skipped: offset has no generated position");
         return None;
     };
-    let mut hover = match bridge.hover(&document.request_uri, line, character).await {
+    let phase = vize_canon::corsa_bridge::EditorPreparationPhase::navigation(
+        "navigation.hover.canonical.native_wait",
+        1,
+    );
+    let native = bridge.hover(&document.request_uri, line, character).await;
+    phase.finish();
+    let mut hover = match native {
         Ok(Some(hover)) => hover,
         Ok(None) => return Some(Answer::Empty),
         Err(error) => {
@@ -102,12 +114,17 @@ pub(super) async fn hover(
             }
         }
     }
+    let phase = vize_canon::corsa_bridge::EditorPreparationPhase::navigation(
+        "navigation.hover.canonical.presentation",
+        1,
+    );
     let mapped_range = hover
         .range
         .as_ref()
         .and_then(|range| corsa_support::map_canonical_lsp_range(ctx, &document, range));
     let mut converted = HoverService::convert_lsp_hover(hover);
     converted.range = mapped_range.or_else(|| authored_hover_token_range(ctx));
+    phase.finish();
     Some(Answer::Hover(converted))
 }
 

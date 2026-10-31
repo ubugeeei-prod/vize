@@ -72,7 +72,15 @@ impl MaestroServer {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(ctx) = IdeContext::at_position(&self.state, uri, position) else {
+        #[cfg(feature = "native")]
+        let phase = vize_canon::corsa_bridge::EditorPreparationPhase::navigation(
+            "navigation.hover.context",
+            1,
+        );
+        let context = IdeContext::at_position(&self.state, uri, position);
+        #[cfg(feature = "native")]
+        phase.finish();
+        let Some(ctx) = context else {
             return Ok(None);
         };
 
@@ -85,7 +93,13 @@ impl MaestroServer {
                 if let Some(hover) = self.jsx_intrinsic_hover(&ctx, position).await {
                     return Ok(Some(hover));
                 }
+                let phase = vize_canon::corsa_bridge::EditorPreparationPhase::navigation(
+                    "navigation.hover.get_bridge",
+                    1,
+                );
+
                 let corsa_bridge = self.state.get_corsa_bridge().await;
+                phase.finish();
                 return Ok(crate::ide::JsxService::hover(&ctx, corsa_bridge).await);
             }
             return Ok(None);
@@ -95,7 +109,13 @@ impl MaestroServer {
         let mut hover_result: Option<Hover> = if ctx.is_in_style() {
             HoverService::hover(&ctx).or_else(|| super::super::annotations::color_hover(&ctx))
         } else {
+            let phase = vize_canon::corsa_bridge::EditorPreparationPhase::navigation(
+                "navigation.hover.get_bridge",
+                1,
+            );
+
             let corsa_bridge = self.state.get_corsa_bridge().await;
+            phase.finish();
             HoverService::hover_with_corsa(&ctx, corsa_bridge).await
         };
 

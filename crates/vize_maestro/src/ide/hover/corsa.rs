@@ -164,7 +164,12 @@ impl HoverService {
             return match answer {
                 canonical::Answer::Empty => None,
                 canonical::Answer::Hover(mut hover) => {
+                    let phase = vize_canon::corsa_bridge::EditorPreparationPhase::navigation(
+                        "navigation.hover.align",
+                        1,
+                    );
                     super::declaration_keyword::align_hover(ctx, &word, &mut hover);
+                    phase.finish();
                     Some(hover)
                 }
             };
