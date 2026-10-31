@@ -12,6 +12,8 @@ use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{ForBinding, ForOp, Namespace, Op, Region};
 use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
 
+pub use vize_l2::analysis::for_facts::{ForName, ForParts};
+
 use super::cx::{Cx, attr_slice, attr_span, element_span};
 use super::element::{Analyzed, attr_text, element_core};
 use super::expr::{desc, expr_at, opaque_at, trimmed};
@@ -26,42 +28,6 @@ use bindings::AliasGoal;
 
 #[cfg(test)]
 mod tests;
-
-/// One `ui.for`'s consumed scope view, positions in grammar order.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ForParts {
-    /// The introduction-site tag the lowering minted.
-    pub tag: ScopeTag,
-    /// The value position.
-    pub value: ForName,
-    /// The second position (object key).
-    pub key: ForName,
-    /// The third position (index).
-    pub index: ForName,
-}
-
-/// One binding position's consumed name status.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ForName {
-    /// The position's one enumerated simple-identifier name.
-    Named(String),
-    /// The position is authored but is not a simple identifier: a
-    /// destructuring pattern, a foreign dialect, or the classified escape.
-    Pending,
-    /// The position was not authored.
-    Absent,
-}
-
-impl ForName {
-    /// The provenance spelling: the name, `?` for pending, `-` for absent.
-    pub(crate) fn spell(&self) -> &str {
-        match self {
-            ForName::Named(name) => name.as_str(),
-            ForName::Pending => "?",
-            ForName::Absent => "-",
-        }
-    }
-}
 
 /// Build the `ui.for` for an element's `v-for` — or, when the directive
 /// carries no expression at all, the kept fragment without it.
