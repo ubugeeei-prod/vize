@@ -6,6 +6,8 @@
     reason = "tower-lsp SymbolInformation takes std String names built with format!/to_string"
 )]
 
+#[cfg(feature = "micro-profiling")]
+pub(crate) mod allocation_observation;
 mod descriptor;
 #[cfg(feature = "native")]
 mod disk;
@@ -56,7 +58,13 @@ impl WorkspaceSymbolsService {
         query: &str,
         symbols: &mut Vec<SymbolInformation>,
     ) {
-        let Some(descriptor) = descriptor::parse(uri.path(), content) else {
+        #[cfg(feature = "micro-profiling")]
+        let descriptor_observation =
+            allocation_observation::region(allocation_observation::Region::Descriptor);
+        let descriptor = descriptor::parse(uri.path(), content);
+        #[cfg(feature = "micro-profiling")]
+        drop(descriptor_observation);
+        let Some(descriptor) = descriptor else {
             return;
         };
 
@@ -88,6 +96,9 @@ impl WorkspaceSymbolsService {
 
         // Collect from script setup
         if let Some(ref script_setup) = descriptor.script_setup {
+            #[cfg(feature = "micro-profiling")]
+            let _script_observation =
+                allocation_observation::region(allocation_observation::Region::Script);
             Self::collect_script_symbols(
                 uri,
                 &script_setup.content,
@@ -100,6 +111,9 @@ impl WorkspaceSymbolsService {
 
         // Collect from script
         if let Some(ref script) = descriptor.script {
+            #[cfg(feature = "micro-profiling")]
+            let _script_observation =
+                allocation_observation::region(allocation_observation::Region::Script);
             Self::collect_script_symbols(
                 uri,
                 &script.content,
@@ -112,6 +126,9 @@ impl WorkspaceSymbolsService {
 
         // Collect from styles
         for (idx, style) in descriptor.styles.iter().enumerate() {
+            #[cfg(feature = "micro-profiling")]
+            let _style_observation =
+                allocation_observation::region(allocation_observation::Region::Style);
             Self::collect_style_symbols(
                 uri,
                 &style.content,
@@ -126,6 +143,9 @@ impl WorkspaceSymbolsService {
         // workspace symbol search surfaces component contracts, not just
         // script bindings. Foundation for #697 — currently covers emits and
         // slot names; provide/inject and template refs follow the same shape.
+        #[cfg(feature = "micro-profiling")]
+        let _contract_observation =
+            allocation_observation::region(allocation_observation::Region::Contract);
         Self::collect_vue_specific_symbols(uri, &descriptor, query, symbols);
     }
 

@@ -26,6 +26,8 @@ impl ServerState {
         query: &str,
         filter: impl Fn(&Url) -> bool + Clone + Send + 'static,
     ) -> Vec<SymbolInformation> {
+        #[cfg(feature = "micro-profiling")]
+        let observation = crate::ide::workspace_symbols::allocation_observation::begin_request();
         loop {
             let paths = self.current_project_paths().await;
             let Some(revision) = self.documents.stable_revision() else {
@@ -67,6 +69,11 @@ impl ServerState {
                 self.workspace_project_files
                     .worker
                     .run(move || {
+                        #[cfg(feature = "micro-profiling")]
+                        let _worker_observation =
+                            crate::ide::workspace_symbols::allocation_observation::worker_scope(
+                                observation,
+                            );
                         collect_sources_filtered(
                             paths.uris,
                             &worker_open,
@@ -92,6 +99,8 @@ impl ServerState {
             if self.project_source_snapshot_current(&paths.roots, paths.generation)
                 && self.documents.stable_revision() == Some(revision)
             {
+                #[cfg(feature = "micro-profiling")]
+                crate::ide::workspace_symbols::allocation_observation::finish_request(observation);
                 return symbols;
             }
         }
