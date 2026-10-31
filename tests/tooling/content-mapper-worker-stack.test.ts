@@ -7,11 +7,15 @@ import { test } from "node:test";
 import {
   OUTPUT_LIMIT_BYTES,
   RSS_LIMIT_BYTES,
+  STACKS,
   checkResponse,
   frames,
   hashFile,
+  largerControlStack,
   readTrialResult,
   requireStackFailure,
+  requireFullWorkerPool,
+  workerPoolReceipt,
   witness,
   type Observation,
   type Shape,
@@ -30,6 +34,37 @@ const observation: Observation = {
   peakProcessTreeRssBytes: 1234,
   wallSeconds: 0.25,
 };
+
+test("adaptive calibration refuses its largest candidate without an independent control", () => {
+  for (let candidate = 0; candidate < STACKS.length - 1; candidate++) {
+    const control = largerControlStack(candidate);
+    assert(control > STACKS[candidate]);
+    assert(STACKS.includes(control));
+  }
+  assert.throws(() => largerControlStack(STACKS.length - 1), /no independent larger stack control/);
+});
+
+test("native worker receipts retain fallback counts and refuse partial or missing qualification", () => {
+  const full = workerPoolReceipt({ requestedWorkers: 8, effectiveWorkers: 8, spawnFailure: null });
+  requireFullWorkerPool(full);
+  const partial = workerPoolReceipt({
+    requestedWorkers: 8,
+    effectiveWorkers: 1,
+    spawnFailure: "OS limit",
+  });
+  assert.equal(partial.effectiveWorkers, 1);
+  assert.throws(() => requireFullWorkerPool(partial), /partial worker pool/);
+  assert.throws(() => requireFullWorkerPool(undefined), /capture is required/);
+  for (const invalid of [
+    null,
+    {},
+    { requestedWorkers: 8, effectiveWorkers: 9, spawnFailure: null },
+    { requestedWorkers: 8, effectiveWorkers: 1, spawnFailure: null },
+    { requestedWorkers: 0, effectiveWorkers: 0, spawnFailure: null },
+  ]) {
+    assert.throws(() => workerPoolReceipt(invalid));
+  }
+});
 
 function response(
   text: string,

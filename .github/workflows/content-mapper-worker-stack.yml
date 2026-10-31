@@ -9,7 +9,9 @@ on:
       - tools/benchmarks/scripts/content-mapper-worker-stack.ts
       - tools/benchmarks/scripts/content-mapper-worker-stack-core.ts
       - tests/tooling/content-mapper-worker-stack.test.ts
+      - crates/vize/src/commands/content_mapper.rs
       - crates/vize/src/commands/content_mapper/dispatch.rs
+      - crates/vize/src/commands/content_mapper/dispatch/**
 
 permissions:
   contents: read
@@ -65,9 +67,9 @@ jobs:
         run: |
           set -euo pipefail
           cargo test --locked --profile "$BUILD_PROFILE" -p vize --lib \
-            commands::content_mapper::dispatch::tests::worker_spawn_failure_drops_channels_before_scoped_join \
-            -- --exact --nocapture | tee "$RUNNER_TEMP/worker-spawn-$BUILD_PROFILE.log"
-          rg -F 'test result: ok. 1 passed; 0 failed;' "$RUNNER_TEMP/worker-spawn-$BUILD_PROFILE.log"
+            commands::content_mapper::dispatch::tests:: \
+            -- --nocapture | tee "$RUNNER_TEMP/worker-spawn-$BUILD_PROFILE.log"
+          rg -F 'test result: ok. 3 passed; 0 failed;' "$RUNNER_TEMP/worker-spawn-$BUILD_PROFILE.log"
       - name: Probe bounded child processes and retain complete packets
         env:
           BUILD_PROFILE: ${{ matrix.profile }}

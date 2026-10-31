@@ -8,6 +8,50 @@ export const STACKS = Array.from({ length: 10 }, (_, power) => 256 * 1024 * 2 **
 export const TIMEOUT_SECONDS = 30;
 export const OUTPUT_LIMIT_BYTES = 512 * 1024 ** 2;
 export const RSS_LIMIT_BYTES = 2 * 1024 ** 3;
+export function largerControlStack(candidate: number): number {
+  assert(Number.isInteger(candidate) && candidate >= 0 && candidate < STACKS.length);
+  const larger = STACKS[candidate + 1];
+  assert(larger !== undefined && larger > STACKS[candidate], "no independent larger stack control");
+  return larger;
+}
+
+export interface WorkerPoolReceipt {
+  requestedWorkers: number;
+  effectiveWorkers: number;
+  spawnFailure: string | null;
+}
+
+export function workerPoolReceipt(value: unknown): WorkerPoolReceipt {
+  assert(value !== null && typeof value === "object" && !Array.isArray(value));
+  const fields = value as Record<string, unknown>;
+  const requested = fields.requestedWorkers,
+    effective = fields.effectiveWorkers,
+    failure = fields.spawnFailure;
+  assert(typeof requested === "number" && Number.isSafeInteger(requested) && requested > 0);
+  assert(
+    typeof effective === "number" &&
+      Number.isSafeInteger(effective) &&
+      effective >= 0 &&
+      effective <= requested,
+  );
+  assert(failure === null || (typeof failure === "string" && failure.length > 0));
+  assert.equal(
+    failure === null,
+    effective === requested,
+    "worker fallback must retain its spawn failure",
+  );
+  return { requestedWorkers: requested, effectiveWorkers: effective, spawnFailure: failure };
+}
+
+export function requireFullWorkerPool(receipt: WorkerPoolReceipt | undefined): void {
+  assert(receipt, "native worker pool capture is required");
+  assert.equal(
+    receipt.effectiveWorkers,
+    receipt.requestedWorkers,
+    "partial worker pool cannot qualify requested parallelism",
+  );
+  assert.equal(receipt.spawnFailure, null);
+}
 export type Shape = "v-for" | "v-slot";
 export type Profile = "ci" | "ci-opt";
 
@@ -21,6 +65,7 @@ export interface Observation {
 }
 
 export interface TrialResult extends Observation {
+  workerPool?: WorkerPoolReceipt;
   shape: Shape;
   depth: number;
   inheritedMinStackBytes: number;

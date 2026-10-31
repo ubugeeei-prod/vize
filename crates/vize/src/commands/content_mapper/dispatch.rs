@@ -82,38 +82,73 @@ impl WriteProgress {
 }
 
 pub(super) fn serve<R: BufRead, W: Write + Send>(reader: &mut R, writer: &mut W) -> io::Result<()> {
-    serve_with_worker_stack(reader, writer, TRANSFORM_WORKER_STACK_BYTES)
+    let workers = thread::available_parallelism()
+        .map(std::num::NonZero::get)
+        .unwrap_or(1);
+    serve_with_worker_plan(
+        reader,
+        writer,
+        thread::Builder::new(),
+        std::iter::repeat_n(TRANSFORM_WORKER_STACK_BYTES, workers),
+    )
+    .map(|_| ())
 }
 
-fn serve_with_worker_stack<R: BufRead, W: Write + Send>(
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WorkerPoolReceipt {
+    requested_workers: usize,
+    effective_workers: usize,
+    spawn_failure: Option<vize_l0::String>,
+}
+
+fn capture_worker_pool(receipt: &WorkerPoolReceipt) -> io::Result<()> {
+    let Some(path) = std::env::var_os("VIZE_CONTENT_MAPPER_WORKER_CAPTURE") else {
+        return Ok(());
+    };
+    let file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(path)?;
+    serde_json::to_writer(file, receipt).map_err(io::Error::other)
+}
+
+fn serve_with_worker_plan<R: BufRead, W: Write + Send>(
     reader: &mut R,
     writer: &mut W,
-    stack_bytes: usize,
-) -> io::Result<()> {
+    writer_builder: thread::Builder,
+    worker_stacks: impl ExactSizeIterator<Item = usize>,
+) -> io::Result<WorkerPoolReceipt> {
     let write_error = Mutex::new(None::<io::Error>);
     let progress = WriteProgress::new();
     let (job_tx, job_rx) = mpsc::channel::<TransformJob>();
     let job_rx = Mutex::new(job_rx);
     let (done_tx, done_rx) = mpsc::channel::<(u64, Vec<u8>)>();
+    let mut receipt = WorkerPoolReceipt {
+        requested_workers: worker_stacks.len(),
+        effective_workers: 0,
+        spawn_failure: None,
+    };
     let read_result = thread::scope(|scope| {
         let writer_error = &write_error;
         let writer_progress = &progress;
-        scope.spawn(move || {
+        writer_builder.spawn_scoped(scope, move || {
             if let Err(error) = write_ordered(writer, done_rx, writer_progress) {
                 writer_progress.fail();
                 *writer_error.lock().unwrap_or_else(PoisonError::into_inner) = Some(error);
             }
-        });
-        let workers = thread::available_parallelism()
-            .map(std::num::NonZero::get)
-            .unwrap_or(1);
-        for _ in 0..workers {
+        })?;
+        for stack_bytes in worker_stacks {
             let jobs = &job_rx;
             let done = done_tx.clone();
             if let Err(error) = thread::Builder::new()
                 .stack_size(stack_bytes)
                 .spawn_scoped(scope, move || worker(jobs, done))
             {
+                receipt.spawn_failure = Some(cstr!("{error}"));
+                if receipt.effective_workers > 0 {
+                    break;
+                }
                 // Scoped threads must see EOF before their automatic join.
                 // Returning early with these senders alive deadlocks both
                 // the writer and any workers that were already started.
@@ -121,8 +156,14 @@ fn serve_with_worker_stack<R: BufRead, W: Write + Send>(
                 drop(done_tx);
                 return Err(error);
             }
+            receipt.effective_workers += 1;
         }
-        let read = read_loop(reader, &job_tx, &done_tx, &progress);
+        let read = if receipt.effective_workers == 0 {
+            Err(io::Error::other("content-mapper has no transform workers"))
+        } else {
+            capture_worker_pool(&receipt)
+                .and_then(|()| read_loop(reader, &job_tx, &done_tx, &progress))
+        };
         drop(job_tx);
         drop(done_tx);
         read
@@ -134,7 +175,7 @@ fn serve_with_worker_stack<R: BufRead, W: Write + Send>(
     {
         return Err(error);
     }
-    read_result
+    read_result.map(|()| receipt)
 }
 
 fn worker(jobs: &Mutex<Receiver<TransformJob>>, done: Sender<(u64, Vec<u8>)>) {
@@ -364,23 +405,4 @@ fn encode_frame(value: &impl Serialize) -> io::Result<Vec<u8>> {
 }
 
 #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
-mod tests {
-    use std::io::Cursor;
-    use std::sync::mpsc;
-    use std::thread;
-    use std::time::Duration;
-
-    #[test]
-    fn worker_spawn_failure_drops_channels_before_scoped_join() {
-        let (done, result) = mpsc::channel();
-        thread::spawn(move || {
-            let observed = super::serve_with_worker_stack(
-                &mut Cursor::new(Vec::<u8>::new()),
-                &mut Vec::new(),
-                isize::MAX as usize / 2,
-            );
-            let _ = done.send(observed.is_err());
-        });
-        assert_eq!(result.recv_timeout(Duration::from_secs(5)), Ok(true));
-    }
-}
+mod tests;

@@ -1,7 +1,15 @@
 /** Bounded real-stdio worker probes; historical Python source/images stay immutable. */
 import assert from "node:assert/strict";
 import { spawn, execFileSync } from "node:child_process";
-import { closeSync, mkdirSync, openSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import {
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  realpathSync,
+  writeFileSync,
+} from "node:fs";
 import { constants } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
@@ -15,8 +23,11 @@ import {
   RSS_LIMIT_BYTES,
   frames,
   hashFile,
+  largerControlStack,
   readTrialResult,
+  requireFullWorkerPool,
   requireStackFailure,
+  workerPoolReceipt,
   witness,
   type Profile,
   type Shape,
@@ -146,7 +157,11 @@ async function trial(
         owned(join(directory, "stdout.wire"), "w"),
         owned(join(directory, "stderr.txt"), "w"),
       ],
-      env: { ...process.env, RUST_MIN_STACK: String(stack) },
+      env: {
+        ...process.env,
+        RUST_MIN_STACK: String(stack),
+        VIZE_CONTENT_MAPPER_WORKER_CAPTURE: join(directory, "worker-pool.json"),
+      },
       detached: true,
       shell: false,
     });
@@ -212,8 +227,12 @@ async function trial(
     peakProcessTreeRssBytes: peakRss,
     wallSeconds: (performance.now() - started) / 1000,
   });
+  const poolPath = join(directory, "worker-pool.json");
+  if (existsSync(poolPath))
+    result.workerPool = workerPoolReceipt(JSON.parse(readFileSync(poolPath, "utf8")));
   writeFileSync(join(directory, "result.json"), JSON.stringify(result, null, 2) + "\n");
   console.log(JSON.stringify(result));
+  if (result.accepted) requireFullWorkerPool(result.workerPool);
   return result;
 }
 
@@ -329,7 +348,7 @@ export async function runProbe(options: Options): Promise<void> {
             candidate++;
           }
           assert(candidate < STACKS.length && result !== undefined, "no candidate stack completed");
-          const stack = STACKS[Math.min(candidate + 1, STACKS.length - 1)];
+          const stack = largerControlStack(candidate);
           const control = await trial(
             binary,
             join(out, `${shape}-${depth}-control`),
