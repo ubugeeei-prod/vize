@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/babel-plugin",
-  "version": "0.474.0",
+  "version": "0.626.0",
   "description": "Vue JSX and TSX compilation through the shared Vize compiler",
   "homepage": "https://github.com/ubugeeei-prod/vize",
   "bugs": {

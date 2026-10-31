@@ -1,6 +1,6 @@
 {
   "name": "prettier-plugin-vize",
-  "version": "0.474.0",
+  "version": "0.626.0",
   "description": "Prettier integration for Vize Glyph Vue and Art formatting",
   "keywords": [
     "formatter",
