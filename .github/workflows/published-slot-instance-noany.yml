@@ -7,6 +7,8 @@ on:
       - tools/support/release/computed_event_custody.ts
       - tools/support/release/editor_vite_stub/custody.ts
       - tools/support/release/public_install/native-custody.cjs
+      - tools/support/release/public_install/registry.ts
+      - tools/support/archive/tar.ts
       - tests/fixtures/typechecker/public-slot-instance/proof.ts.txt
       - tests/tooling/release/slot-instance-public.test.ts
   workflow_dispatch:

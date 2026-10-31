@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 import { copyFileSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
-import { asRecord, asString, readJsonRecord } from "../../json-value.ts";
+import { asRecord, asString, parseJson, readJsonRecord } from "../../json-value.ts";
 import type { Recorder } from "../../config/windows_consumer/common.ts";
 import { assertNativeIdentity, findNpmCli } from "../computed_event_names.ts";
 import {
@@ -17,6 +17,7 @@ import { authenticate, assertLockedPackage, validateNative } from "./authority.t
 import { assertGraph, profiles, type Role } from "./contract.ts";
 import { assertJournalPid, capture } from "./process.ts";
 import { libraryImages, libraryVersion, mergeImages } from "./libraries.ts";
+import { authenticatePackedManifest, captureInstalledManifests } from "./packed-manifest.ts";
 
 export function providerManifest(role: Role) {
   const vueNames = [
@@ -97,9 +98,14 @@ export async function install(
     providerManifest(role).dependencies,
   );
   const modules = realpathSync(join(root, "node_modules"));
+  const capturedManifests = captureInstalledManifests(modules, record);
+  record.json("installation-phase.json", { phase: "validate-installed-package-identities" });
   const pkg = (name: string, wanted: string, packageName = name) => {
     const file = join(modules, name, "package.json"),
-      manifest = readJsonRecord(file);
+      raw = readFileSync(file),
+      manifest = asRecord(parseJson(new TextDecoder("utf-8", { fatal: true }).decode(raw)));
+    const captured = capturedManifests.get(name);
+    if (captured) assert.deepEqual(raw, captured.raw, "installed manifest changed after capture");
     assert.ok(inside(modules, realpathSync(file)));
     assert.equal(manifest.name, packageName);
     assert.equal(manifest.version, wanted);
@@ -111,19 +117,21 @@ export async function install(
     nativePackage = pkg("@vizejs/native", version),
     platformName = "@vizejs/native-linux-x64-gnu",
     platform = pkg(platformName, version);
-  assert.deepEqual(
-    cliPackage.manifest,
+  for (const name of ["vize", "@vizejs/native", platformName])
+    assertLockedPackage(lock, authority.capsule, name, version);
+  await authenticatePackedManifest(
+    authority.capsule,
     authority.packageManifest,
-    "entire installed CLI manifest equals its immutable tagged source",
+    capturedManifests.get("vize")!.raw,
+    record,
   );
+  record.json("installation-phase.json", { phase: "validate-native-source-sdk-and-libraries" });
   assert.deepEqual(asRecord(asRecord(cliPackage.manifest.typescript).contentMapper).exec, [
     "node",
     "./bin/vize",
     "content-mapper",
   ]);
   assert.equal(asRecord(nativePackage.manifest.optionalDependencies)[platformName], version);
-  for (const name of ["vize", "@vizejs/native", platformName])
-    assertLockedPackage(lock, authority.capsule, name, version);
   const require = createRequire(cli),
     nativeEntry = realpathSync(require.resolve("@vizejs/native"));
   assert.equal(
@@ -214,6 +222,7 @@ export async function install(
   assertJournalPid(readFileSync(journal.journal, "utf8"), cliVersion.pid);
   assert.ok(cliVersion.stdout.includes(version));
   const images = mergeImages([
+    ...[...capturedManifests.values()].map((row) => row.image),
     fileImage(join(root, "package.json")),
     fileImage(join(root, "package-lock.json")),
     fileImage(cliPackage.file),
