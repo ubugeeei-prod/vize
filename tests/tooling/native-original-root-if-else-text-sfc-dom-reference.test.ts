@@ -11,6 +11,7 @@ import {
   executeRootIfElseTextComponent,
   rootIfElseTextErrorDetails,
   type RootIfElseTextFixture,
+  type RootIfElseTextMode,
 } from "./support/native-original-root-if-else-text-sfc-dom-runtime.ts";
 import {
   compileRootIfElseTextPrimary,
@@ -56,8 +57,9 @@ object(nativeGoldens);
 object(primaryGoldens);
 object(runtimeGoldens);
 const modes = ["development", "production"] as const;
-const mode = process.env.NODE_ENV ?? "development";
-assert(mode === "development" || mode === "production");
+const selectedMode = process.env.NODE_ENV ?? "development";
+assert(selectedMode === "development" || selectedMode === "production");
+const mode: RootIfElseTextMode = selectedMode;
 assert.equal(pack.schema, "vize.native-sfc.original-root-if-else-text-inputs");
 assert.equal(pack.filename, "OriginalRootIfElseText雪🌸.vue");
 const filename = pack.filename as string;
