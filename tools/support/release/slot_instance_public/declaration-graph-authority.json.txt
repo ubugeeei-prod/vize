@@ -1,0 +1,322 @@
+{
+  "schema": "vize.slot-instance-public-root-relative-graph",
+  "version": 1,
+  "role": "source-declaration-graph-not-installed-acceptance",
+  "sourceReferenceSha256": "d7c3bbef80e3d79522f13a387480e99736bf92d149e134e777c6deb3d709ea2e",
+  "historicalEdgesSha256": "22f282468418c4f0a98aacc332e7beaee7309db5bd29c0383a63a088c1c2aa8b",
+  "roles": {
+    "before": {
+      "source": "e361d3873712eb11db018827713b1434be898261",
+      "candidate": "5695be444d8e5d889d2337fc8e22a974458b93ea",
+      "record": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/slot-provider-payload-update-11027.json",
+      "sha256": "0a71c5c21535e50d02df527e6c00267dfd8b44bfc0d63c37c49a55d67ab1166c",
+      "files": [
+        {
+          "path": "virtual-ts.d.ts",
+          "bytes": 17156,
+          "sha256": "0aadc144db9c92c203751ecf77f86ba84217ec3241e88bc0b0b8168265b94b28"
+        },
+        {
+          "path": "virtual-ts.d.mts",
+          "bytes": 17156,
+          "sha256": "0aadc144db9c92c203751ecf77f86ba84217ec3241e88bc0b0b8168265b94b28"
+        },
+        {
+          "path": "virtual-ts.d.cts",
+          "bytes": 17156,
+          "sha256": "0aadc144db9c92c203751ecf77f86ba84217ec3241e88bc0b0b8168265b94b28"
+        },
+        {
+          "path": "content-mapper-helpers.d.ts",
+          "bytes": 1109,
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "path": "content-mapper-helpers.d.mts",
+          "bytes": 1109,
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "path": "content-mapper-helpers.d.cts",
+          "bytes": 1109,
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "path": "generated/content-mapper-types.d.ts",
+          "bytes": 11202,
+          "sha256": "7457fd86aafb4b2a5b1edbddedf538a45a072517645dd0ece2fd4c074a0f632e"
+        },
+        {
+          "path": "virtual-ts-globals.d.ts",
+          "bytes": 18966,
+          "sha256": "d647737ea035f166c94c131013af3265a3a33783dbad307b2eb3c6d558fc476a"
+        },
+        {
+          "path": "virtual-ts-patterns.d.ts",
+          "bytes": 12522,
+          "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
+        }
+      ],
+      "edges": [
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-globals.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.ts",
+          "target": "virtual-ts-globals.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-patterns.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.ts",
+          "target": "virtual-ts-patterns.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-globals.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.mts",
+          "target": "virtual-ts-globals.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-patterns.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.mts",
+          "target": "virtual-ts-patterns.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-globals.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.cts",
+          "target": "virtual-ts-globals.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-patterns.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.cts",
+          "target": "virtual-ts-patterns.d.ts"
+        },
+        {
+          "kind": "type-export",
+          "specifier": "./generated/content-mapper-types.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "content-mapper-helpers.d.ts",
+          "target": "generated/content-mapper-types.d.ts"
+        },
+        {
+          "kind": "type-export",
+          "specifier": "./generated/content-mapper-types.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "content-mapper-helpers.d.mts",
+          "target": "generated/content-mapper-types.d.ts"
+        },
+        {
+          "kind": "type-export",
+          "specifier": "./generated/content-mapper-types.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "content-mapper-helpers.d.cts",
+          "target": "generated/content-mapper-types.d.ts"
+        }
+      ]
+    },
+    "head": {
+      "source": "3279664693067173a8da325f189dca917557fec5",
+      "candidate": "41cbfb604e9ee10015390f278afa0775e53ae368",
+      "record": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/public-slot-instance-update-11023.json",
+      "sha256": "3f815c1abf70c0a93792e1b5c4c8fadef270cfbb3e8ebddd9f0d0a8280c25616",
+      "files": [
+        {
+          "path": "virtual-ts.d.ts",
+          "bytes": 15334,
+          "sha256": "d5e5eee803afd4fdb74912647d453322d36ce476daef487012eb1eca25f750df"
+        },
+        {
+          "path": "virtual-ts.d.mts",
+          "bytes": 15334,
+          "sha256": "d5e5eee803afd4fdb74912647d453322d36ce476daef487012eb1eca25f750df"
+        },
+        {
+          "path": "virtual-ts.d.cts",
+          "bytes": 15334,
+          "sha256": "d5e5eee803afd4fdb74912647d453322d36ce476daef487012eb1eca25f750df"
+        },
+        {
+          "path": "content-mapper-helpers.d.ts",
+          "bytes": 1109,
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "path": "content-mapper-helpers.d.mts",
+          "bytes": 1109,
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "path": "content-mapper-helpers.d.cts",
+          "bytes": 1109,
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "path": "generated/content-mapper-types.d.ts",
+          "bytes": 11202,
+          "sha256": "7457fd86aafb4b2a5b1edbddedf538a45a072517645dd0ece2fd4c074a0f632e"
+        },
+        {
+          "path": "virtual-ts-globals.d.ts",
+          "bytes": 18966,
+          "sha256": "d647737ea035f166c94c131013af3265a3a33783dbad307b2eb3c6d558fc476a"
+        },
+        {
+          "path": "virtual-ts-patterns.d.ts",
+          "bytes": 12522,
+          "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
+        },
+        {
+          "path": "virtual-ts-slots.d.ts",
+          "bytes": 4134,
+          "sha256": "3b2f3387f8e720bdffd4ed864b74af6fa19895a89ba6f2f64151fd8dd98bdf9f"
+        }
+      ],
+      "edges": [
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-globals.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.ts",
+          "target": "virtual-ts-globals.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-patterns.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.ts",
+          "target": "virtual-ts-patterns.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-slots.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.ts",
+          "target": "virtual-ts-slots.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-globals.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.mts",
+          "target": "virtual-ts-globals.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-patterns.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.mts",
+          "target": "virtual-ts-patterns.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-slots.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.mts",
+          "target": "virtual-ts-slots.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-globals.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.cts",
+          "target": "virtual-ts-globals.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-patterns.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.cts",
+          "target": "virtual-ts-patterns.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./virtual-ts-slots.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts.d.cts",
+          "target": "virtual-ts-slots.d.ts"
+        },
+        {
+          "kind": "type-export",
+          "specifier": "./generated/content-mapper-types.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "content-mapper-helpers.d.ts",
+          "target": "generated/content-mapper-types.d.ts"
+        },
+        {
+          "kind": "type-export",
+          "specifier": "./generated/content-mapper-types.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "content-mapper-helpers.d.mts",
+          "target": "generated/content-mapper-types.d.ts"
+        },
+        {
+          "kind": "type-export",
+          "specifier": "./generated/content-mapper-types.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "content-mapper-helpers.d.cts",
+          "target": "generated/content-mapper-types.d.ts"
+        },
+        {
+          "kind": "type-import",
+          "specifier": "./generated/content-mapper-types.js",
+          "attributes": {
+            "resolution-mode": "import"
+          },
+          "from": "virtual-ts-slots.d.ts",
+          "target": "generated/content-mapper-types.d.ts"
+        }
+      ]
+    }
+  }
+}
