@@ -8,6 +8,28 @@ use crate::{
 use serde_json::{Value, json};
 use std::{fs, path::Path};
 
+pub(super) fn input(capture: &Path) -> (Value, Value) {
+    const PATH: &str = "tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/input.json";
+    let bytes = include_bytes!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/input.json"
+    ));
+    let input: Value = serde_json::from_slice(bytes).unwrap();
+    assert_eq!(input["schema"], 1);
+    assert_eq!(
+        input["id"],
+        "typechecker/protocol/logical-workspace-overlay-revision-11145"
+    );
+    let dependencies = json!([{"path":PATH,"bytes":bytes.len(),"sha256":hash(bytes)}]);
+    let file = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(capture.join("attached-observer-input.json"))
+        .unwrap();
+    serde_json::to_writer_pretty(file, &dependencies).unwrap();
+    (input, dependencies)
+}
+
 pub(super) fn capture(
     client: &mut CorsaProjectClient,
     authored_root: &Path,
