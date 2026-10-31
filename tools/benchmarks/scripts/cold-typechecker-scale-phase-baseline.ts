@@ -6,6 +6,7 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 import { captureColdScale, coldScaleSupportScriptFiles } from "./cold-typechecker-scale.ts";
+import { coldScalePacketView } from "./cold-typechecker-scale-packet.ts";
 
 const hash = (file: string) => createHash("sha256").update(readFileSync(file)).digest("hex");
 type Build = {
@@ -62,7 +63,54 @@ export function phaseBaseline(options: {
     peakRssBytes: number;
     corpusSha256: string;
   }[] = [];
-  let wholePacket: unknown;
+  const view = (directory: string) => {
+    const corpus = JSON.parse(readFileSync(join(directory, "corpus.json"), "utf8")) as {
+      app: string;
+      entries: { path: string }[];
+    };
+    const packet: unknown = JSON.parse(readFileSync(join(directory, "stdout.txt"), "utf8"));
+    return coldScalePacketView(packet, { ...corpus, root: join(directory, "project") });
+  };
+  const allocationDirectory = join(out, "allocation");
+  const allocationMeasurement = captureColdScale({
+    provider,
+    out: allocationDirectory,
+    files,
+    tool: "profile",
+    invalid: false,
+    binary: allocation.binary,
+  });
+  const profile = JSON.parse(readFileSync(join(allocationDirectory, "profile.json"), "utf8")) as {
+    allocation: unknown;
+    spans: unknown[];
+    counters: unknown[];
+  };
+  assert.ok(
+    profile.allocation &&
+      Array.isArray(profile.spans) &&
+      profile.spans.length > 0 &&
+      Array.isArray(profile.counters),
+  );
+  const wholePacket = view(allocationDirectory);
+  writeFileSync(
+    join(out, "allocation-phase.json"),
+    JSON.stringify(
+      { source, normal, allocation, profile, corpusSha256: allocationMeasurement.corpusSha256 },
+      null,
+      2,
+    ) + "\n",
+  );
+  for (const tool of ["mapper", "vue-tsc"])
+    captureColdScale({ provider, out: join(out, `valid-${tool}`), files, tool, invalid: false });
+  for (const tool of ["cli", "mapper", "vue-tsc"])
+    captureColdScale({
+      provider,
+      out: join(out, `invalid-${tool}`),
+      files,
+      tool,
+      invalid: true,
+      ...(tool === "cli" ? { binary: normal.binary } : {}),
+    });
   for (let pair = 1; pair <= 4; pair++) {
     const order = pair % 2 === 1 ? ["A1", "A2"] : ["A2", "A1"];
     for (const [index, role] of order.entries()) {
@@ -75,9 +123,12 @@ export function phaseBaseline(options: {
         invalid: false,
         binary: normal.binary,
       });
-      const packet: unknown = JSON.parse(readFileSync(join(directory, "stdout.txt"), "utf8"));
-      if (wholePacket === undefined) wholePacket = packet;
-      else assert.deepEqual(packet, wholePacket, "complete A/A JSON packet changed");
+      assert.deepEqual(
+        view(directory),
+        wholePacket,
+        "complete A/A and allocation JSON packet changed",
+      );
+      assert.equal(measurement.corpusSha256, allocationMeasurement.corpusSha256);
       samples.push({
         pair,
         role,
@@ -89,41 +140,6 @@ export function phaseBaseline(options: {
     }
   }
   assert.equal(new Set(samples.map((sample) => sample.corpusSha256)).size, 1);
-  for (const tool of ["mapper", "vue-tsc"])
-    captureColdScale({ provider, out: join(out, `valid-${tool}`), files, tool, invalid: false });
-  for (const tool of ["cli", "mapper", "vue-tsc"])
-    captureColdScale({
-      provider,
-      out: join(out, `invalid-${tool}`),
-      files,
-      tool,
-      invalid: true,
-      ...(tool === "cli" ? { binary: normal.binary } : {}),
-    });
-  captureColdScale({
-    provider,
-    out: join(out, "allocation"),
-    files,
-    tool: "profile",
-    invalid: false,
-    binary: allocation.binary,
-  });
-  assert.deepEqual(
-    JSON.parse(readFileSync(join(out, "allocation/stdout.txt"), "utf8")),
-    wholePacket,
-    "allocation instrumentation changed the complete command result",
-  );
-  const profile = JSON.parse(readFileSync(join(out, "allocation/profile.json"), "utf8")) as {
-    allocation: unknown;
-    spans: unknown[];
-    counters: unknown[];
-  };
-  assert.ok(
-    profile.allocation &&
-      Array.isArray(profile.spans) &&
-      profile.spans.length > 0 &&
-      Array.isArray(profile.counters),
-  );
   assert.equal(hash(join(provider, "package-lock.json")), providerLock);
   assert.equal(hash(normal.binary), normal.binarySha256);
   assert.equal(hash(allocation.binary), allocation.binarySha256);
@@ -139,7 +155,7 @@ export function phaseBaseline(options: {
     samples,
     wholeOutputSha256: createHash("sha256").update(JSON.stringify(wholePacket)).digest("hex"),
     wholeOutputComparison:
-      "all complete A/A and allocation JSON objects equal without normalization",
+      "only declared filename identities mapped through each exact authored census; every other field and order exact",
     wallMs: {
       p50: nearestRank(
         samples.map((sample) => sample.wallMs),
