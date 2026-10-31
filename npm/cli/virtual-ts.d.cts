@@ -1,5 +1,5 @@
-/// <reference path="./virtual-ts-globals.d.ts" />
-/// <reference path="./virtual-ts-patterns.d.ts" />
+import "./virtual-ts-globals.js";
+import "./virtual-ts-patterns.js";
 // Generated from the shared virtual TypeScript helpers. Do not edit.
 // One module for every content-mapper virtual file.
 // Template-ref widening. Hoisted-only, deliberately absent from the per-file
