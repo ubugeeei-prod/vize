@@ -5,8 +5,15 @@ import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
 import { request, type Custody } from "./contract.ts";
+import {
+  nativeVdomTen,
+  qualificationTarget,
+  qualifyVdomBrowser,
+  qualifyVdomNode,
+  targetCustody,
+  type Target,
+} from "./target.ts";
 
 type Image = { bytes: number; sha256: string };
 type Authority = {
@@ -58,13 +65,16 @@ const bootstrap = read(path.join(root, "proof/bootstrap-complete.json")) as {
   authority: Image;
   checkout: string;
   custody: Custody;
+  qualificationTarget: Target;
 };
 assert.deepEqual(image(authorityArg), bootstrap.authority);
 assert.equal(bootstrap.version, authority.version);
 assert.equal(bootstrap.candidate, authority.candidate);
 assert.equal(bootstrap.producerRun, authority.producerRun);
 assert.equal(bootstrap.checkout, checkout);
-const custody = read(fileURLToPath(new URL("./source-custody.json", import.meta.url))) as Custody;
+const target = qualificationTarget(process.env.PUBLIC_JSX_TARGET);
+assert.equal(bootstrap.qualificationTarget, target);
+const custody = targetCustody(target);
 assert.deepEqual(bootstrap.custody, custody);
 assert.match(authority.version, /^0\.\d+\.0$/);
 assert.match(authority.candidate, /^[0-9a-f]{40}$/);
@@ -159,7 +169,7 @@ write("public-native-identity.json", {
 
 const original = read(
   path.join(checkout, "tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json"),
-) as { source: string };
+) as Parameters<typeof qualifyVdomNode>[1] & { source: string };
 const shadowedSource =
   "const Node=1;const document=1;const Array=1;const String=1;" + original.source;
 const compile = (source: string, jsxMode: "vapor" | "vdom"): CompileResult =>
@@ -175,6 +185,7 @@ const results = {
   vapor: compile(original.source, "vapor"),
   vdom: compile(original.source, "vdom"),
   shadowedVapor: compile(shadowedSource, "vapor"),
+  ...(target === nativeVdomTen ? { shadowedVdom: compile(shadowedSource, "vdom") } : {}),
 };
 write("complete-compile-results.json", {
   original,
@@ -238,6 +249,21 @@ const browserStatus = run("browser", "tests/tooling/jsx-vapor-oracle/child-brows
   path.join(out, "child-modules.json"),
   path.join(out, "child-browser.json"),
 ]);
+let vdomBrowserStatus: number | null = null;
+if (target === nativeVdomTen) {
+  assert(results.shadowedVdom);
+  write("vdom-child-modules.json", {
+    original,
+    vdom: module(results.vdom),
+    shadowedSource,
+    shadowedVdom: module(results.shadowedVdom),
+  });
+  vdomBrowserStatus = run(
+    "vdom-browser",
+    "tests/tooling/jsx-vapor-oracle/public-vdom-child-browser.ts",
+    [path.join(out, "vdom-child-modules.json"), path.join(out, "vdom-child-browser.json")],
+  );
+}
 checkPins();
 assert.deepEqual(image(entrypoint), authority.entrypoint);
 assert.deepEqual(image(packageJson), authority.packageJson);
@@ -286,21 +312,51 @@ assert.equal(browser.qualifiedVaporPhases, 9);
 assert.equal(browser.referenceConflictPhases, 1);
 assert.equal(browser.wholeCorpusQualified, false);
 assert.equal(browser.issue6890Complete, false);
-write("public-child-acceptance.json", {
-  status: "pass",
-  version: authority.version,
-  candidate: authority.candidate,
-  merge,
-  authoritySha256: sha256(authorityBytes),
-  nativeIdentity: identity,
-  completeNativeRoutes: 8,
-  browserRoutes: 6,
-  qualifiedVaporPhases: 9,
-  referenceConflictPhases: 1,
-  nativeVdomDebtRetained: true,
-  wholeCorpusQualified: false,
-  issue6890Complete: false,
-  scope:
-    "authenticated installed-public native compiler; unchanged Vue3.6.0-rc.10 Vapor reference environment; nine cells only",
-  files: Object.fromEntries(fs.readdirSync(out).map((name) => [name, image(path.join(out, name))])),
-});
+if (target === nativeVdomTen) {
+  qualifyVdomNode(runtime, original);
+  assert.equal(vdomBrowserStatus, 0, "retain complete failing genuine VDOM Chromium evidence");
+  qualifyVdomBrowser(read(path.join(out, "vdom-child-browser.json")), original);
+  write("public-vdom-child-acceptance.json", {
+    status: "pass",
+    qualificationTarget: target,
+    version: authority.version,
+    candidate: authority.candidate,
+    merge,
+    authoritySha256: sha256(authorityBytes),
+    nativeIdentity: identity,
+    completeOriginalNativeRoutes: 8,
+    originalVaporBrowserRoutes: 6,
+    nativeVdomBrowserRoutes: 4,
+    qualifiedNativeVdomPhases: 10,
+    qualifiedVaporPhases: 9,
+    referenceConflictPhases: 1,
+    nativeVdomDebtRetained: false,
+    wholeCorpusQualified: false,
+    issue6890Complete: false,
+    scope:
+      "authenticated installed-public Native VDOM compiler; unchanged original Vue3.6.0-rc.10/Babel ten-phase input; Vapor nine cells and one reference conflict remain separate",
+    files: Object.fromEntries(
+      fs.readdirSync(out).map((name) => [name, image(path.join(out, name))]),
+    ),
+  });
+} else
+  write("public-child-acceptance.json", {
+    status: "pass",
+    version: authority.version,
+    candidate: authority.candidate,
+    merge,
+    authoritySha256: sha256(authorityBytes),
+    nativeIdentity: identity,
+    completeNativeRoutes: 8,
+    browserRoutes: 6,
+    qualifiedVaporPhases: 9,
+    referenceConflictPhases: 1,
+    nativeVdomDebtRetained: true,
+    wholeCorpusQualified: false,
+    issue6890Complete: false,
+    scope:
+      "authenticated installed-public native compiler; unchanged Vue3.6.0-rc.10 Vapor reference environment; nine cells only",
+    files: Object.fromEntries(
+      fs.readdirSync(out).map((name) => [name, image(path.join(out, name))]),
+    ),
+  });

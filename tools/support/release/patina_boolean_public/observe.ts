@@ -14,12 +14,14 @@ export async function captureSelectedRuntime(
   argv: string[],
   cwd: string,
   env: NodeJS.ProcessEnv,
-  expectedExecutable: string,
+  installedExecutables: readonly string[],
 ) {
   assertHost();
-  const expected = realpathSync(expectedExecutable);
-  assert.equal(expected, expectedExecutable, "canonical installed checker path required");
-  const before = digest(expected);
+  assert(installedExecutables.length > 0 && installedExecutables.length <= 3);
+  const candidates = installedExecutables.map((path) => {
+    assert.equal(realpathSync(path), path, "canonical installed checker path required");
+    return { path, before: digest(path) };
+  });
   const child = spawn(argv[0]!, argv.slice(1), {
     cwd,
     env,
@@ -33,12 +35,15 @@ export async function captureSelectedRuntime(
     samples = 0;
   const seen = new Map<number, ProcessRow>(),
     attempts = new Map<number, number>();
-  let selected: {
-    pid: number;
-    parent: number;
-    executable: string;
-    lsof: { stdout: string; stderr: string; status: number | null };
-  } | null = null;
+  const selected = new Map<
+    string,
+    {
+      pid: number;
+      parent: number;
+      executable: string;
+      lsof: { stdout: string; stderr: string; status: number | null };
+    }
+  >();
   const collect = (target: Buffer[]) => (chunk: Buffer) => {
     received += chunk.length;
     if (received > 64 * 1024 * 1024) {
@@ -49,7 +54,7 @@ export async function captureSelectedRuntime(
   child.stdout.on("data", collect(stdout));
   child.stderr.on("data", collect(stderr));
   const observe = () => {
-    if (!child.pid || selected || samples >= 600) return;
+    if (!child.pid || samples >= 600) return;
     samples++;
     const ps = spawnSync("/bin/ps", ["-axo", "pid=,ppid=,comm="], {
       encoding: "utf8",
@@ -57,7 +62,12 @@ export async function captureSelectedRuntime(
       timeout: 5000,
     });
     if (ps.error || ps.signal || ps.status !== 0) return;
-    for (const row of descendants(ps.stdout, child.pid)) {
+    // Include the CLI itself: absence of a descendant alone is not backend absence.
+    const owned = [
+      { pid: child.pid, ppid: process.pid, command: argv[0]! },
+      ...descendants(ps.stdout, child.pid),
+    ];
+    for (const row of owned) {
       seen.set(row.pid, row);
       assert(seen.size <= 256, "bounded owned descendant population");
       const count = attempts.get(row.pid) ?? 0;
@@ -69,18 +79,19 @@ export async function captureSelectedRuntime(
         timeout: 5000,
       });
       if (text.error || text.signal || text.status !== 0) continue;
-      try {
-        assertTextImage(text.stdout, row.pid, expected);
-      } catch {
-        continue;
+      for (const candidate of candidates) {
+        try {
+          assertTextImage(text.stdout, row.pid, candidate.path);
+        } catch {
+          continue;
+        }
+        selected.set(row.pid + ":" + candidate.path, {
+          pid: row.pid,
+          parent: row.ppid,
+          executable: candidate.path,
+          lsof: { stdout: text.stdout, stderr: text.stderr, status: text.status },
+        });
       }
-      selected = {
-        pid: row.pid,
-        parent: row.ppid,
-        executable: expected,
-        lsof: { stdout: text.stdout, stderr: text.stderr, status: text.status },
-      };
-      break;
     }
   };
   const interval = setInterval(() => {
@@ -109,7 +120,7 @@ export async function captureSelectedRuntime(
     err = Buffer.concat(stderr);
   writeFileSync(join(record.root, label + ".stdout.raw"), out, { flag: "wx" });
   writeFileSync(join(record.root, label + ".stderr.raw"), err, { flag: "wx" });
-  const after = digest(expected);
+  const images = candidates.map((candidate) => ({ ...candidate, after: digest(candidate.path) }));
   const packet = {
     label,
     pid: child.pid ?? null,
@@ -124,21 +135,19 @@ export async function captureSelectedRuntime(
     observer: {
       kind: "macOS process-only ps/lsof",
       samples,
-      descendants: [...seen.values()],
-      selected,
-      expected: { path: expected, before, after },
+      ownedProcesses: [...seen.values()],
+      selected: [...selected.values()],
+      selectionStatus: selected.size ? "observed-installed-text-image" : "unknown-unobserved",
+      candidates: images,
     },
     limits:
-      "Separate observed command; original npx command is captured without this observer. lsof attests the live descendant text-image path, not raw protocol packets or SDK internals. No runtime path override, wrapper replacement or product-function instrumentation.",
+      "Separate observed command; original npx is unobserved. lsof can attest an owned PID's installed text-image path, not raw protocol or SDK internals. Installed candidates do not prove selection; no observed candidate leaves selection unknown and does not prove backend absence. No runtime path override or product instrumentation.",
   };
   record.json(label + ".process.json", packet);
   assert.equal(failure, null, "actual CLI capture failed");
   assert.equal(outcome.signal, null);
-  assert(
-    selected,
-    "actual selected checker executable was not observed; do not infer it from package presence",
-  );
   assert.equal(typeof child.pid, "number", "actual CLI PID required");
-  assert.deepEqual(after, before, "installed selected executable bytes changed");
+  for (const image of images)
+    assert.deepEqual(image.after, image.before, "installed candidate executable bytes changed");
   return { ...packet, pid: child.pid!, stdout: out, stderr: err };
 }

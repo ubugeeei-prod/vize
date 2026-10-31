@@ -97,7 +97,7 @@ impl AliasContext {
         if let Some(path) =
             resolve_dependency(specifier, importer_dir, &self.project_root, &self.aliases)
         {
-            let key = std::fs::canonicalize(&path).unwrap_or(path);
+            let key = vize_carton::path::canonicalize_non_verbatim(&path);
             if super::inside_node_modules(&key) {
                 return None;
             }
@@ -120,6 +120,7 @@ impl AliasContext {
             return None;
         }
         let source = std::fs::canonicalize(importer_dir.join(specifier)).ok()?;
+        let source = vize_carton::path::normalize_windows_verbatim_path(source);
         if source
             .extension()
             .is_none_or(|extension| extension != "vue")

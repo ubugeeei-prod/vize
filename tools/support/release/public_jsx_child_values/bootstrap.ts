@@ -21,8 +21,8 @@ import {
   within,
   write,
   type Authority,
-  type Custody,
 } from "./contract.ts";
+import { qualificationTarget, targetCustody } from "./target.ts";
 
 const [version, candidate, producerRun, output] = process.argv.slice(2);
 assert(version && candidate && producerRun && output);
@@ -38,7 +38,8 @@ assert(!fs.existsSync(root), "a completely fresh public installation is required
 fs.mkdirSync(root);
 const proof = path.join(root, "proof");
 fs.mkdirSync(proof);
-const custody = read<Custody>(fileURLToPath(new URL("./source-custody.json", import.meta.url)));
+const target = qualificationTarget(process.env.PUBLIC_JSX_TARGET);
+const custody = targetCustody(target);
 checkSources(checkout, custody);
 const git = (...args: string[]): string => {
   const result = spawnSync("git", ["--no-replace-objects", ...args], {
@@ -249,6 +250,7 @@ write(path.join(proof, "bootstrap-complete.json"), {
   producerRun,
   authority: image(path.join(proof, "authority.json")),
   custody,
+  qualificationTarget: target,
   checkout,
   source: image(fileURLToPath(import.meta.url)),
   scope:

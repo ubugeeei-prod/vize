@@ -78,7 +78,7 @@ export function identity(
   ]) {
     const sri = asRecord(asRecord(authority.npmSRI)[name]);
     assert.equal(new URL(asString(sri.metadataOrigin)).origin, "https://registry.npmjs.org");
-    if (phase === "original-no-provider") {
+    if (phase === "original-default-provider") {
       const result = record.run(
         phase + "-registry-" + name.replaceAll(/[@/]/gu, "-"),
         npmArgv(
@@ -137,31 +137,48 @@ export function install(
   );
   return pnpm;
 }
-export function provider(root: string, phase: Phase, record: Recorder): string | undefined {
+/** Installed roles are not assertions about which backend the product selects. */
+export function installedProviders(root: string, phase: Phase) {
   const manifest = readJsonRecord(join(root, "package.json"));
   const dependencies = asRecord(manifest.devDependencies);
   const stable = "@typescript/typescript-darwin-arm64";
-  if (phase === "original-no-provider") {
+  const cliRoot = realpathSync(join(root, "node_modules/vize"));
+  const cli = readJsonRecord(join(cliRoot, "package.json"));
+  assert.equal(cli.name, "vize");
+  assert.equal(asRecord(cli.optionalDependencies)[stable], "7.0.2");
+  const cliRequire = createRequire(join(cliRoot, "package.json"));
+  const bundledRoot = dirname(realpathSync(cliRequire.resolve(stable + "/package.json")));
+  const bundled = readJsonRecord(join(bundledRoot, "package.json"));
+  assert.equal(bundled.name, stable);
+  assert.equal(bundled.version, "7.0.2");
+  const installed = [
+    {
+      role: "published-cli-optional",
+      name: stable,
+      version: "7.0.2",
+      packageRoot: bundledRoot,
+      executable: realpathSync(join(bundledRoot, "lib/tsc")),
+    },
+  ];
+  if (phase === "original-default-provider") {
     assert.equal(dependencies[stable], undefined);
     assert.equal(dependencies.tsrs, undefined);
     assert.equal(existsSync(join(root, "node_modules", stable)), false);
     assert.equal(existsSync(join(root, "node_modules/tsrs")), false);
-    record.json(phase + ".provider.json", {
-      selectedExecutable: null,
-      reason:
-        "The exact original role has no declared native provider under the current explicit-user-provider policy.",
-    });
-    return undefined;
-  }
-  let packageRoot: string, executable: string;
-  if (phase === "stable-user-provider") {
+  } else if (phase === "stable-user-provider") {
     assert.equal(dependencies[stable], "7.0.2");
     assert.equal(dependencies.tsrs, undefined);
-    packageRoot = realpathSync(join(root, "node_modules", stable));
+    const packageRoot = realpathSync(join(root, "node_modules", stable));
     const metadata = readJsonRecord(join(packageRoot, "package.json"));
     assert.equal(metadata.name, stable);
     assert.equal(metadata.version, "7.0.2");
-    executable = realpathSync(join(packageRoot, "lib/tsc"));
+    installed.push({
+      role: "explicit-user-stable",
+      name: stable,
+      version: "7.0.2",
+      packageRoot,
+      executable: realpathSync(join(packageRoot, "lib/tsc")),
+    });
   } else {
     assert.equal(dependencies[stable], undefined);
     assert.equal(dependencies.tsrs, "0.20.1-ts7.1.0-beta");
@@ -170,7 +187,7 @@ export function provider(root: string, phase: Phase, record: Recorder): string |
       false,
       "stable provider must be removed by pnpm, never hidden with a resolver override",
     );
-    packageRoot = realpathSync(join(root, "node_modules/tsrs"));
+    const packageRoot = realpathSync(join(root, "node_modules/tsrs"));
     const metadata = readJsonRecord(join(packageRoot, "package.json"));
     assert.equal(metadata.name, "tsrs");
     assert.equal(metadata.version, "0.20.1-ts7.1.0-beta");
@@ -181,13 +198,27 @@ export function provider(root: string, phase: Phase, record: Recorder): string |
     const image = readJsonRecord(join(platform, "package.json"));
     assert.equal(image.name, "@tsrs/darwin-arm64");
     assert.equal(image.version, "0.20.1-ts7.1.0-beta");
-    executable = realpathSync(join(platform, "tsrs"));
+    installed.push({
+      role: "reported-tsrs-installed",
+      name: "@tsrs/darwin-arm64",
+      version: "0.20.1-ts7.1.0-beta",
+      packageRoot: platform,
+      executable: realpathSync(join(platform, "tsrs")),
+    });
   }
-  assert(inside(root, packageRoot) && inside(root, executable));
-  const packages = phase === "stable-user-provider" ? [stable] : ["tsrs", "@tsrs/darwin-arm64"];
-  const version = phase === "stable-user-provider" ? "7.0.2" : "0.20.1-ts7.1.0-beta";
+  for (const entry of installed) {
+    assert(inside(root, entry.packageRoot) && inside(entry.packageRoot, entry.executable));
+  }
+  return { cliRoot, installed };
+}
+export function provider(root: string, phase: Phase, record: Recorder): string[] {
+  const inventory = installedProviders(root, phase);
+  const packages = [
+    ...new Map(inventory.installed.map(({ name, version }) => [name, { name, version }])).values(),
+  ];
+  if (phase === "reported-tsrs") packages.push({ name: "tsrs", version: "0.20.1-ts7.1.0-beta" });
   const lock = readFileSync(join(root, "pnpm-lock.yaml"), "utf8");
-  const origins = packages.map((name) => {
+  const origins = packages.map(({ name, version }) => {
     const result = record.run(
       phase + "-provider-registry-" + name.replaceAll(/[@/]/gu, "-"),
       npmArgv(
@@ -205,17 +236,16 @@ export function provider(root: string, phase: Phase, record: Recorder): string |
     assert.match(asString(dist.integrity), /^sha512-[A-Za-z0-9+/]+={0,2}$/u);
     assert(
       lock.includes(asString(dist.integrity)),
-      "selected provider public SRI must be in the actual pnpm lock: " + name,
+      "installed provider public SRI must be in the actual pnpm lock: " + name,
     );
     return { name, version, dist };
   });
   record.json(phase + ".provider.json", {
-    executable,
-    image: digest(executable),
-    packageRoot,
+    ...inventory,
+    images: inventory.installed.map((entry) => ({ ...entry, image: digest(entry.executable) })),
     origins,
     selection:
-      "Prospective expected image only; actual ps/lsof observation is separately mandatory.",
+      "Installed candidates only. A declared tsrs package need not be selected ahead of the published CLI platform backend. Actual text-image observation is separate; an unobserved selection stays unknown.",
   });
-  return executable;
+  return [...new Set(inventory.installed.map((entry) => entry.executable))];
 }

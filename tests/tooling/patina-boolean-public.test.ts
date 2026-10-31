@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -19,11 +19,16 @@ import {
   requiredMerge,
 } from "../../tools/support/release/patina_boolean_public/contract.ts";
 import { verifyJournal } from "../../tools/support/release/editor_vite_stub/custody.ts";
+import { installedProviders } from "../../tools/support/release/patina_boolean_public/install.ts";
 
 const original = readOriginal();
 test("11147 original plain lint rejects Runtime-at-exit1 and extra findings while retaining graphical framing", () => {
   const raw = Buffer.from(asString(original.reportedExpected) + "Linted 1 files in 7.1234ms\n");
-  for (const phase of ["stable-user-provider", "reported-tsrs"] as const)
+  for (const phase of [
+    "original-default-provider",
+    "stable-user-provider",
+    "reported-tsrs",
+  ] as const)
     assertOriginalPlain(original, phase, raw, Buffer.alloc(0));
   const wrapped = raw
     .toString()
@@ -49,7 +54,7 @@ test("11147 original plain lint rejects Runtime-at-exit1 and extra findings whil
   );
 });
 
-test("11147 original no-provider text accepts its whole wrapped error and refuses warning severity", () => {
+test("11147 rejected no-provider hypothesis cannot replace the actual original nullable report", () => {
   const diagnostic = asRecord(
     asArray(asRecord(asArray(original.expectedNoProviderReport)[0]).messages)[0],
   );
@@ -63,17 +68,35 @@ test("11147 original no-provider text accepts its whole wrapped error and refuse
     '\n   ╭─[src/card.vue:1:1]\n 1 │ <script setup lang="ts">\n   ╰────\n  help: ' +
     asString(diagnostic.help) +
     "\n\n1 error in 1 file\nLinted 1 files in 5.1234ms\n";
-  assertOriginalPlain(original, "original-no-provider", Buffer.from(rendered), Buffer.alloc(0));
-  assert.throws(
-    () =>
-      assertOriginalPlain(
-        original,
-        "original-no-provider",
-        Buffer.from(rendered.replace("  × ", "  ⚠ ")),
-        Buffer.alloc(0),
-      ),
-    /original finding is an error/u,
-  );
+  for (const phase of [
+    "original-default-provider",
+    "stable-user-provider",
+    "reported-tsrs",
+  ] as const) {
+    assert.throws(
+      () => assertOriginalPlain(original, phase, Buffer.from(rendered), Buffer.alloc(0)),
+      /one original finding/u,
+    );
+    assert.throws(
+      () =>
+        assertReport(
+          original,
+          phase,
+          Buffer.from(JSON.stringify(original.expectedNoProviderReport)),
+        ),
+      /complete ordered original report/u,
+    );
+    assert.throws(
+      () =>
+        assertOriginalPlain(
+          original,
+          phase,
+          Buffer.from(rendered.replace("  × ", "  ⚠ ")),
+          Buffer.alloc(0),
+        ),
+      /one original finding/u,
+    );
+  }
 });
 
 test("11147 error-exit journal retains one native return and independent PID without a Node exit hook", () => {
@@ -133,15 +156,65 @@ test("11147 whole original authored bytes and complete report remain pinned", ()
   const expected = Buffer.from(JSON.stringify(original.expectedNullableReport));
   assertReport(original, "stable-user-provider", expected);
   assertReport(original, "reported-tsrs", expected);
-  assert.throws(
-    () => assertReport(original, "original-no-provider", expected),
-    /complete ordered original report/u,
-  );
-  assertReport(
-    original,
-    "original-no-provider",
-    Buffer.from(JSON.stringify(original.expectedNoProviderReport)),
-  );
+  assertReport(original, "original-default-provider", expected);
+});
+
+test("11147 installed roles retain the packaged backend without asserting tsrs selection", () => {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "patina11147-providers-pure-")));
+  const stable = "@typescript/typescript-darwin-arm64";
+  const write = (file: string, value: unknown) => {
+    mkdirSync(join(file, ".."), { recursive: true });
+    writeFileSync(file, JSON.stringify(value));
+  };
+  const cli = join(root, "node_modules/vize");
+  const bundled = join(cli, "node_modules", stable);
+  const manifest = join(root, "package.json");
+  try {
+    write(manifest, { devDependencies: { vize: "0.623.0", typescript: "6.0.3" } });
+    write(join(cli, "package.json"), { name: "vize", optionalDependencies: { [stable]: "7.0.2" } });
+    write(join(bundled, "package.json"), { name: stable, version: "7.0.2" });
+    write(join(bundled, "lib/tsc"), "inert fixture, never executed");
+    const first = installedProviders(root, "original-default-provider");
+    assert.deepEqual(
+      first.installed.map(({ role, name, version }) => ({ role, name, version })),
+      [{ role: "published-cli-optional", name: stable, version: "7.0.2" }],
+    );
+    assert.equal(first.installed[0]?.executable, join(bundled, "lib/tsc"));
+    const projectStable = join(root, "node_modules", stable);
+    write(manifest, { devDependencies: { [stable]: "7.0.2" } });
+    write(join(projectStable, "package.json"), { name: stable, version: "7.0.2" });
+    write(join(projectStable, "lib/tsc"), "inert user fixture");
+    assert.deepEqual(
+      installedProviders(root, "stable-user-provider").installed.map(({ role }) => role),
+      ["published-cli-optional", "explicit-user-stable"],
+    );
+    rmSync(projectStable, { recursive: true });
+    write(manifest, { devDependencies: { tsrs: "0.20.1-ts7.1.0-beta" } });
+    const tsrs = join(root, "node_modules/tsrs");
+    const platform = join(tsrs, "node_modules/@tsrs/darwin-arm64");
+    write(join(tsrs, "package.json"), {
+      name: "tsrs",
+      version: "0.20.1-ts7.1.0-beta",
+      optionalDependencies: { "@tsrs/darwin-arm64": "0.20.1-ts7.1.0-beta" },
+    });
+    write(join(platform, "package.json"), {
+      name: "@tsrs/darwin-arm64",
+      version: "0.20.1-ts7.1.0-beta",
+    });
+    write(join(platform, "tsrs"), "inert reported fixture");
+    const reported = installedProviders(root, "reported-tsrs");
+    assert.deepEqual(
+      reported.installed.map(({ role }) => role),
+      ["published-cli-optional", "reported-tsrs-installed"],
+    );
+    assert.equal(reported.installed[0]?.executable, first.installed[0]?.executable);
+    write(join(platform, "package.json"), { name: "@tsrs/darwin-arm64", version: "wrong" });
+    assert.throws(() => installedProviders(root, "reported-tsrs"), assert.AssertionError);
+    write(join(cli, "package.json"), { name: "vize", optionalDependencies: {} });
+    assert.throws(() => installedProviders(root, "reported-tsrs"), assert.AssertionError);
+  } finally {
+    rmSync(root, { recursive: true });
+  }
 });
 test("11147 full report refuses omissions, warning downgrades, changed ranges, extra findings and actual normalization", () => {
   const cases = [
@@ -197,7 +270,7 @@ test("11147 every runtime override and non-original host is refused", () => {
   assert.throws(() => assertHost("darwin", "x64", "v26.6.0"), /original ARM64/u);
   assert.throws(() => assertHost("darwin", "arm64", "v24.14.0"), /Node26/u);
 });
-test("11147 live checker selection requires its own descendant PID and exact text image", () => {
+test("11147 observed checker text image requires its own PID and exact installed path", () => {
   assert.deepEqual(
     descendants(
       "1 0 launchd\n20 1 node\n30 20 /app/node\n40 30 /app/node_modules/tsrs\n50 1 /foreign/tsrs\n",
@@ -212,10 +285,7 @@ test("11147 live checker selection requires its own descendant PID and exact tex
   assert.throws(() => descendants("bad record\n", 20), /ps record is malformed/u);
   const image = "/app/node_modules/@tsrs/darwin-arm64/tsrs";
   assertTextImage("p40\nn" + image + "\nn/usr/lib/libSystem.B.dylib\n", 40, image);
-  assert.throws(
-    () => assertTextImage("p50\nn" + image + "\n", 40, image),
-    /observed descendant PID/u,
-  );
+  assert.throws(() => assertTextImage("p50\nn" + image + "\n", 40, image), /observed owned PID/u);
   assert.throws(
     () => assertTextImage("p40\nn" + image + ".other\n", 40, image),
     /selected loaded text image/u,

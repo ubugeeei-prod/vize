@@ -304,3 +304,6 @@ fn identical_source_in_separate_roots_keeps_authored_membership() {
 
 #[cfg(test)]
 mod native_union;
+
+#[cfg(windows)]
+mod windows_overlays;
