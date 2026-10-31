@@ -313,6 +313,12 @@ const exportedNames = family.filter(isExported).map((node) => {
   return node.name.text;
 });
 assert.equal(exportedNames.length, 8, "complete existing public slot family");
+const previousFamily = family.filter(
+  (node) =>
+    !ts.isTypeAliasDeclaration(node) ||
+    !instanceAliases.slice(0, 3).some(([name]) => name === node.name.text),
+);
+assert.equal(previousFamily.length, 14, "all former implicit and explicit slot exports");
 function checkImport(node: ts.ImportDeclaration, target: string, names: readonly string[]) {
   assert.ok(ts.isStringLiteral(node.moduleSpecifier));
   assert.equal(node.moduleSpecifier.text, target);
@@ -385,26 +391,60 @@ for (const extension of ["ts", "mts", "cts"]) {
         node.moduleSpecifier.text === "./virtual-ts-slots.js",
     );
   assert.equal(imports.length, 1, `${relativePath} one complete slot-module import`);
-  checkImport(imports[0]!, "./virtual-ts-slots.js", exportedNames);
-  const reexports = parsed.statements
-    .filter(ts.isExportDeclaration)
-    .filter(
-      (node) =>
-        node.exportClause &&
-        ts.isNamedExports(node.exportClause) &&
-        node.exportClause.elements.some((item) => exportedNames.includes(item.name.text)),
-    );
-  assert.equal(reexports.length, 1, `${relativePath} one complete slot reexport`);
-  const reexport = reexports[0]!;
-  assert.equal(reexport.isTypeOnly, true);
-  assert.equal(reexport.moduleSpecifier, undefined);
-  assert.ok(reexport.exportClause && ts.isNamedExports(reexport.exportClause));
-  assert.deepEqual(
-    reexport.exportClause.elements.map((item) => [item.propertyName?.text ?? null, item.name.text]),
-    exportedNames.map((name) => [null, name]),
+  const imported = imports[0]!;
+  assert.equal(imported.importClause?.isTypeOnly, true);
+  assert.ok(
+    imported.importClause?.namedBindings &&
+      ts.isNamespaceImport(imported.importClause.namedBindings),
   );
-  for (const name of exportedNames)
-    assert.equal(bindingCount(parsed, name), 1, `${relativePath} slot binding ${name}`);
+  assert.equal(imported.importClause.namedBindings.name.text, "__vizeSlotTypes");
+  assert.deepEqual(
+    imported.attributes?.elements.map((item) => [
+      item.name.text,
+      (item.value as ts.StringLiteral).text,
+    ]),
+    [["resolution-mode", "import"]],
+  );
+  assert.equal(bindingCount(parsed, "__vizeSlotTypes"), 1);
+  // An ExportDeclaration disables the .d.ts ambient implicit-export context,
+  // hiding unrelated existing helpers too. Forward declarations preserve it.
+  assert.equal(
+    parsed.statements.some((node) => ts.isExportDeclaration(node) || ts.isExportAssignment(node)),
+    false,
+    `${relativePath} retains implicit exports`,
+  );
+  for (const canonical of previousFamily) {
+    assert.ok(ts.isTypeAliasDeclaration(canonical) || ts.isFunctionDeclaration(canonical));
+    const name = canonical.name!.text;
+    const matches = parsed.statements.filter(
+      (node) =>
+        (ts.isTypeAliasDeclaration(node) || ts.isFunctionDeclaration(node)) &&
+        node.name?.text === name,
+    );
+    assert.equal(matches.length, 1, `${relativePath} complete slot binding ${name}`);
+    const actual = matches[0]!;
+    assert.equal(isExported(actual), isExported(canonical));
+    let expected = canonical;
+    let expectedSource = sharedParsed;
+    if (ts.isTypeAliasDeclaration(canonical)) {
+      const parameters = canonical.typeParameters!.map((parameter) =>
+        parameter.getText(sharedParsed),
+      );
+      const arguments_ = canonical.typeParameters!.map((parameter) => parameter.name.text);
+      expectedSource = ts.createSourceFile(
+        "forward.d.ts",
+        `type ${name}<${parameters.join(",")}> = __vizeSlotTypes.${name}<${arguments_.join(",")}>;`,
+        ts.ScriptTarget.Latest,
+        true,
+      );
+      expected = expectedSource.statements[0] as ts.TypeAliasDeclaration;
+    }
+    assert.equal(
+      identity(actual, parsed),
+      identity(expected, expectedSource),
+      `${relativePath} forwarding declaration ${name}`,
+    );
+  }
 }
 // Refuse every malformed or unknown input before replacing any SDK copy.
 for (const [relativePath, contents] of outputs) {

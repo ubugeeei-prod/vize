@@ -25,26 +25,32 @@ export type $WidenTemplateRef<T> =
               : T
             : T;
 
-import type {
-  $SlotHostSlots,
-  $SlotsFactory,
-  $SlotConstructor,
-  $SlotConstructorWithoutArguments,
-  $SlotConstructorWithArguments,
-  $SlotConstructorArgs,
-  $SlotConstructorInstance,
-  $SlotHostSelector,
-} from "./virtual-ts-slots.js" with { "resolution-mode": "import" };
-export type {
-  $SlotHostSlots,
-  $SlotsFactory,
-  $SlotConstructor,
-  $SlotConstructorWithoutArguments,
-  $SlotConstructorWithArguments,
-  $SlotConstructorArgs,
-  $SlotConstructorInstance,
-  $SlotHostSelector,
-};
+import type * as __vizeSlotTypes from "./virtual-ts-slots.js" with { "resolution-mode": "import" };
+export type $SlotHostSlots<C> = __vizeSlotTypes.$SlotHostSlots<C>;
+declare function __vizeFunctionalSlots<P, C, R>(
+  component: (props: P, context: C, ...args: any[]) => R,
+): (
+  props: P,
+) => "__ctx" extends keyof R
+  ? NonNullable<R["__ctx"]> extends { slots: infer S }
+    ? S
+    : any
+  : NonNullable<C> extends { slots: infer S }
+    ? S
+    : any;
+type $NativeSlotsFactory<C> = __vizeSlotTypes.$NativeSlotsFactory<C>;
+export type $SlotsFactory<C> = __vizeSlotTypes.$SlotsFactory<C>;
+type $HasSlotResolver<C> = __vizeSlotTypes.$HasSlotResolver<C>;
+type $DirectSlotConstructor<C> = __vizeSlotTypes.$DirectSlotConstructor<C>;
+export type $SlotConstructor<C> = __vizeSlotTypes.$SlotConstructor<C>;
+type $SlotConstructorArgumentLists<C> = __vizeSlotTypes.$SlotConstructorArgumentLists<C>;
+type $SlotConstructorHasArguments<C> = __vizeSlotTypes.$SlotConstructorHasArguments<C>;
+export type $SlotConstructorWithoutArguments<C> =
+  __vizeSlotTypes.$SlotConstructorWithoutArguments<C>;
+export type $SlotConstructorWithArguments<C> = __vizeSlotTypes.$SlotConstructorWithArguments<C>;
+export type $SlotConstructorArgs<C> = __vizeSlotTypes.$SlotConstructorArgs<C>;
+export type $SlotConstructorInstance<C, Z, P> = __vizeSlotTypes.$SlotConstructorInstance<C, Z, P>;
+export type $SlotHostSelector<C> = __vizeSlotTypes.$SlotHostSelector<C>;
 
 // @ts-ignore A missing provider keeps its framework error-any fallback.
 type $SilentAny = {}["__vizeSilentAny"];
