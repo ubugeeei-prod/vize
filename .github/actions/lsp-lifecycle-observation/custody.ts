@@ -99,6 +99,12 @@ assert.equal(fs.readFileSync(path.join(output, "source-build-image.sha256"), "ut
 const nativeTest = fs.readFileSync(path.join(output, "native-profile-test.stdout"));
 assert.match(nativeTest.toString("utf8"), /test lsp_profile_cli::lsp_exports_profile_after_graceful_stdio_shutdown \.\.\. ok/);
 assert.match(nativeTest.toString("utf8"), /test result: ok\. 1 passed; 0 failed; 0 ignored;/);
+const nativeTestImage = fs.readFileSync(path.join(output, "native-test-image.sha256"), "utf8");
+assert.match(nativeTestImage, /^[a-f0-9]{64}  target\/ci\/vize\n$/);
+const nativeTestSha256 = nativeTestImage.slice(0, 64);
+const nativeTestIdentity = image(path.join(env("CARGO_TARGET_DIR"), "native-profile-test-vize"));
+assert.equal(nativeTestIdentity.sha256, nativeTestSha256);
+const nativeTestMetadata = fs.statSync(nativeTestIdentity.realpath, { bigint: true });
 const buildArguments = fs.readFileSync(path.join(output, "source-build-argv.txt"), "utf8").trimEnd().split("\n");
 assert.deepEqual(buildArguments, ["cargo", "build", "--profile", "ci", "-p", "vize", "--features",
   "legacy,profiling,vize_maestro/micro-profiling", "--message-format=json-render-diagnostics"]);
@@ -123,7 +129,11 @@ const build = { schema: "vize.lsp.allocation-diagnostic-build", version: 1, qual
   artifact: { executable: measured["executable"], features, profile: measured["profile"], fresh: measured["fresh"] },
   maestroArtifact: { features: maestro["features"], profile: maestro["profile"], fresh: maestro["fresh"] },
   realStdioProfileTest: { stdoutSha256: hash(nativeTest),
-    stderrSha256: hash(fs.readFileSync(path.join(output, "native-profile-test.stderr"))), passed: 1, failed: 0, ignored: 0 },
+    stderrSha256: hash(fs.readFileSync(path.join(output, "native-profile-test.stderr"))), passed: 1, failed: 0, ignored: 0,
+    testContextImage: { ...nativeTestIdentity, dev: nativeTestMetadata.dev.toString(), ino: nativeTestMetadata.ino.toString(),
+      mode: nativeTestMetadata.mode.toString(), mtimeNs: nativeTestMetadata.mtimeNs.toString(), ctimeNs: nativeTestMetadata.ctimeNs.toString() },
+    byteIdenticalToMeasuredImage: nativeTestSha256 === binary.sha256,
+    scope: "Cargo test may replace the CLI. Its separate image remains in the private build target; only its hash/metadata are exported. The first actual Cargo-build image is restored and hash-checked for measurement. A distinct test image supplies no same-image protocol credit; the original churn terminal profile validates the measured image." },
   profileManifestSha256: hash(fs.readFileSync("Cargo.toml")),
   reason: "Same underlying mimalloc with existing profiling wrapper; separately instrumented diagnostic ELF, no ordinary legacy build-receipt credit" };
 

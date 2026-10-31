@@ -114,6 +114,8 @@ jobs:
           cargo build --profile ci -p vize --features legacy,profiling,vize_maestro/micro-profiling \
             --message-format=json-render-diagnostics > "$EVIDENCE/source-build.jsonl"
           sha256sum target/ci/vize > "$EVIDENCE/source-build-image.sha256"
+          test ! -e "$CARGO_TARGET_DIR/measured-build-vize"
+          cp target/ci/vize "$CARGO_TARGET_DIR/measured-build-vize"
       - name: Verify existing real stdio profiler and successful terminal allocation export
         shell: bash
         run: |
@@ -121,6 +123,10 @@ jobs:
           cargo test --profile ci -p vize --features legacy,profiling,vize_maestro/micro-profiling \
             --test integration lsp_profile_cli::lsp_exports_profile_after_graceful_stdio_shutdown \
             -- --exact > "$EVIDENCE/native-profile-test.stdout" 2> "$EVIDENCE/native-profile-test.stderr"
+          sha256sum target/ci/vize > "$EVIDENCE/native-test-image.sha256"
+          test ! -e "$CARGO_TARGET_DIR/native-profile-test-vize"
+          mv target/ci/vize "$CARGO_TARGET_DIR/native-profile-test-vize"
+          mv "$CARGO_TARGET_DIR/measured-build-vize" target/ci/vize
           sha256sum --check "$EVIDENCE/source-build-image.sha256"
       - name: Stage exact reviewed typed diagnostic helpers and controls
         shell: bash
