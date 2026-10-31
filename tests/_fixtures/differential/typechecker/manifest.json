@@ -11255,6 +11255,31 @@
       }
     },
     {
+      "id": "typechecker/router-mapper-capability-10579/automatic-route-props",
+      "state": "active",
+      "targets": ["batch"],
+      "test": "tests/tooling/router-preview-automatic.ts",
+      "sourceRevision": "c488c1b2d14acc1818f768ee976634e36c5db0bf",
+      "inputs": [
+        {
+          "file": "src/pages/products/[id=int].vue",
+          "path": "router-mapper-capability-10579/Page.vue.txt",
+          "sha256": "534b9539a6a5ae2d986ab9c62caa52c920d8eb88e2a4fb5e3b05c119677bf0c2"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "tests/tooling/router-preview-automatic.ts; newly pinned original automatic64 source physically supplied to source check, independent vue-tsc and native content mapper; not a new semantic program"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/runtime/project-native-runtime-authority-10694",
       "state": "active",
       "targets": ["batch"],
