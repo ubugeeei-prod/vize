@@ -88,10 +88,22 @@ export function assertOriginalPlain(
     [diagnostic.ruleId],
     "one original finding, never an unexpected Runtime or extra diagnostic",
   );
-  const escaped = message.split(" ").map((word) => word.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"));
-  assert(
-    new RegExp(escaped.join("[ \\t\\r\\n│]+"), "u").test(view),
-    "complete original finding title; only graphical continuation wrapping allowed",
+  const lines = view.split(/\r?\n/u);
+  const headerIndex = lines.findIndex((line) => line.includes("[vize:"));
+  assert(headerIndex >= 0);
+  const header = lines[headerIndex]!;
+  const start = header.indexOf("[vize:");
+  assert.match(header.slice(0, start), /^[ \t]*×[ \t]+$/u, "original finding is an error");
+  const title = [header.slice(start).trimEnd()];
+  for (let index = headerIndex + 1; index < lines.length; index++) {
+    const continuation = /^[ \t]*│[ \t]?(.*)$/u.exec(lines[index]!);
+    if (!continuation) break;
+    title.push(continuation[1]!.trim());
+  }
+  assert.equal(
+    title.filter((line) => line.length > 0).join(" "),
+    message,
+    "complete original finding title; only immediate graphical continuation wrapping allowed",
   );
   const summaries = view
     .split(/\r?\n/u)

@@ -33,6 +33,8 @@ test("11147 original plain lint rejects Runtime-at-exit1 and extra findings whil
   for (const wrong of [
     raw.toString().replace("strict-boolean-expressions", "corsa-runtime"),
     raw.toString().replace("Unexpected nullable number", "Unexpected string"),
+    raw.toString().replace("explicitly.", "explicitly. EXTRA"),
+    wrapped.replace("explicitly.", "explicitly.\n  │ EXTRA"),
     raw.toString().replace("1 error in 1 file", "1 warning in 1 file"),
     raw.toString().replace("1 error in 1 file", "2 errors in 1 file"),
     raw.toString() + "× [vize:type/corsa-runtime] unexpected\n",
