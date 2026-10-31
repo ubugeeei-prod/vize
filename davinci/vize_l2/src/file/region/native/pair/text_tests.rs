@@ -13,6 +13,7 @@ use super::*;
 use crate::expr::ExprRef;
 use crate::file::{Namespace as BindingNamespace, NativeFileInterpolationState as State};
 use crate::lang::js::NativeTemplateFile;
+use crate::op::Op;
 use crate::resolution::Usage;
 use crate::walk::NodeRef;
 use vize_l0::Allocator;
