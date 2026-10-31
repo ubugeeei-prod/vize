@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "lsp/regression/editor-import-sorting-6098",
+  "provenance": {
+    "fixCommit": "afd48e8e1f86954aa444157df06b33e633d3f30a"
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "formatting": true
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "ae86278aa0a0b247d9e027b703699f02cf370ea37da9dd96368adf3ff334b106"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "bf921b2e450f97a3df935d11ccfcfa24b96830fce53aa47edb71fa0a13aff229"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "8c963fa85d3572cb4a25a7c6a293053cc2220d717e06c05cd8b253b98728af7e"
+  },
+  "method": "textDocument/formatting",
+  "options": {
+    "tabSize": 2,
+    "insertSpaces": true
+  }
+}

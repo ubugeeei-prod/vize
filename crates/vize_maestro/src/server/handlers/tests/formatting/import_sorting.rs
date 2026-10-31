@@ -5,11 +5,15 @@ use std::path::Path;
 
 const SOURCE: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/../vize_glyph/tests/fixtures/sort-imports/UserCard.vue"
+    "/../../tests/_fixtures/differential/lsp/editor-import-sorting-6098/App.vue.txt"
 ));
 const SORTED: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../vize_glyph/tests/fixtures/sort-imports/UserCard.sorted.vue"
+));
+const CONFIG: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/lsp/editor-import-sorting-6098/vite.config.mjs.txt"
 ));
 
 fn configure(
@@ -54,12 +58,8 @@ fn configured_document_sorting_matches_the_original_whole_reference_and_fixed_po
     let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();
     let service = server_with(&uri, SOURCE, "vue");
     let server = service.inner();
-    configure(
-        server,
-        project.path(),
-        serde_json::json!({ "sortImports": {} }),
-    )
-    .unwrap();
+    std::fs::write(project.path().join("vite.config.mjs"), CONFIG).unwrap();
+    server.state.load_format_config(project.path());
     let edits = futures::executor::block_on(server.formatting(formatting_params(uri.clone())))
         .unwrap()
         .unwrap();
@@ -70,6 +70,12 @@ fn configured_document_sorting_matches_the_original_whole_reference_and_fixed_po
             new_text: SORTED.to_owned(),
         }]
     );
+    let pinned: Vec<TextEdit> = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/lsp/editor-import-sorting-6098/response.expected.json"
+    )))
+    .unwrap();
+    assert_eq!(edits, pinned);
     assert_eq!(
         std::str::from_utf8(&apply(SOURCE, &edits).unwrap()).unwrap(),
         SORTED
@@ -92,11 +98,7 @@ fn workspace_config_installation_carries_the_authored_sorting_policy() {
     let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();
     let service = server_with(&uri, SOURCE, "vue");
     let server = service.inner();
-    std::fs::write(
-        project.path().join("vite.config.mjs"),
-        r#"export default { vue: { formatter: { sortImports: {} } } };"#,
-    )
-    .unwrap();
+    std::fs::write(project.path().join("vite.config.mjs"), CONFIG).unwrap();
     server.state.load_workspace_config(project.path());
     let edits = futures::executor::block_on(server.formatting(formatting_params(uri)))
         .unwrap()
