@@ -8782,40 +8782,6 @@
       ]
     },
     {
-      "id": "typechecker/project-session-retirement-11168/crlf-both-repaired",
-      "state": "active",
-      "targets": [
-        "project-session"
-      ],
-      "test": "content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs",
-      "sourceRevision": "ccea9b862fb20b3dab9e2f04903a22bb503cab3e",
-      "inputs": [
-        {
-          "file": "reference/probe.ts",
-          "path": "project-session-retirement-11168/probe.ts.txt",
-          "sha256": "ad35bcc06b1b2018c4c5a215eb3dda57934260a777415d64ba79513beabd6d29"
-        },
-        {
-          "file": "reference/tsconfig.json",
-          "path": "project-session-retirement-11168/tsconfig.json.txt",
-          "sha256": "81075be1182e35f06d3fac2f7fcaee5a5f650b044d52bb804b51d5488fac9eee"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "ts"
-            ],
-            "selector": "content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs; newly pinned original CRLF repaired reference input, not a new semantic program"
-          }
-        ]
-      }
-    },
-    {
       "id": "typechecker/public-instance-ts-directives-10984/original-expectation",
       "state": "active",
       "targets": [
@@ -11213,6 +11179,40 @@
             ]
           }
         },
+    {
+      "id": "typechecker/project-session-retirement-11168/crlf-both-repaired",
+      "state": "active",
+      "targets": [
+        "project-session"
+      ],
+      "test": "content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs",
+      "sourceRevision": "ccea9b862fb20b3dab9e2f04903a22bb503cab3e",
+      "inputs": [
+        {
+          "file": "reference/probe.ts",
+          "path": "project-session-retirement-11168/probe.ts.txt",
+          "sha256": "ad35bcc06b1b2018c4c5a215eb3dda57934260a777415d64ba79513beabd6d29"
+        },
+        {
+          "file": "reference/tsconfig.json",
+          "path": "project-session-retirement-11168/tsconfig.json.txt",
+          "sha256": "81075be1182e35f06d3fac2f7fcaee5a5f650b044d52bb804b51d5488fac9eee"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs; newly pinned original CRLF repaired reference input, not a new semantic program"
+          }
+        ]
+      }
+    },
     {
       "id": "typechecker/runtime/project-native-runtime-authority-10694",
       "state": "active",
