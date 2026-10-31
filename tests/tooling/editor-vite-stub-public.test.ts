@@ -100,7 +100,7 @@ test("only an early negative JS API phase may finish without loading the native 
         journal,
         events
           .map((event) =>
-            JSON.stringify({ schema: "vize-public-native-custody-event-v1", ...event }),
+            JSON.stringify({ schema: "vize-public-native-custody-event-v1", pid: 11145, ...event }),
           )
           .join("\n") + "\n",
       );
@@ -121,4 +121,16 @@ test("only an early negative JS API phase may finish without loading the native 
       ended,
     ]);
     assert.throws(() => verifyJournal(journal, identity, 1, false));
+    const attempt = {
+      event: "attempt",
+      expectedNative: true,
+      actualPath: identity.binary.path,
+      sha256: identity.binary.sha256,
+    };
+    const returned = { ...attempt, event: "returned" };
+    save([initial, attempt, returned]);
+    verifyJournal(journal, identity, null);
+    assert.throws(() => verifyJournal(journal, identity, 2));
+    save([initial, attempt, returned, { event: "exit", code: 2 }]);
+    assert.throws(() => verifyJournal(journal, identity, null));
   }));

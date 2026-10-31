@@ -66,7 +66,7 @@ export function configAcceptance(
     const value = readJsonRecord(output);
     if (negative) {
       for (const packet of [plain, cli, api]) {
-        assert.equal(packet.status, 1, packet.label);
+        assert.equal(packet.status, packet === api ? 1 : 2, packet.label);
         assert.equal(packet.error, null);
         assert.equal(packet.signal, null);
         assert.ok((packet.stdout + packet.stderr).includes("runtime-owner-11145"), packet.label);
@@ -90,7 +90,9 @@ export function configAcceptance(
         "the original project export must produce its actual project defaults",
       );
     }
-    verifyJournal(cliCustody.journal, identity, negative ? 1 : 0);
+    // Rust's lint config loader exits(2) directly, bypassing Node's exit event.
+    // The actual process status is checked above; its successful .node load remains required.
+    verifyJournal(cliCustody.journal, identity, negative ? null : 0);
     // A runtime-owner import error precedes the JS API's native normalizer.
     // Keep that honest journal; do not preload a binding to fabricate a native call.
     verifyJournal(apiCustody.journal, identity, negative ? 1 : 0, !negative);

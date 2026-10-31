@@ -62,6 +62,10 @@ The negative JS API import can fail before its native normalizer is required;
 its complete journal is retained without requiring or inventing a native load.
 Every positive API execution, CLI observation and LSP session requires the actual
 expected native loader to return successfully.
+The negative CLI follows `lint/config_load.rs`: actual process status is exactly
+2 and Rust exits directly, so no Node exit-hook event is expected. Its native
+load attempt and successful return remain required. The negative JS API has
+actual status 1 and a Node exit event. These are distinct recorded contracts.
 
 The editor phase starts the actual installed public LSP with that same hook,
 private TMP/TEMP/TMPDIR, and no source/checker overrides. It opens the original
