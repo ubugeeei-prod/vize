@@ -12,9 +12,11 @@ mod component_name;
 mod context;
 mod driver;
 mod element;
+mod owner;
 
 pub use context::NativeTemplateLintContext;
 pub use element::{NativeTemplateAttribute, NativeTemplateAttributeKind, NativeTemplateElement};
+pub use owner::{NativeTemplateClosedSelect, NativeTemplateOwnerProfile};
 
 /// Authentic enabled callbacks must all admit the wider source profile.
 /// Empty callback sets and callbacks that do not opt in retain StaticOnly.
@@ -91,6 +93,10 @@ impl From<NativeLintRefusal> for NativeTemplateLintRefusal {
 pub trait NativeTemplateRule: Send + Sync {
     fn attribute_profile(&self) -> NativeTemplateAttributeProfile {
         NativeTemplateAttributeProfile::StaticOnly
+    }
+
+    fn owner_profile(&self) -> NativeTemplateOwnerProfile {
+        NativeTemplateOwnerProfile::Strict
     }
 
     fn run_on_template<'a>(

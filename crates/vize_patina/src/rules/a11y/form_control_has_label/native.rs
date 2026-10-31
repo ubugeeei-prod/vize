@@ -1,4 +1,4 @@
-//! Partial native input capability over one original checked header.
+//! Partial native input/closed-select capability over original checked owners.
 //! Label ancestry, expression-derived types and decoded values are unprovided;
 //! refusing any such owner discards the complete pending result.
 
@@ -6,11 +6,15 @@ use super::FormControlHasLabel;
 use crate::native::template::{
     NativeTemplateAttributeKind as Kind, NativeTemplateAttributeProfile as Profile,
     NativeTemplateElement, NativeTemplateLintContext, NativeTemplateLintRefusal as Refusal,
-    NativeTemplateRule,
+    NativeTemplateOwnerProfile, NativeTemplateRule,
 };
 use vize_l1::markup::NativeLintComponent;
 
 impl NativeTemplateRule for FormControlHasLabel {
+    fn owner_profile(&self) -> NativeTemplateOwnerProfile {
+        NativeTemplateOwnerProfile::ClosedSelect
+    }
+
     fn attribute_profile(&self) -> Profile {
         Profile::Bindings
     }
@@ -36,17 +40,26 @@ impl NativeTemplateRule for FormControlHasLabel {
             return Err(Refusal::SourceMismatch);
         }
         let tag = original.surface().tag();
-        // Label ancestry and non-input form controls are unprovided. Refuse
-        // their own header, including empty select owners and late controls,
-        // rather than relying on an unsupported descendant to stop traversal.
-        if matches!(tag, "label" | "select" | "textarea") {
+        // Label ancestry and textarea semantics are still unprovided.
+        if matches!(tag, "label" | "textarea") {
             return Err(Refusal::UnsupportedContext {
                 span: context.element_opening_range(element)?,
             });
         }
-        if tag != "input" {
+        if tag != "input" && tag != "select" {
             return Ok(());
         }
+        let select_owner = if tag == "select" {
+            let owner = element
+                .closed_select_owner()
+                .ok_or(Refusal::UnsupportedContext {
+                    span: context.element_opening_range(element)?,
+                })?;
+            context.select_opening_range(&owner)?;
+            Some(owner)
+        } else {
+            None
+        };
         let mut hidden = false;
         let mut unknown_hidden = false;
         let mut exempt_type = false;
@@ -70,9 +83,13 @@ impl NativeTemplateRule for FormControlHasLabel {
                             })
                         }
                         "type" => {
-                            exempt_type = value.is_some_and(|value| {
-                                matches!(value, "hidden" | "submit" | "reset" | "button" | "image")
-                            })
+                            exempt_type = tag == "input"
+                                && value.is_some_and(|value| {
+                                    matches!(
+                                        value,
+                                        "hidden" | "submit" | "reset" | "button" | "image"
+                                    )
+                                })
                         }
                         "id" | "aria-label" | "aria-labelledby" | "title" => labelled |= nonempty,
                         "placeholder" => placeholder |= nonempty,
@@ -105,12 +122,21 @@ impl NativeTemplateRule for FormControlHasLabel {
         } else {
             "a11y/form-control-has-label.help"
         };
-        context.warn_void_element_with_help(
-            element,
-            "a11y/form-control-has-label.message",
-            &[("tag", "input")],
-            help,
-        )
+        if let Some(owner) = select_owner {
+            context.warn_select_with_help(
+                &owner,
+                "a11y/form-control-has-label.message",
+                &[("tag", tag)],
+                help,
+            )
+        } else {
+            context.warn_void_element_with_help(
+                element,
+                "a11y/form-control-has-label.message",
+                &[("tag", tag)],
+                help,
+            )
+        }
     }
 }
 

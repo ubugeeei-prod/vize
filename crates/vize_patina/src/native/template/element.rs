@@ -114,6 +114,7 @@ impl<'o, 'a> NativeTemplateAttribute<'o, 'a> {
 pub struct NativeTemplateElement<'o, 'a> {
     original: NativeElement<'o, 'a>,
     attributes: SmallVec<[NativeTemplateAttribute<'o, 'a>; 8]>,
+    closed_select: bool,
 }
 
 impl<'o, 'a> NativeTemplateElement<'o, 'a> {
@@ -124,7 +125,19 @@ impl<'o, 'a> NativeTemplateElement<'o, 'a> {
         Self {
             original,
             attributes,
+            closed_select: false,
         }
+    }
+
+    pub(in crate::native) fn admit_closed_select(&mut self) {
+        self.closed_select = true;
+    }
+
+    /// Present only after this exact select's bounded children were checked.
+    #[must_use]
+    pub fn closed_select_owner(&self) -> Option<super::NativeTemplateClosedSelect<'_, 'o, 'a>> {
+        self.closed_select
+            .then_some(super::NativeTemplateClosedSelect { element: self })
     }
 
     #[must_use]

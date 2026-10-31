@@ -8,7 +8,7 @@ use super::super::admission;
 
 use super::{
     NativeTemplateAttributeProfile, NativeTemplateLintContext, NativeTemplateLintRefusal,
-    NativeTemplateRule,
+    NativeTemplateOwnerProfile, NativeTemplateRule, NativeTemplateTextProfile,
 };
 
 impl Linter {
@@ -39,6 +39,15 @@ impl Linter {
             .map(|(_, callback)| callback.attribute_profile())
             .reduce(NativeTemplateAttributeProfile::intersect)
             .unwrap_or_default();
+        let owners: Vec<_> = callbacks
+            .iter()
+            .map(|(_, rule)| rule.owner_profile())
+            .collect();
+        let owner_profile = owners
+            .iter()
+            .copied()
+            .reduce(NativeTemplateOwnerProfile::intersect)
+            .unwrap_or_default();
         let block = SourceRoot::new(source)
             .map_err(NativeTemplateLintRefusal::Source)?
             .whole_block();
@@ -46,19 +55,28 @@ impl Linter {
             .map_err(NativeTemplateLintRefusal::Parse)?;
         admission::component(root.component())?;
         let mut context = NativeTemplateLintContext::new(self, &root, filename);
-        for &(name, callback) in &callbacks {
+        for (&(name, callback), &owner) in callbacks.iter().zip(&owners) {
             context.current_rule = name;
+            context.current_owner_profile = owner;
             callback.run_on_template(&mut context, &root)?;
         }
         // Root findings are pending. A late refusal discards them wholesale.
         // There is no suppression pre-scan, second tree/header walk or reparse.
-        admission::children(root.component(), root.children(), profile, &mut |view| {
-            for &(name, callback) in &callbacks {
-                context.current_rule = name;
-                callback.run_on_element(&mut context, view)?;
-            }
-            Ok(())
-        })?;
+        admission::children_with_owner_profile(
+            root.component(),
+            root.children(),
+            profile,
+            NativeTemplateTextProfile::LiteralText,
+            owner_profile,
+            &mut |view| {
+                for (&(name, callback), &owner) in callbacks.iter().zip(&owners) {
+                    context.current_rule = name;
+                    context.current_owner_profile = owner;
+                    callback.run_on_element(&mut context, view)?;
+                }
+                Ok(())
+            },
+        )?;
         Ok(context.finish())
     }
 
