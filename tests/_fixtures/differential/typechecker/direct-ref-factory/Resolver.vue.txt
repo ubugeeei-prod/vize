@@ -1,0 +1,5 @@
+<script setup lang="ts" generic="T extends string | number = string">
+const props = defineProps<{ value: T }>();
+defineExpose({ current: () => props.value });
+</script>
+<template><span>{{ value }}</span></template>

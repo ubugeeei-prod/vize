@@ -1,0 +1,33 @@
+<script setup lang="ts">
+import { onMounted, useTemplateRef } from "vue";
+import Resolver from "./Resolver.vue";
+import type { $RefInstanceFactory, $TemplateRefInstance, InstanceType, ReturnType, _C, _F } from "./names";
+type IsAny<T> = 0 extends (1 & T) ? true : false;
+const ownership: [$RefInstanceFactory, $TemplateRefInstance, InstanceType, ReturnType, _C, _F] = [
+  "authored-factory", "authored-instance", "authored-instance-type", "authored-return-type", "authored-c", "authored-f",
+];
+const numericRef = useTemplateRef("numeric");
+const textualRef = useTemplateRef("textual");
+const nativeRef = useTemplateRef("native");
+onMounted(() => {
+  if (numericRef.value) {
+    const actualNumeric = numericRef.value.current();
+    const numeric: number = actualNumeric;
+    const numericNoAny: false = {} as IsAny<typeof actualNumeric>;
+    void [numeric, numericNoAny];
+  }
+  if (textualRef.value) {
+    const actualTextual = textualRef.value.current();
+    const textual: string = actualTextual;
+    const textualNoAny: false = {} as IsAny<typeof actualTextual>;
+    void [textual, textualNoAny];
+  }
+  nativeRef.value?.focus();
+});
+void ownership;
+</script>
+<template>
+  <Resolver ref="numeric" :value="1" />
+  <Resolver ref="textual" :value="'雪🌸'" />
+  <button ref="native">Focus</button>
+</template>

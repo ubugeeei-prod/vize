@@ -1,0 +1,6 @@
+export type $RefInstanceFactory = "authored-factory";
+export type $TemplateRefInstance = "authored-instance";
+export type InstanceType = "authored-instance-type";
+export type ReturnType = "authored-return-type";
+export type _C = "authored-c";
+export type _F = "authored-f";
