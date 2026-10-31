@@ -3224,8 +3224,8 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "linter manifest pinned authored event-ignore inputs; CLI/NAPI/reference tests consume the same bytes; no native adapter admission"
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

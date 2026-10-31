@@ -242,9 +242,16 @@ test("event ignore public configuration owns resets, refusals, disabled selectio
       want: returned(expected(update, false)),
     },
     {
-      id: "flat-null-retains-optional-semantics",
+      id: "flat-null-is-rejected-by-array-binding",
       options: { vOnEventHyphenationIgnore: null },
-      want: returned(expected(original)),
+      want: {
+        kind: "threw",
+        error: {
+          name: "Error",
+          code: "ArrayExpected",
+          message: "Failed to get Array length on PatinaLintOptionsNapi.vOnEventHyphenationIgnore",
+        },
+      },
     },
     {
       id: "omitted-json-policy-validates-flat",
