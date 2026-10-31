@@ -21,11 +21,6 @@ const output = path.join(repoRoot, "target/differential/router-preview-593d7ad/a
 fs.mkdirSync(output, { recursive: true });
 const [source] = resolveVizeLaunchCommand(undefined, sourceBinary, { required: true, repoRoot });
 const tsgo = resolveTsgoBinary();
-const mapperHost = process.env.VIZE_TEST_CONTENT_MAPPER_TSGO;
-assert.ok(
-  mapperHost && path.isAbsolute(mapperHost) && fs.statSync(mapperHost).isFile(),
-  "pinned physical mapper host",
-);
 
 // Newly pinned original generated input; the semantic program and all64 controls
 // remain byte-identical. These bytes physically feed both checkers below.
@@ -121,31 +116,6 @@ try {
   ] as const) {
     const processes = processRecorder(path.join(output, kind));
     const config = JSON.parse(fs.readFileSync(path.join(root, "tsconfig.json"), "utf8"));
-    const mapperPackage = path.join(root, "node_modules/router-source-mapper");
-    fs.mkdirSync(mapperPackage, { recursive: true });
-    const production = JSON.parse(
-      fs.readFileSync(path.join(repoRoot, "npm/cli/package.json"), "utf8"),
-    );
-    fs.writeFileSync(
-      path.join(mapperPackage, "package.json"),
-      JSON.stringify({
-        name: "router-source-mapper",
-        private: true,
-        typescript: {
-          contentMapper: {
-            ...production.typescript.contentMapper,
-            exec: [source, "content-mapper"],
-          },
-        },
-      }),
-    );
-    fs.writeFileSync(
-      path.join(root, "tsconfig.mapper.json"),
-      JSON.stringify({
-        extends: "./tsconfig.json",
-        contentMappers: [{ package: "router-source-mapper", extensions: [".vue"] }],
-      }),
-    );
     for (const enabled of [true, false]) {
       config.vueCompilerOptions.plugins = enabled ? ["vue-router/volar/sfc-typed-router"] : [];
       fs.writeFileSync(path.join(root, "tsconfig.json"), `${JSON.stringify(config)}\n`);
@@ -158,13 +128,11 @@ try {
           fs.writeFileSync(path.join(root, previewPage), page.replaceAll("\n", newline));
           const retained = path.join(output, "inputs", id);
           fs.mkdirSync(retained, { recursive: true });
-          const inputs = [previewPage, "tsconfig.json", "tsconfig.mapper.json"].map(
-            (file, index) => {
-              const bytes = fs.readFileSync(path.join(root, file));
-              fs.writeFileSync(path.join(retained, `${index}.txt`), bytes);
-              return { file, bytes: bytes.length, sha256: hash(bytes) };
-            },
-          );
+          const inputs = [previewPage, "tsconfig.json"].map((file, index) => {
+            const bytes = fs.readFileSync(path.join(root, file));
+            fs.writeFileSync(path.join(retained, `${index}.txt`), bytes);
+            return { file, bytes: bytes.length, sha256: hash(bytes) };
+          });
           const expected = reference(
             processes.run(
               `${id}/reference`,
@@ -198,17 +166,8 @@ try {
               root,
             ),
           );
-          const mapped = reference(
-            processes.run(
-              `${id}/mapper`,
-              mapperHost,
-              ["--runExternalCode", "--noEmit", "--pretty", "false", "-p", "tsconfig.mapper.json"],
-              root,
-            ),
-          );
-          results.push({ id, inputs, expected, actual, mapped });
+          results.push({ id, inputs, expected, actual });
           if (JSON.stringify(actual) !== JSON.stringify(expected)) failures.push(`${id}/check`);
-          if (JSON.stringify(mapped) !== JSON.stringify(expected)) failures.push(`${id}/mapper`);
         }
       }
     }
@@ -221,11 +180,7 @@ try {
   preview.cleanup();
   published.cleanup();
 }
-assert.deepEqual(
-  failures,
-  [],
-  "every complete check and mapper vector matches vue-tsc with the real plugin",
-);
+assert.deepEqual(failures, [], "every complete check vector matches vue-tsc with the real plugin");
 // Both packs report 5.4.0; only the source build may change the diagnostics.
 const outcome = (id: string) =>
   JSON.stringify(

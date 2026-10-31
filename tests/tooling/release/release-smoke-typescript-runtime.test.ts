@@ -23,6 +23,11 @@ const contract = {
     "moduleResolution",
     "resolvePackageJsonExports",
     "customConditions",
+    "baseUrl",
+    "paths",
+    "moduleSuffixes",
+    "noDtsResolution",
+    "preserveSymlinks",
   ],
 };
 const diagnostics = [

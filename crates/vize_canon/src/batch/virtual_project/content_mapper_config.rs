@@ -23,7 +23,7 @@ pub struct ContentMapperProjectConfiguration {
     pub config_identity: CompactString,
     /// Absolute configs, package metadata, and missing candidates affecting resolution.
     pub watched_files: Vec<CompactString>,
-    /// Provider capability bound to this project's selected compiler context.
+    /// Selected project context; provider observations do not grant native authority.
     pub project_context: ContentMapperProjectContext,
 }
 
@@ -85,7 +85,7 @@ impl ContentMapperProjectConfiguration {
                 compiler,
             )
         });
-        let (project_context, provider_identity) = ContentMapperProjectContext::admit(
+        let (project_context, provider_identity) = ContentMapperProjectContext::capture(
             typed_router_root.clone(),
             config_file_name,
             compiler_options,
@@ -118,7 +118,7 @@ impl ContentMapperProjectConfiguration {
             digest.update(serde_json::to_vec(root)?);
         }
         if let Some(identity) = provider_identity {
-            digest.update(b"\0typed-router-provider\0");
+            digest.update(b"\0typed-router-provider-observation\0");
             digest.update(identity);
         }
         let digest = super::identity::encode_digest(digest.finalize());

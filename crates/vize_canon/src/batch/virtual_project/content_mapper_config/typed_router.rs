@@ -1,4 +1,4 @@
-//! Owned typed-router authority admitted once for an opened mapper project.
+//! Selected router context and provider observations for an opened mapper project.
 
 use std::path::{Path, PathBuf};
 
@@ -8,36 +8,29 @@ use super::super::tsconfig_gen::compiler_inputs::CompilerInputs;
 use super::super::typed_router::{Config, provider};
 use crate::batch::error::CorsaResult;
 
-/// Project-owned router capability. Transforming a file never reads its provider.
-/// The legacy root-only transform API deliberately retains file-only behavior.
+/// Project-owned router context. A filesystem observation does not establish
+/// which provider bytes the native project owns, so it never grants route props.
 #[derive(Clone, Debug, Default)]
 pub struct ContentMapperProjectContext {
     root: Option<PathBuf>,
-    route_props: bool,
 }
 
 impl ContentMapperProjectContext {
     pub(in crate::batch::virtual_project) fn config(&self) -> Option<Config<'_>> {
-        self.root.as_deref().map(|root| Config {
-            root,
-            route_props: self.route_props,
-        })
+        self.root.as_deref().map(Config::files_only)
     }
 
     #[expect(
         clippy::disallowed_types,
         reason = "host compiler options use serde_json keys"
     )]
-    pub(super) fn admit(
+    pub(super) fn capture(
         root: Option<PathBuf>,
         config_file_name: &Path,
         compiler: Option<&Map<std::string::String, Value>>,
         watched: &mut Vec<vize_l0::String>,
     ) -> CorsaResult<(Self, Option<[u8; 32]>)> {
-        let mut context = Self {
-            root,
-            route_props: false,
-        };
+        let context = Self { root };
         let Some(compiler) = compiler.filter(|_| context.root.is_some()) else {
             return Ok((context, None));
         };
@@ -47,7 +40,7 @@ impl ContentMapperProjectContext {
             return Ok((context, None));
         }
         let inputs = CompilerInputs::default();
-        let (admitted, identity) = provider::capture_route_props(
+        let identity = provider::capture_observation(
             config_file_name.parent().unwrap_or(Path::new(".")),
             compiler,
             &inputs,
@@ -59,7 +52,6 @@ impl ContentMapperProjectContext {
                 .into_iter()
                 .map(|path| path.to_string_lossy().into()),
         );
-        context.route_props = admitted;
         Ok((context, Some(identity)))
     }
 }

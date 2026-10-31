@@ -1,4 +1,4 @@
-//! Legacy file-only entrypoints and project-owned provider capability entrypoint.
+//! Legacy file-only entrypoints and project-owned context entrypoint.
 
 use std::path::Path;
 
@@ -51,7 +51,8 @@ pub fn generate_vue_content_mapper_transform_with_project_options(
     )
 }
 
-/// Generate a transform with the provider capability captured at project open.
+/// Generate a transform with the selected context captured at project open.
+/// Filesystem provider observations alone do not grant route-props authority.
 pub fn generate_vue_content_mapper_transform_with_project_context(
     path: &Path,
     content: &str,

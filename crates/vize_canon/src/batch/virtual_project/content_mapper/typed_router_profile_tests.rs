@@ -101,12 +101,12 @@ fn typed_router_context_admission_is_outside_repeated_projection_work() {
     let report = json!({
         "schema":"vize.content-mapper.router-source-profile",
         "version":1,
-        "scope":"projection only; provider type checking and process startup excluded",
+        "scope":"filesystem provider observations and file-only projection; native provider authority excluded",
         "sourceSha256":super::super::identity::encode_digest(Sha256::digest(source.as_bytes())),
         "projectConfiguration":observed(&configuration),
         "projection":observed(&projection),
-        "providerAdmissionCalls":1,
-        "providerAdmissionReads":admission_reads,
+        "providerObservationCalls":1,
+        "providerObservationReads":admission_reads,
         "providerReadsDuringTransforms":0,
         "phases":phases,
     });

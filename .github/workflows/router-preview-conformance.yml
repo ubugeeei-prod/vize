@@ -132,19 +132,11 @@ jobs:
         env:
           VIZE_ROUTER_PREVIEW_PROVIDER: ${{ runner.temp }}/router-preview-provider
         run: vp node tests/tooling/router-preview-probe.ts
-      - name: Install the pinned physical mapper host
-        run: |
-          mkdir -p "$RUNNER_TEMP/router-mapper-host"
-          cp tests/fixtures/typechecker/experimental-router-mapper-host/package.json.txt "$RUNNER_TEMP/router-mapper-host/package.json"
-          cp tests/fixtures/typechecker/experimental-router-mapper-host/package-lock.json.txt "$RUNNER_TEMP/router-mapper-host/package-lock.json"
-          npm ci --prefix "$RUNNER_TEMP/router-mapper-host" --ignore-scripts --no-audit --no-fund --prefer-offline --registry=https://registry.npmjs.org
-          sha256sum "$RUNNER_TEMP/router-mapper-host/package-lock.json" "$RUNNER_TEMP/router-mapper-host/node_modules/typescript/package.json" "$RUNNER_TEMP/router-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc" > target/differential/router-preview-593d7ad/mapper-host.sha256
       - name: Compare automatic route props with vue-tsc and both real plugins
         id: automatic
         continue-on-error: true
         env:
           VIZE_ROUTER_PREVIEW_PROVIDER: ${{ runner.temp }}/router-preview-provider
-          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/router-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc
         run: vp node tests/tooling/router-preview-automatic.ts
       - name: Retain complete provider, input, process, and source custody
         if: always()

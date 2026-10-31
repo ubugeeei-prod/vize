@@ -122,7 +122,12 @@
         "module",
         "moduleResolution",
         "resolvePackageJsonExports",
-        "customConditions"
+        "customConditions",
+        "baseUrl",
+        "paths",
+        "moduleSuffixes",
+        "noDtsResolution",
+        "preserveSymlinks"
       ],
       "dynamicConfig": true,
       "exec": [

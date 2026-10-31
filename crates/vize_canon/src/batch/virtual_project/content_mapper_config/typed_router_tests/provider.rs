@@ -63,6 +63,11 @@ fn project(kind: &str) -> (tempfile::TempDir, PathBuf) {
     let guard = tempfile::tempdir().unwrap();
     let root = vize_carton::path::canonicalize_non_verbatim(guard.path());
     std::fs::write(root.join("tsconfig.json"), CONFIG).unwrap();
+    std::fs::write(
+        root.join("package.json"),
+        r#"{"name":"mapper-context-fixture","private":true}"#,
+    )
+    .unwrap();
     install(&root, kind);
     (guard, root)
 }
@@ -111,6 +116,8 @@ fn page_call(output: &ContentMapperTransform) -> &str {
 fn expected_watch(root: &Path, entry: &str) -> Vec<vize_l0::String> {
     let mut paths = [
         "tsconfig.json".to_owned(),
+        "package.json".to_owned(),
+        "node_modules/vue-router".to_owned(),
         "node_modules/vue-router/package.json".to_owned(),
         "node_modules/vue-router/dist/experimental/index.d.ts".to_owned(),
         format!("node_modules/vue-router/dist/{entry}.ts"),
@@ -124,7 +131,7 @@ fn expected_watch(root: &Path, entry: &str) -> Vec<vize_l0::String> {
 }
 
 #[test]
-fn both_actual_same_version_providers_keep_project_context_and_legacy_api_isolated() {
+fn both_actual_same_version_providers_are_observed_without_granting_native_authority() {
     fn assert_send_sync<T: Send + Sync>() {}
     assert_send_sync::<crate::ContentMapperProjectContext>();
     let (_preview_guard, preview) = project("preview");
@@ -135,7 +142,7 @@ fn both_actual_same_version_providers_keep_project_context_and_legacy_api_isolat
     let disabled = transform(&published, &refused);
     assert_eq!(
         page_call(&enabled),
-        "definePage<\"src/pages/[id].vue\", typeof import(\"./[id].vue\").default>({ props: true })"
+        "definePage<\"src/pages/[id].vue\">({ props: true })"
     );
     assert_eq!(
         page_call(&disabled),
@@ -157,6 +164,10 @@ fn both_actual_same_version_providers_keep_project_context_and_legacy_api_isolat
     )
     .unwrap();
     assert_eq!(page_call(&legacy), page_call(&disabled));
+    assert_eq!(
+        serde_json::to_value(&enabled).unwrap(),
+        serde_json::to_value(&legacy).unwrap()
+    );
     assert_eq!(
         serde_json::to_value(transform(&preview, &admitted)).unwrap(),
         serde_json::to_value(&enabled).unwrap()
@@ -196,6 +207,36 @@ fn both_actual_same_version_providers_keep_project_context_and_legacy_api_isolat
 }
 
 #[test]
+fn every_unproven_file_keeps_the_complete_legacy_file_only_packet() {
+    let (_guard, root) = project("preview");
+    let config = load(&root, json!(100));
+    for file in [
+        root.join("src/pages/[id].vue"),
+        root.join("nested/Page.vue"),
+        root.join("../outside/Page.vue"),
+    ] {
+        let actual = generate_vue_content_mapper_transform_with_project_context(
+            &file,
+            PAGE,
+            config.transform_options,
+            &config.project_context,
+        )
+        .unwrap();
+        let legacy = generate_vue_content_mapper_transform_with_project_options(
+            &file,
+            PAGE,
+            config.transform_options,
+            Some(&root),
+        )
+        .unwrap();
+        assert_eq!(
+            serde_json::to_value(actual).unwrap(),
+            serde_json::to_value(legacy).unwrap()
+        );
+    }
+}
+
+#[test]
 fn reopening_tracks_provider_bytes_reexports_removal_and_configuration_changes() {
     let (_guard, root) = project("preview");
     let before = load(&root, json!(100));
@@ -216,6 +257,8 @@ fn reopening_tracks_provider_bytes_reexports_removal_and_configuration_changes()
     );
     let mut missing_watch = [
         root.join("tsconfig.json"),
+        root.join("package.json"),
+        root.join("node_modules/vue-router"),
         root.join("node_modules/vue-router/package.json"),
         entry.clone(),
     ]
@@ -268,5 +311,58 @@ fn reopening_tracks_provider_bytes_reexports_removal_and_configuration_changes()
     assert_eq!(
         page_call(&transform(&root, &load(&root, json!(100)))),
         "definePage({ props: true })"
+    );
+}
+
+#[test]
+fn resolver_redirections_never_publish_a_route_props_capability() {
+    let (_guard, root) = project("preview");
+    let legacy = generate_vue_content_mapper_transform_with_project_options(
+        &root.join("src/pages/[id].vue"),
+        PAGE,
+        Default::default(),
+        Some(&root),
+    )
+    .unwrap();
+    for extension in [
+        json!({"baseUrl":"."}),
+        json!({"baseUrl":""}),
+        json!({"baseUrl":null}),
+        json!({"paths":null}),
+        json!({"paths":[]}),
+        json!({"paths":{"vue-router/experimental":["redirected.d.ts"]}}),
+        json!({"paths":{"@/*":["src/*"]}}),
+    ] {
+        let mut compiler = json!({"rootDir":root,"moduleResolution":100});
+        compiler
+            .as_object_mut()
+            .unwrap()
+            .extend(extension.as_object().unwrap().clone());
+        let config = ContentMapperProjectConfiguration::load_with_compiler_options(
+            &root.join("tsconfig.json"),
+            compiler.as_object().unwrap(),
+        )
+        .unwrap()
+        .0;
+        assert_eq!(
+            config.watched_files,
+            vec![root.join("tsconfig.json").to_string_lossy().into_owned()]
+        );
+        assert_eq!(
+            serde_json::to_value(transform(&root, &config)).unwrap(),
+            serde_json::to_value(&legacy).unwrap()
+        );
+    }
+    let empty = ContentMapperProjectConfiguration::load_with_compiler_options(
+        &root.join("tsconfig.json"),
+        json!({"rootDir":root,"moduleResolution":100,"paths":{}})
+            .as_object()
+            .unwrap(),
+    )
+    .unwrap()
+    .0;
+    assert_eq!(
+        serde_json::to_value(transform(&root, &empty)).unwrap(),
+        serde_json::to_value(transform(&root, &load(&root, json!(100)))).unwrap()
     );
 }

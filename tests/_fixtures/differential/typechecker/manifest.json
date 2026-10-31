@@ -11274,7 +11274,7 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "tests/tooling/router-preview-automatic.ts; newly pinned original automatic64 source physically supplied to source check, independent vue-tsc and native content mapper; not a new semantic program"
+            "selector": "tests/tooling/router-preview-automatic.ts; newly pinned original automatic64 source physically supplied to source native check and independent vue-tsc; not a new semantic program or native mapper authority"
           }
         ]
       }

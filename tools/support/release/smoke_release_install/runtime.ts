@@ -213,6 +213,11 @@ export function assertInstalledMapperContract(installDir: string): void {
         "moduleResolution",
         "resolvePackageJsonExports",
         "customConditions",
+        "baseUrl",
+        "paths",
+        "moduleSuffixes",
+        "noDtsResolution",
+        "preserveSymlinks",
       ],
     })
   ) {

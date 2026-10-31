@@ -49,6 +49,11 @@ test("vize package exposes an executable TypeScript content mapper", () => {
       "moduleResolution",
       "resolvePackageJsonExports",
       "customConditions",
+      "baseUrl",
+      "paths",
+      "moduleSuffixes",
+      "noDtsResolution",
+      "preserveSymlinks",
     ],
   });
   assert.equal(

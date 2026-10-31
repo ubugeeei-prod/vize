@@ -88,7 +88,7 @@ fn expected(root: &Path) -> Value {
 }
 
 #[test]
-fn same_process_same_version_router_providers_keep_complete_packets_isolated() {
+fn same_process_provider_observations_never_grant_route_props_to_mapper_files() {
     let directory = tempfile::tempdir().unwrap();
     let root = vize_carton::path::canonicalize_non_verbatim(directory.path());
     let preview = root.join("preview");
@@ -100,7 +100,7 @@ fn same_process_same_version_router_providers_keep_complete_packets_isolated() {
     }
     let enabled = expected(&preview);
     let disabled = expected(&published);
-    assert_ne!(enabled, disabled);
+    assert_eq!(enabled, disabled);
     let responses = exchange(&frames(&[
         initialize_request(),
         open(2, "preview", &preview),
@@ -153,7 +153,7 @@ impl Write for ProviderEdits<'_> {
 }
 
 #[test]
-fn provider_removal_reopen_and_failed_reload_never_reuse_stale_admission() {
+fn provider_observation_reopen_and_failed_reload_keep_file_only_packets() {
     let directory = tempfile::tempdir().unwrap();
     let root = vize_carton::path::canonicalize_non_verbatim(directory.path());
     let config = root.join("tsconfig.json");
@@ -164,7 +164,7 @@ fn provider_removal_reopen_and_failed_reload_never_reuse_stale_admission() {
     let enabled = expected(&root);
     std::fs::remove_file(&entry).unwrap();
     let disabled = expected(&root);
-    assert_ne!(enabled, disabled);
+    assert_eq!(enabled, disabled);
     std::fs::write(&entry, &original).unwrap();
     std::fs::write(&config, BAD_CONFIG).unwrap();
     let invalid = ContentMapperProjectConfiguration::load_with_compiler_options(
