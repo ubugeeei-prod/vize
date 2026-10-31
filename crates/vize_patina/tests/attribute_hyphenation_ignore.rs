@@ -70,8 +70,12 @@ fn expected(source: &str, filename: &str, reference: &Value) -> Value {
         let end = byte_offset(source, finding["fix"]["range"][1].as_u64().unwrap() as usize);
         let key = &source[start..end];
         // The existing Vize API edits the name, while ESLint edits the complete key.
-        let prefix = if key.starts_with(':') { ":" } else if key.starts_with("v-model:") { "v-model:" } else { "" };
-        assert!(!key.starts_with("v-") || prefix == "v-model:");
+        let prefix = match key {
+            "fooBar" | "foo-bar" => "",
+            ":activeKey" | ":active-key" => ":",
+            "v-model:pageSize" | "v-model:page-size" => "v-model:",
+            _ => panic!("independent corpus key mismatch"),
+        };
         let replacement = finding["fix"]["text"].as_str().unwrap().strip_prefix(prefix).unwrap();
         json!({"rule_name":RULE,"severity":"warning","message":message,"help":help,"labels":[],
             "start":position(source,finding,"line","column"),"end":position(source,finding,"endLine","endColumn"),
