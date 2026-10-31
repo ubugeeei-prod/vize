@@ -59,7 +59,7 @@ fn selected_art_uses_each_profile_without_editing_tags_or_neighbors() {
         ),
     ] {
         let options = FormatOptions::from_preset(preset);
-        let edits = selected(&source, range, &options).unwrap();
+        let edits = selected(source, range, &options).unwrap();
         assert_eq!(
             edits,
             vec![TextEdit {
@@ -75,7 +75,7 @@ fn selected_art_uses_each_profile_without_editing_tags_or_neighbors() {
             .unwrap();
             assert_eq!(edits, pinned);
         }
-        let bytes = apply(&source, &edits).unwrap();
+        let bytes = apply(source, &edits).unwrap();
         let applied = std::str::from_utf8(&bytes).unwrap();
         assert_eq!(applied, [PREFIX, expected, SUFFIX].concat());
         let caret = Range::new(Position::new(2, 2), Position::new(2, 3));
