@@ -10,6 +10,9 @@ use vize_carton::{FxHashMap, FxHashSet, String};
 use super::collect::collect_specifier_spans;
 use crate::PackageResolutionMode;
 
+#[cfg(feature = "profiling")]
+mod profiling;
+
 type SpanOccurrence = (u32, u32, String, PackageResolutionMode);
 
 struct ModuleSpecifierFacts {
