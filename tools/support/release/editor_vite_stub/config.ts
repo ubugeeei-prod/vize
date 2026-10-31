@@ -76,8 +76,10 @@ export function configAcceptance(
     } else {
       for (const packet of [plain, cli, api]) success(packet);
       const report = asArray(parseJson(cli.stdout));
+      assert.equal(report.length, 1, "the original app must actually be linted");
       for (const item of report) {
         const row = asRecord(item);
+        assert.equal(asString(row.file).replaceAll("\\", "/"), "src/app.vue");
         assert.equal(row.errorCount, 0);
         assert.equal(row.warningCount, 0);
         assert.deepEqual(row.messages, []);
