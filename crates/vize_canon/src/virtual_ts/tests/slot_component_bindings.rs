@@ -1,6 +1,8 @@
 use super::generate_virtual_ts_with_offsets;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
+mod hoisted_owner;
+
 const TEMPLATE: &str =
     r#"<el-badge><template #content="{ value }">{{ value.missing }}</template></el-badge>"#;
 const SLOT_RESOLVER_DECLARATIONS: &str =
@@ -381,7 +383,10 @@ fn empty_v_slot_expression_keeps_the_slot_function_parseable() {
 #[test]
 fn hoisted_slot_constructor_branches_keep_the_component_owner() {
     let allocator = vize_carton::Allocator::new();
-    let (root, _) = vize_armature::parse(&allocator, TEMPLATE);
+    let (root, _) = vize_armature::parse(
+        &allocator,
+        r#"<el-badge :value="1"><template #content="{ value }">{{ value.missing }}</template></el-badge>"#,
+    );
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
@@ -418,14 +423,7 @@ fn hoisted_slot_constructor_branches_keep_the_component_owner() {
             "the hoisted helper module must export {helper}",
         );
     }
-    assert_eq!(
-        code.matches(&format!(
-            "import(\"vize:virtual-ts\").$SlotConstructorInstance<{constructor}, __Z, __P>",
-        ))
-        .count(),
-        1,
-        "the branch selector must retain the exact component owner:\n{code}",
-    );
+    hoisted_owner::assert_selector(&code, constructor);
     assert_eq!(
         crate::virtual_ts::helpers::SHARED_PREAMBLE_DTS
             .matches("export type $SlotConstructorInstance<")

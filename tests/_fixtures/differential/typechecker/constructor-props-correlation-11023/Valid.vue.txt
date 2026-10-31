@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import { LastZero, FirstZero, Generic } from './components';
+type IsAny<T> = 0 extends 1 & T ? true : false;
+type Exact<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+type Report<T> = IsAny<T> extends true ? 'any' : Exact<T, number> extends true ? 'number' : Exact<T, string> extends true ? 'string' : 'other';
+function report<T>(_value: T): Report<T> { throw new Error('witness'); }
+function requireNumber(_value: 'number'): void {}
+function requireString(_value: 'string'): void {}
+</script>
+<template>
+  <LastZero :value="1" v-slot="{ item }">{{ requireNumber(report(item)) }}</LastZero>
+  <LastZero :value="'Ada'" v-slot="{ item }">{{ requireString(report(item)) }}</LastZero>
+  <FirstZero :value="'Ada'" v-slot="{ item }">{{ requireString(report(item)) }}</FirstZero>
+  <FirstZero :value="1" v-slot="{ item }">{{ requireNumber(report(item)) }}</FirstZero>
+  <Generic :value="1" v-slot="{ item }">{{ requireNumber(report(item)) }}</Generic>
+  <Generic :value="'Ada'" v-slot="{ item }">{{ requireString(report(item)) }}</Generic>
+</template>

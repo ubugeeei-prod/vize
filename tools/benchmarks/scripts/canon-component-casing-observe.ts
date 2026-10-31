@@ -1,7 +1,9 @@
-/** Complete native diagnostics and explicit public-SDK source-executable selection. */
+/** Complete native diagnostics and exact current-source SDK assembly. */
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { isRecord, jsonValue } from "./canon-instance-directives-model.ts";
 import { save, identify, run } from "./canon-instance-directives-io.ts";
 export type NativeDiagnostic = {
@@ -33,25 +35,67 @@ export function nativeDiagnostics(
   assert.equal(status, result.length ? 2 : 0);
   return result;
 }
-export function sourceSdk(project: string, provider: string, binary: string): void {
+export const sourceSdkDeclarations = [
+  "virtual-ts-globals.d.ts",
+  "virtual-ts-patterns.d.ts",
+  "virtual-ts.d.ts",
+  "virtual-ts.d.mts",
+  "virtual-ts.d.cts",
+  "content-mapper-helpers.d.ts",
+  "content-mapper-helpers.d.mts",
+  "content-mapper-helpers.d.cts",
+  "generated/content-mapper-types.d.ts",
+] as const;
+
+export function sourceSdk(project: string, provider: string, binary: string) {
+  const sourceRoot = fileURLToPath(new URL("../../../", import.meta.url));
+  const source = execFileSync("git", ["rev-parse", "HEAD"], { cwd: sourceRoot }).toString().trim();
+  const gitBytes = (file: string) =>
+    execFileSync("git", ["show", `${source}:npm/cli/${file}`], { cwd: sourceRoot });
   const modules = path.join(project, "node_modules");
   fs.mkdirSync(modules);
   for (const name of fs.readdirSync(path.join(provider, "node_modules")))
     if (name !== "vize")
       fs.symlinkSync(path.join(provider, "node_modules", name), path.join(modules, name), "dir");
-  const original = path.join(provider, "node_modules/vize"),
-    target = path.join(modules, "vize");
+  const target = path.join(modules, "vize");
   fs.mkdirSync(target);
-  for (const name of fs.readdirSync(original))
-    if (name !== "package.json") fs.symlinkSync(path.join(original, name), path.join(target, name));
-  const manifest = jsonValue(fs.readFileSync(path.join(original, "package.json"), "utf8"));
+  const sourceManifest = path.join(sourceRoot, "npm/cli/package.json");
+  const manifestBytes = fs.readFileSync(sourceManifest);
+  assert.deepEqual(manifestBytes, gitBytes("package.json"));
+  const manifest = jsonValue(manifestBytes.toString("utf8"));
   assert.ok(
     isRecord(manifest) &&
       isRecord(manifest.typescript) &&
       isRecord(manifest.typescript.contentMapper),
   );
+  manifest.version = `0.0.0-source-${source}`;
   manifest.typescript.contentMapper.exec = [binary, "content-mapper"];
   save(path.join(target, "package.json"), manifest);
+  const declarations = sourceSdkDeclarations.map((file) => {
+    const original = path.join(sourceRoot, "npm/cli", file),
+      installed = path.join(target, file);
+    assert.deepEqual(
+      fs.readFileSync(original),
+      gitBytes(file),
+      `exact source declaration: ${file}`,
+    );
+    fs.mkdirSync(path.dirname(installed), { recursive: true });
+    fs.copyFileSync(original, installed);
+    const before = identify(original),
+      copied = identify(installed);
+    assert.equal(copied.bytes, before.bytes);
+    assert.equal(copied.sha256, before.sha256);
+    return { file, source: before, installed: copied };
+  });
+  return {
+    source,
+    manifestSource: identify(sourceManifest),
+    manifestInstalled: identify(path.join(target, "package.json")),
+    manifestDerivation:
+      "source manifest with labelled version and selected source mapper executable",
+    declarations,
+    publishedProviderUnmodified: true,
+  };
 }
 export function position(source: string, token: string, skip = 0) {
   const at = source.lastIndexOf(token);
