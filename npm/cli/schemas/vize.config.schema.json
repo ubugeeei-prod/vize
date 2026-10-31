@@ -486,6 +486,10 @@
                 "minLength": 1
               },
               "uniqueItems": true
+            },
+            "defineExposeLast": {
+              "default": false,
+              "type": "boolean"
             }
           },
           "additionalProperties": false

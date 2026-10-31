@@ -365,11 +365,8 @@ mod tests {
         let mut ctx = TransformContext::new(&allocator, source, options());
         ctx.add_identifier("evt");
         let actual = rewrite_expression(source, &ctx, false, None, false);
-        // This inverse role law preserves the existing transform-scope carrier.
-        // The new conditional helper has no admission for an external local.
-        assert_eq!(
-            (actual.code.as_str(), actual.used_is_ref),
-            ("evt.value++", false)
-        );
+        // A lexical template local shadows the setup binding, so neither its
+        // `.value` suffix nor the conditional setup-write helper applies.
+        assert_eq!((actual.code.as_str(), actual.used_is_ref), ("evt++", false));
     }
 }

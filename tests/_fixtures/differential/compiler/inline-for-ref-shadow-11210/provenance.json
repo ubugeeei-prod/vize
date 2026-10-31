@@ -1,0 +1,16 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/11210",
+  "scope": "Original inline-template correctness report; the subsequently edited SSG performance request is not covered.",
+  "originalReportSha256": "c1f16dfa64221699eb982bc7cb144a76c419b2562a7363eb24a75b964990a395",
+  "originalReportUpdatedAt": "2026-10-31T14:08:42Z",
+  "fencedReproducerSha256": "a0c1040a52088f82e356c6d30019c7aa1c11cf41fd2fed3902b122467546b1eb",
+  "rawSourceLiteralSha256": "8565187960431c0ac9a61a4b1355d54a04e7da88eb263bc675b934de1700bd54",
+  "extraction": "TypeScript 6.0.3 parser NoSubstitutionTemplateLiteral.text; no report code was evaluated.",
+  "sourceSha256": "ac78ddf188e89163517383bc2dc457c93de72b85da49a643758a782da30b3fc8",
+  "sourceBytes": 316,
+  "filename": "Repro.vue",
+  "reportedProviders": {
+    "native": ["0.609.0", "0.616.0", "0.617.0"],
+    "vue": "3.5.25"
+  }
+}

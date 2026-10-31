@@ -2,9 +2,12 @@
 
 use super::{FileArtifact, RejectedFile, ScopeId};
 use crate::lang::js::{NativeConditionalInput, NativeTemplateIssueKind};
-use crate::{op::IfOp, resolution::BindingId};
+use crate::{
+    op::{ElementOp, IfOp},
+    resolution::BindingId,
+};
 use vize_l0::id::NodeId;
-use vize_l1::markup::NativeAttributeExpressionFailure;
+use vize_l1::markup::{NativeAttributeElse, NativeAttributeExpressionFailure};
 
 #[derive(Default)]
 pub(crate) struct ConditionalStorage<'a> {
@@ -54,6 +57,33 @@ pub struct NativeFileConditional<'a> {
     pub(crate) scope: ScopeId,
     pub(crate) binding: Option<BindingId>,
     pub(crate) original: Option<core::ptr::NonNull<IfOp<'a>>>,
+    pub(crate) otherwise: Option<alloc::boxed::Box<NativeConditionalElseInput<'a>>>,
+}
+
+/// The original valueless Else and its actual normally closed Element body.
+/// Its presence alone grants no completed File or conditional authority.
+pub struct NativeConditionalElseInput<'a> {
+    pub(crate) operand: NativeAttributeElse<'a>,
+    pub(crate) body: Option<(NodeId, core::ptr::NonNull<ElementOp<'a>>)>,
+}
+
+impl<'a> NativeConditionalElseInput<'a> {
+    #[must_use]
+    pub const fn operand(&self) -> &NativeAttributeElse<'a> {
+        &self.operand
+    }
+
+    #[must_use]
+    pub fn body_node(&self) -> Option<NodeId> {
+        self.body.map(|(node, _)| node)
+    }
+
+    #[must_use]
+    pub fn accepts_body(&self, node: NodeId, original: &ElementOp<'a>) -> bool {
+        self.body.is_some_and(|(actual, pointer)| {
+            actual == node && core::ptr::eq(pointer.as_ptr(), original)
+        })
+    }
 }
 
 impl<'a> NativeFileConditional<'a> {
@@ -72,6 +102,10 @@ impl<'a> NativeFileConditional<'a> {
     #[must_use]
     pub const fn binding(&self) -> Option<BindingId> {
         self.binding
+    }
+    #[must_use]
+    pub fn else_input(&self) -> Option<&NativeConditionalElseInput<'a>> {
+        self.otherwise.as_deref()
     }
     #[must_use]
     pub fn accepts(&self, original: &IfOp<'a>) -> bool {

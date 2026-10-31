@@ -121,6 +121,8 @@ pub enum SsrStringPlanErrorKind {
     ExtraPartitionFact,
     /// The region-only plan has no File-qualified original-head provider.
     UnsupportedOriginalFor,
+    /// Opaque client JSX values require a child renderer, not the SSR text plan.
+    UnsupportedClientChildValue,
 }
 
 /// Build the SSR L4 string plan from an L2 root and the shared L2->L3

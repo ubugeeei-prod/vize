@@ -2109,7 +2109,7 @@ loadData()
         .unwrap();
 
     let stdout = std::string::String::from_utf8(output.stdout).unwrap();
-    assert!(output.status.success());
+    assert_eq!(output.status.code(), Some(1), "{stdout}");
     assert!(
         stdout.contains("Configured Corsa executable does not exist"),
         "{stdout}"

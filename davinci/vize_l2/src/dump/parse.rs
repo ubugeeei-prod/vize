@@ -274,7 +274,7 @@ impl Parser {
                     Op::For(for_op) => self.stack.push(Frame::For(for_op)),
                     Op::OriginalFor(for_op) => self.stack.push(Frame::OriginalFor(for_op)),
                     Op::Slot(slot) => self.stack.push(Frame::Slot(slot, Phase::Attrs)),
-                    Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {
+                    Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {
                         return self.attach_op(op, line_no);
                     }
                 }

@@ -144,6 +144,15 @@ impl<'facts, 'r, 'a> Cx<'facts, 'r, 'a> {
                     Source::Interpolation(interpolation),
                 );
             }
+            l2::Op::JsxChildValue(child) => {
+                let (_, fact) = self.consume_fact(child.span);
+                self.errors.push(SsrStringPlanError {
+                    kind: SsrStringPlanErrorKind::UnsupportedClientChildValue,
+                    fact_index: fact,
+                    expected_span: child.span,
+                    actual_span: Some(child.span),
+                });
+            }
             l2::Op::Comment(comment) => {
                 let (partition, fact) = self.consume_fact(comment.span);
                 let content = Some(payload(SsrStringPayloadKind::Comment, comment.content));

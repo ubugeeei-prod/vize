@@ -57,7 +57,7 @@ fn project_op<D: ExprDialect>(document: &mut EmitDocument, dialect: &D, op: &Op<
             project_bindings(document, dialect, &component.bindings);
             project_region(document, dialect, &component.children);
         }
-        Op::Interpolation(interpolation) => {
+        Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
             project_expr(document, dialect, interpolation.expression);
         }
         Op::If(if_op) => {

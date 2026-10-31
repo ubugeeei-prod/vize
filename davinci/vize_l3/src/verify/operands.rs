@@ -27,6 +27,9 @@ fn invalid(program: &Tables<'_, '_>, operand: &Operand<'_>) -> Option<&'static s
     let Some(owner) = op(program, operand.op) else {
         return Some("owner does not resolve");
     };
+    if (operand.role == OperandRole::ChildValue) != (owner.kind == OpKind::SetChildValue) {
+        return Some("child-value operand must belong exactly to its child-value operation");
+    }
     if !operand.value.is_well_formed() {
         return Some("malformed value");
     }

@@ -1,0 +1,30 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderAttr as _ssrRenderAttr, ssrIncludeBooleanAttr as _ssrIncludeBooleanAttr, ssrRenderList as _ssrRenderList, ssrLooseEqual as _ssrLooseEqual, ssrLooseContain as _ssrLooseContain } from "@vue/server-renderer"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<select${_ssrRenderAttrs(_attrs)}>`)
+  _push(`<!--[-->`)
+  _ssrRenderList($setup.noteVisibilities, (visibility) => {
+    _push(`<option${_ssrRenderAttr("value", visibility)}${((_ssrIncludeBooleanAttr(Array.isArray($setup.visibility) ? _ssrLooseContain($setup.visibility, visibility) : _ssrLooseEqual($setup.visibility, visibility))) ? " selected" : "")}>${_ssrInterpolate(visibility)}</option>`)
+  })
+  _push(`<!--]-->`)
+  _push(`</select>`)
+}
+import { ref } from 'vue'
+
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+const visibility = ref('public')
+const noteVisibilities = ['public', 'home']
+
+const __returned__ = { visibility, ref, noteVisibilities }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

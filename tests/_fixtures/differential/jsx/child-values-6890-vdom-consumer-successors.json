@@ -1,0 +1,186 @@
+{
+  "schema": 1,
+  "head": "11004c61eff840a54965a569da47cec245ae75b6",
+  "originalInputsChanged": false,
+  "runtimeCredit": false,
+  "performanceCredit": false,
+  "wholeCorpusQualified": false,
+  "scope": "Finite complete emitted outputs. Both authentic workflows failed original pre-successor assertions and added consumer assumptions; this data custody gives no semantic or whole-workflow credit. All original Babel snapshots and original values remain unchanged.",
+  "archives": {
+    "native": {
+      "run": 41222652846,
+      "job": 124600240415,
+      "artifact": 13050648010,
+      "bytes": 444725,
+      "sha256": "193525ebfb74d0ec36de52b3aa1586106f656b065f0d9ad87092b0eeee521c26",
+      "source": "11004c61eff840a54965a569da47cec245ae75b6"
+    },
+    "rspack": {
+      "run": 41222653156,
+      "job": 124600568066,
+      "artifact": 13049894272,
+      "bytes": 7949,
+      "sha256": "efaca10197f4df1b531f4a1b21be10148d3a9197c45bbb4feeed5ba6a6b6df5f",
+      "source": "b66d02c20f259cd77dd495d3c30ceb2c13d9f13b",
+      "tree": "f1dd9f77dd618ad28cd8739fb0b390c987474c50",
+      "parents": [
+        "5f50208b59ea72c22955963de9637ec9265890ef",
+        "11004c61eff840a54965a569da47cec245ae75b6"
+      ],
+      "headRelevantSourceEquality": [
+        "crates/vize_atelier_jsx",
+        "crates/vize_atelier_core",
+        "crates/vize_relief",
+        "davinci",
+        "crates/vize_vitrine",
+        "npm/builder/rspack",
+        "npm/native/src",
+        "tools/config/vite-plus/tested-package-groups.ts"
+      ]
+    }
+  },
+  "historicalFiles": [
+    {
+      "path": "npm/builder/rspack/src/__snapshots__/jsx.test.ts.snap",
+      "sha256": "ea414d6cdfcb2442efa5c2bf711cef11c57eb8b419784b2ed30e240abad04a9f"
+    },
+    {
+      "path": "npm/builder/rspack/src/__snapshots__/jsx.test.ts.child-values-6890.snap",
+      "sha256": "b87755a7c9fa7c2b50e2c1410d475ac93748118d90fde29e57d493465cc171fd"
+    },
+    {
+      "path": "npm/builder/rspack/src/shared/jsx-compile.test.ts.snapshot",
+      "sha256": "5e2f2e86069b08a0c888c4464a5923e37afc20a01932b3f311c61316c53b0df5"
+    },
+    {
+      "path": "tests/tooling/jsx-vapor-oracle/child-values.ts",
+      "sha256": "4061aaa141e52b17c170fe74bb4cc6532f9f1c95e5363d38691392f0f2b42bf6"
+    },
+    {
+      "path": "tests/tooling/jsx-vapor-oracle/runtime.ts",
+      "sha256": "c7845036b74a9a866f2c5be5116d6c47e70f0c5c533af12d61174c76727d48ae"
+    },
+    {
+      "path": "tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json",
+      "sha256": "810595733fc8904df998e7d2a1ac1d70319c0be22046d6cb25845b6c46697a37"
+    }
+  ],
+  "rows": [
+    {
+      "kind": "native-snapshot",
+      "original": "crates/vize_atelier_jsx/tests/snapshots/control_flow__vdom_control_flow_matrix.snap",
+      "originalSha256": "0bc93e6523dc27ac5758712e4fc108ee0e782a64176bc93fd83eb5b6df6170ba",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/control_flow__vdom_control_flow_matrix_vdom_child_values_6890.snap",
+      "successorSha256": "3a2cb36f697488c796c3a8f27ec79c50cdd0149e5187fddc7b820056678d714a",
+      "archive": "native",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/control_flow__vdom_control_flow_matrix.snap.new"
+    },
+    {
+      "kind": "native-snapshot",
+      "original": "crates/vize_atelier_jsx/tests/snapshots/parity_vdom__vdom_parity_matrix_snapshot.snap",
+      "originalSha256": "f3fc35e3351e2a97f02e4aea0462d1b9fa6a2f07e5f5e3dd303f1f08ffd2b7c1",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/parity_vdom__vdom_parity_matrix_snapshot_vdom_child_values_6890.snap",
+      "successorSha256": "1ae07c812003458e2d917b93d0ee9c34059cb4d95c75c3f0da83ced77de382f1",
+      "archive": "native",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/parity_vdom__vdom_parity_matrix_snapshot.snap.new"
+    },
+    {
+      "kind": "native-snapshot",
+      "original": "crates/vize_atelier_jsx/tests/snapshots/slots__slot_codegen_snapshot.snap",
+      "originalSha256": "e8cc6169f8dce5c1e5499f5ff436858d57d6e654f9aa73ddd8f068b8308cb800",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/slots__slot_codegen_snapshot_vdom_child_values_6890.snap",
+      "successorSha256": "b161e8db2198fa0a9cfc72006df893cdade083910d3b2c67756d4513e341f5e7",
+      "archive": "native",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/slots__slot_codegen_snapshot.snap.new"
+    },
+    {
+      "kind": "native-snapshot",
+      "original": "crates/vize_atelier_jsx/tests/snapshots/style__non_scoped_style_element_still_renders.snap",
+      "originalSha256": "f0fe0d7619a2208c41e03e6eecf4233a7b448dc7a9d92946dff6bb2172216425",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/style__non_scoped_style_element_still_renders_vdom_child_values_6890.snap",
+      "successorSha256": "7995943f7decd8ce7979c283c8e953d8fb0f6c0940a126f98a5af66f6db7508c",
+      "archive": "native",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/style__non_scoped_style_element_still_renders.snap.new"
+    },
+    {
+      "kind": "native-snapshot",
+      "original": "crates/vize_atelier_jsx/tests/snapshots/vdom__preamble_imports_runtime_helpers.snap",
+      "originalSha256": "323e85295818cfe1a70c25d984132525404918df46b0e0dbe648fd096d4e2ea1",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/vdom__preamble_imports_runtime_helpers_vdom_child_values_6890.snap",
+      "successorSha256": "e07ee5957ce47d9bbb7bf70c5d2338abc6f9c84516009137fdcb33e93fe4d9a2",
+      "archive": "native",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/vdom__preamble_imports_runtime_helpers.snap.new"
+    },
+    {
+      "kind": "native-snapshot",
+      "original": "crates/vize_atelier_jsx/tests/snapshots/vdom__vdom_codegen_matrix.snap",
+      "originalSha256": "c828d14cf2480a2d107b53581d384288a1446332152c1cba803dc9e08fabd610",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/vdom__vdom_codegen_matrix_vdom_child_values_6890.snap",
+      "successorSha256": "ca7201140864f78c563fdfd7e8279a68ace3420041040954afa40f1c8a9a1e98",
+      "archive": "native",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/vdom__vdom_codegen_matrix.snap.new"
+    },
+    {
+      "kind": "rust-adapter",
+      "successor": "tests/_fixtures/differential/jsx/child-values-6890-vdom-consumers/helper-module.json",
+      "successorSha256": "c6dc9767a06b58f303c028ff823ccab9a166c6a78e5aa65f0601141191d8088c",
+      "archive": "native",
+      "member": "_temp/jsx-authored-native/napi-vdom-modules/helper-module.json"
+    },
+    {
+      "kind": "rust-adapter",
+      "successor": "tests/_fixtures/differential/jsx/child-values-6890-vdom-consumers/setup-module.json",
+      "successorSha256": "623d99061249dc0c411cc0dad252bfec84cf98ef406150135d4ec254b3fcd23d",
+      "archive": "native",
+      "member": "_temp/jsx-authored-native/napi-vdom-modules/setup-module.json"
+    },
+    {
+      "kind": "scoped-slot",
+      "successor": "tests/_fixtures/differential/jsx/child-values-6890-vdom-consumers/scoped-slot-vdom.json",
+      "successorSha256": "464a16408d514c6d556ee6e2f688e3bb2a2721337de18722a2c2ab8d8d09775e",
+      "archive": "native",
+      "member": "_temp/jsx-authored-native/scoped-slot-vdom.json"
+    },
+    {
+      "kind": "rspack",
+      "successor": "tests/_fixtures/differential/jsx/child-values-6890-vdom-consumers/native-vdom-module.json",
+      "successorSha256": "4614a5b65f3ad9501f3ad3d4c3757d56733e9d0a3238c37815ed1833a2a2d35d",
+      "archive": "rspack",
+      "member": "vize/vize/target/vize-tests/test-output/rspack-vize-plugin/jsx-vdom-module/native-vdom-module.json"
+    },
+    {
+      "kind": "rspack",
+      "successor": "tests/_fixtures/differential/jsx/child-values-6890-vdom-consumers/native-vdom-bundle.json",
+      "successorSha256": "64f46a44722eca33f5d68b48624a1aefd318a99c2b0781c5edf5c58166188e21",
+      "archive": "rspack",
+      "member": "vize/vize/target/vize-tests/test-output/rspack-vize-plugin/jsx-vdom/native-vdom-bundle.json"
+    },
+    {
+      "kind": "rspack",
+      "successor": "tests/_fixtures/differential/jsx/child-values-6890-vdom-consumers/native-vdom-map.json",
+      "successorSha256": "eef1c71f8fed306768b83b7b51979ee4e43faaaba3549150f6f0ddf5566fdc23",
+      "archive": "rspack",
+      "member": "vize/vize/target/vize-tests/test-output/rspack-vize-plugin/jsx-vdom-map/native-vdom-map.json"
+    }
+  ],
+  "historicalLiterals": [
+    {
+      "path": "crates/vize_vitrine/src/napi/jsx.rs",
+      "function": "jsx_compile_result_includes_runtime_helper_preamble",
+      "binding": "historical_text_child_module",
+      "literalSha256": "ab536465955004389d06ed757ea1e4ae09bf9cddf1cc44f8ddf27fd2cc945336"
+    },
+    {
+      "path": "crates/vize_vitrine/src/napi/jsx.rs",
+      "function": "jsx_compile_result_wraps_block_body_setup_state",
+      "binding": "historical_text_child_module",
+      "literalSha256": "79a4acc4f011cea3bfcd6e80d4e2a1add8def919e7a3c1e0ba35534a794ba73c"
+    },
+    {
+      "path": "crates/vize_atelier_jsx/tests/v_slots.rs",
+      "function": "a_scoped_slot_keeps_its_params",
+      "binding": "historical_stable_slot",
+      "literalSha256": "78d01dd31c3383316e70bd46ad728d2519e510da68e0419e9d8ef2e69d0f8367"
+    }
+  ]
+}

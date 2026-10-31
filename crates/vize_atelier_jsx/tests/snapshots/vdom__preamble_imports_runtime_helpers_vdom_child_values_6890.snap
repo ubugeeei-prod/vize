@@ -1,0 +1,6 @@
+---
+source: crates/vize_atelier_jsx/tests/vdom.rs
+assertion_line: 129
+expression: "out.components[0].preamble.as_str()"
+---
+import { createElementVNode as _createElementVNode } from "vue"

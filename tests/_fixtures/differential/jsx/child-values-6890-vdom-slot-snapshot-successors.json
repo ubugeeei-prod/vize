@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "source": "4b9b4cb797acc412052c6917ef63813b7e5b2088",
+  "run": 41215542556,
+  "job": 124579517264,
+  "artifact": 13048091694,
+  "archiveBytes": 415080,
+  "archiveSha256": "62d99d5ae77bbc8d8d49d09789ce194599d683725cc18c44ee130d7591eae7d5",
+  "producerConclusion": "failure",
+  "producerScope": "Actual new slot outputs retained from an overall failed workflow; original values and browser routes passed, new review input/baseline assertions were being corrected. Snapshot custody gives no runtime or full-workflow credit.",
+  "historicalPredecessor": "tests/_fixtures/differential/jsx/child-values-6890-vdom-snapshot-successors.json",
+  "originalInputsChanged": false,
+  "runtimeCredit": false,
+  "performanceCredit": false,
+  "wholeCorpusQualified": false,
+  "rows": [
+    {
+      "predecessor": "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vdom_vdom_child_values_6890.snap",
+      "predecessorSha256": "eb68529311be0213d2d593b8bd6ebb407d38cc846eadbb7fd38c2d3939ce5cb5",
+      "successor": "crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vdom_vdom_dynamic_slots_6890.snap",
+      "successorSha256": "12afe51f1fcce232eeb65e73dc60e4e0b383d762ff98946a818a0299dda42957",
+      "member": "vize/vize/crates/vize_atelier_jsx/src/compile/snapshots/vize_atelier_jsx__compile__tests__typed_slot_runtime_vdom_vdom_child_values_6890.snap.new",
+      "changes": "Only raw-child-owned slot stability and DYNAMIC_SLOTS patch flag; the adversarial assertion_line follows the actual observer source. Whole maps, source bytes, other component tuples and other summary fields unchanged."
+    },
+    {
+      "predecessor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__directives_slots_svg_and_spreads_vdom_vdom_child_values_6890.snap",
+      "predecessorSha256": "3f5060177a37b1e1e4d7a6f54b02e73ffad4b3e3c1b5933d630543d1df020dae",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__directives_slots_svg_and_spreads_vdom_vdom_dynamic_slots_6890.snap",
+      "successorSha256": "038c40b21c72c67bf8a7751683afe793b5f768cbe51d6530a1c1e9d2d5a6b937",
+      "member": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__directives_slots_svg_and_spreads_vdom_vdom_child_values_6890.snap.new",
+      "changes": "Only raw-child-owned slot stability and DYNAMIC_SLOTS patch flag; the adversarial assertion_line follows the actual observer source. Whole maps, source bytes, other component tuples and other summary fields unchanged."
+    }
+  ]
+}

@@ -30,7 +30,7 @@ pub(super) fn emit_if(
 }
 
 fn emit_chain(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Result<(), EmitError> {
-    cx.buf.use_open_block();
+    cx.use_open_block();
     cx.buf.use_create_comment();
     let facts = id.and_then(|id| cx.facts.if_facts.get(id));
     let mut keys = keys::BranchKeys::default();

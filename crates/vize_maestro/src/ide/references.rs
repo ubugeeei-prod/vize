@@ -64,6 +64,14 @@ impl ReferencesService {
         canonical::setup_local_references(ctx, include_declaration)
     }
 
+    /// A declaration witness for the stricter, query-local private rename path.
+    #[cfg(feature = "native")]
+    pub(crate) fn private_setup_rename_declaration(
+        ctx: &IdeContext<'_>,
+    ) -> Option<(vize_l0::String, (usize, usize))> {
+        canonical::private_setup_rename_declaration(ctx)
+    }
+
     /// Find all references using Corsa when available, with synchronous fallback.
     #[cfg(feature = "native")]
     pub async fn references_with_corsa(

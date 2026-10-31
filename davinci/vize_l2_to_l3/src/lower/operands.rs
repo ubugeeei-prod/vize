@@ -133,6 +133,15 @@ impl<'a> Cx<'a> {
         );
     }
 
+    pub(super) fn capture_child_value(&mut self, op: OpId, expression: ExprRef<'_>) {
+        self.add_operand(
+            op,
+            Role::ChildValue,
+            None,
+            self.expression(Some(expression), expression.span()),
+        );
+    }
+
     pub(super) fn capture_condition(
         &mut self,
         op: OpId,

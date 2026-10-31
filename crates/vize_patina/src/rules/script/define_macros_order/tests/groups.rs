@@ -106,6 +106,7 @@ fn group_violation_preserves_the_complete_diagnostic_and_byte_coordinates() {
         linter.add_rule(Box::new(DefineMacrosOrder::configured(
             vize_l0::config::DefineMacrosOrderOptions {
                 order: ORDER.iter().map(|name| (*name).into()).collect(),
+                define_expose_last: false,
             },
         )));
         let result = linter.lint(&source, 41);

@@ -215,6 +215,9 @@ fn walk(
                     });
                 }
             }
+            DumpOp::JsxChildValue(_) => {
+                *next += 1;
+            }
             DumpOp::Interpolation(interpolation) => {
                 let id = NodeId::from_index(*next);
                 *next += 1;

@@ -50,7 +50,9 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "test": "pnpm --filter @vizejs/nuxt-lint-config build && pnpm build && node --test src/*.test.ts src/**/*.test.ts src/lint/checker/*.test.ts",
+    "test": "pnpm --filter @vizejs/nuxt-lint-config build && pnpm build && pnpm run test:unit",
+    "test:unit": "node --test src/*.test.ts src/**/*.test.ts src/lint/checker/*.test.ts",
+    "test:packed-entry": "node --test src/nuxt2-entry.test.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"

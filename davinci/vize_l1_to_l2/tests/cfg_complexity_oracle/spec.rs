@@ -140,6 +140,7 @@ impl Eval {
             }
             DumpOp::Text(_) | DumpOp::Comment(_) => line,
             DumpOp::Interpolation(interpolation) => self.expr(&interpolation.expression, id, line),
+            DumpOp::JsxChildValue(child) => self.expr(&child.expression, id, line),
             DumpOp::If(if_op) => self.if_chain(if_op, id, line),
             DumpOp::For(for_op) => {
                 let source = &for_op.binding.source;

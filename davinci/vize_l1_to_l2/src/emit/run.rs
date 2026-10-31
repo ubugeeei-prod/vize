@@ -117,6 +117,7 @@ pub(super) fn emit_dom_observed<'f>(
         static_cache,
         parent_ns: Namespace::Html,
         prefix_identifiers: options.prefix_identifiers,
+        untracked_children: lowered.features.has_jsx_child_values(),
         hoist_static: options.hoist_static,
         is_ts: options.is_ts,
         strict_slot_params,

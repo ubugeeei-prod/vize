@@ -5,6 +5,8 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
+import { packWithPnpm } from "../../../../tools/support/compat/package-managers/pnpm-pack-provider.ts";
 
 const NUXT2_SAFE_KIT_VERSION = "3.21.8";
 const SUBPROCESS_TIMEOUT_MS = 120_000;
@@ -14,11 +16,12 @@ void test("packed Nuxt module uses a jiti-safe require entry and keeps the ESM e
   const packDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-nuxt-pack-"));
 
   try {
-    execFileSync("pnpm", ["pack", "--pack-destination", packDir], {
-      cwd: packageRoot,
-      stdio: "pipe",
-      timeout: SUBPROCESS_TIMEOUT_MS,
-    });
+    packWithPnpm(
+      fileURLToPath(new URL("../../../..", import.meta.url)),
+      packageRoot,
+      packDir,
+      SUBPROCESS_TIMEOUT_MS,
+    );
 
     const tarballs = fs.readdirSync(packDir).filter((name) => name.endsWith(".tgz"));
     assert.equal(tarballs.length, 1);

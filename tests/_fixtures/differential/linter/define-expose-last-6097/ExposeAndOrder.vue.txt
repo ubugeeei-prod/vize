@@ -1,0 +1,8 @@
+<script setup lang="ts">
+// 🦀 authored source
+const emit = defineEmits<{ ready: [] }>();
+const props = defineProps<{ ready: boolean }>();
+defineExpose({ props });
+const tail = 1;
+</script>
+<template><div /></template>

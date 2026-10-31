@@ -131,7 +131,7 @@ fn op_has_legacy_hoist(
             skip_region(walk, &slot.fallback.ops);
             false
         }
-        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
+        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => false,
     }
 }
 

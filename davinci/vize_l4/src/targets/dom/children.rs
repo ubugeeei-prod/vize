@@ -8,21 +8,32 @@ use super::{DomError, DomErrorKind, Emitter, ExpressionWriter, LinkSink};
 
 impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
     pub(super) fn root_fragment(&mut self, single_non_comment: bool) -> Result<(), DomError> {
+        let block = !self.facts.has_jsx_child_values();
         self.writer.push("(");
-        spell(&mut self.writer, self.vocabulary, self.helpers.open_block);
-        self.writer.push("(), ");
+        if block {
+            spell(&mut self.writer, self.vocabulary, self.helpers.open_block);
+            self.writer.push("(), ");
+        }
         spell(
             &mut self.writer,
             self.vocabulary,
-            self.helpers.element_block,
+            if block {
+                self.helpers.element_block
+            } else {
+                self.helpers.element
+            },
         );
         self.writer.push("(");
         spell(&mut self.writer, self.vocabulary, self.helpers.fragment);
         self.writer.push(", null, ");
         self.array(&self.facts.root().children)?;
         self.writer.use_helper(self.helpers.fragment);
-        self.writer.use_helper(self.helpers.open_block);
-        self.writer.use_helper(self.helpers.element_block);
+        if block {
+            self.writer.use_helper(self.helpers.open_block);
+            self.writer.use_helper(self.helpers.element_block);
+        } else {
+            self.writer.use_helper(self.helpers.element);
+        }
         self.writer.push(if single_non_comment {
             ", 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))"
         } else {

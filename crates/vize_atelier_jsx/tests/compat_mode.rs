@@ -190,13 +190,18 @@ fn babel_compat_keeps_lone_element_expressions_raw_without_a_text_flag() {
     let babel = compile_module(source, JsxCompatMode::Babel, JsxOutputMode::Vdom);
 
     assert_eq!(implicit_native, explicit_native);
-    assert_eq!(explicit_native.matches("_toDisplayString(t)").count(), 2);
+    assert_eq!(
+        explicit_native.matches("[\n    t\n  ]").count(),
+        2,
+        "{explicit_native}"
+    );
+    assert_eq!(explicit_native.matches("_toDisplayString(t)").count(), 0);
     assert!(
-        explicit_native.contains("1 /* TEXT */"),
+        !explicit_native.contains("1 /* TEXT */"),
         "{explicit_native}"
     );
     assert!(
-        explicit_native.contains("11 /* TEXT, CLASS, PROPS */, [\"id\"]"),
+        explicit_native.contains("10 /* CLASS, PROPS */, [\"id\"]"),
         "{explicit_native}"
     );
 

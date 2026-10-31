@@ -37,6 +37,7 @@ pub(super) fn emit_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), 
             }
             Op::Element(_)
             | Op::Component(_)
+            | Op::JsxChildValue(_)
             | Op::Comment(_)
             | Op::If(_)
             | Op::For(_)
@@ -147,6 +148,23 @@ pub(super) fn emit_interpolation(
         }
         _ => emit_raw_interpolation_or_refuse(cx, interp.expression),
     }
+}
+
+pub(super) fn emit_jsx_child(
+    cx: &mut EmitCx<'_>,
+    child: &InterpolationOp<'_>,
+) -> Result<(), EmitError> {
+    let expression = cx.prefixed_expr(&child.expression, Site::Expression)?;
+    let grouped = matches!(child.expression, ExprRef::Js(js)
+        if matches!(js.ast.get_inner_expression(), oxc_ast::ast::Expression::SequenceExpression(_)));
+    if grouped {
+        cx.buf.push("(");
+    }
+    cx.buf.push(expression.as_str());
+    if grouped {
+        cx.buf.push(")");
+    }
+    Ok(())
 }
 
 /// `_toDisplayString(<prefixed>)` — the `prefix_identifiers` spelling of

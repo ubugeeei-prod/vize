@@ -188,6 +188,7 @@ pub(crate) fn compile_root_to_vapor_with_origins(
     let LoweredRoot {
         mut root,
         l2: _,
+        vdom_value_children: _,
         mode,
         component_name,
         component_setup,

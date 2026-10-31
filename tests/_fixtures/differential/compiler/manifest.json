@@ -801,6 +801,48 @@
       }
     },
     {
+      "id": "compiler/sfc/inline-for-ref-shadow-11210",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "inline-for-ref-shadow-11210",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "ac78ddf188e89163517383bc2dc457c93de72b85da49a643758a782da30b3fc8",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "inline-for-ref-shadow-11210/module.expected.txt",
+        "sha256": "7aeb11a6709974c258b1ce57f799b9eb7d6b836393f3b440da6647405bc03db6",
+        "source": "Actions 41212511971/job 124570281749, retained source CLI 9c594186bae97cbc4b4c5441d9165b3354ccbec0; whole process is baseline.observation.json.txt. This is the original input's SSR control, not inline or native parity."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC compilation is unavailable. The real legacy SSR control preserves the original inline-ref input; separate Rust regressions exercise the inline alias repair."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/inline-method-handlers-10777",
       "state": "active",
       "targets": ["ssr"],
@@ -879,6 +921,59 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/jsx-vdom-template-control-6890",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "jsx-vdom-template-control-6890",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "role": "entry",
+            "sha256": "dc0443da0ad6467f2baed054dcb0ddcc3a999a64108fd0e6d88d6f7c12b8ca8a"
+          }
+        ]
+      },
+      "reference": {
+        "path": "jsx-vdom-template-control-6890/module.expected.txt",
+        "sha256": "0e2bf17d60bee489082253391bdeeaa6437104b75a069d5887f2c0e1460f8c2e",
+        "source": "Actual source9c594186bae97cbc4b4c5441d9165b3354ccbec0 CLI; canonical SSR argv; run41212511971/job124570281749/artifact13047191001, controllerd34ccaa8952534cdb6b6ce2a447ed4192d1917d5; baseline-process.json retains whole original process packet."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Ordinary SFC template/v-text regression control only; no whole-product native SFC/SSR admission is claimed. JSX VDOM values are independently executed by vdom_child_values and genuine Chromium."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]

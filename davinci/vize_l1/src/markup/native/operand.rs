@@ -27,6 +27,8 @@ pub use for_head::{
 };
 mod head;
 pub use head::NativeAttributeHead;
+mod else_head;
+pub use else_head::{NativeAttributeElse, NativeAttributeElseView};
 mod binding;
 pub use binding::{
     NativeAttributeBindingExpression, NativeAttributeBindingExpressionView, NativeStaticBindingHead,

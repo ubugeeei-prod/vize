@@ -58,7 +58,7 @@ fn shift_op(op: &mut DumpOp, shift: &mut Shift<'_>) {
             shift_ops(&mut component.children, shift);
         }
         DumpOp::Text(text) => shift(&mut text.span),
-        DumpOp::Interpolation(interpolation) => {
+        DumpOp::Interpolation(interpolation) | DumpOp::JsxChildValue(interpolation) => {
             shift(&mut interpolation.span);
             shift_expr(&mut interpolation.expression, shift);
         }

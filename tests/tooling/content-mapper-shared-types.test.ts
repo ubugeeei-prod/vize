@@ -13,6 +13,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { verifyPublicSlotInstance } from "./support/public-slot-instance.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -66,6 +67,7 @@ test("ESM and CommonJS share exact helper types and observe the consumer Vue aug
 
 const slotAlias = "$SlotConstructorWithoutArguments";
 const publicFiles = ["ts", "mts", "cts"].map((extension) => `npm/cli/virtual-ts.d.${extension}`);
+const slotFile = "npm/cli/virtual-ts-slots.d.ts";
 const embedded = "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-resolver.d.ts.txt";
 const shared =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-resolver.d.ts.txt";
@@ -88,6 +90,7 @@ function generatorFixture() {
     "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-payload.d.ts.txt",
     "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-payload.d.ts.txt",
     ...publicFiles,
+    slotFile,
   ];
   for (const file of files) {
     mkdirSync(path.dirname(path.join(cwd, file)), { recursive: true });
@@ -117,17 +120,24 @@ function publicAlias(source: string, replacement: string) {
   return source.slice(0, start) + replacement + "\n" + source.slice(end);
 }
 const previous = `export type ${slotAlias}<C> = [$SlotConstructorHasArguments<C>] extends [never] ? C : new () => { $slots: never };`;
+const oldInstance = `export type $SlotConstructorInstance<C, Z, P> = [$SlotConstructorHasArguments<C>] extends [never]\n  ? Z\n  : P;`;
+function previousInstance(source: string) {
+  const start = source.indexOf("type $SlotContractIsUsable<");
+  const end = source.indexOf("export type $SlotHostSelector<", start);
+  assert.ok(start >= 0 && end > start, "actual complete Instance closure required");
+  return source.slice(0, start) + oldInstance + "\n" + source.slice(end);
+}
 test("the one zero-call export regenerates from both canonical bodies and is idempotent", (t) => {
   const fixture = generatorFixture();
   t.after(fixture.cleanup);
-  for (const file of publicFiles) {
+  for (const file of [slotFile]) {
     const target = path.join(fixture.cwd, file);
     writeFileSync(target, publicAlias(readFileSync(target, "utf8"), previous));
   }
   for (const check of [false, false, true]) {
     const result = fixture.run(check);
     assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
-    for (const file of publicFiles) {
+    for (const file of [slotFile]) {
       assert.equal(
         readFileSync(path.join(fixture.cwd, file), "utf8"),
         readFileSync(path.join(root, file), "utf8"),
@@ -168,25 +178,25 @@ for (const [name, file, mutate, reason] of [
   ],
   [
     "missing public alias",
-    publicFiles[0]!,
+    slotFile,
     (source: string) => source.replace(`export type ${slotAlias}<`, "export type $LostSlotAlias<"),
     /must declare exactly one/u,
   ],
   [
     "duplicate public alias",
-    publicFiles[1]!,
+    slotFile,
     (source: string) => source + `\nexport type ${slotAlias}<C> = C;\n`,
     /must declare exactly one/u,
   ],
   [
     "unknown public policy",
-    publicFiles[2]!,
+    slotFile,
     (source: string) => publicAlias(source, `export type ${slotAlias}<C> = C;`),
     /refuse to overwrite drift/u,
   ],
   [
     "public parameter drift",
-    publicFiles[0]!,
+    slotFile,
     (source: string) =>
       source.replace(`export type ${slotAlias}<C>`, `export type ${slotAlias}<C extends unknown>`),
     /must not constrain C/u,
@@ -209,18 +219,172 @@ for (const [name, file, mutate, reason] of [
 test("unknown later SDK input prevents an earlier legacy alias from being overwritten", (t) => {
   const fixture = generatorFixture();
   t.after(fixture.cleanup);
-  const first = path.join(fixture.cwd, publicFiles[0]!);
+  const first = path.join(fixture.cwd, slotFile);
   const legacy = publicAlias(readFileSync(first, "utf8"), previous);
   writeFileSync(first, legacy);
   const second = path.join(fixture.cwd, publicFiles[1]!);
-  writeFileSync(
-    second,
-    publicAlias(readFileSync(second, "utf8"), `export type ${slotAlias}<C> = C;`),
+  const original = readFileSync(second, "utf8");
+  const unsupported = original.replace(
+    'from "./virtual-ts-slots.js" with { "resolution-mode": "import" }',
+    'from "./virtual-ts-slots.js" with { "resolution-mode": "require" }',
   );
+  assert.notEqual(unsupported, original);
+  writeFileSync(second, unsupported);
   const result = fixture.run(false);
   assert.equal(result.status, 1, `${result.stdout}${result.stderr}`);
-  assert.match(`${result.stdout}${result.stderr}`, /refuse to overwrite drift/u);
+  assert.match(`${result.stdout}${result.stderr}`, /resolution-mode/u);
   assert.equal(readFileSync(first, "utf8"), legacy);
+  assert.equal(readFileSync(second, "utf8"), unsupported);
+});
+
+test("the complete Instance dependency closure regenerates without replacing either existing family", (t) => {
+  const fixture = generatorFixture();
+  t.after(fixture.cleanup);
+  for (const file of [slotFile]) {
+    const target = path.join(fixture.cwd, file);
+    writeFileSync(target, previousInstance(publicAlias(readFileSync(target, "utf8"), previous)));
+  }
+  for (const check of [false, false, true]) {
+    const result = fixture.run(check);
+    assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+    for (const file of [slotFile])
+      assert.equal(
+        readFileSync(path.join(fixture.cwd, file), "utf8"),
+        readFileSync(path.join(root, file), "utf8"),
+      );
+  }
+});
+
+for (const [name, file, mutate, reason] of [
+  [
+    "missing canonical dependency",
+    embedded,
+    (source: string) => source.replace("type $SlotContractHasKeys<", "type $MissingSlotKeys<"),
+    /must declare exactly one/u,
+  ],
+  [
+    "duplicate canonical dependency",
+    shared,
+    (source: string) => source + "\ntype $SlotContractHasKeys<S> = true;\n",
+    /must declare exactly one/u,
+  ],
+  [
+    "canonical dependency drift",
+    embedded,
+    (source: string) =>
+      source.replace(
+        "[keyof S] extends [never] ? false : true",
+        "[keyof S] extends [never] ? true : false",
+      ),
+    /canonical embedded\/shared policy drifted/u,
+  ],
+  [
+    "private dependency visibility",
+    shared,
+    (source: string) =>
+      source.replace("type $SlotContractHasKeys<", "export type $SlotContractHasKeys<"),
+    /export visibility drifted/u,
+  ],
+  [
+    "partial public closure",
+    slotFile,
+    (source: string) =>
+      source.replace(
+        "type $SlotContractHasKeys<S> = [keyof S] extends [never] ? false : true;",
+        "",
+      ),
+    /incomplete or duplicate Instance closure/u,
+  ],
+  [
+    "duplicate public dependency",
+    slotFile,
+    (source: string) => source + "\ntype $SlotContractHasKeys<S> = true;\n",
+    /incomplete or duplicate Instance closure/u,
+  ],
+  [
+    "public dependency declaration kind",
+    slotFile,
+    (source: string) =>
+      source.replace(
+        "type $SlotContractHasKeys<S> = [keyof S] extends [never] ? false : true;",
+        "interface $SlotContractHasKeys<S> {}",
+      ),
+    /must declare exactly one/u,
+  ],
+  [
+    "public dependency parameters",
+    slotFile,
+    (source: string) =>
+      source.replace("type $SlotContractHasKeys<S>", "type $SlotContractHasKeys<S = unknown>"),
+    /must not default S/u,
+  ],
+  [
+    "unknown complete Instance policy",
+    slotFile,
+    (source: string) =>
+      source.replace(
+        "? $SlotContractHasKeys<S> extends true",
+        "? $SlotContractHasKeys<S> extends false",
+      ),
+    /Instance.*drifted/u,
+  ],
+  [
+    "unknown previous Instance policy",
+    slotFile,
+    (source: string) => previousInstance(source).replace("  ? Z\n  : P;", "  ? Z\n  : P | Z;"),
+    /unknown previous Instance policy/u,
+  ],
+  [
+    "entry implicit export context",
+    publicFiles[0]!,
+    (source: string) => source + "\nexport {};\n",
+    /retains implicit exports/u,
+  ],
+  [
+    "forwarded private slot helper",
+    publicFiles[0]!,
+    (source: string) =>
+      source.replace(
+        "__vizeSlotTypes.$SlotConstructorHasArguments<C>",
+        "__vizeSlotTypes.$SlotConstructorArgs<C>",
+      ),
+    /forwarding declaration/u,
+  ],
+  [
+    "functional value signature",
+    publicFiles[0]!,
+    (source: string) =>
+      source.replace("component: (props: P, context: C,", "component: (props: P, context: P,"),
+    /forwarding declaration/u,
+  ],
+] as const) {
+  test(`Instance generation refuses ${name} before writing any SDK entry`, (t) => {
+    const fixture = generatorFixture();
+    t.after(fixture.cleanup);
+    const first = path.join(fixture.cwd, slotFile);
+    writeFileSync(first, previousInstance(readFileSync(first, "utf8")));
+    const target = path.join(fixture.cwd, file);
+    // The mutation starts from the real complete entry even when it is the
+    // first pending legacy output, so its claimed refusal is meaningful.
+    const original = readFileSync(path.join(root, file), "utf8");
+    const changed = mutate(original);
+    assert.notEqual(changed, original);
+    writeFileSync(target, changed);
+    const pending = readFileSync(first, "utf8");
+    const result = fixture.run(false);
+    assert.equal(result.status, 1, `${result.stdout}${result.stderr}`);
+    assert.match(`${result.stdout}${result.stderr}`, reason);
+    assert.equal(readFileSync(first, "utf8"), pending);
+    assert.equal(readFileSync(target, "utf8"), changed);
+  });
+}
+
+test("public Instance retains complete before/after consumer laws in all three module entries", (t) => {
+  const receipt = verifyPublicSlotInstance(root);
+  if (process.env.VIZE_PUBLIC_SLOT_RECEIPT) {
+    writeFileSync(process.env.VIZE_PUBLIC_SLOT_RECEIPT, JSON.stringify(receipt, null, 2) + "\n");
+  }
+  t.diagnostic(JSON.stringify(receipt));
 });
 
 const payload = "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-payload.d.ts.txt";

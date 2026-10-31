@@ -74,7 +74,9 @@ mod tests {
     fn walk_interpolations<'a>(ops: &'a [Op<'a>], visit: &mut impl FnMut(vize_l0::Span)) {
         for op in ops {
             match op {
-                Op::Interpolation(interpolation) => visit(interpolation.span),
+                Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
+                    visit(interpolation.span)
+                }
                 Op::Element(element) => walk_interpolations(&element.children.ops, visit),
                 Op::Component(component) => walk_interpolations(&component.children.ops, visit),
                 Op::Slot(slot) => walk_interpolations(&slot.fallback.ops, visit),

@@ -5,11 +5,19 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { cleanEnvironment, inventory, readAuthority, sha256 } from "./patina-project-batch-lib.mjs";
+import { assertPlainTypeRuntimeCounts } from "./patina-plain-type-runtime-counts.ts";
+import {
+  LEGACY_PACKET_REVISION,
+  LEGACY_PACKET_SHA,
+  PACKET_MODULE_SUFFIX,
+  planPacketReplay,
+  verifyPacketTransition,
+} from "./patina-plain-type-contracts.ts";
 
 export const TEST_PARENT = "crates/vize_patina/src/linter/native_type_aware/plain_module_tests.rs";
 export const TEST_CHILD =
   "crates/vize_patina/src/linter/native_type_aware/plain_module_tests/packets.rs";
-export const TEST_SUFFIX = "\nmod packets;\n";
+export const TEST_SUFFIX = PACKET_MODULE_SUFFIX;
 export const TEST_NAME =
   "linter::native_type_aware::plain_module_tests::packets::conditional_plain_type_packets_are_complete";
 export const PROVIDER_SHA = "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4";
@@ -60,7 +68,7 @@ export function testExecutable(stdout) {
   return artifacts[0].executable;
 }
 
-export function verifyPackets(bytes, inputs) {
+export function verifyPackets(bytes, inputs, contract = "runtime-error-v2") {
   const document = JSON.parse(bytes);
   assert.equal(document.provider_version, "7.0.2");
   assert.equal(document.packets.length, 20);
@@ -91,8 +99,7 @@ export function verifyPackets(bytes, inputs) {
       "filename",
       "warning_count",
     ]);
-    assert.equal(row.actual.error_count, 0);
-    assert.equal(row.actual.warning_count, row.actual.diagnostics.length);
+    assertPlainTypeRuntimeCounts(row, contract);
     const rule =
       row.case === "active"
         ? `type/${row.kind === "promise" ? "no-floating-promises" : "no-reactivity-loss"}`
@@ -169,9 +176,9 @@ function main([baseInput, headInput, baseSha, headSha, outputInput]) {
     assert.equal(result.status, 0, `${name}: inspect complete retained stderr`);
     return result.stdout;
   };
-  const git = (root, args) =>
+  const git = (root, args, label = args[0]) =>
     run(
-      `git-${Object.keys(roots).find((key) => roots[key] === root)}-${args[0]}`,
+      `git-${Object.keys(roots).find((key) => roots[key] === root)}-${label}`,
       "git",
       args,
       root,
@@ -188,14 +195,37 @@ function main([baseInput, headInput, baseSha, headSha, outputInput]) {
       "source checkout must start clean",
     );
   }
-  const original = fs.readFileSync(path.join(roots.base, TEST_PARENT));
-  const reviewed = fs.readFileSync(path.join(roots.head, TEST_PARENT));
-  const child = fs.readFileSync(path.join(roots.head, TEST_CHILD));
-  verifyAppendOnly(original, reviewed);
-  assert.ok(
-    !fs.existsSync(path.join(roots.base, TEST_CHILD)),
-    "baseline must not already contain the replay test",
+  const legacy = fs.readFileSync(
+    path.join(roots.head, "tools/benchmarks/fixtures/patina-plain-type-packets/warning-v1.rs"),
   );
+  const replay = {};
+  for (const [side, root] of Object.entries(roots)) {
+    const revision = side === "base" ? baseSha : headSha;
+    const parent = fs.readFileSync(path.join(root, TEST_PARENT));
+    assert.deepEqual(parent, git(root, ["show", `${revision}:${TEST_PARENT}`], "original-parent"));
+    const tracked =
+      git(root, ["ls-tree", revision, "--", TEST_CHILD], "original-child-entry").length > 0;
+    assert.equal(
+      fs.existsSync(path.join(root, TEST_CHILD)),
+      tracked,
+      "packet test must be original source",
+    );
+    const child = tracked ? fs.readFileSync(path.join(root, TEST_CHILD)) : undefined;
+    if (child)
+      assert.deepEqual(child, git(root, ["show", `${revision}:${TEST_CHILD}`], "original-child"));
+    const plan = planPacketReplay(parent, child, legacy);
+    if (side === "head")
+      assert.equal(plan.overlay, false, "head must carry its own original packet test");
+    if (plan.overlay) verifyAppendOnly(parent, plan.parent);
+    replay[side] = {
+      ...plan,
+      originalParentSha256: sha256(parent),
+      originalChildSha256: child ? sha256(child) : null,
+    };
+    log(`${side}-original-tests.rs`, parent);
+    log(`${side}-replayed-tests.rs`, plan.parent);
+    log(`${side}-packet-test.rs`, plan.child);
+  }
   const provider = fs.realpathSync(
     path.join(roots.head, "node_modules/@typescript/typescript-linux-x64/lib/tsc"),
   );
@@ -234,27 +264,37 @@ function main([baseInput, headInput, baseSha, headSha, outputInput]) {
   );
   const inputs = inventory(consumer, ["node_modules", "package-lock.json"]);
   log("dependencies-before.json", JSON.stringify(inputs, null, 2));
-  log("reviewed-packets.rs", child);
-  log("original-tests.rs", original);
+  log("legacy-warning-packets.rs", legacy);
   const provenance = {
     baseSha,
     headSha,
     provider: { version: providerPackage.version, sha256: PROVIDER_SHA, path: provider },
-    overlay: {
-      parent: TEST_PARENT,
-      originalSha256: sha256(original),
-      appended: TEST_SUFFIX,
-      child: TEST_CHILD,
-      childSha256: sha256(child),
-    },
+    originalWarningAuthority: { revision: LEGACY_PACKET_REVISION, sha256: LEGACY_PACKET_SHA },
+    replay: Object.fromEntries(
+      Object.entries(replay).map(([side, plan]) => [
+        side,
+        {
+          contract: plan.contract,
+          overlay: plan.overlay,
+          parent: TEST_PARENT,
+          originalParentSha256: plan.originalParentSha256,
+          replayedParentSha256: sha256(plan.parent),
+          child: TEST_CHILD,
+          originalChildSha256: plan.originalChildSha256,
+          replayedChildSha256: sha256(plan.child),
+        },
+      ]),
+    ),
     profile: "ci-opt-release-thin-lto-cgu16",
     executables: {},
   };
   log("provenance.json", JSON.stringify(provenance, null, 2));
   run("rustc", "rustc", ["--version", "--verbose"], roots.head, env);
-  fs.appendFileSync(path.join(roots.base, TEST_PARENT), TEST_SUFFIX);
-  fs.mkdirSync(path.dirname(path.join(roots.base, TEST_CHILD)), { recursive: true });
-  fs.writeFileSync(path.join(roots.base, TEST_CHILD), child, { flag: "wx" });
+  if (replay.base.overlay) {
+    fs.appendFileSync(path.join(roots.base, TEST_PARENT), TEST_SUFFIX);
+    fs.mkdirSync(path.dirname(path.join(roots.base, TEST_CHILD)), { recursive: true });
+    fs.writeFileSync(path.join(roots.base, TEST_CHILD), replay.base.child, { flag: "wx" });
+  }
   for (const [side, root] of Object.entries(roots)) {
     const capture = path.join(output, side);
     fs.mkdirSync(capture);
@@ -312,35 +352,39 @@ function main([baseInput, headInput, baseSha, headSha, outputInput]) {
     assert.match(stdout.toString(), /^test result: ok\. 1 passed; 0 failed; 0 ignored;/mu);
     assert.ok(stdout.toString().includes(`test ${TEST_NAME} ... ok`));
     const packets = fs.readFileSync(path.join(capture, "packets.json"));
-    verifyPackets(packets, packetInputs);
+    verifyPackets(packets, packetInputs, replay[side].contract);
     log(`${side}-packets.json`, packets);
-    assert.deepEqual(fs.readFileSync(path.join(root, TEST_PARENT)), reviewed);
-    assert.deepEqual(fs.readFileSync(path.join(root, TEST_CHILD)), child);
+    assert.deepEqual(fs.readFileSync(path.join(root, TEST_PARENT)), replay[side].parent);
+    assert.deepEqual(fs.readFileSync(path.join(root, TEST_CHILD)), replay[side].child);
     const changed = git(root, ["diff", "--name-only"])
       .toString()
       .trim()
       .split("\n")
       .filter(Boolean);
-    assert.deepEqual(changed, side === "base" ? [TEST_PARENT] : []);
+    assert.deepEqual(changed, replay[side].overlay ? [TEST_PARENT] : []);
     const untracked = git(root, ["ls-files", "--others", "--exclude-standard"])
       .toString()
       .trim()
       .split("\n")
       .filter(Boolean);
-    assert.deepEqual(untracked, side === "base" ? [TEST_CHILD] : []);
+    assert.deepEqual(untracked, replay[side].overlay ? [TEST_CHILD] : []);
   }
-  assert.deepEqual(
+  const comparison = verifyPacketTransition(
     fs.readFileSync(path.join(output, "base-packets.json")),
     fs.readFileSync(path.join(output, "head-packets.json")),
-    "the entire ordered native packet documents must stay byte-identical across sources",
+    replay.base.contract,
+    replay.head.contract,
+    packetInputs,
+    consumer,
   );
+  log("packet-comparison.json", JSON.stringify(comparison, null, 2));
   assert.equal(sha256(fs.readFileSync(provider)), PROVIDER_SHA);
   const after = inventory(consumer, ["node_modules", "package-lock.json"]);
   log("dependencies-after.json", JSON.stringify(after, null, 2));
   assert.deepEqual(after, inputs);
   log(
     "summary.md",
-    `## Conditional plain-module native packets\n\nTwenty full ordered packets are byte-identical at \`${baseSha}\` → \`${headSha}\`, using TypeScript 7.0.2 (\`${PROVIDER_SHA}\`). Original tests and production files retain their bytes; the reviewed new test is an explicit append-only overlay on the baseline. Source builds and tests ran sequentially after all benchmark observations.\n`,
+    `## Conditional plain-module native packets\n\nAll twenty ordered packets are retained at \`${baseSha}\` → \`${headSha}\`, using TypeScript 7.0.2 (\`${PROVIDER_SHA}\`). ${comparison.unchanged} complete cells are byte-identical; ${comparison.changed} unavailable cells follow the explicit \`${comparison.baseContract}\` → \`${comparison.headContract}\` contract. Full before/after unavailable packets and every cell hash are in packet-comparison.json. Each revision keeps its original tests; only a baseline with no packet child receives the authenticated original warning test append-only. Source builds and tests ran sequentially after all benchmark observations. No performance equivalence is implied by the intentional diagnostic migration.\n`,
   );
 }
 

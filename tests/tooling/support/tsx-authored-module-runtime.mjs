@@ -110,7 +110,7 @@ for (const [scenario, module] of Object.entries(modules)) {
     assert.equal(vue.widgets.render().type, "i");
   } else if (scenario === "factory") {
     assert.equal(host.textContent, "retained-factory");
-    assert.equal(vue.make("other")().children, "other");
+    assert.deepEqual(vue.make("other")().children, ["other"]);
     state.label = "second";
     await vue.nextTick();
     assert.equal(host.textContent, "retained-factory");

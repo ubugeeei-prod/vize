@@ -31,6 +31,7 @@ test("casing source adapter uses the complete current declarations and preserves
       [
         "virtual-ts-globals.d.ts",
         "virtual-ts-patterns.d.ts",
+        "virtual-ts-slots.d.ts",
         "virtual-ts.d.ts",
         "virtual-ts.d.mts",
         "virtual-ts.d.cts",

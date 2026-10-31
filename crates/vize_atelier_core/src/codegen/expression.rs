@@ -42,6 +42,10 @@ pub fn generate_compound_expression(
     ctx: &mut CodegenContext,
     compound: &CompoundExpressionNode<'_>,
 ) {
+    let grouped = compound.is_jsx_child_value && compound.jsx_child_needs_grouping;
+    if grouped {
+        ctx.push("(");
+    }
     for child in compound.children.iter() {
         match child {
             CompoundExpressionChild::Simple(exp) => {
@@ -57,6 +61,9 @@ pub fn generate_compound_expression(
             | CompoundExpressionChild::Interpolation(_)
             | CompoundExpressionChild::Text(_) => {}
         }
+    }
+    if grouped {
+        ctx.push(")");
     }
 }
 

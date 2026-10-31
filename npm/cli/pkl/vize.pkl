@@ -179,6 +179,7 @@ class DefinePropsDestructuringOptions {
 
 class DefineMacrosOrderOptions {
   order: Listing<String> = new Listing { "defineProps"; "defineEmits" }
+  defineExposeLast: Boolean = false
 }
 
 class LintRuleOptions {

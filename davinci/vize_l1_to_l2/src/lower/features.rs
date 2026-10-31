@@ -54,6 +54,8 @@ pub enum OpFamily {
     TextCompound,
     /// A `ui.model` binding.
     Model,
+    /// A JSX-owned dynamic child whose value is normalized by the renderer.
+    JsxChild,
 }
 
 /// Feature bits the lowering observed while building L2.
@@ -96,6 +98,12 @@ impl LoweringFeatures {
         self.holds(OpFamily::Model)
     }
 
+    /// Whether a genuine child-value mint requires complete child patching.
+    #[must_use]
+    pub const fn has_jsx_child_values(self) -> bool {
+        self.holds(OpFamily::JsxChild)
+    }
+
     /// The same bits with `family` observed.
     #[must_use]
     pub const fn observing(self, family: OpFamily) -> Self {
@@ -117,6 +125,7 @@ impl OpFamily {
             OpFamily::SlotCarrier => 1 << 2,
             OpFamily::TextCompound => 1 << 3,
             OpFamily::Model => 1 << 4,
+            OpFamily::JsxChild => 1 << 5,
         }
     }
 }
@@ -125,18 +134,20 @@ impl OpFamily {
 mod tests {
     use super::{LoweringFeatures, OpFamily};
 
-    const EVERY: [OpFamily; 5] = [
+    const EVERY: [OpFamily; 6] = [
         OpFamily::If,
         OpFamily::For,
         OpFamily::SlotCarrier,
         OpFamily::TextCompound,
         OpFamily::Model,
+        OpFamily::JsxChild,
     ];
 
     #[test]
     fn empty_holds_no_family() {
         let features = LoweringFeatures::EMPTY;
         assert!(!features.has_model_bindings());
+        assert!(!features.has_jsx_child_values());
         assert!(!features.has_if_ops());
         assert!(!features.has_for_ops());
         assert!(!features.has_slot_carriers());

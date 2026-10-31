@@ -262,6 +262,7 @@ export interface LinterConfig {
 export interface LintRuleOptions {
   "script/define-macros-order"?: {
     order?: string[];
+    defineExposeLast?: boolean;
   };
   "script/define-props-destructuring"?: {
     destructure?: "only-when-assigned" | "always" | "never";

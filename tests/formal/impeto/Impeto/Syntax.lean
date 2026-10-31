@@ -30,6 +30,7 @@ inductive OpKind where
   | getTextChild
   | childRef
   | nextRef
+  | setChildValue
 deriving Repr, DecidableEq
 
 def OpKind.parse (text : String) : Option OpKind :=
@@ -50,6 +51,7 @@ def OpKind.parse (text : String) : Option OpKind :=
   | "l3.get-text-child" => some .getTextChild
   | "l3.child-ref" => some .childRef
   | "l3.next-ref" => some .nextRef
+  | "l3.set-child-value" => some .setChildValue
   | _ => none
 
 inductive EdgeKind where

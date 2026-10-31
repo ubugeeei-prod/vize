@@ -201,7 +201,7 @@ impl Walk {
                     node.value = Some(text.content.to_owned());
                 });
             }
-            Op::Interpolation(interpolation) => {
+            Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
                 self.push(parent, op.mnemonic(), interpolation.span, |node| {
                     node.value = Some(interpolation.expression.source().to_owned());
                 });

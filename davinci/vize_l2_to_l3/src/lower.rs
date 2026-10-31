@@ -140,6 +140,16 @@ impl<'a> Cx<'a> {
                 self.capture_interpolation(id, interpolation.expression);
                 id
             }
+            l2::Op::JsxChildValue(child) => {
+                let id = self.push_op(
+                    OpKind::SetChildValue,
+                    target_region,
+                    child.span,
+                    PartitionKind::Dynamic,
+                );
+                self.capture_child_value(id, child.expression);
+                id
+            }
             l2::Op::Comment(comment) => {
                 let id = self.push_op(OpKind::InsertNode, target_region, comment.span, inherited);
                 self.capture_text(id, comment.content, comment.span, true);

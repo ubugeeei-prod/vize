@@ -1,0 +1,35 @@
+{
+  "id": "jsx-vdom-template-control-6890",
+  "controller": "d34ccaa8952534cdb6b6ce2a447ed4192d1917d5",
+  "producer": {
+    "source": "9c594186bae97cbc4b4c5441d9165b3354ccbec0",
+    "tree": "e2ab223f3cd39e405a71a307dd04a27644edaa48",
+    "run": 41209502298,
+    "attempt": 1,
+    "job": 124561336908,
+    "artifact": 13045871261,
+    "artifactName": "source-cli-41209502298-1",
+    "artifactBytes": 60968300,
+    "artifactDigest": "sha256:d4b574213361e7d4edd344995fb0ef8921dd36a3c357b5a0eba2879ff42a9cd9"
+  },
+  "imageSha256": "0311cecc8e9655f6e0ee082d0995a270cc71801c7a4e82865f236210df45464e",
+  "inputFile": "tests/_fixtures/differential/compiler/jsx-vdom-template-control-6890/Layout.vue.txt",
+  "sourceBase64": "PHNjcmlwdCBzZXR1cD4KY29uc3Qgc3RhdGUgPSB7IHZhbHVlOiBmYWxzZSB9Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+CiAgPCEtLSDpm6rwn4y4OiBvcmRpbmFyeSB0ZW1wbGF0ZSBjaGlsZHJlbiByZXRhaW4gZGlzcGxheS10ZXh0IHNlbWFudGljcy4gLS0+CiAgPG1haW4+e3sgc3RhdGUudmFsdWUgfX17eyBtaXNzaW5nIH19PC9tYWluPgogIDxwIHYtdGV4dD0ic3RhdGUudmFsdWUiPjwvcD4KPC90ZW1wbGF0ZT4K",
+  "inputSha256": "dc0443da0ad6467f2baed054dcb0ddcc3a999a64108fd0e6d88d6f7c12b8ca8a",
+  "argv": [
+    "build",
+    "Layout.vue",
+    "--format",
+    "json",
+    "--output",
+    "out",
+    "--ssr",
+    "--no-config"
+  ],
+  "status": 0,
+  "signal": null,
+  "stdoutBase64": "",
+  "stderrBase64": "QnVpbHQ6IExheW91dC52dWUgLT4gb3V0L0xheW91dC5qc29uChtbMzJt4pyTIDEgZmlsZSBjb21waWxlZCBpbiAwLjAwMjVzG1swbQo=",
+  "error": null,
+  "wholeJsonBase64": "ewogICJmaWxlbmFtZSI6ICJMYXlvdXQudnVlIiwKICAiY29kZSI6ICJpbXBvcnQgeyBzc3JJbnRlcnBvbGF0ZSBhcyBfc3NySW50ZXJwb2xhdGUgfSBmcm9tIFwiQHZ1ZS9zZXJ2ZXItcmVuZGVyZXJcIlxuXG5cbmZ1bmN0aW9uIHNzclJlbmRlcihfY3R4LCBfcHVzaCwgX3BhcmVudCwgX2F0dHJzLCAkcHJvcHMsICRzZXR1cCwgJGRhdGEsICRvcHRpb25zKSB7XG4gIF9wdXNoKGA8IS0tWy0tPjxtYWluPiR7X3NzckludGVycG9sYXRlKCRzZXR1cC5zdGF0ZS52YWx1ZSl9JHtfc3NySW50ZXJwb2xhdGUoX2N0eC5taXNzaW5nKX08L21haW4+PHA+JHtfc3NySW50ZXJwb2xhdGUoJHNldHVwLnN0YXRlLnZhbHVlKX08L3A+PCEtLV0tLT5gKVxufVxuXG5leHBvcnQgZGVmYXVsdCB7XG4gIF9fbmFtZTogJ0xheW91dCcsXG4gIHNzclJlbmRlcjogc3NyUmVuZGVyLFxuICBzZXR1cChfX3Byb3BzLCB7IGV4cG9zZTogX19leHBvc2UgfSkge1xuICBfX2V4cG9zZSgpO1xuXG5jb25zdCBzdGF0ZSA9IHsgdmFsdWU6IGZhbHNlIH1cblxuY29uc3QgX19yZXR1cm5lZF9fID0geyBzdGF0ZSB9XG5PYmplY3QuZGVmaW5lUHJvcGVydHkoX19yZXR1cm5lZF9fLCAnX19pc1NjcmlwdFNldHVwJywgeyBlbnVtZXJhYmxlOiBmYWxzZSwgdmFsdWU6IHRydWUgfSlcbnJldHVybiBfX3JldHVybmVkX19cbn1cblxufSIsCiAgImNzcyI6IG51bGwsCiAgImVycm9ycyI6IFtdLAogICJ3YXJuaW5ncyI6IFtdLAogICJzY3JpcHRfbGFuZyI6ICJqcyIsCiAgIm1hY3JvX2FydGlmYWN0cyI6IFtdCn0="
+}

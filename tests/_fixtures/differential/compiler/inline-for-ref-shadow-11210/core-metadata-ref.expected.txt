@@ -1,0 +1,12 @@
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("p", null, _toDisplayString(visibility.value), 1 /* TEXT */),
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(choices, (visibility) => {
+      return (_openBlock(), _createElementBlock("option", {
+        key: visibility,
+        value: visibility
+      }, _toDisplayString(visibility), 9 /* TEXT, PROPS */, ["value"]))
+    }), 128 /* KEYED_FRAGMENT */)),
+    _createElementVNode("p", null, _toDisplayString(visibility.value), 1 /* TEXT */)
+  ], 64 /* STABLE_FRAGMENT */))
+}

@@ -3,6 +3,8 @@ use super::support;
 use serde_json::{Value, json};
 use std::fs;
 
+mod public_instance;
+
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";
 const PATHS: [&str; 11] = [
     "npm/cli/virtual-ts.d.ts",
@@ -106,7 +108,12 @@ pub(super) fn source_before(path: &str) -> String {
     let Some(index) = PATHS.iter().position(|candidate| *candidate == path) else {
         return actual;
     };
-    previous(&actual, &load()["files"][index])
+    let before_instance = if index < 3 {
+        public_instance::source_before(path, &actual)
+    } else {
+        actual
+    };
+    previous(&before_instance, &load()["files"][index])
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
@@ -135,6 +142,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
         support::hash(current.as_bytes())
     ]);
     manifest["provenance"]["currentSlotProviderPayloadUpdate"] = update;
+    public_instance::retain_provenance(manifest);
 }
 
 #[cfg(test)]

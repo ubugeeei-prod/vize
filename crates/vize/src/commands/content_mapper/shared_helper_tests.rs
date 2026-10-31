@@ -144,6 +144,7 @@ fn installed_virtual_module_points_helpers_at_the_package() {
         ),
         ("virtual-ts-globals.d.ts", "virtual-ts-globals.d.ts"),
         ("virtual-ts-patterns.d.ts", "virtual-ts-patterns.d.ts"),
+        ("virtual-ts-slots.d.ts", "virtual-ts-slots.d.ts"),
         ("virtual-ts.d.ts", "virtual-ts.d.ts"),
     ] {
         std::fs::copy(package_source.join(source), package.join(target)).unwrap();

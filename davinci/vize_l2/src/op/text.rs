@@ -14,7 +14,8 @@ pub struct TextOp<'a> {
     pub span: Span,
 }
 
-/// `ui.interpolation` - an expression rendered as text.
+/// `ui.interpolation` / `ui.jsx-child` expression payload.
+/// The enclosing op discriminant owns the rendering contract.
 #[derive(Debug)]
 pub struct InterpolationOp<'a> {
     /// The rendered expression.

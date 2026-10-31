@@ -1,0 +1,11 @@
+{
+  "dto": {
+    "code": "import { createElementVNode as _createElementVNode } from \"vue\"\n\nconst App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"div\", null, [\n    message\n  ]))\n})(undefined, [])\n})();\nexport default App;\n",
+    "errors": [],
+    "map": null,
+    "scopedStyles": [],
+    "warnings": []
+  },
+  "scope": "complete pure Rust adapter DTO; no Node ABI execution credit",
+  "source": "const App = () => <div>{message}</div>;\nexport default App;\n"
+}

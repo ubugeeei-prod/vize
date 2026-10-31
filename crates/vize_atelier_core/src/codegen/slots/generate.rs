@@ -65,7 +65,8 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let collected_slots = collect_slots(el, &ctx.source);
     let has_forwarded_slots = has_forwarded_slot_outlet(el);
     let forwarded_slots_are_dynamic = has_forwarded_slots && ctx.has_slot_params();
-    let has_dynamic_slots = (ctx.in_v_for || ctx.in_match_scope)
+    let has_dynamic_slots = ctx.untracked_children
+        || (ctx.in_v_for || ctx.in_match_scope)
         || root_slot.is_some_and(is_dynamic_slot)
         || collected_slots.iter().any(|s| s.is_dynamic)
         || slots_reference_current_scope(ctx, el)
@@ -237,7 +238,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         // only one that normalizes spread entries correctly.
         ctx.push("...");
         generate_expression(ctx, exp);
-    } else if has_forwarded_slots && !forwarded_slots_are_dynamic {
+    } else if has_forwarded_slots && !forwarded_slots_are_dynamic && !ctx.untracked_children {
         ctx.push("_: 3 /* FORWARDED */");
     } else if has_dynamic_slots {
         ctx.push("_: 2 /* DYNAMIC */");

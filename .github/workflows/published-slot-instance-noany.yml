@@ -1,0 +1,78 @@
+name: Published slot instance NoAny
+on:
+  pull_request:
+    paths:
+      - .github/workflows/published-slot-instance-noany.yml
+      - tools/support/release/slot_instance_public/**
+      - tools/support/release/computed_event_custody.ts
+      - tools/support/release/editor_vite_stub/custody.ts
+      - tools/support/release/public_install/native-custody.cjs
+      - tools/support/release/public_install/registry.ts
+      - tools/support/archive/tar.ts
+      - tests/fixtures/typechecker/public-slot-instance/proof.ts.txt
+      - tests/tooling/release/slot-instance-public.test.ts
+  workflow_dispatch:
+    inputs:
+      before_capsule:
+        description: TP-authenticated immutable C12 v0.620.0 capsule Git blob
+        type: string
+        required: true
+      head_capsule:
+        description: TP-authenticated immutable C13 v0.621.0 capsule Git blob
+        type: string
+        required: true
+permissions: { contents: read }
+concurrency:
+  group: published-slot-instance-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name }}
+  cancel-in-progress: false
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_DISABLE_COMPILE_CACHE: "1"
+defaults:
+  run: { shell: bash }
+jobs:
+  contracts:
+    name: Exact release roles and whole NoAny vector controls
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - run: node --test tests/tooling/release/slot-instance-public.test.ts
+  installed-public:
+    name: Untouched C12 and C13 SDKs across ESM CJS and direct declarations
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
+    needs: contracts
+    permissions: { contents: read, actions: read }
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Observe fresh registry installations without source or SDK overlays
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BEFORE_CAPSULE: ${{ inputs.before_capsule }}
+          HEAD_CAPSULE: ${{ inputs.head_capsule }}
+        run: >-
+          node tools/support/release/slot_instance_public/run.ts
+          "$BEFORE_CAPSULE" "$HEAD_CAPSULE" "$RUNNER_TEMP/slot-instance-public"
+      - name: Preserve complete failures and physical installed custody
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ -d "$RUNNER_TEMP/slot-instance-public" ]]; then
+            tar --exclude=node_modules --exclude=registry-installation -czf "$RUNNER_TEMP/slot-instance-public.tgz" -C "$RUNNER_TEMP" slot-instance-public
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: slot-instance-installed-public-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/slot-instance-public.tgz
+          if-no-files-found: error
+          retention-days: 90

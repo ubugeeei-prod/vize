@@ -181,8 +181,10 @@ fn generate_if_branch_component(
     let prev_skip_scope_id = ctx.skip_scope_id;
     ctx.use_helper(RuntimeHelper::CreateBlock);
     ctx.push_mapped("(", el.loc.span.start);
-    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-    ctx.push("(), ");
+    if !ctx.untracked_children {
+        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+        ctx.push("(), ");
+    }
     ctx.push_vnode_helper(RuntimeHelper::CreateBlock);
     ctx.push("(");
     // Generate component name
@@ -354,8 +356,10 @@ fn generate_if_branch_element(
 
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
     ctx.push_mapped("(", el.loc.span.start);
-    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-    ctx.push("(), ");
+    if !ctx.untracked_children {
+        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+        ctx.push("(), ");
+    }
     ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
     ctx.push("(\"");
     ctx.push_tag(el);
@@ -425,8 +429,10 @@ fn generate_if_branch_template_fragment(
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
     ctx.use_helper(RuntimeHelper::Fragment);
     ctx.push_mapped("(", branch.loc.span.start);
-    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
-    ctx.push("(), ");
+    if !ctx.untracked_children {
+        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+        ctx.push("(), ");
+    }
     ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
     ctx.push("(");
     ctx.push(ctx.helper(RuntimeHelper::Fragment));
