@@ -204,7 +204,7 @@ jobs:
           }
           const observedVersion = run("mapper-version", host, ["--version"], consumer, 60_000);
           assertCheckerVersion(observedVersion);
-          save("installation.json", { version, packages, node: fileImage(process.execPath), host: fileImage(host), images });
+          save("installation.json", { version, packages, node: fileImage(process.execPath), "host": fileImage(host), images });
           const output = path.join(evidence, "acceptance");
           const acceptance = run("acceptance", process.execPath, [
             path.join(process.env.GITHUB_WORKSPACE, "tools/support/compat/content-mapper/aria-component-attrs.ts"),
