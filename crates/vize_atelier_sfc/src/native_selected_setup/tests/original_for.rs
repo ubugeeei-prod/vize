@@ -84,7 +84,11 @@ fn ten_whole_original_for_components_and_maps_are_captured() -> Result<(), Strin
         let row = dom.file_for_head(original.id().node()).ok_or("For row")?;
         let resolution = head.resolution().ok_or("whole resolution")?;
         require!(
-            row.accepts_original(original) && core::ptr::eq(row.resolution(), resolution),
+            row.accepts_original(original)
+                && core::ptr::eq(row.resolution(), resolution)
+                && head
+                    .scope_facts()
+                    .is_some_and(|scope| core::ptr::eq(row.scope_facts(), scope)),
             "{id}: actual allocation and retained resolution"
         );
         let read = row.collection_read().ok_or("collection Read")?;

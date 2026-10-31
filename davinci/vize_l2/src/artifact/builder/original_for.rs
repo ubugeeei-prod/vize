@@ -3,6 +3,7 @@
 use super::{ArtifactError, Builder, Frame, Owner, check};
 use crate::op::{OriginalForId, OriginalForOp};
 use crate::resolution::ForResolution;
+use crate::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
 use vize_l0::{Span, id::NodeId};
 
 impl<'a> Builder<'a> {
@@ -22,7 +23,27 @@ impl<'a> Builder<'a> {
         }
         check::owned_span(self.parts.source, id, operand.name_span(), Some(span))?;
         check::owned_span(self.parts.source, id, source.span(), Some(span))?;
+        check::owned_span(
+            self.parts.source,
+            id,
+            head.collection_authored_span(),
+            Some(span),
+        )?;
+        let tag = ScopeTag::from_index(
+            u32::try_from(self.parts.scopes.len()).map_err(|_| ArtifactError::NodeLimit)?,
+        );
+        let key = head.key_declaration();
+        let mut bindings = alloc::vec::Vec::with_capacity(1 + usize::from(key.is_some()));
+        for declaration in core::iter::once(head.value_declaration()).chain(key) {
+            let authored = declaration.authored_span();
+            check::owned_span(self.parts.source, id, authored, Some(span))?;
+            bindings.push(ScopeBinding {
+                name: vize_l0::String::from(declaration.fact().name()),
+                origin: ScopeOrigin::Authored { span: authored },
+            });
+        }
         self.mint();
+        let _ = self.parts.scopes.insert(id, ScopeFacts { tag, bindings });
         self.frames.push(Frame {
             id,
             owner: Owner::OriginalFor(OriginalForId(id)),
@@ -58,3 +79,6 @@ impl<'a> Builder<'a> {
             .ok_or(ArtifactError::UnfinishedOwner { node })
     }
 }
+
+#[cfg(test)]
+mod tests;

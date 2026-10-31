@@ -5,6 +5,7 @@ use vize_l2::{
     file::{BindingRef, FileForHead},
     op::OriginalForOp,
     resolution::ForResolution,
+    scope::ScopeFacts,
 };
 
 /// An authentic same-File/allocation receipt with bounded original setup reads,
@@ -16,8 +17,9 @@ use vize_l2::{
 /// use vize_l2::{file::{BindingRef, FileForHead}, op::OriginalForOp, resolution::ForResolution};
 /// use vize_l3::decision::dom::DomFileForHead;
 /// fn forge<'f, 'a>(head: FileForHead<'f, 'a>, original: &'f OriginalForOp<'a>,
-///     resolution: &'f ForResolution<'a>, collection: BindingRef<'f, 'a>) {
-///     let _ = DomFileForHead { head, original, resolution, collection, read: None };
+///     resolution: &'f ForResolution<'a>, collection: BindingRef<'f, 'a>,
+///     scope: &'f vize_l2::scope::ScopeFacts) {
+///     let _ = DomFileForHead { head, original, resolution, collection, scope, read: None };
 /// }
 /// ```
 /// ```compile_fail
@@ -41,6 +43,7 @@ pub struct DomFileForHead<'owner, 'arena> {
     pub(in crate::decision::dom) original: &'owner OriginalForOp<'arena>,
     pub(in crate::decision::dom) resolution: &'owner ForResolution<'arena>,
     pub(in crate::decision::dom) collection: BindingRef<'owner, 'arena>,
+    pub(in crate::decision::dom) scope: &'owner ScopeFacts,
     pub(in crate::decision::dom) read: Option<VueRenderRead<'owner, 'arena>>,
 }
 
@@ -73,6 +76,12 @@ impl<'owner, 'arena> DomFileForHead<'owner, 'arena> {
     pub const fn collection(&self) -> BindingRef<'owner, 'arena> {
         self.collection
     }
+    /// The same File's canonical authored bindings, joined to the retained
+    /// original declarations. No copied table or numeric scope cast is used.
+    #[must_use]
+    pub const fn scope_facts(&self) -> &'owner ScopeFacts {
+        self.scope
+    }
     /// The actual setup collection occurrence and its sealed native access kind.
     /// Parent-template aliases retain custody but have no setup read policy.
     /// A positive read alone grants no loop target or executable output.
@@ -82,6 +91,11 @@ impl<'owner, 'arena> DomFileForHead<'owner, 'arena> {
     }
     #[must_use]
     pub fn accepts_original(&self, original: &OriginalForOp<'arena>) -> bool {
-        core::ptr::eq(self.original, original) && self.head.accepts(original)
+        core::ptr::eq(self.original, original)
+            && self.head.accepts(original)
+            && self
+                .head
+                .scope_facts()
+                .is_some_and(|scope| core::ptr::eq(scope, self.scope))
     }
 }

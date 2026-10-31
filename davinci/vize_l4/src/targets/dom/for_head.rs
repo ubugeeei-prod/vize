@@ -2,7 +2,7 @@
 
 use super::{DomError, DomErrorKind, Emitter, ExpressionWriter, LinkSink, write::spell};
 use vize_l0::id::NodeId;
-use vize_l2::op::OriginalForOp;
+use vize_l2::{op::OriginalForOp, scope::ScopeOrigin};
 use vize_l3::decision::dom::{DomChild, DomChildren, DomNode, vue::VueReadKind};
 
 impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
@@ -27,8 +27,15 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
             return Err(self.error(node, DomErrorKind::InvalidGrouping));
         };
         let stable = row.collection_read().map(|read| read.kind()) == Some(VueReadKind::SetupConst);
-        let alias = row.resolution().value_declaration();
-        let name = alias.fact().name();
+        let alias = row
+            .scope_facts()
+            .bindings
+            .first()
+            .ok_or_else(|| self.error(node, DomErrorKind::FileOwnerMismatch))?;
+        let ScopeOrigin::Authored { span: alias_span } = alias.origin else {
+            return Err(self.error(node, DomErrorKind::FileOwnerMismatch));
+        };
+        let name = alias.name.as_str();
         // No generated local is introduced inside this callback. All helper
         // aliases actually used inside it must retain their original meaning.
         if name.strip_prefix('_').is_some_and(|name| {
@@ -43,7 +50,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         }) {
             return Err(DomError {
                 node: Some(node),
-                span: alias.authored_span(),
+                span: alias_span,
                 kind: DomErrorKind::GeneratedForBindingCollision,
             });
         }
@@ -68,7 +75,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         self.expressions
             .write_for_collection(&mut self.writer, node, original)?;
         self.writer.push(", (");
-        self.writer.push_named(name, alias.authored_span(), name);
+        self.writer.push_named(name, alias_span, name);
         self.writer.push(") => {");
         self.writer.indent();
         self.writer.newline();

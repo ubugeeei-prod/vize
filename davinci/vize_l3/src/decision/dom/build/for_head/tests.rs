@@ -94,3 +94,88 @@ fn private_join_refuses_foreign_file_and_wrong_canonical_node() {
         head.enclosing_scope().unwrap()
     ));
 }
+
+#[test]
+fn canonical_scope_stays_with_its_file_even_when_foreign_facts_are_equal() {
+    let arena = Allocator::default();
+    let source =
+        "<script setup>const items=2;</script><template><div v-for='item in items'/></template>";
+    let owner = completed(&arena, source);
+    let foreign_owner = completed(&arena, source);
+    let file = owner.file().unwrap();
+    let foreign_file = foreign_owner.file().unwrap();
+    let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
+        panic!("For")
+    };
+    let [Op::OriginalFor(foreign)] = foreign_file.artifact().root().ops.as_slice() else {
+        panic!("foreign For")
+    };
+    let node = original.id().node();
+    let mut row = join(file, node, original).unwrap();
+    let own_scope = file.artifact().scopes().get(node).unwrap();
+    let foreign_scope = foreign_file
+        .artifact()
+        .scopes()
+        .get(foreign.id().node())
+        .unwrap();
+    assert!(core::ptr::eq(row.scope_facts(), own_scope));
+    assert_eq!(own_scope, foreign_scope);
+    assert!(!core::ptr::eq(own_scope, foreign_scope));
+    assert_eq!(own_scope.tag.index(), 0);
+    assert_ne!(own_scope.tag.index(), row.head().scope().unwrap().index());
+    assert!(row.accepts_original(original));
+    row.scope = foreign_scope;
+    assert!(!row.accepts_original(original));
+}
+
+#[test]
+fn canonical_alias_rejects_changed_name_range_and_synthesized_origin() {
+    let arena = Allocator::default();
+    let source =
+        "<script setup>const items=2;</script><template><div v-for='item in items'/></template>";
+    let owner = completed(&arena, source);
+    let file = owner.file().unwrap();
+    let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
+        panic!("For")
+    };
+    let head = file.for_head_for(original).unwrap();
+    let declaration = head.resolution().unwrap().value_declaration();
+    let binding = head.scope_facts().unwrap().bindings.first().unwrap();
+    assert!(canonical_alias(binding, &declaration));
+    let mut wrong_name = binding.clone();
+    wrong_name.name = "other".into();
+    assert!(!canonical_alias(&wrong_name, &declaration));
+    let mut wrong_span = binding.clone();
+    wrong_span.origin = ScopeOrigin::Authored {
+        span: vize_l0::Span::new(0, 1),
+    };
+    assert!(!canonical_alias(&wrong_span, &declaration));
+    let mut synthesized = binding.clone();
+    synthesized.origin = ScopeOrigin::Synthesized {
+        rule: "test.foreign".into(),
+    };
+    assert!(!canonical_alias(&synthesized, &declaration));
+}
+
+#[test]
+fn canonical_binding_order_keeps_original_unicode_value_and_key_ranges() {
+    let arena = Allocator::default();
+    let source = "<script setup>const items=2;</script><template><div v-for='(café,index) in items'/></template>";
+    let owner = completed(&arena, source);
+    let file = owner.file().unwrap();
+    let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
+        panic!("For")
+    };
+    let row = join(file, original.id().node(), original).unwrap();
+    let [value, key] = row.scope_facts().bindings.as_slice() else {
+        panic!("two original declarations")
+    };
+    assert_eq!(value.name.as_str(), "café");
+    assert_eq!(key.name.as_str(), "index");
+    for binding in [value, key] {
+        let ScopeOrigin::Authored { span } = binding.origin else {
+            panic!("authored declaration")
+        };
+        assert_eq!(span.slice(source), binding.name.as_str());
+    }
+}
