@@ -63,11 +63,14 @@ export function evidence(snapshot: RegistrySnapshot, now: number, expectedStatus
   const { body, ...headers } = snapshot;
   return { ...headers, bytes, sha256: createHash("sha256").update(body).digest("hex") };
 }
-export function page(snapshot: RegistrySnapshot, now: number) {
+type HistoryPage =
+  | { rows: unknown[]; total: number; next: string | null; terminal: false }
+  | { rows: []; total: 0; next: null; terminal: true };
+export function page(snapshot: RegistrySnapshot, now: number): HistoryPage {
   evidence(snapshot, now);
   const body = object(JSON.parse(snapshot.body) as unknown);
   requireValue(
-    Array.isArray(body.versions) && body.versions.length > 0 && body.versions.length <= PAGE_SIZE,
+    Array.isArray(body.versions) && body.versions.length <= PAGE_SIZE,
     "history versions required",
   );
   const meta = object(body.meta);
@@ -75,10 +78,20 @@ export function page(snapshot: RegistrySnapshot, now: number) {
     Number.isSafeInteger(meta.total) && Number(meta.total) >= body.versions.length,
     "history total required",
   );
+  if (body.versions.length === 0) {
+    requireValue(
+      Boolean(new URL(snapshot.url).searchParams.get("seek")) &&
+        meta.total === 0 &&
+        meta.next_page === null,
+      "empty history requires a terminal zero-total seek page",
+    );
+    return { rows: [], total: 0, next: null, terminal: true };
+  }
   return {
     rows: body.versions as unknown[],
     total: Number(meta.total),
     next: continuation(meta.next_page, snapshot.url),
+    terminal: false,
   };
 }
 export function versionRow(value: unknown, crate: string, now: number): HistoryVersion {
