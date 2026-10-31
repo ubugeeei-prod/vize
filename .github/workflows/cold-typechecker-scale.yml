@@ -6,10 +6,14 @@ on:
         description: Immutable 40-hex baseline commit distinct from the dispatched source
         type: string
         required: true
+      head_sha:
+        description: Immutable candidate source for the separate paired comparison mode
+        type: string
+        required: false
       mode:
         description: Full comparison or one exact native command attribution capture
         type: choice
-        options: [full, native-command-attribution, native-command-profile]
+        options: [full, native-command-attribution, native-command-profile, paired-comparison]
         default: full
       sfcs:
         description: Vue SFC count plus the complete authored package dependency graph
@@ -32,11 +36,89 @@ on:
       - tests/tooling/source-pmu-calibration.test.ts
 permissions: { contents: read }
 concurrency:
-  group: cold-typechecker-scale-${{ github.event.pull_request.number || github.ref }}${{ startsWith(inputs.mode, 'native-command-') && format('-{0}', inputs.mode) || '' }}
+  group: cold-typechecker-scale-${{ github.event.pull_request.number || github.ref }}${{ (startsWith(inputs.mode, 'native-command-') || inputs.mode == 'paired-comparison') && format('-{0}', inputs.mode) || '' }}
   cancel-in-progress: true
 jobs:
+  paired-comparison:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'paired-comparison'
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    permissions: { contents: read, actions: read }
+    timeout-minutes: 60
+    env:
+      BASE_SHA: ${{ inputs.base_sha }}
+      HEAD_SHA: ${{ inputs.head_sha }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      GOMAXPROCS: "8"
+      RAYON_NUM_THREADS: "8"
+      CARGO_BUILD_JOBS: "8"
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false, fetch-depth: 2 }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - name: Select exact product sources and preserve the separate observer identity
+        run: |
+          set -euo pipefail
+          [[ "${{ inputs.sfcs }}" == 2500 ]]
+          [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && "$HEAD_SHA" =~ ^[a-f0-9]{40}$ && "$BASE_SHA" != "$HEAD_SHA" ]]
+          mkdir "$RUNNER_TEMP/cold-paired"
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"
+          git worktree add --detach "$RUNNER_TEMP/cold-paired-base" "$BASE_SHA"
+          git worktree add --detach "$RUNNER_TEMP/cold-paired-head" "$HEAD_SHA"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/cold-paired/driver.txt"
+      - name: Reuse the authenticated frozen provider graph without changing its public SDK
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/paired-seed" "$RUNNER_TEMP/provider"
+          gh api repos/ubugeeei-prod/vize/actions/artifacts/13039066890/zip > "$RUNNER_TEMP/paired-seed.zip"
+          printf '%s\n' '1a2bf101c6511b8f37f455e51d2493041c853231ddf09ef260d24af822fba321  '"$RUNNER_TEMP/paired-seed.zip" | sha256sum --check -
+          unzip -q "$RUNNER_TEMP/paired-seed.zip" -d "$RUNNER_TEMP/paired-seed"
+          tar -xzf "$RUNNER_TEMP/paired-seed/cold-phase-evidence.tgz" -C "$RUNNER_TEMP/paired-seed" cold-phase/package.json cold-phase/package-lock.json
+          cp "$RUNNER_TEMP/paired-seed/cold-phase/package.json" "$RUNNER_TEMP/paired-seed/cold-phase/package-lock.json" "$RUNNER_TEMP/provider/"
+          cd "$RUNNER_TEMP/provider"
+          printf '%s\n' '9c2974672b5f5358e643276e6ec98c6084681ef609e8f25922ba4aa7adb0f0a6  package-lock.json' | sha256sum --check -
+          npm ci --ignore-scripts --no-audit --no-fund
+          cp package.json package-lock.json "$RUNNER_TEMP/cold-paired/"
+          cd "$GITHUB_WORKSPACE"
+          node --input-type=module -e 'import assert from "node:assert/strict"; import fs from "node:fs"; import {createHash} from "node:crypto"; import {coldScaleCommand} from "./tools/benchmarks/scripts/cold-typechecker-scale-command.ts"; const {backend}=coldScaleCommand({provider:process.env.RUNNER_TEMP+"/provider",out:process.env.RUNNER_TEMP+"/cold-paired",app:process.env.RUNNER_TEMP+"/provider",tool:"cli"}); assert.equal(createHash("sha256").update(fs.readFileSync(backend)).digest("hex"),"a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70");'
+      - name: Refuse incomplete native observations and unsupported factory changes
+        run: |
+          set -euo pipefail
+          mkdir -p node_modules
+          ln -s "$RUNNER_TEMP/provider/node_modules/typescript" node_modules/typescript
+          node --test tests/tooling/cold-typechecker-scale-native-forward.test.ts tests/tooling/cold-typechecker-scale-ref-factory.test.ts tests/tooling/cold-typechecker-scale-paired.test.ts
+      - name: Build only normal exact base and head with equal compiler settings
+        run: |
+          set -euo pipefail
+          for role in base head; do
+            node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/cold-paired-$role" --target-dir "$RUNNER_TEMP/cold-paired-builds/$role" --binary "$RUNNER_TEMP/cold-paired/binaries/$role/vize" --receipt "$RUNNER_TEMP/cold-paired/builds/$role.json" --role "normal-$role"
+          done
+          node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --base-receipt "$RUNNER_TEMP/cold-paired/builds/base.json" --head-receipt "$RUNNER_TEMP/cold-paired/builds/head.json" --receipt "$RUNNER_TEMP/cold-paired/builds/pair.json"
+      - name: Require whole generated packets and raw native parity before forty balanced pairs
+        run: |
+          set -euo pipefail
+          export VIZE_BENCH_CPU_SET=$(node tools/benchmarks/scripts/cold-typechecker-scale-affinity.ts)
+          taskset -c "$VIZE_BENCH_CPU_SET" node tools/benchmarks/scripts/cold-typechecker-scale-paired.ts --provider "$RUNNER_TEMP/provider" --out "$RUNNER_TEMP/cold-paired/observations" --base "$RUNNER_TEMP/cold-paired/builds/base.json" --head "$RUNNER_TEMP/cold-paired/builds/head.json"
+      - name: Preserve every raw pair, native observation, control and source receipt
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/cold-paired"
+          tar --exclude='*/project' --exclude='*/xdg-cache' --exclude='*/tmp' --exclude='*/binaries' -czf "$RUNNER_TEMP/cold-paired-evidence.tgz" -C "$RUNNER_TEMP" cold-paired
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: cold-typechecker-paired-${{ inputs.head_sha }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/cold-paired-evidence.tgz
+          retention-days: 14
   profile:
-    if: github.event_name != 'workflow_dispatch' || !startsWith(inputs.mode, 'native-command-')
+    if: github.event_name != 'workflow_dispatch' || inputs.mode == 'full'
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 90
     env:

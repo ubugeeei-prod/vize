@@ -128,7 +128,7 @@ export function classifyRaw(bytes: Buffer, cwd: string, project: string, provide
 }
 
 /** Entire physical input closure plus exact lexical symlink edges; only one output is excluded. */
-function seal(roots: string[], buildInfo: string | null) {
+export function seal(roots: string[], buildInfo: string | null) {
   const canonicalRoots = roots.map((root) => fs.realpathSync(root));
   const visited = new Set<string>(),
     rows: Row[] = [];
