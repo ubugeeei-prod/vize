@@ -106,12 +106,9 @@ fn invalid_semicolon_values_and_conflicting_flags_refuse_before_writes() {
         let output = run(project.path(), &case.file, &flags, "--write");
         assert_eq!(output.status.code(), Some(2), "{output:?}");
         assert!(output.stdout.is_empty());
-        let stderr = String::from_utf8(output.stderr).unwrap();
-        assert!(stderr.contains("--semi"), "{stderr}");
-        assert!(
-            stderr.contains("invalid value") || stderr.contains("cannot be used with"),
-            "{stderr}"
-        );
+        // Exact parser kinds are asserted against the actual CLI grammar in
+        // cli::tests; this process control proves refusal before any write.
+        assert!(!output.stderr.is_empty(), "{output:?}");
         assert_eq!(fs::read_to_string(&path).unwrap(), case.source);
         assert_eq!(
             fs::read(project.path().join("vite.config.mjs")).unwrap(),
