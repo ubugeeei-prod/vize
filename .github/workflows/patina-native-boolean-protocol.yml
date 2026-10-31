@@ -103,9 +103,9 @@ jobs:
           [[ "$EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
           test "$GITHUB_SHA" = "$EXPECTED_SOURCE"
           test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
-          mkdir -p target/patina-symbol-owner
-          git show -s --format='%H %T %P' HEAD > target/patina-symbol-owner/source.txt
-          sha256sum Cargo.lock pnpm-lock.yaml package.json > target/patina-symbol-owner/lock-sha256.txt
+          mkdir -p "$RUNNER_TEMP/patina-symbol-owner-source"
+          git show -s --format='%H %T %P' HEAD > "$RUNNER_TEMP/patina-symbol-owner-source/source.txt"
+          sha256sum Cargo.lock pnpm-lock.yaml package.json > "$RUNNER_TEMP/patina-symbol-owner-source/lock-sha256.txt"
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -124,6 +124,8 @@ jobs:
       - name: Authenticate the two exact installed native providers
         working-directory: ${{ runner.temp }}
         run: |
+          mkdir -p "$GITHUB_WORKSPACE/target/patina-symbol-owner"
+          cp "$RUNNER_TEMP/patina-symbol-owner-source/source.txt" "$RUNNER_TEMP/patina-symbol-owner-source/lock-sha256.txt" "$GITHUB_WORKSPACE/target/patina-symbol-owner/"
           npm install --prefix "$RUNNER_TEMP/patina-symbol-owner" --ignore-scripts --no-audit --no-fund tsrs@0.20.1-ts7.1.0-beta
           cp "$RUNNER_TEMP/patina-symbol-owner/package-lock.json" "$GITHUB_WORKSPACE/target/patina-symbol-owner/provider-package-lock.json"
           cp "$RUNNER_TEMP/patina-symbol-owner/node_modules/tsrs/package.json" "$GITHUB_WORKSPACE/target/patina-symbol-owner/tsrs-package.json"
