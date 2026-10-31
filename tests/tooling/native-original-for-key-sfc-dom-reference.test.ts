@@ -106,8 +106,13 @@ function compilePrimary(fixture: ForKeyFixture) {
       },
     });
     assert.deepEqual(result.diagnostics, []);
+    assert.deepEqual(Reflect.ownKeys(result), ["outputText", "diagnostics", "sourceMapText"]);
+    const { sourceMapText, ...capturedResult } = result;
+    // The pinned API owns this undefined field when no TS map was requested.
+    // Verify it exactly; JSON retains every remaining result field.
+    assert.equal(sourceMapText, undefined);
     runtimeModule = result.outputText;
-    transpilation = { version: ts.version, ...result };
+    transpilation = { version: ts.version, ...capturedResult };
   }
   const scriptMapRaw = JSON.stringify(script.map);
   const renderMapRaw = JSON.stringify(render.map);
