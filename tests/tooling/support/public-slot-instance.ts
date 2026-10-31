@@ -1,15 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import {
-  copyFileSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
-} from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import ts from "../../../npm/cli/node_modules/typescript/lib/typescript.js";
@@ -93,10 +85,23 @@ function expected(file: string, before: boolean, repaired = false) {
 }
 
 /** Actual public import/constructor calls; no private Instance substituted into the consumer. */
-export function verifyPublicSlotInstance(root: string, previous: (source: string) => string) {
+export function verifyPublicSlotInstance(root: string) {
   assert.equal(ts.version, "6.0.3");
   const directory = mkdtempSync(path.join(tmpdir(), "vize-public-slot-instance-"));
   const compiler = path.join(root, "npm/cli/node_modules/typescript/bin/tsc");
+  const historicalBytes = readFileSync(
+    path.join(
+      root,
+      "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/slot-provider-payload-update-11027.json",
+    ),
+  );
+  assert.equal(
+    hash(historicalBytes),
+    "0a71c5c21535e50d02df527e6c00267dfd8b44bfc0d63c37c49a55d67ab1166c",
+  );
+  const historical = JSON.parse(historicalBytes.toString("utf8")) as {
+    files: Array<{ path: string; afterWholeUtf8: string }>;
+  };
   const input = readFileSync(
     path.join(root, "tests/fixtures/typechecker/public-slot-instance/proof.ts.txt"),
     "utf8",
@@ -119,17 +124,37 @@ export function verifyPublicSlotInstance(root: string, previous: (source: string
         const cwd = path.join(directory, role, mode),
           pkg = path.join(cwd, "node_modules/vize");
         mkdirSync(pkg, { recursive: true });
-        copyFileSync(path.join(root, "npm/cli/package.json"), path.join(pkg, "package.json"));
+        const currentManifest = readFileSync(path.join(root, "npm/cli/package.json"), "utf8");
+        const oldManifest = currentManifest.replace('\n    "virtual-ts-slots.d.ts",', "");
+        assert.notEqual(oldManifest, currentManifest);
+        assert.equal(
+          hash(oldManifest),
+          "6d4cddbdcd51ccb049a695688b5896294ad6aa23abb812f867e6bf6bd0b50d36",
+        );
+        writeFileSync(
+          path.join(pkg, "package.json"),
+          role === "before" ? oldManifest : currentManifest,
+        );
         symlinkSync(path.join(root, "npm/cli/node_modules"), path.join(pkg, "node_modules"), "dir");
         const sdk = Object.entries(preimages).map(([file, sha256]) => {
           const current = readFileSync(path.join(root, "npm/cli", file), "utf8");
-          const old = file.startsWith("virtual-ts.d.") ? previous(current) : current;
+          const old = historical.files.find(
+            (item) => item.path === "npm/cli/" + file,
+          )!.afterWholeUtf8;
           assert.equal(hash(old), sha256, `exact actual-main preimage ${file}`);
+          if (!file.startsWith("virtual-ts.d.")) assert.equal(current, old, `unchanged ${file}`);
           const body = role === "before" ? old : current;
           mkdirSync(path.dirname(path.join(pkg, file)), { recursive: true });
           writeFileSync(path.join(pkg, file), body);
           return { file, bytes: Buffer.byteLength(body), sha256: hash(body) };
         });
+        if (role === "head") {
+          const file = "virtual-ts-slots.d.ts",
+            body = readFileSync(path.join(root, "npm/cli", file));
+          writeFileSync(path.join(pkg, file), body);
+          sdk.push({ file, bytes: body.length, sha256: hash(body) });
+        }
+        assert.equal(sdk.length, role === "before" ? 9 : 10);
         const file = `proof.${extension}`,
           target = path.join(cwd, file);
         const source =

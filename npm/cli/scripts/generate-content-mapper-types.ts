@@ -56,6 +56,7 @@ const outputs = new Map([
 // The checked-in virtual-ts exports predate the canonical zero-call policy.
 // Synchronize this alias without replacing unrelated public declarations.
 const slotAlias = "$SlotConstructorWithoutArguments";
+const slotFiles = ["npm/cli/virtual-ts-slots.d.ts"];
 const printer = ts.createPrinter({ removeComments: true });
 async function slotDeclaration(
   source: string,
@@ -123,8 +124,7 @@ const publicSlot = await format(
   { printWidth: 100 },
 );
 assert.deepEqual(publicSlot.errors, [], "canonical public zero-call export must parse");
-for (const extension of ["ts", "mts", "cts"]) {
-  const relativePath = `npm/cli/virtual-ts.d.${extension}`;
+for (const relativePath of slotFiles) {
   const filePath = path.join(root, relativePath);
   const original = readFileSync(filePath, "utf8");
   const current = await slotDeclaration(original, relativePath, true);
@@ -141,15 +141,7 @@ for (const extension of ["ts", "mts", "cts"]) {
   outputs.set(relativePath, replaced);
 }
 for (const [relativePath, replacement] of await slotPayloadExports(root)) {
-  // Both isolated families change the same entry. Compose the zero-call edit
-  // into the payload result instead of overwriting either source-owned family.
-  const current = await slotDeclaration(replacement, relativePath, true);
-  outputs.set(
-    relativePath,
-    replacement.slice(0, current.declaration.getStart(current.parsed)) +
-      publicSlot.code.trimEnd() +
-      replacement.slice(current.declaration.end),
-  );
+  outputs.set(relativePath, replacement);
 }
 // Instance needs the complete canonical private dependency closure. Keeping the
 // public selector's old `HasArguments ? P : Z` alone admits unusable any slots.
@@ -227,8 +219,7 @@ function bindingCount(parsed: ts.SourceFile, name: string) {
   visit(parsed);
   return count;
 }
-for (const extension of ["ts", "mts", "cts"]) {
-  const relativePath = `npm/cli/virtual-ts.d.${extension}`;
+for (const relativePath of slotFiles) {
   const original = outputs.get(relativePath)!;
   const current = await slotDeclaration(
     original,
@@ -273,6 +264,147 @@ for (const extension of ["ts", "mts", "cts"]) {
       `${relativePath} Instance closure order or complete body drifted`,
     );
   }
+}
+// The complete constructor/functional family lives in one context-free module.
+// Canonical syntax is authoritative; only redundant parentheses are ignored
+// when comparing the previously formatted copy, never names or type branches.
+const sharedParsed = ts.createSourceFile(
+  "shared-slots.ts",
+  sharedSource,
+  ts.ScriptTarget.Latest,
+  true,
+);
+const sharedModule = sharedParsed.statements[0];
+assert.ok(
+  sharedModule &&
+    ts.isModuleDeclaration(sharedModule) &&
+    sharedModule.body &&
+    ts.isModuleBlock(sharedModule.body),
+);
+const family = sharedModule.body.statements;
+function identity(node: ts.Node, source: ts.SourceFile) {
+  const parsed = ts.createSourceFile(
+    "slot.ts",
+    node.getText(source).replace(/^(?:export\s+)?(?:declare\s+)?/u, ""),
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const transformed = ts.transform(parsed, [
+    (context) => {
+      const visit: ts.Visitor = (node) =>
+        ts.isParenthesizedTypeNode(node)
+          ? ts.visitNode(node.type, visit)
+          : ts.visitEachChild(node, visit, context);
+      return (file) => ts.visitNode(file, visit) as ts.SourceFile;
+    },
+  ]);
+  try {
+    return printer.printFile(transformed.transformed[0]!);
+  } finally {
+    transformed.dispose();
+  }
+}
+const isExported = (node: ts.Node) =>
+  ts.canHaveModifiers(node) &&
+  (ts.getModifiers(node)?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword) ??
+    false);
+const exportedNames = family.filter(isExported).map((node) => {
+  assert.ok(ts.isTypeAliasDeclaration(node));
+  return node.name.text;
+});
+assert.equal(exportedNames.length, 8, "complete existing public slot family");
+function checkImport(node: ts.ImportDeclaration, target: string, names: readonly string[]) {
+  assert.ok(ts.isStringLiteral(node.moduleSpecifier));
+  assert.equal(node.moduleSpecifier.text, target);
+  assert.equal(node.importClause?.isTypeOnly, true);
+  const bindings = node.importClause?.namedBindings;
+  assert.ok(bindings && ts.isNamedImports(bindings));
+  assert.deepEqual(
+    bindings.elements.map((item) => [item.propertyName?.text ?? null, item.name.text]),
+    names.map((name) => [null, name]),
+  );
+  assert.deepEqual(
+    node.attributes?.elements.map((item) => {
+      assert.ok(ts.isStringLiteral(item.value));
+      return [item.name.text, item.value.text];
+    }),
+    [["resolution-mode", "import"]],
+  );
+}
+for (const relativePath of slotFiles) {
+  const body = outputs.get(relativePath)!;
+  const parsed = ts.createSourceFile(relativePath, body, ts.ScriptTarget.Latest, true);
+  assert.equal(
+    parsed.statements.length,
+    family.length + 1,
+    "complete private and public slot family only",
+  );
+  const imported = parsed.statements[0]!;
+  assert.ok(ts.isImportDeclaration(imported));
+  checkImport(imported, "./generated/content-mapper-types.js", ["$IsAny"]);
+  for (const [index, canonical] of family.entries()) {
+    const actual = parsed.statements[index + 1]!;
+    assert.equal(
+      identity(actual, parsed),
+      identity(canonical, sharedParsed),
+      `${relativePath} complete slot statement ${index}`,
+    );
+    assert.equal(
+      isExported(actual),
+      isExported(canonical),
+      `${relativePath} slot visibility ${index}`,
+    );
+  }
+  const generatedSlots = await format(
+    "virtual-ts-slots.d.ts",
+    '// Generated from the canonical slot-constructor family. Do not edit.\nimport type { $IsAny } from "./generated/content-mapper-types.js" with { "resolution-mode": "import" };\n\n' +
+      family
+        .map(
+          (node) => (ts.isFunctionDeclaration(node) ? "declare " : "") + node.getText(sharedParsed),
+        )
+        .join("\n") +
+      "\n",
+    { printWidth: 100 },
+  );
+  assert.deepEqual(generatedSlots.errors, []);
+  outputs.set(relativePath, generatedSlots.code);
+}
+for (const extension of ["ts", "mts", "cts"]) {
+  const relativePath = `npm/cli/virtual-ts.d.${extension}`;
+  const parsed = ts.createSourceFile(
+    relativePath,
+    outputs.get(relativePath)!,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const imports = parsed.statements
+    .filter(ts.isImportDeclaration)
+    .filter(
+      (node) =>
+        ts.isStringLiteral(node.moduleSpecifier) &&
+        node.moduleSpecifier.text === "./virtual-ts-slots.js",
+    );
+  assert.equal(imports.length, 1, `${relativePath} one complete slot-module import`);
+  checkImport(imports[0]!, "./virtual-ts-slots.js", exportedNames);
+  const reexports = parsed.statements
+    .filter(ts.isExportDeclaration)
+    .filter(
+      (node) =>
+        node.exportClause &&
+        ts.isNamedExports(node.exportClause) &&
+        node.exportClause.elements.some((item) => exportedNames.includes(item.name.text)),
+    );
+  assert.equal(reexports.length, 1, `${relativePath} one complete slot reexport`);
+  const reexport = reexports[0]!;
+  assert.equal(reexport.isTypeOnly, true);
+  assert.equal(reexport.moduleSpecifier, undefined);
+  assert.ok(reexport.exportClause && ts.isNamedExports(reexport.exportClause));
+  assert.deepEqual(
+    reexport.exportClause.elements.map((item) => [item.propertyName?.text ?? null, item.name.text]),
+    exportedNames.map((name) => [null, name]),
+  );
+  for (const name of exportedNames)
+    assert.equal(bindingCount(parsed, name), 1, `${relativePath} slot binding ${name}`);
 }
 // Refuse every malformed or unknown input before replacing any SDK copy.
 for (const [relativePath, contents] of outputs) {

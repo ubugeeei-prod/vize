@@ -67,6 +67,7 @@ test("ESM and CommonJS share exact helper types and observe the consumer Vue aug
 
 const slotAlias = "$SlotConstructorWithoutArguments";
 const publicFiles = ["ts", "mts", "cts"].map((extension) => `npm/cli/virtual-ts.d.${extension}`);
+const slotFile = "npm/cli/virtual-ts-slots.d.ts";
 const embedded = "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-resolver.d.ts.txt";
 const shared =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-resolver.d.ts.txt";
@@ -89,6 +90,7 @@ function generatorFixture() {
     "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-payload.d.ts.txt",
     "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-payload.d.ts.txt",
     ...publicFiles,
+    slotFile,
   ];
   for (const file of files) {
     mkdirSync(path.dirname(path.join(cwd, file)), { recursive: true });
@@ -128,14 +130,14 @@ function previousInstance(source: string) {
 test("the one zero-call export regenerates from both canonical bodies and is idempotent", (t) => {
   const fixture = generatorFixture();
   t.after(fixture.cleanup);
-  for (const file of publicFiles) {
+  for (const file of [slotFile]) {
     const target = path.join(fixture.cwd, file);
     writeFileSync(target, publicAlias(readFileSync(target, "utf8"), previous));
   }
   for (const check of [false, false, true]) {
     const result = fixture.run(check);
     assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
-    for (const file of publicFiles) {
+    for (const file of [slotFile]) {
       assert.equal(
         readFileSync(path.join(fixture.cwd, file), "utf8"),
         readFileSync(path.join(root, file), "utf8"),
@@ -176,25 +178,25 @@ for (const [name, file, mutate, reason] of [
   ],
   [
     "missing public alias",
-    publicFiles[0]!,
+    slotFile,
     (source: string) => source.replace(`export type ${slotAlias}<`, "export type $LostSlotAlias<"),
     /must declare exactly one/u,
   ],
   [
     "duplicate public alias",
-    publicFiles[1]!,
+    slotFile,
     (source: string) => source + `\nexport type ${slotAlias}<C> = C;\n`,
     /must declare exactly one/u,
   ],
   [
     "unknown public policy",
-    publicFiles[2]!,
+    slotFile,
     (source: string) => publicAlias(source, `export type ${slotAlias}<C> = C;`),
     /refuse to overwrite drift/u,
   ],
   [
     "public parameter drift",
-    publicFiles[0]!,
+    slotFile,
     (source: string) =>
       source.replace(`export type ${slotAlias}<C>`, `export type ${slotAlias}<C extends unknown>`),
     /must not constrain C/u,
@@ -217,31 +219,35 @@ for (const [name, file, mutate, reason] of [
 test("unknown later SDK input prevents an earlier legacy alias from being overwritten", (t) => {
   const fixture = generatorFixture();
   t.after(fixture.cleanup);
-  const first = path.join(fixture.cwd, publicFiles[0]!);
+  const first = path.join(fixture.cwd, slotFile);
   const legacy = publicAlias(readFileSync(first, "utf8"), previous);
   writeFileSync(first, legacy);
   const second = path.join(fixture.cwd, publicFiles[1]!);
-  writeFileSync(
-    second,
-    publicAlias(readFileSync(second, "utf8"), `export type ${slotAlias}<C> = C;`),
+  const original = readFileSync(second, "utf8");
+  const unsupported = original.replace(
+    'from "./virtual-ts-slots.js" with { "resolution-mode": "import" }',
+    'from "./virtual-ts-slots.js" with { "resolution-mode": "require" }',
   );
+  assert.notEqual(unsupported, original);
+  writeFileSync(second, unsupported);
   const result = fixture.run(false);
   assert.equal(result.status, 1, `${result.stdout}${result.stderr}`);
-  assert.match(`${result.stdout}${result.stderr}`, /refuse to overwrite drift/u);
+  assert.match(`${result.stdout}${result.stderr}`, /resolution-mode/u);
   assert.equal(readFileSync(first, "utf8"), legacy);
+  assert.equal(readFileSync(second, "utf8"), unsupported);
 });
 
 test("the complete Instance dependency closure regenerates without replacing either existing family", (t) => {
   const fixture = generatorFixture();
   t.after(fixture.cleanup);
-  for (const file of publicFiles) {
+  for (const file of [slotFile]) {
     const target = path.join(fixture.cwd, file);
     writeFileSync(target, previousInstance(publicAlias(readFileSync(target, "utf8"), previous)));
   }
   for (const check of [false, false, true]) {
     const result = fixture.run(check);
     assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
-    for (const file of publicFiles)
+    for (const file of [slotFile])
       assert.equal(
         readFileSync(path.join(fixture.cwd, file), "utf8"),
         readFileSync(path.join(root, file), "utf8"),
@@ -281,7 +287,7 @@ for (const [name, file, mutate, reason] of [
   ],
   [
     "partial public closure",
-    publicFiles[0]!,
+    slotFile,
     (source: string) =>
       source.replace(
         "type $SlotContractHasKeys<S> = [keyof S] extends [never] ? false : true;",
@@ -291,13 +297,13 @@ for (const [name, file, mutate, reason] of [
   ],
   [
     "duplicate public dependency",
-    publicFiles[1]!,
+    slotFile,
     (source: string) => source + "\ntype $SlotContractHasKeys<S> = true;\n",
     /incomplete or duplicate Instance closure/u,
   ],
   [
     "public dependency declaration kind",
-    publicFiles[2]!,
+    slotFile,
     (source: string) =>
       source.replace(
         "type $SlotContractHasKeys<S> = [keyof S] extends [never] ? false : true;",
@@ -307,14 +313,14 @@ for (const [name, file, mutate, reason] of [
   ],
   [
     "public dependency parameters",
-    publicFiles[0]!,
+    slotFile,
     (source: string) =>
       source.replace("type $SlotContractHasKeys<S>", "type $SlotContractHasKeys<S = unknown>"),
     /must not default S/u,
   ],
   [
     "unknown complete Instance policy",
-    publicFiles[2]!,
+    slotFile,
     (source: string) =>
       source.replace(
         "? $SlotContractHasKeys<S> extends true",
@@ -324,7 +330,7 @@ for (const [name, file, mutate, reason] of [
   ],
   [
     "unknown previous Instance policy",
-    publicFiles[2]!,
+    slotFile,
     (source: string) => previousInstance(source).replace("  ? Z\n  : P;", "  ? Z\n  : P | Z;"),
     /unknown previous Instance policy/u,
   ],
@@ -332,7 +338,7 @@ for (const [name, file, mutate, reason] of [
   test(`Instance generation refuses ${name} before writing any SDK entry`, (t) => {
     const fixture = generatorFixture();
     t.after(fixture.cleanup);
-    const first = path.join(fixture.cwd, publicFiles[0]!);
+    const first = path.join(fixture.cwd, slotFile);
     writeFileSync(first, previousInstance(readFileSync(first, "utf8")));
     const target = path.join(fixture.cwd, file);
     // The mutation starts from the real complete entry even when it is the
@@ -351,7 +357,7 @@ for (const [name, file, mutate, reason] of [
 }
 
 test("public Instance retains complete before/after consumer laws in all three module entries", (t) => {
-  t.diagnostic(JSON.stringify(verifyPublicSlotInstance(root, previousInstance)));
+  t.diagnostic(JSON.stringify(verifyPublicSlotInstance(root)));
 });
 
 const payload = "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-payload.d.ts.txt";
