@@ -20,6 +20,7 @@ import {
   strictPairSources,
   verifyStrictSources,
   verifyStrictDebug,
+  prepareStrictOutput,
 } from "./cold-typechecker-scale-strict-pair.ts";
 import {
   prepareNativeForwarder,
@@ -62,6 +63,7 @@ export async function pairedColdComparison(options: {
   headReceipt: string;
 }) {
   const { provider, out } = options;
+  prepareStrictOutput(out);
   verifyColdScaleBuildPair(options.baseReceipt, options.headReceipt, process.cwd());
   const readBuild = (file: string) => JSON.parse(readFileSync(file, "utf8")) as Build;
   const base = readBuild(options.baseReceipt),

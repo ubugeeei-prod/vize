@@ -37,6 +37,11 @@ const hash = (body: Buffer) => createHash("sha256").update(body).digest("hex");
 const git = (root: string, args: string[]) =>
   execFileSync("git", args, { cwd: root }).toString().trim();
 
+export function prepareStrictOutput(output: string) {
+  assert(path.isAbsolute(output));
+  fs.mkdirSync(output); // No recursive/reuse mode: preserve every prior attempt.
+}
+
 export function verifySourceSdkPair(base: string, head: string, typescript: SdkScanner) {
   assert.equal(typescript.version, "6.0.3");
   const edges: { file: string; specifier: string; target: string }[] = [];

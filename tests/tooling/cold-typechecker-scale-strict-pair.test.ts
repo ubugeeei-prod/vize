@@ -9,6 +9,7 @@ import { test } from "node:test";
 import {
   verifySourceSdkPair,
   verifyStrictDebug,
+  prepareStrictOutput,
   type SdkScanner,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-strict-pair.ts";
 import { coldScalePacketView } from "../../tools/benchmarks/scripts/cold-typechecker-scale-packet.ts";
@@ -19,6 +20,19 @@ import {
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-paired-stats.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
+test("a fresh owned output exists before receipts and any reused attempt is refused", () => {
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), "vize-paired-output-"));
+  try {
+    const output = path.join(parent, "observations");
+    prepareStrictOutput(output);
+    fs.writeFileSync(path.join(output, "source-closure.json"), "{}\n");
+    assert.throws(() => prepareStrictOutput(output));
+    assert.equal(fs.readFileSync(path.join(output, "source-closure.json"), "utf8"), "{}\n");
+    assert.throws(() => prepareStrictOutput("relative"));
+  } finally {
+    fs.rmSync(parent, { recursive: true, force: true });
+  }
+});
 test("whole source SDK10 and all thirteen local edges refuse a changed provider declaration", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-sdk-pair-"));
   try {
