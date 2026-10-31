@@ -14,7 +14,7 @@ const packet = (index: number): Packet => ({
   status: index % 3,
   signal: null,
   error: null,
-  stdout: `line ${index}\r\n\"日本語🍣\"\n${JSON.stringify({ id: index, result: { text: "a\r\nb" } })}\n`,
+  stdout: `line ${index}\r\n"日本語🍣"\n${JSON.stringify({ id: index, result: { text: "a\r\nb" } })}\n`,
   stderr: index % 2 ? "full\r\nerror\n" : "",
   elapsedMs: index + 0.125,
 });
