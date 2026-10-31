@@ -1,0 +1,120 @@
+{
+  "schema": "vize.constructor-props-correction.v1",
+  "caseId": "overload-last-zero",
+  "sourceSha256": "3f8deafae6a3564ac4b98c694f72c558e2af74a922a0ff1582fcfe9a2a5ac455",
+  "componentSha256": "3e9842e0a18b23b1b8dba19479347d7c5a799b75508739cfe59b32bbe851f785",
+  "observed": {
+    "run": 41189935026,
+    "job": 124504456983,
+    "artifact": 13038777979,
+    "archiveSha256": "6f7e5d667ab9d04caac406711f55f03bb8e9f76e27d8b145897b7329f0937563",
+    "source": "5261bbda4edd13dbfc8e33ead8621848f6a06264",
+    "prHead": "b7592b0211060bd63de0e98cb1684dd4ad8c52fe",
+    "binarySha256": "5277ec257623196845e3c48dd88f856f7d4794a5e767398f29b503b31b309012",
+    "baselineVersion": "0.603.0"
+  },
+  "independentReference": {
+    "run": 41190030965,
+    "source": "b7592b0211060bd63de0e98cb1684dd4ad8c52fe",
+    "summarySha256": "554c41998ebccfbcca7abb4da9e0f805a5b1507b374bbd38c148447e33142c9b",
+    "originalCases": 27,
+    "originalInputs": 58,
+    "overloadLastZeroDiagnostics": []
+  },
+  "before": {
+    "diagnostics": [
+      {
+        "file": "src/Tiny.vue",
+        "severity": "error",
+        "line": 12,
+        "column": 18,
+        "code": 2322,
+        "message": "Type 'number' is not assignable to type 'string'. (source: <WitnessChild :value=\"1\">; binding: 'value')",
+        "raw": "error:12:18 [TS2322] Type 'number' is not assignable to type 'string'. (source: <WitnessChild :value=\"1\">; binding: 'value')"
+      }
+    ],
+    "result": {
+      "files": [
+        {
+          "file": "component.ts",
+          "diagnostics": []
+        },
+        {
+          "file": "src/Tiny.vue",
+          "diagnostics": [
+            "error:12:18 [TS2322] Type 'number' is not assignable to type 'string'. (source: <WitnessChild :value=\"1\">; binding: 'value')"
+          ]
+        }
+      ],
+      "programs": [
+        {
+          "root": ".",
+          "tsconfig": "tsconfig.json",
+          "compilerOptions": {
+            "incremental": false,
+            "lib": [
+              "ES2024",
+              "DOM"
+            ],
+            "module": "ESNext",
+            "moduleResolution": "Bundler",
+            "noEmit": true,
+            "skipLibCheck": true,
+            "strict": true,
+            "target": "ES2024",
+            "types": []
+          },
+          "files": [
+            "component.ts",
+            "src/Tiny.vue"
+          ]
+        }
+      ],
+      "errorCount": 1,
+      "warningCount": 0,
+      "fileCount": 2
+    }
+  },
+  "after": {
+    "diagnostics": [],
+    "result": {
+      "files": [
+        {
+          "file": "component.ts",
+          "diagnostics": []
+        },
+        {
+          "file": "src/Tiny.vue",
+          "diagnostics": []
+        }
+      ],
+      "programs": [
+        {
+          "root": ".",
+          "tsconfig": "tsconfig.json",
+          "compilerOptions": {
+            "incremental": false,
+            "lib": [
+              "ES2024",
+              "DOM"
+            ],
+            "module": "ESNext",
+            "moduleResolution": "Bundler",
+            "noEmit": true,
+            "skipLibCheck": true,
+            "strict": true,
+            "target": "ES2024",
+            "types": []
+          },
+          "files": [
+            "component.ts",
+            "src/Tiny.vue"
+          ]
+        }
+      ],
+      "errorCount": 0,
+      "warningCount": 0,
+      "fileCount": 2
+    }
+  }
+}

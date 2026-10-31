@@ -288,6 +288,11 @@ fn generate_usage_declarations(
             "__{component_type_name}_Props_{};\n",
             shared.canonical_idx,
         );
+    } else if !ctx.hoist_shared_preamble {
+        append!(
+            *ts,
+            "typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof {component_ref}> : Record<string, unknown>) : $ComponentRawProps<typeof {component_ref}>;\n",
+        );
     } else {
         let pair = constructor_instance::root_slot_scope(
             &summary.scopes,

@@ -125,6 +125,7 @@ tests/_fixtures/differential/lint/reserved-prefix-8090/*.vue.fixture -text white
 
 # Constructor correlation inputs are hashed and consumed literally by native tests.
 tests/_fixtures/differential/typechecker/constructor-props-correlation-11023/*.txt -text
+tests/_fixtures/differential/typechecker/constructor-props-correlation-11023/overload-last-zero-cli.json -text
 
 # Public import controls retain authored Unicode and CRLF bytes.
 tests/_fixtures/differential/lint/public-vue-imports-8090/CrlfUnicode.vue.fixture -text whitespace=cr-at-eol

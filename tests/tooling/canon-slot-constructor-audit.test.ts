@@ -142,6 +142,45 @@ test("CLI display successors require exact truncation, duplicate diagnostics and
   );
 });
 
+test("one props correction retains both whole CLI packets and refuses unrelated changes", () => {
+  const observed = jsonValue(
+    fs.readFileSync(
+      new URL(
+        "../_fixtures/differential/typechecker/constructor-props-correlation-11023/overload-last-zero-cli.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  assert.ok(isRecord(observed) && isRecord(observed.before) && isRecord(observed.after));
+  const row = slotCases().find((entry) => entry.id === "overload-last-zero");
+  assert.ok(row);
+  const before = observed.before,
+    after = observed.after;
+  assertCliDiagnosticContract(row, before, after);
+  assert.ok(isRecord(after.result) && isRecord(before.result));
+  for (const result of [
+    { ...after.result, fileCount: 0 },
+    { ...after.result, files: [] },
+    { ...after.result, programs: [] },
+    { ...after.result, errorCount: 1 },
+    { ...after.result, unexpected: true },
+  ]) {
+    assert.throws(() => assertCliDiagnosticContract(row, before, { ...after, result }));
+  }
+  assert.throws(() =>
+    assertCliDiagnosticContract(row, before, { ...after, diagnostics: before.diagnostics }),
+  );
+  assert.throws(() => assertCliDiagnosticContract(row, after, after));
+  assert.throws(() => assertCliDiagnosticContract({ ...row, id: "other" }, before, after));
+  assert.throws(() =>
+    assertCliDiagnosticContract({ ...row, source: `${row.source}\n` }, before, after),
+  );
+  assert.throws(() =>
+    assertCliDiagnosticContract({ ...row, component: `${row.component}\n` }, before, after),
+  );
+});
+
 test("slot constructor audit selects the binary and declarations from one SDK image", (context) => {
   const root = fs.mkdtempSync(path.join(process.env.TMPDIR ?? "/tmp", "vize-slot-sdk-"));
   context.after(() => fs.rmSync(root, { recursive: true }));
