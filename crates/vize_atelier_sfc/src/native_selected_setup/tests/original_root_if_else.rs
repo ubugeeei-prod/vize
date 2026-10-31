@@ -1,4 +1,4 @@
-//! Genuine two-branch original observations; current goldens await hosted capture.
+//! Genuine two-branch originals replay whole independently reviewed captures.
 
 use super::*;
 use vize_l2::{expr::ExprRef, file::NativeFileConditionalState, op::Op, resolution::Usage};
@@ -10,6 +10,15 @@ fn twelve_whole_original_root_if_else_components_and_raw_maps_are_captured() -> 
         "../../../tests/fixtures/native_original_root_if_else_inputs_vue_3_5_35.json"
     ))
     .map_err(|error| cstr!("{error}"))?;
+    let goldens: Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/native_original_root_if_else_sfc_vue_3_5_35.json"
+    ))
+    .map_err(|error| cstr!("{error}"))?;
+    require!(
+        goldens["schema"] == "vize.native-sfc.original-root-if-else-complete-goldens"
+            && goldens["filename"] == pack["filename"],
+        "whole original If/Else golden authority"
+    );
     require!(
         pack["schema"] == "vize.native-sfc.original-root-if-else-inputs",
         "original adjacent If/Else input authority"
@@ -282,14 +291,27 @@ fn twelve_whole_original_root_if_else_components_and_raw_maps_are_captured() -> 
         }
     }
     let emitted = captures.len();
+    let captures = Value::Array(captures);
+    let custody = Value::Array(custody);
+    let attempts = Value::Array(attempts);
+    for (field, actual) in [
+        ("fixtures", &captures),
+        ("custody", &custody),
+        ("attempts", &attempts),
+    ] {
+        if goldens["native"].get(field) != Some(actual) {
+            failures.push(cstr!("whole ordered native {field} golden mismatch"));
+        }
+    }
+    let qualified = failures.is_empty() && emitted == fixtures.len() * 2;
     if let Some(path) = std::env::var_os("VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_CAPTURE") {
         std::fs::write(
             path,
             serde_json::to_vec_pretty(&serde_json::json!({
                 "schema":"vize.native-sfc.original-root-if-else-capture",
                 "adapter":"vize_atelier_sfc::compile_native_selected_setup_sfc_dom_with_mode",
-                "qualification":"observed-unqualified-current-oracles-pending",
-                "nativeGoldenComparisonPerformed":false,
+            "qualification":if qualified { "current-complete-native-goldens-matched" } else { "failed-current-complete-native-goldens" },
+            "nativeGoldenComparisonPerformed":true,
                 "sourceRevision":std::env::var("GITHUB_SHA").ok(),
                 "fixtures":captures,"custody":custody,"attempts":attempts,"failures":&failures,
             }))

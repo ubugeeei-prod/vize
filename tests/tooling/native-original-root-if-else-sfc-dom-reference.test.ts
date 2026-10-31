@@ -36,6 +36,26 @@ const inputRaw = fs.readFileSync(
   "utf8",
 );
 const pack = readObject(inputRaw);
+const goldens = readObject(
+  fs.readFileSync(
+    new URL(
+      "../../crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_sfc_vue_3_5_35.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+);
+assert.equal(goldens.schema, "vize.native-sfc.original-root-if-else-complete-goldens");
+assert.equal(goldens.inputHash, hash(inputRaw));
+assert.equal(goldens.filename, pack.filename);
+for (const field of ["compiler", "runtime", "typescript"])
+  assert.deepEqual(goldens[field], pack[field]);
+const nativeGoldens = goldens.native;
+const primaryGoldens = goldens.primary;
+const runtimeGoldens = goldens.runtimeResults;
+object(nativeGoldens);
+object(primaryGoldens);
+object(runtimeGoldens);
 const modes = ["development", "production"] as const;
 const mode = process.env.NODE_ENV ?? "development";
 assert(mode === "development" || mode === "production");
@@ -49,6 +69,10 @@ for (const value of pack.fixtures) {
   fixtures.push(value);
 }
 assert.equal(new Set(fixtures.map((fixture) => fixture.id)).size, 6);
+const expectedPrimary = primaryGoldens[mode];
+const expectedRuntime = runtimeGoldens[mode];
+assert(Array.isArray(expectedPrimary) && expectedPrimary.length === fixtures.length);
+assert(Array.isArray(expectedRuntime) && expectedRuntime.length === fixtures.length);
 const capturePath = process.env.VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_CAPTURE;
 const requireCapture =
   process.env.VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_REQUIRE_CAPTURE === "1";
@@ -69,6 +93,10 @@ const primaryRows = new Map<string, ReturnType<typeof compilePrimary>>();
 const primaryAttempts: ObjectValue[] = [];
 const runtimeAttempts: ObjectValue[] = [];
 const captureObservation: ObjectValue = { state: "not-validated", sourceCapture: captured };
+let nativeGoldenComparisonPerformed = false;
+let nativeGoldensMatched = false;
+let primaryGoldenMatches = 0;
+let runtimeGoldenMatches = 0;
 
 function compilePrimary(fixture: RootIfElseFixture, attempt: ObjectValue) {
   const observed: ObjectValue = {};
@@ -100,8 +128,8 @@ function compilePrimary(fixture: RootIfElseFixture, attempt: ObjectValue) {
     source: fixture.template,
     filename,
     id: fixture.id,
-    sourceMap: true,
     compilerOptions: {
+      sourceMap: true,
       mode: "module",
       hoistStatic: false,
       prefixIdentifiers: true,
@@ -218,7 +246,7 @@ test("six original adjacent If/Else inputs pin providers and twelve genuine mode
       fixtures.map((fixture) => ({ id: fixture.id, mode: current })),
     );
     for (const field of ["fixtures", "custody", "attempts"]) {
-      const rows = captured[field];
+      const rows: unknown = captured[field];
       assert(Array.isArray(rows));
       assert.deepEqual(
         rows.map((row: unknown) => {
@@ -275,17 +303,21 @@ test("six original adjacent If/Else inputs pin providers and twelve genuine mode
       [...nativeRows.keys()],
       fixtures.map((fixture) => fixture.id),
     );
-    assert.equal(captured.qualification, "observed-unqualified-current-oracles-pending");
-    assert.equal(captured.nativeGoldenComparisonPerformed, false);
+    assert.equal(captured.qualification, "current-complete-native-goldens-matched");
+    assert.equal(captured.nativeGoldenComparisonPerformed, true);
     assert.deepEqual(captured.failures, []);
-    captureObservation.state = "observed-source-bound-current-oracles-pending";
+    nativeGoldenComparisonPerformed = true;
+    for (const field of ["fixtures", "custody", "attempts"])
+      assert.deepEqual(captured[field], nativeGoldens[field], `whole native ${field}`);
+    nativeGoldensMatched = true;
+    captureObservation.state = "complete-current-native-goldens-matched";
   } catch (error) {
     Object.assign(captureObservation, { state: "failed", error: rootIfElseErrorDetails(error) });
     throw error;
   }
 });
 
-for (const fixture of fixtures) {
+for (const [index, fixture] of fixtures.entries()) {
   test(`${fixture.id}: retain complete official primary output for ${mode}`, () => {
     const attempt: ObjectValue = { id: fixture.id, mode, source: fixture.source };
     primaryAttempts.push(attempt);
@@ -293,6 +325,8 @@ for (const fixture of fixtures) {
       const primary = compilePrimary(fixture, attempt);
       primaryRows.set(fixture.id, primary);
       Object.assign(attempt, { state: "compiled", primary });
+      assert.deepEqual(attempt, expectedPrimary[index], "whole ordered official primary packet");
+      primaryGoldenMatches++;
     } catch (error) {
       Object.assign(attempt, { state: "failed", error: rootIfElseErrorDetails(error) });
       throw error;
@@ -300,7 +334,7 @@ for (const fixture of fixtures) {
   });
 }
 
-for (const fixture of fixtures) {
+for (const [index, fixture] of fixtures.entries()) {
   test(`${fixture.id}: whole native and reference If/Else branch update and unmount in ${mode}`, async (t) => {
     if (!captured && !requireCapture) {
       t.skip("official primary-only tooling; native was not executed and receives no credit");
@@ -361,6 +395,8 @@ for (const fixture of fixtures) {
       if (failures.length) throw failures[0]!.error;
       assert.deepEqual(native, reference);
       attempt.state = "matched";
+      assert.deepEqual(attempt, expectedRuntime[index], "whole ordered runtime packet");
+      runtimeGoldenMatches++;
     } catch (error) {
       Object.assign(attempt, { state: "failed", error: rootIfElseErrorDetails(error) });
       throw error;
@@ -375,13 +411,20 @@ after(() => {
   const runtimeMatched =
     runtimeAttempts.length === fixtures.length &&
     runtimeAttempts.every((attempt) => attempt.state === "matched");
+  const qualified =
+    nativeGoldensMatched &&
+    primaryComplete &&
+    runtimeMatched &&
+    primaryGoldenMatches === fixtures.length &&
+    runtimeGoldenMatches === fixtures.length;
   const common = {
     adapter: "vize_atelier_sfc::compile_native_selected_setup_sfc_dom_with_mode",
-    qualification:
-      !captured && primaryComplete && !requireCapture
+    qualification: qualified
+      ? "complete-current-oracles-matched"
+      : !captured && primaryComplete && !requireCapture
         ? "official-primary-only-native-not-executed"
-        : "observed-unqualified-current-oracles-pending",
-    nativeGoldenComparisonPerformed: false,
+        : "failed-current-oracles",
+    nativeGoldenComparisonPerformed,
     sourceRevision: process.env.GITHUB_SHA ?? null,
     runId: process.env.GITHUB_RUN_ID ?? null,
     runAttempt: process.env.GITHUB_RUN_ATTEMPT ?? null,
@@ -426,12 +469,15 @@ after(() => {
     );
   assert.equal(primaryRows.size, fixtures.length, "all whole official primary outputs retained");
   assert(primaryComplete);
+  assert.equal(primaryGoldenMatches, fixtures.length);
   if (requireCapture || captured) {
-    assert.equal(captureObservation.state, "observed-source-bound-current-oracles-pending");
+    assert.equal(captureObservation.state, "complete-current-native-goldens-matched");
     assert.equal(runtimeAttempts.length, fixtures.length);
     assert(
       runtimeMatched,
       "both original modules must actually mount/update/unmount and wholly agree",
     );
+    assert.equal(runtimeGoldenMatches, fixtures.length);
+    assert(qualified, "all seven complete ordered current golden arrays must match");
   }
 });

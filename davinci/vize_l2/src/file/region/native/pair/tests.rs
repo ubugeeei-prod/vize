@@ -387,7 +387,9 @@ fn caught_pair_unwind_retains_both_original_headers_and_no_completed_pair_receip
                 point >= 4
             );
             assert_eq!(
-                walk.child_with_tail(first, &mut children).unwrap_err().kind,
+                walk.child_with_tail(first.reborrow(), &mut children)
+                    .unwrap_err()
+                    .kind,
                 Kind::Interrupted
             );
             assert!(walk.complete().is_err());
