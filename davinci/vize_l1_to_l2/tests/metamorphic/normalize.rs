@@ -85,7 +85,10 @@ fn walk_region(ops: &mut [DumpOp]) {
                 sort_binding_attrs(&mut slot.bindings);
                 walk_region(&mut slot.fallback);
             }
-            DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::Comment(_) => {}
+            DumpOp::Text(_)
+            | DumpOp::Interpolation(_)
+            | DumpOp::JsxChildValue(_)
+            | DumpOp::Comment(_) => {}
         }
     }
 }

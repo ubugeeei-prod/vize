@@ -70,6 +70,10 @@ fn assert_op(source: &str, root: SourceRoot<'_>, op: &Op<'_>) {
             assert_span(source, root, interpolation.span, "interpolation");
             assert_expr(source, root, interpolation.expression);
         }
+        Op::JsxChildValue(child) => {
+            assert_span(source, root, child.span, "jsx child value");
+            assert_expr(source, root, child.expression);
+        }
         Op::If(if_op) => {
             assert_span(source, root, if_op.span, "if");
             for branch in &if_op.branches {
