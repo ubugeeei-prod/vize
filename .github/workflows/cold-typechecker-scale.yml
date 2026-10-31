@@ -36,7 +36,7 @@ on:
       - tests/tooling/source-pmu-calibration.test.ts
 permissions: { contents: read }
 concurrency:
-  group: cold-typechecker-scale-${{ github.event.pull_request.number || github.ref }}
+  group: cold-typechecker-scale-${{ github.event.pull_request.number || github.ref }}-${{ inputs.mode || 'full' }}
   cancel-in-progress: true
 jobs:
   profile:
