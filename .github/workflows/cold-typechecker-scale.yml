@@ -92,7 +92,7 @@ jobs:
           set -euo pipefail
           mkdir -p node_modules
           ln -s "$RUNNER_TEMP/provider/node_modules/typescript" node_modules/typescript
-          node --test tests/tooling/cold-typechecker-scale-native-forward.test.ts tests/tooling/cold-typechecker-scale-ref-factory.test.ts tests/tooling/cold-typechecker-scale-paired.test.ts
+          node --test tests/tooling/cold-typechecker-scale-native-forward.test.ts tests/tooling/cold-typechecker-scale-ref-factory.test.ts tests/tooling/cold-typechecker-scale-paired.test.ts tests/tooling/cold-typechecker-scale-phase-baseline.test.ts
       - name: Build only normal exact base and head with equal compiler settings
         run: |
           set -euo pipefail
