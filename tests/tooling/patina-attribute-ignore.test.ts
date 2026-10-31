@@ -284,6 +284,8 @@ test("attribute ignore owns canonical resets, strict refusals, disabled selectio
     {
       id: "null-array",
       options: { attributeHyphenationIgnore: null },
+      // Characterize this authenticated addon's provider error completely;
+      // the vendor wording is not a permanent public API promise.
       want: {
         kind: "threw",
         error: {
@@ -319,6 +321,7 @@ test("attribute ignore owns canonical resets, strict refusals, disabled selectio
     assert.match(String(row.actual.error.message), /^Invalid Patina rule options: .+/s);
   }
   for (const row of flatErrors) assert.deepEqual(row.actual, semanticError(row.message));
+  // Keep the complete serde observation for the source-qualified provider.
   assert.deepEqual(
     malformed,
     semanticError("Invalid Patina rule options: EOF while parsing an object at line 1 column 1"),
