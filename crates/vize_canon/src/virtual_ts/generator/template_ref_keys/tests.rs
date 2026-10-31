@@ -9,11 +9,20 @@ use oxc_span::SourceType;
 use vize_carton::String;
 
 fn usage(script: &str) -> TemplateRefUsage {
+    usage_with_global(script, false)
+}
+
+fn usage_with_global(script: &str, configured_global: bool) -> TemplateRefUsage {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
     assert!(parsed.diagnostics.is_empty());
     let built = SemanticBuilder::new().build(&parsed.program);
-    TemplateRefUsage::collect(&parsed.program, built.semantic.scoping(), script, false)
+    TemplateRefUsage::collect(
+        &parsed.program,
+        built.semantic.scoping(),
+        script,
+        configured_global,
+    )
 }
 
 fn generate(script: &str) -> String {
@@ -46,7 +55,7 @@ fn generate(script: &str) -> String {
 #[test]
 fn only_owned_untyped_calls_outside_functions_infer_template_refs() {
     let script = "const a = useTemplateRef('a')\nfunction f() { useTemplateRef('inner') }\nconst g = () => useTemplateRef('arrow')\nuseTemplateRef(name)\nuseTemplateRef<HTMLElement>('typed')\n";
-    let plan = usage(script);
+    let plan = usage_with_global(script, true);
     assert!(plan.needs_registry());
     let keys: Vec<_> = plan
         .calls
@@ -85,7 +94,7 @@ fn helper_names_avoid_authored_bindings_and_unresolved_reads() {
     for prefix in ["const __vizeInferRef = 1;", "void __vizeInferRef;"] {
         let script =
             format!("{prefix}\nvoid __vize00000000;\nconst box = useTemplateRef('box');\n");
-        let usage = usage(&script);
+        let usage = usage_with_global(&script, true);
         assert_eq!(usage.helper_name(), "__vize00000001");
         assert_eq!(usage.helper_name().len(), "useTemplateRef".len());
         assert_eq!(
@@ -167,7 +176,7 @@ fn escaped_composable_callees_preserve_authored_spelling() {
 #[test]
 fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
     let script = "const target = useTemplateRe\\u0066('target');\n";
-    let usage = usage(script);
+    let usage = usage_with_global(script, true);
     let mut checks = usage.key_checks(true);
     let mut generated = String::default();
     let mut mappings = Vec::new();
@@ -195,12 +204,7 @@ fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
 fn ambient_signature_is_not_vue_ownership() {
     let mut helpers = vize_carton::String::default();
     usage("const target = useTemplateRef('target');\n").emit_inference_helpers(&mut helpers);
-    assert_eq!(
-        helpers.matches("type __vizeInferRefIsVue = false;").count(),
-        1,
-        "{helpers}"
-    );
-    assert_eq!(helpers.matches("Equal<").count(), 0, "{helpers}");
+    assert_eq!(helpers, "");
     let imported = generate(
         "import { useTemplateRef } from 'vue';\nconst target = useTemplateRef('target');\n",
     );
@@ -215,6 +219,62 @@ fn ambient_signature_is_not_vue_ownership() {
 fn generated_global_type_names_cannot_capture_authored_names() {
     for suffix in ["Source", "IsVue", "Global"] {
         let script = format!("type __vizeInferRef{suffix} = string;\nuseTemplateRef('target');");
-        assert_ne!(usage(&script).helper_name(), "__vizeInferRef");
+        assert_ne!(
+            usage_with_global(&script, true).helper_name(),
+            "__vizeInferRef"
+        );
     }
+}
+
+#[test]
+fn unowned_global_calls_retain_the_complete_authored_line_and_one_mapping() {
+    for script in [
+        "const target = useTemplateRef('target');\n",
+        "const target = useTemplateRe\\u0066('target');\n",
+    ] {
+        let usage = usage(script);
+        assert_eq!(usage.needs_registry(), false);
+        assert_eq!(usage.helper_name(), "");
+        let mut helpers = String::default();
+        usage.emit_inference_helpers(&mut helpers);
+        assert_eq!(helpers, "");
+        let mut generated = String::default();
+        let mut mappings = Vec::new();
+        let mut checks = usage.key_checks(true);
+        checks.emit_for_line(&mut generated, &mut mappings, (0, script.len()), &|n| n);
+        checks.emit_line(
+            &mut generated,
+            &mut mappings,
+            std::borrow::Cow::Borrowed(script),
+            (0, script.len()),
+            &|n| n,
+        );
+        assert_eq!(generated, format!("{script}\n"));
+        assert_eq!(
+            mappings,
+            [crate::virtual_ts::VizeMapping {
+                gen_range: 0..script.len(),
+                src_range: 0..script.len(),
+                sub_spans: Vec::new(),
+            }]
+        );
+    }
+}
+
+#[test]
+fn admitted_globals_need_no_unmapped_source_lookup() {
+    let plan = usage_with_global("const target = useTemplateRef('target');\n", true);
+    let mut helpers = String::default();
+    plan.emit_inference_helpers(&mut helpers);
+    assert_eq!(
+        helpers,
+        "  type __vizeInferRefIsVue = true;\n  type __vizeInferRefGlobal = $UseTemplateRef;\n"
+    );
+    let imported = usage("import { useTemplateRef } from 'vue';\nuseTemplateRef('target');\n");
+    helpers.clear();
+    imported.emit_inference_helpers(&mut helpers);
+    assert_eq!(
+        helpers,
+        "  const __vizeInferRef = (undefined as unknown as $UseTemplateRef);\n"
+    );
 }

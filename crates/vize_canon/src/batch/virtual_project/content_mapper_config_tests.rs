@@ -116,7 +116,6 @@ fn configured_template_ref_composable_reaches_the_mapper_projection() {
     assert_eq!(
         template_ref_helper_lines(&transformed.text),
         [
-            "  type __vizeInferRefSource = typeof useTemplateRef;",
             "  type __vizeInferRefIsVue = true;",
             "  type __vizeInferRefGlobal = $UseTemplateRef;",
         ]
