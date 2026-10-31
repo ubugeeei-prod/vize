@@ -81,6 +81,14 @@ const point = (offset: number, edits: Edit[]) =>
     .filter((edit) => edit.end <= offset)
     .reduce((delta, edit) => delta + edit.replacement.length - (edit.end - edit.start), 0);
 
+function utf8Range(bytes: Buffer, start: number, length: number) {
+  assert.ok(Number.isSafeInteger(start) && Number.isSafeInteger(length));
+  assert.ok(start >= 0 && length >= 0 && start + length <= bytes.length);
+  const decoder = new TextDecoder("utf-8", { fatal: true });
+  decoder.decode(bytes.subarray(0, start));
+  decoder.decode(bytes.subarray(start, start + length));
+}
+
 export function callbackNativeEventGate(component: string): string {
   return `"__vizeEmitProps" extends keyof { [__K in keyof typeof ${component} as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown } ? `;
 }
@@ -246,6 +254,7 @@ export function assertPreservedCallbackPacket(
   }
   const source = Buffer.from(original);
   const actual = Buffer.from(actualText);
+  const authored = authoredSource === undefined ? null : Buffer.from(authoredSource);
   assert.ok(Array.isArray(before.mappings) && Array.isArray(after.mappings));
   const nativeTransition = nativeAttributeTransition(original, actualText);
   const edits = scaffoldEdits(original, markerTransition, nativeTransition);
@@ -290,6 +299,8 @@ export function assertPreservedCallbackPacket(
     }
     const shifted = point(start, edits);
     assert.equal(point(end, edits) - shifted, length);
+    utf8Range(source, start, length);
+    utf8Range(actual, shifted, length);
     assert.deepEqual(actual.subarray(shifted, shifted + length), source.subarray(start, end));
     return [shifted, length];
   };
@@ -300,13 +311,7 @@ export function assertPreservedCallbackPacket(
     assert.equal(tuple.length, 6);
     assert.ok(tuple.every(Number.isSafeInteger));
     assert.ok(tuple[2] >= 0 && tuple[3] >= 0);
-    if (authoredSource !== undefined) {
-      const authored = Buffer.from(authoredSource);
-      assert.ok(tuple[2] + tuple[3] <= authored.length);
-      const decoder = new TextDecoder("utf-8", { fatal: true });
-      decoder.decode(authored.subarray(0, tuple[2]));
-      decoder.decode(authored.subarray(tuple[2], tuple[2] + tuple[3]));
-    }
+    if (authored) utf8Range(authored, tuple[2], tuple[3]);
     const [start, length] = range(tuple[0], tuple[1]);
     return [start, length, ...tuple.slice(2)];
   });
@@ -325,6 +330,7 @@ export function assertPreservedCallbackPacket(
         assert.equal(tuple.length, 6);
         assert.ok(tuple.every(Number.isSafeInteger));
         assert.ok(tuple[0] >= 0 && tuple[1] >= 0);
+        if (authored) utf8Range(authored, tuple[0], tuple[1]);
         const [start, length] = range(tuple[2], tuple[3] - tuple[2]);
         return [tuple[0], tuple[1], start, start + length, ...tuple.slice(4)];
       }),

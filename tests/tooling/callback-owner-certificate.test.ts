@@ -119,6 +119,31 @@ test("native callback aliases retain the complete source asset and exact UTF-8 g
         source,
       ),
     );
+    const invalidDirective = (packet: typeof before) => ({
+      ...packet,
+      diagnosticDirectives: {
+        directives: [
+          [
+            Buffer.byteLength(source) + 1,
+            0,
+            packet.mappings[0][0],
+            packet.mappings[0][0] + 5,
+            0,
+            0,
+          ],
+        ],
+      },
+    });
+    assert.throws(() =>
+      assertPreservedCallbackPacket(invalidDirective(before), invalidDirective(after), source),
+    );
+    assert.throws(() =>
+      assertPreservedCallbackPacket(
+        { ...before, mappings: [[before.mappings[0][0] + 4, 1, 6, 5, 0, 0]] },
+        { ...after, mappings: [[after.mappings[0][0] + 4, 1, 6, 5, 0, 0]] },
+        source,
+      ),
+    );
   }
 });
 
