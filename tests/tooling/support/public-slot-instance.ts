@@ -31,7 +31,7 @@ const failures = [
 const unknownControls = ["TwoLastUnknown", "SeventeenFirstUnknown"];
 const hash = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 type Row = { name: string; display: string; flags: number; any: boolean; intrinsic: string | null };
-function typeRows(file: string) {
+function typeRows(file: string, preservation = false) {
   const program = ts.createProgram([file], {
     strict: true,
     noEmit: true,
@@ -48,7 +48,10 @@ function typeRows(file: string) {
     if (
       (ts.isVariableDeclaration(node) || ts.isTypeAliasDeclaration(node)) &&
       ts.isIdentifier(node.name) &&
-      /^(Result_|WholeSlots_|WholeNoAny_|WholePayload_|WholePayloadAny_)/u.test(node.name.text)
+      (preservation
+        ? /^Preserve_/u
+        : /^(Result_|WholeSlots_|WholeNoAny_|WholePayload_|WholePayloadAny_)/u
+      ).test(node.name.text)
     ) {
       const value = checker.getTypeAtLocation(node.name) as ts.Type & { intrinsicName?: string };
       rows.push({
@@ -62,8 +65,47 @@ function typeRows(file: string) {
     ts.forEachChild(node, visit);
   }
   visit(source);
-  assert.equal(rows.length, 40, "all five actual public observations for all eight shapes");
+  assert.equal(rows.length, preservation ? 60 : 40, "complete public type observation roster");
   return rows;
+}
+
+function preservationSource(entry: string) {
+  const lines = [
+    `import type { $SlotConstructor, $SlotConstructorWithoutArguments, $SlotConstructorWithArguments, $SlotConstructorArgs, $SlotConstructorInstance } from ${JSON.stringify(entry)};`,
+    "type Typed<T> = { readonly $props: { value: T }; $slots: { default(props: { item: T }): void } };",
+    "declare function instance<C>(): <Z, P>(zero: Z, props: P) => $SlotConstructorInstance<C, Z, P>;",
+  ];
+  for (const count of [2, 8, 9, 17])
+    for (const order of ["first", "last"]) {
+      const name = `${count}_${order}`;
+      const signatures = Array.from(
+        { length: count - 1 },
+        (_, i) => `new(props: { kind: 'brand${i}'; value: number }): Typed<number>;`,
+      );
+      signatures.splice(order === "first" ? 0 : signatures.length, 0, "new(): Typed<string>;");
+      lines.push(
+        `declare const Original_${name}: { ${signatures.join(" ")} };`,
+        `type Preserve_C_${name} = $SlotConstructor<typeof Original_${name}>;`,
+        `type Preserve_Without_${name} = $SlotConstructorWithoutArguments<Preserve_C_${name}>;`,
+        `type Preserve_With_${name} = $SlotConstructorWithArguments<Preserve_C_${name}>;`,
+        `type Preserve_Args_${name} = $SlotConstructorArgs<Preserve_C_${name}>;`,
+        `const zero_${name} = new(undefined as unknown as Preserve_Without_${name})();`,
+        `const props_${name} = new(undefined as unknown as Preserve_With_${name})({ kind: 'brand0' as const, value: 123 }, ...([] as unknown as Preserve_Args_${name}));`,
+        `const Preserve_Result_${name} = instance<Preserve_C_${name}>()(zero_${name}, props_${name});`,
+      );
+    }
+  for (const poison of ["any", "unknown", "never", "string"]) {
+    lines.push(
+      `declare const Poison_${poison}: { new(): never; new(props: { value: number }): { $slots: ${poison} } };`,
+      `type Preserve_PoisonC_${poison} = $SlotConstructor<typeof Poison_${poison}>;`,
+      `type Preserve_PoisonWithout_${poison} = $SlotConstructorWithoutArguments<Preserve_PoisonC_${poison}>;`,
+      `type Preserve_PoisonWith_${poison} = $SlotConstructorWithArguments<Preserve_PoisonC_${poison}>;`,
+      `type Preserve_PoisonArgs_${poison} = $SlotConstructorArgs<Preserve_PoisonC_${poison}>;`,
+      `type Preserve_PoisonHost_${poison} = typeof Poison_${poison};`,
+    );
+  }
+  lines.push('const wrong: number = "owned-negative";');
+  return lines.join("\n") + "\n";
 }
 function expected(file: string, before: boolean, repaired = false) {
   const messages = before
@@ -89,6 +131,37 @@ export function verifyPublicSlotInstance(root: string) {
   assert.equal(ts.version, "6.0.3");
   const directory = mkdtempSync(path.join(tmpdir(), "vize-public-slot-instance-"));
   const compiler = path.join(root, "npm/cli/node_modules/typescript/bin/tsc");
+  const hosts = [
+    {
+      name: "typescript-6.0.3",
+      executable: process.execPath,
+      prefix: [compiler],
+      sha256: hash(readFileSync(compiler)),
+      version: null as object | null,
+    },
+  ];
+  const native = process.env.VIZE_PUBLIC_SLOT_NATIVE;
+  if (native !== undefined) {
+    assert.ok(path.isAbsolute(native));
+    const version = spawnSync(native, ["--version"], { encoding: "utf8", timeout: 30_000 });
+    assert.equal(version.error, undefined);
+    assert.equal(version.signal, null);
+    assert.equal(version.status, 0);
+    assert.equal(version.stderr, "");
+    assert.equal(version.stdout, "Version 7.1.0-beta\n");
+    hosts.push({
+      name: "native-7.1.0-beta",
+      executable: native,
+      prefix: [],
+      sha256: hash(readFileSync(native)),
+      version: {
+        argv: ["--version"],
+        status: version.status,
+        stdout: version.stdout,
+        stderr: version.stderr,
+      },
+    });
+  }
   const historicalBytes = readFileSync(
     path.join(
       root,
@@ -111,8 +184,9 @@ export function verifyPublicSlotInstance(root: string) {
     mode: string;
     rows: Row[];
     sdk: object[];
-    process: object;
+    processes: object[];
     repair: object | null;
+    preservation: { sourceUtf8: string; rows: Row[]; processes: object[]; repair: object[] };
   }> = [];
   try {
     for (const role of ["before", "head"] as const)
@@ -177,35 +251,36 @@ export function verifyPublicSlotInstance(root: string) {
             files: [file],
           }),
         );
-        const run = (repaired: boolean) => {
-          const argv = [compiler, "--noEmit", "-p", "tsconfig.json", "--pretty", "false"];
-          const output = spawnSync(process.execPath, argv, {
-            cwd,
-            encoding: "utf8",
-            timeout: 60_000,
+        const run = (repaired: boolean) =>
+          hosts.map((host) => {
+            const argv = [...host.prefix, "--noEmit", "-p", "tsconfig.json", "--pretty", "false"];
+            const output = spawnSync(host.executable, argv, {
+              cwd,
+              encoding: "utf8",
+              timeout: 60_000,
+            });
+            const wanted = expected(file, role === "before", repaired);
+            const result = {
+              host,
+              argv,
+              cwd,
+              status: output.status,
+              signal: output.signal,
+              error: output.error?.message ?? null,
+              stdout: output.stdout,
+              stderr: output.stderr,
+              expectedStdout: wanted,
+              sourceSha256: hash(readFileSync(target)),
+              sourceUtf8: readFileSync(target, "utf8"),
+              sdk,
+            };
+            assert.equal(output.error, undefined);
+            assert.equal(output.signal, null);
+            assert.equal(output.status, wanted === "" ? 0 : 2, JSON.stringify(result));
+            assert.equal(output.stderr, "", JSON.stringify(result));
+            assert.equal(output.stdout, wanted, JSON.stringify(result));
+            return result;
           });
-          const wanted = expected(file, role === "before", repaired);
-          const result = {
-            executable: process.execPath,
-            argv,
-            cwd,
-            status: output.status,
-            signal: output.signal,
-            error: output.error?.message ?? null,
-            stdout: output.stdout,
-            stderr: output.stderr,
-            expectedStdout: wanted,
-            sourceSha256: hash(readFileSync(target)),
-            sourceUtf8: readFileSync(target, "utf8"),
-            sdk,
-          };
-          assert.equal(output.error, undefined);
-          assert.equal(output.signal, null);
-          assert.equal(output.status, wanted === "" ? 0 : 2, JSON.stringify(result));
-          assert.equal(output.stderr, "", JSON.stringify(result));
-          assert.equal(output.stdout, wanted, JSON.stringify(result));
-          return result;
-        };
         const processResult = run(false),
           rows = typeRows(target);
         let repair: object | null = null;
@@ -218,7 +293,76 @@ export function verifyPublicSlotInstance(root: string) {
           writeFileSync(target, repaired);
           repair = run(true);
         }
-        observations.push({ role, mode, sdk, process: processResult, repair, rows });
+        const preservation = preservationSource(
+          mode === "direct" ? "./node_modules/vize/virtual-ts.d.ts" : "vize/virtual-ts",
+        );
+        writeFileSync(target, preservation);
+        const preservationRows = typeRows(target, true);
+        const preserveRun = (repaired: boolean) =>
+          hosts.map((host) => {
+            const argv = [...host.prefix, "--noEmit", "-p", "tsconfig.json", "--pretty", "false"];
+            const output = spawnSync(host.executable, argv, {
+              cwd,
+              encoding: "utf8",
+              timeout: 60_000,
+            });
+            const result = {
+              host,
+              argv,
+              cwd,
+              sourceUtf8: readFileSync(target, "utf8"),
+              status: output.status,
+              signal: output.signal,
+              error: output.error?.message ?? null,
+              stdout: output.stdout,
+              stderr: output.stderr,
+            };
+            assert.equal(output.error, undefined, JSON.stringify(result));
+            assert.equal(output.signal, null, JSON.stringify(result));
+            assert.equal(output.stderr, "", JSON.stringify(result));
+            assert.equal(output.status, repaired ? 0 : 2, JSON.stringify(result));
+            assert.equal(
+              output.stdout,
+              repaired
+                ? ""
+                : `${file}(${preservation.split("\n").length - 1},7): error TS2322: Type 'string' is not assignable to type 'number'.\n`,
+              JSON.stringify(result),
+            );
+            return result;
+          });
+        const preserved = preserveRun(false);
+        writeFileSync(
+          target,
+          preservation.replace(
+            'const wrong: number = "owned-negative";',
+            "const wrong: number = 123;",
+          ),
+        );
+        const preservationRepair = preserveRun(true);
+        observations.push({
+          role,
+          mode,
+          sdk,
+          processes: processResult,
+          repair,
+          rows,
+          preservation: {
+            sourceUtf8: preservation,
+            rows: preservationRows,
+            processes: preserved,
+            repair: preservationRepair,
+          },
+        });
+        if (process.env.VIZE_PUBLIC_SLOT_RECEIPT) {
+          writeFileSync(
+            process.env.VIZE_PUBLIC_SLOT_RECEIPT,
+            JSON.stringify(
+              { passed: false, preimageSource, fixtureSha256: hash(input), hosts, observations },
+              null,
+              2,
+            ) + "\n",
+          );
+        }
       }
     for (const role of ["before", "head"]) {
       const modes = observations.filter((item) => item.role === role);
@@ -226,6 +370,20 @@ export function verifyPublicSlotInstance(root: string) {
     }
     const before = observations.find((item) => item.role === "before")!.rows;
     const head = observations.find((item) => item.role === "head")!.rows;
+    for (const mode of ["esm", "commonjs", "direct"]) {
+      const before = observations.find(
+        (item) => item.role === "before" && item.mode === mode,
+      )!.preservation;
+      const head = observations.find(
+        (item) => item.role === "head" && item.mode === mode,
+      )!.preservation;
+      assert.equal(head.sourceUtf8, before.sourceUtf8);
+      assert.deepEqual(
+        head.rows,
+        before.rows,
+        "2/8/9/17 signatures in both orders and four poison adapters remain exact; no rare-correlation repair claimed",
+      );
+    }
     assert.deepEqual(
       head.filter((row) => row.name.endsWith("_DefaultZero")),
       before.filter((row) => row.name.endsWith("_DefaultZero")),
@@ -247,10 +405,12 @@ export function verifyPublicSlotInstance(root: string) {
     // Payload rows are complete observations. Do not invent a fix for the
     // independent unknown/payload-any boundary or arbitrary overload correlation.
     return {
+      passed: true,
       preimageSource,
       fixtureSha256: hash(input),
       typescript: ts.version,
       compilerSha256: hash(readFileSync(compiler)),
+      hosts,
       observations,
     };
   } finally {

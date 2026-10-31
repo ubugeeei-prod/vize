@@ -357,7 +357,11 @@ for (const [name, file, mutate, reason] of [
 }
 
 test("public Instance retains complete before/after consumer laws in all three module entries", (t) => {
-  t.diagnostic(JSON.stringify(verifyPublicSlotInstance(root)));
+  const receipt = verifyPublicSlotInstance(root);
+  if (process.env.VIZE_PUBLIC_SLOT_RECEIPT) {
+    writeFileSync(process.env.VIZE_PUBLIC_SLOT_RECEIPT, JSON.stringify(receipt, null, 2) + "\n");
+  }
+  t.diagnostic(JSON.stringify(receipt));
 });
 
 const payload = "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-payload.d.ts.txt";
