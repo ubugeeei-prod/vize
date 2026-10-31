@@ -7,11 +7,12 @@ import { asRecord, asString, parseJson, readJsonRecord } from "../../json-value.
 import type { Recorder } from "../../config/windows_consumer/common.ts";
 import { assertNativeIdentity, findNpmCli } from "../computed_event_names.ts";
 import { assertCustody, fileImage, inside } from "../computed_event_custody.ts";
-import { hook, observed, verifyJournal } from "../editor_vite_stub/custody.ts";
+import { hook, observed } from "../editor_vite_stub/custody.ts";
 import { authenticate, assertLockedPackage, validateNative } from "./authority.ts";
 import { profiles, type Role } from "./contract.ts";
 import { installedGraph } from "./installed-graph.ts";
-import { assertJournalPid, capture } from "./process.ts";
+import { capture } from "./process.ts";
+import { verifyInstalledVersion } from "./version-custody.ts";
 import { libraryImages, libraryVersion, mergeImages } from "./libraries.ts";
 import { authenticatePackedManifest, captureInstalledManifests } from "./packed-manifest.ts";
 
@@ -210,6 +211,9 @@ export async function install(
     assert.equal(packet.stderr, "");
     assert.equal(packet.stdout, stdout);
   }
+  record.json("installation-phase.json", { phase: "verify-installed-cli-version" });
+  const versionInputs = [fileImage(cli), fileImage(join(cliRoot, "dist/cli.mjs")), binary];
+  record.json("installed-cli-version.inputs.json", { role, images: versionInputs });
   const journal = observed(root, { binary }, record, "installed-cli-version");
   const cliVersion = capture(
     record,
@@ -218,11 +222,17 @@ export async function install(
     root,
     journal.env,
   );
-  successful(cliVersion);
-  verifyJournal(journal.journal, { binary }, cliVersion.status);
-  assertJournalPid(readFileSync(journal.journal, "utf8"), cliVersion.pid);
-  assert.ok(cliVersion.stdout.includes(version));
+  const versionCustody = verifyInstalledVersion(role, journal.journal, cliVersion, {
+    root,
+    cli,
+    node: process.execPath,
+    hook,
+    binary,
+  });
+  assertCustody(versionInputs);
+  record.json("installed-cli-version.custody.json", { ...versionCustody, inputs: versionInputs });
   const images = mergeImages([
+    ...versionInputs,
     ...[...capturedManifests.values()].map((row) => row.image),
     fileImage(join(root, "package.json")),
     fileImage(join(root, "package-lock.json")),
