@@ -169,13 +169,13 @@ fn art_on_type_only_changes_indentation_and_preserves_in_progress_tokens() {
 }
 
 #[test]
-fn invalid_sources_and_invalid_ranges_are_refused_without_partial_art_edits() {
-    let source = "<script setup>const value = ;</script>\n<art><Button /></art>\n";
+fn invalid_block_boundaries_and_ranges_are_refused_without_partial_art_edits() {
+    let source = "<art><Button /></art>\n<template>";
     let options = FormatOptions::default();
     assert_eq!(
         selected(
             source,
-            Range::new(Position::new(1, 6), Position::new(1, 7)),
+            Range::new(Position::new(0, 6), Position::new(0, 7)),
             &options
         ),
         None
@@ -188,5 +188,29 @@ fn invalid_sources_and_invalid_ranges_are_refused_without_partial_art_edits() {
             &options
         ),
         None
+    );
+}
+
+#[test]
+fn a_recoverable_script_error_does_not_block_or_rewrite_selected_art() {
+    // Glyph preserves script parse failures verbatim; partial formatting must
+    // retain that policy instead of rewriting or rejecting the unrelated script.
+    let source = "<script setup>const value = ;</script>\n<art><Button /></art>\n";
+    let edits = selected(
+        source,
+        Range::new(Position::new(1, 6), Position::new(1, 7)),
+        &FormatOptions::default(),
+    )
+    .unwrap();
+    assert_eq!(
+        edits,
+        vec![TextEdit {
+            range: Range::new(Position::new(1, 5), Position::new(1, 15)),
+            new_text: "\n  <Button />\n".to_owned(),
+        }]
+    );
+    assert_eq!(
+        std::str::from_utf8(&apply(source, &edits).unwrap()).unwrap(),
+        "<script setup>const value = ;</script>\n<art>\n  <Button />\n</art>\n"
     );
 }
