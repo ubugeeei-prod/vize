@@ -125,8 +125,12 @@ const watcherSuccessor = {
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
   helperRuntimeSha256: "13977fbeee879ea518ca8abc2329dea34919edcf984102133192f4386014fe7a",
   routeId: "configured-startup-beta-semantic-route-41108828160",
+  membershipId: "source-owned-config-membership-route-41214579457",
+  membershipPath: "tests/tooling/support/native-beta-dto/configuration-membership.ts",
+  membershipSha256: "bf8807fdcd364dd4965184e4548bb9ceb113941aa53093ed7a31a82ac3d6842f",
+  membershipRuntimeSha256: "dc9c18a373b36d366c1bf2887d02a6f83f10f26e72e63c7982c228b5a44c1010",
   routePath: "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
-  routeRuntimeSha256: "73536a250e7d23bb6acd47acd717078830dd781ebeee403a5e67f5a0db4a3520",
+  routeRuntimeSha256: "1a49057ec014a49aec9899070f9aef5e4cee6b4254b21fea7b5b5f1b3ab10f95",
   actualFiles: [
     ["client.bin", "cd11915afee013a728a287098714d5db70e8719867bd596a1c4721ca5a876c13"],
     ["server.bin", "47cc76661e039b28a3e7056d3d2b07d6d4c6da31440166c2e490b76f78079f73"],
@@ -214,6 +218,11 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
           watcherSuccessor.handoffRuntimeSha256,
         ],
         [
+          watcherSuccessor.membershipPath,
+          watcherSuccessor.membershipSha256,
+          watcherSuccessor.membershipRuntimeSha256,
+        ],
+        [
           watcherSuccessor.unavailableTerminalPath,
           watcherSuccessor.unavailableTerminalSha256,
           watcherSuccessor.unavailableTerminalRuntimeSha256,
@@ -252,6 +261,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       currentMixedEofRegistration: index === 3 ? watcherSuccessor.mixedEofId : null,
       currentLateRootRegistration: index === 3 ? watcherSuccessor.lateRootId : null,
       currentRouteRegistration: index === 3 ? watcherSuccessor.routeId : null,
+      currentMembershipRegistration: index === 3 ? watcherSuccessor.membershipId : null,
       currentStorageRegistration: index === 1 || index === 3 ? watcherSuccessor.storageId : null,
       currentStorageObserverDependency:
         index === 1 || index === 3

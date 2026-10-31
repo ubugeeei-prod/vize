@@ -87,6 +87,15 @@ void test("typed producers retain historical bytes and only the exact registered
     "configured-startup-beta-semantic-route-41108828160",
   );
   assert.equal(current.currentSplitLogRegistration, "before-stable-split-watch-log-41152849787");
+  assert.equal(
+    current.currentMembershipRegistration,
+    "source-owned-config-membership-route-41214579457",
+  );
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentMembershipRegistration === null),
+  );
   assert.equal(current.currentTerminalRegistration, "before-stable-terminal-stderr-41156819864");
   assert.equal(
     current.currentUnavailableTerminalRegistration,
@@ -201,6 +210,7 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/execve-handoff.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr-unavailable.ts",
+    "tests/tooling/support/native-beta-dto/configuration-membership.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
@@ -241,6 +251,7 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/native-io.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr-unavailable.ts",
+    "tests/tooling/support/native-beta-dto/configuration-membership.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",

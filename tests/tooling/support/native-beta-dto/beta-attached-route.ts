@@ -5,6 +5,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import { verifyNativeRelations, type WatcherContext } from "./stable-watcher-boundary.ts";
 import type { Receipt } from "./audit-wire-types.ts";
+import { verifyAttachedConfigurationMembership } from "./configuration-membership.ts";
 
 type Packet = Record<string, unknown>;
 export interface AttachedOwner {
@@ -339,10 +340,18 @@ export function verifyBetaAttachedRoute(
     assert.equal(verifyNativeRelations(owner.client, owner.server, context), null);
     assert.equal(verifyNativeRelations(owner.apiClient, owner.apiServer, context), null);
     const apiRequests = owner.apiClient.map(object).filter((row) => "id" in row && "method" in row);
+    const configurationMembership = verifyAttachedConfigurationMembership(
+      owner,
+      context,
+      expectedSource,
+      storage,
+      attachedValue,
+    );
     for (const request of apiRequests) {
       assert.equal(typeof request.method, "string");
       assert.ok(
-        configurationMethods.has(request.method as string),
+        configurationMethods.has(request.method as string) ||
+          configurationMembership.some((row) => row.request === request),
         "attached beta API may only configure and own snapshots",
       );
     }
@@ -432,6 +441,7 @@ export function verifyBetaAttachedRoute(
       nativeOwner: owner.nativeOwner,
       apiRequests,
       apiResponses: owner.apiServer,
+      configurationMembership,
       semanticPackets: packets,
       counts,
       complete,
