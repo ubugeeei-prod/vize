@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { test } from "node:test";
 import {
   observeStableSplitWatchLog,
+  requireCandidateStableStderr,
   type WatcherContext,
   type WatcherTimedIo,
 } from "./support/native-beta-dto/stable-watcher-boundary.ts";
@@ -20,6 +21,17 @@ const fixtureContext = (
     ),
   ) as { context: WatcherContext }
 ).context;
+test("candidate stable requires zero stderr, including known historical cancellation forms", () => {
+  assert.doesNotThrow(() => requireCandidateStableStderr(Buffer.alloc(0)));
+  const f = splitLogFixture();
+  const cancellation = Buffer.concat(f.stderr.slice(2).map((row) => row.data));
+  const split = Buffer.concat(f.stderr.map((row) => row.data));
+  for (const bytes of [cancellation, split])
+    assert.throws(
+      () => requireCandidateStableStderr(bytes),
+      /Candidate stable stderr must be empty/u,
+    );
+});
 // Constructed timing controls; actual8fb raw replay is retained independently.
 function splitLogFixture() {
   const context = structuredClone(fixtureContext),

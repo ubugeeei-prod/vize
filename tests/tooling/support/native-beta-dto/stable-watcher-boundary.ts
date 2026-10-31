@@ -240,6 +240,9 @@ export interface WatcherTimedIo {
   line: number;
   data: Uint8Array;
 }
+export function requireCandidateStableStderr(bytes: Uint8Array) {
+  assert.equal(bytes.byteLength, 0, "Candidate stable stderr must be empty");
+}
 const micros = (value: string) => {
   assert.match(value, /^[0-9]+\.[0-9]{6}$/u, "whole syscall timestamp required");
   return BigInt(value.replace(".", ""));

@@ -86,11 +86,11 @@ const runtime = (source: Buffer) =>
 const watcherSuccessor = {
   id: "before-stable-post-shutdown-observation-41099824102",
   splitLogId: "before-stable-split-watch-log-41152849787",
-  auditRuntimeSha256: "6c0f5e6aa785de99a2f779f72e9e643ca5666754108b62e23c0377211f631a7a",
+  auditRuntimeSha256: "cc9db627d84973fbaab2794550079754e81fe7c75b21e0adead802f93b2f759d",
   typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
   typesSha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
-  helperRuntimeSha256: "665175bafb17232427a58791b60a796afdb1f13b6e631d9ad2b80d130f0982cc",
+  helperRuntimeSha256: "1f67480f2ebbba6b10951245434a3b736cb8918c3066dc05b795b2441e25ef33",
   routeId: "configured-startup-beta-semantic-route-41108828160",
   routePath: "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
   routeRuntimeSha256: "c577043a694e0254b9be7b4505cb49531e527431be332c3343b814f3c4d2ae40",

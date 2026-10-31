@@ -3,7 +3,11 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline";
-import { observeStableSplitWatchLog, verifyNativeRelations } from "./stable-watcher-boundary.ts";
+import {
+  observeStableSplitWatchLog,
+  requireCandidateStableStderr,
+  verifyNativeRelations,
+} from "./stable-watcher-boundary.ts";
 import { verifyBetaAttachedRoute } from "./beta-attached-route.ts";
 import type { Packet, Syscall, StreamPair, Provider, Source, Receipt } from "./audit-wire-types.ts";
 
@@ -436,7 +440,8 @@ if (baseline) {
     assert.equal(receipt.nativeExit, 0, "Actual candidate/control native owner must exit cleanly");
     const bytes = fs.readFileSync(path.join(root, receipt.stderr.file));
     if (provider.version === "7.0.2") {
-      if (stableRegistrationBaseline && bytes[0] === 0x09) {
+      if (source.role === "after") requireCandidateStableStderr(bytes);
+      else if (stableRegistrationBaseline && bytes[0] === 0x09) {
         assert.equal(receipt.registrationRefusals, 0);
         splitWatchLogObservations.push({
           nativeOwner: receipt.nativeOwner,
