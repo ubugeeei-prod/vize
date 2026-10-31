@@ -1,6 +1,9 @@
 //! Original configured product output at the native callback host boundary.
 
-use super::{NativeTemplateAttribute, NativeTemplateElement, NativeTemplateLintRefusal};
+use super::{
+    NativeTemplateAttribute, NativeTemplateClosedSelect, NativeTemplateElement,
+    NativeTemplateLintRefusal, NativeTemplateOwnerProfile,
+};
 use crate::{HelpLevel, LintDiagnostic, LintResult, Linter, Severity};
 use vize_carton::i18n::{Locale, t, t_fmt};
 use vize_l0::{Span, String, config::VueVersion};
@@ -14,6 +17,7 @@ pub struct NativeTemplateLintContext<'o, 'a> {
     root: &'o NativeLintComponent<'a>,
     filename: &'o str,
     pub(super) current_rule: &'static str,
+    pub(super) current_owner_profile: NativeTemplateOwnerProfile,
     diagnostics: Vec<LintDiagnostic>,
 }
 
@@ -28,6 +32,7 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
             root,
             filename,
             current_rule: "",
+            current_owner_profile: NativeTemplateOwnerProfile::Strict,
             diagnostics: Vec::new(),
         }
     }
@@ -140,6 +145,33 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
             return Err(NativeTemplateLintRefusal::SourceMismatch);
         }
         Ok(crate::native::header::opening_range(original)?)
+    }
+
+    /// Report only this callback's admitted closed select, at its opening.
+    /// The grammar proof cannot be replaced by a raw range or foreign owner.
+    pub fn warn_select_with_help(
+        &mut self,
+        owner: &NativeTemplateClosedSelect<'_, '_, 'a>,
+        message_key: &str,
+        variables: &[(&str, &str)],
+        help_key: &str,
+    ) -> Result<(), NativeTemplateLintRefusal> {
+        let range = self.select_opening_range(owner)?;
+        self.warn_with_help(range, message_key, variables, help_key);
+        Ok(())
+    }
+
+    /// Check both original ownership and this actual callback's capability.
+    /// Even a hidden/labelled select must establish this before returning clean.
+    pub fn select_opening_range(
+        &self,
+        owner: &NativeTemplateClosedSelect<'_, '_, 'a>,
+    ) -> Result<Span, NativeTemplateLintRefusal> {
+        let range = self.element_opening_range(owner.element)?;
+        if self.current_owner_profile != NativeTemplateOwnerProfile::ClosedSelect {
+            return Err(NativeTemplateLintRefusal::UnsupportedContext { span: range });
+        }
+        Ok(range)
     }
 
     fn warn_with_help(

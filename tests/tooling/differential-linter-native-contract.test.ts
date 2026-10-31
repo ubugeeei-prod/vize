@@ -53,17 +53,15 @@ void test("input-label native contract pins all six whole originals and rejects 
     );
     assert(fixture);
     assert.deepEqual(JSON.parse(fixture.input.toString()), original);
-    const expected = original.source.startsWith("<input")
-      ? null
-      : {
-          api: "--native-current-api",
-          entry: "template",
-          kind: "UnsupportedContext",
-          detail:
-            original.id === "form-label-hidden-select-control"
-              ? "UnsupportedContext { span: Span { start: 0, end: 15 } }"
-              : "UnsupportedContext { span: Span { start: 0, end: 17 } }",
-        };
+    const expected =
+      original.source.startsWith("<input") || original.source.startsWith("<select")
+        ? null
+        : {
+            api: "--native-current-api",
+            entry: "template",
+            kind: "UnsupportedContext",
+            detail: "UnsupportedContext { span: Span { start: 0, end: 17 } }",
+          };
     assert.deepEqual(expectedNativeReason(fixture), expected);
     for (const [key, value] of Object.entries(original)) {
       const changed = {
@@ -187,11 +185,11 @@ function baseline() {
       legacyMatches: loaded.cases.length,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: loaded.cases.length - 15,
+      nativeUnsupported: loaded.cases.length - 16,
       nativeFailures: 0,
-      nativeHandled: 15,
-      nativeEquivalent: 15,
-      pairedComparisons: 15,
+      nativeHandled: 16,
+      nativeEquivalent: 16,
+      pairedComparisons: 16,
     },
   };
 }
@@ -209,9 +207,9 @@ void test("shared acceptance counts only validated whole-product linter observat
   const acceptance = summarizeLinterAcceptance(loaded, baseline(), receipt);
   assert.deepEqual(acceptance.total, {
     planned: loaded.cases.length,
-    nativeHandled: 15,
-    nativeEquivalent: 15,
-    unsupported: loaded.cases.length - 15,
+    nativeHandled: 16,
+    nativeEquivalent: 16,
+    unsupported: loaded.cases.length - 16,
     legacyBacked: 0,
     unverified: 0,
   });

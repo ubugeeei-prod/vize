@@ -1,4 +1,5 @@
 //! Original frozen history packets and genuine new partial-native controls.
+mod select;
 mod support;
 
 use crate::native::template::NativeTemplateLintRefusal as Refusal;
@@ -21,12 +22,16 @@ fn four_original_input_packets_preserve_all_fields_fix_absence_and_unchanged_req
 }
 
 #[test]
-fn original_select_and_textarea_keep_complete_legacy_packets_and_context_refusals() {
+fn original_select_preserves_whole_native_packet_while_textarea_remains_unprovided() {
     for case in cases()
         .iter()
         .filter(|case| !case.source.starts_with("<input"))
     {
         assert_original(case, false);
+        if case.source.starts_with("<select") {
+            assert_original(case, true);
+            continue;
+        }
         let end = u32::try_from(case.source.find('>').unwrap() + 1).unwrap();
         for _ in 0..2 {
             assert_eq!(
@@ -229,7 +234,7 @@ fn duplicate_static_hidden_and_type_keep_whole_legacy_packets_but_refuse_native_
 }
 
 #[test]
-fn empty_selects_refuse_at_their_own_header_without_losing_whole_legacy_findings() {
+fn closed_empty_selects_preserve_whole_findings_at_their_opening_not_body() {
     let linter = configured();
     let original = cases()
         .into_iter()
@@ -265,15 +270,13 @@ fn empty_selects_refuse_at_their_own_header_without_losing_whole_legacy_findings
                 let legacy = linter.lint_template(&source, "Select.vue");
                 assert_eq!(format!("{legacy:#?}"), format!("{expected:#?}"), "{source}");
                 println!("native-form-label-select source={source:?} legacy={legacy:#?}");
-                let start = u32::try_from(prefix.len()).unwrap();
-                let end = start + u32::try_from(markup.find('>').unwrap() + 1).unwrap();
                 assert_eq!(
-                    linter
-                        .lint_native_template(&source, "Select.vue")
-                        .unwrap_err(),
-                    Refusal::UnsupportedContext {
-                        span: Span::new(start, end)
-                    }
+                    format!(
+                        "{:#?}",
+                        linter.lint_native_template(&source, "Select.vue").unwrap()
+                    ),
+                    format!("{expected:#?}"),
+                    "complete native {source}"
                 );
             }
         }

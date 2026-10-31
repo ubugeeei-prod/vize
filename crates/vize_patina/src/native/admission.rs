@@ -7,9 +7,12 @@ use super::{
     attribute, header, header_rules,
     template::{
         NativeTemplateAttribute, NativeTemplateAttributeProfile, NativeTemplateElement,
-        NativeTemplateLintRefusal as Refusal, NativeTemplateTextProfile,
+        NativeTemplateLintRefusal as Refusal, NativeTemplateOwnerProfile,
+        NativeTemplateTextProfile,
     },
 };
+
+mod select;
 
 pub(in crate::native) fn component(component: &NativeComponent<'_>) -> Result<(), Refusal> {
     carrier(component, 0)?;
@@ -83,6 +86,44 @@ pub(in crate::native) fn children_with_text_profile<'o, 'a>(
     text_profile: NativeTemplateTextProfile,
     visit_element: &mut impl FnMut(&NativeTemplateElement<'o, 'a>) -> Result<(), Refusal>,
 ) -> Result<(), Refusal> {
+    children_with_owner_profile(
+        component,
+        children,
+        profile,
+        text_profile,
+        NativeTemplateOwnerProfile::Strict,
+        visit_element,
+    )
+}
+
+pub(in crate::native) fn children_with_owner_profile<'o, 'a>(
+    component: &'o NativeComponent<'a>,
+    children: NativeChildren<'o, 'a>,
+    profile: NativeTemplateAttributeProfile,
+    text_profile: NativeTemplateTextProfile,
+    owner_profile: NativeTemplateOwnerProfile,
+    visit_element: &mut impl FnMut(&NativeTemplateElement<'o, 'a>) -> Result<(), Refusal>,
+) -> Result<(), Refusal> {
+    walk(
+        component,
+        children,
+        profile,
+        text_profile,
+        owner_profile,
+        select::Parent::Ordinary,
+        visit_element,
+    )
+}
+
+fn walk<'o, 'a>(
+    component: &'o NativeComponent<'a>,
+    children: NativeChildren<'o, 'a>,
+    profile: NativeTemplateAttributeProfile,
+    text_profile: NativeTemplateTextProfile,
+    owner_profile: NativeTemplateOwnerProfile,
+    parent: select::Parent,
+    visit_element: &mut impl FnMut(&NativeTemplateElement<'o, 'a>) -> Result<(), Refusal>,
+) -> Result<(), Refusal> {
     for child in children {
         if !core::ptr::eq(child.component(), component) {
             return Err(Refusal::SourceMismatch);
@@ -119,13 +160,15 @@ pub(in crate::native) fn children_with_text_profile<'o, 'a>(
                         return Err(Refusal::UnsupportedAttribute { span });
                     }
                     let tag = element.surface().tag();
+                    let child_parent =
+                        select::check(owner_profile, parent, &element, &attributes, opening)?;
                     if receipt.kind() != NativeLintTagKind::Element
                         || receipt.header_is_literal()
                         || element.surface().open.is_verbatim()
                         || !is_html_tag(tag)
                         || is_svg_tag(tag)
                         || is_math_ml_tag(tag)
-                        || excluded_owner(tag)
+                        || (excluded_owner(tag) && child_parent != select::Parent::Option)
                     {
                         return Err(Refusal::UnsupportedContext { span: opening });
                     }
@@ -148,16 +191,33 @@ pub(in crate::native) fn children_with_text_profile<'o, 'a>(
                         }
                     }
                     let children = element.children();
-                    let view = NativeTemplateElement::new(element, attributes);
+                    let mut view = NativeTemplateElement::new(element, attributes);
+                    if child_parent == select::Parent::Select {
+                        // Only this bounded owner is postorder: its complete
+                        // original children must pass before proof/reporting.
+                        walk(
+                            component,
+                            children,
+                            profile,
+                            text_profile,
+                            owner_profile,
+                            child_parent,
+                            visit_element,
+                        )?;
+                        view.admit_closed_select();
+                        return visit_element(&view);
+                    }
                     visit_element(&view)?;
                     // Retained header storage is bounded by the largest header,
                     // including possible SmallVec spill, not by ancestor depth.
                     drop(view);
-                    self::children_with_text_profile(
+                    walk(
                         component,
                         children,
                         profile,
                         text_profile,
+                        owner_profile,
+                        child_parent,
                         visit_element,
                     )
                 }
@@ -167,7 +227,8 @@ pub(in crate::native) fn children_with_text_profile<'o, 'a>(
                     // Text custody alone cannot certify the legacy parser result.
                     if token.text.contains("{{")
                         || token.text.contains('<')
-                        || (text_profile == NativeTemplateTextProfile::WhitespaceOnly
+                        || ((text_profile == NativeTemplateTextProfile::WhitespaceOnly
+                            || parent == select::Parent::Select)
                             && !token
                                 .text
                                 .bytes()
