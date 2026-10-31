@@ -48,7 +48,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         // children stay children instead of becoming the slots argument.
         if has_v_slots {
             node.children
-                .push(self.raw_expression_child(expression.span(), container.span));
+                .push(self.raw_expression_child(&container.expression, container.span));
             return true;
         }
 
