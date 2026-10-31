@@ -1,10 +1,8 @@
 use vize_carton::{CompactString, FxHashSet, String, append, camelize, capitalize};
 use vize_croquis::{Croquis, ScopeData};
 
-use crate::virtual_ts::component_reference::{
-    component_reference_alias, contains_compact_name, has_type_only_component_candidate,
-};
-use crate::virtual_ts::helpers::{push_ts_string_literal, to_safe_identifier};
+use crate::virtual_ts::component_reference::{component_reference_alias, contains_compact_name};
+use crate::virtual_ts::helpers::push_ts_string_literal;
 use crate::virtual_ts::scope::{ComponentBindingCheck, GlobalComponentCheck};
 use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 
@@ -162,12 +160,12 @@ impl<'a> GlobalComponentPlan<'a> {
                 continue;
             }
 
-            let component_ref =
-                if has_type_only_component_candidate(syntactic_type_only_imported_names, name) {
-                    component_reference_alias(name)
-                } else {
-                    to_safe_identifier(name)
-                };
+            let component_ref = component_reference_alias(
+                summary,
+                options,
+                syntactic_type_only_imported_names,
+                name,
+            );
             let art_source = art_component_source(summary, name);
             if let Some(diagnostics) = diagnostics.as_mut().filter(|_| {
                 !is_self

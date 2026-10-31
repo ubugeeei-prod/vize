@@ -1,17 +1,19 @@
-use vize_carton::{CompactString, FxHashSet, String, camelize, capitalize, cstr};
+use vize_carton::{CompactString, FxHashSet, String, camelize, capitalize};
 use vize_croquis::{BindingType, Croquis};
 
 use super::{
-    helpers::{is_reserved_identifier, to_safe_identifier, to_safe_identifier_fragment},
+    helpers::{is_reserved_identifier, to_safe_identifier},
     script_facts::ScriptBindings,
     types::VirtualTsOptions,
 };
 
-pub(crate) fn component_reference_alias(template_name: &str) -> String {
-    cstr!(
-        "$Component_{}",
-        to_safe_identifier_fragment(template_name).as_str()
-    )
+pub(crate) fn component_reference_alias(
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+    type_only: &FxHashSet<CompactString>,
+    template_name: &str,
+) -> String {
+    super::component_aliases::reference(summary, options, type_only, template_name)
 }
 
 pub(crate) fn component_binding_reference(
@@ -35,17 +37,51 @@ pub(crate) fn component_binding_reference_with_resolution(
     syntactic_type_only_imported_names: &FxHashSet<CompactString>,
     template_name: &str,
 ) -> (String, bool) {
-    let resolved = resolved_component_binding_reference(
-        summary,
-        options,
-        syntactic_type_only_imported_names,
-        template_name,
-    );
+    let resolved = super::script_facts::with_bindings(summary, |bindings| {
+        resolved_component_binding_reference_with_bindings(
+            summary,
+            bindings,
+            options,
+            syntactic_type_only_imported_names,
+            template_name,
+        )
+    });
     let is_resolved = resolved.is_some();
     (
-        resolved.unwrap_or_else(|| to_safe_identifier(template_name)),
+        resolved.map(|(reference, _)| reference).unwrap_or_else(|| {
+            component_reference_alias(
+                summary,
+                options,
+                syntactic_type_only_imported_names,
+                template_name,
+            )
+        }),
         is_resolved,
     )
+}
+
+/// The selected declaration branch establishes value ownership; alias spelling does not.
+pub(crate) fn component_binding_reference_with_provider(
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+    type_only: &FxHashSet<CompactString>,
+    template_name: &str,
+) -> (String, bool) {
+    super::script_facts::with_bindings(summary, |bindings| {
+        resolved_component_binding_reference_with_bindings(
+            summary,
+            bindings,
+            options,
+            type_only,
+            template_name,
+        )
+    })
+    .unwrap_or_else(|| {
+        (
+            component_reference_alias(summary, options, type_only, template_name),
+            false,
+        )
+    })
 }
 
 pub(super) fn component_binding_reference_with_bindings(
@@ -62,7 +98,15 @@ pub(super) fn component_binding_reference_with_bindings(
         syntactic_type_only_imported_names,
         template_name,
     )
-    .unwrap_or_else(|| to_safe_identifier(template_name))
+    .map(|(reference, _)| reference)
+    .unwrap_or_else(|| {
+        component_reference_alias(
+            summary,
+            options,
+            syntactic_type_only_imported_names,
+            template_name,
+        )
+    })
 }
 
 pub(crate) fn resolved_component_binding_reference(
@@ -79,6 +123,7 @@ pub(crate) fn resolved_component_binding_reference(
             syntactic_type_only_imported_names,
             template_name,
         )
+        .map(|(reference, _)| reference)
     })
 }
 
@@ -88,7 +133,7 @@ fn resolved_component_binding_reference_with_bindings(
     options: &VirtualTsOptions,
     syntactic_type_only_imported_names: &FxHashSet<CompactString>,
     template_name: &str,
-) -> Option<String> {
+) -> Option<(String, bool)> {
     let camel_name = camelize(template_name);
     let pascal_name = capitalize(camel_name.as_str());
     // Vue Language Tools resolves PascalCase, camelCase, then the authored tag.
@@ -100,17 +145,36 @@ fn resolved_component_binding_reference_with_bindings(
         if let Some(binding_type) = bindings.binding_type(candidate)
             && !contains_compact_name(syntactic_type_only_imported_names, candidate)
         {
-            return Some(component_binding_reference_for_summary_binding(
-                summary,
-                bindings,
-                candidate,
-                binding_type,
-                options,
+            return Some((
+                component_binding_reference_for_summary_binding(
+                    summary,
+                    bindings,
+                    candidate,
+                    binding_type,
+                    options,
+                ),
+                true,
             ));
         }
     }
+    if let Some(reference) = super::component_aliases::inline_value(
+        summary,
+        options,
+        syntactic_type_only_imported_names,
+        template_name,
+    ) {
+        return Some((reference, true));
+    }
     if has_type_only_component_candidate(syntactic_type_only_imported_names, template_name) {
-        return Some(component_reference_alias(template_name));
+        return Some((
+            component_reference_alias(
+                summary,
+                options,
+                syntactic_type_only_imported_names,
+                template_name,
+            ),
+            false,
+        ));
     }
     for candidate in [pascal_name.as_str(), camel_name.as_str(), template_name] {
         if options
@@ -118,7 +182,7 @@ fn resolved_component_binding_reference_with_bindings(
             .iter()
             .any(|name| name.as_str() == candidate)
         {
-            return Some(String::from(candidate));
+            return Some((String::from(candidate), true));
         }
     }
     None

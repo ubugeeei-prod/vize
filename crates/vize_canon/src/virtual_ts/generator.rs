@@ -329,6 +329,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         options_api_props.is_some(),
         script_content,
     );
+    let _component_aliases = super::component_aliases::cache_aliases(
+        summary,
+        options,
+        &syntactic_type_only_imported_names,
+        &imported_names,
+    );
     emit_auto_import_stubs(
         &mut ts,
         summary,

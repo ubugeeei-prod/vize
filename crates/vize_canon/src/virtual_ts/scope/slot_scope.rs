@@ -29,7 +29,7 @@ use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 use super::children::generate_child_scopes;
 use super::context::{ScopeGenContext, VForPropsContext};
 use super::explicit_generics::ExplicitGenerics;
-use crate::virtual_ts::component_reference::component_binding_reference;
+use crate::virtual_ts::component_reference::component_binding_reference_with_provider;
 
 use super::emit::emit_slot_function_open;
 use super::slot_outlet_props::generate_scope_slot_outlet_checks;
@@ -68,7 +68,7 @@ fn slot_payload_type(
         return "any".into();
     };
     let host = find_slot_host(summary, scope, component);
-    let resolved = component_binding_reference(
+    let (resolved, has_provider_value) = component_binding_reference_with_provider(
         summary,
         ctx.options,
         ctx.syntactic_type_only_imported_names,
@@ -102,9 +102,18 @@ fn slot_payload_type(
     let slot_payload =
         crate::virtual_ts::helpers::shared_types::SLOT_PAYLOAD.select(ctx.hoist_shared_preamble);
 
+    // A real value binding can be declared `any` or be a compiler error type
+    // from an unresolved import. Pass that exact type through the payload
+    // helper; inventing an error type for both hides authored slot diagnostics.
+    // Registry fallbacks keep the existing missing-provider policy.
+    let provider = if has_provider_value {
+        cstr!(", typeof {component_ref}")
+    } else {
+        String::default()
+    };
     if name_is_static {
         cstr!(
-            "{slot_payload}<typeof {binding}, \"{}\">",
+            "{slot_payload}<typeof {binding}, \"{}\"{provider}>",
             data.name.as_str()
         )
     } else {
@@ -117,7 +126,7 @@ fn slot_payload_type(
         ts.push_str(
             dynamic_slot_name_binding(ctx.indent, name_binding.as_str(), name.as_str()).as_str(),
         );
-        cstr!("{slot_payload}<typeof {binding}, typeof {name_binding}.name>")
+        cstr!("{slot_payload}<typeof {binding}, typeof {name_binding}.name{provider}>")
     }
 }
 
