@@ -11099,6 +11099,41 @@
       }
     },
     {
+      "id": "typechecker/editor-vite-stub-11145/whole-install-ownership",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::runtime_deps::ownership_tests::whole_install_link_is_replaced_before_runtime_writes_and_pruning",
+      "inputs": [
+        {
+          "path": "editor-vite-stub-11145/project.json",
+          "role": "regression-reproduction",
+          "sha256": "8e13ee81f8a0086e34e44f2ec49f7dc6ecde19d55694a75bf3415b212d120f5a"
+        },
+        {
+          "path": "editor-vite-stub-11145/installation.json",
+          "role": "filesystem-ownership-witness",
+          "sha256": "cf67d99370a6339ed1144f22b9fa84f71a15ef7a67a809a7a4fa72462dc83daf"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "whole-install ownership and declaration-only loader source fixtures"
+          }
+        ]
+      }
+    },
+    {
           "id": "typechecker/expect-sibling-interpolation-10871",
           "state": "active",
           "targets": ["batch"],

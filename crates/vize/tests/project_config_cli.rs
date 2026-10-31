@@ -13,6 +13,7 @@ mod nested_lsp;
 mod root;
 mod support;
 mod typecheck;
+mod types_only_vite;
 
 use serde_json::{Value, json};
 use std::fs;

@@ -4,6 +4,8 @@ use super::error::CorsaResult;
 use super::materialize_fs::{ensure_dir, prune_dir_entries, remove_path, write_if_changed};
 use vize_carton::FxHashSet;
 
+#[cfg(test)]
+mod ownership_tests;
 mod resolver;
 mod stubs;
 #[cfg(test)]
@@ -34,7 +36,9 @@ pub(super) fn materialize_runtime_dependencies(
     preserved_entries: &[PathBuf],
 ) -> CorsaResult<()> {
     let node_modules_dir = virtual_root.join("node_modules");
-    ensure_dir(&node_modules_dir)?;
+    // Runtime entries are owned writes; never follow a former whole-install
+    // link into the authored project before writing stubs or pruning entries.
+    ensure_stub_dir(&node_modules_dir)?;
 
     materialize_vue_support(project_root, &node_modules_dir)?;
     prune_stale_vue_package_links(project_root, &node_modules_dir)?;

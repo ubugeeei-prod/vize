@@ -1,5 +1,5 @@
 // Embedded by the native loader. The nearest installed project Vite owns loading.
-import { lstatSync, realpathSync } from "node:fs";
+import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { mkdtemp, realpath, rm, writeFile } from "node:fs/promises";
 import { createRequire, globalPaths } from "node:module";
 import * as nodeModule from "node:module";
@@ -13,6 +13,27 @@ import {
   sep,
 } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+
+// A declaration-only package cannot own loading. Broken/runtime packages still do.
+async function isTypesOnlyEngine(directory, engineName, beforeRead, watchInputs) {
+  let manifest;
+  try {
+    manifest = JSON.parse(readFileSync(join(directory, "package.json"), "utf8"));
+  } catch {
+    return false;
+  }
+  if (
+    manifest?.name !== engineName ||
+    typeof (manifest.types ?? manifest.typings) !== "string" ||
+    (manifest.types ?? manifest.typings).length === 0 ||
+    ["main", "exports", "module", "browser", "bin"].some((key) => Object.hasOwn(manifest, key))
+  )
+    return false;
+  const defaults = ["index.js", "index.json", "index.node"].map((name) => join(directory, name));
+  for (const path of defaults) watchInputs.add(path);
+  await beforeRead?.(defaults);
+  return defaults.every((path) => lstatSync(path, { throwIfNoEntry: false }) === undefined);
+}
 
 // Optional compiled artifacts only; no imported namespace or evaluated config is retained.
 export function enableConfigCompileCache(directory) {
@@ -321,8 +342,13 @@ export async function importConfigModuleWithDependencies(
         watchInputs.add(requested);
         await beforeRead?.([requested]);
         if (lstatSync(requested, { throwIfNoEntry: false }) !== undefined) {
-          candidate = { engineName, directory: requested };
-          watchInputs.add(join(candidate.directory, "package.json"));
+          const engineDirectory = realpathSync(requested);
+          const manifests = [requested, engineDirectory].map((path) => join(path, "package.json"));
+          for (const path of manifests) watchInputs.add(path);
+          await beforeRead?.(manifests);
+          if (await isTypesOnlyEngine(engineDirectory, engineName, beforeRead, watchInputs))
+            continue;
+          candidate = { engineName, directory: requested, engineDirectory };
           break;
         }
       }
@@ -360,12 +386,7 @@ export async function importConfigModuleWithDependencies(
       );
       return result;
     }
-    const engineDirectory = realpathSync(candidate.directory);
-    watchInputs.add(join(engineDirectory, "package.json"));
-    await beforeRead?.([
-      join(candidate.directory, "package.json"),
-      join(engineDirectory, "package.json"),
-    ]);
+    const { engineDirectory } = candidate;
     const resolvedEntry = require.resolve(candidate.engineName);
     watchInputs.add(resolvedEntry);
     const engineEntry = realpathSync(resolvedEntry);
