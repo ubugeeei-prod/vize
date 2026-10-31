@@ -1,0 +1,243 @@
+name: Published component ARIA
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/published-component-aria.yml
+      - tools/support/compat/content-mapper/aria-component-*.ts
+      - tools/support/release/computed_event_*.ts
+      - tests/tooling/aria-component-attrs.test.ts
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact containing public Vize version
+        type: string
+        required: true
+      release_run:
+        description: Successful official Release workflow run for that version
+        type: string
+        required: true
+
+permissions: { contents: read }
+concurrency:
+  group: published-component-aria-${{ github.event.pull_request.number || github.ref }}-${{ inputs.version || 'contracts' }}
+  cancel-in-progress: false
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  PUBLIC_VERSION: ${{ inputs.version }}
+  PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+defaults:
+  run: { shell: bash }
+
+jobs:
+  contracts:
+    name: Original ARIA inputs and public release admission controls
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.13.0", package-manager-cache: false }
+      - name: Require original cases, exact negative repair diagnostics and release custody
+        run: node --test tests/tooling/aria-component-attrs.test.ts tests/tooling/release/computed-event-release.test.ts
+
+  release-identity:
+    name: Authenticate the containing public release
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize'
+    needs: contracts
+    permissions: { contents: read, actions: read }
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.13.0", package-manager-cache: false }
+      - name: Retain successful official producer, immutable tag and integrated main source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          node tools/support/release/computed_event_release.ts
+          --phase after --version "$PUBLIC_VERSION" --release-run "$PUBLIC_RELEASE_RUN"
+          --out "$RUNNER_TEMP/component-aria-release.json"
+      - name: Retain public release admission
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: component-aria-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/component-aria-release.json
+          if-no-files-found: error
+          retention-days: 90
+
+  public-consumer:
+    name: Original public ARIA consumer (${{ matrix.os }})
+    if: github.event_name == 'workflow_dispatch'
+    needs: [contracts, release-identity]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: Windows, runner: blacksmith-32vcpu-windows-2025 }
+          - { os: Linux, runner: blacksmith-8vcpu-ubuntu-2404 }
+          - {
+              os: macOS,
+              runner: "${{ vars.VIZE_RELEASE_MACOS_RUNNER || 'blacksmith-12vcpu-macos-15' }}",
+            }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    steps:
+      - name: Preserve reporter fixture bytes on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.13.0", package-manager-cache: false }
+      - name: Install unmodified public packages and exercise every original ARIA control
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import fs from "node:fs";
+          import path from "node:path";
+          import { pathToFileURL } from "node:url";
+          import { spawnSync } from "node:child_process";
+          import {
+            assertCheckerVersion, assertPublicPackage, assertCustody, checkerVersion,
+            checkerVersionOutput, fileImage, findNpmCli,
+          } from "./tools/support/release/computed_event_names.ts";
+          const version = process.env.PUBLIC_VERSION;
+          assert.match(version ?? "", /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/u);
+          const evidence = path.join(process.env.RUNNER_TEMP, "component-aria-consumer");
+          const consumer = path.join(process.env.RUNNER_TEMP, "component-aria-installation");
+          assert.equal(fs.existsSync(evidence), false);
+          assert.equal(fs.existsSync(consumer), false);
+          fs.mkdirSync(evidence, { recursive: true });
+          fs.mkdirSync(consumer);
+          const save = (file, value) =>
+            fs.writeFileSync(path.join(evidence, file), JSON.stringify(value, null, 2) + "\n");
+          const environment = Object.fromEntries(Object.entries(process.env).filter(([name]) =>
+            !/^(npm_config_|VIZE_|CORSA_|TSGO_|TSRS_|NAPI_RS_)/iu.test(name) &&
+            name.toLowerCase() !== "path" &&
+            !["NODE_OPTIONS", "NODE_PATH", "CARGO_BIN_EXE_vize"].includes(name)));
+          environment.PATH = path.dirname(process.execPath) + path.delimiter +
+            (process.env.PATH ?? process.env.Path ?? "");
+          const run = (id, executable, args, cwd, timeout) => {
+            const observed = spawnSync(executable, args, {
+              cwd, env: environment, encoding: "utf8", timeout, maxBuffer: 32 * 1024 * 1024,
+            });
+            const row = {
+              id, executable, args, cwd, status: observed.status, signal: observed.signal,
+              error: observed.error ? {
+                message: observed.error.message, code: observed.error.code,
+              } : null,
+              stdout: observed.stdout ?? "", stderr: observed.stderr ?? "",
+            };
+            save(id + ".json", row);
+            fs.writeFileSync(path.join(evidence, id + ".stdout.raw"), row.stdout);
+            fs.writeFileSync(path.join(evidence, id + ".stderr.raw"), row.stderr);
+            return row;
+          };
+          const packageFile = path.join(consumer, "package.json");
+          fs.writeFileSync(packageFile, JSON.stringify({
+            name: "published-component-aria-11144", private: true, type: "module",
+            dependencies: { vize: version, vue: "3.5.43", tsrs: checkerVersion },
+          }, null, 2) + "\n");
+          fs.copyFileSync(packageFile, path.join(evidence, "package.json"));
+          const userConfig = path.join(evidence, "npm-user.config");
+          const globalConfig = path.join(evidence, "npm-global.config");
+          fs.writeFileSync(userConfig, "");
+          fs.writeFileSync(globalConfig, "");
+          const npm = findNpmCli();
+          const installed = run("install", process.execPath, [
+            npm, "install", "--ignore-scripts", "--include=optional", "--no-audit", "--no-fund",
+            "--package-lock=true", "--install-strategy=hoisted", "--registry=https://registry.npmjs.org",
+            "--userconfig=" + userConfig, "--globalconfig=" + globalConfig,
+          ], consumer, 300_000);
+          const lockFile = path.join(consumer, "package-lock.json");
+          if (fs.existsSync(lockFile))
+            fs.copyFileSync(lockFile, path.join(evidence, "package-lock.json"));
+          assert.equal(installed.error, null);
+          assert.equal(installed.signal, null);
+          assert.equal(installed.status, 0);
+          const lock = JSON.parse(fs.readFileSync(lockFile, "utf8"));
+          assert.equal(lock.lockfileVersion, 3);
+          const images = [fileImage(packageFile), fileImage(lockFile), fileImage(npm)];
+          const packages = [];
+          const identify = (name, expected) => {
+            const directory = fs.realpathSync(path.join(consumer, "node_modules", name));
+            const file = path.join(directory, "package.json");
+            const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+            assertPublicPackage(manifest, lock.packages["node_modules/" + name], name, expected);
+            images.push(fileImage(file));
+            packages.push({ name, version: expected, directory, lock: lock.packages["node_modules/" + name] });
+            return { directory, manifest };
+          };
+          const vize = identify("vize", version);
+          identify("vue", "3.5.43");
+          const checker = identify("tsrs", checkerVersion);
+          const resolver = path.join(checker.directory, "lib/getExePath.js");
+          const { default: getExePath } = await import(pathToFileURL(resolver).href);
+          const host = fs.realpathSync(getExePath());
+          const providerManifest = JSON.parse(fs.readFileSync(
+            path.join(path.dirname(host), "package.json"), "utf8"));
+          assert.match(providerManifest.name, /^@tsrs\//u);
+          assert.equal(checker.manifest.optionalDependencies[providerManifest.name], checkerVersion);
+          const provider = identify(providerManifest.name, checkerVersion);
+          const relative = path.relative(provider.directory, host);
+          assert.ok(relative && !relative.startsWith("..") && !path.isAbsolute(relative));
+          assert.equal(path.basename(host), process.platform === "win32" ? "tsrs.exe" : "tsrs");
+          images.push(fileImage(host), fileImage(resolver), fileImage(process.execPath));
+          const declarations = [
+            "virtual-ts-globals.d.ts", "virtual-ts-patterns.d.ts", "virtual-ts.d.ts",
+            "virtual-ts.d.mts", "virtual-ts.d.cts", "content-mapper-helpers.d.ts",
+            "content-mapper-helpers.d.mts", "content-mapper-helpers.d.cts",
+            "generated/content-mapper-types.d.ts",
+          ];
+          for (const file of ["package.json", ...declarations]) {
+            const source = path.join(vize.directory, file);
+            const target = path.join(evidence, "installed-vize", file);
+            fs.mkdirSync(path.dirname(target), { recursive: true });
+            fs.copyFileSync(source, target);
+            if (file !== "package.json") images.push(fileImage(source));
+          }
+          const observedVersion = run("mapper-version", host, ["--version"], consumer, 60_000);
+          assertCheckerVersion(observedVersion);
+          save("installation.json", { version, packages, node: fileImage(process.execPath), host: fileImage(host), images });
+          const output = path.join(evidence, "acceptance");
+          const acceptance = run("acceptance", process.execPath, [
+            path.join(process.env.GITHUB_WORKSPACE, "tools/support/compat/content-mapper/aria-component-attrs.ts"),
+            "--consumer", consumer, "--mapper-host", host,
+            "--mapper-version", checkerVersionOutput.slice(0, -1), "--output", output,
+          ], process.env.GITHUB_WORKSPACE, 600_000);
+          assertCustody(images);
+          assert.equal(acceptance.error, null);
+          assert.equal(acceptance.signal, null);
+          assert.equal(acceptance.status, 0);
+          const providers = JSON.parse(fs.readFileSync(path.join(output, "providers.json"), "utf8"));
+          const report = JSON.parse(fs.readFileSync(path.join(output, "report.json"), "utf8"));
+          assert.equal(providers.mode, "unmodified-installed-package");
+          assert.equal(providers.source, undefined);
+          assert.equal(providers.sourceCli, undefined);
+          assert.equal(providers.package.version, version);
+          assert.deepEqual(providers.declarations.map((row) => row.file), declarations);
+          assert.equal(report.installedVersion, version);
+          assert.equal(report.completeCases, 20);
+          assert.equal(report.passed, 20);
+          assert.equal(report.independentPropReference, true);
+          assert.equal(report.rawContext.passed, true);
+          assert.equal(report.rawContext.referenceErrors, 3);
+          assert.equal(report.rawContext.helperDeclarations, 3);
+          save("accepted.json", { version, completeCases: 20, physicalDeclarations: 9, rawContext: report.rawContext });
+          NODE
+      - name: Retain original inputs, installed declaration bytes and every raw process
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: component-aria-consumer-${{ matrix.os }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/component-aria-consumer/**
+            !${{ runner.temp }}/component-aria-consumer/**/node_modules/**
+          if-no-files-found: error
+          retention-days: 90
