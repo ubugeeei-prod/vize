@@ -109,7 +109,10 @@ impl CorsaProjectClient {
             return self.retire_shared_editor_transport(false);
         }
         self.session.take().map_or(Ok(()), |session| {
-            block_on(session.close())
+            let client = session.client().clone();
+            // Retire the session's snapshot before close flushes its release queue.
+            drop(session);
+            block_on(client.close())
                 .map_err(|error| cstr!("Failed to close Corsa project session: {error}"))
         })
     }
