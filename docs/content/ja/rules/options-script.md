@@ -154,6 +154,14 @@ emit("save-item");
 `order` には、`<script setup>` の先頭に置くコンパイラーマクロと、その順序を指定します。
 既定は `["defineProps", "defineEmits"]` です。リストに含めないマクロは、通常の文として扱います。
 
+公開 `lintPatinaSfc` API では、この設定を `ruleOptionsJson` から渡せます。
+この項目は互換用の `defineMacrosOrder` より優先され、空の設定オブジェクトは既定の順序へ戻します。
+項目を省略すると互換用の設定を保ちます。オプションを渡すだけでは未選択のルールは有効になりません。
+
+現在の Patina はマクロ順序の診断を報告しますが、テキスト編集は提供しません。
+固定した ESLint 参照実装には文の並べ替えがありますが、今回の設定対応でその修正機能や
+`defineExposeLast` を追加することはありません。
+
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
