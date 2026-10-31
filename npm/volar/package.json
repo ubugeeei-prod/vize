@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/volar-plugin",
-  "version": "0.474.0",
+  "version": "0.609.0",
   "description": "Vize's native Vue projection for Volar language and TypeScript services",
   "homepage": "https://github.com/ubugeeei-prod/vize",
   "bugs": {
