@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { pathToFileURL } from "node:url";
 
 import { generationAndCliTasks } from "../../tools/config/vite-plus/tasks/generation-cli.ts";
 import { repoRoot, runToolCommand } from "./_helpers/tool-commands.ts";
@@ -39,10 +40,9 @@ function runPkl(args: string[]): SpawnSyncReturns<string> {
   return spawnSync(pkl, preparedArgs, { cwd: root, encoding: "utf8" });
 }
 
-function assertCommandSucceeded(
-  result: SpawnSyncReturns<string>,
-  description: string,
-): asserts result is SpawnSyncReturns<string> & { status: 0 } {
+function assertCommandSucceeded<
+  Result extends Pick<SpawnSyncReturns<string>, "status" | "error" | "stderr" | "stdout">,
+>(result: Result, description: string): asserts result is Result & { status: 0 } {
   assert.equal(
     result.status,
     0,
@@ -97,5 +97,77 @@ test("root config generation resolves and reproduces checked-in artifacts", () =
     );
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true });
+  }
+});
+
+test("both public Pkl entrypoints validate declared prop casing policies", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-pkl-prop-casing-"));
+  const policies = [
+    { name: "default", source: "", expected: "camelCase", field: "casing" },
+    { name: "camel", source: 'casing = "camelCase"', expected: "camelCase", field: "casing" },
+    { name: "snake", source: 'casing = "snake_case"', expected: "snake_case", field: "casing" },
+    { name: "invalid", source: 'casing = "unsupported"', expected: null, field: "casing" },
+    {
+      name: "unexposed-ignore",
+      source: 'ignoreProps = new Listing { "authoredName" }',
+      expected: null,
+      field: "ignoreProps",
+    },
+  ];
+  try {
+    for (const entrypoint of ["vize.pkl", "VizeConfig.pkl"]) {
+      for (const policy of policies) {
+        const input = path.join(directory, `${entrypoint}-${policy.name}.pkl`);
+        const source = [
+          `amends ${JSON.stringify(pathToFileURL(path.join(root, "npm/cli/pkl", entrypoint)).href)}`,
+          "linter = new {",
+          "  ruleOptions = new {",
+          "    `vue/prop-name-casing` = new {",
+          `      ${policy.source}`,
+          "    }",
+          "  }",
+          "}",
+          "",
+        ].join("\n");
+        fs.writeFileSync(input, source);
+        const result = runPkl([
+          "eval",
+          "--project-dir",
+          "npm/cli/pkl",
+          "-f",
+          "json",
+          "-x",
+          "linter.ruleOptions.`vue/prop-name-casing`",
+          input,
+        ]);
+        console.log(
+          "vize-prop-casing-pkl-packet",
+          JSON.stringify({
+            entrypoint,
+            policy: policy.name,
+            source,
+            status: result.status,
+            signal: result.signal,
+            stdout: result.stdout,
+            stderr: result.stderr,
+            error: result.error?.message ?? null,
+          }),
+        );
+        assert.equal(result.error, undefined);
+        assert.equal(result.signal, null);
+        if (policy.expected === null) {
+          assert.equal(result.status, 1);
+          assert.equal(result.stdout, "");
+          assert.ok(result.stderr.includes(policy.field), result.stderr);
+        } else {
+          assertCommandSucceeded(result, `${entrypoint}: ${policy.name}`);
+          assert.equal(result.stderr, "");
+          assert.deepEqual(JSON.parse(result.stdout), { casing: policy.expected });
+        }
+        assert.equal(fs.readFileSync(input, "utf8"), source);
+      }
+    }
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
   }
 });

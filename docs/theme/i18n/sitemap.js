@@ -107,6 +107,7 @@
     "/rules/all",
     "/rules/options",
     "/rules/options-vue",
+    "/rules/options-props",
     "/rules/options-script",
     "/rules/options-type",
     "/rules/options-musea",

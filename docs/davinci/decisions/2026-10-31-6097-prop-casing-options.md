@@ -22,6 +22,6 @@ policy reset, disabled/unselected rules and invalid configuration.
 The input-only differential registration is source-inspected and retains unknown
 native/legacy acceptance. It does not recapture or modify any historical oracle.
 Acceptance requires the pinned executable provider replay, public Rust/CLI config
-tests and repository Pkl 0.27.2 generation on Actions. The earlier local Pkl 0.31
+tests and repository Pkl 0.30.2 generation on Actions. The earlier local Pkl 0.31
 preview does not substitute for that pinned generation check. No local native
 build or native performance result is claimed.
