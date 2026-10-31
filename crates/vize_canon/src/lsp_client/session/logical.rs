@@ -205,4 +205,13 @@ mod tests {
             )
         );
     }
+    #[cfg(unix)]
+    #[test]
+    fn namespace_comparison_refuses_distinct_non_utf8_names_before_uri_encoding() {
+        use std::{ffi::OsString, os::unix::ffi::OsStringExt, path::PathBuf};
+        let root = PathBuf::from(OsString::from_vec(b"/project/\x80".to_vec()));
+        let path = PathBuf::from(OsString::from_vec(b"/project/\x81/App.vue.ts".to_vec()));
+        assert!(!crate::lsp_client::session_paths::is_within_project_namespace(&path, &root));
+        assert!(!crate::lsp_client::session_paths::is_within_project_namespace(&root, &root));
+    }
 }
