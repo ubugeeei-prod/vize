@@ -1761,6 +1761,9 @@ importers:
       '@babel/core':
         specifier: catalog:babel-jsx-oracle
         version: 7.29.0(supports-color@10.2.2)
+      '@playwright/test':
+        specifier: catalog:testing
+        version: 1.62.1
       '@types/babel__core':
         specifier: catalog:babel-jsx-oracle
         version: 7.20.5

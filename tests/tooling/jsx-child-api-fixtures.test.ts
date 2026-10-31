@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { test } from "node:test";
 import {
@@ -21,28 +21,44 @@ const previous = structuredClone(manifest) as Omit<Manifest, "jsxChildApiCases">
 };
 delete previous.jsxChildApiCases;
 const baseline = "be8aa8108652c10b7eb02d963e8862fcae6b542c";
+// Squash merges do not retain the admitted branch's commit ancestry. These
+// immutable unit-fixture bytes have the original provenance and exact digests;
+// the production report still reads the actual comparison Git trees.
+const historicalBytes = fs.readFileSync(
+  "tests/_fixtures/differential/compiler/jsx-child-values-6890/historical-source-admission.json",
+);
+assert.equal(
+  createHash("sha256").update(historicalBytes).digest("hex"),
+  "4b34d12f5695532a31f480c8dab666cf29af25bdfc59871789bc727891263830",
+);
+const historical = JSON.parse(historicalBytes.toString()) as {
+  schema: number;
+  baselineRevision: string;
+  admittedRevision: string;
+  files: { side: "base" | "head"; path: string; sha256: string | null; base64: string | null }[];
+};
+assert.equal(historical.schema, 1);
+assert.equal(historical.baselineRevision, baseline);
+assert.equal(historical.admittedRevision, JSX_CHILD_ADMITTED_REVISION);
 const files = new Map<string, Buffer | null>();
-for (const source of rows[0].sources) {
-  for (const [side, revision] of [
-    ["base", baseline],
-    ["head", JSX_CHILD_ADMITTED_REVISION],
-  ] as const) {
-    const result = spawnSync("git", ["show", `${revision}:${source.path}`], {
-      maxBuffer: 8 * 1024 * 1024,
-    });
-    if (result.status !== 0)
-      assert.equal(execFileSync("git", ["ls-tree", revision, "--", source.path]).length, 0);
-    files.set(`${side}:${source.path}`, result.status === 0 ? result.stdout : null);
-  }
-}
-for (const pin of [...rows[0].inputs, ...rows[0].witnesses]) {
-  files.set(
-    `head:${pin.path}`,
-    execFileSync("git", ["show", `${JSX_CHILD_ADMITTED_REVISION}:${pin.path}`], {
-      maxBuffer: 8 * 1024 * 1024,
-    }),
+for (const entry of historical.files) {
+  const key = `${entry.side}:${entry.path}`;
+  assert(!files.has(key), "duplicate historical byte record");
+  const bytes = entry.base64 === null ? null : Buffer.from(entry.base64, "base64");
+  assert.equal(
+    bytes === null ? null : createHash("sha256").update(bytes).digest("hex"),
+    entry.sha256,
   );
+  files.set(key, bytes);
 }
+assert.deepEqual(
+  [...files.keys()].sort(),
+  [
+    ...rows[0].sources.flatMap((source) => [`base:${source.path}`, `head:${source.path}`]),
+    ...[...rows[0].inputs, ...rows[0].witnesses].map((pin) => `head:${pin.path}`),
+  ].sort(),
+  "the exact historical source/input/witness closure is retained",
+);
 files.set(`base:${manifestPath}`, Buffer.from(JSON.stringify(previous)));
 files.set(`head:${manifestPath}`, Buffer.from(JSON.stringify(manifest)));
 const read: ReadFile = (side, path) => {
