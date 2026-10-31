@@ -59,12 +59,36 @@ be absent after installation; the test never deletes one to manufacture coverage
 The original single-file shell glob is passed as its exact expansion:
 
 ```sh
-pnpm exec vize lint src/app.vue
+npx vize lint src/app.vue
 ```
 
 In each of five phases, the route retains the whole command streams/status,
 complete installed `vize/config` result, machine-readable CLI report and complete
-installation inventory. Positive objects must be equal before the stub, with the
+per-actor installation inventories. The actual npm-shipped npx entry and installed
+local Vize package/bin/shim bytes are bound to the selected public version. Its
+cache is initially empty and offline, with the local bin first on PATH; these
+environment adaptations are recorded and a replacement package is refused.
+The argument/flag sequence is the original npx command with its single-file glob
+expanded. Earlier PNPM-wrapped observations are retained as adapted observations.
+
+In a separate tooling-only fixture, an inert absolute-Node child captures PNPM
+state at entry. A second identical invocation must join the previous snapshot
+and preserve its complete vector. Each raw state/vector is saved before any
+validation, including on failure. The original consumer is never primed by this
+control. State-change attribution is conditional on an observed delta.
+
+Each original npx CLI and direct CLI then audits the source-declared
+configuration cache. Every package/Vite payload byte, mode and link remains
+exact. New cache directories must be owned real directories; new or updated
+cache JSON must retain the exact C2 format1 fields, actual authored config root
+and native release version. Complete pre/post raw bytes and SHA-256 are retained.
+Native u64 values are shape-checked without claiming exact JS numeric precision.
+The source's two-second recent-input refusal and alternating PATH environments
+are observed through every stub/repair phase, without sleeps or cache overrides.
+The JS API actor requires complete installation equality. Unknown writes,
+deletions, cache links, invalid roots/versions/formats and package edits fail.
+
+Positive objects must be equal before the stub, with the
 stub, after repairing a runtime-owning negative package, and after stub removal.
 The runtime-owning package must remain authoritative and fail with its authored
 error. Extra direct-Node CLI/API observations use the unchanged native-loader

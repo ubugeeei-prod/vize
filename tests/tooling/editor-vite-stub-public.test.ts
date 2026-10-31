@@ -11,7 +11,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { Recorder, sha256 } from "../../tools/support/config/windows_consumer/common.ts";
+import { Recorder, sha256, success } from "../../tools/support/config/windows_consumer/common.ts";
 import {
   inventory,
   writeFixture,
@@ -22,6 +22,22 @@ import {
   bootstrapPnpm,
   resolvePnpm,
 } from "../../tools/support/release/editor_vite_stub/install.ts";
+import {
+  auditPnpmState,
+  capturePnpmState,
+  joinPnpmRounds,
+  onlyPnpmStateChanged,
+  validateState,
+} from "../../tools/support/release/editor_vite_stub/pnpm-state.ts";
+import {
+  bindLocalNpx,
+  npxCacheSnapshot,
+} from "../../tools/support/release/editor_vite_stub/config.ts";
+import {
+  auditConfigCache,
+  cacheSnapshot,
+  validateCacheBytes,
+} from "../../tools/support/release/editor_vite_stub/cold-cache.ts";
 
 function fixture(run: (root: string) => void): void {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "editor-custody-control-")));
@@ -185,5 +201,236 @@ test(
     const record = new Recorder(join(output, "proof"));
     const argv = bootstrapPnpm(join(output, "package-manager"), record);
     assert.equal(argv.length, 1, "execute the package-declared native entry directly");
+    const npx = bindLocalNpx(
+      join(output, "package-manager"),
+      { packageName: "pnpm", bin: "pnpm", version: "12.1.0", entry: argv[0] },
+      record,
+    );
+    const local = record.run(
+      "bundled-npx-local-tool",
+      [...npx.command, "pnpm", "--version"],
+      join(output, "package-manager"),
+      npx.env,
+    );
+    success(local);
+    assert.equal(local.stdout.trim(), "12.1.0");
+    record.json("tooling-npx-cache.json", npxCacheSnapshot(npx.cache));
+    const project = join(output, "inert-project"),
+      dependency = join(output, "local-dependency");
+    mkdirSync(project);
+    mkdirSync(dependency);
+    writeFileSync(
+      join(project, "package.json"),
+      '{"name":"inert-project","private":true,"type":"module"}\n',
+    );
+    writeFileSync(
+      join(dependency, "package.json"),
+      '{"name":"inert-local-dependency","version":"1.0.0"}\n',
+    );
+    success(
+      record.run(
+        "inert-local-install",
+        [...argv, "add", "-D", "--save-exact", "file:" + dependency],
+        project,
+      ),
+    );
+    auditPnpmState(realpathSync(project), argv, record);
   },
 );
+
+test("state transition proof protects every row except the named pre-child PNPM state", () => {
+  const row = {
+    path: ".pnpm-workspace-state-v1.json",
+    kind: "file" as const,
+    mode: 33152,
+    bytes: 1,
+    sha256: "a",
+  };
+  const payload = { ...row, path: "vite/package.json" };
+  onlyPnpmStateChanged([row, payload], [{ ...row, bytes: 2, sha256: "b" }, payload]);
+  assert.throws(() => onlyPnpmStateChanged([row, payload], [row, { ...payload, sha256: "b" }]));
+  assert.throws(() => onlyPnpmStateChanged([row, payload], [row]));
+  assert.throws(() => onlyPnpmStateChanged([row, payload], [{ ...row, kind: "link" }, payload]));
+});
+
+test("failed metadata validation keeps raw evidence and an intervening payload edit fails the round join", () =>
+  fixture((root) => {
+    const modules = join(root, "node_modules");
+    mkdirSync(modules);
+    writeFileSync(join(root, "package.json"), "{}\n");
+    const state = join(modules, ".pnpm-workspace-state-v1.json");
+    writeFileSync(state, '{"invalid":true}\n');
+    const record = new Recorder(join(root, "proof"));
+    const invalid = capturePnpmState(root, record, "invalid");
+    assert.throws(() => validateState(invalid));
+    assert.ok(
+      readFileSync(join(record.root, "invalid.snapshot.json"), "utf8").includes(
+        invalid.state.rawBase64,
+      ),
+    );
+    writeFileSync(
+      state,
+      JSON.stringify({
+        lastValidatedTimestamp: 1,
+        projects: {},
+        settings: {},
+        pnpmfiles: [],
+        filteredInstall: false,
+      }),
+    );
+    writeFileSync(join(modules, "payload"), "first\n");
+    const first = capturePnpmState(root, record, "first-after");
+    validateState(first);
+    writeFileSync(join(modules, "payload"), "other\n");
+    const second = capturePnpmState(root, record, "second-before");
+    assert.throws(() => joinPnpmRounds(first, second), /snapshots must join/);
+  }));
+
+test("declared cache transitions retain full bytes and reject package edits, foreign roots and formats", () =>
+  fixture((root) => {
+    const modules = join(root, "node_modules");
+    mkdirSync(modules);
+    writeFileSync(join(modules, "payload"), "original dependency bytes\n");
+    const record = new Recorder(join(root, "proof")),
+      version = "0.610.0";
+    const initial = cacheSnapshot(root, version);
+    const key = {
+      format: 1,
+      version,
+      runtime: 1,
+      config: join(root, "vite.config.ts"),
+      explicit: false,
+    };
+    const value = {
+      key,
+      env: [],
+      env_names: null,
+      inputs: [
+        [key.config, false, { kind: 1, len: 0, modified: 1, changed: 1, inode: 1, link: null }],
+      ],
+      evaluation: { config: {}, complete: true, watchDependencies: [], dependencies: [] },
+    };
+    const directory = join(modules, ".vize/config-cache");
+    mkdirSync(directory, { recursive: true });
+    const cache = join(directory, "1234567890abcdef.json");
+    writeFileSync(cache, JSON.stringify([value]));
+    const cold = cacheSnapshot(root, version);
+    auditConfigCache(root, initial, cold, record, "cold");
+    writeFileSync(
+      cache,
+      JSON.stringify([{ ...value, env: [["PATH", { Value: "a".repeat(64) }]] }]),
+    );
+    const changed = cacheSnapshot(root, version);
+    auditConfigCache(root, cold, changed, record, "updated");
+    assert.notEqual(
+      cold.files[".vize/config-cache/1234567890abcdef.json"].rawBase64,
+      changed.files[".vize/config-cache/1234567890abcdef.json"].rawBase64,
+    );
+    writeFileSync(join(modules, "payload"), "wrong dependency bytes\n");
+    assert.throws(() =>
+      auditConfigCache(root, changed, cacheSnapshot(root, version), record, "corrupt"),
+    );
+    writeFileSync(join(modules, "payload"), "original dependency bytes\n");
+    assert.throws(() =>
+      validateCacheBytes(
+        Buffer.from(
+          JSON.stringify([{ ...value, key: { ...key, config: join(root, "foreign.ts") } }]),
+        ),
+        root,
+        version,
+      ),
+    );
+    for (const runtime of [-1, 0.5])
+      assert.throws(() =>
+        validateCacheBytes(
+          Buffer.from(JSON.stringify([{ ...value, key: { ...key, runtime } }])),
+          root,
+          version,
+        ),
+      );
+    for (const stamp of [{ kind: 4 }, { modified: 0.5 }])
+      assert.throws(() =>
+        validateCacheBytes(
+          Buffer.from(
+            JSON.stringify([
+              {
+                ...value,
+                inputs: [
+                  [
+                    key.config,
+                    false,
+                    { kind: 1, len: 0, modified: 1, changed: 1, inode: 1, link: null, ...stamp },
+                  ],
+                ],
+              },
+            ]),
+          ),
+          root,
+          version,
+        ),
+      );
+    validateCacheBytes(
+      Buffer.from(JSON.stringify([value]).replace('"runtime":1', '"runtime":18446744073709551615')),
+      root,
+      version,
+    );
+    const duplicate = join(directory, "fedcba0987654321.json");
+    writeFileSync(duplicate, JSON.stringify([value]));
+    assert.throws(() => cacheSnapshot(root, version), /one cache filename/);
+    rmSync(duplicate);
+    writeFileSync(
+      cache,
+      JSON.stringify([{ ...value, key: { ...key, version: "invalid-version" } }]),
+    );
+    assert.throws(() => cacheSnapshot(root, version, record, "invalid-cache"));
+    assert.ok(
+      readFileSync(join(record.root, "invalid-cache.cache-bytes.json"), "utf8").includes(
+        Buffer.from(readFileSync(cache)).toString("base64"),
+      ),
+    );
+    writeFileSync(cache, JSON.stringify([value]));
+    assert.throws(() =>
+      validateCacheBytes(
+        Buffer.from(JSON.stringify([{ ...value, key: { ...key, version: "0.609.0" } }])),
+        root,
+        version,
+      ),
+    );
+    assert.throws(() =>
+      validateCacheBytes(
+        Buffer.from(JSON.stringify([{ ...value, key: { ...key, format: 2 } }])),
+        root,
+        version,
+      ),
+    );
+    writeFileSync(join(modules, "vite"), "an undeclared external stub\n");
+    assert.throws(() =>
+      auditConfigCache(root, changed, cacheSnapshot(root, version), record, "stub"),
+    );
+    rmSync(join(modules, "vite"));
+    rmSync(cache);
+    assert.throws(() =>
+      auditConfigCache(root, changed, cacheSnapshot(root, version), record, "deleted-cache"),
+    );
+    rmSync(join(modules, ".vize"), { recursive: true });
+    const foreign = join(root, "foreign-cache");
+    mkdirSync(foreign);
+    symlinkSync(foreign, join(modules, ".vize"), process.platform === "win32" ? "junction" : "dir");
+    assert.throws(() => cacheSnapshot(root, version), /cache ownership/);
+  }));
+
+test("npx replacement-cache detection rejects a private cached package tree", () =>
+  fixture((root) => {
+    assert.equal(npxCacheSnapshot(root).length, 1);
+    mkdirSync(join(root, "_npx/foreign/node_modules"), { recursive: true });
+    assert.throws(() => npxCacheSnapshot(root), /cached replacement/);
+    rmSync(join(root, "_npx/foreign/node_modules"), { recursive: true });
+    const target = join(root, "linked-replacement");
+    mkdirSync(target);
+    symlinkSync(
+      target,
+      join(root, "_npx/foreign/node_modules"),
+      process.platform === "win32" ? "junction" : "dir",
+    );
+    assert.throws(() => npxCacheSnapshot(root), /cached replacement/);
+  }));
