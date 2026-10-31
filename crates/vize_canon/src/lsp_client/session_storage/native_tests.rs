@@ -13,40 +13,13 @@ const MAIN: &str = "import { value } from './support';\nimport type { Ref } from
 const SUPPORT: &str = "export const value = 1;\n";
 
 mod logical_control;
+use logical_control::inventory;
 
 fn hash(bytes: &[u8]) -> vize_l0::String {
     Sha256::digest(bytes)
         .iter()
         .map(|byte| vize_l0::cstr!("{byte:02x}"))
         .collect()
-}
-
-fn inventory(root: &Path) -> Vec<Value> {
-    fn visit(root: &Path, path: &Path, rows: &mut Vec<Value>) {
-        let mut children: Vec<_> = fs::read_dir(path).unwrap().map(Result::unwrap).collect();
-        children.sort_by_key(|entry| entry.file_name());
-        for entry in children {
-            let path = entry.path();
-            let metadata = fs::symlink_metadata(&path).unwrap();
-            let relative = path
-                .strip_prefix(root)
-                .unwrap()
-                .to_string_lossy()
-                .replace('\\', "/");
-            if let Ok(target) = fs::read_link(&path) {
-                rows.push(json!({"path":relative,"kind":"link","target":target}));
-            } else if metadata.is_dir() {
-                rows.push(json!({"path":relative,"kind":"directory"}));
-                visit(root, &path, rows);
-            } else {
-                assert!(metadata.is_file());
-                rows.push(json!({"path":relative,"kind":"file","bytes":metadata.len(),"sha256":hash(&fs::read(&path).unwrap()),"readonly":metadata.permissions().readonly(),"modified":metadata.modified().unwrap().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos().to_string()}));
-            }
-        }
-    }
-    let mut rows = Vec::new();
-    visit(root, root, &mut rows);
-    rows
 }
 
 fn link(source: &Path, target: &Path) {
@@ -83,6 +56,9 @@ fn retain(capture: &Path, policy: &str, phase: &str, stage: &str, value: &Value)
 fn run(root: &Path, native: &Path, policy: logical_control::Policy, capture: &Path) -> Value {
     let old_policy = policy == logical_control::Policy::Original;
     policy.prepare(root, MAIN);
+    if policy == logical_control::Policy::Disk {
+        return logical_control::run_disk(root, native, capture, MAIN, SUPPORT);
+    }
     let virtual_uri = path_to_file_uri(&root.join("src/App.vue.ts"));
     let support_uri = path_to_file_uri(&root.join("src/support.ts"));
     let mut client = CorsaProjectClient::new_for_editor_workspace(native.to_str(), root).unwrap();
@@ -401,7 +377,7 @@ fn actual_native_old_and_private_roots_preserve_complete_configured_overlay_answ
         source
     );
     let test_image = std::env::current_exe().unwrap();
-    fs::write(capture.join("identity.json"), serde_json::to_vec_pretty(&json!({"schema":1,"scope":"same-image physical storage policy differential, not an old-source binary or published-product proof","source":source,"native":{"path":native,"sha256":native_hash,"versionStdout":version.stdout},"libraryImage":{"path":test_image,"sha256":hash(&fs::read(&test_image).unwrap())},"vuePackage":{"path":vue,"manifestSha256":vue_manifest_hash}})).unwrap()).unwrap();
+    fs::write(capture.join("identity.json"), serde_json::to_vec_pretty(&json!({"schema":1,"scope":"same-provider original physical policy plus independent authored-disk vs logical-overlay packets; not old-source binary or published-product proof","source":source,"native":{"path":native,"sha256":native_hash,"versionStdout":version.stdout},"libraryImage":{"path":test_image,"sha256":hash(&fs::read(&test_image).unwrap())},"vuePackage":{"path":vue,"manifestSha256":vue_manifest_hash}})).unwrap()).unwrap();
     let mut comparisons = Vec::new();
     for root_dir in ["src", "."] {
         for composite in [false, true] {
@@ -464,6 +440,7 @@ fn actual_native_old_and_private_roots_preserve_complete_configured_overlay_answ
         }
     }
     // Capture every rootDir/composite role before any cross-role assertion.
+    crate::corsa_bridge::overlay_namespace_tests::run();
     assert_eq!(comparisons.len(), 4);
     for (_work, label, old, private, disk, before, after, support_uri) in comparisons {
         assert_eq!(

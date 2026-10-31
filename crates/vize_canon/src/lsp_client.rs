@@ -53,6 +53,8 @@ pub struct CorsaProjectClient {
     authored_workspace: bool,
     /// This live revision has no owning API overlay; semantic requests use LSP.
     logical_workspace_overlays: bool,
+    /// A previous API revision must retire before closed-file API reuse.
+    logical_api_reset_pending: bool,
     project_root: PathBuf,
     /// Explicit Batch configuration, retained across editor fallback/retries.
     explicit_project_config: Option<PathBuf>,
@@ -127,6 +129,7 @@ impl CorsaProjectClient {
             materialized_project_session: false,
             authored_workspace: false,
             logical_workspace_overlays: false,
+            logical_api_reset_pending: false,
             overlay_storage: Arc::new(session_storage::SessionStorage::new(&project_root).unwrap()),
             project_root,
             explicit_project_config: None,

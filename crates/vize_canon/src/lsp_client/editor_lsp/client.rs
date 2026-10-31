@@ -297,10 +297,7 @@ impl CorsaProjectClient {
     }
 
     #[cfg(test)]
-    pub(in crate::lsp_client) fn logical_configuration_for_test(
-        &mut self,
-        uri: &str,
-    ) -> Result<PathBuf, String> {
+    pub(crate) fn logical_configuration_for_test(&mut self, uri: &str) -> Result<PathBuf, String> {
         self.editor_lsp_session()?
             .diagnosing_configuration(uri)
             .map_err(|error| match error {

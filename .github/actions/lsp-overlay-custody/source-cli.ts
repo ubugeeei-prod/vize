@@ -48,7 +48,7 @@ function sourceTests(file: string, prefix: string): string[] {
     )
     .map((match) => prefix + match[2]!);
 }
-function libraryExecution(capture: string): void {
+function libraryExecution(capture: string, nativeSha: string): void {
   const groups = [
     [
       "storage",
@@ -81,9 +81,18 @@ function libraryExecution(capture: string): void {
     execution(fs.readFileSync(path.join(capture, `${name}.stdout`), "utf8"), expected);
   }
   assert.equal(fs.readFileSync(path.join(capture, "native.status"), "utf8").trim(), "0");
-  execution(fs.readFileSync(path.join(capture, "native.stdout"), "utf8"), [
+  const nativeStdout = fs.readFileSync(path.join(capture, "native.stdout"), "utf8");
+  execution(nativeStdout, [
     "lsp_client::session_storage::native_tests::actual_native_old_and_private_roots_preserve_complete_configured_overlay_answers",
   ]);
+  const markers = [...nativeStdout.matchAll(/^native-overlay-vue-only-control (.+)$/gm)];
+  assert.equal(markers.length, 1);
+  assert.deepEqual(JSON.parse(markers[0]![1]!), {
+    schema: 1,
+    phases: ["valid", "dependency-error", "dependency-repair", "dependency-close"],
+    wholeDiagnosticsMatched: 4,
+    nativeSha256: nativeSha,
+  });
 }
 function main(): void {
   const root = fs.realpathSync(process.cwd());
@@ -278,7 +287,7 @@ function main(): void {
     passed(outcome);
     const stdout = fs.readFileSync(path.join(capture, "source-cli-test.stdout"), "utf8");
     execution(stdout, [test]);
-    libraryExecution(capture);
+    libraryExecution(capture, text(native.sha256));
   } finally {
     fs.rmSync(owner, { recursive: true, force: false });
   }

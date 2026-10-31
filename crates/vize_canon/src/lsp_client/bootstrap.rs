@@ -109,6 +109,7 @@ impl CorsaProjectClient {
             materialized_project_session: false,
             authored_workspace,
             logical_workspace_overlays: false,
+            logical_api_reset_pending: false,
             project_root: project_root.to_path_buf(),
             explicit_project_config,
             materialized_project_preference: None,

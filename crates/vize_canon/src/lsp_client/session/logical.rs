@@ -7,6 +7,10 @@ use vize_l0::{FxHashMap, String, cstr};
 
 impl CorsaProjectClient {
     pub(in crate::lsp_client) fn try_logical_workspace_overlays(&mut self) -> Result<bool, String> {
+        if self.logical_workspace_overlays {
+            self.retain_logical_workspace_revision()?;
+            return Ok(true);
+        }
         if !self.authored_workspace
             || self.materialized_project_session
             || self.project_root.join("__vize_vue_modules.d.ts").is_file()
@@ -18,6 +22,7 @@ impl CorsaProjectClient {
         }
         // Retained invalid inputs stay owned for error reporting, but neither
         // the stale API nor the editor may publish them as an accepted view.
+        self.logical_api_reset_pending = self.has_project_session();
         self.logical_workspace_overlays = true;
         self.retain_logical_workspace_revision()?;
         Ok(true)
@@ -155,5 +160,26 @@ mod tests {
         client.authored_workspace = true;
         assert_eq!(client.try_logical_workspace_overlays(), Ok(false));
         assert!(!client.logical_workspace_overlays);
+    }
+    #[test]
+    fn failed_readonly_api_reset_keeps_the_empty_revision_quarantined() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("tsconfig.json"), "{}").unwrap();
+        let mut client = CorsaProjectClient::empty_for_test(root.path().to_path_buf());
+        client.executable = root
+            .path()
+            .join("missing-native-runtime")
+            .to_string_lossy()
+            .into();
+        client.logical_workspace_overlays = true;
+        client.logical_api_reset_pending = true;
+        let uri = crate::file_uri::path_to_file_uri(&root.path().join("closed.ts"));
+        let first = client.ensure_project_transport().unwrap_err();
+        assert!(client.logical_api_reset_pending);
+        assert!(client.logical_workspace_overlays);
+        assert!(!client.can_use_api_for_uri(&uri));
+        assert_eq!(client.ensure_project_transport(), Err(first));
+        assert!(client.logical_api_reset_pending);
+        assert!(client.logical_workspace_overlays);
     }
 }

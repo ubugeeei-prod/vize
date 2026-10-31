@@ -29,6 +29,8 @@ mod vue_document_alias_tests;
 // Every case links a workspace package through a directory symlink, which
 // Windows refuses without Developer Mode or elevation.
 #[cfg(test)]
+pub(crate) mod overlay_namespace_tests;
+#[cfg(test)]
 #[cfg(unix)]
 mod vue_document_package_compat_tests;
 #[cfg(test)]

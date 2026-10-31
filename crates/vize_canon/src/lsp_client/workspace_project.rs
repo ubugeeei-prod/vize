@@ -120,6 +120,7 @@ impl CorsaProjectClient {
         self.materialized_project_session = false;
         self.authored_workspace = false;
         self.logical_workspace_overlays = false;
+        self.logical_api_reset_pending = false;
         self.clear_workspace_project_overlays();
         self.session_document_uris.clear();
         self.external_document_uris.clear();

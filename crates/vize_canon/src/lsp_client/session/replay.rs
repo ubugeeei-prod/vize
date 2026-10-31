@@ -165,6 +165,21 @@ impl CorsaProjectClient {
     }
 
     pub(in crate::lsp_client) fn ensure_project_transport(&mut self) -> Result<(), String> {
+        if !self.closed && self.logical_workspace_overlays && self.document_texts.is_empty() {
+            // A partially supported overlay API may have accepted an earlier
+            // buffer before this revision switched to LSP. Do not reuse that
+            // API snapshot as the closed, readonly authored program.
+            if self.logical_api_reset_pending {
+                let config = self.explicit_project_config.clone().unwrap_or_else(|| {
+                    crate::lsp_client::lifecycle_setup::workspace_config_path(&self.project_root)
+                });
+                self.retire_project_session()?;
+                let root = self.project_root.clone();
+                self.replace_project_transport(&config, &root)?;
+                self.logical_api_reset_pending = false;
+            }
+            self.logical_workspace_overlays = false;
+        }
         if !self.closed && self.shared_editor_transport && !self.has_project_session() {
             crate::corsa_bridge::native_operation::checkpoint()?;
             self.ensure_editor_transport()?;
