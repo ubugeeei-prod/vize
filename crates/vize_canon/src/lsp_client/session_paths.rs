@@ -1,7 +1,8 @@
-use super::virtual_overlay;
+use super::{CorsaProjectClient, virtual_overlay};
+use crate::batch::SourceFilePolicy;
 use crate::file_uri::{file_uri_to_path, path_to_file_uri};
 use std::path::{Component, Path, PathBuf};
-use vize_l0::String;
+use vize_l0::{String, cstr};
 
 pub(super) fn build_session_document_uri(
     uri: &str,
@@ -61,6 +62,7 @@ pub(super) fn build_materialized_session_document_uri(
 pub(super) fn preferred_materialized_document<'a>(
     uris: impl Iterator<Item = &'a String>,
     overlay_root: &Path,
+    source_policy: SourceFilePolicy,
 ) -> Option<String> {
     uris.filter(|uri| {
         file_uri_to_path(uri).is_some_and(|path| {
@@ -68,6 +70,7 @@ pub(super) fn preferred_materialized_document<'a>(
                 return false;
             };
             path.is_file()
+                && source_policy.accepts_diagnostic_input(&path)
                 && relative.parent().is_some_and(|parent| {
                     parent.components().all(|part| {
                         matches!(part, Component::Normal(name) if !name.as_encoded_bytes().starts_with(b"."))
@@ -77,6 +80,26 @@ pub(super) fn preferred_materialized_document<'a>(
     })
     .min()
     .cloned()
+}
+
+impl CorsaProjectClient {
+    pub(super) fn materialized_source_file_policy(
+        &mut self,
+        config: &Path,
+    ) -> Result<SourceFilePolicy, String> {
+        match crate::batch::VirtualProject::source_file_policy_for_config(
+            self.overlay_storage.root(),
+            config,
+        ) {
+            Ok(policy) => Ok(policy),
+            Err(error) => {
+                let _ = self.retire_project_session();
+                Err(cstr!(
+                    "Failed to read materialized Corsa source policy: {error}"
+                ))
+            }
+        }
+    }
 }
 
 fn materialized_session_path(

@@ -128,9 +128,13 @@ mod tests {
             "export {};".into(),
         );
         let directory = path_to_file_uri(root.path());
-        let error = client.hover_raw(&directory, 0, 0).unwrap_err();
-        let prefix = cstr!("Failed to read closed logical Corsa query {directory}:");
-        assert!(error.starts_with(prefix.as_str()));
+        let read_error = std::fs::read_to_string(root.path()).unwrap_err();
+        assert_eq!(
+            client.hover_raw(&directory, 0, 0),
+            Err(cstr!(
+                "Failed to read closed logical Corsa query {directory}: {read_error}"
+            ))
+        );
         assert_eq!(client.document_texts.len(), 1);
         assert!(client.session.is_none());
         assert!(client.editor_lsp.is_none());

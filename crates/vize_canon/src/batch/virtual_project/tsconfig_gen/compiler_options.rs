@@ -113,6 +113,14 @@ pub(in super::super) struct FlattenedCompilerOptions {
 }
 
 impl VirtualProject {
+    pub(crate) fn source_file_policy_for_config(
+        project_root: &Path,
+        config: &Path,
+    ) -> CorsaResult<crate::batch::source_policy::SourceFilePolicy> {
+        let options = CompilerOptionsContext::new(project_root).load_verbatim(config, None)?;
+        Ok(crate::batch::source_policy::SourceFilePolicy::from_compiler_options(&options))
+    }
+
     #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     pub(in super::super) fn load_compiler_options(
         &self,

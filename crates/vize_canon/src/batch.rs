@@ -30,6 +30,7 @@ mod runtime_deps;
 pub(crate) use runtime_deps::{VUE_RUNTIME_DOM_STUB_TYPES, write_vue_facade};
 mod source_map;
 mod source_policy;
+pub(crate) use source_policy::SourceFilePolicy;
 mod type_checker;
 pub(crate) mod virtual_project;
 pub(crate) mod virtual_specifier_message;

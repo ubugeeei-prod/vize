@@ -15,6 +15,10 @@ on:
       - tests/_fixtures/differential/typechecker/windows-verbatim-overlay-11145/input.json
       - .github/workflows/lsp-overlay-custody.yml
       - .github/actions/lsp-overlay-custody/**
+      - tests/tooling/lsp-overlay-custody-workflow.test.ts
+      - tests/package.json
+      - pnpm-workspace.yaml
+      - pnpm-lock.yaml
       - crates/vize/tests/lsp_cli/overlay_storage.rs
       - crates/vize/tests/lsp_cli.rs
       - crates/vize/tests/main.rs
@@ -103,12 +107,15 @@ jobs:
           native_status=$?
           printf '%s\n' "$native_status" > "$VIZE_PRIVATE_OVERLAY_CAPTURE/native.status"
           set -e
-          node node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/tsc.js --ignoreConfig --strict --noEmit --noImplicitAny --noUncheckedIndexedAccess --exactOptionalPropertyTypes --erasableSyntaxOnly --target es2023 --module esnext --moduleResolution bundler --allowImportingTsExtensions --skipLibCheck --types node --typeRoots "$PWD/node_modules/@types" .github/actions/lsp-overlay-custody/source-cli.ts > "$VIZE_PRIVATE_OVERLAY_CAPTURE/source-cli-helper-strict.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/source-cli-helper-strict.stderr"
+          compiler="$(node --input-type=module -e 'import {createRequire} from "node:module"; console.log(createRequire(new URL("./tests/package.json", import.meta.url)).resolve("typescript/lib/tsc.js"));')"
+          printf '%s\n' "$compiler" > "$VIZE_PRIVATE_OVERLAY_CAPTURE/source-cli-helper-compiler.path"
+          node "$compiler" --version > "$VIZE_PRIVATE_OVERLAY_CAPTURE/source-cli-helper-compiler.version"
+          node "$compiler" --ignoreConfig --strict --noEmit --noImplicitAny --noUncheckedIndexedAccess --exactOptionalPropertyTypes --erasableSyntaxOnly --target es2023 --module esnext --moduleResolution bundler --allowImportingTsExtensions --skipLibCheck --types node --typeRoots "$PWD/node_modules/@types" .github/actions/lsp-overlay-custody/source-cli.ts > "$VIZE_PRIVATE_OVERLAY_CAPTURE/source-cli-helper-strict.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/source-cli-helper-strict.stderr"
           node .github/actions/lsp-overlay-custody/source-cli.ts
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
-          name: lsp-overlay-custody-${{ matrix.os }}-${{ github.event.pull_request.head.sha }}
+          name: lsp-overlay-custody-${{ matrix.os }}-${{ github.event.pull_request.head.sha }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/lsp-overlay-custody/
             target/nextest/full/native-runtime-provider.json

@@ -177,9 +177,11 @@ impl CorsaProjectClient {
             }
             mappings.push((uri.clone(), document_uri));
         }
+        let source_policy = self.materialized_source_file_policy(&config_path)?;
         self.materialized_project_preference = preferred_materialized_document(
             mappings.iter().map(|(_, uri)| uri),
             self.overlay_storage.root(),
+            source_policy,
         )
         .map(|uri| (config_path.clone(), uri));
         if self.has_project_session() {

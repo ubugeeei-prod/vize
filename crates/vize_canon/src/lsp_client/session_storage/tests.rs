@@ -22,7 +22,11 @@ fn preferred_materialized_member_skips_hidden_directories_but_keeps_package_memb
         uris.push(path_to_file_uri(&path));
     }
     fn select(uris: &[vize_l0::String], root: &Path) -> Option<vize_l0::String> {
-        crate::lsp_client::session_paths::preferred_materialized_document(uris.iter(), root)
+        crate::lsp_client::session_paths::preferred_materialized_document(
+            uris.iter(),
+            root,
+            crate::batch::SourceFilePolicy::default(),
+        )
     }
     let package = path_to_file_uri(&storage.root().join("node_modules/package/index.d.ts"));
     assert_eq!(select(&uris, storage.root()), Some(package.clone()));
@@ -49,13 +53,90 @@ fn preferred_materialized_member_skips_hidden_directories_but_keeps_package_memb
 }
 
 #[test]
+fn preferred_materialized_member_uses_native_script_extensions_and_javascript_policy() {
+    use crate::{
+        batch::SourceFilePolicy, lsp_client::session_paths::preferred_materialized_document,
+    };
+    let project = tempfile::tempdir().unwrap();
+    let storage = SessionStorage::new(project.path()).unwrap();
+    for extension in [
+        "ts", "tsx", "mts", "cts", "d.ts", "vue", "txt", "js", "jsx", "mjs", "cjs",
+    ] {
+        let path = storage
+            .root()
+            .join(vize_l0::cstr!("App.{extension}").as_str());
+        write_owned_file(storage.root(), &path, b"export {};").unwrap();
+        let uris = [path_to_file_uri(&path)];
+        for (options, javascript) in [
+            (serde_json::json!({}), false),
+            (serde_json::json!({"allowJs":true}), true),
+            (serde_json::json!({"checkJs":true}), true),
+            (serde_json::json!({"allowJs":false,"checkJs":true}), false),
+        ] {
+            let policy = SourceFilePolicy::from_compiler_options(options.as_object().unwrap());
+            let expected = match extension {
+                "ts" | "tsx" | "mts" | "cts" | "d.ts" => Some(path_to_file_uri(&path)),
+                "js" | "jsx" | "mjs" | "cjs" if javascript => Some(path_to_file_uri(&path)),
+                _ => None,
+            };
+            assert_eq!(
+                preferred_materialized_document(uris.iter(), storage.root(), policy),
+                expected
+            );
+        }
+    }
+}
+
+#[test]
+fn materialized_member_policy_rereads_the_upcoming_config_and_extends_chain() {
+    let project = tempfile::tempdir().unwrap();
+    let base = project.path().join("base.jsonc");
+    fs::write(
+        project.path().join("tsconfig.json"),
+        r#"{/* selected config */"extends":"./base.jsonc","compilerOptions":{"checkJs":true}}"#,
+    )
+    .unwrap();
+    let mut client = CorsaProjectClient::empty_for_test(project.path().to_path_buf());
+    let root = client.overlay_storage.root().to_path_buf();
+    let config = crate::lsp_client::lifecycle_setup::write_materialized_project_tsconfig(
+        project.path(),
+        &root,
+        None,
+    )
+    .unwrap();
+    let member = root.join("member.js");
+    write_owned_file(&root, &member, b"export const value = 1;").unwrap();
+    let uri = path_to_file_uri(&member);
+    for allow_js in [false, true, false] {
+        fs::write(
+            &base,
+            serde_json::to_vec(&serde_json::json!({"compilerOptions":{"allowJs":allow_js}}))
+                .unwrap(),
+        )
+        .unwrap();
+        let policy = client.materialized_source_file_policy(&config).unwrap();
+        assert_eq!(
+            crate::lsp_client::session_paths::preferred_materialized_document(
+                std::iter::once(&uri),
+                &root,
+                policy
+            ),
+            allow_js.then(|| uri.clone())
+        );
+    }
+    assert!(client.session.is_none());
+    assert!(client.editor_lsp.is_none());
+}
+
+#[test]
 fn scratch_project_is_an_owned_sibling_outside_the_materialized_include_scope() {
     let project = tempfile::tempdir().unwrap();
     let storage = SessionStorage::new(project.path()).unwrap();
     let root = storage.root().to_path_buf();
     let scratch = storage.create_scratch_root().unwrap();
     assert_eq!(scratch.parent(), root.parent());
-    assert!(!scratch.starts_with(&root));
+    assert_eq!(scratch, root.parent().unwrap().join("scratch"));
+    assert_ne!(scratch, root);
     fs::write(scratch.join("__vize_vue_modules.d.ts"), "scratch only").unwrap();
     write_owned_file(&root, &root.join("main.ts"), b"materialized only").unwrap();
     assert!(!root.join("__vize_vue_modules.d.ts").exists());

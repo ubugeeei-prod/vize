@@ -148,10 +148,12 @@ impl CorsaProjectClient {
         if self.materialized_project_session {
             // A deleted virtual member cannot remain the SDK preference. Only
             // another exact, still-present mapped member may replace it.
+            let source_policy = self.materialized_source_file_policy(&config)?;
             self.materialized_project_preference =
                 crate::lsp_client::session_paths::preferred_materialized_document(
                     self.session_document_uris.values(),
                     self.overlay_storage.root(),
+                    source_policy,
                 )
                 .map(|uri| (config.clone(), uri));
         }
