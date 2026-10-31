@@ -10,12 +10,15 @@ pub(crate) fn run(
     executable: &Path,
     root: &Path,
     uri: &str,
-    main: &str,
     capture: &Path,
     phase: &str,
     query: (u32, u32),
     dependency: &Path,
 ) -> Result<Value, String> {
+    let main_path = crate::file_uri::file_uri_to_path(uri)
+        .ok_or_else(|| cstr!("Physical native control requires a file URI: {uri}"))?;
+    let main = fs::read_to_string(&main_path)
+        .map_err(|error| cstr!("Cannot read physical native main: {error}"))?;
     let mut packet = json!({"phase":phase,"root":root,"uri":uri,"main":main,
         "scope":"fresh standard LSP; physical dependency reads without a support overlay",
         "dependencyPhysicalPath":dependency,"supportDisk":fs::read_to_string(dependency).unwrap(),
@@ -35,7 +38,7 @@ pub(crate) fn run(
         // Only the real main file is opened, with bytes identical to disk.
         // Support is intentionally never mirrored; each fresh native owner
         // must resolve its current physical bytes under the authored config.
-        let opened = editor.mirror(uri, main).map(|_| ());
+        let opened = editor.mirror(uri, &main).map(|_| ());
         packet["openResult"] = serde_json::to_value(&opened).unwrap();
         save(&packet, "open")?;
         opened?;

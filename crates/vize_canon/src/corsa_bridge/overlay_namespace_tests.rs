@@ -243,7 +243,6 @@ pub(crate) fn run() {
                 &native,
                 generated_root,
                 &document.request_uri,
-                &document.code,
                 &disk_capture,
                 phase,
                 (line, character),

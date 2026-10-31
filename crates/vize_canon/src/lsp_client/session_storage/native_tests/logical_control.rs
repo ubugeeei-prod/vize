@@ -67,7 +67,6 @@ pub(super) fn run_disk(
     root: &Path,
     native: &Path,
     capture: &Path,
-    main: &str,
     support: &str,
 ) -> serde_json::Value {
     use crate::file_uri::path_to_file_uri;
@@ -84,7 +83,6 @@ pub(super) fn run_disk(
             native,
             root,
             &uri,
-            main,
             capture,
             phase,
             (2, 32),

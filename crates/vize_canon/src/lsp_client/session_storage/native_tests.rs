@@ -57,7 +57,7 @@ fn run(root: &Path, native: &Path, policy: logical_control::Policy, capture: &Pa
     let old_policy = policy == logical_control::Policy::Original;
     policy.prepare(root, MAIN);
     if policy == logical_control::Policy::Disk {
-        return logical_control::run_disk(root, native, capture, MAIN, SUPPORT);
+        return logical_control::run_disk(root, native, capture, SUPPORT);
     }
     let virtual_uri = path_to_file_uri(&root.join("src/App.vue.ts"));
     let support_uri = path_to_file_uri(&root.join("src/support.ts"));
