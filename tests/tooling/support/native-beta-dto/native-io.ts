@@ -88,6 +88,7 @@ export interface NativeThreadExit {
   tid: number;
   at: string;
   code: number;
+  line?: number;
 }
 export interface NativeExitGroup {
   tid: number;
@@ -300,7 +301,7 @@ export async function readNativeTrace(root: string, executable: string) {
       const exit = /^([0-9]+\.[0-9]+) \+\+\+ exited with ([0-9]+) \+\+\+/u.exec(line);
       if (exit) {
         exits.set(tid, Number(exit[2]));
-        threadExits.push({ tid, at: exit[1]!, code: Number(exit[2]) });
+        threadExits.push({ tid, at: exit[1]!, code: Number(exit[2]), line: lineNumber });
       }
       const group = /^([0-9]+\.[0-9]+) exit_group\(([0-9]+)\)/u.exec(line);
       if (group)

@@ -232,8 +232,13 @@ export function verifyNativeRelations(
   };
 }
 
-import { requireCompletedBefore, type NativeTimedObservation } from "./native-io.ts";
+import {
+  requireCompletedBefore,
+  type NativeTimedObservation,
+  type nativeOwnerTerminalState,
+} from "./native-io.ts";
 import { micros, timedPackets, type WatcherTimedIo } from "./stable-watcher-timing.ts";
+import { historicalRootAckFragments } from "./stable-watcher-ack-fragment.ts";
 export { micros };
 export type { WatcherTimedIo };
 export function requireCandidateStableStderr(bytes: Uint8Array) {
@@ -247,6 +252,28 @@ export function stableWatchContext(
   context: WatcherContext,
   io: readonly WatcherTimedIo[],
   eofReads: readonly NativeTimedObservation[],
+) {
+  return watchContext(client, server, context, io, eofReads, (ack, eof) => {
+    for (const part of ack.parts) requireCompletedBefore(part, eof);
+  });
+}
+export function historicalSplitWatchContext(
+  ...args: [...Parameters<typeof stableWatchContext>, ReturnType<typeof nativeOwnerTerminalState>]
+) {
+  const [client, server, context, io, eofReads, owner] = args;
+  const proof: { value: ReturnType<typeof historicalRootAckFragments> } = { value: null };
+  const actor = watchContext(client, server, context, io, eofReads, (ack, eof) => {
+    proof.value = historicalRootAckFragments(ack, eof, io, owner);
+  });
+  return { ...actor, rootAckFragmentOrder: proof.value };
+}
+function watchContext(
+  client: readonly unknown[],
+  server: readonly unknown[],
+  context: WatcherContext,
+  io: readonly WatcherTimedIo[],
+  eofReads: readonly NativeTimedObservation[],
+  rootAckOrder: (ack: ReturnType<typeof timedPackets>[number], eof: NativeTimedObservation) => void,
 ) {
   assert.equal(context.role, "before", "split watch log is a baseline observation only");
   assert.equal(context.source, historicalSource);
@@ -388,7 +415,7 @@ export function stableWatchContext(
   assert.equal(watcherAck.packet.result, null);
   closed(watcherAck.packet, ["jsonrpc", "id", "result"]);
   assert.ok(micros(watcher.at) < micros(watcherAck.at));
-  for (const part of watcherAck.parts) requireCompletedBefore(part, eof);
+  rootAckOrder(watcherAck, eof);
   const stderr = io
     .filter((row) => row.op === "write" && row.fd === 2)
     .sort((a, b) => a.at.localeCompare(b.at) || a.tid - b.tid || a.line - b.line);

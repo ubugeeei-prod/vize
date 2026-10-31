@@ -258,6 +258,7 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/role-disposition.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
+    "tests/tooling/support/native-beta-dto/stable-watcher-ack-fragment.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
     "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
