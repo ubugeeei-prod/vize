@@ -16,6 +16,7 @@ mod glued_import;
 mod imports;
 mod legacy_vue2;
 mod macro_anchors;
+mod module_projection;
 mod module_statements;
 mod options_api;
 mod options_api_bridge;
@@ -67,7 +68,7 @@ use self::setup_helpers::{SetupHelperComponentContext, emit_setup_helpers};
 use self::setup_imports::SetupImportPlan;
 use self::setup_props::{emit_template_context, generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
-use self::spans::{DEFINE_COMPONENT_REF, rewrite_export_default_for_module_scope, template_usage};
+use self::spans::{DEFINE_COMPONENT_REF, template_usage};
 use self::type_only_imports::syntactic_type_only_imported_names;
 use self::unresolved_components::emit_unresolved_components;
 use super::{
@@ -193,7 +194,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     };
     let default_export_object = options_script.default_export.object;
     let default_export_class = options_script.default_export.class;
-    let default_export_expr = options_script.default_export.expr;
     if default_export_object.is_some() {
         ts.push_str(legacy_vue2::define_component_helper(legacy_vue2, dialect));
     }
@@ -281,45 +281,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     continue;
                 }
 
-                let gen_start = ts.len();
-                if text.contains("export default") {
-                    // Re-base the script-absolute default-export offsets onto
-                    // this module span so the rewrite can wrap a plain options
-                    // object with `defineComponent`, or rewrite any other shape
-                    // to a bare `const __default__ = <expr>`, by slicing on AST
-                    // byte offsets instead of scanning lines.
-                    let span_start = start as usize;
-                    let span_end = end as usize;
-                    let rebase = |(export_start, inner_start, inner_end): (usize, usize, usize)| {
-                        (export_start >= span_start && inner_end <= span_end).then_some((
-                            export_start - span_start,
-                            inner_start - span_start,
-                            inner_end - span_start,
-                        ))
-                    };
-                    let span_relative_object = default_export_object.and_then(rebase);
-                    let span_relative_expr = default_export_expr.and_then(rebase);
-                    let rewritten = rewrite_export_default_for_module_scope(
-                        text,
-                        span_relative_object,
-                        span_relative_expr,
-                    );
-                    // Every rewrite shape declares the alias; a span with no
-                    // rewriteable default export comes back untouched.
-                    declared_default_alias |= rewritten.as_str() != text;
-                    ts.push_str(&rewritten);
-                    ts.push_str("void __default__;\n");
-                } else {
-                    ts.push_str(text);
-                }
-                let gen_end = ts.len();
-                ts.push('\n');
-                mappings.push(VizeMapping {
-                    gen_range: gen_start..gen_end,
-                    src_range: script_source_offset(start as usize)
-                        ..script_source_offset(end as usize),
-                    sub_spans: Vec::new(),
-                });
+                declared_default_alias |= module_projection::emit(
+                    &mut ts,
+                    &mut mappings,
+                    text,
+                    span,
+                    &script_source_offset,
+                    &options_script,
+                );
             }
 
             setup_helpers.emit_import_anchors(&mut ts);
