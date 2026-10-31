@@ -15,6 +15,7 @@ mod events;
 mod for_loop;
 mod if_block;
 mod insertion;
+pub(super) mod jsx_children;
 mod keep_alive_map;
 mod key;
 mod match_scope;
@@ -48,6 +49,9 @@ pub(crate) fn generate_operation(
         }
         OperationNode::SetText(set_text) => {
             dom::generate_set_text(ctx, set_text);
+        }
+        OperationNode::SetJsxChildren(children) => {
+            jsx_children::generate(ctx, children);
         }
         OperationNode::SetEvent(set_event) => {
             events::generate_set_event(ctx, set_event);

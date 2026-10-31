@@ -248,6 +248,9 @@ pub(crate) fn generate_vapor_with_spans_and_runtime(
     let capacity = imports.len() + template_code.len() + delegate_code.len() + 1 + ctx.out.len();
     let mut document = EmitDocument::with_capacity(capacity, spans.is_some());
     document.push_str(&imports);
+    if ctx.jsx_children {
+        document.push_str(super::operations::jsx_children::RUNTIME);
+    }
     document.push_spanned(&template_code);
     if !delegate_code.is_empty() {
         document.push_str(&delegate_code);

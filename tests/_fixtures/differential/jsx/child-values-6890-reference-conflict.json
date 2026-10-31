@@ -1,0 +1,35 @@
+{
+  "run": 41182731530,
+  "artifact": 13035319133,
+  "artifactSha256": "5f9ade0d876e78014dfa12dd90332670e8464b4c04f78f2ff98bab9e7dedc835",
+  "phase": 8,
+  "vapor": {
+    "dom": [{ "tag": "main", "attributes": {}, "children": ["[object Object]"] }],
+    "text": "[object Object]",
+    "elementIdentities": [0],
+    "warnings": [],
+    "events": []
+  },
+  "babel": {
+    "dom": [
+      {
+        "tag": "main",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "i",
+            "attributes": { "data-kind": "nested" },
+            "children": [
+              { "tag": "b", "attributes": {}, "children": ["inner"] },
+              { "tag": "u", "attributes": {}, "children": ["leaf"] }
+            ]
+          }
+        ]
+      }
+    ],
+    "text": "innerleaf",
+    "elementIdentities": [0, 1, 2, 3],
+    "warnings": [],
+    "events": []
+  }
+}
