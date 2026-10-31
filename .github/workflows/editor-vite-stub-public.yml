@@ -48,7 +48,18 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "26.6.0", package-manager-cache: false }
       - name: Require full byte and link mutation detection and original fixture custody
+        env:
+          VIZE_EDITOR_PNPM_BOOTSTRAP: "1"
         run: node --test tests/tooling/editor-vite-stub-public.test.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: editor-pnpm-bootstrap-${{ matrix.os }}-${{ env.SOURCE_SHA }}
+          path: |
+            ${{ runner.temp }}/editor-pnpm-bootstrap/proof/*.json
+            ${{ runner.temp }}/editor-pnpm-bootstrap/proof/*.stdout
+            ${{ runner.temp }}/editor-pnpm-bootstrap/proof/*.stderr
+          if-no-files-found: error
   published:
     if: github.event_name == 'workflow_dispatch'
     name: Exact public CLI and editor (${{ matrix.os }})

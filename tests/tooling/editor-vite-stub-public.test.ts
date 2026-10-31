@@ -11,13 +11,17 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { sha256 } from "../../tools/support/config/windows_consumer/common.ts";
+import { Recorder, sha256 } from "../../tools/support/config/windows_consumer/common.ts";
 import {
   inventory,
   writeFixture,
 } from "../../tools/support/release/editor_vite_stub/filesystem.ts";
 import { injectLink } from "../../tools/support/release/editor_vite_stub/editor.ts";
 import { verifyJournal } from "../../tools/support/release/editor_vite_stub/custody.ts";
+import {
+  bootstrapPnpm,
+  resolvePnpm,
+} from "../../tools/support/release/editor_vite_stub/install.ts";
 
 function fixture(run: (root: string) => void): void {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "editor-custody-control-")));
@@ -134,3 +138,52 @@ test("only an early negative JS API phase may finish without loading the native 
     save([initial, attempt, returned, { event: "exit", code: 2 }]);
     assert.throws(() => verifyJournal(journal, identity, null));
   }));
+
+test("pnpm uses only its pinned manifest entry and rejects missing, wrong-version and escaped files", () =>
+  fixture((root) => {
+    const pkg = join(root, "node_modules/pnpm");
+    mkdirSync(join(pkg, "bin"), { recursive: true });
+    const save = (bin: string, version = "12.1.0") =>
+      writeFileSync(
+        join(pkg, "package.json"),
+        JSON.stringify({ name: "pnpm", version, bin: { pnpm: bin } }),
+      );
+    assert.throws(() => resolvePnpm(root));
+    for (const name of ["declared.mjs", "declared.cjs"]) {
+      writeFileSync(
+        join(pkg, "bin", name),
+        'throw new Error("control must never execute a fixture");\n',
+      );
+      save("bin/" + name);
+      const selected = resolvePnpm(root);
+      assert.deepEqual(selected.argv, [process.execPath, realpathSync(join(pkg, "bin", name))]);
+      assert.equal(selected.package.entry.sha256, sha256(readFileSync(join(pkg, "bin", name))));
+    }
+    save("bin/missing.mjs");
+    assert.throws(() => resolvePnpm(root));
+    save("bin/declared.mjs", "12.0.0");
+    assert.throws(() => resolvePnpm(root));
+    save("../../../escape.mjs");
+    assert.throws(() => resolvePnpm(root), /declared pnpm entry escaped/);
+    const outside = join(root, "outside");
+    mkdirSync(outside);
+    writeFileSync(join(outside, "entry.mjs"), "throw 0;\n");
+    symlinkSync(outside, join(pkg, "redirect"), process.platform === "win32" ? "junction" : "dir");
+    save("redirect/entry.mjs");
+    assert.throws(() => resolvePnpm(root), /owned regular file/);
+  }));
+
+test(
+  "actual fresh pnpm tooling bootstrap follows its published manifest on this OS",
+  { skip: process.env.VIZE_EDITOR_PNPM_BOOTSTRAP !== "1" },
+  () => {
+    assert.equal(process.env.GITHUB_ACTIONS, "true", "real tooling installs are Actions-only");
+    assert.equal(process.version, "v26.6.0");
+    assert.ok(process.env.RUNNER_TEMP);
+    const output = join(realpathSync(process.env.RUNNER_TEMP), "editor-pnpm-bootstrap");
+    mkdirSync(output);
+    const record = new Recorder(join(output, "proof"));
+    const argv = bootstrapPnpm(join(output, "package-manager"), record);
+    assert.equal(argv[0], process.execPath);
+  },
+);
