@@ -29,7 +29,11 @@ fn selected_art_uses_each_profile_without_editing_tags_or_neighbors() {
     const PREFIX: &str = "<template><p>🌸 untouched</p></template>\n<!--🌸--><art title=\"one\">";
     const BODY: &str = "<Button data-z=\"z\" data-a=\"a\" />";
     const SUFFIX: &str = "</art>\n<script setup>const   value=1</script>\n";
-    let source = [PREFIX, BODY, SUFFIX].concat();
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/lsp/art-range-formatting-6098/App.vue.txt"
+    ));
+    assert_eq!(source, [PREFIX, BODY, SUFFIX].concat());
     // The comment's astral character occupies two UTF-16 units, not four bytes.
     let range = Range::new(Position::new(1, 27), Position::new(1, 28));
     let content = Range::new(
@@ -63,6 +67,14 @@ fn selected_art_uses_each_profile_without_editing_tags_or_neighbors() {
                 new_text: expected.to_owned()
             }]
         );
+        if matches!(preset, FormatPreset::Documentation) {
+            let pinned: Vec<TextEdit> = serde_json::from_str(include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/_fixtures/differential/lsp/art-range-formatting-6098/response.expected.json"
+            )))
+            .unwrap();
+            assert_eq!(edits, pinned);
+        }
         let bytes = apply(&source, &edits).unwrap();
         let applied = std::str::from_utf8(&bytes).unwrap();
         assert_eq!(applied, [PREFIX, expected, SUFFIX].concat());
