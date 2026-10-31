@@ -491,6 +491,6 @@ export default defineConfig({
 
 <span id="vue-attribute-hyphenation"></span>
 
-## `vue/attribute-hyphenation`
+## 属性名のオプション
 
 [属性名のスタイルと例外](./options-attributes.md)を参照してください。

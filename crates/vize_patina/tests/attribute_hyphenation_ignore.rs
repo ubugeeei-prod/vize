@@ -159,3 +159,18 @@ fn custom_ignore_extends_builtins_and_keeps_existing_typechecker_exemptions() {
         clean("Control.vue")
     );
 }
+
+#[test]
+fn attribute_options_do_not_register_rules_absent_from_the_incremental_preset() {
+    let input = source("RegisteredCamel.vue.txt");
+    for policy in [json!("always"), json!({}), json!({"ignore":["active"]})] {
+        let options: ConfigLintRuleOptions = serde_json::from_value(json!({RULE:policy})).unwrap();
+        let configured = Linter::with_preset(LintPreset::Incremental)
+            .with_type_aware_lint(false)
+            .with_config_rule_options(&options);
+        assert_eq!(
+            packet(&configured.lint_sfc(input, "Control.vue")),
+            clean("Control.vue")
+        );
+    }
+}

@@ -459,6 +459,6 @@ Good:
 <MyPanel v-slot:default="slot"><template v-slot:header>Header</template>{{ slot.item }}</MyPanel>
 ```
 
-## `vue/attribute-hyphenation`
+## Attribute naming options {#vue-attribute-hyphenation}
 
 See [attribute styles and literal exemptions](./options-attributes.md).

@@ -70,7 +70,7 @@ test("attribute policy overlays reset the entire inherited policy while preservi
   for (const policy of [{}, { ignore: [] }, "always"]) {
     const own = { linter: { ruleOptions: { [rule]: policy } } };
     const ownBefore = structuredClone(own);
-    assert.deepEqual(mergeVueConfigOptions(base, own), {
+    assert.deepEqual(mergeVueConfigOptions<unknown>(base, own), {
       compiler: base.compiler,
       linter: {
         rules: base.linter.rules,
@@ -80,7 +80,7 @@ test("attribute policy overlays reset the entire inherited policy while preservi
     assert.deepEqual(own, ownBefore);
   }
   assert.deepEqual(
-    mergeVueConfigOptions(base, { linter: { ruleOptions: { [rule]: undefined } } }),
+    mergeVueConfigOptions<unknown>(base, { linter: { ruleOptions: { [rule]: undefined } } }),
     base,
   );
   assert.deepEqual(base, before);

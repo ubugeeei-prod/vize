@@ -305,11 +305,13 @@ impl Linter {
         self
     }
 
-    /// Configure `vue/attribute-hyphenation`.
+    /// Configure `vue/attribute-hyphenation` without enabling an unselected rule.
     #[inline]
     pub fn with_attribute_hyphenation(mut self, style: HyphenationStyle) -> Self {
-        self.registry
-            .replace(Box::new(AttributeHyphenation::new(style)));
+        if self.registry.has_rule("vue/attribute-hyphenation") {
+            self.registry
+                .replace(Box::new(AttributeHyphenation::new(style)));
+        }
         self
     }
 
@@ -320,9 +322,11 @@ impl Linter {
         style: HyphenationStyle,
         ignore: Vec<vize_l0::String>,
     ) -> Self {
-        let mut rule = AttributeHyphenation::new(style);
-        rule.ignore.extend(ignore);
-        self.registry.replace(Box::new(rule));
+        if self.registry.has_rule("vue/attribute-hyphenation") {
+            let mut rule = AttributeHyphenation::new(style);
+            rule.ignore.extend(ignore);
+            self.registry.replace(Box::new(rule));
+        }
         self
     }
 

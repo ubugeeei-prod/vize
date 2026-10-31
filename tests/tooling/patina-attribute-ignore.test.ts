@@ -258,6 +258,25 @@ test("attribute ignore owns canonical resets, strict refusals, disabled selectio
       want: returned(clean(original)),
     },
     {
+      id: "legacy-policy-does-not-enable-rule",
+      options: {
+        preset: "incremental",
+        enabledRules: undefined,
+        ruleOptionsJson: policyJson("always"),
+      },
+      want: returned(clean(original)),
+    },
+    {
+      id: "flat-policy-does-not-enable-rule",
+      options: {
+        preset: "incremental",
+        enabledRules: undefined,
+        attributeHyphenation: "always",
+        attributeHyphenationIgnore: ["active"],
+      },
+      want: returned(clean(original)),
+    },
+    {
       id: "without-fix",
       options: { includeFixes: false, attributeHyphenationIgnore: ["active"] },
       want: returned(expected(ignored, false)),
