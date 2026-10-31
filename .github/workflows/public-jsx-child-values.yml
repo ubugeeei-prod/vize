@@ -27,7 +27,7 @@ on:
         description: Original main Release run that actually created the candidate
         required: true
         type: string
-permissions: { contents: read, actions: read }
+permissions: { contents: read }
 concurrency:
   group: public-jsx-child-values-${{ github.event.pull_request.number || inputs.version || github.ref }}
   cancel-in-progress: false
@@ -38,13 +38,16 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "24.14.0", package-manager-cache: false }
       - name: Pure admission and archive mutation controls only
         run: node --test tests/tooling/release/public-jsx-child-values-guards.test.ts
   installed-public:
     if: github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
+    permissions: { contents: read, actions: read }
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
