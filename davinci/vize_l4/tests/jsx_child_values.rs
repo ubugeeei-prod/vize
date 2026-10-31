@@ -33,25 +33,25 @@ fn typed_sequence_child_preserves_the_real_expression_and_complete_emission_pack
     let span = Span::new(source.find(expression).unwrap() as u32, source.len() as u32);
     let js = JsExpr::parse_in(arena, expression, span).unwrap();
     let region = |ops| Region {
-        ops: Vec::from_iter_in(ops, arena),
+        ops: Vec::from_iter_in(ops, &arena),
     };
     let child = Op::JsxChildValue(Box::new_in(
         InterpolationOp {
             expression: ExprRef::Js(js),
             span,
         },
-        arena,
+        &arena,
     ));
     let root = region([Op::Element(Box::new_in(
         ElementOp {
             tag: "main",
             namespace: Namespace::Html,
-            attributes: Vec::new_in(arena),
-            bindings: Vec::new_in(arena),
+            attributes: Vec::new_in(&arena),
+            bindings: Vec::new_in(&arena),
             children: region([child]),
             span: Span::new(0, source.len() as u32),
         },
-        arena,
+        &arena,
     ))]);
     let artifact = Artifact::try_new(ArtifactParts {
         source: &source,
