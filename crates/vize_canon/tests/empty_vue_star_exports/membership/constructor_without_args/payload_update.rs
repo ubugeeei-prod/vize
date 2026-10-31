@@ -3,6 +3,8 @@ use super::support;
 use serde_json::{Value, json};
 use std::fs;
 
+mod ref_factory;
+
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";
 const PATHS: [&str; 11] = [
     "npm/cli/virtual-ts.d.ts",
@@ -103,6 +105,7 @@ fn previous(current: &str, record: &Value) -> String {
 /// member is read unchanged and remains subject to its existing frozen hash.
 pub(super) fn source_before(path: &str) -> String {
     let actual = fs::read_to_string(support::repository().join(path)).unwrap();
+    let actual = ref_factory::source_before(path, &actual);
     let Some(index) = PATHS.iter().position(|candidate| *candidate == path) else {
         return actual;
     };
@@ -110,7 +113,10 @@ pub(super) fn source_before(path: &str) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
-    previous(current, &load()["logicalPreamble"])
+    previous(
+        &ref_factory::preamble_before(current),
+        &load()["logicalPreamble"],
+    )
 }
 
 pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], current: &str) {
@@ -135,6 +141,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
         support::hash(current.as_bytes())
     ]);
     manifest["provenance"]["currentSlotProviderPayloadUpdate"] = update;
+    manifest["provenance"]["currentRefFactoryUpdate"] = ref_factory::load();
 }
 
 #[cfg(test)]

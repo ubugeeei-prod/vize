@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { hash } from "./canon-instance-directives-io.ts";
 import { packet, isRecord } from "./canon-instance-directives-model.ts";
+import { refFactoryCurrentPreamble } from "./ref-factory-authority.ts";
 
 export function slotCliPacket(
   process: { stdout: Buffer; stderr: Buffer; status: number | null },
@@ -26,7 +27,7 @@ export function slotCliPacket(
   const files = observed.result.files.filter((file) => typeof file.virtualTs === "string");
   assert.ok(files.length > 0, "all actual virtual file bodies must remain in JSON");
   const expected =
-    `\n=== __vize_helpers.d.ts ===\n${text}\n` +
+    `\n=== __vize_helpers.d.ts ===\n${refFactoryCurrentPreamble(text)}\n` +
     files
       .map((file) => `\n=== ${path.resolve(project, file.file)} ===\n${file.virtualTs}\n`)
       .join("");

@@ -136,3 +136,5 @@ tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-member
 
 # Shared ref-factory qualification consumes these exact pinned checkout bytes.
 tests/_fixtures/differential/typechecker/shared-ref-factory/*.txt -text
+crates/vize_canon/src/virtual_ts/helpers/declarations/ref-instance-factory.d.ts.txt -text
+tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/ref-factory-update-20261031.json -text

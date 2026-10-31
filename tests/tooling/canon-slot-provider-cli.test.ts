@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { slotCliPacket } from "../../tools/benchmarks/scripts/canon-slot-provider-cli.ts";
+import { refFactoryCurrentPreamble } from "../../tools/benchmarks/scripts/ref-factory-authority.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -20,7 +21,7 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
     }),
   );
   const stderr = Buffer.from(
-    `\n=== __vize_helpers.d.ts ===\n${record.logicalPreamble.afterWholeUtf8}\n\n=== ${path.join(project, "src/Tiny.vue")} ===\n${virtualTs}\n`,
+    `\n=== __vize_helpers.d.ts ===\n${refFactoryCurrentPreamble(record.logicalPreamble.afterWholeUtf8)}\n\n=== ${path.join(project, "src/Tiny.vue")} ===\n${virtualTs}\n`,
   );
   assert.deepEqual(slotCliPacket({ stdout, stderr, status: 0 }, project).diagnostics, []);
   for (const altered of [
