@@ -30,15 +30,14 @@ pub(super) async fn formatting(
         let formatter_path = uri
             .to_file_path()
             .unwrap_or_else(|_| std::path::PathBuf::from(uri.path()));
-        let (options, preserve) = server.state.get_formatter_context_for_path(&formatter_path);
-        Ok(
-            super::super::format::format_document_with_template_whitespace(
-                &_content,
-                &options,
-                server.state.type_checker_vue_version(),
-                preserve,
-            ),
-        )
+        let Ok(context) = server.state.try_formatter_context_for_path(&formatter_path) else {
+            return Ok(None);
+        };
+        Ok(super::super::format::format_document_with_context(
+            &_content,
+            &context,
+            server.state.type_checker_vue_version(),
+        ))
     }
     #[cfg(not(feature = "glyph"))]
     Ok(None)
@@ -69,14 +68,15 @@ pub(super) async fn range_formatting(
         let formatter_path = uri
             .to_file_path()
             .unwrap_or_else(|_| std::path::PathBuf::from(path));
-        let (options, preserve) = server.state.get_formatter_context_for_path(&formatter_path);
-        Ok(super::super::format::format_range_with_template_whitespace(
+        let Ok(context) = server.state.try_formatter_context_for_path(&formatter_path) else {
+            return Ok(None);
+        };
+        Ok(super::super::format::format_range_with_context(
             &_content,
             path,
             _range,
-            &options,
+            &context,
             server.state.type_checker_vue_version(),
-            preserve,
         ))
     }
     #[cfg(not(feature = "glyph"))]
@@ -108,17 +108,16 @@ pub(super) async fn on_type_formatting(
         let formatter_path = uri
             .to_file_path()
             .unwrap_or_else(|_| std::path::PathBuf::from(path));
-        let (options, preserve) = server.state.get_formatter_context_for_path(&formatter_path);
-        Ok(
-            super::super::format::format_on_type_with_template_whitespace(
-                &_content,
-                path,
-                position,
-                &options,
-                server.state.type_checker_vue_version(),
-                preserve,
-            ),
-        )
+        let Ok(context) = server.state.try_formatter_context_for_path(&formatter_path) else {
+            return Ok(None);
+        };
+        Ok(super::super::format::format_on_type_with_context(
+            &_content,
+            path,
+            position,
+            &context,
+            server.state.type_checker_vue_version(),
+        ))
     }
     #[cfg(not(feature = "glyph"))]
     Ok(None)

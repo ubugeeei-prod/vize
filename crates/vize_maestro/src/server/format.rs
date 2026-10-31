@@ -13,12 +13,46 @@ mod on_type;
 mod range;
 
 #[cfg(feature = "glyph")]
+pub(crate) use on_type::format_on_type_with_context;
+#[cfg(all(test, feature = "glyph"))]
 pub(crate) use on_type::format_on_type_with_template_whitespace;
 #[cfg(feature = "glyph")]
+pub(crate) use range::format_range_with_context;
+#[cfg(all(test, feature = "glyph"))]
 pub(crate) use range::format_range_with_template_whitespace;
 
 #[cfg(feature = "glyph")]
 use tower_lsp::lsp_types::{Position, Range, TextEdit};
+
+/// Complete formatting policy from one validated project snapshot.
+#[cfg(feature = "glyph")]
+pub(crate) struct FormatterContext {
+    pub(crate) options: vize_glyph::FormatOptions,
+    pub(crate) sorting: Option<vize_glyph::ImportSortOptions>,
+    pub(crate) preserve_template_whitespace: bool,
+}
+
+#[cfg(feature = "glyph")]
+impl FormatterContext {
+    fn formatter<'a>(
+        &'a self,
+        allocator: &'a vize_glyph::Allocator,
+        vue_version: vize_glyph::VueVersion,
+    ) -> vize_glyph::GlyphFormatter<'a> {
+        vize_glyph::GlyphFormatter::new_with_vue_version(&self.options, allocator, vue_version)
+            .with_sort_imports(self.sorting.as_ref())
+            .with_template_whitespace_preserved(self.preserve_template_whitespace)
+    }
+
+    #[cfg(test)]
+    fn without_sorting(options: &vize_glyph::FormatOptions, preserve: bool) -> Self {
+        Self {
+            options: options.clone(),
+            sorting: None,
+            preserve_template_whitespace: preserve,
+        }
+    }
+}
 
 /// Format a document and return TextEdits for the LSP client.
 ///
@@ -35,22 +69,32 @@ pub(crate) fn format_document(
 }
 
 #[cfg(feature = "glyph")]
+#[cfg(test)]
 pub(crate) fn format_document_with_template_whitespace(
     content: &str,
     options: &vize_glyph::FormatOptions,
     vue_version: vize_glyph::VueVersion,
     preserve_template_whitespace: bool,
 ) -> Option<Vec<TextEdit>> {
+    format_document_with_context(
+        content,
+        &FormatterContext::without_sorting(options, preserve_template_whitespace),
+        vue_version,
+    )
+}
+
+#[cfg(feature = "glyph")]
+pub(crate) fn format_document_with_context(
+    content: &str,
+    context: &FormatterContext,
+    vue_version: vize_glyph::VueVersion,
+) -> Option<Vec<TextEdit>> {
     let allocator = vize_glyph::Allocator::with_capacity(content.len());
 
-    let formatted =
-        match vize_glyph::GlyphFormatter::new_with_vue_version(options, &allocator, vue_version)
-            .with_template_whitespace_preserved(preserve_template_whitespace)
-            .format(content)
-        {
-            Ok(result) => result,
-            Err(_) => return None,
-        };
+    let formatted = match context.formatter(&allocator, vue_version).format(content) {
+        Ok(result) => result,
+        Err(_) => return None,
+    };
 
     if !formatted.changed {
         return Some(vec![]);

@@ -1,16 +1,16 @@
 //! Reject edits that would capture another lexical symbol or unresolved name.
 
-use oxc_ast::AstKind;
-use oxc_semantic::Semantic;
+use super::snapshot::NamedReference;
+use oxc_semantic::Scoping;
 use oxc_syntax::symbol::SymbolId;
 use vize_l0::FxHashSet;
 
 pub(super) fn rename_is_safe(
-    semantic: &Semantic<'_>,
+    scoping: &Scoping,
+    references: &[NamedReference],
     selected: &FxHashSet<SymbolId>,
     new_name: &str,
 ) -> bool {
-    let scoping = semantic.scoping();
     let name = new_name.into();
     for &symbol in selected {
         let scope = scoping.symbol_scope_id(symbol);
@@ -31,16 +31,11 @@ pub(super) fn rename_is_safe(
                 return false;
             }
         }
-        for node in semantic.nodes().iter() {
-            let AstKind::IdentifierReference(id) = node.kind() else {
-                continue;
-            };
-            if id.name != name {
+        for named in references {
+            if named.name.as_str() != new_name {
                 continue;
             }
-            let Some(reference) = id.reference_id.get().map(|id| scoping.get_reference(id)) else {
-                continue;
-            };
+            let reference = scoping.get_reference(named.reference);
             if scoping
                 .scope_ancestors(reference.scope_id())
                 .any(|ancestor| ancestor == scope)

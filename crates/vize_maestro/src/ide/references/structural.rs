@@ -10,6 +10,7 @@ use oxc_span::{SourceType, Span};
 
 mod edits;
 mod guard;
+pub(super) mod snapshot;
 mod style;
 mod template;
 use oxc_syntax::symbol::SymbolId;
@@ -23,6 +24,7 @@ use vize_l0::FxHashSet;
 
 use crate::ide::{IdeContext, offset_to_position};
 
+#[derive(Clone)]
 struct Occurrence {
     edit: edits::Kind,
     symbol: SymbolId,
@@ -31,10 +33,7 @@ struct Occurrence {
     declaration: bool,
 }
 
-fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrence>> {
-    if crate::ide::template_scope::needs_structural_pattern_navigation(ctx) {
-        return None;
-    }
+fn fresh_projection(ctx: &IdeContext<'_>) -> Option<snapshot::Projection> {
     let options = SfcTypeCheckOptions {
         include_virtual_ts: true,
         experimental_patterned_template: ctx.state.patterned_template_enabled(),
@@ -47,19 +46,39 @@ fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrenc
         check_fallthrough_attrs: false,
         ..SfcTypeCheckOptions::new(ctx.uri.path())
     };
-    let generate = if ctx.state.legacy_vue2_enabled() {
-        type_check_sfc_with_legacy_vue2
+    let mode = if ctx.state.legacy_vue2_enabled() {
+        snapshot::Mode::LegacyVue2
     } else if ctx.state.options_api_enabled() {
-        type_check_sfc_with_options_api
+        snapshot::Mode::OptionsApi
     } else {
-        type_check_sfc
+        snapshot::Mode::Standard
+    };
+    let generate = match mode {
+        snapshot::Mode::LegacyVue2 => type_check_sfc_with_legacy_vue2,
+        snapshot::Mode::OptionsApi => type_check_sfc_with_options_api,
+        snapshot::Mode::Standard => type_check_sfc,
     };
     let projection = generate(&ctx.content, &options);
     let code = projection.virtual_ts?;
+    Some(snapshot::Projection {
+        filename: options.filename,
+        mode,
+        patterned: options.experimental_patterned_template,
+        code,
+        mappings: projection.virtual_ts_mappings,
+        links: projection.virtual_ts_semantic_links,
+    })
+}
+
+fn analyze_projection(
+    ctx: &IdeContext<'_>,
+    projection: &snapshot::Projection,
+) -> Option<snapshot::Facts> {
+    let code = &projection.code;
     let allocator = Allocator::default();
-    let mut parsed = Parser::new(&allocator, &code, SourceType::ts()).parse();
+    let mut parsed = Parser::new(&allocator, code, SourceType::ts()).parse();
     if !parsed.diagnostics.is_empty() {
-        parsed = Parser::new(&allocator, &code, SourceType::tsx()).parse();
+        parsed = Parser::new(&allocator, code, SourceType::tsx()).parse();
     }
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;
@@ -87,12 +106,72 @@ fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrenc
                 symbol,
                 generated: span,
                 declaration,
-                authored: authored_span(&ctx.content, &code, &projection.virtual_ts_mappings, span),
+                authored: authored_span(&ctx.content, code, &projection.mappings, span),
             })
         })
         .collect();
     let css = style::analyze(ctx, &semantic);
     occurrences.extend(css.occurrences);
+    let references = semantic
+        .nodes()
+        .iter()
+        .filter_map(|node| {
+            let AstKind::IdentifierReference(id) = node.kind() else {
+                return None;
+            };
+            Some(snapshot::NamedReference {
+                name: id.name.as_str().into(),
+                reference: id.reference_id.get()?,
+            })
+        })
+        .collect();
+    Some(snapshot::Facts {
+        scoping: semantic.into_scoping(),
+        occurrences,
+        references,
+        css_free_names: css
+            .free_names
+            .into_iter()
+            .collect::<Vec<_>>()
+            .into_boxed_slice(),
+    })
+}
+
+fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrence>> {
+    if crate::ide::template_scope::needs_structural_pattern_navigation(ctx) {
+        return None;
+    }
+    // Type resolution and all external inputs stay fresh. Only the lexical
+    // artifact downstream of this complete current projection can be reused.
+    let projection = fresh_projection(ctx)?;
+    let owner = ctx
+        .state
+        .documents
+        .structural_snapshot_owner(ctx.uri, &ctx.content);
+    let entry = if let Some(cached) = owner.as_ref().and_then(|owner| owner.get(&projection)) {
+        cached
+    } else {
+        let facts = analyze_projection(ctx, &projection)?;
+        match owner {
+            Some(owner) => owner.publish(projection, facts),
+            None => std::sync::Arc::new(snapshot::Entry::uncached(
+                std::sync::Arc::clone(&ctx.content),
+                ctx.uri.clone(),
+                projection,
+                facts,
+            )),
+        }
+    };
+    select(ctx, new_name, &entry)
+}
+
+fn select(
+    ctx: &IdeContext<'_>,
+    new_name: Option<&str>,
+    entry: &snapshot::Entry,
+) -> Option<Vec<Occurrence>> {
+    let occurrences = &entry.facts.occurrences;
+    let scoping = &entry.facts.scoping;
     let candidates: FxHashSet<_> = occurrences
         .iter()
         .filter(|entry| {
@@ -108,9 +187,9 @@ fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrenc
     // Never infer one from an identifier's spelling or a synthetic name prefix.
     loop {
         let before = selected.len();
-        for link in &projection.virtual_ts_semantic_links {
-            let source = symbol_at(&occurrences, &link.source_range);
-            let target = symbol_at(&occurrences, &link.target_range);
+        for link in &entry.projection.links {
+            let source = symbol_at(occurrences, &link.source_range);
+            let target = symbol_at(occurrences, &link.target_range);
             if let (Some(source), Some(target)) = (source, target)
                 && (selected.contains(&source) || selected.contains(&target))
             {
@@ -123,8 +202,8 @@ fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrenc
         }
     }
     if let Some(name) = new_name
-        && (!guard::rename_is_safe(&semantic, &selected, name)
-            || (css.free_names.contains(name)
+        && (!guard::rename_is_safe(scoping, &entry.facts.references, &selected, name)
+            || (entry.facts.css_free_names.iter().any(|free| free == name)
                 && !selected.iter().any(|&id| scoping.symbol_name(id) == name)))
     {
         return None;
@@ -134,8 +213,9 @@ fn resolve(ctx: &IdeContext<'_>, new_name: Option<&str>) -> Option<Vec<Occurrenc
     }
     Some(
         occurrences
-            .into_iter()
+            .iter()
             .filter(|entry| selected.contains(&entry.symbol) && entry.authored.is_some())
+            .cloned()
             .collect(),
     )
 }

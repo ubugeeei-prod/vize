@@ -38,6 +38,7 @@ pub(crate) fn format_range(
     format_range_with_template_whitespace(content, filename, range, options, vue_version, false)
 }
 
+#[cfg(test)]
 pub(crate) fn format_range_with_template_whitespace(
     content: &str,
     filename: &str,
@@ -45,6 +46,22 @@ pub(crate) fn format_range_with_template_whitespace(
     options: &vize_glyph::FormatOptions,
     vue_version: vize_glyph::VueVersion,
     preserve_template_whitespace: bool,
+) -> Option<Vec<TextEdit>> {
+    format_range_with_context(
+        content,
+        filename,
+        range,
+        &super::FormatterContext::without_sorting(options, preserve_template_whitespace),
+        vue_version,
+    )
+}
+
+pub(crate) fn format_range_with_context(
+    content: &str,
+    filename: &str,
+    range: Range,
+    context: &super::FormatterContext,
+    vue_version: vize_glyph::VueVersion,
 ) -> Option<Vec<TextEdit>> {
     let start = position_to_offset(content, range.start.line, range.start.character)?;
     let end = position_to_offset(content, range.end.line, range.end.character)?;
@@ -56,11 +73,10 @@ pub(crate) fn format_range_with_template_whitespace(
     };
 
     let allocator = vize_glyph::Allocator::with_capacity(content.len());
-    let formatted =
-        vize_glyph::GlyphFormatter::new_with_vue_version(options, &allocator, vue_version)
-            .with_template_whitespace_preserved(preserve_template_whitespace)
-            .format(content)
-            .ok()?;
+    let formatted = context
+        .formatter(&allocator, vue_version)
+        .format(content)
+        .ok()?;
     if !formatted.changed {
         return Some(Vec::new());
     }
