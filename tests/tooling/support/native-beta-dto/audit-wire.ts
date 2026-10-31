@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { requireCandidateStableStderr, verifyNativeRelations } from "./stable-watcher-boundary.ts";
+import { requireCandidateStableStderr } from "./stable-watcher-boundary.ts";
+import { verifyHistoricalWatcherRelations } from "./stable-watcher-late-root.ts";
 import { verifyBetaAttachedRoute } from "./beta-attached-route.ts";
 import type { Packet, Syscall, StreamPair, Provider, Source, Receipt } from "./audit-wire-types.ts";
 import {
@@ -67,7 +68,9 @@ const key = (value: unknown) => {
   );
   return `${typeof value}:${value}`;
 };
-const watcherBoundaryObservations: NonNullable<ReturnType<typeof verifyNativeRelations>>[] = [];
+const watcherBoundaryObservations: NonNullable<
+  ReturnType<typeof verifyHistoricalWatcherRelations>
+>[] = [];
 const splitWatchLogObservations: Array<{
   nativeOwner: number;
   observation: ReturnType<typeof observeHistoricalSplitWatchLog>;
@@ -81,7 +84,7 @@ function relations(
   server: Packet[],
   allowStableWatcherRegistrationRefusal: boolean,
 ) {
-  const observation = verifyNativeRelations(client, server, {
+  const observation = verifyHistoricalWatcherRelations(client, server, {
     source: source.source,
     role: source.role,
     sdkVersion: provider.version,
@@ -445,6 +448,9 @@ if (terminalStderrObservations.length)
     native.map((row) => nativeOwnerTerminalState(trace, row.pid)),
   );
 save("terminal-stderr-observation.json", terminalStderrObservations);
+const lateRoot = watcherBoundaryObservations.some(
+  (row) => row.boundary === "post-shutdown-root-and-sdk-program-files",
+);
 const disposition = {
   source: source.source,
   role: source.role,
@@ -458,11 +464,14 @@ const disposition = {
           ? unprovenEofOrder
             ? "baseline-observation-unproven-eof-return"
             : "baseline-observation-split-watch-log"
-          : registrationRefusals === 1
-            ? "baseline-observation-known-post-shutdown-registration-refusal"
-            : "baseline-observation-registration-acknowledged"
+          : lateRoot
+            ? "baseline-observation-late-root-and-unanswered-sdk-watcher"
+            : registrationRefusals === 1
+              ? "baseline-observation-known-post-shutdown-registration-refusal"
+              : "baseline-observation-registration-acknowledged"
       : "functional-source-control",
   observerCompleted: true,
+  ...(lateRoot ? { nativeQualification: false } : {}),
   dtoFunctionalPass:
     !baseline &&
     registrationRefusals === 0 &&

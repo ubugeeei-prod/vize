@@ -107,6 +107,12 @@ void test("typed producers retain historical bytes and only the exact registered
       .filter((entry) => entry !== current)
       .every((entry) => entry.currentSplitLogRegistration === null),
   );
+  assert.equal(current.currentLateRootRegistration, "before-stable-late-root-program-41176048826");
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentLateRootRegistration === null),
+  );
   assert.deepEqual(current.currentTypeDependency, {
     path: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
     sha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
@@ -159,6 +165,7 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
+    "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
     ...["client.bin", "server.bin", "identity.json"].map(
       (name) =>
         "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/" +
@@ -195,6 +202,7 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
+    "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
   ])
     assert.throws(() =>
       validate([row], [], {
