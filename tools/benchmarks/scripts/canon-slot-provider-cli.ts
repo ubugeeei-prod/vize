@@ -30,9 +30,9 @@ export function slotCliPacket(
     files
       .map((file) => `\n=== ${path.resolve(project, file.file)} ===\n${file.virtualTs}\n`)
       .join("");
-  assert.deepEqual(
-    process.stderr,
-    Buffer.from(expected),
+  assert.equal(
+    process.stderr.equals(Buffer.from(expected)),
+    true,
     "complete CLI stderr must equal its source-backed helper and JSON virtual-file dumps",
   );
   return observed;
