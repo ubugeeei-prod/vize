@@ -21,7 +21,6 @@ import {
 import { sha256 } from "../../../tools/support/release/computed_event_custody.ts";
 import {
   diagnostics,
-  cliObservation,
   assertCompilerVectors,
 } from "../../../tools/support/release/slot_provider_public/oracle.ts";
 import {
@@ -41,7 +40,10 @@ test("workflow contract trigger covers real local imports, hook URLs and every p
   const block = workflow.split("    paths:\n")[1].split("  workflow_dispatch:")[0];
   const patterns = [...block.matchAll(/^\s*-\s+(.+)$/gmu)].map((match) => match[1]);
   const covered = (name: string) => patterns.some((pattern) => matchesGlob(name, pattern));
-  const pending = ["tests/tooling/release/slot-provider-public.test.ts"];
+  const pending = [
+    "tests/tooling/release/slot-provider-public.test.ts",
+    "tests/tooling/release/slot-provider-cli-files.test.ts",
+  ];
   const seen = new Set<string>();
   for (let index = 0; index < pending.length; index++) {
     const name = pending[index];
@@ -231,71 +233,6 @@ test("complete mapper/framework vector preserves exact positions and continuatio
     diagnostics(Buffer.concat([numberFailure, Buffer.from("  continuation\n")]), "/project"),
   );
 });
-function syntheticCli(row: Stage) {
-  const source = row.files.get("src/Tiny.vue")!;
-  const result = {
-    fileCount: 1,
-    errorCount: row.expected.length,
-    warningCount: 0,
-    files: [
-      {
-        file: "src/Tiny.vue",
-        virtualTs: "// explicitly synthetic parser control\nexport {};\n",
-        diagnostics: row.expected.map(
-          (diagnostic) =>
-            "error:" +
-            diagnostic.line +
-            ":" +
-            diagnostic.column +
-            " [TS" +
-            diagnostic.code +
-            "] " +
-            diagnostic.message +
-            " (source: " +
-            source.split("\n")[diagnostic.line - 1]!.trim() +
-            ")",
-        ),
-      },
-    ],
-  };
-  const stderr =
-    "\n=== __vize_helpers.d.ts ===\n" +
-    fixtures.helperText +
-    "\n\n=== /project/src/Tiny.vue ===\n" +
-    result.files[0].virtualTs +
-    "\n";
-  return { result, stdout: Buffer.from(JSON.stringify(result)), stderr: Buffer.from(stderr) };
-}
-test("quiet CLI decoder conserves whole helper and declared VTS with no remainder", () => {
-  const row = stage("imported7", "declared-any"),
-    raw = syntheticCli(row);
-  cliObservation(raw.stdout, raw.stderr, 1, "/project", row, fixtures.helperText);
-  for (const stderr of [
-    Buffer.concat([raw.stderr, Buffer.from("warning\n")]),
-    Buffer.from(raw.stderr.toString().replace("synthetic parser", "changed parser")),
-    Buffer.from(raw.stderr.toString().replace("__vize_helpers", "__other_helpers")),
-    raw.stderr.subarray(0, raw.stderr.length - 1),
-  ])
-    assert.throws(() =>
-      cliObservation(raw.stdout, stderr, 1, "/project", row, fixtures.helperText),
-    );
-  const duplicate = {
-    ...raw.result,
-    fileCount: 2,
-    files: [...raw.result.files, ...raw.result.files],
-  };
-  assert.throws(() =>
-    cliObservation(
-      Buffer.from(JSON.stringify(duplicate)),
-      raw.stderr,
-      1,
-      "/project",
-      row,
-      fixtures.helperText,
-    ),
-  );
-});
-
 function syntheticTypes(row: Stage): ReturnType<typeof slotProviderTypes> {
   const kind = row.kind!;
   const flags = { number: 64, any: 1, error: 1, unknown: 2, never: 262144, string: 32 };
