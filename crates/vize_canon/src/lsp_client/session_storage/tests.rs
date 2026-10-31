@@ -129,6 +129,38 @@ fn materialized_member_policy_rereads_the_upcoming_config_and_extends_chain() {
 }
 
 #[test]
+fn editor_reference_backlinks_change_only_known_location_uris() {
+    let project = tempfile::tempdir().unwrap();
+    let mut client = CorsaProjectClient::empty_for_test(project.path().to_path_buf());
+    let source = path_to_file_uri(&project.path().join("App.vue.ts"));
+    let mirror = path_to_file_uri(&client.overlay_storage.root().join("App.vue.ts"));
+    client.remember_session_document_uri(&source, mirror.clone());
+    let unknown = path_to_file_uri(&client.overlay_storage.root().join("unknown.ts"));
+    let authored = path_to_file_uri(
+        &project
+            .path()
+            .join("real.vue.ts.__vize_authored_vue_ts_alias__.ts"),
+    );
+    let range =
+        serde_json::json!({"start":{"line":127,"character":36},"end":{"line":127,"character":40}});
+    let mut actual = serde_json::json!([
+        {"uri":mirror,"range":range,"data":{"uri":mirror},"label":mirror},
+        {"uri":unknown,"range":range},
+        {"uri":authored,"range":range}
+    ]);
+    let expected = serde_json::json!([
+        {"uri":source,"range":range,"data":{"uri":mirror},"label":mirror},
+        {"uri":unknown,"range":range},
+        {"uri":authored,"range":range}
+    ]);
+    client.remap_reference_result_uris(&mut actual);
+    assert_eq!(actual, expected);
+    let mut none = serde_json::Value::Null;
+    client.remap_reference_result_uris(&mut none);
+    assert_eq!(none, serde_json::Value::Null);
+}
+
+#[test]
 fn scratch_project_is_an_owned_sibling_outside_the_materialized_include_scope() {
     let project = tempfile::tempdir().unwrap();
     let storage = SessionStorage::new(project.path()).unwrap();

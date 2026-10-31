@@ -281,6 +281,19 @@ impl CorsaProjectClient {
     pub(super) fn remap_result_uris(&self, value: &mut Value) {
         super::utils::remap_json_uris(value, &self.external_document_uris);
     }
+
+    pub(super) fn remap_reference_result_uris(&self, value: &mut Value) {
+        // The native editor can return the same owned materialized identities
+        // as the API. Only Location.uri is protocol identity here; retain all
+        // coordinates, unknown entries and opaque payloads without rewriting.
+        for location in value.as_array_mut().into_iter().flatten() {
+            if let Some(Value::String(uri)) = location.get_mut("uri")
+                && let Some(mapped) = self.external_document_uris.get(uri.as_str())
+            {
+                *uri = mapped.as_str().into();
+            }
+        }
+    }
 }
 
 fn next_overlay_version(versions: &mut vize_l0::FxHashMap<String, i32>, uri: &str) -> i32 {

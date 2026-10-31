@@ -143,9 +143,13 @@ impl CorsaProjectClient {
         character: u32,
         include_declaration: bool,
     ) -> Result<Option<Value>, String> {
-        self.request_with_editor_lsp_query_recovery(uri, |session| {
+        let mut response = self.request_with_editor_lsp_query_recovery(uri, |session| {
             session.references(uri, line, character, include_declaration)
-        })
+        })?;
+        if let Some(value) = &mut response {
+            self.remap_reference_result_uris(value);
+        }
+        Ok(response)
     }
 
     pub(in crate::lsp_client) fn prepare_rename_via_editor_lsp(
