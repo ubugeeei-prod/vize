@@ -8,6 +8,8 @@ use vize_canon::{
 
 use super::test_support::{exchange, frames, initialize_request};
 
+mod provider;
+
 fn open(id: u8, handle: &str, config: &Path, root: &Path) -> Value {
     json!({"jsonrpc":"2.0","id":id,"method":"openProject","params":{
         "projectHandle":handle,"configFileName":config,"compilerOptions":{"rootDir":root}

@@ -8,7 +8,7 @@
 //! `optionDiagnostics` addressed into the entry's options object instead of
 //! failing the request, so TypeScript can surface them in the tsconfig.
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -29,7 +29,6 @@ const OPTION_CODE_INVALID_TYPE: i32 = 3;
 #[derive(Clone, Debug)]
 pub(super) struct ProjectSettings {
     pub transform_options: ContentMapperTransformOptions,
-    pub typed_router_root: Option<PathBuf>,
     pub project_context: ContentMapperProjectContext,
 }
 
@@ -104,14 +103,13 @@ pub(super) fn resolve_open_project(
     params: &OpenProjectParams,
 ) -> Result<(ProjectSettings, OpenProjectResult), CorsaError> {
     let empty_compiler_options = serde_json::Map::new();
-    let (configuration, typed_router_root) =
-        ContentMapperProjectConfiguration::load_with_compiler_options(
-            Path::new(params.config_file_name.as_str()),
-            params
-                .compiler_options
-                .as_object()
-                .unwrap_or(&empty_compiler_options),
-        )?;
+    let (configuration, _) = ContentMapperProjectConfiguration::load_with_compiler_options(
+        Path::new(params.config_file_name.as_str()),
+        params
+            .compiler_options
+            .as_object()
+            .unwrap_or(&empty_compiler_options),
+    )?;
     let mut options_api = true;
     let mut no_unused_locals = false;
     let mut check_javascript = false;
@@ -151,7 +149,6 @@ pub(super) fn resolve_open_project(
         content_mapper_helper_capability(Path::new(params.config_file_name.as_str()));
     Ok((
         ProjectSettings {
-            typed_router_root,
             project_context: configuration.project_context,
             transform_options: configuration
                 .transform_options

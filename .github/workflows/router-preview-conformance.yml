@@ -6,6 +6,7 @@ on:
       - .github/workflows/router-preview-conformance.yml
       - tests/fixtures/typechecker/experimental-router-preview-593d7ad/**
       - tests/fixtures/typechecker/experimental-router-mapper-host/**
+      - tests/fixtures/typechecker/experimental-router-project-capability/**
       - tests/_fixtures/differential/typechecker/router-mapper-capability-10579/**
       - tests/tooling/router-preview-*.ts
       - tests/tooling/support/router-preview/**
@@ -21,7 +22,8 @@ on:
       - crates/vize/src/commands/content_mapper/dispatch.rs
       - crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_inputs.rs
       - crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_inputs/**
-      - crates/vize/src/commands/content_mapper/typed_router_provider_tests.rs
+      - crates/vize/src/commands/content_mapper/typed_router_tests.rs
+      - crates/vize/src/commands/content_mapper/typed_router_tests/**
       - npm/cli/package.json
   workflow_dispatch:
     inputs:

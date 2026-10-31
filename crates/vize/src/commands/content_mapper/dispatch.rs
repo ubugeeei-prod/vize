@@ -10,7 +10,7 @@ use std::thread;
 
 use serde::Serialize;
 use serde_json::{Value, json};
-use vize_canon::generate_vue_content_mapper_transform_with_project_options;
+use vize_canon::generate_vue_content_mapper_transform_with_project_context;
 use vize_l0::cstr;
 
 use super::project::{
@@ -360,11 +360,11 @@ fn dispatch_transform(
 }
 
 fn transform_frame(job: &TransformJob) -> io::Result<Vec<u8>> {
-    match generate_vue_content_mapper_transform_with_project_options(
+    match generate_vue_content_mapper_transform_with_project_context(
         Path::new(job.file_name.as_str()),
         job.content.as_str(),
         job.settings.transform_options,
-        job.settings.typed_router_root.as_deref(),
+        &job.settings.project_context,
     ) {
         Ok(result) => encode_result(&job.id, result),
         Err(error) => {
