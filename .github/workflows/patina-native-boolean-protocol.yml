@@ -130,6 +130,9 @@ jobs:
           cp "$RUNNER_TEMP/patina-symbol-owner/node_modules/@tsrs/linux-x64-gnu/package.json" "$GITHUB_WORKSPACE/target/patina-symbol-owner/tsrs-image-package.json"
           cp "$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/package.json" "$GITHUB_WORKSPACE/target/patina-symbol-owner/stable-image-package.json"
           sha256sum "$RUNNER_TEMP/patina-symbol-owner/node_modules/@tsrs/linux-x64-gnu/tsrs" "$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc" > "$GITHUB_WORKSPACE/target/patina-symbol-owner/provider-sha256.txt"
+          echo "0ce4f6cb4e95b24f59daafc667034e20182af6615d7a5e41cb9d8bfe035d4468  $RUNNER_TEMP/patina-symbol-owner/node_modules/@tsrs/linux-x64-gnu/tsrs" > "$GITHUB_WORKSPACE/target/patina-symbol-owner/expected-provider-sha256.txt"
+          echo "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4  $GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc" >> "$GITHUB_WORKSPACE/target/patina-symbol-owner/expected-provider-sha256.txt"
+          sha256sum --check "$GITHUB_WORKSPACE/target/patina-symbol-owner/expected-provider-sha256.txt"
       - name: Collect only the explicitly ignored causal target with both providers
         run: |
           set -o pipefail
