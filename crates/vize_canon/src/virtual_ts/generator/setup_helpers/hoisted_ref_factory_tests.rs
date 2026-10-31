@@ -4,7 +4,7 @@ use crate::virtual_ts::{
     helpers::SHARED_PREAMBLE_DTS,
     scope::{REF_INSTANCE_HELPERS, REF_INSTANCE_HELPERS_HOISTED},
 };
-use vize_carton::{Allocator, String};
+use vize_carton::{Allocator, String, cstr};
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 const FACTORY: &str = include_str!("../../helpers/declarations/ref-instance-factory.d.ts.txt");
@@ -41,7 +41,7 @@ fn factory_lines(code: &str) -> Vec<&str> {
 
 #[test]
 fn sharing_changes_only_the_factory_body_in_the_local_helper_block() {
-    let embedded_factory = format!("  {FACTORY}");
+    let embedded_factory = cstr!("  {FACTORY}");
     assert_eq!(
         REF_INSTANCE_HELPERS
             .matches(embedded_factory.as_str())
@@ -58,7 +58,7 @@ fn sharing_changes_only_the_factory_body_in_the_local_helper_block() {
             .lines()
             .filter(|line| line.starts_with("export type $RefInstanceFactory<"))
             .collect::<Vec<_>>(),
-        vec![format!("export {}", FACTORY.trim_end())],
+        vec![cstr!("export {}", FACTORY.trim_end())],
     );
 }
 
@@ -71,7 +71,7 @@ fn instantiated_component_refs_select_the_forwarder_only_in_hoisted_programs() {
         let expected = if hoisted {
             FORWARD.trim_end().into()
         } else {
-            format!("  {}", FACTORY.trim_end())
+            cstr!("  {}", FACTORY.trim_end())
         };
         assert_eq!(factory_lines(&code), vec![expected.as_str()]);
         assert_eq!(
@@ -133,7 +133,7 @@ fn authored_module_factory_types_do_not_capture_the_local_forwarder() {
                 if hoisted {
                     FORWARD.trim_end().into()
                 } else {
-                    format!("  {}", FACTORY.trim_end())
+                    cstr!("  {}", FACTORY.trim_end())
                 },
             ],
         );
