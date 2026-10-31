@@ -65,17 +65,45 @@ fn parse_script_setup_with_exports_capture<const BUILTIN_TYPES: bool>(
     unused: bool,
     skip_diagnostics: bool,
     occurrences: bool,
-    mut exports: Option<&mut ModuleExportCapture>,
+    exports: Option<&mut ModuleExportCapture>,
     force_value_origins: bool,
 ) -> ScriptParseResult {
     vize_carton::micro_count!("croquis.setup.parse_requests.bytes", source.len());
     let allocator = Allocator::default();
+    parse_script_setup_with_exports_capture_in::<BUILTIN_TYPES>(
+        &allocator,
+        source,
+        generic,
+        jsx,
+        unused,
+        skip_diagnostics,
+        occurrences,
+        exports,
+        force_value_origins,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "internal demand carrier keeps the public parse surface unchanged"
+)]
+pub(super) fn parse_script_setup_with_exports_capture_in<const BUILTIN_TYPES: bool>(
+    allocator: &Allocator,
+    source: &str,
+    generic: Option<&str>,
+    jsx: bool,
+    unused: bool,
+    skip_diagnostics: bool,
+    occurrences: bool,
+    mut exports: Option<&mut ModuleExportCapture>,
+    force_value_origins: bool,
+) -> ScriptParseResult {
     let path = if jsx { "script.tsx" } else { "script.ts" };
     let source_type = SourceType::from_path(path).unwrap_or_default();
 
     let ret = profile!(
         "croquis.script_setup.oxc_parse",
-        parse_program_for_analysis(&allocator, source, source_type)
+        parse_program_for_analysis(allocator, source, source_type)
     );
     ModuleExportCapture::observe_if(exports.as_deref_mut(), &ret);
     if ret.panicked {

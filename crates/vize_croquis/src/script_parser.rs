@@ -18,6 +18,7 @@
 //! - [`walk`] - Scope walking functions
 
 mod async_components;
+mod contracts;
 mod define_art;
 mod execution_facts;
 mod expose;
@@ -44,6 +45,8 @@ mod walk;
 pub use value_binding_origins::ValueBindingOrigins;
 pub(crate) use value_binding_origins::component_binding_reference;
 
+#[doc(hidden)]
+pub use contracts::parse_workspace_contracts_in;
 pub use define_art::parse_define_art;
 pub use module_exports::AuthoredModuleExport;
 pub(crate) use module_exports::ModuleExportCapture;
