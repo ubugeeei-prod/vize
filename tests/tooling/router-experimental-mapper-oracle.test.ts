@@ -259,7 +259,15 @@ test(
           typescript: {
             contentMapper: {
               exec: [binary, "content-mapper"],
-              compilerOptions: ["checkJs", "noUnusedLocals", "rootDir"],
+              compilerOptions: [
+                "checkJs",
+                "noUnusedLocals",
+                "rootDir",
+                "module",
+                "moduleResolution",
+                "resolvePackageJsonExports",
+                "customConditions",
+              ],
               dynamicConfig: true,
             },
           },

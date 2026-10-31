@@ -118,7 +118,11 @@
       "compilerOptions": [
         "checkJs",
         "noUnusedLocals",
-        "rootDir"
+        "rootDir",
+        "module",
+        "moduleResolution",
+        "resolvePackageJsonExports",
+        "customConditions"
       ],
       "dynamicConfig": true,
       "exec": [

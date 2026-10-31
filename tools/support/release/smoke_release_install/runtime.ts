@@ -205,7 +205,15 @@ export function assertInstalledMapperContract(installDir: string): void {
     !isDeepStrictEqual(contract, {
       dynamicConfig: true,
       exec: ["node", "./bin/vize", "content-mapper"],
-      compilerOptions: ["checkJs", "noUnusedLocals", "rootDir"],
+      compilerOptions: [
+        "checkJs",
+        "noUnusedLocals",
+        "rootDir",
+        "module",
+        "moduleResolution",
+        "resolvePackageJsonExports",
+        "customConditions",
+      ],
     })
   ) {
     throw new Error(

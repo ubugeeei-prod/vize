@@ -26,7 +26,15 @@ function withInstalledMapper(run: (installDir: string, packageRoot: string) => v
           contentMapper: {
             dynamicConfig: true,
             exec: ["node", "./bin/vize", "content-mapper"],
-            compilerOptions: ["checkJs", "noUnusedLocals", "rootDir"],
+            compilerOptions: [
+              "checkJs",
+              "noUnusedLocals",
+              "rootDir",
+              "module",
+              "moduleResolution",
+              "resolvePackageJsonExports",
+              "customConditions",
+            ],
           },
         },
       }),
@@ -52,7 +60,7 @@ test("Rust release smoke pins the production Content Mapper contract", () => {
     "        != Some(&json!({",
     '            "dynamicConfig": true,',
     '            "exec": ["node", "./bin/vize", "content-mapper"],',
-    '            "compilerOptions": ["checkJs", "noUnusedLocals", "rootDir"],',
+    '            "compilerOptions": ["checkJs", "noUnusedLocals", "rootDir", "module", "moduleResolution", "resolvePackageJsonExports", "customConditions"],',
     "        }))",
   ].join("\n");
 
