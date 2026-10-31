@@ -33,6 +33,11 @@ Vite+ shares `fmt.sortImports` with Vue formatting automatically. Set
 `vue.formatter.sortImports` to override it, including `false` to disable sorting only
 for Vue. Oxfmt still receives its original setting.
 
+Editor Format Document and format-on-save use the same policy. Format Selection
+sorts imports only inside selected script blocks and keeps other blocks and block
+tags unchanged. On-type formatting only adjusts indentation; it does not reorder
+imports as you type.
+
 Supported options are `groups`, `customGroups`, `internalPattern`, `order`,
 `ignoreCase`, `newlinesBetween`, `partitionByNewline`, `partitionByComment`, and
 `sortSideEffects`. Group entries can be names, arrays of names, or

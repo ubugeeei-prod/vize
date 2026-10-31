@@ -213,6 +213,11 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       assert.equal(prepare.method, "textDocument/prepareRename");
       assert.equal(rename.method, "textDocument/rename");
       requests = [prepare, rename];
+    } else if (data.method === "textDocument/formatting") {
+      assert.equal(data.id, "lsp/regression/editor-import-sorting-6098");
+      assert.deepEqual(data.options, { tabSize: 2, insertSpaces: true });
+      assert(Array.isArray(expected) && expected.length === 1, "whole document edit required");
+      requests = [{ params: { options: data.options }, result: expected }];
     } else {
       assert.equal(data.method, "textDocument/onTypeFormatting", "unregistered LSP method");
       assert.deepEqual(data.options, { tabSize: 2, insertSpaces: true });

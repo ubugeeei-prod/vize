@@ -181,10 +181,7 @@ pub struct ServerState {
     workspace_folder_configs: RwLock<Vec<workspace_folders::WorkspaceFolderConfig>>,
     /// Formatting options loaded from the shared Vite project configuration.
     #[cfg(feature = "glyph")]
-    format_options: RwLock<(vize_glyph::FormatOptions, bool)>,
-    /// Compiler whitespace resolved with declaration-ordered entry scopes.
-    #[cfg(feature = "glyph")]
-    format_whitespace: RwLock<config::host::CompilerWhitespacePlan>,
+    format_options: RwLock<config::FormatterSnapshot>,
     /// Corsa bridge for native TypeScript language features. Lazily
     /// initialized; cleared again by [`Self::retire_corsa_bridge`] when the
     /// backend process dies mid-session so the next request can respawn it

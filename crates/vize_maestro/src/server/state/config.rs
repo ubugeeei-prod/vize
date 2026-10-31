@@ -7,7 +7,7 @@ pub(super) mod host;
 mod project;
 mod read;
 #[cfg(feature = "glyph")]
-use formatting::format_options_from_config;
+pub(super) use formatting::FormatterSnapshot;
 
 use std::path::Path;
 use std::sync::atomic::Ordering;
@@ -397,24 +397,20 @@ impl ServerState {
             let config = loaded.config;
             #[cfg(feature = "glyph")]
             {
-                let config_dir = loaded
-                    .project
-                    .project_root
-                    .clone()
-                    .or_else(|| source_path.parent().map(Path::to_path_buf))
-                    .unwrap_or_else(|| {
-                        std::env::current_dir().unwrap_or_else(|_| Path::new(".").to_path_buf())
-                    });
+                let config_dir = formatting::formatter_config_dir(
+                    loaded.project.project_root.as_deref(),
+                    &source_path,
+                );
                 let whitespace = CompilerWhitespacePlan::new(
                     loaded.compiler_whitespace,
                     &loaded.project.document.compiler_entries(),
                     &config_dir,
                 );
-                *self.format_options.write() = (
-                    format_options_from_config(loaded.project.document.formatter_profile()),
-                    whitespace.root_preserves_text(),
+                self.install_formatter_snapshot(
+                    loaded.project.document.formatter_profile(),
+                    loaded.project.document.formatter_sort_imports(),
+                    whitespace,
                 );
-                *self.format_whitespace.write() = whitespace;
                 tracing::info!("Loaded format config from {}", source);
             }
             self.apply_linter_config(loaded.linter, &source);
@@ -501,57 +497,5 @@ impl ServerState {
             }),
             "project defaults",
         );
-    }
-
-    /// Get a clone of the current format options.
-    #[cfg(feature = "glyph")]
-    #[inline]
-    pub fn get_format_options(&self) -> vize_glyph::FormatOptions {
-        self.format_options.read().0.clone()
-    }
-
-    /// Native options and Vite template-whitespace policy from one snapshot.
-    #[cfg(all(feature = "glyph", test))]
-    pub(crate) fn get_formatter_context(&self) -> (vize_glyph::FormatOptions, bool) {
-        self.format_options.read().clone()
-    }
-
-    /// Native options and the compiler's effective whitespace policy for a file.
-    #[cfg(feature = "glyph")]
-    pub(crate) fn get_formatter_context_for_path(
-        &self,
-        path: &Path,
-    ) -> (vize_glyph::FormatOptions, bool) {
-        (
-            self.format_options.read().0.clone(),
-            self.format_whitespace.read().preserves_text_for(path),
-        )
-    }
-
-    /// Load format options from the shared project configuration.
-    #[cfg(feature = "glyph")]
-    pub fn load_format_config(&self, dir: &Path) {
-        let loaded = host::load_project_config_with_source(Some(dir));
-        if let Some(source_path) = loaded.source_path.as_deref() {
-            let config_dir = loaded
-                .project_root
-                .clone()
-                .or_else(|| source_path.parent().map(Path::to_path_buf))
-                .unwrap_or_else(|| {
-                    std::env::current_dir().unwrap_or_else(|_| Path::new(".").to_path_buf())
-                });
-            let compiler_entries = loaded.document.compiler_entries();
-            let whitespace = CompilerWhitespacePlan::new(
-                loaded.document.compiler_whitespace(),
-                &compiler_entries,
-                &config_dir,
-            );
-            *self.format_options.write() = (
-                format_options_from_config(loaded.document.formatter_profile()),
-                whitespace.root_preserves_text(),
-            );
-            *self.format_whitespace.write() = whitespace;
-            tracing::info!("Loaded format config from {}", source_path.display());
-        }
     }
 }
