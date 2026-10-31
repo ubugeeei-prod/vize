@@ -129,9 +129,6 @@ fn collect_sources_filtered<Text: AsRef<str>>(
     uris.extend(open.keys().cloned());
     uris.sort_by(|left, right| left.as_str().cmp(right.as_str()));
     uris.dedup();
-    // The parser arena is reused only within this scan. It allocates lazily,
-    // resets after each closed Vue setup parse and drops before the reply.
-    let mut contract_allocator = vize_l0::Allocator::default();
     let mut symbols = Vec::new();
     for uri in uris {
         let before = symbols.len();
@@ -154,6 +151,9 @@ fn collect_sources_filtered<Text: AsRef<str>>(
             continue;
         }
         let Some(source) = read(&path) else { continue };
+        // Diagnostic fresh control: the same owned parser API and reset, with
+        // a new lazy arena per closed source instead of one per scan.
+        let mut contract_allocator = vize_l0::Allocator::default();
         WorkspaceSymbolsService::collect_source_with_contract_allocator(
             &uri,
             source.as_ref(),
