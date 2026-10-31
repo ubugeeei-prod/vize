@@ -1,0 +1,2 @@
+// 雪🌸
+const App = () => <main>{state.value}</main>;

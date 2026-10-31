@@ -15,17 +15,17 @@ const SPREAD_CHILD_JSX_ARGUMENT: &str = "JSX inside a spread child argument (`{.
 
 impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Lower children of an intrinsic element, preserving Babel's raw value
-    /// semantics for a lone expression child in opt-in VDOM compatibility mode.
+    /// semantics for a lone expression child in client VDOM output.
     ///
-    /// Vize's native template-shaped output stringifies `{value}` and marks the
-    /// vnode with `TEXT`. Babel passes the value as a child array entry instead,
-    /// so it contributes no text patch flag. Component children deliberately do
-    /// not use this path because they are lowered through slot synthesis.
+    /// A JSX value is a child array entry, rather than template display text.
+    /// Component children deliberately do not use this path because they are
+    /// lowered through slot synthesis. Vapor and SSR keep their own contracts.
     pub(crate) fn lower_element_children(
         &mut self,
         children: &[JSXChild<'_>],
     ) -> Vec<'a, TemplateChildNode<'a>> {
-        if !self.uses_babel_vdom_compat() {
+        let client_vdom = self.owns_native_vdom_child_values();
+        if !self.uses_babel_vdom_compat() && !client_vdom {
             return self.lower_children(children);
         }
 
@@ -43,11 +43,25 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
                 {
                     out.push(control_flow);
                 } else {
-                    out.push(self.raw_expression_child(expression.span(), container.span));
+                    if client_vdom {
+                        if let Some(expression) = expression.as_expression() {
+                            self.retain_nested_typecheck_roots(expression);
+                        }
+                        self.pending_vdom_value_children = true;
+                    }
+                    out.push(self.raw_expression_child(expression, container.span));
                 }
                 out
             }
         }
+    }
+
+    /// The explicit client Native producer owns this role; compatibility output
+    /// retains its original unmarked compound and backend contract.
+    fn owns_native_vdom_child_values(&self) -> bool {
+        self.babel_vdom_lane
+            && self.current_output_mode == crate::JsxOutputMode::Vdom
+            && !self.uses_babel_compat()
     }
 
     /// Lower a list of JSX children, dropping whitespace-only text.
@@ -182,12 +196,20 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// out of the public relief node surface.
     pub(crate) fn raw_expression_child(
         &self,
-        expression_span: oxc_span::Span,
+        authored: &JSXExpression<'_>,
         container_span: oxc_span::Span,
     ) -> TemplateChildNode<'a> {
-        let expression = self.dyn_simple_expr(expression_span);
+        let expression = self.dyn_simple_expr(authored.span());
         let mut compound =
             CompoundExpressionNode::new(self.bump(), self.mapper().location(container_span));
+        compound.is_jsx_child_value = self.owns_native_vdom_child_values();
+        compound.jsx_child_needs_grouping = compound.is_jsx_child_value
+            && authored.as_expression().is_some_and(|expression| {
+                matches!(
+                    expression.get_inner_expression(),
+                    oxc_ast::ast::Expression::SequenceExpression(_)
+                )
+            });
         compound
             .children
             .push(CompoundExpressionChild::Simple(expression));

@@ -71,6 +71,9 @@ jobs:
           path: |
             ${{ runner.temp }}/jsx-rspack-child-values-6890/authored-vapor-bundle.json
             target/vize-tests/test-output/rspack-vize-plugin/jsx-vapor/authored-vapor-bundle.json
+            target/vize-tests/test-output/rspack-vize-plugin/jsx-vdom/native-vdom-bundle.json
+            target/vize-tests/test-output/rspack-vize-plugin/jsx-vdom-module/native-vdom-module.json
+            target/vize-tests/test-output/rspack-vize-plugin/jsx-vdom-map/native-vdom-map.json
           if-no-files-found: error
           retention-days: 14
       - name: Preserve public native formatter evidence

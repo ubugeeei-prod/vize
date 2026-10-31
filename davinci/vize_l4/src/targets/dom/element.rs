@@ -17,7 +17,8 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         branch_key: Option<u32>,
     ) -> Result<(), DomError> {
         self.writer.anchor(element.span.start);
-        if fact.block_eligible {
+        let block = fact.block_eligible && !self.facts.has_jsx_child_values();
+        if block {
             self.writer.push("(");
             spell(&mut self.writer, self.vocabulary, self.helpers.open_block);
             self.writer.push("(), ");
@@ -93,8 +94,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
             }
             self.writer.push("]");
         }
-        self.writer
-            .push(if fact.block_eligible { "))" } else { ")" });
+        self.writer.push(if block { "))" } else { ")" });
         // Normalization and vnode creation close after this element's children.
         // Their syntax was already appended; imports follow actual Vue use order.
         if normalizers & 1 != 0 {
@@ -103,7 +103,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         if normalizers & 2 != 0 {
             self.writer.use_helper(self.helpers.style);
         }
-        if fact.block_eligible {
+        if block {
             self.writer.use_helper(self.helpers.open_block);
             self.writer.use_helper(self.helpers.element_block);
         } else {

@@ -21,7 +21,7 @@ namespace Values
 def roles : List String := [
   "tag", "namespace", "attribute", "text", "comment", "binding-kind", "name",
   "value", "modifier", "condition", "for-source", "for-value", "for-key",
-  "for-index", "model-read", "model-write", "model-attribute", "params"
+  "for-index", "model-read", "model-write", "model-attribute", "params", "child-value"
 ]
 
 def u32 (value : Json) : Except String Nat := do

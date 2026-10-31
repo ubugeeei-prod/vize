@@ -106,6 +106,8 @@ pub struct Lowerer<'a, 'm, 's: 'a> {
     /// lowered, in source order. Drained by [`Self::take_scoped_styles`] once
     /// the root is built.
     pending_styles: std::vec::Vec<RawScopedStyle>,
+    /// Published at the actual client-VDOM raw child mint, never by a later scan.
+    pending_vdom_value_children: bool,
 }
 
 impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
@@ -149,6 +151,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             literal_styles_active: false,
             diagnostics: std::vec::Vec::new(),
             pending_styles: std::vec::Vec::new(),
+            pending_vdom_value_children: false,
         }
     }
 
@@ -161,6 +164,10 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Record a `<style scoped>` block extracted during child lowering.
     pub(crate) fn push_scoped_style(&mut self, style: RawScopedStyle) {
         self.pending_styles.push(style);
+    }
+
+    pub(crate) fn take_vdom_value_children(&mut self) -> bool {
+        std::mem::take(&mut self.pending_vdom_value_children)
     }
 
     /// Drain the `<style scoped>` blocks accumulated while lowering the current

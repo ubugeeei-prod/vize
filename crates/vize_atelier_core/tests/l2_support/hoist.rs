@@ -280,7 +280,10 @@ pub fn shape_of_l2(ops: &[DumpOp], out: &mut vize_l0::String) {
                 shape_of_l2(&for_op.ops, out);
                 out.push(')');
             }
-            DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::Comment(_) => {}
+            DumpOp::Text(_)
+            | DumpOp::Interpolation(_)
+            | DumpOp::JsxChildValue(_)
+            | DumpOp::Comment(_) => {}
         }
     }
 }

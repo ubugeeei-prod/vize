@@ -51,11 +51,13 @@ fn emit_block(
     position: Position,
 ) -> Result<(), EmitError> {
     directive::wrap_component(cx, component, |cx| {
-        cx.buf.use_open_block();
-        cx.buf.use_create_block();
+        cx.use_open_block();
+        cx.use_component_block();
         cx.buf.push("(");
-        cx.buf.push(Buf::open_block_alias());
-        cx.buf.push("(), ");
+        if !cx.untracked_children {
+            cx.buf.push(Buf::open_block_alias());
+            cx.buf.push("(), ");
+        }
         emit_call(
             cx, component, /* block */ true, if_key, for_item, id, position,
         )?;

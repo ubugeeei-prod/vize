@@ -1,0 +1,4 @@
+<!-- 雪🌸 -->
+<main>{{ state.value }}</main>
+<p>{{ missing }}</p>
+<p v-text="state.value"></p>

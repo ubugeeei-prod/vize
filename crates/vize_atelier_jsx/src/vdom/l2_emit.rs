@@ -118,7 +118,7 @@ fn region_is_supported(region: &Region<'_>) -> bool {
 
 fn op_is_supported(op: &Op<'_>) -> bool {
     match op {
-        Op::Text(_) | Op::Interpolation(_) => true,
+        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) => true,
         Op::Element(element) => {
             if element.tag == "template" && has_slot_content(&element.bindings) {
                 return slot_template_is_supported(element);

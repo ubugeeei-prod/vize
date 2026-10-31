@@ -75,7 +75,7 @@ pub(super) fn emit_call(
     let transition_slot_root = builtin::transition_slot_root(component.name);
     let transition_props_slot_hoist = call_props::transition_props_slot_hoist(component, has_slots);
     let alias = if block {
-        Buf::create_block_alias()
+        cx.component_block_alias()
     } else {
         Buf::create_vnode_alias()
     };
@@ -189,7 +189,8 @@ pub(super) fn emit_call(
     if array && children_need_text_flag(cx, &component.children) {
         flag |= 1;
     }
-    if (cx.in_v_for && has_slots)
+    if (cx.untracked_children && has_slots)
+        || (cx.in_v_for && has_slots)
         || dynamic_names
         || captures_scope
         || builtin::always_dynamic_slots(component.name)

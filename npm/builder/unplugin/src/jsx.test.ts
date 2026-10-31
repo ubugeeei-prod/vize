@@ -79,11 +79,21 @@ void test("an .jsx fixture flows through the transform and emits vdom render cod
   t.assert.ok(result.code.length > 0, "emitted code is non-empty");
   t.assert.deepStrictEqual(warnings, [], "no warnings are emitted");
 
-  // The default (vdom) JSX backend emits the block-based element factory.
+  // Opaque JSX values stay raw children of a normal VNode so Vue normalizes every update.
   t.assert.match(
     result.code,
-    /_createElementBlock\("div"/,
-    "vdom JSX output uses the element block factory",
+    /_createElementVNode\("div"/,
+    "vdom JSX output uses a normal VNode for opaque child values",
+  );
+  t.assert.match(
+    result.code,
+    /\[\s*message\s*\]/,
+    "the authored message remains one raw child array entry",
+  );
+  t.assert.doesNotMatch(
+    result.code,
+    /\b(?:_toDisplayString|_openBlock|_createElementBlock)\b/,
+    "raw children cannot retain text or block-only update semantics",
   );
 });
 
@@ -219,8 +229,18 @@ void test("jsxMode:'vdom' keeps the vdom default even when vapor:true", async (t
   t.assert.deepStrictEqual(warnings, [], "no warnings are emitted");
   t.assert.match(
     result.code,
-    /_createElementBlock\("div"/,
-    "jsxMode:'vdom' produces vdom element-block output",
+    /_createElementVNode\("div"/,
+    "jsxMode:'vdom' preserves raw values in normal VDOM children",
+  );
+  t.assert.match(
+    result.code,
+    /\[\s*message\s*\]/,
+    "the authored message remains one raw child array entry",
+  );
+  t.assert.doesNotMatch(
+    result.code,
+    /\b(?:_toDisplayString|_openBlock|_createElementBlock)\b/,
+    "raw children cannot retain text or block-only update semantics",
   );
 });
 
@@ -249,8 +269,8 @@ void test("jsxCompat:'babel' reaches the unplugin compiler with complete output"
 });
 
 void test("a .tsx transform carries the runtime-helper preamble and a source map", async (t) => {
-  // The VDOM render code references `_createElementBlock` / `_toDisplayString`,
-  // so the emitted module must import them (the preamble is no longer dropped);
+  // Opaque VDOM children use the normal element factory, so its runtime helper
+  // must stay in the complete module preamble;
   // with `sourceMap` on, a single-component module also surfaces a v3 map
   // (#1533).
   const id = resolveFixturePath("jsx", "App.tsx");
@@ -271,8 +291,18 @@ void test("a .tsx transform carries the runtime-helper preamble and a source map
   t.assert.ok(result && typeof result === "object", "transform returns a result object");
   t.assert.match(
     result.code,
-    /import \{[^}]*createElementBlock[^}]*\} from "vue"/,
+    /import \{[^}]*createElementVNode[^}]*\} from "vue"/,
     "the emitted module imports its runtime helpers",
+  );
+  t.assert.match(
+    result.code,
+    /\[\s*message\s*\]/,
+    "the authored message remains one raw child array entry",
+  );
+  t.assert.doesNotMatch(
+    result.code,
+    /\b(?:_toDisplayString|_openBlock|_createElementBlock)\b/,
+    "raw children cannot retain text or block-only update semantics",
   );
   t.assert.equal(typeof result.map, "string", "a source map is surfaced when requested");
   t.assert.match(String(result.map), /"version":\s*3/, "the surfaced source map is v3");

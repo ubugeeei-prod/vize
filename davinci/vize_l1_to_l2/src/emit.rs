@@ -53,6 +53,7 @@ mod budget;
 mod buf;
 mod builtin;
 mod cache_slots;
+mod child_values;
 mod children;
 mod component;
 mod constant_expr;
@@ -225,6 +226,8 @@ struct EmitCx<'facts> {
     /// `prefix_identifiers`: expressions go through [`prefix`] on their
     /// way out instead of being pushed verbatim.
     prefix_identifiers: bool,
+    /// Genuine JSX child values cannot use a statically collected block child list.
+    untracked_children: bool,
     /// `hoist_static`: static props and static VNode declarations are emitted
     /// only when the public transform option enabled them.
     hoist_static: bool,

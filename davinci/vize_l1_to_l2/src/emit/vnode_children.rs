@@ -96,7 +96,7 @@ fn emit_children_inner(
 }
 
 pub(super) fn is_text_like(op: &Op<'_>) -> bool {
-    matches!(op, Op::Text(_) | Op::Interpolation(_))
+    matches!(op, Op::Text(_)) || matches!(op, Op::Interpolation(_))
 }
 
 /// `ops` split after its leading run of text and interpolation ops.

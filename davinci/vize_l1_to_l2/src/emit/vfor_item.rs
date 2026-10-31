@@ -43,11 +43,13 @@ fn emit_block(
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     directive::wrap_element(cx, element, |cx| {
-        cx.buf.use_open_block();
-        cx.buf.use_create_element_block();
+        cx.use_open_block();
+        cx.use_element_block();
         cx.buf.push("(");
-        cx.buf.push(Buf::open_block_alias());
-        cx.buf.push("(), ");
+        if !cx.untracked_children {
+            cx.buf.push(Buf::open_block_alias());
+            cx.buf.push("(), ");
+        }
         cx.with_static_vnode_hoist(true, |cx| {
             vnode::emit_call(
                 cx,

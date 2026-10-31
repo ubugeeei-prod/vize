@@ -70,6 +70,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                 file_for_heads: SideTable::new(),
                 vue_expressions: SideTable::new(),
                 unsupported: Vec::new(),
+                jsx_child_values: false,
             },
         }
     }
@@ -97,10 +98,18 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
         let conditional = self.prepare_conditional(id, op);
         let text = match op {
             Op::Text(_) => Some(false),
-            Op::Interpolation(interpolation) => Some(
-                self.value(id, interpolation.expression)
-                    .is_some_and(ValueKind::is_dynamic),
-            ),
+            Op::Interpolation(interpolation) => {
+                let dynamic = self
+                    .value(id, interpolation.expression)
+                    .is_some_and(ValueKind::is_dynamic);
+                Some(dynamic)
+            }
+            Op::JsxChildValue(child) => {
+                self.value(id, child.expression);
+                self.facts.jsx_child_values = true;
+                self.demand(DomDependency::NativeElementValue);
+                None
+            }
             Op::Element(element) => {
                 if element.namespace != Namespace::Html {
                     self.reject(id, span, DomUnsupported::Namespace);
@@ -207,6 +216,9 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
             self.complete_conditional(id, NodeRef::Op(frame.node.op).span(), conditional)?;
         }
         self.complete_for_body(id, &mut frame);
+        if self.facts.jsx_child_values {
+            frame.node.block_eligible = false;
+        }
         frame.node.children = if frame.children.is_empty() {
             DomChildren::Empty
         } else if frame.children.len() == 1
@@ -245,8 +257,9 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
             [] => DomRootKind::Empty,
             [DomChild::Node(id)] => {
                 if let Some(node) = self.facts.nodes.get_mut(*id) {
-                    node.block_eligible = matches!(node.op, Op::Element(_))
-                        || (matches!(node.op, Op::OriginalFor(_)) && node.block_eligible);
+                    node.block_eligible = !self.facts.jsx_child_values
+                        && (matches!(node.op, Op::Element(_))
+                            || (matches!(node.op, Op::OriginalFor(_)) && node.block_eligible));
                 }
                 DomRootKind::Direct
             }

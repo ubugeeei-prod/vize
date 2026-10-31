@@ -62,6 +62,7 @@ pub(in crate::emit) fn emit_array_child(
                 super::super::children::emit_comment_vnode(cx, comment);
                 Ok(())
             }
+            Op::JsxChildValue(child) => super::super::children::emit_jsx_child(cx, child),
             Op::Text(_) | Op::Interpolation(_) => {
                 Err(EmitError::unsupported_op(Reason::ArrayChildTextRun, op))
             }

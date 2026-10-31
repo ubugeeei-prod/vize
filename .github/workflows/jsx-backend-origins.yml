@@ -10,6 +10,8 @@ on:
       - "tests/_fixtures/differential/jsx/child-values-6890-backend-profile-contracts.json"
       - "tests/tooling/jsx-child-backend-profile-contract.test.ts"
       - "tests/tooling/support/jsx-child-backend-profile-contract.ts"
+      - "tests/tooling/jsx-current-backend-profile-contract.test.ts"
+      - "tests/tooling/support/jsx-current-backend-profile-contract.ts"
       - ".github/workflows/jsx-backend-origins.yml"
 permissions: { contents: read }
 concurrency:
@@ -63,8 +65,8 @@ jobs:
           sha256sum "$observer" "$baseline/$observer" > "$RUNNER_TEMP/jsx-backend-origins/observer.sha256"
       - name: Compare whole backend outputs and report measured default overhead
         run: |
-          node --test tests/tooling/jsx-child-backend-profile-contract.test.ts
-          node tests/tooling/support/jsx-child-backend-profile-contract.ts "$RUNNER_TEMP/jsx-backend-origins"
+          node --test tests/tooling/jsx-child-backend-profile-contract.test.ts tests/tooling/jsx-current-backend-profile-contract.test.ts
+          node tests/tooling/support/jsx-current-backend-profile-contract.ts "$RUNNER_TEMP/jsx-backend-origins"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

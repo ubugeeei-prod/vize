@@ -93,6 +93,8 @@ pub struct LoweredRoot<'a> {
     /// JSX-to-L2 lowering. A refusal is observable input to the migration lane;
     /// it must not become a silent fallback after the lane selects L2.
     pub l2: Result<l2::JsxL2Root<'a>, l2::L2Refusal>,
+    /// Actual raw JSX child mints require full client-VDOM child patching.
+    pub vdom_value_children: bool,
     /// Output mode override from the nearest enclosing component function's
     /// `"use vue:vapor"` / `"use vue:vdom"` directive prologue, if any. `None`
     /// means the configured default applies.

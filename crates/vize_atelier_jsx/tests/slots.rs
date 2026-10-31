@@ -41,9 +41,10 @@ fn slot_codegen_snapshot() {
         ),
     ];
 
-    insta::assert_snapshot!(common::snapshot_cases(&cases, |source| {
-        common::vdom_code(source, JsxLang::Jsx)
-    }));
+    insta::assert_snapshot!(
+        "slot_codegen_snapshot_vdom_child_values_6890",
+        common::snapshot_cases(&cases, |source| { common::vdom_code(source, JsxLang::Jsx) })
+    );
 }
 
 // 6. IR-level: the lowered slot is a `<template>` with `tag_type == Template`

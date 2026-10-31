@@ -29,6 +29,8 @@ pub enum OperandRole {
     ModelWrite,
     ModelAttribute,
     Params,
+    /// An opaque JSX child expression, not a text or attached binding value.
+    ChildValue,
 }
 
 impl OperandRole {
@@ -52,11 +54,12 @@ impl OperandRole {
             | Self::ForSource
             | Self::ForValue
             | Self::ForKey
-            | Self::ForIndex => !present,
+            | Self::ForIndex
+            | Self::ChildValue => !present,
         }
     }
 
-    pub const ALL: [Self; 18] = [
+    pub const ALL: [Self; 19] = [
         Self::Tag,
         Self::Namespace,
         Self::Attribute,
@@ -75,6 +78,7 @@ impl OperandRole {
         Self::ModelWrite,
         Self::ModelAttribute,
         Self::Params,
+        Self::ChildValue,
     ];
 
     #[must_use]
@@ -103,6 +107,7 @@ impl OperandRole {
             Self::ModelWrite => "model-write",
             Self::ModelAttribute => "model-attribute",
             Self::Params => "params",
+            Self::ChildValue => "child-value",
         }
     }
 }

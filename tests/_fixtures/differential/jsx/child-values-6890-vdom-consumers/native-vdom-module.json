@@ -1,0 +1,16 @@
+{
+  "source": "const App = () => <div>{message}</div>;\nexport default App;\n",
+  "compatSource": "const A = () => <input disabled/>;",
+  "observed": {
+    "module": "import { createElementVNode as _createElementVNode } from \"vue\"\n\nconst App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"div\", null, [\n    message\n  ]))\n})(undefined, [])\n})();\nexport default App;\n",
+    "nativeCompat": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"input\", { disabled: \"\" }))\n})(undefined, [])\n})();",
+    "babelCompat": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"input\", { disabled: true }))\n})(undefined, [])\n})();"
+  },
+  "nativeDto": {
+    "code": "import { createElementVNode as _createElementVNode } from \"vue\"\n\nconst App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"div\", null, [\n    message\n  ]))\n})(undefined, [])\n})();\nexport default App;\n",
+    "errors": [],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  "sourceRevision": "b66d02c20f259cd77dd495d3c30ceb2c13d9f13b"
+}

@@ -49,6 +49,7 @@ impl CodegenContext {
             merge_props,
             component_name,
             experimental_self_component: experimental_options.self_component,
+            untracked_children: false,
             no_slotted,
             development: true,
             pure: false,
@@ -75,6 +76,7 @@ impl CodegenContext {
     /// Name used for vnode creation helpers under the optional JSX factory.
     pub(in crate::codegen) fn vnode_helper(&self, helper: RuntimeHelper) -> &str {
         debug_assert!(is_vnode_factory_helper(helper));
+        let helper = self.child_value_helper(helper).unwrap_or(helper);
         match (&self.vnode_factory, helper) {
             // A custom factory has no block-tracking API. Keep the compiler's
             // comma-expression shape with an inert call and avoid importing
@@ -85,9 +87,29 @@ impl CodegenContext {
         }
     }
 
+    pub(in crate::codegen) fn child_value_helper(
+        &self,
+        helper: RuntimeHelper,
+    ) -> Option<RuntimeHelper> {
+        if self.untracked_children {
+            match helper {
+                RuntimeHelper::OpenBlock => return None,
+                RuntimeHelper::CreateElementBlock => {
+                    return Some(RuntimeHelper::CreateElementVNode);
+                }
+                RuntimeHelper::CreateBlock => return Some(RuntimeHelper::CreateVNode),
+                _ => {}
+            }
+        }
+        Some(helper)
+    }
+
     /// Emit a vnode creation helper and track its default runtime import.
     pub(in crate::codegen) fn push_vnode_helper(&mut self, helper: RuntimeHelper) {
         debug_assert!(is_vnode_factory_helper(helper));
+        let Some(helper) = self.child_value_helper(helper) else {
+            return;
+        };
         if let Some(factory) = &self.vnode_factory {
             if helper == RuntimeHelper::OpenBlock {
                 self.out.push_str("_openBlock");

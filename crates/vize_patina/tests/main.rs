@@ -46,6 +46,7 @@ mod function_return_type_history;
 mod generic_type_reads;
 mod global_component_registration;
 mod html_content_model_differential;
+mod jsx_child_expression_control;
 mod legacy_instance_apis;
 mod lint_history;
 mod musea_component_names;

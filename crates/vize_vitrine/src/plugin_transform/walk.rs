@@ -39,7 +39,7 @@ fn visit_guarded<'a>(
             }
             Op::For(owner) => visit(&mut owner.region, next, visitor),
             Op::OriginalFor(owner) => visit(&mut owner.region, next, visitor),
-            Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
+            Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}
         }
     }
 }

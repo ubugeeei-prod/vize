@@ -1,0 +1,21 @@
+import { ssrInterpolate as _ssrInterpolate } from "@vue/server-renderer"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<!--[--><main>${_ssrInterpolate($setup.state.value)}${_ssrInterpolate(_ctx.missing)}</main><p>${_ssrInterpolate($setup.state.value)}</p><!--]-->`)
+}
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+const state = { value: false }
+
+const __returned__ = { state }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}
