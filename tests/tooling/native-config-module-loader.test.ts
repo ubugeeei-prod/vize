@@ -24,23 +24,12 @@ import {
   importConfigModuleWithDependencies,
 } from "../../crates/vize_carton/src/config/loader/module-runtime.mjs";
 import { resolveViteConfigExport } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
+import { nativeLoaderScript } from "./support/native-config-script.ts";
 
 const require = createRequire(join(process.cwd(), "package.json"));
 const vitePackage = dirname(require.resolve("vite/package.json"));
 const vitePlusPackage = dirname(require.resolve("vite-plus/package.json"));
 const execute = promisify(execFile);
-
-async function nativeLoaderScript() {
-  const loader = new URL("../../crates/vize_carton/src/config/loader/js.rs", import.meta.url);
-  const source = await readFile(loader, "utf8");
-  const includes = [...source.matchAll(/include_str!\("([^"]+)"\)/g)];
-  const scripts = [...source.matchAll(/r#"([\s\S]*?)"#/g)];
-  assert.equal(scripts.length, 1);
-  const bodies = await Promise.all(
-    includes.map((match) => readFile(new URL(match[1], loader), "utf8")),
-  );
-  return [...bodies, scripts[0][1]].join("");
-}
 
 async function project(
   run: (directory: string) => Promise<void>,

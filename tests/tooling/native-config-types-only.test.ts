@@ -20,6 +20,7 @@ import { promisify } from "node:util";
 
 import { importConfigModuleWithDependencies } from "../../crates/vize_carton/src/config/loader/module-runtime.mjs";
 import { resolveViteConfigExport } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
+import { nativeLoaderScript as nativeScript } from "./support/native-config-script.ts";
 
 const require = createRequire(join(process.cwd(), "package.json"));
 const vitePlus = dirname(require.resolve("vite-plus/package.json"));
@@ -65,19 +66,6 @@ async function project(run: (root: string, stub: string) => Promise<void>, withV
   } finally {
     await rm(root, { recursive: true, force: true });
   }
-}
-
-async function nativeScript() {
-  const loader = new URL("../../crates/vize_carton/src/config/loader/js.rs", import.meta.url);
-  const source = await readFile(loader, "utf8");
-  const bodies = await Promise.all(
-    [...source.matchAll(/include_str!\("([^"]+)"\)/g)].map((match) =>
-      readFile(new URL(match[1], loader), "utf8"),
-    ),
-  );
-  const scripts = [...source.matchAll(/r#"([\s\S]*?)"#/g)];
-  assert.equal(scripts.length, 1);
-  return [...bodies, scripts[0][1]].join("");
 }
 
 test("declaration-only Vite preserves the installation and uses real project Vite+ in both loaders", async () => {
