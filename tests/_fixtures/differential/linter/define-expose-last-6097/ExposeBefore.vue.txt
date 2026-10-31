@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const ready = true;
+defineExpose({ ready });
+const tail = 1;
+</script>
+<template><div /></template>

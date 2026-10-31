@@ -87,6 +87,20 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
                 format!("Invalid Patina rule options: {error}"),
             )
         })?;
+    let define_macros_order = if rule_options
+        .as_ref()
+        .is_some_and(|options| options.define_macros_order().is_some())
+    {
+        // The shared JSON policy owns this rule, including an explicit {} reset.
+        None
+    } else {
+        if let Some(options) = define_macros_order.as_ref() {
+            options
+                .validate()
+                .map_err(|message| Error::new(Status::InvalidArg, message.to_owned()))?;
+        }
+        define_macros_order
+    };
     let enabled_rules = opts
         .enabled_rules
         .map(|rules| rules.into_iter().map(Into::into).collect());

@@ -1951,6 +1951,47 @@
       }
     },
     {
+      "id": "linter/define-expose-last-6097",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "define-expose-last-6097",
+        "files": [
+          {
+            "path": "ExposeBefore.vue.txt",
+            "role": "independently-authored-reproduction",
+            "sha256": "ca4599c3fb852852b8891b3f59576c173bc2a112f692d677a757250ee30c0b84"
+          },
+          {
+            "path": "ExposeLast.vue.txt",
+            "role": "independently-authored-reproduction",
+            "sha256": "2e99e170a7c14b691ed2b574d9e2e31c9be26be4224a66a50f928c098ca69841"
+          },
+          {
+            "path": "ExposeAndOrder.vue.txt",
+            "role": "independently-authored-reproduction",
+            "sha256": "35676e3e3e04da374b4b013dcc818b1b121d2d2aac4dd21ff7fe0d8e2e615b5f"
+          },
+          {
+            "path": "cases.json",
+            "role": "independent-reference-and-counterfactuals",
+            "sha256": "b3bac6ba5ae5bddc0d756eb4228285c02c3fa78199225bf63ff91db4c441ec35"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/explicit-type-rule-preset-10717",
       "state": "active",
       "targets": ["lint"],

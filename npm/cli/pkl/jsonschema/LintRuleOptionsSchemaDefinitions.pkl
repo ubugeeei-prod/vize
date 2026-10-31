@@ -25,6 +25,7 @@ defineMacrosOrderOptionsDef: JsonSchema = new JsonSchema {
       uniqueItems = true
       default = new Listing { "defineProps"; "defineEmits" }
     }
+    ["defineExposeLast"] = new JsonSchema { type = "boolean"; default = false }
   }
   additionalProperties = false
 }

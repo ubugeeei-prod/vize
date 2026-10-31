@@ -1,0 +1,266 @@
+{
+  "schema": "vize.patina.define-expose-last-6097",
+  "version": 1,
+  "provider": {
+    "eslint": "10.4.1",
+    "eslint-plugin-vue": "10.9.2",
+    "vue-eslint-parser": "10.4.1",
+    "@typescript-eslint/parser": "8.65.0"
+  },
+  "ruleSource": {
+    "path": "dist/rules/define-macros-order.js",
+    "sha256": "9b9aaf5b52c2e05b67597bb1c859fb10205e86ebb4e8878487a51bb0c3abfd66"
+  },
+  "files": [
+    {
+      "file": "ExposeBefore.vue.txt",
+      "bytes": 125,
+      "sha256": "ca4599c3fb852852b8891b3f59576c173bc2a112f692d677a757250ee30c0b84"
+    },
+    {
+      "file": "ExposeLast.vue.txt",
+      "bytes": 125,
+      "sha256": "2e99e170a7c14b691ed2b574d9e2e31c9be26be4224a66a50f928c098ca69841"
+    },
+    {
+      "file": "ExposeAndOrder.vue.txt",
+      "bytes": 221,
+      "sha256": "35676e3e3e04da374b4b013dcc818b1b121d2d2aac4dd21ff7fe0d8e2e615b5f"
+    }
+  ],
+  "cases": [
+    {
+      "id": "expose-before-true",
+      "file": "ExposeBefore.vue.txt",
+      "options": {
+        "defineExposeLast": true
+      },
+      "statements": ["defineExpose({ ready });"],
+      "sourceSha256": "ca4599c3fb852852b8891b3f59576c173bc2a112f692d677a757250ee30c0b84",
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/define-macros-order",
+            "severity": 2,
+            "message": "`defineExpose` should be the last statement in `<script setup>`.",
+            "line": 3,
+            "column": 1,
+            "messageId": "defineExposeNotTheLast",
+            "endLine": 3,
+            "endColumn": 25,
+            "suggestions": [
+              {
+                "messageId": "putExposeAtTheLast",
+                "fix": {
+                  "range": [45, 85],
+                  "text": "const tail = 1;\ndefineExpose({ ready });"
+                },
+                "desc": "Put `defineExpose` as the last statement in `<script setup>`."
+              }
+            ]
+          }
+        ],
+        "fixResult": {
+          "fixed": false,
+          "messages": [
+            {
+              "ruleId": "vue/define-macros-order",
+              "severity": 2,
+              "message": "`defineExpose` should be the last statement in `<script setup>`.",
+              "line": 3,
+              "column": 1,
+              "messageId": "defineExposeNotTheLast",
+              "endLine": 3,
+              "endColumn": 25,
+              "suggestions": [
+                {
+                  "messageId": "putExposeAtTheLast",
+                  "fix": {
+                    "range": [45, 85],
+                    "text": "const tail = 1;\ndefineExpose({ ready });"
+                  },
+                  "desc": "Put `defineExpose` as the last statement in `<script setup>`."
+                }
+              ]
+            }
+          ],
+          "output": "<script setup lang=\"ts\">\nconst ready = true;\ndefineExpose({ ready });\nconst tail = 1;\n</script>\n<template><div /></template>\n"
+        }
+      }
+    },
+    {
+      "id": "expose-before-default",
+      "file": "ExposeBefore.vue.txt",
+      "options": {},
+      "statements": [],
+      "sourceSha256": "ca4599c3fb852852b8891b3f59576c173bc2a112f692d677a757250ee30c0b84",
+      "reference": {
+        "messages": [],
+        "fixResult": {
+          "fixed": false,
+          "messages": [],
+          "output": "<script setup lang=\"ts\">\nconst ready = true;\ndefineExpose({ ready });\nconst tail = 1;\n</script>\n<template><div /></template>\n"
+        }
+      }
+    },
+    {
+      "id": "expose-before-false",
+      "file": "ExposeBefore.vue.txt",
+      "options": {
+        "defineExposeLast": false
+      },
+      "statements": [],
+      "sourceSha256": "ca4599c3fb852852b8891b3f59576c173bc2a112f692d677a757250ee30c0b84",
+      "reference": {
+        "messages": [],
+        "fixResult": {
+          "fixed": false,
+          "messages": [],
+          "output": "<script setup lang=\"ts\">\nconst ready = true;\ndefineExpose({ ready });\nconst tail = 1;\n</script>\n<template><div /></template>\n"
+        }
+      }
+    },
+    {
+      "id": "expose-last-repaired",
+      "file": "ExposeLast.vue.txt",
+      "options": {
+        "defineExposeLast": true
+      },
+      "statements": [],
+      "sourceSha256": "2e99e170a7c14b691ed2b574d9e2e31c9be26be4224a66a50f928c098ca69841",
+      "reference": {
+        "messages": [],
+        "fixResult": {
+          "fixed": false,
+          "messages": [],
+          "output": "<script setup lang=\"ts\">\nconst ready = true;\nconst tail = 1;\ndefineExpose({ ready });\n</script>\n<template><div /></template>\n"
+        }
+      }
+    },
+    {
+      "id": "expose-and-order-true",
+      "file": "ExposeAndOrder.vue.txt",
+      "options": {
+        "defineExposeLast": true
+      },
+      "statements": [
+        "const props = defineProps<{ ready: boolean }>();",
+        "defineExpose({ props });"
+      ],
+      "sourceSha256": "35676e3e3e04da374b4b013dcc818b1b121d2d2aac4dd21ff7fe0d8e2e615b5f",
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/define-macros-order",
+            "severity": 2,
+            "message": "defineProps should be above defineEmits.",
+            "line": 4,
+            "column": 1,
+            "messageId": "macrosUnordered",
+            "endLine": 4,
+            "endColumn": 49,
+            "fix": {
+              "range": [25, 139],
+              "text": "const props = defineProps<{ ready: boolean }>();\n// 🦀 authored source\nconst emit = defineEmits<{ ready: [] }>();\n"
+            }
+          },
+          {
+            "ruleId": "vue/define-macros-order",
+            "severity": 2,
+            "message": "`defineExpose` should be the last statement in `<script setup>`.",
+            "line": 5,
+            "column": 1,
+            "messageId": "defineExposeNotTheLast",
+            "endLine": 5,
+            "endColumn": 25,
+            "suggestions": [
+              {
+                "messageId": "putExposeAtTheLast",
+                "fix": {
+                  "range": [139, 179],
+                  "text": "const tail = 1;\ndefineExpose({ props });"
+                },
+                "desc": "Put `defineExpose` as the last statement in `<script setup>`."
+              }
+            ]
+          }
+        ],
+        "fixResult": {
+          "fixed": true,
+          "messages": [
+            {
+              "ruleId": "vue/define-macros-order",
+              "severity": 2,
+              "message": "`defineExpose` should be the last statement in `<script setup>`.",
+              "line": 5,
+              "column": 1,
+              "messageId": "defineExposeNotTheLast",
+              "endLine": 5,
+              "endColumn": 25,
+              "suggestions": [
+                {
+                  "messageId": "putExposeAtTheLast",
+                  "fix": {
+                    "range": [139, 179],
+                    "text": "const tail = 1;\ndefineExpose({ props });"
+                  },
+                  "desc": "Put `defineExpose` as the last statement in `<script setup>`."
+                }
+              ]
+            }
+          ],
+          "output": "<script setup lang=\"ts\">\nconst props = defineProps<{ ready: boolean }>();\n// 🦀 authored source\nconst emit = defineEmits<{ ready: [] }>();\ndefineExpose({ props });\nconst tail = 1;\n</script>\n<template><div /></template>\n"
+        }
+      }
+    },
+    {
+      "id": "expose-and-order-default",
+      "file": "ExposeAndOrder.vue.txt",
+      "options": {},
+      "statements": ["const props = defineProps<{ ready: boolean }>();"],
+      "sourceSha256": "35676e3e3e04da374b4b013dcc818b1b121d2d2aac4dd21ff7fe0d8e2e615b5f",
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/define-macros-order",
+            "severity": 2,
+            "message": "defineProps should be above defineEmits.",
+            "line": 4,
+            "column": 1,
+            "messageId": "macrosUnordered",
+            "endLine": 4,
+            "endColumn": 49,
+            "fix": {
+              "range": [25, 139],
+              "text": "const props = defineProps<{ ready: boolean }>();\n// 🦀 authored source\nconst emit = defineEmits<{ ready: [] }>();\n"
+            }
+          }
+        ],
+        "fixResult": {
+          "fixed": true,
+          "messages": [],
+          "output": "<script setup lang=\"ts\">\nconst props = defineProps<{ ready: boolean }>();\n// 🦀 authored source\nconst emit = defineEmits<{ ready: [] }>();\ndefineExpose({ props });\nconst tail = 1;\n</script>\n<template><div /></template>\n"
+        }
+      }
+    },
+    {
+      "id": "ordinary-script-control",
+      "file": "ExposeBefore.vue.txt",
+      "options": {
+        "defineExposeLast": true
+      },
+      "ordinaryScript": true,
+      "statements": [],
+      "sourceSha256": "99858b4caa2b90a3e49311ec6d01970d14f7adce2049e2f5399acd240c897adb",
+      "reference": {
+        "messages": [],
+        "fixResult": {
+          "fixed": false,
+          "messages": [],
+          "output": "<script lang=\"ts\">\nconst ready = true;\ndefineExpose({ ready });\nconst tail = 1;\n</script>\n<template><div /></template>\n"
+        }
+      }
+    }
+  ],
+  "limits": "Complete independent ESLint messages, suggestions and automatic fix result. Vize retains null automatic fixes; no suggestion transport or whole rule equivalence is inferred."
+}

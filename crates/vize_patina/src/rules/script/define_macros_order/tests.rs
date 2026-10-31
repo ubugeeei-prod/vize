@@ -1,6 +1,7 @@
 use super::DefineMacrosOrder;
 use crate::rules::script::ScriptLinter;
 
+mod expose_last;
 mod groups;
 
 fn lint(source: &str) -> Vec<String> {
@@ -19,6 +20,7 @@ fn lint_with_order(source: &str, order: &[&str]) -> Vec<String> {
     linter.add_rule(Box::new(DefineMacrosOrder::configured(
         vize_l0::config::DefineMacrosOrderOptions {
             order: order.iter().map(|name| (*name).into()).collect(),
+            define_expose_last: false,
         },
     )));
     linter

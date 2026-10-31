@@ -3,6 +3,7 @@ use crate::support::vite_config;
 use serde_json::{Value, json};
 use std::{fs, process::Command};
 
+mod expose_last;
 mod pinned;
 
 const RULE: &str = "script/define-macros-order";
