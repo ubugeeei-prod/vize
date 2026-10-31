@@ -19,6 +19,10 @@ on:
       - "crates/vize_atelier_sfc/tests/css_v_bind_source_maps.rs"
   workflow_dispatch:
     inputs:
+      pack_stack_attribution:
+        type: boolean
+        default: false
+        description: One private original builders-command process observation; no product qualification
       ui_stack_isolation:
         type: boolean
         default: false
@@ -44,7 +48,7 @@ env:
   VIZE_CSS_MAP_REQUIRE_SOURCE: "1"
 jobs:
   native:
-    if: ${{ !inputs.ui_stack_isolation }}
+    if: ${{ !inputs.ui_stack_isolation && !inputs.pack_stack_attribution }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
@@ -86,7 +90,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   measurements:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.measurements && !inputs.ui_stack_isolation }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.measurements && !inputs.ui_stack_isolation && !inputs.pack_stack_attribution }}
     needs: native
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
@@ -134,7 +138,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   ui-stack-isolation:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.ui_stack_isolation }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.ui_stack_isolation && !inputs.pack_stack_attribution }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
@@ -191,5 +195,56 @@ jobs:
         with:
           name: ui-stack-observation-${{ github.workflow_sha }}-${{ github.run_id }}
           path: ${{ runner.temp }}/ui-stack-observation/
+          if-no-files-found: error
+          retention-days: 7
+  pack-stack-attribution:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.pack_stack_attribution && !inputs.ui_stack_isolation }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: "0"
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_JS_PACKAGE_GROUP: builders
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.workflow_sha }}", persist-credentials: false }
+      - name: Preserve only the driver outside the original source checkout
+        run: cp tools/support/compat/github/pack-stack-attribution.ts "$RUNNER_TEMP/pack-stack-attribution.ts"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: 4a6e04d35cfbb3b68a437d81d970d971805243c0
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
+        with:
+          version: "1.4.0"
+          node-version-file: package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: test-js-packages
+          cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}"
+      - name: Install the original frozen builders dependency route
+        run: node tools/support/compat/github/install-js-checks.ts "$VIZE_JS_PACKAGE_GROUP"
+      - name: Prepare process-only observation tool
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends strace
+      - name: Observe the original builders command once
+        run: node "$RUNNER_TEMP/pack-stack-attribution.ts" "$RUNNER_TEMP/pack-stack-public" "$RUNNER_TEMP/pack-stack-private"
+      - name: Retain sanitized process events and hashes only
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pack-stack-attribution-${{ github.workflow_sha }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/pack-stack-public/
           if-no-files-found: error
           retention-days: 7
