@@ -57,6 +57,7 @@ function run(collected: Collected): void {
   const selection = createRuleSelection(collected.options);
   const hasSelectedTypeAwareRule = selection.names.some(isTypeAwareRuleName);
   const settings = collected.settings;
+  const { ruleOptions, ...directRuleOptions } = selection.options;
   const result = loadBinding().lintPatinaSfc(collected.source, {
     filename: collected.filename,
     locale: settings.locale,
@@ -65,7 +66,8 @@ function run(collected: Collected): void {
     enabledRules: selection.names,
     typeAware: settings.typeAware === true || hasSelectedTypeAwareRule,
     corsaPath: settings.corsaPath,
-    ...selection.options,
+    ruleOptionsJson: ruleOptions ? JSON.stringify(ruleOptions) : undefined,
+    ...directRuleOptions,
     includeFixes: true,
   });
   if (result.filename !== collected.filename) {

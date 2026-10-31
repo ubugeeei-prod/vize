@@ -104,13 +104,40 @@ try {
     "LocaleMenu.vue/default",
     "LocaleMenu.vue/always-false",
     "LocaleMenu.vue/always-true",
+    "LocaleMenu.vue/reset-empty",
     "LocaleMenu.vue/never-true",
+    "LocaleMenu.vue/always-true-ignore",
     "Modifiers.vue/always-true",
     "FinalSigma.vue/always-true",
+    "LocaleMenu.vue/off",
   ];
+  const exportSha256 = hash(readFileSync(new URL("../dist/eslint.mjs", import.meta.url)));
+  const custody = {
+    source: receipt.source,
+    frozen: receipt.frozen,
+    receiptSha256: hash(receiptBytes),
+    exportSha256,
+    providers,
+    expectedCasingSha256: casingSha256,
+    sourceFiles: Object.fromEntries(
+      ["eslint.ts", "rule-options.ts", "v-on-event-options.ts"].map((path) => [
+        path,
+        hash(readFileSync(new URL(path, import.meta.url))),
+      ]),
+    ),
+  };
+  console.log("vize-v-on-autofix-eslint-host-source " + JSON.stringify(custody));
+  const host = new Linter();
   for (const id of selected) {
-    const row = cases.find((value) => value.id === id);
-    assert(row);
+    const reset = id === "LocaleMenu.vue/reset-empty",
+      disabled = id === "LocaleMenu.vue/off";
+    const originalCase = cases.find(
+      (value) => value.id === (reset || disabled ? "LocaleMenu.vue/default" : id),
+    );
+    assert(originalCase);
+    const row: AutofixCase = reset
+      ? { ...originalCase, id, options: ["always", {}] }
+      : { ...originalCase, id };
     const original = sourceFor(row),
       reference = referenceFor(row);
     const option = policy(row);
@@ -120,11 +147,12 @@ try {
         languageOptions: { parser },
         plugins: { vize: plugin },
         settings: { vize: { preset: "incremental", helpLevel: "none" } },
-        rules: { ["vize/" + rule]: option === undefined ? "warn" : ["warn", option] },
+        rules: {
+          ["vize/" + rule]: disabled ? "off" : option === undefined ? "warn" : ["warn", option],
+        },
       },
     ];
-    const host = new Linter(),
-      filename = { filename: row.file.replace(/\.txt$/u, "") };
+    const filename = { filename: row.file.replace(/\.txt$/u, "") };
     const verify = host.verify(original, config, filename);
     const fixResult = host.verifyAndFix(original, config, filename);
     const output = asString(asRecord(fixResult).output);
@@ -133,12 +161,20 @@ try {
     const packet = { id, original, verify, fixResult, requery, secondFixResult };
     observations.push(packet);
     console.log("vize-v-on-autofix-eslint-host " + JSON.stringify(packet));
-    assert.deepEqual(verify, messages(row, original, reference.messages, kebab), id);
-    const expectedOutput = asString(asRecord(reference.fixResult).output);
-    const remaining = messages(row, expectedOutput, reference.requery, kebab);
+    assert.deepEqual(
+      verify,
+      disabled ? [] : messages(row, original, reference.messages, kebab),
+      id,
+    );
+    const expectedOutput = disabled ? original : asString(asRecord(reference.fixResult).output);
+    const remaining = disabled ? [] : messages(row, expectedOutput, reference.requery, kebab);
     assert.deepEqual(
       fixResult,
-      { fixed: asRecord(reference.fixResult).fixed, messages: remaining, output: expectedOutput },
+      {
+        fixed: disabled ? false : asRecord(reference.fixResult).fixed,
+        messages: remaining,
+        output: expectedOutput,
+      },
       id,
     );
     assert.deepEqual(requery, remaining, id);
@@ -152,15 +188,10 @@ try {
     schema: "vize.patina.event-autofix-eslint-host.v1",
     complete: true,
     node: process.version,
-    source: receipt.source,
-    providers,
-    expectedCasingSha256: casingSha256,
-    frozen: receipt.frozen,
-    receiptSha256: hash(receiptBytes),
-    exportSha256: hash(readFileSync(new URL("../dist/eslint.mjs", import.meta.url))),
+    ...custody,
     observations,
     limits:
-      "Six actual packed-host cases. Whole native/CLI reference corpus has separate controls; the Unicode identity-edit frontier is not generalized into a universal fixed point.",
+      "Nine actual packed-host cases, including all six original cases plus same-host empty reset, disabled selection and pinned ignore. Whole native/CLI reference corpus has separate controls; the Unicode identity-edit frontier is not generalized into a universal fixed point.",
   };
   writeFileSync(
     join(nativeHistoryDirectory(directory), "v-on-event-autofix-host.json"),
