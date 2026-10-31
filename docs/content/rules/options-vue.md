@@ -7,6 +7,7 @@ title: Vue Rule Options
 Vue rule option examples cover component name casing, prop mutation depth, SFC block order,
 self-closing tags, event names, and attribute casing. The main [Rule Options](./options.md) page lists the complete option table,
 unknown-field behavior, and scoped replacement semantics.
+Declared prop casing is documented in [Prop Rule Options](./options-props.md).
 
 ## `vue/html-quotes`
 

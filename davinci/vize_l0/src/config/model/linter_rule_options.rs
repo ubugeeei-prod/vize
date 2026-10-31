@@ -21,6 +21,7 @@ mod hyphenation;
 mod merge;
 mod mustache_spacing;
 mod no_mutating_props;
+mod prop_name_casing;
 mod props_destructuring;
 mod restrictions;
 mod sfc_element_order;
@@ -43,6 +44,7 @@ pub use html_self_closing::{
 pub use hyphenation::HyphenationStyle;
 pub use mustache_spacing::MustacheInterpolationSpacingStyle;
 pub use no_mutating_props::NoMutatingPropsOptions;
+pub use prop_name_casing::{PropNameCasingOptions, PropNameCasingStyle};
 pub use props_destructuring::{DefinePropsDestructuringOptions, PropsDestructureMode};
 pub use restrictions::{
     MuseaDesignToken, MuseaPreferDesignTokensOptions, NoRestrictedGlobalsOptions,
@@ -161,6 +163,12 @@ pub struct ConfigLintRuleOptions {
     /// Options for `script/custom-event-name-casing`.
     #[serde(rename = "script/custom-event-name-casing")]
     custom_event_name_casing: Option<CustomEventNameCasingOptions>,
+    /// Casing of the component's own declared prop names.
+    #[serde(
+        rename = "vue/prop-name-casing",
+        skip_serializing_if = "Option::is_none"
+    )]
+    prop_name_casing: Option<PropNameCasingOptions>,
     /// Options for `vue/no-mutating-props`.
     #[serde(rename = "vue/no-mutating-props")]
     no_mutating_props: Option<NoMutatingPropsOptions>,
@@ -231,6 +239,7 @@ impl ConfigLintRuleOptions {
             && self.define_macros_order.is_none()
             && self.component_name_in_template_casing.is_none()
             && self.custom_event_name_casing.is_none()
+            && self.prop_name_casing.is_none()
             && self.no_mutating_props.is_none()
             && self.sfc_element_order.is_none()
             && self.html_self_closing.is_none()
@@ -307,6 +316,11 @@ impl ConfigLintRuleOptions {
         self.custom_event_name_casing
             .as_ref()
             .map(|options| options.casing)
+    }
+
+    /// Configured casing for the component's own prop declarations.
+    pub fn prop_name_casing(&self) -> Option<PropNameCasingStyle> {
+        self.prop_name_casing.map(|options| options.casing)
     }
 
     /// Configured options for `vue/no-mutating-props`.

@@ -28,6 +28,19 @@ pub(super) fn no_mutating_props_options(
     }
 }
 
+pub(super) fn prop_name_casing(
+    casing: vize_l0::config::PropNameCasingStyle,
+) -> vize_patina::rules::vue::PropNameCasingOption {
+    match casing {
+        vize_l0::config::PropNameCasingStyle::CamelCase => {
+            vize_patina::rules::vue::PropNameCasingOption::CamelCase
+        }
+        vize_l0::config::PropNameCasingStyle::SnakeCase => {
+            vize_patina::rules::vue::PropNameCasingOption::SnakeCase
+        }
+    }
+}
+
 pub(super) fn sfc_element_order_options(
     options: vize_l0::config::SfcElementOrderOptions,
 ) -> vize_patina::rules::SfcElementOrderOptions {

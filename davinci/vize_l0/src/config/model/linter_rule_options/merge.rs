@@ -29,6 +29,9 @@ impl ConfigLintRuleOptions {
         if let Some(options) = &overlay.custom_event_name_casing {
             self.custom_event_name_casing = Some(*options);
         }
+        if let Some(options) = overlay.prop_name_casing {
+            self.prop_name_casing = Some(options);
+        }
         if let Some(options) = &overlay.no_mutating_props {
             self.no_mutating_props = Some(*options);
         }

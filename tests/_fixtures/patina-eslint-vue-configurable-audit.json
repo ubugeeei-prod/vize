@@ -24,8 +24,8 @@
     "mapped": 60,
     "unimplemented": 50,
     "intentionalDivergence": 2,
-    "mappedWithTypedOptions": 16,
-    "mappedWithoutTypedOptions": 44
+    "mappedWithTypedOptions": 17,
+    "mappedWithoutTypedOptions": 43
   },
   "mappedWithTypedOptions": [
     ["vue/attribute-hyphenation", "vue/attribute-hyphenation"],
@@ -38,6 +38,7 @@
     ["vue/html-quotes", "vue/html-quotes"],
     ["vue/mustache-interpolation-spacing", "vue/mustache-interpolation-spacing"],
     ["vue/no-mutating-props", "vue/no-mutating-props"],
+    ["vue/prop-name-casing", "vue/prop-name-casing"],
     ["vue/v-bind-style", "vue/v-bind-style"],
     ["vue/v-on-event-hyphenation", "vue/v-on-event-hyphenation"],
     ["vue/v-on-style", "vue/v-on-style"],
