@@ -10,6 +10,7 @@ import {
   nativeReleasePlatforms,
 } from "../../tools/support/github/release-platforms.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
+import { registerStampGuards } from "./support/release-stamp-guards.ts";
 
 type Step = {
   name?: string;
@@ -24,6 +25,8 @@ const release = parse(readRepoFile(".github", "workflows", "release.yml"));
 const seed = parse(readRepoFile(".github", "workflows", "release-build-cache.yml"));
 const recipe = (name: string): { runs: { steps: Step[] } } =>
   parse(readRepoFile(".github", "actions", name, "action.yml"));
+
+registerStampGuards();
 
 test("cache planning preserves a failed version producer before writing any job output", () => {
   const step = seed.jobs.plan.steps.find((item: { id?: string }) => item.id === "next");
