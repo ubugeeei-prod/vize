@@ -83,6 +83,14 @@ pub trait Rule: Send + Sync {
         None
     }
 
+    /// This configured instance's original template-only SFC capability.
+    /// Bare-template or setup capabilities do not confer this distinct owner.
+    fn as_native_sfc_template_rule(
+        &self,
+    ) -> Option<&dyn crate::native::sfc::NativeSfcTemplateRule> {
+        None
+    }
+
     /// Whether this (markup-capable) rule's JSX/TSX equivalent only materializes
     /// after lowering, so it must run over the **lowered** markup IR rather than
     /// the OXC projection.

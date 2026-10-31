@@ -1541,7 +1541,7 @@ v-slot:header seleciona explicitamente o slot header com a diretiva atual.
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L41) · [Todas as regras](all.md)
 
 ### `vue/no-deprecated-slot-scope-attribute`
 

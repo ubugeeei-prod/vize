@@ -182,9 +182,12 @@ void test("linter result contract rejects omitted rows, incomplete retries and i
   const nativeContract = Buffer.from(
     JSON.stringify({
       schema: "vize.linter-native-observer",
-      version: 2,
+      version: 3,
       apis: NATIVE_APIS,
-      owners: { template: "NativeLintComponent", sfc: "NativeSfcLintOwner" },
+      owners: {
+        template: "NativeLintComponent",
+        sfc: { setup: "NativeSfcLintOwner", template: "NativeSfcTemplateOwner" },
+      },
       entries: ["template", "sfc"],
       wholeOutput: "Case+Observation",
       fallback: false,

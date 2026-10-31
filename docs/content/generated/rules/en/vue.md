@@ -1539,7 +1539,7 @@ v-slot:header explicitly selects the header slot with the current directive.
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L41) · [All rules](all.md)
 
 ### `vue/no-deprecated-slot-scope-attribute`
 

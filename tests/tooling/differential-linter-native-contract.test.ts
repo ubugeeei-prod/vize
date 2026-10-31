@@ -42,9 +42,12 @@ const receipt = {
     }),
     probe(["--native-contract"], {
       schema: "vize.linter-native-observer",
-      version: 2,
+      version: 3,
       apis: NATIVE_APIS,
-      owners: { template: "NativeLintComponent", sfc: "NativeSfcLintOwner" },
+      owners: {
+        template: "NativeLintComponent",
+        sfc: { setup: "NativeSfcLintOwner", template: "NativeSfcTemplateOwner" },
+      },
       entries: ["template", "sfc"],
       wholeOutput: "Case+Observation",
       fallback: false,
@@ -132,11 +135,11 @@ function baseline() {
       legacyMatches: loaded.cases.length,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: loaded.cases.length - 10,
+      nativeUnsupported: loaded.cases.length - 11,
       nativeFailures: 0,
-      nativeHandled: 10,
-      nativeEquivalent: 10,
-      pairedComparisons: 10,
+      nativeHandled: 11,
+      nativeEquivalent: 11,
+      pairedComparisons: 11,
     },
   };
 }
@@ -154,9 +157,9 @@ void test("shared acceptance counts only validated whole-product linter observat
   const acceptance = summarizeLinterAcceptance(loaded, baseline(), receipt);
   assert.deepEqual(acceptance.total, {
     planned: loaded.cases.length,
-    nativeHandled: 10,
-    nativeEquivalent: 10,
-    unsupported: loaded.cases.length - 10,
+    nativeHandled: 11,
+    nativeEquivalent: 11,
+    unsupported: loaded.cases.length - 11,
     legacyBacked: 0,
     unverified: 0,
   });

@@ -44,6 +44,22 @@ export const ORIGINAL_REF_WIRES = [
   },
 ];
 
+// Full 41184189503 at 71af4f97eb750a1f28ff27a5f0283ef052b7f857 retained
+// two native observation bodies and two legacy outputs that byte-match the
+// complete frozen Case+Observation. This pins one wire, not product admission.
+export const ORIGINAL_SLOT_ATTRIBUTE_WIRE = {
+  id: "slot-compat-vue3",
+  history: "f9fa82f7867e3a9373a8d0ee30162c6947c7c113",
+  source: '<template><div slot="header">Title</div></template>',
+  filename: "History.vue",
+  entry: "sfc",
+  rule: "vue/no-deprecated-slot-attribute",
+  vue_version: "3",
+  vapor: null,
+  diagnostics: 1,
+  fixes: 0,
+};
+
 // This original explicitly disabled option leaves no active callback. The
 // retained authored Vapor block still requires genuine Descriptor admission.
 export const ORIGINAL_NEXT_TICK_DISABLED_WIRE = {
@@ -67,6 +83,14 @@ export const ORIGINAL_REF_CALL_REFUSAL =
   "FileIssues { issues: [FileIssue { unit: ScriptUnitId(0), span: Span { start: 64, end: 98 }, kind: UnsupportedSyntax }], interruptions: [] }";
 
 export function expectedSfcReason(input: any, api: string) {
+  if (input.id === ORIGINAL_SLOT_ATTRIBUTE_WIRE.id) {
+    assert.deepEqual(
+      input,
+      ORIGINAL_SLOT_ATTRIBUTE_WIRE,
+      "complete original slot-attribute SFC wire must stay exact",
+    );
+    return null;
+  }
   if (input.id === ORIGINAL_NEXT_TICK_DISABLED_WIRE.id) {
     assert.deepEqual(
       input,

@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if api == "--native-contract" {
         writeln!(
             io::stdout().lock(),
-            "{{\"schema\":\"vize.linter-native-observer\",\"version\":2,\"apis\":[\"--native-current-api\",\"--native-report\",\"--native-static-class\"],\"owners\":{{\"template\":\"NativeLintComponent\",\"sfc\":\"NativeSfcLintOwner\"}},\"entries\":[\"template\",\"sfc\"],\"wholeOutput\":\"Case+Observation\",\"fallback\":false}}"
+            "{{\"schema\":\"vize.linter-native-observer\",\"version\":3,\"apis\":[\"--native-current-api\",\"--native-report\",\"--native-static-class\"],\"owners\":{{\"template\":\"NativeLintComponent\",\"sfc\":{{\"setup\":\"NativeSfcLintOwner\",\"template\":\"NativeSfcTemplateOwner\"}}}},\"entries\":[\"template\",\"sfc\"],\"wholeOutput\":\"Case+Observation\",\"fallback\":false}}"
         )?;
         return Ok(());
     }
