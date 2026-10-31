@@ -5,11 +5,12 @@ const CONTROLS: &str = include_str!(
     "../../../../../../../tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/runtime-controls.original.json"
 );
 
-fn digest(bytes: &[u8]) -> String {
-    Sha256::digest(bytes)
-        .into_iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect()
+fn digest(bytes: &[u8]) -> vize_l0::String {
+    let mut hex = vize_l0::String::with_capacity(64);
+    for byte in Sha256::digest(bytes) {
+        hex.push_str(crate::cstr!("{byte:02x}").as_str());
+    }
+    hex
 }
 
 #[test]
