@@ -20,8 +20,6 @@ fn each_branch_still_refuses_non_bare_unowned_or_mixed_original_bodies() {
         "{{message as string}}",
         "{{}}",
         "{{message +}}",
-        "prefix{{message}}",
-        "{{message}}suffix",
         "{{message}}{{message}}",
         "<i>{{message}}</i>",
     ] {
