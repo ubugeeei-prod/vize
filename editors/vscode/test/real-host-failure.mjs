@@ -5,7 +5,7 @@ import path from "node:path";
 // Only the controlled fixture files and its own server log survive cleanup.
 // Never copy node_modules, the editor profile, or installed extensions.
 const files = [
-  "node_modules/.vize/lsp.log",
+  ".vize/lsp.log",
   "node_modules/.vize/rich-hover.json",
   "src/RichAuthoring.vue",
   "src/SlotAuthoring.vue",

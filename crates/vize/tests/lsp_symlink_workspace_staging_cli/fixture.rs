@@ -35,6 +35,8 @@ enum Entry {
 
 pub struct Fixture {
     _directory: tempfile::TempDir,
+    _logs: tempfile::TempDir,
+    pub log: PathBuf,
     pub root: PathBuf,
     pub app: PathBuf,
     pub host: PathBuf,
@@ -167,8 +169,12 @@ impl Fixture {
         let host_source = fs::read_to_string(&host).unwrap();
         let other_source = fs::read_to_string(&other).unwrap();
         let before = snapshot(&root);
+        let logs = tempfile::tempdir().unwrap();
+        let log = logs.path().join("lsp.log");
         Self {
             _directory: directory,
+            _logs: logs,
+            log,
             root,
             app,
             host,
@@ -180,15 +186,8 @@ impl Fixture {
     }
 
     pub fn assert_authored_unchanged(&self) {
-        let mut observed = snapshot(&self.root);
-        // Default stdio initializes exactly this cache directory and append log
-        // in vize_maestro::serve. Keep every other complete entry comparison.
-        let log_dir = PathBuf::from("app/node_modules/.vize");
-        assert!(!self.before.contains_key(&log_dir));
-        assert_eq!(observed.remove(&log_dir), Some(Entry::Directory));
-        let Some(Entry::File(bytes)) = observed.remove(&log_dir.join("lsp.log")) else {
-            panic!("default stdio must retain its regular known logger");
-        };
+        let observed = snapshot(&self.root);
+        let bytes = fs::read(&self.log).unwrap();
         let log = std::str::from_utf8(&bytes).unwrap();
         let (_, record) = log.lines().next().unwrap().split_once(' ').unwrap();
         assert_eq!(
@@ -207,7 +206,7 @@ impl Fixture {
 impl Drop for Fixture {
     fn drop(&mut self) {
         if std::thread::panicking() {
-            let path = self.app.join("node_modules/.vize/lsp.log");
+            let path = &self.log;
             match fs::read_to_string(&path) {
                 Ok(log) => eprintln!("complete original LSP log {}:\n{log}", path.display()),
                 Err(error) => eprintln!("original LSP log unavailable {}: {error}", path.display()),

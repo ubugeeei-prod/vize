@@ -362,7 +362,14 @@ vize clean path/to/project
 
 `vize clean` deletes the caches and reports Vize writes under `.vize` and `node_modules/.vize`:
 profile output, Musea reports and snapshots, lint sessions, config schemas, cached config
-evaluations, LSP logs, and the generated TypeScript project used by `vize check`.
+evaluations, legacy project LSP logs, and the generated TypeScript project used by `vize check`.
+
+The LSP writes its current log to `vize/logs/lsp.log` inside the operating system's user cache
+directory (for example `$XDG_CACHE_HOME` or `~/.cache` on Linux, `~/Library/Caches` on macOS,
+and `%LOCALAPPDATA%` on Windows). It does not create a log in the project's `node_modules`.
+Set `VIZE_LSP_LOG_FILE` to an absolute file path to retain a particular editor session's log.
+If the cache directory is unavailable, the override is relative or empty, or the file cannot
+be opened, logging continues on stderr only. `vize clean` does not remove user-cache logs.
 
 | Option                              | Description                                               |
 | ----------------------------------- | --------------------------------------------------------- |

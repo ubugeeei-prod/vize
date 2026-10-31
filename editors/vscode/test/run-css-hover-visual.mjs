@@ -138,7 +138,10 @@ try {
   const environment = createPackagedHostEnvironment({
     ...createRealHostEnvironment({
       extensionsPath,
-      processEnvironment: process.env,
+      processEnvironment: {
+        ...process.env,
+        VIZE_LSP_LOG_FILE: path.join(workspacePath, ".vize/lsp.log"),
+      },
       resultPath: path.join(destination, "unused-result.json"),
       serverPath,
       sourceExtensionPath,
@@ -215,7 +218,8 @@ try {
 } finally {
   for (const [input, name] of [
     [path.join(userDataPath, "logs"), "vscode-logs"],
-    [path.join(workspacePath, "node_modules/.vize"), "native-logs"],
+    [path.join(workspacePath, ".vize"), "native-logs"],
+    [path.join(workspacePath, "node_modules/.vize"), "native-artifacts"],
   ]) {
     if (fs.existsSync(input)) fs.cpSync(input, path.join(destination, name), { recursive: true });
   }

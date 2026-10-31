@@ -87,7 +87,7 @@ impl LspProcess {
         Self::spawn_command(command, Stdio::piped())
     }
 
-    fn spawn_command(mut command: Command, stderr_target: Stdio) -> Self {
+    pub(crate) fn spawn_command(mut command: Command, stderr_target: Stdio) -> Self {
         // Loaded CI runners can take longer than the ten-second editor bound to
         // answer a type check; these tests assert results, not latency (#9012).
         if std::env::var_os("VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS").is_none() {

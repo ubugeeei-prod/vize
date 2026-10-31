@@ -297,7 +297,6 @@ test("startup diagnostics retain the production producer and unchanged scale-one
   for (const evidence of [
     "target/ci/vize",
     "target/ci/vize.differential-build.json",
-    "node_modules/.vize/lsp.log",
     "target/vize-tests/metrics/vben-lsp-incremental/",
   ]) {
     assert.ok(String(upload.with?.path).split("\n").includes(evidence));
@@ -313,7 +312,7 @@ test("native phase logs retain all raw bytes after the mutable fixture is remove
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-startup-log-custody-"));
   try {
     const fixture = path.join(directory, "mutable-fixture");
-    const native = path.join(directory, "node_modules/.vize/lsp.log");
+    const native = path.join(directory, "process-lsp.log");
     const artifact = path.join(directory, "native-lsp.log");
     fs.mkdirSync(fixture);
     fs.mkdirSync(path.dirname(native), { recursive: true });

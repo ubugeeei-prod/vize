@@ -350,7 +350,9 @@ vize clean --force
 vize clean path/to/project
 ```
 
-`vize clean` は、Vize が `.vize` と `node_modules/.vize` に書き込むキャッシュとレポートを削除します。対象はプロファイル、Musea のレポートとスナップショット、lint のセッション、設定スキーマ、キャッシュした設定の評価結果、LSP ログ、`vize check` が生成する TypeScript プロジェクトです。
+`vize clean` は、Vize が `.vize` と `node_modules/.vize` に書き込むキャッシュとレポートを削除します。対象はプロファイル、Musea のレポートとスナップショット、lint のセッション、設定スキーマ、キャッシュした設定の評価結果、従来のプロジェクト内 LSP ログ、`vize check` が生成する TypeScript プロジェクトです。
+
+現在の LSP ログは OS のユーザー用キャッシュディレクトリ内の `vize/logs/lsp.log` に保存します。Linux では `$XDG_CACHE_HOME` または `~/.cache`、macOS では `~/Library/Caches`、Windows では `%LOCALAPPDATA%` が基準です。プロジェクトの `node_modules` にログを作成しません。特定のエディターセッションのログを保存するには、環境変数 `VIZE_LSP_LOG_FILE` に絶対パスを指定します。キャッシュディレクトリが見つからない場合、指定が相対パスまたは空の場合、書き込みに失敗した場合は stderr のみに出力します。ユーザー用キャッシュのログは `vize clean` では削除しません。
 
 | オプション                          | 説明                                                   |
 | ----------------------------------- | ------------------------------------------------------ |

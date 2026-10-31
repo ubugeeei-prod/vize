@@ -94,7 +94,10 @@ await withPinnedFixtureWorkspace(
         extensionTestsPath,
         hostEnvironment: createRealHostEnvironment({
           extensionsPath,
-          processEnvironment: process.env,
+          processEnvironment: {
+            ...process.env,
+            VIZE_LSP_LOG_FILE: path.join(fixture.workspaceDir, ".vize/lsp.log"),
+          },
           resultPath,
           serverPath,
           sourceExtensionPath,
@@ -117,7 +120,7 @@ await withPinnedFixtureWorkspace(
         // evidence byte for byte before either temporary directory is cleaned.
         for (const [input, output] of [
           [resultPath, "host-result.json"],
-          [path.join(fixture.workspaceDir, "node_modules/.vize/lsp.log"), "native.log"],
+          [path.join(fixture.workspaceDir, ".vize/lsp.log"), "native.log"],
           [
             path.join(fixture.workspaceDir, "node_modules/.vize/rich-hover.json"),
             "rich-hover.json",

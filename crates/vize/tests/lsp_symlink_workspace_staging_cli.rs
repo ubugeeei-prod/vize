@@ -3,6 +3,7 @@
 use serde_json::{Value, json};
 use std::{
     path::Path,
+    process::{Command, Stdio},
     time::{Duration, Instant},
 };
 
@@ -31,7 +32,13 @@ fn original_include_and_open_order_controls_keep_all_authored_bytes() {
 
 fn run(layout: Layout, open_other: bool, reverse: bool, original_wait: bool) {
     let fixture = Fixture::new(layout);
-    let mut process = LspProcess::spawn_preparation_traced(&fixture.app);
+    let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
+    command
+        .current_dir(&fixture.app)
+        .arg("lsp")
+        .env("VIZE_TRACE_EDITOR_PREPARATION", "1")
+        .env("VIZE_LSP_LOG_FILE", &fixture.log);
+    let mut process = LspProcess::spawn_command(command, Stdio::piped());
     process.send(
         json!({ "jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
             "processId": std::process::id(), "rootUri": file_uri(&fixture.app), "capabilities": {}
