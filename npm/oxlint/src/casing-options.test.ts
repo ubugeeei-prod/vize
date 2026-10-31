@@ -5,6 +5,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { resetFixtureDir } from "./test-support/fixture-dir.ts";
+import {
+  corpus as attributeCorpus,
+  referenceFor as attributeReference,
+  presentation as attributePresentation,
+  sourceFor as attributeSource,
+  type AttributeCase,
+} from "../../../tests/tooling/support/patina-attribute-ignore-contract.ts";
 
 const packageDir = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(packageDir, "../../..");
@@ -337,3 +344,89 @@ assert.deepEqual(eventFindings({ ignore: [] }), eventOriginal);
 assert.deepEqual(eventFindings({ ignore: ["Update:"] }), eventOriginal);
 assert.deepEqual(eventFindings({ ignore: ["update:*"] }), eventOriginal);
 console.log("✅ oxlint-plugin-vize casing option tests passed!");
+
+// Run the genuine packed plugin/host over the original registered SFCs. Native
+// and CLI tests own complete authored spans and edits. Direct-host labels keep
+// their existing carrier boundary: retain every raw field and prove that an
+// ignore removes only the independently identified findings, without claiming
+// template-coordinate support for that host.
+interface AttributeHostFinding {
+  code: string;
+  message: string;
+  severity: string;
+  filename: string;
+}
+function attributeFindings(row: AttributeCase, options: unknown[]) {
+  const source = attributeSource(row);
+  const selected = path.join(fixtureDir, row.filename);
+  fs.writeFileSync(selected, source);
+  fs.writeFileSync(
+    configPath,
+    JSON.stringify({
+      plugins: ["vue"],
+      jsPlugins: [pluginEntry],
+      settings: { vize: { helpLevel: "none", preset: "incremental" } },
+      rules: { "no-unused-vars": "off", "vize/vue/attribute-hyphenation": ["warn", ...options] },
+    }),
+  );
+  const result = runOxlint(["--config", configPath, "--format", "json", row.filename]);
+  console.log(
+    "vize-attribute-ignore-oxlint " + JSON.stringify({ id: row.id, source, options, ...result }),
+  );
+  assert.equal(result.exitCode, 0, result.output);
+  assert.equal(fs.readFileSync(selected, "utf8"), source);
+  const payload = JSON.parse(result.output) as { diagnostics: AttributeHostFinding[] };
+  assert.deepEqual(
+    payload.diagnostics.map(({ code, message, severity, filename }) => ({
+      code,
+      message,
+      severity,
+      filename,
+    })),
+    attributeReference(row).verify[0]!.messages.map((finding) => ({
+      code: "vize(vue/attribute-hyphenation)",
+      severity: "warning",
+      filename: row.filename,
+      message: `${attributePresentation(finding).message} (at <template>:${finding.line}:${finding.column})`,
+    })),
+    row.id,
+  );
+  return payload.diagnostics;
+}
+const attributeBaselines = new Map<
+  string,
+  { row: AttributeCase; findings: AttributeHostFinding[] }
+>();
+for (const id of ["always-default", "never-default"]) {
+  const row = attributeCorpus.valid.find((row) => row.id === id)!;
+  attributeBaselines.set(row.policy as string, {
+    row,
+    findings: attributeFindings(row, [row.policy]),
+  });
+}
+for (const row of attributeCorpus.valid) {
+  const style = typeof row.policy === "string" ? row.policy : (row.policy.style ?? "always");
+  const baseline = attributeBaselines.get(style)!;
+  const original = attributeReference(baseline.row).verify[0]!.messages;
+  const retained = attributeReference(row).verify[0]!.messages.map((finding) => {
+    const index = original.findIndex(
+      (candidate) =>
+        candidate.line === finding.line &&
+        candidate.column === finding.column &&
+        candidate.endLine === finding.endLine &&
+        candidate.endColumn === finding.endColumn &&
+        candidate.messageId === finding.messageId,
+    );
+    assert.notEqual(
+      index,
+      -1,
+      "independent finding belongs to the unchanged source/style baseline",
+    );
+    return baseline.findings[index];
+  });
+  const forms =
+    typeof row.policy === "string"
+      ? [[row.policy]]
+      : [[row.policy], [style, { ignore: row.policy.ignore ?? [] }]];
+  for (const options of forms) assert.deepEqual(attributeFindings(row, options), retained, row.id);
+}
