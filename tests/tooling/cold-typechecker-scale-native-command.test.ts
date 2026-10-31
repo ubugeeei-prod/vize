@@ -13,6 +13,7 @@ import {
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-native-custody.ts";
 import { createHash } from "node:crypto";
 import { coldScaleBuildRecipe } from "../../tools/benchmarks/scripts/cold-typechecker-scale-build.ts";
+import { coldScalePacketView } from "../../tools/benchmarks/scripts/cold-typechecker-scale-packet.ts";
 
 const config = "/owned/virtual/tsconfig.json";
 const args = [
@@ -37,6 +38,48 @@ test("normal/allocation default recipes stay intact; actual custody feature seal
   assert.deepEqual(custody.observerEnvironment, { VIZE_CACHE_OBSERVER_SOURCE_SHA: source });
   assert.throws(() => coldScaleBuildRecipe(false, source, "b".repeat(40)));
   assert.throws(() => coldScaleBuildRecipe(true, source, source));
+});
+test("finite captured-cwd identity law admits mixed filenames and preserves every other field", () => {
+  const corpus = {
+    root: "/owned/project",
+    app: "/owned/project/apps/web",
+    entries: [{ path: "packages/a.ts" }, { path: "apps/web/src/App.vue" }],
+  };
+  const packet = {
+    fileCount: 2,
+    files: [
+      { file: "/owned/project/packages/a.ts", diagnostics: [], extra: "unchanged" },
+      { file: "src/App.vue", diagnostics: [{ message: "/owned/project path is literal" }] },
+    ],
+    programs: [{ tsconfig: "/owned/project/apps/web/tsconfig.json" }],
+    unknown: "raw metadata",
+  };
+  const original = structuredClone(packet);
+  assert.deepEqual(coldScalePacketView(packet, corpus), {
+    ...packet,
+    files: [
+      { ...packet.files[0], file: "packages/a.ts" },
+      { ...packet.files[1], file: "apps/web/src/App.vue" },
+    ],
+  });
+  assert.deepEqual(packet, original);
+});
+test("identity law refuses foreign, missing, duplicate and noncanonical names without suppressing fields", () => {
+  const corpus = {
+    root: "/owned/project",
+    app: "/owned/project/apps/web",
+    entries: [{ path: "apps/web/src/App.vue" }],
+  };
+  for (const file of ["/foreign/App.vue", "src/Other.vue", "src/a/../App.vue"]) {
+    assert.throws(() => coldScalePacketView({ fileCount: 1, files: [{ file }] }, corpus));
+  }
+  assert.throws(() => coldScalePacketView({ fileCount: 1, files: [] }, corpus));
+  assert.throws(() =>
+    coldScalePacketView(
+      { fileCount: 2, files: [{ file: "src/App.vue" }, { file: "src/App.vue" }] },
+      { ...corpus, entries: [...corpus.entries, { path: "apps/web/src/Other.vue" }] },
+    ),
+  );
 });
 test("existing one-checker argv is retained whole, not reconstructed", () => {
   assert.equal(validateNativeArgs(args, config), args);

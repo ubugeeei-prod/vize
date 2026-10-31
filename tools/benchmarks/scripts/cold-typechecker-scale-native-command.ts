@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { coldScalePacketView } from "./cold-typechecker-scale-packet.ts";
 import {
   retainInputBodies,
   recordReplayBeforeInspection,
@@ -50,6 +51,30 @@ export function validateNativeArgs(args: unknown, config: string): string[] {
   assert.deepEqual(args.slice(5), ["--pretty", "false", "--project", config]);
   assert(path.isAbsolute(args[4]));
   return args;
+}
+
+export function assertAuthoredPacket(
+  packet: unknown,
+  project: string,
+  cwd: string,
+  expectedFiles: string[],
+) {
+  const authored = object(packet);
+  assert.equal(authored.errorCount, 0);
+  assert.equal(authored.warningCount, 0);
+  assert.equal(authored.fileCount, expectedFiles.length);
+  assert(Array.isArray(authored.files));
+  authored.files.forEach((row) => assert.deepEqual(object(row).diagnostics, []));
+  const entries = expectedFiles.map((file) => {
+    assert(path.isAbsolute(file) && path.normalize(file) === file && inside(project, file));
+    return { path: path.relative(project, file) };
+  });
+  const view = coldScalePacketView(authored, { root: project, app: cwd, entries });
+  assert.deepEqual(
+    view.files.map((file) => file.file).toSorted(),
+    entries.map((entry) => entry.path).toSorted(),
+  );
+  return view;
 }
 
 /** Preserve every line. Diagnostic roles are physical path classes, never mapper reasons. */
@@ -259,17 +284,6 @@ export function captureThenReplay(spec: CaptureSpec) {
   assert.equal(capture.error, undefined);
   assert.equal(capture.signal, null);
   assert.equal(capture.status, 0);
-  const authored = object(JSON.parse(utf8(capture.stdout)));
-  assert.equal(authored.errorCount, 0);
-  assert.equal(authored.warningCount, 0);
-  assert.equal(authored.fileCount, spec.expectedFiles.length);
-  assert(Array.isArray(authored.files));
-  const outputFiles = authored.files.map((row) => {
-    const file = object(row);
-    assert.deepEqual(file.diagnostics, []);
-    return file.file;
-  });
-  assert.deepEqual(outputFiles.toSorted(), spec.expectedFiles.toSorted());
   const owners = fs.readdirSync(custody);
   assert.equal(owners.length, 1);
   const directory = path.join(custody, owners[0]),
@@ -317,10 +331,6 @@ export function captureThenReplay(spec: CaptureSpec) {
     stderr = bytes(receipt.rawStderrBytes);
   rawWrite(path.join(spec.out, "native-initial.stdout.bin"), stdout);
   rawWrite(path.join(spec.out, "native-initial.stderr.bin"), stderr);
-  write(path.join(spec.out, "native-initial.classes.json"), {
-    stdout: classifyRaw(stdout, cwd, project, provider),
-    stderr: classifyRaw(stderr, cwd, project, provider),
-  });
   rawWrite(path.join(spec.out, "materialized-config.json"), fs.readFileSync(config));
   const retainBuildInfo = (role: string) => {
     if (!fs.existsSync(buildInfo)) return { exists: false };
@@ -339,6 +349,11 @@ export function captureThenReplay(spec: CaptureSpec) {
   const inputBefore = seal([project, provider, cwd], buildInfo);
   write(path.join(spec.out, "materialized-before.json"), inputBefore);
   retainInputBodies(inputBefore, spec.out, spec.metadataOnlyImages, "materialized");
+  write(path.join(spec.out, "native-initial.classes.json"), {
+    stdout: classifyRaw(stdout, cwd, project, provider),
+    stderr: classifyRaw(stderr, cwd, project, provider),
+  });
+  assertAuthoredPacket(JSON.parse(utf8(capture.stdout)), project, spec.cwd, spec.expectedFiles);
   const started = process.hrtime.bigint();
   const replay = spawnSync(receipt.invokedProgram as string, args, {
     cwd,
