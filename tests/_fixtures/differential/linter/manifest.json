@@ -1985,8 +1985,8 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
-            "selector": "Pinned setup/normal-script sources are physically consumed by public NAPI tests; whole-product native adapter remains unsupported"
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

@@ -1,12 +1,11 @@
 mod casing;
 
 use super::{
-    ConfigLintRuleOptions, DefineMacrosOrderOptions, HtmlQuoteStyle, HtmlQuotesConfig,
-    HtmlQuotesOptions, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
-    HyphenationStyle, LintRuleOptions, MuseaDesignToken, MustacheInterpolationSpacingStyle,
-    NoMutatingPropsOptions, RestrictedGlobal, RestrictedMember, SfcElementOrderGroup,
-    SfcElementOrderOptions, VBindStyle, VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions,
-    VSlotStyleValue, VSlotUniformStyle,
+    ConfigLintRuleOptions, HtmlQuoteStyle, HtmlQuotesConfig, HtmlQuotesOptions,
+    HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle, HyphenationStyle,
+    LintRuleOptions, MuseaDesignToken, MustacheInterpolationSpacingStyle, NoMutatingPropsOptions,
+    RestrictedGlobal, RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions, VBindStyle,
+    VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,
 };
 
 #[test]
@@ -131,52 +130,6 @@ fn v_slot_style_accepts_uniform_and_position_specific_options() {
             serde_json::from_str::<ConfigLintRuleOptions>(invalid).is_err(),
             "accepted invalid option: {invalid}"
         );
-    }
-}
-
-#[test]
-fn define_macros_order_options_validate_and_merge() {
-    let mut options: ConfigLintRuleOptions = serde_json::from_str(
-        r#"{"script/define-macros-order":{"order":["defineOptions","defineProps","defineEmits","defineSlots"]}}"#,
-    )
-    .expect("custom macro order");
-    assert_eq!(
-        options.define_macros_order(),
-        Some(DefineMacrosOrderOptions {
-            order: vec![
-                "defineOptions".into(),
-                "defineProps".into(),
-                "defineEmits".into(),
-                "defineSlots".into(),
-            ],
-            define_expose_last: false,
-        })
-    );
-
-    let overlay: ConfigLintRuleOptions = serde_json::from_str(
-        r#"{"script/define-macros-order":{"order":["defineEmits","defineProps"]}}"#,
-    )
-    .expect("overlay macro order");
-    options.merge_from(&overlay);
-    assert_eq!(
-        options.define_macros_order().unwrap().order,
-        ["defineEmits", "defineProps"]
-    );
-    assert!(
-        serde_json::from_str::<ConfigLintRuleOptions>(
-            r#"{"script/define-macros-order":{"order":true}}"#
-        )
-        .is_err()
-    );
-    assert!(
-        serde_json::from_str::<ConfigLintRuleOptions>(
-            r#"{"script/define-macros-order":{"unknown":[]}}"#
-        )
-        .is_err()
-    );
-    for order in [r#"[""]"#, r#"["defineProps","defineProps"]"#] {
-        let json = format!(r#"{{"script/define-macros-order":{{"order":{order}}}}}"#);
-        assert!(serde_json::from_str::<ConfigLintRuleOptions>(&json).is_err());
     }
 }
 

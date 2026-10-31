@@ -8,6 +8,12 @@ use vize_l0::config::DefineMacrosOrderOptions;
 const EXPOSE: &str = "`defineExpose` should be the last statement in `<script setup>`.";
 
 fn check(source: &str, offset: usize, setup: bool) -> ScriptLintResult {
+    let mut result = ScriptLintResult::default();
+    check_into(source, offset, setup, &mut result);
+    result
+}
+
+fn check_into(source: &str, offset: usize, setup: bool, result: &mut ScriptLintResult) {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
     assert!(parsed.diagnostics.is_empty());
@@ -15,7 +21,6 @@ fn check(source: &str, offset: usize, setup: bool) -> ScriptLintResult {
         define_expose_last: true,
         ..Default::default()
     });
-    let mut result = ScriptLintResult::default();
     rule.check_program_with_sfc(
         &parsed.program,
         source,
@@ -25,9 +30,8 @@ fn check(source: &str, offset: usize, setup: bool) -> ScriptLintResult {
             is_script_setup: setup,
             ..Default::default()
         },
-        &mut result,
+        result,
     );
-    result
 }
 
 #[test]
@@ -59,7 +63,7 @@ fn last_statement_is_literal_and_last_expose_is_the_selected_occurrence() {
 }
 
 #[test]
-fn expose_precedes_the_independent_prefix_finding_with_exact_unicode_crlf_spans() {
+fn both_findings_follow_source_order_with_exact_unicode_crlf_spans() {
     for newline in ["\n", "\r\n"] {
         let source = [
             "// 🦀 authored prefix",
@@ -71,7 +75,7 @@ fn expose_precedes_the_independent_prefix_finding_with_exact_unicode_crlf_spans(
         .join(newline);
         let result = check(&source, 41, true);
         assert_eq!(result.diagnostics.len(), 2);
-        let expose = &result.diagnostics[0];
+        let expose = &result.diagnostics[1];
         let start = 41 + source.find("defineExpose").unwrap() as u32;
         assert_eq!(expose.message, EXPOSE);
         assert_eq!(
@@ -86,11 +90,39 @@ fn expose_precedes_the_independent_prefix_finding_with_exact_unicode_crlf_spans(
         assert_eq!(expose.labels[0].message, "compiler macro should be last");
         assert!(expose.fix.is_none());
         assert_eq!(
-            result.diagnostics[1].message,
+            result.diagnostics[0].message,
             "`defineProps` should be above `defineEmits`."
         );
-        assert!(result.diagnostics[1].fix.is_none());
+        assert!(result.diagnostics[0].fix.is_none());
     }
+}
+
+#[test]
+fn ordering_new_macro_findings_preserves_preceding_rule_records() {
+    let mut result = ScriptLintResult::default();
+    result.add_diagnostic(crate::diagnostic::LintDiagnostic::warn(
+        "another-rule",
+        "preserve preceding record",
+        999,
+        1000,
+    ));
+    check_into(
+        "defineEmits();\ndefineProps();\ndefineExpose({});\nordinary();",
+        0,
+        true,
+        &mut result,
+    );
+    assert_eq!(result.diagnostics.len(), 3);
+    assert_eq!(result.diagnostics[0].message, "preserve preceding record");
+    assert_eq!(
+        (result.diagnostics[0].start, result.diagnostics[0].end),
+        (999, 1000)
+    );
+    assert_eq!(
+        result.diagnostics[1].message,
+        "`defineProps` should be above `defineEmits`."
+    );
+    assert_eq!(result.diagnostics[2].message, EXPOSE);
 }
 
 #[test]

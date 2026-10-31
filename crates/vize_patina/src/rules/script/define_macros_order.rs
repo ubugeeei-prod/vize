@@ -116,13 +116,14 @@ impl ScriptRule for ConfiguredDefineMacrosOrder {
             .iter()
             .map(|name| name.as_str())
             .collect::<Vec<_>>();
-        check(
-            program,
-            offset,
-            result,
-            &order,
-            self.0.define_expose_last && sfc.is_sfc && sfc.is_script_setup,
-        );
+        let expose_last = self.0.define_expose_last && sfc.is_sfc && sfc.is_script_setup;
+        let own_start = result.diagnostics.len();
+        check(program, offset, result, &order, expose_last);
+        if expose_last && let Some(own) = result.diagnostics.get_mut(own_start..) {
+            // ESLint presents these independent findings in authored source order.
+            // Keep other rules' diagnostics and the default-off path untouched.
+            own.sort_by_key(|diagnostic| (diagnostic.start, diagnostic.end));
+        }
     }
 }
 
