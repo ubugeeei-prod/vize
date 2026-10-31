@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -63,6 +64,19 @@ test("Windows overlay input pins the genuine main/imported-child/support/config 
       ["dependency-close", null, null],
     ],
   );
+});
+
+test("Git checkout filters preserve the pinned Windows input with either autocrlf setting", () => {
+  for (const autocrlf of ["false", "true"]) {
+    const filtered = execFileSync(
+      "git",
+      ["-c", `core.autocrlf=${autocrlf}`, "cat-file", "--filters", `HEAD:${inputPath}`],
+      { cwd: root },
+    );
+    assert.deepEqual(filtered, raw, `core.autocrlf=${autocrlf} must preserve all input bytes`);
+    assert.equal(filtered.length, 1404);
+    assert.equal(sha(filtered), "09e9e861a991d5ba37cd88c87a3a70a86ab2443cbf1b4443243515bb7c8af4f4");
+  }
 });
 
 test("one input-only row adds source inspection without a diagnostic pack or native admission", () => {

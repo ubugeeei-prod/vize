@@ -49,6 +49,7 @@ tests/_fixtures/differential/lsp/string-literal-completion-original/*.vue.txt -t
 tests/_fixtures/differential/typechecker/split-script-original/**/*.txt -text whitespace=-blank-at-eol
 tests/_fixtures/differential/typechecker/v-for-source-original/**/*.txt -text whitespace=-blank-at-eol
 tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/** -text
+tests/_fixtures/differential/typechecker/windows-verbatim-overlay-11145/input.json -text
 
 # Preserve the original plain-TypeScript reference worker's authored CRLF bytes.
 tests/_fixtures/differential/typechecker/project-session-retirement-11168/probe.ts.txt -text whitespace=cr-at-eol
