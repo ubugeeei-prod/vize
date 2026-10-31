@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "id": "lsp/regression/art-range-formatting-6098",
+  "provenance": {
+    "fixCommit": "f4de7f1dc9b78a28d70a2950774c70ac27d86ce3"
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "formatting": true
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "b385ec46089d431ef9d9bfb69bf1573619fe4d984af0e0e44de665e73b578afa"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "a8b05a4e42410f5f4accd62065d47c9cdf31e5e51fe87d316c313ad6796edd6b"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "a093c64aeea8f28d919bfd992c7313cd0da047f625235f295f0323ad10e4f066"
+  },
+  "method": "textDocument/rangeFormatting",
+  "request": {
+    "params": {
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 27
+        },
+        "end": {
+          "line": 1,
+          "character": 28
+        }
+      },
+      "options": {
+        "tabSize": 2,
+        "insertSpaces": true
+      }
+    }
+  }
+}

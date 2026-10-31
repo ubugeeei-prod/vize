@@ -319,3 +319,5 @@ These differences remain, even with the preset:
 ## Format on save
 
 The [editor setup](./vite-plus-editor.md) selects Vize as the formatter for Vue files and keeps your existing formatter for everything else.
+
+Format Selection also applies the selected profile to the contents of Musea `<art>` blocks. It keeps the block tags and unselected blocks unchanged. On-type formatting only adjusts indentation; other custom block languages remain outside these partial-formatting requests.
