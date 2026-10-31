@@ -3,7 +3,6 @@
 use super::super::conditional::ObservedConditional;
 use super::{NativeVisibility, header};
 use crate::artifact::RegionBuilder;
-use crate::file::build::ScopedResolution;
 use crate::file::region::{FileRegion, TemplatePolicy};
 use crate::file::{
     NativeFileConditionalState, NativeFileInterpolationState, TemplateBody, TemplateChildRegion,
@@ -36,58 +35,7 @@ where
         {
             return Err(Kind::UnsupportedChild);
         }
-        let expression = file
-            .facts
-            .native_conditionals()
-            .get(observed.index)
-            .and_then(|record| record.input.expression())
-            .ok_or(Kind::InvalidEvent)?;
-        let table = file.resolve(expression, span).map_err(Kind::Artifact)?;
-        let [occurrence] = table.occurrences() else {
-            return Err(Kind::UnsupportedChild);
-        };
-        let declaration = file
-            .facts
-            .declarations
-            .get(occurrence.binding.index() as usize)
-            .ok_or(Kind::UnsupportedChild)?;
-        if occurrence.usage != Usage::Read
-            || declaration.id != occurrence.binding
-            || declaration.scope != file.scope
-            || !file.policy.visible(declaration)
-            || declaration.boolean_initializer().is_none()
-            || declaration.name.as_str() != occurrence.name
-            || expression.source != occurrence.name
-        {
-            return Err(Kind::UnsupportedChild);
-        }
-        let binding = occurrence.binding;
-        let record = file
-            .facts
-            .native_conditionals()
-            .get(observed.index)
-            .ok_or(Kind::InvalidEvent)?;
-        if record.scope != file.scope || !record.input.matches_expression(expression) {
-            return Err(Kind::InvalidEvent);
-        }
-        let node = file
-            .region
-            .begin_native_if(&record.input, span)
-            .map_err(Kind::Artifact)?;
-        file.facts.expressions.insert(
-            node,
-            ScopedResolution {
-                scope: file.scope,
-                table,
-            },
-        );
-        file.facts
-            .native_conditionals_mut()
-            .get_mut(observed.index)
-            .ok_or(Kind::InvalidEvent)?
-            .binding = Some(binding);
-        #[cfg(test)]
-        super::super::conditional::tests::after_mint();
+        let node = file.mint_conditional(observed.index, span)?;
         let header = header.resolve_handlers(file)?;
         let mut body_result = Err(Kind::IncompleteChildren);
         let (body_node, allocation) = file

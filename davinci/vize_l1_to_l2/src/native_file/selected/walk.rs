@@ -28,7 +28,8 @@ pub(super) fn construct_setup<'a>(owner: &mut NativeTemplateOwner<'a>) -> Result
 }
 fn construct_walk<'a>(mut walk: NativeTemplateWalk<'_, 'a>) -> Result<(), Failure<'a>> {
     let selected = walk.selected();
-    for child in selected.children() {
+    let mut children = selected.children();
+    while let Some(child) = children.next() {
         match child.surface() {
             SurfaceChild::Text(token) => {
                 let span = selected.component().block().span_of(token.text);
@@ -56,7 +57,7 @@ fn construct_walk<'a>(mut walk: NativeTemplateWalk<'_, 'a>) -> Result<(), Failur
                 walk.root_interpolation(child, NativeInterpolationInput::from_operand(operand))?;
             }
             _ => {
-                walk.child(child)?;
+                walk.child_with_tail(child, &mut children)?;
             }
         }
     }

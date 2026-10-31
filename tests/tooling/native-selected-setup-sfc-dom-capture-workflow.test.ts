@@ -35,6 +35,9 @@ test("actual selected setup consumers require source-built whole-module runtime 
     "davinci/vize_l2/src/lang/js/conditional.rs",
     "davinci/vize_l2/src/lang/js/conditional/tests.rs",
     "davinci/vize_l2/src/artifact/builder/native_if.rs",
+    "davinci/vize_l2/src/artifact/builder.rs",
+    "davinci/vize_l2/src/artifact/builder/close.rs",
+    "davinci/vize_l1_to_l2/src/native_file/selected/walk.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_inputs_vue_3_5_35.json",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_sfc_vue_3_5_35.json",
     "tests/tooling/native-original-root-if-sfc-dom-reference.test.ts",
@@ -43,6 +46,12 @@ test("actual selected setup consumers require source-built whole-module runtime 
     "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_text_sfc_vue_3_5_35.json",
     "tests/tooling/native-original-root-if-text-sfc-dom-reference.test.ts",
     "tests/tooling/support/native-original-root-if-text-sfc-dom-runtime.ts",
+    "davinci/vize_l1/src/markup/native/operand/else_head.rs",
+    "davinci/vize_l1/src/markup/native/operand/else_head/tests.rs",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_inputs_vue_3_5_35.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_sfc_vue_3_5_35.json",
+    "tests/tooling/native-original-root-if-else-sfc-dom-reference.test.ts",
+    "tests/tooling/support/native-original-root-if-else-sfc-dom-runtime.ts",
     "davinci/vize_l3/src/decision/dom/build/for_head/value.rs",
   ])
     assert(nativeSetupCaptureRequired([path]), path);
@@ -145,6 +154,21 @@ test("actual selected setup consumers require source-built whole-module runtime 
   );
   assert.match(action, /native-original-root-if-text-sfc-dom-primary\.\*\.json/);
   assert.match(action, /native-original-root-if-text-sfc-dom-runtime\.\*\.json/);
+  assert.match(action, /VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_REQUIRE_CAPTURE: "1"/);
+  assert.match(
+    action,
+    /original_root_if_else::twelve_whole_original_root_if_else_components_and_raw_maps_are_captured -- --exact --nocapture/,
+  );
+  assert.match(
+    action,
+    /NODE_ENV=development vp node --test tests\/tooling\/native-original-root-if-else-sfc-dom-reference\.test\.ts/,
+  );
+  assert.match(
+    action,
+    /NODE_ENV=production vp node --test tests\/tooling\/native-original-root-if-else-sfc-dom-reference\.test\.ts/,
+  );
+  assert.match(action, /native-original-root-if-else-sfc-dom-primary\.\*\.json/);
+  assert.match(action, /native-original-root-if-else-sfc-dom-runtime\.\*\.json/);
   assert.doesNotMatch(action, /continue-on-error|hashFiles|existsSync|--test-name-pattern/);
 });
 
@@ -152,6 +176,9 @@ test("individual For resolver, DOM collector and writer changes keep mandatory a
   for (const path of [
     "davinci/vize_l2/src/resolution.rs",
     "davinci/vize_l2/src/resolution/walk/for_head.rs",
+    "davinci/vize_l2/src/artifact/builder.rs",
+    "davinci/vize_l2/src/artifact/builder/close.rs",
+    "davinci/vize_l1_to_l2/src/native_file/selected/walk.rs",
     "davinci/vize_l2/src/resolution/for_head/borrowed.rs",
     "davinci/vize_l3/src/decision/dom.rs",
     "davinci/vize_l3/src/decision/dom/build.rs",
@@ -190,10 +217,17 @@ test("individual For resolver, DOM collector and writer changes keep mandatory a
     "tests/tooling/native-original-for-key-sfc-dom-reference_unrelated.test.ts",
     "davinci/vize_l2/src/lang/js/conditional_unrelated.rs",
     "davinci/vize_l2/src/artifact/builder/native_if_unrelated.rs",
+    "davinci/vize_l2/src/artifact/builder_unrelated.rs",
+    "davinci/vize_l2/src/artifact/builder/close_unrelated.rs",
+    "davinci/vize_l1_to_l2/src/native_file/selected/walk_unrelated.rs",
+    "davinci/vize_l1_to_l2/src/native_file/selected/walk.rs_unrelated",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_inputs_unrelated.json",
     "tests/tooling/native-original-root-if-sfc-dom-reference_unrelated.test.ts",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_text_inputs_unrelated.json",
     "tests/tooling/native-original-root-if-text-sfc-dom-reference_unrelated.test.ts",
+    "davinci/vize_l1/src/markup/native/operand/else_head_unrelated.rs",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_root_if_else_inputs_unrelated.json",
+    "tests/tooling/native-original-root-if-else-sfc-dom-reference_unrelated.test.ts",
     "docs/davinci/decisions/2026-10-04-original-for-alias-body-dom-proposal.md",
     "docs/davinci/decisions/2026-10-04-original-for-primitive-dom-proposal.md",
   ]) {

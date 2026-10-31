@@ -30,6 +30,12 @@ enum Owner<'a> {
         name: &'a str,
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
     },
+    NativeIfElse {
+        condition: &'a crate::expr::JsExpr<'a>,
+        first: Region<'a>,
+        first_span: Span,
+        else_span: Span,
+    },
 }
 
 mod binding;
