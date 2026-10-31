@@ -91,7 +91,9 @@ export function configAcceptance(
       );
     }
     verifyJournal(cliCustody.journal, identity, negative ? 1 : 0);
-    verifyJournal(apiCustody.journal, identity, negative ? 1 : 0);
+    // A runtime-owner import error precedes the JS API's native normalizer.
+    // Keep that honest journal; do not preload a binding to fabricate a native call.
+    verifyJournal(apiCustody.journal, identity, negative ? 1 : 0, !negative);
     const after = inventory(modules);
     record.json(label + ".after.json", after);
     assert.deepEqual(after, before, label + " changed an external installed byte, mode, or link");

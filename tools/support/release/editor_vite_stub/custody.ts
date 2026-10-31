@@ -21,12 +21,17 @@ export function observed(root: string, identity: JsonRecord, record: Recorder, l
   };
   return { env, journal };
 }
-export function verifyJournal(journal: string, identity: JsonRecord, exit: number): void {
+export function verifyJournal(
+  journal: string,
+  identity: JsonRecord,
+  exit: number,
+  nativeRequired = true,
+): void {
   const events = readFileSync(journal, "utf8")
     .trim()
     .split("\n")
     .map((line) => asRecord(parseJson(line)));
-  assert.ok(events.length >= 4);
+  assert.ok(events.length >= (nativeRequired ? 4 : 2));
   for (const event of events) assert.equal(event.schema, "vize-public-native-custody-event-v1");
   assert.equal(events[0].event, "initialized");
   const binary = asRecord(identity.binary);
@@ -41,7 +46,10 @@ export function verifyJournal(journal: string, identity: JsonRecord, exit: numbe
   const returned = events.filter(
     (event) => event.event === "returned" && event.expectedNative === true,
   );
-  assert.equal(returned.length, 1);
-  assert.equal(returned[0].actualPath, binary.path);
-  assert.equal(returned[0].sha256, binary.sha256);
+  assert.ok(returned.length <= 1);
+  if (nativeRequired) assert.equal(returned.length, 1);
+  for (const event of returned) {
+    assert.equal(event.actualPath, binary.path);
+    assert.equal(event.sha256, binary.sha256);
+  }
 }

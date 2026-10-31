@@ -58,6 +58,10 @@ stub, after repairing a runtime-owning negative package, and after stub removal.
 The runtime-owning package must remain authoritative and fail with its authored
 error. Extra direct-Node CLI/API observations use the unchanged native-loader
 custody hook; these are separate executions from the original pnpm command.
+The negative JS API import can fail before its native normalizer is required;
+its complete journal is retained without requiring or inventing a native load.
+Every positive API execution, CLI observation and LSP session requires the actual
+expected native loader to return successfully.
 
 The editor phase starts the actual installed public LSP with that same hook,
 private TMP/TEMP/TMPDIR, and no source/checker overrides. It opens the original

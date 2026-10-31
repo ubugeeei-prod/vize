@@ -17,6 +17,7 @@ import {
   writeFixture,
 } from "../../tools/support/release/editor_vite_stub/filesystem.ts";
 import { injectLink } from "../../tools/support/release/editor_vite_stub/editor.ts";
+import { verifyJournal } from "../../tools/support/release/editor_vite_stub/custody.ts";
 
 function fixture(run: (root: string) => void): void {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "editor-custody-control-")));
@@ -82,4 +83,42 @@ test("reported fluent config, app, declaration stub and installation controls re
     writeFixture(root, { "src/app.vue": "original\n" }, () => true);
     assert.equal(readFileSync(join(root, "src/app.vue"), "utf8"), "original\n");
     assert.throws(() => writeFixture(root, { "../escape": "bad" }, () => true), /fixture escaped/);
+  }));
+
+test("only an early negative JS API phase may finish without loading the native normalizer", () =>
+  fixture((root) => {
+    const journal = join(root, "observer.ndjson");
+    const identity = { binary: { path: join(root, "actual.node"), sha256: "a".repeat(64) } };
+    const initial = {
+      event: "initialized",
+      nativePath: identity.binary.path,
+      sha256: identity.binary.sha256,
+    };
+    const ended = { event: "exit", code: 1 };
+    const save = (events: Record<string, unknown>[]) =>
+      writeFileSync(
+        journal,
+        events
+          .map((event) =>
+            JSON.stringify({ schema: "vize-public-native-custody-event-v1", ...event }),
+          )
+          .join("\n") + "\n",
+      );
+    save([initial, ended]);
+    verifyJournal(journal, identity, 1, false);
+    assert.throws(() => verifyJournal(journal, identity, 1));
+    save([initial, { event: "failed" }, ended]);
+    assert.throws(() => verifyJournal(journal, identity, 1, false));
+    save([
+      initial,
+      { event: "attempt" },
+      {
+        event: "returned",
+        expectedNative: true,
+        actualPath: identity.binary.path,
+        sha256: "b".repeat(64),
+      },
+      ended,
+    ]);
+    assert.throws(() => verifyJournal(journal, identity, 1, false));
   }));
