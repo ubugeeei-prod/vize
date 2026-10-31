@@ -49,12 +49,34 @@ test("11147 original plain lint rejects Runtime-at-exit1 and extra findings whil
   );
 });
 
-test("11147 Rust error exit requires no Node exit hook, retaining one native return and independent PID", () => {
-  const source = readFileSync(
-    new URL("../../crates/vize/src/commands/lint.rs", import.meta.url),
-    "utf8",
+test("11147 original no-provider text accepts its whole wrapped error and refuses warning severity", () => {
+  const diagnostic = asRecord(
+    asArray(asRecord(asArray(original.expectedNoProviderReport)[0]).messages)[0],
   );
-  assert.match(source, /if total_errors > 0 \{\s*std::process::exit\(1\);/u);
+  const message = asString(diagnostic.message);
+  const split = message.indexOf(" runtime in ");
+  assert(split > 0);
+  const title = message.slice(0, split) + "\n  │" + message.slice(split);
+  const rendered =
+    "  × " +
+    title +
+    '\n   ╭─[src/card.vue:1:1]\n 1 │ <script setup lang="ts">\n   ╰────\n  help: ' +
+    asString(diagnostic.help) +
+    "\n\n1 error in 1 file\nLinted 1 files in 5.1234ms\n";
+  assertOriginalPlain(original, "original-no-provider", Buffer.from(rendered), Buffer.alloc(0));
+  assert.throws(
+    () =>
+      assertOriginalPlain(
+        original,
+        "original-no-provider",
+        Buffer.from(rendered.replace("  × ", "  ⚠ ")),
+        Buffer.alloc(0),
+      ),
+    /original finding is an error/u,
+  );
+});
+
+test("11147 error-exit journal retains one native return and independent PID without a Node exit hook", () => {
   const scratch = mkdtempSync(join(tmpdir(), "patina11147-journal-pure-"));
   const journal = join(scratch, "native.ndjson");
   const identity = { binary: { path: "/inert/public/vize.node", sha256: "a".repeat(64) } };
