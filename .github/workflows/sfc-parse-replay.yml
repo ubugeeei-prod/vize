@@ -30,11 +30,15 @@ jobs:
           ref: ${{ github.sha }}
           path: harness
           persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: harness/package.json
+          run-install: false
       - name: Validate frozen historical pair before checkout
         working-directory: harness
         run: |
           node --input-type=module -e '
-            import { validateRevisionInputs } from "./tools/benchmarks/scripts/sfc-parse-replay-contract.mjs";
+            import { validateRevisionInputs } from "./tools/benchmarks/scripts/sfc-parse-replay-contract.ts";
             validateRevisionInputs({ base: process.env.REPLAY_BASE_SHA, head: process.env.REPLAY_HEAD_SHA, conflictingModes: process.env.REPLAY_CONFLICTING_MODES !== "false" });
           '
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
@@ -57,10 +61,6 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: harness/package.json
-          run-install: false
       - name: Verify recipe guards
         working-directory: harness
         run: node --test tests/tooling/sfc-parse-replay.test.ts

@@ -1,16 +1,31 @@
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
-import { BASE_SHA, CASES, HEAD_SHA, SETTINGS } from "./sfc-parse-replay-contract.mjs";
+import { BASE_SHA, CASES, HEAD_SHA, SETTINGS } from "./sfc-parse-replay-contract.ts";
 
-export function median(values) {
+export interface ReplayObservation {
+  pair: number;
+  name: string;
+  side: string;
+  estimates: { median: { point_estimate: number } };
+}
+
+export interface ReplayReport {
+  baseSha: string;
+  headSha: string;
+  runner: unknown;
+  settings: typeof SETTINGS;
+  observations: ReplayObservation[];
+}
+
+export function median(values: number[]): number {
   assert.ok(values.length > 0 && values.every((value) => Number.isFinite(value) && value > 0));
   const sorted = [...values].sort((left, right) => left - right);
   const middle = Math.floor(sorted.length / 2);
   return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
 }
 
-export function pairedInterval(ratios, seed = 6189) {
+export function pairedInterval(ratios: number[], seed = 6189) {
   assert.equal(ratios.length, SETTINGS.pairs);
   let state = seed;
   const randomIndex = () => {
@@ -25,7 +40,7 @@ export function pairedInterval(ratios, seed = 6189) {
   return { lower: draws[249], upper: draws[9749], confidence: 0.95, resamples: draws.length, seed };
 }
 
-export function summarizeRunner(report) {
+export function summarizeRunner(report: ReplayReport) {
   assert.equal(report.baseSha, BASE_SHA);
   assert.equal(report.headSha, HEAD_SHA);
   assert.deepEqual(report.settings, SETTINGS);
@@ -81,7 +96,7 @@ export function summarizeRunner(report) {
   };
 }
 
-export function renderSummary(summary) {
+export function renderSummary(summary: ReturnType<typeof summarizeRunner>): string {
   const lines = [
     `# Historical SFC parse replay: runner ${summary.runner}`,
     "",
@@ -94,7 +109,7 @@ export function renderSummary(summary) {
   ];
   for (const row of summary.rows) {
     const ci = row.conditionalPairedInterval;
-    const format = (value) => value.toFixed(4);
+    const format = (value: number) => value.toFixed(4);
     lines.push(
       `| ${row.name} | ${format(row.medianPairedRatio)} | ${format(ci.lower)}–${format(ci.upper)} | ${row.observedRange.map(format).join("–")} | ${format(row.baseFirstMedian)} | ${format(row.headFirstMedian)} |`,
     );
