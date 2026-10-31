@@ -202,7 +202,22 @@ test("unregistered consumers and lost CLI-adapter identity remain conservative",
     references: ["npm", "npm/cli", "content-mapper"],
     identity: auditedCliCone,
   };
-  assert.equal(toolingProductSelection(campaign, paths, () => valid).required, false);
+  // Exercise the eligible fast path even after a future live consumer drift
+  // makes the repository-backed counterfactual correctly run the campaign.
+  assert.deepEqual(
+    toolingProductSelection(campaign, paths, () => valid),
+    {
+      required: false,
+      paths: [],
+    },
+  );
+  assert.deepEqual(
+    toolingProductSelection(campaign, originalSeven, () => valid),
+    {
+      required: false,
+      paths: originalSeven.filter((file) => file !== nativeDeclaration),
+    },
+  );
   for (const identity of [undefined, "unreviewed-consumer-body"])
     assert.equal(
       toolingProductSelection(campaign, paths, () => ({ ...valid, identity })).required,
@@ -257,6 +272,12 @@ test("every consumer/helper body is part of the exact dependency audit", (t) => 
 
 test("a shadowed command runner cannot inherit the prior source-cone audit", (t) => {
   const f = fixture(t);
+  // Exact marker replacements are meaningful only for the exact audited body.
+  // A future rename/reformat must restore execution without creating a new gate.
+  if (f.identity !== auditedCliCone) {
+    assert.ok(f.selected([nativeDeclaration]).includes(campaign));
+    return;
+  }
   const source = readFileSync(f.file(campaign), "utf8");
   const marker = "    try {\n      for (const root of [published, reference])";
   const mutated = source
