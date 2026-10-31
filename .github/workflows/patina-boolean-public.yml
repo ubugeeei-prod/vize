@@ -1,0 +1,85 @@
+name: Public strict boolean runtime acceptance
+run-name: Public strict boolean @ ${{ inputs.version || github.event.pull_request.head.sha || github.sha }}
+on:
+  pull_request:
+    paths:
+      - .github/workflows/patina-boolean-public.yml
+      - tools/support/release/patina_boolean_public/**
+      - tools/support/release/editor_vite_stub/**
+      - tools/support/release/public_install/native-custody.cjs
+      - tools/support/release/constructor_original27_public/authority.ts
+      - tools/support/release/constructor_original27_public/capture.ts
+      - tools/support/release/release/quota_ownership.ts
+      - tools/support/release/release/quota/**
+      - tools/support/config/windows_consumer/common.ts
+      - tools/support/json-value.ts
+      - tests/tooling/patina-boolean-public.test.ts
+      - tests/tooling/fixtures/patina-boolean-public-original.json
+      - tests/_fixtures/differential/linter/native-boolean-tsrs-11147/App.vue.txt
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact public Runtime-containing release selected by the release owner
+        required: true
+        type: string
+      producer_run:
+        description: Genuine completed release Actions run authenticated by the capsule
+        required: true
+        type: string
+      authority_blob:
+        description: Immutable Git blob of genuine producer receipts and public package SRI
+        required: true
+        type: string
+permissions: { contents: read, actions: read }
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+concurrency:
+  group: patina-boolean-public-${{ github.event.pull_request.number || inputs.version || github.ref }}
+  cancel-in-progress: false
+defaults:
+  run: { shell: bash }
+jobs:
+  controls:
+    name: Original runtime role falsification controls
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Check whole original inputs, reports, provider refusal and process custody
+        run: node --test tests/tooling/patina-boolean-public.test.ts
+  published:
+    needs: controls
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    name: Original macOS ARM64 Node26 public runtime role
+    runs-on: blacksmith-12vcpu-macos-15
+    timeout-minutes: 30
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      PUBLIC_VERSION: ${{ inputs.version }}
+      PRODUCER_RUN: ${{ inputs.producer_run }}
+      AUTHORITY_BLOB: ${{ inputs.authority_blob }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "26.6.0", package-manager-cache: false }
+      - name: Verify one authentic original installed-public runtime role
+        run: node tools/support/release/patina_boolean_public/run.ts "$PUBLIC_VERSION" "$PRODUCER_RUN" "$AUTHORITY_BLOB" "$RUNNER_TEMP/patina-original-11147"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: patina-original-11147-${{ inputs.version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/patina-original-11147/*.json
+            ${{ runner.temp }}/patina-original-11147/*.raw
+            ${{ runner.temp }}/patina-original-11147/*.stdout
+            ${{ runner.temp }}/patina-original-11147/*.stderr
+            ${{ runner.temp }}/patina-original-11147/*.ndjson
+            ${{ runner.temp }}/patina-original-11147/*.yaml
+            ${{ runner.temp }}/patina-original-11147/producer-Cargo.lock
+            ${{ runner.temp }}/patina-original-11147/*-npx/*.json
+          if-no-files-found: error
