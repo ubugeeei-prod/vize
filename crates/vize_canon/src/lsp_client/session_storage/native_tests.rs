@@ -231,9 +231,26 @@ fn positive_answers(packet: &Value, support_uri: &str) {
     }
 }
 
+#[cfg(windows)]
+fn lower_drive(path: &str) -> vize_l0::String {
+    match path.as_bytes() {
+        [drive, b':', b'/', ..] if drive.is_ascii_alphabetic() => vize_l0::cstr!(
+            "{}{}",
+            char::from(*drive).to_ascii_lowercase(),
+            path.get(1..).unwrap()
+        ),
+        _ => path.into(),
+    }
+}
+
 fn relocated_messages(packet: &Value, destination: &Value) -> (Value, Vec<Value>) {
     let from = path_to_typescript_name(Path::new(packet["materializedRoot"].as_str().unwrap()));
     let to = path_to_typescript_name(Path::new(destination["materializedRoot"].as_str().unwrap()));
+    let roots = [
+        (from.clone(), to.clone()),
+        #[cfg(windows)]
+        (lower_drive(&from), lower_drive(&to)),
+    ];
     let mut projected = packet["rows"].clone();
     let mut substitutions = Vec::new();
     for (row_index, row) in projected.as_array_mut().unwrap().iter_mut().enumerate() {
@@ -251,12 +268,15 @@ fn relocated_messages(packet: &Value, destination: &Value) -> (Value, Vec<Value>
                 if part_index > 0 {
                     after.push('\'');
                 }
-                let suffix = part.strip_prefix(from.as_str());
+                let replacement = roots.iter().find_map(|(from, to)| {
+                    part.strip_prefix(from.as_str())
+                        .filter(|rest| rest.is_empty() || rest.starts_with('/'))
+                        .map(|suffix| (to, suffix))
+                });
                 if part_index % 2 == 1
-                    && let Some(suffix) =
-                        suffix.filter(|rest| rest.is_empty() || rest.starts_with('/'))
+                    && let Some((to, suffix)) = replacement
                 {
-                    after.push_str(&to);
+                    after.push_str(to);
                     after.push_str(suffix);
                 } else {
                     after.push_str(part);
@@ -301,6 +321,25 @@ fn relocation_controls() {
         packet["rows"][0]["diagnostics"][0]["message"],
         json!(before)
     );
+    #[cfg(windows)]
+    {
+        let from_name = lower_drive(&from_name);
+        let to_name = lower_drive(&to_name);
+        let before = vize_l0::cstr!(
+            "File '{from_name}/src/a.ts'; sibling '{from_name}-sibling/a.ts'; unquoted {from_name}/a.ts"
+        );
+        let after = vize_l0::cstr!(
+            "File '{to_name}/src/a.ts'; sibling '{from_name}-sibling/a.ts'; unquoted {from_name}/a.ts"
+        );
+        let mut native_spelling = packet.clone();
+        native_spelling["rows"][0]["diagnostics"][0]["message"] = json!(before);
+        native_spelling["rows"][0]["diagnostics"][0]["unknown"] = json!(from_name);
+        let (projected, substitutions) = relocated_messages(&native_spelling, &destination);
+        let mut expected = native_spelling["rows"].clone();
+        expected[0]["diagnostics"][0]["message"] = json!(after);
+        assert_eq!(projected, expected);
+        assert_eq!(substitutions.len(), 1);
+    }
 }
 
 #[test]
