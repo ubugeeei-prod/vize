@@ -39,7 +39,7 @@ fn template_scope_positive_and_negative_controls_keep_complete_native_results() 
     for case in cases {
         let source = case["source"].as_str().unwrap();
         assert_eq!(
-            complete(&linter.lint_sfc(source, "Probe.vue")),
+            &complete(&linter.lint_sfc(source, "Probe.vue")),
             super::template_shadow_script_exposure::successor_for(case)
                 .unwrap_or(&case["expectedNative"]),
             "{}",
