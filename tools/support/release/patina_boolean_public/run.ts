@@ -43,6 +43,18 @@ export async function main(args: readonly string[]): Promise<void> {
   const record = new Recorder(realpathSync(directory));
   const original = readOriginal();
   record.json("original-issue-fixture.json", original);
+  record.json("original-fixture-interpretation.json", {
+    historicalFixture: "6f0b9e637e9df46d067058a50d84798a4adf813ff5b72fcf9691cf51d1aabe5d",
+    rejectedHypothesis:
+      "Its expectedNoProviderReport and no-bundled-runtime limit are retained historical assumptions, not the original role's accepted output.",
+    evidence: {
+      run: "41233051533",
+      job: "124631104291",
+      rawSha256: "0a862c582b357c249f1ac316a97539ab3c88a77e5cf8a355580698bee4f8724b",
+    },
+    currentContract:
+      "Original dependencies include the published CLI's optional platform backend; all three installed roles require the whole original nullable-number report.",
+  });
   const authority = await authenticate(version, run, blob, record);
   const root = join(record.root, "consumer"),
     tooling = join(record.root, "package-manager");
@@ -50,7 +62,11 @@ export async function main(args: readonly string[]): Promise<void> {
   const phaseResults: unknown[] = [];
   let stableRaw: Buffer | undefined;
   let originalIdentity: { cli: string; native: string } | undefined;
-  for (const phase of ["original-no-provider", "stable-user-provider", "reported-tsrs"] as const) {
+  for (const phase of [
+    "original-default-provider",
+    "stable-user-provider",
+    "reported-tsrs",
+  ] as const) {
     if (phase === "stable-user-provider") {
       success(
         record.run(
@@ -116,7 +132,7 @@ export async function main(args: readonly string[]): Promise<void> {
         "same public Vize source/image across package-manager phases",
       );
     else originalIdentity = currentIdentity;
-    const executable = provider(root, phase, record);
+    const executables = provider(root, phase, record);
     const npx = bindLocalNpx(
       root,
       { packageName: "vize", bin: "vize", version, entry: asString(installed.cli) },
@@ -144,16 +160,14 @@ export async function main(args: readonly string[]): Promise<void> {
       "json",
       "src/card.vue",
     ];
-    const report = executable
-      ? await captureSelectedRuntime(
-          record,
-          phase + "-complete-report",
-          argv,
-          root,
-          custody.env,
-          executable,
-        )
-      : capture(record, phase + "-complete-report", argv, root, custody.env);
+    const report = await captureSelectedRuntime(
+      record,
+      phase + "-complete-report",
+      argv,
+      root,
+      custody.env,
+      executables,
+    );
     completed(report, 1);
     // lint.rs flushes then Rust process::exit(1), bypassing Node's exit hooks.
     // The independently captured process status remains exactly1 above.
@@ -186,7 +200,9 @@ export async function main(args: readonly string[]): Promise<void> {
       originalCommand: originalRun.label,
       completeReport: report.label,
       completeReportSha256: sha256(report.stdout),
-      selectedExecutable: executable ?? null,
+      installedCandidates: executables,
+      selectedRuntime: report.observer.selected,
+      selectionStatus: report.observer.selectionStatus,
       nativeJournal: custody.journal,
       nativeJournalExitContract:
         "Rust error exit1 bypasses Node exit hooks; zero Node exit events, actual captured process status1",
@@ -195,7 +211,7 @@ export async function main(args: readonly string[]): Promise<void> {
     });
   }
   record.json("qualification.json", {
-    schema: "vize.patina-original-11147-public.v1",
+    schema: "vize.patina-original-11147-public.v2",
     issue: 11147,
     version,
     releaseSource: authority.candidate,
@@ -210,8 +226,8 @@ export async function main(args: readonly string[]): Promise<void> {
     phaseResults,
     limits: [
       "One original macOS ARM64/Node26/pnpm role, not a platform matrix. Node26.6.0/pnpm12.1.0/TypeScript6.0.3 are explicit pins for unspecified patches/hosts.",
-      "The original dependency recipe now has no native provider under current explicit-user-provider policy. Its complete error is retained, not replaced by the stable-provider control or represented as the reporter's successful baseline.",
-      "Stable user provider and tsrs-only actual reports must match all stdout bytes. ps/lsof observes actual selected text-image/PID separately; native-loader journal binds actual public Vize image. No raw protocol packet capture or direct SDK self-introspection.",
+      "The original dependency recipe includes the published CLI's optional platform backend. Direct project provider absence never establishes backend absence. The first failed witness assumption is preserved separately.",
+      "Stable user provider and tsrs-installed actual reports must match all stdout bytes. Installed tsrs is not forced to be selected. ps/lsof records actual owned text images when observed; otherwise selection remains unknown. Native journal binds public Vize image. No raw protocol or SDK self-introspection.",
       "The original92-SFC repeated-warning population and unreproduced~620-SFC symbol-owner failure remain unqualified. No synthetic clone population, heap/timeout diagnosis or Issue closure follows.",
     ],
   });
