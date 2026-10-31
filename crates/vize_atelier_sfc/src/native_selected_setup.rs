@@ -110,7 +110,9 @@ impl<'a> NativeSelectedSetupSfcDomCompilation<'a> {
 /// One root If may read a direct setup BooleanLiteral binding and own one
 /// attribute-free native Element with empty/static text or one bare primitive
 /// setup interpolation in the same File scope. An adjacent original valueless
-/// Else may own another Element with the same bounded body shape.
+/// Else may own another Element with the same bounded body shape. Either paired
+/// branch may also combine one original literal Text and one bare primitive
+/// setup interpolation in their authored order.
 /// Imports, wider TS, compound reads, outer handler accesses and
 /// nested/mixed-body For families remain
 /// precise lower/target refusals with no partial module.

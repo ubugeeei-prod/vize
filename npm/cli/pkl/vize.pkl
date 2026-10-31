@@ -182,6 +182,10 @@ class DefineMacrosOrderOptions {
   defineExposeLast: Boolean = false
 }
 
+class VOnEventHyphenationOptions {
+  style: HyphenationStyle = "always"
+  ignore: Listing<String> = new Listing {}
+}
 class LintRuleOptions {
   `script/define-macros-order`: DefineMacrosOrderOptions? = null
   `script/define-props-destructuring`: DefinePropsDestructuringOptions? = null
@@ -198,7 +202,7 @@ class LintRuleOptions {
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null
   `vue/html-quotes`: (HtmlQuoteStyle|HtmlQuotesOptions)? = null
   `vue/mustache-interpolation-spacing`: MustacheInterpolationSpacingStyle? = null
-  `vue/v-on-event-hyphenation`: HyphenationStyle? = null
+  `vue/v-on-event-hyphenation`: (HyphenationStyle|VOnEventHyphenationOptions)? = null
   `vue/v-bind-style`: VBindStyle? = null
   `vue/v-on-style`: VOnStyle? = null
   `vue/v-slot-style`: (VSlotUniformStyle|VSlotStyleOptions)? = null

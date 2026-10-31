@@ -310,6 +310,8 @@ Use this option for static custom event listener names on components. `always` r
 listener arguments such as `@saveItem`; `never` reports hyphenated listener arguments. Native HTML
 events, object syntax, and dynamic arguments are skipped.
 
+See [event listener options](./options-events.md) for ignore-list validation and overrides.
+
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
@@ -320,7 +322,7 @@ export default defineConfig({
         "vue/v-on-event-hyphenation": "warn"
       },
       "ruleOptions": {
-        "vue/v-on-event-hyphenation": "always"
+        "vue/v-on-event-hyphenation": { "style": "always", "ignore": ["update:"] }
       }
     }
   }

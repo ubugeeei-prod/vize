@@ -1,0 +1,16 @@
+{
+  "verify": {
+    "kind": "threw",
+    "error": {
+      "name": "Error",
+      "message": "Key \"rules\": Key \"vue/v-on-event-hyphenation\":\n\tValue \"\" should NOT be valid.\n"
+    }
+  },
+  "verifyAndFix": {
+    "kind": "threw",
+    "error": {
+      "name": "Error",
+      "message": "Key \"rules\": Key \"vue/v-on-event-hyphenation\":\n\tValue \"\" should NOT be valid.\n"
+    }
+  }
+}

@@ -1,0 +1,337 @@
+{
+  "schema": "vize.native-sfc.original-root-if-else-composite-inputs",
+  "filename": "OriginalRootIfElseComposite雪🌸.vue",
+  "compiler": {
+    "version": "3.5.35"
+  },
+  "runtime": {
+    "version": "3.5.35"
+  },
+  "typescript": {
+    "version": "6.0.3"
+  },
+  "qualification": "input-only; no native code, source-map or primary capture credit",
+  "provenance": "Four exact paired lower refusals and one exact public lower refusal receive explicit current successors. The two remaining inputs are new. Each branch has one original bare setup interpolation with zero or one actual adjacent original Text; generated code/maps/primary results remain absent until genuine Actions.",
+  "fixtures": [
+    {
+      "id": "historical-prefix-first",
+      "source": "<script setup>let ready=true;let message='text'</script><template><p v-if='ready'>prefix{{message}}</p><b v-else>{{message}}</b></template>",
+      "script": "let ready=true;let message='text'",
+      "template": "<p v-if='ready'>prefix{{message}}</p><b v-else>{{message}}</b>",
+      "bindings": ["ready", "message"],
+      "immutableBindings": [],
+      "updates": {
+        "ready": false,
+        "message": "updated"
+      },
+      "conditionBinding": "ready",
+      "textBindings": ["message", "message"],
+      "textAffixes": [
+        {
+          "before": "prefix",
+          "after": ""
+        },
+        {
+          "before": "",
+          "after": ""
+        }
+      ],
+      "ifElseCompositeRuntime": {
+        "initial": {
+          "branch": 0,
+          "tag": "p",
+          "text": "prefixtext",
+          "patchFlag": 1
+        },
+        "updated": {
+          "branch": 1,
+          "tag": "b",
+          "text": "updated",
+          "patchFlag": 1
+        }
+      },
+      "successorOf": {
+        "path": "davinci/vize_l2/src/file/region/native/pair/text_tests/refusal.rs",
+        "revision": "c0dc33d29c1c162ae5fe428a8e7c61381b94d0d3",
+        "blob": "b80941545aefc95bc639429d05d2dc6439102ea0",
+        "bytes": 8558,
+        "sha256": "b7ec9b8c8540ce926756aa7ad3976669785292fea940fa7511b3a8226d3aa2a6",
+        "completeOriginalRetained": true,
+        "test": "each_branch_still_refuses_non_bare_unowned_or_mixed_original_bodies",
+        "sourceSha256": "936e98abf0e50626b273965e41fb3b612644baa4db83579f19fdf75f6b9296a7",
+        "outcome": "UnsupportedChild; cursor 0; incomplete File/view/setup; refused conditional/original None; any genuine admitted prefix remains retained"
+      }
+    },
+    {
+      "id": "historical-prefix-else",
+      "source": "<script setup>let ready=true;let message='text'</script><template><p v-if='ready'>{{message}}</p><b v-else>prefix{{message}}</b></template>",
+      "script": "let ready=true;let message='text'",
+      "template": "<p v-if='ready'>{{message}}</p><b v-else>prefix{{message}}</b>",
+      "bindings": ["ready", "message"],
+      "immutableBindings": [],
+      "updates": {
+        "ready": false,
+        "message": "updated"
+      },
+      "conditionBinding": "ready",
+      "textBindings": ["message", "message"],
+      "textAffixes": [
+        {
+          "before": "",
+          "after": ""
+        },
+        {
+          "before": "prefix",
+          "after": ""
+        }
+      ],
+      "ifElseCompositeRuntime": {
+        "initial": {
+          "branch": 0,
+          "tag": "p",
+          "text": "text",
+          "patchFlag": 1
+        },
+        "updated": {
+          "branch": 1,
+          "tag": "b",
+          "text": "prefixupdated",
+          "patchFlag": 1
+        }
+      },
+      "successorOf": {
+        "path": "davinci/vize_l2/src/file/region/native/pair/text_tests/refusal.rs",
+        "revision": "c0dc33d29c1c162ae5fe428a8e7c61381b94d0d3",
+        "blob": "b80941545aefc95bc639429d05d2dc6439102ea0",
+        "bytes": 8558,
+        "sha256": "b7ec9b8c8540ce926756aa7ad3976669785292fea940fa7511b3a8226d3aa2a6",
+        "completeOriginalRetained": true,
+        "test": "each_branch_still_refuses_non_bare_unowned_or_mixed_original_bodies",
+        "sourceSha256": "a63f53117f8fa0adc3ee51048317f7bc1294121fda8cd26820b99912af9338de",
+        "outcome": "UnsupportedChild; cursor 0; incomplete File/view/setup; refused conditional/original None; any genuine admitted prefix remains retained"
+      }
+    },
+    {
+      "id": "historical-suffix-first",
+      "source": "<script setup>let ready=true;let message='text'</script><template><p v-if='ready'>{{message}}suffix</p><b v-else>{{message}}</b></template>",
+      "script": "let ready=true;let message='text'",
+      "template": "<p v-if='ready'>{{message}}suffix</p><b v-else>{{message}}</b>",
+      "bindings": ["ready", "message"],
+      "immutableBindings": [],
+      "updates": {
+        "ready": false,
+        "message": "updated"
+      },
+      "conditionBinding": "ready",
+      "textBindings": ["message", "message"],
+      "textAffixes": [
+        {
+          "before": "",
+          "after": "suffix"
+        },
+        {
+          "before": "",
+          "after": ""
+        }
+      ],
+      "ifElseCompositeRuntime": {
+        "initial": {
+          "branch": 0,
+          "tag": "p",
+          "text": "textsuffix",
+          "patchFlag": 1
+        },
+        "updated": {
+          "branch": 1,
+          "tag": "b",
+          "text": "updated",
+          "patchFlag": 1
+        }
+      },
+      "successorOf": {
+        "path": "davinci/vize_l2/src/file/region/native/pair/text_tests/refusal.rs",
+        "revision": "c0dc33d29c1c162ae5fe428a8e7c61381b94d0d3",
+        "blob": "b80941545aefc95bc639429d05d2dc6439102ea0",
+        "bytes": 8558,
+        "sha256": "b7ec9b8c8540ce926756aa7ad3976669785292fea940fa7511b3a8226d3aa2a6",
+        "completeOriginalRetained": true,
+        "test": "each_branch_still_refuses_non_bare_unowned_or_mixed_original_bodies",
+        "sourceSha256": "269a8e8be051f108d5a6f9f7b2bb9d2806e2ad7f200e104be8cf66095cdbfb7b",
+        "outcome": "UnsupportedChild; cursor 0; incomplete File/view/setup; refused conditional/original None; any genuine admitted prefix remains retained"
+      }
+    },
+    {
+      "id": "historical-suffix-else",
+      "source": "<script setup>let ready=true;let message='text'</script><template><p v-if='ready'>{{message}}</p><b v-else>{{message}}suffix</b></template>",
+      "script": "let ready=true;let message='text'",
+      "template": "<p v-if='ready'>{{message}}</p><b v-else>{{message}}suffix</b>",
+      "bindings": ["ready", "message"],
+      "immutableBindings": [],
+      "updates": {
+        "ready": false,
+        "message": "updated"
+      },
+      "conditionBinding": "ready",
+      "textBindings": ["message", "message"],
+      "textAffixes": [
+        {
+          "before": "",
+          "after": ""
+        },
+        {
+          "before": "",
+          "after": "suffix"
+        }
+      ],
+      "ifElseCompositeRuntime": {
+        "initial": {
+          "branch": 0,
+          "tag": "p",
+          "text": "text",
+          "patchFlag": 1
+        },
+        "updated": {
+          "branch": 1,
+          "tag": "b",
+          "text": "updatedsuffix",
+          "patchFlag": 1
+        }
+      },
+      "successorOf": {
+        "path": "davinci/vize_l2/src/file/region/native/pair/text_tests/refusal.rs",
+        "revision": "c0dc33d29c1c162ae5fe428a8e7c61381b94d0d3",
+        "blob": "b80941545aefc95bc639429d05d2dc6439102ea0",
+        "bytes": 8558,
+        "sha256": "b7ec9b8c8540ce926756aa7ad3976669785292fea940fa7511b3a8226d3aa2a6",
+        "completeOriginalRetained": true,
+        "test": "each_branch_still_refuses_non_bare_unowned_or_mixed_original_bodies",
+        "sourceSha256": "f54abb4d57cea1a4131b45416fcce82c0c065dfac039edc79fa04cfa4cdffa13",
+        "outcome": "UnsupportedChild; cursor 0; incomplete File/view/setup; refused conditional/original None; any genuine admitted prefix remains retained"
+      }
+    },
+    {
+      "id": "historical-public-numeric-suffix",
+      "source": "<script setup>let ready=true;let left='text';let right=2</script><template><p v-if='ready'>{{left}}</p><b v-else>{{right}}suffix</b></template>",
+      "script": "let ready=true;let left='text';let right=2",
+      "template": "<p v-if='ready'>{{left}}</p><b v-else>{{right}}suffix</b>",
+      "bindings": ["ready", "left", "right"],
+      "immutableBindings": [],
+      "updates": {
+        "ready": false,
+        "left": "unused",
+        "right": 3
+      },
+      "conditionBinding": "ready",
+      "textBindings": ["left", "right"],
+      "textAffixes": [
+        {
+          "before": "",
+          "after": ""
+        },
+        {
+          "before": "",
+          "after": "suffix"
+        }
+      ],
+      "ifElseCompositeRuntime": {
+        "initial": {
+          "branch": 0,
+          "tag": "p",
+          "text": "text",
+          "patchFlag": 1
+        },
+        "updated": {
+          "branch": 1,
+          "tag": "b",
+          "text": "3suffix",
+          "patchFlag": 1
+        }
+      },
+      "successorOf": {
+        "path": "crates/vize_atelier_sfc/src/native_selected_setup/tests/original_root_if_else_text/refusal.rs",
+        "revision": "c0dc33d29c1c162ae5fe428a8e7c61381b94d0d3",
+        "blob": "429cbb8e65ff442dce0ebe20040dca16faa48777",
+        "bytes": 1382,
+        "sha256": "8ac066dc4efacaf34cc421b8216a66bbf5d98f5863208104d3731044a70f0f4d",
+        "completeOriginalRetained": true,
+        "test": "whole_public_output_rejects_late_second_body_failures",
+        "sourceSha256": "ba8e9be1ab3e224084fe38740714b1497d1aeb9e4ded3accd86f105624c7927a",
+        "outcome": "Whole public Observation error and no admitted selected setup, in both modes and mapped/plain"
+      }
+    },
+    {
+      "id": "typescript-unicode-quotes-backslash-active-update",
+      "source": "\r\n<script setup lang='ts'>/* from 'vue' 雪🌸 */\r\nlet 可視:boolean=true;let 文言:string='初'</script>\r\n<template><section v-if='可視'>雪\"\\{{ 文言 }}</section><b v-else>{{\r\n文言\r\n}}🌸</b></template>\r\n",
+      "script": "/* from 'vue' 雪🌸 */\r\nlet 可視:boolean=true;let 文言:string='初'",
+      "template": "<section v-if='可視'>雪\"\\{{ 文言 }}</section><b v-else>{{\r\n文言\r\n}}🌸</b>",
+      "bindings": ["可視", "文言"],
+      "immutableBindings": [],
+      "updates": {
+        "文言": "後"
+      },
+      "conditionBinding": "可視",
+      "textBindings": ["文言", "文言"],
+      "textAffixes": [
+        {
+          "before": "雪\"\\",
+          "after": ""
+        },
+        {
+          "before": "",
+          "after": "🌸"
+        }
+      ],
+      "ifElseCompositeRuntime": {
+        "initial": {
+          "branch": 0,
+          "tag": "section",
+          "text": "雪\"\\初",
+          "patchFlag": 1
+        },
+        "updated": {
+          "branch": 0,
+          "tag": "section",
+          "text": "雪\"\\後",
+          "patchFlag": 1
+        }
+      }
+    },
+    {
+      "id": "constant-primitive-composite",
+      "source": "<script setup>let ready=false;const message=2</script><template><p v-if='ready'>pre{{message}}</p><b v-else>{{message}}post</b></template>",
+      "script": "let ready=false;const message=2",
+      "template": "<p v-if='ready'>pre{{message}}</p><b v-else>{{message}}post</b>",
+      "bindings": ["ready", "message"],
+      "immutableBindings": ["message"],
+      "updates": {
+        "ready": true
+      },
+      "conditionBinding": "ready",
+      "textBindings": ["message", "message"],
+      "textAffixes": [
+        {
+          "before": "pre",
+          "after": ""
+        },
+        {
+          "before": "",
+          "after": "post"
+        }
+      ],
+      "ifElseCompositeRuntime": {
+        "initial": {
+          "branch": 1,
+          "tag": "b",
+          "text": "2post",
+          "patchFlag": 0
+        },
+        "updated": {
+          "branch": 0,
+          "tag": "p",
+          "text": "pre2",
+          "patchFlag": 0
+        }
+      }
+    }
+  ]
+}

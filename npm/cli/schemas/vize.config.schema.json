@@ -714,8 +714,32 @@
           "enum": ["always", "never"]
         },
         "vue/v-on-event-hyphenation": {
-          "type": "string",
-          "enum": ["always", "never"]
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["always", "never"]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "style": {
+                  "default": "always",
+                  "type": "string",
+                  "enum": ["always", "never"]
+                },
+                "ignore": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^(?!\\s*$)(?![\\s\\S]*:exit$)"
+                  },
+                  "uniqueItems": true
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
         },
         "vue/v-bind-style": {
           "type": "string",

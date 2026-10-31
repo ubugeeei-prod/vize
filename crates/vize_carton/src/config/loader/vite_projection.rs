@@ -205,16 +205,32 @@ fn resolve(root: &str, path: &str) -> std::string::String {
 fn schema() -> Option<&'static Value> {
     static SCHEMA: OnceLock<Option<Value>> = OnceLock::new();
     SCHEMA
-        .get_or_init(|| {
-            let (_, rest) = super::js::VITE_RUNTIME.split_once("JSON.parse(")?;
-            let (literal, _) = rest.trim_start().strip_prefix('\'')?.split_once('\'')?;
-            // A JS escape would need decoding first.
-            if literal.contains('\\') {
-                return None;
-            }
-            serde_json::from_str(literal).ok()
-        })
+        .get_or_init(|| read_embedded_schema(super::js::VITE_RUNTIME))
         .as_ref()
+}
+
+/// Decode only the generator's escaped-backslash pairs, then let serde parse
+/// JSON. Other JS escapes, expressions, and extra arguments stay Node-owned.
+fn read_embedded_schema(runtime: &str) -> Option<Value> {
+    let (_, rest) = runtime.split_once("JSON.parse(")?;
+    let (literal, tail) = rest.trim_start().strip_prefix('\'')?.split_once('\'')?;
+    let tail = tail.trim_start();
+    let tail = tail.strip_prefix(',').unwrap_or(tail).trim_start();
+    if !tail.strip_prefix(')')?.trim_start().starts_with(';') {
+        return None;
+    }
+    let mut decoded = vize_l0::String::with_capacity(literal.len());
+    let mut characters = literal.chars();
+    while let Some(character) = characters.next() {
+        if matches!(character, '\n' | '\r' | '\u{2028}' | '\u{2029}') {
+            return None;
+        }
+        if character == '\\' && characters.next()? != '\\' {
+            return None;
+        }
+        decoded.push(character);
+    }
+    serde_json::from_str(decoded.as_str()).ok()
 }
 
 /// `validateVueOption` as a predicate: `Some(false)` where JS throws, and
@@ -271,11 +287,31 @@ fn check(value: &Value, schema: &Value, root: &Value) -> Option<bool> {
             }
         }
     }
+    // Regex validation remains Node-owned, including an empty string value.
+    if value.is_string()
+        && let Some(pattern) = schema.get("pattern")
+        && !pattern.as_str()?.is_empty()
+    {
+        return None;
+    }
     if let (Value::Array(items), Some(rule)) = (value, schema.get("items")) {
         for item in items {
             if !check(item, rule, root)? {
                 return Some(false);
             }
+        }
+    }
+    if let (Value::Array(items), Some(unique)) = (value, schema.get("uniqueItems")) {
+        match unique {
+            Value::Bool(false) => {}
+            Value::Bool(true) if items.iter().all(Value::is_string) => {
+                for (index, item) in items.iter().enumerate() {
+                    if items.iter().take(index).any(|prior| prior == item) {
+                        return Some(false);
+                    }
+                }
+            }
+            _ => return None,
         }
     }
     let Value::Object(object) = value else {
@@ -318,3 +354,6 @@ fn same_value(allowed: &Value, value: &Value) -> bool {
         (allowed, value) => allowed == value,
     }
 }
+
+#[cfg(test)]
+mod tests;

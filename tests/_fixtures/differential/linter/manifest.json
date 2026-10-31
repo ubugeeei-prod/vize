@@ -3080,6 +3080,157 @@
       }
     },
     {
+      "id": "linter/v-on-event-ignore-6097",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "v-on-event-ignore-6097",
+        "files": [
+          {
+            "path": "ColorPalette.vue.txt",
+            "role": "authored-configured-event-input",
+            "sha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5"
+          },
+          {
+            "path": "Never.vue.txt",
+            "role": "authored-configured-event-input",
+            "sha256": "156a14c794098923c6ffb54d0e59916a86a6b4f89cd4ac2b314412f12c69198e"
+          },
+          {
+            "path": "cases.json",
+            "role": "pinned-option-corpus",
+            "sha256": "6896d69d431c71e762e493891f777e2ad62f68eac687d5ad1960f9145a1df285"
+          },
+          {
+            "path": "reference/bad-legacy-style.json",
+            "role": "independent-eslint-reference",
+            "sha256": "a508ab440a75b1fd917d7c7223e53420cea6bc23975d51e80e2d9a6f3614f8a9"
+          },
+          {
+            "path": "reference/blank.json",
+            "role": "independent-eslint-reference",
+            "sha256": "ec96aa3e7ff1b1b9866e60e4b47fe5843c602e8939884907affd6a12bc05648d"
+          },
+          {
+            "path": "reference/bom.json",
+            "role": "independent-eslint-reference",
+            "sha256": "b37e4ea65cc3515c4a49392ab23b5c9667439ed73438db979608388423398a10"
+          },
+          {
+            "path": "reference/duplicate.json",
+            "role": "independent-eslint-reference",
+            "sha256": "e3c7d2b3c2291e3193d6aaabb023f6450bfd25858e4f3811cc507eb7c5956d20"
+          },
+          {
+            "path": "reference/empty.json",
+            "role": "independent-eslint-reference",
+            "sha256": "9394c119eec79dfa5eb087df4f860162af58d8747b2f09ebd12998640cd3ccc8"
+          },
+          {
+            "path": "reference/exit-suffix.json",
+            "role": "independent-eslint-reference",
+            "sha256": "8c7083f877c660b3045d1afde4da41bfa741d3d6a982419724fca0bf0376400d"
+          },
+          {
+            "path": "reference/mixed-types.json",
+            "role": "independent-eslint-reference",
+            "sha256": "de9729bf42fd534f8dec7d7c8fd1c15f0723299bfc4407c8d857ba5f0a35a995"
+          },
+          {
+            "path": "reference/never-ignore-close.json",
+            "role": "independent-eslint-reference",
+            "sha256": "f4fa992b7b25af6931146ffa3daf8fb9f6eca5ce308faef8c8cd80860dfa281c"
+          },
+          {
+            "path": "reference/never-legacy.json",
+            "role": "independent-eslint-reference",
+            "sha256": "27552c85c7cced2d496f71bfc6a0e78020bb6088676a77d661a662ac08f913ba"
+          },
+          {
+            "path": "reference/null-ignore.json",
+            "role": "independent-eslint-reference",
+            "sha256": "3631fd5e0680baa68d172f204e90efce619ea25e9b43760723986742ee160df1"
+          },
+          {
+            "path": "reference/null-style.json",
+            "role": "independent-eslint-reference",
+            "sha256": "a3653b5e2c78724fd3f034b11559db73291872060cd0cab193f2c4315bddd913"
+          },
+          {
+            "path": "reference/original-case-sensitive.json",
+            "role": "independent-eslint-reference",
+            "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+          },
+          {
+            "path": "reference/original-default.json",
+            "role": "independent-eslint-reference",
+            "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+          },
+          {
+            "path": "reference/original-exit-newline-is-valid.json",
+            "role": "independent-eslint-reference",
+            "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+          },
+          {
+            "path": "reference/original-ignore-list.json",
+            "role": "independent-eslint-reference",
+            "sha256": "619d9169bda623cfa2d249644029a4b469f31616aeb7fbb72ebb0ee53a13413b"
+          },
+          {
+            "path": "reference/original-ignore-mid-substring.json",
+            "role": "independent-eslint-reference",
+            "sha256": "0a0b54764c1f87534eafcdf4501f22c91a274e38f6ce6f1c8f2b9b610eb10069"
+          },
+          {
+            "path": "reference/original-ignore-unrelated.json",
+            "role": "independent-eslint-reference",
+            "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+          },
+          {
+            "path": "reference/original-ignore-update.json",
+            "role": "independent-eslint-reference",
+            "sha256": "0a0b54764c1f87534eafcdf4501f22c91a274e38f6ce6f1c8f2b9b610eb10069"
+          },
+          {
+            "path": "reference/original-legacy-always.json",
+            "role": "independent-eslint-reference",
+            "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+          },
+          {
+            "path": "reference/original-literal-not-glob.json",
+            "role": "independent-eslint-reference",
+            "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+          },
+          {
+            "path": "reference/original-nel-is-valid.json",
+            "role": "independent-eslint-reference",
+            "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+          },
+          {
+            "path": "reference/original-restored-empty.json",
+            "role": "independent-eslint-reference",
+            "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+          },
+          {
+            "path": "reference/unknown-field.json",
+            "role": "independent-eslint-reference",
+            "sha256": "6fce60b8c08b9b6f0d401a7ef043da904d052100a7a99c4940f535e0d7ea8252"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/v-on-hyphenation-custom-tags-10822",
       "state": "active",
       "targets": ["lint"],

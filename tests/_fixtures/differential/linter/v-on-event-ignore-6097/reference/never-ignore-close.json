@@ -1,0 +1,42 @@
+{
+  "messages": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@update:model-value' can't be hyphenated.",
+      "line": 3,
+      "column": 34,
+      "messageId": "cannotBeHyphenated",
+      "endLine": 3,
+      "endColumn": 62
+    }
+  ],
+  "fixResult": {
+    "fixed": false,
+    "messages": [
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@update:model-value' can't be hyphenated.",
+        "line": 3,
+        "column": 34,
+        "messageId": "cannotBeHyphenated",
+        "endLine": 3,
+        "endColumn": 62
+      }
+    ],
+    "output": "<template>\n  <!-- 雪🌸: native and dynamic listeners remain controls. -->\n  <MyPanel @close-window=\"close\" @update:model-value=\"update\" @rowClick=\"select\" @[eventName]=\"dynamic\" />\n  <button @close-window=\"native\" />\n</template>\n"
+  },
+  "requery": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@update:model-value' can't be hyphenated.",
+      "line": 3,
+      "column": 34,
+      "messageId": "cannotBeHyphenated",
+      "endLine": 3,
+      "endColumn": 62
+    }
+  ]
+}

@@ -1136,6 +1136,8 @@ export interface PatinaLintOptionsNapi {
   htmlSelfClosing?: HtmlSelfClosingOptionsNapi;
   /** Style for `vue/v-on-event-hyphenation`: "always" or "never" */
   vOnEventHyphenation?: string;
+  /** Case-sensitive literal event-name substrings to exempt. */
+  vOnEventHyphenationIgnore?: Array<string>;
   /** Style for `vue/attribute-hyphenation`: "always" or "never" */
   attributeHyphenation?: string;
   /** CLI-compatible `linter.ruleOptions` encoded as JSON. */

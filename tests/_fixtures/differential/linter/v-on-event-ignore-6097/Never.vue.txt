@@ -1,0 +1,5 @@
+<template>
+  <!-- 雪🌸: native and dynamic listeners remain controls. -->
+  <MyPanel @close-window="close" @update:model-value="update" @rowClick="select" @[eventName]="dynamic" />
+  <button @close-window="native" />
+</template>

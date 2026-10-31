@@ -1,0 +1,16 @@
+{
+  "verify": {
+    "kind": "threw",
+    "error": {
+      "name": "Error",
+      "message": "Key \"rules\": Key \"vue/v-on-event-hyphenation\":\n\tValue null should be array.\n"
+    }
+  },
+  "verifyAndFix": {
+    "kind": "threw",
+    "error": {
+      "name": "Error",
+      "message": "Key \"rules\": Key \"vue/v-on-event-hyphenation\":\n\tValue null should be array.\n"
+    }
+  }
+}

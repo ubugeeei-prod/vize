@@ -1,0 +1,382 @@
+{
+  "schema": "vize.patina.v-on-event-ignore-6097",
+  "version": 1,
+  "rule": "vue/v-on-event-hyphenation",
+  "provider": {
+    "eslint": "10.4.1",
+    "eslint-plugin-vue": "10.9.2",
+    "vue-eslint-parser": "10.4.1",
+    "@typescript-eslint/parser": "8.65.0"
+  },
+  "ruleSource": {
+    "path": "dist/rules/v-on-event-hyphenation.js",
+    "sha256": "f91e547b8e0275dac03081fab804190e619fe87ee376302b50814f929c503849"
+  },
+  "original": {
+    "source": "36d76a54ebdef00cfa83f8788224d0c69dad59a9",
+    "file": "tests/_fixtures/differential/linter/v-on-hyphenation-custom-tags-10822/ColorPalette.vue.txt",
+    "bytes": 521,
+    "sha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5"
+  },
+  "files": [
+    {
+      "file": "ColorPalette.vue.txt",
+      "bytes": 521,
+      "sha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5"
+    },
+    {
+      "file": "Never.vue.txt",
+      "bytes": 232,
+      "sha256": "156a14c794098923c6ffb54d0e59916a86a6b4f89cd4ac2b314412f12c69198e"
+    }
+  ],
+  "valid": [
+    {
+      "id": "original-default",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": null,
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "expectedCount": 2,
+      "reference": {
+        "file": "reference/original-default.json",
+        "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+      }
+    },
+    {
+      "id": "original-legacy-always",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": "always",
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "expectedCount": 2,
+      "reference": {
+        "file": "reference/original-legacy-always.json",
+        "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+      }
+    },
+    {
+      "id": "original-ignore-update",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          "update:"
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "expectedCount": 1,
+      "reference": {
+        "file": "reference/original-ignore-update.json",
+        "sha256": "0a0b54764c1f87534eafcdf4501f22c91a274e38f6ce6f1c8f2b9b610eb10069"
+      }
+    },
+    {
+      "id": "original-restored-empty",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": []
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "expectedCount": 2,
+      "reference": {
+        "file": "reference/original-restored-empty.json",
+        "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+      }
+    },
+    {
+      "id": "original-ignore-unrelated",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          "missing"
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "expectedCount": 2,
+      "reference": {
+        "file": "reference/original-ignore-unrelated.json",
+        "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+      }
+    },
+    {
+      "id": "original-ignore-list",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          "update:",
+          "row"
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "expectedCount": 0,
+      "reference": {
+        "file": "reference/original-ignore-list.json",
+        "sha256": "619d9169bda623cfa2d249644029a4b469f31616aeb7fbb72ebb0ee53a13413b"
+      }
+    },
+    {
+      "id": "original-ignore-mid-substring",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          "odelV"
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "expectedCount": 1,
+      "reference": {
+        "file": "reference/original-ignore-mid-substring.json",
+        "sha256": "0a0b54764c1f87534eafcdf4501f22c91a274e38f6ce6f1c8f2b9b610eb10069"
+      }
+    },
+    {
+      "id": "original-case-sensitive",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          "UPDATE:"
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "expectedCount": 2,
+      "reference": {
+        "file": "reference/original-case-sensitive.json",
+        "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+      }
+    },
+    {
+      "id": "original-literal-not-glob",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          "update:*"
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "expectedCount": 2,
+      "reference": {
+        "file": "reference/original-literal-not-glob.json",
+        "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+      }
+    },
+    {
+      "id": "original-nel-is-valid",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          ""
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "expectedCount": 2,
+      "reference": {
+        "file": "reference/original-nel-is-valid.json",
+        "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+      }
+    },
+    {
+      "id": "original-exit-newline-is-valid",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          ":exit\n"
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "expectedCount": 2,
+      "reference": {
+        "file": "reference/original-exit-newline-is-valid.json",
+        "sha256": "2de49d319843e133bc31d3760a886944cb61efce0971ef023e2b80619c6d54dc"
+      }
+    },
+    {
+      "id": "never-legacy",
+      "file": "Never.vue.txt",
+      "filename": "Never.vue",
+      "policy": "never",
+      "sourceSha256": "156a14c794098923c6ffb54d0e59916a86a6b4f89cd4ac2b314412f12c69198e",
+      "expectedCount": 2,
+      "reference": {
+        "file": "reference/never-legacy.json",
+        "sha256": "27552c85c7cced2d496f71bfc6a0e78020bb6088676a77d661a662ac08f913ba"
+      }
+    },
+    {
+      "id": "never-ignore-close",
+      "file": "Never.vue.txt",
+      "filename": "Never.vue",
+      "policy": {
+        "style": "never",
+        "ignore": [
+          "close-"
+        ]
+      },
+      "sourceSha256": "156a14c794098923c6ffb54d0e59916a86a6b4f89cd4ac2b314412f12c69198e",
+      "expectedCount": 1,
+      "reference": {
+        "file": "reference/never-ignore-close.json",
+        "sha256": "f4fa992b7b25af6931146ffa3daf8fb9f6eca5ce308faef8c8cd80860dfa281c"
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "id": "duplicate",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          "update:",
+          "update:"
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "reference": {
+        "file": "reference/duplicate.json",
+        "sha256": "e3c7d2b3c2291e3193d6aaabb023f6450bfd25858e4f3811cc507eb7c5956d20"
+      }
+    },
+    {
+      "id": "empty",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          ""
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "reference": {
+        "file": "reference/empty.json",
+        "sha256": "9394c119eec79dfa5eb087df4f860162af58d8747b2f09ebd12998640cd3ccc8"
+      }
+    },
+    {
+      "id": "blank",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          " \t"
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "reference": {
+        "file": "reference/blank.json",
+        "sha256": "ec96aa3e7ff1b1b9866e60e4b47fe5843c602e8939884907affd6a12bc05648d"
+      }
+    },
+    {
+      "id": "bom",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          "﻿"
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "reference": {
+        "file": "reference/bom.json",
+        "sha256": "b37e4ea65cc3515c4a49392ab23b5c9667439ed73438db979608388423398a10"
+      }
+    },
+    {
+      "id": "exit-suffix",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          "name:exit"
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "reference": {
+        "file": "reference/exit-suffix.json",
+        "sha256": "8c7083f877c660b3045d1afde4da41bfa741d3d6a982419724fca0bf0376400d"
+      }
+    },
+    {
+      "id": "mixed-types",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [
+          "update:",
+          1
+        ]
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "reference": {
+        "file": "reference/mixed-types.json",
+        "sha256": "de9729bf42fd534f8dec7d7c8fd1c15f0723299bfc4407c8d857ba5f0a35a995"
+      }
+    },
+    {
+      "id": "null-ignore",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": null
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "reference": {
+        "file": "reference/null-ignore.json",
+        "sha256": "3631fd5e0680baa68d172f204e90efce619ea25e9b43760723986742ee160df1"
+      }
+    },
+    {
+      "id": "null-style",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "style": null
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "reference": {
+        "file": "reference/null-style.json",
+        "sha256": "a3653b5e2c78724fd3f034b11559db73291872060cd0cab193f2c4315bddd913"
+      }
+    },
+    {
+      "id": "unknown-field",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": {
+        "ignore": [],
+        "unexpected": true
+      },
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "reference": {
+        "file": "reference/unknown-field.json",
+        "sha256": "6fce60b8c08b9b6f0d401a7ef043da904d052100a7a99c4940f535e0d7ea8252"
+      }
+    },
+    {
+      "id": "bad-legacy-style",
+      "file": "ColorPalette.vue.txt",
+      "filename": "ColorPalette.vue",
+      "policy": "sometimes",
+      "sourceSha256": "967b8c09becc87143749ae3d20fab2bbfe4dced301e02b77f9243e907ad95ed5",
+      "reference": {
+        "file": "reference/bad-legacy-style.json",
+        "sha256": "a508ab440a75b1fd917d7c7223e53420cea6bc23975d51e80e2d9a6f3614f8a9"
+      }
+    }
+  ],
+  "limits": "Independent reference schema/messages/fixResult/requery only. Autofix is not enabled; full messages remain after requery. Vize's existing English presentation is preserved separately. No native-product or published-consumer acceptance is inferred.",
+  "capture": {
+    "node": "v26.6.0",
+    "nativeExecuted": false,
+    "packageInstalled": false
+  }
+}

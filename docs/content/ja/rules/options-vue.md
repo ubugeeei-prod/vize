@@ -334,6 +334,8 @@ export default defineConfig({
 `never` はハイフン区切りのリスナー引数を報告します。
 通常の HTML 要素のイベント、オブジェクト形式の指定、動的な引数は対象外です。
 
+除外リストの検証と上書きは[イベントリスナーのオプション](./options-events.md)で説明しています。
+
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
@@ -344,7 +346,7 @@ export default defineConfig({
         "vue/v-on-event-hyphenation": "warn"
       },
       "ruleOptions": {
-        "vue/v-on-event-hyphenation": "always"
+        "vue/v-on-event-hyphenation": { "style": "always", "ignore": ["update:"] }
       }
     }
   }

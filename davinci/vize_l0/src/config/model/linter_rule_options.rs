@@ -27,6 +27,7 @@ mod restrictions;
 mod sfc_element_order;
 mod strict_boolean;
 mod v_bind_style;
+mod v_on_event_hyphenation;
 mod v_on_style;
 mod v_slot_style;
 mod valid_v_on;
@@ -53,6 +54,7 @@ pub use restrictions::{
 pub use sfc_element_order::{SfcElementOrderGroup, SfcElementOrderOptions};
 pub use strict_boolean::StrictBooleanExpressionsOptions;
 pub use v_bind_style::VBindStyle;
+pub use v_on_event_hyphenation::{VOnEventHyphenationConfig, VOnEventHyphenationOptions};
 pub use v_on_style::VOnStyle;
 pub use v_slot_style::{
     VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,
@@ -186,7 +188,7 @@ pub struct ConfigLintRuleOptions {
     mustache_interpolation_spacing: Option<MustacheInterpolationSpacingStyle>,
     /// Options for `vue/v-on-event-hyphenation`.
     #[serde(rename = "vue/v-on-event-hyphenation")]
-    v_on_event_hyphenation: Option<HyphenationStyle>,
+    v_on_event_hyphenation: Option<VOnEventHyphenationConfig>,
     /// Options for `vue/v-bind-style`.
     #[serde(rename = "vue/v-bind-style")]
     v_bind_style: Option<VBindStyle>,
@@ -357,6 +359,15 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn v_on_event_hyphenation(&self) -> Option<HyphenationStyle> {
         self.v_on_event_hyphenation
+            .as_ref()
+            .map(VOnEventHyphenationConfig::style)
+    }
+
+    /// Configured event-name style and literal substring exemptions.
+    pub fn v_on_event_hyphenation_options(&self) -> Option<VOnEventHyphenationOptions> {
+        self.v_on_event_hyphenation
+            .as_ref()
+            .map(VOnEventHyphenationConfig::options)
     }
 
     /// Configured spelling for `vue/v-bind-style`.

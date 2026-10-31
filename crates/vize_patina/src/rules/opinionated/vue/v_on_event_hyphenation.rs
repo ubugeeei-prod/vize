@@ -57,11 +57,17 @@ pub enum VOnEventHyphenationStyle {
 #[derive(Default)]
 pub struct VOnEventHyphenation {
     style: VOnEventHyphenationStyle,
+    ignore: Vec<CompactString>,
 }
 
 impl VOnEventHyphenation {
     pub fn new(style: VOnEventHyphenationStyle) -> Self {
-        Self { style }
+        Self::with_ignore(style, Vec::new())
+    }
+
+    /// Exempt static event names containing a configured literal substring.
+    pub fn with_ignore(style: VOnEventHyphenationStyle, ignore: Vec<CompactString>) -> Self {
+        Self { style, ignore }
     }
 
     /// Whether `element` receives custom events rather than native DOM events.
@@ -133,6 +139,13 @@ impl Rule for VOnEventHyphenation {
             Some(ExpressionNode::Simple(s)) if s.is_static => s.content,
             _ => return,
         };
+        if self
+            .ignore
+            .iter()
+            .any(|entry| event_name.contains(entry.as_str()))
+        {
+            return;
+        }
         // Modifiers are stripped into `directive.modifiers`, so the arg is the
         // bare name. `@vue:beforeMount` hooks are checked too, as upstream does.
         match self.style {
@@ -184,6 +197,9 @@ fn kebab_case(name: &str) -> CompactString {
     }
     kebab
 }
+
+#[cfg(test)]
+mod ignore;
 
 #[cfg(test)]
 mod tests {

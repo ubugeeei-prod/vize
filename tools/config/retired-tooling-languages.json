@@ -648,8 +648,6 @@
       "tools/benchmarks/scripts/sfc-member-profile.mjs",
       "tools/benchmarks/scripts/sfc-member-worker.mjs",
       "tools/benchmarks/scripts/sfc-optional-lifecycle.mjs",
-      "tools/benchmarks/scripts/sfc-parse-replay-contract.mjs",
-      "tools/benchmarks/scripts/sfc-parse-replay-summary.mjs",
       "tools/benchmarks/scripts/sfc-parse-replay.mjs",
       "tools/benchmarks/scripts/sfc-readonly-counters.mjs",
       "tools/benchmarks/scripts/type-snapshot-cli-corpus.mjs",
