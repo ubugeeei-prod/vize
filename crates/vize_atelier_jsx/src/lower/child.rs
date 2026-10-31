@@ -24,8 +24,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         &mut self,
         children: &[JSXChild<'_>],
     ) -> Vec<'a, TemplateChildNode<'a>> {
-        let client_vdom =
-            self.babel_vdom_lane && self.current_output_mode == crate::JsxOutputMode::Vdom;
+        let client_vdom = self.owns_native_vdom_child_values();
         if !self.uses_babel_vdom_compat() && !client_vdom {
             return self.lower_children(children);
         }
@@ -44,15 +43,25 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
                 {
                     out.push(control_flow);
                 } else {
-                    if let Some(expression) = expression.as_expression() {
-                        self.retain_nested_typecheck_roots(expression);
+                    if client_vdom {
+                        if let Some(expression) = expression.as_expression() {
+                            self.retain_nested_typecheck_roots(expression);
+                        }
+                        self.pending_vdom_value_children = true;
                     }
-                    self.pending_vdom_value_children = true;
                     out.push(self.raw_expression_child(expression, container.span));
                 }
                 out
             }
         }
+    }
+
+    /// The explicit client Native producer owns this role; compatibility output
+    /// retains its original unmarked compound and backend contract.
+    fn owns_native_vdom_child_values(&self) -> bool {
+        self.babel_vdom_lane
+            && self.current_output_mode == crate::JsxOutputMode::Vdom
+            && !self.uses_babel_vdom_compat()
     }
 
     /// Lower a list of JSX children, dropping whitespace-only text.
@@ -193,13 +202,14 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         let expression = self.dyn_simple_expr(authored.span());
         let mut compound =
             CompoundExpressionNode::new(self.bump(), self.mapper().location(container_span));
-        compound.is_jsx_child_value = true;
-        compound.jsx_child_needs_grouping = authored.as_expression().is_some_and(|expression| {
-            matches!(
-                expression.get_inner_expression(),
-                oxc_ast::ast::Expression::SequenceExpression(_)
-            )
-        });
+        compound.is_jsx_child_value = self.owns_native_vdom_child_values();
+        compound.jsx_child_needs_grouping = compound.is_jsx_child_value
+            && authored.as_expression().is_some_and(|expression| {
+                matches!(
+                    expression.get_inner_expression(),
+                    oxc_ast::ast::Expression::SequenceExpression(_)
+                )
+            });
         compound
             .children
             .push(CompoundExpressionChild::Simple(expression));

@@ -1,4 +1,7 @@
 import { test } from "node:test";
+import fs from "node:fs";
+import path from "node:path";
+import { prepareOutputDir } from "../test/helpers.ts";
 import assert from "node:assert/strict";
 import { compileJsx } from "@vizejs/native";
 import ts from "typescript";
@@ -20,12 +23,54 @@ void test("compileJsxModule includes the runtime-helper preamble in the emitted 
   });
   // Preserve complete native/Babel compatibility output alongside the authored
   // module, including their different boolean attribute semantics.
-  t.assert.snapshot({ module: code, nativeCompat: native.code, babelCompat: babel.code });
+  const observed = { module: code, nativeCompat: native.code, babelCompat: babel.code };
+  const directory = process.env.VIZE_RSPACK_JSX_CAPTURE ?? prepareOutputDir("jsx-vdom-module");
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    path.join(directory, "native-vdom-module.json"),
+    JSON.stringify(
+      {
+        source: SOURCE,
+        compatSource: source,
+        observed,
+        nativeDto: compileJsx(SOURCE, {
+          filename: "/src/App.tsx",
+          lang: "tsx",
+          jsxMode: "vdom",
+          sourceMap: false,
+        }),
+        sourceRevision: process.env.GITHUB_SHA ?? null,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+  t.assert.snapshot(observed);
 });
 
 void test("compileJsxModule surfaces a v3 source map when sourceMap is requested", (t) => {
   const { map } = compileJsxModule("/src/App.tsx", SOURCE, { jsxMode: "vdom", sourceMap: true });
   assert.equal(typeof map, "string", "a source map is surfaced when requested");
+  const directory = process.env.VIZE_RSPACK_JSX_CAPTURE ?? prepareOutputDir("jsx-vdom-map");
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    path.join(directory, "native-vdom-map.json"),
+    JSON.stringify(
+      {
+        source: SOURCE,
+        observed: String(map),
+        nativeDto: compileJsx(SOURCE, {
+          filename: "/src/App.tsx",
+          lang: "tsx",
+          jsxMode: "vdom",
+          sourceMap: true,
+        }),
+        sourceRevision: process.env.GITHUB_SHA ?? null,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
   t.assert.snapshot(String(map));
 });
 

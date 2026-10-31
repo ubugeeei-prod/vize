@@ -210,6 +210,9 @@ fn every_role_enforces_its_target_policy_in_every_phase() {
             };
             let arena = Allocator::default();
             let mut program = program(&arena);
+            if role == Role::ChildValue {
+                program.ops[2].kind = OpKind::SetChildValue;
+            }
             let condition = role == Role::Condition;
             program.operands.push(Operand {
                 op: if condition {
@@ -247,4 +250,16 @@ fn every_role_enforces_its_target_policy_in_every_phase() {
             }
         }
     }
+}
+
+#[test]
+fn child_value_role_never_belongs_to_an_unrelated_operation() {
+    rejects(
+        Operand {
+            role: Role::ChildValue,
+            target: None,
+            ..binding()
+        },
+        "child-value operand must belong exactly to its child-value operation",
+    );
 }

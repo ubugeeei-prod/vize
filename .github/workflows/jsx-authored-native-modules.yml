@@ -300,7 +300,7 @@ jobs:
           VIZE_JSX_ADVERSARIAL_CAPTURE: ${{ runner.temp }}/jsx-authored-native/adversarial
         run: |
           status=0
-          for target in compile ssr vapor_ssr babel_is_custom_element babel_merge_props babel_v_slots pragma v_model_argument v_slots_forwarding adversarial_snapshots vapor parity_vapor parity_tsx ordered_spread_props spread_child; do
+          for target in compile ssr vapor_ssr babel_is_custom_element babel_merge_props babel_v_slots babel_compat_oracle babel_tag_classification compat_mode control_flow parity_vdom slots style v_slots vdom authored_modules pragma v_model_argument v_slots_forwarding adversarial_snapshots vapor parity_vapor parity_tsx ordered_spread_props spread_child; do
             cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" || status=1
           done
           exit "$status"
@@ -331,6 +331,16 @@ jobs:
           (directory/'napi-dto.receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
           assert passed, stdout
           PYCODE
+          exit "$status"
+      - name: Preserve complete source-native VDOM adapter modules
+        if: always()
+        env:
+          VIZE_JSX_VDOM_NAPI_CAPTURE: ${{ runner.temp }}/jsx-authored-native/napi-vdom-modules
+        run: |
+          status=0
+          for name in jsx_compile_result_includes_runtime_helper_preamble jsx_compile_result_wraps_block_body_setup_state; do
+            cargo test --locked --profile ci -p vize_vitrine --lib "napi::jsx::tests::$name" -- --exact > "$RUNNER_TEMP/jsx-authored-native/napi-vdom-$name.stdout" 2> "$RUNNER_TEMP/jsx-authored-native/napi-vdom-$name.stderr" || status=1
+          done
           exit "$status"
       - name: Complete WASM JSX DTO and original refusal contracts
         if: always()

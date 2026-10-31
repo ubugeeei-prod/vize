@@ -312,10 +312,25 @@ mod tests {
         assert!(result.scoped_styles.is_empty());
     }
 
+    fn capture_native_vdom_api_module(label: &str, source: &str, result: &JsxCompileResultNapi) {
+        let Some(directory) = std::env::var_os("VIZE_JSX_VDOM_NAPI_CAPTURE") else {
+            return;
+        };
+        let directory = std::path::PathBuf::from(directory);
+        std::fs::create_dir_all(&directory).expect("capture directory");
+        let packet = serde_json::json!({"source":source,"scope":"complete pure Rust adapter DTO; no Node ABI execution credit","dto":{"code":result.code,"map":result.map,"errors":result.errors,"warnings":result.warnings,"scopedStyles":result.scoped_styles.iter().map(|style|serde_json::json!({"scopeId":style.scope_id,"css":style.css})).collect::<std::vec::Vec<_>>()}});
+        std::fs::write(
+            directory.join(format!("{label}.json")),
+            serde_json::to_vec_pretty(&packet).expect("whole DTO"),
+        )
+        .expect("preserve before assertion");
+    }
+
     #[test]
     fn jsx_compile_result_includes_runtime_helper_preamble() {
         let source = "const App = () => <div>{message}</div>;\nexport default App;\n";
         let result = compile_jsx_impl(source.to_string(), None);
+        capture_native_vdom_api_module("helper-module", source, &result);
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
         // The helper import precedes the render that uses it.
@@ -348,6 +363,7 @@ mod tests {
         };
     "#;
         let result = compile_jsx_impl(source.to_string(), None);
+        capture_native_vdom_api_module("setup-module", source, &result);
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
         // Setup state stays inside `setup()`; no separate `render` export.
