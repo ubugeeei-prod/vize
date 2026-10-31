@@ -8,26 +8,14 @@ import {
   slotResponses,
 } from "../../../benchmarks/scripts/canon-slot-constructor-protocol.ts";
 import { hook, observed, verifyJournal } from "../editor_vite_stub/custody.ts";
-import {
-  assertCustody,
-  assertDeclarationCustody,
-} from "../computed_event_custody.ts";
+import { assertCustody, assertDeclarationCustody } from "../computed_event_custody.ts";
 import { assertInputs, type Inputs, type OriginalRow } from "./fixtures.ts";
 import { capture, completed } from "./capture.ts";
-import {
-  assertOriginalVectors,
-  cliPacket,
-  diagnostics,
-  reference,
-} from "./oracle.ts";
+import { assertOriginalVectors, cliPacket, diagnostics, reference } from "./oracle.ts";
 import type { install } from "./install.ts";
 
 type Installed = Awaited<ReturnType<typeof install>>;
-export function writeProject(
-  project: string,
-  files: Map<string, string>,
-  modules: string,
-) {
+export function writeProject(project: string, files: Map<string, string>, modules: string) {
   mkdirSync(project);
   for (const [name, bytes] of files) {
     const output = join(project, name);
@@ -46,15 +34,8 @@ export function protocol(
   row: OriginalRow,
   installed: Installed,
 ) {
-  const config = parseJson(
-    readFileSync(join(project, "tsconfig.mapper.json"), "utf8"),
-  );
-  const input = slotRequests(
-    project,
-    row.source,
-    config,
-    row.id + "/src/Tiny.vue",
-  );
+  const config = parseJson(readFileSync(join(project, "tsconfig.mapper.json"), "utf8"));
+  const input = slotRequests(project, row.source, config, row.id + "/src/Tiny.vue");
   const journal = observed(installed.root, identity(installed), record, label);
   const raw = capture(
     record,
@@ -103,12 +84,7 @@ export function observe(
     ],
     project,
   );
-  const journal = observed(
-    installed.root,
-    identity(installed),
-    record,
-    label + "-cli",
-  );
+  const journal = observed(installed.root, identity(installed), record, label + "-cli");
   const cli = capture(
     record,
     label + "-cli",
@@ -147,11 +123,7 @@ export function observe(
   assertOriginalVectors(version, mapped, displayed.diagnostics, repaired);
   assert.deepEqual(assertInputs(project, files), inputs);
   assertCustody(installed.images);
-  assertDeclarationCustody(
-    installed.cliRoot,
-    installed.graph.files,
-    installed.graph.edges,
-  );
+  assertDeclarationCustody(installed.cliRoot, installed.graph.files, installed.graph.edges);
   return {
     inputs,
     mapperDiagnostics: mapped,
@@ -166,35 +138,17 @@ function referenceIds() {
     return id as string;
   });
 }
-export function independentOracles(
-  record: Recorder,
-  project: string,
-  installed: Installed,
-) {
+export function independentOracles(record: Recorder, project: string, installed: Installed) {
   const h = capture(
     record,
     "stock-h",
-    [
-      process.execPath,
-      installed.stock,
-      "--pretty",
-      "false",
-      "--project",
-      "tsconfig.h.json",
-    ],
+    [process.execPath, installed.stock, "--pretty", "false", "--project", "tsconfig.h.json"],
     project,
   );
   const official = capture(
     record,
     "official-vue-tsc",
-    [
-      process.execPath,
-      installed.official,
-      "--pretty",
-      "false",
-      "--project",
-      "tsconfig.json",
-    ],
+    [process.execPath, installed.official, "--pretty", "false", "--project", "tsconfig.json"],
     project,
   );
   const stock = {
@@ -240,16 +194,7 @@ export function repairCopy(
     };
     states.push({
       label,
-      ...observe(
-        record,
-        "repair-" + label,
-        project,
-        files,
-        [row],
-        installed,
-        version,
-        good,
-      ),
+      ...observe(record, "repair-" + label, project, files, [row], installed, version, good),
     });
   }
   assert.deepEqual(assertInputs(project, original.files), original.manifest);

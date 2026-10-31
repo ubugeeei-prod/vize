@@ -6,23 +6,10 @@ import { assertCustody, inside } from "../computed_event_custody.ts";
 import { authenticate } from "./authority.ts";
 import { loadOriginal27, fixturePath, assertInputs } from "./fixtures.ts";
 import { install } from "./install.ts";
-import {
-  independentOracles,
-  observe,
-  repairCopy,
-  writeProject,
-} from "./observe.ts";
+import { independentOracles, observe, repairCopy, writeProject } from "./observe.ts";
 
-assert.equal(
-  process.env.GITHUB_ACTIONS,
-  "true",
-  "public products run only in Actions",
-);
-assert.equal(
-  process.env.GITHUB_REF,
-  "refs/heads/main",
-  "merged main workflow required",
-);
+assert.equal(process.env.GITHUB_ACTIONS, "true", "public products run only in Actions");
+assert.equal(process.env.GITHUB_REF, "refs/heads/main", "merged main workflow required");
 assert.equal(process.platform, "linux");
 assert.equal(process.arch, "x64");
 assert.equal(process.version, "v24.14.0");
@@ -91,11 +78,7 @@ try {
   );
   const project = join(output, "original27-project");
   writeProject(project, original.inputs.files, installed.modules);
-  writeProject(
-    join(output, "original58-inputs"),
-    original.inputs.files,
-    installed.modules,
-  );
+  writeProject(join(output, "original58-inputs"), original.inputs.files, installed.modules);
   independentOracles(record, project, installed);
   // The frozen original population always completes before a separate repair copy is created.
   result.original27 = observe(
@@ -108,17 +91,8 @@ try {
     version,
   );
   record.json("qualification.json", result);
-  result.repair = repairCopy(
-    record,
-    output,
-    original.inputs,
-    installed,
-    version,
-  );
-  assert.deepEqual(
-    assertInputs(project, original.inputs.files),
-    original.inputs.manifest,
-  );
+  result.repair = repairCopy(record, output, original.inputs, installed, version);
+  assert.deepEqual(assertInputs(project, original.inputs.files), original.inputs.manifest);
   assertCustody(original.custody);
   assertCustody(installed.images);
   result.status = "AUTHORED_CONSERVATION_WITH_GENERATED_DEBT";

@@ -2,13 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import {
-  asArray,
-  asRecord,
-  asString,
-  parseJson,
-  type JsonRecord,
-} from "../../json-value.ts";
+import { asArray, asRecord, asString, parseJson, type JsonRecord } from "../../json-value.ts";
 import { Recorder, sha256 } from "../../config/windows_consumer/common.ts";
 import { githubSnapshot } from "../release/quota/http.ts";
 import { readReleaseOwnership } from "../release/quota_ownership.ts";
@@ -57,15 +51,11 @@ export function validateNativeReceipt(
     const item = asRecord(value),
       origin = asRecord(item.origin);
     assert.equal(String(origin.runId), run);
-    assert.ok(
-      Number.isSafeInteger(origin.artifactId) && Number(origin.artifactId) > 0,
-    );
+    assert.ok(Number.isSafeInteger(origin.artifactId) && Number(origin.artifactId) > 0);
     assert.ok(asString(origin.member));
     const raw = Buffer.from(asString(item.rawBase64), "base64");
     assert.equal(sha256(raw), item.sha256);
-    const receipt = asRecord(
-      parseJson(new TextDecoder("utf-8", { fatal: true }).decode(raw)),
-    );
+    const receipt = asRecord(parseJson(new TextDecoder("utf-8", { fatal: true }).decode(raw)));
     assert.equal(receipt.schema, "vize.platformVsix.v1");
     assert.equal(receipt.version, version);
     assert.equal(receipt.source, candidate);
@@ -82,11 +72,7 @@ export function validateNativeReceipt(
     assert.equal(provider.nativeBuildToken, identity.token);
     matched++;
   }
-  assert.equal(
-    matched,
-    1,
-    "exactly one genuine producer receipt must match this host",
-  );
+  assert.equal(matched, 1, "exactly one genuine producer receipt must match this host");
 }
 export function assertLockedPackage(
   lock: JsonRecord,
@@ -98,24 +84,13 @@ export function assertLockedPackage(
   assert.equal(row.version, version);
   assert.equal(row.link, undefined);
   const expected = asRecord(asRecord(capsule.npmSRI)[name]);
-  assert.equal(
-    new URL(asString(expected.metadataOrigin)).origin,
-    "https://registry.npmjs.org",
-  );
+  assert.equal(new URL(asString(expected.metadataOrigin)).origin, "https://registry.npmjs.org");
   assert.match(asString(expected.integrity), /^sha512-[A-Za-z0-9+/]+={0,2}$/u);
   assert.equal(row.integrity, expected.integrity);
   assert.equal(row.resolved, expected.tarball);
-  assert.equal(
-    new URL(asString(row.resolved)).origin,
-    "https://registry.npmjs.org",
-  );
+  assert.equal(new URL(asString(row.resolved)).origin, "https://registry.npmjs.org");
 }
-export async function authenticate(
-  version: string,
-  run: string,
-  blob: string,
-  record: Recorder,
-) {
+export async function authenticate(version: string, run: string, blob: string, record: Recorder) {
   assert.match(version, /^\d+\.\d+\.\d+$/u);
   assert.match(run, /^[1-9]\d*$/u);
   assert.match(blob, /^[a-f0-9]{40}$/u);
@@ -149,8 +124,7 @@ export async function authenticate(
   assert.equal(producer.status, "completed");
   assert.equal(producer.conclusion, "success");
   assert.ok(
-    Date.parse(asString(publication.published_at)) >=
-      Date.parse(asString(producer.created_at)),
+    Date.parse(asString(publication.published_at)) >= Date.parse(asString(producer.created_at)),
   );
   const ownership = await readReleaseOwnership(version, candidate, run, read);
   record.json("producer-ownership.json", ownership);
@@ -165,16 +139,13 @@ export async function authenticate(
   const sdk = [];
   let packageManifest: JsonRecord | undefined;
   for (const name of ["package.json", ...sdkFiles]) {
-    const file = asRecord(
-      await read("contents/npm/cli/" + name + "?ref=" + candidate),
-    );
+    const file = asRecord(await read("contents/npm/cli/" + name + "?ref=" + candidate));
     assert.equal(file.type, "file");
     assert.equal(file.path, "npm/cli/" + name);
     assert.equal(file.encoding, "base64");
     const bytes = Buffer.from(asString(file.content), "base64");
     assert.equal(gitBlob(bytes), file.sha);
-    if (name === "package.json")
-      packageManifest = asRecord(parseJson(bytes.toString("utf8")));
+    if (name === "package.json") packageManifest = asRecord(parseJson(bytes.toString("utf8")));
     sdk.push({
       file: name,
       bytes: bytes.length,

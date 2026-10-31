@@ -19,11 +19,7 @@ import {
   fileImage,
   inside,
 } from "../computed_event_custody.ts";
-import {
-  assertLockedPackage,
-  validateNativeReceipt,
-  type authenticate,
-} from "./authority.ts";
+import { assertLockedPackage, validateNativeReceipt, type authenticate } from "./authority.ts";
 import { installedManifest, type loadOriginal27 } from "./fixtures.ts";
 import { capture, completed } from "./capture.ts";
 
@@ -36,11 +32,9 @@ export async function install(
 ) {
   mkdirSync(root);
   const manifest = installedManifest(original.provider, version);
-  writeFileSync(
-    join(root, "package.json"),
-    JSON.stringify(manifest, null, 2) + "\n",
-    { flag: "wx" },
-  );
+  writeFileSync(join(root, "package.json"), JSON.stringify(manifest, null, 2) + "\n", {
+    flag: "wx",
+  });
   const user = join(record.root, "npm-user.config"),
     global = join(record.root, "npm-global.config");
   writeFileSync(user, "", { flag: "wx" });
@@ -69,14 +63,8 @@ export async function install(
     0,
     false,
   );
-  copyFileSync(
-    join(root, "package.json"),
-    join(record.root, "installed-package.json"),
-  );
-  copyFileSync(
-    join(root, "package-lock.json"),
-    join(record.root, "installed-package-lock.json"),
-  );
+  copyFileSync(join(root, "package.json"), join(record.root, "installed-package.json"));
+  copyFileSync(join(root, "package-lock.json"), join(record.root, "installed-package-lock.json"));
   const lock = readJsonRecord(join(root, "package-lock.json"));
   assert.equal(lock.lockfileVersion, 3);
   const modules = realpathSync(join(root, "node_modules"));
@@ -93,15 +81,12 @@ export async function install(
   const cliPackage = pkg("vize", version),
     nativePackage = pkg("@vizejs/native", version);
   for (const field of ["name", "version", "typescript", "bin"])
-    assert.deepEqual(
-      cliPackage.manifest[field],
-      authority.packageManifest[field],
-      field,
-    );
-  assert.deepEqual(
-    asRecord(asRecord(cliPackage.manifest.typescript).contentMapper).exec,
-    ["node", "./bin/vize", "content-mapper"],
-  );
+    assert.deepEqual(cliPackage.manifest[field], authority.packageManifest[field], field);
+  assert.deepEqual(asRecord(asRecord(cliPackage.manifest.typescript).contentMapper).exec, [
+    "node",
+    "./bin/vize",
+    "content-mapper",
+  ]);
   const fromCli = createRequire(cli);
   const nativeEntry = realpathSync(fromCli.resolve("@vizejs/native"));
   assert.equal(
@@ -116,34 +101,23 @@ export async function install(
   const image = fileImage(loaded[0]);
   assert.equal(fromCli.cache[image.path]?.loaded, true);
   const imageExports = asRecord(fromCli.cache[image.path]?.exports);
-  const helper = asRecord(
-    fromCli(join(modules, "@vizejs/native/native-binding-identity.js")),
-  );
+  const helper = asRecord(fromCli(join(modules, "@vizejs/native/native-binding-identity.js")));
   assert.equal(typeof native.getNativeBuildToken, "function");
   assert.equal(typeof imageExports.getNativeBuildToken, "function");
   assert.equal(typeof helper.getBindingIdentity, "function");
-  const token = Reflect.apply(
-    native.getNativeBuildToken as () => unknown,
-    native,
-    [],
-  );
+  const token = Reflect.apply(native.getNativeBuildToken as () => unknown, native, []);
   const imageToken = Reflect.apply(
     imageExports.getNativeBuildToken as () => unknown,
     imageExports,
     [],
   );
-  const binding = Reflect.apply(
-    helper.getBindingIdentity as (value: unknown) => unknown,
-    helper,
-    [imageExports],
-  );
+  const binding = Reflect.apply(helper.getBindingIdentity as (value: unknown) => unknown, helper, [
+    imageExports,
+  ]);
   assertNativeIdentity(token, imageToken, binding);
   const platformName = "@vizejs/native-linux-x64-gnu";
   const platform = pkg(platformName, version);
-  assert.equal(
-    asRecord(nativePackage.manifest.optionalDependencies)[platformName],
-    version,
-  );
+  assert.equal(asRecord(nativePackage.manifest.optionalDependencies)[platformName], version);
   assert.ok(inside(realpathSync(dirname(platform.file)), image.path));
   for (const name of ["vize", "@vizejs/native", platformName])
     assertLockedPackage(lock, authority.capsule, name, version);
@@ -161,9 +135,7 @@ export async function install(
   );
   const graph = captureDeclarationGraph(cliRoot);
   assert.equal(graph.files.length, 9);
-  for (const expected of authority.sdk.filter(
-    (file) => file.file !== "package.json",
-  )) {
+  for (const expected of authority.sdk.filter((file) => file.file !== "package.json")) {
     const actual = fileImage(join(cliRoot, expected.file));
     assert.equal(actual.bytes, expected.bytes);
     assert.equal(actual.sha256, expected.sha256, expected.file);
@@ -180,19 +152,14 @@ export async function install(
     ["vue-tsc", "3.3.13"],
   ])
     hostImages.push(
-      fileImage(
-        pkg(name, expected, name === "typescript-native" ? "typescript" : name)
-          .file,
-      ),
+      fileImage(pkg(name, expected, name === "typescript-native" ? "typescript" : name).file),
     );
   for (const name of readdirSync(join(modules, "@vue")))
     hostImages.push(fileImage(pkg("@vue/" + name, "3.5.42").file));
   const resolver = join(modules, "typescript-native/lib/getExePath.js");
   const nativeChecker = asRecord(await import(pathToFileURL(resolver).href));
   assert.equal(typeof nativeChecker.default, "function");
-  const checker = asString(
-    Reflect.apply(nativeChecker.default as () => unknown, undefined, []),
-  );
+  const checker = asString(Reflect.apply(nativeChecker.default as () => unknown, undefined, []));
   const stock = join(modules, "typescript/lib/tsc.js"),
     official = join(modules, "vue-tsc/bin/vue-tsc.js");
   assert.ok(inside(modules, realpathSync(checker)));
@@ -210,11 +177,7 @@ export async function install(
     assert.equal(actual.sha256, expected.sha256, file);
   }
   for (const expected of original.inputs.historical.identities) {
-    if (
-      !/^node_modules\/(?:vue|typescript|typescript-native|vue-tsc)\//u.test(
-        expected.file,
-      )
-    )
+    if (!/^node_modules\/(?:vue|typescript|typescript-native|vue-tsc)\//u.test(expected.file))
       continue;
     const actual = fileImage(join(root, expected.file));
     assert.equal(actual.bytes, expected.bytes);
@@ -235,11 +198,9 @@ export async function install(
     fileImage(resolver),
     fileImage(npm),
     fileImage(nativeEntry),
-    ...[
-      "native-binding.js",
-      "native-targets.js",
-      "native-binding-identity.js",
-    ].map((name) => fileImage(join(modules, "@vizejs/native", name))),
+    ...["native-binding.js", "native-targets.js", "native-binding-identity.js"].map((name) =>
+      fileImage(join(modules, "@vizejs/native", name)),
+    ),
     ...hostImages,
     ...graph.files,
   ];

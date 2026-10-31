@@ -46,26 +46,14 @@ export async function loadOriginal27(driverRoot: string) {
     await import(pathToFileURL(join(root, Object.keys(fixturePins)[0])).href),
   );
   assert.equal(typeof module.original27Inputs, "function");
-  const inputs = Reflect.apply(
-    module.original27Inputs as () => Inputs,
-    undefined,
-    [],
-  );
+  const inputs = Reflect.apply(module.original27Inputs as () => Inputs, undefined, []);
   assert.equal(inputs.rows.length, 27);
   assert.equal(inputs.files.size, 58);
-  assert.equal(
-    inputs.rows.filter((row) => row.requiresAuthoredError).length,
-    14,
-  );
-  const provider = readJsonRecord(
-    join(root, fixturePath, "provider-package.json"),
-  );
+  assert.equal(inputs.rows.filter((row) => row.requiresAuthoredError).length, 14);
+  const provider = readJsonRecord(join(root, fixturePath, "provider-package.json"));
   return { root, custody, inputs, provider };
 }
-export function installedManifest(
-  provider: Record<string, unknown>,
-  version: string,
-) {
+export function installedManifest(provider: Record<string, unknown>, version: string) {
   const manifest = structuredClone(provider);
   const dependencies = asRecord(manifest.dependencies);
   assert.equal(dependencies.vize, "0.602.0");

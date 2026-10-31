@@ -42,19 +42,13 @@ export function capture(
     raw: {
       stdout: { bytes: stdout.length, sha256: sha256(stdout) },
       stderr: { bytes: stderr.length, sha256: sha256(stderr) },
-      ...(input
-        ? { stdin: { bytes: input.length, sha256: sha256(input) } }
-        : {}),
+      ...(input ? { stdin: { bytes: input.length, sha256: sha256(input) } } : {}),
     },
   };
   record.json(label + ".process.json", packet);
   return { ...packet, stdout, stderr };
 }
-export function completed(
-  row: ReturnType<typeof capture>,
-  status: number,
-  emptyStderr = true,
-) {
+export function completed(row: ReturnType<typeof capture>, status: number, emptyStderr = true) {
   assert.equal(row.error, null);
   assert.equal(row.signal, null);
   assert.equal(row.status, status, row.stderr.toString("utf8"));

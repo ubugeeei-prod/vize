@@ -3,10 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import {
-  Recorder,
-  sha256,
-} from "../../../tools/support/config/windows_consumer/common.ts";
+import { Recorder, sha256 } from "../../../tools/support/config/windows_consumer/common.ts";
 import { asArray, asRecord } from "../../../tools/support/json-value.ts";
 import {
   assertLockedPackage,
@@ -98,10 +95,7 @@ test("only the two target package versions change in the original provider manif
     },
   });
   assert.throws(() =>
-    installedManifest(
-      { dependencies: { ...before.dependencies, vize: version } },
-      version,
-    ),
+    installedManifest({ dependencies: { ...before.dependencies, vize: version } }, version),
   );
 });
 test("complete vectors accept explicit public labels and reject lost or changed authored errors", () => {
@@ -112,10 +106,7 @@ test("complete vectors accept explicit public labels and reject lost or changed 
     () => assertOriginalVectors(version, mapper.slice(1), cli),
     /complete mapper vector/,
   );
-  assert.throws(
-    () => assertOriginalVectors(version, mapper, cli.slice(1)),
-    /complete CLI vector/,
-  );
+  assert.throws(() => assertOriginalVectors(version, mapper, cli.slice(1)), /complete CLI vector/);
   const changed = structuredClone(mapper);
   changed[0].code = 9999;
   assert.throws(() => assertOriginalVectors(version, changed, cli));
@@ -126,8 +117,7 @@ test("private generated diagnostics are not filtered, relocated or broadly relab
   assert.equal(JSON.stringify(mapper).includes("vize@0.0.0-source-"), false);
   assert.equal(JSON.stringify(mapper).match(/vize@0\.614\.0/g)?.length, 2);
   for (const change of [
-    (rows: ReturnType<typeof expectedMapper>) =>
-      rows.filter((row) => row.code !== 2741),
+    (rows: ReturnType<typeof expectedMapper>) => rows.filter((row) => row.code !== 2741),
     (rows: ReturnType<typeof expectedMapper>) => {
       rows.find((row) => row.code === 2741)!.line = 58;
       return rows;
@@ -136,24 +126,16 @@ test("private generated diagnostics are not filtered, relocated or broadly relab
       rows.find((row) => row.code === 2741)!.message = "different debt";
       return rows;
     },
-    (rows: ReturnType<typeof expectedMapper>) => [
-      ...rows,
-      structuredClone(rows[0]),
-    ],
+    (rows: ReturnType<typeof expectedMapper>) => [...rows, structuredClone(rows[0])],
   ])
-    assert.throws(() =>
-      assertOriginalVectors(version, change(structuredClone(mapper)), cli),
-    );
+    assert.throws(() => assertOriginalVectors(version, change(structuredClone(mapper)), cli));
 });
 test("repair copy removes only its own authored error; bad and restored populations remain exact", () => {
   const mapper = expectedMapper(version),
     cli = asArray(reference().cli);
-  const keep = (row: unknown) =>
-    asRecord(row).file !== "wrong-prop/src/Tiny.vue";
+  const keep = (row: unknown) => asRecord(row).file !== "wrong-prop/src/Tiny.vue";
   assertOriginalVectors(version, mapper.filter(keep), cli.filter(keep), true);
-  assert.throws(() =>
-    assertOriginalVectors(version, mapper.filter(keep), cli.filter(keep)),
-  );
+  assert.throws(() => assertOriginalVectors(version, mapper.filter(keep), cli.filter(keep)));
   assert.throws(() => assertOriginalVectors(version, mapper, cli, true));
   assert.throws(() =>
     assertOriginalVectors(
@@ -167,9 +149,7 @@ test("repair copy removes only its own authored error; bad and restored populati
 });
 test("compiler parsing keeps complete continuation lines and refuses unrelated output", () => {
   const rows = diagnostics(
-    Buffer.from(
-      "case/src/Tiny.vue(57,495): error TS2741: debt\n  exact continuation\n",
-    ),
+    Buffer.from("case/src/Tiny.vue(57,495): error TS2741: debt\n  exact continuation\n"),
     "/project",
   );
   assert.deepEqual(rows, [
@@ -182,9 +162,7 @@ test("compiler parsing keeps complete continuation lines and refuses unrelated o
       continuation: ["  exact continuation"],
     },
   ]);
-  assert.throws(() =>
-    diagnostics(Buffer.from("warning: ignored?\n"), "/project"),
-  );
+  assert.throws(() => diagnostics(Buffer.from("warning: ignored?\n"), "/project"));
   assert.throws(() => diagnostics(Buffer.from([255]), "/project"));
 });
 test("whole compiler continuations preserve trailing spaces and reject blank or unterminated lines", () => {
@@ -198,34 +176,18 @@ test("whole compiler continuations preserve trailing spaces and reject blank or 
       ])
       .join("\n") + "\n";
   const raw = render(mapper);
-  assertOriginalVectors(
-    version,
-    diagnostics(Buffer.from(raw), "/project"),
-    cli,
-  );
+  assertOriginalVectors(version, diagnostics(Buffer.from(raw), "/project"), cli);
   const finalHeaderSpace = raw.slice(0, -1) + " \n";
   assert.throws(() =>
-    assertOriginalVectors(
-      version,
-      diagnostics(Buffer.from(finalHeaderSpace), "/project"),
-      cli,
-    ),
+    assertOriginalVectors(version, diagnostics(Buffer.from(finalHeaderSpace), "/project"), cli),
   );
   const changed = structuredClone(mapper),
     debt = changed.find((row) => row.code === 2741)!;
-  debt.continuation = asArray(debt.continuation).map(
-    (line) => String(line) + " ",
-  );
+  debt.continuation = asArray(debt.continuation).map((line) => String(line) + " ");
   assert.throws(() =>
-    assertOriginalVectors(
-      version,
-      diagnostics(Buffer.from(render(changed)), "/project"),
-      cli,
-    ),
+    assertOriginalVectors(version, diagnostics(Buffer.from(render(changed)), "/project"), cli),
   );
-  assert.throws(() =>
-    diagnostics(Buffer.from(raw.replace("\n", "\n\n")), "/project"),
-  );
+  assert.throws(() => diagnostics(Buffer.from(raw.replace("\n", "\n\n")), "/project"));
   assert.throws(() => diagnostics(Buffer.from(raw + "\n"), "/project"));
   assert.throws(() => diagnostics(Buffer.from(raw.slice(0, -1)), "/project"));
 });
@@ -234,20 +196,12 @@ test("CLI admission requires all 54 distinct files and complete virtual payloads
   const files = ids
     .flatMap((id) => [id + "/component.ts", id + "/src/Tiny.vue"])
     .map((file) => ({ file, diagnostics: [], virtualTs: "retained" }));
-  const encode = (rows: unknown[]) =>
-    Buffer.from(JSON.stringify({ files: rows, errorCount: 0 }));
+  const encode = (rows: unknown[]) => Buffer.from(JSON.stringify({ files: rows, errorCount: 0 }));
   cliPacket(encode(files), 0, "/project", ids);
   assert.throws(() => cliPacket(encode(files.slice(1)), 0, "/project", ids));
+  assert.throws(() => cliPacket(encode([...files.slice(1), files[1]]), 0, "/project", ids));
   assert.throws(() =>
-    cliPacket(encode([...files.slice(1), files[1]]), 0, "/project", ids),
-  );
-  assert.throws(() =>
-    cliPacket(
-      encode([{ ...files[0], virtualTs: null }, ...files.slice(1)]),
-      0,
-      "/project",
-      ids,
-    ),
+    cliPacket(encode([{ ...files[0], virtualTs: null }, ...files.slice(1)]), 0, "/project", ids),
   );
 });
 
@@ -301,12 +255,8 @@ test("capsule identity cannot cross selected source, tag or version", () => {
   const capsule = mockedCapsule();
   validateCapsule(capsule, version, candidate, source);
   assert.throws(() => validateCapsule(capsule, "0.613.0", candidate, source));
-  assert.throws(() =>
-    validateCapsule(capsule, version, "d".repeat(40), source),
-  );
-  assert.throws(() =>
-    validateCapsule(capsule, version, candidate, "d".repeat(40)),
-  );
+  assert.throws(() => validateCapsule(capsule, version, "d".repeat(40), source));
+  assert.throws(() => validateCapsule(capsule, version, candidate, "d".repeat(40)));
 });
 test("native admission binds one producer host receipt to physical bytes, token and run", () => {
   const capsule = mockedCapsule();
@@ -317,23 +267,11 @@ test("native admission binds one producer host receipt to physical bytes, token 
     { ...identity, token: "d".repeat(32) },
     { ...identity, target: "darwin-arm64" },
   ])
-    assert.throws(() =>
-      validateNativeReceipt(capsule, changed, version, candidate, run),
-    );
+    assert.throws(() => validateNativeReceipt(capsule, changed, version, candidate, run));
+  assert.throws(() => validateNativeReceipt(capsule, identity, version, candidate, "124"));
+  assert.throws(() => validateNativeReceipt(capsule, identity, version, "d".repeat(40), run));
   assert.throws(() =>
-    validateNativeReceipt(capsule, identity, version, candidate, "124"),
-  );
-  assert.throws(() =>
-    validateNativeReceipt(capsule, identity, version, "d".repeat(40), run),
-  );
-  assert.throws(() =>
-    validateNativeReceipt(
-      { ...capsule, receipts: [] },
-      identity,
-      version,
-      candidate,
-      run,
-    ),
+    validateNativeReceipt({ ...capsule, receipts: [] }, identity, version, candidate, run),
   );
   assert.throws(() =>
     validateNativeReceipt(
@@ -374,9 +312,7 @@ test("public package lock must join exact authenticated registry SRI and tarball
     { ...row, integrity: "sha512-Yg==" },
     { ...row, resolved: "https://example.org/package.tgz" },
   ])
-    assert.throws(() =>
-      assertLockedPackage(lock(changed), capsule, "vize", version),
-    );
+    assert.throws(() => assertLockedPackage(lock(changed), capsule, "vize", version));
   assert.throws(() =>
     assertLockedPackage(
       lock(row),
@@ -408,18 +344,10 @@ test("failed inert tooling child leaves exact raw bytes before process assertion
       root,
     );
     assert.throws(() => completed(result, 0));
-    assert.deepEqual(
-      readFileSync(join(root, "inert.stdout.raw")),
-      Buffer.from([255, 0, 97]),
-    );
+    assert.deepEqual(readFileSync(join(root, "inert.stdout.raw")), Buffer.from([255, 0, 97]));
+    assert.equal(readFileSync(join(root, "inert.stderr.raw"), "utf8"), "retained");
     assert.equal(
-      readFileSync(join(root, "inert.stderr.raw"), "utf8"),
-      "retained",
-    );
-    assert.equal(
-      asRecord(
-        JSON.parse(readFileSync(join(root, "inert.process.json"), "utf8")),
-      ).status,
+      asRecord(JSON.parse(readFileSync(join(root, "inert.process.json"), "utf8"))).status,
       2,
     );
   }));
