@@ -94,6 +94,7 @@ mod slot_style_fix_history;
 mod static_class_fix;
 mod template_component_registration;
 mod template_shadow_scopes;
+mod template_shadow_script_exposure;
 mod template_style_fix_history;
 mod this_in_template_reference;
 mod transition_custom_element_children;
