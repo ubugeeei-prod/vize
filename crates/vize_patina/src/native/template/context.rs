@@ -1,6 +1,6 @@
 //! Original configured product output at the native callback host boundary.
 
-use super::{NativeTemplateAttribute, NativeTemplateLintRefusal};
+use super::{NativeTemplateAttribute, NativeTemplateElement, NativeTemplateLintRefusal};
 use crate::{HelpLevel, LintDiagnostic, LintResult, Linter, Severity};
 use vize_carton::i18n::{Locale, t, t_fmt};
 use vize_l0::{Span, String, config::VueVersion};
@@ -97,6 +97,49 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         }
         self.warn_with_help(attribute.range(), message_key, variables, help_key);
         Ok(())
+    }
+
+    /// Report the complete checked opening of a genuine void/self-closing
+    /// element. A caller's span, a foreign owner or a nonvoid extent cannot
+    /// stand in for this original checked header.
+    ///
+    /// ```compile_fail
+    /// use vize_l0::Span;
+    /// use vize_patina::native::template::NativeTemplateLintContext;
+    /// fn raw(context: &mut NativeTemplateLintContext<'_, '_>) {
+    ///     context.warn_void_element_with_help(Span::new(0, 7), "message", &[], "help");
+    /// }
+    /// ```
+    pub fn warn_void_element_with_help(
+        &mut self,
+        element: &NativeTemplateElement<'_, 'a>,
+        message_key: &str,
+        variables: &[(&str, &str)],
+        help_key: &str,
+    ) -> Result<(), NativeTemplateLintRefusal> {
+        let original = element.original();
+        let range = self.element_opening_range(element)?;
+        if !matches!(
+            original.surface().close,
+            vize_l1::markup::ElementClose::NotExpected
+        ) {
+            return Err(NativeTemplateLintRefusal::UnsupportedContext { span: range });
+        }
+        self.warn_with_help(range, message_key, variables, help_key);
+        Ok(())
+    }
+
+    /// Read the complete opening of this context's genuine checked element.
+    /// This observation grants no diagnostic or source-grammar admission.
+    pub fn element_opening_range(
+        &self,
+        element: &NativeTemplateElement<'_, 'a>,
+    ) -> Result<Span, NativeTemplateLintRefusal> {
+        let original = element.original();
+        if !core::ptr::eq(original.component(), self.root.component()) {
+            return Err(NativeTemplateLintRefusal::SourceMismatch);
+        }
+        Ok(crate::native::header::opening_range(original)?)
     }
 
     fn warn_with_help(

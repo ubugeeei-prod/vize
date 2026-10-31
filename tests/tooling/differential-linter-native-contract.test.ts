@@ -16,12 +16,64 @@ import {
   runNative,
 } from "../differential/linter-native.ts";
 import { sha256 } from "../differential/harness.mjs";
+import {
+  ORIGINAL_INPUT_LABEL_WIRES,
+  expectedInputLabelReason,
+} from "../differential/linter-input-label-contract.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const loaded = loadLinterManifest(
   path.join(root, "tests/_fixtures/differential/linter/manifest.json"),
   root,
 );
+
+void test("input-label native contract pins all six whole originals and rejects any wire drift", () => {
+  for (const malformed of [
+    null,
+    undefined,
+    true,
+    0,
+    "original",
+    [],
+    {},
+    { ...ORIGINAL_INPUT_LABEL_WIRES[0], extra: "unproved" },
+  ]) {
+    assert.throws(() => expectedInputLabelReason(malformed, "--native-current-api"));
+  }
+  const originals = JSON.parse(
+    fs.readFileSync(
+      path.join(root, "crates/vize_patina/tests/fixtures/lint-history/cases.json"),
+      "utf8",
+    ),
+  ).filter((wire: { rule: string }) => wire.rule === "a11y/form-control-has-label");
+  assert.deepEqual(ORIGINAL_INPUT_LABEL_WIRES, originals);
+  for (const original of ORIGINAL_INPUT_LABEL_WIRES) {
+    const fixture = loaded.cases.find(
+      (fixture: { id: string }) => fixture.id === `linter/current-api/${original.id}`,
+    );
+    assert(fixture);
+    assert.deepEqual(JSON.parse(fixture.input.toString()), original);
+    const expected = original.source.startsWith("<input")
+      ? null
+      : {
+          api: "--native-current-api",
+          entry: "template",
+          kind: "UnsupportedContext",
+          detail:
+            original.id === "form-label-hidden-select-control"
+              ? "UnsupportedContext { span: Span { start: 0, end: 15 } }"
+              : "UnsupportedContext { span: Span { start: 0, end: 17 } }",
+        };
+    assert.deepEqual(expectedNativeReason(fixture), expected);
+    for (const [key, value] of Object.entries(original)) {
+      const changed = {
+        ...original,
+        [key]: typeof value === "number" ? value + 1 : `${value}EXTRA`,
+      };
+      assert.throws(() => expectedInputLabelReason(changed, "--native-current-api"), key);
+    }
+  }
+});
 
 function probe(argv: string[], value: any) {
   const bytes = Buffer.from(`${JSON.stringify(value)}\n`);
@@ -135,11 +187,11 @@ function baseline() {
       legacyMatches: loaded.cases.length,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: loaded.cases.length - 11,
+      nativeUnsupported: loaded.cases.length - 15,
       nativeFailures: 0,
-      nativeHandled: 11,
-      nativeEquivalent: 11,
-      pairedComparisons: 11,
+      nativeHandled: 15,
+      nativeEquivalent: 15,
+      pairedComparisons: 15,
     },
   };
 }
@@ -157,9 +209,9 @@ void test("shared acceptance counts only validated whole-product linter observat
   const acceptance = summarizeLinterAcceptance(loaded, baseline(), receipt);
   assert.deepEqual(acceptance.total, {
     planned: loaded.cases.length,
-    nativeHandled: 11,
-    nativeEquivalent: 11,
-    unsupported: loaded.cases.length - 11,
+    nativeHandled: 15,
+    nativeEquivalent: 15,
+    unsupported: loaded.cases.length - 15,
     legacyBacked: 0,
     unverified: 0,
   });

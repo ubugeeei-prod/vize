@@ -1,0 +1,1 @@
+<input :hidden="collapsed" type="text" />

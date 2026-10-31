@@ -45,11 +45,11 @@ void test("shared linter corpus retains every complete actual public observation
       legacyMatches: plannedCases,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: plannedCases - 11,
+      nativeUnsupported: plannedCases - 15,
       nativeFailures: 0,
-      nativeHandled: 11,
-      nativeEquivalent: 11,
-      pairedComparisons: 11,
+      nativeHandled: 15,
+      nativeEquivalent: 15,
+      pairedComparisons: 15,
     },
     JSON.stringify(report.rows, null, 2),
   );
@@ -67,9 +67,9 @@ void test("shared linter corpus retains every complete actual public observation
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
   assert.deepEqual(acceptance.total, {
     planned: plannedCases,
-    nativeHandled: 11,
-    nativeEquivalent: 11,
-    unsupported: plannedCases - 11,
+    nativeHandled: 15,
+    nativeEquivalent: 15,
+    unsupported: plannedCases - 15,
     legacyBacked: 0,
     unverified: 0,
   });
@@ -84,6 +84,10 @@ void test("shared linter corpus retains every complete actual public observation
             "linter/current-api/ref-string-untyped",
             "linter/current-api/ref-string-typed",
             "linter/current-api/slot-compat-vue3",
+            "linter/current-api/form-label-hidden-input-report-9751",
+            "linter/current-api/form-label-until-found-control",
+            "linter/current-api/form-label-bound-hidden-control",
+            "linter/current-api/form-label-visible-input-control",
           ].includes(fixture.id),
       )
       .map((fixture: any) => fixture.id)
@@ -96,4 +100,24 @@ void test("shared linter corpus retains every complete actual public observation
       assert.deepEqual(row.native.reason, expectedNativeReason(fixture), row.id);
     }
   }
+  // PR workers retain their log, while the complete corpus directory is
+  // uploaded only by the full worker. Preserve these four genuine new rows
+  // after every existing whole-pack check, without another command/provider.
+  const originalInputIds = [
+    "linter/current-api/form-label-hidden-input-report-9751",
+    "linter/current-api/form-label-until-found-control",
+    "linter/current-api/form-label-bound-hidden-control",
+    "linter/current-api/form-label-visible-input-control",
+  ];
+  const originalInputRows = report.rows.filter((row: any) => originalInputIds.includes(row.id));
+  assert.deepEqual(originalInputRows.map((row: any) => row.id).sort(), originalInputIds.sort());
+  t.diagnostic(
+    `native-input-label-observer ${JSON.stringify({
+      schema: "vize.native-input-label-history-observation",
+      version: 1,
+      sourceRevision: report.sourceRevision,
+      buildReceipt: built.receipt,
+      rows: originalInputRows,
+    })}`,
+  );
 });
