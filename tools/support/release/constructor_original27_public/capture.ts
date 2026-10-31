@@ -34,6 +34,7 @@ export function capture(
     });
   const packet = {
     label,
+    pid: result.pid,
     argv,
     cwd,
     status: result.status,
