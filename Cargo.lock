@@ -663,9 +663,9 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 
 [[package]]
 name = "corsa"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5f74730a7e068220241d94d84530932648a46ccfa6e053867f325e74ba155ba"
+checksum = "1f62f56aaec2f1b4d63c59d47b76bed5f8c427a0c38b1967b49fb92d629cdc1e"
 dependencies = [
  "base64",
  "corsa_client",
@@ -680,9 +680,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_client"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ec16cb3138106003a1c1cdea181debb9281e3e54b88c45fa9550544a943e79a"
+checksum = "5b885df6803d03580a8b771eec0082833057f028f66673d3a92fe941590e6378"
 dependencies = [
  "base64",
  "corsa_core",
@@ -698,9 +698,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_core"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff09d8ab3a2a84ecba003b6730d424dfa963e54ffc7ecf88024268e1f06c7e01"
+checksum = "a280db465308658b2e895eca52850f107f171f061f3ad27b5ce9f5ad1fc5e97a"
 dependencies = [
  "base64",
  "compact_str",
@@ -714,9 +714,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_jsonrpc"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4cc37b9412db358145a5da2c5aa63c2fe002979627ca5cd84e8fc03abd3d9d54"
+checksum = "de5d02c643595b3fdd7f18595ce15a70c7acb08daf60dcf66347c2bb1d34ad0a"
 dependencies = [
  "corsa_core",
  "corsa_runtime",
@@ -728,9 +728,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_lsp"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b1c98174cc9c06ac16f0ed752ebc09091c5ab0e5725944726c4b647f16070b2"
+checksum = "aa2b7de3e032b17103cfbe197fe2117339499344a6658851d6886645905ef9f5"
 dependencies = [
  "corsa_core",
  "corsa_jsonrpc",
@@ -742,9 +742,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_orchestrator"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c6ebfec17134eda9d1b811c305242cd4c010a712af2e80e69641cb1ef7a474b"
+checksum = "2434a260ca9307c7b7aedf7f6a697fb4b427f3a83fd781f9297e7aa5af34fef0"
 dependencies = [
  "corsa_client",
  "corsa_core",
@@ -758,9 +758,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_runtime"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13cac6caa1fee9c9e0bb06ed949b0b53b3d2fb24ea9c0e65bdd987134693b7df"
+checksum = "24719e58bf21cb98957c6380d32fa488d5653a2a34db910a3c01340178a9d82a"
 dependencies = [
  "smallvec",
 ]
