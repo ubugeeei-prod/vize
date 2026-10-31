@@ -17,6 +17,11 @@ struct Combination {
     expected: String,
 }
 
+#[derive(Deserialize)]
+struct HelpOutput {
+    stdout: String,
+}
+
 fn fixtures() -> Combinations {
     serde_json::from_str(include_str!(
         "../../../../../tests/_fixtures/formatter-cli-normalizers-6098/combinations.json"
@@ -122,10 +127,9 @@ fn normalizer_flags_are_visible_in_current_cli_help() {
     let project = tempfile::tempdir().unwrap();
     let output = run(project.path(), &["fmt", "--help"]);
     assert_success(&output);
-    let snapshot = include_str!("../../../src/snapshots/vize__cli__tests__cli_fmt_help.snap");
-    let (_, help) = snapshot.split_once("\n---\n").unwrap();
-    // The unit oracle renders the standalone subcommand; the real process
-    // also names the parent executable in its usage line.
-    let expected = help.replacen("\nUsage: fmt ", "\nUsage: vize fmt ", 1);
-    assert_eq!(std::str::from_utf8(&output.stdout).unwrap(), expected);
+    let expected: HelpOutput = serde_json::from_str(include_str!(
+        "../../../../../tests/_fixtures/formatter-cli-normalizers-6098/fmt-help.json"
+    ))
+    .unwrap();
+    assert_eq!(output.stdout, expected.stdout.as_bytes());
 }
