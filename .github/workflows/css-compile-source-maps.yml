@@ -19,6 +19,10 @@ on:
       - "crates/vize_atelier_sfc/tests/css_v_bind_source_maps.rs"
   workflow_dispatch:
     inputs:
+      ui_stack_isolation:
+        type: boolean
+        default: false
+        description: Private original-command process/core observation; no product qualification
       measurements:
         type: boolean
         default: false
@@ -40,6 +44,7 @@ env:
   VIZE_CSS_MAP_REQUIRE_SOURCE: "1"
 jobs:
   native:
+    if: ${{ !inputs.ui_stack_isolation }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
@@ -81,7 +86,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   measurements:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.measurements }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.measurements && !inputs.ui_stack_isolation }}
     needs: native
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
@@ -128,3 +133,63 @@ jobs:
           path: artifacts/css-source-map-profile/
           if-no-files-found: error
           retention-days: 14
+  ui-stack-isolation:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.ui_stack_isolation }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: "0"
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.workflow_sha }}", persist-credentials: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: 86fabe7388b45ac4ab7d938f910b7e1add6b9d7a
+          path: observed
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
+        with:
+          version: "1.4.0"
+          node-version-file: observed/package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.1", components: clippy }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with: { wild-version: "0.9.0" }
+      - uses: ./observed/.github/actions/setup-rust-sticky-cache
+        with:
+          key: build-js-packages
+          cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}"
+          target-path: observed/target
+      - name: Install the original frozen UI dependency route
+        working-directory: observed
+        env: { CONFORMANCE_GROUP: ui-conformance }
+        run: node tools/support/compat/github/install-js-checks.ts "$CONFORMANCE_GROUP"
+      - name: Prepare private process observer tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends strace gdb
+      - name: Observe original command without stack or source changes
+        run: |
+          set -euo pipefail
+          observation_root="$RUNNER_TEMP/ui-stack-observation"
+          private_cores="$RUNNER_TEMP/ui-stack-private-cores"
+          mkdir -p "$observation_root" "$private_cores"
+          old_core_pattern="$(cat /proc/sys/kernel/core_pattern)"
+          trap 'sudo sysctl -q -w "kernel.core_pattern=$old_core_pattern"' EXIT
+          sudo sysctl -q -w "kernel.core_pattern=$private_cores/core.%e.%p"
+          ulimit -c 4194304
+          node tools/support/compat/github/ui-stack-diagnostic.ts "$GITHUB_WORKSPACE/observed" "$observation_root" "$private_cores"
+      - name: Retain only text, hashes and argument-free bounded backtraces
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ui-stack-observation-${{ github.workflow_sha }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/ui-stack-observation/
+          if-no-files-found: error
+          retention-days: 7
