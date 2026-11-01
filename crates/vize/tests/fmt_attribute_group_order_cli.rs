@@ -4,7 +4,9 @@
 use serde_json::{Value, json};
 use std::{fs, path::Path, process::Command};
 
-const SOURCE: &str = "<template>\n  <div a-late=\"l\" z-early=\"e\"></div>\n</template>\n";
+const SOURCE: &str = include_str!(
+    "../../../tests/_fixtures/differential/formatter/sfc-attribute-group-order-6098/App.vue.txt"
+);
 const ORDERED: &str = "<template>\n  <div z-early=\"e\" a-late=\"l\"></div>\n</template>\n";
 const UNCHANGED: &str = "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n";
 const CHANGED: &str =
