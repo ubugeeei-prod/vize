@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { parse } from "yaml";
 import { sourceInspectedDialectCoverage } from "../differential/source-dialect-coverage.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -28,6 +29,12 @@ const files = pinned.map(([filename]) => ({
   source: fs.readFileSync(path.join(root, relative, filename), "utf8"),
 }));
 const sha = (raw: Buffer) => createHash("sha256").update(raw).digest("hex");
+const byName = new Map(files.map((file) => [file.filename, file]));
+function fixtureSource(filename: (typeof pinned)[number][0]) {
+  const file = byName.get(filename);
+  assert(file, `missing pinned fixture: ${filename}`);
+  return file.source;
+}
 
 test("all seven signature forms and the project inputs are pinned and consumed by the real owner test", () => {
   const consumer = [
@@ -40,13 +47,22 @@ test("all seven signature forms and the project inputs are pinned and consumed b
     files.map(({ filename, source }) => [filename, sha(Buffer.from(source))]),
     pinned,
   );
-  for (const { filename } of files) assert(consumer.includes(`fixture!("${filename}")`));
+  // This is the input-only registration's consumer link, not runtime proof.
+  // Include names are meaningful; incidental Rust whitespace is not.
+  const consumed = new Set(
+    [...consumer.matchAll(/\bfixture\s*!\s*\(\s*"([^"]+)"\s*\)/gu)].map((match) => match[1]),
+  );
+  assert.equal(byName.size, files.length);
+  assert.deepEqual(consumed, new Set(pinned.map(([filename]) => filename)));
   assert.equal(
-    files[7].source,
+    fixtureSource("Probe.ts.txt"),
     'import { check } from "./dependency";\nexport const probe = check;\n',
   );
-  assert.deepEqual(JSON.parse(files[8].source), { private: true, type: "module" });
-  assert.deepEqual(JSON.parse(files[9].source), {
+  assert.deepEqual(JSON.parse(fixtureSource("package.json.txt")), {
+    private: true,
+    type: "module",
+  });
+  assert.deepEqual(JSON.parse(fixtureSource("tsconfig.json.txt")), {
     compilerOptions: {
       target: "ESNext",
       module: "ESNext",
@@ -62,19 +78,30 @@ test("the real authored input-only row carries no invented native acceptance", (
   const manifest = JSON.parse(
     fs.readFileSync(path.join(root, "tests/_fixtures/differential/linter/manifest.json"), "utf8"),
   ) as {
-    cases: { id: string; inputs: unknown; dialectCoverage: unknown }[];
+    cases: {
+      id: string;
+      inputs: { root: string; files: { path: string; role: string; sha256: string }[] };
+      dialectCoverage: unknown;
+    }[];
   };
   const matches = manifest.cases.filter((row) => row.id === "linter/symbol-owner-probes-11267");
   assert.equal(matches.length, 1);
   const row = matches[0];
-  assert.deepEqual(row.inputs, {
-    root: "symbol-owner-probes-11267",
-    files: pinned.map(([filename, sha256]) => ({
-      path: filename,
-      role: filename.endsWith(".json.txt") ? "project-configuration" : "causal-regression",
-      sha256,
-    })),
-  });
+  const byPath = (left: { path: string }, right: { path: string }) =>
+    left.path.localeCompare(right.path);
+  assert.deepEqual(
+    { ...row.inputs, files: row.inputs.files.toSorted(byPath) },
+    {
+      root: "symbol-owner-probes-11267",
+      files: pinned
+        .map(([filename, sha256]) => ({
+          path: filename,
+          role: filename.endsWith(".json.txt") ? "project-configuration" : "causal-regression",
+          sha256,
+        }))
+        .toSorted(byPath),
+    },
+  );
   assert.deepEqual(
     row.dialectCoverage,
     sourceInspectedDialectCoverage(files, "linter manifest pinned authored sources"),
@@ -100,4 +127,123 @@ test("both Git checkout modes retain every pinned input byte", () => {
         ),
         fs.readFileSync(path.join(root, relative, filename)),
       );
+});
+
+type NativeStep = { name?: string; if?: string; env?: Record<string, string>; run?: string };
+type NativeWorkflow = {
+  jobs: Record<string, { env: Record<string, string>; steps: NativeStep[] }>;
+};
+const runtime = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc";
+const tsrsExport =
+  'export CORSA_PATH="$RUNNER_TEMP/patina-tsrs/node_modules/@tsrs/linux-x64-gnu/tsrs"';
+const cliCommand = (provider: string) =>
+  `cargo test --locked --profile ci -p vize --test integration lint_strict_boolean_cli:: -- --nocapture 2>&1 | tee target/patina-native-boolean/${provider}-tests.txt`;
+const ownerCommand = (provider: string) =>
+  `VIZE_SYMBOL_OWNER_CAPTURE="$GITHUB_WORKSPACE/target/patina-native-boolean/${provider}-owner.json" cargo test --locked --profile ci -p vize_patina --lib corsa_session::probe::signature_ -- --nocapture 2>&1 | tee target/patina-native-boolean/${provider}-owner-tests.txt`;
+const lanes = [
+  {
+    name: "Preserve all complete boolean reports with the stable runtime",
+    owner: false,
+    env: {
+      CORSA_PATH: runtime,
+      VIZE_SYMBOL_OWNER_CLI_CAPTURE:
+        "${{ github.workspace }}/target/patina-native-boolean/stable-owner-cli.json",
+    },
+    commands: ["set -o pipefail", "unset VIZE_TEST_DISABLE_TSGO", cliCommand("stable")],
+  },
+  {
+    name: "Preserve the same complete reports with the reported tsrs runtime",
+    owner: false,
+    env: {
+      VIZE_SYMBOL_OWNER_CLI_CAPTURE:
+        "${{ github.workspace }}/target/patina-native-boolean/tsrs-owner-cli.json",
+    },
+    commands: ["set -o pipefail", "unset VIZE_TEST_DISABLE_TSGO", tsrsExport, cliCommand("tsrs")],
+  },
+  {
+    name: "Capture cold and materialized signature owners with the stable runtime",
+    owner: true,
+    env: { CORSA_PATH: runtime },
+    commands: ["set -o pipefail", "unset VIZE_TEST_DISABLE_TSGO", ownerCommand("stable")],
+  },
+  {
+    name: "Capture the same signature owners with the reported tsrs runtime",
+    owner: true,
+    env: {},
+    commands: ["set -o pipefail", "unset VIZE_TEST_DISABLE_TSGO", tsrsExport, ownerCommand("tsrs")],
+  },
+] as const;
+const workflow = parse(
+  fs.readFileSync(path.join(root, ".github/workflows/patina-native-boolean-protocol.yml"), "utf8"),
+) as NativeWorkflow;
+
+function laneStep(candidate: NativeWorkflow, name: string) {
+  const matches = candidate.jobs["live-native"].steps.filter((step) => step.name === name);
+  assert.equal(matches.length, 1, `unique native step required: ${name}`);
+  return matches[0];
+}
+
+function assertOwnerWorkflow(candidate: NativeWorkflow) {
+  const job = candidate.jobs["live-native"];
+  assert.equal(job.env.VIZE_TEST_REQUIRE_TSGO, "1");
+  assert.equal(job.env.VIZE_TEST_REQUIRE_TSRS, "1");
+  for (const lane of lanes) {
+    const step = laneStep(candidate, lane.name);
+    assert.deepEqual(step.env ?? {}, lane.env, lane.name);
+    if (lane.owner) assert.equal(step.if, "always()", lane.name);
+    // These are launch/guard contracts; YAML indentation and comments are immaterial.
+    const commands = (step.run ?? "")
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith("#"));
+    assert.deepEqual(commands, lane.commands, lane.name);
+  }
+}
+
+test("native owner lanes retain required providers, captures, filters and independent execution", () => {
+  assertOwnerWorkflow(workflow);
+});
+
+test("removing native guards or changing selected runtimes and capture/filter contracts refuses", () => {
+  const refuse = (change: (candidate: NativeWorkflow) => void) => {
+    const candidate = structuredClone(workflow);
+    change(candidate);
+    assert.throws(() => assertOwnerWorkflow(candidate));
+  };
+  for (const lane of lanes) {
+    refuse((candidate) => {
+      const step = laneStep(candidate, lane.name);
+      step.run = step.run!.replace("unset VIZE_TEST_DISABLE_TSGO", "");
+    });
+    if (lane.owner) {
+      refuse((candidate) => {
+        laneStep(candidate, lane.name).if = "success()";
+      });
+      refuse((candidate) => {
+        const step = laneStep(candidate, lane.name);
+        step.run = step.run!.replace("corsa_session::probe::signature_", "unrelated_filter");
+      });
+      refuse((candidate) => {
+        const step = laneStep(candidate, lane.name);
+        step.run = step.run!.replace("VIZE_SYMBOL_OWNER_CAPTURE", "UNUSED_CAPTURE");
+      });
+    } else {
+      refuse((candidate) => {
+        laneStep(candidate, lane.name).env!.VIZE_SYMBOL_OWNER_CLI_CAPTURE = "wrong-output.json";
+      });
+    }
+    if ("CORSA_PATH" in lane.env) {
+      refuse((candidate) => {
+        laneStep(candidate, lane.name).env!.CORSA_PATH = "other-provider";
+      });
+    } else {
+      refuse((candidate) => {
+        const step = laneStep(candidate, lane.name);
+        step.run = step.run!.replace(tsrsExport, 'export CORSA_PATH="other-provider"');
+      });
+    }
+  }
+  refuse((candidate) => {
+    candidate.jobs["live-native"].env.VIZE_TEST_REQUIRE_TSGO = "0";
+  });
 });
