@@ -100,6 +100,7 @@ export interface Request {
     receiptBlob: string;
   } | null;
   oracleOwnerReceipt: Image | null;
+  capturedBefore?: CapturedBeforeReference | null;
   publicBefore?: {
     controllerRun: string;
     controllerHead: string;
@@ -110,6 +111,16 @@ export interface Request {
     reviewedController: Request["reviewedController"];
     judgmentBlob: string;
   } | null;
+}
+export interface CapturedBeforeReference {
+  kind: "CAPTURE_ONLY";
+  controllerRun: string;
+  controllerHead: string;
+  artifactId: number;
+  archiveDigest: string;
+  captureMember: "unqualified-capture.json";
+  captureMemberSha256: string;
+  manualRequestBlob: string;
 }
 export interface NativeEvent {
   commandId: string;
@@ -221,6 +232,21 @@ export interface ReleaseAuthority {
   sdk: Array<{ path: string; bytes: number; sha256: string }>;
   observations: Array<{ endpoint: string; value: unknown }>;
   produced: unknown;
+}
+export interface UnqualifiedCapture {
+  schema: "vize.humanReports11252_11253.unqualifiedCapture.v1";
+  request: Request;
+  release: ReleaseAuthority;
+  installs: CaptureInstallReceipt[];
+  observations: Observation[];
+  companions: Observation[];
+  controller: { head: string; run: string; job: string; files: Image[] };
+  completeInstalledFileSetQualified: false;
+  accepted: false;
+  productQualified: false;
+  afterQualified: false;
+  issueQualified: false;
+  outcomeAssessed: false;
 }
 export interface Bundle {
   request: Request;

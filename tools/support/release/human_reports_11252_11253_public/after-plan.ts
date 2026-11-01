@@ -161,7 +161,9 @@ export function inputCommand(command: CommandPlan): unknown {
 export function validateAfterInputs(request: Request): void {
   assert.equal(request.mode, "UNQUALIFIED_AFTER");
   assert.equal(request.release.phase, "after");
-  assert(request.sourceAdmission && request.publicBefore);
+  assert(request.sourceAdmission && request.capturedBefore);
+  assert.equal(request.capturedBefore.kind, "CAPTURE_ONLY");
+  assert.equal(request.publicBefore ?? null, null);
   assert.equal(request.oracleOwnerReceipt, null);
   assert(request.release.fixes.some((f) => f.issue === request.fixture.issue));
   request.release.fixes.forEach(requireCompleteFixPaths);

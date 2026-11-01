@@ -19,6 +19,7 @@ export async function remoteControllerClosure(
         "pnpm-bootstrap.json",
         "pnpm-shim-templates.json.txt",
         "dependency-bin-policy.json.txt",
+        "before-capture-policy.json.txt",
       ].map((n) => ns + n),
       ".github/workflows/published-human-reports-11252-11253.yml",
     ];
