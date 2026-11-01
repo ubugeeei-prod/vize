@@ -386,15 +386,15 @@ fn normalized_v_for(expr: &str, normalize_parens: bool) -> Option<String> {
 /// Each group in `groups` is a list of patterns. Groups are matched in order (index = priority).
 /// Patterns: exact name (`id`), prefix glob (`v-*`, `:*`, `@*`), or `*` catch-all.
 /// Unmatched attributes get priority `groups.len()` (last).
-pub(crate) fn custom_attribute_priority(name: &str, groups: &[Vec<String>]) -> u8 {
+pub(crate) fn custom_attribute_priority(name: &str, groups: &[Vec<String>]) -> usize {
     for (i, group) in groups.iter().enumerate() {
         for pattern in group {
             if matches_attr_pattern(name, pattern) {
-                return i as u8;
+                return i;
             }
         }
     }
-    groups.len() as u8
+    groups.len()
 }
 
 /// Match an attribute name against a pattern.

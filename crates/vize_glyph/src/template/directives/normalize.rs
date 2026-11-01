@@ -15,7 +15,7 @@ pub(crate) fn normalize_attribute_with_vue_version(
     options: &FormatOptions,
     vue_version: crate::VueVersion,
     attribute_depth: usize,
-) -> (String, Option<String>, u8, bool, bool) {
+) -> (String, Option<String>, usize, bool, bool) {
     // Normalize directive shorthands (only if enabled)
     let head = directive_head(name);
     let normalized_shorthand: Option<String> = head
@@ -55,7 +55,10 @@ pub(crate) fn normalize_attribute_with_vue_version(
     let priority = if let Some(ref groups) = options.attribute_groups {
         custom_attribute_priority(&normalized_name, groups)
     } else {
-        attribute_priority_with_head(&normalized_name, normalized_head.as_ref())
+        usize::from(attribute_priority_with_head(
+            &normalized_name,
+            normalized_head.as_ref(),
+        ))
     };
 
     (

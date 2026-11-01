@@ -166,6 +166,7 @@ mod dump_all_levels_cli;
 mod dump_roundtrip_cli;
 mod dump_script_cli;
 mod env_info_cli;
+mod fmt_attribute_group_order_cli;
 mod fmt_bind_style_policy_cli;
 mod fmt_boolean_values_cli;
 mod fmt_config_cli;

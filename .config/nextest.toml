@@ -6,6 +6,17 @@ nextest-version = "0.9.146"
 filter = 'package(=vize_patina) & test(~no_deprecated_v_on_number_modifiers::native::tests::)'
 junit.store-success-output = true
 
+# Retain the complete ordinal/API and canonical-config CLI observations for
+# these three laws only; selection, runtime and retry policy stay unchanged.
+[[profile.default.overrides]]
+filter = '''(package(=vize_glyph) & binary(=attribute_group_order) & (
+  test(=custom_group_ordinals_and_unmatched_fallback_are_lossless) |
+  test(=custom_groups_keep_barriers_duplicates_first_match_and_disabled_sorting)
+)) | (package(=vize) & binary(=integration) &
+  test(=fmt_attribute_group_order_cli::canonical_config_keeps_wide_group_order_and_complete_cli_fixed_points)
+)'''
+junit.store-success-output = true
+
 # Retain whole legacy/native inline-template observations in normal PR/full JUnit.
 # This changes output retention only, not selection, runtime or retry policy.
 [[profile.default.overrides]]
