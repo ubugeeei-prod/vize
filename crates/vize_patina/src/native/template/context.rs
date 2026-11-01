@@ -2,7 +2,8 @@
 
 use super::{
     NativeTemplateAttribute, NativeTemplateClosedSelect, NativeTemplateClosedTextarea,
-    NativeTemplateElement, NativeTemplateLintRefusal, NativeTemplateOwnerProfile,
+    NativeTemplateElement, NativeTemplateFirstOption, NativeTemplateLintRefusal,
+    NativeTemplateOptionValue, NativeTemplateOwnerProfile,
 };
 use crate::{HelpLevel, LintDiagnostic, LintResult, Linter, Severity};
 use vize_carton::i18n::{Locale, t, t_fmt};
@@ -18,6 +19,7 @@ pub struct NativeTemplateLintContext<'o, 'a> {
     filename: &'o str,
     pub(super) current_rule: &'static str,
     pub(super) current_owner_profile: NativeTemplateOwnerProfile,
+    pub(super) current_callback: Option<usize>,
     diagnostics: Vec<LintDiagnostic>,
 }
 
@@ -33,6 +35,7 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
             filename,
             current_rule: "",
             current_owner_profile: NativeTemplateOwnerProfile::Strict,
+            current_callback: None,
             diagnostics: Vec::new(),
         }
     }
@@ -197,6 +200,71 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         let range = self.textarea_opening_range(owner)?;
         self.warn_with_help(range, message_key, variables, help_key);
         Ok(())
+    }
+
+    /// Issue the completed select's first-header token to this callback.
+    /// No first option means proven absence in the complete bounded grammar.
+    pub fn first_option<'s, 'e>(
+        &self,
+        owner: &NativeTemplateClosedSelect<'s, 'e, 'a>,
+    ) -> Result<Option<NativeTemplateFirstOption<'s, 'e, 'a>>, NativeTemplateLintRefusal> {
+        let range = self.select_opening_range(owner)?;
+        let issuer = self.callback_issuer(range)?;
+        Ok(owner
+            .element
+            .first_option_data()
+            .map(|data| NativeTemplateFirstOption { data, issuer }))
+    }
+
+    pub fn first_option_value(
+        &self,
+        owner: &NativeTemplateClosedSelect<'_, '_, 'a>,
+        option: &NativeTemplateFirstOption<'_, '_, 'a>,
+    ) -> Result<NativeTemplateOptionValue<'a>, NativeTemplateLintRefusal> {
+        self.first_option_opening_range(owner, option)?;
+        Ok(option.data.value)
+    }
+
+    /// Equal spans/values, another select in this component or another
+    /// callback's token cannot replace this actual stored first header.
+    pub fn first_option_opening_range(
+        &self,
+        owner: &NativeTemplateClosedSelect<'_, '_, 'a>,
+        option: &NativeTemplateFirstOption<'_, '_, 'a>,
+    ) -> Result<Span, NativeTemplateLintRefusal> {
+        let range = self.select_opening_range(owner)?;
+        if option.issuer != self.callback_issuer(range)?
+            || !core::ptr::eq(option.data.component, self.root.component())
+            || !core::ptr::eq(option.data.select, owner.element.original().surface())
+            || owner
+                .element
+                .first_option_data()
+                .is_none_or(|data| !core::ptr::eq(data, option.data))
+        {
+            return Err(NativeTemplateLintRefusal::SourceMismatch);
+        }
+        Ok(option.data.opening)
+    }
+
+    pub fn warn_first_option_with_help(
+        &mut self,
+        owner: &NativeTemplateClosedSelect<'_, '_, 'a>,
+        option: &NativeTemplateFirstOption<'_, '_, 'a>,
+        message_key: &str,
+        help_key: &str,
+    ) -> Result<(), NativeTemplateLintRefusal> {
+        let range = self.first_option_opening_range(owner, option)?;
+        self.warn_with_help(range, message_key, &[], help_key);
+        Ok(())
+    }
+
+    fn callback_issuer(&self, range: Span) -> Result<(usize, usize), NativeTemplateLintRefusal> {
+        let ordinal = self
+            .current_callback
+            .ok_or(NativeTemplateLintRefusal::UnsupportedContext { span: range })?;
+        // The private ordinal comes from the frozen actual enabled callback
+        // vector. Linter identity prevents reuse across distinct registries.
+        Ok((core::ptr::from_ref(self.linter).addr(), ordinal))
     }
 
     fn warn_with_help(

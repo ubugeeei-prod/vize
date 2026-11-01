@@ -4,6 +4,7 @@ import { sha256 } from "./harness.mjs";
 import { collectLinterAttempts } from "./linter-process.ts";
 import { expectedSfcReason } from "./linter-sfc-contract.ts";
 import { expectedInputLabelReason } from "./linter-input-label-contract.ts";
+import { expectedPlaceholderReason } from "./linter-placeholder-contract.ts";
 
 export const NATIVE_APIS = ["--native-current-api", "--native-report", "--native-static-class"];
 
@@ -87,6 +88,7 @@ export function expectedNativeReason(fixture: any) {
   if (entry === "sfc") return expectedSfcReason(input, api);
   const rule = api === "--native-static-class" ? "vapor/prefer-static-class" : input.rule;
   if (rule === "a11y/form-control-has-label") return expectedInputLabelReason(input, api);
+  if (rule === "a11y/placeholder-label-option") return expectedPlaceholderReason(input, api);
   if (rule !== "vue/component-definition-name-casing")
     return { api, entry, kind: "UnprovidedRule", detail: `UnprovidedRule { rule: "${rule}" }` };
   return null;

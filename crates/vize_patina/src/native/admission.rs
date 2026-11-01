@@ -6,8 +6,8 @@ use vize_l1::markup::{NativeChildren, NativeComponent, NativeLintTagKind, Surfac
 use super::{
     attribute, header, header_rules,
     template::{
-        NativeTemplateAttribute, NativeTemplateAttributeProfile, NativeTemplateElement,
-        NativeTemplateLintRefusal as Refusal, NativeTemplateOwnerProfile,
+        NativeFirstOptionData, NativeTemplateAttribute, NativeTemplateAttributeProfile,
+        NativeTemplateElement, NativeTemplateLintRefusal as Refusal, NativeTemplateOwnerProfile,
         NativeTemplateTextProfile,
     },
 };
@@ -114,6 +114,7 @@ pub(in crate::native) fn children_with_owner_profile<'o, 'a>(
         select::Parent::Ordinary,
         visit_element,
     )
+    .map(|_| ())
 }
 
 fn walk<'o, 'a>(
@@ -124,7 +125,8 @@ fn walk<'o, 'a>(
     owner_profile: NativeTemplateOwnerProfile,
     parent: select::Parent,
     visit_element: &mut impl FnMut(&NativeTemplateElement<'o, 'a>) -> Result<(), Refusal>,
-) -> Result<(), Refusal> {
+) -> Result<Option<NativeFirstOptionData<'o, 'a>>, Refusal> {
+    let mut first_option = None;
     for child in children {
         if !core::ptr::eq(child.component(), component) {
             return Err(Refusal::SourceMismatch);
@@ -206,13 +208,16 @@ fn walk<'o, 'a>(
                     }
                     let children = element.children();
                     let mut view = NativeTemplateElement::new(element, attributes);
+                    if parent == select::Parent::Select && first_option.is_none() {
+                        first_option = Some(NativeFirstOptionData::from_checked(&view, opening)?);
+                    }
                     if matches!(
                         child_parent,
                         select::Parent::Select | select::Parent::Textarea
                     ) {
                         // Only this bounded owner is postorder: its complete
                         // original children must pass before proof/reporting.
-                        walk(
+                        let first = walk(
                             component,
                             children,
                             profile,
@@ -222,7 +227,7 @@ fn walk<'o, 'a>(
                             visit_element,
                         )?;
                         if child_parent == select::Parent::Select {
-                            view.admit_closed_select();
+                            view.admit_closed_select(first)?;
                         } else {
                             view.admit_closed_textarea();
                         }
@@ -241,6 +246,7 @@ fn walk<'o, 'a>(
                         child_parent,
                         visit_element,
                     )
+                    .map(|_| ())
                 }
                 SurfaceChild::Text(token) => {
                     let span = checked_token(component, token)?;
@@ -278,7 +284,7 @@ fn walk<'o, 'a>(
             }
         })?;
     }
-    Ok(())
+    Ok(first_option)
 }
 
 fn gap(token: &Token<'_>) -> bool {
