@@ -89,13 +89,7 @@ fn merge_imported_runtime_props_into_croquis(
             cache,
         )
     } else {
-        resolve_inline_runtime_props(
-            &script_setup.content,
-            path,
-            runtime_arg,
-            &mut visited,
-            cache,
-        )
+        resolve_inline_runtime_props(&script_setup.content, path, &mut visited, cache)
     };
     if props.is_empty() {
         return;

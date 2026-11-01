@@ -240,7 +240,7 @@ pub(super) fn collect_props_from_string_array_helper_call(
         let name = name.value.as_str();
         props.push(PropDefinition {
             name: name.to_compact_string(),
-            prop_type: Some(runtime_prop_shape_member_type(root_runtime_binding, name)),
+            prop_type: runtime_prop_shape_member_type(root_runtime_binding, name),
             required: false,
             default_value: None,
         });

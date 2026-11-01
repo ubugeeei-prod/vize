@@ -74,10 +74,8 @@ fn attach_runtime_prop_types(
     props
         .into_iter()
         .map(|mut prop| {
-            prop.prop_type = Some(runtime_prop_shape_member_type(
-                root_runtime_binding,
-                prop.name.as_str(),
-            ));
+            prop.prop_type =
+                runtime_prop_shape_member_type(root_runtime_binding, prop.name.as_str());
             prop
         })
         .collect()

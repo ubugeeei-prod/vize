@@ -145,3 +145,4 @@ crates/vize_carton/src/config/loader/vite-runtime.mjs text eol=lf
 crates/vize_carton/src/config/loader/vite-runtime-validation.js text eol=lf
 # Independent attribute observations retain their original complete bytes.
 tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/** -text
+tests/_fixtures/differential/typechecker/runtime-null-prop-11252/*.txt -text
