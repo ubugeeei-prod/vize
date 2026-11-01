@@ -363,7 +363,7 @@ export function cacheFacts(project: Project, provider: string) {
     getTsBuildInfoEmitOutputFilePath(options: Record<string, unknown>): string | undefined;
   };
   const config = path.resolve(project.cwd, project.tsconfig),
-    read = ts.readConfigFile(config, ts.sys.readFile);
+    read = ts.readConfigFile(config, (file) => ts.sys.readFile(file));
   const parsed = ts.parseJsonConfigFileContent(
     read.config,
     ts.sys,
