@@ -1,0 +1,5 @@
+<template>
+  <!-- 雪🌸 precedes all ranges. -->
+  <MyWidget @update:modelValue.once="value" v-on:rowClick.stop="row" @node_Expand="blocked" @vue:beforeMount.capture="hook" @close-window.once="close" @[dynamicEvent].once="dynamic" v-on="listeners" />
+  <div @rowClick="native" /><svg><circle @rowClick="native" /><MyWidget @shapeMove="shape" /></svg>
+</template>

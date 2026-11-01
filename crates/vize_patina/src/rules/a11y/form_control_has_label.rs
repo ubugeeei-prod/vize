@@ -26,6 +26,8 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
+mod native;
+
 /// Require form controls to have associated labels
 #[derive(Default)]
 pub struct FormControlHasLabel;
@@ -197,6 +199,10 @@ impl MarkupRule for FormControlHasLabel {
 }
 
 impl Rule for FormControlHasLabel {
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        Some(self)
+    }
+
     fn meta(&self) -> &'static RuleMeta {
         &META
     }

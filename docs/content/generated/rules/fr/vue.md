@@ -5570,10 +5570,14 @@ Imposer des tirets dans les noms d’événements personnalisés de v-on sur les
 
 [Mauvais](#vue-v-on-event-hyphenation-bad) · [Bon](#vue-v-on-event-hyphenation-good)
 
-Gravité par défaut: `warning`  
-Préréglages: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-Correction automatique: Aucune ; examinez la modification proposée  
-Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
+Gravité par défaut: `warning`
+
+Préréglages: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+
+Correction automatique: Disponible pour les diagnostics pris en charge
+
+Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle
+
 Options: Consultez les [options typées et leurs valeurs par défaut](/rules/options.md).
 
 **Configuration (Vite+)**
@@ -5627,7 +5631,7 @@ L’écouteur du composant personnalisé utilise `@myEvent` au lieu d’un nom d
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L38) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L40) · [Toutes les règles](all.md)
 
 ### `vue/v-on-handler-style`
 

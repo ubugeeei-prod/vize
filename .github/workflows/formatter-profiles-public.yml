@@ -1,0 +1,83 @@
+name: Public formatter profile acceptance
+run-name: Public formatter profiles @ ${{ inputs.version || github.event.pull_request.head.sha || github.sha }}
+on:
+  pull_request:
+    paths:
+      - .github/workflows/formatter-profiles-public.yml
+      - tools/support/release/formatter_profiles_public/**
+      - tests/tooling/formatter-profiles-public.test.ts
+      - tests/tooling/formatter-profiles-public-cache.test.ts
+      - tests/tooling/fixtures/formatter-profiles-public-original.json
+      - tests/tooling/support/lsp/installed-alias-replay/**
+      - tools/support/release/editor_vite_stub/custody.ts
+      - tools/support/release/editor_vite_stub/filesystem.ts
+      - tools/support/release/public_install/native-custody.cjs
+      - tools/support/release/constructor_original27_public/authority.ts
+      - tools/support/release/release/quota_ownership.ts
+      - tools/support/release/release/quota/**
+      - tools/support/config/windows_consumer/common.ts
+      - tools/support/json-value.ts
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact public containing release selected by the release owner
+        required: true
+        type: string
+      producer_run:
+        description: Genuine completed normal producer run authenticated by the capsule
+        required: true
+        type: string
+      authority_blob:
+        description: Immutable genuine producer receipt and public package SRI capsule Git blob
+        required: true
+        type: string
+permissions: { contents: read, actions: read }
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+concurrency:
+  group: formatter-public-${{ github.event.pull_request.number || inputs.version || github.ref }}
+  cancel-in-progress: false
+defaults:
+  run: { shell: bash }
+jobs:
+  controls:
+    name: Original formatter and installed-provider falsification controls
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Check immutable inputs, whole edits, initialization defaults and filesystem refusals
+        run: node --test tests/tooling/formatter-profiles-public.test.ts tests/tooling/formatter-profiles-public-cache.test.ts
+  published:
+    needs: controls
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    name: Original formatter CLI and LSP on Linux x64 Node24
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      PUBLIC_VERSION: ${{ inputs.version }}
+      PRODUCER_RUN: ${{ inputs.producer_run }}
+      AUTHORITY_BLOB: ${{ inputs.authority_blob }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Verify exact public Semi, Sort and Art outputs with full installed custody
+        run: node tools/support/release/formatter_profiles_public/run.ts "$PUBLIC_VERSION" "$PRODUCER_RUN" "$AUTHORITY_BLOB" "$RUNNER_TEMP/formatter-profiles-public"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: formatter-profiles-public-${{ inputs.version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/formatter-profiles-public/*.json
+            ${{ runner.temp }}/formatter-profiles-public/*.stdout
+            ${{ runner.temp }}/formatter-profiles-public/*.stderr
+            ${{ runner.temp }}/formatter-profiles-public/*.ndjson
+            ${{ runner.temp }}/formatter-profiles-public/lsp/
+          if-no-files-found: error

@@ -108,6 +108,7 @@
     "/rules/options",
     "/rules/options-vue",
     "/rules/options-events",
+    "/rules/options-attributes",
     "/rules/options-props",
     "/rules/options-script",
     "/rules/options-type",

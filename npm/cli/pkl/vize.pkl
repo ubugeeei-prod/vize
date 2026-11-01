@@ -185,7 +185,13 @@ class DefineMacrosOrderOptions {
 class VOnEventHyphenationOptions {
   style: HyphenationStyle = "always"
   ignore: Listing<String> = new Listing {}
+  autofix: Boolean = false
 }
+class AttributeHyphenationOptions {
+  style: HyphenationStyle = "always"
+  ignore: Listing<String> = new Listing {}
+}
+
 class LintRuleOptions {
   `script/define-macros-order`: DefineMacrosOrderOptions? = null
   `script/define-props-destructuring`: DefinePropsDestructuringOptions? = null
@@ -206,7 +212,7 @@ class LintRuleOptions {
   `vue/v-bind-style`: VBindStyle? = null
   `vue/v-on-style`: VOnStyle? = null
   `vue/v-slot-style`: (VSlotUniformStyle|VSlotStyleOptions)? = null
-  `vue/attribute-hyphenation`: HyphenationStyle? = null
+  `vue/attribute-hyphenation`: (HyphenationStyle|AttributeHyphenationOptions)? = null
   `vue/valid-v-on`: LintRuleOptionTypes.ValidVOnOptions? = null
   `vue/valid-v-slot`: LintRuleOptionTypes.ValidVSlotOptions? = null
   `musea/prefer-design-tokens`: MuseaPreferDesignTokensOptions? = null

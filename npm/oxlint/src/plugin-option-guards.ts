@@ -2,7 +2,7 @@ export function optionField(value: unknown): boolean {
   return value === undefined || value === "always" || value === "never" || value === "any";
 }
 
-export function optionalBooleanField(value: unknown): boolean {
+export function optionalBooleanField(value: unknown): value is boolean | undefined {
   return value === undefined || typeof value === "boolean";
 }
 

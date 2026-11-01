@@ -177,9 +177,10 @@ impl ResolvedLinterRuleGroups {
                         .with_mustache_interpolation_spacing(mustache_interpolation_spacing(style));
                 }
                 if let Some(options) = rule_options.v_on_event_hyphenation_options() {
-                    linter = linter.with_v_on_event_hyphenation_options(
+                    linter = linter.with_v_on_event_hyphenation_policy(
                         v_on_event_hyphenation_style(options.style),
                         options.ignore,
+                        options.autofix,
                     );
                 }
                 if let Some(style) = rule_options.v_on_style() {
@@ -192,7 +193,13 @@ impl ResolvedLinterRuleGroups {
                     linter = linter.with_v_bind_style(v_bind_style(style));
                 }
                 if let Some(style) = rule_options.attribute_hyphenation() {
-                    linter = linter.with_attribute_hyphenation(attribute_hyphenation_style(style));
+                    let style = attribute_hyphenation_style(style);
+                    linter = match rule_options.attribute_hyphenation_ignore() {
+                        Some(ignore) => {
+                            linter.with_attribute_hyphenation_options(style, ignore.to_vec())
+                        }
+                        None => linter.with_attribute_hyphenation(style),
+                    };
                 }
                 if let Some(modifiers) = rule_options.valid_v_on_modifiers() {
                     linter = linter.with_valid_v_on_modifiers(modifiers.to_vec());

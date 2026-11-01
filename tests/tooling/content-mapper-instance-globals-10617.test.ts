@@ -18,6 +18,7 @@ import {
   assertPrefixGeometryMutations,
 } from "./support/content-mapper-instance-globals-geometry-10617.ts";
 import { runRewriteProfileControls } from "./support/content-mapper-instance-globals-profiles-10617.ts";
+import { createInstanceGlobalsProcessLog } from "./support/content-mapper-instance-globals-process-log-10617.ts";
 import {
   admitAdditionalHosts,
   assertHostCase,
@@ -112,8 +113,8 @@ await test(
     for (const name of ["package.json", "package-lock.json"])
       fs.writeFileSync(path.join(reference, name), files.get(`reference/${name}.txt`)!);
     let additionalHostRoot: string | undefined;
-    const records: Packet[] = [],
-      checks: Array<{ id: string; run: () => string | void }> = [],
+    const recordProcess = createInstanceGlobalsProcessLog(path.join(output, "processes.json"));
+    const checks: Array<{ id: string; run: () => string | void }> = [],
       sizes: unknown[] = [],
       geometry: unknown[] = [],
       discovery: unknown[] = [];
@@ -139,11 +140,7 @@ await test(
         stderr: raw.stderr ?? "",
         elapsedMs: performance.now() - started,
       };
-      records.push(packet);
-      fs.writeFileSync(
-        path.join(output, "processes.json"),
-        `${JSON.stringify(records, null, 2)}\n`,
-      );
+      recordProcess(packet);
       assert.equal(packet.error, null, label);
       assert.equal(packet.signal, null, label);
       return packet;

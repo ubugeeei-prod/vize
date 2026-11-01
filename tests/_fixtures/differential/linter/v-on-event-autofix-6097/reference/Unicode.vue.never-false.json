@@ -1,0 +1,138 @@
+{
+  "messages": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@foo-évent' can't be hyphenated.",
+      "line": 3,
+      "column": 46,
+      "messageId": "cannotBeHyphenated",
+      "endLine": 3,
+      "endColumn": 64
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@foo-Évent' can't be hyphenated.",
+      "line": 3,
+      "column": 65,
+      "messageId": "cannotBeHyphenated",
+      "endLine": 3,
+      "endColumn": 82
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@xml--parsed' can't be hyphenated.",
+      "line": 3,
+      "column": 104,
+      "messageId": "cannotBeHyphenated",
+      "endLine": 3,
+      "endColumn": 122
+    }
+  ],
+  "fixResult": {
+    "fixed": false,
+    "messages": [
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@foo-évent' can't be hyphenated.",
+        "line": 3,
+        "column": 46,
+        "messageId": "cannotBeHyphenated",
+        "endLine": 3,
+        "endColumn": 64
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@foo-Évent' can't be hyphenated.",
+        "line": 3,
+        "column": 65,
+        "messageId": "cannotBeHyphenated",
+        "endLine": 3,
+        "endColumn": 82
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@xml--parsed' can't be hyphenated.",
+        "line": 3,
+        "column": 104,
+        "messageId": "cannotBeHyphenated",
+        "endLine": 3,
+        "endColumn": 122
+      }
+    ],
+    "output": "<template>\n  <!-- 雪🌸 exact UTF-16 fix ranges differ from UTF-8 bytes. -->\n  <MyWidget @Événement=\"one\" @fooÉvent=\"two\" @foo-évent=\"three\" @foo-Évent=\"four\" @foo_Évent=\"blocked\" @xml--parsed=\"xml\" @update:ModelValue.once=\"update\" />\n</template>\n"
+  },
+  "requery": [
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@foo-évent' can't be hyphenated.",
+      "line": 3,
+      "column": 46,
+      "messageId": "cannotBeHyphenated",
+      "endLine": 3,
+      "endColumn": 64
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@foo-Évent' can't be hyphenated.",
+      "line": 3,
+      "column": 65,
+      "messageId": "cannotBeHyphenated",
+      "endLine": 3,
+      "endColumn": 82
+    },
+    {
+      "ruleId": "vue/v-on-event-hyphenation",
+      "severity": 1,
+      "message": "v-on event '@xml--parsed' can't be hyphenated.",
+      "line": 3,
+      "column": 104,
+      "messageId": "cannotBeHyphenated",
+      "endLine": 3,
+      "endColumn": 122
+    }
+  ],
+  "secondFixResult": {
+    "fixed": false,
+    "messages": [
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@foo-évent' can't be hyphenated.",
+        "line": 3,
+        "column": 46,
+        "messageId": "cannotBeHyphenated",
+        "endLine": 3,
+        "endColumn": 64
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@foo-Évent' can't be hyphenated.",
+        "line": 3,
+        "column": 65,
+        "messageId": "cannotBeHyphenated",
+        "endLine": 3,
+        "endColumn": 82
+      },
+      {
+        "ruleId": "vue/v-on-event-hyphenation",
+        "severity": 1,
+        "message": "v-on event '@xml--parsed' can't be hyphenated.",
+        "line": 3,
+        "column": 104,
+        "messageId": "cannotBeHyphenated",
+        "endLine": 3,
+        "endColumn": 122
+      }
+    ],
+    "output": "<template>\n  <!-- 雪🌸 exact UTF-16 fix ranges differ from UTF-8 bytes. -->\n  <MyWidget @Événement=\"one\" @fooÉvent=\"two\" @foo-évent=\"three\" @foo-Évent=\"four\" @foo_Évent=\"blocked\" @xml--parsed=\"xml\" @update:ModelValue.once=\"update\" />\n</template>\n"
+  }
+}

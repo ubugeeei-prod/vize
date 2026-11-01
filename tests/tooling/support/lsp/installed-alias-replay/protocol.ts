@@ -1,12 +1,12 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { appendFileSync, mkdirSync, mkdtempSync, realpathSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
 
 import { FrameDecoder } from "./frames.ts";
 import { settlePublication, settleReply } from "./dispatch.ts";
 import {
   InstalledAliasError,
+  installedInitializeParams,
   validateInstalledLaunch,
   type Packet,
   type InstalledAliasLaunch,
@@ -85,17 +85,7 @@ export class InstalledAliasSession {
   static async launch(launch: InstalledAliasLaunch): Promise<InstalledAliasSession> {
     const session = new InstalledAliasSession(launch);
     try {
-      const response = await session.request("initialize", {
-        processId: null,
-        rootUri: pathToFileURL(realpathSync(launch.projectRoot)).href,
-        capabilities: {},
-        initializationOptions: {
-          lint: launch.lint ?? false,
-          typecheck: true,
-          hover: true,
-          crossFile: launch.crossFile,
-        },
-      });
+      const response = await session.request("initialize", installedInitializeParams(launch));
       if (!response.result || typeof response.result !== "object" || Array.isArray(response.result))
         throw new Error("initialize result must be an object");
       session.notify("initialized", {});

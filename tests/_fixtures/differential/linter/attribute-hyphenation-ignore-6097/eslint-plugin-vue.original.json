@@ -1,0 +1,954 @@
+{
+  "schema": 1,
+  "scope": "independent installed official ESLint verify/fix/requery; no Vize or whole6097/10822 qualification",
+  "provider": {
+    "eslint-plugin-vue": {
+      "path": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/eslint-plugin-vue@10.9.2_@stylistic+eslint-plugin@5.10.0_eslint@10.4.1_jiti@2.7.0_suppo_490b589eff1bdf6fd918ebcadce99cb1/node_modules/eslint-plugin-vue/package.json",
+      "version": "10.9.2",
+      "bytes": 4437,
+      "sha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+    },
+    "eslint": {
+      "path": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2/node_modules/eslint/package.json",
+      "version": "10.4.1",
+      "bytes": 7274,
+      "sha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+    },
+    "vue-eslint-parser": {
+      "path": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue-eslint-parser@10.4.1_eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2__supports-color@10.2.2/node_modules/vue-eslint-parser/package.json",
+      "version": "10.4.1",
+      "bytes": 2524,
+      "sha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+    },
+    "@typescript-eslint/parser": {
+      "path": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@typescript-eslint+parser@8.65.0_eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2__supports-color@10.2.2_typescript@6.0.3/node_modules/@typescript-eslint/parser/package.json",
+      "version": "8.65.0",
+      "bytes": 2161,
+      "sha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+    }
+  },
+  "ruleSource": {
+    "path": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/eslint-plugin-vue@10.9.2_@stylistic+eslint-plugin@5.10.0_eslint@10.4.1_jiti@2.7.0_suppo_490b589eff1bdf6fd918ebcadce99cb1/node_modules/eslint-plugin-vue/dist/rules/attribute-hyphenation.js",
+    "bytes": 3500,
+    "sha256": "ce050d17c802fb26ed9d8c7245ad3d55f28750705b86d97b59522c071aa46fbd"
+  },
+  "files": {
+    "RegisteredCamel.vue.txt": {
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "bytes": 169,
+      "sha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db"
+    },
+    "RegisteredHyphen.vue.txt": {
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "bytes": 172,
+      "sha256": "bd9adf1e9a5161b727da0da9d037a2844d50f21dd63ee0300316e4618ac67129"
+    }
+  },
+  "rows": [
+    {
+      "id": "always-default",
+      "file": "RegisteredCamel.vue.txt",
+      "options": [
+        "always"
+      ],
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "verify": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  98,
+                  104
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 6,
+              "column": 28,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 44,
+              "fix": {
+                "range": [
+                  113,
+                  123
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:pageSize' must be hyphenated.",
+              "line": 6,
+              "column": 45,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 68,
+              "fix": {
+                "range": [
+                  130,
+                  146
+                ],
+                "text": "v-model:page-size"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 3,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "always-empty-ignore",
+      "file": "RegisteredCamel.vue.txt",
+      "options": [
+        "always",
+        {
+          "ignore": []
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "verify": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  98,
+                  104
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 6,
+              "column": 28,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 44,
+              "fix": {
+                "range": [
+                  113,
+                  123
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:pageSize' must be hyphenated.",
+              "line": 6,
+              "column": 45,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 68,
+              "fix": {
+                "range": [
+                  130,
+                  146
+                ],
+                "text": "v-model:page-size"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 3,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "always-exact",
+      "file": "RegisteredCamel.vue.txt",
+      "options": [
+        "always",
+        {
+          "ignore": [
+            "activeKey"
+          ]
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "verify": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  98,
+                  104
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:pageSize' must be hyphenated.",
+              "line": 6,
+              "column": 45,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 68,
+              "fix": {
+                "range": [
+                  130,
+                  146
+                ],
+                "text": "v-model:page-size"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 2,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 2,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :activeKey=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :activeKey=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "always-substring",
+      "file": "RegisteredCamel.vue.txt",
+      "options": [
+        "always",
+        {
+          "ignore": [
+            "active"
+          ]
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "verify": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  98,
+                  104
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:pageSize' must be hyphenated.",
+              "line": 6,
+              "column": 45,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 68,
+              "fix": {
+                "range": [
+                  130,
+                  146
+                ],
+                "text": "v-model:page-size"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 2,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 2,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :activeKey=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :activeKey=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "always-case-sensitive",
+      "file": "RegisteredCamel.vue.txt",
+      "options": [
+        "always",
+        {
+          "ignore": [
+            "Active"
+          ]
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "verify": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  98,
+                  104
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 6,
+              "column": 28,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 44,
+              "fix": {
+                "range": [
+                  113,
+                  123
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:pageSize' must be hyphenated.",
+              "line": 6,
+              "column": 45,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 68,
+              "fix": {
+                "range": [
+                  130,
+                  146
+                ],
+                "text": "v-model:page-size"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 3,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "always-literal-not-regexp",
+      "file": "RegisteredCamel.vue.txt",
+      "options": [
+        "always",
+        {
+          "ignore": [
+            "/active/"
+          ]
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "verify": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  98,
+                  104
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 6,
+              "column": 28,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 44,
+              "fix": {
+                "range": [
+                  113,
+                  123
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:pageSize' must be hyphenated.",
+              "line": 6,
+              "column": 45,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 68,
+              "fix": {
+                "range": [
+                  130,
+                  146
+                ],
+                "text": "v-model:page-size"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 3,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "always-all-authored",
+      "file": "RegisteredCamel.vue.txt",
+      "options": [
+        "always",
+        {
+          "ignore": [
+            "fooBar",
+            "active",
+            "pageSize"
+          ]
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "verify": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "never-default",
+      "file": "RegisteredHyphen.vue.txt",
+      "options": [
+        "never"
+      ],
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "verify": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredHyphen.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'foo-bar' can't be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "cannotBeHyphenated",
+              "endLine": 6,
+              "endColumn": 28,
+              "fix": {
+                "range": [
+                  98,
+                  105
+                ],
+                "text": "fooBar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':active-key' can't be hyphenated.",
+              "line": 6,
+              "column": 29,
+              "messageId": "cannotBeHyphenated",
+              "endLine": 6,
+              "endColumn": 46,
+              "fix": {
+                "range": [
+                  114,
+                  125
+                ],
+                "text": ":activeKey"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:page-size' can't be hyphenated.",
+              "line": 6,
+              "column": 47,
+              "messageId": "cannotBeHyphenated",
+              "endLine": 6,
+              "endColumn": 71,
+              "fix": {
+                "range": [
+                  132,
+                  149
+                ],
+                "text": "v-model:pageSize"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 3,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredHyphen.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredHyphen.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "never-substring",
+      "file": "RegisteredHyphen.vue.txt",
+      "options": [
+        "never",
+        {
+          "ignore": [
+            "active"
+          ]
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "verify": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredHyphen.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'foo-bar' can't be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "cannotBeHyphenated",
+              "endLine": 6,
+              "endColumn": 28,
+              "fix": {
+                "range": [
+                  98,
+                  105
+                ],
+                "text": "fooBar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:page-size' can't be hyphenated.",
+              "line": 6,
+              "column": 47,
+              "messageId": "cannotBeHyphenated",
+              "endLine": 6,
+              "endColumn": 71,
+              "fix": {
+                "range": [
+                  132,
+                  149
+                ],
+                "text": "v-model:pageSize"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 2,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 2,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredHyphen.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :active-key=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :active-key=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031/RegisteredHyphen.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    }
+  ],
+  "invalid": [
+    {
+      "ignore": [
+        ""
+      ],
+      "error": {
+        "name": "Error",
+        "message": "Key \"rules\": Key \"vue/attribute-hyphenation\":\n\tValue \"\" should NOT be valid.\n"
+      }
+    },
+    {
+      "ignore": [
+        " "
+      ],
+      "error": {
+        "name": "Error",
+        "message": "Key \"rules\": Key \"vue/attribute-hyphenation\":\n\tValue \" \" should NOT be valid.\n"
+      }
+    },
+    {
+      "ignore": [
+        "﻿"
+      ],
+      "error": {
+        "name": "Error",
+        "message": "Key \"rules\": Key \"vue/attribute-hyphenation\":\n\tValue \"﻿\" should NOT be valid.\n"
+      }
+    },
+    {
+      "ignore": [
+        "name:exit"
+      ],
+      "error": {
+        "name": "Error",
+        "message": "Key \"rules\": Key \"vue/attribute-hyphenation\":\n\tValue \"name:exit\" should NOT be valid.\n"
+      }
+    },
+    {
+      "ignore": [
+        "active",
+        "active"
+      ],
+      "error": {
+        "name": "Error",
+        "message": "Key \"rules\": Key \"vue/attribute-hyphenation\":\n\tValue [\"active\",\"active\"] should NOT have duplicate items (items ## 0 and 1 are identical).\n"
+      }
+    },
+    {
+      "ignore": [
+        1
+      ],
+      "error": {
+        "name": "Error",
+        "message": "Key \"rules\": Key \"vue/attribute-hyphenation\":\n\tValue 1 should be string.\n"
+      }
+    }
+  ]
+}

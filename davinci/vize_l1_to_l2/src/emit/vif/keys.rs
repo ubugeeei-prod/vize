@@ -7,6 +7,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_l0::id::NodeId;
 use vize_l0::{String, ToCompactString};
+use vize_l2::analysis::if_facts::{BranchKey, BranchKeyKind, IfFacts};
 use vize_l2::expr::{ExprRef, JsExpr};
 use vize_l2::op::{BindingOp, IfBranch, IfOp, Op};
 
@@ -14,7 +15,6 @@ use crate::emit::create_slots_walk::is_slot_if;
 use crate::emit::js::{RawJs, escape_js_string};
 use crate::emit::prefix::{self, Content, Site};
 use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
-use crate::lower::{BranchKey, BranchKeyKind, IfFacts};
 
 #[derive(Default)]
 pub(super) struct BranchKeys {

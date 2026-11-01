@@ -62,6 +62,7 @@
       "/rules/options": "Options des règles",
       "/rules/options-vue": "Options : Vue",
       "/rules/options-events": "Options : événements",
+      "/rules/options-attributes": "Options : attributs",
       "/rules/options-props": "Options : props",
       "/rules/options-script": "Options : scripts",
       "/rules/options-type": "Options : types",

@@ -19,6 +19,8 @@ test("Oxlint's actual option schema and projector guard preserve upstream string
     { ignore: ["row", "Row"] },
     { ignore: ["\u0085"] },
     { ignore: ["row:exit\n"] },
+    { autofix: false },
+    { autofix: true },
   ]) {
     assert.equal(validate(options), true, JSON.stringify(options));
     assert.equal(isVOnEventHyphenationOptions(options), true, JSON.stringify(options));
@@ -36,7 +38,8 @@ test("Oxlint's actual option schema and projector guard preserve upstream string
     { ignore: ["\n\t "] },
     { ignore: ["row:exit"] },
     { ignore: ["row", "row"] },
-    { autofix: true },
+    { autofix: "true" },
+    { autofix: null },
     { ignoreTags: [] },
   ]) {
     assert.equal(validate(options), false, JSON.stringify(options));

@@ -13,7 +13,7 @@ type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
 const declarationContract: Equal<
   NonNullable<LintRuleOptions["vue/v-on-event-hyphenation"]>,
-  "always" | "never" | { style?: "always" | "never"; ignore?: string[] }
+  "always" | "never" | { style?: "always" | "never"; ignore?: string[]; autofix?: boolean }
 > = true;
 const root = new URL("../../", import.meta.url);
 const rule = "vue/v-on-event-hyphenation";
@@ -36,6 +36,7 @@ const expectedSchema = {
           items: { type: "string", pattern: "^(?!\\s*$)(?![\\s\\S]*:exit$)" },
           uniqueItems: true,
         },
+        autofix: { default: false, type: "boolean" },
       },
       additionalProperties: false,
     },
@@ -86,7 +87,11 @@ test("public declarations, schema and Pkl retain strings plus only the documente
         .trim()
         .split("\n")
         .map((line) => line.trim()),
-      ['style: HyphenationStyle = "always"', "ignore: Listing<String> = new Listing {}"],
+      [
+        'style: HyphenationStyle = "always"',
+        "ignore: Listing<String> = new Listing {}",
+        "autofix: Boolean = false",
+      ],
     );
     assert.match(
       source,
@@ -106,6 +111,8 @@ test("independent strict JSON Schema and canonical selection agree on complete v
     { ignore: ["Case", "case"] },
     { ignore: ["\u0085"] },
     { ignore: [":exit\n", "a\n:exit\n", "not:exit:tail"] },
+    { autofix: false },
+    { autofix: true },
   ]) {
     assert.equal(validate(option), true, JSON.stringify(option));
     selected(option);
@@ -134,7 +141,8 @@ test("both validators refuse unknown keys, bad types, duplicate strings, blank a
     { ignore: [1] },
     { ignore: [null] },
     { ignore: ["same", "same"] },
-    { autofix: true },
+    { autofix: "true" },
+    { autofix: null },
     { ignoreTags: ["Foo"] },
     { style: "always", extra: false },
     ...["", " ", "\t\r\n", "\ufeff", "a:exit", ":exit", "a\n:exit"].map((value) => ({

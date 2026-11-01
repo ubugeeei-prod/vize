@@ -1,0 +1,191 @@
+{
+  "schema": "vize.patina.attribute-hyphenation-ignore-6097",
+  "version": 1,
+  "rule": "vue/attribute-hyphenation",
+  "originalReference": {
+    "file": "eslint-plugin-vue.original.json",
+    "bytes": 35394,
+    "sha256": "f284836de666e741f1cb4b3cb6a86bff8614711b36fdd386c1ebcac9b58a833b",
+    "sourceRoot": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.overnight-tail-20261031",
+    "allowedEnvironmentRelocation": "only each ESLint result.filePath is relocated from the recorded sourceRoot to the executing checkout; all other whole fields stay exact"
+  },
+  "provider": {
+    "eslint-plugin-vue": "10.9.2",
+    "eslint": "10.4.1",
+    "vue-eslint-parser": "10.4.1",
+    "@typescript-eslint/parser": "8.65.0"
+  },
+  "ruleSource": {
+    "path": "dist/rules/attribute-hyphenation.js",
+    "bytes": 3500,
+    "sha256": "ce050d17c802fb26ed9d8c7245ad3d55f28750705b86d97b59522c071aa46fbd"
+  },
+  "files": [
+    {
+      "file": "RegisteredCamel.vue.txt",
+      "bytes": 169,
+      "sha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db",
+      "original": "tests/_fixtures/differential/linter/attribute-hyphenation-range/RegisteredCamel.vue.txt"
+    },
+    {
+      "file": "RegisteredHyphen.vue.txt",
+      "bytes": 172,
+      "sha256": "bd9adf1e9a5161b727da0da9d037a2844d50f21dd63ee0300316e4618ac67129",
+      "original": "tests/_fixtures/differential/linter/attribute-hyphenation-range/RegisteredHyphen.vue.txt"
+    }
+  ],
+  "valid": [
+    {
+      "id": "always-default",
+      "file": "RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "referenceRow": 0,
+      "policy": "always",
+      "expectedCount": 3
+    },
+    {
+      "id": "always-empty-ignore",
+      "file": "RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "referenceRow": 1,
+      "policy": {
+        "style": "always",
+        "ignore": []
+      },
+      "expectedCount": 3
+    },
+    {
+      "id": "always-exact",
+      "file": "RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "referenceRow": 2,
+      "policy": {
+        "style": "always",
+        "ignore": [
+          "activeKey"
+        ]
+      },
+      "expectedCount": 2
+    },
+    {
+      "id": "always-substring",
+      "file": "RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "referenceRow": 3,
+      "policy": {
+        "style": "always",
+        "ignore": [
+          "active"
+        ]
+      },
+      "expectedCount": 2
+    },
+    {
+      "id": "always-case-sensitive",
+      "file": "RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "referenceRow": 4,
+      "policy": {
+        "style": "always",
+        "ignore": [
+          "Active"
+        ]
+      },
+      "expectedCount": 3
+    },
+    {
+      "id": "always-literal-not-regexp",
+      "file": "RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "referenceRow": 5,
+      "policy": {
+        "style": "always",
+        "ignore": [
+          "/active/"
+        ]
+      },
+      "expectedCount": 3
+    },
+    {
+      "id": "always-all-authored",
+      "file": "RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "referenceRow": 6,
+      "policy": {
+        "style": "always",
+        "ignore": [
+          "fooBar",
+          "active",
+          "pageSize"
+        ]
+      },
+      "expectedCount": 0
+    },
+    {
+      "id": "never-default",
+      "file": "RegisteredHyphen.vue.txt",
+      "filename": "RegisteredHyphen.vue",
+      "referenceRow": 7,
+      "policy": "never",
+      "expectedCount": 3
+    },
+    {
+      "id": "never-substring",
+      "file": "RegisteredHyphen.vue.txt",
+      "filename": "RegisteredHyphen.vue",
+      "referenceRow": 8,
+      "policy": {
+        "style": "never",
+        "ignore": [
+          "active"
+        ]
+      },
+      "expectedCount": 2
+    }
+  ],
+  "invalid": [
+    {
+      "id": "invalid-0",
+      "ignore": [
+        ""
+      ],
+      "referenceRow": 0
+    },
+    {
+      "id": "invalid-1",
+      "ignore": [
+        " "
+      ],
+      "referenceRow": 1
+    },
+    {
+      "id": "invalid-2",
+      "ignore": [
+        "﻿"
+      ],
+      "referenceRow": 2
+    },
+    {
+      "id": "invalid-3",
+      "ignore": [
+        "name:exit"
+      ],
+      "referenceRow": 3
+    },
+    {
+      "id": "invalid-4",
+      "ignore": [
+        "active",
+        "active"
+      ],
+      "referenceRow": 4
+    },
+    {
+      "id": "invalid-5",
+      "ignore": [
+        1
+      ],
+      "referenceRow": 5
+    }
+  ]
+}

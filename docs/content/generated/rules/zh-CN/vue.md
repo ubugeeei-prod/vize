@@ -5570,10 +5570,14 @@ vp run lint
 
 [错误示例](#vue-v-on-event-hyphenation-bad) · [正确示例](#vue-v-on-event-hyphenation-good)
 
-默认严重程度: `warning`  
-预设: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自动修复: 无；请检查建议的修改  
-适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
+默认严重程度: `warning`
+
+预设: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+
+自动修复: 适用于已支持的诊断
+
+适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文
+
 选项: 参见[类型化选项和默认值](/rules/options.md)。
 
 **配置（Vite+）**
@@ -5627,7 +5631,7 @@ vp run lint
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L38) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L40) · [全部规则](all.md)
 
 ### `vue/v-on-handler-style`
 

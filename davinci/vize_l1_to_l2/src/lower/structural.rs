@@ -229,23 +229,24 @@ fn lower_if_group<'a, 't>(
             }
         };
         let branch_span = element_span(cx, element);
-        let (mut ops, wrapper_key, is_template) = branch_body(cx, element, &analyzed, ns);
+        let (ops, wrapper_key, is_template) = branch_body(cx, element, &analyzed, ns);
         once |= is_template && chain_once_attr(element, &analyzed).is_some();
         if let Some(key) = &wrapper_key {
             record_wrapper_key(cx, node, key, lowered.len());
         }
-        let branch_key = wrapper_key
-            .as_ref()
-            .map(if_keys::from_wrapper_key)
-            .or_else(|| if_keys::take_carrier_key(branch_span, &mut ops));
-        branch_keys.push(branch_key);
-        wrapper_keys.push(wrapper_key);
-        from_template.push(is_template);
-        lowered.push(IfBranch {
+        let mut branch = IfBranch {
             condition,
             region: Region { ops },
             span: branch_span,
-        });
+        };
+        let branch_key = wrapper_key
+            .as_ref()
+            .map(if_keys::from_wrapper_key)
+            .or_else(|| if_keys::take_carrier_key(&mut branch));
+        branch_keys.push(branch_key);
+        wrapper_keys.push(wrapper_key);
+        from_template.push(is_template);
+        lowered.push(branch);
     }
     if_keys::attach_if_facts(cx, node, branch_keys);
     if wrapper_keys.iter().any(Option::is_some) || from_template.iter().any(|flag| *flag) {
