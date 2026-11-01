@@ -11763,6 +11763,11 @@
           "path": "legacy-external-component-props/input.json",
           "sha256": "d7e9384eb53b418384c233f54cd25f4ecf365753eca6390f5e90aeb0f47d35a2",
           "role": "regression-reproduction"
+        },
+        {
+          "path": "legacy-external-component-props/loose-controls.json",
+          "sha256": "e9920ebe8f31750cc86cf80faa7a3013020b4141360e079eef352e0ba1e19308",
+          "role": "regression-control"
         }
       ],
       "dialectCoverage": {

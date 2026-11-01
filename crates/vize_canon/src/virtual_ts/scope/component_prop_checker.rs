@@ -94,7 +94,7 @@ pub(super) fn append_prop_checker_alias(
     component_type_name: &str,
     component_ref: &str,
     idx: usize,
-    (relax_required, hoist_shared_preamble): (bool, bool),
+    (relax_required, hoist_shared_preamble, loose_legacy_attrs): (bool, bool, bool),
     sharing: (Option<usize>, bool),
 ) {
     let (shared_idx, force_value_props) = sharing;
@@ -158,10 +158,17 @@ pub(super) fn append_prop_checker_alias(
             *ts,
             "  type __{component_type_name}_CheckProps_{idx} = {own_props} & $EmitListeners<__{component_type_name}_Component_{idx}> & $RequiredFallthroughProps<__{component_type_name}_Component_{idx}>;\n",
         );
-        append!(
-            *ts,
-            "  type __{component_type_name}_CheckTail_{idx} = $ComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
-        );
+        if loose_legacy_attrs {
+            append!(
+                *ts,
+                "  type __{component_type_name}_CheckTail_{idx} = Record<string, unknown>;\n"
+            );
+        } else {
+            append!(
+                *ts,
+                "  type __{component_type_name}_CheckTail_{idx} = $ComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
+            );
+        }
         if force_value_props || usage_needs_per_prop_aliases(usage) {
             append!(
                 *ts,
@@ -188,10 +195,17 @@ pub(super) fn append_prop_checker_alias(
         *ts,
         "  type __{component_type_name}_CheckProps_{idx} = {own_props} & {emit_listeners}<__{component_type_name}_Component_{idx}> & {required_fallthrough}<__{component_type_name}_Component_{idx}>;\n",
     );
-    append!(
-        *ts,
-        "  type __{component_type_name}_CheckTail_{idx} = $ComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
-    );
+    if loose_legacy_attrs {
+        append!(
+            *ts,
+            "  type __{component_type_name}_CheckTail_{idx} = Record<string, unknown>;\n"
+        );
+    } else {
+        append!(
+            *ts,
+            "  type __{component_type_name}_CheckTail_{idx} = $ComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
+        );
+    }
     if force_value_props || usage_needs_per_prop_aliases(usage) {
         append!(
             *ts,

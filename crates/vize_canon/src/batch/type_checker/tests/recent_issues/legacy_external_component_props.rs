@@ -152,3 +152,62 @@ fn observe(input: &Value, legacy: bool, phase: &str) -> Value {
         .expect("remove source-only temporary project after native completion");
     result
 }
+
+#[test]
+fn legacy_external_callbacks_and_partial_declarations_keep_the_loose_surface() {
+    assert!(
+        std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none()
+            || std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_none(),
+        "required native compatibility control cannot be disabled"
+    );
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let input: Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/legacy-external-component-props/loose-controls.json"
+    )))
+    .expect("pinned loose controls");
+    let observation = observe(&input, true, "compatibility");
+    let capture = json!({
+        "schema":"vize.legacy-external-props-compatibility-observation.v1",
+        "scope":"Synthetic declarations. MixedCallbacks.vue is a raw remaining-gap control, not evidence its wrong count is checked.",
+        "input":input, "observation":observation,
+    });
+    let whole = serde_json::to_string_pretty(&capture).expect("complete compatibility API capture");
+    if let Some(root) = std::env::var_os("VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR") {
+        let directory = std::path::PathBuf::from(root).join("legacy-external-props");
+        std::fs::create_dir_all(&directory).expect("capture directory");
+        std::fs::write(directory.join("compatibility-observation.json"), &whole)
+            .expect("retain complete compatibility result before semantic assertions");
+    }
+    println!("{whole}");
+    let observation = &capture["observation"];
+    assert_eq!(observation["kind"], "result", "{observation:#}");
+    let diagnostics = observation["diagnostics"]
+        .as_array()
+        .expect("full diagnostics");
+    for file in [
+        "src/Partial.vue",
+        "src/AnyCallbacks.vue",
+        "src/UnknownCallbacks.vue",
+        "src/KnownCallbacks.vue",
+    ] {
+        assert!(
+            diagnostics.iter().all(|diagnostic| {
+                !Path::new(diagnostic["file"].as_str().expect("diagnostic path")).ends_with(file)
+            }),
+            "existing loose compatibility must not gain false findings: {observation:#}"
+        );
+    }
+    assert!(
+        diagnostics.iter().any(|diagnostic| {
+            Path::new(diagnostic["file"].as_str().expect("diagnostic path"))
+                .ends_with("src/Shadow.vue")
+                && diagnostic["code"] == 2322
+        }),
+        "a local binding shadow must keep its existing typed check: {observation:#}"
+    );
+    // Do not pin MixedCallbacks.vue to a false-clean result. Its full result
+    // remains visible and may improve when callback ownership is qualified.
+}

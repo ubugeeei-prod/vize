@@ -212,7 +212,7 @@ function submitHooks(hooks: { before?: () => void; after?: () => void }) {
 }
 
 #[test]
-fn legacy_vue2_skips_external_component_prop_checks() {
+fn legacy_vue2_checks_external_values_with_loose_extra_attributes() {
     let script = "const width = 320\n";
     let template = r#"<VDatePicker :width="width" />"#;
     let options = VirtualTsOptions {
@@ -231,8 +231,9 @@ fn legacy_vue2_skips_external_component_prop_checks() {
 
     let legacy = legacy_virtual_ts(script, template, &options);
     assert!(
-        !legacy.contains("type __VDatePicker_Props_0"),
-        "legacy Vue 2 external component props should avoid Vuetify false positives:\n{legacy}"
+        legacy.contains("type __VDatePicker_Props_0")
+            && legacy.contains("type __VDatePicker_CheckTail_0 = Record<string, unknown>;"),
+        "legacy external values keep known types without rejecting loose extra attrs:\n{legacy}"
     );
 }
 
@@ -321,5 +322,40 @@ fn vue2_instance_members_are_declared_once() {
         standard.matches("void (__ctx.$listeners);").count(),
         1,
         "Vue 3 should still resolve $listeners through the instance-global form:\n{standard}"
+    );
+}
+
+#[test]
+fn legacy_external_inline_callbacks_keep_the_existing_loose_route() {
+    let options = VirtualTsOptions {
+        auto_import_stubs: vec!["declare const ExternalInput: any;".into()],
+        external_template_bindings: vec!["ExternalInput".into()],
+        ..Default::default()
+    };
+    let legacy = legacy_virtual_ts(
+        "",
+        r#"<ExternalInput :rules="[(value) => !!value]" />"#,
+        &options,
+    );
+    assert!(!legacy.contains("type __ExternalInput_Props_0"), "{legacy}");
+}
+
+#[test]
+fn legacy_local_import_shadow_keeps_the_original_strict_check_tail() {
+    let options = VirtualTsOptions {
+        auto_import_stubs: vec!["declare const ExternalInput: any;".into()],
+        external_template_bindings: vec!["ExternalInput".into()],
+        ..Default::default()
+    };
+    let legacy = legacy_virtual_ts(
+        "import ExternalInput from './Input.vue'",
+        r#"<ExternalInput :count="'wrong'" />"#,
+        &options,
+    );
+    assert!(
+        legacy.contains(
+            "type __ExternalInput_CheckTail_0 = $ComponentCheckTail<__ExternalInput_Component_0>;"
+        ),
+        "{legacy}"
     );
 }

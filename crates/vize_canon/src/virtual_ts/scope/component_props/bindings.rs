@@ -43,20 +43,39 @@ pub(in crate::virtual_ts::scope) fn component_usage_has_checkable_binding(
     legacy_vue2: bool,
 ) -> bool {
     let name = usage.name.as_str();
-    let script_binding = if bindings.contains_binding(name) {
-        true
-    } else {
-        let camel = camelize(name);
-        let pascal = capitalize(camel.as_str());
-        [pascal.as_str(), camel.as_str()]
-            .into_iter()
-            .any(|candidate| bindings.contains_binding(candidate))
-    };
-    script_binding
-        || (!legacy_vue2
-            && (component_name_matches_external_template_binding(name, external_template_bindings)
-                || component_binding_check.allows(name)
-                || vize_croquis::drawer::is_dynamic_component_alias(name)))
+    if has_script_binding(bindings, usage) {
+        return true;
+    }
+    let external =
+        component_name_matches_external_template_binding(name, external_template_bindings);
+    if legacy_vue2 {
+        // Retain the existing loose callback route until its contextual owner
+        // is known. Scalar-only external uses can check resolved value types
+        // without exposing untyped library callbacks as TS7006 findings.
+        return external
+            && !usage.props.iter().any(|prop| {
+                prop.value.as_ref().is_some_and(|value| {
+                    super::super::component_prop_checker::contains_inline_function_prop_value(
+                        value.as_str(),
+                    )
+                })
+            });
+    }
+    external
+        || component_binding_check.allows(name)
+        || vize_croquis::drawer::is_dynamic_component_alias(name)
+}
+
+pub(super) fn has_script_binding(bindings: ScriptBindings<'_>, usage: &ComponentUsage) -> bool {
+    let name = usage.name.as_str();
+    if bindings.contains_binding(name) {
+        return true;
+    }
+    let camel = camelize(name);
+    let pascal = capitalize(camel.as_str());
+    [pascal.as_str(), camel.as_str()]
+        .into_iter()
+        .any(|candidate| bindings.contains_binding(candidate))
 }
 
 fn component_name_matches_external_template_binding(
