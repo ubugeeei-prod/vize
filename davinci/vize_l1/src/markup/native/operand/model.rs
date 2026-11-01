@@ -1,6 +1,7 @@
 //! Distinct original model operand and same-event short admission.
 
 use super::{NativeAttribute, NativeAttributeHead, NativeTemplateComponent, Origin};
+use crate::dialect::vue3::operand::ModelModifier;
 use crate::embed::syntax::RetainedExpression;
 use oxc_parser::AdmittedExpression;
 use vize_l0::Span;
@@ -28,7 +29,7 @@ pub use head::NativeModelHead;
 pub struct NativeAttributeModelExpression<'a> {
     origin: Origin<'a>,
     syntax: RetainedExpression<'a>,
-    trim: Option<Span>,
+    modifier: Option<ModelModifier>,
 }
 
 impl<'a> NativeAttributeModelExpression<'a> {
@@ -52,7 +53,18 @@ impl<'a> NativeAttributeModelExpression<'a> {
     /// Authored modifier name, retained only by the supported original head.
     #[must_use]
     pub const fn trim_span(&self) -> Option<Span> {
-        self.trim
+        match self.modifier {
+            Some(ModelModifier::Trim(span)) => Some(span),
+            _ => None,
+        }
+    }
+    /// Authored lazy modifier; it does not grant File or write authority.
+    #[must_use]
+    pub const fn lazy_span(&self) -> Option<Span> {
+        match self.modifier {
+            Some(ModelModifier::Lazy(span)) => Some(span),
+            _ => None,
+        }
     }
     /// Join only with the actual component/header/ordinal/source/profile owner.
     /// Equal-byte copies and independently parsed siblings confer no authority.

@@ -73,9 +73,14 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     body.push(" = ");
     body.push(value.as_str());
     body.push("))");
-    if let Some(span) = original.input().operand().trim_span() {
+    let operand = original.input().operand();
+    let modifier = operand
+        .trim_span()
+        .map(|span| ("trim", span))
+        .or_else(|| operand.lazy_span().map(|span| ("lazy", span)));
+    if let Some((name, span)) = modifier {
         body.push(", { ");
-        body.push_named("trim", span, "trim");
+        body.push_named(name, span, name);
         body.push(": true }");
     }
     body.push(")");

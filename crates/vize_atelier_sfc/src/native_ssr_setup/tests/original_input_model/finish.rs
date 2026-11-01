@@ -30,9 +30,15 @@ pub(super) fn write(
                 && golden["provenance"]["independentlyReviewedBeforeFreeze"] == true,
             "whole reviewed original SSR authority"
         );
+        let current = crate::native_selected_setup::tests::current_model_outside::expected("ssr")?;
         compared = true;
         for field in ["fixtures", "custody", "attempts", "refusals"] {
-            if actual[field] != golden["native"][field] {
+            let expected = if field == "refusals" {
+                &current
+            } else {
+                &golden["native"][field]
+            };
+            if &actual[field] != expected {
                 failures.push(cstr!(
                     "whole current native SSR {field} differs from reviewed golden"
                 ));

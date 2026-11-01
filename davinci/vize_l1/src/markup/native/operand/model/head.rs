@@ -4,8 +4,7 @@ use super::super::{
     NativeAttributeExpressionFailure, NativeAttributeOperandError, observe_expression_value,
 };
 use super::{NativeAttributeHead, NativeAttributeModelExpression};
-use crate::dialect::vue3::operand::model_parts;
-use vize_l0::Span;
+use crate::dialect::vue3::operand::{ModelModifier, model_parts};
 
 /// A short original model selection, never a caller-assembled expression.
 /// Its value is prepared and parsed once when this selection is consumed.
@@ -33,11 +32,11 @@ use vize_l0::Span;
 /// ```
 pub struct NativeModelHead<'h, 'o, 'a> {
     head: &'h NativeAttributeHead<'o, 'a>,
-    trim: Option<Span>,
+    modifier: Option<ModelModifier>,
 }
 
 impl<'o, 'a> NativeAttributeHead<'o, 'a> {
-    /// Select a full `v-model`, optionally with the single original `.trim`.
+    /// Select a full `v-model`, optionally with one original `.trim` or `.lazy`.
     /// Other families return None; arguments and other modifiers are unsupported.
     /// Conditional and static-binding expression routes keep their own contracts.
     pub fn model(
@@ -46,7 +45,7 @@ impl<'o, 'a> NativeAttributeHead<'o, 'a> {
         Ok(
             model_parts(self.directive(), self.name_block())?.map(|parts| NativeModelHead {
                 head: self,
-                trim: parts.trim,
+                modifier: parts.modifier,
             }),
         )
     }
@@ -68,7 +67,7 @@ impl<'h, 'o, 'a> NativeModelHead<'h, 'o, 'a> {
         Ok(NativeAttributeModelExpression {
             origin,
             syntax,
-            trim: self.trim,
+            modifier: self.modifier,
         })
     }
 }

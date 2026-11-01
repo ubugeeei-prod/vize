@@ -1,0 +1,115 @@
+{
+  "schema": "vize.native-sfc.original-input-model-modifier-inputs",
+  "qualification": "new-current-inputs-not-native-execution-evidence",
+  "filename": "OriginalInputModelModifiers.vue",
+  "typescript": "6.0.3",
+  "targets": {
+    "dom": { "compiler": "3.5.35", "runtime": "3.5.35" },
+    "ssr": { "compiler": "3.5.35", "runtime": "3.5.35", "renderer": "3.5.35" },
+    "vapor": { "compiler": "3.6.0-rc.9", "runtime": "3.6.0-rc.9" }
+  },
+  "groups": [
+    {
+      "modifier": "trim",
+      "filename": "OriginalInputModelTrim.vue",
+      "ids": ["trim-let-string", "trim-var-number", "trim-ts-unicode-crlf"]
+    },
+    {
+      "modifier": "lazy",
+      "filename": "OriginalInputModelLazy.vue",
+      "ids": ["lazy-original-modifier", "lazy-var-number", "lazy-ts-unicode-crlf"]
+    }
+  ],
+  "history": {
+    "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
+    "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+    "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
+    "intentionalOutsideSuccessor": {
+      "id": "modifier",
+      "targets": ["dom", "ssr", "vapor"],
+      "source": "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>",
+      "previousOutcome": "refused",
+      "currentExpectedOutcome": "emitted"
+    }
+  },
+  "fixtures": [
+    {
+      "id": "trim-let-string",
+      "source": "<script setup>let draft=' initial '</script><template><input v-model.trim='draft'/></template>",
+      "script": "let draft=' initial '",
+      "template": "<input v-model.trim='draft'/>",
+      "bindings": ["draft"],
+      "binding": "draft",
+      "initial": { "kind": "string", "value": " initial " },
+      "input": " \t雪🌸  ",
+      "programmatic": " programmatic 雪🌸 ",
+      "composing": " \tIME 雪🌸  ",
+      "change": " \tchanged 雪🌸  "
+    },
+    {
+      "id": "trim-var-number",
+      "source": "<script setup>var count=7</script><template><input v-model.trim=count /></template>",
+      "script": "var count=7",
+      "template": "<input v-model.trim=count />",
+      "bindings": ["count"],
+      "binding": "count",
+      "initial": { "kind": "number", "value": 7 },
+      "input": " 007 ",
+      "programmatic": " 0042 ",
+      "composing": " 0099 ",
+      "change": " 0101 "
+    },
+    {
+      "id": "trim-ts-unicode-crlf",
+      "source": "<!-- import \"vue\" 雪🌸 -->\r\n<script setup lang='ts'>let café:string=' 雪🌸 '</script>\r\n<template><input v-model.trim='café'/></template>\r\n",
+      "script": "let café:string=' 雪🌸 '",
+      "template": "<input v-model.trim='café'/>",
+      "bindings": ["café"],
+      "binding": "café",
+      "initial": { "kind": "string", "value": " 雪🌸 " },
+      "input": "  café 雪🌸 \t",
+      "programmatic": " original setter café ",
+      "composing": " \tcomposé 雪🌸  ",
+      "change": "  changed café \t"
+    },
+    {
+      "id": "lazy-original-modifier",
+      "source": "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>",
+      "script": "let draft='x'",
+      "template": "<input v-model.lazy='draft'/>",
+      "bindings": ["draft"],
+      "binding": "draft",
+      "initial": { "kind": "string", "value": "x" },
+      "input": " typed 🌸 ",
+      "programmatic": " programmatic 雪 ",
+      "composing": " composé café ",
+      "change": " changed 🌸 "
+    },
+    {
+      "id": "lazy-var-number",
+      "source": "<script setup>var count=7</script><template><input v-model.lazy=count /></template>",
+      "script": "var count=7",
+      "template": "<input v-model.lazy=count />",
+      "bindings": ["count"],
+      "binding": "count",
+      "initial": { "kind": "number", "value": 7 },
+      "input": " 007 ",
+      "programmatic": " 0042 ",
+      "composing": " 0099 ",
+      "change": " 0101 "
+    },
+    {
+      "id": "lazy-ts-unicode-crlf",
+      "source": "<!-- import \"vue\" 雪🌸 -->\r\n<script setup lang='ts'>let café:string=' 初🌸 '</script>\r\n<template><input v-model.lazy='café'/></template>\r\n",
+      "script": "let café:string=' 初🌸 '",
+      "template": "<input v-model.lazy='café'/>",
+      "bindings": ["café"],
+      "binding": "café",
+      "initial": { "kind": "string", "value": " 初🌸 " },
+      "input": "  typed 雪 \t",
+      "programmatic": " new café ",
+      "composing": " 入力🌸 ",
+      "change": "  更新 🌸 \t"
+    }
+  ]
+}

@@ -60,7 +60,7 @@ impl<'a> Builder<'a> {
         )?;
         check::expression(self.parts.source, id, ExprRef::Js(expression), span)?;
         let mut attributes = vize_l0::Vec::new_in(&self.allocator);
-        if let Some(modifier) = input.operand().trim_span() {
+        if let Some(modifier) = input.operand().trim_span().or(input.operand().lazy_span()) {
             check::owned_span(self.parts.source, id, modifier, Some(span))?;
             attributes.push(Attribute {
                 name: modifier.slice(self.parts.source),

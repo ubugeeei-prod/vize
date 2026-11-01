@@ -3,6 +3,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { after, test } from "node:test";
 import {
+  currentModelOutside,
+  isLazyOriginalOutside,
+} from "./support/native-input-model-current-outside.ts";
+import {
   assertContext,
   assertFixture,
   hash,
@@ -74,7 +78,8 @@ assert.deepEqual(goldens.inputPack, pack);
 assert.deepEqual(goldens.contextPack, contextPack);
 object(goldens.provenance);
 assert.equal(goldens.provenance.independentlyReviewedBeforeFreeze, true);
-const expectedNative = goldens.native;
+object(goldens.native);
+const expectedNative: ObjectValue = { ...goldens.native, refusals: currentModelOutside("ssr") };
 const expectedPrimary = goldens.primary;
 const expectedRuntime = goldens.runtimeResults;
 object(expectedNative);
@@ -138,7 +143,7 @@ function assertNativeRow(value: unknown): asserts value is NativeRow {
   object(value.nativeMap);
 }
 
-test("original SSR Model capture retains seven real owners and all twelve outside refusals", () => {
+test("original SSR Model capture retains seven real owners and all twelve current outside attempts", () => {
   if (!capturePath && !requireCapture) return;
   try {
     object(captured);
@@ -200,8 +205,13 @@ test("original SSR Model capture retains seven real owners and all twelve outsid
       captured.refusals.map((row: unknown) => {
         object(row);
         object(row.result);
-        assert.equal(row.result.state, "refused");
-        assert(typeof row.result.error === "string" && row.result.error.length > 0);
+        if (isLazyOriginalOutside(row.id, row.source)) {
+          assert.equal(row.result.state, "emitted");
+          assert(typeof row.result.code === "string");
+        } else {
+          assert.equal(row.result.state, "refused");
+          assert(typeof row.result.error === "string" && row.result.error.length > 0);
+        }
         return { id: row.id, source: row.source };
       }),
       contextPack.refusals,

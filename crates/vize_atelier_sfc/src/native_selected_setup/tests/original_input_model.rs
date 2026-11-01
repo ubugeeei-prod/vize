@@ -4,7 +4,7 @@ use super::*;
 
 mod custody;
 mod finish;
-mod refusal;
+pub(super) mod refusal;
 
 #[test]
 fn fourteen_whole_original_input_model_components_and_raw_maps_are_captured() -> Result<(), String>
