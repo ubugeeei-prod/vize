@@ -7,6 +7,7 @@ import {
 } from "./plugin-option-guards.js";
 import { isVOnEventHyphenationOptions } from "./v-on-event-options.js";
 import { getAttributeHyphenationOptions } from "./attribute-options.js";
+import { getPropNameCasingOptions } from "./prop-name-options.js";
 import type {
   ComponentNameInTemplateCasingOption,
   CustomEventNameCasingOption,
@@ -29,6 +30,8 @@ export function getRuleOptions(
 ): PatinaRuleOptions | undefined {
   const firstOption = options[0];
   switch (ruleName) {
+    case "vue/prop-name-casing":
+      return getPropNameCasingOptions(options);
     case "vue/component-name-in-template-casing":
       if (isComponentNameInTemplateCasingOption(firstOption)) {
         return { componentNameInTemplateCasing: firstOption };
