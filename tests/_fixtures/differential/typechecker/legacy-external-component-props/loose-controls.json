@@ -29,6 +29,18 @@
     {
       "path": "src/shadow.d.ts",
       "source": "declare const TypedControl: { new (): { $props: { count: number } } };\nexport default TypedControl;\n"
+    },
+    {
+      "path": "src/AnyMethods.vue",
+      "source": "<template><AnyControl :rules=\"{ format(value) { return !!value } }\" /></template>\n"
+    },
+    {
+      "path": "src/UnknownMethods.vue",
+      "source": "<template><UnknownControl :rules=\"{ format(value) { return !!value } }\" /></template>\n"
+    },
+    {
+      "path": "src/QuotedArrow.vue",
+      "source": "<template><TypedControl :count=\"'a=>b'\" /></template>\n"
     }
   ],
   "externalDeclarations": [

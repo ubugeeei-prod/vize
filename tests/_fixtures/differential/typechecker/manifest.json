@@ -11766,7 +11766,7 @@
         },
         {
           "path": "legacy-external-component-props/loose-controls.json",
-          "sha256": "e9920ebe8f31750cc86cf80faa7a3013020b4141360e079eef352e0ba1e19308",
+          "sha256": "0de634cc3735350ea7eaafaaf309232be43de5cfe1b42dc2b8844e886dc3c0cb",
           "role": "regression-control"
         }
       ],

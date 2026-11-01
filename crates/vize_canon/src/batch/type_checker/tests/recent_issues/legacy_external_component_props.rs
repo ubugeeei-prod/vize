@@ -157,10 +157,16 @@ fn legacy_external_callbacks_and_partial_declarations_keep_the_loose_surface() {
     )))
     .expect("pinned loose controls");
     let observation = observe(&input, true, "compatibility");
+    let mut old_route_input = input.clone();
+    old_route_input["externalBindings"]
+        .as_array_mut()
+        .expect("binding names")
+        .retain(|name| name != "AnyControl" && name != "UnknownControl");
+    let old_route = observe(&old_route_input, true, "unregistered-method-controls");
     let capture = json!({
         "schema":"vize.legacy-external-props-compatibility-observation.v1",
         "scope":"Synthetic declarations. MixedCallbacks.vue is a raw remaining-gap control, not evidence its wrong count is checked.",
-        "input":input, "observation":observation,
+        "input":input, "observation":observation, "unregisteredMethodObservation":old_route,
     });
     let whole = serde_json::to_string_pretty(&capture).expect("complete compatibility API capture");
     if let Some(root) = std::env::var_os("VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR") {
