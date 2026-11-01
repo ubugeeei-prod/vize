@@ -19,7 +19,8 @@ use tower_lsp::lsp_types::{
 // Shared, UTF-16-correct offset->(line, column) conversion (#1389).
 use vize_l0::line_index::offset_to_line_col;
 
-#[cfg(all(test, unix))]
+#[cfg(test)]
+#[cfg(unix)]
 mod auto_import_literal_tests;
 #[cfg(test)]
 mod diagnostic_selection_tests;

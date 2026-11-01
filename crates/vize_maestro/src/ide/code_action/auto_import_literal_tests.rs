@@ -28,7 +28,7 @@ const COMPONENT: &str = include_str!(
 fn assert_module(source: &str, expected_specifier: &str) {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::mjs()).parse();
-    assert_eq!(format!("{:#?}", parsed.diagnostics), "[]");
+    assert!(parsed.diagnostics.is_empty(), "{:#?}", parsed.diagnostics);
     assert!(!parsed.panicked);
     let Statement::ImportDeclaration(import) = &parsed.program.body[0] else {
         panic!(
@@ -103,7 +103,7 @@ fn exercise(quoted_target: bool, specifier: &str, statement: &str) {
     let allocator = Allocator::default();
     let component_script = component.script_setup.as_ref().unwrap();
     let parsed = Parser::new(&allocator, &component_script.content, SourceType::mjs()).parse();
-    assert_eq!(format!("{:#?}", parsed.diagnostics), "[]");
+    assert!(parsed.diagnostics.is_empty(), "{:#?}", parsed.diagnostics);
     assert_eq!(
         AutoImportIndex::find_in_directory(&directory, "MyButton"),
         Some(AutoImportEntry {
@@ -193,7 +193,7 @@ fn source_derived_unescaped_interpolation_is_not_a_valid_javascript_module() {
     let source = "import MyButton from '../owner's-components/MyButton.vue'\n";
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::mjs()).parse();
-    assert_ne!(format!("{:#?}", parsed.diagnostics), "[]");
+    assert!(!parsed.diagnostics.is_empty(), "{:#?}", parsed.diagnostics);
 }
 
 #[test]
