@@ -7,7 +7,11 @@ import { readFileSync, realpathSync } from "node:fs";
 import { fileImage, inside } from "../computed_event_custody.ts";
 import { object, text } from "./value.ts";
 export function probe(root: string): unknown {
-  const require = createRequire(join(root, "node_modules/vize/package.json"));
+  // Match the real canonical public CLI module's default lookup context.
+  // A virtual lexical alias can miss pnpm slot dependencies or inspect a
+  // different nested node_modules population from the actual product entry.
+  const cli = realpathSync(join(root, "node_modules/vize/bin/vize"));
+  const require = createRequire(cli);
   const native = object(require("@vizejs/native"));
   const images = Object.keys(require.cache).filter((p) => p.endsWith(".node") && inside(root, p));
   assert.equal(images.length, 1);

@@ -25,6 +25,7 @@ import { humanDependencyBinPartition } from "./dependency-bin-partition.ts";
 import { validateBinRecord } from "./dependency-bin-record.ts";
 import { capturePublicPayload } from "./capture-payload.ts";
 import type { Sink } from "./evidence.ts";
+import { validateNativeLoadRecord } from "./native-loader-prerequisite.ts";
 export function manifestBytes(fixture: Fixture, version: string, supplement: boolean): Buffer {
   const source = fixture.files.find((f) => f.path === "package.json");
   assert(source);
@@ -137,12 +138,10 @@ function validateNativeAndDeclarations(
   }
   assert.equal(fileImage(receipt.cli.path).sha256, receipt.cli.sha256);
   assert.equal(fileImage(receipt.native.path).sha256, receipt.native.sha256);
-  const requiredNative =
-    receipt.platform === "darwin" ? "@vizejs/native-darwin-arm64" : "@vizejs/native-linux-x64-gnu";
-  assert.equal(receipt.native.packageName, requiredNative);
+  validateNativeLoadRecord(receipt, authority);
   for (const [name, image] of [
     ["vize", receipt.cli],
-    [requiredNative, receipt.native],
+    [receipt.nativeLoad.selectedOwner, receipt.native],
   ] as const) {
     const owner = receipt.packages.find(
       (pkg) => pkg.name === name && pkg.version === authority.version,
