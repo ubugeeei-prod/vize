@@ -57,7 +57,7 @@ fn suppression(uri: &Url, diagnostic: &Diagnostic, version: Option<i32>) -> serd
 }
 
 #[test]
-fn selected_no_fix_suppression_keeps_full_diagnostic_and_only_suppresses_that_rule() {
+fn selected_no_fix_suppression_keeps_full_diagnostic_and_only_suppresses_the_next_element() {
     let original: serde_json::Value = serde_json::from_str(REFERENCE).unwrap();
     let diagnostic: Diagnostic =
         serde_json::from_value(original["diagnostics"][0].clone()).unwrap();
@@ -167,13 +167,8 @@ fn selected_no_fix_suppression_keeps_full_diagnostic_and_only_suppresses_that_ru
     let actual_peer =
         futures::executor::block_on(code_actions(server, &params(&uri, peer.clone())));
     eprintln!("whole fresh peer-rule suppression requery: {actual_peer:#?}");
-    assert_eq!(
-        serde_json::to_value(actual_peer.unwrap()).unwrap(),
-        serde_json::json!([
-            {"title":"Fix: Use self-closing syntax","kind":"quickfix","diagnostics":[peer],"edit":edit(&uri,2,2,23,"<img src=\"/logo.png\" />",Some(9)),"isPreferred":true},
-            suppression(&uri,&peer,Some(9))
-        ])
-    );
+    // The existing @vize:forget payload is a reason, not a rule filter.
+    assert!(actual_peer.is_none());
     let mut suppressed = diagnostic;
     suppressed.range.start.line = 2;
     suppressed.range.end.line = 2;
@@ -182,4 +177,29 @@ fn selected_no_fix_suppression_keeps_full_diagnostic_and_only_suppresses_that_ru
     eprintln!("whole suppressed-rule fresh requery: {actual_absent:#?}");
     assert!(actual_absent.is_none());
     assert_eq!(server.state.documents.text(&uri).unwrap(), applied);
+    let with_sibling = applied.replace("</template>", "  <img src=\"/logo.png\">\n</template>");
+    assert!(server.state.documents.apply_changes(
+        &uri,
+        vec![TextDocumentContentChangeEvent {
+            range: None,
+            range_length: None,
+            text: with_sibling.clone()
+        }],
+        10
+    ));
+    server.state.update_virtual_docs(&uri, &with_sibling);
+    peer.range.start.line = 3;
+    peer.range.end.line = 3;
+    let actual_sibling =
+        futures::executor::block_on(code_actions(server, &params(&uri, peer.clone())));
+    eprintln!("whole untouched sibling source: {with_sibling:?}");
+    eprintln!("whole untouched sibling peer-rule response: {actual_sibling:#?}");
+    assert_eq!(
+        serde_json::to_value(actual_sibling.unwrap()).unwrap(),
+        serde_json::json!([
+            {"title":"Fix: Use self-closing syntax","kind":"quickfix","diagnostics":[peer],"edit":edit(&uri,3,2,23,"<img src=\"/logo.png\" />",Some(10)),"isPreferred":true},
+            suppression(&uri,&peer,Some(10))
+        ])
+    );
+    assert_eq!(server.state.documents.text(&uri).unwrap(), with_sibling);
 }
