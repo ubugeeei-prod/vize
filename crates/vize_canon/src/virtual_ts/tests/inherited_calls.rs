@@ -29,41 +29,6 @@ fn direct_optional_generic_and_grouped_calls_retain_affine_property_tokens() {
     let template = "<p :title=\"greet('x')\">{{ greet?.('x') }} {{ identity<number>(1) }} {{ (greet)('x') }} {{ ({ greet, member: holder.greet, text: 'greet' }) }}</p><Child :title=\"/* comment */greet('x')\"/>";
     let output = generate(template, SCRIPT);
     let receiver = "__vize_template_instance";
-    assert!(
-        output
-            .code
-            .contains(&format!("{}('x')", callee(receiver, "greet"))),
-        "{}",
-        output.code
-    );
-    assert!(
-        output
-            .code
-            .contains(&format!("{}?.('x')", callee(receiver, "greet"))),
-        "{}",
-        output.code
-    );
-    assert!(
-        output
-            .code
-            .contains(&format!("{}<number>(1)", callee(receiver, "identity"))),
-        "{}",
-        output.code
-    );
-    assert!(
-        output
-            .code
-            .contains(&format!("({})('x')", callee(receiver, "greet"))),
-        "{}",
-        output.code
-    );
-    assert!(
-        output
-            .code
-            .contains("({ greet, member: holder.greet, text: 'greet' })"),
-        "{}",
-        output.code
-    );
     let early = output
         .code
         .find("const __vize_template_instance = undefined as unknown as")
@@ -73,39 +38,96 @@ fn direct_optional_generic_and_grouped_calls_retain_affine_property_tokens() {
         .find(callee(receiver, "greet").as_str())
         .unwrap();
     assert!(early < first_call);
-    let prefixes = output
-        .mapping
-        .spans()
-        .iter()
-        .filter(|m| {
+    assert_eq!(
+        output
+            .code
+            .matches("({ greet, member: holder.greet, text: 'greet' })")
+            .count(),
+        1
+    );
+    let expected = [
+        (
+            ":title=\"greet('x')",
+            ":title=\"".len(),
+            "greet",
+            "greet('x')",
+        ),
+        ("greet?.('x')", 0, "greet", "greet?.('x')"),
+        ("identity<number>(1)", 0, "identity", "identity<number>(1)"),
+        ("(greet)('x')", 1, "greet", "greet)('x')"),
+        (
+            "/* comment */greet('x')",
+            "/* comment */".len(),
+            "greet",
+            "greet('x')",
+        ),
+    ]
+    .map(|(marker, offset, name, tail)| {
+        let start = template.find(marker).unwrap() + offset;
+        let whole = callee(receiver, name);
+        (
+            start,
+            start + name.len(),
+            whole.get(..whole.len() - name.len()).unwrap().to_owned(),
+            tail,
+        )
+    });
+    let mut actual = std::collections::BTreeSet::new();
+    let owner = format!("({receiver} as ");
+    for row in output.mapping.rows().filter(|row| {
+        row.meta.features == crate::virtual_ts::mapping::ProjectionFeatures::DIAGNOSTICS
+    }) {
+        let prefix = output.code.get(row.span.gen_range.clone()).unwrap();
+        if !prefix.starts_with(&owner) {
+            continue;
+        }
+        let source = &row.span.src_range;
+        let expected_row = expected
+            .iter()
+            .find(|(start, end, _, _)| *start == source.start && *end == source.end)
+            .expect("every synthetic receiver prefix must own an actual authored callee");
+        assert_eq!(
+            prefix, expected_row.2,
+            "complete receiver view at {source:?}"
+        );
+        assert_eq!(
+            output
+                .mapping
+                .diagnostic_range_to_authored(row.span.gen_range.start, row.span.gen_range.end),
+            Some((source.start, source.end)),
+            "actual diagnostic consumer honors this authored callee"
+        );
+        let property_start = row.span.gen_range.end;
+        assert_eq!(
             output
                 .code
-                .get(m.gen_range.clone())
-                .is_some_and(|s| s.ends_with(")).") && s.contains("as unknown as (\""))
-        })
-        .collect::<Vec<_>>();
-    assert!(!prefixes.is_empty(), "{}", output.code);
-    let comment_start = template.find("/* comment */greet").unwrap() + "/* comment */".len();
-    assert!(
-        prefixes
-            .iter()
-            .any(|p| p.src_range == (comment_start..comment_start + 5)),
-        "comment-stripped prop keeps its source offsets: {:#?}",
-        output.mapping.spans()
-    );
-    for prefix in prefixes {
-        let authored = template.get(prefix.src_range.clone()).unwrap();
-        assert!(matches!(authored, "greet" | "identity"), "{authored}");
+                .get(property_start..property_start + expected_row.3.len()),
+            Some(expected_row.3),
+            "all call syntax and type arguments remain authored"
+        );
+        actual.insert((source.start, source.end, prefix.to_owned()));
     }
+    // Multiple emitted copies are all checked above; each authored call has one
+    // distinct owner/prefix, independent of prop-inference duplication.
+    let expected = expected
+        .into_iter()
+        .map(|(start, end, prefix, _)| (start, end, prefix))
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        actual, expected,
+        "complete diagnostic-only receiver projection"
+    );
 }
 #[test]
 fn lexical_loop_and_slot_callees_keep_their_own_receiver() {
     let template = "<div>{{ ((greet: (x: string) => string) => greet('x'))((x) => x) }}<p v-for=\"greet in [(x: string) => x]\">{{ greet('x') }}</p><Child v-slot=\"{ greet }\">{{ greet('x') }}</Child></div>";
     let output = generate(template, SCRIPT);
-    assert!(
-        !output
+    assert_eq!(
+        output
             .code
-            .contains("as unknown as (\"greet\" extends keyof"),
+            .matches("as unknown as (\"greet\" extends keyof")
+            .count(),
+        0,
         "{}",
         output.code
     );
@@ -115,17 +137,21 @@ fn receiver_hygiene_and_missing_member_guard_keep_distinct_owners() {
     let template =
         "<p>{{ (__vize_template_instance => greet('x'))(0) }} {{ missingInherited() }}</p>";
     let output = generate(template, SCRIPT);
-    assert!(
+    assert_eq!(
         output
             .code
-            .contains(callee("__vize_template_instance_", "greet").as_str()),
+            .matches(callee("__vize_template_instance_", "greet").as_str())
+            .count(),
+        1,
         "{}",
         output.code
     );
-    assert!(
+    assert_eq!(
         output
             .code
-            .contains(callee("__vize_template_instance_", "missingInherited").as_str()),
+            .matches(callee("__vize_template_instance_", "missingInherited").as_str())
+            .count(),
+        1,
         "{}",
         output.code
     );
@@ -138,7 +164,13 @@ fn receiver_hygiene_and_missing_member_guard_keep_distinct_owners() {
         "{}",
         output.code
     );
-    assert!(!output.code.contains("\"greet\" | \"missingInherited\""));
+    assert_eq!(
+        output
+            .code
+            .matches("\"greet\" | \"missingInherited\"")
+            .count(),
+        0
+    );
 }
 #[test]
 fn script_names_and_parse_failure_keep_the_old_unprojected_route() {
@@ -147,18 +179,22 @@ fn script_names_and_parse_failure_keep_the_old_unprojected_route() {
         "export default { mixins: [shared], broken: };",
     ] {
         let output = generate("<p>{{ Named('x') }} {{ greet('x') }}</p>", script);
-        assert!(
-            !output
+        assert_eq!(
+            output
                 .code
-                .contains("as unknown as (\"Named\" extends keyof"),
+                .matches("as unknown as (\"Named\" extends keyof")
+                .count(),
+            0,
             "{}",
             output.code
         );
         if script.contains("broken:") {
-            assert!(
-                !output
+            assert_eq!(
+                output
                     .code
-                    .contains("as unknown as (\"greet\" extends keyof"),
+                    .matches("as unknown as (\"greet\" extends keyof")
+                    .count(),
+                0,
                 "{}",
                 output.code
             );
