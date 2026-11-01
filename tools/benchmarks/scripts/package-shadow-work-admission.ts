@@ -154,6 +154,17 @@ export function qualifyPackageShadowWork(options: Options): void {
   };
   const head = git(sourceRoot, "rev-parse", "HEAD").trim();
   const headTree = git(sourceRoot, "rev-parse", "HEAD^{tree}").trim();
+  const associatedHead = process.env.PACKAGE_ROUTE_ASSOCIATED_HEAD;
+  assert.match(associatedHead ?? "", /^[a-f0-9]{40}$/u);
+  const parents = git(sourceRoot, "cat-file", "-p", "HEAD")
+    .split("\n")
+    .filter((line) => line.startsWith("parent "))
+    .map((line) => line.slice(7));
+  if (process.env.GITHUB_EVENT_NAME === "pull_request") {
+    assert.deepEqual(parents, [baseSha, associatedHead]);
+  } else {
+    assert.equal(head, associatedHead);
+  }
   assert.equal(git(sourceRoot, "status", "--porcelain", "--untracked-files=all"), "");
   const fetched = spawnSync(
     "git",
@@ -170,6 +181,8 @@ export function qualifyPackageShadowWork(options: Options): void {
     save("selection.json", {
       head,
       headTree,
+      associatedHead,
+      executionParents: parents,
       baseSha,
       selected: false,
       reason: "not the introduction of cold propagation deferral",
@@ -218,6 +231,8 @@ export function qualifyPackageShadowWork(options: Options): void {
   save("source-and-overlay.json", {
     head,
     headTree,
+    associatedHead,
+    executionParents: parents,
     baseSha,
     baseTree,
     originalModuleSha256: hash(original),
@@ -371,7 +386,7 @@ export function qualifyPackageShadowWork(options: Options): void {
   assert.equal(fs.readFileSync(path.join(baseRoot, modulePath), "utf8"), overlay.observed);
   for (const file of copied) assert.equal(fileHash(path.join(baseRoot, file.path)), file.sha256);
   save("acceptance.json", {
-    source: { head, headTree, baseSha, baseTree },
+    source: { head, headTree, associatedHead, executionParents: parents, baseSha, baseTree },
     images,
     packets,
     registration: {
