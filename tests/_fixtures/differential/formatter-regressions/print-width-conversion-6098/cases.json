@@ -1,0 +1,55 @@
+{
+  "schema": "vize.glyph.printWidthConversion.v1",
+  "issue": 6098,
+  "sourceBase": "fbb2f58a596621adff00e8e3cf7aac2e35b70160",
+  "phase": "before-observation-only",
+  "originalCallInput": "tests/_fixtures/differential/formatter-regressions/expression-print-width-7876/original-deep-lf.input",
+  "widths": [
+    1,
+    40,
+    80,
+    100,
+    120,
+    65535,
+    65536,
+    65576,
+    65616,
+    65636,
+    65656,
+    4294967295
+  ],
+  "cases": [
+    {
+      "id": "script-signature",
+      "target": "script",
+      "input": "tests/_fixtures/differential/formatter-history/script-signature/input.ts",
+      "inputSha256": "e223bcede2e2113819b359c582ccbfea7dc376dd7072ba50ed3fdea42bfa0712",
+      "defaultExpected": "crates/vize_glyph/tests/snapshots/history_script_signature.snap.txt",
+      "defaultExpectedSha256": "f38bca15eb8b102053a9e0319b024ae2d3b902d0b581e44ce5ec38a413009638"
+    },
+    {
+      "id": "script-zod",
+      "target": "script",
+      "input": "tests/_fixtures/differential/formatter-history/script-zod/input.ts",
+      "inputSha256": "8c1ac450fb05ad7306c1792d1d450fb5513a72c120b289f2af232acb352ce88b",
+      "defaultExpected": "crates/vize_glyph/tests/snapshots/history_script_zod.snap.txt",
+      "defaultExpectedSha256": "b3dcb9b4cdb68a3a32508165a775fcf4a603074f1d7d08ee0e15c8cea52c23fc"
+    },
+    {
+      "id": "sfc-signature",
+      "target": "sfc",
+      "input": "tests/_fixtures/differential/formatter-history/sfc-signature/input.vue.txt",
+      "inputSha256": "b89cb12c7b688a7ceb2afd35ddc177a5187118dcb681a8ec550d4bd666cb4636",
+      "defaultExpected": "crates/vize_glyph/tests/snapshots/history_sfc_signature.snap.txt",
+      "defaultExpectedSha256": "4e619c2f9c1df9eb87d71d1b0ee3ad033b97a99fc5c62d5ee3a572375b6bd162"
+    },
+    {
+      "id": "indented-direct-call",
+      "target": "sfc",
+      "input": "tests/_fixtures/differential/formatter-regressions/print-width-conversion-6098/Original.vue.txt",
+      "inputSha256": "851c54f3ec30d67d54dc5b6369b06303f3222583da08d873c1144cf3a1a8cb52",
+      "defaultExpected": "tests/_fixtures/differential/formatter-regressions/expression-print-width-7876/original-deep-lf.expected",
+      "defaultExpectedSha256": "b2fb731eb8b2376c016442868a4f632d62cc617c53d50e7d4ffa40a073e28b16"
+    }
+  ]
+}
