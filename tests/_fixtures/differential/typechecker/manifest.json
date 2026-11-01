@@ -14367,7 +14367,7 @@
         {
           "selector": "TypeScript 5.7.3 and 6.0.3",
           "source": ".github/workflows/typescript-plugin.yml",
-          "sha256": "734f5482d5cacd69668dad12e43a43985823cad8c56322dd674c0a4dbce2d288"
+          "sha256": "b72749d2b7ce07ff13885a7d74a2dcaf0c40e62f416846adc487ea229e992270"
         },
         {
           "selector": "Linux and Windows physical VSIX",
