@@ -1,0 +1,30 @@
+{
+  "schema": "vize.humanPnpm12161InputPolicy.v1",
+  "sourceCommit": "c7b46aedef7b81c07816cb551187449a3dd81792",
+  "bindings": {
+    "runtime-prop-null-11252": {
+      "role": "runtime-prop-null-11252",
+      "host": { "platform": "darwin", "arch": "arm64" },
+      "parent": { "name": "vue", "version": "3.5.44", "manifestSha256": "94139d37af28f8cd4bbfe2902d4e07fe920f786de8a0f35086aee1060243502e" },
+      "owner": { "name": "typescript", "version": "7.1.0-beta", "manifestSha256": "29955061fde038b8154a844f4d99837343143d057ef8feb2a588bbf5c7d2cbd1" },
+      "dependencyNames": ["@vue/compiler-dom", "@vue/compiler-sfc", "@vue/runtime-dom", "@vue/server-renderer", "@vue/shared", "typescript"],
+      "rootConstruction": "OUTPUT/consumer-KIND",
+      "generatorOutputObservedAsInput": false
+    },
+    "imports-vue-ts-11253": {
+      "role": "imports-vue-ts-11253",
+      "host": { "platform": "linux", "arch": "x64" },
+      "parent": { "name": "vue", "version": "3.5.44", "manifestSha256": "94139d37af28f8cd4bbfe2902d4e07fe920f786de8a0f35086aee1060243502e" },
+      "owner": { "name": "typescript", "version": "5.9.3", "manifestSha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6" },
+      "dependencyNames": ["@vue/compiler-dom", "@vue/compiler-sfc", "@vue/runtime-dom", "@vue/server-renderer", "@vue/shared", "typescript"],
+      "rootConstruction": "OUTPUT/consumer-KIND",
+      "generatorOutputObservedAsInput": false
+    }
+  },
+  "options": {
+    "extraNodePaths": ["CONSUMER_VIRTUAL_NODE_MODULES"],
+    "preferSymlinkedExecutables": false,
+    "projectModulesDirName": null,
+    "relocatableRoot": "CONSUMER_ROOT"
+  }
+}

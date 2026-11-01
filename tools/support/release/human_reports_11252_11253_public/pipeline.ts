@@ -32,6 +32,7 @@ import {
   restoreInputState,
 } from "./input-state.ts";
 import { managerFiles } from "./optional-residency.ts";
+import { controllerBinPolicy } from "./dependency-bin-policy.ts";
 function file(path: string, raw: Buffer): SourceFile {
   return { path, base64: raw.toString("base64"), sha256: sha256(raw) };
 }
@@ -93,6 +94,8 @@ export async function runPublic(
       "controller-authority.json",
       await authenticateController(controller, request.reviewedController, github, false),
     );
+    const binPolicy = controllerBinPolicy(request.reviewedController);
+    write("controller-bin-input-policy.json", binPolicy);
     const release = await authenticateRelease(request.release, github, sink);
     write("release-authority.json", release);
     if (request.release.phase === "after")
@@ -119,6 +122,7 @@ export async function runPublic(
         output,
         archiveCache,
         sink,
+        binPolicy,
       ),
     ];
     if (recipe.tsrs)
@@ -133,6 +137,7 @@ export async function runPublic(
           output,
           archiveCache,
           sink,
+          binPolicy,
         ),
       );
     if (request.release.phase === "before") {
@@ -157,7 +162,7 @@ export async function runPublic(
             (request.role === "imports-vue-ts-11253" && id !== "original-cli-json")
               ? null
               : "Explicit report-note/supplement command; original script, sources and compiler settings remain separate",
-          checker: identifyLauncher(id, install, output),
+          checker: identifyLauncher(id, install, output, sink),
           requiresNativeLoad: id !== "original-vue-tsc",
           oracle: null,
         };
@@ -168,7 +173,7 @@ export async function runPublic(
         assert(install);
         command.executable = install.pnpm.path;
         command.argv = argumentsFor(request, command.id);
-        command.checker = identifyLauncher(command.id, install, output);
+        command.checker = identifyLauncher(command.id, install, output, sink);
       }
       if (request.mode === "UNQUALIFIED_AFTER")
         assert.deepEqual(

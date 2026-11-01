@@ -20,6 +20,9 @@ pub enum NativeTemplateAttributeKind<'a> {
     DynamicBind {
         argument_range: Span,
     },
+    On {
+        argument_range: Span,
+    },
 }
 
 /// A genuine checked attribute; callers cannot construct raw-parts proofs.
@@ -68,6 +71,13 @@ impl<'o, 'a> NativeTemplateAttribute<'o, 'a> {
                 if profile == NativeTemplateAttributeProfile::Bindings =>
             {
                 NativeTemplateAttributeKind::DynamicBind {
+                    argument_range: argument,
+                }
+            }
+            AttributeBinding::On { argument }
+                if profile == NativeTemplateAttributeProfile::Events =>
+            {
+                NativeTemplateAttributeKind::On {
                     argument_range: argument,
                 }
             }

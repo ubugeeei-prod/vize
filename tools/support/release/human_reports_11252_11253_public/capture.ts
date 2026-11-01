@@ -8,12 +8,16 @@ import { prohibited } from "./processes.ts";
 import { bytes, object, sha256, sourcePath, text } from "./value.ts";
 import { discard, type Sink } from "./evidence.ts";
 import { inputWitness } from "./witness.ts";
-export function cleanEnvironment(): NodeJS.ProcessEnv {
+import { requireAmbientBinConfiguration } from "./bin-configuration.ts";
+export function cleanEnvironment(
+  sink: Sink = discard,
+  ambient: NodeJS.ProcessEnv = process.env,
+): NodeJS.ProcessEnv {
+  requireAmbientBinConfiguration(ambient, sink);
   for (const key of prohibited)
-    assert.equal(process.env[key] ?? "", "", `initial source/provider override: ${key}`);
-  assert.equal(process.env.VIZE_HUMAN_REPORT_NATIVE_OBSERVER ?? "", "");
-  const env = { ...process.env };
-  for (const key of Object.keys(env)) if (/^npm_config_/iu.test(key)) delete env[key];
+    assert.equal(ambient[key] ?? "", "", `initial source/provider override: ${key}`);
+  assert.equal(ambient.VIZE_HUMAN_REPORT_NATIVE_OBSERVER ?? "", "");
+  const env = { ...ambient };
   for (const key of ["GITHUB_TOKEN", "GH_TOKEN", "NODE_AUTH_TOKEN", "NPM_TOKEN"]) delete env[key];
   return env;
 }
@@ -87,7 +91,7 @@ export function recordCommand(
   sink: Sink = discard,
   inputAlreadyPrepared = false,
 ): Observation {
-  const env = { ...cleanEnvironment(), ...install.packageManagerEnvironment },
+  const env = { ...cleanEnvironment(sink), ...install.packageManagerEnvironment },
     journalRoot = join(output, `${plan.id}-native-journal`);
   if (companion) {
     mkdirSync(journalRoot);

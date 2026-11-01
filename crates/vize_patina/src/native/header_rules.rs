@@ -36,6 +36,46 @@ pub(super) fn inspect_attributes<'o, 'a>(
 /// Wider use requires the bare driver's clean whole-component admission.
 pub(super) fn inspect_checked<'o, 'a, const WIDE: bool>(
     element: &NativeElement<'o, 'a>,
+    visit: impl FnMut(
+        header::CheckedAttribute<'o, 'a>,
+        header::AttributeBinding<'a>,
+    ) -> Result<(), NativeLintRefusal>,
+) -> Result<(NativeLintTag<'o, 'a>, Span), NativeLintRefusal> {
+    inspect_with(
+        element,
+        |element, original| {
+            if WIDE {
+                header::wide_binding(element, original)
+            } else {
+                header::strict_binding(element, original)
+            }
+        },
+        visit,
+    )
+}
+
+pub(super) fn inspect_events<'o, 'a>(
+    element: &NativeElement<'o, 'a>,
+    visit: impl FnMut(
+        header::CheckedAttribute<'o, 'a>,
+        header::AttributeBinding<'a>,
+    ) -> Result<(), NativeLintRefusal>,
+) -> Result<(NativeLintTag<'o, 'a>, Span), NativeLintRefusal> {
+    inspect_with(element, header::event_binding, visit)
+}
+
+fn inspect_with<'o, 'a>(
+    element: &NativeElement<'o, 'a>,
+    mut binding: impl FnMut(
+        &NativeElement<'o, 'a>,
+        NativeAttribute<'o, 'a>,
+    ) -> Result<
+        (
+            header::CheckedAttribute<'o, 'a>,
+            header::AttributeBinding<'a>,
+        ),
+        NativeLintRefusal,
+    >,
     mut visit: impl FnMut(
         header::CheckedAttribute<'o, 'a>,
         header::AttributeBinding<'a>,
@@ -57,12 +97,8 @@ pub(super) fn inspect_checked<'o, 'a, const WIDE: bool>(
     let opening = header::opening_range(element)?;
     let mut names: SmallVec<[&str; 8]> = SmallVec::new();
     for original in element.attributes() {
-        let (checked, binding) = if WIDE {
-            header::wide_binding(element, original)?
-        } else {
-            header::strict_binding(element, original)?
-        };
-        if let header::AttributeBinding::Static { name, .. } = &binding {
+        let (checked, bound) = binding(element, original)?;
+        if let header::AttributeBinding::Static { name, .. } = &bound {
             if names
                 .iter()
                 .any(|previous| previous.eq_ignore_ascii_case(name))
@@ -75,7 +111,7 @@ pub(super) fn inspect_checked<'o, 'a, const WIDE: bool>(
             }
             names.push(name);
         }
-        visit(checked, binding)?;
+        visit(checked, bound)?;
     }
     Ok((receipt, opening))
 }

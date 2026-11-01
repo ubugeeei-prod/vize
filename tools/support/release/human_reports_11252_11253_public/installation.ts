@@ -13,6 +13,9 @@ import {
   managerFiles,
   validateOptionalAbsence,
 } from "./optional-residency.ts";
+import { binInventory, contextFacts } from "./dependency-bin-context.ts";
+import { humanDependencyBinPartition } from "./dependency-bin-partition.ts";
+import { validateBinRecord } from "./dependency-bin-record.ts";
 export function manifestBytes(fixture: Fixture, version: string, supplement: boolean): Buffer {
   const source = fixture.files.find((f) => f.path === "package.json");
   assert(source);
@@ -89,10 +92,20 @@ export function validateInstallation(
     assert(pkg.files.length > 0);
     const archive = archiveBodies.get(pkg.name + "@" + pkg.version);
     assert(archive, `whole public archive required for ${pkg.name}`);
-    const comparison = archiveComparison(pkg.directory, archive, pkg.integrity);
-    assert.equal(comparison.tarballSHA512, pkg.archiveSha512);
-    assert.deepEqual(comparison.files, pkg.files);
-    assert.equal(pkg.allInstalledBytesEqualArchive, true);
+    if (pkg.allInstalledBytesEqualArchive === true) {
+      const comparison = archiveComparison(pkg.directory, archive, pkg.integrity);
+      assert.equal(comparison.tarballSHA512, pkg.archiveSha512);
+      assert.deepEqual(comparison.files, pkg.files);
+    } else {
+      assert.equal(pkg.allInstalledBytesEqualArchive, false);
+      validateBinRecord(pkg, receipt);
+      assert.deepEqual(
+        humanDependencyBinPartition(
+          contextFacts(pkg.binContext, archiveBodies, binInventory(pkg.directory)),
+        ),
+        pkg.sourceConformance,
+      );
+    }
   }
   for (const name of expected.keys())
     assert(seenExpected.has(name), `missing original provider ${name}`);

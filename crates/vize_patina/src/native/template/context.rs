@@ -10,6 +10,9 @@ use vize_carton::i18n::{Locale, t, t_fmt};
 use vize_l0::{Span, String, config::VueVersion};
 use vize_l1::markup::NativeLintComponent;
 
+mod event;
+pub use event::{NativeTemplateEventModifier, NativeTemplateEventModifiers};
+
 /// Normal configured output from the genuine original bare component.
 /// The constructor and unfinished findings are private to the native driver.
 /// Inline comment suppression is not inferred; the initial driver refuses it.

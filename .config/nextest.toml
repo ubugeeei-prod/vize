@@ -1,6 +1,11 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Retain whole numeric modifier Case/fix/requery packets; execution is unchanged.
+[[profile.default.overrides]]
+filter = 'package(=vize_patina) & test(~no_deprecated_v_on_number_modifiers::native::tests::)'
+junit.store-success-output = true
+
 # Retain whole legacy/native inline-template observations in normal PR/full JUnit.
 # This changes output retention only, not selection, runtime or retry policy.
 [[profile.default.overrides]]
