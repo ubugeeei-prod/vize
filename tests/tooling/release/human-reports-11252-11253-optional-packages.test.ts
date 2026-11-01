@@ -313,11 +313,37 @@ test("early root files preserve actual generated workspace and lock bytes", () =
     f.close();
   }
 });
-test("lock proof is package-scoped, unique and exact across multiple documents", () => {
+test("lock proof is package-scoped and refuses duplicate declarations or documents", () => {
   const f = fixture();
   try {
     assert.equal(lockPackageIntegrity(f.lock, child, version).integrity, f.metadata.integrity);
     assert.throws(() => lockPackageIntegrity(Buffer.concat([f.lock, f.lock]), child, version));
+    assert.throws(() =>
+      lockPackageIntegrity(
+        Buffer.from(f.lock.toString().replace("packages:", "lockfileVersion: '9.0'\npackages:")),
+        child,
+        version,
+      ),
+    );
+    assert.throws(() =>
+      lockPackageIntegrity(
+        Buffer.from(
+          f.lock.toString() +
+            "\npackages:\n  other@1.0.0:\n    resolution: {integrity: " +
+            f.metadata.integrity +
+            "}\n",
+        ),
+        child,
+        version,
+      ),
+    );
+    assert.throws(() =>
+      lockPackageIntegrity(
+        Buffer.from(f.lock.toString() + "\n---\nother: value\n"),
+        child,
+        version,
+      ),
+    );
     assert.throws(() =>
       lockPackageIntegrity(
         Buffer.from(f.lock.toString().replace("packages:", "notPackages:")),

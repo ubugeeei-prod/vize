@@ -10,6 +10,17 @@ export function lockPackageIntegrity(raw: Buffer, name: string, version: string)
   assert(!source.includes("\t") && !source.includes("\0"));
   const lines = source.replaceAll("\r\n", "\n").split("\n");
   const versions = lines.filter((line) => line.startsWith("lockfileVersion:"));
+  assert.equal(versions.length, 1, "one lockfileVersion declaration required");
+  assert.equal(
+    lines.filter((line) => line === "packages:").length,
+    1,
+    "one packages declaration required",
+  );
+  assert.equal(
+    source.split(/^--- *$/mu).filter((document) => document.trim()).length,
+    1,
+    "one canonical lock document supported",
+  );
   assert(
     versions.length > 0 && versions.every((line) => /^lockfileVersion: (['"]?)9\.0\1$/u.test(line)),
     "unsupported pnpm lockfile version",
