@@ -1,0 +1,13 @@
+{
+  "source": "33eb41ea8a39d997383e797fea3dca5e482c0a9d",
+  "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt",
+  "sourceSha256": "8b78a238856c7599da7d38bd9f1f354d9394481282230845c5c52ba9056cb133",
+  "aliases": [
+    "type $PublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};",
+    "type $InstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? $PublicProps<C> : __P : $PublicProps<C>;",
+    "type $StaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? $IsAny<__P> extends true ? $PublicProps<C> : __P : $PublicProps<C>;",
+    "type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? false : true : false : false;",
+    "type $HasStaticRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { readonly __vizeRawProps?: infer __P } ? $IsAny<__P> extends true ? false : true : false : false;",
+    "type $ComponentRawProps<C, __P = $HasInstanceRawProps<C> extends true ? $InstanceRawProps<C> : $HasStaticRawProps<C> extends true ? $StaticRawProps<C> : $PublicProps<C>> = unknown extends __P ? Record<string, unknown> : __P;"
+  ]
+}

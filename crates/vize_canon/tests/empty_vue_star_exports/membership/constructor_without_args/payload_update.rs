@@ -3,6 +3,7 @@ use super::support;
 use serde_json::{Value, json};
 use std::fs;
 
+mod instance_props;
 mod public_instance;
 
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";
@@ -105,6 +106,7 @@ fn previous(current: &str, record: &Value) -> String {
 /// member is read unchanged and remains subject to its existing frozen hash.
 pub(super) fn source_before(path: &str) -> String {
     let actual = fs::read_to_string(support::repository().join(path)).unwrap();
+    let actual = instance_props::source_before(path, &actual);
     let Some(index) = PATHS.iter().position(|candidate| *candidate == path) else {
         return actual;
     };
@@ -117,7 +119,10 @@ pub(super) fn source_before(path: &str) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
-    previous(current, &load()["logicalPreamble"])
+    previous(
+        &instance_props::preamble_before(current),
+        &load()["logicalPreamble"],
+    )
 }
 
 pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], current: &str) {
@@ -143,6 +148,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     ]);
     manifest["provenance"]["currentSlotProviderPayloadUpdate"] = update;
     public_instance::retain_provenance(manifest);
+    instance_props::retain_provenance(manifest);
 }
 
 #[cfg(test)]
