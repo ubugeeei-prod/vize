@@ -74,7 +74,7 @@ fn production_packet(
 }
 
 fn config_metadata(
-    client: &CorsaProjectClient,
+    client: &mut CorsaProjectClient,
     name: &str,
     config: &Path,
     uri: &str,
@@ -127,8 +127,8 @@ fn native_two_config_shared_owner_uses_production_editor_fallback() {
     );
     let first_owner = only_owner(&root, &native);
     publish(&mut client, Some((&a_uri, A_BAD)), Some((&b_uri, B_GOOD)));
-    let a_metadata = config_metadata(&client, "production-a-initial-config", &a, &a_uri);
-    let b_metadata = config_metadata(&client, "production-b-initial-config", &b, &b_uri);
+    let a_metadata = config_metadata(&mut client, "production-a-initial-config", &a, &a_uri);
+    let b_metadata = config_metadata(&mut client, "production-b-initial-config", &b, &b_uri);
     record(
         "production-owner",
         &json!({"physicalNativeChildren":1,"pid":first_owner.pid,
@@ -144,8 +144,8 @@ fn native_two_config_shared_owner_uses_production_editor_fallback() {
     );
     assert_diagnostics(&b_before, clean());
     publish(&mut client, Some((&a_uri, A_NULL)), Some((&b_uri, B_NULL)));
-    let a_null_metadata = config_metadata(&client, "production-a-null-config", &a, &a_uri);
-    let b_null_metadata = config_metadata(&client, "production-b-null-config", &b, &b_uri);
+    let a_null_metadata = config_metadata(&mut client, "production-a-null-config", &a, &a_uri);
+    let b_null_metadata = config_metadata(&mut client, "production-b-null-config", &b, &b_uri);
     assert_diagnostics(
         &production_packet(&mut client, "production-a-strict-null", &a_uri, &a, 7),
         expected_error(19, "Type 'null' is not assignable to type 'number'."),
@@ -208,7 +208,7 @@ fn native_two_config_shared_owner_uses_production_editor_fallback() {
     assert_eq!(detached_type, "number");
     assert_eq!(only_owner(&root, &native), first_owner);
     publish(&mut client, Some((&a_uri, A_GOOD)), Some((&b_uri, B_BAD)));
-    let b_current_metadata = config_metadata(&client, "production-b-edited-config", &b, &b_uri);
+    let b_current_metadata = config_metadata(&mut client, "production-b-edited-config", &b, &b_uri);
     assert_diagnostics(
         &production_packet(&mut client, "production-b-error", &b_uri, &b, 6),
         expected_error(18, "Type 'number' is not assignable to type 'string'."),
@@ -244,8 +244,10 @@ fn native_two_config_shared_owner_uses_production_editor_fallback() {
     let stale = replacement.completion_resolve_via_editor_lsp(&b_uri, issued);
     record("production-resolve-stale-after-restart", &json!(stale));
     assert_eq!(stale.unwrap(), None);
-    let next_a_metadata = config_metadata(&replacement, "production-a-restart-config", &a, &a_uri);
-    let next_b_metadata = config_metadata(&replacement, "production-b-restart-config", &b, &b_uri);
+    let next_a_metadata =
+        config_metadata(&mut replacement, "production-a-restart-config", &a, &a_uri);
+    let next_b_metadata =
+        config_metadata(&mut replacement, "production-b-restart-config", &b, &b_uri);
     assert_diagnostics(
         &production_packet(&mut replacement, "production-a-restart", &a_uri, &a, 7),
         clean(),
