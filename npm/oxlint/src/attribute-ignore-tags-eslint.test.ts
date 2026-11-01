@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import {
@@ -142,11 +142,12 @@ try {
     limits:
       "Sixteen independent literal tag SFC cases through the actual packed ESLint export. Existing Vize name-only fixes retain authored directive prefixes; complete fixed source and both subsequent queries are compared to the frozen official reference.",
   };
-  writeFileSync(
-    join(nativeHistoryDirectory(directory), "attribute-ignore-tags-eslint-host.json"),
-    JSON.stringify(proof, null, 2) + "\n",
-    { flag: "wx" },
+  const proofDirectory = mkdtempSync(
+    join(nativeHistoryDirectory(directory), "attribute-ignore-tags-eslint-host-"),
   );
+  writeFileSync(join(proofDirectory, "proof.json"), JSON.stringify(proof, null, 2) + "\n", {
+    flag: "wx",
+  });
   console.log("vize-attribute-ignore-tags-eslint-custody " + JSON.stringify(proof));
 } finally {
   for (const [key, value] of previous) {
