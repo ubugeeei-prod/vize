@@ -49,7 +49,7 @@ void test("outline cases preserve complete original projects and separately auth
   }
 });
 
-void test("hierarchy capability is explicit for new sessions and every older case is unchanged", () => {
+void test("hierarchy and versioned-edit capabilities are explicit without changing older sessions", () => {
   for (const fixture of loaded.cases) {
     const capabilities = initializeCapabilities(fixture);
     if (fixture.data.method === "textDocument/documentSymbol") {
@@ -58,6 +58,12 @@ void test("hierarchy capability is explicit for new sessions and every older cas
           ...INITIALIZE_CAPABILITIES.textDocument,
           documentSymbol: { hierarchicalDocumentSymbolSupport: true },
         },
+      });
+    } else if (fixture.data.workspaceEditDocumentChanges === true) {
+      assert.equal(fixture.data.method, "textDocument/codeAction");
+      assert.deepEqual(capabilities, {
+        ...INITIALIZE_CAPABILITIES,
+        workspace: { workspaceEdit: { documentChanges: true } },
       });
     } else {
       assert.deepEqual(capabilities, INITIALIZE_CAPABILITIES);
