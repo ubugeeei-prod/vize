@@ -10,6 +10,8 @@ use serde_json::{Value, json};
 use std::path::Path;
 use vize_carton::cstr;
 
+mod mixed;
+
 const INPUT: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../tests/_fixtures/differential/typechecker/legacy-external-component-props/input.json"

@@ -1,0 +1,163 @@
+{
+  "schema": "vize.synthetic-legacy-mixed-scalar-controls.v1",
+  "id": "typechecker/regression/legacy-mixed-scalar-props",
+  "scope": "Synthetic controls, no installed Vue2/Vuetify/original application claim. Preserve all previously caught callback/body/public-props/shadow/unregistered diagnostics; only add known scalar validation alongside callback values.",
+  "origin": {
+    "commit": "531882865e3a3d09d3d8caad1964fb3613c8933a",
+    "input": "tests/_fixtures/differential/typechecker/legacy-external-component-props/loose-controls.json",
+    "file": "src/MixedCallbacks.vue",
+    "wholeSourceSha256": "e3df7a76a3732e643b04a9d3dfae452683a97d8f4d6eb411150ea3bf91e54bda"
+  },
+  "files": [
+    {
+      "path": "src/External.vue",
+      "source": "<template><TypedControl :count=\"'wrong'\" :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/Method.vue",
+      "source": "<template><TypedControl :count=\"'wrong'\" :config=\"{ format(value) { return value.length > 0 } }\" /></template>\n"
+    },
+    {
+      "path": "src/Valid.vue",
+      "source": "<template><TypedControl :count=\"42\" :rules=\"[(value) => value.length > 0]\" /></template>\n"
+    },
+    {
+      "path": "src/CallbackOnly.vue",
+      "source": "<template><CallbackOnlyControl :rules=\"[(value) => value.length > 0]\" /></template>\n"
+    },
+    {
+      "path": "src/Any.vue",
+      "source": "<template><AnyControl :count=\"'wrong'\" :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/Unknown.vue",
+      "source": "<template><UnknownControl :count=\"'wrong'\" :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/Attrs.vue",
+      "source": "<template><TypedControl :count=\"42\" :rules=\"[(value) => value.length > 0]\" legacy-extra=\"open\" /></template>\n"
+    },
+    {
+      "path": "src/RecordShadow.vue",
+      "source": "<script setup lang=\"ts\">\nimport type { Record } from \"./record-shadow\"; const marker: Record<string, unknown> = { count: \"captured\" }; void marker;\n</script>\n<template><TypedControl :count=\"42\" :rules=\"[(value) => value.length > 0]\" legacy-extra=\"open\" /><AnyControl :count=\"42\" :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/record-shadow.d.ts",
+      "source": "export type Record<K extends PropertyKey, V> = { [P in K]: V } & { count: \"captured\" };\n"
+    },
+    {
+      "path": "src/shadow.d.ts",
+      "source": "declare const TypedControl: { new (): { $props: { count: number; rules?: Array<(value: string) => boolean>; config?: { format: (value: string) => boolean } } } };\nexport default TypedControl;\n"
+    },
+    {
+      "path": "src/Shadow.vue",
+      "source": "<script setup lang=\"ts\">\nimport TypedControl from \"./shadow\";\n</script>\n<template><TypedControl :count=\"'wrong'\" :rules=\"[(value) => value.length > 0]\" /></template>\n"
+    },
+    {
+      "path": "src/Unregistered.vue",
+      "source": "<template><UnregisteredControl :count=\"'wrong'\" :rules=\"{ format(value) { return !!value } }\" /></template>\n"
+    },
+    {
+      "path": "src/LocalBadCallback.vue",
+      "source": "<script setup lang=\"ts\">\nimport TypedControl from \"./shadow\";\n</script>\n<template><TypedControl :count=\"42\" :rules=\"[(value) => value.missing()]\" /></template>\n"
+    },
+    {
+      "path": "src/ScriptBadCallback.vue",
+      "source": "<script setup lang=\"ts\">\nconst badRules = [(value: string) => value.missing()];\n</script>\n<template><TypedControl :count=\"42\" :rules=\"badRules\" /></template>\n"
+    },
+    {
+      "path": "src/ScriptMissingCallback.vue",
+      "source": "<script setup lang=\"ts\">\nconst badRules = [(value: string) => missingRule(value)];\n</script>\n<template><TypedControl :count=\"42\" :rules=\"badRules\" /></template>\n"
+    },
+    {
+      "path": "src/InlineBadIdentifier.vue",
+      "source": "<template><TypedControl :count=\"42\" :rules=\"[(value) => missingRule(value)]\" /></template>\n"
+    },
+    {
+      "path": "src/InlineBadMember.vue",
+      "source": "<script setup lang=\"ts\">\nconst target = { okay: true }; void target;\n</script>\n<template><TypedControl :count=\"42\" :rules=\"[(value) => target.missing && !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/controls.d.ts",
+      "source": "export declare const TypedControl: { new (): { $props: { count: number; rules?: Array<(value: string) => boolean>; config?: { format: (value: string) => boolean } } } };\n"
+    },
+    {
+      "path": "src/Public.vue",
+      "source": "<script setup lang=\"ts\">\nimport { TypedControl } from \"./controls\";\ntype Public = typeof TypedControl extends new () => { $props: infer Props } ? Props : never;\nconst bad: Public = { count: \"wrong\" }; void bad;\nconst extra: Public = { count: 42, unrelated: true }; void extra;\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "path": "src/Scope.vue",
+      "source": "<script setup lang=\"ts\">\nconst items = [\"one\", \"two\"];\n</script>\n<template><TypedControl v-for=\"item in items\" :count=\"item\" :rules=\"[(value) => value.length > 0]\" /></template>\n"
+    },
+    {
+      "path": "tsconfig.json",
+      "source": "{\n  \"compilerOptions\": { \"strict\": true, \"noUnusedLocals\": true, \"noUnusedParameters\": true, \"target\": \"ES2022\", \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"noEmit\": true },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"include\": [\"src/**/*\"]\n}\n"
+    },
+    {
+      "path": "src/AliasRaw.vue",
+      "source": "<template><AliasRawControl :count-value=\"'wrong'\" :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/AliasCamel.vue",
+      "source": "<template><AliasCamelControl :count-value=\"'wrong'\" :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/Callable.vue",
+      "source": "<template><CallableControl :count=\"'wrong'\" :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/ConstructorArgs.vue",
+      "source": "<template><ArgsControl :count=\"'wrong'\" :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/ConstructorCallableUnion.vue",
+      "source": "<template><UnionControl :count=\"'wrong'\" :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/OpaqueUnion.vue",
+      "source": "<template><OpaqueUnionControl :count=\"'wrong'\" :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/UnionKeys.vue",
+      "source": "<template><UnionKeyControl :data-owned=\"'branch value'\" :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/LoopEvent.vue",
+      "source": "<script setup lang=\"ts\">\nconst items = [\"one\", \"two\"]; function onKnown(value: string) { void value; }\n</script>\n<template><EventControl v-for=\"item in items\" :count=\"item\" :rules=\"[(value) => !!value]\" @known=\"onKnown\" @missing=\"onKnown\" /></template>\n"
+    },
+    {
+      "path": "src/LoopNameShadow.vue",
+      "source": "<script setup lang=\"ts\">\ndeclare const components: Array<{ new (): { $props: { count: string; rules?: Array<(value: string) => boolean> } } }>;\n</script>\n<template><TypedControl v-for=\"TypedControl in components\" :count=\"'valid local'\" :rules=\"[(value) => !!value]\" /></template>\n"
+    }
+  ],
+  "repairedExternal": "<template><TypedControl :count=\"42\" :rules=\"[(value) => !!value]\" /></template>\n",
+  "externalDeclarations": [
+    "declare const TypedControl: { new (): { $props: { count: number; rules?: Array<(value: string) => boolean>; config?: { format: (value: string) => boolean } } } };",
+    "declare const CallbackOnlyControl: { new (): { $props: { rules?: Array<(value: string) => boolean> } } };",
+    "declare const AnyControl: any;",
+    "declare const UnknownControl: unknown;",
+    "declare const UnregisteredControl: unknown;",
+    "declare const AliasRawControl: { new (): { $props: { \"count-value\"?: number; countValue?: string; rules?: Array<(value: string) => boolean> } } };",
+    "declare const AliasCamelControl: { new (): { $props: { countValue?: number; rules?: Array<(value: string) => boolean> } } };",
+    "declare const CallableControl: ((props: { count: number; rules?: Array<(value: string) => boolean> }) => unknown);",
+    "declare const ArgsControl: { new (argument: string): { $props: { count: number; rules?: Array<(value: string) => boolean> } } };",
+    "declare const UnionControl: { new (): { $props: { count: number; rules?: Array<(value: string) => boolean> } } } | ((props: { count: number; rules?: Array<(value: string) => boolean> }) => unknown);",
+    "declare const OpaqueUnionControl: { new (): { $props: { count: number; rules?: Array<(value: string) => boolean> } } } | unknown;",
+    "declare const UnionKeyControl: { new (): { $props: ({ \"data-owned\"?: number; rules?: Array<(value: string) => boolean> } | { dataOwned?: string; rules?: Array<(value: string) => boolean> }) } };",
+    "declare const EventControl: { new (): { $props: { count: number; rules?: Array<(value: string) => boolean>; onKnown?: (value: number) => unknown }; $emit: (event: \"known\", value: number) => void } };"
+  ],
+  "externalBindings": [
+    "TypedControl",
+    "CallbackOnlyControl",
+    "AnyControl",
+    "UnknownControl",
+    "AliasRawControl",
+    "AliasCamelControl",
+    "CallableControl",
+    "ArgsControl",
+    "UnionControl",
+    "OpaqueUnionControl",
+    "UnionKeyControl",
+    "EventControl"
+  ]
+}
