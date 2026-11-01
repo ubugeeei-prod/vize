@@ -147,7 +147,10 @@ fn original_trim_tokens_and_write_bindings_are_shared_without_generic_read_promo
 #[test]
 fn other_model_modifiers_and_arguments_remain_lower_refusals() {
     for head in [
-        "v-model.number",
+        // Exact former single-number input is the new number fixture's first row.
+        "v-model.number.number",
+        "v-model.number.trim",
+        "v-model.trim.number",
         "v-model.lazy.lazy",
         "v-model.lazy.number",
         "v-model.trim.trim",
