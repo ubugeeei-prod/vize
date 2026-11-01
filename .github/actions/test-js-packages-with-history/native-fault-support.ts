@@ -24,13 +24,14 @@ export function readText(filename: string): string | null {
   }
 }
 
-export function sha256File(filename: string): string {
+export function sha256File(filename: string, deadline = Infinity): string {
   const started = performance.now();
   const digest = createHash("sha256");
   const descriptor = fs.openSync(filename, "r");
   try {
     const block = Buffer.allocUnsafe(1024 * 1024);
     for (let size = fs.readSync(descriptor, block); size; size = fs.readSync(descriptor, block)) {
+      if (performance.now() >= deadline) throw new Error("Image observation time limit");
       digest.update(block.subarray(0, size));
       hashMeasurements.bytes += size;
     }
@@ -183,18 +184,56 @@ export function privateGuest(capture = runCapture, read = readText): Packet {
   };
 }
 
-function processTable(): Map<number, { parent: number; start: string }> {
+const processLimits = {
+  packets: 128,
+  tasks: 128,
+  textBytes: 262_144,
+  imageBytes: 536_870_912,
+  sampleMilliseconds: 1000,
+};
+const processGaps = new WeakMap<Set<string>, Packet[]>();
+
+function processText(filename: string, limit = processLimits.textBytes): string {
+  const descriptor = fs.openSync(filename, "r");
+  try {
+    const buffer = Buffer.alloc(limit + 1);
+    let bytes = 0;
+    for (;;) {
+      const size = fs.readSync(descriptor, buffer, bytes, buffer.length - bytes);
+      bytes += size;
+      if (bytes > limit) throw new Error("Process observation text limit");
+      if (!size) return buffer.subarray(0, bytes).toString("utf8");
+    }
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+
+function processStat(filename: string): { pid: number; parent: number; start: string } {
+  const stat = processText(filename, 16_384);
+  const tail = stat.slice(stat.lastIndexOf(")") + 2).trim().split(/\s+/);
+  const pid = Number(stat.slice(0, stat.indexOf(" ")));
+  const parent = Number(tail[1]);
+  const start = tail[19];
+  if (
+    !Number.isSafeInteger(pid) ||
+    pid < 1 ||
+    !Number.isSafeInteger(parent) ||
+    parent < 0 ||
+    typeof start !== "string" ||
+    !/^\d+$/.test(start)
+  )
+    throw new Error("Unknown process identity");
+  return { pid, parent, start };
+}
+
+function processTable(procRoot: string): Map<number, { parent: number; start: string }> {
   const processes = new Map<number, { parent: number; start: string }>();
-  for (const directory of fs.readdirSync("/proc")) {
+  for (const directory of fs.readdirSync(procRoot)) {
     if (!/^\d+$/.test(directory)) continue;
     try {
-      const stat = fs.readFileSync(`/proc/${directory}/stat`, "utf8");
-      const tail = stat
-        .slice(stat.lastIndexOf(")") + 2)
-        .trim()
-        .split(/\s+/);
-      if (tail.length > 19)
-        processes.set(Number(directory), { parent: Number(tail[1]), start: tail[19] });
+      const stat = processStat(path.join(procRoot, directory, "stat"));
+      if (stat.pid === Number(directory)) processes.set(stat.pid, stat);
     } catch {
       // A vanished PID is an observation gap, never absence proof.
     }
@@ -206,26 +245,109 @@ export function statIdentity(stat: fs.BigIntStats): string {
   return [stat.dev, stat.ino, stat.size, stat.mtimeNs].join(":");
 }
 
+function imageIdentity(
+  filename: string,
+  physical: string,
+  retained: Map<string, Packet>,
+  deadline: number,
+): Packet {
+  const stat = fs.statSync(physical, { bigint: true });
+  if (stat.size > BigInt(processLimits.imageBytes)) throw new Error("Image observation size limit");
+  const identity = statIdentity(stat);
+  const key = `${filename}:${identity}`;
+  if (!retained.has(key)) {
+    const sha256 = sha256File(physical, deadline);
+    if (identity !== statIdentity(fs.statSync(physical, { bigint: true })))
+      throw new Error("Image changed during hashing");
+    retained.set(key, {
+      path: filename,
+      fileIdentity: identity,
+      inode: String(stat.ino),
+      sha256,
+      bytes: Number(stat.size),
+    });
+  }
+  return retained.get(key)!;
+}
+
+function taskSample(directory: string, pid: number, deadline: number): Packet {
+  const names = fs
+    .readdirSync(`${directory}/task`)
+    .filter((name) => /^\d+$/.test(name))
+    .sort((left, right) => Number(left) - Number(right));
+  const tasks: Packet[] = [];
+  const unavailable: number[] = [];
+  for (const name of names.slice(0, processLimits.tasks)) {
+    if (performance.now() >= deadline) break;
+    try {
+      const root = `${directory}/task/${name}`;
+      const task = processStat(`${root}/stat`);
+      const status = processText(`${root}/status`, 16_384);
+      if (
+        task.pid !== Number(name) ||
+        Number(/^Tgid:\s*(\d+)$/m.exec(status)?.[1]) !== pid ||
+        Number(/^Pid:\s*(\d+)$/m.exec(status)?.[1]) !== task.pid ||
+        processStat(`${root}/stat`).start !== task.start
+      )
+        throw new Error("Task identity changed");
+      tasks.push({ tid: task.pid, tgid: pid, startTicks: task.start });
+    } catch {
+      unavailable.push(Number(name));
+    }
+  }
+  return { tasks, unavailable, limited: tasks.length + unavailable.length < names.length };
+}
+
 export function observeDescendants(
   leader: number,
   seen: Set<string>,
   retainedProviders: Map<string, Packet>,
   output: string,
+  procRoot = "/proc",
 ): void {
-  const processes = processTable();
+  const deadline = performance.now() + processLimits.sampleMilliseconds;
+  const processes = processTable(procRoot);
   const descendants = new Set([leader]);
   for (let previousSize = 0; previousSize !== descendants.size;) {
     previousSize = descendants.size;
     for (const [pid, info] of processes) if (descendants.has(info.parent)) descendants.add(pid);
   }
+  const gaps = processGaps.get(seen) ?? [];
+  processGaps.set(seen, gaps);
+  let limited = false;
+  let visited = 0;
   for (const pid of descendants) {
+    if (
+      visited++ >= processLimits.packets ||
+      seen.size >= processLimits.packets ||
+      performance.now() >= deadline
+    ) {
+      limited = true;
+      break;
+    }
     const processInfo = processes.get(pid);
-    if (!processInfo) continue;
-    const directory = `/proc/${pid}`;
+    if (!processInfo) {
+      if (gaps.length < processLimits.packets && !gaps.some((gap) => gap.pid === pid))
+        gaps.push({ pid, identity: "UNKNOWN", unavailable: "ProcessStatUnavailable" });
+      continue;
+    }
+    const directory = path.join(procRoot, String(pid));
     try {
       const executable = fs.readlinkSync(`${directory}/exe`);
-      if (path.basename(executable) !== "node" && pid !== leader) continue;
-      const maps = fs.readFileSync(`${directory}/maps`, "utf8");
+      const maps = processText(`${directory}/maps`);
+      const taskObservation = taskSample(directory, pid, deadline);
+      limited ||= taskObservation.limited;
+      let executableIdentity: Packet;
+      try {
+        executableIdentity = imageIdentity(
+          executable,
+          `${directory}/exe`,
+          retainedProviders,
+          deadline,
+        );
+      } catch (error) {
+        executableIdentity = { path: executable, identity: "UNKNOWN", unavailable: errorName(error) };
+      }
       const mapped = new Map<string, string>();
       for (const line of maps.split("\n")) {
         const fields = /^\S+\s+(\S+)\s+\S+\s+\S+\s+(\d+)\s+(.+)$/.exec(line);
@@ -233,46 +355,79 @@ export function observeDescendants(
           mapped.set(fields[3], fields[2]);
       }
       const sorted = [...mapped].sort(([left], [right]) => left.localeCompare(right));
-      const identity = JSON.stringify([pid, processInfo.start, executable, sorted]);
-      if (seen.has(identity)) continue;
       const providers = sorted.map(([filename, inode]) => {
         const mappedInode =
           BigInt(inode) <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(inode) : inode;
         let item: Packet = { path: filename, mappedInode };
         try {
-          const stat = fs.statSync(filename, { bigint: true });
-          if (stat.ino !== BigInt(inode)) throw new Error("Mapped provider inode changed");
-          const key = `${filename}:${statIdentity(stat)}`;
-          if (!retainedProviders.has(key)) {
-            const sha256 = sha256File(filename);
-            if (statIdentity(stat) !== statIdentity(fs.statSync(filename, { bigint: true }))) {
-              throw new Error("Provider changed during hashing");
-            }
-            retainedProviders.set(key, { ...item, sha256, bytes: Number(stat.size) });
-          }
-          item = retainedProviders.get(key)!;
+          const image = imageIdentity(filename, filename, retainedProviders, deadline);
+          if (BigInt(image.inode) !== BigInt(inode)) throw new Error("Mapped provider inode changed");
+          item = { ...image, mappedInode };
         } catch (error) {
           item.unavailable = errorName(error);
         }
         return item;
       });
+      const identity = JSON.stringify([
+        pid,
+        processInfo.parent,
+        processInfo.start,
+        executableIdentity,
+        sorted,
+        providers,
+        taskObservation,
+      ]);
+      if (seen.has(identity)) continue;
+      let parentStartTicks: string | null = null;
+      try {
+        const parent = processStat(path.join(procRoot, String(processInfo.parent), "stat"));
+        if (
+          parent.pid === processInfo.parent &&
+          parent.start === processes.get(processInfo.parent)?.start
+        )
+          parentStartTicks = parent.start;
+      } catch {
+        // The parent may disappear or be reused independently of this process.
+      }
       const packet = {
         pid,
+        parentPid: processInfo.parent,
+        parentStartTicks,
         startTicks: processInfo.start,
         executable,
+        executableIdentity,
+        observedAt: Date.now() / 1000,
+        selection: "partial process/task sample; not a complete process or call census",
+        ...taskObservation,
         cwd: fs.readlinkSync(`${directory}/cwd`),
         maps,
         providers,
       };
+      const after = processStat(`${directory}/stat`);
       if (
-        processTable().get(pid)?.start !== processInfo.start ||
-        fs.readlinkSync(`${directory}/exe`) !== executable
+        after.start !== processInfo.start ||
+        after.pid !== pid ||
+        after.parent !== processInfo.parent ||
+        fs.readlinkSync(`${directory}/exe`) !== executable ||
+        (executableIdentity.fileIdentity &&
+          statIdentity(fs.statSync(`${directory}/exe`, { bigint: true })) !==
+            executableIdentity.fileIdentity)
       )
-        continue;
+        throw new Error("Process identity changed");
       writeJson(path.join(output, "processes", `${pid}-${seen.size}.json`), packet);
       seen.add(identity);
-    } catch {
+    } catch (error) {
       // Process exit and /proc permission changes are observation gaps.
+      if (gaps.length < processLimits.packets && !gaps.some((gap) => gap.pid === pid))
+        gaps.push({ pid, identity: "UNKNOWN", unavailable: errorName(error) });
     }
   }
+  writeJson(path.join(output, "process-sampling.json"), {
+    selection: "partial process/task sample; unreadable or unobserved actors remain UNKNOWN",
+    limits: processLimits,
+    limited,
+    sampledMapPackets: seen.size,
+    gapLimitReached: gaps.length === processLimits.packets,
+    gaps,
+  });
 }
