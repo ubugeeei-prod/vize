@@ -1,0 +1,85 @@
+{
+  "schema": "vize.slot-function-presence-original-source",
+  "project": "buefy",
+  "upstreamRevision": "4f094cd51a229a0ac16097c77bf537ab4e94f701",
+  "sourcePath": "packages/buefy/src/components/autocomplete/Autocomplete.vue",
+  "sourceBytes": 34069,
+  "sourceSha256": "38580d4997ffb6104558c50bbcb01dd751295aad1a12a33dd921ef746e0ed366",
+  "historicalReport": {
+    "file": "buefy-lint-divergence.json",
+    "bytes": 47289426,
+    "sha256": "7cd7ec5b7058d83f628ef7aab41e2303591c9e474942c3f8ed1ecfdbdb46467d",
+    "producer": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
+    "originalTargetRuleFalsePositiveCount": 24,
+    "originalAutocompleteFindings": [
+      {
+        "column": 22,
+        "endColumn": 41,
+        "endLine": 295,
+        "file": "packages/buefy/src/components/autocomplete/Autocomplete.vue",
+        "line": 295,
+        "message": "[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
+        "ruleId": "script/require-slots-as-functions",
+        "severity": "error"
+      },
+      {
+        "column": 22,
+        "endColumn": 39,
+        "endLine": 302,
+        "file": "packages/buefy/src/components/autocomplete/Autocomplete.vue",
+        "line": 302,
+        "message": "[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
+        "ruleId": "script/require-slots-as-functions",
+        "severity": "error"
+      },
+      {
+        "column": 22,
+        "endColumn": 39,
+        "endLine": 309,
+        "file": "packages/buefy/src/components/autocomplete/Autocomplete.vue",
+        "line": 309,
+        "message": "[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
+        "ruleId": "script/require-slots-as-functions",
+        "severity": "error"
+      },
+      {
+        "column": 22,
+        "endColumn": 40,
+        "endLine": 316,
+        "file": "packages/buefy/src/components/autocomplete/Autocomplete.vue",
+        "line": 316,
+        "message": "[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
+        "ruleId": "script/require-slots-as-functions",
+        "severity": "error"
+      },
+      {
+        "column": 22,
+        "endColumn": 40,
+        "endLine": 323,
+        "file": "packages/buefy/src/components/autocomplete/Autocomplete.vue",
+        "line": 323,
+        "message": "[vize:script/require-slots-as-functions] `$slots` properties are functions in Vue 3 and must be called.",
+        "ruleId": "script/require-slots-as-functions",
+        "severity": "error"
+      }
+    ],
+    "completeOriginalEslintFileResultSha256": "5d311ac8aa469b230cad572a60cead6138c6f98c54180ac70b81e4d3970e5979",
+    "originalOtherMessages": 1017,
+    "originalTargetRuleMessages": []
+  },
+  "sourceContinuity": {
+    "rulePath": "crates/vize_patina/src/rules/script/require_slots_as_functions.rs",
+    "bytes": 10431,
+    "sha256": "b371e6c4bd97e2193996543790a77297716a0e94a79932c0b9b84a47bb5f7086",
+    "wholeEqualHistoricalAndActualPreimage": true
+  },
+  "officialRule": {
+    "package": "eslint-plugin-vue",
+    "version": "10.9.2",
+    "path": "dist/rules/require-slots-as-functions.js",
+    "sha256": "94857af48a201bc454f37630d1176a373a60d8fd0f6dc9d22a758a3243d76575",
+    "helperPath": "dist/utils/index.js",
+    "helperSha256": "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925"
+  },
+  "limits": "Historical BEFORE source/observations, no newly executed current-before CLI or all24/matrix parity claim. Current AFTER uses the entire original and distinct authored controls."
+}

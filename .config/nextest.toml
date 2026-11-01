@@ -1,6 +1,12 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Retain complete slot-existence API and original CLI packets; execution is unchanged.
+[[profile.default.overrides]]
+filter = '''(package(=vize_patina) & test(~require_slots_as_functions::presence_tests::)) |
+(package(=vize) & binary(=integration) & test(=lint_slot_presence_negation_cli::original_and_boundaries_keep_complete_cli_json))'''
+junit.store-success-output = true
+
 # Retain the whole authored conditional-whitespace compiler observations.
 [[profile.default.overrides]]
 filter = 'package(=vize_atelier_sfc) & binary(=ideographic_if_whitespace)'

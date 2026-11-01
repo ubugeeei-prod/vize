@@ -27,18 +27,18 @@ use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     BindingPattern, Expression, Function, MemberExpression, Program, SpreadElement,
-    StaticMemberExpression, VariableDeclarator,
+    StaticMemberExpression, UnaryExpression, VariableDeclarator,
 };
 use oxc_ast_visit::{
     Visit,
     walk::{
         walk_arrow_function_expression, walk_call_expression, walk_function,
         walk_identifier_reference, walk_spread_element, walk_static_member_expression,
-        walk_variable_declarator,
+        walk_unary_expression, walk_variable_declarator,
     },
 };
 use oxc_span::{GetSpan, Span};
-use oxc_syntax::scope::ScopeFlags;
+use oxc_syntax::{operator::UnaryOperator, scope::ScopeFlags};
 use vize_l0::{CompactString, FxHashMap, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -126,8 +126,15 @@ impl<'a> Visit<'a> for SlotsVisitor<'_> {
     }
 
     fn visit_call_expression(&mut self, call: &oxc_ast::ast::CallExpression<'a>) {
-        self.note_callee(&call.callee);
+        self.suppress_direct_slot_function(&call.callee);
         walk_call_expression(self, call);
+    }
+
+    fn visit_unary_expression(&mut self, expression: &UnaryExpression<'a>) {
+        if expression.operator == UnaryOperator::LogicalNot {
+            self.suppress_direct_slot_function(&expression.argument);
+        }
+        walk_unary_expression(self, expression);
     }
 
     fn visit_static_member_expression(&mut self, member: &StaticMemberExpression<'a>) {
@@ -184,7 +191,7 @@ impl SlotsVisitor<'_> {
         }
     }
 
-    fn note_callee(&mut self, callee: &Expression<'_>) {
+    fn suppress_direct_slot_function(&mut self, callee: &Expression<'_>) {
         let callee = callee.get_inner_expression();
         if let Expression::Identifier(identifier) = callee
             && self.lookup(identifier.name.as_str()) == Some(Kind::SlotFn)
@@ -326,3 +333,6 @@ mod tests {
         assert_eq!(lint(source).error_count, 2);
     }
 }
+
+#[cfg(test)]
+mod presence_tests;
