@@ -9,10 +9,6 @@ const object = (value: unknown): Row => {
   assert.ok(value && typeof value === "object" && !Array.isArray(value));
   return value as Row;
 };
-const array = (value: unknown): unknown[] => {
-  assert.ok(Array.isArray(value));
-  return value;
-};
 const id = (value: unknown) => {
   assert.ok(
     typeof value === "string" || (typeof value === "number" && Number.isSafeInteger(value)),
