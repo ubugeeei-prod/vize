@@ -2,10 +2,7 @@
 
 use super::*;
 use crate::{ide::IdeContext, runtime::block_on};
-use std::{
-    sync::{Arc, atomic::Ordering},
-    time::Duration,
-};
+use std::{sync::atomic::Ordering, time::Duration};
 
 fn fixture() -> (
     ServerState,
@@ -23,7 +20,7 @@ fn fixture() -> (
         sender: Some(sender),
         sync_sender: None,
         worker_owned: false,
-        pending: Arc::new(parking_lot::Mutex::new(Default::default())),
+        pending: parking_lot::Mutex::new(Default::default()).into(),
     };
     (state, uri, scheduler, receiver)
 }
@@ -297,12 +294,12 @@ fn document_dispatch_requires_success_marker_and_the_original_scope_then_release
     ] {
         let (state, uri, scheduler, receiver) = fixture();
         state.set_workspace_root("/foreground".into());
-        let state = Arc::new(state);
         let (service, _socket) = tower_lsp::LspService::new(crate::server::MaestroServer::new);
         let mut server = crate::server::MaestroServer::diagnostic_worker(
             service.inner().client.clone(),
-            Arc::clone(&state),
+            state.into(),
         );
+        let state = server.state.clone();
         server.initial_diagnostics = Some(scheduler.clone());
         let now = Instant::now();
         insert(&scheduler, &uri, now);
@@ -378,12 +375,12 @@ fn document_dispatch_requires_success_marker_and_the_original_scope_then_release
     use std::future::Future;
     let (state, uri, scheduler, receiver) = fixture();
     state.set_workspace_root("/foreground".into());
-    let state = Arc::new(state);
     let (service, _socket) = tower_lsp::LspService::new(crate::server::MaestroServer::new);
     let mut server = crate::server::MaestroServer::diagnostic_worker(
         service.inner().client.clone(),
-        Arc::clone(&state),
+        state.into(),
     );
+    let state = server.state.clone();
     server.initial_diagnostics = Some(scheduler.clone());
     let now = Instant::now();
     insert(&scheduler, &uri, now);
