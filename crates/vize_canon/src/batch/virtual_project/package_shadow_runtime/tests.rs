@@ -29,13 +29,7 @@ fn project(main: Option<&str>) -> (tempfile::TempDir, VirtualProject, PathBuf) {
     }
     let main = root.join("src/main.ts");
     let mut project = VirtualProject::new(&root).unwrap();
-    for path in [
-        root.join("src/App.vue"),
-        main.clone(),
-        root.join("src/plain.ts"),
-    ] {
-        project.register_path(&path).unwrap();
-    }
+    project.register_path(&main).unwrap();
     project.reconcile_package_routes_for_importers(std::slice::from_ref(&main));
     let bindings = project.package_routes_snapshot();
     let private = bindings
@@ -43,6 +37,15 @@ fn project(main: Option<&str>) -> (tempfile::TempDir, VirtualProject, PathBuf) {
         .find(|binding| binding.importer_path == main && binding.specifier == "#src/plain")
         .expect("the exact authored private import must have a binding");
     assert!(private.route.is_some());
+    // As in CLI preparation, absorb the complete source set while the package
+    // route is active, so every package source enters its topology index.
+    project
+        .register_paths(&[
+            root.join("src/App.vue"),
+            main.clone(),
+            root.join("src/plain.ts"),
+        ])
+        .unwrap();
     project.register_package_route_targets().unwrap();
     project.finalize_package_routes().unwrap();
     (directory, project, main)
@@ -66,11 +69,12 @@ fn canonical_self_shadow_keeps_generated_bytes_and_authored_diagnostic_positions
     project.materialize().unwrap();
     assert_eq!(fs::read_to_string(&canonical).unwrap(), expected.as_str());
     assert!(project.find_by_diagnostic_virtual(&canonical).is_some());
-    let (path, line, column) = project.map_to_virtual(&main, 4, 7).unwrap();
+    // The mapping API uses zero-based LSP coordinates; CLI errors use 4:7.
+    let (path, line, column) = project.map_to_virtual(&main, 3, 6).unwrap();
     assert_eq!(path, canonical);
     let original = project.map_to_original(&path, line, column).unwrap();
     assert_eq!(original.path, main);
-    assert_eq!((original.line, original.column), (4, 7));
+    assert_eq!((original.line, original.column), (3, 6));
 }
 
 #[test]
@@ -108,11 +112,11 @@ fn same_line_import_growth_maps_across_unicode_and_crlf_without_losing_the_file(
         .clone();
     project.materialize().unwrap();
     assert!(project.find_by_diagnostic_virtual(&canonical).is_some());
-    let column = source.lines().nth(1).unwrap().find("probe").unwrap() as u32 + 1;
-    let (path, line, virtual_column) = project.map_to_virtual(&main, 2, column).unwrap();
-    assert_eq!((line, virtual_column), (2, column + 3));
+    let column = source.lines().nth(1).unwrap().find("probe").unwrap() as u32;
+    let (path, line, virtual_column) = project.map_to_virtual(&main, 1, column).unwrap();
+    assert_eq!((line, virtual_column), (1, column + 3));
     let original = project
         .map_to_original(&path, line, virtual_column)
         .unwrap();
-    assert_eq!((original.line, original.column), (2, column));
+    assert_eq!((original.line, original.column), (1, column));
 }
