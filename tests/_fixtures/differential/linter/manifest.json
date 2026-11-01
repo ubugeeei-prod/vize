@@ -2338,6 +2338,44 @@
       }
     },
     {
+      "id": "linter/native-html-element-is-6848",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "native-html-element-is-6848",
+        "files": [
+          {
+            "path": "Original.html.txt",
+            "sha256": "52ac934e9636796d4a2f4289e72cda19fbc10a7da53b0ef7f9013d942799b4cc"
+          },
+          {
+            "path": "OriginalDocumented.vue.txt",
+            "sha256": "18fb4fad08249c4fbfbbacda4d66fd57976c8c8c4bc9e2f7f811838209ca3959"
+          },
+          {
+            "path": "cases.json",
+            "sha256": "79ab70cfa5269ea5eb3a5e3df70127cf4feda7872a17f0ffd67bf5071de98226"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/native-input-label-history-6881",
       "state": "active",
       "targets": ["lint"],

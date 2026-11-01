@@ -44,12 +44,18 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Error,
 };
 
+mod native;
+
 /// Disallow the `is` attribute on native HTML elements.
 pub struct NoDeprecatedHtmlElementIs;
 
 impl Rule for NoDeprecatedHtmlElementIs {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
