@@ -21,6 +21,13 @@ import {
   nativeBetaDtoProtocolSource,
   newNativeBetaDtoProtocolCases,
 } from "./native-beta-dto-fixtures.ts";
+import { currentNativeBetaDtoObserver } from "./native-beta-dto-observer-successor.ts";
+import {
+  LOGICAL_WORKSPACE_PROTOCOL_ID,
+  newLogicalWorkspaceProtocolCases,
+  remainingShutdownProtocolCases,
+  protocolPartition,
+} from "./native-beta-logical-workspace-fixtures.ts";
 
 import { knownCompilerCssSource } from "../../../../tests/differential/compiler-css-api-registry.ts";
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
@@ -45,6 +52,9 @@ export interface ProductReport {
   state: ProductState;
   cases: string[];
   reason?: string;
+  currentObserverSuccessor?: NonNullable<
+    ReturnType<typeof currentNativeBetaDtoObserver>["evidence"]
+  >;
 }
 
 export interface LegacyFixReport {
@@ -123,21 +133,6 @@ function coverageLost(before?: DialectCoverage, after?: DialectCoverage): boolea
   if (rank(before) !== rank(after)) return rank(after) < rank(before);
   const kept = dialects(after);
   return [...dialects(before)].some((dialect) => !kept.has(dialect));
-}
-
-// Route only one explicitly registered protocol ID; malformed/unknown rows
-// remain with the original closed validator and cannot disappear in filtering.
-function protocolPartition(value: unknown, id: string, include: boolean): unknown {
-  if (!Array.isArray(value)) return value;
-  return value.filter((row: unknown) => {
-    const matches =
-      row !== null &&
-      typeof row === "object" &&
-      !Array.isArray(row) &&
-      "id" in row &&
-      row.id === id;
-    return matches === include;
-  });
 }
 
 function sha256(bytes: Buffer): string {
@@ -287,7 +282,31 @@ function checkProduct(
           )
         : [];
     const dtoRegistered = dtoProtocols.includes(NATIVE_BETA_DTO_PROTOCOL_ID);
-    const dtoRequired = product === "typechecker" && canonPaths.some(nativeBetaDtoProtocolSource);
+    const currentObserver =
+      product === "typechecker"
+        ? currentNativeBetaDtoObserver(
+            canonPaths,
+            protocolPartition(before?.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, true),
+            protocolPartition(manifest.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, true),
+            readFile,
+          )
+        : { sources: new Set<string>(), evidence: null };
+    const logical =
+      product === "typechecker"
+        ? newLogicalWorkspaceProtocolCases(
+            protocolPartition(before?.protocolCases, LOGICAL_WORKSPACE_PROTOCOL_ID, true),
+            protocolPartition(manifest.protocolCases, LOGICAL_WORKSPACE_PROTOCOL_ID, true),
+            readFile,
+          )
+        : { ids: [] as string[], sources: new Set<string>() };
+    const dtoRequired =
+      product === "typechecker" &&
+      canonPaths.some(
+        (path) =>
+          nativeBetaDtoProtocolSource(path) &&
+          !currentObserver.sources.has(path) &&
+          !logical.sources.has(path),
+      );
     const runtime = newNativeRuntimeCases(
       product,
       before?.runtimeCases,
@@ -303,6 +322,8 @@ function checkProduct(
             (path) =>
               !runtime.sources.has(path) &&
               !languageProject.sources.has(path) &&
+              !currentObserver.sources.has(path) &&
+              !logical.sources.has(path) &&
               !(dtoRegistered && nativeBetaDtoProtocolSource(path)) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
@@ -310,8 +331,8 @@ function checkProduct(
     const protocols =
       product === "typechecker"
         ? newNativeShutdownProtocolCases(
-            protocolPartition(before?.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
-            protocolPartition(manifest.protocolCases, NATIVE_BETA_DTO_PROTOCOL_ID, false),
+            remainingShutdownProtocolCases(before?.protocolCases),
+            remainingShutdownProtocolCases(manifest.protocolCases),
             readFile,
           )
         : [];
@@ -362,7 +383,9 @@ function checkProduct(
         ...jsxIds,
         ...languageProject.ids,
         ...dtoProtocols,
+        ...logical.ids,
       ],
+      ...(currentObserver.evidence ? { currentObserverSuccessor: currentObserver.evidence } : {}),
     };
   } catch (error) {
     return { product, state: "invalid-manifest-or-input", cases: [], reason: String(error) };

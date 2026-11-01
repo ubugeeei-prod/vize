@@ -1,10 +1,10 @@
 use super::close_materialized_document;
 use crate::{
     file_uri::path_to_file_uri,
-    lsp_client::{CorsaProjectClient, session_paths::overlay_root_for_project},
+    lsp_client::{CorsaProjectClient, session_storage::SessionStorage},
 };
 use corsa::api::{FileChangeSummary, FileChanges};
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, sync::Arc};
 
 const DISK: &[u8] = b"export const value = 1;\r\n";
 const OVERLAY: &[u8] = b"export const value = 'unsaved';\r\n";
@@ -12,6 +12,7 @@ const OVERLAY: &[u8] = b"export const value = 'unsaved';\r\n";
 struct Fixture {
     _directory: tempfile::TempDir,
     root: PathBuf,
+    storage: Arc<SessionStorage>,
     original: PathBuf,
     mirror: PathBuf,
 }
@@ -25,12 +26,14 @@ impl Fixture {
         if let Some(bytes) = disk {
             fs::write(&original, bytes).unwrap();
         }
-        let mirror = overlay_root_for_project(&root).join(relative);
+        let storage = Arc::new(SessionStorage::new(&root).unwrap());
+        let mirror = storage.root().join(relative);
         fs::create_dir_all(mirror.parent().unwrap()).unwrap();
         fs::write(&mirror, OVERLAY).unwrap();
         Self {
             _directory: directory,
             root,
+            storage,
             original,
             mirror,
         }
@@ -41,11 +44,13 @@ impl Fixture {
             &path_to_file_uri(&self.original),
             &path_to_file_uri(&self.mirror),
             &self.root,
+            self.storage.root(),
         )
     }
 
     fn client(&self) -> CorsaProjectClient {
         let mut client = CorsaProjectClient::empty_for_test(self.root.clone());
+        client.overlay_storage = Arc::clone(&self.storage);
         client.materialized_project_session = true;
         let uri = path_to_file_uri(&self.original);
         let mapped = path_to_file_uri(&self.mirror);
@@ -194,13 +199,21 @@ fn physical_identity_and_non_owned_targets_cannot_modify_authored_inputs() {
     let fixture = Fixture::new("src/support.ts", Some(DISK));
     let uri = path_to_file_uri(&fixture.original);
     assert!(
-        close_materialized_document(&uri, &uri, &fixture.root)
+        close_materialized_document(&uri, &uri, &fixture.root, fixture.storage.root())
             .unwrap()
             .is_none()
     );
     let wrong = fixture.root.join("owned-sibling.ts");
     fs::write(&wrong, b"unrelated authored bytes\n").unwrap();
-    assert!(close_materialized_document(&uri, &path_to_file_uri(&wrong), &fixture.root).is_err());
+    assert!(
+        close_materialized_document(
+            &uri,
+            &path_to_file_uri(&wrong),
+            &fixture.root,
+            fixture.storage.root()
+        )
+        .is_err()
+    );
     assert_eq!(fs::read(&wrong).unwrap(), b"unrelated authored bytes\n");
     assert_eq!(fs::read(&fixture.original).unwrap(), DISK);
     assert_eq!(fs::read(&fixture.mirror).unwrap(), OVERLAY);
@@ -211,21 +224,21 @@ fn physical_identity_and_non_owned_targets_cannot_modify_authored_inputs() {
 fn linked_mirror_root_parent_and_leaf_refuse_restore_and_delete_without_touching_targets() {
     use std::os::unix::fs::symlink;
     for disk_backed in [true, false] {
-        for linked in ["node_modules", "root", "parent", "leaf"] {
+        for linked in ["owner", "root", "parent", "leaf"] {
             let fixture = Fixture::new("src/support.ts", disk_backed.then_some(DISK));
             let foreign = tempfile::tempdir().unwrap();
             fs::create_dir_all(foreign.path().join("src")).unwrap();
             let target = match linked {
-                "node_modules" => {
-                    let directory = fixture.root.join("node_modules");
-                    fs::remove_dir_all(&directory).unwrap();
-                    fs::create_dir_all(foreign.path().join(".vize/corsa-overlay/src")).unwrap();
+                "owner" => {
+                    let directory = fixture.storage.root().parent().unwrap();
+                    fs::remove_dir_all(directory).unwrap();
+                    fs::create_dir_all(foreign.path().join("project/src")).unwrap();
                     symlink(foreign.path(), directory).unwrap();
-                    foreign.path().join(".vize/corsa-overlay/src/support.ts")
+                    foreign.path().join("project/src/support.ts")
                 }
                 "root" => {
-                    let root = overlay_root_for_project(&fixture.root);
-                    fs::remove_dir_all(&root).unwrap();
+                    let root = fixture.storage.root();
+                    fs::remove_dir_all(root).unwrap();
                     symlink(foreign.path(), root).unwrap();
                     foreign.path().join("src/support.ts")
                 }
@@ -307,12 +320,16 @@ fn canonical_project_alias_may_restore_inside_its_same_owned_tree() {
     // the project root; the close guard must use the same owned boundary.
     let project_root = alias.canonicalize().unwrap();
     let external_uri = path_to_file_uri(&alias.join("src/support.ts"));
-    let mapped_uri =
-        path_to_file_uri(&overlay_root_for_project(&project_root).join("src/support.ts"));
+    let mapped_uri = path_to_file_uri(&fixture.storage.root().join("src/support.ts"));
     assert!(
-        close_materialized_document(&external_uri, &mapped_uri, &project_root)
-            .unwrap()
-            .is_some()
+        close_materialized_document(
+            &external_uri,
+            &mapped_uri,
+            &project_root,
+            fixture.storage.root()
+        )
+        .unwrap()
+        .is_some()
     );
     assert_eq!(fs::read(&fixture.mirror).unwrap(), DISK);
     assert_eq!(fs::read(&fixture.original).unwrap(), DISK);
@@ -334,7 +351,7 @@ fn replaced_project_root_cannot_restore_or_delete_through_a_foreign_tree() {
         let saved_root = retired.path().join("original-project");
         let foreign_root = foreign.path().canonicalize().unwrap();
         let foreign_source = foreign_root.join("src/support.ts");
-        let foreign_mirror = overlay_root_for_project(&foreign_root).join("src/support.ts");
+        let foreign_mirror = foreign_root.join("unrelated-mirror/src/support.ts");
         fs::create_dir_all(foreign_mirror.parent().unwrap()).unwrap();
         if disk_backed {
             fs::create_dir_all(foreign_source.parent().unwrap()).unwrap();
@@ -367,10 +384,7 @@ fn replaced_project_root_cannot_restore_or_delete_through_a_foreign_tree() {
             assert!(!foreign_source.exists());
             assert!(!saved_root.join("src/support.ts").exists());
         }
-        assert_eq!(
-            fs::read(overlay_root_for_project(&saved_root).join("src/support.ts")).unwrap(),
-            OVERLAY
-        );
+        assert_eq!(fs::read(&fixture.mirror).unwrap(), OVERLAY);
         fs::remove_file(&fixture.root).unwrap();
         fs::rename(&saved_root, &fixture.root).unwrap();
     }

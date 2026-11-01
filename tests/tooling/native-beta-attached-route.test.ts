@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { verifyBetaAttachedRoute } from "./support/native-beta-dto/beta-attached-route.ts";
+import { storageFixture } from "./support/native-beta-storage-fixture.ts";
 
 type Packet = Record<string, unknown>;
 function fixture() {
   const root = "/tmp/owned-beta-project",
     source = "b".repeat(40);
+  const storage = storageFixture(root);
   const phases = ["valid", "dependency-error", "dependency-repair", "dependency-close"].map(
-    (phase) => ({
+    (phase, index) => ({
+      ...storage.attached.rows[index],
       phase,
       apiEligible: false,
       nativePull: {
@@ -52,8 +55,35 @@ function fixture() {
     server: Packet[] = [],
     apiClient: Packet[] = [],
     apiServer: Packet[] = [];
+  client.push({
+    jsonrpc: "2.0",
+    id: -1,
+    method: "initialize",
+    params: {
+      rootPath: storage.root,
+      rootUri: `file://${storage.root}`,
+    },
+  });
+  server.push({
+    jsonrpc: "2.0",
+    id: -1,
+    result: { serverInfo: { name: "typescript", version: "7.1.0-beta" } },
+  });
+  client.push({
+    jsonrpc: "2.0",
+    id: -2,
+    method: "custom/projectInfo",
+    params: {
+      textDocument: { uri: `file://${storage.root}/main.ts` },
+    },
+  });
+  server.push({
+    jsonrpc: "2.0",
+    id: -2,
+    result: { configFilePath: storage.root + "/tsconfig.json" },
+  });
   const main = `file://${root}/main.ts`,
-    mapped = `file://${root}/node_modules/.vize/corsa-overlay/main.ts`;
+    mapped = `file://${storage.root}/main.ts`;
   let id = 0;
   for (const phase of phases) {
     for (const uri of [main, mapped, mapped]) {
@@ -99,6 +129,7 @@ function fixture() {
     phases,
     source,
     root,
+    attached: { ...storage.attached, rows: phases },
     context: {
       source,
       role: "after",
@@ -110,7 +141,7 @@ function fixture() {
   };
 }
 const verify = (f: ReturnType<typeof fixture>) =>
-  verifyBetaAttachedRoute(f.owners, f.context, f.source, f.root, f.phases);
+  verifyBetaAttachedRoute(f.owners, f.context, f.source, f.root, f.phases, f.attached);
 
 test("configuration attachment retains a complete same-owner LSP semantic-route witness", () => {
   const f = fixture(),
@@ -217,8 +248,11 @@ test("missing, split, failed, foreign, API-semantic or incomplete phase evidence
     [
       "foreign query",
       (f) => {
-        (f.owners[0]!.client[0]!.params as { textDocument: { uri: string } }).textDocument.uri =
-          "file:///tmp/foreign/main.ts";
+        (
+          f.owners[0]!.client.find((row) => row.method === "textDocument/diagnostic")!.params as {
+            textDocument: { uri: string };
+          }
+        ).textDocument.uri = "file:///tmp/foreign/main.ts";
       },
     ],
     [

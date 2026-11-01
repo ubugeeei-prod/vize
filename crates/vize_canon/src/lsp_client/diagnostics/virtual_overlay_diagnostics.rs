@@ -6,7 +6,7 @@ pub(in crate::lsp_client) fn ensure_materialized_project<'a>(
     uris: impl IntoIterator<Item = &'a str>,
 ) -> Result<(), String> {
     client.ensure_project_transport()?;
-    if client.materialized_project_session {
+    if client.materialized_project_session || client.logical_workspace_overlays {
         return Ok(());
     }
 
@@ -18,7 +18,9 @@ pub(in crate::lsp_client) fn ensure_materialized_project<'a>(
             .document_texts
             .keys()
             .any(|uri| open_uri_needs_materialized_project_config(uri));
-    if requested_virtual_overlay || open_virtual_overlay {
+    if (requested_virtual_overlay || open_virtual_overlay)
+        && !client.try_logical_workspace_overlays()?
+    {
         client.activate_materialized_project_session()?;
     }
     Ok(())

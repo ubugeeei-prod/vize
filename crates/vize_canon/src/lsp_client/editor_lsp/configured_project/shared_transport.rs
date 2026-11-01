@@ -23,11 +23,13 @@ pub(in crate::lsp_client) fn try_shared_editor_project(
     cwd: &Path,
     root: &Path,
     config: &Path,
+    storage: &crate::lsp_client::session_storage::SessionStorage,
+    preferred: Option<&str>,
 ) -> Option<SharedProject> {
     if !supports_shared_editor_project(executable, config) {
         return None;
     }
-    match spawn_shared_editor_project(executable, cwd, root, config) {
+    match spawn_shared_editor_project(executable, cwd, root, config, storage, preferred) {
         Ok(project) => Some(project),
         Err(error) => {
             tracing::debug!(
@@ -39,6 +41,7 @@ pub(in crate::lsp_client) fn try_shared_editor_project(
     }
 }
 
+mod logical_attachment;
 #[cfg(test)]
 mod tests;
 
@@ -47,9 +50,14 @@ fn spawn_shared_editor_project(
     cwd: &Path,
     root: &Path,
     config: &Path,
+    storage: &crate::lsp_client::session_storage::SessionStorage,
+    preferred: Option<&str>,
 ) -> Result<SharedProject, String> {
     let mut editor =
-        EditorLspSession::spawn_with_startup_configuration(executable, cwd, root, config)?;
+        EditorLspSession::spawn_with_startup_configuration(executable, cwd, root, config)
+            .inspect_err(|_| {
+                storage.retain_after_failed_shutdown();
+            })?;
     let result = (|| {
         let api = editor
             .configured_api
@@ -58,9 +66,14 @@ fn spawn_shared_editor_project(
         let session = block_on(ProjectSession::open(
             api.client.clone(),
             config.to_string_lossy().as_ref(),
-            None,
+            preferred.map(crate::lsp_client::session::uri_document_identifier),
         ))
         .map_err(|error| cstr!("Cannot open attached editor project: {error}"))?;
+        crate::lsp_client::session::validate_materialized_project_selection(
+            session.project(),
+            config,
+            preferred,
+        )?;
         let capabilities = block_on(session.describe_capabilities())
             .unwrap_or_else(|_| Arc::new(CapabilitiesResponse::default()));
         Ok((session, capabilities))
@@ -68,7 +81,9 @@ fn spawn_shared_editor_project(
     match result {
         Ok((session, capabilities)) => Ok((session, capabilities, editor)),
         Err(error) => {
-            if let Err(cleanup) = editor.shutdown() {
+            let cleanup = editor.shutdown();
+            storage.observe_retirement(&cleanup);
+            if let Err(cleanup) = cleanup {
                 tracing::warn!(
                     error = cleanup.as_str(),
                     "cannot retire failed editor attachment"
@@ -123,12 +138,27 @@ impl CorsaProjectClient {
         if self.try_replace_shared_project_transport(config, root, &cwd)? {
             return Ok(());
         }
-        match crate::lsp_client::session::spawn_project_session(
+        let preferred = self.preferred_document_for_config(config);
+        match crate::lsp_client::session::spawn_project_session_for_document(
             self.executable.as_str(),
             &self.cwd,
             config,
+            preferred.as_deref(),
         ) {
             Ok((session, capabilities)) => {
+                if let Err(error) =
+                    crate::lsp_client::session::validate_materialized_project_selection(
+                        session.project(),
+                        config,
+                        preferred.as_deref(),
+                    )
+                {
+                    let cleanup = block_on(session.close()).map_err(|error| {
+                        cstr!("Failed to retire refused materialized Corsa project: {error}")
+                    });
+                    self.overlay_storage.observe_retirement(&cleanup);
+                    return Err(error);
+                }
                 self.session = Some(session);
                 self.capabilities = capabilities;
             }
@@ -165,9 +195,15 @@ impl CorsaProjectClient {
         // An initial refusal may have spawned an independent editor later.
         // Reap it before a replacement can acquire the same project owner.
         self.retire_editor_lsp()?;
-        if let Some((session, capabilities, editor)) =
-            try_shared_editor_project(self.executable.as_str(), cwd, root, config)
-        {
+        let preferred = self.preferred_document_for_config(config);
+        if let Some((session, capabilities, editor)) = try_shared_editor_project(
+            self.executable.as_str(),
+            cwd,
+            root,
+            config,
+            &self.overlay_storage,
+            preferred.as_deref(),
+        ) {
             self.session = Some(session);
             self.capabilities = capabilities;
             self.editor_lsp = Some(editor);
@@ -209,6 +245,8 @@ impl CorsaProjectClient {
         drop(session);
         self.project_session_attached_to_editor = false;
         self.editor_lsp_documents_dirty = true;
-        snapshot_result.and(editor_result)
+        let result = snapshot_result.and(editor_result);
+        self.overlay_storage.observe_retirement(&result);
+        result
     }
 }

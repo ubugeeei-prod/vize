@@ -24,6 +24,9 @@ impl CorsaProjectClient {
         if self.synchronize_existing_canon_project_documents(documents)? {
             return Ok(());
         }
+        if self.try_logical_workspace_overlays()? {
+            return Ok(());
+        }
         self.activate_materialized_project_session()?;
         let mut summary = FileChangeSummary::default();
         for (uri, content) in documents {
@@ -31,9 +34,12 @@ impl CorsaProjectClient {
             let document_uri = self.materialized_session_document_uri(uri).ok_or_else(|| {
                 cstr!("Failed to derive materialized Corsa overlay path for {uri}")
             })?;
-            if let Some(FileChanges::Summary(delta)) =
-                materialize_session_document(uri, document_uri.as_str(), content)
-            {
+            if let Some(FileChanges::Summary(delta)) = materialize_session_document(
+                uri,
+                document_uri.as_str(),
+                content,
+                self.overlay_storage.root(),
+            )? {
                 summary.changed.extend(delta.changed);
                 summary.created.extend(delta.created);
             }
@@ -62,10 +68,10 @@ impl CorsaProjectClient {
         else {
             return Ok(false);
         };
-        if !paths
-            .iter()
-            .all(|path| path.starts_with(&self.project_root) && path.is_file())
-        {
+        if !paths.iter().all(|path| {
+            crate::lsp_client::session_paths::is_within_project_namespace(path, &self.project_root)
+                && path.is_file()
+        }) {
             return Ok(false);
         }
         let mut summary = FileChangeSummary::default();
@@ -95,12 +101,37 @@ impl CorsaProjectClient {
         if !self.has_project_session() {
             return Ok(());
         }
+        if self.materialized_project_session
+            && self
+                .materialized_project_preference
+                .as_ref()
+                .is_some_and(|(_, uri)| !file_uri_to_path(uri).is_some_and(|path| path.is_file()))
+        {
+            return self.reload_materialized_project_transport();
+        }
         if matches!(&file_changes, Some(FileChanges::Summary(summary)) if !summary.created.is_empty())
         {
             return self.reload_materialized_project_transport();
         }
         block_on(self.project_session_mut()?.refresh(file_changes))
-            .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"))
+            .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"))?;
+        if self.materialized_project_session
+            && let Some((config, preferred)) = &self.materialized_project_preference
+        {
+            let session = self
+                .session
+                .as_ref()
+                .ok_or_else(|| cstr!("Materialized Corsa session disappeared after refresh"))?;
+            if let Err(error) = super::validate_materialized_project_selection(
+                session.project(),
+                config,
+                Some(preferred),
+            ) {
+                let _ = self.retire_project_session();
+                return Err(error);
+            }
+        }
+        Ok(())
     }
 
     pub(in crate::lsp_client) fn reload_materialized_project_transport(
@@ -114,11 +145,38 @@ impl CorsaProjectClient {
             .explicit_project_config
             .clone()
             .unwrap_or_else(|| crate::lsp_client::lifecycle_setup::workspace_config_path(&root));
+        if self.materialized_project_session {
+            // A deleted virtual member cannot remain the SDK preference. Only
+            // another exact, still-present mapped member may replace it.
+            let source_policy = self.materialized_source_file_policy(&config)?;
+            self.materialized_project_preference =
+                crate::lsp_client::session_paths::preferred_materialized_document(
+                    self.session_document_uris.values(),
+                    self.overlay_storage.root(),
+                    source_policy,
+                )
+                .map(|uri| (config.clone(), uri));
+        }
         self.retire_project_session()?;
         self.replace_project_transport(&config, &root)
     }
 
     pub(in crate::lsp_client) fn ensure_project_transport(&mut self) -> Result<(), String> {
+        if !self.closed && self.logical_workspace_overlays && self.document_texts.is_empty() {
+            // A partially supported overlay API may have accepted an earlier
+            // buffer before this revision switched to LSP. Do not reuse that
+            // API snapshot as the closed, readonly authored program.
+            if self.logical_api_reset_pending {
+                let config = self.explicit_project_config.clone().unwrap_or_else(|| {
+                    crate::lsp_client::lifecycle_setup::workspace_config_path(&self.project_root)
+                });
+                self.retire_project_session()?;
+                let root = self.project_root.clone();
+                self.replace_project_transport(&config, &root)?;
+                self.logical_api_reset_pending = false;
+            }
+            self.logical_workspace_overlays = false;
+        }
         if !self.closed && self.shared_editor_transport && !self.has_project_session() {
             crate::corsa_bridge::native_operation::checkpoint()?;
             self.ensure_editor_transport()?;

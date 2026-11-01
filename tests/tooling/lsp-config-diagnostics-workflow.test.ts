@@ -118,11 +118,16 @@ test("startup diagnostics retain the production producer and unchanged scale-one
     ),
   );
   const apiReadSource = readRepoFile(
-    "crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics.rs",
+    "crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics/tests.rs",
+  );
+  assert.match(
+    readRepoFile("crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics.rs"),
+    /#\[cfg\(all\(test, unix\)\)\]\nmod tests;/,
   );
   assert.deepEqual(
     [...apiReadSource.matchAll(/#\[test\]\n\s*fn (\w+)\(/g)].map((match) => match[1]),
     [
+      "refused_materialized_refresh_retires_the_session_before_later_access",
       "current_read_commits_whole_cache_only_after_foreground_lane_remains_usable",
       "refreshed_snapshot_rejects_both_old_success_and_old_error_without_effects",
       "cancelled_caller_keeps_real_snapshot_alive_until_entered_read_drains",

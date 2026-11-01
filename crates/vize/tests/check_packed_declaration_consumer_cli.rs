@@ -353,7 +353,12 @@ impl Case {
             .expect("install workspace dependencies before packed Vue tests");
         let link = self.root.join("node_modules").join("vue");
         std::fs::remove_dir_all(&link).unwrap();
+        #[cfg(unix)]
         std::os::unix::fs::symlink(vue, link).unwrap();
+        #[cfg(windows)]
+        std::os::windows::fs::symlink_dir(&vue, &link)
+            .or_else(|_| junction::create(&vue, &link))
+            .unwrap();
     }
 
     /// Run plain tsc (the Corsa binary) on the consumer project.

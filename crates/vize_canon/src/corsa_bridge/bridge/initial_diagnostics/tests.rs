@@ -1,0 +1,498 @@
+//! Framed API controls; these do not claim native server scheduling fairness.
+#![expect(clippy::disallowed_macros, reason = "framed protocol test fixtures")]
+
+use std::{
+    io::{BufReader, BufWriter},
+    os::unix::net::UnixListener,
+    sync::{Arc, mpsc},
+    thread,
+    time::Duration,
+};
+
+use corsa::{
+    api::{ApiClient, ProjectSession},
+    jsonrpc::{RawMessage, RequestId, read_frame, write_frame},
+    runtime::block_on,
+};
+use futures::FutureExt;
+use serde_json::{Value, json};
+
+use super::{CorsaBridge, InitialApiDiagnosticsOutcome};
+use crate::lsp_client::CorsaProjectClient;
+
+const BOUND: Duration = Duration::from_secs(10);
+const CONFIG: &str = "/workspace/tsconfig.json";
+const FILE: &str = "/workspace/App.vue.ts";
+const URI: &str = "file:///workspace/App.vue.ts";
+const OLD: &str = "n0000000000000001";
+const NEW: &str = "n0000000000000002";
+
+struct Peer {
+    _directory: tempfile::TempDir,
+    client: ApiClient,
+    entered: mpsc::Receiver<()>,
+    worker: thread::JoinHandle<Vec<std::string::String>>,
+    rpc_file: Arc<std::sync::Mutex<std::string::String>>,
+}
+
+impl Peer {
+    fn start(expected_releases: usize) -> Self {
+        Self::start_with_project(expected_releases, None, false)
+    }
+
+    fn start_with_project(
+        expected_releases: usize,
+        project_config: Option<std::path::PathBuf>,
+        finish_on_release: bool,
+    ) -> Self {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("initial.sock");
+        let listener = UnixListener::bind(&path).unwrap();
+        let (entered, observed) = mpsc::sync_channel(1);
+        let rpc_file = Arc::new(std::sync::Mutex::new(std::string::String::new()));
+        let expected_file = Arc::clone(&rpc_file);
+        let worker = thread::spawn(move || {
+            let (stream, _) = listener.accept().unwrap();
+            stream.set_read_timeout(Some(BOUND)).unwrap();
+            stream.set_write_timeout(Some(BOUND)).unwrap();
+            let mut reader = BufReader::new(stream.try_clone().unwrap());
+            let mut writer = BufWriter::new(stream);
+            let mut generation = 0;
+            let mut pending: Option<RequestId> = None;
+            let mut released = Vec::new();
+            let mut finished = false;
+            let project_response = || {
+                let mut response = project();
+                if let Some(config) = &project_config {
+                    response["configFileName"] = json!(config);
+                }
+                response
+            };
+            loop {
+                let body = match read_frame(&mut reader) {
+                    Ok(body) => body,
+                    Err(corsa::CorsaError::Closed(_)) => return released,
+                    Err(error) => panic!("initial API peer: {error}"),
+                };
+                let request: RawMessage = serde_json::from_slice(&body).unwrap();
+                let id = request.id.unwrap();
+                let params = request.params.unwrap_or(Value::Null);
+                let result = match request.method.as_deref().unwrap() {
+                    "initialize" => {
+                        json!({"useCaseSensitiveFileNames":true,"currentDirectory":"/workspace"})
+                    }
+                    "updateSnapshot" => {
+                        generation += 1;
+                        json!({"snapshot":if generation == 1 { OLD } else { NEW },"projects":[project_response()],"changes":{"changedProjects":{},"removedProjects":[]}})
+                    }
+                    "getDefaultProjectForFile" => project_response(),
+                    "getDiagnosticsForFile" => {
+                        assert_eq!(params["file"], *expected_file.lock().unwrap());
+                        assert_eq!(params["project"], "p./workspace/tsconfig.json");
+                        assert_eq!(params["snapshot"], OLD);
+                        assert!(pending.replace(id).is_none());
+                        entered.send(()).unwrap();
+                        continue;
+                    }
+                    "test/finish" => {
+                        finished = true;
+                        let id = pending.take().unwrap();
+                        if params["fail"] == true {
+                            let body = serde_json::to_vec(&json!({"jsonrpc":"2.0","id":id,"error":{"code":-32000,"message":"old world transport failed"}})).unwrap();
+                            write_frame(&mut writer, &body).unwrap();
+                        } else {
+                            assert!(
+                                !released.iter().any(|handle| handle == OLD),
+                                "snapshot released before held read finished"
+                            );
+                            respond(
+                                &mut writer,
+                                id,
+                                json!({"file":*expected_file.lock().unwrap(),"semantic":[diagnostic()]}),
+                            );
+                        }
+                        Value::Null
+                    }
+                    "release" => {
+                        let handle = params["handle"].as_str().unwrap().to_owned();
+                        assert_eq!(
+                            released
+                                .iter()
+                                .filter(|released| *released == &handle)
+                                .count(),
+                            0,
+                            "double release"
+                        );
+                        released.push(handle);
+                        Value::Null
+                    }
+                    method => panic!("unexpected initial API peer method: {method}"),
+                };
+                respond(&mut writer, id, result);
+                if (finished || finish_on_release) && released.len() == expected_releases {
+                    return released;
+                }
+            }
+        });
+        let client = block_on(ApiClient::connect_pipe(path)).unwrap();
+        Self {
+            _directory: directory,
+            client,
+            entered: observed,
+            worker,
+            rpc_file,
+        }
+    }
+
+    fn bridge(&self) -> Arc<CorsaBridge> {
+        let session = block_on(ProjectSession::open(
+            self.client.clone(),
+            CONFIG,
+            Some(FILE.into()),
+        ))
+        .unwrap();
+        let mut client = CorsaProjectClient::empty_for_test("/workspace".into());
+        *self.rpc_file.lock().unwrap() = client
+            .overlay_root_for_test()
+            .join("App.vue.ts")
+            .to_string_lossy()
+            .into_owned();
+        client
+            .did_open_fast(URI, "export const value: string = 1")
+            .unwrap();
+        *client.project_session_for_test() = Some(session);
+
+        let bridge = Arc::new(CorsaBridge::new());
+        block_on(bridge.submit_async(move |slot| {
+            *slot = Some(client);
+            Ok(())
+        }))
+        .unwrap();
+        bridge
+            .initialized
+            .store(true, std::sync::atomic::Ordering::SeqCst);
+        bridge
+    }
+
+    fn release_read(&self, fail: bool) {
+        block_on(
+            self.client
+                .raw_json_request("test/finish", json!({"fail":fail})),
+        )
+        .unwrap();
+    }
+
+    fn finish(self, bridge: Arc<CorsaBridge>) -> Vec<std::string::String> {
+        // Cleanup explicitly releases the current snapshot before client
+        // close, whose existing semantics invalidate every remaining lease.
+        block_on(bridge.with_client(|client| {
+            if let Some(session) = client.project_session_for_test().as_ref() {
+                block_on(session.snapshot().release()).unwrap();
+            }
+            Ok(())
+        }))
+        .unwrap();
+        block_on(bridge.shutdown()).unwrap();
+        drop(bridge);
+        block_on(self.client.close()).unwrap();
+        self.worker.join().unwrap()
+    }
+}
+
+fn project() -> Value {
+    json!({"id":"p./workspace/tsconfig.json","configFileName":CONFIG,"compilerOptions":{"strict":true},"rootFiles":[FILE]})
+}
+
+fn diagnostic() -> Value {
+    json!({"range":{"start":{"line":0,"character":0},"end":{"line":0,"character":1}},"severity":1,"code":2322,"source":"ts","message":"Type number is not assignable to string"})
+}
+
+fn respond(writer: &mut impl std::io::Write, id: RequestId, result: Value) {
+    write_frame(
+        writer,
+        &serde_json::to_vec(&RawMessage::response(id, result)).unwrap(),
+    )
+    .unwrap();
+}
+
+#[test]
+fn refused_materialized_refresh_retires_the_session_before_later_access() {
+    let directory = tempfile::tempdir().unwrap();
+    let config = directory.path().join("tsconfig.json");
+    let foreign = directory.path().join("foreign.json");
+    let member = directory.path().join("member.ts");
+    std::fs::write(&config, "{}").unwrap();
+    std::fs::write(&foreign, "{}").unwrap();
+    std::fs::write(&member, "export const value = 1;").unwrap();
+    let member = crate::file_uri::path_to_file_uri(&member);
+    let peer = Peer::start_with_project(2, Some(foreign), true);
+    let bridge = peer.bridge();
+    block_on(bridge.with_client(move |client| {
+        assert!(client.project_session_for_test().is_some());
+        let result = client.refresh_materialized_for_test(config, member);
+        assert_eq!(
+            result,
+            Err(vize_l0::cstr!(
+                "Preferred materialized Corsa member did not retain its exact configured project"
+            ))
+        );
+        assert!(client.project_session_for_test().is_none());
+        Ok(())
+    }))
+    .unwrap();
+    let mut released = peer.finish(bridge);
+    released.sort();
+    assert_eq!(released, vec![OLD.to_owned(), NEW.to_owned()]);
+}
+
+#[test]
+fn current_read_commits_whole_cache_only_after_foreground_lane_remains_usable() {
+    let peer = Peer::start(1);
+    let bridge = peer.bridge();
+    let request = block_on(bridge.prepare_initial_api_diagnostics(URI))
+        .unwrap()
+        .unwrap();
+    let mut read = Box::pin(bridge.read_initial_api_diagnostics(request));
+    assert!(read.as_mut().now_or_never().is_none());
+    peer.entered.recv_timeout(BOUND).unwrap();
+    // The mutable foreground lane remains usable while the native read waits.
+    assert_eq!(
+        block_on(bridge.with_client(|client| Ok(client.diagnostics_cache_len()))).unwrap(),
+        0
+    );
+    peer.release_read(false);
+    let pending = block_on(read);
+    let prior = {
+        let mut diagnostic = diagnostic();
+        diagnostic["message"] = json!("prior complete cached result");
+        diagnostic
+    };
+    let previous = prior.clone();
+    block_on(bridge.with_client(move |client| {
+        client.replace_initial_diagnostics_cache(
+            URI,
+            Some(vec![serde_json::from_value(previous).unwrap()]),
+        );
+        Ok(())
+    }))
+    .unwrap();
+    assert!(matches!(
+        block_on(bridge.finish_initial_api_diagnostics(pending, |commit| {
+            assert!(commit());
+            false
+        }))
+        .unwrap(),
+        InitialApiDiagnosticsOutcome::Stale
+    ));
+    assert_eq!(
+        serde_json::to_value(
+            block_on(bridge.with_client(|client| Ok(client.get_diagnostics(URI)))).unwrap()
+        )
+        .unwrap(),
+        json!([prior])
+    );
+    let request = block_on(bridge.prepare_initial_api_diagnostics(URI))
+        .unwrap()
+        .unwrap();
+    let mut read = Box::pin(bridge.read_initial_api_diagnostics(request));
+    assert!(read.as_mut().now_or_never().is_none());
+    peer.entered.recv_timeout(BOUND).unwrap();
+    peer.release_read(false);
+    let pending = block_on(read);
+    let outcome =
+        block_on(bridge.finish_initial_api_diagnostics(pending, |commit| commit())).unwrap();
+    let InitialApiDiagnosticsOutcome::Complete(diagnostics) = outcome else {
+        panic!("expected whole diagnostic result")
+    };
+    let mut expected = diagnostic();
+    expected["relatedInformation"] = Value::Null;
+    assert_eq!(
+        serde_json::to_value(diagnostics).unwrap(),
+        json!([expected])
+    );
+    assert_eq!(
+        serde_json::to_value(
+            block_on(bridge.with_client(|client| Ok(client.get_diagnostics(URI)))).unwrap()
+        )
+        .unwrap(),
+        json!([diagnostic()])
+    );
+    assert_eq!(peer.finish(bridge), vec![OLD]);
+}
+
+#[test]
+fn refreshed_snapshot_rejects_both_old_success_and_old_error_without_effects() {
+    for fail in [false, true] {
+        let peer = Peer::start(2);
+        let bridge = peer.bridge();
+        let request = block_on(bridge.prepare_initial_api_diagnostics(URI))
+            .unwrap()
+            .unwrap();
+        let mut read = Box::pin(bridge.read_initial_api_diagnostics(request));
+        assert!(read.as_mut().now_or_never().is_none());
+        peer.entered.recv_timeout(BOUND).unwrap();
+        block_on(bridge.with_client(|client| {
+            block_on(
+                client
+                    .project_session_for_test()
+                    .as_mut()
+                    .unwrap()
+                    .refresh(None),
+            )
+            .unwrap();
+            assert_eq!(
+                client
+                    .project_session_for_test()
+                    .as_ref()
+                    .unwrap()
+                    .snapshot()
+                    .handle
+                    .as_str(),
+                NEW
+            );
+            Ok(())
+        }))
+        .unwrap();
+        peer.release_read(fail);
+        let pending = block_on(read);
+        assert!(matches!(
+            block_on(bridge.finish_initial_api_diagnostics(pending, |commit| commit())).unwrap(),
+            InitialApiDiagnosticsOutcome::Stale
+        ));
+        assert!(bridge.is_initialized());
+        assert_eq!(
+            block_on(bridge.with_client(|client| Ok(client.diagnostics_cache_len()))).unwrap(),
+            0
+        );
+        let mut released = peer.finish(bridge);
+        released.sort();
+        assert_eq!(released, vec![OLD, NEW]);
+    }
+}
+
+#[test]
+fn cancelled_caller_keeps_real_snapshot_alive_until_entered_read_drains() {
+    let peer = Peer::start(2);
+    let bridge = peer.bridge();
+    let request = block_on(bridge.prepare_initial_api_diagnostics(URI))
+        .unwrap()
+        .unwrap();
+    let weak = block_on(bridge.with_client(|client| {
+        Ok(Arc::downgrade(
+            &client
+                .project_session_for_test()
+                .as_ref()
+                .unwrap()
+                .snapshot_lease(),
+        ))
+    }))
+    .unwrap();
+    let mut read = Box::pin(bridge.read_initial_api_diagnostics(request));
+    assert!(read.as_mut().now_or_never().is_none());
+    peer.entered.recv_timeout(BOUND).unwrap();
+    drop(read);
+    assert!(bridge.is_draining());
+    block_on(bridge.with_client(|client| {
+        block_on(
+            client
+                .project_session_for_test()
+                .as_mut()
+                .unwrap()
+                .refresh(None),
+        )
+        .unwrap();
+        Ok(())
+    }))
+    .unwrap();
+    assert!(
+        weak.upgrade().is_some(),
+        "entered read owns the retired snapshot"
+    );
+    peer.release_read(false);
+    block_on(
+        bridge
+            .initial_diagnostics_worker
+            .submit_ready_async(BOUND, |_| ()),
+    )
+    .unwrap();
+    assert!(
+        weak.upgrade().is_none(),
+        "last worker lease releases after actual RPC completion"
+    );
+    assert!(!bridge.is_draining());
+    assert_eq!(
+        block_on(bridge.with_client(|client| Ok(client.diagnostics_cache_len()))).unwrap(),
+        0
+    );
+    let mut released = peer.finish(bridge);
+    released.sort();
+    assert_eq!(released, vec![OLD, NEW]);
+}
+
+#[test]
+fn dropped_session_owner_does_not_drop_a_workers_snapshot_or_admit_its_result() {
+    let peer = Peer::start(1);
+    let bridge = peer.bridge();
+    let request = block_on(bridge.prepare_initial_api_diagnostics(URI))
+        .unwrap()
+        .unwrap();
+    let mut read = Box::pin(bridge.read_initial_api_diagnostics(request));
+    assert!(read.as_mut().now_or_never().is_none());
+    peer.entered.recv_timeout(BOUND).unwrap();
+    let private_root = block_on(bridge.with_client(|client| {
+        drop(client.project_session_for_test().take());
+        Ok(client.replace_overlay_storage_for_test())
+    }))
+    .unwrap();
+    assert!(
+        private_root.exists(),
+        "detached read still owns the physical mirror"
+    );
+    peer.release_read(false);
+    let pending = block_on(read);
+    assert!(matches!(
+        block_on(bridge.finish_initial_api_diagnostics(pending, |commit| commit())).unwrap(),
+        InitialApiDiagnosticsOutcome::Stale
+    ));
+    assert!(
+        !private_root.exists(),
+        "last completed read releases the retired mirror"
+    );
+    assert_eq!(peer.finish(bridge), vec![OLD]);
+}
+
+#[test]
+fn explicit_release_still_invalidates_the_remote_snapshot_without_double_release() {
+    let peer = Peer::start(1);
+    let bridge = peer.bridge();
+    let request = block_on(bridge.prepare_initial_api_diagnostics(URI))
+        .unwrap()
+        .unwrap();
+    let mut read = Box::pin(bridge.read_initial_api_diagnostics(request));
+    assert!(read.as_mut().now_or_never().is_none());
+    peer.entered.recv_timeout(BOUND).unwrap();
+    block_on(bridge.with_client(|client| {
+        block_on(
+            client
+                .project_session_for_test()
+                .as_ref()
+                .unwrap()
+                .snapshot()
+                .release(),
+        )
+        .unwrap();
+        Ok(())
+    }))
+    .unwrap();
+    peer.release_read(true);
+    let pending = block_on(read);
+    assert!(matches!(
+        block_on(bridge.finish_initial_api_diagnostics(pending, |commit| commit())).unwrap(),
+        InitialApiDiagnosticsOutcome::Failed(_)
+    ));
+    assert!(
+        bridge.is_initialized(),
+        "adapter cannot retire a session on its own"
+    );
+    assert_eq!(peer.finish(bridge), vec![OLD]);
+}

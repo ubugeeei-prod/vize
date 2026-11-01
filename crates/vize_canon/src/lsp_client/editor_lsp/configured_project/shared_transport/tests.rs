@@ -29,3 +29,6 @@ fn shared_editor_attachment_keeps_sync_fake_and_absent_config_fallbacks() {
 
 #[cfg(target_os = "linux")]
 mod native;
+
+#[cfg(target_os = "linux")]
+mod logical_currentness;

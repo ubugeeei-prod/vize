@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { stableWatchContext, observeStableSplitWatchLog } from "./stable-watcher-boundary.ts";
+import {
+  stableWatchContext,
+  historicalSplitWatchContext,
+  observeStableSplitWatchLog,
+} from "./stable-watcher-boundary.ts";
 import { micros } from "./stable-watcher-timing.ts";
 import { requireCompletedBefore, type nativeOwnerTerminalState } from "./native-io.ts";
 
@@ -15,12 +19,12 @@ function proven(earlier: ContextArgs[4][number], later: ContextArgs[3][number]) 
 /** A fixed historical observation never converts an unknown temporal order into PASS. */
 export function observeHistoricalSplitWatchLog(...args: [...ContextArgs, OwnerState]) {
   const [client, server, context, io, eofReads, owner] = args;
-  const actor = stableWatchContext(client, server, context, io, eofReads);
+  const actor = historicalSplitWatchContext(client, server, context, io, eofReads, owner);
   const observed = actor.eof.completion;
   assert.ok(observed);
   const knownBound = observed.returnedAt ?? observed.returnedBy?.at;
   if (knownBound) assert.ok(micros(actor.eof.at) <= micros(knownBound));
-  if (actor.stderr.every((row) => proven(actor.eof, row)))
+  if (!actor.rootAckFragmentOrder && actor.stderr.every((row) => proven(actor.eof, row)))
     return observeStableSplitWatchLog(client, server, context, io, eofReads);
   assert.equal(owner.unknownWrites.length, 0, "unobserved writes refuse mixed EOF observation");
   assert.equal(
@@ -64,7 +68,29 @@ export function observeHistoricalSplitWatchLog(...args: [...ContextArgs, OwnerSt
       (row.startedLine ?? row.line) === upper.line &&
       row.at === upper.at,
   );
-  assert.equal(event.length, 1, "EOF upper bound requires its actual same-thread IO event");
+  let exitUpperBound: OwnerState["exitGroups"][number] | undefined;
+  if (actor.rootAckFragmentOrder) {
+    assert.equal(event.length, 0, "this EOF upper bound is the actual terminal thread exit");
+    assert.deepEqual(
+      actor.rootAckFragmentOrder.eofReturnUpperBoundThreadExit,
+      owner.threadExits.find((row) => row.tid === actor.eof.tid),
+    );
+  } else if (event.length === 0) {
+    const groups = owner.exitGroups.filter(
+      (row) =>
+        row.tid === actor.eof.tid &&
+        row.at === upper.at &&
+        row.line === upper.line &&
+        row.code === 0 &&
+        row.rawResult === "?",
+    );
+    assert.equal(
+      groups.length,
+      1,
+      "EOF upper bound requires exact same-thread IO or terminal exit-group provenance",
+    );
+    exitUpperBound = groups[0]!;
+  } else assert.equal(event.length, 1, "EOF upper bound requires its actual same-thread IO event");
   const expected = Buffer.from(
     `\t${actor.project}/**/*\n\n1 paths ineligible for watching\n` +
       "errors updating watches: [failed to register file watcher: context canceled failed to register file watcher: context canceled]\n",
@@ -94,6 +120,25 @@ export function observeHistoricalSplitWatchLog(...args: [...ContextArgs, OwnerSt
     };
   });
   assert.ok(relations.some((row) => row.eofReturnOrder === "UNPROVEN"));
+  if (actor.rootAckFragmentOrder) {
+    assert.ok(
+      relations.every((row) => row.eofReturnOrder === "UNPROVEN"),
+      "fragmented root ACK observation retains every unproven stderr relation",
+    );
+    for (const row of actor.stderr)
+      assert.equal(
+        owner.threadExits.filter(
+          (exit) =>
+            exit.tid === row.tid &&
+            exit.code === 0 &&
+            exit.line !== undefined &&
+            exit.line > row.line &&
+            micros(row.at) < micros(exit.at),
+        ).length,
+        1,
+        "each completed stderr write precedes its actual writer thread exit",
+      );
+  }
   return {
     schema: "vize.nativeStableWatcher.unprovenEofReturnObservation.v1",
     context,
@@ -114,6 +159,8 @@ export function observeHistoricalSplitWatchLog(...args: [...ContextArgs, OwnerSt
     watcher: actor.watcher,
     watcherAck: actor.watcherAck,
     nativeStdinEof: actor.eof,
+    ...(exitUpperBound ? { eofReturnUpperBoundExitRequest: exitUpperBound } : {}),
+    ...(actor.rootAckFragmentOrder ? { rootAckFragmentOrder: actor.rootAckFragmentOrder } : {}),
     stderrWrites: relations,
     clientPackets: client,
     serverPackets: server,

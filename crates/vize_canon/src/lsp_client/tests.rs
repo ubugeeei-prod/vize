@@ -1,8 +1,7 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::{
-    bootstrap::resolve_corsa_executable, paths::resolve_temp_dir_base,
-    session::materialize_session_document, session_paths::build_session_document_uri,
-    utils::convert_diagnostics,
+    bootstrap::resolve_corsa_executable, session::materialize_session_document,
+    session_paths::build_session_document_uri, utils::convert_diagnostics,
 };
 use crate::file_uri::path_to_file_uri;
 use lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range};
@@ -27,8 +26,26 @@ fn unique_case_dir(name: &str) -> PathBuf {
         ))
 }
 
+fn assert_private_storage_base(storage: &super::session_storage::SessionStorage) {
+    assert_eq!(
+        storage.root().file_name(),
+        Some(std::ffi::OsStr::new("project"))
+    );
+    assert_eq!(
+        storage
+            .root()
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .canonicalize()
+            .unwrap(),
+        std::env::temp_dir().canonicalize().unwrap()
+    );
+}
+
 #[test]
-fn resolves_temp_dir_under_package_root_when_node_modules_exists() {
+fn private_scratch_storage_resolves_package_dependencies_without_package_writes() {
     let case_dir = unique_case_dir("package-root");
     let source_dir = case_dir.join("playground").join("src").join("shared");
     let node_modules_vue = case_dir.join("playground").join("node_modules").join("vue");
@@ -37,22 +54,21 @@ fn resolves_temp_dir_under_package_root_when_node_modules_exists() {
     fs::create_dir_all(&source_dir).unwrap();
     fs::create_dir_all(&node_modules_vue).unwrap();
 
-    let resolved = resolve_temp_dir_base(Some(&source_dir));
-
+    let storage = super::session_storage::SessionStorage::new(&source_dir).unwrap();
+    assert_private_storage_base(&storage);
+    let linked = storage.root().parent().unwrap().join("node_modules/vue");
     assert_eq!(
-        resolved,
-        case_dir
-            .join("playground")
-            .join("node_modules")
-            .join(".vize")
-            .join("corsa")
+        linked.canonicalize().unwrap(),
+        node_modules_vue.canonicalize().unwrap()
     );
+    assert!(!node_modules_vue.parent().unwrap().join(".vize").exists());
+    drop(storage);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
 
 #[test]
-fn falls_back_to_nearest_available_node_modules_root() {
+fn private_scratch_storage_resolves_ancestor_dependencies_without_workspace_writes() {
     let case_dir = unique_case_dir("fallback");
     let workspace_root = case_dir.join("workspace");
     let source_dir = workspace_root.join("playground").join("src").join("shared");
@@ -62,39 +78,38 @@ fn falls_back_to_nearest_available_node_modules_root() {
     fs::create_dir_all(&source_dir).unwrap();
     fs::create_dir_all(&node_modules_vue).unwrap();
 
-    let resolved = resolve_temp_dir_base(Some(&source_dir));
-
+    let storage = super::session_storage::SessionStorage::new(&source_dir).unwrap();
+    assert_private_storage_base(&storage);
+    let linked = storage.root().parent().unwrap().join("node_modules/vue");
     assert_eq!(
-        resolved,
-        workspace_root
-            .join("node_modules")
-            .join(".vize")
-            .join("corsa")
+        linked.canonicalize().unwrap(),
+        node_modules_vue.canonicalize().unwrap()
     );
-    assert!(!resolved.starts_with(&source_dir));
+    assert!(!workspace_root.join("node_modules/.vize").exists());
+    drop(storage);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
 
 #[test]
-fn overlay_documents_materialize_under_node_modules_vize() {
+fn overlay_documents_materialize_in_the_owned_private_root() {
     let temp_dir = TempDir::new().unwrap();
     let project_root = temp_dir.path().join("project");
     fs::create_dir_all(&project_root).unwrap();
 
+    let storage = super::session_storage::SessionStorage::new(&project_root).unwrap();
     let external_uri = "file:///external/App.vue.setup.ts";
-    let document_uri = build_session_document_uri(external_uri, &project_root, false);
-    let test_output_fragment = PathBuf::from("target")
-        .join("vize-tests")
-        .to_string_lossy()
-        .replace('\\', "/");
-
-    assert!(document_uri.contains("/node_modules/.vize/corsa-overlay/"));
-    assert!(!document_uri.contains(test_output_fragment.as_str()));
+    let document_uri =
+        build_session_document_uri(external_uri, &project_root, storage.root(), false);
+    assert_eq!(
+        document_uri,
+        path_to_file_uri(&storage.root().join("external/App.vue.setup.ts"))
+    );
+    assert_private_storage_base(&storage);
 }
 
 #[test]
-fn internal_vize_sessions_keep_overlays_inside_session_root() {
+fn internal_vize_sessions_use_their_independent_owned_root() {
     let temp_dir = TempDir::new().unwrap();
     let project_root = temp_dir
         .path()
@@ -104,15 +119,15 @@ fn internal_vize_sessions_keep_overlays_inside_session_root() {
         .join("session");
     fs::create_dir_all(&project_root).unwrap();
 
+    let storage = super::session_storage::SessionStorage::new(&project_root).unwrap();
     let external_uri = "file:///external/App.vue.setup.ts";
-    let document_uri = build_session_document_uri(external_uri, &project_root, false);
-    let test_output_fragment = PathBuf::from("target")
-        .join("vize-tests")
-        .to_string_lossy()
-        .replace('\\', "/");
-
-    assert!(document_uri.contains("/node_modules/.vize/corsa/session/overlays/"));
-    assert!(!document_uri.contains(test_output_fragment.as_str()));
+    let document_uri =
+        build_session_document_uri(external_uri, &project_root, storage.root(), false);
+    assert_eq!(
+        document_uri,
+        path_to_file_uri(&storage.root().join("external/App.vue.setup.ts"))
+    );
+    assert_private_storage_base(&storage);
 }
 
 #[test]
@@ -195,29 +210,30 @@ fn keeps_encoded_vue_virtual_overlay_uri_at_real_path_inside_project() {
 
     let virtual_path = components.join("Button.vue.ts");
     let uri = path_to_file_uri(&virtual_path);
-    assert!(
-        uri.contains("%3D"),
-        "test workspace path must exercise file URI encoding: {uri}"
-    );
+    let encoded_component = cstr!("vize-canon-session-uri-eq%3D{}-{nonce}", std::process::id());
+    assert_eq!(uri.rsplit('/').nth(3), Some(encoded_component.as_str()));
 
-    let mapped = build_session_document_uri(&uri, &project, true);
+    let storage = super::session_storage::SessionStorage::new(&project).unwrap();
+    let mapped = build_session_document_uri(&uri, &project, storage.root(), true);
     assert_eq!(
         mapped, uri,
         "encoded in-project overlay URI must stay stable"
     );
     assert!(
-        materialize_session_document(&uri, &mapped, "export {};").is_none(),
+        materialize_session_document(&uri, &mapped, "export {};", storage.root())
+            .unwrap()
+            .is_none(),
         "stable overlay URIs must not materialize sibling files"
     );
 
-    let mapped_without_overlay = build_session_document_uri(&uri, &project, false);
+    let mapped_without_overlay = build_session_document_uri(&uri, &project, storage.root(), false);
     assert_ne!(
         mapped_without_overlay, uri,
         "without overlay support, virtual mirrors must move into the session overlay root"
     );
-    assert!(
-        mapped_without_overlay.contains("/node_modules/.vize/corsa-overlay/"),
-        "unexpected materialized overlay URI: {mapped_without_overlay}"
+    assert_eq!(
+        mapped_without_overlay,
+        path_to_file_uri(&storage.root().join("src/components/Button.vue.ts"))
     );
     assert!(!virtual_path.exists());
 

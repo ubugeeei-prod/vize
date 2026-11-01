@@ -40,7 +40,9 @@ export type Source = {
   sdkVersion: string;
   sdkSha256: string;
   rows: Array<{ phase: string; encodedSourceSha256: string; lower: { refused: string } }>;
-  attached: { root: string; rows: unknown[] };
+  observerDependencies: Array<{ path: string; sha256: string }>;
+  observerSha256: string;
+  attached: { root: string; rows: unknown[]; [field: string]: unknown };
 };
 export type Receipt = {
   scope: string;

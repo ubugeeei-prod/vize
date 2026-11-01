@@ -24,9 +24,11 @@ mod bootstrap;
 mod canon_document;
 mod capabilities;
 mod close;
+mod logical;
 mod replay;
 pub(super) use bootstrap::{
     ProjectSessionSpawnError, api_mode_for_executable, spawn_project_session,
+    spawn_project_session_for_document, validate_materialized_project_selection,
 };
 #[cfg(test)]
 use bootstrap::{classify_project_session_error, should_retry_json_rpc};
@@ -49,6 +51,7 @@ impl CorsaProjectClient {
 
     pub(super) fn project_session(&mut self) -> Result<&ProjectSession, String> {
         self.ensure_project_transport()?;
+        self.require_current_logical_api_revision()?;
         self.session
             .as_ref()
             .ok_or_else(|| cstr!("Corsa project-session API is unavailable"))
@@ -56,6 +59,7 @@ impl CorsaProjectClient {
 
     pub(super) fn project_session_mut(&mut self) -> Result<&mut ProjectSession, String> {
         self.ensure_project_transport()?;
+        self.require_current_logical_api_revision()?;
         self.session
             .as_mut()
             .ok_or_else(|| cstr!("Corsa project-session API is unavailable"))
@@ -67,11 +71,15 @@ impl CorsaProjectClient {
             self.editor_lsp_documents_dirty = true;
         }
 
+        if self.logical_workspace_overlays {
+            return self.retain_logical_workspace_revision();
+        }
         if self.materialized_project_session {
             return self.sync_materialized_overlay_document(uri, content);
         }
 
         if !self.has_project_session() {
+            self.try_logical_workspace_overlays()?;
             return Ok(());
         }
 
@@ -94,15 +102,20 @@ impl CorsaProjectClient {
             return self.sync_materialized_overlay_document(uri, content);
         }
 
-        let file_changes = materialize_session_document(uri, document_uri.as_str(), content)
-            .or_else(|| {
-                virtual_overlay::upsert_file_changes(
-                    uri,
-                    document_uri.as_str(),
-                    &self.project_root,
-                    previous.is_some(),
-                )
-            });
+        let file_changes = materialize_session_document(
+            uri,
+            document_uri.as_str(),
+            content,
+            self.overlay_storage.root(),
+        )?
+        .or_else(|| {
+            virtual_overlay::upsert_file_changes(
+                uri,
+                document_uri.as_str(),
+                &self.project_root,
+                previous.is_some(),
+            )
+        });
         let version = next_overlay_version(&mut self.overlay_versions, uri);
         match block_on(self.project_session_mut()?.refresh_with_overlay_changes(
             file_changes,
@@ -133,22 +146,38 @@ impl CorsaProjectClient {
         uri: &str,
         content: &str,
     ) -> Result<(), String> {
+        if self.try_logical_workspace_overlays()? {
+            return Ok(());
+        }
         self.activate_materialized_project_session()?;
         let document_uri = self
             .materialized_session_document_uri(uri)
             .ok_or_else(|| cstr!("Failed to derive materialized Corsa overlay path for {uri}"))?;
-        let file_changes = materialize_session_document(uri, document_uri.as_str(), content);
+        let file_changes = materialize_session_document(
+            uri,
+            document_uri.as_str(),
+            content,
+            self.overlay_storage.root(),
+        )?;
         self.refresh_materialized_overlay_snapshot(file_changes)
     }
 
     pub(super) fn delete_overlay_document(&mut self, uri: &str) -> Result<(), String> {
+        if self.logical_workspace_overlays {
+            return self.close_logical_workspace_document(uri);
+        }
         let document_uri = self
             .session_document_uris
             .get(uri)
             .cloned()
             .unwrap_or_else(|| self.session_document_uri(uri));
         let file_changes = if document_uri != uri {
-            close::close_materialized_document(uri, document_uri.as_str(), &self.project_root)?
+            close::close_materialized_document(
+                uri,
+                document_uri.as_str(),
+                &self.project_root,
+                self.overlay_storage.root(),
+            )?
         } else {
             virtual_overlay::delete_file_changes(uri, document_uri.as_str(), &self.project_root)
         };
@@ -209,17 +238,28 @@ impl CorsaProjectClient {
     }
 
     pub(super) fn session_document_uri(&mut self, uri: &str) -> String {
+        if self.logical_workspace_overlays {
+            return self.remember_session_document_uri(uri, uri.into());
+        }
         if let Some(mapped) = self.session_document_uris.get(uri) {
             return mapped.clone();
         }
 
-        let mapped =
-            build_session_document_uri(uri, &self.project_root, self.supports_overlay_api());
+        let mapped = build_session_document_uri(
+            uri,
+            &self.project_root,
+            self.overlay_storage.root(),
+            self.supports_overlay_api(),
+        );
         self.remember_session_document_uri(uri, mapped)
     }
 
     fn materialized_session_document_uri(&mut self, uri: &str) -> Option<String> {
-        let mapped = build_materialized_session_document_uri(uri, &self.project_root)?;
+        let mapped = build_materialized_session_document_uri(
+            uri,
+            &self.project_root,
+            self.overlay_storage.root(),
+        )?;
         Some(self.remember_session_document_uri(uri, mapped))
     }
 
@@ -242,6 +282,19 @@ impl CorsaProjectClient {
 
     pub(super) fn remap_result_uris(&self, value: &mut Value) {
         super::utils::remap_json_uris(value, &self.external_document_uris);
+    }
+
+    pub(super) fn remap_reference_result_uris(&self, value: &mut Value) {
+        // The native editor can return the same owned materialized identities
+        // as the API. Only Location.uri is protocol identity here; retain all
+        // coordinates, unknown entries and opaque payloads without rewriting.
+        for location in value.as_array_mut().into_iter().flatten() {
+            if let Some(Value::String(uri)) = location.get_mut("uri")
+                && let Some(mapped) = self.external_document_uris.get(uri.as_str())
+            {
+                *uri = mapped.as_str().into();
+            }
+        }
     }
 }
 
@@ -270,19 +323,16 @@ pub(super) fn materialize_session_document(
     external_uri: &str,
     document_uri: &str,
     content: &str,
-) -> Option<FileChanges> {
+    overlay_root: &std::path::Path,
+) -> Result<Option<FileChanges>, String> {
     if document_uri == external_uri {
-        return None;
+        return Ok(None);
     }
-
-    let path = file_uri_to_path(document_uri)?;
-    let path = path.as_path();
-    let parent = path.parent()?;
-    let existed = path.exists();
-    let _ = std::fs::create_dir_all(parent);
-    let _ = std::fs::write(path, content);
-
-    Some(FileChanges::Summary(FileChangeSummary {
+    let path = file_uri_to_path(document_uri)
+        .ok_or_else(|| cstr!("Invalid private Corsa document URI {document_uri}"))?;
+    let existed =
+        super::session_storage::write_owned_file(overlay_root, &path, content.as_bytes())?;
+    Ok(Some(FileChanges::Summary(FileChangeSummary {
         changed: if existed {
             vec![uri_document_identifier(document_uri)]
         } else {
@@ -294,7 +344,7 @@ pub(super) fn materialize_session_document(
             vec![uri_document_identifier(document_uri)]
         },
         deleted: Vec::new(),
-    }))
+    })))
 }
 
 pub(super) fn line_character_to_utf16_offset(text: &str, line: u32, character: u32) -> u32 {

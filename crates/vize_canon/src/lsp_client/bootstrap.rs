@@ -2,7 +2,7 @@ use super::{
     CorsaProjectClient,
     lifecycle_setup::{workspace_config_path, write_materialized_project_tsconfig},
     session::{ProjectSessionSpawnError, materialize_session_document, spawn_project_session},
-    session_paths::build_materialized_session_document_uri,
+    session_paths::{build_materialized_session_document_uri, preferred_materialized_document},
 };
 use crate::file_uri::file_uri_to_path;
 use std::{
@@ -31,23 +31,23 @@ impl CorsaProjectClient {
         executable: &str,
         cwd: PathBuf,
         root_path: Option<PathBuf>,
-        temp_dir: Option<PathBuf>,
+        owned_storage: Option<Arc<super::session_storage::SessionStorage>>,
     ) -> Result<Self, String> {
-        Self::spawn_initialized_client_with_config(executable, cwd, root_path, temp_dir, None)
+        Self::spawn_initialized_client_with_config(executable, cwd, root_path, owned_storage, None)
     }
 
     pub(super) fn spawn_initialized_client_with_config(
         executable: &str,
         cwd: PathBuf,
         root_path: Option<PathBuf>,
-        temp_dir: Option<PathBuf>,
+        owned_storage: Option<Arc<super::session_storage::SessionStorage>>,
         config_path: Option<&Path>,
     ) -> Result<Self, String> {
         Self::spawn_initialized_client_with_transport(
             executable,
             cwd,
             root_path,
-            temp_dir,
+            owned_storage,
             config_path,
             false,
         )
@@ -57,11 +57,16 @@ impl CorsaProjectClient {
         executable: &str,
         cwd: PathBuf,
         root_path: Option<PathBuf>,
-        temp_dir: Option<PathBuf>,
+        owned_storage: Option<Arc<super::session_storage::SessionStorage>>,
         config_path: Option<&Path>,
         shared_editor_transport: bool,
     ) -> Result<Self, String> {
         let project_root = root_path.as_deref().unwrap_or(&cwd);
+        let authored_workspace = owned_storage.is_none();
+        let overlay_storage = match owned_storage {
+            Some(storage) => storage,
+            None => Arc::new(super::session_storage::SessionStorage::new(project_root)?),
+        };
         let explicit_project_config = config_path.map(Path::to_path_buf);
         let config_path = selected_workspace_config(project_root, config_path);
         let shared = shared_editor_transport
@@ -71,6 +76,8 @@ impl CorsaProjectClient {
                     &cwd,
                     project_root,
                     &config_path,
+                    &overlay_storage,
+                    None,
                 )
             })
             .flatten();
@@ -100,14 +107,18 @@ impl CorsaProjectClient {
             capabilities,
             overlay_api_disabled: false,
             materialized_project_session: false,
+            authored_workspace,
+            logical_workspace_overlays: false,
+            logical_api_reset_pending: false,
             project_root: project_root.to_path_buf(),
             explicit_project_config,
+            materialized_project_preference: None,
             diagnostics: Default::default(),
             overlay_versions: Default::default(),
             document_texts: Default::default(),
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
-            temp_dir,
+            overlay_storage,
             editor_lsp,
             shared_editor_transport_requested: shared_editor_transport,
             shared_editor_transport: project_session_attached_to_editor,
@@ -126,7 +137,11 @@ impl CorsaProjectClient {
 
         self.retire_original_diagnosing_session()?;
 
-        let config_path = write_materialized_project_tsconfig(&self.project_root)?;
+        let config_path = write_materialized_project_tsconfig(
+            &self.project_root,
+            self.overlay_storage.root(),
+            self.explicit_project_config.as_deref(),
+        )?;
         let documents: Vec<_> = self
             .document_texts
             .iter()
@@ -134,12 +149,19 @@ impl CorsaProjectClient {
             .collect();
         let mut mappings = Vec::with_capacity(documents.len());
         for (uri, content) in &documents {
-            let document_uri = build_materialized_session_document_uri(uri, &self.project_root)
-                .ok_or_else(|| {
-                    cstr!("Failed to derive materialized Corsa overlay path for {uri}")
-                })?;
-            materialize_session_document(uri, document_uri.as_str(), content)
-                .ok_or_else(|| cstr!("Failed to materialize Corsa overlay document for {uri}"))?;
+            let document_uri = build_materialized_session_document_uri(
+                uri,
+                &self.project_root,
+                self.overlay_storage.root(),
+            )
+            .ok_or_else(|| cstr!("Failed to derive materialized Corsa overlay path for {uri}"))?;
+            materialize_session_document(
+                uri,
+                document_uri.as_str(),
+                content,
+                self.overlay_storage.root(),
+            )?
+            .ok_or_else(|| cstr!("Failed to materialize Corsa overlay document for {uri}"))?;
             let path = file_uri_to_path(document_uri.as_str())
                 .ok_or_else(|| cstr!("Invalid materialized Corsa document URI {document_uri}"))?;
             let written = std::fs::read_to_string(&path).map_err(|error| {
@@ -155,9 +177,16 @@ impl CorsaProjectClient {
             }
             mappings.push((uri.clone(), document_uri));
         }
+        let source_policy = self.materialized_source_file_policy(&config_path)?;
+        self.materialized_project_preference = preferred_materialized_document(
+            mappings.iter().map(|(_, uri)| uri),
+            self.overlay_storage.root(),
+            source_policy,
+        )
+        .map(|uri| (config_path.clone(), uri));
         if self.has_project_session() {
             self.retire_project_session()?;
-            let overlay_root = super::session_paths::overlay_root_for_project(&self.project_root);
+            let overlay_root = self.overlay_storage.root().to_path_buf();
             self.replace_project_transport(&config_path, &overlay_root)?;
         }
         self.session_document_uris.clear();
@@ -176,6 +205,16 @@ impl CorsaProjectClient {
         } else {
             self.retire_editor_lsp()
         }
+    }
+
+    pub(in crate::lsp_client) fn preferred_document_for_config(
+        &self,
+        config: &Path,
+    ) -> Option<String> {
+        self.materialized_project_preference
+            .as_ref()
+            .filter(|(selected, _)| selected == config)
+            .map(|(_, uri)| uri.clone())
     }
 }
 

@@ -33,9 +33,28 @@ const output = path.join(
 );
 fs.mkdirSync(output, { recursive: true });
 const observer = "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs";
+const observerDependencies = [
+  {
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs",
+    sha256: "9bc79324540fd1b37f649f102fa2ed90a09aaf53eca1765f799cb6bc1fe88d40",
+  },
+];
+const observerInputDependencies = [
+  {
+    path: "tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/input.json",
+    bytes: 1108,
+    sha256: "4659fc88d76ee98c9f0ddc74f6450ecc80b720be9b3ab4a0335bf8f2a2050c58",
+  },
+];
+const copiedInputs = [...observerDependencies, ...observerInputDependencies];
 const registration = "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs";
 const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const harness = fs.readFileSync(path.join(GITHUB_WORKSPACE, observer));
+for (const dependency of copiedInputs)
+  assert.equal(
+    hash(fs.readFileSync(path.join(GITHUB_WORKSPACE, dependency.path))),
+    dependency.sha256,
+  );
 if (ROLE === "before") {
   assert(!fs.existsSync(root));
   execFileSync("git", ["worktree", "add", "--detach", root, source], { cwd: GITHUB_WORKSPACE });
@@ -43,9 +62,21 @@ if (ROLE === "before") {
   assert(!original.includes("mod native_beta;"));
   fs.writeFileSync(path.join(root, registration), `${original}\n#[cfg(unix)]\nmod native_beta;\n`);
   fs.copyFileSync(path.join(GITHUB_WORKSPACE, observer), path.join(root, observer));
+  for (const dependency of copiedInputs) {
+    const target = path.join(root, dependency.path);
+    assert(
+      !fs.existsSync(target),
+      "before source must not already contain the exact current observer dependency",
+    );
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(GITHUB_WORKSPACE, dependency.path), target);
+  }
   // The sole tracked delta only registers the separately hashed public-API test.
   assert.equal(git(["diff", "--name-only"], root), registration);
-  assert.equal(git(["ls-files", "--others", "--exclude-standard"], root), observer);
+  assert.deepEqual(
+    git(["ls-files", "--others", "--exclude-standard"], root).split("\n").sort(),
+    [observer, ...copiedInputs.map((dependency) => dependency.path)].sort(),
+  );
   execFileSync("git", ["diff", "--exit-code", "--", ".", `:(exclude)${registration}`], {
     cwd: root,
   });
@@ -55,6 +86,9 @@ if (ROLE === "before") {
   );
 }
 assert.equal(hash(fs.readFileSync(path.join(root, observer))), hash(harness));
+for (const dependency of copiedInputs)
+  assert.equal(hash(fs.readFileSync(path.join(root, dependency.path))), dependency.sha256);
+assert.equal(fs.readFileSync(path.join(root, observerInputDependencies[0]!.path)).length, 1108);
 const production = [
   "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response.rs",
   "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics.rs",
@@ -76,11 +110,13 @@ const manifest = {
   sdkVersion: SDK_VERSION,
   head: HEAD_SHA,
   harness: { path: observer, sha256: hash(harness) },
+  harnessDependencies: observerDependencies,
+  observerInputDependencies,
   production: Object.fromEntries(
     production.map((file) => [file, hash(fs.readFileSync(path.join(root, file)))]),
   ),
   scope:
-    "Before source production bytes remain pinned; only the identical separately hashed public-API observer and its test-only module registration are copied. Candidate decoders are never copied into the before role.",
+    "Before production remains pinned; only the identical separately hashed observer, its one exact Rust helper, its separately identified consumed input, and the test-only module registration are copied. Candidate decoders are never copied into the before role; copied input receipts grant no baseline qualification.",
 };
 fs.writeFileSync(path.join(output, "source-role.json"), JSON.stringify(manifest, null, 2) + "\n");
 const target = path.join(RUNNER_TEMP, `native-dto-target-${ROLE}-${SDK_VERSION}-${source}`);

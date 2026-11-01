@@ -1,11 +1,13 @@
-use super::virtual_overlay;
+use super::{CorsaProjectClient, virtual_overlay};
+use crate::batch::SourceFilePolicy;
 use crate::file_uri::{file_uri_to_path, path_to_file_uri};
 use std::path::{Component, Path, PathBuf};
-use vize_l0::String;
+use vize_l0::{String, cstr};
 
 pub(super) fn build_session_document_uri(
     uri: &str,
     project_root: &Path,
+    overlay_root: &Path,
     overlay_confirmed: bool,
 ) -> String {
     let Some(external_path) = external_document_path(uri) else {
@@ -16,29 +18,96 @@ pub(super) fn build_session_document_uri(
     // `*.html.ts`) can also stay there when Corsa overlay support is confirmed;
     // otherwise materialize them under the session overlay root so imports
     // never point at non-existent workspace files.
-    if external_path.starts_with(project_root)
+    if is_within_project_namespace(&external_path, project_root)
         && (external_path.exists()
             || (overlay_confirmed && virtual_overlay::target_exists(&external_path)))
     {
         return path_to_file_uri(&external_path);
     }
 
-    path_to_file_uri(&materialized_session_path(&external_path, project_root))
+    path_to_file_uri(&materialized_session_path(
+        &external_path,
+        project_root,
+        overlay_root,
+    ))
+}
+
+/// Compare the same logical file namespace used by protocol URIs. Windows
+/// canonical roots may use a verbatim prefix while their file URIs do not.
+/// This does not resolve another file or change the authored cwd/config path.
+pub(super) fn is_within_project_namespace(path: &Path, root: &Path) -> bool {
+    if path.to_str().is_none() || root.to_str().is_none() {
+        return false;
+    }
+    let path = file_uri_to_path(&path_to_file_uri(path));
+    let root = file_uri_to_path(&path_to_file_uri(root));
+    matches!((path, root), (Some(path), Some(root)) if path.starts_with(&root))
 }
 
 pub(super) fn build_materialized_session_document_uri(
     uri: &str,
     project_root: &Path,
+    overlay_root: &Path,
 ) -> Option<String> {
     let external_path = external_document_path(uri)?;
     Some(path_to_file_uri(&materialized_session_path(
         &external_path,
         project_root,
+        overlay_root,
     )))
 }
 
-fn materialized_session_path(external_path: &Path, project_root: &Path) -> PathBuf {
-    let mut session_path = overlay_root_for_project(project_root);
+/// The generated config discovers `**/*` with no explicit excludes. Dot
+/// directories are not glob members, while `node_modules` remains eligible.
+pub(super) fn preferred_materialized_document<'a>(
+    uris: impl Iterator<Item = &'a String>,
+    overlay_root: &Path,
+    source_policy: SourceFilePolicy,
+) -> Option<String> {
+    uris.filter(|uri| {
+        file_uri_to_path(uri).is_some_and(|path| {
+            let Ok(relative) = path.strip_prefix(overlay_root) else {
+                return false;
+            };
+            path.is_file()
+                && source_policy.accepts_diagnostic_input(&path)
+                && relative.parent().is_some_and(|parent| {
+                    parent.components().all(|part| {
+                        matches!(part, Component::Normal(name) if !name.as_encoded_bytes().starts_with(b"."))
+                    })
+                })
+        })
+    })
+    .min()
+    .cloned()
+}
+
+impl CorsaProjectClient {
+    pub(super) fn materialized_source_file_policy(
+        &mut self,
+        config: &Path,
+    ) -> Result<SourceFilePolicy, String> {
+        match crate::batch::VirtualProject::source_file_policy_for_config(
+            self.overlay_storage.root(),
+            config,
+        ) {
+            Ok(policy) => Ok(policy),
+            Err(error) => {
+                let _ = self.retire_project_session();
+                Err(cstr!(
+                    "Failed to read materialized Corsa source policy: {error}"
+                ))
+            }
+        }
+    }
+}
+
+fn materialized_session_path(
+    external_path: &Path,
+    project_root: &Path,
+    overlay_root: &Path,
+) -> PathBuf {
+    let mut session_path = overlay_root.to_path_buf();
     let canonical_external = external_path.parent().and_then(|parent| {
         let file_name = external_path.file_name()?;
         parent
@@ -51,14 +120,24 @@ fn materialized_session_path(external_path: &Path, project_root: &Path) -> PathB
             .as_deref()
             .and_then(|path| path.strip_prefix(project_root).ok())
     });
-    if let Some(relative) = relative {
+    if let Some(relative) = relative.filter(|path| {
+        path.components()
+            .all(|part| matches!(part, Component::Normal(_)))
+    }) {
         session_path.push(relative);
         return session_path;
     }
 
     for component in external_path.components() {
         match component {
-            Component::Prefix(prefix) => session_path.push(prefix.as_os_str()),
+            Component::Prefix(prefix) => {
+                use sha2::Digest as _;
+                let digest: String = sha2::Sha256::digest(prefix.as_os_str().as_encoded_bytes())
+                    .iter()
+                    .map(|byte| vize_l0::cstr!("{byte:02x}"))
+                    .collect();
+                session_path.push(vize_l0::cstr!("__prefix_{digest}").as_str());
+            }
             Component::RootDir | Component::CurDir => {}
             Component::ParentDir => session_path.push("__parent__"),
             Component::Normal(part) => session_path.push(part),
@@ -66,32 +145,6 @@ fn materialized_session_path(external_path: &Path, project_root: &Path) -> PathB
     }
 
     session_path
-}
-
-pub(super) fn overlay_root_for_project(project_root: &Path) -> PathBuf {
-    if is_under_node_modules_vize(project_root) {
-        return project_root.join("overlays");
-    }
-
-    project_root
-        .join("node_modules")
-        .join(".vize")
-        .join("corsa-overlay")
-}
-
-fn is_under_node_modules_vize(path: &Path) -> bool {
-    let mut previous = None;
-    for component in path.components() {
-        let Some(name) = component.as_os_str().to_str() else {
-            previous = None;
-            continue;
-        };
-        if previous == Some("node_modules") && name == ".vize" {
-            return true;
-        }
-        previous = Some(name);
-    }
-    false
 }
 
 pub(super) fn external_document_path(uri: &str) -> Option<PathBuf> {

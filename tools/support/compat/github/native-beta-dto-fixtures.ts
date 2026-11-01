@@ -1,12 +1,16 @@
 // One closed API/SourceFile ABI registration, outside authored-language rates.
 import { createHash } from "node:crypto";
 import { stripTypeScriptTypes } from "node:module";
+import { watcherSuccessor } from "./native-beta-dto-current-custody.ts";
+const currentAuthorityPath = "tools/support/compat/github/native-beta-dto-current-custody.ts";
+const currentAuthoritySha256 = "9fd741be52de06c90550fe16befb3a5fa216956361ec3f09c4b3188013c6a436";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";
 const fixtureRoot = "tests/_fixtures/differential/typechecker/";
 const dto = "crates/vize_canon/src/lsp_client/initial_diagnostics/";
 const snapshot = "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/";
+const currentObserverHelperPath = `${snapshot}tests/native_beta/storage_authority.rs`;
 const production = [
   `${dto}diagnostic_response.rs`,
   `${dto}diagnostic_response/location.rs`,
@@ -51,6 +55,7 @@ const scope = new Set([
   `${snapshot}protocol/protocol9/tests.rs`,
   `${snapshot}tests.rs`,
   `${snapshot}tests/native_beta.rs`,
+  currentObserverHelperPath,
 ]);
 const inputs = [
   "snapshot-source-text/protocol9-beta.bin",
@@ -83,44 +88,7 @@ const runtime = (source: Buffer) =>
   stripTypeScriptTypes(source.toString("utf8"), { mode: "transform" });
 // One explicit current observer successor. This does not rewrite the original
 // producer identity or equate the distinct root and SDK watcher registrations.
-const watcherSuccessor = {
-  id: "before-stable-post-shutdown-observation-41099824102",
-  splitLogId: "before-stable-split-watch-log-41152849787",
-  terminalId: "before-stable-terminal-stderr-41156819864",
-  mixedEofId: "before-stable-unproven-eof-return-41171790405",
-  lateRootId: "before-stable-late-root-program-41176048826",
-  lateRootPath: "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
-  lateRootSha256: "54f9dc3a48b041f12e2218964757ae6ef10fdcbcbbd32e07374a6c91708a8942",
-  lateRootRuntimeSha256: "c799fb044a7ba6d216ae5911f87da57cb19c7645448547148c2f6f3dcd0f4580",
-  timingPath: "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
-  timingSha256: "c023dcf8b0e937a01d224bb9829ecbcea948e848e207825688c10e3c175301fc",
-  timingRuntimeSha256: "e525777159da6ce60bbbcbe84f70ad6ae62c8f8e425ecedbeb59620dd29eed1f",
-  mixedPath: "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
-  mixedSha256: "3e17e772b1bef8c3536c32b257bbc47696976c3575f2ed48c07bcc1780d954a0",
-  mixedRuntimeSha256: "b37485edbffdbd73f01d26aea09b984102b3777952d340730ba8cf66079562a3",
-  ioPath: "tests/tooling/support/native-beta-dto/native-io.ts",
-  ioSha256: "d4a8ac3d4ce7c2d38a53bc64aaf02a7f0b86b870a0b10b8174e0fb48739c8b54",
-  ioRuntimeSha256: "ba488b82755d55e3230b5ebc7a75cef432d0279e31d8b817bc6ef675571b1036",
-  handoffPath: "tests/tooling/support/native-beta-dto/execve-handoff.ts",
-  handoffSha256: "9c40b14722ee5e1b70f8343ad37bc9f093d474bb99c69da1ea9d12eb29f6218f",
-  handoffRuntimeSha256: "6a12c1726bd7829b6023613041cb2c28ce4c49bd0d906053d406932a4db188d0",
-  terminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
-  terminalSha256: "83b167d4146f812255b01a946ead297693bad85cdf904817e4207a2bf1c97c35",
-  terminalRuntimeSha256: "2ed2edfda0877fa9a4b1093242f8501c5fb2ce834dfaf39ff478edfa9da18013",
-  auditRuntimeSha256: "abe25f136fa1273c11d55f3c96ef784f4ead8f0be0109939d983ea93b2e37f13",
-  typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
-  typesSha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
-  helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
-  helperRuntimeSha256: "13977fbeee879ea518ca8abc2329dea34919edcf984102133192f4386014fe7a",
-  routeId: "configured-startup-beta-semantic-route-41108828160",
-  routePath: "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
-  routeRuntimeSha256: "c577043a694e0254b9be7b4505cb49531e527431be332c3343b814f3c4d2ae40",
-  actualFiles: [
-    ["client.bin", "cd11915afee013a728a287098714d5db70e8719867bd596a1c4721ca5a876c13"],
-    ["server.bin", "47cc76661e039b28a3e7056d3d2b07d6d4c6da31440166c2e490b76f78079f73"],
-    ["identity.json", "990dc13e94623891b8781a37ea05fa96b61c3fb168e6d7e7bef0a2ef265cf05a"],
-  ],
-};
+
 function require(value: unknown, message: string): asserts value {
   if (!value) throw new Error(`invalid native beta DTO protocol case: ${message}`);
 }
@@ -142,12 +110,24 @@ function pinned(
   return data;
 }
 export function nativeBetaDtoProducerCustody(read: ReadFile) {
+  pinned(read, currentAuthorityPath, currentAuthoritySha256);
   return producerFiles.map((originalPath, index) => {
     const archivedPath = producerOriginalRoot + originalPath.split("/").at(-1) + ".txt";
     const original = pinned(read, archivedPath, producerHashes[index]);
     const currentPath = index === 0 ? originalPath : originalPath.replace(/\.mjs$/u, ".ts");
     const current = read("head", currentPath);
     require(current !== null, `missing current typed producer: ${currentPath}`);
+    const currentInputDependency =
+      index === 1 || index === 3
+        ? {
+            path: watcherSuccessor.inputPath,
+            bytes: watcherSuccessor.inputBytes,
+            sha256: watcherSuccessor.inputSha256,
+          }
+        : null;
+    if (currentInputDependency)
+      require(pinned(read, currentInputDependency.path, currentInputDependency.sha256).length ===
+        currentInputDependency.bytes, "consumed observer input byte count differs");
     let currentTypeDependency: { path: string; sha256: string } | null = null;
     if (index === 0) {
       let transitioned = original.toString("utf8");
@@ -158,7 +138,14 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       require(current.equals(
         Buffer.from(transitioned),
       ), "workflow changed beyond four typed producer paths");
+    } else if (index === 1) {
+      pinned(read, tests[3]!.source, watcherSuccessor.observerCurrentSha256);
+      pinned(read, currentObserverHelperPath, watcherSuccessor.storageObserverSha256);
+      require(sha(Buffer.from(runtime(current))) ===
+        watcherSuccessor.prepareRuntimeSha256, "unregistered current common-observer preparation runtime");
     } else if (index === 3) {
+      pinned(read, tests[3]!.source, watcherSuccessor.observerCurrentSha256);
+      pinned(read, currentObserverHelperPath, watcherSuccessor.storageObserverSha256);
       const types = pinned(read, watcherSuccessor.typesPath, watcherSuccessor.typesSha256);
       require(runtime(types) === "", "audit type dependency must erase completely");
       currentTypeDependency = { path: watcherSuccessor.typesPath, sha256: sha(types) };
@@ -173,6 +160,32 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
         sha(Buffer.from(runtime(route))) ===
           watcherSuccessor.routeRuntimeSha256, "missing or changed registered beta semantic route runtime");
       for (const [path, physical, executable] of [
+        [
+          watcherSuccessor.inflightWarningPath,
+          watcherSuccessor.inflightWarningHash,
+          watcherSuccessor.inflightWarningRuntime,
+        ],
+        [
+          watcherSuccessor.after4SourcePath,
+          watcherSuccessor.after4SourceHash,
+          watcherSuccessor.after4SourceRuntime,
+        ],
+        [
+          watcherSuccessor.after4CleanupPath,
+          watcherSuccessor.after4CleanupHash,
+          watcherSuccessor.after4CleanupRuntime,
+        ],
+        [watcherSuccessor.tomlPath, watcherSuccessor.tomlHash, watcherSuccessor.tomlRuntime],
+        [
+          watcherSuccessor.ackFragmentPath,
+          watcherSuccessor.ackFragmentHash,
+          watcherSuccessor.ackFragmentRuntime,
+        ],
+        [
+          watcherSuccessor.logicalBatchPath,
+          watcherSuccessor.logicalBatchHash,
+          watcherSuccessor.logicalBatchRuntime,
+        ],
         [
           watcherSuccessor.lateRootPath,
           watcherSuccessor.lateRootSha256,
@@ -193,6 +206,41 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
           watcherSuccessor.handoffPath,
           watcherSuccessor.handoffSha256,
           watcherSuccessor.handoffRuntimeSha256,
+        ],
+        [
+          watcherSuccessor.logicalPath,
+          watcherSuccessor.logicalHash,
+          watcherSuccessor.logicalRuntime,
+        ],
+        [
+          watcherSuccessor.logicalRoutePath,
+          watcherSuccessor.logicalRouteHash,
+          watcherSuccessor.logicalRouteRuntime,
+        ],
+        [
+          watcherSuccessor.semanticPath,
+          watcherSuccessor.semanticHash,
+          watcherSuccessor.semanticRuntime,
+        ],
+        [
+          watcherSuccessor.rootWarningPath,
+          watcherSuccessor.rootWarningSha256,
+          watcherSuccessor.rootWarningRuntimeSha256,
+        ],
+        [
+          watcherSuccessor.dispositionPath,
+          watcherSuccessor.dispositionSha256,
+          watcherSuccessor.dispositionRuntimeSha256,
+        ],
+        [
+          watcherSuccessor.membershipPath,
+          watcherSuccessor.membershipSha256,
+          watcherSuccessor.membershipRuntimeSha256,
+        ],
+        [
+          watcherSuccessor.unavailableTerminalPath,
+          watcherSuccessor.unavailableTerminalSha256,
+          watcherSuccessor.unavailableTerminalRuntimeSha256,
         ],
         [
           watcherSuccessor.terminalPath,
@@ -223,15 +271,42 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       currentRuntimeRegistration: index === 3 ? watcherSuccessor.id : null,
       currentSplitLogRegistration: index === 3 ? watcherSuccessor.splitLogId : null,
       currentTerminalRegistration: index === 3 ? watcherSuccessor.terminalId : null,
+      currentUnavailableTerminalRegistration:
+        index === 3 ? watcherSuccessor.unavailableTerminalId : null,
       currentMixedEofRegistration: index === 3 ? watcherSuccessor.mixedEofId : null,
       currentLateRootRegistration: index === 3 ? watcherSuccessor.lateRootId : null,
       currentRouteRegistration: index === 3 ? watcherSuccessor.routeId : null,
+      currentAfter4CleanupRegistration: index === 3 ? watcherSuccessor.after4CleanupId : null,
+      currentMembershipRegistration: index === 3 ? watcherSuccessor.membershipId : null,
+      currentRootWarningRegistration: index === 3 ? watcherSuccessor.rootWarningId : null,
+      currentInflightWarningRegistration: index === 3 ? watcherSuccessor.inflightWarningId : null,
+      currentStorageRegistration: index === 1 || index === 3 ? watcherSuccessor.storageId : null,
+      currentStorageObserverDependency:
+        index === 1 || index === 3
+          ? { path: currentObserverHelperPath, sha256: watcherSuccessor.storageObserverSha256 }
+          : null,
+      currentObserverIdentity:
+        index === 1 || index === 3
+          ? {
+              path: tests[3]!.source,
+              historicalSha256: watcherSuccessor.observerHistoricalSha256,
+              currentSha256: watcherSuccessor.observerCurrentSha256,
+            }
+          : null,
       currentTypeDependency,
+      currentInputDependency,
     };
   });
 }
 export function nativeBetaDtoProtocolSource(path: string): boolean {
   return scope.has(path);
+}
+export function nativeBetaDtoObserverBoundary() {
+  return {
+    production: [...production],
+    inputs: inputs.map((path) => fixtureRoot + path),
+    observers: [tests[3]!.source, currentObserverHelperPath],
+  };
 }
 function frames(data: Buffer): Record<string, unknown>[] {
   const rows: Record<string, unknown>[] = [];
@@ -352,7 +427,14 @@ export function newNativeBetaDtoProtocolCases(
       const test = object(row.tests[index], ["selector", "source", "sha256"]);
       require(test.selector === expected.selector &&
         test.source === expected.source, "unregistered selector or source");
-      const source = pinned(read, expected.source, test.sha256).toString("utf8");
+      if (index === 3)
+        require(test.sha256 ===
+          watcherSuccessor.observerHistoricalSha256, "historical common-observer identity changed");
+      const source = pinned(
+        read,
+        expected.source,
+        index === 3 ? watcherSuccessor.observerCurrentSha256 : test.sha256,
+      ).toString("utf8");
       require(source.includes(
         `fn ${expected.selector.split("::").at(-1)}(`,
       ), "required Rust test missing");
@@ -362,6 +444,16 @@ export function newNativeBetaDtoProtocolCases(
         ), "actual DTO pack is not consumed");
     }
     const actual = read("head", tests[3]!.source)?.toString("utf8") ?? "";
+    const phaseInput = object(
+      JSON.parse(
+        pinned(read, watcherSuccessor.inputPath, watcherSuccessor.inputSha256).toString("utf8"),
+      ),
+      ["schema", "id", "main", "support", "virtual", "configText", "phases"],
+    );
+    require(Array.isArray(phaseInput.phases), "complete consumed observer phases required");
+    const phaseIds = phaseInput.phases.map(
+      (row: unknown) => object(row, ["id", "support", "error", "closed"]).id,
+    );
     for (const marker of [
       "#[ignore",
       "native_diagnostics::read(",
@@ -383,9 +475,11 @@ export function newNativeBetaDtoProtocolCases(
       "whole_batch",
       "directCompletion",
     ])
-      require(actual.includes(
-        marker === "expected_refusal" ? "expect_refusal" : marker,
-      ), `missing actual observer authority: ${marker}`);
+      require(marker === "dependency-error" || marker === "dependency-close"
+        ? actual.includes('input["phases"]') && phaseIds.includes(marker)
+        : actual.includes(
+            marker === "expected_refusal" ? "expect_refusal" : marker,
+          ), `missing actual observer authority: ${marker}`);
     const job = read("head", workflow)?.toString("utf8") ?? "";
     for (const marker of [
       "role: [before, after]",

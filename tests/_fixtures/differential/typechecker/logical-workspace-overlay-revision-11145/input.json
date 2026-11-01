@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "id": "typechecker/protocol/logical-workspace-overlay-revision-11145",
+  "main": "/*🧭é日本語  */\r\nimport { value } from \"./support\";\r\nexport const checked: number = value;\r\nexport const echo = value;\r\n",
+  "support": "export const value = 1;\r\n",
+  "virtual": "export const bad: number = \"x\";\r\n",
+  "configText": "{\"compilerOptions\":{\"strict\":true,\"target\":\"ESNext\",\"module\":\"ESNext\",\"moduleResolution\":\"Bundler\",\"types\":[],\"noEmit\":true},\"files\":[\"main.ts\",\"support.ts\"]}",
+  "phases": [
+    {
+      "id": "valid",
+      "support": "export const value = 1;\r\n",
+      "error": false,
+      "closed": false
+    },
+    {
+      "id": "dependency-error",
+      "support": "export const value = \"oops\";\r\n",
+      "error": true,
+      "closed": false
+    },
+    {
+      "id": "dependency-repair",
+      "support": "export const value = 2;\r\n",
+      "error": false,
+      "closed": false
+    },
+    {
+      "id": "dependency-close",
+      "support": "export const value = 1;\r\n",
+      "error": false,
+      "closed": true
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import { test } from "node:test";
 import {
   NATIVE_BETA_DTO_PROTOCOL_ID,
   nativeBetaDtoProducerCustody,
+  nativeBetaDtoObserverBoundary,
   nativeBetaDtoProtocolSource,
   newNativeBetaDtoProtocolCases,
 } from "../../tools/support/compat/github/native-beta-dto-fixtures.ts";
@@ -27,12 +28,20 @@ type MutationInput = {
   producerFiles: { sha256: string }[];
 };
 const before = "13fa41356d075047a229f580014b637d3bbeb57f";
+// Reachable main retains all eight exact afterSha256 blobs. The original
+// ce77 candidate provenance remains immutable in source-pairs.json.
+const historicalSnapshot = "e361d3873712eb11db018827713b1434be898261";
+const historicalProduction = new Set(nativeBetaDtoObserverBoundary().production);
 const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 function read(side: "base" | "head", path: string): Buffer | null {
   try {
-    return side === "head"
+    // This synthetic initial registration consumes its frozen source-pair actor.
+    // Current producer/observer controls still read the actual working-tree bytes.
+    return side === "head" && !historicalProduction.has(path)
       ? fs.readFileSync(path)
-      : execFileSync("git", ["show", `${before}:${path}`], { stdio: ["ignore", "pipe", "ignore"] });
+      : execFileSync("git", ["show", `${side === "head" ? historicalSnapshot : before}:${path}`], {
+          stdio: ["ignore", "pipe", "ignore"],
+        });
   } catch {
     return null;
   }
@@ -48,6 +57,12 @@ function validate(
 }
 void test("one closed DTO registration consumes actual ABI and four-role authority outside batch rates", () => {
   assert.deepEqual(validate(), [NATIVE_BETA_DTO_PROTOCOL_ID]);
+  const changed = "crates/vize_canon/src/lsp_client/session/capabilities.rs";
+  assert.notDeepEqual(fs.readFileSync(changed), read("head", changed));
+  assert.throws(
+    () => validate([row], [], { [changed]: fs.readFileSync(changed) }),
+    "today's changed ABI source cannot inherit the historical registration",
+  );
   const loaded = loadTypecheckerManifest(manifestPath);
   assert.equal(
     loaded.cases.length,
@@ -79,6 +94,24 @@ void test("typed producers retain historical bytes and only the exact registered
   }
   const current = custody.find((entry) => entry.currentPath.endsWith("audit-wire.ts"))!;
   assert.equal(
+    current.currentInflightWarningRegistration,
+    "before-stable-inflight-root-warning-41270804509",
+  );
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentInflightWarningRegistration === null),
+  );
+  assert.equal(
+    current.currentRootWarningRegistration,
+    "before-stable-root-watch-warning-41214579457",
+  );
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentRootWarningRegistration === null),
+  );
+  assert.equal(
     current.currentRuntimeRegistration,
     "before-stable-post-shutdown-observation-41099824102",
   );
@@ -87,7 +120,25 @@ void test("typed producers retain historical bytes and only the exact registered
     "configured-startup-beta-semantic-route-41108828160",
   );
   assert.equal(current.currentSplitLogRegistration, "before-stable-split-watch-log-41152849787");
+  assert.equal(
+    current.currentMembershipRegistration,
+    "source-owned-config-membership-route-41214579457",
+  );
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentMembershipRegistration === null),
+  );
   assert.equal(current.currentTerminalRegistration, "before-stable-terminal-stderr-41156819864");
+  assert.equal(
+    current.currentUnavailableTerminalRegistration,
+    "before-stable-unavailable-terminal-stderr-41208964081",
+  );
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentUnavailableTerminalRegistration === null),
+  );
   assert.equal(
     current.currentMixedEofRegistration,
     "before-stable-unproven-eof-return-41171790405",
@@ -108,6 +159,10 @@ void test("typed producers retain historical bytes and only the exact registered
       .every((entry) => entry.currentSplitLogRegistration === null),
   );
   assert.equal(current.currentLateRootRegistration, "before-stable-late-root-program-41176048826");
+  assert.equal(
+    current.currentAfter4CleanupRegistration,
+    "source-owned-sdk4-post-batch-cleanup-41265655424",
+  );
   assert(
     custody
       .filter((entry) => entry !== current)
@@ -115,8 +170,46 @@ void test("typed producers retain historical bytes and only the exact registered
   );
   assert.deepEqual(current.currentTypeDependency, {
     path: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
-    sha256: "56f303405ead37abd90ec1cb73e509b38226f635bbf21073130656af9d97e79e",
+    sha256: "3904cfaf07e59b501c2361b65410877f22780bfdc365cedf74300bb6fb88d127",
   });
+  const storage =
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs";
+  for (const entry of custody) {
+    const selected = /\/(?:prepare-role|audit-wire)\.ts$/u.test(entry.currentPath);
+    assert.equal(
+      entry.currentStorageRegistration,
+      selected ? "after-source-selected-logical-editor-revision" : null,
+    );
+    assert.deepEqual(
+      entry.currentStorageObserverDependency,
+      selected
+        ? {
+            path: storage,
+            sha256: "9bc79324540fd1b37f649f102fa2ed90a09aaf53eca1765f799cb6bc1fe88d40",
+          }
+        : null,
+    );
+    assert.deepEqual(
+      entry.currentObserverIdentity,
+      selected
+        ? {
+            path: "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
+            historicalSha256: "26eb21864007e6011c69d0a95e1be173fd586605a87400bdc3aacecb5cb31dc6",
+            currentSha256: "c75ef79c388eb5aee6c93115150196c42aecb75d638ead10dab1a1b94872ca61",
+          }
+        : null,
+    );
+    assert.deepEqual(
+      entry.currentInputDependency,
+      selected
+        ? {
+            path: "tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/input.json",
+            bytes: 1108,
+            sha256: "4659fc88d76ee98c9f0ddc74f6450ecc80b720be9b3ab4a0335bf8f2a2050c58",
+          }
+        : null,
+    );
+  }
   assert(
     custody
       .filter((entry) => entry !== current)
@@ -156,6 +249,10 @@ void test("typed producers retain historical bytes and only the exact registered
   );
 });
 void test("current observer successor requires its exact bounded runtime and actual raw packet authority", () => {
+  const input =
+    "tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/input.json";
+  assert.throws(() => validate([row], [], { [input]: null }));
+  assert.throws(() => validate([row], [], { [input]: Buffer.from("{}\n") }));
   for (const path of [
     "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
@@ -163,9 +260,25 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/native-io.ts",
     "tests/tooling/support/native-beta-dto/execve-handoff.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
+    "tests/tooling/support/native-beta-dto/terminal-stderr-unavailable.ts",
+    "tests/tooling/support/native-beta-dto/configuration-membership.ts",
+    "tests/tooling/support/native-beta-dto/semantic-route.ts",
+    "tests/tooling/support/native-beta-dto/logical-revision.ts",
+    "tests/tooling/support/native-beta-dto/logical-batch.ts",
+    "tests/tooling/support/native-beta-dto/after4-cleanup-source.ts",
+    "tests/tooling/support/native-beta-dto/logical-beta4-cleanup.ts",
+    "tools/support/compat/davinci/toml-lite.ts",
+    "tests/tooling/support/native-beta-dto/logical-attached-route.ts",
+    "tools/support/compat/github/native-beta-dto-current-custody.ts",
+    "tests/tooling/support/native-beta-dto/historical-root-watch-warning.ts",
+    "tests/tooling/support/native-beta-dto/historical-inflight-root-warning.ts",
+    "tests/tooling/support/native-beta-dto/role-disposition.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
+    "tests/tooling/support/native-beta-dto/stable-watcher-ack-fragment.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
     ...["client.bin", "server.bin", "identity.json"].map(
       (name) =>
         "tests/_fixtures/differential/typechecker/native-beta-diagnostic-dto-10731/" +
@@ -200,6 +313,19 @@ void test("current observer successor requires its exact bounded runtime and act
   for (const path of [
     "tests/tooling/support/native-beta-dto/native-io.ts",
     "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
+    "tests/tooling/support/native-beta-dto/terminal-stderr-unavailable.ts",
+    "tests/tooling/support/native-beta-dto/configuration-membership.ts",
+    "tests/tooling/support/native-beta-dto/semantic-route.ts",
+    "tests/tooling/support/native-beta-dto/logical-revision.ts",
+    "tests/tooling/support/native-beta-dto/logical-batch.ts",
+    "tests/tooling/support/native-beta-dto/after4-cleanup-source.ts",
+    "tests/tooling/support/native-beta-dto/logical-beta4-cleanup.ts",
+    "tools/support/compat/davinci/toml-lite.ts",
+    "tests/tooling/support/native-beta-dto/logical-attached-route.ts",
+    "tools/support/compat/github/native-beta-dto-current-custody.ts",
+    "tests/tooling/support/native-beta-dto/historical-root-watch-warning.ts",
+    "tests/tooling/support/native-beta-dto/historical-inflight-root-warning.ts",
+    "tests/tooling/support/native-beta-dto/role-disposition.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
@@ -237,12 +363,14 @@ void test("only the finite registered source files enter this protocol family", 
     "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/protocol9.rs",
     "crates/vize_canon/src/lsp_client/session/capabilities.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs",
   ])
     assert(nativeBetaDtoProtocolSource(path));
   for (const path of [
     "crates/vize_canon/src/check.rs",
     "crates/vize_canon/src/lsp_client/initial_diagnostics.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/future.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority/future.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/protocol/../protocol9.rs",
   ])
     assert(!nativeBetaDtoProtocolSource(path));

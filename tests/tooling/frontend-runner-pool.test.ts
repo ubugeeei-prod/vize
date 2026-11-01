@@ -103,6 +103,39 @@ function restoreCoverageBeforeRuntimeProvisioning(job: Job) {
   }
 }
 
+function restoreHistoryToolchainSelection(job: Job, original: Job) {
+  // The separately merged #11268 adds this one reviewed control. Keep the
+  // archived workflow intact and invert only its exact current step.
+  assert.equal(
+    createHash("sha256")
+      .update(fs.readFileSync(new URL("./native-history-toolchain.test.ts", import.meta.url)))
+      .digest("hex"),
+    "da230fd0bc5a8d51005578d8c2d1c437fc3b0bd85216c6c6cdc952928bc8c3c0",
+  );
+  function selection(target: Job) {
+    const matches = target.steps?.filter(
+      (step) => step.name === "Test CI selection when its inputs change",
+    );
+    assert(matches);
+    assert.equal(matches.length, 1);
+    const step = matches[0];
+    assert(step);
+    return step;
+  }
+  const previous = selection(original);
+  assert.equal(typeof previous.run, "string");
+  const command = previous.run as string;
+  const marker = "tests/tooling/native-history-profile.test.ts";
+  assert.equal(command.split(marker).length, 2);
+  const reviewed = command.replace(
+    marker,
+    marker + " tests/tooling/native-history-toolchain.test.ts",
+  );
+  const current = selection(job);
+  assert.deepEqual(current, { ...previous, run: reviewed });
+  current.run = command;
+}
+
 test("the seven runner selectors and exact runtime steps preserve every original job", () => {
   let changed = 0,
     protectedJobs = 0;
@@ -110,6 +143,11 @@ test("the seven runner selectors and exact runtime steps preserve every original
     const restored = structuredClone(after);
     if (specification.name === "check")
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
+    if (specification.name === "pr-source-checks")
+      restoreHistoryToolchainSelection(
+        restored.jobs["ci-selection-tests"],
+        before.jobs["ci-selection-tests"],
+      );
     for (const id of specification.jobs) {
       const original = before.jobs[id],
         updated = after.jobs[id],
@@ -138,6 +176,41 @@ test("the seven runner selectors and exact runtime steps preserve every original
   }
   assert.equal(changed, 7);
   assert.equal(protectedJobs, 25);
+});
+
+test("history selection refuses missing, duplicate, moved and unknown command changes", () => {
+  const workflow = workflows.find((entry) => entry.specification.name === "pr-source-checks");
+  assert(workflow);
+  const original = workflow.before.jobs["ci-selection-tests"];
+  const current = workflow.after.jobs["ci-selection-tests"];
+  assert(original && current);
+  const restored = structuredClone(current);
+  restoreHistoryToolchainSelection(restored, original);
+  restored["runs-on"] = oldRunner;
+  assert.deepEqual(restored, original);
+  const added = "tests/tooling/native-history-toolchain.test.ts";
+  const previous = "tests/tooling/native-history-profile.test.ts";
+  for (const mutate of [
+    (command: string) => command.replace(" " + added, ""),
+    (command: string) => command.replace(added, added + " " + added),
+    (command: string) => command.replace(previous + " " + added, added + " " + previous),
+    (command: string) => command.replace(added, "tests/tooling/unreviewed-toolchain.test.ts"),
+  ]) {
+    const changed = structuredClone(current);
+    const step = changed.steps?.find(
+      (candidate) => candidate.name === "Test CI selection when its inputs change",
+    );
+    assert(step && typeof step.run === "string");
+    step.run = mutate(step.run);
+    assert.throws(() => restoreHistoryToolchainSelection(changed, original), assert.AssertionError);
+  }
+  const extra = structuredClone(current);
+  const step = extra.steps?.find(
+    (candidate) => candidate.name === "Test CI selection when its inputs change",
+  );
+  assert(step);
+  step.if = "${{ success() }}";
+  assert.throws(() => restoreHistoryToolchainSelection(extra, original), assert.AssertionError);
 });
 
 test("source coverage refuses unknown provider mutations while retaining the archived workflow", () => {

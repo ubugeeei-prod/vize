@@ -18,6 +18,8 @@ mod diagnostics;
 mod diagnostics_api;
 mod diagnostics_lsp;
 mod editor_lsp;
+#[cfg(test)]
+pub(crate) use editor_lsp::logical_disk_control::run as native_logical_disk_control_for_test;
 mod initial_diagnostics;
 mod language_id;
 mod lifecycle;
@@ -27,6 +29,7 @@ pub(crate) mod paths;
 mod queries;
 mod session;
 mod session_paths;
+mod session_storage;
 pub use editor_lsp::snapshot_source;
 mod utils;
 mod virtual_overlay;
@@ -48,9 +51,18 @@ pub struct CorsaProjectClient {
     capabilities: Arc<CapabilitiesResponse>,
     overlay_api_disabled: bool,
     materialized_project_session: bool,
+    /// Authored workspace overlays may use their original logical LSP names.
+    authored_workspace: bool,
+    /// This live revision has no owning API overlay; semantic requests use LSP.
+    logical_workspace_overlays: bool,
+    /// A newer logical revision has no accepted current API head; an empty
+    /// logical view requires the existing readonly owner reset.
+    logical_api_reset_pending: bool,
     project_root: PathBuf,
     /// Explicit Batch configuration, retained across editor fallback/retries.
     explicit_project_config: Option<PathBuf>,
+    /// Exact mapped member and config retained across materialized refreshes.
+    materialized_project_preference: Option<(PathBuf, String)>,
     /// Cached diagnostics keyed by document URI.
     pub(crate) diagnostics: FxHashMap<String, Vec<Diagnostic>>,
     /// Per-document overlay versions so Corsa can keep snapshots ordered.
@@ -61,8 +73,8 @@ pub struct CorsaProjectClient {
     session_document_uris: FxHashMap<String, String>,
     /// Reverse mapping used to translate API responses back to caller-facing URIs.
     external_document_uris: FxHashMap<String, String>,
-    /// Temporary directory for tsconfig.json (cleaned up on drop).
-    temp_dir: Option<PathBuf>,
+    /// Private materialization storage, dropped after native owners retire.
+    overlay_storage: Arc<session_storage::SessionStorage>,
     /// Lazily spawned `--lsp --stdio` session answering editor requests the
     /// project-session API rejects as unsupported (corsa-bind#409), and the
     /// standard-tsgo diagnostics path when no project-session API exists.
@@ -85,8 +97,29 @@ pub struct CorsaProjectClient {
 
 #[cfg(test)]
 impl CorsaProjectClient {
+    pub(crate) fn overlay_root_for_test(&self) -> &std::path::Path {
+        self.overlay_storage.root()
+    }
+
+    pub(crate) fn replace_overlay_storage_for_test(&mut self) -> PathBuf {
+        let previous = self.overlay_storage.root().to_path_buf();
+        self.overlay_storage =
+            Arc::new(session_storage::SessionStorage::new(&self.project_root).unwrap());
+        previous
+    }
+
     pub(crate) fn project_session_for_test(&mut self) -> &mut Option<ProjectSession> {
         &mut self.session
+    }
+
+    pub(crate) fn refresh_materialized_for_test(
+        &mut self,
+        config: PathBuf,
+        member: String,
+    ) -> Result<(), String> {
+        self.materialized_project_session = true;
+        self.materialized_project_preference = Some((config, member));
+        self.refresh_materialized_overlay_snapshot(None)
     }
 
     pub(crate) fn empty_for_test(project_root: PathBuf) -> Self {
@@ -97,14 +130,18 @@ impl CorsaProjectClient {
             capabilities: Arc::new(Default::default()),
             overlay_api_disabled: false,
             materialized_project_session: false,
+            authored_workspace: false,
+            logical_workspace_overlays: false,
+            logical_api_reset_pending: false,
+            overlay_storage: Arc::new(session_storage::SessionStorage::new(&project_root).unwrap()),
             project_root,
             explicit_project_config: None,
+            materialized_project_preference: None,
             diagnostics: Default::default(),
             overlay_versions: Default::default(),
             document_texts: Default::default(),
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
-            temp_dir: None,
             editor_lsp: None,
             shared_editor_transport_requested: false,
             shared_editor_transport: false,

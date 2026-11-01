@@ -32,10 +32,13 @@ pub(crate) struct InitialDiagnosticsRead {
     explicit_config: Option<PathBuf>,
     uri: String,
     document_uri: String,
-    text: Option<String>,
+    documents: FxHashMap<String, String>,
     external_document_uris: FxHashMap<String, String>,
     file_supported: bool,
     project_supported: bool,
+    // Detached workers keep physical materialization alive until their RPC and
+    // SDK snapshot/client fields have been dropped, including cancellation.
+    _storage: Arc<super::session_storage::SessionStorage>,
 }
 
 impl CorsaProjectClient {
@@ -64,10 +67,11 @@ impl CorsaProjectClient {
             explicit_config: self.explicit_project_config.clone(),
             uri: uri.into(),
             document_uri,
-            text: self.document_texts.get(uri).cloned(),
+            documents: self.document_texts.clone(),
             external_document_uris: self.external_document_uris.clone(),
             file_supported: self.supports_file_diagnostics_api(),
             project_supported: self.supports_project_diagnostics_api(),
+            _storage: Arc::clone(&self.overlay_storage),
         };
         if crate::corsa_bridge::preparation_trace::enabled() {
             tracing::info!(target: "vize_editor_preparation", phase="initial_api_owner",
@@ -97,6 +101,7 @@ impl CorsaProjectClient {
         read: &InitialDiagnosticsRead,
     ) -> bool {
         !self.closed
+            && self.can_use_api_for_uri(read.uri.as_str())
             && self.session.as_ref().is_some_and(|session| {
                 Arc::ptr_eq(&read.snapshot, &session.snapshot_lease())
                     && session.project() == &read.project
@@ -104,7 +109,7 @@ impl CorsaProjectClient {
             && Arc::ptr_eq(&self.capabilities, &read.capabilities)
             && self.project_root == read.project_root
             && self.explicit_project_config == read.explicit_config
-            && self.document_texts.get(read.uri.as_str()) == read.text.as_ref()
+            && self.document_texts == read.documents
             && self.external_document_uris == read.external_document_uris
             && self.session_document_uris.get(read.uri.as_str()) == Some(&read.document_uri)
     }
@@ -215,7 +220,7 @@ impl InitialDiagnosticsRead {
             if route == "capture" {
                 tracing::info!(target: "vize_editor_preparation", phase="initial_api_input",
                     snapshot=self.snapshot.handle.as_str(), project=?self.project,
-                    logical_uri=%self.uri, request_uri=%self.document_uri, query_text=?self.text);
+                    logical_uri=%self.uri, request_uri=%self.document_uri, query_text=?self.documents.get(self.uri.as_str()));
             }
             tracing::info!(target: "vize_editor_preparation", phase = "initial_api_read",
                 route, event, logical_uri = %self.uri, request_uri = %self.document_uri,

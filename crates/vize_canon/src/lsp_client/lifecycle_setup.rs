@@ -1,126 +1,6 @@
-use super::{paths::find_node_modules_with_vue, session_paths::overlay_root_for_project};
 use serde_json::json;
-use std::{
-    path::Path,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::path::Path;
 use vize_l0::{String, ToCompactString, cstr};
-
-const SESSION_META_FILE: &str = "meta.json";
-const SESSION_SCHEMA_VERSION: u32 = 1;
-pub(super) const STALE_SESSION_SECONDS: u64 = 24 * 60 * 60;
-
-pub(super) fn install_node_modules_link(project_root: Option<&Path>, temp_dir_path: &Path) {
-    let node_modules_path = project_root.and_then(find_node_modules_with_vue);
-    if let Some(ref node_modules_path) = node_modules_path {
-        let symlink_target = temp_dir_path.join("node_modules");
-        let _ = std::fs::remove_file(&symlink_target);
-        #[cfg(unix)]
-        {
-            let _ = std::os::unix::fs::symlink(node_modules_path, &symlink_target);
-        }
-        #[cfg(windows)]
-        {
-            let _ = std::os::windows::fs::symlink_dir(node_modules_path, &symlink_target);
-        }
-    }
-}
-
-pub(super) fn write_session_meta(temp_dir_path: &Path) -> Result<(), String> {
-    let created_at = now_unix_seconds();
-    let content = json!({
-        "schemaVersion": SESSION_SCHEMA_VERSION,
-        "tool": "vize-corsa",
-        "pid": std::process::id(),
-        "createdAtUnix": created_at
-    });
-    std::fs::write(
-        temp_dir_path.join(SESSION_META_FILE),
-        serde_json::to_string_pretty(&content)
-            .map_err(|e| cstr!("Failed to serialize Corsa session metadata: {e}"))?,
-    )
-    .map_err(|e| cstr!("Failed to write Corsa session metadata: {e}"))
-}
-
-pub(super) fn cleanup_stale_sessions(base_dir: &Path) {
-    let Ok(entries) = std::fs::read_dir(base_dir) else {
-        return;
-    };
-
-    for entry in entries.filter_map(Result::ok) {
-        let path = entry.path();
-        if !path.is_dir() || !should_remove_session_dir(&path) {
-            continue;
-        }
-        let _ = std::fs::remove_dir_all(path);
-    }
-}
-
-fn should_remove_session_dir(path: &Path) -> bool {
-    let meta_path = path.join(SESSION_META_FILE);
-    let Ok(content) = std::fs::read_to_string(meta_path) else {
-        return session_dir_is_stale(path);
-    };
-    let Ok(meta) = serde_json::from_str::<serde_json::Value>(&content) else {
-        return true;
-    };
-
-    if meta
-        .get("schemaVersion")
-        .and_then(serde_json::Value::as_u64)
-        != Some(SESSION_SCHEMA_VERSION as u64)
-    {
-        return true;
-    }
-
-    let Some(pid) = meta
-        .get("pid")
-        .and_then(serde_json::Value::as_u64)
-        .and_then(|pid| u32::try_from(pid).ok())
-    else {
-        return true;
-    };
-
-    if !process_is_alive(pid) {
-        return true;
-    }
-
-    meta.get("createdAtUnix")
-        .and_then(serde_json::Value::as_u64)
-        .is_some_and(|created_at| {
-            now_unix_seconds().saturating_sub(created_at) > STALE_SESSION_SECONDS
-        })
-}
-
-fn session_dir_is_stale(path: &Path) -> bool {
-    std::fs::metadata(path)
-        .and_then(|metadata| metadata.modified())
-        .ok()
-        .and_then(|modified| SystemTime::now().duration_since(modified).ok())
-        .is_some_and(|age| age.as_secs() > STALE_SESSION_SECONDS)
-}
-
-fn now_unix_seconds() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|duration| duration.as_secs())
-        .unwrap_or(0)
-}
-
-#[cfg(unix)]
-fn process_is_alive(pid: u32) -> bool {
-    if pid == std::process::id() {
-        return true;
-    }
-    // SAFETY: `kill(pid, 0)` does not send a signal; it only checks whether the
-    // process exists and is visible to the current user.
-    unsafe { libc::kill(pid as libc::pid_t, 0) == 0 }
-}
-
-#[cfg(not(unix))]
-fn process_is_alive(_pid: u32) -> bool {
-    true
-}
 
 /// Write a minimal `tsconfig.json` that keeps the native checker in strict mode.
 pub(super) fn write_temp_tsconfig(temp_dir_path: &Path) -> Result<(), String> {
@@ -157,22 +37,47 @@ pub(super) fn workspace_config_path(project_root: &Path) -> std::path::PathBuf {
 
 pub(super) fn write_materialized_project_tsconfig(
     project_root: &Path,
+    overlay_root: &Path,
+    selected_config: Option<&Path>,
 ) -> Result<std::path::PathBuf, String> {
-    let overlay_root = overlay_root_for_project(project_root);
-    std::fs::create_dir_all(&overlay_root)
-        .map_err(|error| cstr!("Failed to create materialized Corsa project: {error}"))?;
     let config_path = overlay_root.join("tsconfig.json");
+    let selected = selected_config
+        .map(|config| {
+            if config.is_absolute() {
+                config.to_path_buf()
+            } else {
+                project_root.join(config)
+            }
+        })
+        .unwrap_or_else(|| workspace_config_path(project_root));
+    let mut include = vec![String::new("**/*")];
+    if overlay_root
+        .parent()
+        .is_some_and(|owner| owner.join("scratch") == project_root)
+    {
+        // A rootless session owns these exact generated declarations. Keep
+        // them when materializing, without globbing unrelated scratch files.
+        include.extend([
+            crate::file_uri::path_to_typescript_name(&project_root.join("__vize_vue_modules.d.ts")),
+            crate::file_uri::path_to_typescript_name(
+                &project_root.join(crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME),
+            ),
+        ]);
+    }
     let content = json!({
-        "extends": workspace_config_path(project_root).to_string_lossy(),
+        "extends": crate::file_uri::path_to_typescript_name(&selected),
         "compilerOptions": {
             "allowImportingTsExtensions": true,
             "noEmit": true
         },
-        "include": ["**/*"],
+        "include": include,
         "exclude": []
     });
-    std::fs::write(&config_path, content.to_compact_string())
-        .map_err(|error| cstr!("Failed to write materialized Corsa tsconfig: {error}"))?;
+    super::session_storage::write_owned_file(
+        overlay_root,
+        &config_path,
+        content.to_compact_string().as_bytes(),
+    )?;
     Ok(config_path)
 }
 
@@ -215,18 +120,16 @@ mod tests {
         let workspace_config = root.join("tsconfig.json");
         std::fs::write(&workspace_config, r#"{"compilerOptions":{"strict":false}}"#).unwrap();
 
-        let generated = write_materialized_project_tsconfig(root).unwrap();
+        let storage = crate::lsp_client::session_storage::SessionStorage::new(root).unwrap();
+        let generated = write_materialized_project_tsconfig(root, storage.root(), None).unwrap();
         let parsed: serde_json::Value =
             serde_json::from_str(&std::fs::read_to_string(&generated).unwrap()).unwrap();
 
         assert_eq!(workspace_config_path(root), workspace_config);
-        assert_eq!(
-            generated,
-            root.join("node_modules/.vize/corsa-overlay/tsconfig.json")
-        );
+        assert_eq!(generated, storage.root().join("tsconfig.json"));
         assert_eq!(
             parsed["extends"],
-            workspace_config.to_string_lossy().as_ref()
+            crate::file_uri::path_to_typescript_name(&workspace_config).as_str()
         );
         assert_eq!(parsed["include"], serde_json::json!(["**/*"]));
         assert_eq!(parsed["exclude"], serde_json::json!([]));
@@ -248,5 +151,42 @@ mod tests {
         std::fs::write(&jsconfig, "{}").unwrap();
 
         assert_eq!(workspace_config_path(project.path()), jsconfig);
+    }
+
+    #[test]
+    fn materialized_config_preserves_explicit_relative_selection_and_all_authored_bytes() {
+        let project = tempfile::tempdir().unwrap();
+        let root = project.path();
+        std::fs::create_dir(root.join("config")).unwrap();
+        let selected = root.join("config/selected.json");
+        let authored = br#"{"compilerOptions":{"rootDir":"../src","baseUrl":"..","paths":{"@/*":["src/*"]},"typeRoots":["../types"],"composite":true}}"#;
+        std::fs::write(&selected, authored).unwrap();
+        std::fs::write(
+            root.join("tsconfig.json"),
+            "{\"compilerOptions\":{\"strict\":false}}",
+        )
+        .unwrap();
+        let storage = crate::lsp_client::session_storage::SessionStorage::new(root).unwrap();
+        let generated = write_materialized_project_tsconfig(
+            root,
+            storage.root(),
+            Some(std::path::Path::new("config/selected.json")),
+        )
+        .unwrap();
+        let parsed: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(generated).unwrap()).unwrap();
+        assert_eq!(
+            parsed["extends"],
+            crate::file_uri::path_to_typescript_name(&selected).as_str()
+        );
+        assert_eq!(
+            parsed["compilerOptions"],
+            serde_json::json!({"allowImportingTsExtensions":true,"noEmit":true})
+        );
+        assert_eq!(std::fs::read(selected).unwrap(), authored);
+        assert_eq!(
+            std::fs::read(root.join("tsconfig.json")).unwrap(),
+            b"{\"compilerOptions\":{\"strict\":false}}"
+        );
     }
 }

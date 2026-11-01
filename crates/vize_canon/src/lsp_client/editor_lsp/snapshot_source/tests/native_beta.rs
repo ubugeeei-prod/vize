@@ -19,6 +19,9 @@ use std::{
     process::Command,
 };
 
+mod storage_authority;
+pub(super) use storage_authority::completion_multiset;
+
 const VALID: &str = "/*🧭é日本語\u{2028}\u{2029}*/\r\nexport const label: string = \"ok\";\r\nexport const length: number = label.length;\r\nexport const echo = label;\r\n";
 const NEIGHBOR: &str = "export const outside: string = 42;\r\n";
 const BEFORE_BETA_REFUSAL: &str = "Malformed getSemanticDiagnostics response: unknown field `endPosition`, expected one of `fileName`, `pos`, `end`, `code`, `category`, `text`, `messageChain`, `relatedInformation`, `reportsUnnecessary`, `reportsDeprecated`";
@@ -232,7 +235,7 @@ fn actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete()
     drop(client);
     drop(editor);
     let mut record = json!({"source":expected_source,"role":std::env::var("VIZE_NATIVE_DTO_ROLE").unwrap(),
-        "observerSha256":hash(include_bytes!("native_beta.rs")),"testExecutable":test_exe,"testExecutableSha256":hash(&std::fs::read(&test_exe).unwrap()),
+        "observerSha256":hash(include_bytes!("native_beta.rs")),"observerDependencies":[{"path":"crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta/storage_authority.rs","sha256":hash(include_bytes!("native_beta/storage_authority.rs"))}],"testExecutable":test_exe,"testExecutableSha256":hash(&std::fs::read(&test_exe).unwrap()),
         "sdkVersion":expected_version,"sdkExecutable":executable,"sdkSha256":expected_hash,"dialect":dialect,
         "scope":"API-owned explicit disk/FileChanges snapshots; attached overlay view is independently tested below",
         "root":root,"config":std::str::from_utf8(config_text).unwrap(),"neighbor":NEIGHBOR,"rows":rows});
@@ -263,42 +266,39 @@ fn attached_overlay_packets(
     before_beta: bool,
 ) -> serde_json::Value {
     use vize_l0::FxHashMap;
-    const MAIN: &str = "/*🧭é日本語\u{2028}\u{2029}*/\r\nimport { value } from \"./support\";\r\nexport const checked: number = value;\r\nexport const echo = value;\r\n";
-    const SUPPORT: &str = "export const value = 1;\r\n";
+    let (input, input_dependencies) = storage_authority::input(capture);
+    let main = input["main"].as_str().unwrap();
+    let original_support = input["support"].as_str().unwrap();
+    let virtual_text = input["virtual"].as_str().unwrap();
     let work = tempfile::tempdir().unwrap();
     let root = work.path().canonicalize().unwrap();
     let main_path = root.join("main.ts");
     let support_path = root.join("support.ts");
-    let config = br#"{"compilerOptions":{"strict":true,"target":"ESNext","module":"ESNext","moduleResolution":"Bundler","types":[],"noEmit":true},"files":["main.ts","support.ts"]}"#;
+    let config = input["configText"].as_str().unwrap().as_bytes();
     std::fs::write(root.join("tsconfig.json"), config).unwrap();
-    std::fs::write(&main_path, MAIN).unwrap();
-    std::fs::write(&support_path, SUPPORT).unwrap();
+    std::fs::write(&main_path, main).unwrap();
+    std::fs::write(&support_path, original_support).unwrap();
     let main_uri = path_to_file_uri(&main_path);
     let support_uri = path_to_file_uri(&support_path);
     let mut client = CorsaProjectClient::new_for_editor_workspace(runtime.to_str(), &root).unwrap();
     assert!(client.project_session_attached_to_editor);
     client
-        .did_open_batch_fast(&[(&main_uri, MAIN), (&support_uri, SUPPORT)])
+        .did_open_batch_fast(&[(&main_uri, main), (&support_uri, original_support)])
         .unwrap();
     let mut rows = Vec::new();
-    for (phase, support, error) in [
-        ("valid", SUPPORT, false),
-        (
-            "dependency-error",
-            "export const value = \"oops\";\r\n",
-            true,
-        ),
-        ("dependency-repair", "export const value = 2;\r\n", false),
-        ("dependency-close", SUPPORT, false),
-    ] {
-        if phase == "dependency-close" {
+    for row in input["phases"].as_array().unwrap() {
+        let phase = row["id"].as_str().unwrap();
+        let support = row["support"].as_str().unwrap();
+        let error = row["error"].as_bool().unwrap();
+        let closed = row["closed"].as_bool().unwrap();
+        if closed {
             client.did_close(&support_uri).unwrap();
         } else {
             client.did_change(&support_uri, support).unwrap();
         }
         let mut documents = FxHashMap::default();
-        documents.insert(main_uri.clone(), MAIN.into());
-        if phase != "dependency-close" {
+        documents.insert(main_uri.clone(), main.into());
+        if !closed {
             documents.insert(support_uri.clone(), support.into());
         }
         // Synchronize and observe the actual LSP independently of route choice.
@@ -352,7 +352,7 @@ fn attached_overlay_packets(
             );
             assert!(
                 client
-                    .component_types_raw(&main_uri, MAIN, 0, &[])
+                    .component_types_raw(&main_uri, main, 0, &[])
                     .unwrap()
                     .is_none()
             );
@@ -407,7 +407,7 @@ fn attached_overlay_packets(
             assert_eq!(rename.as_ref().unwrap(), &direct_rename);
         }
         assert!(direct_references.as_array().unwrap().len() >= 4);
-        rows.push(json!({"phase":phase,"mainText":MAIN,"supportOverlay":support,"apiEligible":api_eligible,
+        rows.push(json!({"phase":phase,"mainText":main,"supportOverlay":support,"apiEligible":api_eligible,
             "nativePull":direct,"selected":selected_packet,"hover":hover,"references":references.ok(),
             "directReferences":direct_references,"definition":definition.ok(),"directDefinition":direct_definition,
             "completion":completion,"directCompletion":direct_completion,"rename":rename,"directRename":direct_rename,"batch":batch}));
@@ -416,24 +416,30 @@ fn attached_overlay_packets(
             serde_json::to_vec_pretty(&rows).unwrap(),
         )
         .unwrap();
-        assert_eq!(std::fs::read(&main_path).unwrap(), MAIN.as_bytes());
-        assert_eq!(std::fs::read(&support_path).unwrap(), SUPPORT.as_bytes());
+        assert_eq!(std::fs::read(&main_path).unwrap(), main.as_bytes());
+        assert_eq!(
+            std::fs::read(&support_path).unwrap(),
+            original_support.as_bytes()
+        );
     }
     // The dependency-close row above proves the original on-disk fallback.
-    // Reopen those exact bytes before switching to a materialized project: that
-    // project deliberately replays current editor buffers, so this independent
-    // virtual-file probe must carry its relative dependency with it.
-    client.did_open(&support_uri, SUPPORT).unwrap();
-    // No original disk file: the batch must exercise a mapped identity.
+    // Reopen those exact bytes for the complete retained revision. The historical
+    // before source materializes it; the current source keeps logical names.
+    // Both must carry the original relative dependency without changing disk.
+    client.did_open(&support_uri, original_support).unwrap();
+    // No original disk file: observe the actual source-owned identity policy.
     let virtual_path = root.join("Virtual.vue.ts");
     let virtual_uri = path_to_file_uri(&virtual_path);
-    const VIRTUAL: &str = "export const bad: number = \"x\";\r\n";
-    client.did_open(&virtual_uri, VIRTUAL).unwrap();
+    client.did_open(&virtual_uri, virtual_text).unwrap();
     let mapped_virtual = client.session_document_uri(&virtual_uri);
-    assert_ne!(mapped_virtual, virtual_uri);
+    if std::env::var("VIZE_NATIVE_DTO_ROLE").unwrap() == "before" {
+        assert_ne!(mapped_virtual, virtual_uri);
+    } else {
+        assert_eq!(mapped_virtual, virtual_uri);
+    }
     let documents = FxHashMap::from_iter([
-        (main_uri.clone(), MAIN.into()),
-        (virtual_uri.clone(), VIRTUAL.into()),
+        (main_uri.clone(), main.into()),
+        (virtual_uri.clone(), virtual_text.into()),
     ]);
     let virtual_pull = client
         .diagnostics_via_editor_lsp(&virtual_uri, &documents)
@@ -464,29 +470,27 @@ fn attached_overlay_packets(
         );
     }
     assert!(!virtual_path.exists());
+    let storage_authority = storage_authority::capture(
+        &mut client,
+        &root,
+        &[
+            (&main_uri, main),
+            (&support_uri, original_support),
+            (&virtual_uri, virtual_text),
+        ],
+    );
     client.did_close(&virtual_uri).unwrap();
     client.did_close(&support_uri).unwrap();
     client.did_close(&main_uri).unwrap();
     assert!(client.hover_raw(&main_uri, 2, 31).unwrap().is_none());
     client.shutdown().unwrap();
-    let result = json!({"scope":"attached editor; dependency close verified before a self-contained materialized virtual batch",
-        "root":root,"mainUri":main_uri,"supportUri":support_uri,"config":std::str::from_utf8(config).unwrap(),"rows":rows,
-        "materializedBatch":{"virtualUri":virtual_uri,"mappedUri":mapped_virtual,"source":VIRTUAL,"nativePull":virtual_pull,"selected":whole_batch}});
+    let result = json!({"scope":"attached editor; dependency close and whole source-selected virtual revision",
+        "observerInputDependencies":input_dependencies,"root":root,"mainUri":main_uri,"supportUri":support_uri,"config":std::str::from_utf8(config).unwrap(),"rows":rows,
+        "materializedBatch":{"virtualUri":virtual_uri,"mappedUri":mapped_virtual,"source":virtual_text,"nativePull":virtual_pull,"selected":whole_batch,"storageAuthority":storage_authority}});
     std::fs::write(
         capture.join("attached-overlay-packets.json"),
         serde_json::to_vec_pretty(&result).unwrap(),
     )
     .unwrap();
-    result
-}
-
-pub(super) fn completion_multiset(packet: &serde_json::Value) -> serde_json::Value {
-    let mut result = packet.clone();
-    result
-        .get_mut("items")
-        .unwrap()
-        .as_array_mut()
-        .unwrap()
-        .sort_by_cached_key(|item| serde_json::to_vec(item).unwrap());
     result
 }

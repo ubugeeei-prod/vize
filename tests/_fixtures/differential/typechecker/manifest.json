@@ -11772,6 +11772,37 @@
       }
     },
     {
+      "id": "typechecker/regression/native-overlay-input-custody-11145",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "lsp_cli::overlay_storage::default_native_overlay_preserves_the_whole_linked_installation_and_authored_project",
+      "sourceRevision": "497fc8a13749e065b126850d5fb1cf918eecd945",
+      "inputs": [
+        {
+          "file": "App.vue",
+          "path": "native-overlay-input-custody-11145/App.vue.txt",
+          "sha256": "d423cb62ecd4cc1fc89a9287b33d95e2fb17f9703e77de1d5b439ef0b270943d"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "source CLI original11145 physical input pin only; checker packet/native parity/filesystem/public acceptance unsupported"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/runtime-null-prop-11252",
       "state": "active",
       "targets": ["batch"],
@@ -14191,6 +14222,32 @@
           "selector": "lsp_client::editor_lsp::snapshot_source::tests::completion_comparison_retains_metadata_nested_fields_and_duplicate_counts",
           "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs",
           "sha256": "7f361282a17865effeb4b497721c8b077edf8232e79ef0600cba87796267fb55"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/protocol/logical-workspace-overlay-revision-11145",
+      "state": "active",
+      "adapter": "logical-editor-revision-protocol-v1",
+      "targets": [
+        "native-diagnostic-dto",
+        "logical-workspace-revision"
+      ],
+      "inputs": [
+        {
+          "path": "logical-workspace-overlay-revision-11145/input.json",
+          "sha256": "4659fc88d76ee98c9f0ddc74f6450ecc80b720be9b3ab4a0335bf8f2a2050c58"
+        },
+        {
+          "path": "logical-workspace-overlay-revision-11145/source-authority.json",
+          "sha256": "c3950279205ac4939b10c019c5e10e55632ed336f06fd3f46bc4a8085f7ab3dd"
+        }
+      ],
+      "tests": [
+        {
+          "selector": "lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete",
+          "source": "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs",
+          "sha256": "c75ef79c388eb5aee6c93115150196c42aecb75d638ead10dab1a1b94872ca61"
         }
       ]
     }
