@@ -22,6 +22,7 @@ import {
   modelError,
 } from "./support/native-input-model-number-dom-runtime.ts";
 import { executeNumberModelVapor } from "./support/native-input-model-number-vapor-runtime.ts";
+import { assertWholeNumberArray } from "./support/native-input-model-number-order.ts";
 import { executeInputModelSsr } from "./support/native-original-input-model-sfc-ssr-runtime.ts";
 import {
   assertContext,
@@ -357,12 +358,38 @@ after(async () => {
       remember(error);
     }
   }
+  let primaryArrayMatched = false;
+  let runtimeArrayMatched = false;
+  try {
+    assertWholeNumberArray(
+      primaryAttempts,
+      expectedPrimary,
+      `whole ordered ${target}/${mode} primary array`,
+    );
+    primaryArrayMatched = true;
+  } catch (error) {
+    remember(error);
+  }
+  if (capturePath || requireCapture) {
+    try {
+      assertWholeNumberArray(
+        runtimeAttempts,
+        expectedRuntime,
+        `whole ordered ${target}/${mode} runtime array`,
+      );
+      runtimeArrayMatched = true;
+    } catch (error) {
+      remember(error);
+    }
+  }
   const qualified =
     requireCapture &&
     sourceCaptureComplete &&
     nativeGoldensMatched &&
     primaryGoldenMatches === 3 &&
     runtimeGoldenMatches === 3 &&
+    primaryArrayMatched &&
+    runtimeArrayMatched &&
     runtimeMatches === 3 &&
     !failed;
   const common = {
@@ -395,6 +422,8 @@ after(async () => {
     nativeGoldensMatched,
     primaryGoldenMatches,
     runtimeGoldenMatches,
+    primaryArrayMatched,
+    runtimeArrayMatched,
     wholePacketQualification: qualified,
     runtimeMatches,
     cleanup,

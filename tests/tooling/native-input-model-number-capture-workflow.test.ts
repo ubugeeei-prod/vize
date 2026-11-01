@@ -19,6 +19,8 @@ test("number producer, inputs and all three consumers select genuine hosted capt
     ),
     "tests/tooling/native-input-model-number-reference.test.ts",
     "tests/tooling/native-input-model-number-capture-workflow.test.ts",
+    "tests/tooling/native-input-model-number-order.test.ts",
+    "tests/tooling/support/native-input-model-number-order.ts",
     ...["boundary", "dom-runtime", "vapor-runtime"].map(
       (name) => `tests/tooling/support/native-input-model-number-${name}.ts`,
     ),
