@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -140,4 +141,18 @@ test("locked Vue preserves authored ideographic conditional whitespace and rejec
       assert.equal(errors.length, 1);
     }
   }
+});
+
+test("both Git autocrlf modes preserve the whole authored conditional input bytes", () => {
+  const expected = fs.readFileSync(path.join(root, inputPath));
+  assert.equal(sha(expected), inputSha);
+  for (const autocrlf of ["false", "true"])
+    assert.deepEqual(
+      execFileSync(
+        "git",
+        ["-c", `core.autocrlf=${autocrlf}`, "cat-file", "--filters", `HEAD:${inputPath}`],
+        { cwd: root },
+      ),
+      expected,
+    );
 });

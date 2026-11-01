@@ -163,3 +163,6 @@ tests/_fixtures/differential/typechecker/cold-package-shadow-routes-11265/input.
 
 # Original #11317 package-import input is byte-pinned and compile-included.
 tests/_fixtures/differential/typechecker/package-import-redirects-11317/input.json -text
+
+# The authored Unicode conditional corpus is compile-included and byte-pinned.
+crates/vize_atelier_sfc/tests/fixtures/ideographic_if_whitespace.json -text
