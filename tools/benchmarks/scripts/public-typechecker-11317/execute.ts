@@ -150,12 +150,28 @@ export function execute(
   npx: string,
   original: SourceFile[],
   record: Recorder,
+  verifyRoute: () => void,
 ) {
+  const attempt = (label: string, argv: string[]) => {
+    try {
+      verifyRoute();
+    } catch (error) {
+      return retain(record, label, argv, root, new Date().toISOString(), {
+        pid: undefined,
+        status: null,
+        signal: null,
+        stdout: null,
+        stderr: null,
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
+    }
+    return capture(record, label, argv, root);
+  };
   const initial = sources(original, role, "Original");
   writeSources(root, initial);
   const textBefore = captureInputs(root, initial);
   record.json("original-text.inputs-before.json", textBefore);
-  const text = capture(record, "original-text", [process.execPath, npx, "vize", "check"], root);
+  const text = attempt("original-text", [process.execPath, npx, "vize", "check"]);
   const textAfter = captureInputs(root, initial);
   record.json("original-text.inputs-after.json", textAfter);
   const outcomes = cases.map((id) => {
@@ -163,12 +179,7 @@ export function execute(
     writeSources(root, files);
     const before = captureInputs(root, files);
     record.json(id + ".inputs-before.json", before);
-    const packet = capture(
-      record,
-      id,
-      [process.execPath, npx, "vize", "check", "-f", "json"],
-      root,
-    );
+    const packet = attempt(id, [process.execPath, npx, "vize", "check", "-f", "json"]);
     const after = captureInputs(root, files);
     record.json(id + ".inputs-after.json", after);
     let parsed: unknown = null,
@@ -227,7 +238,8 @@ export function assess(role: Role, observation: ReturnType<typeof execute>, reco
       role === "before"
         ? "complete installed baseline witness; no correctness acceptance"
         : "original text plus all nine whole authored JSON laws",
-    publicAcceptance: role === "after",
+    publicAcceptance: false,
+    semanticMatch: role === "after",
     wsl2Acceptance: false,
     selectedOriginalCliPid: null,
     selectedOriginalBackendPid: null,

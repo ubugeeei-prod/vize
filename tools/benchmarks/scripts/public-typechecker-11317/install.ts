@@ -5,6 +5,7 @@ import {
   lstatSync,
   mkdirSync,
   readFileSync,
+  readlinkSync,
   realpathSync,
   writeFileSync,
 } from "node:fs";
@@ -30,6 +31,11 @@ import {
   assertPackedManifest,
   packedManifest,
 } from "../../../support/release/slot_instance_public/packed-manifest.ts";
+import {
+  requireNativeLoadPrerequisite,
+  recheckNativeLoadPrerequisite,
+} from "../../../support/release/human_reports_11252_11253_public/native-loader-prerequisite.ts";
+import type { PackageBase } from "../../../support/release/human_reports_11252_11253_public/model.ts";
 import { profiles, sha256, sources, type Role, type SourceFile } from "./contract.ts";
 import { validateNative, type authenticate } from "./authority.ts";
 import { capture, healthy, type Recorder } from "./execute.ts";
@@ -62,6 +68,40 @@ export function shippedImages(root: string, payload: Buffer, integrity: unknown)
   assert.equal(images.length, archive.files.length);
   return { archive, images };
 }
+export function managerImages(npm: string, npx: string) {
+  const root = realpathSync(dirname(dirname(npm)));
+  const raw = readFileSync(join(root, "package.json"));
+  const manifest = asRecord(JSON.parse(raw.toString("utf8")));
+  assert.equal(manifest.name, "npm");
+  assert.equal(manifest.version, "11.19.1");
+  const bins = asRecord(manifest.bin);
+  for (const [name, actual] of [
+    ["npm", npm],
+    ["npx", npx],
+  ]) {
+    assert.equal(bins[name!], "bin/" + name + "-cli.js");
+    assert.equal(realpathSync(actual!), join(root, asString(bins[name!])));
+  }
+  return [
+    fileImage(npm),
+    fileImage(npx),
+    fileImage(join(root, "package.json")),
+    fileImage(process.execPath),
+  ];
+}
+export function projectBin(root: string, cli: string) {
+  const link = join(root, "node_modules/.bin/vize");
+  assert.equal(lstatSync(link).isSymbolicLink(), true, "npm's Linux vize link must be explicit");
+  const target = readlinkSync(link),
+    resolved = realpathSync(link);
+  assert.equal(resolved, realpathSync(cli), "npx must select the authenticated package bin");
+  const pkg = asRecord(
+    JSON.parse(readFileSync(join(root, "node_modules/vize/package.json"), "utf8")),
+  );
+  assert.equal(asRecord(pkg.bin).vize, "bin/vize");
+  return { path: link, target, resolved, image: fileImage(resolved) };
+}
+
 export async function install(
   root: string,
   role: Role,
@@ -104,6 +144,7 @@ export async function install(
   );
   const modules = realpathSync(join(root, "node_modules")),
     version = profiles[role].version;
+  const packageFacts: PackageBase[] = [];
   const images: FileImage[] = [],
     packages: unknown[] = [];
   const readRegistry = async (url: string) => {
@@ -172,6 +213,15 @@ export async function install(
         ),
       );
     images.push(...checked.images);
+    packageFacts.push({
+      name,
+      version: wanted,
+      directory: packageRoot,
+      resolved: asString(entry.resolved),
+      integrity: asString(entry.integrity),
+      archiveSha512: checked.archive.tarballSHA512,
+      files: checked.images,
+    });
     record.json(label + ".archive-authority.json", {
       name,
       version: wanted,
@@ -201,6 +251,27 @@ export async function install(
     assert.equal(file.bytes, source.bytes);
     assert.equal(file.sha256, source.sha256);
   }
+  const nativeLoad = requireNativeLoadPrerequisite(
+    root,
+    packageFacts,
+    graph.files,
+    {
+      version,
+      candidate: profiles[role].candidate,
+      source: profiles[role].source,
+      workflowHead: authority.ownership.workflowHead,
+      run: profiles[role].run,
+      capsule: authority.capsule,
+      sdk: graph.files,
+      observations: [],
+      produced: authority.ownership.produced,
+    },
+    process.env,
+    (kind, value) => record.json("native-prerequisite-" + kind + ".json", value),
+  );
+  record.json("native-prerequisite.json", nativeLoad);
+  const bin = projectBin(root, cli);
+  record.json("project-bin-before.json", bin);
   const require = createRequire(cli),
     nativeEntry = realpathSync(require.resolve("@vizejs/native"));
   const native = asRecord(require("@vizejs/native"));
@@ -292,5 +363,12 @@ export async function install(
     originalSelectedCliPid: null,
     completeNodeModulesFileSetAsserted: false,
   });
-  return { images: custody, cli, checker };
+  const verifyRoute = () => {
+    assert.deepEqual(projectBin(root, cli), bin);
+    recheckNativeLoadPrerequisite(
+      { root, packages: packageFacts, sdk: graph.files, nativeLoad },
+      process.env,
+    );
+  };
+  return { images: custody, cli, checker, verifyRoute };
 }

@@ -8,7 +8,7 @@ import { rejectOverrides } from "../../../support/release/public_install/identit
 import { authenticate } from "./authority.ts";
 import { fixturePath, input, ownerSource, profiles, type Role } from "./contract.ts";
 import { assess, execute, recorder } from "./execute.ts";
-import { install } from "./install.ts";
+import { install, managerImages } from "./install.ts";
 
 export function argumentsFor(argv: string[]) {
   assert.equal(argv.length, 6);
@@ -63,10 +63,10 @@ export async function main(argv: string[]) {
         root = join(dirname(options.out), "11317-" + role);
       record.json("phase.json", { stage: "public-role", role, accepted: false });
       const authority = await authenticate(role, owned);
+      const manager = managerImages(options.npm, options.npx);
       const installed = await install(root, role, options.npm, original, authority, owned);
-      const manager = [fileImage(options.npm), fileImage(options.npx), fileImage(process.execPath)];
       owned.json("manager-inputs.json", manager);
-      const outcomes = execute(root, role, options.npx, original, owned);
+      const outcomes = execute(root, role, options.npx, original, owned, installed.verifyRoute);
       captured.push({ role, owned, installed, manager, outcomes });
     }
     record.json(
@@ -77,6 +77,7 @@ export async function main(argv: string[]) {
       const outcomes = assess(row.role, row.outcomes, row.owned);
       assertCustody(row.installed.images);
       assertCustody(row.manager);
+      row.installed.verifyRoute();
       row.owned.json("custody-after.json", {
         unchanged: true,
         images: row.installed.images,
