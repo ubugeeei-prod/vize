@@ -6,7 +6,7 @@ use crate::resolution::{ResolutionError, ResolutionErrorKind};
 use oxc_ast::ast::Expression;
 use vize_l0::Span;
 
-pub(super) fn original<'a>(
+pub(in crate::resolution) fn original<'a>(
     input: &NativeModelInput<'a>,
     sink: &mut impl ReferenceSink<'a>,
 ) -> Result<(), ResolutionError> {
