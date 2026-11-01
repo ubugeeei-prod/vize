@@ -70,18 +70,20 @@ fn whole_historical_outputs_and_all_width_boundaries_are_retained_before_verdict
         .unwrap();
     assert_eq!(fs::read(root.join(&call.input)).unwrap(), original);
 
-    let default_width = FormatOptions::default()
+    let glyph_default_converted = FormatOptions::default()
         .to_oxc_format_options()
         .line_width
         .value();
+    let u16_boundaries = [0u16, 1, 40, 80, 100, 120, 65535].map(|width| {
+        serde_json::json!({"input":width,"outcome":LineWidth::try_from(width)
+            .map(|value|value.value()).map_err(|error|error.to_string())})
+    });
     eprintln!(
         "formatter-width-engine:{}",
         serde_json::json!({
-            "default": default_width,
-            "u16Boundaries": [0u16, 1, 40, 80, 100, 120, 65535].map(|width| {
-                serde_json::json!({"input":width,"outcome":LineWidth::try_from(width)
-                    .map(|value|value.value()).map_err(|error|error.to_string())})
-            })
+            "glyphDefaultConverted": glyph_default_converted,
+            "lineWidthDefault": LineWidth::default().value(),
+            "u16Boundaries": u16_boundaries
         })
     );
 
