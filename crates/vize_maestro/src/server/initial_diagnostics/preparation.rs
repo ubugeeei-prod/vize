@@ -20,19 +20,13 @@ impl MaestroServer {
         {
             return None;
         }
-        let Some(scope) = self.state.try_corsa_request_scope() else {
-            return None;
-        };
+        let scope = self.state.try_corsa_request_scope()?;
         if !scope.is_current() {
             return None;
         }
-        let Some(ctx) = IdeContext::new(&self.state, uri, 0) else {
-            return None;
-        };
+        let ctx = IdeContext::new(&self.state, uri, 0)?;
         tracing::info!("preparing initial native project for {uri} version {version}");
-        let Some(bridge) = self.state.get_corsa_bridge().await else {
-            return None;
-        };
+        let bridge = self.state.get_corsa_bridge().await?;
         if !scope.is_current() || self.state.documents.version(uri) != Some(version) {
             return None;
         }
