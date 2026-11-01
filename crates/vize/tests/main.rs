@@ -89,6 +89,7 @@ mod check_outside_import_types_cli;
 mod check_package_cwd_cli;
 mod check_package_declaration_barrel_cli;
 mod check_package_external_import_cli;
+mod check_package_import_redirects_cli;
 mod check_package_paths_authority_cli;
 mod check_package_resolution_modes_cli;
 mod check_package_scope_mode_cli;

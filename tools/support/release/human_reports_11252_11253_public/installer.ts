@@ -33,6 +33,10 @@ import { recheckBinPackage } from "./dependency-bin-record.ts";
 import { collectBinConfiguration, recheckBinConfiguration } from "./bin-configuration.ts";
 import { captureExecutableChains, recheckExecutableChains } from "./command-chains.ts";
 import { recheckCapturePayload } from "./capture-payload.ts";
+import {
+  probeAfterNativePrerequisite,
+  recheckNativeLoadPrerequisite,
+} from "./native-loader-prerequisite.ts";
 export interface PreparedInstallation {
   capture: CaptureInstallReceipt;
   qualify: () => InstallReceipt;
@@ -172,20 +176,41 @@ export async function preparePublic(
     },
   );
   const packages = graph.packages;
-  const probe = capture(
-    node.path,
-    [fileURLToPath(new URL("./identity-probe.ts", import.meta.url)), root],
-    root,
-    env,
-    output,
-    `${kind}-independent-native-image-probe`,
+  const cliRoot = realpathSync(join(root, "node_modules/vize"));
+  const sdk = captureDeclarationGraph(cliRoot).files;
+  assert.equal(sdk.length, 10);
+  for (const declaration of authority.sdk.filter((file) => file.path !== "package.json")) {
+    const actual = fileImage(join(cliRoot, declaration.path));
+    assert.equal(actual.bytes, declaration.bytes);
+    assert.equal(actual.sha256, declaration.sha256);
+  }
+  // This non-executing check precedes the first require()/dlopen in the
+  // separate image probe. No forced binding path or loader override is used.
+  const checked = probeAfterNativePrerequisite(
+    { root, packages, sdk, authority, env, sink },
+    (proof) => {
+      writeFileSync(
+        join(output, `${kind}-native-load-prerequisite.json`),
+        JSON.stringify(proof, null, 2) + "\n",
+        { flag: "wx" },
+      );
+      return capture(
+        node.path,
+        [fileURLToPath(new URL("./identity-probe.ts", import.meta.url)), root],
+        root,
+        env,
+        output,
+        `${kind}-independent-native-image-probe`,
+      );
+    },
   );
+  const nativeLoad = checked.proof,
+    probe = checked.result;
   assert.equal(probe.status, 0);
   assert.equal(probe.stderrBase64, "");
   const native = object(
     wholeJson(bytes(probe.stdoutBase64)),
   ) as unknown as InstallReceipt["native"];
-  const cliRoot = realpathSync(join(root, "node_modules/vize"));
   const facts: InstallationFacts = {
     kind,
     root,
@@ -211,9 +236,10 @@ export async function preparePublic(
     packages,
     binPolicy,
     cli: fileImage(join(cliRoot, "bin/vize")),
-    sdk: captureDeclarationGraph(cliRoot).files,
+    sdk,
     mapperExec: ["node", "./bin/vize", "content-mapper"],
     native,
+    nativeLoad,
   };
   const executableChains = captureExecutableChains({
     root,
@@ -288,6 +314,10 @@ export function recheckCaptureInstallation(
   checkCaseManagers(receipt.managerFiles, managerFiles(receipt.root), expectedCaseManifest);
   assert.deepEqual(hostFacts(), receipt.host);
   recheckCapturePayload(receipt.packages);
+  recheckNativeLoadPrerequisite(receipt, {
+    ...cleanEnvironment(),
+    ...receipt.packageManagerEnvironment,
+  });
   recheckExecutableChains(receipt.executableChains, receipt, expectedCaseManifest);
   recheckBinConfiguration(receipt.binConfiguration, expectedCaseManifest);
   assert.deepEqual(

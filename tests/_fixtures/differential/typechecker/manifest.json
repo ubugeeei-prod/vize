@@ -11837,6 +11837,35 @@
       }
     },
     {
+      "id": "typechecker/regression/package-import-redirects-11317",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "package-import-redirects-11317/input.json",
+          "sha256": "13e0288f0d69e7be48366148023c8ec2324fd650e8396966ce46fabb1449d0b4",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_package_import_redirects_cli::check_json_private_import_redirects_keep_imported_diagnostics; compile-included original five files and versioned private imports; input registration only, no diagnostic pack or native admission"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/prepared-type-only-import-facts",
       "state": "active",
       "targets": ["batch"],
