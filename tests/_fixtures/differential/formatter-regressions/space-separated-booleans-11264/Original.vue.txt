@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const name = "ada"
+function greet (value: string) {
+  return { name: "ada" }
+}
+</script>
+<template>
+  <button type="button" class="x" id="y" @click="greet(name)">{{ name }}</button>
+</template>
