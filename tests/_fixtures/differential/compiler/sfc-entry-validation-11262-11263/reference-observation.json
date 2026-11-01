@@ -1,0 +1,35 @@
+{
+  "id": "sfc-entry-validation-11262-11263",
+  "controller": "198cc0bdd4d330076b38fe20e2a6537cab2533a0",
+  "producer": {
+    "source": "3e67833be5b3ccd85b871a2bfa2d05683e77c3a4",
+    "tree": "64de3a23acdf285826f84c434139c3f74c0fcf74",
+    "run": 41271259992,
+    "attempt": 1,
+    "job": 124744341561,
+    "artifact": 13070015036,
+    "artifactName": "source-cli-41271259992-1",
+    "artifactBytes": 61081688,
+    "artifactDigest": "sha256:3e38b0bbe9a48f2b54188bea75177cf9e43609223f92953903144803b957a207"
+  },
+  "imageSha256": "5f570767f6795821f45a2ee56476f313cd39427dfd7883b2322a835f61250235",
+  "inputFile": "tests/_fixtures/differential/compiler/sfc-entry-validation-11262-11263/Layout.vue.txt",
+  "sourceBase64": "PHRlbXBsYXRlPjxwPnJlYWR5PC9wPjwvdGVtcGxhdGU+Cg==",
+  "inputSha256": "7ec65634a398549830e6f1dc6b770f268cb4423c53e539f1746a911dc7057660",
+  "argv": [
+    "build",
+    "Layout.vue",
+    "--format",
+    "json",
+    "--output",
+    "out",
+    "--ssr",
+    "--no-config"
+  ],
+  "status": 0,
+  "signal": null,
+  "stdoutBase64": "",
+  "stderrBase64": "QnVpbHQ6IExheW91dC52dWUgLT4gb3V0L0xheW91dC5qc29uChtbMzJt4pyTIDEgZmlsZSBjb21waWxlZCBpbiAwLjAwMTdzG1swbQo=",
+  "error": null,
+  "wholeJsonBase64": "ewogICJmaWxlbmFtZSI6ICJMYXlvdXQudnVlIiwKICAiY29kZSI6ICJpbXBvcnQgeyBzc3JSZW5kZXJBdHRycyBhcyBfc3NyUmVuZGVyQXR0cnMgfSBmcm9tIFwiQHZ1ZS9zZXJ2ZXItcmVuZGVyZXJcIlxuXG5mdW5jdGlvbiBzc3JSZW5kZXIoX2N0eCwgX3B1c2gsIF9wYXJlbnQsIF9hdHRycykge1xuICBfcHVzaChgPHAke19zc3JSZW5kZXJBdHRycyhfYXR0cnMpfT5yZWFkeTwvcD5gKVxufVxuXG5jb25zdCBfc2ZjX21haW4gPSB7fVxuX3NmY19tYWluLnNzclJlbmRlciA9IHNzclJlbmRlclxuZXhwb3J0IGRlZmF1bHQgX3NmY19tYWluIiwKICAiY3NzIjogbnVsbCwKICAiZXJyb3JzIjogW10sCiAgIndhcm5pbmdzIjogW10sCiAgInNjcmlwdF9sYW5nIjogImpzIiwKICAibWFjcm9fYXJ0aWZhY3RzIjogW10KfQ=="
+}
