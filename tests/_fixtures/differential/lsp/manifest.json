@@ -3036,6 +3036,42 @@
       }
     },
     {
+      "id": "lsp/regression/versioned-template-lint-edits-6876",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "versioned-template-lint-edits-6876",
+        "files": [
+          {
+            "path": "CodeActionUtf16.vue.txt",
+            "sha256": "4e334c5f8bdef19e5e77408a7aff23ef11f57362c5171401f6a5f5932c3fc1fd"
+          }
+        ]
+      },
+      "case": {
+        "path": "versioned-template-lint-edits-6876/case.json",
+        "sha256": "6d94d5c8ce5a79261c1a1110a80d9e24387289c4c612346eb12e66a4143b85f9"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": false,
+        "codeActions": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/workspace-tsconfig-inheritance-9842",
       "state": "active",
       "targets": ["stdio"],

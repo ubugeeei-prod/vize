@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "id": "lsp/regression/versioned-template-lint-edits-6876",
+  "provenance": {
+    "fixCommit": "2c4214e654b1038a1732159db154dc003400f7e0",
+    "witnessPath": "tests/_fixtures/differential/lsp/code-action-utf16-original/response.expected.json",
+    "inputOrigin": "Exact unchanged original UTF-16 code-action fixture; SHA4e334c5f8bdef19e5e77408a7aff23ef11f57362c5171401f6a5f5932c3fc1fd",
+    "contractOrigin": "Whole original three-action oracle SHA6bdbc749bffaab95aad63b97553b99c115239210734d9c3c4d9bd8340890ef7a; only the fix edit envelope becomes a client-advertised versioned document change. All original edit ranges/text/titles and both suppressions remain whole."
+  },
+  "input": {
+    "source": "CodeActionUtf16.vue.txt",
+    "runtimePath": "CodeActionUtf16.vue",
+    "sha256": "4e334c5f8bdef19e5e77408a7aff23ef11f57362c5171401f6a5f5932c3fc1fd"
+  },
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false,
+    "codeActions": true
+  },
+  "entry": "CodeActionUtf16.vue",
+  "documentVersion": 1,
+  "workspaceEditDocumentChanges": true,
+  "method": "textDocument/codeAction",
+  "request": {
+    "params": {
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 17
+        },
+        "end": {
+          "line": 1,
+          "character": 19
+        }
+      },
+      "context": {
+        "diagnostics": []
+      }
+    }
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "3888a6a6fff7c9c9b7151957100f0f9e06e04e830439929f8c359565af62e24c"
+  },
+  "scope": "One real supporting-client template-lint fix with original authored UTF-16 ranges and document version. Old no-advertisement fixture/oracle unchanged. Native File/product admission, other action families, atomic client application and whole6876 migration remain unqualified."
+}

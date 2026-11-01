@@ -56,6 +56,7 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     assert.match(data.provenance.fixCommit, /^[a-f0-9]{40}$/);
     assert.equal(data.documentVersion, 1);
     fixtureLanguageId(data);
+    versionedLintClient(data);
     if (Object.hasOwn(data, "openDocument")) assert.equal(data.openDocument, false);
     assert.deepEqual(
       planned.initializationOptions,
@@ -276,7 +277,15 @@ export const INITIALIZE_CAPABILITIES = {
 };
 
 export function initializeCapabilities(fixture: LspFixture) {
-  if (fixture.data.method !== "textDocument/documentSymbol") return INITIALIZE_CAPABILITIES;
+  const versioned = versionedLintClient(fixture.data);
+  if (fixture.data.method !== "textDocument/documentSymbol") {
+    return versioned
+      ? {
+          ...INITIALIZE_CAPABILITIES,
+          workspace: { workspaceEdit: { documentChanges: true } },
+        }
+      : INITIALIZE_CAPABILITIES;
+  }
   assert.equal(fixture.data.hierarchicalDocumentSymbols, true);
   return {
     textDocument: {
@@ -284,4 +293,15 @@ export function initializeCapabilities(fixture: LspFixture) {
       documentSymbol: { hierarchicalDocumentSymbolSupport: true },
     },
   };
+}
+
+function versionedLintClient(data: FixtureData): boolean {
+  if (data.workspaceEditDocumentChanges === undefined) return false;
+  assert.equal(data.workspaceEditDocumentChanges, true, "explicit versioned edit client required");
+  assert.equal(
+    data.method,
+    "textDocument/codeAction",
+    "versioned edit fixture requires code actions",
+  );
+  return true;
 }
