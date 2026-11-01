@@ -138,7 +138,14 @@ void test("independent native and package execution stops on cancellation withou
         (step) => step.if && !step.uses?.startsWith("actions/upload-artifact@"),
       ),
     );
-  assert.equal(execution.length, 13);
+  assert.equal(execution.length, 14);
+  assert.equal(
+    execution.filter(
+      (step) =>
+        step.name === "Capture genuine original input Models with actual DOM events and IME",
+    ).length,
+    1,
+  );
   assert.equal(
     execution.filter(
       (step) => step.name === "Capture genuine original root If components in both explicit modes",

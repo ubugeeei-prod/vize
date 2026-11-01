@@ -1,0 +1,1 @@
+<template><a v-bind:title.prop="t"></a></template>

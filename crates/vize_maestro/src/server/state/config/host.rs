@@ -4,6 +4,8 @@
 pub(in crate::server::state) use vize_carton::config::ConfigLoadFailureIdentity;
 pub(in crate::server::state) use vize_carton::config::LoadedLspConfig;
 pub(in crate::server::state) use vize_carton::config::ProjectModel;
+#[cfg(feature = "glyph")]
+pub(in crate::server::state) use vize_carton::config::formatter_lint_plan::FormatterLinterPlan;
 pub(in crate::server::state) use vize_carton::config::load_lsp_config_snapshot;
 #[cfg(feature = "glyph")]
 pub(in crate::server::state) use vize_carton::config::load_project_config_with_source;

@@ -25,6 +25,7 @@ mod file_support;
 mod files;
 mod format_source;
 mod ignores;
+mod lint_policy;
 mod options;
 use format_source::format_file_source;
 mod patterns;
@@ -158,6 +159,13 @@ pub fn run(args: FmtArgs) {
         }
         return;
     }
+
+    lint_policy::validate_selected_files(&files, &snapshot, &options, &config_dir).unwrap_or_else(
+        |error| {
+            eprintln!("Invalid formatter configuration: {error}");
+            std::process::exit(2);
+        },
+    );
 
     eprintln!("Found {} file(s)", files.len());
 

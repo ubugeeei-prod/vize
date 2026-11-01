@@ -1,0 +1,115 @@
+{
+  "schema": "vize.native-sfc.original-input-model-inputs",
+  "compiler": "@vue/compiler-sfc@3.5.35",
+  "runtime": "vue@3.5.35",
+  "dom": "happy-dom@21.0.4",
+  "typescript": "6.0.3",
+  "filename": "OriginalInputModel雪🌸.vue",
+  "qualification": "new-original-inputs-not-historical-native-evidence",
+  "fixtures": [
+    {
+      "id": "let-string",
+      "source": "<script setup>let draft='雪🌸'</script><template><input v-model='draft'/></template>",
+      "script": "let draft='雪🌸'",
+      "template": "<input v-model='draft'/>",
+      "bindings": ["draft"],
+      "binding": "draft",
+      "initial": {
+        "kind": "string",
+        "value": "雪🌸"
+      },
+      "input": "event 雪🌸",
+      "programmatic": "setter 🌸",
+      "composing": "IME 雪🌸"
+    },
+    {
+      "id": "var-number",
+      "source": "<script setup>var draft=7</script><template><input v-model=\"draft\" /></template>",
+      "script": "var draft=7",
+      "template": "<input v-model=\"draft\" />",
+      "bindings": ["draft"],
+      "binding": "draft",
+      "initial": {
+        "kind": "number",
+        "value": 7
+      },
+      "input": "event 雪🌸",
+      "programmatic": "setter 🌸",
+      "composing": "IME 雪🌸"
+    },
+    {
+      "id": "let-boolean",
+      "source": "<script setup>let draft=false</script><template><input v-model='draft'></template>",
+      "script": "let draft=false",
+      "template": "<input v-model='draft'>",
+      "bindings": ["draft"],
+      "binding": "draft",
+      "initial": {
+        "kind": "boolean",
+        "value": false
+      },
+      "input": "event 雪🌸",
+      "programmatic": "setter 🌸",
+      "composing": "IME 雪🌸"
+    },
+    {
+      "id": "var-null",
+      "source": "<script setup>var draft=null</script><template><input v-model='draft' /></template>",
+      "script": "var draft=null",
+      "template": "<input v-model='draft' />",
+      "bindings": ["draft"],
+      "binding": "draft",
+      "initial": {
+        "kind": "null"
+      },
+      "input": "event 雪🌸",
+      "programmatic": "setter 🌸",
+      "composing": "IME 雪🌸"
+    },
+    {
+      "id": "let-bigint",
+      "source": "<script setup>let draft=9n</script><template><input v-model=\"draft\"></template>",
+      "script": "let draft=9n",
+      "template": "<input v-model=\"draft\">",
+      "bindings": ["draft"],
+      "binding": "draft",
+      "initial": {
+        "kind": "bigint",
+        "decimal": "9"
+      },
+      "input": "event 雪🌸",
+      "programmatic": "setter 🌸",
+      "composing": "IME 雪🌸"
+    },
+    {
+      "id": "ts-unicode-crlf",
+      "source": "<script setup lang='ts'>/* from 'vue' 雪🌸 */\r\nlet café:string='initial🌸'</script>\r\n<template><input v-model=\"café\"/></template>",
+      "script": "/* from 'vue' 雪🌸 */\r\nlet café:string='initial🌸'",
+      "template": "<input v-model=\"café\"/>",
+      "bindings": ["café"],
+      "binding": "café",
+      "initial": {
+        "kind": "string",
+        "value": "initial🌸"
+      },
+      "input": "event 雪🌸",
+      "programmatic": "setter 🌸",
+      "composing": "IME 雪🌸"
+    },
+    {
+      "id": "unquoted-void",
+      "source": "<script setup>var draft='plain'</script><template><input v-model=draft ></template>",
+      "script": "var draft='plain'",
+      "template": "<input v-model=draft >",
+      "bindings": ["draft"],
+      "binding": "draft",
+      "initial": {
+        "kind": "string",
+        "value": "plain"
+      },
+      "input": "event 雪🌸",
+      "programmatic": "setter 🌸",
+      "composing": "IME 雪🌸"
+    }
+  ]
+}

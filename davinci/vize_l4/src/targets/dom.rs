@@ -25,6 +25,7 @@ mod expression;
 mod file;
 mod for_head;
 mod handler;
+mod model;
 mod output;
 #[cfg(test)]
 mod tests;

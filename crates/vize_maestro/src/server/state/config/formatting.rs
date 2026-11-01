@@ -1,11 +1,11 @@
 //! Resolve a config file's formatter options into native formatter options.
 
-use super::host::{self, CompilerWhitespacePlan};
+use super::host::{self, CompilerWhitespacePlan, FormatterLinterPlan};
 use crate::server::{ServerState, format::FormatterContext};
 use std::path::{Path, PathBuf};
 use vize_l0::{
     String, ToCompactString,
-    config::{FormatterProfile, SortImportsSetting},
+    config::{ConfigDocument, FormatterProfile},
 };
 
 pub(super) fn formatter_config_dir(project_root: Option<&Path>, source_path: &Path) -> PathBuf {
@@ -20,6 +20,7 @@ pub(in crate::server::state) struct FormatterSnapshot {
     options: vize_glyph::FormatOptions,
     sorting: Result<Option<vize_glyph::ImportSortOptions>, String>,
     whitespace: CompilerWhitespacePlan,
+    lint: Option<FormatterLinterPlan>,
 }
 
 impl Default for FormatterSnapshot {
@@ -28,22 +29,44 @@ impl Default for FormatterSnapshot {
             options: vize_glyph::FormatOptions::default(),
             sorting: Ok(None),
             whitespace: CompilerWhitespacePlan::default(),
+            lint: None,
         }
     }
 }
 
 impl ServerState {
+    /// Keep all formatter projections together without rereading configuration.
+    pub(in crate::server::state) fn install_project_formatter_snapshot(
+        &self,
+        document: &ConfigDocument,
+        project_root: Option<&Path>,
+        source_path: &Path,
+        compiler_whitespace: Option<&'static str>,
+    ) {
+        let config_dir = formatter_config_dir(project_root, source_path);
+        let whitespace = CompilerWhitespacePlan::new(
+            compiler_whitespace,
+            &document.compiler_entries(),
+            &config_dir,
+        );
+        self.install_formatter_snapshot(document, &config_dir, whitespace);
+    }
+
     pub(in crate::server::state) fn install_formatter_snapshot(
         &self,
-        profile: &FormatterProfile,
-        sorting: Option<&SortImportsSetting>,
+        document: &ConfigDocument,
+        config_dir: &Path,
         whitespace: CompilerWhitespacePlan,
     ) {
         let snapshot = FormatterSnapshot {
-            options: format_options_from_config(profile),
-            sorting: vize_glyph::resolve_sort_imports(sorting)
+            options: format_options_from_config(document.formatter_profile()),
+            sorting: vize_glyph::resolve_sort_imports(document.formatter_sort_imports())
                 .map_err(|error| error.to_compact_string()),
             whitespace,
+            lint: Some(FormatterLinterPlan::new(
+                document.linter_plan_with_config_rule_options(),
+                config_dir,
+            )),
         };
         if let Err(error) = &snapshot.sorting {
             tracing::warn!("Invalid formatter import sorting: {error}");
@@ -85,9 +108,26 @@ impl ServerState {
         path: &Path,
     ) -> Result<FormatterContext, String> {
         let snapshot = self.format_options.read();
+        let sorting = snapshot.sorting.clone()?;
+        if path
+            .extension()
+            .and_then(|value| value.to_str())
+            .is_some_and(|extension| extension.eq_ignore_ascii_case("vue"))
+            && let Some(resolved) = snapshot.lint.as_ref().and_then(|plan| plan.resolve(path))
+        {
+            vize_patina::Linter::validate_editor_directive_normalization(
+                &resolved.config,
+                &resolved.rule_options,
+                snapshot.options.normalize_directive_shorthands,
+            )
+            .map_err(|error| {
+                tracing::warn!("Refusing formatter request for {}: {error}", path.display());
+                error
+            })?;
+        }
         Ok(FormatterContext {
             options: snapshot.options.clone(),
-            sorting: snapshot.sorting.clone()?,
+            sorting,
             preserve_template_whitespace: snapshot.whitespace.preserves_text_for(path),
         })
     }
@@ -96,16 +136,11 @@ impl ServerState {
     pub fn load_format_config(&self, dir: &Path) {
         let loaded = host::load_project_config_with_source(Some(dir));
         if let Some(source_path) = loaded.source_path.as_deref() {
-            let config_dir = formatter_config_dir(loaded.project_root.as_deref(), source_path);
-            let whitespace = CompilerWhitespacePlan::new(
+            self.install_project_formatter_snapshot(
+                &loaded.document,
+                loaded.project_root.as_deref(),
+                source_path,
                 loaded.document.compiler_whitespace(),
-                &loaded.document.compiler_entries(),
-                &config_dir,
-            );
-            self.install_formatter_snapshot(
-                loaded.document.formatter_profile(),
-                loaded.document.formatter_sort_imports(),
-                whitespace,
             );
             tracing::info!("Loaded format config from {}", source_path.display());
         }

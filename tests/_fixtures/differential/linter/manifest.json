@@ -2086,6 +2086,44 @@
       }
     },
     {
+      "id": "linter/formatter-bind-style-policy-6098",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "formatter-bind-style-policy-6098",
+        "files": [
+          {
+            "path": "Original.vue.txt",
+            "sha256": "75c8e6b56baba055c15f17153083627217eea010bc90081f6289afc1ca99e0cf"
+          },
+          {
+            "path": "Fixed.vue.txt",
+            "sha256": "83d741c78b8e8de60767a95724ae2e882446dbafce92edff32f512616e024952"
+          },
+          {
+            "path": "cases.json",
+            "sha256": "78c714fb4c510a41a18df29fdc434d3c187546c7b416fcb244a5a44979741b8a"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/jsx-child-expression-control-6890",
       "state": "active",
       "targets": [

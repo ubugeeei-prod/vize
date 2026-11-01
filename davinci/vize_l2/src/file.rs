@@ -17,12 +17,14 @@ pub use region::{
 };
 mod attribute_value;
 mod conditional;
+mod model;
 pub use attribute_value::{
     FileAttributeValue, NativeFileAttributeValue, NativeFileAttributeValueState,
 };
 pub use conditional::{
     NativeConditionalElseInput, NativeFileConditional, NativeFileConditionalState,
 };
+pub use model::{NativeFileModel, NativeFileModelState};
 mod for_head;
 mod handler;
 mod interpolation;

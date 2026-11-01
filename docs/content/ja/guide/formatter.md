@@ -180,6 +180,29 @@ export default defineConfig({}).withVue({
 | `reindentPreprocessorStyles`   | `false`          | SCSS と Less のブロックを入れ子の深さでインデントし直し、空行を整えます。                                                                           |
 | `sortImports`                  | 無効             | スクリプトの import を並べ替えます。[import の並べ替え](./formatter-import-sorting.md)を参照してください。                                          |
 
+有効な `vue/v-bind-style` の lint ルールが `"longform"` を指定している場合は、
+`normalizeDirectiveShorthands: false` を指定してください。既定の `true` では
+lint の修正を省略記法へ戻してしまうためです。
+
+```ts
+export default {
+  vue: {
+    formatter: { normalizeDirectiveShorthands: false },
+    linter: {
+      rules: { "vue/v-bind-style": "error" },
+      ruleOptions: { "vue/v-bind-style": "longform" },
+    },
+  },
+};
+```
+
+CLI では `--normalize-directive-shorthands=false` でも上書きできます。
+設定が矛盾している場合は、対象ファイルを書き込む前に終了コード 2 で停止します。
+エディターのドキュメント・範囲・入力時の整形要求は `null` を返し、解消方法を
+警告ログへ出します。有効性は各ホストの既存 lint builder、ファイルスコープ、
+無効なルールに従い、オプションによるルール登録も反映します。カテゴリの扱いは
+CLI とエディターそれぞれの既存動作に従います。単独の整形 API の既定値は従来どおりです。
+
 Node の native `formatSfc` API でも、Prettier 移行用の 5 つの真偽値
 `normalizeCssQuotes`、`normalizeInlineStyles`、`normalizeVForParens`、
 `selfCloseVoidElements`、`reindentPreprocessorStyles` を同じ名前で指定できます。

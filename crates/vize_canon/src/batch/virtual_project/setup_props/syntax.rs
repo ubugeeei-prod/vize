@@ -62,11 +62,17 @@ pub(super) fn runtime_object_property_name<'a>(key: &'a PropertyKey<'a>) -> Opti
     }
 }
 
-pub(super) fn runtime_prop_shape_member_type(runtime_binding: &str, name: &str) -> CompactString {
-    cstr!(
+pub(super) fn runtime_prop_shape_member_type(
+    runtime_binding: &str,
+    name: &str,
+) -> Option<CompactString> {
+    if runtime_binding.is_empty() {
+        return None;
+    }
+    Some(cstr!(
         "__RuntimePropShape<typeof {runtime_binding}>[{}]",
         ts_string_literal(name).as_str()
-    )
+    ))
 }
 
 pub(super) fn runtime_prop_return_shape_member_type(

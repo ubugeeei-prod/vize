@@ -16,6 +16,8 @@ use super::{
 mod collect;
 mod object;
 mod shape;
+#[cfg(test)]
+mod tests;
 
 use collect::{
     collect_props_from_argument, collect_props_from_default_declaration,
@@ -25,7 +27,6 @@ use collect::{
 pub(super) fn resolve_inline_runtime_props(
     source: &str,
     path: &Path,
-    root_runtime_binding: &str,
     visited: &mut RuntimePropVisitSet,
     cache: &RuntimePropResolveCache,
 ) -> Vec<PropDefinition> {
@@ -37,7 +38,6 @@ pub(super) fn resolve_inline_runtime_props(
         struct DefinePropsVisitor<'ctx, 'a> {
             source: &'ctx str,
             path: &'ctx Path,
-            root_runtime_binding: &'ctx str,
             imports: &'ctx FxHashMap<&'a str, RuntimeImport>,
             local_values: &'ctx FxHashMap<&'a str, &'a Expression<'a>>,
             visited: &'ctx mut RuntimePropVisitSet,
@@ -49,11 +49,13 @@ pub(super) fn resolve_inline_runtime_props(
             fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
                 if super::syntax::call_expression_name(call) == Some("defineProps") {
                     if let Some(argument) = call.arguments.first() {
+                        // Inline expressions have no binding for a type query.
+                        // Named spreads choose their own root in object.rs.
                         collect_props_from_argument(
                             argument,
                             self.source,
                             self.path,
-                            self.root_runtime_binding,
+                            "",
                             true,
                             self.imports,
                             self.local_values,
@@ -71,7 +73,6 @@ pub(super) fn resolve_inline_runtime_props(
         DefinePropsVisitor {
             source,
             path,
-            root_runtime_binding,
             imports: &imports,
             local_values: &local_values,
             visited,

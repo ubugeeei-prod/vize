@@ -25,6 +25,10 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
       /^pub\(in crate::server::state\) use vize_carton::config::matcher::CompilerWhitespacePlan;$/gmu,
       "host_config_matcher_facade",
     );
+    storage = storage.replace(
+      /^pub\(in crate::server::state\) use vize_carton::config::formatter_lint_plan::FormatterLinterPlan;$/gmu,
+      "host_formatter_lint_plan_facade",
+    );
   }
   if (file === "crates/vize_maestro/src/server/state/config.rs") {
     storage = storage.replace(

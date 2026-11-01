@@ -47,6 +47,8 @@ impl Helpers {
             DomDependency::ClassNormalization => self.class,
             DomDependency::StyleNormalization => self.style,
             DomDependency::CollectionIteration => return vocabulary.helper("renderList"),
+            DomDependency::TextModel => return vocabulary.helper("vModelText"),
+            DomDependency::DirectiveApplication => return vocabulary.helper("withDirectives"),
         })
     }
 }

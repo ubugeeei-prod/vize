@@ -17,6 +17,7 @@ mod dependencies;
 pub(in crate::decision) mod file;
 mod for_head;
 mod handler;
+mod model;
 pub mod vue;
 
 pub use context::ContextOnly;
@@ -24,6 +25,7 @@ pub use dependencies::DomDependency;
 pub use file::{DomFileExpression, NativeFileAnalysis, build_dom_file_decisions};
 pub use for_head::DomFileForHead;
 pub use handler::DomFileHandler;
+pub use model::DomFileModel;
 
 /// A complete expression's references all have explicitly declared context bindings.
 ///
@@ -129,6 +131,7 @@ pub enum PropertyRole {
     Class,
     Style,
     Event,
+    Model,
 }
 
 /// Value semantics proved by the retained AST or complete context registry.
@@ -248,6 +251,12 @@ impl<'owner, 'arena> DomFacts<'owner, 'arena> {
     #[must_use]
     pub fn file_handler(&self, id: NodeId) -> Option<&DomFileHandler<'owner, 'arena>> {
         self.file_handlers.get(id)
+    }
+
+    /// A dedicated mutable original Model receipt, independent of read policy.
+    #[must_use]
+    pub fn file_model(&self, id: NodeId) -> Option<DomFileModel<'owner, 'arena>> {
+        model::get(self, id)
     }
 
     /// Whole original head custody at the actual introducing canonical event.
