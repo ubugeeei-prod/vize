@@ -1,17 +1,27 @@
 name: Public typechecker consumer
 on:
   workflow_dispatch:
+    inputs:
+      consumer:
+        type: choice
+        default: legacy-0.602
+        options: [legacy-0.602, package-import-redirects-11317]
+        description: Closed public consumer role
   pull_request:
     paths:
       - .github/workflows/public-typechecker-consumer.yml
       - tools/benchmarks/scripts/public-typechecker-consumer.ts
       - tests/_fixtures/differential/typechecker/dependency-probe-history-10936/**
-permissions: { contents: read }
+      - tools/benchmarks/scripts/public-typechecker-11317/**
+      - tests/tooling/public-typechecker-11317.test.ts
+      - tests/_fixtures/differential/typechecker/package-import-redirects-11317/**
+permissions: { contents: read, actions: read }
 concurrency:
   group: public-typechecker-consumer-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 jobs:
   public:
+    if: github.event_name != 'workflow_dispatch' || inputs.consumer == 'legacy-0.602'
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -57,4 +67,47 @@ jobs:
         with:
           name: public-typechecker-0.602-${{ github.sha }}
           path: ${{ runner.temp }}/public-acceptance.tgz
+          retention-days: 14
+  contracts-11317:
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: 24.22.1, package-manager-cache: false }
+      - name: Check the closed npm role without executing a public package
+        run: node --test tests/tooling/public-typechecker-11317.test.ts
+  public-11317:
+    if: github.event_name == 'workflow_dispatch' && inputs.consumer == 'package-import-redirects-11317' && github.repository == 'ubugeeei-prod/vize'
+    needs: contracts-11317
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: 24.22.1, package-manager-cache: false }
+      - name: Provision the reported npm version separately
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix "$RUNNER_TEMP/11317-manager" npm@11.19.1 --ignore-scripts --no-audit --no-fund
+          test "$(node "$RUNNER_TEMP/11317-manager/node_modules/npm/bin/npm-cli.js" --version)" = 11.19.1
+      - name: Retain the original command and all nine JSON vectors for each public version
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node tools/benchmarks/scripts/public-typechecker-11317/run.ts --out "$RUNNER_TEMP/public-11317-evidence" --npm "$RUNNER_TEMP/11317-manager/node_modules/npm/bin/npm-cli.js" --npx "$RUNNER_TEMP/11317-manager/node_modules/npm/bin/npx-cli.js"
+      - name: Package only owned data
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/public-11317-evidence"
+          tar -czf "$RUNNER_TEMP/public-11317-evidence.tgz" -C "$RUNNER_TEMP" public-11317-evidence
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: public-typechecker-11317-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/public-11317-evidence.tgz
           retention-days: 14
