@@ -52,7 +52,13 @@ impl Rule for NoDeprecatedInlineTemplate {
             }
         }
     }
+
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        Some(self)
+    }
 }
+
+mod native;
 
 #[cfg(test)]
 mod tests {

@@ -2376,6 +2376,32 @@
       }
     },
     {
+      "id": "linter/native-inline-template-6848",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "native-inline-template-6848",
+        "files": [
+          {
+            "path": "Original.html.txt",
+            "role": "original-native-element-input-consumed-by-legacy-and-native",
+            "sha256": "eba44a30525a87d2121e058a0a63d59fcb8a6fe0ea8bf4942612e9b88836460c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["html-template"],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/native-input-label-history-6881",
       "state": "active",
       "targets": ["lint"],
