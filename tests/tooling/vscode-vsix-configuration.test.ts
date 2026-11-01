@@ -29,5 +29,16 @@ void test("the actual Rust VSIX configuration validator keeps typed defaults and
     },
   );
   assert.equal(result.status, 0, result.stderr + result.stdout);
-  assert.match(result.stdout, /6 passed; 0 failed/);
+  assert.match(result.stdout, /8 passed; 0 failed; 0 ignored; 0 measured;/);
+  for (const name of [
+    "closed_context_policy_requires_boolean_false_window_contract",
+    "unknown_false_and_misspelled_closed_context_properties_are_rejected",
+  ]) {
+    const expected = `test editors::vsix_configuration::tests::${name} ... ok`;
+    assert.equal(
+      result.stdout.split(/\r?\n/).filter((line) => line === expected).length,
+      1,
+      expected,
+    );
+  }
 });

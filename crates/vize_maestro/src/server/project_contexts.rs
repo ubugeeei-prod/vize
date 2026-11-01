@@ -40,6 +40,8 @@ pub(super) struct DocumentServer<'a> {
     owner: DocumentOwner<'a>,
     #[cfg(feature = "native")]
     authored_revision: Option<u64>,
+    #[cfg(feature = "native")]
+    foreground_open: Option<super::initial_diagnostics::ForegroundOpen>,
 }
 
 impl<'a> DocumentServer<'a> {
@@ -48,6 +50,40 @@ impl<'a> DocumentServer<'a> {
             owner: DocumentOwner::Primary(server),
             #[cfg(feature = "native")]
             authored_revision: server.state.documents.stable_revision(),
+            #[cfg(feature = "native")]
+            foreground_open: None,
+        }
+    }
+
+    pub(super) fn foreground_preparation(&self) -> Option<(&Url, &std::sync::atomic::AtomicBool)> {
+        #[cfg(feature = "native")]
+        {
+            self.foreground_open
+                .as_ref()
+                .map(|ticket| ticket.preparation())
+        }
+        #[cfg(not(feature = "native"))]
+        {
+            None
+        }
+    }
+
+    #[cfg(feature = "native")]
+    pub(super) fn release_foreground_open(
+        &self,
+        stamp: super::state::CorsaRequestStamp,
+        prepared: bool,
+    ) {
+        if let Some(ticket) = &self.foreground_open
+            && let Some(scheduler) = &self.initial_diagnostics
+        {
+            scheduler.foreground_ready(
+                ticket,
+                stamp,
+                prepared,
+                &self.state,
+                std::time::Instant::now(),
+            );
         }
     }
 
@@ -134,6 +170,7 @@ impl MaestroServer {
             return DocumentServer {
                 owner: DocumentOwner::Project(server),
                 authored_revision,
+                foreground_open: None,
             };
         }
         self.for_document(uri).await
@@ -187,9 +224,14 @@ impl MaestroServer {
             .await
             .unwrap_or_else(|| self.state.clone());
         self.queue_configuration_watches();
+        let foreground_open = self
+            .initial_diagnostics
+            .as_ref()
+            .and_then(|scheduler| scheduler.foreground_open(uri, &state));
         DocumentServer {
             owner: DocumentOwner::Project(self.with_project_state(state)),
             authored_revision,
+            foreground_open,
         }
     }
 }

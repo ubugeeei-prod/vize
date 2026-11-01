@@ -40,6 +40,23 @@ function output(executable: string, args: string[], cwd: string) {
   return result.stdout.trim();
 }
 
+export function coldScaleBuildRecipe(
+  allocation: boolean,
+  sourceSha: string,
+  observerSourceSha?: string,
+) {
+  const args = [...flags, ...(allocation ? ["--features", "profiling"] : [])];
+  const observerEnvironment: NodeJS.ProcessEnv = {};
+  if (observerSourceSha !== undefined) {
+    assert.match(observerSourceSha, /^[a-f0-9]{40}$/u);
+    assert.equal(observerSourceSha, sourceSha, "observer must compile the actual immutable source");
+    assert.equal(allocation, false, "custody carrier is separate from allocation timing");
+    args.push("--features", "cache-custody");
+    observerEnvironment.VIZE_CACHE_OBSERVER_SOURCE_SHA = observerSourceSha;
+  }
+  return { args, observerEnvironment };
+}
+
 export function buildColdScaleBinary(options: {
   sourceRoot: string;
   targetDir: string;
@@ -47,6 +64,7 @@ export function buildColdScaleBinary(options: {
   receipt: string;
   role: string;
   allocation: boolean;
+  observerSourceSha?: string;
   /** Test-only executable injection; Actions uses cargo from its pinned toolchain. */
   cargoExecutable?: string;
 }) {
@@ -65,11 +83,15 @@ export function buildColdScaleBinary(options: {
   );
   mkdirSync(dirname(receiptPath), { recursive: true });
   const cargo = options.cargoExecutable ?? "cargo";
-  const args = [...flags, ...(options.allocation ? ["--features", "profiling"] : [])];
+  const { args, observerEnvironment } = coldScaleBuildRecipe(
+    options.allocation,
+    sourceSha,
+    options.observerSourceSha,
+  );
   const startedAt = new Date().toISOString();
   const result = spawnSync(cargo, args, {
     cwd: sourceRoot,
-    env: { ...process.env, CARGO_TARGET_DIR: targetDir },
+    env: { ...process.env, CARGO_TARGET_DIR: targetDir, ...observerEnvironment },
     encoding: "utf8",
     timeout: 30 * 60_000,
     maxBuffer: 128 * 1024 * 1024,
@@ -91,6 +113,7 @@ export function buildColdScaleBinary(options: {
   assert.equal(artifacts.length, 1, "Cargo must identify the actual vize executable");
   const built = resolve(artifacts[0].executable);
   const features: string[] = artifacts[0].features ?? [];
+  if (options.observerSourceSha !== undefined) assert(features.includes("cache-custody"));
   assert.equal(
     features.includes("profiling"),
     options.allocation,
@@ -144,6 +167,9 @@ export function buildColdScaleBinary(options: {
       ]),
     ),
     allocation: options.allocation,
+    ...(options.observerSourceSha === undefined
+      ? {}
+      : { observerSourceSha: options.observerSourceSha }),
     cargo: { executable: cargo, args, version: output(cargo, ["--version"], sourceRoot) },
     rustc: output("rustc", ["-Vv"], sourceRoot),
     startedAt,
@@ -249,6 +275,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       receipt: { type: "string" },
       role: { type: "string" },
       allocation: { type: "boolean", default: false },
+      "observer-source-sha": { type: "string" },
       "base-receipt": { type: "string" },
       "head-receipt": { type: "string" },
       repository: { type: "string" },
@@ -291,6 +318,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       receipt: values.receipt,
       role: values.role,
       allocation: values.allocation!,
+      ...(values["observer-source-sha"] === undefined
+        ? {}
+        : { observerSourceSha: values["observer-source-sha"] }),
     });
   }
 }

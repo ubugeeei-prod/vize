@@ -14,6 +14,9 @@ pub(super) struct LspConfigSection {
     lint: Option<bool>,
     typecheck: Option<bool>,
     pub(super) typecheck_timeout_ms: Option<u64>,
+    /// Initialization-only: sacrifice closed child reuse to release routing ownership.
+    #[cfg(feature = "native")]
+    pub(super) release_closed_project_contexts: Option<bool>,
     editor: Option<bool>,
     ecosystem: Option<bool>,
     options_api: Option<bool>,
@@ -156,6 +159,8 @@ impl From<LanguageServerConfig> for LspConfigSection {
             lint: config.lint,
             typecheck: config.typecheck,
             typecheck_timeout_ms: None,
+            #[cfg(feature = "native")]
+            release_closed_project_contexts: None,
             editor: config.editor,
             ecosystem: config.ecosystem,
             options_api: None,

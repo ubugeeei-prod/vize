@@ -3,22 +3,68 @@
 use super::{OptionsApiScriptFacts, is_safe_value_identifier, unresolved_extends_template_names};
 use crate::virtual_ts::component_reference::options_api_reserved_binding_local;
 use crate::virtual_ts::helpers::is_reserved_identifier;
+use crate::virtual_ts::scope::{
+    authored_instance_declares_unknown_names, is_strict_template_context_candidate,
+};
 use crate::virtual_ts::{VirtualTsOptions, VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{BindingType, Croquis};
 
+/// Emit the profiled Options API variables without growing the root generator.
+pub(in crate::virtual_ts::generator) fn emit_options_api_variables(
+    enabled: bool,
+    output: (
+        &mut String,
+        &mut Vec<VizeSemanticLink>,
+        &mut Vec<VizeMapping>,
+    ),
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+    script: Option<&str>,
+    script_facts: (&OptionsApiScriptFacts, bool),
+    offset: &dyn Fn(usize) -> usize,
+) {
+    if !enabled {
+        return;
+    }
+    let (ts, links, mappings) = output;
+    vize_carton::profile!(
+        "canon.virtual_ts.generate_options_api_variables",
+        links.extend(generate_options_api_variables(
+            ts,
+            summary,
+            options,
+            script,
+            script_facts,
+            mappings,
+            offset,
+        ))
+    );
+}
+
 // Emit declarations for Options API template bindings (`data`/`computed`/
 // `methods`/`inject`/`setup`/`props`, plus legacy globals) when the caller
 // enables Options API / legacy checking.
-pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
+//
+// `script_facts` pairs the analyzed script facts with whether this is the Vue 3
+// Options API shape whose unknown template names the undefined-reference pass
+// declares from the authored default export's instance (see
+// `generate_undefined_refs`; the pass also needs a cleanly parsed script, which
+// `authored_instance_declares_unknown_names` checks here). There a member of an
+// imported `extends:` base resolves with its declared type through that
+// instance, so the untyped `any` fallback is kept only for the names that pass
+// cannot declare; a second `const` for a declared name would redeclare it
+// (`TS2451`) and win with `any`.
+fn generate_options_api_variables(
     mut ts: &mut String,
     summary: &Croquis,
     options: &VirtualTsOptions,
     script: Option<&str>,
-    script_facts: &OptionsApiScriptFacts,
+    script_facts: (&OptionsApiScriptFacts, bool),
     mappings: &mut Vec<VizeMapping>,
     offset: &dyn Fn(usize) -> usize,
 ) -> Vec<VizeSemanticLink> {
+    let (script_facts, authored_instance_declares_unknowns) = script_facts;
     let mut links = Vec::new();
     // Options from a normal script remain visible with a second setup block.
     // Setup macro props already have their own projection, including referenced
@@ -62,11 +108,30 @@ pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
         });
     names.sort_by(|left, right| left.0.cmp(&right.0));
     names.dedup_by(|left, right| left.0 == right.0);
-    let inherited_unknown_names = unresolved_extends_template_names(
+    let mut inherited_unknown_names = unresolved_extends_template_names(
         summary,
         &configured_globals,
         script_facts.has_unresolved_extends,
     );
+    if authored_instance_declares_unknowns
+        && !inherited_unknown_names.is_empty()
+        && authored_instance_declares_unknown_names(script)
+    {
+        // The undefined-reference pass declares each of these names from the
+        // authored instance with the member's type; a second `const` here would
+        // redeclare it (`TS2451`, unmapped and dropped) and win with `any`.
+        // Only a name that pass cannot declare keeps the untyped fallback: a
+        // contextual keyword such as `as`, which component APIs legitimately
+        // expose, or an expression identifier the analyzer never recorded as
+        // an undefined reference.
+        let undefined_refs = crate::virtual_ts::script_facts::undefined_refs(summary);
+        inherited_unknown_names.retain(|name| {
+            !is_strict_template_context_candidate(name)
+                || !undefined_refs
+                    .iter()
+                    .any(|reference| reference.name.as_str() == name.as_str())
+        });
+    }
 
     if names.is_empty() && inherited_unknown_names.is_empty() {
         return Vec::new();

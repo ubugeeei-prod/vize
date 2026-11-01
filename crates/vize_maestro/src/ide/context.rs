@@ -30,6 +30,9 @@ pub struct IdeContext<'a> {
     /// This document's SFC descriptor, read once from the resident tier
     /// (P5-6a) — see [`IdeContext::descriptor`].
     descriptor: OnceLock<Option<SharedDescriptor>>,
+    /// Optional request-local strict-open receipt; never inherited by another context.
+    #[cfg(feature = "native")]
+    foreground_preparation: Option<(&'a Url, &'a std::sync::atomic::AtomicBool)>,
     /// Pug derivation and semantic scope are shared by this request's fallbacks.
     pub(in crate::ide) pug_scope: OnceLock<Option<Box<super::template_scope::pug::PugScope>>>,
 }
@@ -181,7 +184,28 @@ impl<'a> IdeContext<'a> {
             block_type,
             virtual_docs,
             descriptor,
+            #[cfg(feature = "native")]
+            foreground_preparation: None,
             pug_scope: OnceLock::new(),
+        }
+    }
+
+    #[cfg(feature = "native")]
+    pub(crate) fn with_foreground_preparation(
+        mut self,
+        preparation: Option<(&'a Url, &'a std::sync::atomic::AtomicBool)>,
+    ) -> Self {
+        self.foreground_preparation = preparation;
+        self
+    }
+
+    /// Called only after the existing strict canonical open completed successfully.
+    #[cfg(feature = "native")]
+    pub(crate) fn record_foreground_preparation(&self) {
+        if let Some((uri, prepared)) = self.foreground_preparation
+            && uri == self.uri
+        {
+            prepared.store(true, std::sync::atomic::Ordering::Release);
         }
     }
 

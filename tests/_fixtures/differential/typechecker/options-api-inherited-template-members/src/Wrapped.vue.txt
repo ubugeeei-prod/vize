@@ -1,0 +1,17 @@
+<template>
+  <p :title="greet('x')">{{ isPC.toFixed() }} {{ count.toFixed() }} {{ fromBase.toFixed() }}</p>
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'vue'
+import { base } from './base'
+import { shared } from './shared'
+
+export default defineComponent({
+  extends: (base as typeof base),
+  mixins: [(shared)!],
+  data() {
+    return { count: 1 }
+  },
+})
+</script>

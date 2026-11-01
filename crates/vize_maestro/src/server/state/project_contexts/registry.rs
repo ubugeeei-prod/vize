@@ -24,6 +24,7 @@ pub(super) struct ProjectContext {
     #[cfg(feature = "retained-program")]
     navigation: OnceLock<Arc<NativeNavigationProject<'static>>>,
     retired: AtomicBool,
+    closed_detached: AtomicBool,
     reload_failed: AtomicBool,
     initialization: super::Mutex<Option<Initialization>>,
 }
@@ -38,6 +39,7 @@ impl ProjectContext {
             #[cfg(feature = "retained-program")]
             navigation: OnceLock::new(),
             retired: AtomicBool::new(false),
+            closed_detached: AtomicBool::new(false),
             reload_failed: AtomicBool::new(false),
             initialization: super::Mutex::new(None),
         }
@@ -138,7 +140,7 @@ impl ProjectContext {
         let state = initialization.await;
         if self.retired.load(Ordering::Acquire) {
             if let Some(state) = &state {
-                state.retire_project_owner();
+                self.retire_initialized_state(state);
             }
             return None;
         }
@@ -169,16 +171,19 @@ impl ProjectContext {
                 .store(true, Ordering::Release);
         }
         if self.retired.load(Ordering::Acquire) {
-            state.retire_project_owner();
+            self.retire_initialized_state(&state);
             return None;
         }
         Some(state)
     }
 
     pub(super) fn initialized_state(&self) -> Option<Arc<ServerState>> {
-        (!self.retired.load(Ordering::Acquire))
-            .then(|| self.state.get().cloned())
-            .flatten()
+        if self.retired.load(Ordering::Acquire) {
+            return None;
+        }
+        let state = self.state.get()?.clone();
+        // A closed detach can race the OnceLock's first publication.
+        (!self.retired.load(Ordering::Acquire)).then_some(state)
     }
 
     pub(super) fn published_state(&self) -> Option<&Arc<ServerState>> {
@@ -196,6 +201,23 @@ impl ProjectContext {
                 .project_contexts
                 .retired
                 .store(true, Ordering::Release);
+        }
+    }
+
+    /// Release only registry ownership; live request/worker owners drain naturally.
+    pub(super) fn detach_closed(&self) {
+        self.closed_detached.store(true, Ordering::Release);
+        self.mark_retired();
+        if let Some(state) = self.state.get() {
+            state.mark_project_owner_retired();
+        }
+    }
+
+    fn retire_initialized_state(&self, state: &ServerState) {
+        if self.closed_detached.load(Ordering::Acquire) && !state.project_routing_shutting_down() {
+            state.mark_project_owner_retired();
+        } else {
+            state.retire_project_owner();
         }
     }
 
@@ -258,3 +280,6 @@ impl Drop for ProjectContext {
         }
     }
 }
+
+#[cfg(test)]
+mod closed_tests;

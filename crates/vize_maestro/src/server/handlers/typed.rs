@@ -64,7 +64,13 @@ impl MaestroServer {
         })
     }
 
-    pub(super) async fn hover_request(&self, params: HoverParams) -> Result<Option<Hover>> {
+    async fn hover_request_with_preparation(
+        &self,
+        params: HoverParams,
+        preparation: Option<(&tower_lsp::lsp_types::Url, &std::sync::atomic::AtomicBool)>,
+    ) -> Result<Option<Hover>> {
+        #[cfg(not(feature = "native"))]
+        let _ = preparation;
         if !self.state.lsp_features().hover {
             return Ok(None);
         }
@@ -75,6 +81,8 @@ impl MaestroServer {
         let Some(ctx) = IdeContext::at_position(&self.state, uri, position) else {
             return Ok(None);
         };
+        #[cfg(feature = "native")]
+        let ctx = ctx.with_foreground_preparation(preparation);
 
         // Type-aware hover for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
         // Routed before the SFC path since JSX documents never produce an SFC
@@ -111,10 +119,13 @@ impl MaestroServer {
         Ok(hover_result)
     }
 
-    pub(super) async fn completion_request(
+    async fn completion_request_with_preparation(
         &self,
         params: CompletionParams,
+        preparation: Option<(&tower_lsp::lsp_types::Url, &std::sync::atomic::AtomicBool)>,
     ) -> Result<Option<CompletionResponse>> {
+        #[cfg(not(feature = "native"))]
+        let _ = preparation;
         if !self.state.lsp_features().completion {
             return Ok(None);
         }
@@ -125,6 +136,8 @@ impl MaestroServer {
         let Some(ctx) = IdeContext::at_completion_position(&self.state, uri, position) else {
             return Ok(None);
         };
+        #[cfg(feature = "native")]
+        let ctx = ctx.with_foreground_preparation(preparation);
         // JSX completion is opt-in so React remains untouched.
         #[cfg(feature = "native")]
         if crate::utils::is_jsx_path(uri.path()) {
@@ -247,5 +260,24 @@ impl MaestroServer {
         {
             Ok(RenameService::rename(&ctx, new_name))
         }
+    }
+}
+
+impl super::super::project_contexts::DocumentServer<'_> {
+    pub(super) async fn hover_request(&self, params: HoverParams) -> Result<Option<Hover>> {
+        MaestroServer::hover_request_with_preparation(self, params, self.foreground_preparation())
+            .await
+    }
+
+    pub(super) async fn completion_request(
+        &self,
+        params: CompletionParams,
+    ) -> Result<Option<CompletionResponse>> {
+        MaestroServer::completion_request_with_preparation(
+            self,
+            params,
+            self.foreground_preparation(),
+        )
+        .await
     }
 }

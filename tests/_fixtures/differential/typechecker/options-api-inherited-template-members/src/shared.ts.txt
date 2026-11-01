@@ -1,0 +1,17 @@
+import { defineComponent } from 'vue'
+
+export const shared = defineComponent({
+  data() {
+    return { currentDevice: 'pc' }
+  },
+  computed: {
+    isPC(): boolean {
+      return this.currentDevice === 'pc'
+    },
+  },
+  methods: {
+    greet(name: string) {
+      return `hi ${name}`
+    },
+  },
+})

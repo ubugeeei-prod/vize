@@ -232,11 +232,29 @@ export function getInitializationOptions(
     options.typecheckTimeoutMs = timeoutMs;
   }
 
+  const releaseClosedContexts = config.get<unknown>("memory.releaseClosedProjectContexts", false);
+  if (
+    hasExplicitConfigurationValue(config, "memory.releaseClosedProjectContexts") &&
+    typeof releaseClosedContexts === "boolean"
+  ) {
+    options.releaseClosedProjectContexts = releaseClosedContexts;
+  }
+
   return options;
 }
 
-export function describeCapabilities(options: LspInitializationOptions): string {
-  const capabilities = Object.entries(options)
+export function describeCapabilities(
+  options: LspInitializationOptions,
+  hasWorkspaceLspConfig = false,
+): string {
+  // A lifecycle policy changes ownership, not the enabled language features.
+  const entries = Object.entries(options).filter(
+    ([name]) => name !== "releaseClosedProjectContexts",
+  );
+  if (entries.length === 0 && hasWorkspaceLspConfig) {
+    return "workspace configuration and defaults";
+  }
+  const capabilities = entries
     .filter(([, enabled]) => enabled === true)
     .map(([name]) => CAPABILITY_LABELS[name] ?? name);
 

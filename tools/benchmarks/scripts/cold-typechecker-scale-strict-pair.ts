@@ -141,7 +141,7 @@ export function verifyStrictSources(base: string, head: string, provider: string
 }
 
 /** output.rs prints one program in absolute UTF-8 byte order, separately from JSON display order. */
-export function verifyStrictDebug(stderr: Buffer, value: unknown, cwd: string) {
+export function strictDebugParts(stderr: Buffer, value: unknown, cwd: string) {
   assert(value && typeof value === "object" && !Array.isArray(value));
   const packet = value as {
     programs: unknown[];
@@ -172,9 +172,10 @@ export function verifyStrictDebug(stderr: Buffer, value: unknown, cwd: string) {
     stderr.subarray(-suffix.length).equals(suffix),
     `whole generated debug suffix mismatch: ${stderr.length}/${hash(stderr)}`,
   );
-  return {
-    bytes: stderr.length,
-    sha256: hash(stderr),
-    helperSha256: hash(stderr.subarray(header.length, -suffix.length)),
-  };
+  return { header, helper: stderr.subarray(header.length, -suffix.length), suffix };
+}
+
+export function verifyStrictDebug(stderr: Buffer, value: unknown, cwd: string) {
+  const { helper } = strictDebugParts(stderr, value, cwd);
+  return { bytes: stderr.length, sha256: hash(stderr), helperSha256: hash(helper) };
 }

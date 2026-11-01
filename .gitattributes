@@ -1,6 +1,8 @@
 tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 # Dependency patch filenames must retain LF when Windows checks out the repository.
 patches/*.patch text eol=lf
+# Derived imported markRaw callback inputs are physically consumed by native tests.
+tests/_fixtures/differential/typechecker/imported-mark-raw-callback/** text eol=lf
 # Byte-pinned untimed owned read-buffer observer and Node-only refusal fixture.
 tools/benchmarks/scripts/cold-typechecker-scale-read-buffer.rs.txt text eol=lf
 tests/_fixtures/tooling/native-forward/backend.ts text eol=lf
@@ -177,3 +179,11 @@ tests/_fixtures/differential/typechecker/package-import-redirects-11317/input.js
 
 # The authored Unicode conditional corpus is compile-included and byte-pinned.
 crates/vize_atelier_sfc/tests/fixtures/ideographic_if_whitespace.json -text
+tests/tooling/fixtures/formatter-css-browser-plan-8840/formatter-css-browser-plan.mjs.txt -text
+
+# Source-only allocation observer bodies are hash-bound in the paired controller.
+tools/benchmarks/observers/paired-candidate-child-allocation.rs text eol=lf
+tools/benchmarks/observers/paired-candidate-route-memory.rs text eol=lf
+tests/_fixtures/tooling/paired-inherited-options-inputs.json text eol=lf
+tests/_fixtures/tooling/paired-native-a183-libraries.json text eol=lf
+tools/benchmarks/scripts/cold-typechecker-scale-candidate-cases.json text eol=lf

@@ -88,6 +88,10 @@ pub(super) struct ProjectContexts {
     evaluation_session: Arc<super::config::host::ConfigEvaluationSession>,
     owner: RwLock<Option<Weak<ServerState>>>,
     retired: AtomicBool,
+    /// Explicit last-close policy; absent/false retains existing warm owners.
+    release_closed: AtomicBool,
+    /// Weak discovery only: final shutdown still reaches detached live owners.
+    detached_bridges: Mutex<Vec<Weak<vize_canon::CorsaBridge>>>,
     shutting_down: AtomicBool,
     generation: AtomicU64,
     routing_changes: AtomicUsize,
@@ -356,9 +360,13 @@ impl ServerState {
         self.project_contexts.retired.load(Ordering::Acquire)
     }
 
-    fn retire_project_owner(&self) {
+    fn mark_project_owner_retired(&self) {
         self.project_contexts.retired.store(true, Ordering::Release);
         self.invalidate_corsa_request_environment();
+    }
+
+    fn retire_project_owner(&self) {
+        self.mark_project_owner_retired();
         self.retire_corsa_configuration();
     }
 
@@ -438,6 +446,7 @@ impl ServerState {
     }
 }
 
+mod closed;
 mod root_discovery;
 use root_discovery::{document_root, is_config_marker};
 

@@ -171,6 +171,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
     let materialized_sources =
         map_materialized_sources_with_resolver(ctx, &authored_uris, opened.materialized_sources);
 
+    ctx.record_foreground_preparation();
     Ok(Some(CanonicalVirtualDocument {
         source_uri: ctx.uri.clone(),
         request_uri: opened.request_uri,

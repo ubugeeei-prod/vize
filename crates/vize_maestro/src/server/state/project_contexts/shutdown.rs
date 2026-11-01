@@ -35,6 +35,11 @@ impl ServerState {
                 bridges.push(bridge);
             }
         }
+        for bridge in self.take_detached_corsa_bridges() {
+            if bridge.is_initialized() && !bridges.iter().any(|known| Arc::ptr_eq(known, &bridge)) {
+                bridges.push(bridge);
+            }
+        }
         self.retire_project_contexts();
         join_all(bridges.iter().map(|bridge| bridge.shutdown()))
             .await

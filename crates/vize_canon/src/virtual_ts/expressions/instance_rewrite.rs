@@ -84,7 +84,9 @@ pub(super) fn rewrite<'a>(
     expression: &str,
     bindings: &'a TemplateBindingAccess,
 ) -> Option<Ref<'a, BindingRewrite>> {
-    if !bindings.has_instance_globals() || !expression.contains('$') {
+    if !bindings.has_instance_globals()
+        || (!bindings.has_authored_instance_calls() && !expression.contains('$'))
+    {
         return None;
     }
     bindings.cached_instance_rewrite(expression, || {

@@ -5,7 +5,7 @@ import {
   optionField,
   optionalBooleanField,
 } from "./plugin-option-guards.js";
-import { isVOnEventHyphenationOptions } from "./v-on-event-options.js";
+import { getVOnEventHyphenationOptions } from "./v-on-event-options.js";
 import { getAttributeHyphenationOptions } from "./attribute-options.js";
 import { getPropNameCasingOptions } from "./prop-name-options.js";
 import { getComponentNameCasingOptions } from "./component-name-options.js";
@@ -14,7 +14,6 @@ import type {
   DefineMacrosOrderOption,
   HtmlQuoteStyle,
   HtmlSelfClosingOption,
-  HyphenationStyle,
   MustacheInterpolationSpacingStyle,
   NoMutatingPropsOption,
   PatinaRuleOptions,
@@ -88,12 +87,7 @@ export function getRuleOptions(
       }
       break;
     case "vue/v-on-event-hyphenation":
-      if (isHyphenationStyle(firstOption)) {
-        return { vOnEventHyphenation: firstOption };
-      }
-      if (isRecord(firstOption) && isVOnEventHyphenationOptions(firstOption))
-        return cliRuleOptions(ruleName, firstOption);
-      break;
+      return getVOnEventHyphenationOptions(options);
     case "vue/v-on-style":
       if (isVOnStyle(firstOption)) {
         return { ruleOptions: { "vue/v-on-style": firstOption } };
@@ -194,10 +188,6 @@ function isHtmlQuoteStyle(value: unknown): value is HtmlQuoteStyle {
 function isMustacheInterpolationSpacingStyle(
   value: unknown,
 ): value is MustacheInterpolationSpacingStyle {
-  return value === "always" || value === "never";
-}
-
-function isHyphenationStyle(value: unknown): value is HyphenationStyle {
   return value === "always" || value === "never";
 }
 
