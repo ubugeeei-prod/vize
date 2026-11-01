@@ -53,14 +53,14 @@ impl tracing::field::Visit for Message {
     }
 }
 impl<S: tracing::Subscriber> Layer<S> for CapturedWarnings {
-    fn on_slot(
+    fn on_event(
         &self,
-        slot: &tracing::Slot<'_>,
+        event: &tracing::Event<'_>,
         _context: tracing_subscriber::layer::Context<'_, S>,
     ) {
         let mut message = Message(String::default());
-        slot.record(&mut message);
-        LOGS.with_borrow_mut(|rows| rows.push((cstr!("{}", slot.metadata().level()), message.0)));
+        event.record(&mut message);
+        LOGS.with_borrow_mut(|rows| rows.push((cstr!("{}", event.metadata().level()), message.0)));
     }
 }
 
