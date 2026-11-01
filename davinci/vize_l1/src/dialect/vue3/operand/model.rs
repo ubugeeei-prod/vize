@@ -7,6 +7,7 @@ use vize_l0::{SourceBlock, Span};
 pub(crate) enum ModelModifier {
     Trim(Span),
     Lazy(Span),
+    Number(Span),
 }
 
 pub(crate) struct ModelParts {
@@ -33,6 +34,7 @@ pub(crate) fn model_parts(
         Some(match head.modifiers.slice(block.root_source()) {
             ".trim" => ModelModifier::Trim(span),
             ".lazy" => ModelModifier::Lazy(span),
+            ".number" => ModelModifier::Number(span),
             _ => return Err(NativeAttributeOperandError::UnsupportedDirective),
         })
     } else {

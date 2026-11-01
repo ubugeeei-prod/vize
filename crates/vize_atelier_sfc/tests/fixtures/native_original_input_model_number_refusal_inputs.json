@@ -1,0 +1,18 @@
+{
+  "schema": "vize.native-sfc.original-input-model-number-outside-inputs",
+  "qualification": "new-derived-inputs-not-historical-native-evidence",
+  "cases": [
+    {"id": "number-then-trim", "source": "<script setup>let draft='x'</script><template><input v-model.number.trim='draft'/></template>"},
+    {"id": "trim-then-number", "source": "<script setup>let draft='x'</script><template><input v-model.trim.number='draft'/></template>"},
+    {"id": "number-then-lazy", "source": "<script setup>let draft='x'</script><template><input v-model.number.lazy='draft'/></template>"},
+    {"id": "lazy-then-number", "source": "<script setup>let draft='x'</script><template><input v-model.lazy.number='draft'/></template>"},
+    {"id": "repeated-number", "source": "<script setup>let draft='x'</script><template><input v-model.number.number='draft'/></template>"},
+    {"id": "number-argument", "source": "<script setup>let draft='x'</script><template><input v-model:arg.number='draft'/></template>"},
+    {"id": "number-case-variant", "source": "<script setup>let draft='x'</script><template><input v-model.Number='draft'/></template>"},
+    {"id": "number-const", "source": "<script setup>const draft='x'</script><template><input v-model.number='draft'/></template>"},
+    {"id": "number-member", "source": "<script setup>let draft='x'</script><template><input v-model.number='draft.value'/></template>"},
+    {"id": "number-unresolved", "source": "<script setup>let other='x'</script><template><input v-model.number='draft'/></template>"},
+    {"id": "number-late-header", "source": "<script setup>let draft='x'</script><template><input v-model.number='draft' :class='draft'/></template>"},
+    {"id": "number-malformed-value", "source": "<template><input v-model.number='broken &amp;'/></template>"}
+  ]
+}

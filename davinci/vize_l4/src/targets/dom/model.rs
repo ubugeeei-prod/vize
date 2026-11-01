@@ -96,7 +96,8 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         let modifier = operand
             .trim_span()
             .map(|span| ("trim", span))
-            .or_else(|| operand.lazy_span().map(|span| ("lazy", span)));
+            .or_else(|| operand.lazy_span().map(|span| ("lazy", span)))
+            .or_else(|| operand.number_span().map(|span| ("number", span)));
         if let Some((name, span)) = modifier {
             self.writer.push(", void 0, { ");
             self.writer.push_named(name, span, name);

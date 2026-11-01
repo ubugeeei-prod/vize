@@ -66,6 +66,14 @@ impl<'a> NativeAttributeModelExpression<'a> {
             _ => None,
         }
     }
+    /// Authored number modifier; conversion grants no File or write authority.
+    #[must_use]
+    pub const fn number_span(&self) -> Option<Span> {
+        match self.modifier {
+            Some(ModelModifier::Number(span)) => Some(span),
+            _ => None,
+        }
+    }
     /// Join only with the actual component/header/ordinal/source/profile owner.
     /// Equal-byte copies and independently parsed siblings confer no authority.
     pub fn admitted_for<'s>(
