@@ -1,5 +1,7 @@
 //! Owned links to existing authored workspace shadows, never fresh type copies.
 
+#[cfg(test)]
+mod dirty_propagation_tests;
 mod install_roots;
 mod link_overlap;
 
@@ -105,16 +107,42 @@ impl VirtualProject {
         &mut self,
         keys: impl IntoIterator<Item = crate::package_route::PackageRouteKey>,
     ) {
-        let mut pending = keys.into_iter().collect::<Vec<_>>();
+        #[cfg(test)]
+        dirty_propagation_tests::record_call(!self.package_shadows_initialized);
+        // No shadow owner exists before the first reconstruction. That pass
+        // clears the shadow maps and independently seeds every live route.
+        // Retain explicit (including removed) keys, but do not repeatedly walk
+        // the cold registration graph for effects that cannot be observed yet.
+        if !self.package_shadows_initialized {
+            self.package_shadow_dirty_keys.extend(keys);
+            return;
+        }
         let mut visited = FxHashSet::default();
-        while let Some(key) = pending.pop() {
-            if !visited.insert(key.clone()) {
-                continue;
+        let mut pending = Vec::new();
+        for key in keys {
+            if !visited.contains(&key) {
+                visited.insert(key.clone());
+                pending.push(key);
+                #[cfg(test)]
+                dirty_propagation_tests::record_push(pending.len());
             }
+        }
+        while let Some(key) = pending.pop() {
+            #[cfg(test)]
+            dirty_propagation_tests::record_pop();
             self.package_shadow_dirty_keys.insert(key.clone());
             for ancestor in key.importer_path.ancestors() {
                 if let Some(owners) = self.package_route_roots.get(ancestor) {
-                    pending.extend(owners.iter().cloned());
+                    for owner in owners {
+                        // Check borrowed keys before cloning. Dense owners can
+                        // repeat every edge; only unique keys need queue space.
+                        if !visited.contains(owner) {
+                            visited.insert(owner.clone());
+                            pending.push(owner.clone());
+                            #[cfg(test)]
+                            dirty_propagation_tests::record_push(pending.len());
+                        }
+                    }
                 }
             }
         }

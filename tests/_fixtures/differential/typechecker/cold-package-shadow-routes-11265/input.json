@@ -1,0 +1,91 @@
+{
+  "schema": "vize.controlled-package-route-work",
+  "id": "typechecker/regression/cold-package-shadow-routes-11265",
+  "scope": "Controlled pnpm self-import cycles and prepared config; not the reporter private Nuxt project or a diagnostic oracle.",
+  "files": [
+    {
+      "path": "package.json",
+      "source": "{\"name\":\"controlled-route-workspace\",\"private\":true,\"type\":\"module\"}\n"
+    },
+    {
+      "path": ".nuxt/tsconfig.app.json",
+      "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"paths\": {\n      \"#prepared0/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared1/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared2/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared3/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared4/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared5/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared6/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared7/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared8/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared9/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared10/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared11/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared12/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared13/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared14/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared15/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared16/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared17/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared18/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared19/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared20/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared21/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared22/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared23/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared24/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared25/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared26/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared27/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared28/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared29/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared30/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared31/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared32/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared33/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared34/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared35/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared36/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared37/*\": [\n        \"../src/*\"\n      ],\n      \"#prepared38/*\": [\n        \"../src/*\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../apps/**/*.ts\",\n    \"../packages/**/*.ts\",\n    \"../packages/**/*.vue\"\n  ]\n}\n"
+    },
+    {
+      "path": "packages/kit/package.json",
+      "source": "{\"name\":\"@fixture/kit\",\"version\":\"1.0.0\",\"type\":\"module\",\"exports\":{\".\":\"./src/index.ts\"}}\n"
+    },
+    {
+      "path": "packages/kit/src/Box.vue",
+      "source": "<script setup lang=\"ts\">defineProps<{ label: string }>()</script>\n<template><button>{{ label }}</button></template>\n"
+    },
+    {
+      "path": "apps/a/main.ts",
+      "source": "import { Box } from \"@fixture/kit\";\nexport { Box };\n"
+    },
+    {
+      "path": "apps/b/main.ts",
+      "source": "import { Box } from \"@fixture/kit\";\nexport { Box };\n"
+    },
+    {
+      "path": "packages/kit/src/Node0.ts",
+      "source": "import { Box } from \"@fixture/kit\";\nexport { Box as Node0 };\n"
+    },
+    {
+      "path": "packages/kit/src/Node1.ts",
+      "source": "import { Box } from \"@fixture/kit\";\nexport { Box as Node1 };\n"
+    },
+    {
+      "path": "packages/kit/src/Node2.ts",
+      "source": "import { Box } from \"@fixture/kit\";\nexport { Box as Node2 };\n"
+    },
+    {
+      "path": "packages/kit/src/Node3.ts",
+      "source": "import { Box } from \"@fixture/kit\";\nexport { Box as Node3 };\n"
+    },
+    {
+      "path": "packages/kit/src/Node4.ts",
+      "source": "import { Box } from \"@fixture/kit\";\nexport { Box as Node4 };\n"
+    },
+    {
+      "path": "packages/kit/src/Node5.ts",
+      "source": "import { Box } from \"@fixture/kit\";\nexport { Box as Node5 };\n"
+    },
+    {
+      "path": "packages/kit/src/Node6.ts",
+      "source": "import { Box } from \"@fixture/kit\";\nexport { Box as Node6 };\n"
+    },
+    {
+      "path": "packages/kit/src/Node7.ts",
+      "source": "import { Box } from \"@fixture/kit\";\nexport { Box as Node7 };\n"
+    },
+    {
+      "path": "packages/kit/src/index.ts",
+      "source": "export { default as Box } from \"./Box.vue\";\nexport * from \"./Node0\";\nexport * from \"./Node1\";\nexport * from \"./Node2\";\nexport * from \"./Node3\";\nexport * from \"./Node4\";\nexport * from \"./Node5\";\nexport * from \"./Node6\";\nexport * from \"./Node7\";\n"
+    }
+  ],
+  "importers": [
+    "apps/a/main.ts",
+    "apps/b/main.ts",
+    "packages/kit/src/Node0.ts",
+    "packages/kit/src/Node1.ts",
+    "packages/kit/src/Node2.ts",
+    "packages/kit/src/Node3.ts",
+    "packages/kit/src/Node4.ts",
+    "packages/kit/src/Node5.ts",
+    "packages/kit/src/Node6.ts",
+    "packages/kit/src/Node7.ts"
+  ],
+  "packageSources": [
+    "packages/kit/src/Box.vue",
+    "packages/kit/src/Node0.ts",
+    "packages/kit/src/Node1.ts",
+    "packages/kit/src/Node2.ts",
+    "packages/kit/src/Node3.ts",
+    "packages/kit/src/Node4.ts",
+    "packages/kit/src/Node5.ts",
+    "packages/kit/src/Node6.ts",
+    "packages/kit/src/Node7.ts",
+    "packages/kit/src/index.ts"
+  ]
+}
