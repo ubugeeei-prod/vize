@@ -10,13 +10,72 @@
 )]
 
 use std::borrow::Cow;
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::fs;
+use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
 
 use vize_carton::String as CompactString;
 
 use super::super::build::{RegisteredFile, build_registered_file, retain_source_content};
 use super::VirtualProject;
+
+// Only explicitly leased fixture paths are observed, including rayon workers.
+type ReadAllocation = (usize, usize, usize);
+static READ_ALLOCATIONS: OnceLock<Mutex<HashMap<PathBuf, Vec<ReadAllocation>>>> = OnceLock::new();
+
+pub(super) fn record_filesystem_read(
+    path: &Path,
+    source: std::string::String,
+) -> std::string::String {
+    if let Some(allocations) = READ_ALLOCATIONS.get() {
+        if let Some(reads) = allocations.lock().unwrap().get_mut(path) {
+            reads.push((source.as_ptr() as usize, source.len(), source.capacity()));
+        }
+    }
+    source
+}
+
+struct ReadCapture(Vec<PathBuf>);
+
+impl ReadCapture {
+    fn new(paths: &[PathBuf]) -> Self {
+        let mut allocations = READ_ALLOCATIONS
+            .get_or_init(|| Mutex::new(HashMap::new()))
+            .lock()
+            .unwrap();
+        for path in paths {
+            assert!(allocations.insert(path.clone(), Vec::new()).is_none());
+        }
+        Self(paths.to_vec())
+    }
+
+    fn assert_retained(&self, project: &VirtualProject) {
+        let allocations = READ_ALLOCATIONS.get().unwrap().lock().unwrap();
+        for path in &self.0 {
+            let reads = &allocations[path];
+            assert_eq!(reads.len(), 1, "one filesystem allocation per fixture path");
+            let file = project.find_by_original(path).unwrap();
+            let source = &project.original_contents[&file.virtual_path];
+            assert_eq!(
+                (source.as_ptr() as usize, source.len(), source.capacity()),
+                reads[0],
+                "the successful filesystem route must retain its own read allocation: {}",
+                path.display(),
+            );
+        }
+    }
+}
+
+impl Drop for ReadCapture {
+    fn drop(&mut self) {
+        let mut allocations = READ_ALLOCATIONS.get().unwrap().lock().unwrap();
+        for path in &self.0 {
+            allocations.remove(path);
+        }
+    }
+}
 
 fn assert_debug_equal(left: &impl Debug, right: &impl Debug) {
     assert_eq!(format!("{left:?}"), format!("{right:?}"));
@@ -190,6 +249,7 @@ fn owned_source_all_four_filesystem_read_routes_match_borrowed_revision() {
             .unwrap();
         let expected = project_observation(&borrowed);
         for route in 0..3 {
+            let allocation_capture = ReadCapture::new(&paths);
             let mut project = VirtualProject::new(&root).unwrap();
             project.set_jsx_typecheck(jsx);
             match route {
@@ -202,6 +262,7 @@ fn owned_source_all_four_filesystem_read_routes_match_borrowed_revision() {
                 _ => assert!(project.register_canonical_paths_lenient(&paths)),
             }
             assert_eq!(project_observation(&project), expected);
+            allocation_capture.assert_retained(&project);
         }
     }
     for extension in ["ts", "d.ts", "tsx"] {
@@ -212,9 +273,11 @@ fn owned_source_all_four_filesystem_read_routes_match_borrowed_revision() {
         borrowed
             .register_script_file(&path, &content, source_type)
             .unwrap();
+        let allocation_capture = ReadCapture::new(std::slice::from_ref(&path));
         let mut owned = VirtualProject::new(&root).unwrap();
         owned.register_ts_file(&path).unwrap();
         assert_eq!(project_observation(&owned), project_observation(&borrowed));
+        allocation_capture.assert_retained(&owned);
     }
 }
 

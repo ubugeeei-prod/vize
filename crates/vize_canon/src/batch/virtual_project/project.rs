@@ -129,6 +129,8 @@ impl VirtualProject {
 
     pub fn register_path(&mut self, path: &Path) -> CorsaResult<()> {
         let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
+        #[cfg(test)]
+        let content = source_content_tests::record_filesystem_read(path, content);
         let registered = build_registered_file(
             path,
             Cow::Owned(content),
@@ -201,6 +203,8 @@ impl VirtualProject {
             .zip(contexts)
             .map(|(path, context)| {
                 let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
+                #[cfg(test)]
+                let content = source_content_tests::record_filesystem_read(path, content);
                 build_registered_file(path, Cow::Owned(content), context)
             })
             .collect::<Vec<_>>();
@@ -329,6 +333,8 @@ impl VirtualProject {
             .par_iter()
             .map(|&path| {
                 let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
+                #[cfg(test)]
+                let content = source_content_tests::record_filesystem_read(path, content);
                 let mut context = build_context;
                 context.preserve_relative_declarations =
                     package_paths.contains(path) || self.session_scripts;
@@ -389,6 +395,8 @@ impl VirtualProject {
     /// Register a `.ts`/`.tsx`/`.mts`/`.cts` file.
     pub fn register_ts_file(&mut self, path: &Path) -> CorsaResult<()> {
         let content = std::fs::read_to_string(path)?;
+        #[cfg(test)]
+        let content = source_content_tests::record_filesystem_read(path, content);
         let source_type = source_type_for_path(path).ok_or_else(|| CorsaError::PathError {
             path: path.to_path_buf(),
         })?;
