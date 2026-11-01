@@ -182,6 +182,34 @@ fn checkbox_unwinds_keep_the_actual_prefix_and_never_publish_an_incomplete_file(
         assert!(caught.is_err(), "point {point}");
         let output = original.finish();
         assert!(output.view().is_err() && output.setup().is_err());
+        assert!(output.retained_setup().is_some());
+        if point == 3 || point == 4 {
+            assert!(output.file().is_none());
+            let rejected = output.rejected_file().unwrap();
+            assert!(rejected.template_interruption().is_some());
+            let [record] = rejected.native_models() else {
+                panic!("retained active Model prefix")
+            };
+            assert_eq!(record.kind(), None);
+            assert_eq!(record.state(), NativeFileModelState::Pending);
+            assert!(record.element_node().is_none());
+            let [Op::Element(element)] = rejected.artifact().parts.root.ops.as_slice() else {
+                panic!("retained active input")
+            };
+            let [BindingOp::Model(model)] = element.bindings.as_slice() else {
+                panic!("retained original Model")
+            };
+            assert!(!record.accepts(model));
+            let [value] = rejected.native_attribute_values() else {
+                panic!("retained prepared type")
+            };
+            assert_eq!(
+                value.state(),
+                crate::file::NativeFileAttributeValueState::Pending
+            );
+            assert_eq!(value.observation().unwrap().source().text(), "checkbox");
+            continue;
+        }
         let file = output.file().unwrap();
         assert!(!file.is_complete());
         if point == 1 {

@@ -37,7 +37,10 @@ where
         if original.attributes().len() != 2
             || attribute.name != "type"
             || attribute.value != Some("checkbox")
-            || prepared.storage != NonNull::from(attributes)
+            || !core::ptr::eq(
+                prepared.storage.as_ptr(),
+                NonNull::from(attributes).as_ptr(),
+            )
             || prepared.range.end.checked_sub(prepared.range.start) != Some(1)
         {
             return false;
