@@ -1,4 +1,4 @@
-import type { HyphenationStyle } from "./model.js";
+import type { HyphenationStyle, PatinaRuleOptions } from "./model.js";
 
 export interface VOnEventHyphenationOptions {
   style?: HyphenationStyle;
@@ -45,6 +45,58 @@ export function vOnEventHyphenationSchema(): Record<string, unknown> {
           },
         },
         additionalProperties: false,
+      },
+    ],
+  };
+}
+
+/** Carry the supported official tuple without changing canonical/default policy. */
+export function getVOnEventHyphenationOptions(
+  options: readonly unknown[],
+): PatinaRuleOptions | undefined {
+  const first = options[0];
+  const isStyle = first === "always" || first === "never";
+  if (options.length === 1 && isStyle) return { vOnEventHyphenation: first };
+  if (options.length === 1 && isVOnEventHyphenationOptions(first))
+    return { ruleOptions: { "vue/v-on-event-hyphenation": structuredClone(first) } };
+  const second = options[1];
+  if (
+    options.length === 2 &&
+    isStyle &&
+    isVOnEventHyphenationOptions(second) &&
+    !Object.hasOwn(second, "style")
+  )
+    return {
+      ruleOptions: {
+        "vue/v-on-event-hyphenation": { style: first, ...structuredClone(second) },
+      },
+    };
+  return undefined;
+}
+
+/** Canonical object policies remain one item; the official style accepts a policy. */
+export function vOnEventHyphenationRuleSchema(): Record<string, unknown> {
+  const style = { enum: ["always", "never"] };
+  const policy = {
+    type: "object",
+    properties: {
+      autofix: { type: "boolean" },
+      ignore: {
+        type: "array",
+        uniqueItems: true,
+        items: { type: "string", pattern: "^(?!\\s*$)(?![\\s\\S]*:exit$)" },
+      },
+    },
+    additionalProperties: false,
+  };
+  return {
+    type: "array",
+    oneOf: [
+      { items: [style, policy], maxItems: 2 },
+      {
+        items: [{ ...policy, properties: { style, ...policy.properties } }],
+        minItems: 1,
+        maxItems: 1,
       },
     ],
   };

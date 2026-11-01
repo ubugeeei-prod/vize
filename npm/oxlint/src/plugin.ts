@@ -1,6 +1,6 @@
 import { definePlugin, defineRule, type Diagnostic } from "@oxlint/plugins";
 import { getRuleOptions } from "./rule-options.js";
-import { vOnEventHyphenationSchema } from "./v-on-event-options.js";
+import { vOnEventHyphenationRuleSchema } from "./v-on-event-options.js";
 import { attributeHyphenationSchema } from "./attribute-options.js";
 import { propNameCasingSchema } from "./prop-name-options.js";
 import { componentNameCasingSchema } from "./component-name-options.js";
@@ -193,7 +193,7 @@ function ruleOptionsSchema(ruleName: string): unknown[] | Record<string, unknown
     case "vue/mustache-interpolation-spacing":
       return [{ enum: ["always", "never"] }];
     case "vue/v-on-event-hyphenation":
-      return [vOnEventHyphenationSchema()];
+      return vOnEventHyphenationRuleSchema();
     case "vue/attribute-hyphenation":
       return attributeHyphenationSchema();
     case "vue/v-on-style":
