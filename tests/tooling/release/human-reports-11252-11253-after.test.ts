@@ -102,15 +102,16 @@ function request(role: Role): Request {
       receiptSha256: "0".repeat(64),
     },
     oracleOwnerReceipt: null,
-    publicBefore: {
+    publicBefore: null,
+    capturedBefore: {
+      kind: "CAPTURE_ONLY",
       controllerRun: "789",
       controllerHead: "a".repeat(40),
       artifactId: 1,
       archiveDigest: "sha256:" + "b".repeat(64),
-      bundleMemberSha256: "c".repeat(64),
-      oracles: [],
-      reviewedController: { head: "a".repeat(40), files: [] },
-      judgmentBlob: "d".repeat(40),
+      captureMember: "unqualified-capture.json",
+      captureMemberSha256: "c".repeat(64),
+      manualRequestBlob: "d".repeat(40),
     },
   };
 }
@@ -152,7 +153,7 @@ test("missing source admission or genuine BEFORE cannot become capture-ready", (
   r.sourceAdmission = null;
   assert.throws(() => requireCaptureReady(r));
   const s = request(roles[0]!);
-  s.publicBefore = null;
+  s.capturedBefore = null;
   assert.throws(() => requireCaptureReady(s));
 });
 test("strict acceptance still rejects unqualified mode and absent whole oracles", () => {

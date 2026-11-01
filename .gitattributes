@@ -1,6 +1,13 @@
 tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 # Dependency patch filenames must retain LF when Windows checks out the repository.
 patches/*.patch text eol=lf
+# Byte-pinned untimed owned read-buffer observer and Node-only refusal fixture.
+tools/benchmarks/scripts/cold-typechecker-scale-read-buffer.rs.txt text eol=lf
+tests/_fixtures/tooling/native-forward/backend.ts text eol=lf
+# Exact provider source inputs from the bounded owned-buffer comparison.
+tests/_fixtures/tooling/owned-read-buffer-provider/package.json.txt text eol=lf
+tests/_fixtures/tooling/owned-read-buffer-provider/package-lock.json.txt text eol=lf
+# Frozen comparative provider inputs retain their exact authenticated lock bytes.
 tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package.json.txt text eol=lf
 tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package-lock.json.txt text eol=lf
 # Diagnostic workflow custody compares complete source bytes on every host.

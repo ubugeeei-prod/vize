@@ -1,0 +1,171 @@
+{
+  "schema": "vize.humanReportPublic.beforeCapturePolicy.v1",
+  "target": {
+    "version": "0.628.0",
+    "releaseRun": "41287527688",
+    "workflowHead": "836b74b5aa2d877de5162e0515719c86a805df46",
+    "source": "836b74b5aa2d877de5162e0515719c86a805df46",
+    "candidate": "65d72a29e2f4fcfde286a8255bee879dc2083b9a",
+    "capsuleBlob": "df887904a32ef7a2eca99b9dee5f5061f131043a"
+  },
+  "roles": [
+    {
+      "issue": 11252,
+      "role": "runtime-prop-null-11252",
+      "fixtureReceiptSha256": "42a655bad3104e3665d4d75c540f008812e9dfd42cf11fcd330e1282b671f2a4",
+      "ownerFixMerge": "170288d4401511f874d958d709d28f5e001a2e1c",
+      "reference": {
+        "kind": "CAPTURE_ONLY",
+        "controllerRun": "41315399086",
+        "controllerHead": "e57fd021bf08b197956807eb122941c9cd13b056",
+        "artifactId": 13087700160,
+        "archiveDigest": "sha256:776f6b14992bfe4e26d329b70bb445af0891b1a483680c555cb4b93137c5170e",
+        "captureMember": "unqualified-capture.json",
+        "captureMemberSha256": "7c3de4c3d87509855c3c6bdf24be71df5c9a3cbf0bd7fd4d1d5e474a0581ac8b",
+        "manualRequestBlob": "8b6a7421b7a113dcb57b1df5e720d4e45b1ad810"
+      },
+      "artifact": {
+        "compressedBytes": 8695959,
+        "entries": 2410,
+        "decodedBytes": 46980741,
+        "allMembersCrcVerified": true,
+        "captureBytes": 4178753,
+        "knownWorkflowPath": ".github/workflows/published-human-reports-11252-11253.yml",
+        "runAttempt": 1,
+        "actualRunConclusion": "failure",
+        "jobName": "public-consumer",
+        "jobId": 124874301892,
+        "sourceFileCount": 71
+      },
+      "judgment": {
+        "schema": "vize.humanReportPublic.beforeCaptureJudgment.v1",
+        "role": "runtime-prop-null-11252",
+        "issue": 11252,
+        "fixtureReceiptSha256": "42a655bad3104e3665d4d75c540f008812e9dfd42cf11fcd330e1282b671f2a4",
+        "ownerFixMerge": "170288d4401511f874d958d709d28f5e001a2e1c",
+        "reference": {
+          "kind": "CAPTURE_ONLY",
+          "controllerRun": "41315399086",
+          "controllerHead": "e57fd021bf08b197956807eb122941c9cd13b056",
+          "artifactId": 13087700160,
+          "archiveDigest": "sha256:776f6b14992bfe4e26d329b70bb445af0891b1a483680c555cb4b93137c5170e",
+          "captureMember": "unqualified-capture.json",
+          "captureMemberSha256": "7c3de4c3d87509855c3c6bdf24be71df5c9a3cbf0bd7fd4d1d5e474a0581ac8b",
+          "manualRequestBlob": "8b6a7421b7a113dcb57b1df5e720d4e45b1ad810"
+        },
+        "originalFields": [
+          {
+            "id": "original-pnpm-check",
+            "status": 2,
+            "stdoutSha256": "47f2cb396ee8ccd1a3b5e3f5f37564a612895339fc608c8438b5f303b893fb60",
+            "stderrSha256": "9d49d89a74d48b2cb02a1cf5b4fe268fe7b64f4619bbdf9fccaa6768f8266e9b"
+          },
+          {
+            "id": "original-cli",
+            "status": 0,
+            "stdoutSha256": "d80763140fff7ff4e59ce982c5a3a52cb40597dccf79874a38dcf1ae22e23b79",
+            "stderrSha256": "6a2d4db9f0883d59715bd2d68c5fcff90765178dcd598ebeea19ab41dfbbb747"
+          },
+          {
+            "id": "supplement-tsrs",
+            "status": 2,
+            "stdoutSha256": "47f2cb396ee8ccd1a3b5e3f5f37564a612895339fc608c8438b5f303b893fb60",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ],
+        "completeOriginalAndCompanionPacketsReviewed": true,
+        "knownBugReproduction": "OBSERVED",
+        "postQualificationRefused": true,
+        "scope": "ORIGINAL_PUBLIC_BEFORE_ONLY",
+        "sourceOwnedTargetOutputsClaimed": false,
+        "afterOutputsSupplied": false,
+        "sourceAdaptedOutputsTransferred": false,
+        "accepted": false,
+        "productQualified": false,
+        "afterQualified": false,
+        "issueQualified": false,
+        "reviewer": "Typechecker generation/source owner (/root/typechecker_lead/generation_audit)",
+        "notes": "Independently reviewed all three complete original packets and all three complete load-observed companion packets in held public 0.627 BEFORE capture7c3de4c3d87509855c3c6bdf24be71df5c9a3cbf0bd7fd4d1d5e474a0581ac8b; whole packet objects equal the full rows in raw-custody audit4d8c185fff254c6555065055d6b28a2b129149b95b9ff4d33f52c182bfcd6a5c. The bound original Box.vue containing defineProps({ as: { type: null, required: false } }) is consumed with Node26.12.1/pnpm12.16.1/Vue3.5.44/TypeScript7.1.0-beta on Darwin arm64. Original pnpm check exits2 with TS1003/1005/1109/1128 at virtual-code coordinates14:36,14:64,14:75,15:1; the separately pinned tsrs0.20.1-ts7.1.0-beta supplement exits2 with the same four complete diagnostics. Their companions have identical complete stdout/stderr/status. Original CLI exits0 and prints No type errors found while stderr retains those four syntax diagnostics and the Corsa fast-path degradation warning; its companion preserves that behavior, with its different recorded timing text retained rather than normalized. All six packets have signal/error null. Original commands have instrumentation none and no recorded native events; companion native-load actor evidence is separate and does not establish the untouched originals or Corsa backend, which remains UNKNOWN. This is known-bug reproduction in the BEFORE role only. Complete installed-file qualification was refused, including unqualified Vize OWN/self bins; postQualificationRefused remains true. No D6/workspace source outputs, AFTER oracle, current release outcome, full public acceptance or backend selection is transferred. All bound fields/hashes and every qualification/accepted flag remain unchanged and false. No command, native, registry, network or product execution was performed for this data review."
+      }
+    },
+    {
+      "issue": 11253,
+      "role": "imports-vue-ts-11253",
+      "fixtureReceiptSha256": "41f272617bd60acc5c737f4d72327edcc0e85e53ca161ef076ca8509072c1ed6",
+      "ownerFixMerge": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+      "reference": {
+        "kind": "CAPTURE_ONLY",
+        "controllerRun": "41315402209",
+        "controllerHead": "e57fd021bf08b197956807eb122941c9cd13b056",
+        "artifactId": 13086997201,
+        "archiveDigest": "sha256:530a20600c9ecd79662d55b789103daff6026194c20554b1abd9f9036f2205af",
+        "captureMember": "unqualified-capture.json",
+        "captureMemberSha256": "2395d2d26e0c07128f8f529a053eda7f83892a8b43bb609ad35a09a0b5db66a6",
+        "manualRequestBlob": "7258f2b0fb530584a5d80bc3918b0feff672095f"
+      },
+      "artifact": {
+        "compressedBytes": 5386289,
+        "entries": 1629,
+        "decodedBytes": 25703562,
+        "allMembersCrcVerified": true,
+        "captureBytes": 1948251,
+        "knownWorkflowPath": ".github/workflows/published-human-reports-11252-11253.yml",
+        "runAttempt": 1,
+        "actualRunConclusion": "failure",
+        "jobName": "public-consumer",
+        "jobId": 124874316546,
+        "sourceFileCount": 71
+      },
+      "judgment": {
+        "schema": "vize.humanReportPublic.beforeCaptureJudgment.v1",
+        "role": "imports-vue-ts-11253",
+        "issue": 11253,
+        "fixtureReceiptSha256": "41f272617bd60acc5c737f4d72327edcc0e85e53ca161ef076ca8509072c1ed6",
+        "ownerFixMerge": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+        "reference": {
+          "kind": "CAPTURE_ONLY",
+          "controllerRun": "41315402209",
+          "controllerHead": "e57fd021bf08b197956807eb122941c9cd13b056",
+          "artifactId": 13086997201,
+          "archiveDigest": "sha256:530a20600c9ecd79662d55b789103daff6026194c20554b1abd9f9036f2205af",
+          "captureMember": "unqualified-capture.json",
+          "captureMemberSha256": "2395d2d26e0c07128f8f529a053eda7f83892a8b43bb609ad35a09a0b5db66a6",
+          "manualRequestBlob": "7258f2b0fb530584a5d80bc3918b0feff672095f"
+        },
+        "originalFields": [
+          {
+            "id": "original-cli",
+            "status": 1,
+            "stdoutSha256": "d17d166d1f83ec09272b06d751a30eaafc51fbe811ddbd20cb32e165727333ff",
+            "stderrSha256": "aaffdf3f87c5c2071be2b962ed70ed040e4101d0aef5025dd0dd4328e5c73ba6"
+          },
+          {
+            "id": "original-cli-json",
+            "status": 1,
+            "stdoutSha256": "565b83a45713948afe5efd98571b484984774714da0f7674eaf66952d0ebef65",
+            "stderrSha256": "aaffdf3f87c5c2071be2b962ed70ed040e4101d0aef5025dd0dd4328e5c73ba6"
+          },
+          {
+            "id": "original-vue-tsc",
+            "status": 2,
+            "stdoutSha256": "fea52080e7f45807d76fe858bddb43d31eb828c9a3159ae0a1b5649de7232f86",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ],
+        "completeOriginalAndCompanionPacketsReviewed": true,
+        "knownBugReproduction": "OBSERVED",
+        "postQualificationRefused": true,
+        "scope": "ORIGINAL_PUBLIC_BEFORE_ONLY",
+        "sourceOwnedTargetOutputsClaimed": false,
+        "afterOutputsSupplied": false,
+        "sourceAdaptedOutputsTransferred": false,
+        "accepted": false,
+        "productQualified": false,
+        "afterQualified": false,
+        "issueQualified": false,
+        "reviewer": "/root/typechecker_lead/gate_audit (11253 source owner)",
+        "notes": "BEFORE ONLY: independently reviewed the complete three original stdout/stderr/status packets and both load-observed companions in immutable e57 run 41315402209/capture 2395d2d2. Vize 0.627 text and JSON return status 1 with only plain.ts(3,7) TS2322; main.ts diagnostics are absent although both authored files contain string-to-number assignments. The same original Vue3.5.44/TypeScript5.9.3/vue-tsc3.3.14 project reports both main.ts(4,7) and plain.ts(3,7) TS2322 in vue-tsc/status2. Both companions retain that same missing-main result with initialized/attempt/returned native load actors; their process/native evidence is not transferred to original actors, whose backend remains UNKNOWN. Linux Actions Node24.22.1/pnpm12.16.1 is observed, not WSL2. Strict final OWN-bin file-set refusal remains unqualified: postQualificationRefused and all acceptance/product/after/issue flags remain unchanged. No e06/D6/source-adapted result or AFTER output oracle was used or supplied."
+      }
+    }
+  ]
+}
