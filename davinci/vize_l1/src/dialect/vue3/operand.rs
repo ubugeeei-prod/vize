@@ -86,3 +86,6 @@ pub(crate) fn static_event_head(
     }
     Ok(Some(argument))
 }
+
+mod model;
+pub(crate) use model::model_parts;

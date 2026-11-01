@@ -33,6 +33,10 @@ mod binding;
 pub use binding::{
     NativeAttributeBindingExpression, NativeAttributeBindingExpressionView, NativeStaticBindingHead,
 };
+mod model;
+pub use model::{
+    NativeAttributeModelExpression, NativeAttributeModelExpressionView, NativeModelHead,
+};
 mod origin;
 use origin::Origin;
 mod value;

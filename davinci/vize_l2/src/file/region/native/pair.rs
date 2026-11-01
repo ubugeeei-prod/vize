@@ -66,6 +66,7 @@ where
         if span.end != else_span.start
             || operand.element_span() != else_span
             || header.for_head.is_some()
+            || header.model.is_some()
             || !header.attributes.is_empty()
             || !header.handlers.is_empty()
         {

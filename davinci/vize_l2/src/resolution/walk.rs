@@ -12,6 +12,8 @@ mod exports;
 mod for_head;
 mod handler;
 mod jsx;
+mod model;
+pub(super) use model::original as original_model;
 #[cfg(test)]
 mod syntax_tests;
 mod values;

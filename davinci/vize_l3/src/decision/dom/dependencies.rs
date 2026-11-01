@@ -16,4 +16,6 @@ pub enum DomDependency {
     StyleNormalization,
     ConditionalPlaceholder,
     CollectionIteration,
+    TextModel,
+    DirectiveApplication,
 }

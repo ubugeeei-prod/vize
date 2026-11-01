@@ -20,6 +20,12 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             self.handler_binding(id, binding, on);
             return;
         }
+        if R::NATIVE_SETUP
+            && let BindingOp::Model(model) = binding
+        {
+            self.model_binding(id, binding, model);
+            return;
+        }
         let BindingOp::Bind(bind) = binding else {
             self.reject(id, span, DomUnsupported::Binding);
             return;
@@ -77,7 +83,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         frame.normalize_style |= role == PropertyRole::Style && value.is_dynamic();
         if value.is_dynamic() {
             match role {
-                PropertyRole::Property | PropertyRole::Event => {
+                PropertyRole::Property | PropertyRole::Event | PropertyRole::Model => {
                     frame.node.changes.properties = true;
                     frame.node.dynamic_property_bindings.push(id);
                 }

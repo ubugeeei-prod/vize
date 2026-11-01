@@ -2,7 +2,7 @@
 
 use super::super::{
     NativeVisibility, attribute_value::PreparedAttributes, conditional::ObservedConditional,
-    for_head::ObservedFor, handler::ObservedHandler,
+    for_head::ObservedFor, handler::ObservedHandler, model::ObservedModel,
 };
 use crate::artifact::RegionBuilder;
 use crate::file::region::FileRegion;
@@ -24,6 +24,7 @@ pub(in crate::file::region::native) struct Header<'a> {
     pub(in crate::file::region::native) handlers: alloc::vec::Vec<ObservedHandler<'a>>,
     pub(in crate::file::region::native) for_head: Option<ObservedFor>,
     pub(in crate::file::region::native) conditional: Option<ObservedConditional>,
+    pub(in crate::file::region::native) model: Option<ObservedModel>,
 }
 
 pub(super) fn construct<'a: 'b, 'b, R>(
@@ -62,6 +63,7 @@ where
     let mut handlers: alloc::vec::Vec<ObservedHandler<'a>> = alloc::vec::Vec::new();
     let mut for_head = None;
     let mut conditional = None;
+    let mut model = None;
     // One actual full header iterator. Only its normal end permits the Element
     // factory and original callback; pending owners remain parked on refusal.
     for (ordinal, attribute) in original.attributes().enumerate() {
@@ -138,6 +140,19 @@ where
                 }
                 conditional = Some(observed);
             }
+            Ok(Some(directive))
+                if directive.prefix == DirectivePrefix::Full
+                    && directive.name.slice(block.root_source()) == "model" =>
+            {
+                let head = selected
+                    .observe_attribute_head(attribute.reborrow())
+                    .map_err(|_| Kind::UnsupportedChild)?;
+                let observed = region.observe_model(selected, &head)?;
+                if model.is_some() {
+                    return Err(Kind::UnsupportedChild);
+                }
+                model = Some(observed);
+            }
             Ok(Some(_)) | Err(_) => return Err(Kind::UnsupportedChild),
         }
     }
@@ -154,6 +169,7 @@ where
         handlers,
         for_head,
         conditional,
+        model,
     })
 }
 
@@ -172,7 +188,7 @@ impl<'a> Header<'a> {
         'a: 'b,
         R: DerefMut<Target = RegionBuilder<'b, 'a>>,
     {
-        if self.for_head.is_some() || self.conditional.is_some() {
+        if self.for_head.is_some() || self.conditional.is_some() || self.model.is_some() {
             return Err(Kind::InvalidEvent);
         }
         for handler in &self.handlers {

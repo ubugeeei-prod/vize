@@ -17,6 +17,10 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         branch_key: Option<u32>,
     ) -> Result<(), DomError> {
         self.writer.anchor(element.span.start);
+        let model = self.element_model(node, element, branch_key)?;
+        if model.is_some() {
+            self.model_start(node)?;
+        }
         let block = fact.block_eligible && !self.facts.has_jsx_child_values();
         if block {
             self.writer.push("(");
@@ -88,6 +92,9 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
                         (name, bind.span)
                     }
                     BindingOp::On(on) if fact.role == PropertyRole::Event => ("onClick", on.span),
+                    BindingOp::Model(model) if fact.role == PropertyRole::Model => {
+                        ("onUpdate:modelValue", model.span)
+                    }
                     _ => return Err(self.error(binding, DomErrorKind::InvalidGrouping)),
                 };
                 quoted(&mut self.writer, name, span);
@@ -109,6 +116,9 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         } else {
             self.writer.use_helper(self.helpers.element);
         }
+        if let Some(model) = model {
+            self.model_directive(model)?;
+        }
         Ok(())
     }
 
@@ -121,8 +131,10 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
     ) -> Result<u8, DomError> {
         let complex_value = bindings.iter().any(|&id| {
             self.facts.binding(id).is_some_and(|fact| {
-                matches!(fact.role, PropertyRole::Class | PropertyRole::Event)
-                    || (fact.role == PropertyRole::Style && fact.value.is_dynamic())
+                matches!(
+                    fact.role,
+                    PropertyRole::Class | PropertyRole::Event | PropertyRole::Model
+                ) || (fact.role == PropertyRole::Style && fact.value.is_dynamic())
                     || matches!(fact.binding(), BindingOp::Bind(bind)
                         if bind.value.is_some_and(|value| !inline_value(value)))
             })
@@ -155,6 +167,17 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
                 .facts
                 .binding(id)
                 .ok_or_else(|| self.error(id, DomErrorKind::MissingBinding))?;
+            if let BindingOp::Model(model) = fact.binding() {
+                if fact.role != PropertyRole::Model {
+                    return Err(self.error(id, DomErrorKind::InvalidGrouping));
+                }
+                self.property_start(index, multiline);
+                quoted(&mut self.writer, "onUpdate:modelValue", model.span);
+                self.writer.push(": ");
+                self.model_update(id, model)?;
+                index += 1;
+                continue;
+            }
             if let BindingOp::On(on) = fact.binding() {
                 if fact.role != PropertyRole::Event {
                     return Err(self.error(id, DomErrorKind::InvalidGrouping));

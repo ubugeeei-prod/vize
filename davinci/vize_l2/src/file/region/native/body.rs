@@ -14,6 +14,7 @@ use vize_l1::markup::{
 
 mod conditional;
 pub(super) mod header;
+mod model;
 
 pub(super) fn construct<'a: 'b, 'b, R>(
     selected: &NativeTemplateComponent<'a>,
@@ -136,6 +137,9 @@ pub(super) fn element_prepared<'a: 'b, 'b, R>(
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
 {
+    if let Some(observed) = header.model.take() {
+        return model::construct(original, selected, span, header, observed, region);
+    }
     if let Some(observed) = header.conditional.take() {
         return conditional::construct(original, selected, span, header, observed, region);
     }
