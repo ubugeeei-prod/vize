@@ -24,7 +24,7 @@ pub use attribute_value::{
 pub use conditional::{
     NativeConditionalElseInput, NativeFileConditional, NativeFileConditionalState,
 };
-pub use model::{NativeFileModel, NativeFileModelState};
+pub use model::{NativeFileModel, NativeFileModelKind, NativeFileModelState};
 mod for_head;
 mod handler;
 mod interpolation;

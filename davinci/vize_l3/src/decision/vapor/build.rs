@@ -167,8 +167,15 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
         for (slot, attribute) in element.attributes.iter().enumerate() {
             crate::decision::attribute_value::observe(original_values, node, element, slot);
             let name = attribute.name;
+            // An input is void here only after the actual Model opening join.
+            // That closed kind, not a generic attribute-name exemption, owns type.
+            let checkbox = void
+                && element.tag == "input"
+                && name == "type"
+                && attribute.value == Some("checkbox");
             let generic = matches!(name, "class" | "id" | "title" | "role" | "dir" | "lang")
-                || (name.starts_with("data-") || name.starts_with("aria-")) && name.len() > 5;
+                || (name.starts_with("data-") || name.starts_with("aria-")) && name.len() > 5
+                || checkbox;
             if !generic
                 || !name
                     .bytes()

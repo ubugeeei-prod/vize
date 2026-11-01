@@ -1,0 +1,70 @@
+{
+  "schema": "vize.native-sfc.original-input-model-checkbox-outside-inputs",
+  "qualification": "derived-current-inputs-not-historical-execution-evidence",
+  "cases": [
+    {
+      "id": "checkbox-trim",
+      "source": "<script setup>let draft=false</script><template><input type='checkbox' v-model.trim='draft'/></template>"
+    },
+    {
+      "id": "checkbox-lazy",
+      "source": "<script setup>let draft=false</script><template><input type='checkbox' v-model.lazy='draft'/></template>"
+    },
+    {
+      "id": "checkbox-number",
+      "source": "<script setup>let draft=false</script><template><input type='checkbox' v-model.number='draft'/></template>"
+    },
+    {
+      "id": "dynamic-type",
+      "source": "<script setup>let draft=false</script><template><input v-model='draft' :type='draft'/></template>"
+    },
+    {
+      "id": "encoded-type",
+      "source": "<script setup>let draft=false</script><template><input type='&#99;heckbox' v-model='draft'/></template>"
+    },
+    {
+      "id": "case-type",
+      "source": "<script setup>let draft=false</script><template><input type='CHECKBOX' v-model='draft'/></template>"
+    },
+    {
+      "id": "radio-type",
+      "source": "<script setup>let draft=false</script><template><input type='radio' v-model='draft'/></template>"
+    },
+    {
+      "id": "text-type",
+      "source": "<script setup>let draft=false</script><template><input type='text' v-model='draft'/></template>"
+    },
+    {
+      "id": "duplicate-type",
+      "source": "<script setup>let draft=false</script><template><input type='checkbox' type='checkbox' v-model='draft'/></template>"
+    },
+    {
+      "id": "extra-attribute",
+      "source": "<script setup>let draft=false</script><template><input type='checkbox' v-model='draft' disabled/></template>"
+    },
+    {
+      "id": "explicit-value",
+      "source": "<script setup>let draft=false</script><template><input type='checkbox' v-model='draft' value='x'/></template>"
+    },
+    {
+      "id": "true-value",
+      "source": "<script setup>let draft=false</script><template><input type='checkbox' v-model='draft' true-value='yes'/></template>"
+    },
+    {
+      "id": "false-value",
+      "source": "<script setup>let draft=false</script><template><input type='checkbox' v-model='draft' false-value='no'/></template>"
+    },
+    {
+      "id": "const-target",
+      "source": "<script setup>const draft=false</script><template><input type='checkbox' v-model='draft'/></template>"
+    },
+    {
+      "id": "member-target",
+      "source": "<script setup>let draft=false</script><template><input type='checkbox' v-model='draft.value'/></template>"
+    },
+    {
+      "id": "late-handler",
+      "source": "<script setup>let draft=false</script><template><input type='checkbox' v-model='draft' @click='draft=true'/></template>"
+    }
+  ]
+}

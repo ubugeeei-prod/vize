@@ -11,7 +11,7 @@ use core::{
     ptr::NonNull,
 };
 use vize_l0::{Span, id::NodeId};
-use vize_l1::markup::{NativeAttribute, NativeTemplateComponent};
+use vize_l1::markup::{NativeAttribute, NativeElement, NativeTemplateComponent};
 
 pub(super) struct PreparedAttributes<'a> {
     range: Range<usize>,
@@ -22,6 +22,53 @@ impl<'a: 'b, 'b, R> FileRegion<'_, 'b, 'a, R, NativeVisibility>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
 {
+    /// Authenticate the original static type while its exact header storage is
+    /// prepared. Only normal Element close later attaches this observation.
+    pub(super) fn prepared_checkbox_type(
+        &self,
+        prepared: &PreparedAttributes<'a>,
+        attributes: &[Attribute<'a>],
+        selected: &NativeTemplateComponent<'a>,
+        original: &NativeElement<'_, 'a>,
+    ) -> bool {
+        let [attribute] = attributes else {
+            return false;
+        };
+        if original.attributes().len() != 2
+            || attribute.name != "type"
+            || attribute.value != Some("checkbox")
+            || prepared.storage != NonNull::from(attributes)
+            || prepared.range.end.checked_sub(prepared.range.start) != Some(1)
+        {
+            return false;
+        }
+        let Some(record) = self.facts.native_attribute_values.get(prepared.range.start) else {
+            return false;
+        };
+        let Some(observation) = record.observation() else {
+            return false;
+        };
+        let Some(original_type) = original
+            .attributes()
+            .find(|value| value.surface().name.text == "type")
+        else {
+            return false;
+        };
+        if observation.admitted_for(selected, original_type).is_none() {
+            return false;
+        }
+        matches!(record.state, State::Pending)
+            && record.slot == 0
+            && record.element.is_none()
+            && record.attribute == Some(NonNull::from(attribute))
+            && core::ptr::eq(record.name, attribute.name)
+            && attribute
+                .value
+                .is_some_and(|text| core::ptr::eq(text, observation.source().text()))
+            && core::ptr::eq(observation.source().authored_root(), self.source)
+            && observation.source().decode_map().is_none()
+    }
+
     pub(super) fn observe_attribute_value(
         &mut self,
         selected: &NativeTemplateComponent<'a>,

@@ -4,7 +4,7 @@ use super::super::model::ObservedModel;
 use super::{NativeVisibility, header};
 use crate::artifact::RegionBuilder;
 use crate::file::region::FileRegion;
-use crate::file::{NativeFileModelState, TemplateBody, TemplateChildRegion};
+use crate::file::{NativeFileModelKind, NativeFileModelState, TemplateBody, TemplateChildRegion};
 use crate::lang::js::NativeTemplateIssueKind as Kind;
 use crate::op::Namespace;
 use core::ops::DerefMut;
@@ -31,11 +31,33 @@ where
             || original.children().len() != 0
             || header.for_head.is_some()
             || header.conditional.is_some()
-            || !header.attributes.is_empty()
             || !header.handlers.is_empty()
         {
             return Err(Kind::UnsupportedChild);
         }
+        let kind = if header.attributes.is_empty() {
+            NativeFileModelKind::Text
+        } else {
+            let record = file
+                .facts
+                .native_models()
+                .get(observed.index)
+                .ok_or(Kind::InvalidEvent)?;
+            let operand = record.input().operand();
+            if operand.trim_span().is_some()
+                || operand.lazy_span().is_some()
+                || operand.number_span().is_some()
+                || !file.prepared_checkbox_type(
+                    &header.values,
+                    header.attributes.as_slice(),
+                    selected,
+                    &original,
+                )
+            {
+                return Err(Kind::UnsupportedChild);
+            }
+            NativeFileModelKind::Checkbox
+        };
         let header = header.resolve_handlers(file)?;
         let mut model_result = Err(Kind::IncompleteChildren);
         let (element, allocation) = file
@@ -46,6 +68,7 @@ where
                 span,
                 ModelBody {
                     index: observed.index,
+                    kind,
                     result: &mut model_result,
                 },
             )
@@ -59,6 +82,7 @@ where
             .get_mut(observed.index)
             .ok_or(Kind::InvalidEvent)?;
         record.element = Some((element, pointer));
+        record.kind = Some(kind);
         record.state = NativeFileModelState::Admitted(model);
         #[cfg(test)]
         super::super::model::tests::after_close();
@@ -77,6 +101,7 @@ where
 
 struct ModelBody<'result> {
     index: usize,
+    kind: NativeFileModelKind,
     result: &'result mut Result<NodeId, Kind>,
 }
 
@@ -86,7 +111,7 @@ impl<'a> TemplateBody<'a, NativeVisibility> for ModelBody<'_> {
         'a: 'b,
         'b: 'r,
     {
-        *self.result = region.inner.attach_model(self.index);
+        *self.result = region.inner.attach_model(self.index, self.kind);
         #[cfg(test)]
         if self.result.is_ok() {
             super::super::model::tests::after_body();

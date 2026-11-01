@@ -6,7 +6,7 @@ use crate::{
     write::{LinkSink, Writer},
 };
 use vize_l0::{String, cstr, id::NodeId};
-use vize_l2::{lang::js::NativeSelectedSetup, op::ElementOp};
+use vize_l2::{file::NativeFileModelKind, lang::js::NativeSelectedSetup, op::ElementOp};
 use vize_l3::decision::vapor::{NativeSelectedSetupVaporAnalysis, VaporModel};
 
 pub(super) fn write<'owner, 'arena, L: LinkSink>(
@@ -19,6 +19,7 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
 ) -> Result<(), VaporError> {
     let fail = || error(VaporErrorKind::ForeignRoot);
     let original = model.original().ok_or_else(fail)?;
+    let kind = original.kind().ok_or_else(fail)?;
     let resolution = model.resolution();
     let occurrence = model.occurrence().ok_or_else(fail)?;
     let authored = model.authored_span().ok_or_else(fail)?;
@@ -39,7 +40,11 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     let runtime = vocabulary(Runtime::VueVapor);
     let helpers = fresh(analysis.setup(), "__vizeModelRuntime")?;
     let value = fresh(analysis.setup(), "__vizeModelValue")?;
-    for name in ["applyTextModel", "unref", "isRef", "template"] {
+    let apply = match kind {
+        NativeFileModelKind::Text => "applyTextModel",
+        NativeFileModelKind::Checkbox => "applyCheckboxModel",
+    };
+    for name in [apply, "unref", "isRef", "template"] {
         helper(prelude, runtime, name)?;
     }
     // Import aliases are resolved outside the original inline setup scope.
@@ -47,8 +52,23 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     // `_isRef`, `_applyTextModel` or callback-looking name cannot shadow them.
     prelude.push("const ");
     prelude.push(helpers.as_str());
-    prelude.push(" = { apply: _applyTextModel, read: _unref, isRef: _isRef }\n");
-    prelude.push("const t0 = _template(\"<input>\", 1)\n");
+    prelude.push(" = { apply: _");
+    prelude.push(apply);
+    prelude.push(", read: _unref, isRef: _isRef }\n");
+    if kind == NativeFileModelKind::Checkbox {
+        let value = analysis
+            .file()
+            .native_attribute_value_for(0, element, 0)
+            .ok_or_else(fail)?;
+        let observation = value.observation().ok_or_else(fail)?;
+        prelude.push("const t0 = _template(\"<input ");
+        prelude.push_named("type", observation.name_span(), "type");
+        prelude.push("=\\\"");
+        prelude.push_named("checkbox", observation.source().span(), "checkbox");
+        prelude.push("\\\">\", 1)\n");
+    } else {
+        prelude.push("const t0 = _template(\"<input>\", 1)\n");
+    }
     body.newline();
     body.anchor(element.span.start);
     body.push("const n0 = t0()");

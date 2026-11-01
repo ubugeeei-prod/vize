@@ -1,5 +1,6 @@
 //! Actual original modifier custody reaches all three existing Model consumers.
 
+mod native_model_checkbox;
 mod native_model_number;
 
 use vize_l0::{

@@ -1,6 +1,7 @@
 //! Runtime text-model realization from a distinct authenticated read/write row.
 
 use vize_l0::id::NodeId;
+use vize_l2::file::NativeFileModelKind;
 use vize_l2::op::{BindingOp, ElementOp, ModelOp};
 use vize_l3::decision::dom::{DomChild, DomFileModel, PropertyRole};
 
@@ -9,6 +10,27 @@ use super::{DomError, DomErrorKind, Emitter, ExpressionWriter, LinkSink};
 use crate::write::Writer;
 
 impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
+    /// Both spans already belong to the checked original Model/Element row.
+    /// They choose property order only and confer no source admission.
+    pub(super) fn model_precedes_type(
+        &self,
+        node: NodeId,
+        element: &ElementOp<'_>,
+    ) -> Result<bool, DomError> {
+        let fail = || self.error(node, DomErrorKind::FileOwnerMismatch);
+        let row = self.facts.file_model(node).ok_or_else(fail)?;
+        match row.original().kind() {
+            Some(NativeFileModelKind::Text) => Ok(false),
+            Some(NativeFileModelKind::Checkbox) => {
+                let [attribute] = element.attributes.as_slice() else {
+                    return Err(fail());
+                };
+                Ok(row.model().span.start < attribute.span.start)
+            }
+            None => Err(fail()),
+        }
+    }
+
     pub(super) fn model_start(&mut self, node: NodeId) -> Result<(), DomError> {
         let helper = self
             .vocabulary
@@ -42,7 +64,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         };
         let row = self.facts.file_model(*model_node).ok_or_else(fail)?;
         if *root != node || branch_key.is_some() || element.tag != "input"
-            || !element.attributes.is_empty() || !element.children.ops.is_empty()
+            || !element.children.ops.is_empty()
             || !row.accepts_model(model) || !row.accepts_element(node, element)
             || !self.facts.binding(*model_node).is_some_and(|fact| {
                 fact.role == PropertyRole::Model
@@ -73,18 +95,23 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
     }
 
     pub(super) fn model_directive(&mut self, node: NodeId) -> Result<(), DomError> {
+        let row = self
+            .facts
+            .file_model(node)
+            .ok_or_else(|| self.error(node, DomErrorKind::MissingBinding))?;
+        let helper_name = match row.original().kind() {
+            Some(NativeFileModelKind::Text) => "vModelText",
+            Some(NativeFileModelKind::Checkbox) => "vModelCheckbox",
+            None => return Err(self.error(node, DomErrorKind::FileOwnerMismatch)),
+        };
         let model_text = self
             .vocabulary
-            .helper("vModelText")
+            .helper(helper_name)
             .ok_or_else(|| self.error(node, DomErrorKind::MissingRuntimeHelper))?;
         let with_directives = self
             .vocabulary
             .helper("withDirectives")
             .ok_or_else(|| self.error(node, DomErrorKind::MissingRuntimeHelper))?;
-        let row = self
-            .facts
-            .file_model(node)
-            .ok_or_else(|| self.error(node, DomErrorKind::MissingBinding))?;
         self.writer.push(", [");
         self.writer.indent();
         self.writer.newline();

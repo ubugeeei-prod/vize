@@ -18,7 +18,7 @@ export const typescript = createRequire(new URL("../../package.json", import.met
 assert.equal(typescript.version, "6.0.3");
 
 function compile(
-  fixture: ModelVaporFixture,
+  fixture: Pick<ModelVaporFixture, "id" | "source" | "script" | "template" | "bindings">,
   filename: string,
   mode: ModelVaporMode,
   ssr: boolean,
@@ -110,7 +110,7 @@ function compile(
 }
 
 export function compileInputModelVaporPrimary(
-  fixture: ModelVaporFixture,
+  fixture: Pick<ModelVaporFixture, "id" | "source" | "script" | "template" | "bindings">,
   attempt: ObjectValue,
   filename: string,
   mode: ModelVaporMode,

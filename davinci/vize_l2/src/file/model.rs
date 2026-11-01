@@ -47,6 +47,14 @@ pub enum NativeFileModelState {
     Refused(NativeTemplateIssueKind),
 }
 
+/// Input behavior established by the normally closed original Element factory.
+/// It grants neither mutation nor generic expression-read permission.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NativeFileModelKind {
+    Text,
+    Checkbox,
+}
+
 /// Original observation and its real attached Model/Element identity.
 /// No caller-owned row, numeric ID or raw span can construct this record.
 pub struct NativeFileModel<'a> {
@@ -56,6 +64,7 @@ pub struct NativeFileModel<'a> {
     pub(crate) binding: Option<BindingId>,
     pub(crate) original: Option<core::ptr::NonNull<ModelOp<'a>>>,
     pub(crate) element: Option<(NodeId, core::ptr::NonNull<ElementOp<'a>>)>,
+    pub(crate) kind: Option<NativeFileModelKind>,
 }
 
 impl<'a> NativeFileModel<'a> {
@@ -66,6 +75,10 @@ impl<'a> NativeFileModel<'a> {
     #[must_use]
     pub const fn state(&self) -> NativeFileModelState {
         self.state
+    }
+    #[must_use]
+    pub const fn kind(&self) -> Option<NativeFileModelKind> {
+        self.kind
     }
     #[must_use]
     pub const fn scope(&self) -> ScopeId {

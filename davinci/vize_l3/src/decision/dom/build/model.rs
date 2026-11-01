@@ -24,6 +24,18 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             self.reject(node, model.span, DomUnsupported::FileBinding);
             return;
         };
+        let dependency = match resolution
+            .file()
+            .native_model(node)
+            .and_then(|original| original.kind())
+        {
+            Some(vize_l2::file::NativeFileModelKind::Text) => DomDependency::TextModel,
+            Some(vize_l2::file::NativeFileModelKind::Checkbox) => DomDependency::CheckboxModel,
+            None => {
+                self.reject(node, model.span, DomUnsupported::FileBinding);
+                return;
+            }
+        };
         let Some((_, frame)) = self.frames.last_mut() else {
             self.reject(node, model.span, DomUnsupported::Binding);
             return;
@@ -44,7 +56,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
                 value: ValueKind::FileDependent,
             },
         );
-        self.demand(DomDependency::TextModel);
+        self.demand(dependency);
         self.demand(DomDependency::DirectiveApplication);
     }
 

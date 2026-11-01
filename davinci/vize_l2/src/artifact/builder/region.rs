@@ -79,8 +79,9 @@ impl<'a> RegionBuilder<'_, 'a> {
     pub(crate) fn native_model(
         &mut self,
         input: &crate::lang::js::NativeModelInput<'a>,
+        kind: crate::file::NativeFileModelKind,
     ) -> Result<(NodeId, core::ptr::NonNull<crate::op::ModelOp<'a>>), ArtifactError> {
-        self.builder.native_model(input)
+        self.builder.native_model(input, kind)
     }
 
     /// Attach an explicit static named binding before this owner's children.

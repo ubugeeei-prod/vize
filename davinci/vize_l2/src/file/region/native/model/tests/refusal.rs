@@ -104,7 +104,8 @@ fn actual_root_geometry_and_late_header_failures_keep_inputs_without_publishing_
         ("<b/><input v-model='draft'/>", false, 1),
         ("<div><input v-model='draft'/></div>", false, 1),
         ("<input v-model='draft' disabled/>", false, 1),
-        ("<input v-model='draft' type='checkbox'/>", false, 1),
+        // The exact original checkbox input is an explicit successor in
+        // checkbox::checkbox_original_inline_successor_and_both_header_orders_keep_real_type_and_write.
         ("<input v-model='draft' :class='draft'/>", true, 1),
         ("<input v-model='draft' v-model='draft'/>", true, 2),
     ] {

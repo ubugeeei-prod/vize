@@ -18,4 +18,5 @@ pub enum DomDependency {
     CollectionIteration,
     TextModel,
     DirectiveApplication,
+    CheckboxModel,
 }
