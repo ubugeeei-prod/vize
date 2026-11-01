@@ -312,3 +312,149 @@ fn matching_property_declarations_and_headers_never_grant_vue_admission() {
         ]
     );
 }
+
+fn signature_return(id: &str) -> corsa::Result<SignatureReturn> {
+    Ok(SignatureReturn {
+        signature: serde_json::from_value(json!({"id":id,"flags":0}))?,
+        returned: None,
+        symbol: None,
+        type_parameters_raw: SignatureTypeParametersRaw::NotRequested,
+        type_parameters: None,
+    })
+}
+
+#[test]
+fn signature_parameter_presence_is_not_normalized_to_an_empty_list() {
+    let mut record = signature_return("signature").unwrap();
+    assert_eq!(
+        serde_json::to_value(&record.type_parameters_raw).unwrap(),
+        json!({"state":"notRequested"})
+    );
+    record.type_parameters_raw = SignatureTypeParametersRaw::Requested;
+    assert_eq!(
+        serde_json::to_value(&record.type_parameters_raw).unwrap(),
+        json!({"state":"requested"})
+    );
+    retain_signature_type_parameters(&mut record, Ok(Value::Null)).unwrap();
+    assert_eq!(
+        serde_json::to_value(&record.type_parameters_raw).unwrap(),
+        json!({"state":"received","value":null})
+    );
+    assert!(record.type_parameters.is_none());
+    retain_signature_type_parameters(&mut record, Ok(json!([]))).unwrap();
+    assert_eq!(
+        serde_json::to_value(&record.type_parameters_raw).unwrap(),
+        json!({"state":"received","value":[]})
+    );
+    assert_eq!(record.type_parameters, Some(vec![]));
+}
+
+#[test]
+fn signature_parameter_values_keep_whole_raw_payload_and_native_order() {
+    let raw = json!([
+        {"id":"second","flags":262144,"future":{"text":"😀\r\n","missing":null}},
+        {"id":"first","flags":262144,"typeParameters":["outer"],"future":[3,1]}
+    ]);
+    let mut record = signature_return("signature").unwrap();
+    retain_signature_type_parameters(&mut record, Ok(raw.clone())).unwrap();
+    assert_eq!(
+        serde_json::to_value(&record.type_parameters_raw).unwrap(),
+        json!({"state":"received","value":raw})
+    );
+    let typed = record.type_parameters.as_ref().unwrap();
+    assert_eq!(
+        typed
+            .iter()
+            .map(|item| item.id.as_str())
+            .collect::<Vec<_>>(),
+        ["second", "first"]
+    );
+    assert_eq!(
+        typed[1]
+            .type_parameters
+            .iter()
+            .map(|parameter| parameter.as_str())
+            .collect::<Vec<_>>(),
+        ["outer"]
+    );
+    assert_eq!(record.signature.id.as_str(), "signature");
+}
+
+#[test]
+fn malformed_signature_parameters_retain_raw_before_typed_errors() {
+    for raw in [
+        json!({"unexpected":"whole response"}),
+        json!([{"id":"valid","flags":0},{"id":"bad","flags":"invalid"}]),
+        json!([null]),
+    ] {
+        let mut record = signature_return("signature").unwrap();
+        let error = retain_signature_type_parameters(&mut record, Ok(raw.clone())).unwrap_err();
+        assert!(matches!(error, CorsaError::Json(_)));
+        assert_eq!(
+            serde_json::to_value(&record.type_parameters_raw).unwrap(),
+            json!({"state":"received","value":raw})
+        );
+        assert!(record.type_parameters.is_none());
+        assert_eq!(record.signature.id.as_str(), "signature");
+    }
+}
+
+#[test]
+fn signature_parameter_request_failure_preserves_original_error_and_partial_prefix() {
+    let mut data = ObservationData::new(request(), "snapshot".into(), project());
+    data.declared_returns = ["first", "failed", "unrequested"]
+        .into_iter()
+        .map(signature_return)
+        .collect::<corsa::Result<Vec<_>>>()
+        .unwrap();
+    data.declared_returns[0].returned =
+        Some(serde_json::from_value(json!({"id":"returned","flags":0})).unwrap());
+    data.sources.push(NativeSource {
+        requested: expected().file,
+        encoded: Some(vec![9, 0, 42]),
+        decoded: Some(native_source()),
+    });
+    let mut before = serde_json::to_value(&data).unwrap();
+    retain_signature_type_parameters(&mut data.declared_returns[0], Ok(json!([]))).unwrap();
+    data.declared_returns[1].type_parameters_raw = SignatureTypeParametersRaw::Requested;
+    let error = retain_signature_type_parameters(
+        &mut data.declared_returns[1],
+        Err(CorsaError::Io(std::io::Error::from_raw_os_error(77))),
+    )
+    .unwrap_err();
+    match error {
+        CorsaError::Io(error) => assert_eq!(error.raw_os_error(), Some(77)),
+        other => panic!("original typed SDK error changed: {other:?}"),
+    }
+    let mut after = serde_json::to_value(&data).unwrap();
+    assert_eq!(
+        after["declaredReturns"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|record| record["type_parameters_raw"].clone())
+            .collect::<Vec<_>>(),
+        [
+            json!({"state":"received","value":[]}),
+            json!({"state":"requested"}),
+            json!({"state":"notRequested"}),
+        ]
+    );
+    for value in [&mut before, &mut after] {
+        for record in value["declaredReturns"].as_array_mut().unwrap() {
+            let record = record.as_object_mut().unwrap();
+            record.remove("type_parameters_raw");
+            record.remove("type_parameters");
+        }
+    }
+    assert_eq!(after, before, "all prior observations and ordering survive");
+    assert_eq!(
+        data.unavailable,
+        [
+            Unavailable::SelectedSignatureRequiresNativeCallNode,
+            Unavailable::GenericClosureNotAdmitted,
+            Unavailable::VueReturnOriginNotAdmitted,
+        ]
+    );
+    assert!(!data.native_admission);
+}
