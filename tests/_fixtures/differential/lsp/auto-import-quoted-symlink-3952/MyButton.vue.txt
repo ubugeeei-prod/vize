@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const caption = 'child'
+</script>
+<template><button>{{ caption }}</button></template>

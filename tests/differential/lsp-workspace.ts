@@ -5,6 +5,12 @@ import { vueConfigFixtureSource } from "../tooling/support/vue-config-fixture.ts
 import { sha256 } from "./harness.mjs";
 import { safeRuntimePath } from "./lsp-manifest.ts";
 import type { LspFixture } from "./lsp-types.ts";
+import {
+  expectedLspSymlinks,
+  lspSymlinks,
+  type LspSymlink,
+  type LspSymlinkObservation,
+} from "./lsp-symlinks.ts";
 
 export type WorkspaceFileDigest = { path: string; sha256: string };
 export type LspWorkspaceMapping = {
@@ -20,11 +26,15 @@ export type LspWorkspaceMapping = {
     carrierBase64: string;
     carrierSha256: string;
   }[];
+  symlinks?: LspSymlink[];
 };
 export type LspWorkspaceEvidence = {
   mapping: LspWorkspaceMapping;
   before?: WorkspaceFileDigest[];
   after?: WorkspaceFileDigest[];
+  symlinksBefore?: LspSymlinkObservation[];
+  symlinksAfter?: LspSymlinkObservation[];
+  symlinkWorkspaceUri?: string;
 };
 
 type WorkspaceFile = { runtimePath: string; bytes: Buffer };
@@ -86,6 +96,8 @@ export function lspWorkspace(fixture: LspFixture) {
     files: digests(files),
     configurations,
   };
+  const symlinks = lspSymlinks(fixture.data.workspaceSymlinks, mapping.files);
+  if (symlinks !== undefined) mapping.symlinks = symlinks;
   return { files, mapping };
 }
 
@@ -96,22 +108,52 @@ export function observeLspWorkspace(
 ): WorkspaceFileDigest[] {
   return mapping.files.map((file) => ({
     path: file.path,
-    sha256: sha256(fs.readFileSync(path.join(root, safeRuntimePath(file.path)))),
+    sha256: observeFile(root, file.path, mapping.symlinks !== undefined),
   }));
+}
+
+function observeFile(root: string, relative: string, sourceOwned: boolean): string {
+  const file = path.join(root, safeRuntimePath(relative));
+  if (sourceOwned) {
+    const stat = fs.lstatSync(file);
+    assert(stat.isFile() && !stat.isSymbolicLink(), "owned regular input changed type");
+    assert.equal(fs.realpathSync(file), file, "owned input escaped its source workspace");
+  }
+  return sha256(fs.readFileSync(file));
 }
 
 export function validateLspWorkspace(
   fixture: LspFixture,
   evidence: LspWorkspaceEvidence | undefined,
   completed: boolean,
+  workspaceUri?: string,
 ): void {
   assert(evidence, "explicit LSP workspace transport evidence is required");
   const expected = lspWorkspace(fixture).mapping;
   assert.deepEqual(evidence.mapping, expected, "LSP configuration transport mapping changed");
+  if (expected.symlinks === undefined) {
+    assert.equal(evidence.symlinkWorkspaceUri, undefined, "unrequested link workspace changed");
+  } else if (completed) {
+    assert.equal(
+      evidence.symlinkWorkspaceUri,
+      workspaceUri,
+      "link workspace must equal the actual wire root",
+    );
+  }
   for (const phase of ["before", "after"] as const) {
     if (completed)
       assert(Array.isArray(evidence[phase]), `actual ${phase} workspace observation is required`);
     if (evidence[phase] !== undefined)
       assert.deepEqual(evidence[phase], expected.files, `actual ${phase} workspace inputs changed`);
+  }
+  for (const phase of ["symlinksBefore", "symlinksAfter"] as const) {
+    if (expected.symlinks === undefined) {
+      assert.equal(evidence[phase], undefined, "unrequested links must not enter old profiles");
+    } else if (completed || evidence[phase] !== undefined) {
+      assert.deepEqual(
+        evidence[phase],
+        expectedLspSymlinks(evidence.symlinkWorkspaceUri, expected.symlinks),
+      );
+    }
   }
 }

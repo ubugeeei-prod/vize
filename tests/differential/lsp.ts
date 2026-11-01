@@ -13,9 +13,14 @@ import {
   lspFixtureInventory,
   NATIVE_REASON,
 } from "./lsp-manifest.ts";
-import { inspectLspObservation, validateLspReport } from "./lsp-report.ts";
+import {
+  inspectLspObservation,
+  validateCapturedLspReport,
+  validateLspReport,
+} from "./lsp-report.ts";
 import { LspWire } from "./lsp-wire.ts";
 import { lspWorkspace, observeLspWorkspace } from "./lsp-workspace.ts";
+import { materializeLspSymlinks, observeLspSymlinks } from "./lsp-symlinks.ts";
 import { sourceSessionUnsupportedLegacy } from "./lsp-source-sessions.ts";
 import { sourceLspRuntimeEnvironment } from "../tooling/support/lsp/runtime-environment.ts";
 import {
@@ -60,6 +65,11 @@ async function runLspCase(
       fs.writeFileSync(destination, file.bytes);
     }
     workspace = fs.realpathSync(workspace);
+    if (active.mapping.symlinks !== undefined)
+      row.legacy.workspace.symlinkWorkspaceUri = pathToFileURL(workspace).href;
+    materializeLspSymlinks(workspace, active.mapping.symlinks);
+    if (active.mapping.symlinks !== undefined)
+      row.legacy.workspace.symlinksBefore = observeLspSymlinks(workspace, active.mapping.symlinks);
     row.legacy.workspace.before = observeLspWorkspace(workspace, active.mapping);
     const workspaceUri = pathToFileURL(workspace).href;
     const entryUri = pathToFileURL(path.join(workspace, fixture.entry)).href;
@@ -106,6 +116,8 @@ async function runLspCase(
       });
     }
     await wire.finish();
+    if (active.mapping.symlinks !== undefined)
+      row.legacy.workspace.symlinksAfter = observeLspSymlinks(workspace, active.mapping.symlinks);
     row.legacy.workspace.after = observeLspWorkspace(workspace, active.mapping);
     row.legacy.observation = { ...wire.observation(), workspaceUri };
     for (const stream of ["client", "server"] as const) {
@@ -139,11 +151,13 @@ export async function runLspPack({
   binaryPath,
   sourceRevision,
   repoRoot,
+  capture,
 }: {
   manifestPath: string;
   binaryPath?: string;
   sourceRevision: string;
   repoRoot?: string;
+  capture?: (report: Readonly<LspReport>) => void;
 }): Promise<LspReport> {
   const loaded = loadLspManifest(manifestPath);
   assert.match(sourceRevision, /^[a-f0-9]{40}$/);
@@ -224,6 +238,6 @@ export async function runLspPack({
     nativeHandled: 0,
     nativeEquivalent: 0,
   };
-  validateLspReport(loaded, report, build);
+  validateCapturedLspReport(loaded, report, build, capture);
   return report;
 }
