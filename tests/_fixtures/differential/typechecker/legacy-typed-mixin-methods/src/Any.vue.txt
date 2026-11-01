@@ -1,0 +1,5 @@
+<script lang="ts">
+import opaque from "./untyped";
+export default { mixins: [opaque], methods: { missing() { return this.$missing(); } } };
+</script>
+<template><span /></template>

@@ -1,0 +1,5 @@
+<script lang="ts">
+import auth from "./auth";
+export default { extends: auth, methods: { valid() { return this.$auth("ok"); } } };
+</script>
+<template><span /></template>

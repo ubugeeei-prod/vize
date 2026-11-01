@@ -1,0 +1,35 @@
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+type Assert<T extends true> = T;
+interface Methods { $auth(token: string): number }
+type Laws = [
+  Assert<Equal<$InheritedMembers<any>, $NoInheritedMembers>>,
+  Assert<Equal<$InheritedMembers<unknown>, $NoInheritedMembers>>,
+  Assert<Equal<$InheritedMembers<never>, never>>,
+  Assert<Equal<$InheritedMembers<new () => any>, $NoInheritedMembers>>,
+  Assert<Equal<$InheritedMembers<new () => Methods>, Methods>>,
+  Assert<Equal<$InheritedMembers<{ methods: Methods }>, Methods>>,
+  Assert<Equal<$InheritedMembers<{ methods: any }>, $NoInheritedMembers>>,
+  Assert<Equal<$InheritedMembers<{ methods: unknown }>, $NoInheritedMembers>>,
+  Assert<Equal<$InheritedMembers<{ methods: never }>, $NoInheritedMembers>>,
+  Assert<Equal<$InheritedMembers<{ methods: object }>, $NoInheritedMembers>>,
+  Assert<Equal<$InheritedMembers<{ methods: {} }>, $NoInheritedMembers>>,
+  Assert<Equal<$InheritedMembers<{ methods: Record<string, () => void> }>, $NoInheritedMembers>>,
+  Assert<Equal<$InheritedMembers<{ methods: Record<number, () => void> }>, $NoInheritedMembers>>,
+  Assert<Equal<$InheritedMembers<{ methods: Record<symbol, () => void> }>, $NoInheritedMembers>>,
+];
+declare const receiver: $InheritedMembers<{ methods: Methods }>;
+const length: number = receiver.$auth("valid");
+// @ts-expect-error The inherited signature must not widen its argument.
+receiver.$auth(1);
+// @ts-expect-error Finite methods must not add an unknown-member index.
+receiver.$missing();
+export {};
+
+// Authored helper names can shadow the shared preamble in an Options API
+// script. New guards must not consult that user-defined predicate before the
+// unchanged constructor branch.
+namespace AuthoredAnyHelper {
+  type $IsAny<T> = T extends abstract new (...args: any[]) => any ? true : false;
+  __INHERITED_HELPERS__
+  type ConstructorPreserved = Assert<Equal<$InheritedMembers<new () => Methods>, Methods>>;
+}
