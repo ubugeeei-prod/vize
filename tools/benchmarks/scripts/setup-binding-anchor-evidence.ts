@@ -28,14 +28,32 @@ function completeDocuments(row: {
   for (const [index, document] of row.documents.entries()) {
     const kind = index < 2 ? "measured" : "pinned";
     assert.deepEqual(Object.keys(document).sort(), [
-      "code", "hoist", "importSourceMapDebug", "kind", "mappingDebug", "preRewriteCode",
-      "source", "sourceTypeDebug", "virtualFile", "virtualSuffix",
+      "code",
+      "hoist",
+      "importSourceMapDebug",
+      "kind",
+      "mappingDebug",
+      "preRewriteCode",
+      "source",
+      "sourceTypeDebug",
+      "virtualFile",
+      "virtualSuffix",
     ]);
     assert.equal(document.kind, kind);
     assert.equal(document.hoist, index % 2 === 1);
-    assert.equal(document.virtualFile, kind === "measured" ? "src/Bindings.vue" : "src/Imports.vue");
+    assert.equal(
+      document.virtualFile,
+      kind === "measured" ? "src/Bindings.vue" : "src/Imports.vue",
+    );
     assert.equal(document.source, kind === "measured" ? row.source : row.pinnedInput.source);
-    for (const field of ["code", "preRewriteCode", "mappingDebug", "importSourceMapDebug", "sourceTypeDebug", "virtualSuffix"])
+    for (const field of [
+      "code",
+      "preRewriteCode",
+      "mappingDebug",
+      "importSourceMapDebug",
+      "sourceTypeDebug",
+      "virtualSuffix",
+    ])
       assert.equal(typeof document[field], "string", field);
   }
   return { documents: row.documents, pinnedInput: row.pinnedInput };
@@ -44,7 +62,9 @@ function completeDocuments(row: {
 const summary = [];
 for (const shape of ["locals", "imports"]) {
   for (const count of [32, 128, 512]) {
-    let reference: { source: string; packet: unknown; documents: unknown; pinnedInput: unknown } | undefined;
+    let reference:
+      | { source: string; packet: unknown; documents: unknown; pinnedInput: unknown }
+      | undefined;
     const roles = new Map<
       string,
       {

@@ -9,10 +9,13 @@ const observer = new URL(
   "../../tools/benchmarks/scripts/setup-binding-anchor-evidence.ts",
   import.meta.url,
 );
-const pinnedSource = readFileSync(new URL(
-  "../_fixtures/differential/typechecker/prepared-type-only-import-facts/Imports.vue.txt",
-  import.meta.url,
-), "utf8");
+const pinnedSource = readFileSync(
+  new URL(
+    "../_fixtures/differential/typechecker/prepared-type-only-import-facts/Imports.vue.txt",
+    import.meta.url,
+  ),
+  "utf8",
+);
 
 function fixture(root: string) {
   const binaries = {
@@ -92,7 +95,16 @@ test("comparison retains all72 full observations and independent binary identiti
 });
 
 test("whole document geometry, order, fields and the physical pinned input are strict", () => {
-  for (const control of ["code", "mappingDebug", "importSourceMapDebug", "hoist", "order", "extra", "source", "path"]) {
+  for (const control of [
+    "code",
+    "mappingDebug",
+    "importSourceMapDebug",
+    "hoist",
+    "order",
+    "extra",
+    "source",
+    "path",
+  ]) {
     const root = mkdtempSync(join(tmpdir(), "anchor-documents-invalid-"));
     try {
       fixture(root);

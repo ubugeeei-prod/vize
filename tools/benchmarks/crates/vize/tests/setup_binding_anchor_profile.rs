@@ -45,7 +45,12 @@ fn authored_source(count: usize, imports: bool) -> String {
     source
 }
 
-fn complete_document(source: &str, path: &str, kind: &str, hoist: bool) -> serde_json::Value {
+fn complete_document(
+    source: &str,
+    path: &str,
+    kind: &str,
+    hoist: bool,
+) -> vize_canon::batch::CorsaResult<serde_json::Value> {
     let VueDocumentVirtualTs {
         code,
         pre_rewrite_code,
@@ -59,15 +64,14 @@ fn complete_document(source: &str, path: &str, kind: &str, hoist: bool) -> serde
         &VirtualTsOptions::default(),
         &ImportRewriter::new(),
         hoist,
-    )
-    .unwrap();
-    json!({
+    )?;
+    Ok(json!({
         "kind": kind, "hoist": hoist, "virtualFile": path, "source": source,
         "code": code, "preRewriteCode": pre_rewrite_code,
         "mappingDebug": format!("{mapping:?}"),
         "importSourceMapDebug": format!("{import_source_map:?}"),
         "sourceTypeDebug": format!("{source_type:?}"), "virtualSuffix": virtual_suffix,
-    })
+    }))
 }
 
 #[test]
@@ -132,10 +136,10 @@ fn complete_binding_anchor_generation_profile() {
     }
     // These whole-document observations are deliberately outside both measurement windows.
     let documents = [
-        complete_document(&source, "src/Bindings.vue", "measured", false),
-        complete_document(&source, "src/Bindings.vue", "measured", true),
-        complete_document(&pinned_source, "src/Imports.vue", "pinned", false),
-        complete_document(&pinned_source, "src/Imports.vue", "pinned", true),
+        complete_document(&source, "src/Bindings.vue", "measured", false).unwrap(),
+        complete_document(&source, "src/Bindings.vue", "measured", true).unwrap(),
+        complete_document(&pinned_source, "src/Imports.vue", "pinned", false).unwrap(),
+        complete_document(&pinned_source, "src/Imports.vue", "pinned", true).unwrap(),
     ];
     assert_eq!(std::fs::read_to_string(&input_path).unwrap(), pinned_source);
     let observation = json!({
