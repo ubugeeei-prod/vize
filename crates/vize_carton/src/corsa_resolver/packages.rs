@@ -150,11 +150,6 @@ fn find_declared_native_preview(
         let declared_runtime = declaration_targets(project, name, canonical)
             || declaration_targets(project, name, platform.as_str());
         let Some(package_dir) = nearest_package(dir, name) else {
-            if declared_runtime {
-                return Err(InvalidNativePackage {
-                    package: dir.join("node_modules").join(name),
-                });
-            }
             continue;
         };
         let Some(manifest) = read_manifest(&package_dir) else {
@@ -234,11 +229,6 @@ fn find_declared_tsrs(
     for name in declared_dependency_names(project) {
         let declared_runtime = declaration_targets(project, name, "tsrs");
         let Some(package_dir) = nearest_package(dir, name) else {
-            if declared_runtime {
-                return Err(InvalidNativePackage {
-                    package: dir.join("node_modules").join(name),
-                });
-            }
             continue;
         };
         let actual = read_manifest(&package_dir)
