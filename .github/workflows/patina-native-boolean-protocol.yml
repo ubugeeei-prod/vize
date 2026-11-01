@@ -70,6 +70,21 @@ jobs:
           set -o pipefail
           export CORSA_PATH="$RUNNER_TEMP/patina-tsrs/node_modules/@tsrs/linux-x64-gnu/tsrs"
           cargo test --locked --profile ci -p vize --test integration lint_strict_boolean_cli:: -- --nocapture 2>&1 | tee target/patina-native-boolean/tsrs-tests.txt
+      - name: Capture cold and materialized signature owners with the stable runtime
+        if: always()
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+        run: |
+          set -o pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          VIZE_SYMBOL_OWNER_CAPTURE="$GITHUB_WORKSPACE/target/patina-native-boolean/stable-owner.json" cargo test --locked --profile ci -p vize_patina --lib corsa_session::probe::signature_owner_tests:: -- --nocapture 2>&1 | tee target/patina-native-boolean/stable-owner-tests.txt
+      - name: Capture the same signature owners with the reported tsrs runtime
+        if: always()
+        run: |
+          set -o pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          export CORSA_PATH="$RUNNER_TEMP/patina-tsrs/node_modules/@tsrs/linux-x64-gnu/tsrs"
+          VIZE_SYMBOL_OWNER_CAPTURE="$GITHUB_WORKSPACE/target/patina-native-boolean/tsrs-owner.json" cargo test --locked --profile ci -p vize_patina --lib corsa_session::probe::signature_owner_tests:: -- --nocapture 2>&1 | tee target/patina-native-boolean/tsrs-owner-tests.txt
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

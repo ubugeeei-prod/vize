@@ -1,0 +1,1 @@
+export declare function check(this: { ready: boolean }, value: number): boolean;

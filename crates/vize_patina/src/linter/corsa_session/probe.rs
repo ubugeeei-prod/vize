@@ -483,3 +483,6 @@ mod tests {
         )));
     }
 }
+
+#[cfg(test)]
+mod signature_owner_tests;

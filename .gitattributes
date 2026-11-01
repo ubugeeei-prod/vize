@@ -75,6 +75,9 @@ crates/vize_patina/tests/fixtures/issue-7977/** -text whitespace=cr-at-eol
 # Original generic setup import inputs retain authored bytes on every checkout.
 tests/_fixtures/differential/linter/generic-type-reads-7938/** -text whitespace=cr-at-eol
 
+# Signature-owner causal inputs retain their whole pinned bytes on Windows.
+tests/_fixtures/differential/linter/symbol-owner-probes-11267/** -text
+
 # Macro ownership laws retain pinned LF, Unicode and authored CRLF bytes.
 tests/_fixtures/differential/lint-with-defaults/** -text whitespace=cr-at-eol
 
