@@ -159,6 +159,11 @@ void test("delegation precedes persistent restore, clears stale state and leaves
     assert.equal(first.cache.has(file), false);
     assert.ok(first.cache.has(ordinary));
     await assert.rejects(compileAll(state(root)), /At least one <template> or <script>/);
+    const copiedComponent = state(root);
+    copiedComponent.scanPatterns = ["src/Ordinary.vue"];
+    await compileAll(copiedComponent);
+    assert.deepEqual([...copiedComponent.cache.keys()], [ordinary]);
+    assert.equal(copiedComponent.precompileMetadata.has(file), false);
     config.exclude = ["src/**"];
     await assert.rejects(
       compileAll(state(root), ownersFor(createRawArtInputOwner(config))),
