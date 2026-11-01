@@ -55,7 +55,11 @@ export function reportCpuProfile(capture: string) {
     fs.writeFileSync(path.join(out, name), JSON.stringify(value, null, 2) + "\n", { flag: "wx" });
   const status = read("native-profile.status.json");
   assert(Number.isInteger(status.invokedPid) && Number(status.invokedPid) > 0);
-  const cpu = path.join(capture, "native-profile-data", `${status.invokedPid}-cpuprofile.pb.gz`);
+  const cpu = path.join(
+    capture,
+    "native-profile-data",
+    `${String(status.invokedPid)}-cpuprofile.pb.gz`,
+  );
   const decoded = decodeCpuProfile(fs.readFileSync(cpu));
   write("cpu-full-decoded.json", decoded);
   const goPath = (process.env.PATH ?? "")
