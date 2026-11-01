@@ -362,7 +362,20 @@ test("same-reader split root ACK retains terminal EOF uncertainty without wideni
     );
   });
   assert.equal(result.watcherAck.parts.length, 2);
-  assert.equal(result.registrationPass, false);
+  assert.ok("eofReturnUpperBoundThreadExit" in result);
+  assert.deepEqual(result.eofReturnUpperBoundThreadExit, f.owner.threadExits[1]);
+  assert.equal("rootAckFragmentOrder" in result, false);
+  assert.deepEqual(
+    result.stderrWrites.map((row) => ("eofReturnOrder" in row ? row.eofReturnOrder : null)),
+    Array(4).fill("UNPROVEN"),
+  );
+  for (const key of [
+    "nativeQualification",
+    "candidateFunctionalPass",
+    "lifecyclePass",
+    "registrationPass",
+  ] as const)
+    assert.equal(result[key], false);
   assert.throws(() =>
     observe(threadExitFixture(), (io) => {
       io.find((row) => row.op === "read" && row.line === 12)!.tid = 52;
