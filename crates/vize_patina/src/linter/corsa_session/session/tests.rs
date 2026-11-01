@@ -132,7 +132,7 @@ fn case_dir(name: &str) -> std::path::PathBuf {
         ))
 }
 
-fn test_corsa_path() -> Option<PathBuf> {
+pub(in crate::linter::corsa_session) fn test_corsa_path() -> Option<PathBuf> {
     let repo_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent()?
         .parent()?

@@ -7,7 +7,10 @@ use corsa::{
     runtime::block_on,
 };
 use serde_json::{Value, json};
-use std::{fs, path::Path};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 macro_rules! fixture {
     ($name:literal) => {
@@ -210,13 +213,24 @@ fn observe(runtime: &Path, case: &Case, imported: bool) -> Value {
 
 #[test]
 fn cold_and_materialized_signature_probes_stay_identical() {
-    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
+    let required = std::env::var("VIZE_TEST_REQUIRE_TSGO").as_deref() == Ok("1");
+    let disabled = std::env::var("VIZE_TEST_DISABLE_TSGO").as_deref() == Ok("1");
+    assert!(
+        !(required && disabled),
+        "required native owner probes cannot be disabled"
+    );
+    if disabled {
         return;
     }
-    let Some(runtime) = std::env::var_os("CORSA_PATH") else {
+    // Dedicated lanes keep their exact explicit runtime. The general required
+    // queue lane provisions its runtime through the existing test discovery.
+    let runtime = std::env::var_os("CORSA_PATH")
+        .map(PathBuf::from)
+        .or_else(super::super::session::tests::test_corsa_path);
+    let Some(runtime) = runtime else {
         assert!(
-            std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
-            "the mandatory owner test requires an explicit selected runtime"
+            !required,
+            "the mandatory owner test requires a real checker runtime"
         );
         return;
     };
@@ -224,8 +238,8 @@ fn cold_and_materialized_signature_probes_stay_identical() {
         .iter()
         .flat_map(|case| {
             [
-                observe(Path::new(&runtime), case, true),
-                observe(Path::new(&runtime), case, false),
+                observe(&runtime, case, true),
+                observe(&runtime, case, false),
             ]
         })
         .collect::<Vec<_>>();
