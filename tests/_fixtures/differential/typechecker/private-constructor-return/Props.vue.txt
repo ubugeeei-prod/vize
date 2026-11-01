@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const props = defineProps<{ title: string; count?: number }>();
+const note = "雪🌸";
+</script>
+
+<template>
+  <div :title="props.title">{{ note }} {{ props.count }}</div>
+</template>

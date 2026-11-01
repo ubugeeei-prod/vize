@@ -160,3 +160,5 @@ tests/_fixtures/differential/typechecker/generation-value-import-facts/Imports.v
 tests/_fixtures/differential/typechecker/prepared-type-only-import-facts/Imports.vue.txt text eol=lf
 # Controlled route graph is hashed and consumed literally by ordinary Rust tests.
 tests/_fixtures/differential/typechecker/cold-package-shadow-routes-11265/input.json text eol=lf
+# The private return geometry controls consume this full SFC literally.
+tests/_fixtures/differential/typechecker/private-constructor-return/Props.vue.txt text eol=lf
