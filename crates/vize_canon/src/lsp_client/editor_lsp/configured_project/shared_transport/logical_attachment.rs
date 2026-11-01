@@ -6,7 +6,6 @@ use corsa::{
     runtime::block_on,
 };
 use std::path::Path;
-use vize_carton::path::normalize_windows_verbatim_path;
 use vize_l0::{String, cstr};
 
 impl CorsaProjectClient {
@@ -44,16 +43,12 @@ impl CorsaProjectClient {
             None,
         ))
         .map_err(|error| cstr!("Cannot open current logical editor snapshot: {error}"))?;
-        let requested = normalize_windows_verbatim_path(
-            config
-                .canonicalize()
-                .map_err(|error| cstr!("Cannot inspect authored editor config: {error}"))?,
-        );
-        let selected = normalize_windows_verbatim_path(
-            Path::new(replacement.project().config_file_name.as_str())
-                .canonicalize()
-                .map_err(|error| cstr!("Cannot inspect selected logical editor config: {error}"))?,
-        );
+        let requested = config
+            .canonicalize()
+            .map_err(|error| cstr!("Cannot inspect authored editor config: {error}"))?;
+        let selected = Path::new(replacement.project().config_file_name.as_str())
+            .canonicalize()
+            .map_err(|error| cstr!("Cannot inspect selected logical editor config: {error}"))?;
         if selected != requested {
             return Err(cstr!(
                 "Current logical editor snapshot did not retain its exact authored config"
