@@ -6,11 +6,28 @@ use tower_lsp::jsonrpc::Result;
 
 use super::MaestroServer;
 
+/// The stamp belongs to the final actual transaction, never a later observation.
+struct NativeResponse<T> {
+    value: T,
+    #[cfg(feature = "native")]
+    stamp: Option<super::state::CorsaRequestStamp>,
+    #[cfg(feature = "native")]
+    prepared: bool,
+}
+
 impl super::project_contexts::DocumentServer<'_> {
     /// Preserve native transaction/cancellation ordering, then refuse the whole
     /// reply if authored coordinates became stale during admission or native work.
-    async fn authored_request<T>(&self, request: impl Future<Output = Result<T>>) -> Result<T> {
-        self.authored_response(request.await)
+    async fn authored_request<T>(
+        &self,
+        request: impl Future<Output = Result<NativeResponse<T>>>,
+    ) -> Result<T> {
+        let response = self.authored_response(request.await)?;
+        #[cfg(feature = "native")]
+        if let Some(stamp) = response.stamp {
+            self.release_foreground_open(stamp, response.prepared);
+        }
+        Ok(response.value)
     }
 
     /// Only completed answers pass this boundary. A local probe returning no
@@ -27,8 +44,12 @@ impl super::project_contexts::DocumentServer<'_> {
         &self,
         request: impl Future<Output = Result<T>>,
     ) -> Result<T> {
-        self.authored_request(MaestroServer::native_request(self, request))
-            .await
+        self.authored_request(MaestroServer::native_request_receipted(
+            self,
+            request,
+            self.foreground_preparation().map(|(_, prepared)| prepared),
+        ))
+        .await
     }
 
     pub(super) async fn workspace_native_request<T, F, Fut>(&self, request: F) -> Result<T>
@@ -36,8 +57,7 @@ impl super::project_contexts::DocumentServer<'_> {
         F: Fn() -> Fut,
         Fut: Future<Output = Result<T>>,
     {
-        self.authored_request(MaestroServer::workspace_native_request(self, request))
-            .await
+        self.authored_response(MaestroServer::workspace_native_request(self, request).await)
     }
 }
 
@@ -93,7 +113,17 @@ impl MaestroServer {
         &self,
         request: impl Future<Output = Result<T>>,
     ) -> Result<T> {
-        self.cancel_on_edit(self.native_request_admitted(request))
+        self.native_request_receipted(request, None)
+            .await
+            .map(|response| response.value)
+    }
+
+    async fn native_request_receipted<T>(
+        &self,
+        request: impl Future<Output = Result<T>>,
+        preparation: Option<&std::sync::atomic::AtomicBool>,
+    ) -> Result<NativeResponse<T>> {
+        self.cancel_on_edit(self.native_request_admitted(request, preparation))
             .await
     }
 
@@ -109,7 +139,8 @@ impl MaestroServer {
     async fn native_request_admitted<T>(
         &self,
         request: impl Future<Output = Result<T>>,
-    ) -> Result<T> {
+        preparation: Option<&std::sync::atomic::AtomicBool>,
+    ) -> Result<NativeResponse<T>> {
         #[cfg(feature = "native")]
         if self.state.project_context_retired() {
             return Err(Error::content_modified());
@@ -120,19 +151,40 @@ impl MaestroServer {
         } else {
             None
         };
+        #[cfg(feature = "native")]
+        let preparation = scope.as_ref().and(preparation);
+        #[cfg(feature = "native")]
+        if let Some(prepared) = preparation {
+            prepared.store(false, std::sync::atomic::Ordering::Release);
+        }
+        #[cfg(not(feature = "native"))]
+        let _ = preparation;
         let reply = request.await;
         #[cfg(feature = "native")]
         if self.state.project_context_retired() {
             return Err(Error::content_modified());
         }
         #[cfg(feature = "native")]
-        if let Some(scope) = scope
+        if let Some(scope) = scope.as_ref()
             && !scope.is_current()
         {
             scope.trace_refusal();
             return Err(Error::content_modified());
         }
-        reply
+        #[cfg(feature = "native")]
+        let stamp = scope.as_ref().map(|scope| scope.stamp());
+        #[cfg(feature = "native")]
+        let prepared = preparation
+            .is_some_and(|prepared| prepared.swap(false, std::sync::atomic::Ordering::AcqRel));
+        #[cfg(feature = "native")]
+        drop(scope);
+        reply.map(|value| NativeResponse {
+            value,
+            #[cfg(feature = "native")]
+            stamp,
+            #[cfg(feature = "native")]
+            prepared,
+        })
     }
 }
 
@@ -196,7 +248,9 @@ impl MaestroServer {
                 }
             }
         }
-        self.native_request_admitted(request()).await
+        self.native_request_admitted(request(), None)
+            .await
+            .map(|response| response.value)
     }
 }
 
