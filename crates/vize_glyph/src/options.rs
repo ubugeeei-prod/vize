@@ -243,6 +243,15 @@ fn is_false(value: &bool) -> bool {
     !*value
 }
 
+/// Preserve the formatter's existing fallback for widths outside its domain.
+/// Narrowing first would reinterpret a large configured width modulo 65536.
+pub(crate) fn javascript_line_width(width: u32) -> oxc_formatter_core::LineWidth {
+    u16::try_from(width)
+        .ok()
+        .and_then(|width| oxc_formatter_core::LineWidth::try_from(width).ok())
+        .unwrap_or_default()
+}
+
 fn default_print_width() -> u32 {
     100
 }
@@ -333,7 +342,7 @@ impl FormatOptions {
             ArrowParentheses, BracketSameLine, BracketSpacing, QuoteProperties, QuoteStyle,
             Semicolons, TrailingCommas,
         };
-        use oxc_formatter_core::{IndentStyle, IndentWidth, LineEnding, LineWidth};
+        use oxc_formatter_core::{IndentStyle, IndentWidth, LineEnding};
 
         oxc_formatter::JsFormatOptions {
             indent_style: if self.use_tabs {
@@ -342,7 +351,7 @@ impl FormatOptions {
                 IndentStyle::Space
             },
             indent_width: IndentWidth::try_from(self.tab_width).unwrap_or_default(),
-            line_width: LineWidth::try_from(self.print_width as u16).unwrap_or_default(),
+            line_width: javascript_line_width(self.print_width),
             line_ending: match self.end_of_line {
                 EndOfLine::Lf | EndOfLine::Auto => LineEnding::Lf,
                 EndOfLine::Crlf => LineEnding::Crlf,

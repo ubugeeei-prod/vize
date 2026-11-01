@@ -147,5 +147,16 @@ fn original_sfc_inputs_retain_every_configured_cli_packet_before_verdicts() {
         {
             assert_eq!(packet["after"], expected, "{packet}");
         }
+        let control = observations
+            .iter()
+            .find(|packet| {
+                packet["id"] == case["id"] && packet["width"] == 65535 && packet["pass"] == 0
+            })
+            .unwrap();
+        for packet in observations.iter().filter(|packet| {
+            packet["id"] == case["id"] && packet["width"].as_u64().unwrap() > u64::from(u16::MAX)
+        }) {
+            assert_eq!(packet["after"], control["after"], "{packet}");
+        }
     }
 }

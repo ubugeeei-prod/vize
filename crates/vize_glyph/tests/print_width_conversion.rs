@@ -142,4 +142,21 @@ fn whole_historical_outputs_and_all_width_boundaries_are_retained_before_verdict
             assert_eq!(first["code"], packet["defaultExpected"], "{packet}");
         }
     }
+    // These exact historical inputs fit well below 65535 columns. Their
+    // existing invalid downstream-width control therefore preserves the
+    // same raw u32 template-layout decisions while exposing both JS casts.
+    for case in &corpus.cases {
+        let control = observed
+            .iter()
+            .find(|packet| packet["id"] == case.id && packet["options"]["printWidth"] == 65535)
+            .unwrap();
+        assert_eq!(control["engineWidth"], LineWidth::default().value());
+        for packet in observed.iter().filter(|packet| {
+            packet["id"] == case.id
+                && packet["options"]["printWidth"].as_u64().unwrap() > u64::from(u16::MAX)
+        }) {
+            assert_eq!(packet["engineWidth"], control["engineWidth"], "{packet}");
+            assert_eq!(packet["passes"], control["passes"], "{packet}");
+        }
+    }
 }

@@ -2,13 +2,12 @@
 
 use super::FormattedExpression;
 use super::expression_wrapper;
-use crate::options::FormatOptions;
+use crate::options::{FormatOptions, javascript_line_width};
 use crate::template::literal_lines::Representation;
 use crate::template::literal_spans::ValueLines;
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::{Expression, Statement};
 use oxc_formatter::{QuoteStyle, format_program, parse_for_format};
-use oxc_formatter_core::LineWidth;
 use oxc_span::SourceType;
 use unicode_width::UnicodeWidthStr;
 use vize_l0::{String, ToCompactString};
@@ -231,7 +230,7 @@ fn format_expression_with_layout(
                 .print_width
                 .saturating_sub(value_indent as u32)
                 .max(1);
-            oxc_options.line_width = LineWidth::try_from(width as u16).unwrap_or_default();
+            oxc_options.line_width = javascript_line_width(width);
             let code =
                 oxc_formatter::format_unary_argument(oxc_allocator, &parsed.program, oxc_options)?
                     .print()
