@@ -255,8 +255,7 @@ pub(super) fn generate_undefined_refs(
         // Use void expression to reference the name without creating an unused variable
         let expr_code = if on_instance {
             cstr!(
-                "  var {}!: \"{}\" extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[keyof typeof __vize_template_instance & \"{}\"] : any; void ({});\n  void (__vize_template_instance.{});\n",
-                undef.name,
+                "  var {}!: $AuthoredInstanceMember<\"{}\">; void ({});\n  void (__vize_template_instance.{});\n",
                 undef.name,
                 undef.name,
                 undef.name,
@@ -284,6 +283,10 @@ pub(super) fn generate_undefined_refs(
             *ts,
             "  // @vize-map: {gen_name_start}:{gen_name_end} -> {src_start}:{src_end}\n",
         );
+    }
+
+    if emitted_instance {
+        ts.push_str("  } // End generated inherited-member declarations.\n");
     }
 
     if (options.virtual_ts_options.strict_instance_globals || check_keyed) && !resolve_on_instance {
@@ -315,14 +318,11 @@ const PUBLIC_INSTANCE_PRELUDE: &str = "  type $TemplateInstance = { [__K in keyo
 
 const PUBLIC_INSTANCE_RECEIVER: &str = "__vize_public_instance";
 
-/// The value a Vue 3 Options API template reads its unknown names off: the
-/// authored default export's instance. An inline conditional types each
-/// hoisted name declaration from that instance, so a member a `mixins:` or
-/// `extends:` entry contributes keeps its declared type in the authored
-/// expression without introducing a type binding that can capture authored names.
-/// It degrades to `any` only for a name the instance does not
-/// carry, whose single report is the mapped instance read.
-const AUTHORED_INSTANCE_PRELUDE: &str = "  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n  void __vize_template_instance;\n";
+/// These generated declarations need a generic key constraint for Vue's
+/// intersection instance types. A generated-only block keeps the helper type
+/// and receiver out of authored template type expressions. The `var` bindings
+/// remain function-scoped, with their annotations resolved inside this block.
+const AUTHORED_INSTANCE_PRELUDE: &str = "  { // Generated inherited-member declarations only.\n  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n  void __vize_template_instance;\n  type $AuthoredInstanceMember<__K extends string> = __K extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[__K] : any;\n";
 
 /// Same-name shorthand (`:aria-labelledby`) stores the camelized binding while
 /// the authored token is longer. A prefix range overlaps the attribute and is

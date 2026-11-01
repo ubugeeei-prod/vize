@@ -66,7 +66,7 @@ fn unresolved_options_extends_keeps_legal_inherited_names() {
     for name in ["falsey", "trueValue", "nullish", "inheritedHandler"] {
         assert!(
             virtual_ts.contains(
-                cstr!("  var {name}!: \"{name}\" extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[keyof typeof __vize_template_instance & \"{name}\"] : any; void ({name});\n")
+                cstr!("  var {name}!: $AuthoredInstanceMember<\"{name}\">; void ({name});\n")
                     .as_str()
             ),
             "legal inherited template binding `{name}` must remain available:\n{virtual_ts}"

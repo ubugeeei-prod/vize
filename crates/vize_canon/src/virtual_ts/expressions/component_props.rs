@@ -15,15 +15,18 @@ use super::prop_sources::{
     prop_name_source_range, prop_value_source_range,
 };
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
-use vize_carton::FxHashMap;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
+use vize_carton::{FxHashMap, FxHashSet};
 use vize_croquis::{
     ScopeChain,
     croquis::{ComponentUsage, PassedProp},
 };
+
+mod context;
+pub(crate) use context::ComponentPropCheckContext;
 
 pub(super) fn is_checkable_prop(prop: &PassedProp) -> bool {
     !prop.name_is_dynamic && prop.name.as_str() != "key" && prop.name.as_str() != "ref"
@@ -203,61 +206,21 @@ impl<'a> ComponentPropSource<'a> {
     }
 }
 
-pub(crate) struct ComponentPropCheckContext<'a, 'b> {
-    pub(crate) inference_prelude:
-        Option<&'a std::cell::RefCell<super::super::scope::RootOwnerBuffer>>,
-    pub(crate) ts: &'b mut String,
-    pub(crate) mappings: &'b mut Vec<VizeMapping>,
-    pub(crate) template_binding_access: &'a TemplateBindingAccess<'a>,
-    pub(crate) source_context: ComponentPropSource<'a>,
-    pub(crate) indent: &'b str,
-    pub(crate) strict_v_model: bool,
-    pub(crate) typed_fallthrough_values: bool,
-    pub(crate) hoist_shared_preamble: bool,
-}
-
-impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
-    pub(crate) fn new(
-        ts: &'b mut String,
-        mappings: &'b mut Vec<VizeMapping>,
-        template_binding_access: &'a TemplateBindingAccess<'a>,
-        source_context: ComponentPropSource<'a>,
-        indent: &'b str,
-    ) -> Self {
-        Self {
-            inference_prelude: None,
-            ts,
-            mappings,
-            template_binding_access,
-            source_context,
-            indent,
-            strict_v_model: false,
-            typed_fallthrough_values: false,
-            hoist_shared_preamble: false,
-        }
-    }
-
-    /// Also check what a `v-model` writes back (`strictVModel`).
-    pub(crate) fn strict_v_model(mut self, enabled: bool) -> Self {
-        self.strict_v_model = enabled;
-        self
-    }
-
-    /// Also validate values contributed by inherited fallthrough spread keys.
-    pub(crate) fn typed_fallthrough_values(mut self, enabled: bool) -> Self {
-        self.typed_fallthrough_values = enabled;
-        self
-    }
-
-    /// Resolve batch-shared helpers through their collision-proof module.
-    pub(crate) fn hoist_shared_preamble(mut self, enabled: bool) -> Self {
-        self.hoist_shared_preamble = enabled;
-        self
-    }
-}
-
 /// Generate component prop value checks at the given indentation level.
 pub(crate) fn generate_component_prop_checks(
+    ctx: &mut ComponentPropCheckContext<'_, '_>,
+    usage: &ComponentUsage,
+    idx: usize,
+    component_ref: &str,
+) {
+    if ctx.legacy_scalar_callback_props.is_some() {
+        generate_component_prop_checks_inner::<true>(ctx, usage, idx, component_ref);
+    } else {
+        generate_component_prop_checks_inner::<false>(ctx, usage, idx, component_ref);
+    }
+}
+
+fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
     ctx: &mut ComponentPropCheckContext<'_, '_>,
     usage: &ComponentUsage,
     idx: usize,
@@ -271,10 +234,11 @@ pub(crate) fn generate_component_prop_checks(
     let indent = ctx.indent;
     let strict_v_model = ctx.strict_v_model;
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
-    let has_inline_callback = usage
-        .props
-        .iter()
-        .any(crate::virtual_ts::scope::is_inline_callback_prop);
+    let has_inline_callback = !LEGACY_SCALARS
+        && usage
+            .props
+            .iter()
+            .any(crate::virtual_ts::scope::is_inline_callback_prop);
     let grouped_guard_expr = usage.vif_guard.as_deref().filter(|_| has_inline_callback);
     let grouped_guard = grouped_guard_expr.is_some();
     if let Some(guard) = grouped_guard_expr {
@@ -296,7 +260,9 @@ pub(crate) fn generate_component_prop_checks(
             (source_context, ctx.hoist_shared_preamble),
         )
     };
-    let resolved_props = if let Some(prelude) = ctx.inference_prelude {
+    let resolved_props = if LEGACY_SCALARS {
+        None
+    } else if let Some(prelude) = ctx.inference_prelude {
         let mut prelude = prelude.borrow_mut();
         let super::super::scope::RootOwnerBuffer {
             text,
@@ -315,7 +281,15 @@ pub(crate) fn generate_component_prop_checks(
         resolve(ts, source_context)
     };
     let mut name_occurrences: FxHashMap<String, u32> = FxHashMap::default();
-    for prop in &usage.props {
+    for (prop_index, prop) in usage.props.iter().enumerate() {
+        if LEGACY_SCALARS
+            && (!is_checkable_prop(prop)
+                || ctx
+                    .legacy_scalar_callback_props
+                    .is_some_and(|callbacks| callbacks.contains(&prop_index)))
+        {
+            continue;
+        }
         if !is_checkable_prop(prop) && !crate::virtual_ts::scope::is_inline_ref_callback_prop(prop)
         {
             continue;
@@ -371,20 +345,25 @@ pub(crate) fn generate_component_prop_checks(
                 ts.push_str(check_name.as_str());
             });
             let check_name_end = ts.len();
-            let inline_callback = crate::virtual_ts::scope::is_inline_callback_prop(prop);
-            super::callback_prop_resolution::append_prop_check_type(
-                ts,
-                (
-                    resolved_props.as_ref().filter(|_| inline_callback),
-                    ctx.hoist_shared_preamble,
-                ),
-                (
-                    component_type_name.as_str(),
-                    idx,
-                    safe_prop_name.as_str(),
-                    prop.name.as_str(),
-                ),
-            );
+            let inline_callback =
+                !LEGACY_SCALARS && crate::virtual_ts::scope::is_inline_callback_prop(prop);
+            if LEGACY_SCALARS {
+                append!(*ts, ": __vize_legacy_prop_{idx}_{prop_index} = ");
+            } else {
+                super::callback_prop_resolution::append_prop_check_type(
+                    ts,
+                    (
+                        resolved_props.as_ref().filter(|_| inline_callback),
+                        ctx.hoist_shared_preamble,
+                    ),
+                    (
+                        component_type_name.as_str(),
+                        idx,
+                        safe_prop_name.as_str(),
+                        prop.name.as_str(),
+                    ),
+                );
+            }
             let value_gen_range = profile!("canon.virtual_ts.prop_check.value_emission", {
                 append_prop_value(ts, generated_value.text.as_str())
             });
@@ -472,15 +451,17 @@ pub(crate) fn generate_component_prop_checks(
         append!(*ts, "{indent}}}\n");
     }
 
-    super::generic_props_call::generate_generic_props_call(
-        ts,
-        mappings,
-        usage,
-        idx,
-        template_binding_access,
-        source_context,
-        indent,
-        ctx.typed_fallthrough_values,
-        ctx.hoist_shared_preamble,
-    );
+    if !LEGACY_SCALARS {
+        super::generic_props_call::generate_generic_props_call(
+            ts,
+            mappings,
+            usage,
+            idx,
+            template_binding_access,
+            source_context,
+            indent,
+            ctx.typed_fallthrough_values,
+            ctx.hoist_shared_preamble,
+        );
+    }
 }

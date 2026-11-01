@@ -357,7 +357,7 @@ export default defineComponent({
     assert_eq!(
         output
             .code
-            .matches("  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n")
+            .matches("  { // Generated inherited-member declarations only.\n  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n")
             .count(),
         1,
         "the authored instance receiver is declared once:\n{}",
@@ -372,12 +372,19 @@ export default defineComponent({
         "the component's own data member keeps its lexical binding:\n{}",
         output.code
     );
+    assert_eq!(
+        output
+            .code
+            .matches("  } // End generated inherited-member declarations.\n")
+            .count(),
+        1
+    );
     for name in ["fromBase", "fromMixin", "missing"] {
         assert_eq!(
             output
                 .code
                 .matches(&format!(
-                    "  var {name}!: \"{name}\" extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[keyof typeof __vize_template_instance & \"{name}\"] : any; void ({name});\n"
+                    "  var {name}!: $AuthoredInstanceMember<\"{name}\">; void ({name});\n"
                 ))
                 .count(),
             1,

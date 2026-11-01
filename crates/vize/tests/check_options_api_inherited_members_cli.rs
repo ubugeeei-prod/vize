@@ -84,7 +84,7 @@ fn sources(case: Case) -> Vec<(&'static str, String)> {
     files
 }
 
-fn original_errors(column_shift: usize) -> Vec<String> {
+fn original_errors(column_shift: usize, source_line: &str) -> Vec<String> {
     [
         (
             20,
@@ -114,7 +114,18 @@ fn original_errors(column_shift: usize) -> Vec<String> {
     ]
     .into_iter()
     .map(|(column, code, message)| {
-        format!("error:2:{} [TS{code}] {message}", column + column_shift)
+        // SourceContextCache renders this complete, <160-character authored
+        // line. Only the original title expression is inside the start tag;
+        // the Unicode comment ends before every diagnostic in that control.
+        let binding = if column == 20 && column_shift == 0 {
+            "; binding: 'title'"
+        } else {
+            ""
+        };
+        format!(
+            "error:2:{} [TS{code}] {message} (source: {source_line}{binding})",
+            column + column_shift
+        )
     })
     .collect()
 }
@@ -131,10 +142,10 @@ fn portable_packet(packet: &serde_json::Value) -> serde_json::Value {
                         if let Some((prefix, receiver)) =
                             text.split_once("Property 'missing' does not exist on type '")
                         {
-                            if receiver.starts_with("CreateComponentPublicInstance")
-                                && receiver.ends_with("'.")
-                            {
-                                *diagnostic = format!("{prefix}Property 'missing' does not exist on type '<authored instance>'.").into();
+                            if receiver.starts_with("CreateComponentPublicInstance") {
+                                if let Some((_, source)) = receiver.rsplit_once("'. (source: ") {
+                                    *diagnostic = format!("{prefix}Property 'missing' does not exist on type '<authored instance>'. (source: {source}").into();
+                                }
                             }
                         }
                     }
@@ -155,15 +166,28 @@ fn expected(case: Case) -> serde_json::Value {
     let errors = if repaired {
         vec![]
     } else {
-        original_errors(if matches!(case, Case::UnicodeCrLf) {
-            10
-        } else {
-            0
-        })
+        let files = sources(case);
+        let (_, invalid) = files
+            .iter()
+            .find(|(path, _)| *path == "src/Invalid.vue")
+            .unwrap();
+        let line = invalid.lines().nth(1).unwrap().trim();
+        assert!(
+            line.chars().count() < 160,
+            "fixture must retain its whole source context"
+        );
+        original_errors(
+            if matches!(case, Case::UnicodeCrLf) {
+                10
+            } else {
+                0
+            },
+            line,
+        )
     };
     let files = paths.iter().map(|name|serde_json::json!({"file":name,"diagnostics":
         if *name=="src/Invalid.vue" {errors.clone()} else if *name=="src/Wrapped.vue" {
-            vec!["error:2:34 [TS2339] Property 'toFixed' does not exist on type 'boolean'.".to_owned()]
+            vec![format!("error:2:34 [TS2339] Property 'toFixed' does not exist on type 'boolean'. (source: {})", WRAPPED.lines().nth(1).unwrap().trim())]
         } else {vec![]}})).collect::<Vec<_>>();
     let config: serde_json::Value = serde_json::from_str(CONFIG).expect("physical config JSON");
     serde_json::json!({"files":files,"programs":[{"root":".","tsconfig":"tsconfig.json",

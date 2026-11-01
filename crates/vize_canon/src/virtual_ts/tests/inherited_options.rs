@@ -42,7 +42,7 @@ export default {
             output
                 .code
                 .matches(&format!(
-                    "  var {name}!: \"{name}\" extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[keyof typeof __vize_template_instance & \"{name}\"] : any; void ({name});\n"
+                    "  var {name}!: $AuthoredInstanceMember<\"{name}\">; void ({name});\n"
                 ))
                 .count(),
             1,
@@ -71,7 +71,7 @@ export default {
     assert_eq!(
         output
             .code
-            .matches("\"as\" extends keyof typeof __vize_template_instance")
+            .matches("$AuthoredInstanceMember<\"as\">")
             .count(),
         0,
         "the contextual keyword `as` is not declared by the instance pass:\n{}",

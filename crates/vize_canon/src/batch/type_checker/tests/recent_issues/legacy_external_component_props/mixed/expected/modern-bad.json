@@ -1,0 +1,272 @@
+[
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 30,
+    "file": "src/AliasCamel.vue",
+    "line": 0,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 28,
+    "file": "src/AliasRaw.vue",
+    "line": 0,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 7006,
+    "column": 49,
+    "file": "src/Any.vue",
+    "line": 0,
+    "message": "Parameter 'value' implicitly has an 'any' type.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 28,
+    "file": "src/Callable.vue",
+    "line": 0,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 24,
+    "file": "src/ConstructorArgs.vue",
+    "line": 0,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 25,
+    "file": "src/ConstructorCallableUnion.vue",
+    "line": 0,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 25,
+    "file": "src/External.vue",
+    "line": 0,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2339,
+    "column": 56,
+    "file": "src/InlineBadIdentifier.vue",
+    "line": 0,
+    "message": "Property 'missingRule' does not exist on the component instance.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2339,
+    "column": 63,
+    "file": "src/InlineBadMember.vue",
+    "line": 3,
+    "message": "Property 'missing' does not exist on type '{ okay: boolean; }'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2339,
+    "column": 62,
+    "file": "src/LocalBadCallback.vue",
+    "line": 3,
+    "message": "Property 'missing' does not exist on type 'string'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 91,
+    "file": "src/LoopEvent.vue",
+    "line": 3,
+    "message": "Type '(value: string) => void' is not assignable to type '(value: number) => unknown'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2353,
+    "column": 108,
+    "file": "src/LoopEvent.vue",
+    "line": 3,
+    "message": "Object literal may only specify known properties, and '\"onMissing\"' does not exist in type '{ onKnown?: unknown; }'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 47,
+    "file": "src/LoopEvent.vue",
+    "line": 3,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 60,
+    "file": "src/LoopNameShadow.vue",
+    "line": 3,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 7006,
+    "column": 59,
+    "file": "src/Method.vue",
+    "line": 0,
+    "message": "Parameter 'value' implicitly has an 'any' type.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 25,
+    "file": "src/Method.vue",
+    "line": 0,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 7006,
+    "column": 57,
+    "file": "src/OpaqueUnion.vue",
+    "line": 0,
+    "message": "Parameter 'value' implicitly has an 'any' type.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(ScriptSetup)",
+    "code": 2322,
+    "column": 22,
+    "file": "src/Public.vue",
+    "line": 3,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(ScriptSetup)",
+    "code": 2353,
+    "column": 35,
+    "file": "src/Public.vue",
+    "line": 4,
+    "message": "Object literal may only specify known properties, and 'unrelated' does not exist in type '{ count: number; rules?: ((value: string) => boolean)[] | undefined; config?: { format: (value: string) => boolean; } | undefined; }'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2339,
+    "column": 25,
+    "file": "src/RecordShadow.vue",
+    "line": 3,
+    "message": "Property 'count' does not exist on type 'never'.\nThe intersection '{ count: number; rules?: ((value: string) => boolean)[] | undefined; config?: { format: (value: string) => boolean; } | undefined; } & { [x: string]: unknown; } & { count: \"captured\"; }' was reduced to 'never' because property 'count' has conflicting types in some constituents.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2339,
+    "column": 37,
+    "file": "src/RecordShadow.vue",
+    "line": 3,
+    "message": "Property 'rules' does not exist on type 'never'.\nThe intersection '{ count: number; rules?: ((value: string) => boolean)[] | undefined; config?: { format: (value: string) => boolean; } | undefined; } & { [x: string]: unknown; } & { count: \"captured\"; }' was reduced to 'never' because property 'count' has conflicting types in some constituents.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2339,
+    "column": 75,
+    "file": "src/RecordShadow.vue",
+    "line": 3,
+    "message": "Property 'legacyExtra' does not exist on type 'never'.\nThe intersection '{ count: number; rules?: ((value: string) => boolean)[] | undefined; config?: { format: (value: string) => boolean; } | undefined; } & { [x: string]: unknown; } & { count: \"captured\"; }' was reduced to 'never' because property 'count' has conflicting types in some constituents.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 7006,
+    "column": 131,
+    "file": "src/RecordShadow.vue",
+    "line": 3,
+    "message": "Parameter 'value' implicitly has an 'any' type.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 47,
+    "file": "src/Scope.vue",
+    "line": 3,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(ScriptSetup)",
+    "code": 2339,
+    "column": 43,
+    "file": "src/ScriptBadCallback.vue",
+    "line": 1,
+    "message": "Property 'missing' does not exist on type 'string'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(ScriptSetup)",
+    "code": 2304,
+    "column": 37,
+    "file": "src/ScriptMissingCallback.vue",
+    "line": 1,
+    "message": "Cannot find name 'missingRule'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 25,
+    "file": "src/Shadow.vue",
+    "line": 3,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 2322,
+    "column": 28,
+    "file": "src/UnionKeys.vue",
+    "line": 0,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 7006,
+    "column": 53,
+    "file": "src/Unknown.vue",
+    "line": 0,
+    "message": "Parameter 'value' implicitly has an 'any' type.",
+    "severity": 1
+  },
+  {
+    "blockType": "Some(Template)",
+    "code": 7006,
+    "column": 65,
+    "file": "src/Unregistered.vue",
+    "line": 0,
+    "message": "Parameter 'value' implicitly has an 'any' type.",
+    "severity": 1
+  }
+]

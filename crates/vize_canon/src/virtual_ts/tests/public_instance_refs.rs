@@ -185,7 +185,7 @@ fn an_options_api_default_export_keeps_its_own_instance_form() {
     assert_eq!(
         count_lines(
             &code,
-            "  var missing!: \"missing\" extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[keyof typeof __vize_template_instance & \"missing\"] : any; void (missing);"
+            "  var missing!: $AuthoredInstanceMember<\"missing\">; void (missing);"
         ),
         1,
         "{code}"

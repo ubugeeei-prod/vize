@@ -294,3 +294,50 @@ export default defineComponent({ mixins: [shared], data() { return { payload: { 
     drop(checker);
     std::fs::remove_dir_all(&root).expect("remove completed shadow fixture");
 }
+
+/// A method's explicit receiver is a preservation control, separate from the
+/// original report's implicit-this mixin. Hidden generated errors also fail.
+#[test]
+fn inherited_method_explicit_this_keeps_valid_calls_clean() {
+    let Some(native) = resolve_test_tsgo_binary() else {
+        assert!(
+            std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
+            "required explicit-this control needs the native checker"
+        );
+        return;
+    };
+    let shared = FILES[1].1.replace(
+        "greet(name: string)",
+        "greet(this: { currentDevice: string }, name: string)",
+    );
+    let repaired = FILES[3]
+        .1
+        .replace("greet(1)", "greet('x')")
+        .replace("isPC.toFixed()", "isPC ? 'pc' : 'sp'")
+        .replace("currentDevice.toFixed()", "currentDevice.toUpperCase()")
+        .replace("fromBase.toUpperCase()", "fromBase.toFixed()")
+        .replace("{{ missing }}", "");
+    let files = [
+        FILES[0],
+        ("src/shared.ts", shared.as_str()),
+        ("src/Invalid.vue", repaired.as_str()),
+        FILES[5],
+    ];
+    let root = create_project_case("options-api-inherited-explicit-this", &files);
+    let mut checker = BatchTypeChecker::with_options_and_corsa_path(
+        &root,
+        BatchTypeCheckerOptions::default(),
+        Some(&native),
+    )
+    .expect("real Vue explicit-this checker");
+    checker.enable_options_api();
+    checker.scan_project().expect("explicit-this scan");
+    let result = checker.check_project().expect("explicit-this check");
+    retain_complete_result(&checker, &root, &native, &result, &files, "explicit-this")
+        .expect("retain complete explicit-this source and result before verdict");
+    assert!(result.diagnostics.is_empty(), "{result:?}");
+    assert_eq!(result.exit_code, 0, "{result:?}");
+    assert!(result.success, "{result:?}");
+    drop(checker);
+    std::fs::remove_dir_all(&root).expect("remove completed explicit-this fixture");
+}
