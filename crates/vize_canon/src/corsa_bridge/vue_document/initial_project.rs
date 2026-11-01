@@ -204,9 +204,8 @@ impl CorsaBridge {
                 .source_catalog
                 .extend_native_project_documents(root, &mut project.documents);
         }
-        let config_bytes = read_config(&project)?;
-        let inputs_identical =
-            receipt.owner.is_current(self) && receipt.matches(&project, &config_bytes);
+        let inputs_identical = receipt.owner.is_current(self)
+            && receipt.matches_config_read(&project, read_config(&project));
         let identical = if inputs_identical {
             let expected = receipt.operation_epoch;
             let epoch = Arc::clone(&self.client_operation_epoch);
@@ -275,6 +274,16 @@ impl CorsaBridge {
 }
 
 impl CorsaInitialVueDocument {
+    fn matches_config_read(
+        &self,
+        project: &CorsaVueVirtualProject,
+        bytes: Result<Vec<u8>, CorsaBridgeError>,
+    ) -> bool {
+        // Failure to prove reuse never replaces the ordinary synchronization
+        // operation or its original error/fallback behavior.
+        bytes.is_ok_and(|bytes| self.matches(project, &bytes))
+    }
+
     fn matches(&self, project: &CorsaVueVirtualProject, config_bytes: &[u8]) -> bool {
         self.project.session_project_root == project.session_project_root
             && self.project.session_config_path == project.session_config_path

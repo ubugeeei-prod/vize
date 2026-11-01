@@ -309,3 +309,33 @@ fn sticky_failure_keeps_actual_canon_generated_file_after_later_success_and_brid
     assert!(owner.join(".retained-after-failed-shutdown").is_file());
     std::fs::remove_dir_all(owner).unwrap();
 }
+
+#[test]
+fn missing_private_config_disables_receipt_reuse_without_replacing_the_normal_error_route() {
+    let root = workspace();
+    let bridge = bridge(root.path());
+    let seed = bridge
+        .prepare_initial_vue_project(request(root.path()))
+        .unwrap()
+        .unwrap();
+    let CorsaInitialVueProject {
+        project,
+        lease,
+        config_bytes,
+    } = seed;
+    let receipt = CorsaInitialVueDocument {
+        project,
+        owner: lease.receipt(),
+        operation_epoch: 0,
+        config_bytes,
+    };
+    let current = bridge
+        .build_owned_initial_request(&request(root.path()))
+        .unwrap();
+    let path = current.session_config_path.as_ref().unwrap();
+    std::fs::remove_file(path).unwrap();
+    let unreadable = read_config(&current);
+    assert!(unreadable.is_err(), "actual missing private config");
+    assert!(!receipt.matches_config_read(&current, unreadable));
+    drop(lease);
+}

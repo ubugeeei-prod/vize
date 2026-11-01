@@ -36,13 +36,10 @@ impl ServerState {
             }
         }
         for bridge in self.take_detached_corsa_bridges() {
-            if bridge.is_initialized() {
-                if !bridges.iter().any(|known| Arc::ptr_eq(known, &bridge)) {
-                    bridges.push(bridge);
-                }
-            } else {
-                // Pending startup never delays the outer reply (#10760).
-                bridge.stop_pending_startup();
+            if should_join_bridge(|| bridge.is_initialized(), || bridge.stop_pending_startup())
+                && !bridges.iter().any(|known| Arc::ptr_eq(known, &bridge))
+            {
+                bridges.push(bridge);
             }
         }
         self.retire_project_contexts();
@@ -54,13 +51,16 @@ impl ServerState {
 
     fn corsa_bridge_for_shutdown(&self) -> Option<Arc<CorsaBridge>> {
         let bridge = self.corsa_bridge.read().clone()?;
-        if bridge.is_initialized() {
-            Some(bridge)
-        } else {
-            // Fence queued work and irrevocably queue cleanup behind entered
-            // startup. Only already-initialized owners join the outer wait.
-            bridge.stop_pending_startup();
-            None
-        }
+        should_join_bridge(|| bridge.is_initialized(), || bridge.stop_pending_startup())
+            .then_some(bridge)
     }
 }
+
+/// Publication and pending-stop classification can race. If publication won,
+/// keep that owner in the existing outer join rather than losing both paths.
+fn should_join_bridge(initialized: impl Fn() -> bool, stop_pending: impl FnOnce() -> bool) -> bool {
+    initialized() || (!stop_pending() && initialized())
+}
+
+#[cfg(test)]
+mod tests;
