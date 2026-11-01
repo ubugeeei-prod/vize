@@ -252,6 +252,8 @@ export function validateNativeHistoryToolchain(nativeDir: string, value: unknown
   assert.deepEqual(Object.keys(value.ambient), selectionKeys);
   for (const key of selectionKeys)
     assert(value.ambient[key] === null || typeof value.ambient[key] === "string");
+  const ambientPath = value.ambient.PATH;
+  assert(ambientPath === null || typeof ambientPath === "string");
   for (const key of wrapperKeys) {
     assert(!value.ambient[key], `unqualified producer wrapper: ${key}`);
     assert(!process.env[key], `unqualified observer wrapper: ${key}`);
@@ -315,7 +317,7 @@ export function validateNativeHistoryToolchain(nativeDir: string, value: unknown
     assert.deepEqual(value.buildEnvironment, {
       CARGO: actual.cargo.realpath,
       RUSTC: actual.rustc.realpath,
-      PATH: `${path.dirname(actual.cargo.realpath)}${path.delimiter}${value.ambient.PATH ?? ""}`,
+      PATH: `${path.dirname(actual.cargo.realpath)}${path.delimiter}${ambientPath ?? ""}`,
     });
     observed.qualified = true;
     persist();
