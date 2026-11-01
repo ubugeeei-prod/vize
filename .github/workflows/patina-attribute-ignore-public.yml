@@ -1,0 +1,76 @@
+name: Public attribute ignore acceptance
+run-name: Public attribute ignore @ ${{ inputs.version || github.event.pull_request.head.sha || github.sha }}
+on:
+  pull_request:
+    paths:
+      - .github/workflows/patina-attribute-ignore-public.yml
+      - tools/support/release/patina_attribute_ignore_public/**
+      - tools/support/release/public_install/**
+      - tools/support/release/editor_vite_stub/custody.ts
+      - tools/support/release/public-provider.ts
+      - tools/support/release/release/quota/**
+      - tools/support/archive/**
+      - tools/support/json-value.ts
+      - tools/support/config/windows_consumer/common.ts
+      - tests/tooling/patina-attribute-ignore-public.test.ts
+      - tests/tooling/support/patina-attribute-ignore-contract.ts
+      - tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/**
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact genuine published attribute-ignore-containing version
+        required: true
+        type: string
+      candidate:
+        description: Immutable actual release tag candidate commit
+        required: true
+        type: string
+      producer_run:
+        description: Genuine completed successful original Release run
+        required: true
+        type: string
+permissions: { contents: read, actions: read }
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+concurrency:
+  group: patina-attribute-public-${{ github.event.pull_request.number || inputs.version || github.ref }}
+  cancel-in-progress: false
+defaults:
+  run: { shell: bash }
+jobs:
+  controls:
+    name: Original attribute source and provider refusal controls
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Verify original inputs and meaningful producer/provider/whole-output refusals
+        run: node --test tests/tooling/patina-attribute-ignore-public.test.ts
+  published:
+    needs: controls
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    name: Original nine attributes through installed public Native CLI ESLint and Oxlint
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      PUBLIC_VERSION: ${{ inputs.version }}
+      PUBLIC_CANDIDATE: ${{ inputs.candidate }}
+      PRODUCER_RUN: ${{ inputs.producer_run }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Verify the genuine containing version with complete raw process custody
+        run: node tools/support/release/patina_attribute_ignore_public/run.ts "$PUBLIC_VERSION" "$PUBLIC_CANDIDATE" "$PRODUCER_RUN" "$RUNNER_TEMP/patina-attribute-public"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: patina-attribute-public-${{ inputs.version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/patina-attribute-public/proof/
+          if-no-files-found: error

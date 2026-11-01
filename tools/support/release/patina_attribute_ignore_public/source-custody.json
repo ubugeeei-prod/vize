@@ -1,0 +1,96 @@
+{
+  "schema": "vize.patina-attribute-ignore-public.source.v1",
+  "role": "literal-attribute-ignore-nine-v1",
+  "source": "a70648d367c4fb93510ab001813c7235dae8a5c0",
+  "requiredMerges": [
+    "30153aa658b97928f73f5a12d01d676411166709",
+    "a70648d367c4fb93510ab001813c7235dae8a5c0"
+  ],
+  "referenceProviders": {
+    "eslint-plugin-vue": "10.9.2",
+    "eslint": "10.4.1",
+    "vue-eslint-parser": "10.4.1",
+    "@typescript-eslint/parser": "8.65.0"
+  },
+  "targetProviders": {
+    "eslint": "10.13.0",
+    "vue-eslint-parser": "10.4.1",
+    "oxlint": "1.78.0",
+    "@oxlint/plugins": "1.78.0"
+  },
+  "files": [
+    {
+      "path": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "bytes": 169,
+      "gitBlob": "6fe55e07e80587df896d862d43b543d087a34011",
+      "sha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt",
+      "bytes": 172,
+      "gitBlob": "6d48f660bf48f75859f3f467e5d7847ad96cc587",
+      "sha256": "bd9adf1e9a5161b727da0da9d037a2844d50f21dd63ee0300316e4618ac67129"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/cases.json",
+      "bytes": 4521,
+      "gitBlob": "4101e457e58145098dcd3319127122ff82811b8d",
+      "sha256": "436d6184399349841a522bf0d08958b4f867b197b7a6fe5428d6bbf2216e6ce4"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/eslint-plugin-vue.original.json",
+      "bytes": 35394,
+      "gitBlob": "94e33c2ce0c8b5361fa60bd500b76b3498b62f74",
+      "sha256": "f284836de666e741f1cb4b3cb6a86bff8614711b36fdd386c1ebcac9b58a833b"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/runtime-controls.original.json",
+      "bytes": 9309,
+      "gitBlob": "6dc0656558bb83e18dcf902349c5f5be1f8facc9",
+      "sha256": "96711d8ae2e3d73365ed768b3acff4334bf0d241cbf13764f4a95102a076a5fa"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/vite-runtime-6852.mjs.fixture",
+      "bytes": 35659,
+      "gitBlob": "5e3c378cae06f25588f464924c2edefcc247abbb",
+      "sha256": "3efc312a8430dac0e331dc823fd3fd134f59c694404b3283da0eb851b6663de0"
+    },
+    {
+      "path": "tests/tooling/support/patina-attribute-ignore-contract.ts",
+      "bytes": 6592,
+      "gitBlob": "beb16d91b9a7435a1115f0454e7a1d1a19a79c86",
+      "sha256": "d3d553c463397043bb6a166d03f042369a894cee75e5ed8564badfed8344ffe2"
+    },
+    {
+      "path": "crates/vize/tests/lint_attribute_hyphenation_ignore.rs",
+      "bytes": 6410,
+      "gitBlob": "fd95f7f31582169279cd666a9be64d950ecd6748",
+      "sha256": "d374f5af3f51c46312df248c322d1e36ebd8c92fcd9323495e75c27460bf40a8"
+    },
+    {
+      "path": "tests/tooling/patina-attribute-ignore.test.ts",
+      "bytes": 10994,
+      "gitBlob": "fe88fb7d323292f04850a8c5cc784cce5c28e7b6",
+      "sha256": "a6f58aa43898884f0ecdcf497b3b6a452837b40acbd9a5533bcee4acc7007477"
+    },
+    {
+      "path": "npm/oxlint/src/attribute-eslint.test.ts",
+      "bytes": 6192,
+      "gitBlob": "4597abcb29d1370e11b6dfa5ecdf473de08ac139",
+      "sha256": "816b878e680d84042f3c50630f3bb9e8e1c147fde2bdc7a93067ca68b8ed3b68"
+    },
+    {
+      "path": "npm/oxlint/src/casing-options.test.ts",
+      "bytes": 13587,
+      "gitBlob": "41186ca32d9ef9ef8eee65da764c3d5ba9778ffa",
+      "sha256": "25ef409313d03f99ce8d2c4d895078fb0d7373528bcbd925fd92ca84eb5ea95f"
+    },
+    {
+      "path": "tools/support/release/public_install/native-custody.cjs",
+      "bytes": 4887,
+      "gitBlob": "a464e1ac47114e76430f0dfce363a6574ca50e06",
+      "sha256": "40de2336457a26d93ee72dc9fcbf91f95e6ecdbd9b267c4bc9101cff2a976fea"
+    }
+  ],
+  "limits": "Nine original literal attribute-ignore inputs; six semantic refusals; complete CLI and ESLint fixed points. Oxlint only original independent semantic vectors and same-host retained presentation, without precise-range/fixer qualification. Reference provider identity remains separate from target hosts. Event/Boolean/formatter/JSX roles and whole #6097/#10822 qualification are outside this role."
+}
