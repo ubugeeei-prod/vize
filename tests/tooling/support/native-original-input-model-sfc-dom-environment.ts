@@ -119,7 +119,7 @@ type ModelRuntime = {
   isVNode(value: unknown): value is ModelVNode;
 };
 
-export function openModelDom() {
+export async function openModelDom() {
   // No shared helper importing Vue is used by this family.
   const runtimePath = fromModelVue.resolve("@vue/runtime-dom");
   assert.equal(
@@ -144,11 +144,11 @@ export function openModelDom() {
   const saved = globals.map(
     (name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)] as const,
   );
-  function close() {
+  async function close() {
     let failed = false;
     let firstFailure: unknown;
     try {
-      window.close();
+      await window.happyDOM.close();
     } catch (error) {
       failed = true;
       firstFailure = error;
@@ -179,7 +179,7 @@ export function openModelDom() {
     return { window, runtime, close };
   } catch (error) {
     try {
-      close();
+      await close();
     } catch {
       /* Preserve the bootstrap's first failure. */
     }

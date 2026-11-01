@@ -89,7 +89,7 @@ const primaryRows = new Map<string, ReturnType<typeof compileInputModelPrimary>>
 const primaryAttempts: ObjectValue[] = [];
 const runtimeAttempts: ObjectValue[] = [];
 // This is the genuine first load of Vue runtime-dom after actual DOM globals.
-const dom = openModelDom();
+const dom = await openModelDom();
 
 test("original Model capture keeps all fourteen source/mode/owner/attempt rows", () => {
   if (!captured && !requireCapture && !capturePath) return;
@@ -276,7 +276,7 @@ for (const fixture of fixtures) {
   );
 }
 
-after(() => {
+after(async () => {
   const primaryComplete =
     primaryAttempts.length === fixtures.length &&
     primaryAttempts.every((row) => row.state === "compiled");
@@ -298,7 +298,7 @@ after(() => {
     firstFailure = error;
   }
   try {
-    dom.close();
+    await dom.close();
     environmentCleanup.state = "closed-globals-restored";
   } catch (error) {
     Object.assign(environmentCleanup, { state: "failed", error: modelError(error) });

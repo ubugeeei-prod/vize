@@ -18,7 +18,7 @@ import {
   runtimeErrorDetails,
 } from "./native-original-for-constant-sfc-dom-observation.ts";
 
-type Dom = ReturnType<typeof openModelDom>;
+type Dom = Awaited<ReturnType<typeof openModelDom>>;
 export function modelError(error: unknown) {
   return {
     ...runtimeErrorDetails(error),
@@ -231,14 +231,14 @@ export async function executeInputModel(
       type,
       dispatched,
       defaultPrevented: event.defaultPrevented,
-      isTrusted: event.isTrusted,
+      isTrusted: primitive(Reflect.get(event, "isTrusted")),
     });
     assert(dispatched && !event.defaultPrevented);
     return {
       type,
       dispatched,
       defaultPrevented: event.defaultPrevented,
-      isTrusted: event.isTrusted,
+      isTrusted: primitive(Reflect.get(event, "isTrusted")),
     };
   }
   let failed = false;
@@ -272,7 +272,7 @@ export async function executeInputModel(
           value: actualInput.value,
           composing: Boolean(Reflect.get(actualInput, "composing")),
           bubbles: event.bubbles,
-          isTrusted: event.isTrusted,
+          isTrusted: primitive(Reflect.get(event, "isTrusted")),
           sameTarget: event.target === actualInput,
           sameCurrentTarget: event.currentTarget === actualInput,
         };
@@ -328,7 +328,7 @@ export async function executeInputModel(
         value: fixture.input,
         composing: false,
         bubbles: true,
-        isTrusted: false,
+        isTrusted: { kind: "undefined" },
         sameTarget: true,
         sameCurrentTarget: true,
       },
@@ -337,7 +337,7 @@ export async function executeInputModel(
         value: fixture.programmatic,
         composing: true,
         bubbles: true,
-        isTrusted: false,
+        isTrusted: { kind: "undefined" },
         sameTarget: true,
         sameCurrentTarget: true,
       },
@@ -346,7 +346,7 @@ export async function executeInputModel(
         value: fixture.composing,
         composing: true,
         bubbles: true,
-        isTrusted: false,
+        isTrusted: { kind: "undefined" },
         sameTarget: true,
         sameCurrentTarget: true,
       },
@@ -355,7 +355,7 @@ export async function executeInputModel(
         value: fixture.composing,
         composing: false,
         bubbles: false,
-        isTrusted: false,
+        isTrusted: { kind: "undefined" },
         sameTarget: true,
         sameCurrentTarget: true,
       },
@@ -364,7 +364,7 @@ export async function executeInputModel(
         value: fixture.composing,
         composing: false,
         bubbles: true,
-        isTrusted: false,
+        isTrusted: { kind: "undefined" },
         sameTarget: true,
         sameCurrentTarget: true,
       },
