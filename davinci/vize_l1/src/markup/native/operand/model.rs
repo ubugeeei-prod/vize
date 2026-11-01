@@ -28,6 +28,7 @@ pub use head::NativeModelHead;
 pub struct NativeAttributeModelExpression<'a> {
     origin: Origin<'a>,
     syntax: RetainedExpression<'a>,
+    trim: Option<Span>,
 }
 
 impl<'a> NativeAttributeModelExpression<'a> {
@@ -47,6 +48,11 @@ impl<'a> NativeAttributeModelExpression<'a> {
     #[must_use]
     pub const fn name_span(&self) -> Span {
         self.origin.name_span
+    }
+    /// Authored modifier name, retained only by the supported original head.
+    #[must_use]
+    pub const fn trim_span(&self) -> Option<Span> {
+        self.trim
     }
     /// Join only with the actual component/header/ordinal/source/profile owner.
     /// Equal-byte copies and independently parsed siblings confer no authority.

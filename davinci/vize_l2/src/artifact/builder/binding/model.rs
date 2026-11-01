@@ -3,7 +3,7 @@
 use super::super::{ArtifactError, Builder, Owner, check};
 use crate::expr::ExprRef;
 use crate::lang::js::NativeModelInput;
-use crate::op::{BindingContract, BindingOp, ModelOp, Namespace};
+use crate::op::{Attribute, BindingContract, BindingOp, ModelOp, Namespace};
 use vize_l0::{Box, id::NodeId};
 
 impl<'a> Builder<'a> {
@@ -59,6 +59,15 @@ impl<'a> Builder<'a> {
             Some(span),
         )?;
         check::expression(self.parts.source, id, ExprRef::Js(expression), span)?;
+        let mut attributes = vize_l0::Vec::new_in(&self.allocator);
+        if let Some(modifier) = input.operand().trim_span() {
+            check::owned_span(self.parts.source, id, modifier, Some(span))?;
+            attributes.push(Attribute {
+                name: modifier.slice(self.parts.source),
+                value: None,
+                span: modifier,
+            });
+        }
         let model = Box::new_in(
             ModelOp {
                 contract: BindingContract {
@@ -66,7 +75,7 @@ impl<'a> Builder<'a> {
                     write: ExprRef::Js(expression),
                 },
                 argument: None,
-                attributes: vize_l0::Vec::new_in(&self.allocator),
+                attributes,
                 span,
             },
             &self.allocator,
