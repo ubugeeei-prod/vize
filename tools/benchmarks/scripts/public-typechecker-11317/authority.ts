@@ -149,11 +149,18 @@ export function assertProvenancePayload(
 ) {
   const profile = profiles[role],
     value = asRecord(payload);
+  const names: Record<string, string> = {
+    vize: "vize",
+    "@vizejs/native": "%40vizejs/native",
+    "@vizejs/native-linux-x64-gnu": "%40vizejs/native-linux-x64-gnu",
+  };
+  const purl = names[name];
+  assert.ok(purl, "only the three literal public packages belong to this role");
   assert.equal(value._type, "https://in-toto.io/Statement/v1");
   assert.equal(value.predicateType, "https://slsa.dev/provenance/v1");
   assert.deepEqual(value.subject, [
     {
-      name: "pkg:npm/" + name + "@" + profile.version,
+      name: "pkg:npm/" + purl + "@" + profile.version,
       digest: { sha512: sriSha512(integrity).toString("hex") },
     },
   ]);
