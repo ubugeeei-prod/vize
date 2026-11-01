@@ -30,11 +30,18 @@ const providerKeys = ["repositoryId", "providerSha", "providerRepositoryId"];
 const positive = (value, label) => assert(Number.isSafeInteger(value) && value > 0, label);
 
 export function canonicalTimestamp(value) {
+  const match =
+    typeof value === "string"
+      ? /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,3}))?Z$/.exec(value)
+      : null;
+  assert(match, "Invalid canonical execution timestamp");
+  const parsed = Date.parse(value);
+  const expected = `${match[1]}.${(match[2] ?? "").padEnd(3, "0")}Z`;
   assert(
-    typeof value === "string" && value.endsWith("Z") && Number.isFinite(Date.parse(value)),
+    Number.isFinite(parsed) && new Date(parsed).toISOString() === expected,
     "Invalid canonical execution timestamp",
   );
-  return Date.parse(value);
+  return parsed;
 }
 const window = (value) => {
   const start = canonicalTimestamp(value.started_at);

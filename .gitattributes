@@ -3,6 +3,8 @@ tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 patches/*.patch text eol=lf
 # Diagnostic workflow custody compares complete source bytes on every host.
 tests/_fixtures/tooling/typescript-plugin-metadata-observer-11260.json -text
+# Keep the JSX packet source guard's original full input/argv/oracle fragments byte-exact.
+crates/vize/tests/check_jsx_slot_parameter_types_cli/attribute_expressions.rs text eol=lf
 # Keep GitHub language statistics focused on authored source code.
 *.snap linguist-generated=true
 # Retain the compiler's authored whole-output whitespace in project config oracles.
