@@ -6,7 +6,10 @@ import { authenticateFixCustody } from "../../../tools/support/release/human_rep
 import { publicArchive } from "../../../tools/support/release/human_reports_11252_11253_public/network.ts";
 import { mainManualContext } from "../../../tools/support/release/human_reports_11252_11253_public/context.ts";
 import { gitBlob } from "../../../tools/support/release/human_reports_11252_11253_public/value.ts";
-import { observedFetch } from "../../../tools/support/release/human_reports_11252_11253_public/evidence.ts";
+import {
+  observedFetch,
+  requestUrl,
+} from "../../../tools/support/release/human_reports_11252_11253_public/evidence.ts";
 import { compareOutcome } from "../../../tools/support/release/human_reports_11252_11253_public/processes.ts";
 import type {
   Oracle,
@@ -19,10 +22,9 @@ test("pure loader conserves all arguments, this, returned identity and thrown id
     returned = { same: true },
     events: string[] = [];
   let seen: unknown[] = [];
-  let context: unknown;
   const original = function (this: unknown, ...input: unknown[]) {
     seen = input;
-    context = this;
+    assert.equal(this, receiver);
     return returned;
   };
   const observed = observeLoader(
@@ -32,7 +34,6 @@ test("pure loader conserves all arguments, this, returned identity and thrown id
     () => {},
   );
   assert.equal(Reflect.apply(observed, receiver, args), returned);
-  assert.equal(context, receiver);
   assert.deepEqual(seen, args);
   assert.deepEqual(events, ["attempt", "returned"]);
   const error = { sameError: true };
@@ -149,10 +150,11 @@ test("bounded registry metadata rejects overflow and strict UTF8 before package/
   const receipts: unknown[] = [];
   const sink = (kind: string, value: unknown) => receipts.push({ kind, value });
   const over: typeof fetch = async (input) =>
-    response(new Uint8Array(1024 * 1024 + 1), String(input));
+    response(new Uint8Array(1024 * 1024 + 1), requestUrl(input));
   await assert.rejects(publicArchive("synthetic-overflow", "0", sink, over), /byte limit/);
   assert(receipts.some((v) => (v as { kind: string }).kind === "registry-body-refusal"));
-  const invalid: typeof fetch = async (input) => response(new Uint8Array([0xff]), String(input));
+  const invalid: typeof fetch = async (input) =>
+    response(new Uint8Array([0xff]), requestUrl(input));
   await assert.rejects(publicArchive("synthetic-utf8", "0", sink, invalid));
   assert(receipts.some((v) => (v as { kind: string }).kind === "registry-body"));
   const badSri: typeof fetch = async (input) =>
@@ -162,7 +164,7 @@ test("bounded registry metadata rejects overflow and strict UTF8 before package/
         version: "0",
         dist: { tarball: "https://registry.npmjs.org/synthetic.tgz", integrity: "invalid" },
       }),
-      String(input),
+      requestUrl(input),
     );
   await assert.rejects(publicArchive("synthetic-sri", "0", sink, badSri));
   assert(receipts.some((v) => (v as { kind: string }).kind === "registry-metadata"));

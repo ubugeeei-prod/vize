@@ -4,11 +4,15 @@ import { sha256 } from "./value.ts";
 import { boundedBytes } from "../release/quota/http.ts";
 export type Sink = (kind: string, value: unknown) => void;
 export const discard: Sink = () => {};
+export function requestUrl(input: Parameters<typeof fetch>[0]): string {
+  if (typeof input === "string") return input;
+  return input instanceof URL ? input.href : input.url;
+}
 export function observedFetch(sink: Sink, fetcher: typeof fetch = fetch): typeof fetch {
   return async (input, init) => {
     const response = await fetcher(input, init);
     sink("http-headers", {
-      url: String(input),
+      url: requestUrl(input),
       status: response.status,
       date: response.headers.get("date"),
       location: response.headers.get("location"),
@@ -17,7 +21,7 @@ export function observedFetch(sink: Sink, fetcher: typeof fetch = fetch): typeof
       const hadBody = response.body !== null;
       const raw = hadBody ? await boundedBytes(response, 2 * 1024 * 1024) : Buffer.alloc(0);
       sink("http-body", {
-        url: String(input),
+        url: requestUrl(input),
         status: response.status,
         bytes: raw.length,
         sha256: sha256(raw),
@@ -32,7 +36,7 @@ export function observedFetch(sink: Sink, fetcher: typeof fetch = fetch): typeof
         Object.defineProperty(rebuilt, key, { value: response[key] });
       return rebuilt;
     } catch (error) {
-      sink("http-body-refusal", { url: String(input), error: String(error) });
+      sink("http-body-refusal", { url: requestUrl(input), error: String(error) });
       throw error;
     }
   };
