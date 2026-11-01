@@ -1,0 +1,213 @@
+{
+  "version": 1,
+  "scope": "Historical unit source inputs only; no current product source, images, compiler execution or result normalization.",
+  "roles": {
+    "base": {
+      "commit": "e57fd021bf08b197956807eb122941c9cd13b056",
+      "files": {
+        "crates/vize_canon/src/batch/virtual_project/project.rs": {
+          "fixture": "base/project.rs.txt",
+          "bytes": 19211,
+          "sha256": "54ba3320a64cb16a1a196a5b8c8df053232ab1235b40f39770355cc32668bdc3",
+          "gitBlob": "5b49bf97258677011c9292f34d1d956c0a41e19e"
+        },
+        "crates/vize_canon/src/batch/virtual_project/materialize.rs": {
+          "fixture": "base/materialize.rs.txt",
+          "bytes": 18730,
+          "sha256": "3780adb2c19f54400cf8d12b6b2d5148ce22736fcf7498ee246eb495b2e0f671",
+          "gitBlob": "45b7c0d0ab5f42f1c02cdd9d726f0b2636f89635"
+        },
+        "crates/vize_canon/src/batch/virtual_project/build.rs": {
+          "fixture": "base/build.rs.txt",
+          "bytes": 14806,
+          "sha256": "cd1b1014136ea62d7e2c9cc69c3a5b4ac6292fa0d20d4bee02d9cfcf11c118b7",
+          "gitBlob": "647ff4c5eae607252100fdf86b43c99eaa4904a7"
+        },
+        "crates/vize_canon/src/batch/virtual_project/build/script_build.rs": {
+          "fixture": "base/build/script_build.rs.txt",
+          "bytes": 2667,
+          "sha256": "d8de388f8e049bfcc3115c927ac3d95f34e6597ed06556ef286bb691587b14fd",
+          "gitBlob": "3b04834c8e784bac1467adc4b2aaf08c39d20c70"
+        },
+        "crates/vize_canon/src/batch/virtual_project/jsx_build.rs": {
+          "fixture": "base/jsx_build.rs.txt",
+          "bytes": 3415,
+          "sha256": "056a5b9d8404d44fccccba21cea6b4a607a48757c2f065fb1ad26c22aabccafb",
+          "gitBlob": "a596f70c0b94625bc229f5c3c57e330a9323f05c"
+        },
+        "crates/vize_canon/src/batch/virtual_project/project/artifacts.rs": {
+          "fixture": "base/project/artifacts.rs.txt",
+          "bytes": 8797,
+          "sha256": "7018c5f77f3429bec304a304f74e7647ecb3c30034e4af40ea58cfaefb5f8d95",
+          "gitBlob": "0f47647a564367adb534188f7e3e27408a35eff6"
+        },
+        "Cargo.toml": {
+          "fixture": "base/Cargo.toml.txt",
+          "bytes": 13168,
+          "sha256": "6400cafce2abb1c16bb3c43dfc6498d0a0c695c88849bd5a6bdd4063b91377de",
+          "gitBlob": "679d57dd112ec6cac98ede4d1481787eaeef5397"
+        },
+        "Cargo.lock": {
+          "fixture": "base/Cargo.lock.txt",
+          "bytes": 128818,
+          "sha256": "e9a8659e79a919541b6cf29340886dabad787a18fa3051bd77873fc3a76194a4",
+          "gitBlob": "c95d868c4a6ab932a918a4399f5a78d4e1633e27"
+        }
+      }
+    },
+    "head": {
+      "commit": "d440bf04becabbb71d916915c640d39c8d8c6450",
+      "files": {
+        "crates/vize_canon/src/batch/virtual_project/project.rs": {
+          "fixture": "head/project.rs.txt",
+          "bytes": 19757,
+          "sha256": "01d38af070840ededd98899b3a54b6e04300b1edf6c21c0621ecf156215be7cb",
+          "gitBlob": "7468d4e807dd9904df510df9322c4716732d0cd9"
+        },
+        "crates/vize_canon/src/batch/virtual_project/materialize.rs": {
+          "fixture": "base/materialize.rs.txt",
+          "bytes": 18730,
+          "sha256": "3780adb2c19f54400cf8d12b6b2d5148ce22736fcf7498ee246eb495b2e0f671",
+          "gitBlob": "45b7c0d0ab5f42f1c02cdd9d726f0b2636f89635"
+        },
+        "crates/vize_canon/src/batch/virtual_project/build.rs": {
+          "fixture": "head/build.rs.txt",
+          "bytes": 14945,
+          "sha256": "ffc4ae219f9e22b3e2af0e707a37c94cfec29299e3fceea9b8a9f141be29fa63",
+          "gitBlob": "9c7832177b27d14fb64c381ab5f947306c7d832a"
+        },
+        "crates/vize_canon/src/batch/virtual_project/build/script_build.rs": {
+          "fixture": "head/build/script_build.rs.txt",
+          "bytes": 2737,
+          "sha256": "058a8892ef7f5caf09ebe2f91bba4e07819a61d94f3b8928f1e24ad4869d0c88",
+          "gitBlob": "6fe74f2ef5915d90a31bd6b018e39fbaff2f4c33"
+        },
+        "crates/vize_canon/src/batch/virtual_project/jsx_build.rs": {
+          "fixture": "head/jsx_build.rs.txt",
+          "bytes": 3494,
+          "sha256": "d3deeef788fa7eeea77a79670e3450992f736481ecaf58a9c564f5cea382303a",
+          "gitBlob": "cde236c03b3295c9145793f9c4991de1d2471656"
+        },
+        "crates/vize_canon/src/batch/virtual_project/project/artifacts.rs": {
+          "fixture": "base/project/artifacts.rs.txt",
+          "bytes": 8797,
+          "sha256": "7018c5f77f3429bec304a304f74e7647ecb3c30034e4af40ea58cfaefb5f8d95",
+          "gitBlob": "0f47647a564367adb534188f7e3e27408a35eff6"
+        },
+        "Cargo.toml": {
+          "fixture": "base/Cargo.toml.txt",
+          "bytes": 13168,
+          "sha256": "6400cafce2abb1c16bb3c43dfc6498d0a0c695c88849bd5a6bdd4063b91377de",
+          "gitBlob": "679d57dd112ec6cac98ede4d1481787eaeef5397"
+        },
+        "Cargo.lock": {
+          "fixture": "base/Cargo.lock.txt",
+          "bytes": 128818,
+          "sha256": "e9a8659e79a919541b6cf29340886dabad787a18fa3051bd77873fc3a76194a4",
+          "gitBlob": "c95d868c4a6ab932a918a4399f5a78d4e1633e27"
+        }
+      }
+    },
+    "workflow": {
+      "commit": "a193c99c824b54fbe7e900bb88a19f549cd25ea7",
+      "files": {
+        ".github/workflows/cold-typechecker-scale.yml": {
+          "fixture": "workflow/cold-typechecker-scale.yml.txt",
+          "bytes": 11223,
+          "sha256": "2e91fdc382a626995dcda2896073eed1d23cc2226b83ebc29634a24a7e9a9a0b",
+          "gitBlob": "d765b9627ed3b18531eac5000bd44b28c643d632"
+        }
+      }
+    }
+  },
+  "overlays": [
+    {
+      "role": "base",
+      "productSource": "e57fd021bf08b197956807eb122941c9cd13b056",
+      "files": [
+        {
+          "file": "project.rs",
+          "bytes": 19838,
+          "sha256": "8284e4dc5376eb56ec64436ff725d3b55eb338daebbc9c556a9caeacc73cc087"
+        },
+        {
+          "file": "materialize.rs",
+          "bytes": 18844,
+          "sha256": "2595c0c143f688e9cf2d05907a1c31ee6a5dc32698e78999a1123f57d2d0e227"
+        },
+        {
+          "file": "build.rs",
+          "bytes": 15332,
+          "sha256": "845769f3a48539e49c15ad9adf6be957227c8830720244031fe9d9274378cb4d"
+        },
+        {
+          "file": "build/script_build.rs",
+          "bytes": 3111,
+          "sha256": "da688f631d6f7af6d4378d47faab265134ea7340ae1c61594b00e683b4be554d"
+        },
+        {
+          "file": "jsx_build.rs",
+          "bytes": 3859,
+          "sha256": "452fa6e82ebe65007bf1803ca537239bac7bef9acea6948b0880b87dff2a5aea"
+        },
+        {
+          "file": "project/artifacts.rs",
+          "bytes": 8975,
+          "sha256": "d9bc7eecb07a18c7ec9562356f20177cf76bf39a789db9d4f3a6c5ba196422b2"
+        },
+        {
+          "file": "project/owned_read_buffer_observation.rs",
+          "bytes": 6172,
+          "sha256": "03ddd39c1538187eaa167e5e45ef083a83d1032a0ed5e8cc761fbf4ac8bff127"
+        }
+      ]
+    },
+    {
+      "role": "head",
+      "productSource": "d440bf04becabbb71d916915c640d39c8d8c6450",
+      "files": [
+        {
+          "file": "project.rs",
+          "bytes": 20384,
+          "sha256": "85b9a7b7bf32c4324d8e11ff01b42e45bd5193c0474293e1729d6520fca61463"
+        },
+        {
+          "file": "materialize.rs",
+          "bytes": 18844,
+          "sha256": "2595c0c143f688e9cf2d05907a1c31ee6a5dc32698e78999a1123f57d2d0e227"
+        },
+        {
+          "file": "build.rs",
+          "bytes": 15497,
+          "sha256": "236c0d5f163dba3190b3cfad7a68077e5661fb24765b7207727aede745dd8be3"
+        },
+        {
+          "file": "build/script_build.rs",
+          "bytes": 3216,
+          "sha256": "c3a75a0c94f0f5fa52f611c3ac13ac3d59cd4f01c44d0cd0ebb0ae5c70b24a12"
+        },
+        {
+          "file": "jsx_build.rs",
+          "bytes": 3973,
+          "sha256": "91c727e989175ba305af4a9590ad03dbb4bb3622c94bd1646c92d84bc13e392f"
+        },
+        {
+          "file": "project/artifacts.rs",
+          "bytes": 8975,
+          "sha256": "d9bc7eecb07a18c7ec9562356f20177cf76bf39a789db9d4f3a6c5ba196422b2"
+        },
+        {
+          "file": "project/owned_read_buffer_observation.rs",
+          "bytes": 6172,
+          "sha256": "03ddd39c1538187eaa167e5e45ef083a83d1032a0ed5e8cc761fbf4ac8bff127"
+        }
+      ]
+    }
+  ],
+  "measuredEvidence": {
+    "run": 41323754376,
+    "artifact": 13089973448,
+    "artifactSha256": "cc7b7acb393dfb08dd6262de2ec92e822ab671ae7c479c7cf9d6b6eddd00e2dc",
+    "wholeAuditSha256": "8b7403501d4c7bfde7713eba6a287892edeb61c54d99b6c223b574070be0b4c3"
+  }
+}

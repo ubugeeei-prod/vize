@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
+import fs from "node:fs";
 import { test } from "node:test";
 import {
   instrumentReadSources,
@@ -10,23 +9,48 @@ import { selectObservedTree } from "../../tools/benchmarks/scripts/cold-typechec
 import { readBufferOrders } from "../../tools/benchmarks/scripts/cold-typechecker-scale-paired.ts";
 import { strictPairSources } from "../../tools/benchmarks/scripts/cold-typechecker-scale-strict-pair.ts";
 
-const root = process.env.VIZE_BENCH_GIT_ROOT ?? fileURLToPath(new URL("../../", import.meta.url));
+import {
+  frozenColdSource,
+  frozenColdSourcePins,
+  verifyFrozenColdSource,
+  verifyFrozenReadOverlay,
+} from "./support/cold-typechecker-frozen-source.ts";
+
+const sourceDirectory = "crates/vize_canon/src/batch/virtual_project/";
 test("both actual frozen source roles accept exactly four read hooks and explicit owner carriage", () => {
-  const read = (sha: string, file: string) =>
-    execFileSync("git", ["show", sha + ":crates/vize_canon/src/batch/virtual_project/" + file], {
-      cwd: root,
-      encoding: "utf8",
-    });
-  for (const sha of [strictPairSources.base, strictPairSources.head]) {
-    const project = read(sha, "project.rs"),
-      materialize = read(sha, "materialize.rs");
+  assert.equal(frozenColdSourcePins.base, strictPairSources.base);
+  assert.equal(frozenColdSourcePins.head, strictPairSources.head);
+  for (const role of ["base", "head"] as const) {
+    const sha = frozenColdSourcePins[role];
+    const read = (file: string) => frozenColdSource(role, sourceDirectory + file).toString();
+    const project = read("project.rs"),
+      materialize = read("materialize.rs");
     const builders = {
-      build: read(sha, "build.rs"),
-      script: read(sha, "build/script_build.rs"),
-      jsx: read(sha, "jsx_build.rs"),
-      artifacts: read(sha, "project/artifacts.rs"),
+      build: read("build.rs"),
+      script: read("build/script_build.rs"),
+      jsx: read("jsx_build.rs"),
+      artifacts: read("project/artifacts.rs"),
     };
     const changed = instrumentReadSources(project, materialize, builders);
+    const overlay = {
+      "project.rs": changed.project,
+      "materialize.rs": changed.materialize,
+      "build.rs": changed.builders.build,
+      "build/script_build.rs": changed.builders.script,
+      "jsx_build.rs": changed.builders.jsx,
+      "project/artifacts.rs": changed.builders.artifacts,
+      "project/owned_read_buffer_observation.rs": fs.readFileSync(
+        new URL(
+          "../../tools/benchmarks/scripts/cold-typechecker-scale-read-buffer.rs.txt",
+          import.meta.url,
+        ),
+      ),
+    };
+    verifyFrozenReadOverlay(role, overlay);
+    assert.throws(() => verifyFrozenReadOverlay(role, { ...overlay, extra: "unknown" }));
+    assert.throws(() =>
+      verifyFrozenReadOverlay(role, { ...overlay, "project.rs": changed.project + "\n" }),
+    );
     assert.equal(changed.project.split("owned_read_buffer_observation::read(").length - 1, 4);
     assert.equal(changed.materialize.split("final_project(self)").length - 1, 1);
     assert(
@@ -65,6 +89,16 @@ test("both actual frozen source roles accept exactly four read hooks and explici
       ),
     );
   }
+});
+
+test("whole historical fixtures refuse missing, truncated, changed and extra source bytes", () => {
+  const file = sourceDirectory + "project.rs";
+  const body = frozenColdSource("head", file);
+  assert.throws(() => frozenColdSource("head", "unregistered.rs"));
+  const changed = Buffer.from(body);
+  changed[0] ^= 1;
+  for (const mutant of [body.subarray(0, -1), changed, Buffer.concat([body, Buffer.from("\n")])])
+    assert.throws(() => verifyFrozenColdSource("head", file, mutant));
 });
 
 const sha = "a".repeat(64);
