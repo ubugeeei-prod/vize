@@ -105,17 +105,19 @@ void test("source-built stdio preserves every original response and the whole ve
   const root = fileURLToPath(new URL("../../", import.meta.url));
   const revision = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" });
   assert.equal(revision.status, 0, revision.stderr);
+  const output = path.join(root, "target/differential/versioned-lint-actions-6876.json");
   const report = await runLspPack({
     manifestPath: fileURLToPath(new URL("manifest.json", pack)),
     binaryPath: path.join(root, "target/ci", process.platform === "win32" ? "vize.exe" : "vize"),
     sourceRevision: revision.stdout.trim(),
     repoRoot: root,
+    capture(observed) {
+      mkdirSync(path.dirname(output), { recursive: true });
+      writeFileSync(output, `${JSON.stringify(observed, null, 2)}\n`);
+      // Preserve the whole record even when the existing validator refuses it.
+      t.diagnostic(`versioned-lint-actions-whole-report ${JSON.stringify(observed)}`);
+    },
   });
-  const output = path.join(root, "target/differential/versioned-lint-actions-6876.json");
-  mkdirSync(path.dirname(output), { recursive: true });
-  writeFileSync(output, `${JSON.stringify(report, null, 2)}\n`);
-  // PR workers retain ordinary logs; full workers also retain target/differential.
-  t.diagnostic(`versioned-lint-actions-whole-report ${JSON.stringify(report)}`);
   const unsupported = loaded.cases.filter((fixture) => fixture.data.sourceSession).length;
   assert.deepEqual(report.summary, {
     plannedCases: 79,

@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Auto-import `MyButton` from `../owner's-components/MyButton.vue`",
+    "kind": "quickfix",
+    "edit": {
+      "changes": {
+        "${workspace}/app/Page.vue": [
+          {
+            "range": {
+              "start": {
+                "line": 1,
+                "character": 0
+              },
+              "end": {
+                "line": 1,
+                "character": 0
+              }
+            },
+            "newText": "import MyButton from \"../owner's-components/MyButton.vue\"\n"
+          }
+        ]
+      }
+    },
+    "isPreferred": true
+  }
+]

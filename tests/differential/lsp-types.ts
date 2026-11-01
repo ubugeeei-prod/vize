@@ -18,6 +18,7 @@ export type FixtureData = {
   provenance: { fixCommit: string; witness?: { path: string; sha256: string } };
   documentVersion: number;
   workspaceEditDocumentChanges?: true;
+  workspaceSymlinks?: { path: string; target: string }[];
   openDocument?: false;
   languageId?: "vue" | "javascriptreact" | "typescriptreact";
   initializationOptions?: Record<string, boolean | number>;

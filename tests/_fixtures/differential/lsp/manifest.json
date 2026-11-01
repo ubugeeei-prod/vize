@@ -956,6 +956,46 @@
       }
     },
     {
+      "id": "lsp/regression/auto-import-quoted-symlink-3952",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "auto-import-quoted-symlink-3952",
+        "files": [
+          {
+            "path": "Page.vue.txt",
+            "sha256": "8e36c1d42e0c9ee8999c4b3259ae04580543a902409fc45938bf1d145aa62130"
+          },
+          {
+            "path": "MyButton.vue.txt",
+            "sha256": "b0ca633eb9dd0a5fbf4ea5598d08ad9f0b49af75169670d2c949df3104267dbb"
+          }
+        ]
+      },
+      "case": {
+        "path": "auto-import-quoted-symlink-3952/case.json",
+        "sha256": "917bf1f8d6935fbd9e1efb94343dcb54225b895dc3860b7add884f1d1d02e005"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": false,
+        "codeActions": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/binding-occurrences-original",
       "state": "active",
       "targets": ["stdio"],

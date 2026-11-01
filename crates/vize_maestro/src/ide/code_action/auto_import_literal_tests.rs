@@ -18,8 +18,12 @@ use crate::ide::IdeContext;
 use crate::ide::auto_import::{AutoImportEntry, AutoImportIndex, AutoImportKind};
 use crate::server::ServerState;
 
-const SOURCE: &str = "<script setup lang=\"ts\">\nconst enabled = true\n</script>\n\n<template>\n  <MyButton v-if=\"enabled\" />\n</template>\n";
-const COMPONENT: &str = "<script setup lang=\"ts\">\nconst caption = 'child'\n</script>\n<template><button>{{ caption }}</button></template>\n";
+const SOURCE: &str = include_str!(
+    "../../../../../tests/_fixtures/differential/lsp/auto-import-quoted-symlink-3952/Page.vue.txt"
+);
+const COMPONENT: &str = include_str!(
+    "../../../../../tests/_fixtures/differential/lsp/auto-import-quoted-symlink-3952/MyButton.vue.txt"
+);
 
 fn assert_module(source: &str, expected_specifier: &str) {
     let allocator = Allocator::default();

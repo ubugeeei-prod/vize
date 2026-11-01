@@ -4,6 +4,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { sourceSessionUnsupportedLegacy } from "../../../differential/lsp-source-sessions.ts";
 import { lspWorkspace } from "../../../differential/lsp-workspace.ts";
+import { expectedLspSymlinks } from "../../../differential/lsp-symlinks.ts";
 import { BUILD_RECIPE } from "../../../differential/build-receipt.ts";
 import { sha256 } from "../../../differential/harness.mjs";
 import {
@@ -162,6 +163,13 @@ export function referenceReport(
             mapping,
             before: structuredClone(mapping.files),
             after: structuredClone(mapping.files),
+            ...(mapping.symlinks === undefined
+              ? {}
+              : {
+                  symlinkWorkspaceUri: observation.workspaceUri,
+                  symlinksBefore: expectedLspSymlinks(observation.workspaceUri, mapping.symlinks),
+                  symlinksAfter: expectedLspSymlinks(observation.workspaceUri, mapping.symlinks),
+                }),
           },
           responses: inspectLspObservation(fixture, observation),
         },

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { isDeepStrictEqual } from "node:util";
+import { inspect, isDeepStrictEqual } from "node:util";
 import { validateBuildReceipt } from "./build-receipt.ts";
 import { sha256, validateResultEnvelope } from "./harness.mjs";
 import {
@@ -218,7 +218,12 @@ export function validateLspReport(
     }
     assert.equal(row.legacy.comparator, "complete-jsonrpc-response");
     assert(["completed", "failed"].includes(row.legacy.state));
-    validateLspWorkspace(fixture, row.legacy.workspace, row.legacy.state === "completed");
+    validateLspWorkspace(
+      fixture,
+      row.legacy.workspace,
+      row.legacy.state === "completed",
+      row.legacy.observation?.workspaceUri,
+    );
     if (row.legacy.state === "failed") {
       assert.equal(row.legacy.verdict, "failed");
       assert(typeof row.legacy.error === "string");
@@ -236,4 +241,52 @@ export function validateLspReport(
   }
   assert.deepEqual(report.summary, summary, "every planned LSP case must remain accounted");
   return summary;
+}
+
+/** Capture a detached whole record without changing the existing first verdict. */
+export function validateCapturedLspReport(
+  loaded: LoadedLspManifest,
+  report: LspReport,
+  build: BuildIdentity,
+  capture?: (report: Readonly<LspReport>) => void,
+) {
+  if (capture === undefined) return validateLspReport(loaded, report, build);
+  let failure: { error: unknown } | undefined;
+  try {
+    capture(structuredClone(report));
+  } catch (error) {
+    failure = { error };
+  }
+  let summary: ReturnType<typeof validateLspReport>;
+  try {
+    summary = validateLspReport(loaded, report, build);
+  } catch (primary) {
+    if (failure) retainCaptureFailure(report, failure.error);
+    throw primary;
+  }
+  if (failure) {
+    retainCaptureFailure(report, failure.error);
+    // Failed product records retain their caller-owned verdict and first cause.
+    if (summary.legacyFailures === 0 && summary.baselineDrift === 0) throw failure.error;
+  }
+  return summary;
+}
+
+function retainCaptureFailure(report: LspReport, error: unknown): void {
+  try {
+    console.error(
+      "LSP whole-report capture failure (secondary):",
+      inspect(error, {
+        depth: null,
+        showHidden: true,
+        maxArrayLength: null,
+        maxStringLength: null,
+        getters: false,
+        customInspect: false,
+      }),
+    );
+    console.error(`LSP whole-report capture fallback ${JSON.stringify(report)}`);
+  } catch {
+    // A closed diagnostic stream must not replace the original primary failure.
+  }
 }
