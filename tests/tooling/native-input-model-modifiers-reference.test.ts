@@ -1,4 +1,4 @@
-// First six-source observation: no new native or runtime golden is loaded.
+// Strict current six-source replay; historical unqualified rows are full expected data.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { after, test } from "node:test";
@@ -94,6 +94,34 @@ const mode: TrimMode = modeValue;
 const targetValue = process.env.VIZE_NATIVE_MODEL_MODIFIERS_TARGET ?? "dom";
 assert(targetValue === "dom" || targetValue === "ssr" || targetValue === "vapor");
 const target: TrimTarget = targetValue;
+const goldens: unknown = JSON.parse(
+  fs.readFileSync(
+    new URL("native_original_input_model_modifiers_all_targets.json", fixtureRoot),
+    "utf8",
+  ),
+);
+object(goldens);
+assert.equal(goldens.schema, "vize.native-sfc.original-input-model-modifiers-complete-goldens");
+assert.equal(goldens.inputHash, hash(inputRaw));
+assert.deepEqual(goldens.inputPack, pack);
+object(goldens.provenance);
+assert.equal(goldens.provenance.independentlyReviewedBeforeFreeze, true);
+object(goldens.native);
+object(goldens.primary);
+object(goldens.runtimeResults);
+const expectedNative = goldens.native;
+const primaryTarget = goldens.primary[target],
+  runtimeTarget = goldens.runtimeResults[target];
+object(primaryTarget);
+object(runtimeTarget);
+const expectedPrimary = primaryTarget[mode],
+  expectedRuntime = runtimeTarget[mode];
+assert(Array.isArray(expectedPrimary) && expectedPrimary.length === 6);
+assert(Array.isArray(expectedRuntime) && expectedRuntime.length === 6);
+function whole(actual: unknown, expected: unknown, label: string) {
+  assert.deepEqual(actual, expected, label);
+  assert.equal(JSON.stringify(actual), JSON.stringify(expected), `${label}: all fields/order`);
+}
 const capturePath = process.env.VIZE_NATIVE_MODEL_MODIFIERS_CAPTURE;
 const requireCapture = process.env.VIZE_NATIVE_MODEL_MODIFIERS_REQUIRE_CAPTURE === "1";
 const primaryPrefix = process.env.VIZE_NATIVE_MODEL_MODIFIERS_PRIMARY_CAPTURE;
@@ -131,6 +159,9 @@ const captureObservation: ObjectValue = { state: "absent" };
 let captured: unknown;
 let captureRaw: string | null = null;
 let captureComplete = false;
+let nativeGoldensMatched = false,
+  primaryGoldenMatches = 0,
+  runtimeGoldenMatches = 0;
 let failed = false;
 let firstFailure: unknown;
 let runtimeMatches = 0;
@@ -160,8 +191,9 @@ test(
       assert.equal(captured.schema, "vize.native-sfc.original-input-model-modifiers-capture");
       assert.equal(captured.inputHash, hash(inputRaw));
       assert.deepEqual(captured.inputPack, pack);
-      assert.equal(captured.qualification, "observed-unqualified-current-oracles-pending");
-      assert.equal(captured.nativeGoldenComparisonPerformed, false);
+      assert.equal(captured.qualification, "complete-current-native-oracles-matched");
+      assert.equal(captured.nativeGoldenComparisonPerformed, true);
+      assert.equal(captured.nativeGoldensMatched, true);
       assert.equal(captured.wholePacketQualification, false);
       assert.equal(captured.nativeCaptureComplete, true);
       assert.deepEqual(captured.failures, []);
@@ -216,8 +248,16 @@ test(
         expectedRefusals,
       );
       assertCurrentModelOutside(captured.currentOutside, originalRefusals, fixtures[3]?.source);
+      for (const key of ["fixtures", "custody", "attempts", "refusals"])
+        whole(captured[key], expectedNative[key], `whole native ${key}`);
+      whole(
+        captured.currentOutside,
+        goldens.currentOutside,
+        "all three whole compatibility outside arrays",
+      );
+      nativeGoldensMatched = true;
       captureComplete = true;
-      captureObservation.state = "observed-unqualified";
+      captureObservation.state = "complete-current-native-oracles-matched";
     } catch (error) {
       remember(error);
       throw error;
@@ -248,6 +288,13 @@ for (const fixture of fixtures) {
       attempt.primary = primary;
       primaries.set(fixture.id, primary);
       attempt.state = "observed-unqualified";
+      const expected = expectedPrimary.find((row: unknown) => {
+        object(row);
+        return row.id === fixture.id;
+      });
+      assert(expected);
+      whole(attempt, expected, `whole ${target}/${mode}/${fixture.id} primary`);
+      primaryGoldenMatches++;
     } catch (error) {
       attempt.state = "failed";
       attempt.error = modelError(error);
@@ -317,6 +364,13 @@ for (const fixture of fixtures) {
         assert.deepEqual(native.result, official.result, "entire unnormalized runtime outcome");
         attempt.state = "matched-observation-unqualified";
         runtimeMatches++;
+        const expected = expectedRuntime.find((row: unknown) => {
+          object(row);
+          return row.id === fixture.id;
+        });
+        assert(expected);
+        whole(attempt, expected, `whole ${target}/${mode}/${fixture.id} runtime`);
+        runtimeGoldenMatches++;
       } catch (error) {
         attempt.state = "failed";
         attempt.error = modelError(error);
@@ -337,6 +391,14 @@ after(async () => {
       remember(error);
     }
   }
+  const qualified =
+    requireCapture &&
+    captureComplete &&
+    nativeGoldensMatched &&
+    primaryGoldenMatches === 6 &&
+    runtimeGoldenMatches === 6 &&
+    runtimeMatches === 6 &&
+    !failed;
   const common = {
     schema: "vize.native-sfc.original-input-model-modifiers-runtime-capture",
     target,
@@ -350,14 +412,16 @@ after(async () => {
     sourceCaptureRawSha256: captureRaw === null ? null : hash(captureRaw),
     captureObservation,
     captureComplete,
-    qualification: failed
-      ? "failed-current-observation"
-      : "observed-unqualified-current-oracles-pending",
-    nativeGoldenComparisonPerformed: false,
-    nativeGoldensMatched: false,
-    primaryGoldenMatches: 0,
-    runtimeGoldenMatches: 0,
-    wholePacketQualification: false,
+    qualification: qualified
+      ? "complete-current-oracles-matched"
+      : !requireCapture
+        ? "primary-only-or-unforced-observation"
+        : "failed-current-observation",
+    nativeGoldenComparisonPerformed: nativeGoldensMatched,
+    nativeGoldensMatched,
+    primaryGoldenMatches,
+    runtimeGoldenMatches,
+    wholePacketQualification: qualified,
     runtimeMatches,
     cleanup,
     failed,
@@ -381,5 +445,6 @@ after(async () => {
         runtimeMatches === 6,
     );
     assert.equal(failed, false, "raw attempts retained before verdict");
+    assert.equal(qualified, true, "all current whole comparisons and cleanup must match");
   }
 });

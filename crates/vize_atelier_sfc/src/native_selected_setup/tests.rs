@@ -3,6 +3,7 @@ use serde_json::Value;
 use vize_l0::{String, cstr, id::NodeId};
 use vize_l3::decision::{dom::vue::VueReadKind, native::build_native_selected_setup_dom_decisions};
 
+pub(crate) mod current_model_outside;
 mod nested;
 mod refusal;
 

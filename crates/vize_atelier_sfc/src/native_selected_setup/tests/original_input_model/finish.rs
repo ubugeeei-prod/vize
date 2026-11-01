@@ -26,11 +26,22 @@ pub(super) fn write(
             {
                 failures.push(cstr!("complete input Model golden authority mismatch"));
             }
-            compared = true;
-            for field in ["fixtures", "custody", "attempts", "refusals"] {
-                if goldens["native"].get(field) != native.get(field) {
-                    failures.push(cstr!("whole ordered input Model {field} golden mismatch"));
+            match super::super::current_model_outside::expected("dom") {
+                Ok(current) => {
+                    compared = true;
+                    for field in ["fixtures", "custody", "attempts", "refusals"] {
+                        let expected = if field == "refusals" {
+                            &current
+                        } else {
+                            &goldens["native"][field]
+                        };
+                        if expected != &native[field] {
+                            failures
+                                .push(cstr!("whole ordered input Model {field} golden mismatch"));
+                        }
+                    }
                 }
+                Err(error) => failures.push(error),
             }
         }
         Err(error) => failures.push(cstr!("complete input Model golden parse: {error}")),

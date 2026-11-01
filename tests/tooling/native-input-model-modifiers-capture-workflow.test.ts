@@ -7,16 +7,22 @@ test("modifier inputs, native producers, and all real consumer leaves select hos
   for (const path of [
     "davinci/vize_l3/tests/native_model_lazy.rs",
     "crates/vize_atelier_sfc/src/native_selected_setup/tests/original_input_model_modifiers.rs",
-    ...["custody", "output", "outside", "refusal"].map(
+    ...["custody", "output", "outside", "refusal", "finish"].map(
       (name) =>
         `crates/vize_atelier_sfc/src/native_selected_setup/tests/original_input_model_modifiers/${name}.rs`,
     ),
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_modifier_inputs.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_modifiers_all_targets.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_current_outside.json",
+    "crates/vize_atelier_sfc/src/native_selected_setup/tests/current_model_outside.rs",
     "tests/tooling/native-input-model-modifiers-reference.test.ts",
     "tests/tooling/native-input-model-modifiers-capture-workflow.test.ts",
     "tests/tooling/support/native-input-model-lazy-dom-runtime.ts",
     "tests/tooling/support/native-input-model-lazy-vapor-runtime.ts",
     "tests/tooling/support/native-input-model-modifiers-outside.ts",
+    "tests/tooling/support/native-input-model-current-outside.ts",
+    "tests/tooling/native-original-input-model-sfc-dom-reference.test.ts",
+    "tests/tooling/native-original-input-model-sfc-ssr-reference.test.ts",
   ])
     assert.equal(nativeVaporCaptureRequired([path]), true, path);
   for (const path of [

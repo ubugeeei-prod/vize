@@ -11,6 +11,7 @@ use vize_l0::Allocator;
 use vize_l4::targets::dom::DomMode;
 
 mod custody;
+mod finish;
 mod output;
 mod outside;
 mod refusal;
@@ -178,23 +179,5 @@ fn six_original_models_retain_all_target_mode_attempts_before_verdict() -> Resul
         "fixtures":captures,"custody":owners,"attempts":attempts,"refusals":refusals,
         "currentOutside":current_outside,
     });
-    if let Ok(path) = std::env::var("VIZE_NATIVE_MODEL_MODIFIERS_CAPTURE") {
-        std::fs::write(
-            path,
-            serde_json::to_string_pretty(&capture).map_err(|e| e.to_string())?,
-        )
-        .map_err(|e| e.to_string())?;
-    }
-    println!(
-        "{}",
-        serde_json::to_string(&capture).map_err(|e| e.to_string())?
-    );
-    if complete {
-        Ok(())
-    } else {
-        Err(format!(
-            "incomplete first modifier capture: {}",
-            capture["failures"]
-        ))
-    }
+    finish::write(capture, complete)
 }

@@ -6,7 +6,7 @@ export function nativeVaporCaptureRequired(paths) {
   const trimModel =
     /^(?:davinci\/vize_l3\/tests\/native_model_trim\.rs$|crates\/vize_atelier_sfc\/tests\/native_input_model_trim\/(?:main|custody|output|refusal|finish)\.rs$|crates\/vize_atelier_sfc\/tests\/fixtures\/native_original_input_model_trim_(?:inputs|all_targets)\.json$|tests\/tooling\/native-input-model-trim-(?:reference|capture-workflow)\.test\.ts$|tests\/tooling\/support\/native-input-model-trim-(?:boundary|dom-runtime|vapor-runtime|vapor-module)\.ts$)/;
   const modifierModel =
-    /^(?:davinci\/vize_l3\/tests\/native_model_lazy\.rs$|crates\/vize_atelier_sfc\/src\/native_selected_setup\/tests\/original_input_model_modifiers(?:\.rs$|\/(?:custody|output|outside|refusal)\.rs$)|crates\/vize_atelier_sfc\/tests\/fixtures\/native_original_input_model_modifier_inputs\.json$|tests\/tooling\/native-input-model-modifiers-(?:reference|capture-workflow)\.test\.ts$|tests\/tooling\/support\/native-input-model-(?:lazy-(?:dom|vapor)-runtime|modifiers-outside)\.ts$)/;
+    /^(?:davinci\/vize_l3\/tests\/native_model_lazy\.rs$|crates\/vize_atelier_sfc\/src\/native_selected_setup\/tests\/(?:current_model_outside\.rs$|original_input_model_modifiers(?:\.rs$|\/(?:custody|output|outside|refusal|finish)\.rs$))|crates\/vize_atelier_sfc\/tests\/fixtures\/native_original_input_model_(?:modifier_inputs|modifiers_all_targets|current_outside)\.json$|tests\/tooling\/native-(?:input-model-modifiers-(?:reference|capture-workflow)|original-input-model-sfc-(?:dom|ssr)-reference)\.test\.ts$|tests\/tooling\/support\/native-input-model-(?:lazy-(?:dom|vapor)-runtime|modifiers-outside|current-outside)\.ts$)/;
   return paths.some(
     (path) =>
       inputModel.test(path) ||
