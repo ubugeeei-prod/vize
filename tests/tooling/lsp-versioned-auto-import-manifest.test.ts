@@ -71,8 +71,8 @@ void test("only the exact supporting-client profile changes initialization witho
     workspace: { workspaceEdit: { documentChanges: true } },
   });
   assert.deepEqual(INITIALIZE_CAPABILITIES, before);
-  assert.equal(loaded.cases.length, 81);
-  assert.equal(loaded.cases.filter((row) => row.id !== VERSIONED_AUTO_IMPORT_ID).length, 80);
+  assert.equal(loaded.cases.length, 82);
+  assert.equal(loaded.cases.filter((row) => row.id !== VERSIONED_AUTO_IMPORT_ID).length, 81);
 });
 
 void test("the closed whole import contract refuses foreign metadata, altered pins and partial responses", () => {

@@ -107,7 +107,12 @@ fn original_inline_unicode_header_and_crlf_insertions_keep_whole_edits_and_reque
         assert_eq!((start, end), (byte_offset, byte_offset));
         let mut applied = source.to_owned();
         applied.insert_str(start, &edit.new_text);
-        let intended = [&source[..byte_offset], &text, &source[byte_offset..]].concat();
+        let intended = [
+            source.get(..byte_offset).unwrap(),
+            &text,
+            source.get(byte_offset..).unwrap(),
+        ]
+        .concat();
         eprintln!("whole actually applied template suppression: {applied:?}");
         assert_eq!(applied, intended);
         assert_eq!(state.documents.text(&uri).unwrap(), source);
