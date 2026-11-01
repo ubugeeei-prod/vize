@@ -1,3 +1,5 @@
+# Reporter toolchain bootstrap
+
 The public report workflow prepares the reporter's pnpm 12.16.1 through the
 pinned setup action and this directory's `pnpm-bootstrap.json`. The action's
 `package_json_file` input selects this isolated manifest; the repository's own

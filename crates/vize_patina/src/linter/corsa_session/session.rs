@@ -1,6 +1,6 @@
 use super::{
     CorsaTypeAwareSession,
-    errors::{compact_error, io_error_message},
+    errors::{initialization_error, io_error_message},
     paths::{
         TSCONFIG_FILE_NAME, allocate_session_root, path_to_wire, remove_session_root,
         resolve_corsa_executable, resolve_project_root, runtime_project_root,
@@ -100,12 +100,7 @@ impl CorsaTypeAwareSession {
                 Some(virtual_file_wire.as_str().into()),
             ))
         )
-        .map_err(|error| {
-            compact_error(
-                "Failed to start corsa type-aware session",
-                error.to_compact_string().as_str(),
-            )
-        })?;
+        .map_err(|error| initialization_error(&executable, error.to_compact_string().as_str()))?;
         let supports_overlay_updates = profile!(
             "patina.corsa_session.describe_capabilities",
             block_on(session.describe_capabilities())
