@@ -4,9 +4,8 @@
 //! `__VLS_ctx.<name>`. A name the instance lacks still reports exactly once,
 //! with the instance wording.
 
-use super::super::{
-    BatchTypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary,
-};
+use super::super::{BatchTypeChecker, relative_path, resolve_test_tsgo_binary};
+use super::real_vue::create_project_case;
 use crate::batch::{BatchTypeCheckerOptions, TypeChecker};
 use vize_l0::{String, cstr};
 
@@ -52,7 +51,9 @@ const FILES: [(&str, &str); 6] = [
 /// Native mapped diagnostics for the pack shared with the differential runner:
 /// every misuse of an inherited member reports once with the member's declared
 /// type, valid uses stay silent, and an undeclared name keeps its single
-/// instance report.
+/// instance report. The `extends` and `mixins` members are inferred from the
+/// installed workspace Vue (`tests/node_modules`), not the dependency stub,
+/// whose `defineComponent` carries no mixin members.
 #[test]
 fn inherited_template_members_are_checked_with_their_declared_types() {
     let Some(native) = resolve_test_tsgo_binary() else {
