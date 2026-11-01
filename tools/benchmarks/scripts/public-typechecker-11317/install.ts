@@ -37,7 +37,7 @@ import {
 } from "../../../support/release/human_reports_11252_11253_public/native-loader-prerequisite.ts";
 import type { PackageBase } from "../../../support/release/human_reports_11252_11253_public/model.ts";
 import { profiles, sha256, sources, type Role, type SourceFile } from "./contract.ts";
-import { validateNative, type authenticate } from "./authority.ts";
+import { authenticateProvenance, validateNative, type authenticate } from "./authority.ts";
 import { capture, healthy, type Recorder } from "./execute.ts";
 
 export function assertLocked(lock: JsonRecord, capsule: JsonRecord, name: string, version: string) {
@@ -191,16 +191,14 @@ export async function install(
     assert.equal(entry.version, wanted);
     assert.equal(entry.link, undefined);
     if (vize) assertLocked(lock, authority.capsule, name, version);
-    const source = vize
-      ? { H: profiles[role].candidate, tag: "v" + version, R: profiles[role].run }
-      : undefined;
-    const provenance = await packageMetadata(
-      asString(manifest.name),
-      wanted,
-      entry,
-      source,
-      readRegistry,
-    );
+    let metadata: unknown;
+    await packageMetadata(asString(manifest.name), wanted, entry, undefined, async (url) => {
+      metadata = await readRegistry(url);
+      return metadata;
+    });
+    const provenance = vize
+      ? await authenticateProvenance(role, name, asRecord(asRecord(metadata).dist), readRegistry)
+      : { publicMetadataLockAndArchiveBound: true, vizeSourceProvenanceClaimed: false };
     const payload = await readBytes(asString(entry.resolved));
     record.json(label + ".archive-download.json", {
       url: entry.resolved,

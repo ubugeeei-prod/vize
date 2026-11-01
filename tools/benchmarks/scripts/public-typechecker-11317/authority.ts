@@ -5,7 +5,11 @@ import { join } from "node:path";
 import { asArray, asRecord, asString, type JsonRecord } from "../../../support/json-value.ts";
 import { githubSnapshot } from "../../../support/release/release/quota/http.ts";
 import { readReleaseOwnership } from "../../../support/release/release/quota_ownership.ts";
-import { publicUrl, sriSha512 } from "../../../support/release/public_install/registry.ts";
+import {
+  publicUrl,
+  sriSha512,
+  type Reader,
+} from "../../../support/release/public_install/registry.ts";
 import { profiles, sha256, type Role } from "./contract.ts";
 import type { Recorder } from "./execute.ts";
 
@@ -133,4 +137,77 @@ export async function authenticate(role: Role, record: Recorder) {
   }
   record.json("release-authority.json", { role, profile, ownership, sourceFiles });
   return { capsule, ownership, sourceFiles };
+}
+
+/** These two original Release runs published from main/S, while C owns the
+ * separately authenticated tag, prepared manifests and compiled native image. */
+export function assertProvenancePayload(
+  role: Role,
+  name: string,
+  integrity: unknown,
+  payload: unknown,
+) {
+  const profile = profiles[role],
+    value = asRecord(payload);
+  assert.equal(value._type, "https://in-toto.io/Statement/v1");
+  assert.equal(value.predicateType, "https://slsa.dev/provenance/v1");
+  assert.deepEqual(value.subject, [
+    {
+      name: "pkg:npm/" + name + "@" + profile.version,
+      digest: { sha512: sriSha512(integrity).toString("hex") },
+    },
+  ]);
+  const predicate = asRecord(value.predicate),
+    definition = asRecord(predicate.buildDefinition);
+  assert.equal(
+    definition.buildType,
+    "https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1",
+  );
+  const workflow = asRecord(definition.externalParameters).workflow;
+  assert.deepEqual(workflow, {
+    ref: "refs/heads/main",
+    repository: "https://github.com/ubugeeei-prod/vize",
+    path: ".github/workflows/release.yml",
+  });
+  assert.deepEqual(definition.resolvedDependencies, [
+    {
+      uri: "git+https://github.com/ubugeeei-prod/vize@refs/heads/main",
+      digest: { gitCommit: profile.source },
+    },
+  ]);
+  const invocation = asRecord(asRecord(predicate.runDetails).metadata).invocationId;
+  assert.equal(
+    invocation,
+    "https://github.com/ubugeeei-prod/vize/actions/runs/" + profile.run + "/attempts/1",
+  );
+  return {
+    source: profile.source,
+    preparedCandidate: profile.candidate,
+    workflow,
+    invocation,
+    package: name,
+    subjectSha512: sriSha512(integrity).toString("hex"),
+    payloadBindingChecked: true,
+    cryptographicSignatureVerificationPerformed: false,
+  };
+}
+export async function authenticateProvenance(
+  role: Role,
+  name: string,
+  dist: JsonRecord,
+  reader: Reader,
+) {
+  const url = publicUrl(asString(asRecord(dist.attestations).url));
+  const response = asRecord(await reader(url)),
+    payloads: unknown[] = [];
+  for (const item of asArray(response.attestations)) {
+    const encoded = asString(asRecord(asRecord(asRecord(item).bundle).dsseEnvelope).payload);
+    const raw = Buffer.from(encoded, "base64");
+    assert.equal(raw.toString("base64"), encoded);
+    const payload: unknown = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(raw));
+    if (asRecord(payload).predicateType === "https://slsa.dev/provenance/v1")
+      payloads.push(payload);
+  }
+  assert.equal(payloads.length, 1, "one exact original-release SLSA payload required");
+  return { url, ...assertProvenancePayload(role, name, dist.integrity, payloads[0]) };
 }

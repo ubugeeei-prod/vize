@@ -18,6 +18,7 @@ import {
   sources,
 } from "../../tools/benchmarks/scripts/public-typechecker-11317/contract.ts";
 import {
+  assertProvenancePayload,
   gitBlob,
   validateCapsule,
   validateNative,
@@ -374,4 +375,70 @@ test("the new closed manual role preserves the old 0.602 job body and never sele
   assert.ok(publicRole.includes("        if: always()"));
   assert.ok(!workflow.slice(0, workflow.indexOf("  public-11317:\n")).includes("actions: read"));
   assert.ok(!workflow.includes("CORSA_PATH"));
+});
+
+// Whole genuine public payload from failed 41323976400, not a fabricated success oracle.
+const actual632Payload =
+  "eyJfdHlwZSI6Imh0dHBzOi8vaW4tdG90by5pby9TdGF0ZW1lbnQvdjEiLCJzdWJqZWN0IjpbeyJuYW1lIjoicGtnOm5wbS92aXplQDAuNjMyLjAiLCJkaWdlc3QiOnsic2hhNTEyIjoiNmVmOTUxYjFjNWVmMjJjZDdlZjI5OWIyMjcwNzIzMTRmZWQyYmViYWNkMTVkZjNjNjRiOWU0N2JhZjZkYWVhNjlhZDUwMWNhZTNiYjlhOGI5MTMyMmI0NmM1ZTcwZTU4MGFhMmFhNDA2NGY0OWYxNDVhMzc2MDU0M2Q3YTM1ZTEifX1dLCJwcmVkaWNhdGVUeXBlIjoiaHR0cHM6Ly9zbHNhLmRldi9wcm92ZW5hbmNlL3YxIiwicHJlZGljYXRlIjp7ImJ1aWxkRGVmaW5pdGlvbiI6eyJidWlsZFR5cGUiOiJodHRwczovL3Nsc2EtZnJhbWV3b3JrLmdpdGh1Yi5pby9naXRodWItYWN0aW9ucy1idWlsZHR5cGVzL3dvcmtmbG93L3YxIiwiZXh0ZXJuYWxQYXJhbWV0ZXJzIjp7IndvcmtmbG93Ijp7InJlZiI6InJlZnMvaGVhZHMvbWFpbiIsInJlcG9zaXRvcnkiOiJodHRwczovL2dpdGh1Yi5jb20vdWJ1Z2VlZWktcHJvZC92aXplIiwicGF0aCI6Ii5naXRodWIvd29ya2Zsb3dzL3JlbGVhc2UueW1sIn19LCJpbnRlcm5hbFBhcmFtZXRlcnMiOnsiZ2l0aHViIjp7ImV2ZW50X25hbWUiOiJ3b3JrZmxvd19kaXNwYXRjaCIsInJlcG9zaXRvcnlfaWQiOiIxMTIzNjEwMjE2IiwicmVwb3NpdG9yeV9vd25lcl9pZCI6IjI4ODgxMzM4MSJ9fSwicmVzb2x2ZWREZXBlbmRlbmNpZXMiOlt7InVyaSI6ImdpdCtodHRwczovL2dpdGh1Yi5jb20vdWJ1Z2VlZWktcHJvZC92aXplQHJlZnMvaGVhZHMvbWFpbiIsImRpZ2VzdCI6eyJnaXRDb21taXQiOiIxZWU3YjE0NDQ1OGFjMWJkMGMwNzE1NmNlMjQxODllNTljYTYwODBhIn19XX0sInJ1bkRldGFpbHMiOnsiYnVpbGRlciI6eyJpZCI6Imh0dHBzOi8vZ2l0aHViLmNvbS9hY3Rpb25zL3J1bm5lci9naXRodWItaG9zdGVkIn0sIm1ldGFkYXRhIjp7Imludm9jYXRpb25JZCI6Imh0dHBzOi8vZ2l0aHViLmNvbS91YnVnZWVlaS1wcm9kL3ZpemUvYWN0aW9ucy9ydW5zLzQxMzA1NjI1OTc0L2F0dGVtcHRzLzEifX19fQ==";
+test("the retained real main/S/run/SRI payload passes; each foreign binding refuses", () => {
+  const raw = Buffer.from(actual632Payload, "base64");
+  assert.equal(sha256(raw), "81154657a27e10890733abb4d777897d237f238b45051ee7d8451665304a94a7");
+  const payload = JSON.parse(raw.toString("utf8")) as {
+      predicate: {
+        buildDefinition: {
+          externalParameters: { workflow: { ref: string; path: string; repository: string } };
+          resolvedDependencies: { uri: string; digest: { gitCommit: string } }[];
+        };
+        runDetails: { metadata: { invocationId: string } };
+      };
+      subject: { name: string; digest: { sha512: string } }[];
+    },
+    integrity =
+      "sha512-bvlRscXvIs1+8pmyJwcjFP7SvrrNFd88ZLnke69trqaa1QHK47uai5EyK0bF5w5YCqKqQGT0nxRaN2BUPXo14Q==";
+  assert.equal(
+    assertProvenancePayload("before", "vize", integrity, payload).source,
+    profiles.before.source,
+  );
+  assert.throws(() => assertProvenancePayload("after", "vize", integrity, payload));
+  const mutations = [
+    (row: typeof payload) => {
+      row.predicate.buildDefinition.externalParameters.workflow.ref = "refs/heads/release/v0.632.0";
+    },
+    (row: typeof payload) => {
+      row.predicate.buildDefinition.externalParameters.workflow.path =
+        ".github/workflows/foreign.yml";
+    },
+    (row: typeof payload) => {
+      row.predicate.buildDefinition.externalParameters.workflow.repository =
+        "https://github.com/foreign/repo";
+    },
+    (row: typeof payload) => {
+      row.predicate.buildDefinition.resolvedDependencies[0].digest.gitCommit =
+        profiles.before.candidate;
+    },
+    (row: typeof payload) => {
+      row.predicate.buildDefinition.resolvedDependencies.push(
+        structuredClone(row.predicate.buildDefinition.resolvedDependencies[0]),
+      );
+    },
+    (row: typeof payload) => {
+      row.predicate.runDetails.metadata.invocationId =
+        "https://github.com/ubugeeei-prod/vize/actions/runs/1/attempts/1";
+    },
+    (row: typeof payload) => {
+      row.predicate.runDetails.metadata.invocationId =
+        "https://github.com/ubugeeei-prod/vize/actions/runs/41305625974/attempts/2";
+    },
+    (row: typeof payload) => {
+      row.subject[0].name = "pkg:npm/foreign@0.632.0";
+    },
+    (row: typeof payload) => {
+      row.subject[0].digest.sha512 = "0".repeat(128);
+    },
+  ];
+  for (const mutate of mutations) {
+    const row = structuredClone(payload);
+    mutate(row);
+    assert.throws(() => assertProvenancePayload("before", "vize", integrity, row));
+  }
 });
