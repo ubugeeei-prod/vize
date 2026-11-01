@@ -6,8 +6,19 @@ import fs from "node:fs";
 import path from "node:path";
 import { coldScalePacketView } from "./cold-typechecker-scale-packet.ts";
 import { captureNativeProfile } from "./cold-typechecker-scale-native-profile.ts";
+import { assertProfileBuild } from "./cold-typechecker-scale-native-source.ts";
+import {
+  assertPhaseProgram,
+  assertPrimaryArgs,
+  assertPrimaryOutput,
+  assertProfileEnvironment,
+  captureNormalPhase,
+  resetOwnedPhaseRuntime,
+  sealInputs as seal,
+} from "./cold-typechecker-scale-native-phase.ts";
 import {
   retainInputBodies,
+  recordNativeBeforeInspection,
   recordReplayBeforeInspection,
   type NativeImage,
 } from "./cold-typechecker-scale-native-custody.ts";
@@ -17,6 +28,8 @@ export interface CaptureSpec {
   sourceSha: string;
   sourceTree: string;
   buildReceipt: string;
+  phaseExecutable: string;
+  phaseBuildReceipt: string;
   providerLockSha256: string;
   vizeExecutable: string;
   vizeArgs: string[];
@@ -127,62 +140,6 @@ export function classifyRaw(bytes: Buffer, cwd: string, project: string, provide
   return { rows, groups: [...groups].sort(([a], [b]) => a.localeCompare(b)) };
 }
 
-/** Entire physical input closure plus exact lexical symlink edges; only one output is excluded. */
-function seal(roots: string[], buildInfo: string | null) {
-  const canonicalRoots = roots.map((root) => fs.realpathSync(root));
-  const visited = new Set<string>(),
-    rows: Row[] = [];
-  const visit = (file: string) => {
-    const stat = fs.lstatSync(file, { bigint: true });
-    const physical = fs.realpathSync(file);
-    assert(
-      canonicalRoots.some((root) => inside(root, physical)),
-      "input symlink escaped sealed roots",
-    );
-    if (stat.isSymbolicLink()) {
-      rows.push({
-        path: file,
-        kind: "symlink",
-        target: utf8(fs.readlinkSync(file, { encoding: "buffer" })),
-        physical,
-      });
-      if (visited.has(physical)) return;
-      visit(physical);
-      return;
-    }
-    if (visited.has(physical)) return;
-    visited.add(physical);
-    if (stat.isDirectory()) {
-      rows.push({ path: physical, kind: "directory", mode: Number(stat.mode) });
-      for (const name of fs.readdirSync(physical, { encoding: "buffer" }).sort(Buffer.compare)) {
-        visit(path.join(physical, utf8(name)));
-      }
-      return;
-    }
-    assert(stat.isFile(), "unmodeled input file kind");
-    if (buildInfo !== null && physical === buildInfo) return;
-    rows.push({
-      path: physical,
-      kind: "file",
-      bytes: Number(stat.size),
-      mtimeNs: stat.mtimeNs.toString(),
-      mode: Number(stat.mode),
-      sha256: fileHash(physical),
-    });
-  };
-  for (const root of canonicalRoots) visit(root);
-  rows.sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
-  return {
-    roots: canonicalRoots,
-    rows,
-    sha256: hash(JSON.stringify(rows)),
-    files: rows.filter((row) => row.kind === "file").length,
-    bytes: rows
-      .filter((row) => row.kind === "file")
-      .reduce((sum, row) => sum + Number(row.bytes), 0),
-  };
-}
-
 /** Invoked only by the explicitly selected hosted attribution mode. */
 export function captureThenReplay(spec: CaptureSpec) {
   assert.equal(process.platform, "linux");
@@ -196,6 +153,8 @@ export function captureThenReplay(spec: CaptureSpec) {
     spec.cwd,
     spec.out,
     spec.buildReceipt,
+    spec.phaseExecutable,
+    spec.phaseBuildReceipt,
   ]) {
     assert(path.isAbsolute(file), "all invocation/input/output paths must be absolute");
   }
@@ -207,6 +166,11 @@ export function captureThenReplay(spec: CaptureSpec) {
     vize = fs.realpathSync(spec.vizeExecutable);
   const buildBytes = fs.readFileSync(spec.buildReceipt),
     build = object(JSON.parse(utf8(buildBytes)));
+  assertProfileBuild(build, fileHash(vize), true);
+  const phaseBinary = fs.realpathSync(spec.phaseExecutable),
+    phaseBuild = fs.readFileSync(spec.phaseBuildReceipt),
+    phaseHash = fileHash(phaseBinary);
+  assertProfileBuild(object(JSON.parse(utf8(phaseBuild))), phaseHash, false);
   assert.equal(build.sourceSha, spec.sourceSha);
   assert.equal(build.treeSha, spec.sourceTree);
   assert.equal(build.binarySha256, fileHash(vize));
@@ -235,8 +199,11 @@ export function captureThenReplay(spec: CaptureSpec) {
   );
   assert.equal(spec.vizeArgs.filter((arg) => arg === "--corsa-path").length, 1);
   assert.equal(spec.vizeArgs[spec.vizeArgs.indexOf("--corsa-path") + 1], spec.backend);
+  assertPrimaryArgs(spec.vizeArgs, spec.backend);
+  assertProfileEnvironment(process.env);
   fs.mkdirSync(spec.out);
   rawWrite(path.join(spec.out, "build-receipt.json"), buildBytes);
+  rawWrite(path.join(spec.out, "phase-build-receipt.json"), phaseBuild);
   const runtime = path.join(spec.out, "runtime"),
     custody = path.join(spec.out, "custody");
   fs.mkdirSync(runtime);
@@ -269,6 +236,21 @@ export function captureThenReplay(spec: CaptureSpec) {
   const sourceBefore = seal([project, provider], null);
   write(path.join(spec.out, "source-before.json"), sourceBefore);
   retainInputBodies(sourceBefore, spec.out, spec.metadataOnlyImages, "source");
+  const phaseEnv = { ...env };
+  delete phaseEnv.VIZE_CACHE_CUSTODY_CAPTURE_DIR;
+  const phase = captureNormalPhase({
+    executable: phaseBinary,
+    args: spec.vizeArgs,
+    cwd: spec.cwd,
+    env: phaseEnv,
+    out: spec.out,
+    images: spec.metadataOnlyImages,
+    snapshot: () => seal([project, provider, xdg, tmp], null),
+  });
+  assert.deepEqual(seal([project, provider], null), sourceBefore);
+  assert.equal(fileHash(phaseBinary), phaseHash);
+  resetOwnedPhaseRuntime(spec.out, phase.snapshot);
+  const vizeStarted = process.hrtime.bigint();
   const vizeHash = fileHash(vize),
     capture = spawnSync(vize, spec.vizeArgs, {
       cwd: spec.cwd,
@@ -276,13 +258,13 @@ export function captureThenReplay(spec: CaptureSpec) {
       maxBuffer: 64 * 1024 * 1024,
       timeout: 600_000,
     });
-  rawWrite(path.join(spec.out, "vize.stdout.bin"), capture.stdout ?? Buffer.alloc(0));
-  rawWrite(path.join(spec.out, "vize.stderr.bin"), capture.stderr ?? Buffer.alloc(0));
-  write(path.join(spec.out, "vize.status.json"), {
-    status: capture.status,
-    signal: capture.signal,
-    error: capture.error?.message ?? null,
-  });
+  recordNativeBeforeInspection(
+    spec.out,
+    "vize",
+    capture,
+    (process.hrtime.bigint() - vizeStarted).toString(),
+    () => null,
+  );
   assert.equal(capture.error, undefined);
   assert.equal(capture.signal, null);
   assert.equal(capture.status, 0);
@@ -348,9 +330,19 @@ export function captureThenReplay(spec: CaptureSpec) {
   const initialBuildInfo = retainBuildInfo("initial");
   assert(!fs.existsSync(buildInfo));
   assert.deepEqual(seal([project, provider], null), sourceBefore);
-  const inputBefore = seal([project, provider, cwd], buildInfo);
+  const inputBefore = seal([project, provider, xdg, tmp], buildInfo);
   write(path.join(spec.out, "materialized-before.json"), inputBefore);
   retainInputBodies(inputBefore, spec.out, spec.metadataOnlyImages, "materialized");
+  assertPrimaryOutput(phase.result, capture);
+  assertPhaseProgram(phase.snapshot, inputBefore, runtime, buildInfo, initialBuildInfo);
+  write(path.join(spec.out, "phase-custody-parity.json"), {
+    completePrimaryOutputAndInputsEqual: true,
+    logicalOuterCommands: spec.profile ? 4 : 3,
+    phaseNativeChildren: "unobserved",
+    loadedFileVector: "unobserved",
+    scope:
+      "complete four-root snapshot; recreated runtime file mtimeNs only; build info separately equal",
+  });
   write(path.join(spec.out, "native-initial.classes.json"), {
     stdout: classifyRaw(stdout, cwd, project, provider),
     stderr: classifyRaw(stderr, cwd, project, provider),
@@ -366,7 +358,7 @@ export function captureThenReplay(spec: CaptureSpec) {
   const elapsedNs = (process.hrtime.bigint() - started).toString();
   return recordReplayBeforeInspection(spec.out, replay, elapsedNs, (status) => {
     const replayBuildInfo = retainBuildInfo("replay");
-    const inputAfter = seal([project, provider, cwd], buildInfo);
+    const inputAfter = seal([project, provider, xdg, tmp], buildInfo);
     write(path.join(spec.out, "materialized-after.json"), inputAfter);
     write(path.join(spec.out, "native-replay.input-custody.json"), {
       initialBuildInfo,
@@ -375,6 +367,7 @@ export function captureThenReplay(spec: CaptureSpec) {
     assert.equal(replay.error, undefined);
     assert.equal(replay.signal, null);
     assert.equal(replay.status, receipt.exitCode);
+    assert.deepEqual(replayBuildInfo, initialBuildInfo);
     assert.deepEqual(replay.stdout, stdout);
     assert.deepEqual(replay.stderr, stderr);
     assert.deepEqual(inputAfter, inputBefore);
@@ -403,7 +396,7 @@ export function captureThenReplay(spec: CaptureSpec) {
         baseline: replay,
         baselineBuildInfo: replayBuildInfo,
         initialSeal: inputBefore,
-        snapshot: () => seal([project, provider, cwd], buildInfo),
+        snapshot: () => seal([project, provider, xdg, tmp], buildInfo),
         retainBuildInfo,
       });
   });

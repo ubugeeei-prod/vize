@@ -1,4 +1,4 @@
-/** Hosted-only entry over the unchanged597 cold corpus and frozen provider graph. */
+/** Hosted-only current SDK4 observation over the unchanged sealed cold corpus. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -8,6 +8,10 @@ import { prepareColdScale, coldScaleSupportScriptFiles } from "./cold-typechecke
 import { coldScaleCommand } from "./cold-typechecker-scale-command.ts";
 import { captureThenReplay } from "./cold-typechecker-scale-native-command.ts";
 import { assertLinuxX64Image, type NativeImage } from "./cold-typechecker-scale-native-custody.ts";
+import {
+  currentProfileSource,
+  verifyProfileSource,
+} from "./cold-typechecker-scale-native-source.ts";
 
 const { values } = parseArgs({
   options: {
@@ -16,10 +20,13 @@ const { values } = parseArgs({
     project: { type: "string" },
     binary: { type: "string" },
     build: { type: "string" },
+    "phase-binary": { type: "string" },
+    "phase-build": { type: "string" },
     "cpu-profile": { type: "boolean", default: false },
   },
 });
 assert(values.provider && values.out && values.project && values.binary && values.build);
+assert(values["phase-binary"] && values["phase-build"]);
 assert.equal(process.platform, "linux");
 assert.equal(process.arch, "x64");
 const provider = fs.realpathSync(values.provider),
@@ -34,6 +41,17 @@ const provider = fs.realpathSync(values.provider),
 const hash = (file: string) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 const lockSha = "9c2974672b5f5358e643276e6ec98c6084681ef609e8f25922ba4aa7adb0f0a6";
 assert.equal(hash(path.join(provider, "package-lock.json")), lockSha);
+const sourceClosure = Object.fromEntries(
+  [values.build, values["phase-build"]].map((receipt, index) => {
+    const build = JSON.parse(fs.readFileSync(receipt, "utf8")) as { sourceRoot: string };
+    return [index === 0 ? "custody" : "normal", verifyProfileSource(build.sourceRoot, provider)];
+  }),
+);
+fs.writeFileSync(
+  path.join(path.dirname(out), "source-closure.json"),
+  JSON.stringify(sourceClosure, null, 2) + "\n",
+  { flag: "wx" },
+);
 const lock = JSON.parse(fs.readFileSync(path.join(provider, "package-lock.json"), "utf8")) as {
   packages: Record<string, { version: string; integrity?: string }>;
 };
@@ -89,9 +107,11 @@ const { command, backend } = coldScaleCommand({
 });
 try {
   captureThenReplay({
-    sourceSha: "597cffd9aa91f0b6e4ddf7f6ed4d71a18270a6ee",
-    sourceTree: "be9c6f3be69a81bdb9202b6616e71c16b6110508",
+    sourceSha: currentProfileSource.sha,
+    sourceTree: currentProfileSource.tree,
     buildReceipt: path.resolve(values.build),
+    phaseExecutable: path.resolve(values["phase-binary"]),
+    phaseBuildReceipt: path.resolve(values["phase-build"]),
     providerLockSha256: lockSha,
     vizeExecutable: command.executable,
     vizeArgs: command.args,

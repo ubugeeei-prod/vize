@@ -100,7 +100,7 @@ export function recordReplayBeforeInspection<T>(
 
 export function recordNativeBeforeInspection<T>(
   out: string,
-  role: "native-replay" | "native-profile",
+  role: "native-replay" | "native-profile" | "phase-vize" | "vize",
   replay: ReplayOutcome,
   elapsedNs: string,
   inspect: (status: InputRow) => T,

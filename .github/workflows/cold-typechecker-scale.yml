@@ -171,14 +171,18 @@ jobs:
       RAYON_NUM_THREADS: "8"
       CARGO_BUILD_JOBS: "8"
       CARGO_INCREMENTAL: "0"
-      NATIVE_SOURCE: "597cffd9aa91f0b6e4ddf7f6ed4d71a18270a6ee"
+      NATIVE_SOURCE: "d2579c761944c5a1480f74443188bb4ba10c3913"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false, fetch-depth: 2 }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Fetch the immutable product oracle before the pure source controls
+        run: |
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$NATIVE_SOURCE"
+          git worktree add --detach "$RUNNER_TEMP/native-command-source" "$NATIVE_SOURCE"
       - name: Refuse custody mutation and partial-failure evidence loss
-        run: node --test tests/tooling/cold-typechecker-scale-native-command.test.ts tests/tooling/cold-typechecker-scale-cpu-report.test.ts
+        run: node --test tests/tooling/cold-typechecker-scale-native-command.test.ts tests/tooling/cold-typechecker-scale-native-phase.test.ts tests/tooling/cold-typechecker-scale-cpu-report.test.ts
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
@@ -203,19 +207,18 @@ jobs:
           cp "$RUNNER_TEMP/native-command-seed/cold-phase/package.json" "$RUNNER_TEMP/native-command-seed/cold-phase/package-lock.json" "$RUNNER_TEMP/native-command-provider/"
           cd "$RUNNER_TEMP/native-command-provider"
           npm ci --ignore-scripts --no-audit --no-fund
-      - name: Build one actual source-sealed custody carrier
+      - name: Build separate current-source normal and custody images
         run: |
           set -euo pipefail
-          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$NATIVE_SOURCE"
-          git worktree add --detach "$RUNNER_TEMP/native-command-source" "$NATIVE_SOURCE"
+          node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/native-command-source" --target-dir "$RUNNER_TEMP/native-phase-target" --binary "$RUNNER_TEMP/native-phase-image/vize" --receipt "$RUNNER_TEMP/native-command-evidence/phase-build.json" --role normal-phase-untimed
           node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/native-command-source" --target-dir "$RUNNER_TEMP/native-command-target" --binary "$RUNNER_TEMP/native-command-image/vize" --receipt "$RUNNER_TEMP/native-command-evidence/build.json" --role native-command-custody-untimed --observer-source-sha "$NATIVE_SOURCE"
-      - name: Capture one Vize invocation and replay its bare materialized native command once
+      - name: Capture normal phases and custody, then one bare and optional single profile replay
         env: { PROFILE_MODE: "${{ inputs.mode }}" }
         run: |
           set -euo pipefail
           profile_args=()
           if [[ "$PROFILE_MODE" = native-command-profile ]]; then profile_args+=(--cpu-profile); fi
-          node tools/benchmarks/scripts/cold-typechecker-scale-native-run.ts --provider "$RUNNER_TEMP/native-command-provider" --project "$RUNNER_TEMP/native-command-project" --out "$RUNNER_TEMP/native-command-evidence/capture" --binary "$RUNNER_TEMP/native-command-image/vize" --build "$RUNNER_TEMP/native-command-evidence/build.json" "${profile_args[@]}"
+          taskset -c 0,1,2,3,4,5,6,7 node tools/benchmarks/scripts/cold-typechecker-scale-native-run.ts --provider "$RUNNER_TEMP/native-command-provider" --project "$RUNNER_TEMP/native-command-project" --out "$RUNNER_TEMP/native-command-evidence/capture" --binary "$RUNNER_TEMP/native-command-image/vize" --build "$RUNNER_TEMP/native-command-evidence/build.json" --phase-binary "$RUNNER_TEMP/native-phase-image/vize" --phase-build "$RUNNER_TEMP/native-command-evidence/phase-build.json" "${profile_args[@]}"
       - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c
         if: always() && inputs.mode == 'native-command-profile'
         with: { go-version: "1.27.2", cache: false }
@@ -227,7 +230,9 @@ jobs:
         if: always() && inputs.mode == 'native-command-profile'
         with:
           name: native-command-profile-raw-${{ github.sha }}-${{ github.run_id }}
-          path: ${{ runner.temp }}/native-command-evidence/capture/native-profile-data
+          path: |
+            ${{ runner.temp }}/native-command-evidence/capture/native-profile-data
+            ${{ runner.temp }}/native-command-evidence/capture/input-blobs
           retention-days: 14
       - name: Preserve source text, raw observations and metadata without executable images
         if: always()
