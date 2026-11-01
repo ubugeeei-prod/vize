@@ -201,5 +201,5 @@ pub(super) fn assert_public(
         {"file":"src/i18n.ts","virtualTs":I18N,"diagnostics":[]}
     ],"programs":[{"root":".","tsconfig":"tsconfig.json","compilerOptions":serde_json::from_str::<Value>(CONFIG).unwrap()["compilerOptions"],
         "files":["src/Formatter.vue","src/Parent.vue","src/i18n.ts"]}],"errorCount":if kind.is_empty(){0}else{2},"warningCount":0,"fileCount":3});
-    assert_eq!(packet, expected);
+    assert_eq!(packet, &expected);
 }
