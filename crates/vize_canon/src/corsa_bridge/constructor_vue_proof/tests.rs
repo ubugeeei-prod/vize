@@ -205,9 +205,13 @@ fn sdk_missing_generic_metadata_is_not_proof_of_a_nongeneric_signature() {
         } else {
             assert!(decoded.unwrap()[0].type_parameters.is_empty());
         }
-        assert!(
-            data.unavailable
-                .contains(&Unavailable::GenericClosureNotAdmitted)
+        assert_eq!(
+            data.unavailable,
+            [
+                Unavailable::SelectedSignatureRequiresNativeCallNode,
+                Unavailable::GenericClosureNotAdmitted,
+                Unavailable::VueReturnOriginNotAdmitted,
+            ]
         );
         assert!(!data.native_admission);
     }
@@ -255,9 +259,13 @@ fn compact_or_malformed_declarations_cannot_supply_native_call_ranges() {
         assert!(NodeHandle::from(node).parse().is_err());
     }
     let data = ObservationData::new(request(), "snapshot".into(), project());
-    assert!(
-        data.unavailable
-            .contains(&Unavailable::SelectedSignatureRequiresNativeCallNode)
+    assert_eq!(
+        data.unavailable,
+        [
+            Unavailable::SelectedSignatureRequiresNativeCallNode,
+            Unavailable::GenericClosureNotAdmitted,
+            Unavailable::VueReturnOriginNotAdmitted,
+        ]
     );
     assert!(!data.native_admission);
 }
@@ -295,8 +303,12 @@ fn matching_property_declarations_and_headers_never_grant_vue_admission() {
     );
     assert_eq!(value["sources"][0]["encoded"], json!([9, 0, 0]));
     assert_eq!(value["nativeAdmission"], false);
-    assert!(
-        data.unavailable
-            .contains(&Unavailable::VueReturnOriginNotAdmitted)
+    assert_eq!(
+        data.unavailable,
+        [
+            Unavailable::SelectedSignatureRequiresNativeCallNode,
+            Unavailable::GenericClosureNotAdmitted,
+            Unavailable::VueReturnOriginNotAdmitted,
+        ]
     );
 }
