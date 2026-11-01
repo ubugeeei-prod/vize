@@ -55,7 +55,6 @@ fault.observers.observeDescendants = (pid, seen, providers, output, _proc, phase
 ${setup}
 process.exitCode = await fault.main(['--ui-conformance'], 'linux');`;
   const env = {
-    ...process.env,
     PATH: directory,
     GITHUB_ACTIONS: String(observed),
     GITHUB_RUN_ID: "phases",
@@ -70,6 +69,13 @@ process.exitCode = await fault.main(['--ui-conformance'], 'linux');`;
     env,
     encoding: "utf8",
   });
+  // Compare the whole effective environment with an independent launch under
+  // the same finite input. macOS adds its own text-encoding variable at launch.
+  const baseline = spawnSync(process.execPath, ["-p", "JSON.stringify(process.env)"], {
+    env,
+    encoding: "utf8",
+  });
+  assert.equal(baseline.status, 0, baseline.stderr);
   const calls = fs.existsSync(path.join(directory, "calls.jsonl"))
     ? fs
         .readFileSync(path.join(directory, "calls.jsonl"), "utf8")
@@ -77,7 +83,7 @@ process.exitCode = await fault.main(['--ui-conformance'], 'linux');`;
         .split("\n")
         .map((line) => JSON.parse(line))
     : [];
-  return { directory, outcome, result, calls, env };
+  return { directory, outcome, result, calls, env: JSON.parse(baseline.stdout) };
 }
 
 test("closed UI mode executes both original argv in one source/session/shared128 observation", () => {
@@ -164,12 +170,61 @@ for (const [first, second, status, count] of [
       assert.equal(phase.commandSignal, status === 143 ? "SIGTERM" : null);
       assert.equal(phase.commandExitCode, status === 143 ? null : status);
       assert.equal(phase.commandReturnCode, status === 143 ? -15 : status);
+      assert.equal(phase.shellReturnCode, status);
       assert.ok(receipt.processRetention.terminalObservation.finishedAt);
     } finally {
       fs.rmSync(value.directory, { recursive: true, force: true });
     }
   });
 }
+
+for (const [code, status, setup] of [
+  ["ENOENT", 127, "fs.unlinkSync(process.env.PATH + '/vp');"],
+  ["EACCES", 126, "fs.chmodSync(process.env.PATH + '/vp', 0o644);"],
+] as const) {
+  test(`UI shell launch refusal ${code} preserves ${status} and never starts phase two`, () => {
+    const value = fixture("0", "0", setup);
+    try {
+      assert.equal(value.result.status, status, value.result.stderr);
+      assert.equal(value.result.signal, null);
+      assert.deepEqual(value.calls, []);
+      const receipt = JSON.parse(fs.readFileSync(value.outcome, "utf8"));
+      assert.equal(receipt.commandReturnCode, status);
+      assert.equal(receipt.phases.length, 1);
+      const phase = receipt.phases[0];
+      assert.deepEqual(phase.command, commands[0]);
+      assert.equal(phase.commandExitCode, null);
+      assert.equal(phase.commandSignal, null);
+      assert.equal(phase.commandReturnCode, 1);
+      assert.equal(phase.shellReturnCode, status);
+      assert.deepEqual(phase.commandSpawnError, { name: "Error", code });
+      assert.equal(phase.sampleSequenceStart, 0);
+      assert.equal(phase.sampleSequenceEnd, 0);
+      assert.equal(receipt.processRetention.observedPackets, 0);
+    } finally {
+      fs.rmSync(value.directory, { recursive: true, force: true });
+    }
+  });
+}
+
+test("default single-command launch refusal retains its original exit1 behavior", () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "-e",
+      `
+const fault = await import(${JSON.stringify(helper)});
+await fault.main(['--', '/nonexistent-vize-pure-fixture-command'], 'linux');`,
+    ],
+    {
+      env: { PATH: "/nonexistent-vize-pure-fixture-path" },
+      encoding: "utf8",
+    },
+  );
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /ENOENT/);
+});
 
 test("phase outcome I/O and setup refusal preserve the first product failure and execute it once", () => {
   for (const setup of [

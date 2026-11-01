@@ -113,6 +113,14 @@ async function runOriginal(
     child.once("error", (error) => {
       spawnError = error;
       receipt.spawnError = errorName(error);
+      Object.assign(receipt, {
+        commandExitCode: null,
+        commandSignal: null,
+        commandSpawnError: {
+          name: errorName(error),
+          code: (error as NodeJS.ErrnoException).code ?? null,
+        },
+      });
       completed = true;
       resolve(1);
     });
@@ -174,6 +182,10 @@ async function runInvocation(
             sample(pid);
           }),
       );
+    } catch (error) {
+      const code = phase.commandSpawnError?.code;
+      if (code !== "ENOENT" && code !== "EACCES") throw error;
+      status = code === "ENOENT" ? 127 : 126;
     } finally {
       receipt.pid = phase.pid;
       phase.sampleSequenceEnd = packetCount();
@@ -181,6 +193,7 @@ async function runInvocation(
     }
     // The original shell && reports 128+signal instead of signalling its parent.
     receipt.commandReturnCode = status < 0 ? 128 - status : status;
+    phase.shellReturnCode = receipt.commandReturnCode;
     receipt.commandFinishedAt = phase.commandFinishedAt;
     if (status !== 0) break;
   }
