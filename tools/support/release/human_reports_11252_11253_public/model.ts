@@ -186,6 +186,7 @@ export interface InstallationFacts {
   sdk: Image[];
   mapperExec: string[];
   native: Image & { packageName: string; token: string; identityProbeOnly: true };
+  nativeLoad: import("./native-loader-prerequisite.ts").NativeLoadPrerequisite;
 }
 export interface InstallReceipt extends InstallationFacts {
   schema: "vize.humanReports11252_11253.install.v1";
