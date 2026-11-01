@@ -44,6 +44,15 @@ fn complete_encoded_ampersand_outputs_retain_data_and_reach_fixed_points() {
     for (id, source, first, second, third) in observations {
         assert_eq!(first, second, "{id}: first full output is stable");
         assert_eq!(second, third, "{id}: third full output is stable");
+        if id == "bare-sequence-reference" {
+            assert_eq!(
+                first.as_str(),
+                include_str!(
+                    "../../../tests/_fixtures/differential/formatter/sfc-encoded-ampersand-data-6098/reference.expected.txt"
+                ),
+                "the registered canonical input retains its complete genuine baseline output"
+            );
+        }
         if matches!(
             id,
             "quoted-reference"
