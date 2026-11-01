@@ -1,9 +1,8 @@
 //! Synthetic Options API controls using the locked, real Vue type owner.
 //! They do not reconstruct a reporter's application or exercise Vue 2.
 
-use super::super::{
-    BatchTypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary,
-};
+use super::super::{BatchTypeChecker, relative_path, resolve_test_tsgo_binary};
+use super::real_vue::create_project_case;
 use crate::batch::{BatchTypeCheckerOptions, TypeChecker};
 use vize_l0::cstr;
 
@@ -101,9 +100,14 @@ fn authored_options_methods_keep_module_augmentations_typed() {
                 })
             })
             .collect();
+        let vue_manifest_path = project_root.join("node_modules/vue/package.json");
+        let vue_manifest = std::fs::read_to_string(&vue_manifest_path)
+            .expect("the real Vue package manifest must exist");
         let packet = serde_json::json!({
             "scope": "synthetic Options API controls with the locked real Vue owner; not the reported app or Vue 2",
             "native": native,
+            "vuePackagePath": std::fs::canonicalize(&vue_manifest_path).expect("actual Vue package path"),
+            "wholeVuePackageManifest": vue_manifest,
             "augmentationPath": augmentation_path,
             "wholeAugmentation": AUGMENTATION,
             "wholeAuthoredSource": component,
