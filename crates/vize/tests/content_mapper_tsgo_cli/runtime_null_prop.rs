@@ -55,11 +55,12 @@ fn runtime_null_prop_keeps_original_acceptance_and_authored_error_repair() {
             "repair",
             Some(TYPED_ERROR.replace("invalid: number", "invalid: string")),
         ),
+        ("restored-error", Some(TYPED_ERROR.to_owned())),
     ] {
         if let Some(typed) = &typed {
             fs::write(project.path().join("src/Typed.vue"), typed).unwrap();
         }
-        let bad = phase == "authored-error";
+        let bad = matches!(phase, "authored-error" | "restored-error");
         let mapper = check_project(&tsgo, project.path(), "tsconfig.json");
         // Retain complete process outcomes before any verdict, including failures.
         println!(
