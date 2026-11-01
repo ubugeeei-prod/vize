@@ -8,6 +8,8 @@ use corsa::{
 };
 use vize_l0::{String, cstr};
 
+mod file_text;
+
 impl CorsaProjectClient {
     pub(in crate::lsp_client) fn synchronize_materialized_project_documents(
         &mut self,
@@ -77,7 +79,7 @@ impl CorsaProjectClient {
         let mut summary = FileChangeSummary::default();
         for ((uri, content), path) in documents.iter().zip(paths) {
             self.clear_document_state(uri);
-            if std::fs::read_to_string(&path).ok().as_deref() != Some(*content) {
+            if !file_text::matches(&path, content) {
                 std::fs::write(&path, content).map_err(|error| {
                     cstr!(
                         "Failed to update Canon document {}: {error}",
