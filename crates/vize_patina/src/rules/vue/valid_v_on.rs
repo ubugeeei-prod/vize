@@ -88,6 +88,10 @@ impl Rule for ValidVOn {
         &META
     }
 
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        Some(self)
+    }
+
     fn check_directive<'a>(
         &self,
         ctx: &mut LintContext<'a>,
@@ -186,6 +190,10 @@ impl Rule for ConfiguredValidVOn {
         &META
     }
 
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        Some(self)
+    }
+
     fn check_directive<'a>(
         &self,
         ctx: &mut LintContext<'a>,
@@ -247,6 +255,8 @@ fn is_keyword_expression(exp: &ExpressionNode) -> bool {
     let candidate = simple.content.trim();
     JAVASCRIPT_KEYWORDS.contains(&candidate)
 }
+
+mod native;
 
 #[cfg(test)]
 mod tests;

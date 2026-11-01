@@ -2576,6 +2576,35 @@
       }
     },
     {
+      "id": "linter/native-valid-v-on-6848",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "native-valid-v-on-6848",
+        "files": [
+          {
+            "path": "Original.html.txt",
+            "sha256": "6980aeb5aa08669b0d5d8026b2b3e512522ff1bd18a2382a7b5bf5ea94d31d0c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/next-tick-vapor-gating-10784",
       "state": "active",
       "targets": ["lint"],

@@ -316,6 +316,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // Deprecated-native bare observations, numeric fix requery and disabled
     // controls add three nonliteral legacy calls. All originals stay intact;
     // the literal-only scan counts these calls as skips, not new fixtures.
+    // Valid-v-on's whole legacy/native observer adds one nonliteral call;
+    // absent-handler unit controls add no literal history fixture or trace.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -331,7 +333,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 3
         + 8
         + 5
-        + 3,
+        + 3
+        + 1,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -353,7 +356,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 3
         + 7
         + 5
-        + 3,
+        + 3
+        + 1,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42 + 4,
     restructured: 0,

@@ -11,6 +11,11 @@ junit.store-success-output = true
 filter = 'package(=vize_maestro) & (test(~ide::code_action::versioned_auto_import_tests::) | test(~server::code_actions::versioned_auto_import_tests::))'
 junit.store-success-output = true
 
+# Retain whole valid-v-on legacy/native Case, fix requery and refusal records.
+[[profile.default.overrides]]
+filter = 'package(=vize_patina) & test(~valid_v_on::native::tests::)'
+junit.store-success-output = true
+
 # Retain complete deprecated-native Case/Observation and refusal packets only.
 [[profile.default.overrides]]
 filter = 'package(=vize_patina) & (test(~no_deprecated_v_on_native_modifier::native::tests::) | test(~native::template::context::event::tests::native_modifier::))'
