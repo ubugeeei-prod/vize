@@ -5,6 +5,7 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
+use std::borrow::Cow;
 use vize_carton::{FxHashSet, String, append, cstr};
 
 use vize_croquis::{Croquis, ScopeKind};
@@ -96,10 +97,17 @@ pub(super) fn generate_undefined_refs(
     // which names it declares is unknown and the free-name emission is the
     // only safe one.
     let script_scope_names = if resolve_on_instance || resolve_on_public_instance {
-        match script_content {
-            Some(script) => script_top_level_binding_names(script),
-            None => Some(FxHashSet::default()),
-        }
+        let prepared = if resolve_on_instance {
+            template_binding_access.authored_script_binding_names(summary)
+        } else {
+            None
+        };
+        prepared
+            .map(Cow::Borrowed)
+            .or_else(|| match script_content {
+                Some(script) => script_top_level_binding_names(script).map(Cow::Owned),
+                None => Some(Cow::Owned(FxHashSet::default())),
+            })
     } else {
         None
     };

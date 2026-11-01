@@ -7,6 +7,8 @@
 use super::{helpers::is_reserved_identifier, props::collect_template_prop_names};
 
 mod authored_calls;
+#[cfg(test)]
+mod script_binding_names_tests;
 use std::{
     borrow::Cow,
     cell::{Ref, RefCell},
@@ -364,6 +366,22 @@ impl<'a> TemplateBindingAccess<'a> {
         self.instance
             .as_ref()
             .map(|instance| instance.get().summary)
+    }
+
+    /// Borrow the completed authored-call plan's exact semantic root bindings.
+    /// The same owned set continues to reserve receiver names for this projection.
+    pub(crate) fn authored_script_binding_names(
+        &self,
+        summary: &Croquis,
+    ) -> Option<&FxHashSet<String>> {
+        let instance = self.instance.as_ref()?.get();
+        if !std::ptr::eq(instance.summary, summary) {
+            return None;
+        }
+        match &instance.owner {
+            InstanceOwner::AuthoredCalls { script_names, .. } => Some(script_names),
+            InstanceOwner::PublicGlobals => None,
+        }
     }
 
     pub(crate) fn has_instance_globals(&self) -> bool {
