@@ -71,6 +71,15 @@ runs:
       run: |
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::setup_custom_properties::loop_sources_keep_authored_reads_and_parent_scope -- --exact --nocapture
+    - name: Test typed external props in the selected legacy dialect
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::legacy_external_component_props:: -- --nocapture
     - name: Install locked Vue dependency and pinned syntax corpus
       shell: bash
       run: |
