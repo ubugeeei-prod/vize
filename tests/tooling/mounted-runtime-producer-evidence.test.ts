@@ -13,6 +13,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { parse, stringify } from "yaml";
 import { collectRuntimeProducer } from "./support/mounted-runtime-source.ts";
 
 const keys = [
@@ -259,38 +260,46 @@ await test("evidence I/O failure retains the original terminal failure as the fi
   assert.equal(manifest.streams.stderr.persisted, true);
 });
 
-function rustCaptureWiring(source: string) {
-  const invocation =
-    /      - name: Build and run the affected Rust test cohort\n[\s\S]*?(?=      - name:)/u.exec(
-      source,
-    )?.[0];
-  assert(invocation);
-  assert.match(
-    invocation,
-    /^        env:\n          VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE: \$\{\{ runner\.temp \}\}\/mounted-runtime-producer-failures\n          VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE_FAILURES_ONLY: "1"$/mu,
+type CaptureStep = {
+  name?: string;
+  env?: Record<string, string>;
+  run?: string;
+  if?: string;
+  with?: Record<string, string>;
+};
+type RustWorkflow = { jobs: { "pr-rust-shard": { steps: CaptureStep[] } } };
+
+function captureStep(workflow: RustWorkflow, name: string): CaptureStep {
+  const steps = workflow.jobs["pr-rust-shard"].steps.filter((step) => step.name === name);
+  assert.equal(steps.length, 1, `exactly one ${name} step must retain the owned wiring`);
+  return steps[0];
+}
+
+function rustCaptureWiring(workflow: RustWorkflow) {
+  const invocation = captureStep(workflow, "Build and run the affected Rust test cohort");
+  assert.equal(
+    invocation.env?.VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE,
+    "${{ runner.temp }}/mounted-runtime-producer-failures",
   );
+  assert.equal(invocation.env?.VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE_FAILURES_ONLY, "1");
   assert.match(
-    invocation,
+    invocation.run ?? "",
     /run-affected-rust\.ts "\$RUNNER_TEMP\/rust-plan\.json" cargo nextest run @packages@/u,
   );
-  const upload =
-    /      - name: Preserve rejected mounted runtime producer streams\n([\s\S]*?)(?=\n  rust-product-report:)/u.exec(
-      source,
-    )?.[1];
-  assert(upload);
-  assert.match(upload, /^        if: \$\{\{ always\(\) \}\}$/mu);
-  assert.match(
-    upload,
-    /^          name: mounted-runtime-producer-failures-\$\{\{ matrix\.cohort \}\}-\$\{\{ github\.sha \}\}-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}$/mu,
+  const upload = captureStep(workflow, "Preserve rejected mounted runtime producer streams");
+  assert.equal(upload.if, "${{ always() }}");
+  assert.equal(
+    upload.with?.name,
+    "mounted-runtime-producer-failures-${{ matrix.cohort }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}",
   );
-  const paths = [...upload.matchAll(/^            (.+)$/gmu)].map((match) => match[1]);
+  const paths = (upload.with?.path ?? "").trim().split(/\r?\n/u);
   assert.deepEqual(
     paths,
     ["failure.json", "stdout.bin", "stderr.bin"].map(
       (suffix) => "${{ runner.temp }}/mounted-runtime-producer-failures/*." + suffix,
     ),
   );
-  assert.match(upload, /^          if-no-files-found: ignore$/mu);
+  assert.equal(upload.with?.["if-no-files-found"], "ignore");
 }
 
 await test("the exact Rust invocation captures failures and uploads only attempt-qualified streams", () => {
@@ -298,25 +307,39 @@ await test("the exact Rust invocation captures failures and uploads only attempt
     new URL("../../.github/workflows/pr-rust-products.yml", import.meta.url),
     "utf8",
   );
-  rustCaptureWiring(source);
-  const mutations = [
-    source.replace("VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE:", "UNUSED_PRODUCER_EVIDENCE:"),
-    source.replace(
-      'VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE_FAILURES_ONLY: "1"',
-      'VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE_FAILURES_ONLY: "0"',
-    ),
-    source.replace(
-      "Preserve rejected mounted runtime producer streams\n        if: ${{ always() }}",
-      "Preserve rejected mounted runtime producer streams\n        if: ${{ success() }}",
-    ),
-    source.replace("-${{ github.run_attempt }}\n          path: |", "\n          path: |"),
-    source.replace(
-      "mounted-runtime-producer-failures/*.stdout.bin",
-      "mounted-runtime-producer-failures/**",
-    ),
+  const workflow = parse(source) as RustWorkflow;
+  rustCaptureWiring(workflow);
+  const reformatted = stringify(workflow, { lineWidth: 0 });
+  assert.notEqual(reformatted, source);
+  rustCaptureWiring(parse(reformatted) as RustWorkflow);
+  const invocationName = "Build and run the affected Rust test cohort";
+  const uploadName = "Preserve rejected mounted runtime producer streams";
+  const mutations: ((changed: RustWorkflow) => void)[] = [
+    (changed) => {
+      delete captureStep(changed, invocationName).env![keys[0]];
+    },
+    (changed) => {
+      captureStep(changed, invocationName).env![keys[1]] = "0";
+    },
+    (changed) => {
+      captureStep(changed, uploadName).if = "${{ success() }}";
+    },
+    (changed) => {
+      const settings = captureStep(changed, uploadName).with!;
+      settings.name = settings.name.replace("-${{ github.run_attempt }}", "");
+    },
+    (changed) => {
+      const settings = captureStep(changed, uploadName).with!;
+      settings.path = settings.path.replace(
+        "mounted-runtime-producer-failures/*.stdout.bin",
+        "mounted-runtime-producer-failures/**",
+      );
+    },
   ];
-  for (const changed of mutations) {
-    assert.notEqual(changed, source);
+  for (const mutate of mutations) {
+    const changed = structuredClone(workflow);
+    mutate(changed);
+    assert.notDeepEqual(changed, workflow);
     assert.throws(() => rustCaptureWiring(changed));
   }
 });

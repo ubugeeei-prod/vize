@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - ".github/workflows/sfc-parse-attributes.yml"
+      - "crates/vize_atelier_sfc/src/compile.rs"
+      - "crates/vize_atelier_sfc/src/compile/empty_component.rs"
+      - "crates/vize_vitrine/src/napi/sfc/compile.rs"
       - "crates/vize_vitrine/src/napi/sfc/parse.rs"
       - "crates/vize_vitrine/src/napi/sfc/parse/**"
       - "crates/vize_vitrine/src/napi/sfc/types.rs"
@@ -44,6 +47,7 @@ jobs:
       - name: Verify observer bootstrap and source roles
         run: |
           node --test tests/tooling/sfc-parse-attributes-bootstrap.test.ts
+          node --test tests/tooling/sfc-parse-attributes-reference.test.ts
           node tests/native/sfc-parse-attributes-source.mjs
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.99.1" }
