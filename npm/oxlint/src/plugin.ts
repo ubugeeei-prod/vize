@@ -2,6 +2,7 @@ import { definePlugin, defineRule, type Diagnostic } from "@oxlint/plugins";
 import { getRuleOptions } from "./rule-options.js";
 import { vOnEventHyphenationSchema } from "./v-on-event-options.js";
 import { attributeHyphenationSchema } from "./attribute-options.js";
+import { propNameCasingSchema } from "./prop-name-options.js";
 import { collectActiveRule, getActiveRuleDiagnostics } from "./active-rule-collection.js";
 
 import { getPatinaRules } from "./binding.js";
@@ -155,6 +156,8 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
 
 function ruleOptionsSchema(ruleName: string): unknown[] {
   switch (ruleName) {
+    case "vue/prop-name-casing":
+      return [propNameCasingSchema()];
     case "vue/component-name-in-template-casing":
       return [
         {

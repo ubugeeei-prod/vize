@@ -1,6 +1,7 @@
 import type { OxlintHtmlOptions, OxlintHtmlOutcome } from "@vizejs/native";
 import type { VOnEventHyphenationOptions } from "./v-on-event-options.js";
 import type { AttributeHyphenationOptions } from "./attribute-options.js";
+import type { PropNameCasingOptions } from "./prop-name-options.js";
 
 export interface PatinaPosition {
   line: number;
@@ -134,6 +135,7 @@ export interface PatinaRuleOptions {
 }
 
 export interface VizeRuleOptions {
+  "vue/prop-name-casing"?: PropNameCasingOptions;
   "script/define-props-destructuring"?: {
     destructure?: "only-when-assigned" | "always" | "never";
   };
