@@ -142,7 +142,7 @@ pub(super) fn collect_component_prop_expression_ranges(
                 }
                 let value = value.as_str().trim();
                 let contains_callback = if legacy_external {
-                    callbacks.contains(value)
+                    callbacks.has_inline_function(value)
                 } else {
                     contains_inline_function_prop_value(value)
                 };

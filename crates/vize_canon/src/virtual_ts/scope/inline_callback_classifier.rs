@@ -29,7 +29,7 @@ impl<'template> LegacyInlineCallbacks<'template> {
         facts
     }
 
-    pub(super) fn contains(&self, value: &str) -> bool {
+    pub(super) fn has_inline_function(&self, value: &str) -> bool {
         let value = value.trim();
         if !may_contain_function(value) {
             return false;
@@ -244,7 +244,7 @@ mod tests {
             "{ format(value) {",
         ];
         assert_eq!(
-            values.map(|value| facts.contains(value)),
+            values.map(|value| facts.has_inline_function(value)),
             [true, true, true, true, false, false, false, false, false]
         );
     }
@@ -261,8 +261,8 @@ mod tests {
         assert_eq!(facts.values.len(), 2);
         assert_eq!(
             [
-                facts.contains("{ format(value) { return !!value } }"),
-                facts.contains("'a=>b'")
+                facts.has_inline_function("{ format(value) { return !!value } }"),
+                facts.has_inline_function("'a=>b'")
             ],
             [true, false]
         );

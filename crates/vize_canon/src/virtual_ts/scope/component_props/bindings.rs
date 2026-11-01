@@ -63,7 +63,7 @@ pub(in crate::virtual_ts::scope) fn component_usage_has_checkable_binding(
             && !usage.props.iter().any(|prop| {
                 prop.value
                     .as_ref()
-                    .is_some_and(|value| callbacks.contains(value.as_str()))
+                    .is_some_and(|value| callbacks.has_inline_function(value.as_str()))
             });
     }
     external
