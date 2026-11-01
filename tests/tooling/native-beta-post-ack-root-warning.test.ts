@@ -257,7 +257,11 @@ test("exact source/role/image/root/pairing/API and post-ACK channel order are re
   for (const [name, mutate] of mutations) {
     const args = fresh();
     mutate(args);
-    assert.throws(() => historicalPostAckTranscript(args[0], args[1], args[2], args[6]), name);
+    assert.throws(
+      () => historicalPostAckTranscript(args[0], args[1], args[2], args[6]),
+      assert.AssertionError,
+      name,
+    );
   }
 });
 
@@ -405,6 +409,6 @@ test("actor graph, one exact unknown32, completed97 same-writer header and no fa
   for (const [name, mutate] of mutations) {
     const args = fresh();
     mutate(args);
-    assert.throws(() => observeHistoricalPostAckRootWarning(...args), name);
+    assert.throws(() => observeHistoricalPostAckRootWarning(...args), assert.AssertionError, name);
   }
 });
