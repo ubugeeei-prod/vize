@@ -35,7 +35,10 @@ fn runtime(version: &str, image: &str) -> std::path::PathBuf {
         "this ignored test requires actual native execution"
     );
     let native = control::runtime();
-    let digest = cstr!("{:x}", Sha256::digest(fs::read(&native).unwrap()));
+    let digest = Sha256::digest(fs::read(&native).unwrap())
+        .iter()
+        .map(|byte| cstr!("{byte:02x}"))
+        .collect::<String>();
     let output = Command::new(&native).arg("--version").output().unwrap();
     record(
         "provider",
