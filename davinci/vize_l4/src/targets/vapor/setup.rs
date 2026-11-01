@@ -138,6 +138,16 @@ pub fn emit_selected_setup_component<L: LinkSink>(
             if mutable {
                 body.push(")");
             }
+        } else if let [
+            VaporPart::Open {
+                node,
+                element,
+                void: true,
+            },
+            VaporPart::Model { model },
+        ] = parts
+        {
+            super::model::write(&mut prelude, &mut body, analysis, *node, element, *model)?;
         } else {
             roots::static_roots(&mut prelude, &mut body, facts)?;
         }
@@ -152,7 +162,7 @@ pub fn emit_selected_setup_component<L: LinkSink>(
     assemble(module).map_err(|assembly| error(VaporErrorKind::Assembly(assembly)))
 }
 
-fn helper<L: LinkSink>(
+pub(super) fn helper<L: LinkSink>(
     writer: &mut Writer<L>,
     vocabulary: &Vocabulary,
     name: &str,

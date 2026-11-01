@@ -122,3 +122,6 @@ fn emit<L: LinkSink>(
         source_map,
     })
 }
+
+#[cfg(test)]
+mod tests;

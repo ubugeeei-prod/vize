@@ -44,6 +44,9 @@ pub(super) fn html_part<L: LinkSink>(writer: &mut Writer<L>, part: &VaporPart<'_
             raw(writer, comment.content);
             writer.push("-->");
         }
+        // Only the selected-setup Model writer consumes this dedicated role.
+        // It contributes no static HTML text or independently emitted code.
+        VaporPart::Model { .. } => {}
     }
 }
 

@@ -11,12 +11,14 @@ use vize_l2::op::{CommentOp, ElementOp, InterpolationOp, TextOp};
 pub(super) mod build;
 mod expression;
 mod file;
+mod model;
 mod setup;
 mod template;
 #[cfg(test)]
 mod tests;
 pub use expression::{VaporExpression, VaporValueKind};
 pub use file::{NativeVaporFileAnalysis, build_vapor_file_decisions};
+pub use model::VaporModel;
 pub use setup::{NativeSelectedSetupVaporAnalysis, build_native_selected_setup_vapor_decisions};
 pub use template::{NativeTemplateVaporAnalysis, build_native_vapor_file_decisions};
 
@@ -37,6 +39,8 @@ pub enum VaporUnsupported {
     SetupRead,
     StringNormalization,
     NestedInterpolation,
+    ModelOrigin,
+    ModelShape,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -71,6 +75,8 @@ pub enum VaporPart<'owner, 'arena> {
         node: NodeId,
         comment: &'owner CommentOp<'arena>,
     },
+    /// A separate original ReadWrite role, never a generic lexical read.
+    Model { model: VaporModel<'owner, 'arena> },
 }
 
 /// A real root's complete contiguous part range; callers cannot mint one.

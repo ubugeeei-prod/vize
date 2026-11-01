@@ -9,6 +9,8 @@ use vize_l2::{
     walk::NodeRef,
 };
 
+mod model;
+
 pub(in crate::decision) struct VaporBuilder<'facts, 'owner, 'arena> {
     setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
     facts: VaporFacts<'owner, 'arena>,
@@ -57,7 +59,8 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
         }
         let (element, void) = match op {
             Op::Element(element) => {
-                let void = matches!(element.tag, "br" | "hr" | "img");
+                let void =
+                    matches!(element.tag, "br" | "hr" | "img") || self.model_opening(node, element);
                 self.element(node, element, void, original_values);
                 self.facts.parts.push(VaporPart::Open {
                     node,
@@ -138,7 +141,7 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
         }
         // No raw-text, RCDATA, table/select/p paragraph
         // recovery, custom-element, component or foreign-tree semantics.
-        if !matches!(
+        if !(matches!(
             element.tag,
             "div"
                 | "span"
@@ -153,7 +156,8 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
                 | "br"
                 | "hr"
                 | "img"
-        ) {
+        ) || element.tag == "input" && void)
+        {
             self.reject(node, element.span, VaporUnsupported::ElementSemantics);
         }
         if void && !element.children.ops.is_empty() {
@@ -186,7 +190,15 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
         }
     }
 
-    pub fn binding(&mut self, node: NodeId, binding: &BindingOp<'arena>) {
+    pub fn binding(&mut self, node: NodeId, binding: &'owner BindingOp<'arena>) {
+        if let BindingOp::Model(model) = binding
+            && self.setup.is_some()
+        {
+            if let Err(reason) = self.model_binding(node, binding, model) {
+                self.reject(node, model.span, reason);
+            }
+            return;
+        }
         self.reject(
             node,
             NodeRef::Binding(binding).span(),
@@ -212,6 +224,7 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
     }
 
     pub fn finish(mut self) -> VaporFacts<'owner, 'arena> {
+        self.finish_model();
         if self.non_comments == 1 {
             self.facts.inherit_attrs = self.root_element;
         }
