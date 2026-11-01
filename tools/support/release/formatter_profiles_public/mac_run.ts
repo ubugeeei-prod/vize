@@ -1,5 +1,13 @@
 import assert from "node:assert/strict";
-import { mkdirSync, readFileSync, realpathSync, statfsSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  statfsSync,
+  writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 import { release } from "node:os";
 import { Recorder, success } from "../../config/windows_consumer/common.ts";
@@ -9,6 +17,8 @@ import { assertEnvironment } from "./run.ts";
 import { assertMacHost, macOriginal, macRole, validateDispatch } from "./mac_contract.ts";
 import { authenticateMac } from "./mac_authority.ts";
 import { installMac, type MacContext } from "./mac_install.ts";
+import { assertFullFalse, macReference } from "./mac_reference.ts";
+import { asString } from "../../json-value.ts";
 
 export function assertMacFiles(before: Entry[], after: Entry[], writable: string[]): void {
   const keep = (rows: Entry[]) => rows.filter((row) => !writable.includes(row.path));
@@ -32,7 +42,7 @@ export function macJournalExit(label: string): 0 | null {
   return label === "original-version" || label === "original-help" ? null : 0;
 }
 
-/** Capture every packet and whole output before evaluating any formatter result. */
+/** Capture every packet and whole output; neither version is judged here. */
 export function observeMac(context: MacContext) {
   const { root, record, identity, cli } = context,
     original = macOriginal();
@@ -56,7 +66,11 @@ export function observeMac(context: MacContext) {
       root,
       custody.env,
     );
-    const output = readFileSync(join(root, "a.vue"));
+    const path = join(root, "a.vue");
+    const output =
+      existsSync(path) && lstatSync(path).isFile() && !lstatSync(path).isSymbolicLink()
+        ? readFileSync(path).toString("base64")
+        : null;
     const after = inventory(root);
     const observation = {
       label,
@@ -64,7 +78,7 @@ export function observeMac(context: MacContext) {
       packet,
       before,
       after,
-      outputRawBase64: output.toString("base64"),
+      outputRawBase64: output,
       custody,
       writable,
     };
@@ -72,7 +86,7 @@ export function observeMac(context: MacContext) {
     return observation;
   }
   for (const command of commands) rows.push(capture(command.label, command.args, command.writable));
-  const outcomes: { name: string; rawBase64: string }[] = [];
+  const outcomes: { name: string; rawBase64: string | null }[] = [];
   for (const [name, args] of [
     ["equals", original.equals],
     ["spaced", original.spaced],
@@ -96,12 +110,25 @@ export function observeMac(context: MacContext) {
       ["check", args.map((arg) => (arg === "--write" ? "--check" : arg))],
     ] as const)
       rows.push(capture(name + "-" + step, [...argv], step === "check" ? [] : ["a.vue"]));
-    outcomes.push({ name, rawBase64: readFileSync(join(root, "a.vue")).toString("base64") });
+    outcomes.push({ name, rawBase64: rows.at(-1)?.outputRawBase64 ?? null });
   }
   record.json("whole-observations.json", { rows, outcomes });
-  // Every command (including both original forms) has now completed and been retained.
+  return { rows, outcomes };
+}
+
+export type MacObservation = ReturnType<typeof observeMac>;
+
+/** Called only after both versions' complete observations have been retained. */
+export function validateMac(context: MacContext, observation: MacObservation, expected: Buffer) {
+  const { identity, record } = context,
+    { rows, outcomes } = observation;
   for (const row of rows) {
     success(row.packet);
+    assert.equal(
+      typeof row.outputRawBase64,
+      "string",
+      "selected output must remain a regular owned file",
+    );
     assertMacFiles(row.before, row.after, row.writable);
     verifyJournal(row.custody.journal, identity, macJournalExit(row.label));
   }
@@ -125,20 +152,45 @@ export function observeMac(context: MacContext) {
       "whole check fixed point: " + name,
     );
   }
-  const equals = outcomes[0]!,
-    spaced = outcomes[1]!,
-    enabled = outcomes[2]!;
-  assert.notEqual(equals.rawBase64, Buffer.from(original.source).toString("base64"));
-  assert.notEqual(
-    equals.rawBase64,
-    enabled.rawBase64,
-    "explicit true must be an effective negative control",
-  );
-  const matched = equals.rawBase64 === spaced.rawBase64;
-  record.json("boolean-comparison.json", { matched, outcomes, historicalFailureRequired: false });
-  if (context.version === "0.628.0")
+  const equals = asString(outcomes[0]?.rawBase64),
+    spaced = asString(outcomes[1]?.rawBase64),
+    enabled = asString(outcomes[2]?.rawBase64);
+  assert.notEqual(equals, Buffer.from(macOriginal().source).toString("base64"));
+  assert.notEqual(equals, enabled, "explicit true must be an effective negative control");
+  const matched = equals === spaced;
+  const reference = expected.toString("base64");
+  record.json("boolean-comparison.json", {
+    matched,
+    outcomes,
+    historicalFailureRequired: false,
+    equalsMatchesFullReference: equals === reference,
+    spacedMatchesFullReference: spaced === reference,
+  });
+  if (context.version === "0.628.0") {
     assert.equal(matched, true, "whole joint false outputs must agree in containing release");
+    assertFullFalse(Buffer.from(equals, "base64"), expected);
+    assertFullFalse(Buffer.from(spaced, "base64"), expected);
+  }
   return { version: context.version, matched, outcomes, commands: rows.length };
+}
+
+/** A baseline verdict cannot prevent the containing release from being evaluated. */
+export function macVerdicts(phases: readonly { version: string; evaluate: () => unknown }[]) {
+  assert.equal(phases.length, 2);
+  return phases.map((phase) => {
+    try {
+      return { version: phase.version, state: "passed", result: phase.evaluate() };
+    } catch (error) {
+      return {
+        version: phase.version,
+        state: "failed",
+        error:
+          error instanceof Error
+            ? { name: error.name, message: error.message, stack: error.stack }
+            : String(error),
+      };
+    }
+  });
 }
 
 export async function runMac(): Promise<void> {
@@ -170,6 +222,8 @@ export async function runMac(): Promise<void> {
     "one GiB floor plus four GiB two-install forecast",
   );
   const record = new Recorder(realpathSync(output));
+  const reference = macReference();
+  record.json("complete-source-reference.json", reference.value);
   record.json("controller.json", {
     controllerSource: process.env.GITHUB_SHA,
     run: process.env.GITHUB_RUN_ID,
@@ -188,6 +242,7 @@ export async function runMac(): Promise<void> {
     ],
   });
   const results: unknown[] = [];
+  const phases: { context: MacContext; observation: MacObservation }[] = [];
   try {
     for (const [version, producer, blob] of [
       ["0.627.0", process.env.BEFORE_PRODUCER_RUN, process.env.BEFORE_AUTHORITY_BLOB],
@@ -197,9 +252,11 @@ export async function runMac(): Promise<void> {
       const phase = new Recorder(join(output, version));
       const authority = await authenticateMac(version, producer, blob, phase);
       const context = installMac(join(phase.root, "consumer"), authority, phase);
-      const result = observeMac(context);
+      const observation = observeMac(context);
+      phases.push({ context, observation });
       results.push({
-        ...result,
+        version,
+        state: "captured-before-verdict",
         candidate: authority.candidate,
         producerSource: authority.ownership.producerSource,
         producer,
@@ -207,10 +264,24 @@ export async function runMac(): Promise<void> {
       });
       record.json("phase-results.json", results);
     }
+    // Authority and provider trust checks precede execution. Formatting verdicts
+    // follow collection of BOTH releases, including an unexpected old result.
+    const verdicts = macVerdicts(
+      phases.map(({ context, observation }) => ({
+        version: context.version,
+        evaluate: () => validateMac(context, observation, reference.output),
+      })),
+    );
+    record.json("verdicts.json", verdicts);
+    assert(
+      verdicts.every((verdict) => verdict.state === "passed"),
+      "both completed phase verdicts are retained; inspect verdicts.json",
+    );
     record.json("qualification.json", {
       state: "passed",
       role: macRole,
       results,
+      verdicts,
       scope:
         "one original11264 SFC, joint three equals/spaced false forms and true/fixed-point controls; no broad formatter/native-adapter/6098 closure",
       limitation:

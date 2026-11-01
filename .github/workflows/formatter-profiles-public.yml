@@ -10,6 +10,7 @@ on:
       - tests/tooling/formatter-profiles-public-mac.test.ts
       - tests/tooling/fixtures/formatter-profiles-public-original.json
       - tests/tooling/fixtures/formatter-profiles-public-mac-original.json
+      - tests/tooling/fixtures/formatter-profiles-public-mac-reference.json
       - tests/tooling/support/lsp/installed-alias-replay/**
       - tools/support/release/editor_vite_stub/custody.ts
       - tools/support/release/editor_vite_stub/filesystem.ts

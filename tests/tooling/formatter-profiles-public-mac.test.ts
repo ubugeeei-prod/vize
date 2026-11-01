@@ -14,7 +14,12 @@ import { macInstallArgs } from "../../tools/support/release/formatter_profiles_p
 import {
   assertMacFiles,
   macJournalExit,
+  macVerdicts,
 } from "../../tools/support/release/formatter_profiles_public/mac_run.ts";
+import {
+  macReference,
+  assertFullFalse,
+} from "../../tools/support/release/formatter_profiles_public/mac_reference.ts";
 import { inventory } from "../../tools/support/release/editor_vite_stub/filesystem.ts";
 import { sha256 } from "../../tools/support/config/windows_consumer/common.ts";
 
@@ -109,6 +114,50 @@ test("original help and version preserve Rust clap exits while successful fmt re
   assert.equal(macJournalExit("original-version"), null);
   for (const label of ["equals-original", "spaced-rewrite", "true-control-check"])
     assert.equal(macJournalExit(label), 0);
+});
+
+test("whole source reference rejects false agreement assembled from every genuinely observed wrong alternative", () => {
+  const reference = macReference();
+  assert.equal(reference.packets.length, 30);
+  assert.equal(
+    sha256(reference.output),
+    "baa8e7b1a02bfd36727815527ebc96435f31d281db7dfcdfc0fc3bfa054a4662",
+  );
+  assertFullFalse(reference.output, reference.output);
+  // These are validator falsifications built from genuine full source outputs,
+  // not claims that a public version produced these synthetic paired results.
+  for (const wrong of reference.alternatives) {
+    const bothFalseForms = [wrong, Buffer.from(wrong)];
+    assert.deepEqual(bothFalseForms[0], bothFalseForms[1]);
+    assert.throws(() => assertFullFalse(bothFalseForms[0]!, reference.output));
+    assert.throws(() => assertFullFalse(bothFalseForms[1]!, reference.output));
+  }
+});
+
+test("a failed old formatting verdict cannot suppress containing-release evaluation", () => {
+  const visited: string[] = [];
+  const verdicts = macVerdicts([
+    {
+      version: "0.627.0",
+      evaluate: () => {
+        visited.push("before");
+        throw new Error("observed old mismatch");
+      },
+    },
+    {
+      version: "0.628.0",
+      evaluate: () => {
+        visited.push("after");
+        return "whole reference matched";
+      },
+    },
+  ]);
+  assert.deepEqual(visited, ["before", "after"]);
+  assert.deepEqual(
+    verdicts.map((row) => row.state),
+    ["failed", "passed"],
+  );
+  assert.throws(() => macVerdicts([]));
 });
 
 test("whole Mac filesystem guard rejects unselected, unrelated module, extra file and link mutation", () => {
