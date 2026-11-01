@@ -148,6 +148,24 @@ impl CorsaExecutor {
         project: &VirtualProject,
         servers: Option<usize>,
     ) -> CorsaResult<TypeCheckResult> {
+        if project.owned_cli_support_path().is_some() {
+            // The private witness belongs to this terminal CLI route. Never
+            // reuse it for an uncertified API/session provider or retry a
+            // support-file failure through a second native invocation.
+            if project.requires_project_session() {
+                return Err(CorsaError::CorsaExecution {
+                    exit_code: 1,
+                    message: "witnessed CLI support cannot enter a project session".into(),
+                });
+            }
+            let servers = servers.unwrap_or_else(|| auto_server_count(project, self.checkers()));
+            return if servers > 1 {
+                check_with_cli_sharded(&self.corsa_path, project, servers, self.checkers())
+            } else {
+                check_with_cli_classified(&self.corsa_path, project, self.checkers())
+            }
+            .map_err(CheckFailure::into_error);
+        }
         if profile!(
             "canon.corsa.diagnostic_route",
             project.requires_project_session()

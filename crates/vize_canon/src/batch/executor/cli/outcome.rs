@@ -11,12 +11,17 @@ pub(in crate::batch::executor) enum CliCheckFailure {
     SemanticCompletionRequired(CorsaError),
     /// An unsupported, unparseable or unavailable native runtime path.
     Runtime(CorsaError),
+    /// An error in a witnessed compiler-owned support file must never be
+    /// dropped by authored mapping or retried through another native route.
+    OwnedSupport(CorsaError),
 }
 
 impl CliCheckFailure {
     pub(in crate::batch::executor) fn into_error(self) -> CorsaError {
         match self {
-            Self::SemanticCompletionRequired(error) | Self::Runtime(error) => error,
+            Self::SemanticCompletionRequired(error)
+            | Self::Runtime(error)
+            | Self::OwnedSupport(error) => error,
         }
     }
 }

@@ -21,6 +21,7 @@ mod import_resolution;
 mod lexical_dollar_receipt;
 mod outcome;
 mod output;
+mod owned_support;
 use outcome::{CliCheckFailure, CliCheckResult};
 mod partition;
 mod patterns;
@@ -78,6 +79,7 @@ fn run_cli_for_config(
     let build_info = project.cli_build_info_path(config_path);
     let recorded = RecordedBuildInfo::read(&build_info);
     let mut output = run_cli_command(corsa_path, project, config_path, &build_info, checkers)?;
+    owned_support::refuse(&output, project)?;
     if recorded.is_some_and(|recorded| {
         profile!(
             "canon.corsa.cli.build_info_global_scope",
@@ -87,6 +89,7 @@ fn run_cli_for_config(
         // Corsa reused diagnostics computed without the new globals.
         std::fs::remove_file(&build_info)?;
         output = run_cli_command(corsa_path, project, config_path, &build_info, checkers)?;
+        owned_support::refuse(&output, project)?;
     }
     let profiler = vize_carton::profiler::global_profiler();
     if profiler.is_enabled() {

@@ -51,7 +51,12 @@ impl VirtualProject {
             .into();
         let links = self.desired_package_links();
         let typed_router = self.has_typed_router_imports();
-        if !links.is_empty() || !self.package_shadow_manifests.is_empty() || typed_router {
+        let private_return = self.private_return_fingerprint();
+        if !links.is_empty()
+            || !self.package_shadow_manifests.is_empty()
+            || typed_router
+            || private_return.is_some()
+        {
             let mut links = links.into_iter().collect::<Vec<_>>();
             links.sort();
             let mut manifests = self.package_shadow_manifests.iter().collect::<Vec<_>>();
@@ -70,6 +75,11 @@ impl VirtualProject {
             }
             if typed_router {
                 digest.update(b"typed-router-helper\0");
+            }
+            if let Some(identity) = private_return {
+                digest.update(b"cli-private-return:v1\0");
+                digest.update((identity.len() as u64).to_le_bytes());
+                digest.update(identity.as_bytes());
             }
             let fingerprint = super::super::identity::encode_digest(digest.finalize());
             if let Some(stem) = name.strip_suffix(".tsbuildinfo") {

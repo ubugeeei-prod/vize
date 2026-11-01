@@ -95,7 +95,9 @@ pub(in crate::batch::executor) fn check_with_cli_sharded(
             Ok(result) => result,
             // An earlier shard's normal parser abort must not hide a later
             // shard's runtime degradation or consume its warning instead.
-            Err(error @ CliCheckFailure::Runtime(_)) => return Err(error),
+            Err(error @ (CliCheckFailure::Runtime(_) | CliCheckFailure::OwnedSupport(_))) => {
+                return Err(error);
+            }
             Err(error @ CliCheckFailure::SemanticCompletionRequired(_)) => {
                 completion_required.get_or_insert(error);
                 continue;

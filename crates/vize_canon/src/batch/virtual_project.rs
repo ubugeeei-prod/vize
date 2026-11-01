@@ -110,6 +110,7 @@ mod package_source_index;
 mod passthrough;
 mod paths;
 pub(in crate::batch) use paths::script_virtual_path;
+mod private_return;
 mod project;
 mod setup_props;
 mod topology;
@@ -208,6 +209,7 @@ pub struct VirtualProject {
     /// re-scoped to a session-private namespace.
     virtual_root: PathBuf,
     private_batch_namespace: bool,
+    private_return: Option<private_return::ActiveReturn>,
 
     /// Shared owner lock held for as long as this project can read or patch
     /// its materialized cache. Cache GC takes the same file exclusively.
