@@ -148,9 +148,53 @@ pub(super) fn generate_scope_checks(
     let Some(usages) = ctx.components_by_scope.get(&scope_id) else {
         return;
     };
-    component_event_navigation::emit_scoped_event_references(ts, mappings, ctx, usages, indent);
+    // Supplemental rows never gain an event/navigation/resolver arm. Keep
+    // the ordinary path borrowed, with no filtering allocation.
+    let navigation_rows;
+    let navigation_usages = if let Some(supplemental) = ctx.legacy_scalar_callbacks {
+        navigation_rows = usages
+            .iter()
+            .copied()
+            .filter(|(_, usage)| !supplemental.contains_key(&usage.start))
+            .collect::<Vec<_>>();
+        &navigation_rows
+    } else {
+        usages
+    };
+    component_event_navigation::emit_scoped_event_references(
+        ts,
+        mappings,
+        ctx,
+        navigation_usages,
+        indent,
+    );
     for &(idx, usage) in usages {
         if is_empty_props_usage(usage) {
+            continue;
+        }
+        if let Some(callbacks) = ctx
+            .legacy_scalar_callbacks
+            .and_then(|rows| rows.get(&usage.start))
+        {
+            let component_ref = ctx.explicit_generics.usage_reference(
+                usage.start,
+                component_binding_reference(
+                    ctx.summary,
+                    ctx.options,
+                    ctx.syntactic_type_only_imported_names,
+                    usage.name.as_str(),
+                ),
+            );
+            let mut check_context = ComponentPropCheckContext::new(
+                ts,
+                mappings,
+                ctx.template_binding_access,
+                ctx.source_context,
+                indent,
+            )
+            .hoist_shared_preamble(ctx.hoist_shared_preamble);
+            check_context.legacy_scalar_callback_props = Some(callbacks);
+            generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str());
             continue;
         }
         profile!("canon.virtual_ts.component_prop_checks", {
