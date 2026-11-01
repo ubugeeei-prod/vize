@@ -32,9 +32,12 @@ pub(super) async fn observe(api: &ApiClient, data: &mut ObservationData) -> cors
         let Some(index) = source(api, data, &expected.file).await? else {
             return Ok(());
         };
-        if let Some(reason) =
-            source_matches(&expected, data.sources[index].decoded.as_ref().unwrap())
-        {
+        let Some(decoded) = data.sources[index].decoded.as_ref() else {
+            data.unavailable
+                .push(Unavailable::IncompleteSourceRecord(expected.file));
+            return Ok(());
+        };
+        if let Some(reason) = source_matches(&expected, decoded) {
             data.unavailable.push(reason);
             return Ok(());
         }
@@ -68,22 +71,23 @@ pub(super) async fn observe(api: &ApiClient, data: &mut ObservationData) -> cors
         .await?;
     if let Some(component) = &data.constructor_type {
         data.stage = "declared-construct-signatures";
-        data.construct_signatures = Some(
-            api.get_signatures_of_type(
+        let signatures = api
+            .get_signatures_of_type(
                 data.snapshot.clone(),
                 data.project.id.clone(),
                 component.id.clone(),
                 1,
             )
-            .await?,
-        );
-        for signature in data.construct_signatures.clone().unwrap_or_default() {
+            .await?;
+        data.construct_signatures = Some(signatures.clone());
+        for signature in signatures {
+            let index = data.declared_returns.len();
             data.declared_returns.push(SignatureReturn {
                 signature,
                 returned: None,
                 symbol: None,
             });
-            let record = data.declared_returns.last_mut().unwrap();
+            let record = &mut data.declared_returns[index];
             data.stage = "declared-signature-return";
             record.returned = api
                 .get_return_type_of_signature(
@@ -108,6 +112,7 @@ pub(super) async fn observe(api: &ApiClient, data: &mut ObservationData) -> cors
     }
 
     for anchor in data.request.hosts.clone() {
+        let index = data.hosts.len();
         data.hosts.push(HostObservation {
             anchor,
             pair: None,
@@ -117,7 +122,7 @@ pub(super) async fn observe(api: &ApiClient, data: &mut ObservationData) -> cors
             props: None,
             props_type: None,
         });
-        let host = data.hosts.last_mut().unwrap();
+        let host = &mut data.hosts[index];
         data.stage = "actual-host-type";
         host.pair = api
             .get_type_at_position(
@@ -212,23 +217,15 @@ pub(super) async fn observe(api: &ApiClient, data: &mut ObservationData) -> cors
         };
         if let Some(module_id) = module_id {
             data.stage = "selected-vue-exports";
-            data.vue.exports = Some(
-                api.get_exports_of_module(
-                    data.snapshot.clone(),
-                    data.project.id.clone(),
-                    module_id,
-                )
-                .await?,
-            );
-            let selected: Vec<_> = data
-                .vue
-                .exports
-                .as_ref()
-                .unwrap()
+            let exports = api
+                .get_exports_of_module(data.snapshot.clone(), data.project.id.clone(), module_id)
+                .await?;
+            let selected: Vec<_> = exports
                 .iter()
                 .filter(|symbol| symbol.name == "ComponentPublicInstance")
                 .cloned()
                 .collect();
+            data.vue.exports = Some(exports);
             if selected.len() == 1 {
                 data.vue.public_instance = selected.into_iter().next();
             } else {
@@ -341,7 +338,12 @@ pub(super) async fn observe(api: &ApiClient, data: &mut ObservationData) -> cors
         let Some(index) = source(api, data, parsed.path.as_str()).await? else {
             continue;
         };
-        let decoded = data.sources[index].decoded.as_ref().unwrap();
+        let Some(decoded) = data.sources[index].decoded.as_ref() else {
+            data.unavailable.push(Unavailable::IncompleteSourceRecord(
+                parsed.path.as_str().into(),
+            ));
+            continue;
+        };
         if decoded.file_name != parsed.path.as_str()
             || decoded.path != parsed.path.as_str()
             || utf16_byte(&decoded.text, parsed.pos).is_none()
@@ -365,18 +367,7 @@ async fn source(
     data: &mut ObservationData,
     file: &str,
 ) -> corsa::Result<Option<usize>> {
-    if data
-        .source_names
-        .as_ref()
-        .and_then(Value::as_array)
-        .is_none_or(|names| {
-            names
-                .iter()
-                .filter(|name| name.as_str() == Some(file))
-                .count()
-                != 1
-        })
-    {
+    if !source_member(data.source_names.as_ref(), file) {
         data.unavailable
             .push(Unavailable::SourceIdentity(file.into()));
         return Ok(None);

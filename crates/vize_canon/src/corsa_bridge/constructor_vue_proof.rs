@@ -41,6 +41,8 @@ pub(crate) struct UsageRequest {
     pub(crate) usage_id: String,
     pub(crate) authored_file: String,
     pub(crate) authored_source: String,
+    pub(crate) authored_usage: Anchor,
+    /// Selected config name only; no authored config-file byte claim.
     pub(crate) config_file: String,
     pub(crate) generated: SourceExpectation,
     pub(crate) component_source: SourceExpectation,
@@ -91,6 +93,7 @@ pub(crate) enum Unavailable {
     ProjectIdentity,
     SourceMembership,
     AbsentSource(String),
+    IncompleteSourceRecord(String),
     SourceIdentity(String),
     SourceText(String),
     Anchor(String),
@@ -114,6 +117,7 @@ pub(crate) struct ObservationData {
     native_admission: bool,
     request: UsageRequest,
     snapshot: SnapshotHandle,
+    snapshot_projects: Vec<ProjectResponse>,
     project: ProjectResponse,
     stage: &'static str,
     source_names: Option<Value>,
@@ -161,6 +165,7 @@ impl ObservationData {
             native_admission: false,
             request,
             snapshot,
+            snapshot_projects: Vec::new(),
             project,
             stage: "project-identity",
             source_names: None,
@@ -191,12 +196,18 @@ pub(crate) async fn capture<'session>(
         _snapshot: snapshot,
     };
     let data = &mut observation.data;
+    data.snapshot_projects = observation._snapshot.projects.clone();
     if !project_matches(
-        &observation._snapshot.projects,
+        &data.snapshot_projects,
         &data.project,
         &data.request.config_file,
     ) {
         data.unavailable.push(Unavailable::ProjectIdentity);
+        return Ok(observation);
+    }
+    if !anchor_matches(&data.request.authored_source, &data.request.authored_usage) {
+        data.unavailable
+            .push(Unavailable::Anchor(data.request.usage_id.clone()));
         return Ok(observation);
     }
     match query::observe(session.client(), data).await {
@@ -254,4 +265,15 @@ fn source_matches(expected: &SourceExpectation, actual: &EncodedSourceFile) -> O
     } else {
         None
     }
+}
+
+fn source_member(names: Option<&Value>, file: &str) -> bool {
+    names.and_then(Value::as_array).is_some_and(|names| {
+        names.iter().all(Value::is_string)
+            && names
+                .iter()
+                .filter(|name| name.as_str() == Some(file))
+                .count()
+                == 1
+    })
 }

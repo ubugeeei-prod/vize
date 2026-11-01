@@ -34,6 +34,12 @@ fn request() -> UsageRequest {
         usage_id: "original27:constructor-public-props-discrepancy:9".into(),
         authored_file: "/p/Tiny.vue".into(),
         authored_source: "<WitnessChild :value=\"1\" />\r\n".into(),
+        authored_usage: Anchor {
+            start: 1,
+            end: 13,
+            position: 1,
+            text: "WitnessChild".into(),
+        },
         config_file: "/p/tsconfig.json".into(),
         generated: expected(),
         component_source: expected(),
@@ -146,6 +152,29 @@ fn anchors_use_complete_utf16_ranges_without_splitting_astral_characters() {
     changed.text = "post".into();
     assert!(!anchor_matches(&source, &changed));
     assert!(!anchor_matches("😀\nconst host = 1;", &anchor()));
+    let usage = request();
+    assert!(anchor_matches(
+        &usage.authored_source,
+        &usage.authored_usage
+    ));
+    assert!(!anchor_matches("<DifferentChild />", &usage.authored_usage));
+}
+
+#[test]
+fn source_membership_refuses_missing_duplicate_foreign_and_malformed_names() {
+    let file = "/p/generated.ts";
+    assert!(source_member(Some(&json!([file, "/p/component.ts"])), file));
+    for names in [
+        json!([]),
+        json!([file, file]),
+        json!(["/foreign/generated.ts"]),
+        json!([file, 42]),
+        json!({"files":[file]}),
+        json!(null),
+    ] {
+        assert!(!source_member(Some(&names), file));
+    }
+    assert!(!source_member(None, file));
 }
 
 #[test]
