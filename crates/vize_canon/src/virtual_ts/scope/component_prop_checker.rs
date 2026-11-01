@@ -161,7 +161,7 @@ pub(super) fn append_prop_checker_alias(
         if loose_legacy_attrs {
             append!(
                 *ts,
-                "  type __{component_type_name}_CheckTail_{idx} = Record<string, unknown>;\n"
+                "  type __{component_type_name}_CheckTail_{idx} = {{ [__K in string]: unknown }};\n"
             );
         } else {
             append!(
@@ -198,7 +198,7 @@ pub(super) fn append_prop_checker_alias(
     if loose_legacy_attrs {
         append!(
             *ts,
-            "  type __{component_type_name}_CheckTail_{idx} = Record<string, unknown>;\n"
+            "  type __{component_type_name}_CheckTail_{idx} = {{ [__K in string]: unknown }};\n"
         );
     } else {
         append!(

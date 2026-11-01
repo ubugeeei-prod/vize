@@ -1,5 +1,6 @@
 //! One prepared script-binding view for a component-usage lookup domain.
 use super::super::context::{ComponentBindingCheck, ComponentPropsContext};
+use super::super::inline_callback_classifier::LegacyInlineCallbacks;
 use super::named_dynamic_reference;
 use crate::virtual_ts::script_facts::{self, ScriptBindings};
 use vize_carton::{FxHashSet, camelize, capitalize};
@@ -18,6 +19,10 @@ pub(in crate::virtual_ts::scope) fn collect_checkable_usages(
     if usages.is_empty() {
         return Vec::new();
     }
+    let callbacks = LegacyInlineCallbacks::from_root(
+        ctx.template_ast,
+        ctx.legacy_vue2 && !external_template_bindings.is_empty(),
+    );
     script_facts::with_bindings(ctx.summary, |bindings| {
         usages
             .into_iter()
@@ -29,6 +34,7 @@ pub(in crate::virtual_ts::scope) fn collect_checkable_usages(
                     &external_template_bindings,
                     ctx.component_binding_check,
                     ctx.legacy_vue2,
+                    &callbacks,
                 ) || named_dynamic_reference(ctx, usage).is_some()
             })
             .collect()
@@ -41,6 +47,7 @@ pub(in crate::virtual_ts::scope) fn component_usage_has_checkable_binding(
     external_template_bindings: &FxHashSet<&str>,
     component_binding_check: ComponentBindingCheck<'_>,
     legacy_vue2: bool,
+    callbacks: &LegacyInlineCallbacks<'_>,
 ) -> bool {
     let name = usage.name.as_str();
     if has_script_binding(bindings, usage) {
@@ -54,11 +61,9 @@ pub(in crate::virtual_ts::scope) fn component_usage_has_checkable_binding(
         // without exposing untyped library callbacks as TS7006 findings.
         return external
             && !usage.props.iter().any(|prop| {
-                prop.value.as_ref().is_some_and(|value| {
-                    super::super::component_prop_checker::contains_inline_function_prop_value(
-                        value.as_str(),
-                    )
-                })
+                prop.value
+                    .as_ref()
+                    .is_some_and(|value| callbacks.contains(value.as_str()))
             });
     }
     external
@@ -66,7 +71,10 @@ pub(in crate::virtual_ts::scope) fn component_usage_has_checkable_binding(
         || vize_croquis::drawer::is_dynamic_component_alias(name)
 }
 
-pub(super) fn has_script_binding(bindings: ScriptBindings<'_>, usage: &ComponentUsage) -> bool {
+pub(in crate::virtual_ts::scope) fn has_script_binding(
+    bindings: ScriptBindings<'_>,
+    usage: &ComponentUsage,
+) -> bool {
     let name = usage.name.as_str();
     if bindings.contains_binding(name) {
         return true;
@@ -78,7 +86,7 @@ pub(super) fn has_script_binding(bindings: ScriptBindings<'_>, usage: &Component
         .any(|candidate| bindings.contains_binding(candidate))
 }
 
-fn component_name_matches_external_template_binding(
+pub(in crate::virtual_ts::scope) fn component_name_matches_external_template_binding(
     name: &str,
     external_template_bindings: &FxHashSet<&str>,
 ) -> bool {

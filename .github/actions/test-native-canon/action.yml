@@ -89,8 +89,12 @@ runs:
       run: |
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
-        cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::legacy_external_component_props:: -- --nocapture
-        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::legacy_vue2_vuetify_tests:: -- --nocapture --test-threads=1
+        native_status=0
+        cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::legacy_external_component_props:: -- --nocapture || native_status=$?
+        # Capture unaccepted changed tails; every command failure remains fatal.
+        INSTA_UPDATE=new cargo test --locked --profile ci -p vize_canon --lib virtual_ts::legacy_vue2_vuetify_tests:: -- --nocapture --test-threads=1 || native_status=$?
+        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::scope::inline_callback_classifier:: -- --nocapture || native_status=$?
+        exit "$native_status"
     - name: Install locked Vue dependency and pinned syntax corpus
       shell: bash
       run: |

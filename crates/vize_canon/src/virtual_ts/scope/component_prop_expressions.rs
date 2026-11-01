@@ -4,8 +4,12 @@ use vize_carton::{FxHashMap, FxHashSet};
 use vize_croquis::{Croquis, TemplateExpressionKind};
 
 use super::component_prop_checker::contains_inline_function_prop_value;
-use super::component_props::component_usage_has_checkable_binding;
+use super::component_props::{
+    component_name_matches_external_template_binding, component_usage_has_checkable_binding,
+    has_script_binding,
+};
 use super::context::ScopeGenerationOptions;
+use super::inline_callback_classifier::LegacyInlineCallbacks;
 use super::slot_outlet_props::SlotOutletChecks;
 
 #[derive(Default)]
@@ -65,6 +69,10 @@ pub(super) fn collect_component_prop_expression_ranges(
     if usages.is_empty() {
         return plan;
     }
+    let callbacks = LegacyInlineCallbacks::from_root(
+        options.template_ast,
+        options.legacy_vue2 && !external_template_bindings.is_empty(),
+    );
     crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
         for usage in usages {
             let has_checkable_binding = component_usage_has_checkable_binding(
@@ -73,6 +81,7 @@ pub(super) fn collect_component_prop_expression_ranges(
                 &external_template_bindings,
                 options.component_binding_check,
                 options.legacy_vue2,
+                &callbacks,
             );
             if !has_checkable_binding && !options.legacy_vue2 {
                 continue;
@@ -126,7 +135,18 @@ pub(super) fn collect_component_prop_expression_ranges(
                     continue;
                 }
                 let value = value.as_str().trim();
-                if !contains_inline_function_prop_value(value) {
+                let legacy_external = options.legacy_vue2
+                    && !has_script_binding(bindings, &usage)
+                    && component_name_matches_external_template_binding(
+                        usage.name.as_str(),
+                        &external_template_bindings,
+                    );
+                let contains_callback = if legacy_external {
+                    callbacks.contains(value)
+                } else {
+                    contains_inline_function_prop_value(value)
+                };
+                if !contains_callback {
                     continue;
                 }
                 // Checkable components validate inline function props through the

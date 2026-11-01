@@ -5,7 +5,10 @@ mod bindings;
 mod closure_scopes;
 mod duplicate_listeners;
 mod dynamic_reference;
-pub(super) use bindings::{collect_checkable_usages, component_usage_has_checkable_binding};
+pub(super) use bindings::{
+    collect_checkable_usages, component_name_matches_external_template_binding,
+    component_usage_has_checkable_binding, has_script_binding,
+};
 use duplicate_listeners::append_duplicate_listener_checks;
 pub(super) use dynamic_reference::named_dynamic_reference;
 

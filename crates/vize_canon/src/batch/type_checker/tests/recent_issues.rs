@@ -369,5 +369,5 @@ watchEffect(() => {
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
-mod options_projection;
 mod legacy_external_component_props;
+mod options_projection;
