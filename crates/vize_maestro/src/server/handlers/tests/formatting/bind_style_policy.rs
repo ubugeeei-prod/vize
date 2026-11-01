@@ -3,9 +3,9 @@
 use super::*;
 use serde_json::{Value, json};
 use std::{
+    cell::RefCell,
     io::{self, Write},
     path::Path,
-    sync::{Arc, Mutex},
 };
 
 const RULE: &str = "vue/v-bind-style";
@@ -14,7 +14,7 @@ const CORPUS: &str = include_str!(concat!(
     "/../../tests/_fixtures/differential/linter/v-bind-prop-longform-6097/cases.json"
 ));
 
-fn original_fixed() -> std::string::String {
+fn original_fixed() -> &'static str {
     let corpus: Value = serde_json::from_str(CORPUS).unwrap();
     let expected = corpus["cases"]
         .as_array()
@@ -30,7 +30,7 @@ fn original_fixed() -> std::string::String {
         "/../../tests/_fixtures/differential/lsp/formatter-bind-style-policy-6098/Fixed.vue.txt"
     ));
     assert_eq!(pinned, expected);
-    pinned.to_owned()
+    pinned
 }
 
 fn configure(server: &MaestroServer, root: &Path, configuration: Value) {
@@ -68,12 +68,15 @@ fn requests(server: &MaestroServer, uri: &Url) -> [Option<Vec<TextEdit>>; 3] {
     ]
 }
 
-#[derive(Clone)]
-struct LogWriter(Arc<Mutex<Vec<u8>>>);
+thread_local! {
+    static CAPTURED_LOGS: RefCell<Vec<u8>> = const { RefCell::new(Vec::new()) };
+}
+
+struct LogWriter;
 
 impl Write for LogWriter {
     fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
-        self.0.lock().unwrap().extend_from_slice(bytes);
+        CAPTURED_LOGS.with_borrow_mut(|buffer| buffer.extend_from_slice(bytes));
         Ok(bytes.len())
     }
     fn flush(&mut self) -> io::Result<()> {
@@ -87,9 +90,9 @@ fn every_handler_logs_the_conflict_returns_null_and_keeps_authored_bytes() {
     let root = project.path();
     let file = root.join("VBindProp.vue");
     let source = original_fixed();
-    std::fs::write(&file, &source).unwrap();
+    std::fs::write(&file, source).unwrap();
     let uri = Url::from_file_path(&file).unwrap();
-    let service = server_with(&uri, &source, "vue");
+    let service = server_with(&uri, source, "vue");
     let server = service.inner();
     for normalize in [None, Some(true)] {
         configure(server, root, policy(normalize));
@@ -103,26 +106,27 @@ fn every_handler_logs_the_conflict_returns_null_and_keeps_authored_bytes() {
             );
         }
         let config_before = std::fs::read(root.join("vite.config.mjs")).unwrap();
-        let logs = Arc::new(Mutex::new(Vec::new()));
-        let writer = LogWriter(Arc::clone(&logs));
+        CAPTURED_LOGS.with_borrow_mut(Vec::clear);
         let subscriber = tracing_subscriber::fmt()
             .without_time()
             .with_ansi(false)
             .with_max_level(tracing::Level::WARN)
-            .with_writer(move || writer.clone())
+            .with_writer(|| LogWriter)
             .finish();
         let result = tracing::subscriber::with_default(subscriber, || requests(server, &uri));
         assert_eq!(result, [None, None, None]);
-        let logs = std::string::String::from_utf8(logs.lock().unwrap().clone()).unwrap();
-        assert_eq!(logs.matches("Refusing formatter request").count(), 3);
-        assert_eq!(
-            logs.matches(
-                "normalizeDirectiveShorthands=true conflicts with active vue/v-bind-style=longform"
-            )
-            .count(),
-            3
-        );
-        assert!(logs.contains("formatter.normalizeDirectiveShorthands=false"));
+        CAPTURED_LOGS.with_borrow(|bytes| {
+            let logs = std::str::from_utf8(bytes).unwrap();
+            assert_eq!(logs.matches("Refusing formatter request").count(), 3);
+            assert_eq!(
+                logs.matches(
+                    "normalizeDirectiveShorthands=true conflicts with active vue/v-bind-style=longform"
+                )
+                .count(),
+                3
+            );
+            assert!(logs.contains("formatter.normalizeDirectiveShorthands=false"));
+        });
         assert_eq!(std::fs::read_to_string(&file).unwrap(), source);
         assert_eq!(
             std::fs::read(root.join("vite.config.mjs")).unwrap(),
@@ -141,7 +145,7 @@ fn every_handler_logs_the_conflict_returns_null_and_keeps_authored_bytes() {
         normalize_directive_shorthands: false,
         ..Default::default()
     };
-    let formatted = vize_glyph::format_sfc(&source, &options).unwrap().code;
+    let formatted = vize_glyph::format_sfc(source, &options).unwrap().code;
     let full = result[0].as_ref().unwrap();
     assert_eq!(full.len(), 1);
     assert_eq!(full[0].new_text, formatted.as_str());
@@ -166,7 +170,7 @@ fn each_formatter_request_resolves_entry_order_negations_and_inactive_files() {
     let root = project.path();
     let source = original_fixed();
     let uri = Url::from_file_path(root.join("Root.vue")).unwrap();
-    let service = server_with(&uri, &source, "vue");
+    let service = server_with(&uri, source, "vue");
     let server = service.inner();
     configure(
         server,
@@ -193,12 +197,12 @@ fn each_formatter_request_resolves_entry_order_negations_and_inactive_files() {
     ] {
         let file = root.join(name);
         std::fs::create_dir_all(file.parent().unwrap()).unwrap();
-        std::fs::write(&file, &source).unwrap();
+        std::fs::write(&file, source).unwrap();
         let uri = Url::from_file_path(&file).unwrap();
         server
             .state
             .documents
-            .open(uri.clone(), source.clone(), 1, "vue".into());
+            .open(uri.clone(), source.to_owned(), 1, "vue".into());
         let result = requests(server, &uri);
         assert_eq!(result.iter().all(Option::is_none), conflict, "{name}");
         if !conflict {
