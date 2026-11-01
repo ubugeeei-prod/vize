@@ -49,6 +49,7 @@ impl CodeActionService {
         range: Range,
         lint: &TemplateLint,
         requested: &[Diagnostic],
+        #[cfg(feature = "native")] stamp: Option<super::versioned_lint_edits::LintEditStamp>,
     ) -> Vec<CodeActionOrCommand> {
         let mut actions = Vec::new();
 
@@ -74,32 +75,23 @@ impl CodeActionService {
                 continue;
             };
 
-            // Convert fix edits to LSP TextEdits
-            let edits: Vec<TextEdit> = fix
-                .edits
-                .iter()
-                .map(|edit| TextEdit {
-                    range: Range {
-                        start: template_position(
-                            &ctx.content,
-                            lint.start_offset,
-                            edit.start as usize,
-                        ),
-                        end: template_position(&ctx.content, lint.start_offset, edit.end as usize),
-                    },
-                    new_text: edit.new_text.to_string(),
-                })
-                .collect();
-
-            // Create workspace edit
-            let mut changes = std::collections::HashMap::new();
-            changes.insert(ctx.uri.clone(), edits);
-
-            let workspace_edit = WorkspaceEdit {
-                changes: Some(changes),
-                document_changes: None,
-                change_annotations: None,
+            #[cfg(feature = "native")]
+            let workspace_edit = if let Some(stamp) = stamp {
+                let Some(edit) = super::versioned_lint_edits::workspace_edit(
+                    ctx,
+                    stamp,
+                    &lint.content,
+                    lint.start_offset,
+                    &fix.edits,
+                ) else {
+                    continue;
+                };
+                edit
+            } else {
+                unversioned_fix_edit(ctx, lint, fix)
             };
+            #[cfg(not(feature = "native"))]
+            let workspace_edit = unversioned_fix_edit(ctx, lint, fix);
 
             // Create code action
             let action = CodeAction {
@@ -202,6 +194,31 @@ impl CodeActionService {
         }
 
         actions
+    }
+}
+
+fn unversioned_fix_edit(
+    ctx: &IdeContext,
+    lint: &TemplateLint,
+    fix: &vize_patina::Fix,
+) -> WorkspaceEdit {
+    let edits: Vec<TextEdit> = fix
+        .edits
+        .iter()
+        .map(|edit| TextEdit {
+            range: Range {
+                start: template_position(&ctx.content, lint.start_offset, edit.start as usize),
+                end: template_position(&ctx.content, lint.start_offset, edit.end as usize),
+            },
+            new_text: edit.new_text.to_string(),
+        })
+        .collect();
+    let mut changes = std::collections::HashMap::new();
+    changes.insert(ctx.uri.clone(), edits);
+    WorkspaceEdit {
+        changes: Some(changes),
+        document_changes: None,
+        change_annotations: None,
     }
 }
 

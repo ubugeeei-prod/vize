@@ -12,6 +12,16 @@ impl ServerState {
     pub(crate) fn record_client_capabilities(&self, capabilities: &ClientCapabilities) {
         #[cfg(feature = "native")]
         self.retain_project_client_capabilities(capabilities);
+        #[cfg(feature = "native")]
+        self.versioned_lint_edits.store(
+            capabilities
+                .workspace
+                .as_ref()
+                .and_then(|workspace| workspace.workspace_edit.as_ref())
+                .and_then(|edit| edit.document_changes)
+                == Some(true),
+            Ordering::Relaxed,
+        );
         crate::server::workspace_files::record_watcher_support(self, capabilities);
         let supported = cfg!(feature = "native")
             && capabilities
@@ -31,6 +41,12 @@ impl ServerState {
         self.completion_documentation_resolve
             .load(Ordering::Relaxed)
     }
+
+    /// Only the exact client advertisement selects versioned lint edits.
+    #[cfg(feature = "native")]
+    pub(crate) fn supports_versioned_lint_edits(&self) -> bool {
+        self.versioned_lint_edits.load(Ordering::Relaxed)
+    }
 }
 
 #[cfg(test)]
@@ -40,6 +56,34 @@ mod tests {
         CompletionClientCapabilities, CompletionItemCapability,
         CompletionItemCapabilityResolveSupport, TextDocumentClientCapabilities,
     };
+
+    #[cfg(feature = "native")]
+    #[test]
+    fn versioned_lint_edits_require_the_exact_workspace_advertisement() {
+        use tower_lsp::lsp_types::{WorkspaceClientCapabilities, WorkspaceEditClientCapabilities};
+        let state = ServerState::new();
+        assert!(!state.supports_versioned_lint_edits());
+        for advertised in [None, Some(false), Some(true), None] {
+            let capabilities = ClientCapabilities {
+                workspace: Some(WorkspaceClientCapabilities {
+                    workspace_edit: Some(WorkspaceEditClientCapabilities {
+                        document_changes: advertised,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            };
+            state.record_client_capabilities(&capabilities);
+            assert_eq!(
+                state.supports_versioned_lint_edits(),
+                advertised == Some(true)
+            );
+            assert!(!state.supports_completion_documentation_resolve());
+        }
+        state.record_client_capabilities(&ClientCapabilities::default());
+        assert!(!state.supports_versioned_lint_edits());
+    }
 
     fn capabilities(properties: Option<&[&str]>) -> ClientCapabilities {
         ClientCapabilities {
