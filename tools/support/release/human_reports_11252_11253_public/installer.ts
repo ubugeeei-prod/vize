@@ -16,6 +16,7 @@ import {
 import type { Fixture, InstallReceipt, Recipe, ReleaseAuthority } from "./model.ts";
 import { bytes, object, sha256, text, wholeJson } from "./value.ts";
 import { discard, type Sink } from "./evidence.ts";
+import { checkCaseManagers } from "./input-state.ts";
 export async function installPublic(
   root: string,
   kind: InstallReceipt["kind"],
@@ -182,8 +183,8 @@ export async function installPublic(
     );
   return receipt;
 }
-export function recheckInstalled(receipt: InstallReceipt): void {
-  assert.deepEqual(managerFiles(receipt.root), receipt.managerFiles);
+export function recheckInstalled(receipt: InstallReceipt, expectedCaseManifest?: Buffer): void {
+  checkCaseManagers(receipt.managerFiles, managerFiles(receipt.root), expectedCaseManifest);
   assert.deepEqual(hostFacts(), receipt.host);
   for (const row of receipt.declaredOptionalNotInstalled) {
     validateOptionalAbsence(

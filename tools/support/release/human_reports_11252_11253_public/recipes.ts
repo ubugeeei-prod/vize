@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import type { Recipe, Role, Request } from "./model.ts";
+import { validateAfterInputs } from "./after-plan.ts";
 export const recipes: Record<Role, Recipe> = {
   "runtime-prop-null-11252": {
     issue: 11252,
@@ -72,7 +73,11 @@ export function requireCaptureReady(request: Request): Recipe {
   assert.equal(request.release.issue, recipe.issue);
   assert.equal(
     request.mode,
-    request.release.phase === "before" ? "CAPTURE_BEFORE" : "ACCEPT_AFTER",
+    request.release.phase === "before"
+      ? "CAPTURE_BEFORE"
+      : request.mode === "UNQUALIFIED_AFTER"
+        ? "UNQUALIFIED_AFTER"
+        : "ACCEPT_AFTER",
   );
   assert.deepEqual(
     request.commands.map((v) => v.id),
@@ -80,6 +85,10 @@ export function requireCaptureReady(request: Request): Recipe {
       ? beforeCommands[request.role]
       : requiredCommands[request.role],
   );
+  if (request.mode === "UNQUALIFIED_AFTER") {
+    validateAfterInputs(request);
+    return recipe;
+  }
   if (request.release.phase === "after") return requireComplete(request);
   // A first genuine public-before observation cannot require a previously
   // observed public-before output. It always remains unaccepted observation.

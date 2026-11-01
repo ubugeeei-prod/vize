@@ -100,7 +100,7 @@ test("public checkout keeps no persisted credential while API bootstrap retains 
   );
 });
 
-test("local and independently reconstructed controller custody both include bootstrap manifest", async () => {
+test("local and remote controller custody include bootstrap and source-owned input data", async () => {
   const head = "a".repeat(40);
   const closure = await remoteControllerClosure(head, async (request) => {
     assert(request.startsWith("contents/") && request.endsWith(`?ref=${head}`));
@@ -115,6 +115,13 @@ test("local and independently reconstructed controller custody both include boot
     };
   });
   assert(closure.some((file) => file.path === bootstrapPath));
+  assert(
+    closure.some(
+      (file) =>
+        file.path ===
+        "tools/support/release/human_reports_11252_11253_public/after-input-plan.json.txt",
+    ),
+  );
   const actual = controllerFiles().map((file) => ({
     path: file.path.slice(root.length),
     bytes: file.bytes,

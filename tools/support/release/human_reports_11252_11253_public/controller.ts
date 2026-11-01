@@ -15,6 +15,7 @@ export function controllerFiles(): Image[] {
   const seen = new Set<string>();
   pending.push(
     resolve(here, "original-inputs.json"),
+    resolve(here, "after-input-plan.json.txt"),
     resolve(here, "pnpm-bootstrap.json"),
     resolve(root, ".github/workflows/published-human-reports-11252-11253.yml"),
   );
@@ -22,7 +23,7 @@ export function controllerFiles(): Image[] {
     const file = pending[index]!;
     if (seen.has(file)) continue;
     assert(inside(root, file));
-    assert(/\.(?:ts|json|yml)$/u.test(file));
+    assert(/\.(?:ts|json|yml)$/u.test(file) || file === resolve(here, "after-input-plan.json.txt"));
     seen.add(file);
     const source = readFileSync(file, "utf8");
     for (const match of source.matchAll(
