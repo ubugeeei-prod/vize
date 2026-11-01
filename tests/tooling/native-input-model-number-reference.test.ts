@@ -1,4 +1,4 @@
-// First genuine number observations; no golden is loaded or inferred here.
+// Strict whole number replay; origin observation labels and flags remain intact.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { after, test } from "node:test";
@@ -79,6 +79,32 @@ const mode: TrimMode = modeValue;
 const targetValue = process.env.VIZE_NATIVE_MODEL_NUMBER_TARGET ?? "dom";
 assert(targetValue === "dom" || targetValue === "ssr" || targetValue === "vapor");
 const target: TrimTarget = targetValue;
+const goldens: unknown = JSON.parse(
+  fs.readFileSync(new URL("native_original_input_model_number_all_targets.json", root), "utf8"),
+);
+object(goldens);
+assert.equal(goldens.schema, "vize.native-sfc.original-input-model-number-complete-goldens");
+assert.equal(goldens.inputHash, hash(inputRaw));
+assert.deepEqual(goldens.inputPack, pack);
+assert.deepEqual(goldens.refusalInputPack, refusalPack);
+object(goldens.provenance);
+assert.equal(goldens.provenance.independentlyReviewedBeforeFreeze, true);
+object(goldens.native);
+object(goldens.primary);
+object(goldens.runtimeResults);
+const expectedNative = goldens.native;
+const primaryTarget = goldens.primary[target],
+  runtimeTarget = goldens.runtimeResults[target];
+object(primaryTarget);
+object(runtimeTarget);
+const expectedPrimary = primaryTarget[mode],
+  expectedRuntime = runtimeTarget[mode];
+assert(Array.isArray(expectedPrimary) && expectedPrimary.length === 3);
+assert(Array.isArray(expectedRuntime) && expectedRuntime.length === 3);
+function whole(actual: unknown, expected: unknown, label: string) {
+  assert.deepEqual(actual, expected, label);
+  assert.equal(JSON.stringify(actual), JSON.stringify(expected), label + " fields/order");
+}
 const capturePath = process.env.VIZE_NATIVE_MODEL_NUMBER_CAPTURE;
 const requireCapture = process.env.VIZE_NATIVE_MODEL_NUMBER_REQUIRE_CAPTURE === "1";
 const primaryPrefix = process.env.VIZE_NATIVE_MODEL_NUMBER_PRIMARY_CAPTURE;
@@ -118,6 +144,9 @@ let captured: unknown,
 let sourceCaptureComplete = false,
   failed = false,
   firstFailure: unknown;
+let nativeGoldensMatched = false,
+  primaryGoldenMatches = 0,
+  runtimeGoldenMatches = 0;
 let runtimeMatches = 0;
 let dom: Awaited<ReturnType<typeof openModelDom>> | undefined;
 const cleanup: ObjectValue = { dom: "not-used" };
@@ -146,8 +175,9 @@ test(
       assert.equal(captured.inputHash, hash(inputRaw));
       assert.deepEqual(captured.inputPack, pack);
       assert.deepEqual(captured.refusalInputPack, refusalPack);
-      assert.equal(captured.qualification, "observed-unqualified-current-oracles-pending");
-      assert.equal(captured.nativeGoldenComparisonPerformed, false);
+      assert.equal(captured.qualification, "complete-current-native-oracles-matched");
+      assert.equal(captured.nativeGoldenComparisonPerformed, true);
+      assert.equal(captured.nativeGoldensMatched, true);
       assert.equal(captured.wholePacketQualification, false);
       assert.equal(captured.nativeCaptureComplete, true);
       assert.deepEqual(captured.failures, []);
@@ -199,8 +229,11 @@ test(
         }),
         outside,
       );
+      for (const field of ["fixtures", "custody", "attempts", "refusals"])
+        whole(captured[field], expectedNative[field], `whole current number native ${field}`);
+      nativeGoldensMatched = true;
       sourceCaptureComplete = true;
-      captureObservation.state = "complete-source-observation-unqualified";
+      captureObservation.state = "complete-current-native-oracles-matched";
     } catch (error) {
       remember(error);
       throw error;
@@ -227,6 +260,13 @@ for (const fixture of fixtures) {
       attempt.primary = primary;
       primaries.set(fixture.id, primary);
       attempt.state = "observed-unqualified";
+      const expected = expectedPrimary.find((row: unknown) => {
+        object(row);
+        return row.id === fixture.id;
+      });
+      assert(expected);
+      whole(attempt, expected, `whole current ${target}/${mode}/${fixture.id} primary`);
+      primaryGoldenMatches++;
     } catch (error) {
       attempt.state = "failed";
       attempt.error = modelError(error);
@@ -290,6 +330,13 @@ for (const fixture of fixtures) {
         assert.deepEqual(native.result, official.result, "entire unnormalized runtime outcome");
         attempt.state = "matched-observation-unqualified";
         runtimeMatches++;
+        const expected = expectedRuntime.find((row: unknown) => {
+          object(row);
+          return row.id === fixture.id;
+        });
+        assert(expected);
+        whole(attempt, expected, `whole current ${target}/${mode}/${fixture.id} runtime`);
+        runtimeGoldenMatches++;
       } catch (error) {
         attempt.state = "failed";
         attempt.error = modelError(error);
@@ -310,6 +357,14 @@ after(async () => {
       remember(error);
     }
   }
+  const qualified =
+    requireCapture &&
+    sourceCaptureComplete &&
+    nativeGoldensMatched &&
+    primaryGoldenMatches === 3 &&
+    runtimeGoldenMatches === 3 &&
+    runtimeMatches === 3 &&
+    !failed;
   const common = {
     schema: "vize.native-sfc.original-input-model-number-runtime-capture",
     target,
@@ -331,13 +386,16 @@ after(async () => {
       runtimeAttempts.length === 3 &&
       runtimeMatches === 3 &&
       !failed,
-    qualification: failed
-      ? "failed-current-observation"
-      : requireCapture
-        ? "observed-unqualified-current-oracles-pending"
-        : "primary-only-or-unforced-observation",
-    nativeGoldenComparisonPerformed: false,
-    wholePacketQualification: false,
+    qualification: qualified
+      ? "complete-current-oracles-matched"
+      : !requireCapture
+        ? "primary-only-or-unforced-observation"
+        : "failed-current-observation",
+    nativeGoldenComparisonPerformed: nativeGoldensMatched,
+    nativeGoldensMatched,
+    primaryGoldenMatches,
+    runtimeGoldenMatches,
+    wholePacketQualification: qualified,
     runtimeMatches,
     cleanup,
     failed,
@@ -361,5 +419,6 @@ after(async () => {
         runtimeMatches === 3,
     );
     assert.equal(failed, false, "all raw attempts and cleanup retained before verdict");
+    assert.equal(qualified, true, "all whole current arrays, source and cleanup must match");
   }
 });
