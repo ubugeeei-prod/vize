@@ -118,12 +118,12 @@ void test("source-built stdio preserves every original response and the whole ve
   t.diagnostic(`versioned-lint-actions-whole-report ${JSON.stringify(report)}`);
   const unsupported = loaded.cases.filter((fixture) => fixture.data.sourceSession).length;
   assert.deepEqual(report.summary, {
-    plannedCases: 78,
-    legacyMatches: 78 - unsupported,
+    plannedCases: 79,
+    legacyMatches: 79 - unsupported,
     legacyFailures: 0,
     legacyUnsupported: unsupported,
     baselineDrift: 0,
-    nativeUnsupported: 78,
+    nativeUnsupported: 79,
     pairedComparisons: 0,
     nativeHandled: 0,
     nativeEquivalent: 0,
