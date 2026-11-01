@@ -162,3 +162,5 @@ tests/_fixtures/differential/typechecker/prepared-type-only-import-facts/Imports
 tests/_fixtures/differential/typechecker/cold-package-shadow-routes-11265/input.json text eol=lf
 # The private return geometry controls consume this full SFC literally.
 tests/_fixtures/differential/typechecker/private-constructor-return/Props.vue.txt text eol=lf
+# The private prototype authenticates every adjacent packaged library asset.
+crates/vize_canon/src/batch/virtual_project/private_return/libraries/assets.json text eol=lf

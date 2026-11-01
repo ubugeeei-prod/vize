@@ -8,6 +8,7 @@ use std::{
 
 /// One successful operation of the existing runtime link producer. This does
 /// not certify declaration membership, Vue authority or input completeness.
+#[cfg(test)]
 #[derive(Debug, PartialEq, Eq)]
 pub(in crate::batch) struct RuntimeDependencyLink {
     pub(in crate::batch) materialized: PathBuf,
@@ -24,6 +25,7 @@ pub(in crate::batch) struct RuntimeDependencyRoots {
 }
 
 impl RuntimeDependencyRoots {
+    #[cfg(test)]
     pub(in crate::batch) fn observed() -> Self {
         Self {
             observed: true,
@@ -51,6 +53,7 @@ impl RuntimeDependencyRoots {
 
     /// Retargeting or a failed observation disqualifies the optional plan.
     /// It does not change the old materializer's success or repair any leaf.
+    #[cfg(test)]
     pub(in crate::batch) fn finish(self) -> Option<Vec<RuntimeDependencyLink>> {
         if !self.observed || self.refused {
             return None;

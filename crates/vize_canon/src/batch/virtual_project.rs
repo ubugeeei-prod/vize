@@ -81,6 +81,7 @@ pub use jsx_codegen::{
 mod mapping;
 pub(crate) use mapping::MaterializedSourceMappingKind;
 mod materialize;
+#[cfg(test)]
 pub(in crate::batch) use materialize::CliMaterializedInputs;
 mod materialize_delta;
 mod materialize_links;
@@ -110,6 +111,8 @@ mod package_source_index;
 mod passthrough;
 mod paths;
 pub(in crate::batch) use paths::script_virtual_path;
+// Prototype transformations have no release admission before the closure producer.
+#[cfg(test)]
 mod private_return;
 mod project;
 mod setup_props;
@@ -209,6 +212,7 @@ pub struct VirtualProject {
     /// re-scoped to a session-private namespace.
     virtual_root: PathBuf,
     private_batch_namespace: bool,
+    #[cfg(test)]
     private_return: Option<private_return::ActiveReturn>,
 
     /// Shared owner lock held for as long as this project can read or patch

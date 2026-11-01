@@ -13,6 +13,28 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 use super::super::VirtualProject;
 
 impl VirtualProject {
+    pub(super) fn private_return_fingerprint(&self) -> Option<&str> {
+        #[cfg(test)]
+        {
+            super::super::private_return::fingerprint(self)
+        }
+        #[cfg(not(test))]
+        {
+            None
+        }
+    }
+
+    pub(crate) fn owned_cli_support_path(&self) -> Option<&Path> {
+        #[cfg(test)]
+        {
+            super::super::private_return::active_path(self)
+        }
+        #[cfg(not(test))]
+        {
+            None
+        }
+    }
+
     /// A terminal CLI owner can change storage only before any generated or
     /// editor artifact exists. This is storage isolation, not a semantic grant.
     pub(crate) fn can_scope_cli_diagnostics(&self) -> bool {

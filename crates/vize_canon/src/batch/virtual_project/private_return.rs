@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use super::VirtualProject;
 
 mod edit;
+mod libraries;
 mod materialization;
 mod syntax;
 
@@ -27,16 +28,16 @@ pub(super) struct ActiveReturn {
     fingerprint: vize_carton::String,
 }
 
-impl VirtualProject {
-    pub(super) fn private_return_fingerprint(&self) -> Option<&str> {
-        self.private_return
-            .as_ref()
-            .map(|active| active.fingerprint.as_str())
-    }
+pub(super) fn fingerprint(project: &VirtualProject) -> Option<&str> {
+    project
+        .private_return
+        .as_ref()
+        .map(|active| active.fingerprint.as_str())
+}
 
-    pub(crate) fn owned_cli_support_path(&self) -> Option<&Path> {
-        self.private_return
-            .as_ref()
-            .map(|active| active.helper.path.as_path())
-    }
+pub(super) fn active_path(project: &VirtualProject) -> Option<&Path> {
+    project
+        .private_return
+        .as_ref()
+        .map(|active| active.helper.path.as_path())
 }

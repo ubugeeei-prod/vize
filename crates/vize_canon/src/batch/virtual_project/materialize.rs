@@ -12,8 +12,7 @@ use crate::batch::materialize_fs::{
     ensure_dir, ensure_materialize_root, prune_unexpected_entries, write_if_changed,
 };
 use crate::batch::runtime_deps::{
-    RuntimeDependencyLink, RuntimeDependencyRoots, materialize_runtime_dependencies,
-    materialize_with_roots,
+    RuntimeDependencyRoots, materialize_runtime_dependencies, materialize_with_roots,
 };
 
 use super::package_node_modules::materialize_package_node_modules;
@@ -22,7 +21,11 @@ use super::{
     VUE_MODULE_STUBS_FILE, VirtualProject,
 };
 
+#[cfg(test)]
+use crate::batch::runtime_deps::RuntimeDependencyLink;
+#[cfg(test)]
 mod cli_inputs;
+#[cfg(test)]
 pub(in crate::batch) use cli_inputs::CliMaterializedInputs;
 
 impl VirtualProject {

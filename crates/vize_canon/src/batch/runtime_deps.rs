@@ -8,7 +8,9 @@ mod owned_roots;
 #[cfg(test)]
 mod ownership_tests;
 mod resolver;
-pub(in crate::batch) use owned_roots::{RuntimeDependencyLink, RuntimeDependencyRoots};
+#[cfg(test)]
+pub(in crate::batch) use owned_roots::RuntimeDependencyLink;
+pub(in crate::batch) use owned_roots::RuntimeDependencyRoots;
 mod stubs;
 #[cfg(test)]
 mod tests;
