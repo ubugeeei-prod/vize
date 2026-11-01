@@ -193,10 +193,6 @@ fn format_expression_with_layout(
             return None;
         }
 
-        let mut oxc_options = options.to_oxc_format_options();
-        if let Some(quote_style) = quote_style {
-            oxc_options.quote_style = quote_style;
-        }
         if let Some(depth) = attribute_depth
             && let [Statement::ExpressionStatement(statement)] = parsed.program.body.as_slice()
             && let Expression::UnaryExpression(unary) = &statement.expression
@@ -230,7 +226,13 @@ fn format_expression_with_layout(
                 .print_width
                 .saturating_sub(value_indent as u32)
                 .max(1);
-            oxc_options.line_width = javascript_line_width(width);
+            // Construct the options with the width this branch actually uses,
+            // without validating a configured width that would be discarded.
+            let mut oxc_options =
+                options.to_oxc_format_options_with_line_width(javascript_line_width(width));
+            if let Some(quote_style) = quote_style {
+                oxc_options.quote_style = quote_style;
+            }
             let code =
                 oxc_formatter::format_unary_argument(oxc_allocator, &parsed.program, oxc_options)?
                     .print()
@@ -254,6 +256,10 @@ fn format_expression_with_layout(
                 retained_bare_sequence: inner.retained_bare_sequence,
                 owns_attribute_lines,
             });
+        }
+        let mut oxc_options = options.to_oxc_format_options();
+        if let Some(quote_style) = quote_style {
+            oxc_options.quote_style = quote_style;
         }
         let formatted = format_program(oxc_allocator, &parsed.program, oxc_options, None)
             .print()

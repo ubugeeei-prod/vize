@@ -342,6 +342,13 @@ impl FormatOptions {
 
     /// Convert to `oxc_formatter::JsFormatOptions`
     pub fn to_oxc_format_options(&self) -> oxc_formatter::JsFormatOptions {
+        self.to_oxc_format_options_with_line_width(javascript_line_width(self.print_width))
+    }
+
+    pub(crate) fn to_oxc_format_options_with_line_width(
+        &self,
+        line_width: oxc_formatter_core::LineWidth,
+    ) -> oxc_formatter::JsFormatOptions {
         // Oxc 0.142 renamed FormatOptions to JsFormatOptions; shared layout types
         // live in oxc_formatter_core and are not re-exported by oxc_formatter.
         use oxc_formatter::{
@@ -357,7 +364,7 @@ impl FormatOptions {
                 IndentStyle::Space
             },
             indent_width: IndentWidth::try_from(self.tab_width).unwrap_or_default(),
-            line_width: javascript_line_width(self.print_width),
+            line_width,
             line_ending: match self.end_of_line {
                 EndOfLine::Lf | EndOfLine::Auto => LineEnding::Lf,
                 EndOfLine::Crlf => LineEnding::Crlf,
