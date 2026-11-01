@@ -112,5 +112,4 @@ fn rewrite(command: &Command, args: &[OsString]) -> Option<Vec<OsString>> {
 }
 
 #[cfg(test)]
-#[path = "fmt_bool_args_tests.rs"]
 mod tests;

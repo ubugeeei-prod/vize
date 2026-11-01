@@ -35,40 +35,18 @@ fn run(root: &Path, args: &[&str]) -> Output {
     output
 }
 
-fn success(output: &Output) {
-    assert_eq!(output.status.code(), Some(0), "{output:?}");
-    assert!(output.stdout.is_empty(), "{output:?}");
-    assert!(
-        String::from_utf8_lossy(&output.stderr).contains("Found 1 file(s)"),
-        "{output:?}"
-    );
+fn changed(file: &str) -> vize_l0::String {
+    vize_l0::cstr!(
+        "Found 1 file(s)\nReformatted: {file}\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+    )
 }
+const UNCHANGED: &str = "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n";
+const CHECKED: &str = "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n";
 
-fn assert_preferences(output: &str, semi: bool, spacing: bool, sorting: bool) {
-    assert!(
-        output.contains(if semi {
-            "const name = \"ada\";"
-        } else {
-            "const name = \"ada\"\n"
-        }),
-        "{output}"
-    );
-    assert!(
-        output.contains(if spacing {
-            "{ name: \"ada\" }"
-        } else {
-            "{name: \"ada\"}"
-        }),
-        "{output}"
-    );
-    assert!(
-        output.contains(if sorting {
-            "id=\"y\" class=\"x\" type=\"button\""
-        } else {
-            "type=\"button\" class=\"x\" id=\"y\""
-        }),
-        "{output}"
-    );
+fn success(output: &Output, expected_stderr: &str) {
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    assert_eq!(output.stdout, b"");
+    assert_eq!(output.stderr, expected_stderr.as_bytes());
 }
 
 fn round_trip(root: &Path, command: &str, flags: &[&str], configured: bool) -> String {
@@ -81,12 +59,12 @@ fn round_trip(root: &Path, command: &str, flags: &[&str], configured: bool) -> S
     });
     argv.push("--write");
     argv.extend_from_slice(flags);
-    success(&run(root, &argv));
+    success(&run(root, &argv), changed("a.vue").as_str());
     let expected = fs::read_to_string(root.join("a.vue")).unwrap();
-    success(&run(root, &argv));
+    success(&run(root, &argv), UNCHANGED);
     assert_eq!(fs::read_to_string(root.join("a.vue")).unwrap(), expected);
     *argv.iter_mut().find(|arg| **arg == "--write").unwrap() = "--check";
-    success(&run(root, &argv));
+    success(&run(root, &argv), CHECKED);
     assert_eq!(fs::read_to_string(root.join("a.vue")).unwrap(), expected);
     expected
 }
@@ -105,7 +83,7 @@ fn reported_original_spaced_false_matches_the_complete_existing_equals_route() {
         ],
         false,
     );
-    assert_preferences(&equals, false, false, false);
+
     let spaced = round_trip(
         project.path(),
         "fmt",
@@ -132,6 +110,17 @@ fn reported_original_spaced_false_matches_the_complete_existing_equals_route() {
         false,
     );
     assert_eq!(mixed, equals);
+    let all_true = round_trip(
+        project.path(),
+        "fmt",
+        &[
+            "--semi=true",
+            "--bracket-spacing=true",
+            "--sort-attributes=true",
+        ],
+        false,
+    );
+    assert_ne!(equals, all_true);
     for index in 0..3 {
         let mut flags = vec![
             "--semi=true",
@@ -141,7 +130,21 @@ fn reported_original_spaced_false_matches_the_complete_existing_equals_route() {
         flags.remove(index);
         flags.extend([*FLAGS.get(index).unwrap(), "false"]);
         let output = round_trip(project.path(), "fmt", &flags, false);
-        assert_preferences(&output, index != 0, index != 1, index != 2);
+        let mut equals_flags = vec![
+            "--semi=true",
+            "--bracket-spacing=true",
+            "--sort-attributes=true",
+        ];
+        *equals_flags.get_mut(index).unwrap() = *[
+            "--semi=false",
+            "--bracket-spacing=false",
+            "--sort-attributes=false",
+        ]
+        .get(index)
+        .unwrap();
+        let control = round_trip(project.path(), "fmt", &equals_flags, false);
+        assert_eq!(output, control);
+        assert_ne!(output, all_true);
     }
 }
 
@@ -154,16 +157,55 @@ fn spaced_true_false_and_bare_options_override_config_without_changing_absent_or
         })).unwrap());
         let config = fs::read(project.path().join("vite.config.mjs")).unwrap();
         let absent = round_trip(project.path(), "fmt", &[], true);
-        assert_preferences(&absent, configured, configured, configured);
+        let configured_flags = if configured {
+            [
+                "--semi=true",
+                "--bracket-spacing=true",
+                "--sort-attributes=true",
+            ]
+        } else {
+            [
+                "--semi=false",
+                "--bracket-spacing=false",
+                "--sort-attributes=false",
+            ]
+        };
+        let configured_control = round_trip(project.path(), "fmt", &configured_flags, true);
+        assert_eq!(absent, configured_control);
         for value in ["false", "true"] {
             let spaced: Vec<_> = FLAGS.iter().flat_map(|flag| [*flag, value]).collect();
             let expected = round_trip(project.path(), "fmt", &spaced, true);
-            assert_preferences(&expected, value == "true", value == "true", value == "true");
+            let equals_flags = if value == "true" {
+                [
+                    "--semi=true",
+                    "--bracket-spacing=true",
+                    "--sort-attributes=true",
+                ]
+            } else {
+                [
+                    "--semi=false",
+                    "--bracket-spacing=false",
+                    "--sort-attributes=false",
+                ]
+            };
+            let control = round_trip(project.path(), "fmt", &equals_flags, true);
+            assert_eq!(expected, control);
         }
         let bare = round_trip(project.path(), "fmt", &FLAGS, true);
-        assert_preferences(&bare, true, true, true);
+        let true_control = round_trip(
+            project.path(),
+            "fmt",
+            &[
+                "--semi=true",
+                "--bracket-spacing=true",
+                "--sort-attributes=true",
+            ],
+            true,
+        );
+        assert_eq!(bare, true_control);
         let no_semi = round_trip(project.path(), "fmt", &["--no-semi"], true);
-        assert_preferences(&no_semi, false, configured, configured);
+        let semi_control = round_trip(project.path(), "fmt", &["--semi=false"], true);
+        assert_eq!(no_semi, semi_control);
         assert_eq!(
             fs::read(project.path().join("vite.config.mjs")).unwrap(),
             config
@@ -202,7 +244,12 @@ fn spaced_semicolons_preserve_the_prior_complete_independent_js_ts_reference_out
             ("false", &case.without_semicolons),
         ] {
             fs::write(project.path().join(&case.file), &case.source).unwrap();
-            for action in ["--write", "--write", "--check"] {
+            let changed = changed(&case.file);
+            for (action, stderr) in [
+                ("--write", changed.as_str()),
+                ("--write", UNCHANGED),
+                ("--check", CHECKED),
+            ] {
                 let output = run(
                     project.path(),
                     &[
@@ -215,7 +262,7 @@ fn spaced_semicolons_preserve_the_prior_complete_independent_js_ts_reference_out
                         value,
                     ],
                 );
-                success(&output);
+                success(&output, stderr);
                 assert_eq!(
                     &fs::read_to_string(project.path().join(&case.file)).unwrap(),
                     expected
