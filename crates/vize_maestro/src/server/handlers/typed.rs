@@ -82,7 +82,7 @@ impl MaestroServer {
             return Ok(None);
         };
         #[cfg(feature = "native")]
-        let ctx = ctx.with_foreground_preparation(preparation);
+        let mut ctx = ctx.with_foreground_preparation(preparation);
 
         // Type-aware hover for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
         // Routed before the SFC path since JSX documents never produce an SFC
@@ -103,7 +103,12 @@ impl MaestroServer {
         let mut hover_result: Option<Hover> = if ctx.is_in_style() {
             HoverService::hover(&ctx).or_else(|| super::super::annotations::color_hover(&ctx))
         } else {
-            let corsa_bridge = self.state.get_corsa_bridge().await;
+            let stamp = self.state.corsa_request_stamp();
+            let (corsa_bridge, initial) = self
+                .state
+                .get_corsa_bridge_for_canonical_source(ctx.uri, &ctx.content)
+                .await;
+            ctx.attach_initial_canonical_document(corsa_bridge.as_ref(), initial, stamp);
             HoverService::hover_with_corsa(&ctx, corsa_bridge).await
         };
 
@@ -137,7 +142,7 @@ impl MaestroServer {
             return Ok(None);
         };
         #[cfg(feature = "native")]
-        let ctx = ctx.with_foreground_preparation(preparation);
+        let mut ctx = ctx.with_foreground_preparation(preparation);
         // JSX completion is opt-in so React remains untouched.
         #[cfg(feature = "native")]
         if crate::utils::is_jsx_path(uri.path()) {
@@ -161,7 +166,12 @@ impl MaestroServer {
             if let Some(response) = CompletionService::complete_static_object_member(&ctx) {
                 return Ok(Some(response));
             }
-            let corsa_bridge = self.state.get_corsa_bridge().await;
+            let stamp = self.state.corsa_request_stamp();
+            let (corsa_bridge, initial) = self
+                .state
+                .get_corsa_bridge_for_canonical_source(ctx.uri, &ctx.content)
+                .await;
+            ctx.attach_initial_canonical_document(corsa_bridge.as_ref(), initial, stamp);
             if let Some(response) = CompletionService::complete_with_corsa(&ctx, corsa_bridge).await
             {
                 return Ok(Some(response));

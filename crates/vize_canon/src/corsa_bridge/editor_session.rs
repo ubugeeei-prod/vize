@@ -2,6 +2,7 @@
 
 use std::fs::{File, OpenOptions, TryLockError};
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, MutexGuard};
 use std::time::{Duration, SystemTime};
 
@@ -25,7 +26,8 @@ pub(crate) struct EditorMirrorSession {
 
 struct EditorStorage {
     _lifetime_lock: File,
-    directory: tempfile::TempDir,
+    directory: Option<tempfile::TempDir>,
+    retain_after_failure: AtomicBool,
 }
 
 /// One preparation identity and the signal its worker thread resolves.
@@ -68,10 +70,25 @@ impl EditorMirrorSession {
     }
 
     pub(crate) fn root(&self) -> Result<&Path, CorsaBridgeError> {
-        self.storage
+        let storage = self
+            .storage
             .as_ref()
-            .map(|storage| storage.directory.path())
-            .map_err(|error| CorsaBridgeError::CommunicationError(error.clone()))
+            .map_err(|error| CorsaBridgeError::CommunicationError(error.clone()))?;
+        storage
+            .directory
+            .as_ref()
+            .map(tempfile::TempDir::path)
+            .ok_or_else(|| {
+                CorsaBridgeError::CommunicationError("editor mirror storage was retired".into())
+            })
+    }
+
+    /// An incomplete native retirement can still be reading these exact files.
+    /// This flag is sticky even if a later cleanup attempt appears successful.
+    pub(in crate::corsa_bridge) fn retain_after_failed_shutdown(&self) {
+        if let Ok(storage) = &self.storage {
+            storage.retain_after_failure.store(true, Ordering::Release);
+        }
     }
 
     pub(in crate::corsa_bridge) fn cache(&self) -> MutexGuard<'_, SessionCache> {
@@ -91,6 +108,13 @@ impl EditorMirrorSession {
     }
 
     pub(crate) fn clear(&self) {
+        if self
+            .storage
+            .as_ref()
+            .is_ok_and(|storage| storage.retain_after_failure.load(Ordering::Acquire))
+        {
+            return;
+        }
         self.cache().clear();
         let Ok(root) = self.root() else {
             return;
@@ -111,6 +135,30 @@ impl EditorMirrorSession {
         }
     }
 }
+
+const RETAINED_FAILURE: &str = ".retained-after-failed-shutdown";
+
+impl Drop for EditorStorage {
+    fn drop(&mut self) {
+        if self.retain_after_failure.load(Ordering::Acquire)
+            && let Some(directory) = self.directory.take()
+        {
+            // A later session's existing abandoned-owner sweep must not infer
+            // quiescence merely because our lifetime lock has been released.
+            if let Err(error) = std::fs::write(
+                directory.path().join(RETAINED_FAILURE),
+                b"unknown native retirement\n",
+            ) {
+                tracing::warn!(%error, "could not mark retained editor mirror");
+            }
+            let retained = directory.keep();
+            tracing::warn!(path = %retained.display(), "retaining editor mirror after incomplete native shutdown");
+        }
+    }
+}
+
+#[cfg(test)]
+mod retained_tests;
 
 impl Default for EditorMirrorSession {
     fn default() -> Self {
@@ -160,7 +208,8 @@ fn create_storage() -> std::io::Result<EditorStorage> {
     }
     Ok(EditorStorage {
         _lifetime_lock: lifetime_lock,
-        directory,
+        directory: Some(directory),
+        retain_after_failure: AtomicBool::new(false),
     })
 }
 
@@ -183,6 +232,10 @@ fn reap_abandoned_sessions(base: &Path) {
         if !entry.file_type().is_ok_and(|kind| kind.is_dir())
             || !entry.file_name().to_string_lossy().starts_with("session-")
         {
+            continue;
+        }
+        // No lock/PID inference can prove an unknown native reader stopped.
+        if path.join(RETAINED_FAILURE).exists() {
             continue;
         }
         let lock_path = path.join(".session.lock");

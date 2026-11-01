@@ -63,6 +63,19 @@ pub(crate) struct BoundedWorker<T> {
 }
 
 impl<T: Send + 'static> BoundedWorker<T> {
+    /// Irrevocably queue owner cleanup behind entered IPC without waiting or
+    /// starting a new deadline. Used by nonblocking outer shutdown only.
+    pub(in crate::corsa_bridge) fn enqueue_retirement<F>(&self, f: F) -> Result<(), WorkerError>
+    where
+        F: FnOnce(&mut T) + Send + 'static,
+    {
+        self.jobs
+            .as_ref()
+            .ok_or(WorkerError::Stopped)?
+            .send(Box::new(f))
+            .map_err(|_| WorkerError::Stopped)
+    }
+
     pub(crate) fn is_draining(&self) -> bool {
         self.abandoned.load(Ordering::Acquire) > 0
     }

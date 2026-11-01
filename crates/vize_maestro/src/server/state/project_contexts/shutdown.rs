@@ -21,13 +21,13 @@ impl ServerState {
             .values()
             .cloned()
             .collect();
-        let mut bridges: Vec<_> = self.initialized_corsa_bridge().into_iter().collect();
+        let mut bridges: Vec<_> = self.corsa_bridge_for_shutdown().into_iter().collect();
         for context in contexts {
             // Retired owners discard startups that complete after this point.
             context.mark_retired();
             let Some(bridge) = context
                 .published_state()
-                .and_then(|state| state.initialized_corsa_bridge())
+                .and_then(|state| state.corsa_bridge_for_shutdown())
             else {
                 continue;
             };
@@ -36,8 +36,13 @@ impl ServerState {
             }
         }
         for bridge in self.take_detached_corsa_bridges() {
-            if bridge.is_initialized() && !bridges.iter().any(|known| Arc::ptr_eq(known, &bridge)) {
-                bridges.push(bridge);
+            if bridge.is_initialized() {
+                if !bridges.iter().any(|known| Arc::ptr_eq(known, &bridge)) {
+                    bridges.push(bridge);
+                }
+            } else {
+                // Pending startup never delays the outer reply (#10760).
+                bridge.stop_pending_startup();
             }
         }
         self.retire_project_contexts();
@@ -47,10 +52,15 @@ impl ServerState {
             .collect()
     }
 
-    fn initialized_corsa_bridge(&self) -> Option<Arc<CorsaBridge>> {
-        self.corsa_bridge
-            .read()
-            .clone()
-            .filter(|bridge| bridge.is_initialized())
+    fn corsa_bridge_for_shutdown(&self) -> Option<Arc<CorsaBridge>> {
+        let bridge = self.corsa_bridge.read().clone()?;
+        if bridge.is_initialized() {
+            Some(bridge)
+        } else {
+            // Fence queued work and irrevocably queue cleanup behind entered
+            // startup. Only already-initialized owners join the outer wait.
+            bridge.stop_pending_startup();
+            None
+        }
     }
 }

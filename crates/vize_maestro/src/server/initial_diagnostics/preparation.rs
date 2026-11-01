@@ -24,9 +24,14 @@ impl MaestroServer {
         if !scope.is_current() {
             return None;
         }
-        let ctx = IdeContext::new(&self.state, uri, 0)?;
+        let mut ctx = IdeContext::new(&self.state, uri, 0)?;
         tracing::info!("preparing initial native project for {uri} version {version}");
-        let bridge = self.state.get_corsa_bridge().await?;
+        let (bridge, initial) = self
+            .state
+            .get_corsa_bridge_for_canonical_source(uri, &ctx.content)
+            .await;
+        let bridge = bridge?;
+        ctx.attach_initial_canonical_document(Some(&bridge), initial, scope.stamp());
         if !scope.is_current() || self.state.documents.version(uri) != Some(version) {
             return None;
         }

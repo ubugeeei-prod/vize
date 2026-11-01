@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
+import {
+  foregroundTypedSourceSha256,
+  initialProjectTypedEntry,
+  initialProjectTypedSourceSha256,
+  invertInitialProjectSource,
+} from "./css-hover-initial-project-source.ts";
 
 export type SourceTreeEntry = Readonly<{ path: string; mode: string; type: string; oid: string }>;
 type SourceLayer = Readonly<{
@@ -10,9 +16,17 @@ type SourceLayer = Readonly<{
   inverseSha256: string;
   changes: readonly Readonly<{ path: string; before: SourceTreeEntry; after: SourceTreeEntry }>[];
 }>;
+type InitialProjectLayer = Readonly<{
+  name: "initial-canonical-project-bootstrap";
+  sourceSha256: string;
+  inverseSha256: string;
+  intermediateSha256: string;
+  changes: SourceLayer["changes"];
+  foregroundPreparation: SourceLayer;
+}>;
 type CheckoutComposition = Readonly<{
   entries: readonly SourceTreeEntry[];
-  layer: SourceLayer | null;
+  layer: SourceLayer | InitialProjectLayer | null;
 }>;
 
 export const typedSourcePath = "crates/vize_maestro/src/server/handlers/typed.rs";
@@ -122,6 +136,29 @@ export function composeForegroundPreparationCheckout(
   if (!original || !current) return { entries: expected, layer: null };
   assert.deepEqual(original, before, "foreign original typed row");
   if (isDeepStrictEqual(current, before)) return { entries: expected, layer: null };
+  if (current.oid === initialProjectTypedEntry.oid) {
+    assert.deepEqual(current, initialProjectTypedEntry, "foreign initial-project typed row");
+    assert.equal(typeof readSource, "function", "complete typed source reader required");
+    const foreground = invertInitialProjectSource(readSource(typedSourcePath));
+    invertForegroundPreparationSource(foreground);
+    return {
+      entries: expected.map((row) => (row.path === typedSourcePath ? current : row)),
+      layer: {
+        name: "initial-canonical-project-bootstrap",
+        sourceSha256: initialProjectTypedSourceSha256,
+        inverseSha256: originalTypedSourceSha256,
+        intermediateSha256: foregroundTypedSourceSha256,
+        changes: [{ path: typedSourcePath, before, after: current }],
+        foregroundPreparation: {
+          name: "same-document-foreground-preparation-11347",
+          reviewedRevision: "1248e5a903c6de56f2e4630650a048744d135edf",
+          sourceSha256: reviewedTypedSourceSha256,
+          inverseSha256: originalTypedSourceSha256,
+          changes: [{ path: typedSourcePath, before, after }],
+        },
+      },
+    };
+  }
   assert.deepEqual(current, after, "foreign current typed row");
   invertForegroundPreparationSource(readSource(typedSourcePath));
   return {
