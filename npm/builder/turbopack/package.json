@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/turbopack-plugin",
-  "version": "0.474.0",
+  "version": "0.631.0",
   "description": "Native Vue SFC compilation for Turbopack",
   "keywords": [
     "compiler",
