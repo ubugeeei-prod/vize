@@ -1,4 +1,4 @@
-//! Whole JSON-config and direct-CLI observations before width-conversion verdicts.
+//! Whole Vite-config and direct-CLI observations before width-conversion verdicts.
 #![cfg(feature = "glyph")]
 #![expect(clippy::disallowed_types, reason = "complete CLI observation packets")]
 
@@ -20,11 +20,13 @@ fn read_pinned(root: &Path, file: &str, expected: &str) -> Vec<u8> {
 fn collect(case: &Value, input: &[u8], width: u32, direct: bool) -> Vec<Value> {
     let project = tempfile::tempdir().unwrap();
     let root = project.path();
-    let config = serde_json::to_vec(&serde_json::json!({
-        "formatter":{"printWidth":if direct {40} else {width}}
-    }))
-    .unwrap();
-    fs::write(root.join("vize.config.json"), &config).unwrap();
+    let config = crate::support::vite_config::source(
+        serde_json::to_vec(&serde_json::json!({
+            "formatter":{"printWidth":if direct {40} else {width}}
+        }))
+        .unwrap(),
+    );
+    fs::write(root.join("vite.config.mjs"), &config).unwrap();
     fs::write(root.join("Example.vue"), input).unwrap();
     fs::write(
         root.join("Unselected.vue"),
@@ -34,10 +36,10 @@ fn collect(case: &Value, input: &[u8], width: u32, direct: bool) -> Vec<Value> {
     let mut packets = Vec::new();
     for (pass, mode) in ["--write", "--write", "--check"].into_iter().enumerate() {
         let before = fs::read(root.join("Example.vue")).unwrap();
-        let config_before = fs::read(root.join("vize.config.json")).unwrap();
+        let config_before = fs::read(root.join("vite.config.mjs")).unwrap();
         let unselected_before = fs::read(root.join("Unselected.vue")).unwrap();
         let width_arg = width.to_string();
-        let mut argv = vec!["fmt", "Example.vue", "--config", "vize.config.json", mode];
+        let mut argv = vec!["fmt", "Example.vue", "--config", "vite.config.mjs", mode];
         if direct {
             argv.extend(["--print-width", width_arg.as_str()]);
         }
@@ -54,7 +56,7 @@ fn collect(case: &Value, input: &[u8], width: u32, direct: bool) -> Vec<Value> {
             "stderr":String::from_utf8(result.stderr).unwrap(),
             "before":String::from_utf8(before).unwrap(),"after":String::from_utf8(after).unwrap(),
             "configBefore":String::from_utf8(config_before).unwrap(),
-            "configAfter":fs::read_to_string(root.join("vize.config.json")).unwrap(),
+            "configAfter":fs::read_to_string(root.join("vite.config.mjs")).unwrap(),
             "unselectedBefore":String::from_utf8(unselected_before).unwrap(),
             "unselectedAfter":fs::read_to_string(root.join("Unselected.vue")).unwrap()
         });
