@@ -21,6 +21,7 @@ test("actual Oxlint tuple schema and projector preserve literal ignore boundarie
     [{ ignore: [] }],
     [{ ignore: ["\u0085", "name:exit\n"] }],
     [{ style: "never", ignore: ["active", "Active"] }],
+    [{ ignoreTags: [] }],
   ]) {
     assert.equal(validate(options), true, JSON.stringify(options));
     const before = JSON.stringify(options);
@@ -36,7 +37,6 @@ test("actual Oxlint tuple schema and projector preserve literal ignore boundarie
     [{ ignore: ["\uFEFF"] }],
     [{ ignore: ["name:exit"] }],
     [{ ignore: ["active", "active"] }],
-    [{ ignoreTags: [] }],
     ["always", { style: "never" }],
     ["always", {}, {}],
   ]) {

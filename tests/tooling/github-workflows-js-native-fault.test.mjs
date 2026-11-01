@@ -120,7 +120,16 @@ else process.exit(Number(result));
       assert.equal("coreRestore" in receipt, false);
       assert.equal(receipt.observationGaps["source-before"], "PermissionError");
       assert.equal(receipt.observationGaps["source-after"], "PermissionError");
-      assert.equal(receipt.helpers.length, 3);
+      assert.equal(receipt.helpers.length, 4);
+      assert.deepEqual(
+        receipt.helpers.map((row) => row.path.split("/").at(-1)),
+        [
+          "native-fault-evidence.ts",
+          "native-fault-core.ts",
+          "native-fault-support.ts",
+          "native-fault-retention.ts",
+        ],
+      );
     } finally {
       rmSync(fixture, { recursive: true, force: true });
     }
@@ -259,6 +268,13 @@ void test("real core process PID and retained start ticks bind the exact physica
     const result = producer(core, output, sha256File);
     assert.equal(result.path, executable);
     assert.equal(result.startTicks, "456");
+    const fixedSlot = join(packets, "tail-001.json");
+    renameSync(first, fixedSlot);
+    assert.equal(producer(core, output, sha256File).pid, 123);
+    writeFileSync(fixedSlot, JSON.stringify({ ...packet, pid: 999 }));
+    assert.throws(() => producer(core, output));
+    writeFileSync(fixedSlot, JSON.stringify(packet));
+    renameSync(fixedSlot, first);
     const second = join(packets, "123-1.json");
     writeFileSync(second, JSON.stringify({ ...packet, startTicks: "789" }));
     assert.throws(() => producer(core, output));
@@ -364,6 +380,7 @@ void test("only an explicit label observes the frozen original failure; mandator
   assert.equal((commands.match(/-- vp run --workspace-root test:js/g) ?? []).length, 1);
   assert.match(commands, /670e62ad66b6ff29b441e887bc7f62abb641c106/);
   assert.match(commands, /cp \.github\/actions.*native-fault-evidence\.ts/);
+  assert.match(commands, /cp \.github\/actions.*native-fault-retention\.ts/);
   assert.doesNotMatch(commands, /continue-on-error|retry|DISABLE_TSGO|test-name-pattern/);
   const upload = job.steps.at(-1);
   assert.equal(upload.if, "${{ always() }}");

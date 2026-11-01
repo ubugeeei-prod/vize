@@ -1,0 +1,22 @@
+{
+  "schema": "vize.sfc-attributes-empty-compile-reference.v1",
+  "fixSource": "2645cb590a3f839494a8681a26cb305eaa34a9e9",
+  "evidence": {
+    "run": "41281988924",
+    "job": "124775884421",
+    "observerActor": "6cd498e45d14ab0a6b1499351c55f1485e6fbc18",
+    "triggerHead": "f1df356d1359c0a1ab3cbffce3b21fdd3d08c654",
+    "rawSha256": "a2c04f8ada772f9471707487956712ca5e60338ebc425dafcf0ff522fecb42cc",
+    "rawBasePacketsRetained": true,
+    "candidatePacketsUnmodified": true
+  },
+  "source": "",
+  "before": {
+    "kind": "return",
+    "json": "{\"code\":\"const _sfc_main = {}\\nexport default _sfc_main\",\"errors\":[],\"warnings\":[],\"hasScoped\":false,\"styles\":[],\"customBlocks\":[],\"macroArtifacts\":[],\"moduleShape\":{\"hasDefaultExport\":true,\"hasSfcMainDefined\":true,\"hasNamedRenderExport\":false,\"hasNamedSsrRenderExport\":false,\"defaultExportIsSfcMain\":true,\"defaultExportStart\":21,\"defaultExportKeywordEnd\":35,\"defaultExportEnd\":45}}"
+  },
+  "after": {
+    "kind": "return",
+    "json": "{\"code\":\"\",\"errors\":[\"At least one <template> or <script> is required in a single file component.\"],\"warnings\":[],\"hasScoped\":false,\"styles\":[],\"customBlocks\":[],\"macroArtifacts\":[]}"
+  }
+}

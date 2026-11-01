@@ -1,0 +1,38 @@
+name: Attribute ignoreTags reference
+on:
+  pull_request:
+    paths:
+      - .github/workflows/patina-attribute-ignore-tags-reference.yml
+      - tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/**
+      - tests/tooling/support/patina-attribute-ignore-tags-reference.ts
+permissions: { contents: read }
+concurrency:
+  group: attribute-ignore-tags-reference-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  reference:
+    name: Whole official literal-tag reference
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with: { run_install: false }
+      - name: Install the unchanged pinned reference providers
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts --filter '{./tools/benchmarks/scripts}...'
+      - name: Capture all independent verify, fix and requery results
+        run: node tests/tooling/support/patina-attribute-ignore-tags-reference.ts --capture "$RUNNER_TEMP/attribute-ignore-tags-reference"
+      - name: Preserve whole reference subprocess and all original packets
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: attribute-ignore-tags-reference-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/attribute-ignore-tags-reference
+          if-no-files-found: error

@@ -20,6 +20,7 @@ import {
   writeJson,
 } from "./native-fault-support.ts";
 import type { Packet } from "./native-fault-support.ts";
+import { processRetention } from "./native-fault-retention.ts";
 
 export const observers = { sourceSnapshot, privateGuest, observeDescendants, diagnoseCore };
 
@@ -54,6 +55,7 @@ function prepareObservation(command: string[]): { output: string; receipt: Packe
       helper,
       path.join(path.dirname(helper), "native-fault-core.ts"),
       path.join(path.dirname(helper), "native-fault-support.ts"),
+      path.join(path.dirname(helper), "native-fault-retention.ts"),
     ].map((filename) => ({ path: filename, sha256: sha256File(filename) })),
     sampling: "read-only /proc descendants; sampled maps are not complete-call evidence",
     coreCapture: "unavailable",
@@ -185,6 +187,11 @@ async function observeCommand(command: string[], output: string, receipt: Packet
       );
     });
   } finally {
+    if (typeof receipt.pid === "number")
+      attempt(receipt, "process-maps-terminal", () =>
+        observers.observeDescendants(receipt.pid, seen, providers, output, "/proc", "terminal"),
+      );
+    receipt.processRetention = processRetention(seen);
     Object.assign(receipt, { finishedAt: Date.now() / 1000, sampledMapPackets: seen.size });
     if (patternChanged)
       attempt(receipt, "restore", () => {

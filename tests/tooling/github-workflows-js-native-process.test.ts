@@ -202,6 +202,52 @@ void test(
 );
 
 void test(
+  "long process sampling keeps late task identities after the original128-packet frontier",
+  unix,
+  () => {
+    const f = fixture();
+    try {
+      const executable = f.image("native-tool");
+      f.actor(100, 1, "111", executable);
+      f.task(100, 100, "111");
+      const seen = new Set<string>();
+      const images = new Map();
+      for (let index = 0; index < 300; index++) {
+        if (index > 0)
+          fs.rmSync(path.join(f.proc, "100/task", String(199 + index)), { recursive: true });
+        f.task(100, 200 + index, String(index + 1));
+        observeDescendants(100, seen, images, f.output, f.proc);
+        assert.ok(f.samples().length <= 128);
+      }
+      const retained = f.samples();
+      assert.ok(
+        retained.some((packet) => packet.tasks.some((task) => task.tid === 499)),
+        "the late original actor/task must remain observable after128 unique samples",
+      );
+      assert.equal(retained.length, 128);
+      assert.ok(retained.some((packet) => packet.tasks.some((task) => task.tid === 200)));
+      const summary = f.summary() as Summary & {
+        retention: {
+          observedPackets: number;
+          droppedPackets: number;
+          terminalObservation: { packetWrites: number; partial: boolean };
+        };
+      };
+      assert.equal(summary.limited, true);
+      assert.equal(summary.retention.observedPackets, 300);
+      assert.equal(summary.retention.droppedPackets, 172);
+      observeDescendants(100, seen, images, f.output, f.proc, "terminal");
+      const terminal = f.summary() as typeof summary;
+      assert.equal(terminal.retention.terminalObservation.packetWrites, 1);
+      assert.equal(terminal.retention.terminalObservation.partial, true);
+      assert.equal(f.samples().length, 128);
+    } finally {
+      fs.rmSync(f.root, { recursive: true, force: true });
+    }
+  },
+);
+
+void test(
   "real Linux procfs joins a non-Node child and its task to one physical image",
   { skip: process.platform !== "linux" },
   async () => {

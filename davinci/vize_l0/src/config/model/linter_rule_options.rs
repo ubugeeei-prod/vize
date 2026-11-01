@@ -405,6 +405,13 @@ impl ConfigLintRuleOptions {
             .and_then(AttributeHyphenationConfig::ignore)
     }
 
+    /// Exact authored tag exemptions; an empty object resets this custom list.
+    pub fn attribute_hyphenation_ignore_tags(&self) -> Option<&[String]> {
+        self.attribute_hyphenation
+            .as_ref()
+            .and_then(AttributeHyphenationConfig::ignore_tags)
+    }
+
     /// Configured design-token primitive values for
     /// `musea/prefer-design-tokens` as `(value, path, tier)` tuples. Empty
     /// when unconfigured.

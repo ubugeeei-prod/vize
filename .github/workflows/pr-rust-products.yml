@@ -96,6 +96,9 @@ jobs:
       - name: Build and run the affected Rust test cohort
         # Preserve affected package feature unification; the shared cohort
         # registry partitions test binaries by their actual product surface.
+        env:
+          VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE: ${{ runner.temp }}/mounted-runtime-producer-failures
+          VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE_FAILURES_ONLY: "1"
         run: |
           node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
           evidence="$RUNNER_TEMP/rust-build-evidence"
@@ -143,6 +146,17 @@ jobs:
           name: rust-test-cohort-${{ matrix.cohort }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/nextest/${{ env.NEXTEST_PROFILE }}/
           if-no-files-found: error
+          retention-days: 7
+      - name: Preserve rejected mounted runtime producer streams
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mounted-runtime-producer-failures-${{ matrix.cohort }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/mounted-runtime-producer-failures/*.failure.json
+            ${{ runner.temp }}/mounted-runtime-producer-failures/*.stdout.bin
+            ${{ runner.temp }}/mounted-runtime-producer-failures/*.stderr.bin
+          if-no-files-found: ignore
           retention-days: 7
 
   rust-product-report:

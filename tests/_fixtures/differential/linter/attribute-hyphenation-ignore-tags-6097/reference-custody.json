@@ -1,0 +1,30 @@
+{
+  "schema": "vize.attribute-ignore-tags.reference-custody.v1",
+  "run": 41276234481,
+  "attempt": 1,
+  "head": "23226010068c284a2a05770aec458396b62d3f30",
+  "workflow": ".github/workflows/patina-attribute-ignore-tags-reference.yml",
+  "artifact": 13071177574,
+  "zipBytes": 7298,
+  "zipSha256": "35407488aeb8dd1a905e41bca8f9d5cfb3a2fbba8396a023026c086a1f49f938",
+  "members": [
+    {
+      "name": "official.original.json",
+      "bytes": 89043,
+      "sha256": "e930f5d35f6fd9b4044f4ae19ad03947367a2cca6c60cd2c7064e0dbc551e3f9"
+    },
+    {
+      "name": "process.json",
+      "bytes": 98895,
+      "sha256": "352cc00f7c621fedafed977c4acb38443cb7bc27984630d18b7efbb4971c2f9f"
+    }
+  ],
+  "producer": {
+    "path": "tests/tooling/support/patina-attribute-ignore-tags-reference.ts",
+    "sha256": "5257f52c3684296b2d802e949e3dbc0af5f0db5ceb85a19d5365a12d5f84ae92"
+  },
+  "inputsSha256": "586b6b29cee1e9baa81679934a6c9ce1248ead8736f206da542748e647d96f49",
+  "literalRows": 16,
+  "upstreamRegexpOnlyRows": 2,
+  "limits": "Independent official ESLint verify/fix/requery only. Regular-expression policies remain unsupported in Vize. No native, CLI, Oxlint, public artifact or whole6097/10822 qualification is supplied by this capture."
+}

@@ -15,6 +15,7 @@ test("canonical attribute style and custom-ignore policies roundtrip without mut
     {},
     ...corpus.valid.map((row) => row.policy),
     { ignore: ["\u0085", "\u200b", "name:exit\n"] },
+    { ignoreTags: [] },
   ]) {
     const config = { vue: { linter: { ruleOptions: { [rule]: policy } } } };
     const before = JSON.stringify(config);
@@ -27,7 +28,6 @@ test("canonical attribute style and custom-ignore policies roundtrip without mut
     { style: "sometimes" },
     { ignore: null },
     { ignore: "active" },
-    { ignoreTags: [] },
   ])
     assert.throws(
       () => vueConfigOptions({ vue: { linter: { ruleOptions: { [rule]: policy } } } }),
@@ -41,7 +41,11 @@ test("published schema/types/PKL declare the attribute option while keeping the 
   );
   const option = schema.definitions.LintRuleOptions.properties[rule];
   assert.deepEqual(option.oneOf[0], { type: "string", enum: ["always", "never"] });
-  assert.deepEqual(Object.keys(option.oneOf[1].properties).sort(), ["ignore", "style"]);
+  assert.deepEqual(Object.keys(option.oneOf[1].properties).sort(), [
+    "ignore",
+    "ignoreTags",
+    "style",
+  ]);
   assert.equal(option.oneOf[1].additionalProperties, false);
   assert.equal(option.oneOf[1].properties.ignore.uniqueItems, true);
   for (const file of ["npm/cli/pkl/LinterConfig.pkl", "npm/cli/pkl/vize.pkl"]) {
@@ -52,7 +56,9 @@ test("published schema/types/PKL declare the attribute option while keeping the 
       source.match(/"(?:\\.|[^"\\])*"|`[^`]*`|[A-Za-z_][\w-]*|[^\s]/gu);
     assert.deepEqual(
       tokens(declaration[1]!),
-      tokens('style: HyphenationStyle = "always" ignore: Listing<String> = new Listing {}'),
+      tokens(
+        'style: HyphenationStyle = "always" ignore: Listing<String> = new Listing {} ignoreTags: Listing<String> = new Listing {}',
+      ),
     );
     const entry = /`vue\/attribute-hyphenation`\s*:\s*([\s\S]*?=\s*null)/u.exec(value);
     assert(entry);

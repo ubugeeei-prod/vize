@@ -229,6 +229,58 @@
       }
     },
     {
+      "id": "linter/attribute-hyphenation-ignore-tags-6097",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "attribute-hyphenation-ignore-tags-6097",
+        "files": [
+          {
+            "path": "AuthoredTags.vue.txt",
+            "role": "authored-literal-tag-scope-control",
+            "sha256": "f8b246b925fe489f2ce1b7e2f6f8643605d01d3c8f243d77236e68e4a7ab0274"
+          },
+          {
+            "path": "inputs.json",
+            "role": "pinned-literal-policy-and-regexp-frontier-inputs",
+            "sha256": "586b6b29cee1e9baa81679934a6c9ce1248ead8736f206da542748e647d96f49"
+          },
+          {
+            "path": "official.original.json",
+            "role": "independent-whole-eslint-reference",
+            "sha256": "e930f5d35f6fd9b4044f4ae19ad03947367a2cca6c60cd2c7064e0dbc551e3f9"
+          },
+          {
+            "path": "reference-process.original.json",
+            "role": "independent-reference-subprocess",
+            "sha256": "352cc00f7c621fedafed977c4acb38443cb7bc27984630d18b7efbb4971c2f9f"
+          },
+          {
+            "path": "reference-custody.json",
+            "role": "source-qualified-reference-custody",
+            "sha256": "a989d313149ed438785b6fe76a3754cb83a5903797362122ccc9f8cec443d830"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/attribute-hyphenation-range",
       "state": "active",
       "targets": ["lint"],

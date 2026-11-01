@@ -3,6 +3,14 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { constants, cpus, release, tmpdir } from "node:os";
 import path from "node:path";
+import {
+  beginProcessObservation,
+  finishProcessObservation,
+  processPacketLimit,
+  processRetention,
+  retainProcessPacket,
+} from "./native-fault-retention.ts";
+import type { ObservationPhase } from "./native-fault-retention.ts";
 
 export const hashMeasurements = { bytes: 0, seconds: 0 };
 export type Packet = Record<string, any>;
@@ -185,7 +193,7 @@ export function privateGuest(capture = runCapture, read = readText): Packet {
 }
 
 const processLimits = {
-  packets: 128,
+  packets: processPacketLimit,
   tasks: 128,
   textBytes: 262_144,
   imageBytes: 536_870_912,
@@ -307,7 +315,9 @@ export function observeDescendants(
   retainedProviders: Map<string, Packet>,
   output: string,
   procRoot = "/proc",
+  phase: ObservationPhase = "interval",
 ): void {
+  const observation = beginProcessObservation(seen, phase);
   const deadline = performance.now() + processLimits.sampleMilliseconds;
   const processes = processTable(procRoot);
   const descendants = new Set([leader]);
@@ -320,11 +330,7 @@ export function observeDescendants(
   let limited = false;
   let visited = 0;
   for (const pid of descendants) {
-    if (
-      visited++ >= processLimits.packets ||
-      seen.size >= processLimits.packets ||
-      performance.now() >= deadline
-    ) {
+    if (visited++ >= processLimits.packets || performance.now() >= deadline) {
       limited = true;
       break;
     }
@@ -385,7 +391,7 @@ export function observeDescendants(
         providers,
         taskObservation,
       ]);
-      if (seen.has(identity)) continue;
+      if (seen.has(phase === "terminal" ? "terminal:" + identity : identity)) continue;
       let parentStartTicks: string | null = null;
       try {
         const parent = processStat(path.join(procRoot, String(processInfo.parent), "stat"));
@@ -422,20 +428,22 @@ export function observeDescendants(
             executableIdentity.fileIdentity)
       )
         throw new Error("Process identity changed");
-      writeJson(path.join(output, "processes", `${pid}-${seen.size}.json`), packet);
-      seen.add(identity);
+      retainProcessPacket(seen, identity, packet, output, phase);
     } catch (error) {
       // Process exit and /proc permission changes are observation gaps.
       if (gaps.length < processLimits.packets && !gaps.some((gap) => gap.pid === pid))
         gaps.push({ pid, identity: "UNKNOWN", unavailable: errorName(error) });
     }
   }
+  finishProcessObservation(observation);
+  const retention = processRetention(seen);
   writeJson(path.join(output, "process-sampling.json"), {
     selection: "partial process/task sample; unreadable or unobserved actors remain UNKNOWN",
     limits: processLimits,
-    limited,
+    limited: limited || retention.droppedPackets > 0 || retention.persistenceFailures > 0,
     sampledMapPackets: seen.size,
     gapLimitReached: gaps.length === processLimits.packets,
     gaps,
+    retention,
   });
 }

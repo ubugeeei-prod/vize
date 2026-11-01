@@ -12,6 +12,7 @@ pub(crate) fn validate_attribute_hyphenation_ignore(
     AttributeHyphenationOptions {
         style: HyphenationStyle::Always,
         ignore: ignore.iter().map(|entry| entry.as_str().into()).collect(),
+        ignore_tags: Vec::new(),
     }
     .validate()
 }
@@ -20,16 +21,43 @@ pub(crate) fn configure_patina_attribute_ignore(
     linter: vize_patina::Linter,
     style: Option<&str>,
     ignore: Option<&[String]>,
+    ignore_tags: Option<&[String]>,
 ) -> vize_patina::Linter {
-    match ignore {
-        Some(ignore) => linter.with_attribute_hyphenation_options(
+    match (ignore, ignore_tags) {
+        (None, None) => linter,
+        (ignore, ignore_tags) => linter.with_attribute_hyphenation_policy(
             style
                 .and_then(attribute_hyphenation_style)
                 .unwrap_or_default(),
-            ignore.iter().map(|entry| entry.as_str().into()).collect(),
+            ignore
+                .unwrap_or_default()
+                .iter()
+                .map(|entry| entry.as_str().into())
+                .collect(),
+            ignore_tags
+                .unwrap_or_default()
+                .iter()
+                .map(|entry| entry.as_str().into())
+                .collect(),
         ),
-        None => linter,
     }
+}
+
+pub(crate) fn validate_attribute_hyphenation_ignore_tags(
+    style: Option<&str>,
+    ignore_tags: &[String],
+) -> Result<(), &'static str> {
+    if style.is_some_and(|value| attribute_hyphenation_style(value).is_none()) {
+        return Err("attributeHyphenation must be always or never when ignoreTags is configured");
+    }
+    AttributeHyphenationOptions {
+        ignore_tags: ignore_tags
+            .iter()
+            .map(|entry| entry.as_str().into())
+            .collect(),
+        ..Default::default()
+    }
+    .validate()
 }
 
 #[cfg(test)]

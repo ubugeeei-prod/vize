@@ -25,14 +25,24 @@ impl AttributeHyphenationConfig {
             Self::Options(options) => Some(&options.ignore),
         }
     }
+
+    pub fn ignore_tags(&self) -> Option<&[String]> {
+        match self {
+            Self::Style(_) => None,
+            Self::Options(options) => Some(&options.ignore_tags),
+        }
+    }
 }
 
 /// Case-sensitive literal substrings appended to the rule's built-in exemptions.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(try_from = "RawOptions")]
+#[serde(rename_all = "camelCase", try_from = "RawOptions")]
 pub struct AttributeHyphenationOptions {
     pub style: HyphenationStyle,
     pub ignore: Vec<String>,
+    /// Exact authored tag names; regular-expression policies are unsupported.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub ignore_tags: Vec<String>,
 }
 
 impl Default for AttributeHyphenationOptions {
@@ -40,6 +50,7 @@ impl Default for AttributeHyphenationOptions {
         Self {
             style: HyphenationStyle::Always,
             ignore: Vec::new(),
+            ignore_tags: Vec::new(),
         }
     }
 }
@@ -62,15 +73,31 @@ impl AttributeHyphenationOptions {
                 return Err("ignore entries must be unique");
             }
         }
+        for (index, tag) in self.ignore_tags.iter().enumerate() {
+            if is_regex_tag_policy(tag) {
+                return Err(
+                    "ignoreTags supports literal tag names only; regular-expression policies are unsupported",
+                );
+            }
+            if self
+                .ignore_tags
+                .iter()
+                .take(index)
+                .any(|previous| previous == tag)
+            {
+                return Err("ignoreTags entries must be unique");
+            }
+        }
         Ok(())
     }
 }
 
 #[derive(Deserialize)]
-#[serde(default, deny_unknown_fields)]
+#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
 struct RawOptions {
     style: HyphenationStyle,
     ignore: Vec<String>,
+    ignore_tags: Vec<String>,
 }
 
 impl Default for RawOptions {
@@ -78,6 +105,7 @@ impl Default for RawOptions {
         Self {
             style: HyphenationStyle::Always,
             ignore: Vec::new(),
+            ignore_tags: Vec::new(),
         }
     }
 }
@@ -89,10 +117,22 @@ impl TryFrom<RawOptions> for AttributeHyphenationOptions {
         let options = Self {
             style: raw.style,
             ignore: raw.ignore,
+            ignore_tags: raw.ignore_tags,
         };
         options.validate()?;
         Ok(options)
     }
+}
+
+// Recognize the official /^\/(.+)\/(.*)$/u marker without evaluating a regex.
+// Dot excludes these four ECMAScript line terminators; all other plain strings,
+// including empty/blank/:exit values, remain valid nonmatching literal names.
+fn is_regex_tag_policy(value: &str) -> bool {
+    value.starts_with('/')
+        && !value
+            .chars()
+            .any(|ch| matches!(ch, '\n' | '\r' | '\u{2028}' | '\u{2029}'))
+        && value.rfind('/').is_some_and(|index| index > 1)
 }
 
 // Match the official JSON-schema /^\s*$/ boundary: Rust whitespace also

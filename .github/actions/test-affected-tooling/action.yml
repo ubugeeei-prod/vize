@@ -58,6 +58,14 @@ runs:
         VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
         VIZE_TOOLING_TEST_SHARD: ${{ inputs.shard }}/${{ inputs.total }}
       run: vp run --workspace-root test:scripts:pr
+    - name: Retain complete config generation before byte comparisons
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: config-generation-${{ inputs.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/vize-config-generation
+        if-no-files-found: ignore
+        retention-days: 7
     - name: Retain complete experimental Router observations
       if: ${{ always() && hashFiles('target/differential/experimental-router-check/provider-processes.json', 'target/differential/experimental-router-params/provider-processes.json', 'target/differential/experimental-router-params/observation.json', 'target/differential/experimental-router-variable-roots/observation.json', 'target/differential/reference-path-attributes/provider-processes.json') != '' }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

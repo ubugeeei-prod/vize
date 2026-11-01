@@ -5,6 +5,11 @@ import {
   attributesPacketReference,
   exposureReferenceCustody,
 } from "../native/sfc-parse-attributes-reference.ts";
+import {
+  emptyCompileReference,
+  emptyCompileSourceBlobs,
+  validateEmptyCompileSources,
+} from "../native/sfc-parse-attributes-empty-component.ts";
 
 const captured = JSON.parse(
   readFileSync(
@@ -58,4 +63,56 @@ test("the attribute adapter still rejects unrelated whole-packet changes", () =>
       );
     }
   }
+});
+
+await test("only the original empty compile packet advances by the authenticated build law", () => {
+  const before = structuredClone(emptyCompileReference.before);
+  const retained = structuredClone(before);
+  assert.deepEqual(attributesPacketReference(before, "", "compile"), emptyCompileReference.after);
+  assert.deepEqual(before, retained);
+  for (const mode of ["omitted", "filename", "disabled", "enabled"])
+    assert.deepEqual(attributesPacketReference(before, "", mode), before);
+  for (const source of [" ", "<!--comment-->", "<style/>", "<docs/>", "<template/>", "<script/>"])
+    assert.deepEqual(attributesPacketReference(before, source, "compile"), before);
+  for (const field of ["code", "errors", "warnings", "styles", "moduleShape", "unknown"]) {
+    const alteredBefore = JSON.parse(String(before.json)) as Record<string, unknown>;
+    alteredBefore[field] = "unexpected";
+    assert.throws(() =>
+      attributesPacketReference({ ...before, json: JSON.stringify(alteredBefore) }, "", "compile"),
+    );
+    const alteredAfter = JSON.parse(String(emptyCompileReference.after.json)) as Record<
+      string,
+      unknown
+    >;
+    alteredAfter[field] = "unexpected";
+    assert.throws(() =>
+      assert.deepEqual(
+        { kind: "return", json: JSON.stringify(alteredAfter) },
+        attributesPacketReference(before, "", "compile"),
+      ),
+    );
+  }
+  assert.throws(() => attributesPacketReference({ ...before, unknown: true }, "", "compile"));
+});
+
+await test("empty compile references reject altered or incomplete complete product source laws", () => {
+  const sources = Object.fromEntries(
+    Object.keys(emptyCompileSourceBlobs).map((file) => [
+      file,
+      readFileSync(new URL(`../../${file}`, import.meta.url)),
+    ]),
+  );
+  validateEmptyCompileSources(sources);
+  for (const file of Object.keys(sources)) {
+    assert.throws(() =>
+      validateEmptyCompileSources({
+        ...sources,
+        [file]: Buffer.concat([sources[file], Buffer.from("\n")]),
+      }),
+    );
+    const missing = { ...sources };
+    delete missing[file];
+    assert.throws(() => validateEmptyCompileSources(missing));
+  }
+  assert.throws(() => validateEmptyCompileSources({ ...sources, unknown: Buffer.from("") }));
 });

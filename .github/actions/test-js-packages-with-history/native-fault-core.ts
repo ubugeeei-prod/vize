@@ -73,10 +73,9 @@ export function producer(core: string, output: string, hashFile = sha256File): P
   const processDirectory = path.join(output, "processes");
   const packets = fs
     .readdirSync(processDirectory)
-    .filter((name) => name.startsWith(`${pid}-`) && name.endsWith(".json"))
-    .map(
-      (name) => JSON.parse(fs.readFileSync(path.join(processDirectory, name), "utf8")) as Packet,
-    );
+    .filter((name) => name.endsWith(".json"))
+    .map((name) => JSON.parse(fs.readFileSync(path.join(processDirectory, name), "utf8")) as Packet)
+    .filter((packet) => packet.pid === pid);
   if (!packets.length || new Set(packets.map((packet) => packet.startTicks)).size !== 1) {
     throw new Error("Missing or ambiguous retained producer start ticks");
   }

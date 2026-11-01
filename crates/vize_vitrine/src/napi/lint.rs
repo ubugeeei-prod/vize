@@ -27,7 +27,7 @@ use lint_options::{
     configure_patina_event_ignore, configure_patina_rule_options, configure_type_aware_lint,
     create_patina_linter, patina_help_level_from_option, patina_locale_from_option,
     patina_preset_from_option, validate_attribute_hyphenation_ignore,
-    validate_event_hyphenation_ignore,
+    validate_attribute_hyphenation_ignore_tags, validate_event_hyphenation_ignore,
 };
 pub use oxlint_html_binding::dto::{
     OxlintHtmlCompleted, OxlintHtmlDiagnostic, OxlintHtmlFile, OxlintHtmlLabel, OxlintHtmlOptions,
@@ -117,6 +117,19 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
         }
         ignore
     };
+    let attribute_hyphenation_ignore_tags = if rule_options
+        .as_ref()
+        .is_some_and(|options| options.attribute_hyphenation().is_some())
+    {
+        None
+    } else {
+        let tags = opts.attribute_hyphenation_ignore_tags.as_deref();
+        if let Some(tags) = tags {
+            validate_attribute_hyphenation_ignore_tags(attribute_hyphenation, tags)
+                .map_err(|message| Error::new(Status::InvalidArg, message.to_owned()))?;
+        }
+        tags
+    };
     let define_macros_order = if rule_options
         .as_ref()
         .is_some_and(|options| options.define_macros_order().is_some())
@@ -158,6 +171,7 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
         linter,
         attribute_hyphenation,
         attribute_hyphenation_ignore,
+        attribute_hyphenation_ignore_tags,
     );
     let linter = match rule_options.as_ref() {
         Some(options) => linter.with_config_rule_options(options),

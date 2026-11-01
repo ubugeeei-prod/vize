@@ -1,0 +1,8 @@
+<template>
+  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->
+  <Ignored fooBar="parent"><MyWidget :activeKey="key" /></Ignored>
+  <MyWidget fooBar="sibling" />
+  <Foo.Bar fooBar="dot" /><FooXBar fooBar="neighbor" />
+  <ns:Widget fooBar="namespace" /><ns:widget fooBar="lowercase" />
+  <div is="vue:MyRow" :rowData="row" /><div rowData="native" />
+</template>

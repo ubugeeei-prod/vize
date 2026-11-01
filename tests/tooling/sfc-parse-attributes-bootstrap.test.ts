@@ -57,6 +57,43 @@ void test("attributes workflow selects the actual actor and preserves the immuta
     assert.ok(line.includes("${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}"), line);
 });
 
+function requireReferenceCoverage(source: string) {
+  const trigger = /^on:\n  pull_request:\n    paths:\n((?:      - "[^"]+"\n)+)/m.exec(source)?.[1];
+  assert.ok(trigger, "the actual pull-request paths must select the comparison");
+  const paths = [...trigger.matchAll(/^      - "([^"]+)"$/gm)].map((match) => match[1]);
+  for (const file of [
+    "crates/vize_atelier_sfc/src/compile.rs",
+    "crates/vize_atelier_sfc/src/compile/empty_component.rs",
+    "crates/vize_vitrine/src/napi/sfc/compile.rs",
+    "tests/tooling/sfc-parse-attributes-reference.test.ts",
+  ])
+    assert.ok(paths.includes(file), `${file} must trigger the bound reference comparison`);
+  assert.match(
+    source,
+    /^          node --test tests\/tooling\/sfc-parse-attributes-reference\.test\.ts$/m,
+  );
+}
+
+void test("bound compiler sources trigger and execute the complete reference controls", () => {
+  requireReferenceCoverage(workflow);
+  for (const file of [
+    "crates/vize_atelier_sfc/src/compile.rs",
+    "crates/vize_atelier_sfc/src/compile/empty_component.rs",
+    "crates/vize_vitrine/src/napi/sfc/compile.rs",
+    "tests/tooling/sfc-parse-attributes-reference.test.ts",
+  ]) {
+    const changed = workflow.replace(`      - "${file}"\n`, "");
+    assert.notEqual(changed, workflow);
+    assert.throws(() => requireReferenceCoverage(changed));
+  }
+  const changed = workflow.replace(
+    "          node --test tests/tooling/sfc-parse-attributes-reference.test.ts\n",
+    "",
+  );
+  assert.notEqual(changed, workflow);
+  assert.throws(() => requireReferenceCoverage(changed));
+});
+
 void test("an older head missing the real recipe runs it from the merge actor without rewriting the head", (t) => {
   const checkout = fs.mkdtempSync(path.join(os.tmpdir(), "vize-attrs-bootstrap-"));
   t.after(() => fs.rmSync(checkout, { recursive: true, force: true }));

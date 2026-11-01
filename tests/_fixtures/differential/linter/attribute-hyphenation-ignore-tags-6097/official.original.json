@@ -1,0 +1,2348 @@
+{
+  "schema": "vize.attribute-ignore-tags.reference.v1",
+  "sourceRoot": "/home/runner/_work/vize/vize/",
+  "versions": {
+    "eslint": "10.4.1",
+    "eslint-plugin-vue": "10.9.2",
+    "vue-eslint-parser": "10.4.1",
+    "@typescript-eslint/parser": "8.65.0"
+  },
+  "providerSources": [
+    [
+      "dist/rules/attribute-hyphenation.js",
+      3500,
+      "ce050d17c802fb26ed9d8c7245ad3d55f28750705b86d97b59522c071aa46fbd"
+    ],
+    [
+      "dist/utils/regexp.js",
+      1875,
+      "4ec4a0605ab8f3ce65949d015b5f33ab616a2aeaf47c1fec45d9cc21cc723ea5"
+    ]
+  ],
+  "inputsSha256": "586b6b29cee1e9baa81679934a6c9ce1248ead8736f206da542748e647d96f49",
+  "rows": [
+    {
+      "id": "camel-empty",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": [],
+      "scope": "literal",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "sourceSha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  98,
+                  104
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 6,
+              "column": 28,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 44,
+              "fix": {
+                "range": [
+                  113,
+                  123
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:pageSize' must be hyphenated.",
+              "line": 6,
+              "column": 45,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 68,
+              "fix": {
+                "range": [
+                  130,
+                  146
+                ],
+                "text": "v-model:page-size"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 3,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "camel-exact",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": [
+        "MyWidget"
+      ],
+      "scope": "literal",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "sourceSha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "camel-case",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": [
+        "mywidget"
+      ],
+      "scope": "literal",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "sourceSha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  98,
+                  104
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 6,
+              "column": 28,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 44,
+              "fix": {
+                "range": [
+                  113,
+                  123
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:pageSize' must be hyphenated.",
+              "line": 6,
+              "column": 45,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 68,
+              "fix": {
+                "range": [
+                  130,
+                  146
+                ],
+                "text": "v-model:page-size"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 3,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "camel-prefix",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": [
+        "Widget"
+      ],
+      "scope": "literal",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "sourceSha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  98,
+                  104
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 6,
+              "column": 28,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 44,
+              "fix": {
+                "range": [
+                  113,
+                  123
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:pageSize' must be hyphenated.",
+              "line": 6,
+              "column": 45,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 68,
+              "fix": {
+                "range": [
+                  130,
+                  146
+                ],
+                "text": "v-model:page-size"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 3,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "camel-nonmatching-literals",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": [
+        "",
+        " ",
+        ":exit",
+        "//",
+        "/name",
+        "/x/\n"
+      ],
+      "scope": "literal",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "sourceSha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  98,
+                  104
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 6,
+              "column": 28,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 44,
+              "fix": {
+                "range": [
+                  113,
+                  123
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:pageSize' must be hyphenated.",
+              "line": 6,
+              "column": 45,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 68,
+              "fix": {
+                "range": [
+                  130,
+                  146
+                ],
+                "text": "v-model:page-size"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 3,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "never-empty",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt",
+      "filename": "RegisteredHyphen.vue",
+      "style": "never",
+      "ignoreTags": [],
+      "scope": "literal",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "sourceSha256": "bd9adf1e9a5161b727da0da9d037a2844d50f21dd63ee0300316e4618ac67129",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredHyphen.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'foo-bar' can't be hyphenated.",
+              "line": 6,
+              "column": 13,
+              "messageId": "cannotBeHyphenated",
+              "endLine": 6,
+              "endColumn": 28,
+              "fix": {
+                "range": [
+                  98,
+                  105
+                ],
+                "text": "fooBar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':active-key' can't be hyphenated.",
+              "line": 6,
+              "column": 29,
+              "messageId": "cannotBeHyphenated",
+              "endLine": 6,
+              "endColumn": 46,
+              "fix": {
+                "range": [
+                  114,
+                  125
+                ],
+                "text": ":activeKey"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'v-model:page-size' can't be hyphenated.",
+              "line": 6,
+              "column": 47,
+              "messageId": "cannotBeHyphenated",
+              "endLine": 6,
+              "endColumn": 71,
+              "fix": {
+                "range": [
+                  132,
+                  149
+                ],
+                "text": "v-model:pageSize"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 3,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3,
+          "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredHyphen.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredHyphen.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "never-exact",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt",
+      "filename": "RegisteredHyphen.vue",
+      "style": "never",
+      "ignoreTags": [
+        "MyWidget"
+      ],
+      "scope": "literal",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "sourceSha256": "bd9adf1e9a5161b727da0da9d037a2844d50f21dd63ee0300316e4618ac67129",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredHyphen.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredHyphen.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget foo-bar=\"value\" :active-key=\"key\" v-model:page-size=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredHyphen.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "authored-empty",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": [],
+      "scope": "literal",
+      "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "sourceSha256": "f8b246b925fe489f2ce1b7e2f6f8643605d01d3c8f243d77236e68e4a7ab0274",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 3,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  79,
+                  85
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 3,
+              "column": 38,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 54,
+              "fix": {
+                "range": [
+                  105,
+                  115
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 4,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 4,
+              "endColumn": 29,
+              "fix": {
+                "range": [
+                  147,
+                  153
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 24,
+              "fix": {
+                "range": [
+                  178,
+                  184
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 36,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 53,
+              "fix": {
+                "range": [
+                  202,
+                  208
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 14,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 32,
+              "fix": {
+                "range": [
+                  236,
+                  242
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 46,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 64,
+              "fix": {
+                "range": [
+                  268,
+                  274
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':rowData' must be hyphenated.",
+              "line": 7,
+              "column": 23,
+              "messageId": "mustBeHyphenated",
+              "endLine": 7,
+              "endColumn": 37,
+              "fix": {
+                "range": [
+                  312,
+                  320
+                ],
+                "text": ":row-data"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 8,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 8,
+          "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "parent-only",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": [
+        "Ignored"
+      ],
+      "scope": "literal",
+      "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "sourceSha256": "f8b246b925fe489f2ce1b7e2f6f8643605d01d3c8f243d77236e68e4a7ab0274",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 3,
+              "column": 38,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 54,
+              "fix": {
+                "range": [
+                  105,
+                  115
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 4,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 4,
+              "endColumn": 29,
+              "fix": {
+                "range": [
+                  147,
+                  153
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 24,
+              "fix": {
+                "range": [
+                  178,
+                  184
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 36,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 53,
+              "fix": {
+                "range": [
+                  202,
+                  208
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 14,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 32,
+              "fix": {
+                "range": [
+                  236,
+                  242
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 46,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 64,
+              "fix": {
+                "range": [
+                  268,
+                  274
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':rowData' must be hyphenated.",
+              "line": 7,
+              "column": 23,
+              "messageId": "mustBeHyphenated",
+              "endLine": 7,
+              "endColumn": 37,
+              "fix": {
+                "range": [
+                  312,
+                  320
+                ],
+                "text": ":row-data"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 7,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 7,
+          "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "dot-only",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": [
+        "Foo.Bar"
+      ],
+      "scope": "literal",
+      "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "sourceSha256": "f8b246b925fe489f2ce1b7e2f6f8643605d01d3c8f243d77236e68e4a7ab0274",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 3,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  79,
+                  85
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 3,
+              "column": 38,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 54,
+              "fix": {
+                "range": [
+                  105,
+                  115
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 4,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 4,
+              "endColumn": 29,
+              "fix": {
+                "range": [
+                  147,
+                  153
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 36,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 53,
+              "fix": {
+                "range": [
+                  202,
+                  208
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 14,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 32,
+              "fix": {
+                "range": [
+                  236,
+                  242
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 46,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 64,
+              "fix": {
+                "range": [
+                  268,
+                  274
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':rowData' must be hyphenated.",
+              "line": 7,
+              "column": 23,
+              "messageId": "mustBeHyphenated",
+              "endLine": 7,
+              "endColumn": 37,
+              "fix": {
+                "range": [
+                  312,
+                  320
+                ],
+                "text": ":row-data"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 7,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 7,
+          "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "dot-case",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": [
+        "foo.bar"
+      ],
+      "scope": "literal",
+      "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "sourceSha256": "f8b246b925fe489f2ce1b7e2f6f8643605d01d3c8f243d77236e68e4a7ab0274",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 3,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  79,
+                  85
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 3,
+              "column": 38,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 54,
+              "fix": {
+                "range": [
+                  105,
+                  115
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 4,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 4,
+              "endColumn": 29,
+              "fix": {
+                "range": [
+                  147,
+                  153
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 24,
+              "fix": {
+                "range": [
+                  178,
+                  184
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 36,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 53,
+              "fix": {
+                "range": [
+                  202,
+                  208
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 14,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 32,
+              "fix": {
+                "range": [
+                  236,
+                  242
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 46,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 64,
+              "fix": {
+                "range": [
+                  268,
+                  274
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':rowData' must be hyphenated.",
+              "line": 7,
+              "column": 23,
+              "messageId": "mustBeHyphenated",
+              "endLine": 7,
+              "endColumn": 37,
+              "fix": {
+                "range": [
+                  312,
+                  320
+                ],
+                "text": ":row-data"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 8,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 8,
+          "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "namespace-only",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": [
+        "ns:Widget"
+      ],
+      "scope": "literal",
+      "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "sourceSha256": "f8b246b925fe489f2ce1b7e2f6f8643605d01d3c8f243d77236e68e4a7ab0274",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 3,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  79,
+                  85
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 3,
+              "column": 38,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 54,
+              "fix": {
+                "range": [
+                  105,
+                  115
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 4,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 4,
+              "endColumn": 29,
+              "fix": {
+                "range": [
+                  147,
+                  153
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 24,
+              "fix": {
+                "range": [
+                  178,
+                  184
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 36,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 53,
+              "fix": {
+                "range": [
+                  202,
+                  208
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 46,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 64,
+              "fix": {
+                "range": [
+                  268,
+                  274
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':rowData' must be hyphenated.",
+              "line": 7,
+              "column": 23,
+              "messageId": "mustBeHyphenated",
+              "endLine": 7,
+              "endColumn": 37,
+              "fix": {
+                "range": [
+                  312,
+                  320
+                ],
+                "text": ":row-data"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 7,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 7,
+          "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "namespace-case",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": [
+        "NS:Widget"
+      ],
+      "scope": "literal",
+      "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "sourceSha256": "f8b246b925fe489f2ce1b7e2f6f8643605d01d3c8f243d77236e68e4a7ab0274",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 3,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  79,
+                  85
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 3,
+              "column": 38,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 54,
+              "fix": {
+                "range": [
+                  105,
+                  115
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 4,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 4,
+              "endColumn": 29,
+              "fix": {
+                "range": [
+                  147,
+                  153
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 24,
+              "fix": {
+                "range": [
+                  178,
+                  184
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 36,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 53,
+              "fix": {
+                "range": [
+                  202,
+                  208
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 14,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 32,
+              "fix": {
+                "range": [
+                  236,
+                  242
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 46,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 64,
+              "fix": {
+                "range": [
+                  268,
+                  274
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':rowData' must be hyphenated.",
+              "line": 7,
+              "column": 23,
+              "messageId": "mustBeHyphenated",
+              "endLine": 7,
+              "endColumn": 37,
+              "fix": {
+                "range": [
+                  312,
+                  320
+                ],
+                "text": ":row-data"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 8,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 8,
+          "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "customized-raw-div",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": [
+        "div"
+      ],
+      "scope": "literal",
+      "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "sourceSha256": "f8b246b925fe489f2ce1b7e2f6f8643605d01d3c8f243d77236e68e4a7ab0274",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 3,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  79,
+                  85
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 3,
+              "column": 38,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 54,
+              "fix": {
+                "range": [
+                  105,
+                  115
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 4,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 4,
+              "endColumn": 29,
+              "fix": {
+                "range": [
+                  147,
+                  153
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 24,
+              "fix": {
+                "range": [
+                  178,
+                  184
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 36,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 53,
+              "fix": {
+                "range": [
+                  202,
+                  208
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 14,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 32,
+              "fix": {
+                "range": [
+                  236,
+                  242
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 46,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 64,
+              "fix": {
+                "range": [
+                  268,
+                  274
+                ],
+                "text": "foo-bar"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 7,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 7,
+          "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "customized-semantic-name",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": [
+        "MyRow"
+      ],
+      "scope": "literal",
+      "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "sourceSha256": "f8b246b925fe489f2ce1b7e2f6f8643605d01d3c8f243d77236e68e4a7ab0274",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 3,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 27,
+              "fix": {
+                "range": [
+                  79,
+                  85
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 3,
+              "column": 38,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 54,
+              "fix": {
+                "range": [
+                  105,
+                  115
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 4,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 4,
+              "endColumn": 29,
+              "fix": {
+                "range": [
+                  147,
+                  153
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 12,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 24,
+              "fix": {
+                "range": [
+                  178,
+                  184
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 36,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 53,
+              "fix": {
+                "range": [
+                  202,
+                  208
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 14,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 32,
+              "fix": {
+                "range": [
+                  236,
+                  242
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 46,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 64,
+              "fix": {
+                "range": [
+                  268,
+                  274
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':rowData' must be hyphenated.",
+              "line": 7,
+              "column": 23,
+              "messageId": "mustBeHyphenated",
+              "endLine": 7,
+              "endColumn": 37,
+              "fix": {
+                "range": [
+                  312,
+                  320
+                ],
+                "text": ":row-data"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 8,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 8,
+          "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored foo-bar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar foo-bar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget foo-bar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :row-data=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "authored-combined",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": [
+        "Ignored",
+        "Foo.Bar",
+        "ns:Widget",
+        "div"
+      ],
+      "scope": "literal",
+      "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "sourceSha256": "f8b246b925fe489f2ce1b7e2f6f8643605d01d3c8f243d77236e68e4a7ab0274",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute ':activeKey' must be hyphenated.",
+              "line": 3,
+              "column": 38,
+              "messageId": "mustBeHyphenated",
+              "endLine": 3,
+              "endColumn": 54,
+              "fix": {
+                "range": [
+                  105,
+                  115
+                ],
+                "text": ":active-key"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 4,
+              "column": 13,
+              "messageId": "mustBeHyphenated",
+              "endLine": 4,
+              "endColumn": 29,
+              "fix": {
+                "range": [
+                  147,
+                  153
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 5,
+              "column": 36,
+              "messageId": "mustBeHyphenated",
+              "endLine": 5,
+              "endColumn": 53,
+              "fix": {
+                "range": [
+                  202,
+                  208
+                ],
+                "text": "foo-bar"
+              }
+            },
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "severity": 1,
+              "message": "Attribute 'fooBar' must be hyphenated.",
+              "line": 6,
+              "column": 46,
+              "messageId": "mustBeHyphenated",
+              "endLine": 6,
+              "endColumn": 64,
+              "fix": {
+                "range": [
+                  268,
+                  274
+                ],
+                "text": "foo-bar"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 4,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 4,
+          "source": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :activeKey=\"key\" /></Ignored>\n  <MyWidget fooBar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar fooBar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget fooBar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "output": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<template>\n  <!-- 雪🌸: retain authored UTF-16 and UTF-8 offsets -->\n  <Ignored fooBar=\"parent\"><MyWidget :active-key=\"key\" /></Ignored>\n  <MyWidget foo-bar=\"sibling\" />\n  <Foo.Bar fooBar=\"dot\" /><FooXBar foo-bar=\"neighbor\" />\n  <ns:Widget fooBar=\"namespace\" /><ns:widget foo-bar=\"lowercase\" />\n  <div is=\"vue:MyRow\" :rowData=\"row\" /><div rowData=\"native\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/AuthoredTags.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "regexp-prefix-reference-only",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": [
+        "/^My/"
+      ],
+      "scope": "upstream-regexp-only",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "sourceSha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "regexp-case-reference-only",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": [
+        "/^my/i"
+      ],
+      "scope": "upstream-regexp-only",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "sourceSha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db",
+      "verify": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fix": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ],
+      "fixedSource": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n\n<template>\n  <MyWidget fooBar=\"value\" :activeKey=\"key\" v-model:pageSize=\"size\" />\n</template>\n",
+      "requery": [
+        {
+          "filePath": "/home/runner/_work/vize/vize/RegisteredCamel.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    }
+  ]
+}

@@ -5,9 +5,9 @@ import { readFile } from "node:fs/promises";
 // These complete postimages are independently required by Carton's native
 // runtime_source unit. Both observers execute that same dependency-free body.
 const pins = {
-  validator: "515047133aeba1ec3d34c80b9346a532d00bd0d47e3ce21d9cd0a6fa94a1dd82",
-  runtime: "8cbd863757317f245d08daf8e0e171be44a36948fc875d1f9ab7f38a7f6fc048",
-  assembled: "a0682c22fe27a45b314b89dc3bb3ec441bb6cff173dac2dcd788ed575663c014",
+  validator: "e7cd857464b449579d288fd20e75549875404389200fa40a1bd9517ec4e2ab83",
+  runtime: "36573f96d303132f683025a1de39c3737b5a6a4d4b1fb5cef4dcad5b599b5006",
+  assembled: "5ee8cf36d0a8cae745de7a14cd8d6636db5c5d3023cdc5e020a355e5961a27ce",
 } as const;
 const validatorImport =
   'import { createVueOptionValidator } from "./vite-runtime-validation.js";\n';
