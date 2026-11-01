@@ -38,7 +38,7 @@ fn expected(unsafe_validator: bool) -> Value {
             call.len(),
         );
         emit["help"] =
-            json!("Use `defineEmits<...>()` or a validator object with typed payload parameters.");
+            json!("Use defineEmits<...>() or a validator object with typed payload parameters.");
         messages.push(emit);
     }
     // Match the existing complete strict-boolean contract, at its authored span.
