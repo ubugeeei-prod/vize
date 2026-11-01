@@ -1,0 +1,26 @@
+{
+  "schema": "vize.mixed-vue-package-imports",
+  "id": "typechecker/regression/mixed-vue-package-imports-11253",
+  "files": [
+    {
+      "path": "package.json",
+      "source": "{\n  \"name\": \"vize-repro\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"imports\": {\n    \"#src/*\": \"./src/*.ts\"\n  },\n  \"dependencies\": {\n    \"vue\": \"3.5.44\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.9.3\",\n    \"vize\": \"0.627.0\",\n    \"vue-tsc\": \"3.3.14\"\n  }\n}\n"
+    },
+    {
+      "path": "tsconfig.json",
+      "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true\n  },\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+    },
+    {
+      "path": "src/App.vue",
+      "source": "<script setup lang=\"ts\">\nconst message = \"hello\";\n</script>\n\n<template>\n  <p>{{ message }}</p>\n</template>\n"
+    },
+    {
+      "path": "src/main.ts",
+      "source": "import App from \"./App.vue\";\nimport { value } from \"#src/plain\";\n\nconst probe: number = \"not a number\";\n\nexport { App, value, probe };\n"
+    },
+    {
+      "path": "src/plain.ts",
+      "source": "export const value = 1;\n\nconst probe: number = \"not a number\";\nexport { probe };\n"
+    }
+  ]
+}

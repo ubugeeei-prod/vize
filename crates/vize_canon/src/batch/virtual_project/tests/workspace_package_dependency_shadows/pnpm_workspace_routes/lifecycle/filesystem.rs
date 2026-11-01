@@ -458,11 +458,11 @@ fn removing_route_owners_restores_surviving_root_bytes_without_stale_shadow_auth
         .virtual_path
         .clone();
     assert!(project.package_shadow_files.contains_key(&path));
-    assert_ne!(
-        raw,
-        project.virtual_files.get(&path).unwrap().content.as_bytes()
-    );
-    assert_eq!(fs::read(&path).unwrap(), raw);
+    let generated = "export { default as Btn } from \"./Btn.vue.ts\";\n";
+    assert_eq!(raw, b"export { default as Btn } from \"./Btn.vue\";\n");
+    assert_eq!(project.virtual_files.get(&path).unwrap().content, generated);
+    assert_ne!(raw, generated.as_bytes());
+    assert_eq!(fs::read(&path).unwrap(), generated.as_bytes());
     super::begin_warm(&mut project);
     let roots = [
         root.join("packages/a/src/index.ts"),

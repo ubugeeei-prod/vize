@@ -11705,6 +11705,25 @@
       }
     },
     {
+      "id": "typechecker/regression/mixed-vue-package-imports-11253",
+      "state": "active",
+      "targets": ["batch"],
+      "inputs": [{
+        "path": "mixed-vue-package-imports-11253/input.json",
+        "sha256": "41f272617bd60acc5c737f4d72327edcc0e85e53ca161ef076ca8509072c1ed6",
+        "role": "regression-reproduction"
+      }],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [{
+          "kind": "source-inspection",
+          "dialects": ["vue3-sfc", "html-template", "ts"],
+          "selector": "check_mixed_vue_package_imports_cli::check_json_mixed_vue_and_private_imports_keep_every_authored_diagnostic; compile-included original five files and package imports scope; input registration only, no diagnostic pack or native admission"
+        }]
+      }
+    },
+    {
       "id": "typechecker/regression/windows-verbatim-overlay-11145",
       "state": "active",
       "targets": [
