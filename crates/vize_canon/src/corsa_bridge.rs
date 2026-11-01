@@ -6,6 +6,8 @@
 
 mod batch_checker;
 mod bridge;
+#[cfg(test)]
+pub(crate) mod constructor_vue_proof;
 mod diagnosing_configuration;
 mod editor_session;
 mod native_vue;

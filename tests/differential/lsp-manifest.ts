@@ -9,6 +9,7 @@ import { validateLocalResolveSourceSession } from "./lsp-source-sessions.ts";
 import { validateNativeCapacitySourceSession } from "./lsp-native-capacity-session.ts";
 import { FORMATTER_BIND_POLICY_ID, loadFormatterBindPolicy } from "./lsp-formatter-bind-policy.ts";
 import { FORMATTER_ON_POLICY_ID, loadFormatterOnPolicy } from "./lsp-formatter-on-policy.ts";
+import { FORMATTER_SLOT_POLICY_ID, loadFormatterSlotPolicy } from "./lsp-formatter-slot-policy.ts";
 import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } from "./lsp-types.ts";
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
@@ -56,6 +57,7 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     assert.match(data.provenance.fixCommit, /^[a-f0-9]{40}$/);
     assert.equal(data.documentVersion, 1);
     fixtureLanguageId(data);
+    versionedLintClient(data);
     if (Object.hasOwn(data, "openDocument")) assert.equal(data.openDocument, false);
     assert.deepEqual(
       planned.initializationOptions,
@@ -118,6 +120,8 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = loadFormatterBindPolicy(data, files, expected);
     } else if (data.id === FORMATTER_ON_POLICY_ID) {
       requests = loadFormatterOnPolicy(data, files, expected);
+    } else if (data.id === FORMATTER_SLOT_POLICY_ID) {
+      requests = loadFormatterSlotPolicy(data, files, expected);
     } else if (data.id === BINDING_SESSION) {
       requests = loadBindingOccurrences(packRoot, data, expected);
     } else if (data.id === "lsp/fix-history/document-link-module-resolution-original") {
@@ -276,7 +280,15 @@ export const INITIALIZE_CAPABILITIES = {
 };
 
 export function initializeCapabilities(fixture: LspFixture) {
-  if (fixture.data.method !== "textDocument/documentSymbol") return INITIALIZE_CAPABILITIES;
+  const versioned = versionedLintClient(fixture.data);
+  if (fixture.data.method !== "textDocument/documentSymbol") {
+    return versioned
+      ? {
+          ...INITIALIZE_CAPABILITIES,
+          workspace: { workspaceEdit: { documentChanges: true } },
+        }
+      : INITIALIZE_CAPABILITIES;
+  }
   assert.equal(fixture.data.hierarchicalDocumentSymbols, true);
   return {
     textDocument: {
@@ -284,4 +296,15 @@ export function initializeCapabilities(fixture: LspFixture) {
       documentSymbol: { hierarchicalDocumentSymbolSupport: true },
     },
   };
+}
+
+function versionedLintClient(data: FixtureData): boolean {
+  if (data.workspaceEditDocumentChanges === undefined) return false;
+  assert.equal(data.workspaceEditDocumentChanges, true, "explicit versioned edit client required");
+  assert.equal(
+    data.method,
+    "textDocument/codeAction",
+    "versioned edit fixture requires code actions",
+  );
+  return true;
 }

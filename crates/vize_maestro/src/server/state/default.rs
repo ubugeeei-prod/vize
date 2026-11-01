@@ -48,6 +48,8 @@ impl ServerState {
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             native_diagnostic_timeout_ms: std::sync::atomic::AtomicU64::new(10_000),
             completion_documentation_resolve: AtomicBool::new(false),
+            #[cfg(feature = "native")]
+            versioned_lint_edits: AtomicBool::new(false),
             type_checker_config: RwLock::new((
                 default_type_checker.clone(),
                 60_000,

@@ -28,13 +28,184 @@ const commands = {
 };
 const providerKeys = ["repositoryId", "providerSha", "providerRepositoryId"];
 const positive = (value, label) => assert(Number.isSafeInteger(value) && value > 0, label);
-const timestamp = (value) => {
+
+export function canonicalTimestamp(value) {
+  const match =
+    typeof value === "string"
+      ? /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,3}))?Z$/.exec(value)
+      : null;
+  assert(match, "Invalid canonical execution timestamp");
+  const parsed = Date.parse(value);
+  const expected = `${match[1]}.${(match[2] ?? "").padEnd(3, "0")}Z`;
   assert(
-    typeof value === "string" && value.endsWith("Z") && Number.isFinite(Date.parse(value)),
+    Number.isFinite(parsed) && new Date(parsed).toISOString() === expected,
     "Invalid canonical execution timestamp",
   );
-  return Date.parse(value);
+  return parsed;
+}
+const window = (value) => {
+  const start = canonicalTimestamp(value.started_at);
+  const end = canonicalTimestamp(value.completed_at);
+  assert(end >= start, "Invalid canonical execution window");
+  return { start, end };
 };
+const contains = (outer, inner) => inner.start >= outer.start && inner.end <= outer.end;
+const rawWindow = (value) => ({ startedAt: value.started_at, completedAt: value.completed_at });
+const stepRecord = (step) => ({ name: step.name, number: step.number, ...rawWindow(step) });
+
+function lifecycleStep(job, name) {
+  const matches = job.steps.filter((step) => step.name === name);
+  assert.equal(matches.length, 1, "Missing or duplicate canonical lifecycle: " + name);
+  const step = matches[0];
+  assert.equal(step.status, "completed", "Canonical lifecycle is incomplete");
+  assert.equal(step.conclusion, "success", "Canonical lifecycle did not succeed");
+  window(step);
+  return step;
+}
+
+function linkedCheck(job, context, run) {
+  const check = job.canonicalCheck;
+  assert(check && typeof check === "object", "Missing canonical clock Check authority");
+  positive(check.id, "Invalid canonical clock Check ID");
+  positive(run.check_suite_id, "Missing canonical clock check suite");
+  assert.equal(check.check_suite?.id, run.check_suite_id, "Foreign canonical clock check suite");
+  assert.equal(check.head_sha, context.providerSha, "Foreign canonical clock Check head");
+  assert.equal(check.name, job.name, "Foreign canonical clock Check name");
+  const checkUrl = "https://api.github.com/repos/" + context.repository + "/check-runs/" + check.id;
+  assert.equal(check.url, checkUrl, "Foreign canonical clock Check URL");
+  assert.equal(job.check_run_url, checkUrl, "Foreign canonical clock job Check");
+  assert.equal(
+    check.details_url,
+    "https://github.com/" +
+      context.repository +
+      "/actions/runs/" +
+      context.runId +
+      "/job/" +
+      job.id,
+    "Foreign canonical clock Check job",
+  );
+  assert.equal(check.status, "completed", "Canonical clock Check is incomplete");
+  assert.equal(check.conclusion, "success", "Canonical clock Check did not succeed");
+  return check;
+}
+
+export function completedCanonicalWorker(job, command, context, run) {
+  assert.equal(job.status, "completed", "Latest canonical observer is incomplete");
+  assert.equal(job.conclusion, "success", "Latest canonical observer did not succeed");
+  const apiWindow = {
+    start: canonicalTimestamp(job.started_at),
+    end: canonicalTimestamp(job.completed_at),
+  };
+  const reversed = apiWindow.end < apiWindow.start;
+  assert(Array.isArray(job.steps), "Invalid canonical execution window");
+  const numbers = job.steps.map((step) => step.number);
+  numbers.forEach((number) => positive(number, "Invalid canonical step number"));
+  assert.equal(new Set(numbers).size, numbers.length, "Duplicate canonical step");
+  let previous = 0;
+  const required = [
+    "Plan canonical corpus identity",
+    "Select and hydrate full fixture corpus",
+    "Capture canonical corpus identity",
+    command,
+    "Record required observer evidence",
+    "Upload required observer evidence",
+  ].map((name) => {
+    const matches = job.steps.filter((step) => step.name === name);
+    assert.equal(matches.length, 1, "Missing canonical step: " + name);
+    const step = matches[0];
+    assert.equal(step.status, "completed", "Canonical step is incomplete");
+    assert.equal(step.conclusion, "success", "Canonical step did not succeed");
+    assert(step.number > previous, "Canonical steps are out of order");
+    window(step);
+    previous = step.number;
+    return step;
+  });
+  const upload = required.at(-1);
+  const base = { apiJob: rawWindow(job), requiredSteps: required.map(stepRecord) };
+  if (!reversed && required.every((step) => contains(apiWindow, window(step))))
+    return { upload, timing: { authority: "actions-job-envelope", ...base, contradiction: null } };
+
+  // The Actions/Checks/artifact API clock can contradict the runner's step
+  // clock. Retain both domains; never infer or apply a timestamp offset.
+  const setup = lifecycleStep(job, "Set up job");
+  const complete = lifecycleStep(job, "Complete job");
+  assert.equal(setup.number, Math.min(...numbers), "Foreign canonical setup lifecycle");
+  assert.equal(complete.number, Math.max(...numbers), "Foreign canonical complete lifecycle");
+  const runner = { start: window(setup).end, end: window(complete).start };
+  assert(runner.end >= runner.start, "Reversed canonical runner lifecycle");
+  previous = runner.start;
+  for (const step of required) {
+    const current = window(step);
+    assert(
+      step.number > setup.number && step.number < complete.number && contains(runner, current),
+      "Foreign canonical runner step window",
+    );
+    assert(current.start >= previous, "Overlapping or reversed canonical runner steps");
+    previous = current.end;
+  }
+  const check = linkedCheck(job, context, run);
+  if (reversed) {
+    // Starts can be unusable while the linked API completion and the artifact's
+    // original runner upload window still provide independent ordering anchors.
+    assert.equal(check.started_at, job.started_at, "Unmatched canonical reversed start");
+    assert.equal(check.completed_at, job.completed_at, "Unmatched canonical completion anchor");
+    assert(window(complete).end <= apiWindow.end, "Foreign canonical completion anchor");
+  } else {
+    window(check);
+    assert(
+      runner.end < apiWindow.start || runner.start > apiWindow.end,
+      "Canonical clocks are not independently disjoint",
+    );
+  }
+  return {
+    upload,
+    timing: {
+      authority: reversed
+        ? "linked-completion-and-runner-upload"
+        : "linked-check-api-and-runner-lifecycle",
+      ...base,
+      apiCheck: {
+        id: check.id,
+        url: check.url,
+        detailsUrl: check.details_url,
+        ...rawWindow(check),
+      },
+      runnerLifecycle: { setup: stepRecord(setup), complete: stepRecord(complete) },
+      contradiction: reversed
+        ? "API starts follow their linked completions; starts are unusable, no offset applied"
+        : "API execution envelope and runner lifecycle are disjoint; no offset applied",
+    },
+  };
+}
+
+export function validateCanonicalUpload(artifact, worker) {
+  const created = canonicalTimestamp(artifact.created_at);
+  if (
+    worker.timing.authority === "actions-job-envelope" ||
+    worker.timing.authority === "linked-completion-and-runner-upload"
+  ) {
+    assert(
+      created >= canonicalTimestamp(worker.upload.started_at) &&
+        created <= canonicalTimestamp(worker.upload.completed_at),
+      "Foreign canonical upload window",
+    );
+    if (worker.timing.authority === "linked-completion-and-runner-upload")
+      for (const anchor of [worker.timing.apiJob, worker.timing.apiCheck])
+        assert(
+          created <= canonicalTimestamp(anchor.completedAt),
+          "Foreign canonical completion upload",
+        );
+    return;
+  }
+  for (const anchor of [worker.timing.apiJob, worker.timing.apiCheck]) {
+    assert(
+      created >= canonicalTimestamp(anchor.startedAt) &&
+        created <= canonicalTimestamp(anchor.completedAt),
+      "Foreign canonical API artifact window",
+    );
+  }
+}
+
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);
   if (value && typeof value === "object")
@@ -64,40 +235,6 @@ function execution(job) {
       ),
     ),
   );
-}
-function completedWorker(job, observer) {
-  assert.equal(job.status, "completed", "Latest canonical observer is incomplete");
-  assert.equal(job.conclusion, "success", "Latest canonical observer did not succeed");
-  const start = timestamp(job.started_at);
-  const end = timestamp(job.completed_at);
-  assert(end >= start && Array.isArray(job.steps), "Invalid canonical execution window");
-  const numbers = job.steps.map((step) => step.number);
-  numbers.forEach((number) => positive(number, "Invalid canonical step number"));
-  assert.equal(new Set(numbers).size, numbers.length, "Duplicate canonical step");
-  let previous = 0;
-  for (const name of [
-    "Plan canonical corpus identity",
-    "Select and hydrate full fixture corpus",
-    "Capture canonical corpus identity",
-    commands[observer],
-    "Record required observer evidence",
-    "Upload required observer evidence",
-  ]) {
-    const matches = job.steps.filter((step) => step.name === name);
-    assert.equal(matches.length, 1, `Missing canonical step: ${name}`);
-    const step = matches[0];
-    assert.equal(step.status, "completed", "Canonical step is incomplete");
-    assert.equal(step.conclusion, "success", "Canonical step did not succeed");
-    assert(step.number > previous, "Canonical steps are out of order");
-    assert(
-      timestamp(step.started_at) >= start &&
-        timestamp(step.completed_at) >= timestamp(step.started_at) &&
-        timestamp(step.completed_at) <= end,
-      "Foreign canonical step window",
-    );
-    previous = step.number;
-  }
-  return job.steps.find((step) => step.name === "Upload required observer evidence");
 }
 
 export function selectCanonicalWorkers(context, run, jobs, artifacts) {
@@ -165,10 +302,10 @@ export function selectCanonicalWorkers(context, run, jobs, artifacts) {
     const group = groups[observer].sort((left, right) => right.run_attempt - left.run_attempt);
     assert(group.length, `Missing canonical worker ${observer}`);
     const latest = group[0];
-    completedWorker(latest, observer); // Never borrow green behind a newer failure or pending job.
+    const latestExecution = completedCanonicalWorker(latest, commands[observer], context, run); // Never borrow green behind a newer failure or pending job.
     const signature = execution(latest);
     const original = group.filter((job) => execution(job) === signature).at(-1);
-    const upload = completedWorker(original, observer);
+    const originalExecution = completedCanonicalWorker(original, commands[observer], context, run);
     const artifactName = `canonical-corpus-${observer}-${runId}-${original.run_attempt}-${sha}`;
     const matches = artifacts.filter((artifact) => artifact.name === artifactName);
     assert.equal(matches.length, 1, "Missing or duplicate canonical artifact");
@@ -192,11 +329,8 @@ export function selectCanonicalWorkers(context, run, jobs, artifacts) {
         expected,
         "Foreign canonical artifact repository",
       );
-    assert(
-      timestamp(artifact.created_at) >= timestamp(upload.started_at) &&
-        timestamp(artifact.created_at) <= timestamp(upload.completed_at),
-      "Foreign canonical upload window",
-    );
+    validateCanonicalUpload(artifact, latestExecution);
+    validateCanonicalUpload(artifact, originalExecution);
     return {
       observer,
       latestJobId: latest.id,
@@ -208,6 +342,7 @@ export function selectCanonicalWorkers(context, run, jobs, artifacts) {
       artifactName,
       artifactDigest: artifact.digest,
       artifactCreatedAt: artifact.created_at,
+      timing: { latest: latestExecution.timing, execution: originalExecution.timing },
     };
   });
   assert.equal(

@@ -24,7 +24,7 @@ import { observeHistoricalSplitWatchLog } from "./stable-watcher-mixed.ts";
 import {
   historicalRootWarning,
   observeRootWatchWarning as observeHistoricalRootWatchWarning,
-} from "./historical-inflight-root-warning.ts";
+} from "./historical-post-ack-root-warning.ts";
 import { buildRoleDisposition } from "./role-disposition.ts";
 
 const root = process.env.VIZE_NATIVE_DTO_CAPTURE!;

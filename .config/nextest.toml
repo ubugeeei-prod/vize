@@ -1,6 +1,17 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Retain whole legacy/native inline-template observations in normal PR/full JUnit.
+# This changes output retention only, not selection, runtime or retry policy.
+[[profile.default.overrides]]
+filter = 'package(=vize_patina) & binary(=integration) & test(~native_deprecated_inline_template::)'
+junit.store-success-output = true
+
+# Retain complete new native/legacy Case+Observation packets without changing execution.
+[[profile.default.overrides]]
+filter = 'package(=vize_patina) & test(~no_deprecated_html_element_is::native::tests::)'
+junit.store-success-output = true
+
 # Preserve complete original SFC validation errors, valid modules and CLI
 # packets. Only these exact tests retain stdout; execution policies stay fixed.
 [[profile.default.overrides]]
@@ -14,6 +25,10 @@ junit.store-success-output = true
 # Retain complete event-policy CLI observations; normal execution is unchanged.
 [[profile.default.overrides]]
 filter = 'package(=vize) & binary(=integration) & test(~fmt_on_style_policy_cli::)'
+junit.store-success-output = true
+
+[[profile.default.overrides]]
+filter = 'package(=vize) & binary(=integration) & test(~fmt_slot_style_policy_cli::)'
 junit.store-success-output = true
 
 # Keep all original #11264 CLI argv/streams/files in ordinary PR/full JUnit.

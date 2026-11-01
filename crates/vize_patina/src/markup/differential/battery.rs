@@ -301,6 +301,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // the original snapshot query, complete pair baseline and pair requery.
     // All four whole originals and the policy matrix run in focused tests;
     // their variables remain skips without changing the 913 literal fixtures.
+    // Native static-is pairs, disabled controls and refused owners add three
+    // nonliteral legacy calls. Their complete Case/Observation tests execute;
+    // this literal-only scanner records the three calls as skips, not fixtures.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -312,8 +315,27 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 2
         + 1
         + 7
+        + 3
         + 3,
-    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1 + 3 + 1 + 5 + 1 + 1 + 2 + 1 + 7 + 3,
+    rule_fixture_skipped: 87
+        + 4
+        + 3
+        + 1
+        + 1
+        + 6
+        + 5
+        + 1
+        + 1
+        + 3
+        + 1
+        + 5
+        + 1
+        + 1
+        + 2
+        + 1
+        + 7
+        + 3
+        + 3,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42,
     restructured: 0,

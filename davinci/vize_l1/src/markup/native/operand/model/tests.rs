@@ -1,6 +1,7 @@
 //! Original model syntax ownership only: no assignability, File or DOM credit.
 
 mod support;
+mod trim;
 use support::{assert_original, observe, selected, source_span, value_span};
 
 use crate::embed::{DecodeSegmentKind, Grammar, Lang, Shape, syntax::EmbedHole};
@@ -283,13 +284,16 @@ fn parked_movement_and_owner_drop_preserve_original_ast_and_syntax_transfer() {
 }
 
 #[test]
-fn model_arguments_and_modifiers_refuse_before_any_value_preparation() {
+fn model_arguments_and_unsupported_modifiers_refuse_before_any_value_preparation() {
     for name in [
         "v-model:value",
         "v-model:[name]",
         "v-model.lazy",
-        "v-model.trim",
         "v-model.number",
+        "v-model.trim.trim",
+        "v-model.trim.lazy",
+        "v-model.lazy.trim",
+        "v-model.Trim",
         "v-model.",
         "v-model:value.trim",
     ] {

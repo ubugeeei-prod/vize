@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { archiveComparison } from "../public_install/archive.ts";
+import { observedArchiveComparison } from "./package-inventory.ts";
 import { array, object, sha256, text, wholeJson } from "./value.ts";
 import { publicArchive, publicPackageMetadata } from "./network.ts";
 import {
@@ -16,6 +16,7 @@ import {
 import { lockPackageIntegrity } from "./lock-integrity.ts";
 import type { InstallReceipt } from "./model.ts";
 import type { Sink } from "./evidence.ts";
+import { witnessKnownBins, type BinInstallContext } from "./bin-witness.ts";
 
 /** Physical installed nodes and nonresident declarations are deliberately
  * separate. A pnpm list category never establishes optionality or presence. */
@@ -28,6 +29,7 @@ export async function installedGraph(
   archiveCache: Map<string, Buffer>,
   sink: Sink,
   readers = { archive: publicArchive, metadata: publicPackageMetadata },
+  installContext?: BinInstallContext,
 ): Promise<{ packages: InstallReceipt["packages"]; absent: OptionalAbsence[] }> {
   const packages: InstallReceipt["packages"] = [],
     absent: OptionalAbsence[] = [];
@@ -143,7 +145,19 @@ export async function installedGraph(
           if (prior)
             assert(prior.equals(downloaded.body), "package version cannot silently change archive");
           else archiveCache.set(name + "@" + version, downloaded.body);
-          const comparison = archiveComparison(directory, downloaded.body, downloaded.integrity);
+          await witnessKnownBins(
+            directory,
+            installContext
+              ? { ...installContext, root, lock, archive: readers.archive }
+              : undefined,
+            sink,
+          );
+          const comparison = observedArchiveComparison(
+            directory,
+            downloaded.body,
+            downloaded.integrity,
+            sink,
+          );
           assert.equal(downloaded.resolved, row.resolved);
           packages.push({
             name,

@@ -31,6 +31,15 @@ on:
         description: "Exact 40-hex source commit for an original27 current-source observation (no public qualification)"
         required: true
         type: string
+      original27_mode:
+        description: "Current27 capture, or one imported-case SDK origin metadata probe (no diagnostic admission)"
+        type: choice
+        default: capture
+        options: [capture, native-props-origin]
+      native_vue_return_observation:
+        description: "Observe source-owned Vue return metadata in the existing Origin session; no admission"
+        type: boolean
+        default: false
 permissions: { contents: read }
 concurrency:
   group: canon-slot-constructor-${{ github.event.pull_request.number || github.run_id }}
@@ -186,6 +195,8 @@ jobs:
     timeout-minutes: 45
     env:
       CAPTURE_SOURCE: ${{ inputs.original27_source }}
+      ORIGINAL27_MODE: ${{ inputs.original27_mode || 'capture' }}
+      NATIVE_VUE_RETURN_OBSERVATION: ${{ inputs.native_vue_return_observation && 'true' || 'false' }}
       CARGO_BUILD_JOBS: "4"
       CARGO_INCREMENTAL: "0"
       GOMAXPROCS: "2"
@@ -193,7 +204,12 @@ jobs:
       NODE_DISABLE_COMPILE_CACHE: "1"
     steps:
       - name: Require one literal source commit
-        run: '[[ "$CAPTURE_SOURCE" =~ ^[0-9a-f]{40}$ ]]'
+        run: |
+          set -euo pipefail
+          [[ "$CAPTURE_SOURCE" =~ ^[0-9a-f]{40}$ ]] || exit 1
+          [[ "$ORIGINAL27_MODE" == capture || "$ORIGINAL27_MODE" == native-props-origin ]] || exit 1
+          [[ "$NATIVE_VUE_RETURN_OBSERVATION" == false || "$NATIVE_VUE_RETURN_OBSERVATION" == true ]] || exit 1
+          [[ "$NATIVE_VUE_RETURN_OBSERVATION" == false || "$ORIGINAL27_MODE" == native-props-origin ]] || exit 1
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -218,14 +234,28 @@ jobs:
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
+      - name: Prepare one explicit observation directory
+        run: mkdir "$RUNNER_TEMP/original27-current-evidence"
       - name: Build the unchanged selected source and seal its CLI
+        if: inputs.original27_mode != 'native-props-origin'
         run: |
           set -euo pipefail
           evidence="$RUNNER_TEMP/original27-current-evidence"
-          mkdir "$evidence"
           export CARGO_TARGET_DIR="$RUNNER_TEMP/original27-current-target"
           (cd original27-source && cargo build --locked --profile ci-opt -p vize --bin vize --message-format=json) > "$evidence/head-cargo.jsonl" 2> "$evidence/head-cargo.stderr"
           node tools/support/compat/content-mapper/constructor-original27-current.ts build "$GITHUB_WORKSPACE/original27-source" "$CAPTURE_SOURCE" "$GITHUB_WORKSPACE/original27-fixtures" "$RUNNER_TEMP/original27-current-provider" "$evidence"
+      - name: Build only the selected source's origin probe test executable
+        if: inputs.original27_mode == 'native-props-origin'
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/original27-current-evidence"
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/original27-current-target"
+          (cd original27-source && cargo test --locked --profile ci-opt -p vize_canon --lib --no-run --message-format=json) > "$evidence/origin-cargo.jsonl" 2> "$evidence/origin-cargo.stderr"
+          sidecar_args=()
+          if [[ "$NATIVE_VUE_RETURN_OBSERVATION" == true ]]; then
+            sidecar_args+=(--vue-return-observation)
+          fi
+          node tools/support/compat/content-mapper/constructor-native-props-origin.ts build "$GITHUB_WORKSPACE/original27-source" "$CAPTURE_SOURCE" "$GITHUB_WORKSPACE/original27-fixtures" "$RUNNER_TEMP/original27-current-provider" "$evidence" "${sidecar_args[@]}"
       - name: Install the original provider without executing its published Vize
         run: |
           set -euo pipefail
@@ -234,8 +264,18 @@ jobs:
           cp original27-fixtures/tests/_fixtures/differential/typechecker/constructor-overload-11023-original27/provider-package.json "$provider/package.json"
           npm install --prefix "$provider" --ignore-scripts --include=optional --no-audit --no-fund --registry=https://registry.npmjs.org > "$RUNNER_TEMP/original27-current-evidence/provider-install.stdout" 2> "$RUNNER_TEMP/original27-current-evidence/provider-install.stderr"
       - name: Preserve both independent oracles, every current diagnostic and all27 mapper transactions
+        if: inputs.original27_mode != 'native-props-origin'
         run: |
           node tools/support/compat/content-mapper/constructor-original27-current.ts capture "$GITHUB_WORKSPACE/original27-source" "$CAPTURE_SOURCE" "$GITHUB_WORKSPACE/original27-fixtures" "$RUNNER_TEMP/original27-current-provider" "$RUNNER_TEMP/original27-current-evidence"
+      - name: Observe both actual instance hosts and Vue declaration identities in one snapshot
+        if: inputs.original27_mode == 'native-props-origin'
+        run: |
+          set -euo pipefail
+          sidecar_args=()
+          if [[ "$NATIVE_VUE_RETURN_OBSERVATION" == true ]]; then
+            sidecar_args+=(--vue-return-observation)
+          fi
+          node tools/support/compat/content-mapper/constructor-native-props-origin.ts run "$GITHUB_WORKSPACE/original27-source" "$CAPTURE_SOURCE" "$GITHUB_WORKSPACE/original27-fixtures" "$RUNNER_TEMP/original27-current-provider" "$RUNNER_TEMP/original27-current-evidence" "${sidecar_args[@]}"
       - name: Preserve complete raw failures and original authored inputs
         if: always()
         run: |
@@ -246,7 +286,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: original27-current-${{ inputs.original27_source }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: ${{ inputs.original27_mode == 'native-props-origin' && 'native-props-origin' || 'original27-current' }}-${{ inputs.original27_source }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/original27-current.tgz
           if-no-files-found: error
           retention-days: 14

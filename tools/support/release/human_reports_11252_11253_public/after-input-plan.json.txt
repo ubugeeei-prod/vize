@@ -1,0 +1,3561 @@
+{
+  "kind": "SOURCE_OWNED_AFTER_COMPLETE_INPUT_PLAN_PREPARATION_ONLY",
+  "controller": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+  "target": {
+    "version": null,
+    "candidate": null,
+    "source": null,
+    "workflowHead": null,
+    "releaseRun": null,
+    "capsuleBlob": null,
+    "reviewedController": null
+  },
+  "captureReady": false,
+  "accepted": false,
+  "productQualified": false,
+  "afterQualified": false,
+  "issueQualified": false,
+  "outcomeAssessed": false,
+  "backend": "UNKNOWN",
+  "executionEffects": 0,
+  "sourceClosure": [
+    {
+      "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+      "path": "tools/support/release/human_reports_11252_11253_public/recipes.ts",
+      "bytes": 3997,
+      "sha256": "9bb5f1648fa4221d52e6e986741c8f54b3989287119cc354a582b0281cf98db7",
+      "gitBlob": "0a80864edb9401e4f7fb5961c86979dae678b51d"
+    },
+    {
+      "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+      "path": "tools/support/release/human_reports_11252_11253_public/commands.ts",
+      "bytes": 3915,
+      "sha256": "894f8e6e743c4c2244a974bbbfb0f81a42ea39299162329e310e319830e1a757",
+      "gitBlob": "5b5fd5e5941b9995a6ea705d27e30ed95b845f22"
+    },
+    {
+      "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+      "path": "tools/support/release/human_reports_11252_11253_public/fixtures.ts",
+      "bytes": 4297,
+      "sha256": "827de7504073bac30af59bb1d55e668302b99d952689e0794f624bc99d1e527e",
+      "gitBlob": "68529882120aef89254b1c778c4936a55701440e"
+    },
+    {
+      "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+      "path": "tools/support/release/human_reports_11252_11253_public/original-inputs.json",
+      "bytes": 3088,
+      "sha256": "6c751be34e9707a2cb4475a1b8e7bde46cb4815ba6d2d9a8b572fee9f45e9841",
+      "gitBlob": "1707add195b8ec0a6fe37c93f167e2c480ba7915"
+    },
+    {
+      "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+      "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+      "bytes": 6453,
+      "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+      "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+    },
+    {
+      "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+      "path": "tools/support/release/human_reports_11252_11253_public/capture.ts",
+      "bytes": 5179,
+      "sha256": "e645ce4fe7b7b6973939933128c136d3936e7194663648fc71d5fa436d7f1913",
+      "gitBlob": "0c6f4ff45426dd5da36a250100ec932f9af18492"
+    },
+    {
+      "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+      "path": "tools/support/release/human_reports_11252_11253_public/pipeline.ts",
+      "bytes": 8655,
+      "sha256": "ac0ff23cf68f9a3703f0a2f4605bbb6c3e30725dcd1c3fcbfa443e4afdd9cb04",
+      "gitBlob": "5c23501e352bba009f0699e95e49887eb56b0d76"
+    },
+    {
+      "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+      "path": "tools/support/release/human_reports_11252_11253_public/witness.ts",
+      "bytes": 1949,
+      "sha256": "4aaba9338accd86437cd2ae1a0b2611dbea94e528933c75b8f8aef1cbfd13fd2",
+      "gitBlob": "ed6c185400a0a6bb6266f4e71855bdf05d4ca51e"
+    },
+    {
+      "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+      "path": "tools/support/release/human_reports_11252_11253_public/model.ts",
+      "bytes": 5096,
+      "sha256": "257c07d0a922a134980ab86bcd2a9629ef13242432135e5c5a18a395d827c1ed",
+      "gitBlob": "c9c1569a09db060cb9d13f01ed79c612d2d2921e"
+    }
+  ],
+  "fixes": [
+    {
+      "issue": 11252,
+      "pull": 11257,
+      "merge": "170288d4401511f874d958d709d28f5e001a2e1c"
+    },
+    {
+      "issue": 11253,
+      "pull": 11258,
+      "merge": "64996d903726427ba8c8ea5ac99bfb1042f77a6f"
+    }
+  ],
+  "originalFixtureAuthority": {
+    "nullSource": "5c7ab4d77c8f25c0a2d05522b391454dd9389039",
+    "mixedSource": "4949b9f9f735f84de37fc9865fa65986fee37e1f",
+    "originalInputs": {
+      "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+      "path": "tools/support/release/human_reports_11252_11253_public/original-inputs.json",
+      "bytes": 3088,
+      "sha256": "6c751be34e9707a2cb4475a1b8e7bde46cb4815ba6d2d9a8b572fee9f45e9841",
+      "gitBlob": "1707add195b8ec0a6fe37c93f167e2c480ba7915"
+    },
+    "nullFixturePins": [
+      {
+        "commit": "5c7ab4d77c8f25c0a2d05522b391454dd9389039",
+        "path": "tests/_fixtures/differential/typechecker/runtime-null-prop-11252/Box.vue.txt",
+        "bytes": 123,
+        "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+        "gitBlob": "0989dd38444930710ee096fa30437fd59e36e85e"
+      },
+      {
+        "commit": "5c7ab4d77c8f25c0a2d05522b391454dd9389039",
+        "path": "tests/_fixtures/differential/typechecker/runtime-null-prop-11252/package.json.txt",
+        "bytes": 299,
+        "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+        "gitBlob": "27b5fcf269ce83dc3f8e42f995e7de56e1d6bb0d"
+      },
+      {
+        "commit": "5c7ab4d77c8f25c0a2d05522b391454dd9389039",
+        "path": "tests/_fixtures/differential/typechecker/runtime-null-prop-11252/tsconfig.json.txt",
+        "bytes": 191,
+        "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+        "gitBlob": "7657e05a1c302a57e35f124e3a2d6b946dcb6f22"
+      }
+    ],
+    "mixedFixturePin": {
+      "commit": "4949b9f9f735f84de37fc9865fa65986fee37e1f",
+      "path": "tests/_fixtures/differential/typechecker/mixed-vue-package-imports-11253/input.json",
+      "bytes": 1367,
+      "sha256": "41f272617bd60acc5c737f4d72327edcc0e85e53ca161ef076ca8509072c1ed6",
+      "gitBlob": "c4a9bc1b6d1bccf2c2768b2612bf9461c1262c4f"
+    },
+    "nullOriginals": [
+      {
+        "path": "src/Box.vue",
+        "bytes": 123,
+        "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+        "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+      },
+      {
+        "path": "package.json",
+        "bytes": 299,
+        "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+        "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+      },
+      {
+        "path": "tsconfig.json",
+        "bytes": 191,
+        "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+        "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+      }
+    ],
+    "mixedOriginals": [
+      {
+        "path": "package.json",
+        "bytes": 260,
+        "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+        "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+      },
+      {
+        "path": "tsconfig.json",
+        "bytes": 225,
+        "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+        "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+      },
+      {
+        "path": "src/App.vue",
+        "bytes": 107,
+        "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+        "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+      },
+      {
+        "path": "src/main.ts",
+        "bytes": 135,
+        "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+        "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+      },
+      {
+        "path": "src/plain.ts",
+        "bytes": 81,
+        "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+        "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+      }
+    ]
+  },
+  "hashVueFormattingAuthority": {
+    "source": {
+      "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+      "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+      "bytes": 7446,
+      "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+      "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+    },
+    "lock": {
+      "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+      "path": "Cargo.lock",
+      "bytes": 128805,
+      "sha256": "519fabcc3dd6e10c993829ebeab497c39264bcec68454acb7f0d07f54d5e9104",
+      "gitBlob": "51183504af6009ff575d5c6934f91019be856b74"
+    },
+    "map": "serde_json without indexmap/preserve_order; recursively key-sorted JSON pretty2+LF; full sourceImage retained per case"
+  },
+  "inputOwnership": {
+    "bound": "Only finite universe paths are controller-owned; package bytes remain unresolved until genuine target version binding",
+    "preAndPost": "Restore and byte-check complete present universe plus explicit absences before and after every original and companion; refuse unexpected/unowned content rather than blanket-cleaning",
+    "controlRemoval": "src/Typed.vue may be removed only if absent or equal to a registered exact prior error/repair image; preserve/refuse other bytes; original-vector replay including companions requires absence",
+    "unexpected": "Do not delete packages, locks, caches, user files or unknown paths; enumerate unexpected source input paths as a custody refusal",
+    "installed": "Generated lock and installed package/provider/SDK/native bytes come only from genuine target installation and are rechecked separately; no reporter lock is fabricated",
+    "ordering": "Per role: finish all listed uninstrumented commands in order before any native-load companion; then same order for requiresNativeLoad=true. No cross-host total execution order is claimed"
+  },
+  "roles": [
+    {
+      "role": "runtime-prop-null-11252",
+      "recipe": {
+        "issue": 11252,
+        "role": "runtime-prop-null-11252",
+        "platform": "darwin",
+        "arch": "arm64",
+        "node": "v26.12.1",
+        "pnpm": "12.16.1",
+        "vue": "3.5.44",
+        "typescript": "7.1.0-beta",
+        "vueTsc": null,
+        "tsrs": "0.20.1-ts7.1.0-beta",
+        "originalArgv": [
+          [
+            "install"
+          ],
+          [
+            "check"
+          ]
+        ]
+      },
+      "commandCount": 12,
+      "commands": [
+        {
+          "order": 1,
+          "id": "original-pnpm-check",
+          "argv": [
+            "check"
+          ],
+          "consumer": "original",
+          "purpose": "original",
+          "adaptation": null,
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": [
+              "src/Typed.vue"
+            ]
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": [
+              "src/Typed.vue"
+            ]
+          },
+          "inputAuthority": {
+            "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+            "bytes": 5312,
+            "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+            "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+          },
+          "sourceCase": "original",
+          "intendedSourceJsonContract": null,
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 2,
+          "id": "original-cli",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "src"
+          ],
+          "consumer": "original",
+          "purpose": "supplement",
+          "adaptation": "Explicit source-owned supplementary command; not original report command",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": [
+              "src/Typed.vue"
+            ]
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": [
+              "src/Typed.vue"
+            ]
+          },
+          "inputAuthority": {
+            "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+            "bytes": 5312,
+            "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+            "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+          },
+          "sourceCase": "original",
+          "intendedSourceJsonContract": null,
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 3,
+          "id": "supplement-tsrs",
+          "argv": [
+            "exec",
+            "tsrs",
+            "--runExternalCode",
+            "--noEmit",
+            "-p",
+            "tsconfig.json"
+          ],
+          "consumer": "tsrs-supplement",
+          "purpose": "supplement",
+          "adaptation": "Explicit source-owned supplementary command; not original report command",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": {
+                "afterVersionBinding": "JSON.parse; append devDependencies.tsrs; JSON.stringify(value,null,2)+LF",
+                "tsrs": "0.20.1-ts7.1.0-beta"
+              },
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": [
+              "src/Typed.vue"
+            ]
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": {
+                "afterVersionBinding": "JSON.parse; append devDependencies.tsrs; JSON.stringify(value,null,2)+LF",
+                "tsrs": "0.20.1-ts7.1.0-beta"
+              },
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": [
+              "src/Typed.vue"
+            ]
+          },
+          "inputAuthority": {
+            "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+            "bytes": 5312,
+            "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+            "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+          },
+          "sourceCase": "original",
+          "intendedSourceJsonContract": null,
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 4,
+          "id": "error-ts7",
+          "argv": [
+            "check"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "dc8c1762ba9e0ebea2c2553617340481deb1745bb97c627f7532e7d732d4129b",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogbnVtYmVyID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "dc8c1762ba9e0ebea2c2553617340481deb1745bb97c627f7532e7d732d4129b",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogbnVtYmVyID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+            "bytes": 5312,
+            "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+            "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+          },
+          "sourceCase": "authored-error",
+          "intendedSourceJsonContract": null,
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 5,
+          "id": "repair-ts7",
+          "argv": [
+            "check"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "47a3804876732d5a56807509fdf3cfce4ee2702c4d34887d2dc5b322935730dd",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogc3RyaW5nID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "47a3804876732d5a56807509fdf3cfce4ee2702c4d34887d2dc5b322935730dd",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogc3RyaW5nID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+            "bytes": 5312,
+            "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+            "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+          },
+          "sourceCase": "repair",
+          "intendedSourceJsonContract": null,
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 6,
+          "id": "restore-error-ts7",
+          "argv": [
+            "check"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "dc8c1762ba9e0ebea2c2553617340481deb1745bb97c627f7532e7d732d4129b",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogbnVtYmVyID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "dc8c1762ba9e0ebea2c2553617340481deb1745bb97c627f7532e7d732d4129b",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogbnVtYmVyID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+            "bytes": 5312,
+            "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+            "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+          },
+          "sourceCase": "restored-error",
+          "intendedSourceJsonContract": null,
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 7,
+          "id": "error-cli-json",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "--quiet",
+            "--format",
+            "json",
+            "--tsconfig",
+            "tsconfig.json",
+            "src"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "dc8c1762ba9e0ebea2c2553617340481deb1745bb97c627f7532e7d732d4129b",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogbnVtYmVyID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "dc8c1762ba9e0ebea2c2553617340481deb1745bb97c627f7532e7d732d4129b",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogbnVtYmVyID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+            "bytes": 5312,
+            "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+            "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+          },
+          "sourceCase": "authored-error",
+          "intendedSourceJsonContract": {
+            "available": true,
+            "kind": "SOURCE_CONTRACT_ONLY_NOT_PUBLIC_OUTPUT",
+            "authority": {
+              "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+              "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+              "bytes": 5312,
+              "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+              "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+            }
+          },
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 8,
+          "id": "repair-cli-json",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "--quiet",
+            "--format",
+            "json",
+            "--tsconfig",
+            "tsconfig.json",
+            "src"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "47a3804876732d5a56807509fdf3cfce4ee2702c4d34887d2dc5b322935730dd",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogc3RyaW5nID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "47a3804876732d5a56807509fdf3cfce4ee2702c4d34887d2dc5b322935730dd",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogc3RyaW5nID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+            "bytes": 5312,
+            "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+            "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+          },
+          "sourceCase": "repair",
+          "intendedSourceJsonContract": {
+            "available": true,
+            "kind": "SOURCE_CONTRACT_ONLY_NOT_PUBLIC_OUTPUT",
+            "authority": {
+              "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+              "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+              "bytes": 5312,
+              "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+              "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+            }
+          },
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 9,
+          "id": "restore-error-cli-json",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "--quiet",
+            "--format",
+            "json",
+            "--tsconfig",
+            "tsconfig.json",
+            "src"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "dc8c1762ba9e0ebea2c2553617340481deb1745bb97c627f7532e7d732d4129b",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogbnVtYmVyID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "dc8c1762ba9e0ebea2c2553617340481deb1745bb97c627f7532e7d732d4129b",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogbnVtYmVyID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+            "bytes": 5312,
+            "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+            "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+          },
+          "sourceCase": "restored-error",
+          "intendedSourceJsonContract": {
+            "available": true,
+            "kind": "SOURCE_CONTRACT_ONLY_NOT_PUBLIC_OUTPUT",
+            "authority": {
+              "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+              "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+              "bytes": 5312,
+              "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+              "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+            }
+          },
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 10,
+          "id": "error-tsrs",
+          "argv": [
+            "exec",
+            "tsrs",
+            "--runExternalCode",
+            "--noEmit",
+            "-p",
+            "tsconfig.json"
+          ],
+          "consumer": "tsrs-supplement",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "dc8c1762ba9e0ebea2c2553617340481deb1745bb97c627f7532e7d732d4129b",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogbnVtYmVyID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": {
+                "afterVersionBinding": "JSON.parse; append devDependencies.tsrs; JSON.stringify(value,null,2)+LF",
+                "tsrs": "0.20.1-ts7.1.0-beta"
+              },
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "dc8c1762ba9e0ebea2c2553617340481deb1745bb97c627f7532e7d732d4129b",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogbnVtYmVyID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": {
+                "afterVersionBinding": "JSON.parse; append devDependencies.tsrs; JSON.stringify(value,null,2)+LF",
+                "tsrs": "0.20.1-ts7.1.0-beta"
+              },
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+            "bytes": 5312,
+            "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+            "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+          },
+          "sourceCase": "authored-error",
+          "intendedSourceJsonContract": null,
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 11,
+          "id": "repair-tsrs",
+          "argv": [
+            "exec",
+            "tsrs",
+            "--runExternalCode",
+            "--noEmit",
+            "-p",
+            "tsconfig.json"
+          ],
+          "consumer": "tsrs-supplement",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "47a3804876732d5a56807509fdf3cfce4ee2702c4d34887d2dc5b322935730dd",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogc3RyaW5nID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": {
+                "afterVersionBinding": "JSON.parse; append devDependencies.tsrs; JSON.stringify(value,null,2)+LF",
+                "tsrs": "0.20.1-ts7.1.0-beta"
+              },
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "47a3804876732d5a56807509fdf3cfce4ee2702c4d34887d2dc5b322935730dd",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogc3RyaW5nID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": {
+                "afterVersionBinding": "JSON.parse; append devDependencies.tsrs; JSON.stringify(value,null,2)+LF",
+                "tsrs": "0.20.1-ts7.1.0-beta"
+              },
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+            "bytes": 5312,
+            "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+            "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+          },
+          "sourceCase": "repair",
+          "intendedSourceJsonContract": null,
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 12,
+          "id": "restore-error-tsrs",
+          "argv": [
+            "exec",
+            "tsrs",
+            "--runExternalCode",
+            "--noEmit",
+            "-p",
+            "tsconfig.json"
+          ],
+          "consumer": "tsrs-supplement",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "dc8c1762ba9e0ebea2c2553617340481deb1745bb97c627f7532e7d732d4129b",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogbnVtYmVyID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": {
+                "afterVersionBinding": "JSON.parse; append devDependencies.tsrs; JSON.stringify(value,null,2)+LF",
+                "tsrs": "0.20.1-ts7.1.0-beta"
+              },
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/Box.vue",
+              "src/Typed.vue"
+            ],
+            "present": [
+              {
+                "path": "src/Box.vue",
+                "bytes": 123,
+                "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmRlZmluZVByb3BzKHsgYXM6IHsgdHlwZTogbnVsbCwgcmVxdWlyZWQ6IGZhbHNlIH0gfSk7Cjwvc2NyaXB0PgoKPHRlbXBsYXRlPgogIDxkaXYgLz4KPC90ZW1wbGF0ZT4K"
+              },
+              {
+                "path": "tsconfig.json",
+                "bytes": 191,
+                "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogImVzbmV4dCIsCiAgICAibW9kdWxlIjogInByZXNlcnZlIiwKICAgICJzdHJpY3QiOiB0cnVlCiAgfSwKICAiY29udGVudE1hcHBlcnMiOiBbeyAicGFja2FnZSI6ICJ2aXplIiwgImV4dGVuc2lvbnMiOiBbIi52dWUiXSB9XSwKICAiaW5jbHVkZSI6IFsic3JjIl0KfQo="
+              },
+              {
+                "path": "src/Typed.vue",
+                "bytes": 193,
+                "sha256": "dc8c1762ba9e0ebea2c2553617340481deb1745bb97c627f7532e7d732d4129b",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IHByb3BzID0gZGVmaW5lUHJvcHMoeyBhczogeyB0eXBlOiBudWxsIH0sIGxhYmVsOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUgfSB9KTsKY29uc3QgaW52YWxpZDogbnVtYmVyID0gcHJvcHMubGFiZWw7Cjwvc2NyaXB0Pgo8dGVtcGxhdGU+PGRpdiAvPjwvdGVtcGxhdGU+Cg=="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 299,
+                "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+                "base64": "ewogICJuYW1lIjogInZpemUtcnVudGltZS1wcm9wLXR5cGUtbnVsbC1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIsCiAgInNjcmlwdHMiOiB7CiAgICAiY2hlY2siOiAidHNjIC0tcnVuRXh0ZXJuYWxDb2RlIC0tbm9FbWl0IC1wIHRzY29uZmlnLmpzb24iCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgInZ1ZSI6ICIzLjUuNDQiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInR5cGVzY3JpcHQiOiAiNy4xLjAtYmV0YSIsCiAgICAidml6ZSI6ICIwLjYyNy4wIgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": {
+                "afterVersionBinding": "JSON.parse; append devDependencies.tsrs; JSON.stringify(value,null,2)+LF",
+                "tsrs": "0.20.1-ts7.1.0-beta"
+              },
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "170288d4401511f874d958d709d28f5e001a2e1c",
+            "path": "crates/vize/tests/content_mapper_tsgo_cli/runtime_null_prop.rs",
+            "bytes": 5312,
+            "sha256": "d391fe9e45339f67ea52c092f085859f85ec98d56024b9abe33468cb4d58ec3e",
+            "gitBlob": "c762b98fdff8036b3a132b7cd1129b4236bf291e"
+          },
+          "sourceCase": "restored-error",
+          "intendedSourceJsonContract": null,
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        }
+      ]
+    },
+    {
+      "role": "imports-vue-ts-11253",
+      "recipe": {
+        "issue": 11253,
+        "role": "imports-vue-ts-11253",
+        "platform": "linux",
+        "arch": "x64",
+        "node": "v24.22.1",
+        "pnpm": "12.16.1",
+        "vue": "3.5.44",
+        "typescript": "5.9.3",
+        "vueTsc": "3.3.14",
+        "tsrs": null,
+        "originalArgv": [
+          [
+            "install"
+          ],
+          [
+            "exec",
+            "vize",
+            "check"
+          ],
+          [
+            "exec",
+            "vue-tsc",
+            "--noEmit"
+          ]
+        ]
+      },
+      "commandCount": 11,
+      "commands": [
+        {
+          "order": 1,
+          "id": "original-cli",
+          "argv": [
+            "exec",
+            "vize",
+            "check"
+          ],
+          "consumer": "original",
+          "purpose": "original",
+          "adaptation": null,
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+            "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+            "bytes": 7446,
+            "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+            "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+          },
+          "sourceCase": "Original",
+          "intendedSourceJsonContract": null,
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 2,
+          "id": "original-cli-json",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "-f",
+            "json"
+          ],
+          "consumer": "original",
+          "purpose": "supplement",
+          "adaptation": "Explicit source-owned supplementary command; not original report command",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+            "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+            "bytes": 7446,
+            "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+            "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+          },
+          "sourceCase": "Original",
+          "intendedSourceJsonContract": {
+            "available": true,
+            "kind": "SOURCE_CONTRACT_ONLY_NOT_PUBLIC_OUTPUT",
+            "authority": {
+              "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+              "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+              "bytes": 7446,
+              "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+              "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+            }
+          },
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 3,
+          "id": "original-vue-tsc",
+          "argv": [
+            "exec",
+            "vue-tsc",
+            "--noEmit"
+          ],
+          "consumer": "original",
+          "purpose": "original",
+          "adaptation": null,
+          "requiresNativeLoad": false,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+            "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+            "bytes": 7446,
+            "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+            "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+          },
+          "sourceCase": "Original",
+          "intendedSourceJsonContract": null,
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 4,
+          "id": "hash-only",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "--format",
+            "json",
+            "--quiet"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 102,
+                "sha256": "739ae45aaec965434d5a8b6e48e02c33ab1e0abdcf11d9fe066edcbf8013bd2b",
+                "base64": "CmltcG9ydCB7IHZhbHVlIH0gZnJvbSAiI3NyYy9wbGFpbiI7Cgpjb25zdCBwcm9iZTogbnVtYmVyID0gIm5vdCBhIG51bWJlciI7CgpleHBvcnQgeyB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 102,
+                "sha256": "739ae45aaec965434d5a8b6e48e02c33ab1e0abdcf11d9fe066edcbf8013bd2b",
+                "base64": "CmltcG9ydCB7IHZhbHVlIH0gZnJvbSAiI3NyYy9wbGFpbiI7Cgpjb25zdCBwcm9iZTogbnVtYmVyID0gIm5vdCBhIG51bWJlciI7CgpleHBvcnQgeyB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+            "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+            "bytes": 7446,
+            "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+            "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+          },
+          "sourceCase": "HashOnly",
+          "intendedSourceJsonContract": {
+            "available": true,
+            "kind": "SOURCE_CONTRACT_ONLY_NOT_PUBLIC_OUTPUT",
+            "authority": {
+              "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+              "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+              "bytes": 7446,
+              "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+              "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+            }
+          },
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 5,
+          "id": "relative",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "--format",
+            "json",
+            "--quiet"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 132,
+                "sha256": "bd1218f3371e1232632e485745e1aab649c03593954a8b40b3084ad0f3abac44",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIi4vcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 132,
+                "sha256": "bd1218f3371e1232632e485745e1aab649c03593954a8b40b3084ad0f3abac44",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIi4vcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+            "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+            "bytes": 7446,
+            "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+            "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+          },
+          "sourceCase": "Relative",
+          "intendedSourceJsonContract": {
+            "available": true,
+            "kind": "SOURCE_CONTRACT_ONLY_NOT_PUBLIC_OUTPUT",
+            "authority": {
+              "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+              "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+              "bytes": 7446,
+              "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+              "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+            }
+          },
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 6,
+          "id": "vue-package",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "--format",
+            "json",
+            "--quiet"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "016891d068e98d1e8efca7cea8a2e0cf273673bc9e878be5643331e2df00fe79",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyByZWYgYXMgdmFsdWUgfSBmcm9tICJ2dWUiOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "016891d068e98d1e8efca7cea8a2e0cf273673bc9e878be5643331e2df00fe79",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyByZWYgYXMgdmFsdWUgfSBmcm9tICJ2dWUiOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+            "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+            "bytes": 7446,
+            "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+            "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+          },
+          "sourceCase": "VuePackage",
+          "intendedSourceJsonContract": {
+            "available": true,
+            "kind": "SOURCE_CONTRACT_ONLY_NOT_PUBLIC_OUTPUT",
+            "authority": {
+              "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+              "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+              "bytes": 7446,
+              "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+              "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+            }
+          },
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 7,
+          "id": "hash-vue",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "--format",
+            "json",
+            "--quiet"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 96,
+                "sha256": "eddd276137b59b86b0bfc54fb21cd384e27c08d865dff7ea8b5803979a17c231",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIjc3JjL0FwcC52dWUiOwoKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKCmV4cG9ydCB7IEFwcCwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 293,
+                "sha256": "313608773ab47a5bc515ede00725579d4caf1fea1d8dcdb4de3f8e851565c3e5",
+                "base64": "ewogICJkZXBlbmRlbmNpZXMiOiB7CiAgICAidnVlIjogIjMuNS40NCIKICB9LAogICJkZXZEZXBlbmRlbmNpZXMiOiB7CiAgICAidHlwZXNjcmlwdCI6ICI1LjkuMyIsCiAgICAidml6ZSI6ICIwLjYyNy4wIiwKICAgICJ2dWUtdHNjIjogIjMuMy4xNCIKICB9LAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIiwKICAgICIjc3JjLyoudnVlIjogIi4vc3JjLyoudnVlIgogIH0sCiAgIm5hbWUiOiAidml6ZS1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIKfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 96,
+                "sha256": "eddd276137b59b86b0bfc54fb21cd384e27c08d865dff7ea8b5803979a17c231",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIjc3JjL0FwcC52dWUiOwoKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKCmV4cG9ydCB7IEFwcCwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 293,
+                "sha256": "313608773ab47a5bc515ede00725579d4caf1fea1d8dcdb4de3f8e851565c3e5",
+                "base64": "ewogICJkZXBlbmRlbmNpZXMiOiB7CiAgICAidnVlIjogIjMuNS40NCIKICB9LAogICJkZXZEZXBlbmRlbmNpZXMiOiB7CiAgICAidHlwZXNjcmlwdCI6ICI1LjkuMyIsCiAgICAidml6ZSI6ICIwLjYyNy4wIiwKICAgICJ2dWUtdHNjIjogIjMuMy4xNCIKICB9LAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIiwKICAgICIjc3JjLyoudnVlIjogIi4vc3JjLyoudnVlIgogIH0sCiAgIm5hbWUiOiAidml6ZS1yZXBybyIsCiAgInByaXZhdGUiOiB0cnVlLAogICJ0eXBlIjogIm1vZHVsZSIKfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+            "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+            "bytes": 7446,
+            "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+            "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+          },
+          "sourceCase": "HashVue",
+          "intendedSourceJsonContract": {
+            "available": true,
+            "kind": "SOURCE_CONTRACT_ONLY_NOT_PUBLIC_OUTPUT",
+            "authority": {
+              "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+              "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+              "bytes": 7446,
+              "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+              "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+            }
+          },
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 8,
+          "id": "main-only",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "--format",
+            "json",
+            "--quiet"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 68,
+                "sha256": "582b4359093e3e2e5b3357a5a281a1507e062501c24c365a1ba477c14f427b17",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAxOwpleHBvcnQgeyBwcm9iZSB9Owo="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 68,
+                "sha256": "582b4359093e3e2e5b3357a5a281a1507e062501c24c365a1ba477c14f427b17",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAxOwpleHBvcnQgeyBwcm9iZSB9Owo="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+            "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+            "bytes": 7446,
+            "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+            "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+          },
+          "sourceCase": "MainOnly",
+          "intendedSourceJsonContract": {
+            "available": true,
+            "kind": "SOURCE_CONTRACT_ONLY_NOT_PUBLIC_OUTPUT",
+            "authority": {
+              "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+              "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+              "bytes": 7446,
+              "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+              "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+            }
+          },
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 9,
+          "id": "repair",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "--format",
+            "json",
+            "--quiet"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 122,
+                "sha256": "a58a20e31348a5a45a28bcf1c886a49bd19b96b079daefc0dd1e76db65e50848",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9IDE7CgpleHBvcnQgeyBBcHAsIHZhbHVlLCBwcm9iZSB9Owo="
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 68,
+                "sha256": "582b4359093e3e2e5b3357a5a281a1507e062501c24c365a1ba477c14f427b17",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAxOwpleHBvcnQgeyBwcm9iZSB9Owo="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 122,
+                "sha256": "a58a20e31348a5a45a28bcf1c886a49bd19b96b079daefc0dd1e76db65e50848",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9IDE7CgpleHBvcnQgeyBBcHAsIHZhbHVlLCBwcm9iZSB9Owo="
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 68,
+                "sha256": "582b4359093e3e2e5b3357a5a281a1507e062501c24c365a1ba477c14f427b17",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAxOwpleHBvcnQgeyBwcm9iZSB9Owo="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+            "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+            "bytes": 7446,
+            "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+            "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+          },
+          "sourceCase": "Repair",
+          "intendedSourceJsonContract": {
+            "available": true,
+            "kind": "SOURCE_CONTRACT_ONLY_NOT_PUBLIC_OUTPUT",
+            "authority": {
+              "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+              "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+              "bytes": 7446,
+              "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+              "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+            }
+          },
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 10,
+          "id": "restore-main-only",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "--format",
+            "json",
+            "--quiet"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 68,
+                "sha256": "582b4359093e3e2e5b3357a5a281a1507e062501c24c365a1ba477c14f427b17",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAxOwpleHBvcnQgeyBwcm9iZSB9Owo="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 68,
+                "sha256": "582b4359093e3e2e5b3357a5a281a1507e062501c24c365a1ba477c14f427b17",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAxOwpleHBvcnQgeyBwcm9iZSB9Owo="
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+            "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+            "bytes": 7446,
+            "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+            "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+          },
+          "sourceCase": "RestoreMainOnly",
+          "intendedSourceJsonContract": {
+            "available": true,
+            "kind": "SOURCE_CONTRACT_ONLY_NOT_PUBLIC_OUTPUT",
+            "authority": {
+              "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+              "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+              "bytes": 7446,
+              "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+              "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+            }
+          },
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        },
+        {
+          "order": 11,
+          "id": "restore-original",
+          "argv": [
+            "exec",
+            "vize",
+            "check",
+            "--format",
+            "json",
+            "--quiet"
+          ],
+          "consumer": "original",
+          "purpose": "control",
+          "adaptation": "Source-owned isolated authored error/import/control/repair/restore state",
+          "requiresNativeLoad": true,
+          "beforeInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "afterInputState": {
+            "universe": [
+              "package.json",
+              "tsconfig.json",
+              "src/App.vue",
+              "src/main.ts",
+              "src/plain.ts"
+            ],
+            "present": [
+              {
+                "path": "tsconfig.json",
+                "bytes": 225,
+                "sha256": "ee5fca5e89d5c8f4d98aeb6175b41eb702baec8e52c2d4e1b4725d8b35959c0d",
+                "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidGFyZ2V0IjogIkVTTmV4dCIsCiAgICAibW9kdWxlIjogIkVTTmV4dCIsCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJzdHJpY3QiOiB0cnVlLAogICAgIm5vRW1pdCI6IHRydWUsCiAgICAic2tpcExpYkNoZWNrIjogdHJ1ZQogIH0sCiAgImluY2x1ZGUiOiBbInNyYy8qKi8qLnRzIiwgInNyYy8qKi8qLnZ1ZSJdCn0K"
+              },
+              {
+                "path": "src/App.vue",
+                "bytes": 107,
+                "sha256": "46c19e03d37447d379f56d4d43460ffd33de737a678d279182d53385590dd7a5",
+                "base64": "PHNjcmlwdCBzZXR1cCBsYW5nPSJ0cyI+CmNvbnN0IG1lc3NhZ2UgPSAiaGVsbG8iOwo8L3NjcmlwdD4KCjx0ZW1wbGF0ZT4KICA8cD57eyBtZXNzYWdlIH19PC9wPgo8L3RlbXBsYXRlPgo="
+              },
+              {
+                "path": "src/main.ts",
+                "bytes": 135,
+                "sha256": "7e0b11adbb8653c81e6a7f6c951987a5593ae7a82d4783465c7f97bc49a97a35",
+                "base64": "aW1wb3J0IEFwcCBmcm9tICIuL0FwcC52dWUiOwppbXBvcnQgeyB2YWx1ZSB9IGZyb20gIiNzcmMvcGxhaW4iOwoKY29uc3QgcHJvYmU6IG51bWJlciA9ICJub3QgYSBudW1iZXIiOwoKZXhwb3J0IHsgQXBwLCB2YWx1ZSwgcHJvYmUgfTsK"
+              },
+              {
+                "path": "src/plain.ts",
+                "bytes": 81,
+                "sha256": "f122f10ec44e72f111262f782d61de2d37b4033cc2d3783137ab9ee98d60defc",
+                "base64": "ZXhwb3J0IGNvbnN0IHZhbHVlID0gMTsKCmNvbnN0IHByb2JlOiBudW1iZXIgPSAibm90IGEgbnVtYmVyIjsKZXhwb3J0IHsgcHJvYmUgfTsK"
+              }
+            ],
+            "parameterizedPackage": {
+              "sourceImage": {
+                "path": "package.json",
+                "bytes": 260,
+                "sha256": "c5bc1e91d32304525fc093dbe8d1b828479382d5d22051f8b3769822c99f7461",
+                "base64": "ewogICJuYW1lIjogInZpemUtcmVwcm8iLAogICJwcml2YXRlIjogdHJ1ZSwKICAidHlwZSI6ICJtb2R1bGUiLAogICJpbXBvcnRzIjogewogICAgIiNzcmMvKiI6ICIuL3NyYy8qLnRzIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJ2dWUiOiAiMy41LjQ0IgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJ0eXBlc2NyaXB0IjogIjUuOS4zIiwKICAgICJ2aXplIjogIjAuNjI3LjAiLAogICAgInZ1ZS10c2MiOiAiMy4zLjE0IgogIH0KfQo="
+              },
+              "exactVersionBinding": {
+                "before": "\"vize\": \"0.627.0\"",
+                "replacementVersionParameter": "target.version",
+                "occurrences": 1
+              },
+              "supplement": null,
+              "resolvedBytes": null,
+              "resolvedSha256": null,
+              "source": {
+                "commit": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+                "path": "tools/support/release/human_reports_11252_11253_public/installation.ts",
+                "bytes": 6453,
+                "sha256": "8aace636428077577f96b1d6ea3527f3926f9dbfd894e4b2061d6855dedf2f51",
+                "gitBlob": "b3e2009d5cf178ac6fd79ddc44e40fac75069fa9"
+              }
+            },
+            "absent": []
+          },
+          "inputAuthority": {
+            "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+            "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+            "bytes": 7446,
+            "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+            "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+          },
+          "sourceCase": "RestoreOriginal",
+          "intendedSourceJsonContract": {
+            "available": true,
+            "kind": "SOURCE_CONTRACT_ONLY_NOT_PUBLIC_OUTPUT",
+            "authority": {
+              "commit": "64996d903726427ba8c8ea5ac99bfb1042f77a6f",
+              "path": "crates/vize/tests/check_mixed_vue_package_imports_cli.rs",
+              "bytes": 7446,
+              "sha256": "5589f3c1af6d3f050e2013d9901feb397683b0ea522f28e4241843b4a312c809",
+              "gitBlob": "53488d692192ac87b4800ddcd71130df7e34fd1c"
+            }
+          },
+          "wholeIdenticalPublicCommandOutputOracle": "UNKNOWN",
+          "outcomeExpectation": null
+        }
+      ]
+    }
+  ],
+  "coverage": {
+    "intendedSourceJsonContracts": 12,
+    "missingIdenticalCommandWholeStreamOracles": 11,
+    "actualPublicAfterOutputs": 0,
+    "sourceD6OrE06IsPublicOracle": false,
+    "assessment": "No output/status expectation in this input plan; all outputs remain raw unqualified future observations"
+  },
+  "pending": [
+    "Genuine containing release/capsule and source containment",
+    "Reviewed actual main controller with separate UNQUALIFIED_AFTER route",
+    "Genuine judged untouched public BEFORE authority",
+    "Bind target version and freeze every complete package byte/hash before capture",
+    "Actual installed launcher/provider/native identity",
+    "Immutable sourceAdmission input-plan/Git/CI binding",
+    "Independent later whole-output assessment; never copy observed output into its own oracle"
+  ],
+  "futureTrailerNote": "Any follow-up related commits/PR/squash/actual merge retain both original reporter trailers contiguously; source-fix merge receipts remain immutable"
+}

@@ -78,6 +78,8 @@ jobs:
             runtime="$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc"
             test -x "$runtime"
             printf 'CORSA_PATH=%s\n' "$runtime" >> "$GITHUB_ENV"
+            # Packet-only JSON leaves enter the existing cohort artifact; no project links.
+            printf 'VIZE_JSX_ATTRIBUTE_PACKET_DIR=%s\n' "$GITHUB_WORKSPACE/target/nextest/$NEXTEST_PROFILE/jsx-attribute-packets/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$GITHUB_SHA" >> "$GITHUB_ENV"
           fi
           if [[ "$COHORT" == "typechecker" || "$COHORT" == "language-server" ]]; then
             # Insta's CI default writes no pending observations. NewFile retains

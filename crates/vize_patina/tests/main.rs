@@ -58,6 +58,7 @@ mod native_canonical_img_alt;
 mod native_canonical_tabindex;
 mod native_deprecated_attr;
 mod native_deprecated_element;
+mod native_deprecated_inline_template;
 mod native_focus_callbacks;
 mod native_header_facts;
 mod native_header_rules;

@@ -72,7 +72,13 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     body.push_named(occurrence.name, authored, occurrence.name);
     body.push(" = ");
     body.push(value.as_str());
-    body.push(")))");
+    body.push("))");
+    if let Some(span) = original.input().operand().trim_span() {
+        body.push(", { ");
+        body.push_named("trim", span, "trim");
+        body.push(": true }");
+    }
+    body.push(")");
     Ok(())
 }
 

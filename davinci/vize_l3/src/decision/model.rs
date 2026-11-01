@@ -25,7 +25,6 @@ pub(super) fn checked<'owner, 'arena>(
         return None;
     };
     if model.argument.is_some()
-        || !model.attributes.is_empty()
         || element.tag != "input"
         || element.namespace != vize_l2::op::Namespace::Html
         || !element.attributes.is_empty()
@@ -42,6 +41,26 @@ pub(super) fn checked<'owner, 'arena>(
         || original.input().attribute_span() != Some(model.span)
     {
         return None;
+    }
+    match (
+        original.input().operand().trim_span(),
+        model.attributes.as_slice(),
+    ) {
+        (None, []) => {}
+        (Some(span), [attribute]) => {
+            let authored = file
+                .artifact()
+                .source()
+                .get(span.start as usize..span.end as usize)?;
+            if attribute.span != span
+                || attribute.value.is_some()
+                || attribute.name != "trim"
+                || !core::ptr::eq(attribute.name, authored)
+            {
+                return None;
+            }
+        }
+        _ => return None,
     }
     let (ExprRef::Js(read), ExprRef::Js(write)) = (model.contract.read, model.contract.write)
     else {

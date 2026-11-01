@@ -153,6 +153,9 @@ pub struct ServerState {
     native_diagnostic_timeout_ms: std::sync::atomic::AtomicU64,
     /// Client can request documentation through the native completion resolver.
     completion_documentation_resolve: AtomicBool,
+    /// Native lint edits may carry the version explicitly advertised by this client.
+    #[cfg(feature = "native")]
+    versioned_lint_edits: AtomicBool,
     /// Type checker options and project identity shared by LSP diagnostics.
     /// Corsa options, timeout, and the effective tsconfig belong to one snapshot.
     type_checker_config: RwLock<(TypeCheckerConfig, u64, ProjectModel)>,

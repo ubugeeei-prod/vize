@@ -93,6 +93,9 @@ impl RenameService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<PrepareRenameResponse> {
+        if let Some(response) = Self::private_setup_prepare(ctx) {
+            return Some(response);
+        }
         match canonical::prepare(ctx, corsa_bridge.as_deref()).await {
             canonical::Answer::Available(response) => return response,
             canonical::Answer::Unavailable if corsa::is_component_attribute_query(ctx) => {

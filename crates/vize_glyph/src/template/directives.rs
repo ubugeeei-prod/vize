@@ -4,7 +4,7 @@
 //! `v-slot:` -> `#`) and JS expression formatting in directive values.
 
 use crate::{options::FormatOptions, script};
-use vize_l0::{Allocator, SmallVec, Span, String, ToCompactString, is_simple_identifier};
+use vize_l0::{Allocator, Span, String, ToCompactString, is_simple_identifier};
 use vize_l1::{
     embed::{
         Embed, EmbedSource, Grammar, Lang, Shape,
@@ -16,7 +16,9 @@ use vize_l1::{
 use super::literal_lines::{Representation, encode_reference_data};
 use super::literal_spans::ValueLines;
 
+mod entities;
 mod normalize;
+use entities::decode_expression_attribute_entities;
 pub(crate) use normalize::normalize_attribute_with_vue_version;
 
 /// Determine if an attribute's value should be formatted as a JS expression.
@@ -120,7 +122,13 @@ pub(super) fn format_directive_value(
         return (formatted, false, false);
     }
 
-    let decoded = decode_expression_attribute_entities(trimmed);
+    // The decoder's first guard returns None without an ampersand. Keep that
+    // common case out of the out-of-line decoder, without changing its grammar.
+    let decoded = if trimmed.as_bytes().contains(&b'&') {
+        decode_expression_attribute_entities(trimmed)
+    } else {
+        None
+    };
     let expression = decoded
         .as_ref()
         .map_or(trimmed, |value| value.code.as_str());
@@ -158,7 +166,34 @@ pub(super) fn format_directive_value(
                 reanchor_continuation_lines(&code, options, Representation::JavaScript);
             (value, indent, false)
         }
+        Some(formatted)
+            if options.end_of_line != crate::EndOfLine::Cr
+                && memchr::memchr2(b'&', b'\n', formatted.code.as_bytes()).is_none() =>
+        {
+            // One scan proves both no reference and the original false LF
+            // indentation flag. Preserve the complete line-ownership metadata.
+            (formatted.code, false, formatted.owns_attribute_lines)
+        }
         Some(formatted) => {
+            // Without an actual printed ampersand, HTML cannot form a new
+            // reference. Keep the common path out of the rare-path call and
+            // its reference-position collection entirely.
+            let formatted = if formatted.code.contains('&') {
+                let Some(formatted) = entities::protect_formatted_reference_data(
+                    formatted,
+                    value,
+                    options,
+                    attribute_depth,
+                    name,
+                ) else {
+                    let (value, indent) =
+                        reanchor_continuation_lines(value, options, Representation::Html);
+                    return (value, indent, false);
+                };
+                formatted
+            } else {
+                formatted
+            };
             let indent_multiline_value = formatted.code.contains('\n')
                 || (options.end_of_line == crate::EndOfLine::Cr && formatted.code.contains('\r'));
             (
@@ -269,65 +304,6 @@ fn dedent(line: &str, columns: usize) -> &str {
 
 fn blank_prefix_len(line: &str) -> usize {
     line.len() - line.trim_start_matches([' ', '\t']).len()
-}
-
-struct DecodedExpression {
-    code: String,
-    amp_positions: SmallVec<[usize; 2]>,
-}
-
-fn decode_expression_attribute_entities(value: &str) -> Option<DecodedExpression> {
-    if !value.contains('&') {
-        return None;
-    }
-
-    let mut decoded = String::with_capacity(value.len());
-    let mut amp_positions = SmallVec::new();
-    let mut changed = false;
-    let mut rest = value;
-    while !rest.is_empty() {
-        if let Some(tail) = rest.strip_prefix("&quot;") {
-            decoded.push('"');
-            rest = tail;
-            changed = true;
-        } else if let Some(tail) = rest
-            .strip_prefix("&#34;")
-            .or_else(|| rest.strip_prefix("&#x22;"))
-            .or_else(|| rest.strip_prefix("&#X22;"))
-        {
-            decoded.push('"');
-            rest = tail;
-            changed = true;
-        } else if let Some(tail) = rest.strip_prefix("&apos;") {
-            decoded.push('\'');
-            rest = tail;
-            changed = true;
-        } else if let Some(tail) = rest
-            .strip_prefix("&#39;")
-            .or_else(|| rest.strip_prefix("&#x27;"))
-            .or_else(|| rest.strip_prefix("&#X27;"))
-        {
-            decoded.push('\'');
-            rest = tail;
-            changed = true;
-        } else if let Some(tail) = rest.strip_prefix("&amp;") {
-            amp_positions.push(decoded.len());
-            decoded.push('&');
-            rest = tail;
-            changed = true;
-        } else {
-            let Some(ch) = rest.chars().next() else {
-                break;
-            };
-            decoded.push(ch);
-            rest = rest.get(ch.len_utf8()..).unwrap_or_default();
-        }
-    }
-
-    changed.then_some(DecodedExpression {
-        code: decoded,
-        amp_positions,
-    })
 }
 
 /// Format `v-for` expression: normalize spacing in `(item, index) in items`.

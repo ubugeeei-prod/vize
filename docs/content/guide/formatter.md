@@ -206,6 +206,13 @@ The same guard applies to an active `vue/v-on-style: "longform"` rule:
 disable `normalizeDirectiveShorthands` to preserve its `v-on:click` fixes.
 Rule activation and request refusal follow the same host-specific behavior above.
 
+An active `vue/v-slot-style` policy with `"longform"` at any slot position also
+requires `normalizeDirectiveShorthands: false`: normalization would turn
+`v-slot:default` or `v-slot:header` back into shorthand. Both the uniform string
+and position-specific object options are respected. Bare `v-slot` defaults
+remain compatible. Slot options alone do not enable an unselected rule, so an
+incremental preset must also select `vue/v-slot-style` to create this conflict.
+
 The native Node `formatSfc` API accepts the five Prettier migration booleans
 `normalizeCssQuotes`, `normalizeInlineStyles`, `normalizeVForParens`,
 `selfCloseVoidElements` and `reindentPreprocessorStyles` under the same names.

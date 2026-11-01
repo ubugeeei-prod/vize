@@ -8,6 +8,13 @@ use tower_lsp::lsp_types::{
 use super::MaestroServer;
 use crate::ide::{CodeActionService, IdeContext, position_to_offset};
 
+struct ActionSnapshot<T> {
+    revision: u64,
+    content: T,
+    #[cfg(feature = "native")]
+    version: i32,
+}
+
 pub(super) async fn code_actions(
     server: &MaestroServer,
     params: &CodeActionParams,
@@ -19,10 +26,16 @@ pub(super) async fn code_actions(
 
     let uri = &params.text_document.uri;
     let range = params.range;
-    let (revision, content) = {
+    let snapshot = {
         let document = server.state.documents.get(uri)?;
-        (document.revision(), document.text_snapshot())
+        ActionSnapshot {
+            revision: document.revision(),
+            content: document.text_snapshot(),
+            #[cfg(feature = "native")]
+            version: document.version,
+        }
     };
+    let content = &snapshot.content;
     let context = OnceLock::new();
 
     let actions = if !features.lint {
@@ -30,11 +43,11 @@ pub(super) async fn code_actions(
     } else if crate::utils::is_jsx_path(uri.path()) {
         // `.jsx`/`.tsx`: surface the fixable Patina/JSX-compiler diagnostics.
         // Lint-based (parse-only), so not gated on `typeChecker.jsxTypecheck`.
-        crate::ide::JsxCodeActionService::code_actions(&content, uri, range)
+        crate::ide::JsxCodeActionService::code_actions(content, uri, range)
     } else {
         let ctx = context
             .get_or_init(|| {
-                let offset = position_to_offset(&content, range.start.line, range.start.character)?;
+                let offset = position_to_offset(content, range.start.line, range.start.character)?;
                 Some(IdeContext::with_content(
                     &server.state,
                     uri,
@@ -43,6 +56,25 @@ pub(super) async fn code_actions(
                 ))
             })
             .as_ref()?;
+        #[cfg(feature = "native")]
+        {
+            if server.state.supports_versioned_lint_edits() {
+                CodeActionService::code_actions_for_snapshot(
+                    ctx,
+                    range,
+                    &params.context.diagnostics,
+                    snapshot.revision,
+                    snapshot.version,
+                )
+            } else {
+                CodeActionService::code_actions_for_diagnostics(
+                    ctx,
+                    range,
+                    &params.context.diagnostics,
+                )
+            }
+        }
+        #[cfg(not(feature = "native"))]
         CodeActionService::code_actions_for_diagnostics(ctx, range, &params.context.diagnostics)
     };
 
@@ -54,7 +86,7 @@ pub(super) async fn code_actions(
             let ctx = context
                 .get_or_init(|| {
                     let offset =
-                        position_to_offset(&content, range.start.line, range.start.character)?;
+                        position_to_offset(content, range.start.line, range.start.character)?;
                     Some(IdeContext::with_content(
                         &server.state,
                         uri,
@@ -72,7 +104,7 @@ pub(super) async fn code_actions(
             let ctx = context
                 .get_or_init(|| {
                     let offset =
-                        position_to_offset(&content, range.start.line, range.start.character)?;
+                        position_to_offset(content, range.start.line, range.start.character)?;
                     Some(IdeContext::with_content(
                         &server.state,
                         uri,
@@ -86,7 +118,7 @@ pub(super) async fn code_actions(
         actions
     };
 
-    if server.state.documents.get(uri)?.revision() != revision {
+    if server.state.documents.get(uri)?.revision() != snapshot.revision {
         return None;
     }
 
@@ -169,6 +201,110 @@ fn code_action_kind_is_requested(kind: &CodeActionKind, requested: &[CodeActionK
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(feature = "native")]
+    #[test]
+    fn advertised_client_gets_the_actual_document_version_only_for_the_lint_fix() {
+        use tower_lsp::{
+            LspService,
+            lsp_types::{
+                ClientCapabilities, CodeActionContext, Diagnostic, PartialResultParams,
+                TextDocumentContentChangeEvent, TextDocumentIdentifier, Url,
+                WorkDoneProgressParams, WorkspaceClientCapabilities,
+                WorkspaceEditClientCapabilities,
+            },
+        };
+        const SOURCE: &str = include_str!(
+            "../../../../tests/_fixtures/differential/lsp/code-action-diagnostics/App.vue.txt"
+        );
+        const CONFIG: &str = include_str!(
+            "../../../../tests/_fixtures/differential/lsp/code-action-diagnostics/vize.config.json"
+        );
+        let reference: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../tests/_fixtures/differential/lsp/code-action-diagnostics/references.json"
+        ))
+        .unwrap();
+        let diagnostic: Diagnostic =
+            serde_json::from_value(reference["diagnostics"][1].clone()).unwrap();
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(
+            root.path().join("vite.config.mjs"),
+            vize_l0::cstr!("export default {{ vue: {} }};", CONFIG).as_bytes(),
+        )
+        .unwrap();
+        let (service, _socket) = LspService::new(MaestroServer::new);
+        let server = service.inner();
+        server.state.load_lsp_config(root.path());
+        server
+            .state
+            .apply_lsp_initialization_options(Some(&serde_json::json!({ "typecheck": false })));
+        let uri = Url::from_file_path(root.path().join("App.vue")).unwrap();
+        server
+            .state
+            .documents
+            .open(uri.clone(), SOURCE.into(), 7, "vue".into());
+        let params = CodeActionParams {
+            text_document: TextDocumentIdentifier { uri: uri.clone() },
+            range: diagnostic.range,
+            context: CodeActionContext {
+                diagnostics: vec![diagnostic.clone()],
+                ..Default::default()
+            },
+            work_done_progress_params: WorkDoneProgressParams::default(),
+            partial_result_params: PartialResultParams::default(),
+        };
+        let edits = serde_json::json!([{
+            "range": {"start":{"line":1,"character":2},"end":{"line":1,"character":23}},
+            "newText": "<img src=\"/logo.png\" />"
+        }]);
+        let expected = |versioned, version| {
+            let fix = if versioned {
+                serde_json::json!({"documentChanges":[{
+                    "textDocument":{"uri":uri,"version":version}, "edits":edits
+                }]})
+            } else {
+                serde_json::json!({"changes":{(uri.as_str()):edits}})
+            };
+            serde_json::json!([
+                {"title":"Fix: Use self-closing syntax","kind":"quickfix","diagnostics":[diagnostic],"edit":fix,"isPreferred":true},
+                {"title":"Suppress with @vize:forget (vue/html-self-closing)","kind":"quickfix","diagnostics":[diagnostic],"edit":{"changes":{(uri.as_str()):[{
+                    "range":{"start":{"line":1,"character":0},"end":{"line":1,"character":0}},
+                    "newText":"  <!-- @vize:forget vue/html-self-closing -->\n"
+                }]}},"isPreferred":false}
+            ])
+        };
+        for advertised in [None, Some(false), Some(true)] {
+            server
+                .state
+                .record_client_capabilities(&ClientCapabilities {
+                    workspace: Some(WorkspaceClientCapabilities {
+                        workspace_edit: Some(WorkspaceEditClientCapabilities {
+                            document_changes: advertised,
+                            ..Default::default()
+                        }),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                });
+            let response = futures::executor::block_on(code_actions(server, &params)).unwrap();
+            assert_eq!(
+                serde_json::to_value(response).unwrap(),
+                expected(advertised == Some(true), 7)
+            );
+            assert_eq!(server.state.documents.text(&uri).unwrap(), SOURCE);
+        }
+        assert!(server.state.documents.apply_changes(
+            &uri,
+            vec![TextDocumentContentChangeEvent {
+                range: None,
+                range_length: None,
+                text: SOURCE.into()
+            }],
+            8
+        ));
+        let response = futures::executor::block_on(code_actions(server, &params)).unwrap();
+        assert_eq!(serde_json::to_value(response).unwrap(), expected(true, 8));
+    }
 
     #[cfg(feature = "native")]
     #[test]

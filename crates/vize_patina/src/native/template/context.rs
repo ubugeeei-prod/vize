@@ -107,6 +107,36 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         Ok(())
     }
 
+    /// Report a checked whole attribute with an Error default. This grants no
+    /// raw range or foreign-owner authority; configured severity still wins.
+    ///
+    /// ```compile_fail
+    /// use vize_l0::Span;
+    /// use vize_patina::native::template::NativeTemplateLintContext;
+    /// fn raw(context: &mut NativeTemplateLintContext<'_, '_>) {
+    ///     context.error_attribute_with_help(Span::new(0, 1), "message", &[], "help");
+    /// }
+    /// ```
+    pub fn error_attribute_with_help(
+        &mut self,
+        attribute: &NativeTemplateAttribute<'_, 'a>,
+        message_key: &str,
+        variables: &[(&str, &str)],
+        help_key: &str,
+    ) -> Result<(), NativeTemplateLintRefusal> {
+        if !core::ptr::eq(attribute.original().component(), self.root.component()) {
+            return Err(NativeTemplateLintRefusal::SourceMismatch);
+        }
+        self.report_with_help(
+            Severity::Error,
+            attribute.range(),
+            message_key,
+            variables,
+            help_key,
+        );
+        Ok(())
+    }
+
     /// Report the complete checked opening of a genuine void/self-closing
     /// element. A caller's span, a foreign owner or a nonvoid extent cannot
     /// stand in for this original checked header.
@@ -274,12 +304,24 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         variables: &[(&str, &str)],
         help_key: &str,
     ) {
+        self.report_with_help(Severity::Warning, range, message_key, variables, help_key);
+    }
+
+    fn report_with_help(
+        &mut self,
+        default_severity: Severity,
+        range: Span,
+        message_key: &str,
+        variables: &[(&str, &str)],
+        help_key: &str,
+    ) {
         let mut diagnostic = LintDiagnostic::warn(
             self.current_rule,
             t_fmt(self.linter.locale, message_key, variables),
             range.start,
             range.end,
         );
+        diagnostic.severity = default_severity;
         diagnostic.help = self
             .linter
             .help_level

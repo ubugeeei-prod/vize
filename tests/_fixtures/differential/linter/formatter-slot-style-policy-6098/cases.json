@@ -1,0 +1,37 @@
+{
+  "schema": "vize.formatter-slot-style-policy-6098",
+  "source": {
+    "revision": "7ea42da746a0d6e40d8ab15cd201c2c0586afd6f",
+    "originalProducer": "699c512b2e8df3c69c2b3f957549a2287a33f372",
+    "originalPath": "tests/_fixtures/differential/linter/v-slot-style-options-6097/",
+    "originalSha256": "d7aaa8d98e874bdc395714317c76f4ca8804b7f95c431b1a2cdf195762159851",
+    "fixedSha256": "e0badc3ad6008fec63eb26e5545ea877e0d6692e31220b5551640dc8e3cff285"
+  },
+  "reference": {
+    "kind": "Existing #10241 whole configured inputs; new independent lint-fix verification by ordinary Actions",
+    "package": "eslint-plugin-vue",
+    "version": "10.9.2",
+    "ruleSourceSha256": "77c92649c9e16a0fe6228525524a7651ce8f811e64cb2eeebf3b7bcfd50f3866",
+    "fixedSha256": "e0badc3ad6008fec63eb26e5545ea877e0d6692e31220b5551640dc8e3cff285"
+  },
+  "config": {
+    "formatter": {
+      "normalizeDirectiveShorthands": true
+    },
+    "linter": {
+      "preset": "incremental",
+      "ruleOptions": {
+        "vue/v-slot-style": {
+          "atComponent": "longform",
+          "default": "v-slot",
+          "named": "longform"
+        }
+      },
+      "rules": {
+        "vue/v-slot-style": "error"
+      }
+    }
+  },
+  "expectedConflict": "normalizeDirectiveShorthands=true conflicts with an active vue/v-slot-style longform policy; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand/v-slot for the affected slot positions",
+  "scope": "New host-only normalization refusal; no historical issue-report oracle, standalone formatter golden, transport execution, native adapter or public-package credit."
+}

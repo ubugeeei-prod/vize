@@ -16,6 +16,7 @@ import {
 import type { Fixture, InstallReceipt, Recipe, ReleaseAuthority } from "./model.ts";
 import { bytes, object, sha256, text, wholeJson } from "./value.ts";
 import { discard, type Sink } from "./evidence.ts";
+import { checkCaseManagers } from "./input-state.ts";
 export async function installPublic(
   root: string,
   kind: InstallReceipt["kind"],
@@ -63,8 +64,9 @@ export async function installPublic(
   const host = hostFacts(),
     manager = managerFiles(root),
     lockRaw = readFileSync(join(root, "pnpm-lock.yaml"));
+  const installContextPath = join(output, `${kind}-install-context.json`);
   writeFileSync(
-    join(output, `${kind}-install-context.json`),
+    installContextPath,
     JSON.stringify(
       {
         root,
@@ -122,6 +124,8 @@ export async function installPublic(
     required,
     archiveCache,
     sink,
+    undefined,
+    { path: installContextPath, managerVersion: recipe.pnpm },
   );
   const packages = graph.packages;
   const probe = capture(
@@ -182,8 +186,8 @@ export async function installPublic(
     );
   return receipt;
 }
-export function recheckInstalled(receipt: InstallReceipt): void {
-  assert.deepEqual(managerFiles(receipt.root), receipt.managerFiles);
+export function recheckInstalled(receipt: InstallReceipt, expectedCaseManifest?: Buffer): void {
+  checkCaseManagers(receipt.managerFiles, managerFiles(receipt.root), expectedCaseManifest);
   assert.deepEqual(hostFacts(), receipt.host);
   for (const row of receipt.declaredOptionalNotInstalled) {
     validateOptionalAbsence(

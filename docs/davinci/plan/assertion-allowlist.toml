@@ -213,7 +213,6 @@ paths = [
   "crates/vize_glyph/tests/template_literal_interpolation.rs",
   "crates/vize_glyph/tests/template_runtime_semantics.rs",
   "crates/vize_glyph/tests/template_suppression_line.rs",
-  "crates/vize_maestro/src/ide/code_action.rs",
   "crates/vize_maestro/src/ide/completion/items.rs",
   "crates/vize_maestro/src/ide/completion/template/component_docs.rs",
   "crates/vize_maestro/src/ide/corsa_support/html_tag.rs",

@@ -1,0 +1,1 @@
+<template><div @click="read('&lt; &amp;quot;')"></div></template>
