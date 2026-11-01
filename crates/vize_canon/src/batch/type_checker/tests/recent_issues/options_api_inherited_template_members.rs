@@ -11,6 +11,15 @@ use vize_l0::{String, cstr};
 
 mod receiver_controls;
 
+/// The source receipts live in the runner capture directory, outside this
+/// unique project. Unwinding must not leave scratch project state behind.
+struct ProjectCleanup<'a>(&'a std::path::Path);
+impl Drop for ProjectCleanup<'_> {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(self.0);
+    }
+}
+
 const FILES: [(&str, &str); 6] = [
     (
         "src/base.ts",
@@ -66,6 +75,7 @@ fn inherited_template_members_are_checked_with_their_declared_types() {
         return;
     };
     let project_root = create_project_case("options-api-inherited-template-members", &FILES);
+    let _cleanup = ProjectCleanup(&project_root);
     let mut checker = BatchTypeChecker::with_options_and_corsa_path(
         &project_root,
         BatchTypeCheckerOptions::default(),
@@ -260,6 +270,7 @@ export default defineComponent({ mixins: [shared], data() { return { payload: { 
 "#;
     let files = [FILES[0], FILES[1], ("src/Shadow.vue", source), FILES[5]];
     let root = create_project_case("options-api-authored-member-type-shadow", &files);
+    let _cleanup = ProjectCleanup(&root);
     let mut checker = BatchTypeChecker::with_options_and_corsa_path(
         &root,
         BatchTypeCheckerOptions::default(),
@@ -326,6 +337,7 @@ fn inherited_method_explicit_this_keeps_valid_calls_clean() {
         FILES[5],
     ];
     let root = create_project_case("options-api-inherited-explicit-this", &files);
+    let _cleanup = ProjectCleanup(&root);
     let mut checker = BatchTypeChecker::with_options_and_corsa_path(
         &root,
         BatchTypeCheckerOptions::default(),

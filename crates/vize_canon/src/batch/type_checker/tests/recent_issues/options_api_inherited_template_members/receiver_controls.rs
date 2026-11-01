@@ -2,6 +2,11 @@
 use super::*;
 
 pub(super) fn shared_with_receiver_methods() -> String {
+    assert_eq!(
+        FILES[1].1.matches("greet(name: string)").count(),
+        1,
+        "the original explicit-this fixture edit must apply exactly once"
+    );
     let overloads = "function overloaded(this: { currentDevice: string }, value: string): string;\nfunction overloaded(this: { currentDevice: string }, value: number): number;\nfunction overloaded(this: { currentDevice: string }, value: string | number): string | number { return value; }\n";
     FILES[1].1.replace("export const shared", &cstr!("{overloads}export const shared"))
         .replace("methods: {", "methods: {\n    overloaded,\n    identity<T>(this: { currentDevice: string }, value: T): T { return value; },")
@@ -29,6 +34,14 @@ fn portable_negative(message: &str) -> String {
 
 #[test]
 fn absent_call_generic_argument_and_wrong_receiver_keep_their_complete_errors() {
+    // Expected before observing results; only the preauthenticated controller
+    // may select the supplemental provider. Unknown roles never run a case.
+    let expected_exit = match std::env::var("VIZE_TEST_INHERITED_PROVIDER_ROLE") {
+        Err(std::env::VarError::NotPresent) => 1,
+        Ok(role) if role == "a183-ts7.1" => 2,
+        _ => panic!("unknown inherited-provider source role"),
+    };
+
     let Some(native) = resolve_test_tsgo_binary() else {
         assert!(
             std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
@@ -75,6 +88,7 @@ fn absent_call_generic_argument_and_wrong_receiver_keep_their_complete_errors() 
             FILES[5],
         ];
         let root = create_project_case(label, &files);
+        let _cleanup = ProjectCleanup(&root);
         let mut checker = BatchTypeChecker::with_options_and_corsa_path(
             &root,
             BatchTypeCheckerOptions::default(),
@@ -90,7 +104,7 @@ fn absent_call_generic_argument_and_wrong_receiver_keep_their_complete_errors() 
             "diagnostics":result.diagnostics.iter().map(|d|serde_json::json!({
                 "file":d.file,"line":d.line,"column":d.column,"code":d.code,"severity":d.severity,
                 "message":portable_negative(&d.message),"blockType":d.block_type.as_ref().map(|b|cstr!("{b:?}"))})).collect::<Vec<_>>()});
-        let expected = serde_json::json!({"exitCode":1,"success":false,"diagnostics":[{
+        let expected = serde_json::json!({"exitCode":expected_exit,"success":false,"diagnostics":[{
             "file":root.join("src/Negative.vue"),"line":1,"column":if code==2345 { 25 } else { 8 },
             "code":code,"severity":1,"message":message,"blockType":"Template"}]});
         records.push((label, actual, expected));

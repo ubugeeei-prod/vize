@@ -205,6 +205,19 @@ fn original_inherited_options_cli_keeps_errors_repair_restore_and_authored_types
     let Some(native) = corsa_requirement::required_or_skip(corsa_path::resolve(workspace)) else {
         return;
     };
+    // Check the edit before launching any case, so fixture drift cannot leave
+    // earlier command observations unpersisted or silently remove this control.
+    assert_eq!(SHARED.matches("greet(name: string)").count(), 1);
+    assert_eq!(
+        SHARED
+            .replace(
+                "greet(name: string)",
+                "greet(this: { currentDevice: string }, name: string)"
+            )
+            .matches("greet(this: { currentDevice: string }, name: string)")
+            .count(),
+        1
+    );
     let modules = workspace.join("tests/node_modules");
     let vue_path = modules
         .join("vue/package.json")
