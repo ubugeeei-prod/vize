@@ -3,6 +3,10 @@
 use super::*;
 use crate::lsp_client::CorsaProjectClient;
 
+// Typechecking only: this expression is never executed and remains boolean, not literal true.
+const PRODUCTION_NEXT: &str =
+    "export const answer: boolean = Math.random() > 0.5;\nanswer.valueOf();\n";
+
 fn publish(client: &mut CorsaProjectClient, a: Option<(&str, &str)>, b: Option<(&str, &str)>) {
     let desired = union(a, b).unwrap();
     let previous = client.document_texts.keys().cloned().collect::<Vec<_>>();
@@ -171,7 +175,11 @@ fn native_two_config_shared_owner_uses_production_editor_fallback() {
         &production_packet(&mut client, "production-b-after-a-repair", &b_uri, &b, 6),
         &b_before,
     );
-    publish(&mut client, Some((&a_uri, A_NEXT)), Some((&b_uri, B_GOOD)));
+    publish(
+        &mut client,
+        Some((&a_uri, PRODUCTION_NEXT)),
+        Some((&b_uri, B_GOOD)),
+    );
     let current = production_packet(&mut client, "production-current-boolean", &a_uri, &a, 7);
     assert_diagnostics(&current, clean());
     assert_eq!(
