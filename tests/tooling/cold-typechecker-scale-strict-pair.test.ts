@@ -193,6 +193,35 @@ test("paired dispatch is isolated and the complete full-default job remains byte
   assert(after.includes("npm ci --ignore-scripts --no-audit --no-fund"));
   assert(after.includes('[[ "$BASE_SHA" == ec8474e0ea9ed05062542c57c857f36b9467ac15 ]]'));
   assert(after.includes('[[ "$HEAD_SHA" == d2579c761944c5a1480f74443188bb4ba10c3913 ]]'));
+  const fetch =
+    '          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA" a193c99c824b54fbe7e900bb88a19f549cd25ea7';
+  const pure =
+    "          node --test tests/tooling/cold-typechecker-scale-native-forward.test.ts tests/tooling/cold-typechecker-scale-paired.test.ts tests/tooling/cold-typechecker-scale-strict-pair.test.ts";
+  const verifyOracleFetch = (workflow: string) => {
+    const job = workflow.slice(
+      workflow.indexOf("  paired-comparison:\n"),
+      workflow.indexOf("  profile:\n"),
+    );
+    assert.deepEqual(
+      job.split("\n").filter((line) => line.trimStart().startsWith("git fetch ")),
+      [fetch],
+    );
+    assert.deepEqual(
+      job.split("\n").filter((line) => line.trimStart().startsWith("node --test ")),
+      [pure],
+    );
+    assert(
+      job.indexOf(fetch) < job.indexOf(pure),
+      "fetch the unchanged historical oracle before its test",
+    );
+  };
+  verifyOracleFetch(after);
+  for (const changed of [
+    after.replace(fetch, fetch.replace(" a193c99c824b54fbe7e900bb88a19f549cd25ea7", "")),
+    after.replace(fetch, fetch.replace("a193c99c824b54fbe7e900bb88a19f549cd25ea7", "a".repeat(40))),
+    after.replace(fetch + "\n", "").replace(pure, pure + "\n" + fetch),
+  ])
+    assert.throws(() => verifyOracleFetch(changed));
 });
 
 test("affinity and RSS controls retain sparse CPU sets and explicit GNU-time scope", () => {
