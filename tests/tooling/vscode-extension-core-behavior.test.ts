@@ -375,3 +375,90 @@ test("vscode typecheck timeout reaches initialization without enabling any featu
     );
   }
 });
+
+test("vscode closed-context policy has a separate false window default", () => {
+  const manifest = readJson<{
+    contributes: { configuration: { properties: Record<string, unknown> } };
+  }>("editors/vscode/package.json");
+  const property = manifest.contributes.configuration.properties[
+    "vize.memory.releaseClosedProjectContexts"
+  ] as { type: string; default: boolean; scope: string };
+  assert.equal(property.type, "boolean");
+  assert.equal(property.default, false);
+  assert.equal(property.scope, "window");
+  const key = "memory.releaseClosedProjectContexts";
+  assert.ok(!(FEATURE_SETTING_KEYS as readonly string[]).includes(key));
+  assert.ok(!LINT_ONLY_CONFIGURATION_UPDATES.some(([name]) => name === key));
+  for (const value of [false, true]) {
+    const config = new FakeConfig({ [key]: value });
+    assert.equal(shouldStartFromConfiguration(config), false);
+    assert.equal(hasAnyEnabledCapability(config), false);
+    assert.equal(hasAnyExplicitCapabilityValue(config), false);
+    assert.deepEqual(getInitializationOptions(config), { releaseClosedProjectContexts: value });
+  }
+});
+
+test("vscode explicit lifecycle booleans preserve recommended and workspace profiles", () => {
+  const key = "memory.releaseClosedProjectContexts";
+  for (const scope of ["global", "workspace"] as const)
+    for (const value of [false, true]) {
+      const config = new FakeConfig({ enable: true, [key]: value }, { [key]: scope });
+      assert.deepEqual(getInitializationOptions(config), {
+        lint: true,
+        typecheck: true,
+        editor: true,
+        ecosystem: true,
+        releaseClosedProjectContexts: value,
+      });
+      assert.deepEqual(getInitializationOptions(config, { hasWorkspaceLspConfig: true }), {
+        releaseClosedProjectContexts: value,
+      });
+      assert.deepEqual(
+        getInitializationOptions(
+          new FakeConfig({ enable: true, "hover.enable": false, [key]: value }),
+        ),
+        { hover: false, releaseClosedProjectContexts: value },
+      );
+    }
+  const effectiveFalse: VizeConfigurationLike = {
+    get: <T>(key: string, fallback: T): T =>
+      (key === "memory.releaseClosedProjectContexts" ? false : fallback) as T,
+    inspect: <T>(key: string) =>
+      key === "memory.releaseClosedProjectContexts"
+        ? { globalValue: true as T, workspaceValue: false as T }
+        : undefined,
+  };
+  assert.deepEqual(getInitializationOptions(effectiveFalse), {
+    releaseClosedProjectContexts: false,
+  });
+});
+
+test("vscode absent and invalid lifecycle values never enter initialization", () => {
+  assert.deepEqual(getInitializationOptions(new FakeConfig({})), {});
+  for (const value of [undefined, null, "true", "false", "", 0, 1, {}, []]) {
+    assert.deepEqual(
+      getInitializationOptions(new FakeConfig({ "memory.releaseClosedProjectContexts": value })),
+      {},
+    );
+    assert.deepEqual(
+      getInitializationOptions(
+        new FakeConfig({ enable: true, "memory.releaseClosedProjectContexts": value }),
+      ),
+      { lint: true, typecheck: true, editor: true, ecosystem: true },
+    );
+  }
+});
+
+test("vscode lifecycle display retains whole capability defaults and unknown features", () => {
+  for (const value of [false, true]) {
+    const options = { releaseClosedProjectContexts: value };
+    assert.equal(describeCapabilities(options), "none");
+    assert.equal(describeCapabilities(options, true), "workspace configuration and defaults");
+    assert.equal(
+      describeCapabilities({ ...options, hover: true, unknownFutureFeature: true }, true),
+      "hover, unknownFutureFeature",
+    );
+    assert.equal(describeCapabilities({ ...options, typecheckTimeoutMs: 180000 }, true), "none");
+    assert.deepEqual(options, { releaseClosedProjectContexts: value });
+  }
+});

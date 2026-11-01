@@ -5,6 +5,8 @@
     reason = "project owners share buffers and protocol consumers require std String"
 )]
 
+#[cfg(feature = "native")]
+mod closed;
 mod structural_navigation;
 mod uri_snapshot;
 

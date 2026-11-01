@@ -63,9 +63,7 @@ export class WorkspaceLspConfigDiscovery {
   }
 
   describeCapabilities(options: LspInitializationOptions): string {
-    return Object.keys(options).length === 0 && this.hasConfig
-      ? "workspace configuration and defaults"
-      : describeCapabilities(options);
+    return describeCapabilities(options, this.hasConfig);
   }
 
   watch(onChange: (reason: string) => void): Disposable[] {

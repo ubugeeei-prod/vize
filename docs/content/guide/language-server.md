@@ -16,25 +16,25 @@ with completion and navigation for `.vue` and Musea `.art.vue` files.
 
 ## Features
 
-| Area        | What you get                                                                                   |
-| ----------- | ---------------------------------------------------------------------------------------------- |
+| Area        | What you get                                                                                        |
+| ----------- | --------------------------------------------------------------------------------------------------- |
 | Diagnostics | [Lint rules](../rules/index.md) and [type errors](./type-checking.md) as you type, with quick fixes |
-| Completion  | Components, props, events, directives, and script bindings in templates                        |
-| Navigation  | Hover, go to definition, find references, document and workspace symbols                       |
-| Editing     | Rename, file rename updates, signature help, inlay hints, auto-insert, folding                 |
-| Formatting  | [Vize formatter](./formatter.md) for `.vue` files                                              |
-| Ecosystem   | Vue Router route names and params, Vue I18n keys, Nuxt, and Void Vue helpers                   |
+| Completion  | Components, props, events, directives, and script bindings in templates                             |
+| Navigation  | Hover, go to definition, find references, document and workspace symbols                            |
+| Editing     | Rename, file rename updates, signature help, inlay hints, auto-insert, folding                      |
+| Formatting  | [Vize formatter](./formatter.md) for `.vue` files                                                   |
+| Ecosystem   | Vue Router route names and params, Vue I18n keys, Nuxt, and Void Vue helpers                        |
 
 ## Profiles
 
 Every editor integration starts the same server with one of three profiles. Choose by who owns Vue
 language features in your editor:
 
-| Profile       | Turns on                                  | Use it when                                              |
-| ------------- | ----------------------------------------- | -------------------------------------------------------- |
-| `recommended` | lint, type checking, editor features, ecosystem | Vize is your only Vue language server              |
-| `lint`        | lint diagnostics only                     | You keep Vue - Official for types, completion, and navigation |
-| `off`         | nothing                                   | You want to switch Vize off without uninstalling it      |
+| Profile       | Turns on                                        | Use it when                                                   |
+| ------------- | ----------------------------------------------- | ------------------------------------------------------------- |
+| `recommended` | lint, type checking, editor features, ecosystem | Vize is your only Vue language server                         |
+| `lint`        | lint diagnostics only                           | You keep Vue - Official for types, completion, and navigation |
+| `off`         | nothing                                         | You want to switch Vize off without uninstalling it           |
 
 You can also enable single features, for example only `hover` and `references`. Each editor
 section below shows where those switches go.
@@ -66,6 +66,23 @@ Open a `.vue` file and accept the setup prompt, or run **Vize: Show Status** to 
 In a Vite+ project, `vp run editor:setup` writes the workspace settings for you; see
 [Vite+ editor setup](./vite-plus-editor.md). Every setting and command is listed in
 [VS Code](../integrations/vscode.md).
+
+To reduce retained RAM in multi-project sessions, you can opt in to releasing cached non-primary
+project contexts after all Vize-managed documents close:
+
+```json
+{ "vize.memory.releaseClosedProjectContexts": true }
+```
+
+The default is `false`, retaining warm contexts. Reopening can require initialization again.
+Active requests and workers drain naturally, so this does not guarantee an immediate RSS drop.
+Changing the setting restarts Vize.
+
+In the trace-enabled, eight-context [source-release check](https://github.com/ubugeeei-prod/vize/actions/runs/41349101847),
+the interval from enqueueing all reopens through the last query pair was 1064.655/1065.306 ms
+with retention and 1182.279/1175.012 ms with release (two sessions per source). One release-side reopened query
+pair took 123.428 ms. These observations include tracing and initialization work; they are not
+shipping query-latency estimates or a general tail bound.
 
 ## Zed
 
@@ -169,12 +186,12 @@ also report Rust allocation counts and requested bytes. Ordinary builds report
 `allocation: null`; allocator totals do not include the TypeScript child process
 and are separate from process-tree RSS.
 
-| Symptom                                    | Check                                                                          |
-| ------------------------------------------ | ------------------------------------------------------------------------------ |
-| No diagnostics at all                      | The profile is `off`, or no feature is enabled. In VS Code run **Vize: Show Status** |
-| The same type error appears twice          | Vue - Official also checks types. Use the `lint` profile or disable one of them |
-| Globals such as `$t` are reported missing  | The declaration file is outside `tsconfig.json` `include`; see [Type checking](./type-checking.md#global-types-and-auto-imports) |
-| The server does not start                  | `vize --version` fails in the editor's environment. Set the full binary path   |
+| Symptom                                   | Check                                                                                                                            |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| No diagnostics at all                     | The profile is `off`, or no feature is enabled. In VS Code run **Vize: Show Status**                                             |
+| The same type error appears twice         | Vue - Official also checks types. Use the `lint` profile or disable one of them                                                  |
+| Globals such as `$t` are reported missing | The declaration file is outside `tsconfig.json` `include`; see [Type checking](./type-checking.md#global-types-and-auto-imports) |
+| The server does not start                 | `vize --version` fails in the editor's environment. Set the full binary path                                                     |
 
 Start the server with `--debug`, or use **Vize: Show Output Channel** in VS Code, and include the
 log when you [report a problem](./testing.md).
