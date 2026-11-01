@@ -3,6 +3,7 @@ import { getRuleOptions } from "./rule-options.js";
 import { vOnEventHyphenationSchema } from "./v-on-event-options.js";
 import { attributeHyphenationSchema } from "./attribute-options.js";
 import { propNameCasingSchema } from "./prop-name-options.js";
+import { componentNameCasingSchema } from "./component-name-options.js";
 import { collectActiveRule, getActiveRuleDiagnostics } from "./active-rule-collection.js";
 
 import { getPatinaRules } from "./binding.js";
@@ -154,23 +155,12 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
   });
 }
 
-function ruleOptionsSchema(ruleName: string): unknown[] {
+function ruleOptionsSchema(ruleName: string): unknown[] | Record<string, unknown> {
   switch (ruleName) {
     case "vue/prop-name-casing":
       return [propNameCasingSchema()];
     case "vue/component-name-in-template-casing":
-      return [
-        {
-          oneOf: [
-            { enum: ["PascalCase", "kebab-case"] },
-            objectSchema({
-              casing: { enum: ["PascalCase", "kebab-case"] },
-              registeredComponentsOnly: { type: "boolean" },
-              globals: stringArraySchema(),
-            }),
-          ],
-        },
-      ];
+      return componentNameCasingSchema();
     case "script/custom-event-name-casing":
       return [
         {
