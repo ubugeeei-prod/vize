@@ -4,45 +4,53 @@ use tower_lsp::lsp_types::Url;
 
 use super::MaestroServer;
 use crate::ide::{IdeContext, prepare_canonical_virtual_document};
+use crate::server::state::CorsaRequestStamp;
 
 impl MaestroServer {
-    pub(super) async fn prepare_initial_native_document(&self, uri: &Url, version: i32) {
+    pub(super) async fn prepare_initial_native_document(
+        &self,
+        uri: &Url,
+        version: i32,
+    ) -> Option<CorsaRequestStamp> {
         if !self.state.is_lsp_typecheck_enabled()
             || self.state.project_context_retired()
             || self.state.documents.version(uri) != Some(version)
             || !uri.path().ends_with(".vue")
             || uri.path().ends_with(".art.vue")
         {
-            return;
+            return None;
         }
         let Some(scope) = self.state.try_corsa_request_scope() else {
-            return;
+            return None;
         };
         if !scope.is_current() {
-            return;
+            return None;
         }
         let Some(ctx) = IdeContext::new(&self.state, uri, 0) else {
-            return;
+            return None;
         };
         tracing::info!("preparing initial native project for {uri} version {version}");
         let Some(bridge) = self.state.get_corsa_bridge().await else {
-            return;
+            return None;
         };
         if !scope.is_current() || self.state.documents.version(uri) != Some(version) {
-            return;
+            return None;
         }
         // Both configured-project attestations and normal mirror ownership run
         // unchanged. This opens no diagnostic query and publishes no result.
         match prepare_canonical_virtual_document(&ctx, &bridge).await {
             Ok(true) => {}
-            Ok(false) => return,
+            Ok(false) => return None,
             Err(error) => {
                 tracing::debug!("initial native preparation deferred after {error}");
-                return;
+                return None;
             }
         }
         if scope.is_current() && self.state.documents.version(uri) == Some(version) {
             tracing::info!("prepared initial native project for {uri} version {version}");
+            Some(scope.stamp())
+        } else {
+            None
         }
     }
 }
@@ -80,9 +88,15 @@ mod tests {
                 } else {
                     None
                 };
-                server
-                    .prepare_initial_native_document(&uri, if control == "stale" { 1 } else { 2 })
-                    .await;
+                assert!(
+                    server
+                        .prepare_initial_native_document(
+                            &uri,
+                            if control == "stale" { 1 } else { 2 }
+                        )
+                        .await
+                        .is_none()
+                );
             });
             assert!(
                 !server.state.has_corsa_bridge(),
