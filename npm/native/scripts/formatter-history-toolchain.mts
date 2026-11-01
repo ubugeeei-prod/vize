@@ -24,8 +24,6 @@ const wrapperKeys = [
   "RUSTC_WORKSPACE_WRAPPER",
   "CARGO_BUILD_RUSTC_WRAPPER",
   "CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER",
-  "LD_PRELOAD",
-  "LD_AUDIT",
 ] as const;
 const hash = (body: Uint8Array) => createHash("sha256").update(body).digest("hex");
 const bytes = (body: Buffer) => ({ base64: body.toString("base64"), sha256: hash(body) });
@@ -187,7 +185,7 @@ export function prepareNativeHistoryToolchain(nativeDir: string, environment: No
       RUSTC: before.rustc.realpath,
       PATH: `${path.dirname(before.cargo.realpath)}${path.delimiter}${environment.PATH ?? ""}`,
     };
-    const pinned = { ...environment, ...buildEnvironment };
+    const pinned: NodeJS.ProcessEnv = { ...environment, ...buildEnvironment };
     const versions = {
       rustc: version(before.rustc, ["-Vv"], cwd, pinned),
       cargo: version(before.cargo, ["-V"], cwd, pinned),
@@ -254,15 +252,23 @@ export function validateNativeHistoryToolchain(nativeDir: string, value: unknown
     assert(value.ambient[key] === null || typeof value.ambient[key] === "string");
   const ambientPath = value.ambient.PATH;
   assert(ambientPath === null || typeof ambientPath === "string");
-  for (const key of wrapperKeys) {
-    assert(!value.ambient[key], `unqualified producer wrapper: ${key}`);
-    assert(!process.env[key], `unqualified observer wrapper: ${key}`);
-  }
   const cwd = value.cwd as string;
-  const observed: Record<string, unknown> = { phase, pid: process.pid, cwd };
+  const versionEnvironment = { ...process.env, ...value.buildEnvironment } as NodeJS.ProcessEnv;
+  const observed: Record<string, unknown> = {
+    phase,
+    pid: process.pid,
+    cwd,
+    observerEnvironment: environmentSelection(process.env),
+    versionEnvironment: environmentSelection(versionEnvironment),
+  };
   const ordinal = ++observation;
   const persist = () => write(nativeDir, `observation-${process.pid}-${ordinal}.json`, observed);
   try {
+    persist();
+    for (const key of wrapperKeys) {
+      assert(!value.ambient[key], `unqualified producer wrapper: ${key}`);
+      assert(!process.env[key], `unqualified observer wrapper: ${key}`);
+    }
     assert(typeof value.rustup.path === "string");
     assert.deepEqual(nativeHistoryToolImage(value.rustup.path, cwd), value.rustup);
     for (const tool of ["rustc", "cargo"] as const) {
@@ -302,8 +308,12 @@ export function validateNativeHistoryToolchain(nativeDir: string, value: unknown
         tool === "rustc" ? "-Vv" : "-V",
       ]);
       assert.equal(oldVersion.cwd, cwd);
-      const environment = { ...process.env, ...value.buildEnvironment } as NodeJS.ProcessEnv;
-      versions[tool] = version(actual[tool], tool === "rustc" ? ["-Vv"] : ["-V"], cwd, environment);
+      versions[tool] = version(
+        actual[tool],
+        tool === "rustc" ? ["-Vv"] : ["-V"],
+        cwd,
+        versionEnvironment,
+      );
       observed.versions = versions;
       persist();
       assert.equal(

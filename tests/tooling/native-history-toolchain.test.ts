@@ -138,7 +138,11 @@ void test("real toolchain admission binds producer cwd, actual NAPI/metadata env
 
 void test("custom wrapper selections fail closed and retain the actual requested environment", (context) => {
   const f = fixture(context);
-  for (const key of ["RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "LD_PRELOAD"] as const) {
+  for (const key of [
+    "RUSTC_WRAPPER",
+    "RUSTC_WORKSPACE_WRAPPER",
+    "CARGO_BUILD_RUSTC_WRAPPER",
+  ] as const) {
     assert.throws(
       () =>
         prepareNativeHistoryToolchain(f.nativeDir, {
@@ -153,6 +157,37 @@ void test("custom wrapper selections fail closed and retain the actual requested
     assert(packet.error);
   }
   assert.equal(f.calls.length, 0);
+});
+
+void test("inherited loader environment is retained in actual version requests and whole observations", (context) => {
+  const f = fixture(context);
+  const preload = f.image(
+    path.join(f.root, "authored-loader.so"),
+    "authored loader; never executed",
+  );
+  const environment = { ...f.environment, LD_PRELOAD: preload, LD_AUDIT: preload };
+  const selected = prepareNativeHistoryToolchain(f.nativeDir, environment);
+  assert.equal(selected.environment.LD_PRELOAD, preload);
+  assert.equal(selected.environment.LD_AUDIT, preload);
+  const previous = { LD_PRELOAD: process.env.LD_PRELOAD, LD_AUDIT: process.env.LD_AUDIT };
+  context.after(() => {
+    for (const key of ["LD_PRELOAD", "LD_AUDIT"] as const) {
+      if (previous[key] === undefined) delete process.env[key];
+      else process.env[key] = previous[key];
+    }
+  });
+  process.env.LD_PRELOAD = preload;
+  process.env.LD_AUDIT = preload;
+  validateNativeHistoryToolchain(f.nativeDir, selected.provider, "consumer");
+  const observation = f.packets().find(({ body }) => body.phase === "consumer")?.body;
+  assert(observation);
+  assert.equal((observation.observerEnvironment as NodeJS.ProcessEnv).LD_PRELOAD, preload);
+  assert.equal((observation.versionEnvironment as NodeJS.ProcessEnv).LD_AUDIT, preload);
+  assert(
+    f.calls.every(
+      ({ environment: actual }) => actual.LD_PRELOAD === preload && actual.LD_AUDIT === preload,
+    ),
+  );
 });
 
 void test("a same-reply custom executable cannot replace the real selected compiler or Cargo", (context) => {
