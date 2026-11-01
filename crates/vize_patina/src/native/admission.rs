@@ -153,8 +153,9 @@ fn walk<'o, 'a>(
                         }
                         Ok(())
                     };
-                    let (receipt, opening) = if profile == NativeTemplateAttributeProfile::Bindings
-                    {
+                    let (receipt, opening) = if profile == NativeTemplateAttributeProfile::Events {
+                        header_rules::inspect_events(&element, visit)?
+                    } else if profile == NativeTemplateAttributeProfile::Bindings {
                         header_rules::inspect_checked::<true>(&element, visit)?
                     } else {
                         header_rules::inspect_checked::<false>(&element, visit)?

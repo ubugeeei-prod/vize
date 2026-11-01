@@ -118,7 +118,7 @@ impl NativeTemplateRule for FormControlHasLabel {
                 }
                 // Dynamic argument expressions have no authenticated label
                 // name here; do not turn an unknown runtime binding clean.
-                Kind::DynamicBind { .. } => {
+                Kind::DynamicBind { .. } | Kind::On { .. } => {
                     return Err(Refusal::UnsupportedAttribute {
                         span: attribute.range(),
                     });

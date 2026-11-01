@@ -310,6 +310,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // whose complete Relief/L2 facade comparison contributes four trace lines.
     // The nineteen original attribute tests only move to their owning leaf;
     // their unchanged calls and literal sources remain in the same scan.
+    // Native numeric modifier pairs, applied fixes and refusal controls add
+    // five nonliteral legacy calls; full source-unit observations execute
+    // without adding a literal fixture or original history coordinate.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -323,7 +326,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 7
         + 3
         + 3
-        + 8,
+        + 8
+        + 5,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -343,7 +347,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 7
         + 3
         + 3
-        + 7,
+        + 7
+        + 5,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42 + 4,
     restructured: 0,

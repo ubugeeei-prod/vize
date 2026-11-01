@@ -53,7 +53,7 @@ impl NativeTemplateRule for PlaceholderLabelOption {
                         _ => {}
                     }
                 }
-                Kind::Bind { .. } | Kind::DynamicBind { .. } => {
+                Kind::Bind { .. } | Kind::DynamicBind { .. } | Kind::On { .. } => {
                     return Err(Refusal::UnsupportedAttribute {
                         span: attribute.range(),
                     });

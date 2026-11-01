@@ -37,6 +37,11 @@ impl NativeTemplateRule for NoAutofocus {
             let name = match attribute.kind() {
                 Kind::Static { name, .. } | Kind::Bind { name, .. } => name,
                 Kind::DynamicBind { .. } => continue,
+                Kind::On { .. } => {
+                    return Err(Refusal::UnsupportedAttribute {
+                        span: attribute.range(),
+                    });
+                }
             };
             if name == "autofocus" {
                 context.warn_attribute_with_help(

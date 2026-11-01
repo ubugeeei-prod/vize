@@ -15,7 +15,9 @@ mod element;
 mod option;
 mod owner;
 
-pub use context::NativeTemplateLintContext;
+pub use context::{
+    NativeTemplateEventModifier, NativeTemplateEventModifiers, NativeTemplateLintContext,
+};
 pub use element::{NativeTemplateAttribute, NativeTemplateAttributeKind, NativeTemplateElement};
 pub(in crate::native) use option::NativeFirstOptionData;
 pub use option::{NativeTemplateFirstOption, NativeTemplateOptionValue};
@@ -33,12 +35,15 @@ pub enum NativeTemplateAttributeProfile {
     /// Original component lexer errors still refuse before any callback;
     /// this says nothing about JavaScript validity or runtime argument names.
     Bindings,
+    /// Static original event arguments and their exact checked modifier text.
+    /// This does not grant bindings, dynamic arguments or expression validity.
+    Events,
 }
 
 impl NativeTemplateAttributeProfile {
     pub(super) fn intersect(self, other: Self) -> Self {
-        if self == Self::Bindings && other == Self::Bindings {
-            Self::Bindings
+        if self == other {
+            self
         } else {
             Self::StaticOnly
         }
