@@ -59,9 +59,8 @@ export const pathHostCallers: Record<string, readonly [number, number, number, n
   "crates/vize_canon/src/batch/virtual_project/content_mapper/typed_router_profile_tests.rs": [
     0, 1, 0, 0,
   ],
-  "crates/vize_canon/src/batch/type_checker/tests/recent_issues/constructor_vue_return_consumer.rs": [
-    0, 1, 0, 0,
-  ],
+  "crates/vize_canon/src/batch/type_checker/tests/recent_issues/constructor_vue_return_consumer.rs":
+    [0, 1, 0, 0],
   "crates/vize_canon/src/batch/type_checker/tests/recent_issues/css_side_effect_import.rs": [
     0, 1, 0, 0,
   ],
