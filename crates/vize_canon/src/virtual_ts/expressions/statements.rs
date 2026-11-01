@@ -5,10 +5,11 @@
 //! control-flow emitter in [`super::vif_chain`].
 
 use super::super::types::VizeMapping;
+use super::binding_mapping::BindingSource;
 use super::component_ref_callbacks::generate_component_ref_callback_statement;
 use super::directive_values::generate_directive_value_statement;
 use super::native_props::generate_native_prop_statement;
-use super::reserved_props::{map_rewritten_template_binding, rewrite_reserved_template_binding};
+use super::reserved_props::{map_rewritten_binding_source, rewrite_reserved_template_binding};
 use super::statement_guard::generate_vif_guard_expression;
 use super::ts_suppression_comments::expression_source_for_typecheck;
 use super::value_checks::TemplateValueChecks;
@@ -21,6 +22,7 @@ use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use std::borrow::Cow;
 use vize_carton::{CompactString, FxHashSet, String, append, cstr, profile};
 use vize_croquis::croquis::{TemplateExpression, TemplateExpressionKind};
+use vize_croquis::drawer::strip_js_comments_with_offsets;
 
 /// Generate template expressions, compacting recognized v-if chains into
 /// TypeScript control-flow blocks.
@@ -231,14 +233,34 @@ pub(super) fn generate_expression_statement(
     }
     if !template_binding_access.is_empty() {
         let expression = expression_source_for_typecheck(expr.content.as_str());
+        // The same stripped text was emitted above. Retain its original byte
+        // offsets rather than treating removed comments as affine source bytes.
+        // Borrowed suppression comments remain identity input, as before.
+        let (expression, offsets) = if matches!(expression, Cow::Owned(_)) {
+            strip_js_comments_with_offsets(expr.content.as_str())
+        } else {
+            (expression, None)
+        };
         let trimmed = expression.trim();
         let leading = expression.len() - expression.trim_start().len();
-        map_rewritten_template_binding(
+        let authored_start = (template_offset + expr.start) as usize;
+        let (start, offsets) = if let Some(offsets) = offsets.as_deref() {
+            let Some(offsets) = offsets.get(leading..leading + trimmed.len()) else {
+                return;
+            };
+            (authored_start, Some(offsets))
+        } else {
+            (authored_start + leading, None)
+        };
+        map_rewritten_binding_source(
             ts,
             mappings,
-            generated_start,
-            (template_offset + expr.start) as usize + leading,
-            trimmed,
+            generated_start..ts.len(),
+            BindingSource {
+                expression: trimmed,
+                start,
+                offsets,
+            },
             template_binding_access,
         );
     }

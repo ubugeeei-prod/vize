@@ -26,7 +26,7 @@ fn callee(receiver: &str, name: &str) -> vize_carton::String {
 }
 #[test]
 fn direct_optional_generic_and_grouped_calls_retain_affine_property_tokens() {
-    let template = "<p :title=\"greet('x')\">{{ greet?.('x') }} {{ identity<number>(1) }} {{ (greet)('x') }} {{ ({ greet, member: holder.greet, text: 'greet' }) }}</p><Child :title=\"/* comment */greet('x')\"/>";
+    let template = "<p :title=\"greet('x')\">{{ greet?.('x') }} {{ identity<number>(1) }} {{ (greet)('x') }} {{ ({ greet, member: holder.greet, text: 'greet' }) }}</p><Child :title=\"/* comment */greet(/* inner */'x')\"/>";
     let output = generate(template, SCRIPT);
     let receiver = "__vize_template_instance";
     let early = output
@@ -56,10 +56,10 @@ fn direct_optional_generic_and_grouped_calls_retain_affine_property_tokens() {
         ("identity<number>(1)", 0, "identity", "identity<number>(1)"),
         ("(greet)('x')", 1, "greet", "greet)('x')"),
         (
-            "/* comment */greet('x')",
+            "/* comment */greet(/* inner */'x')",
             "/* comment */".len(),
             "greet",
-            "greet('x')",
+            "greet( 'x')",
         ),
     ]
     .map(|(marker, offset, name, tail)| {
@@ -105,6 +105,17 @@ fn direct_optional_generic_and_grouped_calls_retain_affine_property_tokens() {
             Some(expected_row.3),
             "all call syntax and type arguments remain authored"
         );
+        if source.start == template.find("/* comment */greet").unwrap() + "/* comment */".len() {
+            let argument = template.find("/* inner */'x'").unwrap() + "/* inner */".len();
+            let generated_argument = property_start + "greet( ".len();
+            assert_eq!(
+                output
+                    .mapping
+                    .diagnostic_range_to_authored(generated_argument, generated_argument + 3),
+                Some((argument, argument + 3)),
+                "internal comment preserves the actual argument range"
+            );
+        }
         actual.insert((source.start, source.end, prefix.to_owned()));
     }
     // Multiple emitted copies are all checked above; each authored call has one
