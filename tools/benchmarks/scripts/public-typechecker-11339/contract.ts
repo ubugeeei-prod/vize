@@ -17,8 +17,14 @@ export const beforeProfile: Profile = {
   run: "41322907495",
   capsule: "9b9242d60d7121df1b8454697d1eec37e2d16309",
 };
-// A genuine containing release must be source-frozen here before feature dispatch.
-export const afterProfile: Profile | null = null;
+// First genuine published release containing the original inherited-member fix.
+export const afterProfile: Profile | null = {
+  version: "0.639.0",
+  source: "0dd3941dc3c090879c2c4ca540233b27fb0b8129",
+  candidate: "5f69b49d868345c7dd18b0c25db2b1905fdba377",
+  run: "41358672565",
+  capsule: "d45d6012f4ad597b247ff8264e6af6a05adf4575",
+};
 export function profileFor(role: Role): Profile {
   const value = role === "before" ? beforeProfile : afterProfile;
   assert(value, "AFTER release is UNKNOWN; do not execute or guess a candidate");
