@@ -149,10 +149,10 @@ fn entity_dependent_prefixes_and_late_refusals_cannot_publish_partial_findings()
 #[test]
 fn component_dynamic_context_and_unprovided_instance_are_not_clean_certificates() {
     let linter = configured(Locale::En, HelpLevel::Full, None);
-    for (source,spans) in [
-        ("<Widget is=\"Other\"/>",vec![]),
-        ("<component is=\"Other\"/>",vec![]),
-        ("<template is=\"Other\"/>",vec![[10,20]]),
+    for (source, spans) in [
+        ("<Widget is=\"Other\"/>", vec![]),
+        ("<component is=\"Other\"/>", vec![]),
+        ("<template is=\"Other\"/>", vec![[10, 20]]),
     ] {
         let result = linter.lint_template(source, "Owner.vue");
         assert_eq!(
