@@ -1,7 +1,7 @@
 // Genuine packed public host; the five independent findings stay immutable.
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -283,11 +283,19 @@ try {
     limits:
       "Five unchanged official finding vectors through both supported public forms. Complete target verify/fix/requery/second-fix packets; no automatic prop rename, new Core/default/reset behavior, ignoreProps support or whole-rule parity claim. Baseline is an explicitly metadata-only counterfactual on the current physical host.",
   };
-  writeFileSync(
-    join(nativeHistoryDirectory(directory), "prop-name-eslint-host.json"),
-    JSON.stringify(proof, null, 2) + "\n",
-    { flag: "wx" },
-  );
+  const serialized = JSON.stringify(proof, null, 2) + "\n";
+  const persist = () => {
+    const invocation = mkdtempSync(join(nativeHistoryDirectory(directory), "prop-name-eslint-"));
+    const destination = join(invocation, "prop-name-eslint-host.json");
+    writeFileSync(destination, serialized, { flag: "wx" });
+    return destination;
+  };
+  const first = persist();
+  const repeated = persist();
+  assert.notEqual(first, repeated, "each custody write has its own immutable invocation");
+  assert.equal(readFileSync(first, "utf8"), serialized, "the first whole proof remains intact");
+  assert.equal(readFileSync(repeated, "utf8"), serialized);
+  console.log("vize-prop-name-eslint-invocations " + JSON.stringify({ first, repeated }));
   console.log("vize-prop-name-eslint-custody " + JSON.stringify(proof));
 } finally {
   for (const [key, value] of previous) {
