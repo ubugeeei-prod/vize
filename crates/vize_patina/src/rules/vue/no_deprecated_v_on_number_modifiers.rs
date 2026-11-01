@@ -40,6 +40,8 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
 use vize_relief::{DirectiveNode, ElementNode};
 
+mod native;
+
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-v-on-number-modifiers",
     description: "Disallow deprecated numeric `keyCode` modifiers on `v-on`",
@@ -54,6 +56,10 @@ pub struct NoDeprecatedVOnNumberModifiers;
 impl Rule for NoDeprecatedVOnNumberModifiers {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        Some(self)
     }
 
     fn check_directive<'a>(
