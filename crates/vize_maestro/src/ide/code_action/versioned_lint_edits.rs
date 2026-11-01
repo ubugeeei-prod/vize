@@ -1,4 +1,4 @@
-//! One original template-lint fix bound to the actual open-document snapshot.
+//! Original authored edits bound to the actual open-document snapshot.
 
 use tower_lsp::lsp_types::{
     CodeActionOrCommand, Diagnostic, DocumentChanges, OneOf,
@@ -36,16 +36,16 @@ impl CodeActionService {
     }
 }
 
-/// Byte offsets are from the original linted template, never decoded coordinates.
+/// Byte offsets are from an original descriptor body, never decoded coordinates.
 pub(super) fn workspace_edit(
     ctx: &IdeContext,
     stamp: LintEditStamp,
-    template: &str,
-    template_start: usize,
+    body: &str,
+    body_start: usize,
     edits: &[vize_patina::TextEdit],
 ) -> Option<WorkspaceEdit> {
-    let template_end = template_start.checked_add(template.len())?;
-    if ctx.content.get(template_start..template_end)? != template {
+    let body_end = body_start.checked_add(body.len())?;
+    if ctx.content.get(body_start..body_end)? != body {
         return None;
     }
     let frame = VersionedSource::new(
@@ -56,10 +56,10 @@ pub(super) fn workspace_edit(
     let checked = edits
         .iter()
         .map(|edit| {
-            let start = u32::try_from(template_start.checked_add(edit.start as usize)?).ok()?;
-            let end = u32::try_from(template_start.checked_add(edit.end as usize)?).ok()?;
-            // Refuse edits outside the actual template even if they fit the SFC.
-            if edit.end as usize > template.len() {
+            let start = u32::try_from(body_start.checked_add(edit.start as usize)?).ok()?;
+            let end = u32::try_from(body_start.checked_add(edit.end as usize)?).ok()?;
+            // Refuse edits outside the actual body even if they fit the SFC.
+            if edit.end as usize > body.len() {
                 return None;
             }
             frame

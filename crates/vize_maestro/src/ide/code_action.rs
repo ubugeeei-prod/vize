@@ -34,6 +34,8 @@ mod script_lint_tests;
 #[cfg(test)]
 mod source_position_tests;
 mod template_lint;
+#[cfg(all(test, feature = "native"))]
+mod versioned_auto_import_tests;
 #[cfg(feature = "native")]
 mod versioned_lint_edits;
 
@@ -103,7 +105,12 @@ impl CodeActionService {
         // edit when the cursor sits on a known reactive ref. See #691.
         actions.extend(Self::collect_wrap_with_value(ctx));
         actions.extend(Self::collect_unwrap_value(ctx));
-        actions.extend(Self::collect_auto_import(ctx, range));
+        actions.extend(Self::collect_auto_import(
+            ctx,
+            range,
+            #[cfg(feature = "native")]
+            stamp,
+        ));
 
         actions
     }
@@ -111,7 +118,11 @@ impl CodeActionService {
     /// Offer "Auto-import from <path>" when the cursor sits on an identifier
     /// that the current SFC's script doesn't declare, but the workspace
     /// index built in #722 knows about.
-    fn collect_auto_import(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
+    fn collect_auto_import(
+        ctx: &IdeContext,
+        range: Range,
+        #[cfg(feature = "native")] stamp: Option<versioned_lint_edits::LintEditStamp>,
+    ) -> Vec<CodeActionOrCommand> {
         let _ = range;
         let Some((_, identifier)) = identifier_at_cursor(&ctx.content, ctx.offset) else {
             return Vec::new();
@@ -190,24 +201,35 @@ impl CodeActionService {
             end: insert_position,
         };
 
-        let mut changes = std::collections::HashMap::new();
-        changes.insert(
-            ctx.uri.clone(),
-            vec![TextEdit {
-                range: edit_range,
-                new_text: import_statement,
-            }],
-        );
+        #[cfg(feature = "native")]
+        let workspace_edit = if let Some(stamp) = stamp {
+            let Ok(relative_offset) = u32::try_from(leading_newline) else {
+                return Vec::new();
+            };
+            let Some(edit) = versioned_lint_edits::workspace_edit(
+                ctx,
+                stamp,
+                &script.content,
+                script.loc.start,
+                &[vize_patina::TextEdit::insert(
+                    relative_offset,
+                    import_statement.as_str(),
+                )],
+            ) else {
+                return Vec::new();
+            };
+            edit
+        } else {
+            unversioned_import_edit(ctx, edit_range, import_statement)
+        };
+        #[cfg(not(feature = "native"))]
+        let workspace_edit = unversioned_import_edit(ctx, edit_range, import_statement);
 
         let action = CodeAction {
             title: format!("Auto-import `{}` from `{}`", entry.name, import_specifier),
             kind: Some(CodeActionKind::QUICKFIX),
             diagnostics: None,
-            edit: Some(WorkspaceEdit {
-                changes: Some(changes),
-                document_changes: None,
-                change_annotations: None,
-            }),
+            edit: Some(workspace_edit),
             command: None,
             is_preferred: Some(true),
             disabled: None,
@@ -280,6 +302,16 @@ impl CodeActionService {
             document_changes: None,
             change_annotations: None,
         })
+    }
+}
+
+fn unversioned_import_edit(ctx: &IdeContext, range: Range, new_text: String) -> WorkspaceEdit {
+    let mut changes = std::collections::HashMap::new();
+    changes.insert(ctx.uri.clone(), vec![TextEdit { range, new_text }]);
+    WorkspaceEdit {
+        changes: Some(changes),
+        document_changes: None,
+        change_annotations: None,
     }
 }
 
