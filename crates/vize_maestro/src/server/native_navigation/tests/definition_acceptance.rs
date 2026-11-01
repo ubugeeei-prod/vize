@@ -34,6 +34,7 @@ impl Case {
 }
 
 struct Observation {
+    case: Case,
     tape: Value,
     client: Vec<Value>,
     server: Vec<Value>,
@@ -180,6 +181,7 @@ fn observe(case: Case) -> Observation {
     let client: Vec<u8> = serde_json::from_value(tape["clientConsumed"].clone()).unwrap();
     let server: Vec<u8> = serde_json::from_value(tape["serverWritten"].clone()).unwrap();
     Observation {
+        case,
         client: wire::decode(&client, true).unwrap(),
         server: wire::decode(&server, true).unwrap(),
         tape,
@@ -232,39 +234,36 @@ fn validate_transport(observation: &Observation, reply_ids: &[i32], methods: &[&
         initialized["result"]["serverInfo"],
         json!({"name":"vize-maestro","version":vize_carton::VERSION})
     );
-    let mut logs = 0;
-    for value in observation
-        .server
-        .iter()
-        .filter(|v| v.get("method").is_some())
-    {
-        if value["method"] == "window/logMessage" {
-            assert_eq!(
-                *value,
-                json!({"jsonrpc":"2.0","method":"window/logMessage",
-                "params":{"type":3,"message":"vize_maestro LSP server initialized"}})
-            );
-            logs += 1;
-        } else {
-            assert_eq!(value["method"], "textDocument/publishDiagnostics");
-            let uri = value["params"]["uri"].as_str().unwrap();
-            assert!([URI, OTHER].contains(&uri));
-            let expected = match value["params"].get("version") {
-                Some(version) => {
-                    assert!([json!(1), json!(2)].contains(version));
-                    json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics",
-                        "params":{"uri":uri,"diagnostics":[],"version":version}})
-                }
-                None => json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics",
-                    "params":{"uri":uri,"diagnostics":[]}}),
-            };
-            assert_eq!(
-                *value, expected,
-                "whole allowed notification, no unknown fields"
-            );
-        }
-    }
-    assert_eq!(logs, 1);
+    let notifications = match observation.case {
+        Case::Success | Case::Disabled => vec![
+            fixtures::initialized_log(),
+            fixtures::diagnostics(URI, Some(1)),
+            fixtures::diagnostics(URI, None),
+        ],
+        Case::Stale => vec![
+            fixtures::initialized_log(),
+            fixtures::diagnostics(URI, Some(1)),
+            fixtures::diagnostics(URI, Some(2)),
+            fixtures::diagnostics(URI, None),
+        ],
+        Case::CrossFile => vec![
+            fixtures::initialized_log(),
+            fixtures::diagnostics(OTHER, Some(1)),
+            fixtures::diagnostics(URI, Some(1)),
+            fixtures::diagnostics(URI, None),
+            fixtures::diagnostics(OTHER, None),
+        ],
+    };
+    assert_eq!(
+        observation
+            .server
+            .iter()
+            .filter(|v| v.get("method").is_some())
+            .cloned()
+            .collect::<Vec<_>>(),
+        notifications,
+        "whole ordered notifications, including their complete URI/version fields"
+    );
     let shutdown = *reply_ids.last().unwrap();
     assert_eq!(
         response(observation, shutdown),

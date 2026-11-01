@@ -63,6 +63,20 @@ pub(super) fn error(id: i32, code: i32, message: &str) -> Value {
     json!({"jsonrpc":"2.0","id":id,"error":{"code":code,"message":message}})
 }
 
+pub(super) fn initialized_log() -> Value {
+    json!({"jsonrpc":"2.0","method":"window/logMessage",
+        "params":{"type":3,"message":"vize_maestro LSP server initialized"}})
+}
+
+pub(super) fn diagnostics(uri: &str, version: Option<i32>) -> Value {
+    match version {
+        Some(version) => json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics",
+            "params":{"uri":uri,"diagnostics":[],"version":version}}),
+        None => json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics",
+            "params":{"uri":uri,"diagnostics":[]}}),
+    }
+}
+
 pub(super) fn inputs() -> Value {
     json!({
         "authored":{"bytes":AUTHORED.len(),"sha256":hash(AUTHORED.as_bytes()),"source":AUTHORED},

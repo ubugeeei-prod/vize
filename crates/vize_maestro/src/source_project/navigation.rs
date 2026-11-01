@@ -175,8 +175,10 @@ impl<'host> NativeNavigationProject<'host> {
             .await
             .map_err(NavigationRefusal::Host)?;
         #[cfg(all(test, feature = "experimental-source-navigation"))]
-        self.wait_definition_publication_for_test(ready.prepared().1.clone())
-            .await;
+        self.wait_definition_publication_for_test(
+            ready.prepared().clone().and_then(|(_, response)| response),
+        )
+        .await;
         let result = ready
             .publish(|response| self.checked_response(response))
             .map_err(NavigationRefusal::Host)?;
