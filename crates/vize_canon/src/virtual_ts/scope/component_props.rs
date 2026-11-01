@@ -5,12 +5,15 @@ mod bindings;
 mod closure_scopes;
 mod duplicate_listeners;
 mod dynamic_reference;
+mod legacy_scalars;
+mod shared_contracts;
 pub(super) use bindings::{
     collect_checkable_usages, component_name_matches_external_template_binding,
     component_usage_has_checkable_binding, has_script_binding,
 };
 use duplicate_listeners::append_duplicate_listener_checks;
 pub(super) use dynamic_reference::named_dynamic_reference;
+use shared_contracts::{SharedComponentContract, shared_component_contracts};
 
 pub(super) use closure_scopes::generate_closure_component_props_recursive;
 pub(super) use closure_scopes::recurse_child_closure_scopes;
@@ -51,6 +54,22 @@ pub(super) fn generate_component_props(
 ) {
     let (root_packets, callback_owners) = owners;
     let summary = ctx.summary;
+    // Original eligibility/callback ownership remains untouched. The opt-in
+    // supplementary rows only add previously un-emitted scalar assignments.
+    let original_usages = checkable_usages;
+    let supplemental = legacy_scalars::collect(ctx, original_usages);
+    let combined_usages;
+    let checkable_usages = if let Some(extra) = supplemental.as_ref() {
+        combined_usages = original_usages
+            .iter()
+            .copied()
+            .chain(extra.rows.iter().map(|(idx, usage)| (*idx, usage)))
+            .collect::<Vec<_>>();
+        &combined_usages
+    } else {
+        original_usages
+    };
+    let scalar_callbacks = supplemental.as_ref().map(|extra| &extra.callbacks);
     if checkable_usages.is_empty() {
         return;
     }
@@ -66,35 +85,39 @@ pub(super) fn generate_component_props(
 
     ts.push_str("\n  // Component props type declarations\n");
 
-    // Generic children expose `__vizeCheck<T>(props)`; fallback contextual
-    // typing is limited to inline function props to avoid duplicate errors.
-    append_prop_check_helpers(
-        ts,
-        checkable_usages,
-        ctx.check_unknown_props,
-        ctx.check_unknown_fallthrough_props,
-        ctx.strict_component_attrs,
-        ctx.typed_fallthrough_values,
-        ctx.hoist_shared_preamble,
-    );
-    append_component_slot_check_helpers(
-        ts,
-        ctx.experimental_strict_slot_children,
-        ctx.hoist_shared_preamble,
-    );
+    if !original_usages.is_empty() {
+        // Generic children expose `__vizeCheck<T>(props)`; fallback contextual
+        // typing is limited to inline function props to avoid duplicate errors.
+        append_prop_check_helpers(
+            ts,
+            original_usages,
+            ctx.check_unknown_props,
+            ctx.check_unknown_fallthrough_props,
+            ctx.strict_component_attrs,
+            ctx.typed_fallthrough_values,
+            ctx.hoist_shared_preamble,
+        );
+        append_component_slot_check_helpers(
+            ts,
+            ctx.experimental_strict_slot_children,
+            ctx.hoist_shared_preamble,
+        );
+    }
 
-    let shared_contracts = shared_component_contracts(ctx, checkable_usages);
+    let shared_contracts = shared_component_contracts(ctx, original_usages);
 
     for &(idx, usage) in checkable_usages {
-        if !root_packets.contains(idx) {
+        if let Some(callbacks) = scalar_callbacks.and_then(|rows| rows.get(&usage.start)) {
+            legacy_scalars::append_aliases(ts, ctx, idx, usage, callbacks);
+        } else if !root_packets.contains(idx) {
             generate_usage_declarations(ts, mappings, ctx, &shared_contracts, idx, usage);
         }
     }
     let legacy_usages;
     let navigation_usages = if root_packets.is_empty() {
-        checkable_usages
+        original_usages
     } else {
-        legacy_usages = checkable_usages
+        legacy_usages = original_usages
             .iter()
             .copied()
             .filter(|(idx, _)| !root_packets.contains(*idx))
@@ -177,7 +200,9 @@ pub(super) fn generate_component_props(
         if is_empty_props_usage(usage) {
             continue;
         }
-        if !root_packets.contains(idx) && !callback_owners.contains(idx) {
+        if let Some(callbacks) = scalar_callbacks.and_then(|rows| rows.get(&usage.start)) {
+            legacy_scalars::generate_root_checks(ts, mappings, ctx, idx, usage, callbacks);
+        } else if !root_packets.contains(idx) && !callback_owners.contains(idx) {
             generate_root_usage_checks(ts, mappings, ctx, idx, usage, false);
         }
     }
@@ -190,6 +215,7 @@ pub(super) fn generate_component_props(
             continue;
         }
         let props_ctx = VForPropsContext {
+            legacy_scalar_callbacks: scalar_callbacks,
             component_binding_check: ctx.component_binding_check,
             summary,
             options: ctx.options,
@@ -354,89 +380,6 @@ fn generate_usage_declarations(
         ctx.hoist_shared_preamble,
     );
     append_duplicate_listener_checks(ts, mappings, ctx, usage);
-}
-
-#[derive(Clone, Copy)]
-struct SharedComponentContract {
-    canonical_idx: usize,
-    needs_value_props: bool,
-}
-
-fn shared_component_contracts(
-    ctx: &ComponentPropsContext<'_, '_>,
-    usages: &[(usize, &ComponentUsage)],
-) -> FxHashMap<usize, SharedComponentContract> {
-    let mut groups: FxHashMap<(String, String, bool), SharedComponentContract> =
-        FxHashMap::default();
-    for &(idx, usage) in usages {
-        if constructor_instance::root_slot_scope(
-            &ctx.summary.scopes,
-            usage,
-            ctx.hoist_shared_preamble,
-        )
-        .is_some()
-        {
-            continue;
-        }
-        let component_ref = ctx.explicit_generics.usage_reference(
-            usage.start,
-            named_dynamic_reference(ctx, usage).unwrap_or_else(|| {
-                component_binding_reference(
-                    ctx.summary,
-                    ctx.options,
-                    ctx.syntactic_type_only_imported_names,
-                    usage.name.as_str(),
-                )
-            }),
-        );
-        let key = (
-            String::from(to_safe_identifier_fragment(usage.name.as_str()).as_str()),
-            component_ref,
-            ctx.relaxed_required_usage_starts.contains(&usage.start),
-        );
-        groups
-            .entry(key)
-            .and_modify(|shared| {
-                shared.needs_value_props |= usage_needs_per_prop_aliases(usage);
-            })
-            .or_insert(SharedComponentContract {
-                canonical_idx: idx,
-                needs_value_props: usage_needs_per_prop_aliases(usage),
-            });
-    }
-
-    let mut contracts = FxHashMap::default();
-    for &(idx, usage) in usages {
-        if constructor_instance::root_slot_scope(
-            &ctx.summary.scopes,
-            usage,
-            ctx.hoist_shared_preamble,
-        )
-        .is_some()
-        {
-            continue;
-        }
-        let component_ref = ctx.explicit_generics.usage_reference(
-            usage.start,
-            named_dynamic_reference(ctx, usage).unwrap_or_else(|| {
-                component_binding_reference(
-                    ctx.summary,
-                    ctx.options,
-                    ctx.syntactic_type_only_imported_names,
-                    usage.name.as_str(),
-                )
-            }),
-        );
-        let key = (
-            String::from(to_safe_identifier_fragment(usage.name.as_str()).as_str()),
-            component_ref,
-            ctx.relaxed_required_usage_starts.contains(&usage.start),
-        );
-        if let Some(shared) = groups.get(&key) {
-            contracts.insert(idx, *shared);
-        }
-    }
-    contracts
 }
 
 pub(super) fn generate_root_usage_checks(

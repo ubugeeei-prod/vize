@@ -25,7 +25,7 @@ assert(original);
 const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 const read = (path: string) => readFileSync(new URL(path, pack));
 
-void test("versioned lint profile keeps the whole original UTF-16 input and three-action oracle", () => {
+void test("versioned template profile preserves its mixed oracle and declares the whole suppression successor", () => {
   const oldSource = read("code-action-utf16-original/CodeActionUtf16.vue.txt");
   const oldResponse = read("code-action-utf16-original/response.expected.json");
   assert.equal(hash(oldSource), "4e334c5f8bdef19e5e77408a7aff23ef11f57362c5171401f6a5f5932c3fc1fd");
@@ -58,6 +58,52 @@ void test("versioned lint profile keeps the whole original UTF-16 input and thre
     },
     ...before.slice(1),
   ]);
+  assert.equal(
+    hash(read("versioned-template-lint-edits-6876/case.json")),
+    "6d94d5c8ce5a79261c1a1110a80d9e24387289c4c612346eb12e66a4143b85f9",
+  );
+  assert.equal(
+    hash(read("versioned-template-lint-edits-6876/response.expected.json")),
+    "3888a6a6fff7c9c9b7151957100f0f9e06e04e830439929f8c359565af62e24c",
+  );
+  const provenance = asRecord(current.data.provenance);
+  assert.deepEqual(provenance.previousCase, {
+    path: "case.json",
+    sha256: "6d94d5c8ce5a79261c1a1110a80d9e24387289c4c612346eb12e66a4143b85f9",
+  });
+  assert.deepEqual(provenance.previousExpected, {
+    path: "response.expected.json",
+    sha256: "3888a6a6fff7c9c9b7151957100f0f9e06e04e830439929f8c359565af62e24c",
+  });
+  assert.equal(
+    current.case.path,
+    "versioned-template-lint-edits-6876/case.with-versioned-suppressions.json",
+  );
+  const successor = asArray(
+    parseJson(
+      read(
+        "versioned-template-lint-edits-6876/response.with-versioned-suppressions.expected.json",
+      ).toString("utf8"),
+    ),
+  );
+  assert.deepEqual(successor, [
+    after[0],
+    ...after.slice(1).map((value) => {
+      const action = asRecord(value);
+      return {
+        ...action,
+        edit: {
+          documentChanges: [
+            {
+              textDocument: { uri: "${workspace}/CodeActionUtf16.vue", version: 1 },
+              edits: asRecord(asRecord(action.edit).changes)["${workspace}/CodeActionUtf16.vue"],
+            },
+          ],
+        },
+      };
+    }),
+  ]);
+  assert.deepEqual(current.requests[0].result, successor);
 });
 
 void test("only the explicit client profile adds documentChanges without mutating existing capabilities", () => {
@@ -101,7 +147,7 @@ void test("unknown or misrouted capability metadata refuses instead of silently 
   assert.equal(current.data.method, "textDocument/codeAction");
 });
 
-void test("source-built stdio preserves every original response and the whole versioned lint edit", async (t) => {
+void test("source-built stdio preserves unadvertised originals and explicit versioned template successors", async (t) => {
   const root = fileURLToPath(new URL("../../", import.meta.url));
   const revision = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" });
   assert.equal(revision.status, 0, revision.stderr);
@@ -120,12 +166,12 @@ void test("source-built stdio preserves every original response and the whole ve
   });
   const unsupported = loaded.cases.filter((fixture) => fixture.data.sourceSession).length;
   assert.deepEqual(report.summary, {
-    plannedCases: 81,
-    legacyMatches: 81 - unsupported,
+    plannedCases: 82,
+    legacyMatches: 82 - unsupported,
     legacyFailures: 0,
     legacyUnsupported: unsupported,
     baselineDrift: 0,
-    nativeUnsupported: 81,
+    nativeUnsupported: 82,
     pairedComparisons: 0,
     nativeHandled: 0,
     nativeEquivalent: 0,

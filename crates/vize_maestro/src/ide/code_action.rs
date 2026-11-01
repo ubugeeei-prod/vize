@@ -90,6 +90,8 @@ impl CodeActionService {
                 range,
                 &lint,
                 diagnostics,
+                #[cfg(feature = "native")]
+                stamp,
             ));
         }
 

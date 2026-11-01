@@ -1,0 +1,53 @@
+[
+  {
+    "title": "Suppress with @vize:forget (a11y/alt-text)",
+    "kind": "quickfix",
+    "diagnostics": [
+      {
+        "range": {
+          "start": {
+            "line": 1,
+            "character": 2
+          },
+          "end": {
+            "line": 1,
+            "character": 23
+          }
+        },
+        "severity": 2,
+        "code": "a11y/alt-text",
+        "codeDescription": {
+          "href": "https://eslint.vuejs.org/rules/a11y/alt-text.html"
+        },
+        "source": "vize/lint",
+        "message": "<img> elements must have an alt attribute\n\nHelp: Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      }
+    ],
+    "edit": {
+      "documentChanges": [
+        {
+          "textDocument": {
+            "uri": "${workspace}/App.vue",
+            "version": 1
+          },
+          "edits": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 0
+                },
+                "end": {
+                  "line": 1,
+                  "character": 0
+                }
+              },
+              "newText": "  <!-- @vize:forget a11y/alt-text -->\n"
+            }
+          ]
+        }
+      ]
+    },
+    "isPreferred": false
+  }
+]

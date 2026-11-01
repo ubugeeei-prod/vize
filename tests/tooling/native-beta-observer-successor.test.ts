@@ -126,6 +126,7 @@ test("missing or forged current source, dependency, runtime or four-role produce
     "tests/tooling/support/native-beta-dto/prepare-role.ts",
     "tests/tooling/support/native-beta-dto/audit-wire.ts",
     "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
+    "tests/tooling/support/native-beta-dto/historical-acknowledged-root-warning.ts",
     "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
   ];
   for (const path of paths)

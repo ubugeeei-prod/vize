@@ -36,10 +36,11 @@ test("Actions retains partial evidence after failure and records the source actu
     .split(/^      - /m)
     .find((step) => step.startsWith("uses: actions/upload-artifact@"));
   assert.match(upload ?? "", /^        if: always\(\)$/m);
-  assert.match(
-    workflow.split(/^      - /m).find((step) => step.startsWith("name: Measure\n")) ?? "",
-    /--meta "head=\$\(git rev-parse HEAD\)"/,
-  );
+  assert.match(workflow, /if: \$\{\{ github.event_name == 'workflow_dispatch' \}\}/);
+  assert.match(workflow, /typecheck-vs-vue-tsc-frozen\.ts --source-root/);
+  assert.match(workflow, /33eb41ea8a39d997383e797fea3dca5e482c0a9d/);
+  assert.match(workflow, /--exclude=provider\/node_modules/);
+  assert.doesNotMatch(workflow, /npm install.*latest/);
 });
 
 function sample(

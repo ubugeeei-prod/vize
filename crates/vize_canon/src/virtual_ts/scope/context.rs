@@ -187,6 +187,8 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) summary: &'a Croquis,
     pub(crate) options: &'a VirtualTsOptions,
     pub(crate) template_ast: Option<&'a vize_relief::RootNode<'template>>,
+    /// Supplemental legacy checks are separate from ordinary callback owners.
+    pub(crate) legacy_scalar_callbacks: Option<&'a FxHashMap<u32, FxHashSet<usize>>>,
     pub(crate) components_by_scope: &'a FxHashMap<u32, Vec<(usize, &'a ComponentUsage)>>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(crate) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
