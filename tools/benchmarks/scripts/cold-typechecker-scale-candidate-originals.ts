@@ -110,7 +110,10 @@ export function materializeInheritedOptions(
   for (const row of files) {
     const file = path.join(root, row.file);
     const previous = fs.lstatSync(file, { throwIfNoEntry: false });
-    assert(previous === undefined || (previous.isFile() && !previous.isSymbolicLink()));
+    assert(
+      previous === undefined ||
+        (previous.isFile() && !previous.isSymbolicLink() && previous.nlink === 1),
+    );
     fs.writeFileSync(file, row.body);
   }
   return verifyInheritedOwnedInputs(root, provider, fixture, state);
@@ -124,7 +127,12 @@ export function verifyInheritedOwnedInputs(
 ) {
   ownedInventory(root, provider);
   const files = inheritedOptionsState(fixture, state);
-  for (const row of files) assert(fs.readFileSync(path.join(root, row.file)).equals(row.body));
+  for (const row of files) {
+    const file = path.join(root, row.file),
+      stat = fs.lstatSync(file);
+    assert(stat.isFile() && !stat.isSymbolicLink() && stat.nlink === 1);
+    assert(fs.readFileSync(file).equals(row.body));
+  }
   for (const absent of fixture.absent)
     assert(fs.lstatSync(path.join(root, absent), { throwIfNoEntry: false }) === undefined);
   return {
@@ -138,6 +146,37 @@ export function verifyInheritedOwnedInputs(
     absent: fixture.absent,
     nativeLoadedFiles: "unobserved",
   };
+}
+
+/** Closed four-file data capture, before any equality verdict; no unowned symlink traversal. */
+export function captureInheritedInputBytes(root: string, fixture: Fixture) {
+  return fixture.files.map(({ file }) => {
+    const selected = path.join(root, file);
+    try {
+      assert.equal(fs.realpathSync(path.dirname(selected)), path.dirname(selected));
+      const stat = fs.lstatSync(selected, { bigint: true });
+      assert(stat.isFile() && !stat.isSymbolicLink() && stat.nlink === 1n);
+      assert(
+        stat.size <= 64n * 1024n,
+        "unexpected oversized fixture input; whole bytes unavailable",
+      );
+      const body = fs.readFileSync(selected),
+        after = fs.lstatSync(selected, { bigint: true });
+      for (const key of ["dev", "ino", "mode", "size", "mtimeNs", "ctimeNs"] as const)
+        assert.equal(after[key], stat[key]);
+      return {
+        file,
+        available: true,
+        bytes: body.length,
+        sha256: digest(body),
+        base64: body.toString("base64"),
+        mode: stat.mode.toString(),
+        mtimeNs: stat.mtimeNs.toString(),
+      };
+    } catch (error) {
+      return { file, available: false, reason: String(error) };
+    }
+  });
 }
 
 /** Baseline functional law only. Preserve the actual full receiver text, then compare all H bytes. */

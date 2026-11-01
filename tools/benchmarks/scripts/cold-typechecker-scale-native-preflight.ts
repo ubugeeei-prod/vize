@@ -248,6 +248,8 @@ export function compareNativePreflights(
     authoredCwd: string;
     /** Complete source-authenticated debug helper bodies; absent keeps the original equality law. */
     materializedHelperBodies?: { before: Buffer; after: Buffer };
+    /** Reuse an already retained normal preflight without rewriting its classification record. */
+    persistClasses?: boolean;
   },
 ) {
   assert.equal(before.length, after.length);
@@ -296,7 +298,7 @@ export function compareNativePreflights(
       old.request.kind === "main-cli"
         ? classifyRaw(old.stdout, old.request.cwd as string, expected.project, expected.provider)
         : null;
-    if (classes) {
+    if (classes && expected.persistClasses !== false) {
       write(path.join(old.directory, "classes.json"), classes);
     }
     return {

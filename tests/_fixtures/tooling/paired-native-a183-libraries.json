@@ -1,0 +1,582 @@
+[
+  {
+    "name": "lib.d.ts",
+    "bytes": 953,
+    "sha256": "0e6477e5049e579cc5de741a70ac91235252edc0468b2e569f22de9db3357786"
+  },
+  {
+    "name": "lib.decorators.d.ts",
+    "bytes": 13419,
+    "sha256": "940824bc0b599c6ecf5afe930218ebbb1831219b65f7f1ed78ec677b275f3edf"
+  },
+  {
+    "name": "lib.decorators.legacy.d.ts",
+    "bytes": 1287,
+    "sha256": "b3a048b3e9302ef9a34ef4ebb9aecfb28b66abb3bce577206a79fee559c230da"
+  },
+  {
+    "name": "lib.dom.asynciterable.d.ts",
+    "bytes": 933,
+    "sha256": "7f57fc4404ff020bc45b9c620aff2b40f700b95fe31164024c453a5e3c163c54"
+  },
+  {
+    "name": "lib.dom.d.ts",
+    "bytes": 2399570,
+    "sha256": "2f8c8d9e23d03e00c353412f5b2be3b1fd893290fc0976ad2229681bb7d46a35"
+  },
+  {
+    "name": "lib.dom.iterable.d.ts",
+    "bytes": 933,
+    "sha256": "7f57fc4404ff020bc45b9c620aff2b40f700b95fe31164024c453a5e3c163c54"
+  },
+  {
+    "name": "lib.es2015.collection.d.ts",
+    "bytes": 5627,
+    "sha256": "f0b6b1d3624fb143656dd86a8dd3e1950b7e65f218319b47bde52f65d47e2e4b"
+  },
+  {
+    "name": "lib.es2015.core.d.ts",
+    "bytes": 22821,
+    "sha256": "770011bd32a52f929fc98fbf9976c1fa9d80b6445171c02b08627fdba9778933"
+  },
+  {
+    "name": "lib.es2015.d.ts",
+    "bytes": 1202,
+    "sha256": "3f88bedbeb09c6f5a6645cb24c7c55f1aa22d19ae96c8e6959cbd8b85a707bc6"
+  },
+  {
+    "name": "lib.es2015.generator.d.ts",
+    "bytes": 2518,
+    "sha256": "00343ca5b2e3d48fa5df1db6e32ea2a59afab09590274a6cccb1dbae82e60c7c"
+  },
+  {
+    "name": "lib.es2015.iterable.d.ts",
+    "bytes": 18185,
+    "sha256": "ebd9f816d4002697cb2864bea1f0b70a103124e18a8cd9645eeccc09bdf80ab4"
+  },
+  {
+    "name": "lib.es2015.promise.d.ts",
+    "bytes": 3161,
+    "sha256": "2c1afac30a01772cd2a9a298a7ce7706b5892e447bb46bdbeef720f7b5da77ad"
+  },
+  {
+    "name": "lib.es2015.proxy.d.ts",
+    "bytes": 5212,
+    "sha256": "7b0225f483e4fa685625ebe43dd584bb7973bbd84e66a6ba7bbe175ee1048b4f"
+  },
+  {
+    "name": "lib.es2015.reflect.d.ts",
+    "bytes": 6454,
+    "sha256": "c0a4b8ac6ce74679c1da2b3795296f5896e31c38e888469a8e0f99dc3305de60"
+  },
+  {
+    "name": "lib.es2015.symbol.d.ts",
+    "bytes": 1608,
+    "sha256": "83e3871cda2abd4421970fa923cca51a9ce8cdbece6f898285643ab030cb80f3"
+  },
+  {
+    "name": "lib.es2015.symbol.wellknown.d.ts",
+    "bytes": 10971,
+    "sha256": "c5079c53f0f141a0698faa903e76cb41cd664e3efb01cc17a5c46ec2eb0bef42"
+  },
+  {
+    "name": "lib.es2016.array.include.d.ts",
+    "bytes": 5165,
+    "sha256": "32cafbc484dea6b0ab62cf8473182bbcb23020d70845b406f80b7526f38ae862"
+  },
+  {
+    "name": "lib.es2016.d.ts",
+    "bytes": 926,
+    "sha256": "7fe93b39b810eadd916be8db880dd7f0f7012a5cc6ffb62de8f62a2117fa6f1f"
+  },
+  {
+    "name": "lib.es2016.full.d.ts",
+    "bytes": 993,
+    "sha256": "19adadff5144f8f89fef0a10b299d7a96206f4913d4c17d4864171320e9edbd6"
+  },
+  {
+    "name": "lib.es2016.intl.d.ts",
+    "bytes": 1445,
+    "sha256": "fca4cdcb6d6c5ef18a869003d02c9f0fd95df8cfaf6eb431cd3376bc034cad36"
+  },
+  {
+    "name": "lib.es2017.arraybuffer.d.ts",
+    "bytes": 876,
+    "sha256": "b93ec88115de9a9dc1b602291b85baf825c85666bf25985cc5f698073892b467"
+  },
+  {
+    "name": "lib.es2017.d.ts",
+    "bytes": 1123,
+    "sha256": "bb0074cc08b84a2374af33d8bf044b80851ccc9e719a5e202eacf40db2c31600"
+  },
+  {
+    "name": "lib.es2017.date.d.ts",
+    "bytes": 1877,
+    "sha256": "f5c06dcc3fe849fcb297c247865a161f995cc29de7aa823afdd75aaaddc1419b"
+  },
+  {
+    "name": "lib.es2017.full.d.ts",
+    "bytes": 993,
+    "sha256": "83635f912d414d0c5a855fba3e18418e9db7e73c2e0e170009c48275cc8c1a36"
+  },
+  {
+    "name": "lib.es2017.intl.d.ts",
+    "bytes": 1410,
+    "sha256": "c7b3542146734342e440a84b213384bfa188835537ddbda50d30766f0593aff9"
+  },
+  {
+    "name": "lib.es2017.object.d.ts",
+    "bytes": 2434,
+    "sha256": "b77e16112127a4b169ef0b8c3a4d730edf459c5f25fe52d5e436a6919206c4d7"
+  },
+  {
+    "name": "lib.es2017.sharedmemory.d.ts",
+    "bytes": 7170,
+    "sha256": "fbffd9337146eff822c7c00acbb78b01ea7ea23987f6c961eba689349e744f8c"
+  },
+  {
+    "name": "lib.es2017.string.d.ts",
+    "bytes": 2540,
+    "sha256": "6aaeba1e4f228fda4e9175e34d96807e2c6dc984d0b37a772b3af9365a456681"
+  },
+  {
+    "name": "lib.es2017.typedarrays.d.ts",
+    "bytes": 1503,
+    "sha256": "ce6180fa19b1cccd07ee7f7dbb9a367ac19c0ed160573e4686425060b6df7f57"
+  },
+  {
+    "name": "lib.es2018.asyncgenerator.d.ts",
+    "bytes": 2653,
+    "sha256": "3f02e2476bccb9dbe21280d6090f0df17d2f66b74711489415a8aa4df73c9675"
+  },
+  {
+    "name": "lib.es2018.asynciterable.d.ts",
+    "bytes": 2218,
+    "sha256": "45e3ab34c1c013c8ab2dc1ba4c80c780744b13b5676800ae2e3be27ae862c40c"
+  },
+  {
+    "name": "lib.es2018.d.ts",
+    "bytes": 1049,
+    "sha256": "1a7daebe4f45fb03d9ec53d60008fbf9ac45a697fdc89e4ce218bc94b94f94d6"
+  },
+  {
+    "name": "lib.es2018.full.d.ts",
+    "bytes": 1035,
+    "sha256": "63787dbe04141f5d3ebce2e08b64bc9bba589beb0a4d22e7994d3005af1e48a6"
+  },
+  {
+    "name": "lib.es2018.intl.d.ts",
+    "bytes": 2891,
+    "sha256": "b477b19cafa67ab59a4818c40d821674e641bf11e6200d5567b28cabedbc953d"
+  },
+  {
+    "name": "lib.es2018.promise.d.ts",
+    "bytes": 1314,
+    "sha256": "e42e397f1a5a77994f0185fd1466520691456c772d06bf843e5084ceb879a0ad"
+  },
+  {
+    "name": "lib.es2018.regexp.d.ts",
+    "bytes": 1193,
+    "sha256": "f4c2b41f90c95b1c532ecc874bd3c111865793b23aebcc1c3cbbabcd5d76ffb0"
+  },
+  {
+    "name": "lib.es2019.array.d.ts",
+    "bytes": 3124,
+    "sha256": "ab26191cfad5b66afa11b8bf935ef1cd88fabfcb28d30b2dfa6fad877d050332"
+  },
+  {
+    "name": "lib.es2019.d.ts",
+    "bytes": 1032,
+    "sha256": "f94b133a3cb14a288803be545ac2683e0d0ff6661bcd37e31aaaec54fc382aed"
+  },
+  {
+    "name": "lib.es2019.full.d.ts",
+    "bytes": 1035,
+    "sha256": "e3de8409485b0c198a5a075bd4a1d06d8f42dc52b377709d33b131b97de56456"
+  },
+  {
+    "name": "lib.es2019.intl.d.ts",
+    "bytes": 919,
+    "sha256": "689da16f46e647cef0d64b0def88910e818a5877ca5379ede156ca3afb780ac3"
+  },
+  {
+    "name": "lib.es2019.object.d.ts",
+    "bytes": 1434,
+    "sha256": "2088bc26531e38fb05eedac2951480db5309f6be3fa4a08d2221abb0f5b4200d"
+  },
+  {
+    "name": "lib.es2019.string.d.ts",
+    "bytes": 1489,
+    "sha256": "cb9d366c425fea79716a8fb3af0d78e6b22ebbab3bd64d25063b42dc9f531c1e"
+  },
+  {
+    "name": "lib.es2019.symbol.d.ts",
+    "bytes": 967,
+    "sha256": "500934a8089c26d57ebdb688fc9757389bb6207a3c8f0674d68efa900d2abb34"
+  },
+  {
+    "name": "lib.es2020.bigint.d.ts",
+    "bytes": 38258,
+    "sha256": "bc21cc8b6fee4f4c2440d08035b7ea3c06b3511314c8bab6bef7a92de58a2593"
+  },
+  {
+    "name": "lib.es2020.d.ts",
+    "bytes": 1162,
+    "sha256": "f59d0650799f8782fd74cf73c19223730c6d1b9198671b1c5b3a38e1188b5953"
+  },
+  {
+    "name": "lib.es2020.date.d.ts",
+    "bytes": 2917,
+    "sha256": "7ca53d13d2957003abb47922a71866ba7cb2068f8d154877c596d63c359fed25"
+  },
+  {
+    "name": "lib.es2020.full.d.ts",
+    "bytes": 1035,
+    "sha256": "577cc49be1979782a5a695b46049566d123e2a75382f10bb82f2e5c87e29059a"
+  },
+  {
+    "name": "lib.es2020.intl.d.ts",
+    "bytes": 22314,
+    "sha256": "7b4f295ddb7e8c73f608bf54aa5d76b604b4fc44340a2eaa1f34040e7261afd4"
+  },
+  {
+    "name": "lib.es2020.number.d.ts",
+    "bytes": 1548,
+    "sha256": "b7bf9377723203b5a6a4b920164df22d56a43f593269ba6ae1fdc97774b68855"
+  },
+  {
+    "name": "lib.es2020.promise.d.ts",
+    "bytes": 1764,
+    "sha256": "54725f8c4df3d900cb4dac84b64689ce29548da0b4e9b7c2de61d41c79293611"
+  },
+  {
+    "name": "lib.es2020.sharedmemory.d.ts",
+    "bytes": 5089,
+    "sha256": "e5594bc3076ac29e6c1ebda77939bc4c8833de72f654b6e376862c0473199323"
+  },
+  {
+    "name": "lib.es2020.string.d.ts",
+    "bytes": 2451,
+    "sha256": "2f3eb332c2d73e729f3364fcc0c2b375e72a121e8157d25a82d67a138c83a95c"
+  },
+  {
+    "name": "lib.es2020.symbol.wellknown.d.ts",
+    "bytes": 1566,
+    "sha256": "6f4427f9642ce8d500970e4e69d1397f64072ab73b97e476b4002a646ac743b1"
+  },
+  {
+    "name": "lib.es2021.d.ts",
+    "bytes": 997,
+    "sha256": "8a15b4607d9a499e2dbeed9ec0d3c0d7372c850b2d5f1fb259e8f6d41d468a84"
+  },
+  {
+    "name": "lib.es2021.full.d.ts",
+    "bytes": 1035,
+    "sha256": "e4a70ead7fea07d9abe520cc9e30c04ac035ebceaab28f9e67211610006c65de"
+  },
+  {
+    "name": "lib.es2021.intl.d.ts",
+    "bytes": 8206,
+    "sha256": "a917a49ac94cd26b754ab84e113369a75d1a47a710661d7cd25e961cc797065f"
+  },
+  {
+    "name": "lib.es2021.promise.d.ts",
+    "bytes": 2223,
+    "sha256": "db9709688f82c9e5f65a119c64d835f906efe5f559d08b11642d56eb85b79357"
+  },
+  {
+    "name": "lib.es2021.string.d.ts",
+    "bytes": 1553,
+    "sha256": "4b25b8c874acd1a4cf8444c3617e037d444d19080ac9f634b405583fd10ce1f7"
+  },
+  {
+    "name": "lib.es2021.weakref.d.ts",
+    "bytes": 3132,
+    "sha256": "37be57d7c90cf1f8112ee2636a068d8fd181289f82b744160ec56a7dc158a9f5"
+  },
+  {
+    "name": "lib.es2022.array.d.ts",
+    "bytes": 4572,
+    "sha256": "a6b2211fcbf07dcc84e274b0ce935473ac4e24e75a12234f6a65b7a6fbe9285b"
+  },
+  {
+    "name": "lib.es2022.d.ts",
+    "bytes": 1069,
+    "sha256": "26e0fe14baee4e127f4365d1ae0b276f400562e45e19e35fd2d4c296684715e6"
+  },
+  {
+    "name": "lib.es2022.error.d.ts",
+    "bytes": 2340,
+    "sha256": "195daca651dde22f2167ac0d0a05e215308119a3100f5e6268e8317d05a92526"
+  },
+  {
+    "name": "lib.es2022.full.d.ts",
+    "bytes": 1035,
+    "sha256": "01a30f9e8582b369075c0808df71121e6855cb06fd8d3d39511d9ebb66405205"
+  },
+  {
+    "name": "lib.es2022.intl.d.ts",
+    "bytes": 7653,
+    "sha256": "8b11e4285cd2bb164a4dc09248bdec69e9842517db4ca47c1ba913011e44ff2f"
+  },
+  {
+    "name": "lib.es2022.object.d.ts",
+    "bytes": 1046,
+    "sha256": "0508571a52475e245b02bc50fa1394065a0a3d05277fbf5120c3784b85651799"
+  },
+  {
+    "name": "lib.es2022.regexp.d.ts",
+    "bytes": 1304,
+    "sha256": "fc611fea8d30ea72c6bbfb599c9b4d393ce22e2f5bfef2172534781e7d138104"
+  },
+  {
+    "name": "lib.es2022.string.d.ts",
+    "bytes": 1116,
+    "sha256": "8f9af488f510c3015af3cc8c267a9e9d96c4dd38a1fdff0e11dc5a544711415b"
+  },
+  {
+    "name": "lib.es2023.array.d.ts",
+    "bytes": 40197,
+    "sha256": "0bd714129fca875f7d4c477a1a392200b0bcd13fb2e80928cd334b63830ea047"
+  },
+  {
+    "name": "lib.es2023.collection.d.ts",
+    "bytes": 861,
+    "sha256": "e2c9037ae6cd2c52d80ceef0b3c5ffdb488627d71529cf4f63776daf11161c9a"
+  },
+  {
+    "name": "lib.es2023.d.ts",
+    "bytes": 960,
+    "sha256": "1e9332c23e9a907175e0ffc6a49e236f97b48838cc8aec9ce7e4cec21e544b65"
+  },
+  {
+    "name": "lib.es2023.full.d.ts",
+    "bytes": 1035,
+    "sha256": "821bd6049b8f96b9d24c9fbc49b542dcf7a80d76f9efb330b5ef32c373af83d4"
+  },
+  {
+    "name": "lib.es2023.intl.d.ts",
+    "bytes": 2954,
+    "sha256": "2c14b6fc74e9488a93c8212bdac44cbf534d5c30c7b688d52d7e6013d19a56c1"
+  },
+  {
+    "name": "lib.es2024.arraybuffer.d.ts",
+    "bytes": 2598,
+    "sha256": "bc238c3f81c2984751932b6aab223cd5b830e0ac6cad76389e5e9d2ffc03287d"
+  },
+  {
+    "name": "lib.es2024.collection.d.ts",
+    "bytes": 1185,
+    "sha256": "4a07f9b76d361f572620927e5735b77d6d2101c23cdd94383eb5b706e7b36357"
+  },
+  {
+    "name": "lib.es2024.d.ts",
+    "bytes": 1127,
+    "sha256": "3753fbc1113dc511214802a2342280a8b284ab9094f6420e7aa171e868679f91"
+  },
+  {
+    "name": "lib.es2024.full.d.ts",
+    "bytes": 1035,
+    "sha256": "b9f65879de79a7647ad2e5b8089277c215911fa99d4b858d78014df6ba2852f3"
+  },
+  {
+    "name": "lib.es2024.object.d.ts",
+    "bytes": 1220,
+    "sha256": "7c4e8dc6ab834cc6baa0227e030606d29e3e8449a9f67cdf5605ea5493c4db29"
+  },
+  {
+    "name": "lib.es2024.promise.d.ts",
+    "bytes": 1350,
+    "sha256": "de7ba0fd02e06cd9a5bd4ab441ed0e122735786e67dde1e849cced1cd8b46b78"
+  },
+  {
+    "name": "lib.es2024.regexp.d.ts",
+    "bytes": 1034,
+    "sha256": "6148e4e88d720a06855071c3db02069434142a8332cf9c182cda551adedf3156"
+  },
+  {
+    "name": "lib.es2024.sharedmemory.d.ts",
+    "bytes": 3038,
+    "sha256": "d63dba625b108316a40c95a4425f8d4294e0deeccfd6c7e59d819efa19e23409"
+  },
+  {
+    "name": "lib.es2024.string.d.ts",
+    "bytes": 1155,
+    "sha256": "0568d6befee03dd435bed4fc25c4e46865b24bdcb8c563fdc21f580a2c301904"
+  },
+  {
+    "name": "lib.es2025.collection.d.ts",
+    "bytes": 3839,
+    "sha256": "30d62269b05b584741f19a5369852d5d34895aa2ac4fd948956f886d15f9cc0d"
+  },
+  {
+    "name": "lib.es2025.d.ts",
+    "bytes": 1079,
+    "sha256": "999ca32883495a866aa5737fe1babc764a469e4cde6ee6b136a4b9ae68853e4b"
+  },
+  {
+    "name": "lib.es2025.float16.d.ts",
+    "bytes": 20489,
+    "sha256": "f128dae7c44d8f35ee42e0a437000a57c9f06cc04f8b4fb42eebf44954d53dc8"
+  },
+  {
+    "name": "lib.es2025.full.d.ts",
+    "bytes": 1035,
+    "sha256": "e03da518b01b46a4c99a1f88cd727ee98ddf14492c43dae1ae7a63e992971bab"
+  },
+  {
+    "name": "lib.es2025.intl.d.ts",
+    "bytes": 9390,
+    "sha256": "ffbe6d7b295306b2ba88030f65b74c107d8d99bdcf596ea99c62a02f606108b0"
+  },
+  {
+    "name": "lib.es2025.iterator.d.ts",
+    "bytes": 8637,
+    "sha256": "996fb27b15277369c68a4ba46ed138b4e9e839a02fb4ec756f7997629242fd9f"
+  },
+  {
+    "name": "lib.es2025.promise.d.ts",
+    "bytes": 1619,
+    "sha256": "79b712591b270d4778c89706ca2cfc56ddb8c3f895840e477388f1710dc5eda9"
+  },
+  {
+    "name": "lib.es2025.regexp.d.ts",
+    "bytes": 1255,
+    "sha256": "20884846cef428b992b9bd032e70a4ef88e349263f63aeddf04dda837a7dba26"
+  },
+  {
+    "name": "lib.es2026.array.d.ts",
+    "bytes": 1752,
+    "sha256": "9fdb2d4893f2582d5d96c89aa3606a0692ff620fb2eb81314f598d4c705cdba2"
+  },
+  {
+    "name": "lib.es2026.collection.d.ts",
+    "bytes": 2598,
+    "sha256": "db59a81f070c1880ad645b2c0275022baa6a0c4f0acdc58d29d349c6efcf0903"
+  },
+  {
+    "name": "lib.es2026.d.ts",
+    "bytes": 1116,
+    "sha256": "7e15d13e27b1b7f3c13680bdf0b96a367e11d16db15b48662664492c9b028341"
+  },
+  {
+    "name": "lib.es2026.error.d.ts",
+    "bytes": 990,
+    "sha256": "142efd4ce210576f777dc34df121777be89eda476942d6d6663b03dcb53be3ff"
+  },
+  {
+    "name": "lib.es2026.full.d.ts",
+    "bytes": 1035,
+    "sha256": "103cc88b49cbf0968e60b700e470b0cf8a4406fb41e720223391d5ab5ef6d5b1"
+  },
+  {
+    "name": "lib.es2026.iterator.d.ts",
+    "bytes": 1205,
+    "sha256": "980c5476cbc0589d977c043f32c0c6a08ee76d5eb28450079a39aa8b76451b42"
+  },
+  {
+    "name": "lib.es2026.json.d.ts",
+    "bytes": 2337,
+    "sha256": "76e348ff85f0a6a3b0b29312a678ce8f5f551ff3ceb01898e0f75ab992542786"
+  },
+  {
+    "name": "lib.es2026.math.d.ts",
+    "bytes": 1229,
+    "sha256": "b49218cb3617a535a9f82c9f9fbf00de62b60e3afb1aa2e2c7df989b37fb2ece"
+  },
+  {
+    "name": "lib.es2026.typedarrays.d.ts",
+    "bytes": 3350,
+    "sha256": "83a730b125d477dd264df8ba479afab27a3dae7152b005c214ab94dc7ee44fd3"
+  },
+  {
+    "name": "lib.es5.d.ts",
+    "bytes": 218855,
+    "sha256": "45cc92f8dd3df7cb07b7d19e2b2ca34e78bc005c910c1e53ee1cf9bf37910215"
+  },
+  {
+    "name": "lib.es6.d.ts",
+    "bytes": 993,
+    "sha256": "174a0fa01bb60bcb80e09b0b7bdcdddf688891433d6030244df5b44eb9ebd210"
+  },
+  {
+    "name": "lib.esnext.d.ts",
+    "bytes": 1208,
+    "sha256": "c527e446837b7d310f855182dc902d9352d82ebf49f3fa5a91f567490272150b"
+  },
+  {
+    "name": "lib.esnext.date.d.ts",
+    "bytes": 917,
+    "sha256": "673294292640f5722b700e7d814e17aaf7d93f83a48a2c9b38f33cbc940ad8b0"
+  },
+  {
+    "name": "lib.esnext.decorators.d.ts",
+    "bytes": 1031,
+    "sha256": "d786b48f934cbca483b3c6d0a798cb43bbb4ada283e76fb22c28e53ae05b9e69"
+  },
+  {
+    "name": "lib.esnext.disposable.d.ts",
+    "bytes": 6767,
+    "sha256": "1ecb8e347cb6b2a8927c09b86263663289418df375f5e68e11a0ae683776978f"
+  },
+  {
+    "name": "lib.esnext.full.d.ts",
+    "bytes": 1035,
+    "sha256": "ef4a897cd2a3f91000c10264e400b3667c7e51e1b7365f03b62e8081dc53bde6"
+  },
+  {
+    "name": "lib.esnext.intl.d.ts",
+    "bytes": 5305,
+    "sha256": "379bc41580c2d774f82e828c70308f24a005b490c25ba34d679d84bcf05c3d9d"
+  },
+  {
+    "name": "lib.esnext.iterator.d.ts",
+    "bytes": 8229,
+    "sha256": "7838fe28f089cd1d07670ef889f9f5d1291972f3eb30ca0d5c35c4b4f643dee8"
+  },
+  {
+    "name": "lib.esnext.modulesource.d.ts",
+    "bytes": 941,
+    "sha256": "07d0263a8b648fe19544ded6e93dfd5dfd9d204bd1f897cf629b200006b90b6f"
+  },
+  {
+    "name": "lib.esnext.promise.d.ts",
+    "bytes": 1623,
+    "sha256": "6ea73fc934d2d487cad935bdab38d5be9b315a808f6a38083ea6926373b115c3"
+  },
+  {
+    "name": "lib.esnext.sharedmemory.d.ts",
+    "bytes": 1028,
+    "sha256": "ed484fb2aa8a1a23d0277056ec3336e0a0b52f9b8d6a961f338a642faf43235d"
+  },
+  {
+    "name": "lib.esnext.temporal.d.ts",
+    "bytes": 22011,
+    "sha256": "4ffedae1d1c2d53fdbca1c96d3c7dda544281f7d262f99b6880634f8fd8d9820"
+  },
+  {
+    "name": "lib.scripthost.d.ts",
+    "bytes": 9412,
+    "sha256": "f13f4b465c99041e912db5c44129a94588e1aafee35a50eab51044833f50b4ee"
+  },
+  {
+    "name": "lib.webworker.asynciterable.d.ts",
+    "bytes": 933,
+    "sha256": "7f57fc4404ff020bc45b9c620aff2b40f700b95fe31164024c453a5e3c163c54"
+  },
+  {
+    "name": "lib.webworker.d.ts",
+    "bytes": 804222,
+    "sha256": "fd62aa7e72f83ebbbc0bf278cc101846bb50ae08c688cc5143751ea33bbe3c6d"
+  },
+  {
+    "name": "lib.webworker.importscripts.d.ts",
+    "bytes": 1002,
+    "sha256": "2a2de5b9459b3fc44decd9ce6100b72f1b002ef523126c1d3d8b2a4a63d74d78"
+  },
+  {
+    "name": "lib.webworker.iterable.d.ts",
+    "bytes": 933,
+    "sha256": "7f57fc4404ff020bc45b9c620aff2b40f700b95fe31164024c453a5e3c163c54"
+  }
+]

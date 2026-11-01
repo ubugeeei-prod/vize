@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { verifySourceSdkPair, type SdkScanner } from "./cold-typechecker-scale-strict-pair.ts";
+import { currentProfileSource } from "./cold-typechecker-scale-native-source.ts";
 
 export const componentChecksPath =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt";
@@ -75,6 +76,80 @@ const pinBody = (body: Buffer | null, pin: BodyPin | null) => {
     "whole source Git blob mismatch",
   );
 };
+
+export function verifyCandidateSdkRoles(lock: Buffer) {
+  const roles = lock
+    .toString("utf8")
+    .split("[[package]]")
+    .flatMap((block) => {
+      const name = /^name = "([^"]+)"$/mu.exec(block)?.[1];
+      if (!name || !/^corsa(?:_|$)/u.test(name)) return [];
+      return [
+        {
+          name,
+          version: /^version = "([^"]+)"$/mu.exec(block)?.[1],
+          source: /^source = "([^"]+)"$/mu.exec(block)?.[1],
+          checksum: /^checksum = "([^"]+)"$/mu.exec(block)?.[1],
+        },
+      ];
+    });
+  assert.deepEqual(
+    roles,
+    currentProfileSource.sdkRoles,
+    "all seven published SDK4 roles; no mixed version/source/checksum",
+  );
+  return roles;
+}
+
+export function candidateNativeLibraryPins(): { name: string; bytes: number; sha256: string }[] {
+  const body = fs.readFileSync(
+    new URL("../../../tests/_fixtures/tooling/paired-native-a183-libraries.json", import.meta.url),
+  );
+  assert.equal(digest(body), "d29f79e6663f668910c4baf72ff6d8ea02c46e6e443357007b206ee06ddf900e");
+  const rows = JSON.parse(body.toString("utf8"));
+  assert.equal(rows.length, 116);
+  return rows;
+}
+export function verifyCandidateLibraryRows(
+  rows: { name: string; bytes: number; sha256: string }[],
+) {
+  assert.deepEqual(rows, candidateNativeLibraryPins(), "whole116 adjacent packaged library assets");
+}
+export function verifyCandidateNativeLibraries(backend: string) {
+  assert.equal(fs.realpathSync(backend), backend);
+  assert.equal(path.basename(backend), "tsc");
+  const root = path.dirname(backend);
+  assert.equal(path.basename(root), "lib");
+  const image = fs.readFileSync(backend);
+  assert.equal(image.length, 24522912);
+  assert.equal(digest(image), "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70");
+  const names = fs
+    .readdirSync(root)
+    .filter((name) => /\.(?:ts|mts|cts)$/u.test(name))
+    .sort();
+  assert.deepEqual(
+    names,
+    candidateNativeLibraryPins().map((row) => row.name),
+  );
+  const rows = names.map((name) => {
+    const file = path.join(root, name),
+      before = fs.lstatSync(file, { bigint: true });
+    assert(before.isFile() && !before.isSymbolicLink());
+    const body = fs.readFileSync(file),
+      after = fs.lstatSync(file, { bigint: true });
+    for (const key of ["dev", "ino", "mode", "size", "mtimeNs", "ctimeNs"] as const)
+      assert.equal(after[key], before[key]);
+    return { name, bytes: body.length, sha256: digest(body) };
+  });
+  verifyCandidateLibraryRows(rows);
+  return {
+    image: { path: backend, bytes: image.length, sha256: digest(image) },
+    root,
+    rows,
+    scope:
+      "complete known116 adjacent packaged assets; not native loaded-file membership or provenance of the modified Go source",
+  };
+}
 
 /** Pure checks; the caller supplies the separately frozen, reviewed literal source manifest. */
 export function verifyCandidateSourceInputs(frozen: CandidateSources, actual: SourceInput) {
@@ -201,11 +276,13 @@ export function verifyCandidateSources(
     protocol,
     ancestry,
   });
+  const sdkRoles = verifyCandidateSdkRoles(cargo.base[1]);
   const require = createRequire(path.join(provider, "package.json"));
   const sdk = verifySourceSdkPair(roots.base, roots.head, require("typescript") as SdkScanner);
   return {
     ...source,
     sdk,
+    sdkRoles,
     assets:
       frozen.kind === "type-work"
         ? {

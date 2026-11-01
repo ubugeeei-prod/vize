@@ -10,6 +10,7 @@ import {
   verifyInheritedOwnedInputs,
   verifyInheritedOptionsOutput,
   compareInheritedOptionsRaw,
+  captureInheritedInputBytes,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-candidate-originals.ts";
 
 test("literal original inputs have one exact five-change repair, same config/roster and explicit absences", (t) => {
@@ -40,6 +41,7 @@ test("literal original inputs have one exact five-change repair, same config/ros
   assert.equal(repaired.files.length, 4);
   const restored = materializeInheritedOptions(root, provider, fixture, "invalid");
   assert.deepEqual(restored, first);
+  assert(captureInheritedInputBytes(root, fixture).every((row) => row.available));
   fs.writeFileSync(path.join(root, "src/Wrapped.vue"), "unowned extra input");
   assert.throws(() => verifyInheritedOwnedInputs(root, provider, fixture, "invalid"));
   assert.throws(() => materializeInheritedOptions(root, provider, fixture, "typed"));

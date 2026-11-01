@@ -182,3 +182,4 @@ crates/vize_atelier_sfc/tests/fixtures/ideographic_if_whitespace.json -text
 tools/benchmarks/observers/paired-candidate-child-allocation.rs text eol=lf
 tools/benchmarks/observers/paired-candidate-route-memory.rs text eol=lf
 tests/_fixtures/tooling/paired-inherited-options-inputs.json text eol=lf
+tests/_fixtures/tooling/paired-native-a183-libraries.json text eol=lf
