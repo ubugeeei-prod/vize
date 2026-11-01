@@ -1,0 +1,86 @@
+{
+  "schema": "vize.native-sfc.original-input-model-number-inputs",
+  "qualification": "new-current-inputs-not-native-execution-evidence",
+  "typescript": "6.0.3",
+  "targets": {
+    "dom": {"compiler": "3.5.35", "runtime": "3.5.35"},
+    "ssr": {"compiler": "3.5.35", "runtime": "3.5.35", "renderer": "3.5.35"},
+    "vapor": {"compiler": "3.6.0-rc.9", "runtime": "3.6.0-rc.9"}
+  },
+  "filename": "OriginalInputModelNumber.vue",
+  "groups": [
+    {
+      "modifier": "number",
+      "filename": "OriginalInputModelNumber.vue",
+      "ids": ["number-empty-inline-successor", "number-var-nonnumeric", "number-ts-unicode-crlf"]
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "number-empty-inline-successor",
+      "source": "<script setup>let draft=''</script><template><input v-model.number='draft'/></template>",
+      "script": "let draft=''",
+      "template": "<input v-model.number='draft'/>",
+      "bindings": ["draft"],
+      "binding": "draft",
+      "initial": {"kind": "string", "value": ""},
+      "input": " 7.5tail ",
+      "programmatic": "programmatic 41",
+      "composing": " -0 ",
+      "change": " 1e309 ",
+      "numberRuntime": {
+        "inputModel": {"kind": "number", "value": 7.5},
+        "compositionEndModel": {"kind": "special-number", "spelling": "-0"},
+        "changeModel": {"kind": "special-number", "spelling": "-0"},
+        "changeDom": "Infinity",
+        "afterChangeRenderDom": "0"
+      },
+      "successorOf": {
+        "kind": "previous-inline-refusal",
+        "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
+        "paths": ["davinci/vize_l3/tests/native_model_trim.rs", "davinci/vize_l3/tests/native_model_lazy.rs"],
+        "historicalCompleteNativePacket": false
+      }
+    },
+    {
+      "id": "number-var-nonnumeric",
+      "source": "<script setup>var count=7</script><template><input v-model.number='count'/></template>",
+      "script": "var count=7",
+      "template": "<input v-model.number='count'/>",
+      "bindings": ["count"],
+      "binding": "count",
+      "initial": {"kind": "number", "value": 7},
+      "input": " not numeric ",
+      "programmatic": "programmatic 23",
+      "composing": "8.25suffix",
+      "change": "  bad  ",
+      "numberRuntime": {
+        "inputModel": {"kind": "string", "value": " not numeric "},
+        "compositionEndModel": {"kind": "number", "value": 8.25},
+        "changeModel": {"kind": "number", "value": 8.25},
+        "changeDom": "  bad  ",
+        "afterChangeRenderDom": "8.25"
+      }
+    },
+    {
+      "id": "number-ts-unicode-crlf",
+      "source": "<!--雪🌸--><script setup lang='ts'>// import 'vue' stays authored\r\nlet café: string=' 2 '\r\n</script>\r\n<template><input v-model.number='café'/></template>\r\n",
+      "script": "// import 'vue' stays authored\r\nlet café: string=' 2 '\r\n",
+      "template": "<input v-model.number='café'/>",
+      "bindings": ["café"],
+      "binding": "café",
+      "initial": {"kind": "string", "value": " 2 "},
+      "input": "1e309",
+      "programmatic": "programmatic café 31",
+      "composing": " 9.25 ",
+      "change": " -0 ",
+      "numberRuntime": {
+        "inputModel": {"kind": "special-number", "spelling": "Infinity"},
+        "compositionEndModel": {"kind": "number", "value": 9.25},
+        "changeModel": {"kind": "number", "value": 9.25},
+        "changeDom": "0",
+        "afterChangeRenderDom": "9.25"
+      }
+    }
+  ]
+}

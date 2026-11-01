@@ -1,0 +1,7 @@
+<script lang="ts">
+import absent from "./never";
+type AssertNever<T extends never> = T;
+type ImportedMixinIsNever = AssertNever<typeof absent>;
+export default { mixins: [absent], methods: { safe() { return 1; }, probe() { this.safe(); return this.$unbound(); } } };
+</script>
+<template><span /></template>

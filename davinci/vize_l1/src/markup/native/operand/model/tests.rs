@@ -1,6 +1,7 @@
 //! Original model syntax ownership only: no assignability, File or DOM credit.
 
 mod lazy;
+mod number;
 mod support;
 mod trim;
 use support::{assert_original, observe, selected, source_span, value_span};
@@ -289,7 +290,11 @@ fn model_arguments_and_unsupported_modifiers_refuse_before_any_value_preparation
     for name in [
         "v-model:value",
         "v-model:[name]",
-        "v-model.number",
+        "v-model.number.number",
+        "v-model.number.trim",
+        "v-model.trim.number",
+        "v-model.number.lazy",
+        "v-model.Number",
         "v-model.trim.trim",
         "v-model.trim.lazy",
         "v-model.lazy.trim",

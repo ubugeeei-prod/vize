@@ -77,7 +77,8 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     let modifier = operand
         .trim_span()
         .map(|span| ("trim", span))
-        .or_else(|| operand.lazy_span().map(|span| ("lazy", span)));
+        .or_else(|| operand.lazy_span().map(|span| ("lazy", span)))
+        .or_else(|| operand.number_span().map(|span| ("number", span)));
     if let Some((name, span)) = modifier {
         body.push(", { ");
         body.push_named(name, span, name);
