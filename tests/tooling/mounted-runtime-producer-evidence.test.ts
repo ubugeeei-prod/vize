@@ -112,6 +112,7 @@ await test("failed producers retain complete large streams and status before rej
     assert.equal(manifest.schema, "vize.mounted-runtime-producer-failure.v1");
     assert.equal(manifest.accepted, false);
     assert.equal(manifest.phase, row.phase);
+    assert.equal(manifest.protocolValidated, false);
     assert.equal(manifest.pid, child.pid);
     assert.equal(manifest.production, false);
     assert.equal(manifest.selectedExecutable, child.spawnfile);
@@ -133,6 +134,41 @@ await test("failed producers retain complete large streams and status before rej
       assert.equal(stream.persisted, true);
       assert.equal(stream.error, null);
     }
+  }
+});
+
+await test("legacy evidence I/O failure is distinct from protocol rejection", async (t) => {
+  const temporary = mkdtempSync(join(tmpdir(), "vize-mounted-producer-legacy-io-"));
+  const previous = keys.map((key) => [key, process.env[key]] as const);
+  t.after(() => {
+    for (const [key, value] of previous) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    rmSync(temporary, { recursive: true, force: true });
+  });
+  for (const [index, suffix] of ["stdout.bin", "json"].entries()) {
+    const directory = join(temporary, String(index));
+    process.env[keys[0]] = directory;
+    delete process.env[keys[1]];
+    const { child, result } = execute(canonical, Buffer.alloc(0), 0);
+    mkdirSync(join(directory, `development-${child.pid}.${suffix}`), { recursive: true });
+    await assert.rejects(result, (error) => {
+      assert(error instanceof Error);
+      assert(error.cause instanceof Error);
+      assert.match(error.cause.message, /EISDIR|EPERM|EACCES/u);
+      return true;
+    });
+    const filename = readdirSync(directory).find((name) => name.endsWith(".failure.json"));
+    assert(filename);
+    const manifest = JSON.parse(readFileSync(join(directory, filename), "utf8"));
+    assert.equal(manifest.accepted, false);
+    assert.equal(manifest.phase, "evidence-io");
+    assert.equal(manifest.protocolValidated, suffix === "json");
+    assert.equal(manifest.exitCode, 0);
+    assert.equal(manifest.signal, null);
+    assert.equal(manifest.completeStreamsPersisted, true);
+    assert.deepEqual(readFileSync(join(directory, manifest.streams.stdout.file)), canonical);
   }
 });
 

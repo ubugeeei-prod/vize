@@ -5,6 +5,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+type ProducerFailurePhase = "terminal-status" | "protocol-rejection" | "evidence-io";
+
 /** Cache generated code, including a failed attempt, separately for both modes.
  * The entry and every other build flag are fixed by mounted-runtime-producer.
  * Each observer process starts at most two producers, with no silent retries.
@@ -53,7 +55,9 @@ export function collectRuntimeProducer(
         err.length !== 0;
       const captureErrors: unknown[] = [];
       let failureRecorded = false;
-      const captureFailure = (phase: "terminal-status" | "protocol-rejection") => {
+      let failurePhase: ProducerFailurePhase = "terminal-status";
+      let protocolValidated = false;
+      const captureFailure = (phase: ProducerFailurePhase) => {
         if (!directory || production === undefined || failureRecorded) return;
         failureRecorded = true;
         const prefix = `${name}-parent-${process.pid}`;
@@ -86,6 +90,7 @@ export function collectRuntimeProducer(
           schema: "vize.mounted-runtime-producer-failure.v1",
           accepted: false,
           phase,
+          protocolValidated,
           source: process.env.GITHUB_SHA ?? null,
           run: process.env.GITHUB_RUN_ID ?? null,
           attempt: process.env.GITHUB_RUN_ATTEMPT ?? null,
@@ -110,20 +115,25 @@ export function collectRuntimeProducer(
       try {
         if (statusFailed) captureFailure("terminal-status");
         if (directory && production !== undefined && !failuresOnly && !statusFailed) {
+          failurePhase = "evidence-io";
           mkdirSync(directory, { recursive: true });
           writeFileSync(join(directory, `${name}.stdout.bin`), out);
           writeFileSync(join(directory, `${name}.stderr.bin`), err);
         }
+        failurePhase = "terminal-status";
         assert.equal(spawnError, undefined, "runtime producer spawn failed");
         assert.equal(inputError, undefined, "runtime producer input failed");
         assert.equal(code, 0, "runtime producer must exit naturally with status 0");
         assert.equal(signal, null, "runtime producer must not signal");
         assert.deepEqual(err, Buffer.alloc(0), "runtime producer stderr must remain empty");
+        failurePhase = "protocol-rejection";
         const packet = JSON.parse(out.toString("utf8"));
         assert.deepEqual(Object.keys(packet), ["code"], "runtime producer packet fields");
         assert.equal(typeof packet.code, "string", "runtime producer must return code");
         assert.ok(packet.code.length > 0, "runtime producer code must not be empty");
         assert.deepEqual(out, Buffer.from(`${JSON.stringify(packet)}\n`), "whole producer packet");
+        protocolValidated = true;
+        failurePhase = "evidence-io";
         if (directory && production !== undefined && !failuresOnly) {
           writeFileSync(
             join(directory, `${name}.json`),
@@ -141,7 +151,7 @@ export function collectRuntimeProducer(
         }
         resolve(packet.code);
       } catch (cause) {
-        captureFailure("protocol-rejection");
+        captureFailure(failurePhase);
         reject(
           new Error(
             `mounted runtime producer failed\n${JSON.stringify({
