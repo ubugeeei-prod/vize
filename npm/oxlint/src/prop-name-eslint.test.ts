@@ -108,11 +108,11 @@ function messages(row: Record<string, unknown>, severity: number): unknown[] {
     assert.equal(finding.messageId, "invalidCase");
     const message = asString(finding.message);
     assert(message.endsWith("."));
-    // The existing CLI oracle specifies this complete Vize public presentation.
+    // NAPI exposes the plain finding; the CLI adds its own separate rule prefix.
     return {
       ruleId: publicRule,
       severity,
-      message: `[vize:${rule}] ${message.slice(0, -1)}`,
+      message: message.slice(0, -1),
       line: asNumber(finding.line),
       column: asNumber(finding.column),
       endLine: asNumber(finding.endLine),
