@@ -6,7 +6,8 @@ import { recipes, requiredCommands } from "./recipes.ts";
 import { array, bytes, gitBlob, object, sha256, sourcePath, text } from "./value.ts";
 
 export const inputPlanSha256 = "08e9d98975ef3bf695e24c3aa00bf9e31c5e601bad3bf17bdbd0484720ba2f45";
-const raw = readFileSync(new URL("./after-input-plan.json", import.meta.url));
+// Inert fixture spelling preserves the source owner's exact immutable bytes.
+const raw = readFileSync(new URL("./after-input-plan.json.txt", import.meta.url));
 assert.equal(sha256(raw), inputPlanSha256);
 export const inputPlanGitBlob = gitBlob(raw);
 const owned = object(JSON.parse(raw.toString("utf8")));

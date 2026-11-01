@@ -119,7 +119,7 @@ test("local and remote controller custody include bootstrap and source-owned inp
     closure.some(
       (file) =>
         file.path ===
-        "tools/support/release/human_reports_11252_11253_public/after-input-plan.json",
+        "tools/support/release/human_reports_11252_11253_public/after-input-plan.json.txt",
     ),
   );
   const actual = controllerFiles().map((file) => ({
