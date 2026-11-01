@@ -202,6 +202,10 @@ file scopes and disabled rules. This includes option-driven rule registration;
 category handling follows the CLI or editor respectively. The standalone
 formatter APIs retain their existing option defaults.
 
+The same guard applies to an active `vue/v-on-style: "longform"` rule:
+disable `normalizeDirectiveShorthands` to preserve its `v-on:click` fixes.
+Rule activation and request refusal follow the same host-specific behavior above.
+
 The native Node `formatSfc` API accepts the five Prettier migration booleans
 `normalizeCssQuotes`, `normalizeInlineStyles`, `normalizeVForParens`,
 `selfCloseVoidElements` and `reindentPreprocessorStyles` under the same names.

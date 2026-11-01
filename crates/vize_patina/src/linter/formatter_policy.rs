@@ -1,22 +1,28 @@
-//! Metadata-only activation for the formatter's bind-style interaction.
+//! Metadata-only activation for the formatter's directive-style interactions.
 
 use super::Linter;
 use crate::LintPreset;
-use crate::rules::vue::VBindStyleOption;
+use crate::rules::vue::{VBindStyleOption, VOnStyleOption};
 use vize_l0::{
     String,
-    config::{ConfigLintRuleOptions, LinterConfig, VBindStyle},
+    config::{ConfigLintRuleOptions, LinterConfig, VBindStyle, VOnStyle},
     cstr,
 };
 
+#[derive(Clone, Copy)]
+enum StyleRule {
+    Bind,
+    On,
+}
+
 impl Linter {
-    /// Validate only the formatter's interaction with an active bind-style rule.
+    /// Validate the formatter's interaction with active bind/event style rules.
     pub fn validate_directive_normalization(
         config: &LinterConfig,
         options: &ConfigLintRuleOptions,
         normalize: bool,
     ) -> Result<(), String> {
-        Self::validate_bind_normalization(config, options, normalize, false)
+        Self::validate_normalization(config, options, normalize, false)
     }
 
     /// Match the editor's existing constructor, including its category handling.
@@ -25,10 +31,10 @@ impl Linter {
         options: &ConfigLintRuleOptions,
         normalize: bool,
     ) -> Result<(), String> {
-        Self::validate_bind_normalization(config, options, normalize, true)
+        Self::validate_normalization(config, options, normalize, true)
     }
 
-    fn validate_bind_normalization(
+    fn validate_normalization(
         config: &LinterConfig,
         options: &ConfigLintRuleOptions,
         normalize: bool,
@@ -37,6 +43,11 @@ impl Linter {
         if normalize && Self::active_configured_bind(config, options, editor)? {
             return Err(String::from(
                 "normalizeDirectiveShorthands=true conflicts with active vue/v-bind-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand binding style",
+            ));
+        }
+        if normalize && Self::active_configured_style(config, options, editor, StyleRule::On)? {
+            return Err(String::from(
+                "normalizeDirectiveShorthands=true conflicts with active vue/v-on-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand event style",
             ));
         }
         Ok(())
@@ -58,7 +69,26 @@ impl Linter {
         options: &ConfigLintRuleOptions,
         editor: bool,
     ) -> Result<bool, String> {
-        if !config.enabled || options.v_bind_style() != Some(VBindStyle::Longform) {
+        Self::active_configured_style(config, options, editor, StyleRule::Bind)
+    }
+
+    fn active_configured_style(
+        config: &LinterConfig,
+        options: &ConfigLintRuleOptions,
+        editor: bool,
+        rule: StyleRule,
+    ) -> Result<bool, String> {
+        let (longform, name) = match rule {
+            StyleRule::Bind => (
+                options.v_bind_style() == Some(VBindStyle::Longform),
+                "vue/v-bind-style",
+            ),
+            StyleRule::On => (
+                options.v_on_style() == Some(VOnStyle::Longform),
+                "vue/v-on-style",
+            ),
+        };
+        if !config.enabled || !longform {
             return Ok(false);
         }
         let disabled = config.disabled_rules();
@@ -96,9 +126,11 @@ impl Linter {
         }
         // This existing builder can register a missing rule; its actual
         // enabled/disabled sets, rather than the option's presence, decide.
-        let linter = linter.with_v_bind_style(VBindStyleOption::Longform);
-        Ok(linter.registry().has_rule("vue/v-bind-style")
-            && linter.is_rule_enabled("vue/v-bind-style"))
+        let linter = match rule {
+            StyleRule::Bind => linter.with_v_bind_style(VBindStyleOption::Longform),
+            StyleRule::On => linter.with_v_on_style(VOnStyleOption::Longform),
+        };
+        Ok(linter.registry().has_rule(name) && linter.is_rule_enabled(name))
     }
 }
 
@@ -155,5 +187,66 @@ mod tests {
         assert!(defaults);
         assert_eq!(defaults, ecosystem);
         assert!(active(serde_json::json!({"preset":"unknown","ruleOptions":{"vue/v-bind-style":"longform"}})).is_err());
+    }
+
+    #[test]
+    fn event_conflict_preserves_bind_priority_and_explicit_false() {
+        let document: ConfigDocument = serde_json::from_value(serde_json::json!({
+            "linter":{"preset":"incremental","rules":{"vue/v-on-style":"error"},
+                "ruleOptions":{"vue/v-on-style":"longform"}}
+        }))
+        .unwrap();
+        let resolved = document
+            .linter_plan_with_config_rule_options()
+            .resolve_matching_entries(&[]);
+        let reason = "normalizeDirectiveShorthands=true conflicts with active vue/v-on-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand event style";
+        assert_eq!(
+            Linter::validate_directive_normalization(
+                &resolved.config,
+                &resolved.rule_options,
+                true
+            ),
+            Err(String::from(reason))
+        );
+        assert_eq!(
+            Linter::validate_editor_directive_normalization(
+                &resolved.config,
+                &resolved.rule_options,
+                true
+            ),
+            Err(String::from(reason))
+        );
+        assert_eq!(
+            Linter::validate_directive_normalization(
+                &resolved.config,
+                &resolved.rule_options,
+                false
+            ),
+            Ok(())
+        );
+        let both: ConfigDocument = serde_json::from_value(serde_json::json!({
+            "linter":{"preset":"incremental","rules":{"vue/v-bind-style":"error","vue/v-on-style":"error"},
+                "ruleOptions":{"vue/v-bind-style":"longform","vue/v-on-style":"longform"}}
+        })).unwrap();
+        let resolved = both
+            .linter_plan_with_config_rule_options()
+            .resolve_matching_entries(&[]);
+        let reason = "normalizeDirectiveShorthands=true conflicts with active vue/v-bind-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand binding style";
+        assert_eq!(
+            Linter::validate_directive_normalization(
+                &resolved.config,
+                &resolved.rule_options,
+                true
+            ),
+            Err(String::from(reason))
+        );
+        assert_eq!(
+            Linter::validate_editor_directive_normalization(
+                &resolved.config,
+                &resolved.rule_options,
+                true
+            ),
+            Err(String::from(reason))
+        );
     }
 }

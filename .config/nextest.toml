@@ -11,6 +11,11 @@ filter = '''(package(=vize_atelier_sfc) & binary(=empty_component)) |
 ))'''
 junit.store-success-output = true
 
+# Retain complete event-policy CLI observations; normal execution is unchanged.
+[[profile.default.overrides]]
+filter = 'package(=vize) & binary(=integration) & test(~fmt_on_style_policy_cli::)'
+junit.store-success-output = true
+
 # Keep all original #11264 CLI argv/streams/files in ordinary PR/full JUnit.
 # This changes retention only; the four tests keep the normal execution policy.
 [[profile.default.overrides]]

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "lsp/regression/formatter-on-style-policy-6098",
+  "provenance": {
+    "fixCommit": "b46054f5ca8cf890f13d6e75488c052a442ba39b",
+    "inputOrigin": "Original configured v-on-style source from #10135, with its new independently verified complete longform fix. fixCommit names that original option producer, not this host-policy repair.",
+    "contractOrigin": "New authored host-policy refusal contract; these three nulls are not an independent old legacy formatter golden. Direct Rust handler controls retain actionable warnings and no-write assertions."
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "formatting": true
+  },
+  "files": [
+    {
+      "source": "Fixed.vue.txt",
+      "runtimePath": "Events.vue",
+      "sha256": "d9a03b58b3a05f01a87b09c72e5e382f2829d7eef26eff8a5f74f474e080cdae"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "1694a0cdbac2790803bc117de19a193e1056156ecb3a65e2f9e43801189c5fc1"
+    }
+  ],
+  "entry": "Events.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "23af3ce264de550c8f68796a72f521343a9c684e15b2039d6d3e5cd8a403b096"
+  },
+  "method": "textDocument/formatting",
+  "options": {
+    "tabSize": 2,
+    "insertSpaces": true
+  }
+}

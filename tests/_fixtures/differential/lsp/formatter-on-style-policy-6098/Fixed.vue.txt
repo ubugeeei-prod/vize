@@ -1,0 +1,3 @@
+<template>
+  <button v-on:click="save" v-on:keyup="cancel" v-on="listeners">Save</button>
+</template>
