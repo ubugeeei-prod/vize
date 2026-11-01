@@ -246,13 +246,15 @@ fn is_false(value: &bool) -> bool {
 /// Preserve the formatter's existing fallback for widths outside its domain.
 /// Narrowing first would reinterpret a large configured width modulo 65536.
 pub(crate) fn javascript_line_width(width: u32) -> oxc_formatter_core::LineWidth {
-    let default = oxc_formatter_core::LineWidth::default();
-    if width == u32::from(default.value()) {
-        return default;
+    use oxc_formatter_core::LineWidth;
+
+    // Apply the provider's existing domain before narrowing the integer.
+    if !(u32::from(LineWidth::MIN)..=u32::from(LineWidth::MAX)).contains(&width) {
+        return LineWidth::default();
     }
     u16::try_from(width)
         .ok()
-        .and_then(|width| oxc_formatter_core::LineWidth::try_from(width).ok())
+        .and_then(|width| LineWidth::try_from(width).ok())
         .unwrap_or_default()
 }
 
