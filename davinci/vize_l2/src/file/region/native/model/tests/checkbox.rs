@@ -71,11 +71,12 @@ fn checkbox_original_inline_successor_and_both_header_orders_keep_real_type_and_
     }
 }
 
+#[cfg(test)]
 #[test]
 fn type_owner_and_model_owner_cannot_be_borrowed_from_equal_byte_files() {
     let arena = Allocator::default();
-    let left = std::string::String::from(ORIGINAL_INLINE);
-    let right = std::string::String::from(ORIGINAL_INLINE);
+    let left = alloc::string::String::from(ORIGINAL_INLINE);
+    let right = alloc::string::String::from(ORIGINAL_INLINE);
     let actual = completed(&arena, &left);
     let foreign = completed(&arena, &right);
     let file = actual.file().unwrap();
