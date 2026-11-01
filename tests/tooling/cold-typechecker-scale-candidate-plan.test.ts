@@ -74,19 +74,39 @@ test("synthetic pending plan has null unknowns and refuses any candidate before 
   assert.throws(() => selectCandidatePlan(pending(), id("c"), id("e"), "10000"));
 });
 test("each source-bound controller case selects only its own exact pair", () => {
-  const plan = validateCandidatePlan(literalPlan());
-  for (const row of plan.cases) {
-    if (row.state !== "ready") continue;
-    const selected = selectCandidatePlan(plan, row.sources.base.sha, row.sources.head.sha, "2500");
-    assert.equal(selected.route, "candidate");
-    assert(selected.route === "candidate");
-    assert.equal(selected.selected.kind, row.kind);
-    assert.deepEqual(selected.selected, row);
-    assert.throws(() =>
-      selectCandidatePlan(plan, row.sources.head.sha, row.sources.base.sha, "2500"),
+  const verify = (plan: CandidatePlan) => {
+    const rows = plan.cases.filter((row) => row.state === "ready");
+    assert.deepEqual(
+      rows.map((row) => row.kind),
+      ["type-work", "route-move"],
+      "both checked-in source-bound cases must be ready",
     );
+    for (const row of rows) {
+      const selected = selectCandidatePlan(
+        plan,
+        row.sources.base.sha,
+        row.sources.head.sha,
+        "2500",
+      );
+      assert.equal(selected.route, "candidate");
+      assert(selected.route === "candidate");
+      assert.equal(selected.selected.kind, row.kind);
+      assert.deepEqual(selected.selected, row);
+      assert.throws(() =>
+        selectCandidatePlan(plan, row.sources.head.sha, row.sources.base.sha, "2500"),
+      );
+    }
+  };
+  const plan = validateCandidatePlan(literalPlan());
+  verify(plan);
+  assert.throws(() => verify(validateCandidatePlan(pending())), /both checked-in/u);
+  for (const index of [0, 1]) {
+    const missing = structuredClone(plan);
+    missing.cases[index] = pending().cases[index];
+    assert.throws(() => verify(validateCandidatePlan(missing)), /both checked-in/u);
   }
 });
+
 test("one frozen ready case selects only its exact pair; both cases remain independent", () => {
   const plan = ready();
   const selected = selectCandidatePlan(plan, id("c"), id("e"), "2500");
