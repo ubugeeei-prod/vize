@@ -3,7 +3,11 @@
 
 use serde_json::json;
 use std::{alloc::System, path::Path, time::Instant};
-use vize_canon::generate_vue_content_mapper_transform;
+use vize_canon::{
+    batch::{ImportRewriter, VueDocumentVirtualTs, generate_vue_document_virtual_ts},
+    generate_vue_content_mapper_transform,
+    virtual_ts::VirtualTsOptions,
+};
 use vize_l0::{
     String,
     profiler::{
@@ -41,6 +45,31 @@ fn authored_source(count: usize, imports: bool) -> String {
     source
 }
 
+fn complete_document(source: &str, path: &str, kind: &str, hoist: bool) -> serde_json::Value {
+    let VueDocumentVirtualTs {
+        code,
+        pre_rewrite_code,
+        mapping,
+        import_source_map,
+        source_type,
+        virtual_suffix,
+    } = generate_vue_document_virtual_ts(
+        Path::new(path),
+        source,
+        &VirtualTsOptions::default(),
+        &ImportRewriter::new(),
+        hoist,
+    )
+    .unwrap();
+    json!({
+        "kind": kind, "hoist": hoist, "virtualFile": path, "source": source,
+        "code": code, "preRewriteCode": pre_rewrite_code,
+        "mappingDebug": format!("{mapping:?}"),
+        "importSourceMapDebug": format!("{import_source_map:?}"),
+        "sourceTypeDebug": format!("{source_type:?}"), "virtualSuffix": virtual_suffix,
+    })
+}
+
 #[test]
 fn complete_binding_anchor_generation_profile() {
     let count = std::env::var("VIZE_BINDING_PROFILE_COUNT")
@@ -52,6 +81,14 @@ fn complete_binding_anchor_generation_profile() {
     let shape = std::env::var("VIZE_BINDING_PROFILE_SHAPE").unwrap_or_else(|_| "locals".into());
     assert!(matches!(shape.as_str(), "locals" | "imports"));
     let source = authored_source(count, shape == "imports");
+    let input_path = std::env::var_os("VIZE_BINDING_PROFILE_INPUT")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "../../../../tests/_fixtures/differential/typechecker/prepared-type-only-import-facts/Imports.vue.txt",
+        ))
+        .canonicalize()
+        .unwrap();
+    let pinned_source = std::fs::read_to_string(&input_path).unwrap();
     let profiler = global_profiler();
     profiler.disable();
     profiler.clear();
@@ -93,16 +130,25 @@ fn complete_binding_anchor_generation_profile() {
         assert_eq!(allocation.allocation_calls(), 0);
         assert_eq!(spans, Vec::<serde_json::Value>::new());
     }
+    // These whole-document observations are deliberately outside both measurement windows.
+    let documents = [
+        complete_document(&source, "src/Bindings.vue", "measured", false),
+        complete_document(&source, "src/Bindings.vue", "measured", true),
+        complete_document(&pinned_source, "src/Imports.vue", "pinned", false),
+        complete_document(&pinned_source, "src/Imports.vue", "pinned", true),
+    ];
+    assert_eq!(std::fs::read_to_string(&input_path).unwrap(), pinned_source);
     let observation = json!({
         "schema": "vize.setup-binding-anchor-profile",
         "sourceRevision": std::env::var("VIZE_BINDING_PROFILE_SOURCE").ok(),
         "shape": shape, "count": count, "mode": mode,
-        "source": source, "packet": packet,
+        "source": source, "packet": packet, "documents": documents,
+        "pinnedInput": {"path": input_path, "source": pinned_source},
         "elapsedNanoseconds": elapsed.as_nanos(),
         "allocation": {"calls": allocation.allocation_calls(), "requestedBytes": allocation.requested_bytes(),
             "releasedBytes": allocation.released_bytes(), "failures": allocation.allocation_failures()},
         "spans": spans,
-        "scope": "one source generation in a fresh process; fixture construction and serialization excluded; profiling binary runtime-off is not a normal release artifact timing",
+        "scope": "one measured source generation in a fresh process; fixture reads, whole default/hoisted documents and serialization excluded; profiling binary runtime-off is not a normal release artifact timing",
         "cold": {"generationCalls": 1, "warmups": 0, "persistentCache": false},
     });
     if let Some(output) = std::env::var_os("VIZE_BINDING_PROFILE_OUTPUT") {

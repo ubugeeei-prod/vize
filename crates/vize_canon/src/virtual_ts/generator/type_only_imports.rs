@@ -108,6 +108,9 @@ fn extract_syntactic_type_only_import_names(import_text: &str) -> Vec<&str> {
 }
 
 #[cfg(test)]
+mod prepared_tests;
+
+#[cfg(test)]
 mod tests {
     use super::extract_syntactic_type_only_import_names;
 

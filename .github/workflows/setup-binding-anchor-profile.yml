@@ -4,6 +4,9 @@ on:
     paths:
       - crates/vize_canon/src/virtual_ts/generator/anchors.rs
       - crates/vize_canon/src/virtual_ts/generator/imports.rs
+      - crates/vize_canon/src/virtual_ts/generator/type_only_imports.rs
+      - crates/vize_canon/src/virtual_ts/generator/type_only_imports/**
+      - tests/_fixtures/differential/typechecker/prepared-type-only-import-facts/**
       - crates/vize_canon/src/virtual_ts/props.rs
       - crates/vize_canon/src/virtual_ts/props/template_bindings.rs
       - tools/benchmarks/crates/vize/tests/setup_binding_anchor_profile.rs
@@ -24,6 +27,7 @@ jobs:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
       RAYON_NUM_THREADS: "8"
+      VIZE_BINDING_PROFILE_INPUT: ${{ github.workspace }}/tests/_fixtures/differential/typechecker/prepared-type-only-import-facts/Imports.vue.txt
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:

@@ -9,6 +9,10 @@ const observer = new URL(
   "../../tools/benchmarks/scripts/setup-binding-anchor-evidence.ts",
   import.meta.url,
 );
+const pinnedSource = readFileSync(new URL(
+  "../_fixtures/differential/typechecker/prepared-type-only-import-facts/Imports.vue.txt",
+  import.meta.url,
+), "utf8");
 
 function fixture(root: string) {
   const binaries = {
@@ -29,6 +33,19 @@ function fixture(root: string) {
               mode,
               source: `${shape} ${count} 日本 🧭`,
               packet: { text: "whole packet", mappings: [[0, 1, 0, 1]], diagnostics: [] },
+              pinnedInput: { path: "/same-physical-input/Imports.vue.txt", source: pinnedSource },
+              documents: [0, 1, 2, 3].map((index) => ({
+                kind: index < 2 ? "measured" : "pinned",
+                hoist: index % 2 === 1,
+                virtualFile: index < 2 ? "src/Bindings.vue" : "src/Imports.vue",
+                source: index < 2 ? `${shape} ${count} 日本 🧭` : pinnedSource,
+                code: "complete generated TypeScript",
+                preRewriteCode: "complete pre-rewrite TypeScript",
+                mappingDebug: "all private mapping fields in derived Debug order",
+                importSourceMapDebug: "complete rewrite map",
+                sourceTypeDebug: "TypeScript",
+                virtualSuffix: ".ts",
+              })),
               cold: { generationCalls: 1, warmups: 0, persistentCache: false },
               elapsedNanoseconds: 100,
               allocation: {
@@ -67,14 +84,36 @@ test("comparison retains all72 full observations and independent binary identiti
     assert.equal(result.status, 0, result.stderr);
     const receipt = JSON.parse(readFileSync(join(root, "comparison.json"), "utf8"));
     assert.equal(receipt.completeObservations, 72);
+    assert.equal(receipt.completeDocumentObservations, 288);
     assert.equal(receipt.summary.length, 6);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
 });
 
+test("whole document geometry, order, fields and the physical pinned input are strict", () => {
+  for (const control of ["code", "mappingDebug", "importSourceMapDebug", "hoist", "order", "extra", "source", "path"]) {
+    const root = mkdtempSync(join(tmpdir(), "anchor-documents-invalid-"));
+    try {
+      fixture(root);
+      const path = join(root, "head-imports-128-allocation-2.json");
+      const row = JSON.parse(readFileSync(path, "utf8"));
+      if (control === "hoist") row.documents[3].hoist = false;
+      else if (control === "order") row.documents.reverse();
+      else if (control === "extra") row.documents[3].unknown = true;
+      else if (control === "source") row.pinnedInput.source += "\n";
+      else if (control === "path") row.pinnedInput.path += ".other";
+      else row.documents[3][control] += " changed";
+      writeFileSync(path, JSON.stringify(row));
+      assert.notEqual(run(root).status, 0, control);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }
+});
+
 test("same binary, modified packet, skipped size and allocation increases are rejected", () => {
-  for (const control of ["same-binary", "packet", "missing", "regression"]) {
+  for (const control of ["same-binary", "packet", "missing", "regression", "whole-bytes"]) {
     const root = mkdtempSync(join(tmpdir(), "anchor-evidence-invalid-"));
     try {
       fixture(root);
@@ -92,7 +131,8 @@ test("same binary, modified packet, skipped size and allocation increases are re
         for (const round of [1, 2, 3]) {
           const path = join(root, `head-imports-128-allocation-${round}.json`);
           const packet = JSON.parse(readFileSync(path, "utf8"));
-          packet.spans[0].allocationCalls = 128 * 128 + 1;
+          if (control === "whole-bytes") packet.allocation.requestedBytes = 128 * 128 * 8 + 1;
+          else packet.spans[0].allocationCalls = 128 * 128 + 1;
           writeFileSync(path, JSON.stringify(packet));
         }
       assert.notEqual(run(root).status, 0, control);

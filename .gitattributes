@@ -149,5 +149,7 @@ tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/** -text
 tests/_fixtures/differential/typechecker/runtime-null-prop-11252/*.txt -text
 # The generation-local import test consumes this pinned script literally.
 tests/_fixtures/differential/typechecker/generation-value-import-facts/Imports.vue.txt text eol=lf
+# The prepared type-import plan consumes this complete pinned SFC literally.
+tests/_fixtures/differential/typechecker/prepared-type-only-import-facts/Imports.vue.txt text eol=lf
 # Controlled route graph is hashed and consumed literally by ordinary Rust tests.
 tests/_fixtures/differential/typechecker/cold-package-shadow-routes-11265/input.json text eol=lf
