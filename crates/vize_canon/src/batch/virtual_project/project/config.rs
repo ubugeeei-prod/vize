@@ -13,7 +13,7 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 use super::super::VirtualProject;
 
 impl VirtualProject {
-    pub(super) fn private_return_fingerprint(&self) -> Option<&str> {
+    pub(in crate::batch::virtual_project) fn private_return_fingerprint(&self) -> Option<&str> {
         #[cfg(test)]
         {
             super::super::private_return::fingerprint(self)
