@@ -1,0 +1,4 @@
+<template>
+  <MyPanel #default="slot">{{ slot.item }}</MyPanel>
+  <MyPanel><template #header>Header</template></MyPanel>
+</template>

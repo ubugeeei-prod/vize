@@ -1,0 +1,47 @@
+[
+  {
+    "method": "textDocument/formatting",
+    "params": {
+      "options": {
+        "tabSize": 2,
+        "insertSpaces": true
+      }
+    },
+    "result": null
+  },
+  {
+    "method": "textDocument/rangeFormatting",
+    "params": {
+      "range": {
+        "start": {
+          "line": 0,
+          "character": 0
+        },
+        "end": {
+          "line": 4,
+          "character": 0
+        }
+      },
+      "options": {
+        "tabSize": 2,
+        "insertSpaces": true
+      }
+    },
+    "result": null
+  },
+  {
+    "method": "textDocument/onTypeFormatting",
+    "params": {
+      "position": {
+        "line": 1,
+        "character": 2
+      },
+      "ch": "\n",
+      "options": {
+        "tabSize": 2,
+        "insertSpaces": true
+      }
+    },
+    "result": null
+  }
+]

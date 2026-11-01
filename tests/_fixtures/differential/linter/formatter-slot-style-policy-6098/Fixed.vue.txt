@@ -1,0 +1,4 @@
+<template>
+  <MyPanel v-slot:default="slot">{{ slot.item }}</MyPanel>
+  <MyPanel><template v-slot:header>Header</template></MyPanel>
+</template>

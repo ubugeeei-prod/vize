@@ -27,6 +27,10 @@ junit.store-success-output = true
 filter = 'package(=vize) & binary(=integration) & test(~fmt_on_style_policy_cli::)'
 junit.store-success-output = true
 
+[[profile.default.overrides]]
+filter = 'package(=vize) & binary(=integration) & test(~fmt_slot_style_policy_cli::)'
+junit.store-success-output = true
+
 # Keep all original #11264 CLI argv/streams/files in ordinary PR/full JUnit.
 # This changes retention only; the four tests keep the normal execution policy.
 [[profile.default.overrides]]

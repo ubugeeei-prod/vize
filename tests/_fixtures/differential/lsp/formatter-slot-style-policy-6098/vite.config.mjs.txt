@@ -1,0 +1,1 @@
+export default { vue: {"formatter":{"normalizeDirectiveShorthands":true},"linter":{"preset":"incremental","ruleOptions":{"vue/v-slot-style":{"atComponent":"longform","default":"v-slot","named":"longform"}},"rules":{"vue/v-slot-style":"error"}}} };

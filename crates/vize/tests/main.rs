@@ -178,6 +178,7 @@ mod fmt_on_style_policy_cli;
 mod fmt_plain_cli;
 mod fmt_preserved_template_text_cli;
 mod fmt_semicolon_cli;
+mod fmt_slot_style_policy_cli;
 mod fmt_supported_targets_cli;
 mod fmt_template_attribute_print_width_cli;
 mod fmt_template_closing_print_width_cli;

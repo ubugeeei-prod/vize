@@ -205,6 +205,13 @@ CLI とエディターそれぞれの既存動作に従います。単独の整�
 
 有効な `vue/v-on-style: "longform"` にも同じ検査が適用されます。
 `v-on:click` への修正を保つには `normalizeDirectiveShorthands` を `false` にします。
+
+有効な `vue/v-slot-style` のいずれかの位置を `"longform"` にする場合も、
+`normalizeDirectiveShorthands: false` が必要です。既定の正規化は
+`v-slot:default` や `v-slot:header` を略記へ戻すためです。文字列による一括指定と
+位置ごとのオブジェクト指定に対応し、裸の `v-slot` を使う既定値は衝突しません。
+スロットのオプションだけでは未選択のルールを有効にしないため、incremental
+プリセットでは `vue/v-slot-style` 自体を選択したときにだけ衝突します。
 有効性と整形要求の拒否は、上記と同じ各ホストの動作に従います。
 
 Node の native `formatSfc` API でも、Prettier 移行用の 5 つの真偽値
