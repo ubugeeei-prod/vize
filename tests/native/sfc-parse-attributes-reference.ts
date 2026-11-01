@@ -5,6 +5,7 @@ import {
   closedSetupReference,
   type ExposurePacket,
 } from "../tooling/support/script-setup-default-expose.ts";
+import { emptyCompilePacketReference } from "./sfc-parse-attributes-empty-component.ts";
 
 export const exposureReferenceCustody = {
   fixSource: "9157b9fa83dbdc98100be084be288f21d0d1bc18",
@@ -28,6 +29,7 @@ export function attributesPacketReference(
   mode: string,
 ): Record<string, unknown> {
   if (mode !== "compile" || packet.kind !== "return") return structuredClone(packet);
+  if (source === "") return emptyCompilePacketReference(packet);
   assert.equal(typeof packet.json, "string");
   const value: unknown = JSON.parse(String(packet.json));
   assert(value !== null && typeof value === "object" && !Array.isArray(value));

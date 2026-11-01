@@ -8,7 +8,9 @@ on:
       - "crates/vize_vitrine/src/napi/sfc/types.rs"
       - "npm/native/index.d.ts"
       - "tests/native/sfc-parse-attributes-*.mjs"
+      - "tests/native/sfc-parse-attributes-*.ts"
       - "tests/tooling/sfc-parse-attributes-bootstrap.test.ts"
+      - "tests/tooling/sfc-parse-attributes-reference.test.ts"
       - "tests/fixtures/sfc/parsed-attributes/**"
   workflow_dispatch:
 permissions: { contents: read }

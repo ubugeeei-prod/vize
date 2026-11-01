@@ -8,6 +8,10 @@ import {
   attributesPacketReference,
   exposureReferenceCustody,
 } from "./sfc-parse-attributes-reference.ts";
+import {
+  emptyCompileReference,
+  emptyCompileSourceBlobs,
+} from "./sfc-parse-attributes-empty-component.ts";
 
 const directory = path.resolve(process.argv[2]);
 const base = JSON.parse(await fs.readFile(path.join(directory, "base/packets.json"), "utf8"));
@@ -54,7 +58,7 @@ for (const fixture of fixtures) {
     assert.deepEqual(
       original(after[mode]),
       original(attributesPacketReference(before[mode], fixture.source, mode)),
-      `${fixture.id}/${mode}: complete existing API packet stays identical`,
+      `${fixture.id}/${mode}: complete API packet matches its explicit source-bound reference`,
     );
   if (fixture.error) {
     assert.equal(after.enabled.kind, "throw");
@@ -103,6 +107,14 @@ await fs.writeFile(
       defaultPackets: fixtures.length * 4,
       originalErrorStacksRetained: true,
       historicalExposureReference: exposureReferenceCustody,
+      emptyCompileSuccessor: {
+        fixSource: emptyCompileReference.fixSource,
+        sourceBlobs: emptyCompileSourceBlobs,
+        evidence: emptyCompileReference.evidence,
+        cases: 1,
+        rawBasePacketsRetained: true,
+        candidatePacketsUnmodified: true,
+      },
     },
     null,
     2,
