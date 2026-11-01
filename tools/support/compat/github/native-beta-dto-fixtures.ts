@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { stripTypeScriptTypes } from "node:module";
 import { watcherSuccessor } from "./native-beta-dto-current-custody.ts";
 const currentAuthorityPath = "tools/support/compat/github/native-beta-dto-current-custody.ts";
-const currentAuthoritySha256 = "e1a7bbd00a2e6e4221c642b9eabcb35cac68e4e54e115ae919b028258bf916d3";
+const currentAuthoritySha256 = "7b3a237c532c7a9c0ff980f42235212c01a38fef09c77a1a87d0e815513060fc";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";
@@ -161,6 +161,17 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
           watcherSuccessor.routeRuntimeSha256, "missing or changed registered beta semantic route runtime");
       for (const [path, physical, executable] of [
         [
+          watcherSuccessor.after4SourcePath,
+          watcherSuccessor.after4SourceHash,
+          watcherSuccessor.after4SourceRuntime,
+        ],
+        [
+          watcherSuccessor.after4CleanupPath,
+          watcherSuccessor.after4CleanupHash,
+          watcherSuccessor.after4CleanupRuntime,
+        ],
+        [watcherSuccessor.tomlPath, watcherSuccessor.tomlHash, watcherSuccessor.tomlRuntime],
+        [
           watcherSuccessor.ackFragmentPath,
           watcherSuccessor.ackFragmentHash,
           watcherSuccessor.ackFragmentRuntime,
@@ -260,6 +271,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       currentMixedEofRegistration: index === 3 ? watcherSuccessor.mixedEofId : null,
       currentLateRootRegistration: index === 3 ? watcherSuccessor.lateRootId : null,
       currentRouteRegistration: index === 3 ? watcherSuccessor.routeId : null,
+      currentAfter4CleanupRegistration: index === 3 ? watcherSuccessor.after4CleanupId : null,
       currentMembershipRegistration: index === 3 ? watcherSuccessor.membershipId : null,
       currentRootWarningRegistration: index === 3 ? watcherSuccessor.rootWarningId : null,
       currentStorageRegistration: index === 1 || index === 3 ? watcherSuccessor.storageId : null,

@@ -150,6 +150,10 @@ void test("typed producers retain historical bytes and only the exact registered
       .every((entry) => entry.currentSplitLogRegistration === null),
   );
   assert.equal(current.currentLateRootRegistration, "before-stable-late-root-program-41176048826");
+  assert.equal(
+    current.currentAfter4CleanupRegistration,
+    "source-owned-sdk4-post-batch-cleanup-41265655424",
+  );
   assert(
     custody
       .filter((entry) => entry !== current)
@@ -252,6 +256,9 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/semantic-route.ts",
     "tests/tooling/support/native-beta-dto/logical-revision.ts",
     "tests/tooling/support/native-beta-dto/logical-batch.ts",
+    "tests/tooling/support/native-beta-dto/after4-cleanup-source.ts",
+    "tests/tooling/support/native-beta-dto/logical-beta4-cleanup.ts",
+    "tools/support/compat/davinci/toml-lite.ts",
     "tests/tooling/support/native-beta-dto/logical-attached-route.ts",
     "tools/support/compat/github/native-beta-dto-current-custody.ts",
     "tests/tooling/support/native-beta-dto/historical-root-watch-warning.ts",
@@ -301,6 +308,9 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/semantic-route.ts",
     "tests/tooling/support/native-beta-dto/logical-revision.ts",
     "tests/tooling/support/native-beta-dto/logical-batch.ts",
+    "tests/tooling/support/native-beta-dto/after4-cleanup-source.ts",
+    "tests/tooling/support/native-beta-dto/logical-beta4-cleanup.ts",
+    "tools/support/compat/davinci/toml-lite.ts",
     "tests/tooling/support/native-beta-dto/logical-attached-route.ts",
     "tools/support/compat/github/native-beta-dto-current-custody.ts",
     "tests/tooling/support/native-beta-dto/historical-root-watch-warning.ts",

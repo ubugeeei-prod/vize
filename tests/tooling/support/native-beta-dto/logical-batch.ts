@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import type { AttachedOwner } from "./beta-attached-route.ts";
 import type { SemanticPacket, SourceSupplement } from "./semantic-route.ts";
+import { verifyLogicalBeta4Cleanup } from "./logical-beta4-cleanup.ts";
+import type { After4CleanupSource } from "./after4-cleanup-source.ts";
+import type { WatcherContext } from "./stable-watcher-boundary.ts";
 type Packet = Record<string, unknown>;
 const object = (value: unknown): Packet => {
   assert.ok(value && typeof value === "object" && !Array.isArray(value));
@@ -11,6 +14,11 @@ export function verifyLogicalBatchSuffix(
   owner: AttachedOwner,
   packets: readonly SemanticPacket[],
   attachedValue: unknown,
+  cleanup: {
+    authority: After4CleanupSource;
+    context: WatcherContext;
+    sourceRows: readonly unknown[];
+  } | null = null,
 ): SourceSupplement | null {
   if (packets.length === 0) return null;
   const attached = object(attachedValue),
@@ -110,14 +118,26 @@ export function verifyLogicalBatchSuffix(
   );
   assert.equal(shutdown.length, 1);
   assert.ok(shutdown[0]!.index > indices[2]!);
-  for (const [index, row] of client.entries())
-    if (index > client.indexOf(packets[51]!.request) && index < shutdown[0]!.index)
-      if (row.method === "textDocument/didClose")
-        assert.ok(
-          ![mainUri, virtualUri, attached.supportUri].includes(
-            object(object(row.params).textDocument).uri,
-          ),
-        );
+  const sourceCleanup = cleanup
+    ? verifyLogicalBeta4Cleanup(
+        owner,
+        phasePackets,
+        suffix,
+        attachedValue,
+        cleanup.authority,
+        cleanup.context,
+        cleanup.sourceRows,
+      )
+    : null;
+  if (!cleanup)
+    for (const [index, row] of client.entries())
+      if (index > client.indexOf(packets[51]!.request) && index < shutdown[0]!.index)
+        if (row.method === "textDocument/didClose")
+          assert.ok(
+            ![mainUri, virtualUri, attached.supportUri].includes(
+              object(object(row.params).textDocument).uri,
+            ),
+          );
   return {
     phasePackets,
     batchPackets: suffix,
@@ -131,6 +151,7 @@ export function verifyLogicalBatchSuffix(
       packets: suffix,
       sourceNativePull: batch.nativePull,
       sourceBatch: batch.selected,
+      ...(sourceCleanup ? { sourceCleanup } : {}),
     },
   };
 }

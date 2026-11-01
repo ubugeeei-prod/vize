@@ -3,6 +3,7 @@ import type { WatcherContext } from "./stable-watcher-boundary.ts";
 import { verifyAfterLogicalRevision } from "./logical-revision.ts";
 import { verifyBetaSemanticRoute } from "./semantic-route.ts";
 import { verifyLogicalBatchSuffix } from "./logical-batch.ts";
+import type { After4CleanupSource } from "./after4-cleanup-source.ts";
 
 /** Current logical revisions admit no physical-project membership method or URI alias. */
 export function verifyBetaLogicalRoute(
@@ -12,6 +13,7 @@ export function verifyBetaLogicalRoute(
   attachedRoot: string,
   sourceRows: readonly unknown[],
   attachedValue: unknown,
+  cleanup: After4CleanupSource | null = null,
 ) {
   const revision = verifyAfterLogicalRevision(owners, context, expectedSource, attachedValue);
   return verifyBetaSemanticRoute(
@@ -23,6 +25,12 @@ export function verifyBetaLogicalRoute(
     revision,
     revision.logicalRoot,
     () => [],
-    (owner, packets) => verifyLogicalBatchSuffix(owner, packets, attachedValue),
+    (owner, packets) =>
+      verifyLogicalBatchSuffix(
+        owner,
+        packets,
+        attachedValue,
+        cleanup ? { authority: cleanup, context, sourceRows } : null,
+      ),
   );
 }

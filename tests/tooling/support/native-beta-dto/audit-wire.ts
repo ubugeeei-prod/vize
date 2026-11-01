@@ -11,6 +11,7 @@ import {
 } from "./beta-attached-route.ts";
 import { verifyAfterLogicalRevision } from "./logical-revision.ts";
 import { verifyBetaLogicalRoute } from "./logical-attached-route.ts";
+import { loadAfter4CleanupSource } from "./after4-cleanup-source.ts";
 import type { Packet, Syscall, StreamPair, Provider, Source, Receipt } from "./audit-wire-types.ts";
 import {
   readNativeTrace,
@@ -333,6 +334,7 @@ if (provider.version === "7.1.0-beta") {
         source.attached.root,
         source.attached.rows,
         source.attached,
+        loadAfter4CleanupSource(root, source),
       ),
     );
 }
