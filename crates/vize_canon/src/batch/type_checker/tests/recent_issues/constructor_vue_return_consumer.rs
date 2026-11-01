@@ -196,7 +196,11 @@ fn request(input: &Input<'_>) -> Result<UsageRequest, Failure> {
 }
 
 fn hash(bytes: &[u8]) -> String {
-    cstr!("{:x}", Sha256::digest(bytes))
+    let mut encoded = String::with_capacity(64);
+    for byte in Sha256::digest(bytes) {
+        encoded.push_str(cstr!("{byte:02x}").as_str());
+    }
+    encoded
 }
 
 fn persist(file: &mut fs::File, value: &Value) -> Result<(), Failure> {
