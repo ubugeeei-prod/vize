@@ -55,8 +55,9 @@ impl Linter {
             .map_err(NativeTemplateLintRefusal::Parse)?;
         admission::component(root.component())?;
         let mut context = NativeTemplateLintContext::new(self, &root, filename);
-        for (&(name, callback), &owner) in callbacks.iter().zip(&owners) {
+        for (ordinal, (&(name, callback), &owner)) in callbacks.iter().zip(&owners).enumerate() {
             context.current_rule = name;
+            context.current_callback = Some(ordinal);
             context.current_owner_profile = owner;
             callback.run_on_template(&mut context, &root)?;
         }
@@ -69,8 +70,11 @@ impl Linter {
             NativeTemplateTextProfile::LiteralText,
             owner_profile,
             &mut |view| {
-                for (&(name, callback), &owner) in callbacks.iter().zip(&owners) {
+                for (ordinal, (&(name, callback), &owner)) in
+                    callbacks.iter().zip(&owners).enumerate()
+                {
                     context.current_rule = name;
+                    context.current_callback = Some(ordinal);
                     context.current_owner_profile = owner;
                     callback.run_on_element(&mut context, view)?;
                 }

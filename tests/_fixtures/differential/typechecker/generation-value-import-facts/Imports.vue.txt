@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import DefaultValue, { value as aliased, type Model } from "./values";
+import * as namespace from "./values";
+import type { OnlyType } from "./values";
+import "./side-effect";
+const local = DefaultValue;
+const enum LocalState { Ready }
+type Payload = Model | OnlyType;
+type Namespace = typeof namespace;
+</script>
+
+<template>{{ aliased }} {{ local }} {{ LocalState.Ready }}</template>

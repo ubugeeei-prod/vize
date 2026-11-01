@@ -1,8 +1,6 @@
 //! Setup binding anchor emission for template-used names.
 
-use super::imports::{
-    IdentifierUsage, collect_setup_binding_anchor_names, collect_value_import_binding_names,
-};
+use super::imports::{IdentifierUsage, ValueImportNames, collect_setup_binding_anchor_names};
 use std::ops::Range;
 use vize_carton::{FxHashSet, String, append, profile};
 use vize_croquis::{BindingType, Croquis};
@@ -82,7 +80,7 @@ fn is_setup_variable(kind: &BindingType) -> bool {
 
 pub(super) struct SetupBindingAnchors<'a> {
     pub(super) summary: &'a Croquis,
-    pub(super) script_content: Option<&'a str>,
+    pub(super) imports: &'a ValueImportNames,
     pub(super) usage: &'a IdentifierUsage,
     pub(super) template_usage_names: &'a FxHashSet<String>,
     pub(super) template_value_usage_names: &'a FxHashSet<String>,
@@ -96,7 +94,7 @@ impl SetupBindingAnchors<'_> {
             emit_setup_binding_anchors(
                 ts,
                 self.summary,
-                self.script_content,
+                self.imports,
                 self.usage,
                 self.preserve_unused_diagnostics
                     .then_some(self.template_usage_names),
@@ -110,7 +108,7 @@ impl SetupBindingAnchors<'_> {
 fn emit_setup_binding_anchors(
     ts: &mut String,
     summary: &Croquis,
-    script_content: Option<&str>,
+    imports: &ValueImportNames,
     usage: &IdentifierUsage,
     template_referenced_names: Option<&FxHashSet<String>>,
     template_value_names: &FxHashSet<String>,
@@ -122,7 +120,7 @@ fn emit_setup_binding_anchors(
 
     let binding_names = collect_setup_binding_anchor_names(
         summary,
-        script_content,
+        imports,
         usage,
         template_referenced_names,
         template_value_names,
@@ -130,15 +128,12 @@ fn emit_setup_binding_anchors(
     if binding_names.is_empty() {
         return;
     }
-    let value_import_names = script_content
-        .map(|script| collect_value_import_binding_names(summary, script))
-        .unwrap_or_default();
     // One immutable fact table serves every anchor; preparing it per name
     // rebuilds the full binding union and makes emission quadratic.
     crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
         let mut first = true;
         for name in binding_names {
-            let value_import = value_import_names.contains(name.as_str());
+            let value_import = imports.bindings.contains(name.as_str());
             let kind = bindings.binding_type(name.as_str());
             let name = crate::virtual_ts::props::setup_anchor_identifier(summary, name, kind);
             if is_reserved_anchor_name(&name) {
@@ -217,6 +212,9 @@ fn is_reserved_anchor_name(name: &str) -> bool {
 mod contextual_names;
 
 #[cfg(test)]
+mod value_import_names;
+
+#[cfg(test)]
 mod tests {
     use oxc_allocator::Allocator;
     use oxc_parser::Parser;
@@ -269,11 +267,13 @@ mod tests {
         analyzer.analyze_script_setup(script);
         let summary = analyzer.finish();
         let usage = super::super::imports::collect_identifier_usage(&parsed.program);
+        let imports =
+            super::super::imports::collect_value_import_names(&summary, Some(script), &usage);
         let mut anchors = String::default();
         super::emit_setup_binding_anchors(
             &mut anchors,
             &summary,
-            Some(script),
+            &imports,
             &usage,
             None,
             &Default::default(),
@@ -323,11 +323,13 @@ const state = ref(State.Idle);"#;
         analyzer.analyze_script_setup(script);
         let summary = analyzer.finish();
         let usage = super::super::imports::collect_identifier_usage(&parsed.program);
+        let imports =
+            super::super::imports::collect_value_import_names(&summary, Some(script), &usage);
         let mut anchors = String::default();
         super::emit_setup_binding_anchors(
             &mut anchors,
             &summary,
-            Some(script),
+            &imports,
             &usage,
             None,
             &Default::default(),

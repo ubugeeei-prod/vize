@@ -12,10 +12,13 @@ mod component_name;
 mod context;
 mod driver;
 mod element;
+mod option;
 mod owner;
 
 pub use context::NativeTemplateLintContext;
 pub use element::{NativeTemplateAttribute, NativeTemplateAttributeKind, NativeTemplateElement};
+pub(in crate::native) use option::NativeFirstOptionData;
+pub use option::{NativeTemplateFirstOption, NativeTemplateOptionValue};
 pub use owner::{
     NativeTemplateClosedSelect, NativeTemplateClosedTextarea, NativeTemplateOwnerProfile,
 };

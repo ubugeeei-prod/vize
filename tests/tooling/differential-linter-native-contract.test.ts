@@ -177,11 +177,11 @@ function baseline() {
       legacyMatches: loaded.cases.length,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: loaded.cases.length - 17,
+      nativeUnsupported: loaded.cases.length - 20,
       nativeFailures: 0,
-      nativeHandled: 17,
-      nativeEquivalent: 17,
-      pairedComparisons: 17,
+      nativeHandled: 20,
+      nativeEquivalent: 20,
+      pairedComparisons: 20,
     },
   };
 }
@@ -199,9 +199,9 @@ void test("shared acceptance counts only validated whole-product linter observat
   const acceptance = summarizeLinterAcceptance(loaded, baseline(), receipt);
   assert.deepEqual(acceptance.total, {
     planned: loaded.cases.length,
-    nativeHandled: 17,
-    nativeEquivalent: 17,
-    unsupported: loaded.cases.length - 17,
+    nativeHandled: 20,
+    nativeEquivalent: 20,
+    unsupported: loaded.cases.length - 20,
     legacyBacked: 0,
     unverified: 0,
   });

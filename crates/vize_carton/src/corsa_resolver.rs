@@ -16,7 +16,8 @@
 //!    the current directory when no root is supplied), following user-installed
 //!    native TypeScript packages, declared aliases and linked platform packages.
 //!    The nearest native package wins; local launchers remain a final fallback.
-//!    Unlinked package-store entries and Vize's old bundled runtime are ignored.
+//!    Vize's linked optional platform compiler is a project-local fallback.
+//!    Unlinked package-store entries remain ignored.
 //!
 //! Discovery ends at those project roots. Global executables require an
 //! explicit configuration or environment path; discovery does not run npm.

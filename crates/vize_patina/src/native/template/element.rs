@@ -116,6 +116,7 @@ pub struct NativeTemplateElement<'o, 'a> {
     attributes: SmallVec<[NativeTemplateAttribute<'o, 'a>; 8]>,
     closed_select: bool,
     closed_textarea: bool,
+    first_option: Option<super::NativeFirstOptionData<'o, 'a>>,
 }
 
 impl<'o, 'a> NativeTemplateElement<'o, 'a> {
@@ -128,11 +129,27 @@ impl<'o, 'a> NativeTemplateElement<'o, 'a> {
             attributes,
             closed_select: false,
             closed_textarea: false,
+            first_option: None,
         }
     }
 
-    pub(in crate::native) fn admit_closed_select(&mut self) {
+    pub(in crate::native) fn admit_closed_select(
+        &mut self,
+        first: Option<super::NativeFirstOptionData<'o, 'a>>,
+    ) -> Result<(), super::NativeTemplateLintRefusal> {
+        if first.as_ref().is_some_and(|data| {
+            !core::ptr::eq(data.component, self.original.component())
+                || !core::ptr::eq(data.select, self.original.surface())
+        }) {
+            return Err(super::NativeTemplateLintRefusal::SourceMismatch);
+        }
+        self.first_option = first;
         self.closed_select = true;
+        Ok(())
+    }
+
+    pub(super) fn first_option_data(&self) -> Option<&super::NativeFirstOptionData<'o, 'a>> {
+        self.first_option.as_ref()
     }
 
     pub(in crate::native) fn admit_closed_textarea(&mut self) {

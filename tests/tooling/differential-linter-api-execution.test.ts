@@ -45,11 +45,11 @@ void test("shared linter corpus retains every complete actual public observation
       legacyMatches: plannedCases,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: plannedCases - 17,
+      nativeUnsupported: plannedCases - 20,
       nativeFailures: 0,
-      nativeHandled: 17,
-      nativeEquivalent: 17,
-      pairedComparisons: 17,
+      nativeHandled: 20,
+      nativeEquivalent: 20,
+      pairedComparisons: 20,
     },
     JSON.stringify(report.rows, null, 2),
   );
@@ -67,9 +67,9 @@ void test("shared linter corpus retains every complete actual public observation
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
   assert.deepEqual(acceptance.total, {
     planned: plannedCases,
-    nativeHandled: 17,
-    nativeEquivalent: 17,
-    unsupported: plannedCases - 17,
+    nativeHandled: 20,
+    nativeEquivalent: 20,
+    unsupported: plannedCases - 20,
     legacyBacked: 0,
     unverified: 0,
   });
@@ -90,6 +90,9 @@ void test("shared linter corpus retains every complete actual public observation
             "linter/current-api/form-label-until-found-control",
             "linter/current-api/form-label-bound-hidden-control",
             "linter/current-api/form-label-visible-input-control",
+            "linter/current-api/placeholder-label-unrequired-empty-control",
+            "linter/current-api/placeholder-label-required-empty-control",
+            "linter/current-api/placeholder-label-required-nonempty-report",
           ].includes(fixture.id),
       )
       .map((fixture: any) => fixture.id)
@@ -122,6 +125,28 @@ void test("shared linter corpus retains every complete actual public observation
       sourceRevision: report.sourceRevision,
       buildReceipt: built.receipt,
       rows: originalInputRows,
+    })}`,
+  );
+  const placeholderIds = [
+    "linter/current-api/placeholder-label-unrequired-empty-control",
+    "linter/current-api/placeholder-label-required-empty-control",
+    "linter/current-api/placeholder-label-required-nonempty-report",
+    "linter/current-api/placeholder-label-optgroup-report",
+  ];
+  const placeholderRows = report.rows.filter((row: { id: string }) =>
+    placeholderIds.includes(row.id),
+  );
+  assert.deepEqual(
+    placeholderRows.map((row: { id: string }) => row.id).sort(),
+    placeholderIds.sort(),
+  );
+  t.diagnostic(
+    `native-placeholder-label-observer ${JSON.stringify({
+      schema: "vize.native-placeholder-label-history-observation",
+      version: 1,
+      sourceRevision: report.sourceRevision,
+      buildReceipt: built.receipt,
+      rows: placeholderRows,
     })}`,
   );
 });
