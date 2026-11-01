@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -23,12 +22,12 @@ import {
   linuxPeakRss,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-paired-stats.ts";
 
+import { frozenColdSource } from "./support/cold-typechecker-frozen-source.ts";
+
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const gitRoot = process.env.VIZE_BENCH_GIT_ROOT ?? root;
 
 test("only the frozen six-path input and whole SDK4 Cargo identities are admitted", () => {
-  const read = (file: string) =>
-    execFileSync("git", ["show", `${strictPairSources.base}:${file}`], { cwd: gitRoot });
+  const read = (file: string) => frozenColdSource("base", file);
   const manifest = read("Cargo.toml"),
     lock = read("Cargo.lock");
   const make = (): Parameters<typeof verifyStrictSourceInputs>[0] => ({
@@ -175,9 +174,7 @@ test("timed identity projection changes only declared filenames and retains unkn
 
 test("paired dispatch is isolated and the complete full-default job remains byte-identical", () => {
   const file = ".github/workflows/cold-typechecker-scale.yml";
-  const before = execFileSync("git", ["show", "a193c99c824b54fbe7e900bb88a19f549cd25ea7:" + file], {
-    cwd: gitRoot,
-  }).toString();
+  const before = frozenColdSource("workflow", file).toString();
   const after = fs.readFileSync(path.join(root, file), "utf8");
   const condition = "    if: github.event_name != 'workflow_dispatch' || inputs.mode == 'full'\n";
   assert.equal(after.split(condition).length, 2);
@@ -196,10 +193,10 @@ test("paired dispatch is isolated and the complete full-default job remains byte
   assert(after.includes('[[ "$BASE_SHA" == e57fd021bf08b197956807eb122941c9cd13b056 ]]'));
   assert(after.includes('[[ "$HEAD_SHA" == d440bf04becabbb71d916915c640d39c8d8c6450 ]]'));
   const fetch =
-    '          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA" a193c99c824b54fbe7e900bb88a19f549cd25ea7';
+    '          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"';
   const pure =
     "          node --test tests/tooling/cold-typechecker-scale-native-forward.test.ts tests/tooling/cold-typechecker-scale-paired.test.ts tests/tooling/cold-typechecker-scale-strict-pair.test.ts tests/tooling/cold-typechecker-scale-read-buffer.test.ts";
-  const verifyOracleFetch = (workflow: string) => {
+  const verifyProductFetch = (workflow: string) => {
     const job = workflow.slice(
       workflow.indexOf("  paired-comparison:\n"),
       workflow.indexOf("  profile:\n"),
@@ -214,16 +211,16 @@ test("paired dispatch is isolated and the complete full-default job remains byte
     );
     assert(
       job.indexOf(fetch) < job.indexOf(pure),
-      "fetch the unchanged historical oracle before its test",
+      "acquire the exact product sources before setup and tests",
     );
   };
-  verifyOracleFetch(after);
+  verifyProductFetch(after);
   for (const changed of [
-    after.replace(fetch, fetch.replace(" a193c99c824b54fbe7e900bb88a19f549cd25ea7", "")),
-    after.replace(fetch, fetch.replace("a193c99c824b54fbe7e900bb88a19f549cd25ea7", "a".repeat(40))),
+    after.replace(fetch, fetch.replace(' "$HEAD_SHA"', "")),
+    after.replace(fetch, fetch.replace('"$HEAD_SHA"', "a".repeat(40))),
     after.replace(fetch + "\n", "").replace(pure, pure + "\n" + fetch),
   ])
-    assert.throws(() => verifyOracleFetch(changed));
+    assert.throws(() => verifyProductFetch(changed));
 });
 
 test("affinity and RSS controls retain sparse CPU sets and explicit GNU-time scope", () => {
