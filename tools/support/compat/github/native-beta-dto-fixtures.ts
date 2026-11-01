@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { stripTypeScriptTypes } from "node:module";
 import { watcherSuccessor, postAckDependencies } from "./native-beta-dto-current-custody.ts";
 const currentAuthorityPath = "tools/support/compat/github/native-beta-dto-current-custody.ts";
-const currentAuthoritySha256 = "b0229cffcf8bc10e06ec1a280feaa8e3aa476641b2b8b0382cb2203a1f97e67b";
+const currentAuthoritySha256 = "f7b9a08d3f48139c0616e38104dccab7c2d24d020f7033662bf517a8ffd70587";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";
