@@ -1,4 +1,4 @@
-// First genuine whole Model source/primary/DOM observations; no guessed goldens.
+// Strict whole Model source/primary/DOM comparison to independently reviewed captures.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { after, test } from "node:test";
@@ -42,6 +42,28 @@ const fixtures: ModelFixture[] = pack.fixtures.map((value: unknown) => {
   return value;
 });
 assert.equal(new Set(fixtures.map((row) => row.id)).size, 7);
+const goldens: unknown = JSON.parse(
+  fs.readFileSync(
+    new URL(
+      "../../crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_sfc_vue_3_5_35.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+);
+object(goldens);
+assert.equal(goldens.schema, "vize.native-sfc.original-input-model-complete-goldens");
+assert.equal(goldens.inputHash, hash(inputRaw));
+assert.equal(goldens.filename, pack.filename);
+assert.deepEqual(goldens.inputPack, pack);
+object(goldens.provenance);
+assert.equal(goldens.provenance.independentlyReviewedBeforeFreeze, true);
+const expectedNative = goldens.native;
+const expectedPrimary = goldens.primary;
+const expectedRuntime = goldens.runtimeResults;
+object(expectedNative);
+object(expectedPrimary);
+object(expectedRuntime);
 const expectedIds = [
   "let-string",
   "var-number",
@@ -58,6 +80,10 @@ assert.deepEqual(
 const actualMode = process.env.NODE_ENV ?? "development";
 assert(actualMode === "development" || actualMode === "production");
 const mode: ModelMode = actualMode;
+const expectedPrimaryRows = expectedPrimary[mode];
+const expectedRuntimeRows = expectedRuntime[mode];
+assert(Array.isArray(expectedPrimaryRows) && expectedPrimaryRows.length === fixtures.length);
+assert(Array.isArray(expectedRuntimeRows) && expectedRuntimeRows.length === fixtures.length);
 const capturePath = process.env.VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_CAPTURE;
 const requireCapture = process.env.VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_REQUIRE_CAPTURE === "1";
 const primaryPrefix = process.env.VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_PRIMARY_CAPTURE;
@@ -88,6 +114,10 @@ const rows = new Map<string, NativeRow>();
 const primaryRows = new Map<string, ReturnType<typeof compileInputModelPrimary>>();
 const primaryAttempts: ObjectValue[] = [];
 const runtimeAttempts: ObjectValue[] = [];
+let nativeGoldenComparisonPerformed = false;
+let nativeGoldensMatched = false;
+let primaryGoldenMatches = 0;
+let runtimeGoldenMatches = 0;
 // This is the genuine first load of Vue runtime-dom after actual DOM globals.
 const dom = await openModelDom();
 
@@ -100,8 +130,8 @@ test("original Model capture keeps all fourteen source/mode/owner/attempt rows",
       captured.adapter,
       "vize_atelier_sfc::compile_native_selected_setup_sfc_dom_with_mode",
     );
-    assert.equal(captured.qualification, "observed-unqualified-current-oracles-pending");
-    assert.equal(captured.nativeGoldenComparisonPerformed, false);
+    assert.equal(captured.qualification, "current-complete-native-goldens-matched");
+    assert.equal(captured.nativeGoldenComparisonPerformed, true);
     assert.deepEqual(captured.failures, []);
     if (requireCapture) assert.equal(captured.sourceRevision, process.env.GITHUB_SHA);
     const identities = (["development", "production"] as const).flatMap((entryMode) =>
@@ -182,7 +212,12 @@ test("original Model capture keeps all fourteen source/mode/owner/attempt rows",
       }),
       refusalIds.flatMap((id) => ["development", "production"].map((mode) => ({ id, mode }))),
     );
-    captureObservation.state = "complete-original-observation-unqualified";
+    nativeGoldenComparisonPerformed = true;
+    for (const field of ["fixtures", "custody", "attempts", "refusals"]) {
+      assert.deepEqual(captured[field], expectedNative[field], `whole ordered native ${field}`);
+    }
+    nativeGoldensMatched = true;
+    captureObservation.state = "complete-native-goldens-matched";
   } catch (error) {
     Object.assign(captureObservation, { state: "failed", error: modelError(error) });
     throw error;
@@ -197,6 +232,8 @@ for (const fixture of fixtures) {
       const primary = compileInputModelPrimary(fixture, attempt, String(pack.filename), mode);
       primaryRows.set(fixture.id, primary);
       Object.assign(attempt, { state: "compiled", primary });
+      assert.deepEqual(attempt, expectedPrimaryRows[fixtures.indexOf(fixture)]);
+      primaryGoldenMatches++;
     } catch (error) {
       Object.assign(attempt, { state: "failed", error: modelError(error) });
       throw error;
@@ -268,6 +305,9 @@ for (const fixture of fixtures) {
           "all actual DOM/event/typed binding/render/unmount outcomes",
         );
         attempt.state = "matched-observation-unqualified";
+        // The origin array retains its truthful first-capture state verbatim.
+        assert.deepEqual(attempt, expectedRuntimeRows[fixtures.indexOf(fixture)]);
+        runtimeGoldenMatches++;
       } catch (error) {
         Object.assign(attempt, { state: "failed", error: modelError(error) });
         throw error;
@@ -289,10 +329,13 @@ after(async () => {
   try {
     assert(primaryComplete);
     if (requireCapture || captured || capturePath) {
-      assert.equal(captureObservation.state, "complete-original-observation-unqualified");
+      assert.equal(captureObservation.state, "complete-native-goldens-matched");
+      assert(nativeGoldenComparisonPerformed && nativeGoldensMatched);
       assert(runtimeMatched);
       assert.equal(runtimeAttempts.length, fixtures.length);
+      assert.equal(runtimeGoldenMatches, fixtures.length);
     }
+    assert.equal(primaryGoldenMatches, fixtures.length);
   } catch (error) {
     failed = true;
     firstFailure = error;
@@ -309,8 +352,19 @@ after(async () => {
   }
   const common = {
     adapter: "vize_atelier_sfc::compile_native_selected_setup_sfc_dom_with_mode",
-    qualification: "observed-unqualified-current-oracles-pending",
-    nativeGoldenComparisonPerformed: false,
+    qualification:
+      !captured && !capturePath && !requireCapture && primaryComplete
+        ? "official-primary-only-native-not-executed"
+        : !failed &&
+            nativeGoldensMatched &&
+            primaryGoldenMatches === fixtures.length &&
+            runtimeGoldenMatches === fixtures.length
+          ? "complete-current-oracles-matched"
+          : "failed-current-complete-oracles",
+    nativeGoldenComparisonPerformed,
+    nativeGoldensMatched,
+    primaryGoldenMatches,
+    runtimeGoldenMatches,
     sourceRevision: process.env.GITHUB_SHA ?? null,
     runId: process.env.GITHUB_RUN_ID ?? null,
     runAttempt: process.env.GITHUB_RUN_ATTEMPT ?? null,

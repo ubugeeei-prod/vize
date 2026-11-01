@@ -1,8 +1,9 @@
-//! First genuine original input Model capture; current whole goldens are pending.
+//! Genuine original input Models with strict complete current golden comparison.
 
 use super::*;
 
 mod custody;
+mod finish;
 mod refusal;
 
 #[test]
@@ -106,19 +107,5 @@ fn fourteen_whole_original_input_model_components_and_raw_maps_are_captured() ->
             }
         }
     }
-    let complete = failures.is_empty() && captures.len() == fixtures.len() * 2;
-    if let Some(path) = std::env::var_os("VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_CAPTURE") {
-        std::fs::write(path, serde_json::to_vec_pretty(&serde_json::json!({
-            "schema":"vize.native-sfc.original-input-model-capture",
-            "adapter":"vize_atelier_sfc::compile_native_selected_setup_sfc_dom_with_mode",
-            "qualification":if complete {"observed-unqualified-current-oracles-pending"} else {"failed-current-source-observation"},
-            "nativeGoldenComparisonPerformed":false,"sourceRevision":std::env::var("GITHUB_SHA").ok(),
-            "fixtures":captures,"custody":owners,"attempts":attempts,"refusals":refusals,"failures":failures,
-        })).map_err(|error|cstr!("{error}"))?).map_err(|error|cstr!("{error}"))?;
-    }
-    require!(
-        complete,
-        "all fourteen source/mode Models complete without golden credit: {failures:?}"
-    );
-    Ok(())
+    finish::write(&pack, captures, owners, attempts, refusals, failures)
 }
