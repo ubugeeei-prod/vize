@@ -146,7 +146,6 @@ void test(
       fs.writeFileSync(
         path.join(directory, "observation.json"),
         JSON.stringify(observation, null, 2) + "\n",
-        { flag: "wx" },
       );
       t.diagnostic(`sfc-entry-official-reference ${JSON.stringify(observation, null, 2)}`);
     }

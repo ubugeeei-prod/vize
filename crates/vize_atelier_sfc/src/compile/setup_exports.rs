@@ -69,7 +69,7 @@ fn location(source: &str, start: usize, end: usize) -> BlockLocation {
                 line += 1;
                 column = 1;
             } else {
-                column += character.len_utf16();
+                column += character.len_utf8();
             }
         }
         (line, column)

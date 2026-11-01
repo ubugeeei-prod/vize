@@ -7,7 +7,7 @@
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
-use vize_atelier_sfc::{SfcCompileOptions, SfcError, SfcParseOptions, compile_sfc, parse_sfc};
+use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -72,7 +72,7 @@ fn expected_error(case: &Case, source: &str) -> serde_json::Value {
         let prefix = source.get(..offset).unwrap();
         (
             prefix.bytes().filter(|byte| *byte == b'\n').count() + 1,
-            prefix.rsplit('\n').next().unwrap().encode_utf16().count() + 1,
+            prefix.rsplit('\n').next().unwrap().len() + 1,
         )
     };
     let (start_line, start_column) = position(start);
@@ -149,16 +149,22 @@ fn empty_descriptor_parsing_remains_tolerant_for_editor_inputs() {
 }
 
 #[test]
-fn setup_export_errors_keep_original_utf8_offsets_and_utf16_columns() {
-    let source = "<!-- 雪🌸 -->\r\n<script setup lang=\"ts\">\r\nexport const n = 1;\r\n</script>";
+fn setup_export_errors_keep_original_utf8_offsets_and_byte_columns() {
+    let source = "<!-- 雪🌸 -->\r\n<script setup lang=\"ts\">\r\n/* 雪🌸 */ export const n = 'é';\r\n</script>";
     let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
-    let SfcError { code, loc, .. } =
-        compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap_err();
-    assert_eq!(code.as_deref(), Some("SCRIPT_SETUP_EXPORT"));
-    let loc = loc.unwrap();
-    assert_eq!(source.get(loc.start..loc.end), Some("export const n = 1;"));
-    assert_eq!((loc.start_line, loc.start_column), (3, 1));
-    assert_eq!((loc.end_line, loc.end_column), (3, 20));
+    let error = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap_err();
+    let start = source.find("export").unwrap();
+    let end = start + "export const n = 'é';".len();
+    assert_eq!(source.get(start..end), Some("export const n = 'é';"));
+    assert_eq!(
+        serde_json::to_value(error).unwrap(),
+        serde_json::json!({
+            "message": "<script setup> cannot contain ES module exports.",
+            "code": "SCRIPT_SETUP_EXPORT",
+            "loc": { "start": start, "end": end, "tag_start": start, "tag_end": end,
+                "start_line": 3, "start_column": 15, "end_line": 3, "end_column": 37 }
+        })
+    );
 }
 
 #[test]
