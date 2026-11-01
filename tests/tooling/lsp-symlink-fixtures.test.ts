@@ -22,6 +22,8 @@ import {
 } from "../differential/lsp-symlinks.ts";
 import { validateCapturedLspReport, validateLspReport } from "../differential/lsp-report.ts";
 import { referenceReport } from "./support/lsp/differential-reference.ts";
+import { loadAutoImportSymlink } from "../differential/lsp-auto-import-manifest.ts";
+import type { FixtureData } from "../differential/lsp-types.ts";
 
 const manifest = fileURLToPath(
   new URL("../_fixtures/differential/lsp/manifest.json", import.meta.url),
@@ -34,6 +36,81 @@ assert(candidate);
 const fixture = candidate;
 const target = "owner's-components/MyButton.vue";
 const targetSha = "b0ca633eb9dd0a5fbf4ea5598d08ad9f0b49af75169670d2c949df3104267dbb";
+
+void test("the one-action import loader authenticates its complete closed source and response contract", () => {
+  const expected = fixture.requests[0].result;
+  const original = structuredClone({ data: fixture.data, expected });
+  assert.deepEqual(loadAutoImportSymlink(fixture.data, fixture.files, expected), fixture.requests);
+  const mutations: ((data: FixtureData) => void)[] = [
+    (data) => {
+      data.id += "-foreign";
+    },
+    (data) => {
+      data.method = "textDocument/formatting";
+    },
+    (data) => {
+      data.documentVersion = 2;
+    },
+    (data) => {
+      data.provenance.fixCommit = "0".repeat(40);
+    },
+    (data) => {
+      data.entry = target;
+    },
+    (data) => {
+      data.initializationOptions = { editor: true, lint: false };
+    },
+    (data) => {
+      data.request = { params: { range: {}, context: { diagnostics: [] } } };
+    },
+    (data) => {
+      data.workspaceSymlinks = [];
+    },
+    (data) => {
+      data.files = [...(data.files ?? [])].reverse();
+    },
+    (data) => {
+      data.expected.sha256 = "0".repeat(64);
+    },
+    (data) => {
+      data.workspaceEditDocumentChanges = true;
+    },
+    (data) => {
+      Reflect.set(data, "unknown", true);
+    },
+  ];
+  for (const mutate of mutations) {
+    const data = structuredClone(fixture.data);
+    mutate(data);
+    assert.throws(() => loadAutoImportSymlink(data, fixture.files, expected), {
+      name: "AssertionError",
+    });
+  }
+  for (const files of [
+    fixture.files.slice(0, 1),
+    [...fixture.files].reverse(),
+    fixture.files.map((file) => ({
+      ...file,
+      bytes: Buffer.concat([file.bytes, Buffer.from(" ")]),
+    })),
+  ])
+    assert.throws(() => loadAutoImportSymlink(fixture.data, files, expected), {
+      name: "AssertionError",
+    });
+  assert(Array.isArray(expected));
+  for (const value of [
+    [],
+    [...expected, { title: "Suppress with @vize:forget", isPreferred: false }],
+    [{ ...expected[0], isPreferred: false }],
+    [{ ...expected[0], title: "Auto-import from an unauthenticated target" }],
+    [{ ...expected[0], edit: { changes: { "${workspace}/foreign.vue": [] } } }],
+    [{ ...expected[0], extra: true }],
+  ])
+    assert.throws(() => loadAutoImportSymlink(fixture.data, fixture.files, value), {
+      name: "AssertionError",
+    });
+  assert.deepEqual({ data: fixture.data, expected }, original);
+});
 
 void test("explicit symlink metadata keeps every earlier workspace and initialize profile unchanged", () => {
   const before = structuredClone(fixture.data);
@@ -128,12 +205,15 @@ void test("real link observations bind the pinned regular target before and afte
     assert.deepEqual(evidence.symlinksBefore, expected);
     assert.deepEqual(evidence.symlinksAfter, expected);
     validateLspWorkspace(fixture, evidence, true, pathToFileURL(root).href);
-    assert.throws(() =>
-      validateLspWorkspace(fixture, evidence, true, pathToFileURL(root + "-foreign").href),
+    assert.throws(
+      () => validateLspWorkspace(fixture, evidence, true, pathToFileURL(root + "-foreign").href),
+      { name: "AssertionError" },
     );
     const wrong = structuredClone(evidence);
     if (wrong.symlinksAfter) wrong.symlinksAfter[0].sha256 = "0".repeat(64);
-    assert.throws(() => validateLspWorkspace(fixture, wrong, true, pathToFileURL(root).href));
+    assert.throws(() => validateLspWorkspace(fixture, wrong, true, pathToFileURL(root).href), {
+      name: "AssertionError",
+    });
   });
 });
 
@@ -157,12 +237,16 @@ void test("redirected links and equal-byte regular replacements remain actual re
           sha256: null,
         },
       ]);
-      assert.throws(() => validateLspWorkspace(fixture, evidence, true, pathToFileURL(root).href));
+      assert.throws(() => validateLspWorkspace(fixture, evidence, true, pathToFileURL(root).href), {
+        name: "AssertionError",
+      });
       fs.unlinkSync(link);
       fs.copyFileSync(path.join(root, target), link);
       evidence.symlinksAfter = observeLspSymlinks(root, evidence.mapping.symlinks);
       assert.equal(evidence.symlinksAfter?.[0].isSymbolicLink, false);
-      assert.throws(() => validateLspWorkspace(fixture, evidence, true, pathToFileURL(root).href));
+      assert.throws(() => validateLspWorkspace(fixture, evidence, true, pathToFileURL(root).href), {
+        name: "AssertionError",
+      });
     } finally {
       fs.rmSync(external, { recursive: true, force: true });
     }
@@ -211,7 +295,7 @@ const syntheticBuild = {
   sourceRevision: "4".repeat(40),
   binaryPath: "target/ci/vize",
   binarySha256: "5".repeat(64),
-  cliVersion: "vize synthetic validator fixture",
+  cliVersion: "vize 0.0.0-dev",
 };
 
 void test("optional capture receives a detached whole copy and absent capture never clones", () => {

@@ -10,6 +10,7 @@ import { validateNativeCapacitySourceSession } from "./lsp-native-capacity-sessi
 import { FORMATTER_BIND_POLICY_ID, loadFormatterBindPolicy } from "./lsp-formatter-bind-policy.ts";
 import { FORMATTER_ON_POLICY_ID, loadFormatterOnPolicy } from "./lsp-formatter-on-policy.ts";
 import { FORMATTER_SLOT_POLICY_ID, loadFormatterSlotPolicy } from "./lsp-formatter-slot-policy.ts";
+import { AUTO_IMPORT_SYMLINK_ID, loadAutoImportSymlink } from "./lsp-auto-import-manifest.ts";
 import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } from "./lsp-types.ts";
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
@@ -116,6 +117,8 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
           : validateLocalResolveSourceSession;
       validate(data, new Map(files.map((file) => [file.runtimePath, file.bytes])), expected);
       requests = [];
+    } else if (data.id === AUTO_IMPORT_SYMLINK_ID) {
+      requests = loadAutoImportSymlink(data, files, expected);
     } else if (data.id === FORMATTER_BIND_POLICY_ID) {
       requests = loadFormatterBindPolicy(data, files, expected);
     } else if (data.id === FORMATTER_ON_POLICY_ID) {

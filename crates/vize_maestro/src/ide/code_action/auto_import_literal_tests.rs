@@ -28,7 +28,7 @@ const COMPONENT: &str = include_str!(
 fn assert_module(source: &str, expected_specifier: &str) {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::mjs()).parse();
-    assert_eq!(format!("{:#?}", parsed.errors), "[]");
+    assert_eq!(format!("{:#?}", parsed.diagnostics), "[]");
     assert!(!parsed.panicked);
     let Statement::ImportDeclaration(import) = &parsed.program.body[0] else {
         panic!(
@@ -92,15 +92,18 @@ fn exercise(quoted_target: bool, specifier: &str, statement: &str) {
     }
     let component_source = fs::read_to_string(&indexed).unwrap();
     assert_eq!(component_source, COMPONENT);
-    let component = vize_atelier_sfc::parse_sfc(&component_source, Default::default()).unwrap();
+    let state = ServerState::new();
+    let component = state
+        .component_descriptor(&indexed, &component_source)
+        .unwrap();
     assert_eq!(
-        component.template.unwrap().content,
+        component.template.as_ref().unwrap().content,
         "<button>{{ caption }}</button>"
     );
     let allocator = Allocator::default();
-    let component_script = component.script_setup.unwrap();
+    let component_script = component.script_setup.as_ref().unwrap();
     let parsed = Parser::new(&allocator, &component_script.content, SourceType::mjs()).parse();
-    assert_eq!(format!("{:#?}", parsed.errors), "[]");
+    assert_eq!(format!("{:#?}", parsed.diagnostics), "[]");
     assert_eq!(
         AutoImportIndex::find_in_directory(&directory, "MyButton"),
         Some(AutoImportEntry {
@@ -112,7 +115,6 @@ fn exercise(quoted_target: bool, specifier: &str, statement: &str) {
     let file = directory.join("Page.vue");
     fs::write(&file, SOURCE).unwrap();
     let uri = Url::from_file_path(&file).unwrap();
-    let state = ServerState::new();
     state
         .documents
         .open(uri.clone(), SOURCE.into(), 1, "vue".into());
@@ -137,12 +139,6 @@ fn exercise(quoted_target: bool, specifier: &str, statement: &str) {
     let mut applied = SOURCE.to_owned();
     applied.insert_str(start, &edit.new_text);
     assert_eq!(applied, SOURCE.replacen('\n', &format!("\n{statement}"), 1));
-    let descriptor = vize_atelier_sfc::parse_sfc(&applied, Default::default()).unwrap();
-    assert_eq!(
-        descriptor.template.unwrap().content,
-        "\n  <MyButton v-if=\"enabled\" />\n"
-    );
-    assert_module(&descriptor.script_setup.unwrap().content, specifier);
     assert!(state.documents.apply_changes(
         &uri,
         vec![TextDocumentContentChangeEvent {
@@ -153,6 +149,16 @@ fn exercise(quoted_target: bool, specifier: &str, statement: &str) {
         2,
     ));
     state.update_virtual_docs(&uri, &applied);
+    let ctx = IdeContext::new(&state, &uri, 0).unwrap();
+    let descriptor = ctx.descriptor().unwrap();
+    assert_eq!(
+        descriptor.template.as_ref().unwrap().content,
+        "\n  <MyButton v-if=\"enabled\" />\n"
+    );
+    assert_module(
+        &descriptor.script_setup.as_ref().unwrap().content,
+        specifier,
+    );
     assert_eq!(actions(&state, &uri, &applied), Vec::new());
     assert_eq!(fs::read_to_string(&file).unwrap(), SOURCE);
     assert_eq!(
@@ -187,7 +193,7 @@ fn source_derived_unescaped_interpolation_is_not_a_valid_javascript_module() {
     let source = "import MyButton from '../owner's-components/MyButton.vue'\n";
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::mjs()).parse();
-    assert_ne!(format!("{:#?}", parsed.errors), "[]");
+    assert_ne!(format!("{:#?}", parsed.diagnostics), "[]");
 }
 
 #[test]
