@@ -70,6 +70,7 @@ function mockDto(id: Case, receiver: string = opaqueReceivers[0]) {
   };
 }
 type Mock = ReturnType<typeof mockDto>;
+const refuses = (action: () => void) => assert.throws(action, assert.AssertionError);
 function withPacket(action: (packet: ReturnType<typeof retain>, root: string) => void) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "public-11339-renderer-")));
   try {
@@ -173,14 +174,14 @@ test("source context, title binding and each owned base cannot be omitted or fit
     for (const mutate of mutations) {
       const f = mockDto("Original");
       mutate(f);
-      assert.throws(() =>
+      refuses(() =>
         assessFacts("after", "Original", { ...packet, stdout: JSON.stringify(f.dto) }, f.files),
       );
     }
     const wrapped = mockDto("WrappedSupplement");
     wrapped.dto.files.find((row) => row.file === "src/Wrapped.vue")!.diagnostics[0] =
       "error:2:34 [TS2339] Property 'toFixed' does not exist on type 'boolean'." + context;
-    assert.throws(() =>
+    refuses(() =>
       assessFacts(
         "after",
         "WrappedSupplement",
@@ -225,7 +226,7 @@ test("file, code, exact canonical start header, ordering and population remain c
     for (const mutate of mutations) {
       const f = mockDto("Original");
       mutate(f);
-      assert.throws(() =>
+      refuses(() =>
         assessFacts("after", "Original", { ...packet, stdout: JSON.stringify(f.dto) }, f.files),
       );
     }
@@ -259,12 +260,12 @@ test("complete DTO, program, counters and frozen input joins retain strict refus
     for (const mutate of mutations) {
       const f = mockDto("Original");
       mutate(f);
-      assert.throws(() =>
+      refuses(() =>
         assessFacts("after", "Original", { ...packet, stdout: JSON.stringify(f.dto) }, f.files),
       );
     }
     const f = mockDto("Original");
-    assert.throws(() =>
+    refuses(() =>
       assessFacts(
         "after",
         "Original",
@@ -272,10 +273,8 @@ test("complete DTO, program, counters and frozen input joins retain strict refus
         f.files,
       ),
     );
-    assert.throws(() => assessFacts("after", "Original", { ...packet, status: 0 }, f.files));
-    assert.throws(() =>
-      assessFacts("after", "Original", { ...packet, signal: "SIGTERM" }, f.files),
-    );
+    refuses(() => assessFacts("after", "Original", { ...packet, status: 0 }, f.files));
+    refuses(() => assessFacts("after", "Original", { ...packet, signal: "SIGTERM" }, f.files));
   }));
 
 test("BEFORE remains unassessed, repaired zero remains all-false, and whole stderr stays unchanged", () =>
