@@ -23,7 +23,14 @@ import {
 
 // Native-looking bytes are inert data. No require(), dlopen(), shell, manager,
 // compiler, native probe or product command is executed by these controls.
-function setup(localPublic = false, host = readNativeHostInput()) {
+function setup(
+  localPublic = false,
+  host = readNativeHostInput(),
+  manifests: {
+    core?: Record<string, unknown>;
+    platform?: Record<string, unknown>;
+  } = {},
+) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "human-native-precheck-")));
   const slot = join(root, "node_modules/.pnpm/synthetic/node_modules");
   const coreDirectory = join(slot, "@vizejs/native"),
@@ -47,15 +54,19 @@ function setup(localPublic = false, host = readNativeHostInput()) {
       "@vizejs/native",
       version,
       coreDirectory,
-      { name: "@vizejs/native", version, main: "index.js" },
-      { ...programs, ...(localPublic ? { [nodeName]: image } : {}) },
+      { name: "@vizejs/native", version, main: "index.js", ...manifests.core },
+      {
+        ...programs,
+        "other.mjs": Buffer.from("// inert unsupported import branch; never evaluated\n"),
+        ...(localPublic ? { [nodeName]: image } : {}),
+      },
     ),
     pkg(
       packageName,
       version,
       join(slot, packageName),
-      { name: packageName, version, main: nodeName },
-      { [nodeName]: image },
+      { name: packageName, version, main: nodeName, ...manifests.platform },
+      { [nodeName]: image, "other.mjs": Buffer.from("// inert unsupported platform entry\n") },
     ),
     pkg(
       "vize",
@@ -222,6 +233,36 @@ test("an earlier darwin-universal candidate is inspected even when a known arm64
     } finally {
       f.close();
     }
+  }
+});
+test("public-authenticated conditional import, module type and unsupported main cannot bypass the CJS prerequisite", () => {
+  for (const manifests of [
+    { core: { exports: { require: "./index.js", import: "./other.mjs" } } },
+    { core: { imports: { "#loader": "./other.mjs" } } },
+    { core: { type: "module" } },
+    { core: { main: "other.mjs" } },
+    { platform: { exports: { import: "./other.mjs" } } },
+    { platform: { imports: { "#image": "./other.mjs" } } },
+    { platform: { type: "module" } },
+    { platform: { main: "other.mjs" } },
+  ]) {
+    const f = setup(false, readNativeHostInput(), manifests);
+    try {
+      assert.throws(f.execute);
+      assert.deepEqual(f.counts(), { probes: 0, products: 0 });
+    } finally {
+      f.close();
+    }
+  }
+  const f = setup(false, readNativeHostInput(), {
+    core: { type: "commonjs", main: "./index.js" },
+    platform: { type: "commonjs" },
+  });
+  try {
+    f.execute();
+    assert.deepEqual(f.counts(), { probes: 1, products: 1 });
+  } finally {
+    f.close();
   }
 });
 test("authentic shipped local native image is permitted by public archive and producer proof rather than basename", () => {

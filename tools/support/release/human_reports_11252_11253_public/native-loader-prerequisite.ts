@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync, realpathSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { fileImage } from "../computed_event_custody.ts";
 import type { Image, InstallationFacts, PackageBase, ReleaseAuthority } from "./model.ts";
 import type { Sink } from "./evidence.ts";
 import { discard } from "./evidence.ts";
-import { array, bytes, object, sha256, text } from "./value.ts";
+import { array, bytes, object, sha256, text, wholeJson } from "./value.ts";
 import { nativeLoaderProgram } from "./native-loader-program.ts";
 import { resolveAuthenticatedModule } from "./module-resolution.ts";
 import { prohibited } from "./processes.ts";
@@ -35,6 +35,7 @@ export interface NativeLoadPrerequisite {
   probeBase: string;
   checkedBases: string[];
   modules: Image[];
+  manifests: Array<{ name: string; image: Image; rawBase64: string }>;
   selectedNative: Image;
   selectedOwner: string;
   nonExecutingPrerequisiteOnly: true;
@@ -151,6 +152,41 @@ function member(pkg: PackageBase, name: string): Image {
   assert.equal(rows.length, 1);
   return rows[0]!;
 }
+function validateProgramManifest(
+  record: NativeLoadPrerequisite["manifests"][number],
+  pkg: PackageBase,
+  mains: readonly string[],
+): void {
+  assert.equal(record.name, pkg.name);
+  assert.deepEqual(record.image, member(pkg, "package.json"));
+  const raw = bytes(record.rawBase64);
+  assert.equal(raw.length, record.image.bytes);
+  assert.equal(sha256(raw), record.image.sha256);
+  const value = object(wholeJson(raw));
+  assert.equal(value.name, pkg.name);
+  assert.equal(value.version, pkg.version);
+  assert.equal(
+    value.exports,
+    undefined,
+    "conditional ESM/require exports are outside the reviewed loader program",
+  );
+  assert.equal(
+    value.imports,
+    undefined,
+    "package imports redirects are outside the reviewed loader program",
+  );
+  assert(value.type === undefined || value.type === "commonjs", "unsupported loader module type");
+  assert(
+    mains.some((main) => value.main === main || value.main === "./" + main),
+    "unsupported loader main",
+  );
+}
+function expectedNativeMembers(pkg: PackageBase, input: NativeBindingInput): Image[] {
+  return pkg.files.filter(
+    (f) =>
+      f.path.endsWith(".node") && f.bytes === input.image.bytes && f.sha256 === input.image.sha256,
+  );
+}
 function lookupBases(cli: PackageBase, sdk: readonly Image[]): string[] {
   assert.equal(sdk.length, 10);
   for (const file of sdk)
@@ -200,20 +236,28 @@ function inspect(
     assert.deepEqual(actual, image);
     return image;
   });
-  const coreManifest = member(core, "package.json");
-  assert.deepEqual(fileImage(coreManifest.path), coreManifest);
-  const allowedNative = owners
-    .flatMap((pkg) => pkg.files)
-    .filter(
-      (file) =>
-        file.path.endsWith(".node") &&
-        file.bytes === input.image.bytes &&
-        file.sha256 === input.image.sha256,
-    );
+  const allowedNative = owners.flatMap((pkg) => expectedNativeMembers(pkg, input));
   assert(
     allowedNative.length > 0,
     "genuine producer image is not an authenticated public payload member",
   );
+  // Closing the authenticated manifest shape makes import and require select
+  // the same reviewed CommonJS/native entry; no conditional entry is executed.
+  const manifests = owners.map((pkg) => {
+    const image = member(pkg, "package.json");
+    assert.deepEqual(fileImage(image.path), image);
+    const raw = readFileSync(image.path);
+    const record = { name: pkg.name, image, rawBase64: raw.toString("base64") };
+    validateProgramManifest(
+      record,
+      pkg,
+      pkg === core
+        ? ["index.js"]
+        : expectedNativeMembers(pkg, input).map((f) => relative(pkg.directory, f.path)),
+    );
+    sink("native-public-program-manifest", record);
+    return record;
+  });
   const probeBase = member(cli[0]!, "bin/vize").path;
   const bases = lookupBases(cli[0]!, sdk);
   for (const base of bases) {
@@ -299,6 +343,7 @@ function inspect(
     probeBase,
     checkedBases: bases,
     modules,
+    manifests,
     selectedNative,
     selectedOwner: selectedOwner.name,
     nonExecutingPrerequisiteOnly: true,
@@ -379,7 +424,19 @@ export function validateNativeLoadRecord(
   for (const key of ["accepted", "productQualified", "afterQualified", "issueQualified"] as const)
     assert.equal(proof[key], false);
   const core = expectedPackage(install.packages, "@vizejs/native", proof.input);
-  expectedPackage(install.packages, proof.input.packageName, proof.input);
+  const platform = expectedPackage(install.packages, proof.input.packageName, proof.input);
+  assert.equal(proof.manifests.length, 2);
+  for (const [index, pkg] of [core, platform].entries()) {
+    const record = proof.manifests[index];
+    assert(record);
+    validateProgramManifest(
+      record,
+      pkg,
+      pkg === core
+        ? ["index.js"]
+        : expectedNativeMembers(pkg, proof.input).map((f) => relative(pkg.directory, f.path)),
+    );
+  }
   const cli = install.packages.filter((p) => p.name === "vize" && p.version === authority.version);
   assert.equal(cli.length, 1);
   assert.equal(proof.probeBase, member(cli[0]!, "bin/vize").path);
