@@ -115,6 +115,7 @@ pub struct NativeTemplateElement<'o, 'a> {
     original: NativeElement<'o, 'a>,
     attributes: SmallVec<[NativeTemplateAttribute<'o, 'a>; 8]>,
     closed_select: bool,
+    closed_textarea: bool,
 }
 
 impl<'o, 'a> NativeTemplateElement<'o, 'a> {
@@ -126,11 +127,22 @@ impl<'o, 'a> NativeTemplateElement<'o, 'a> {
             original,
             attributes,
             closed_select: false,
+            closed_textarea: false,
         }
     }
 
     pub(in crate::native) fn admit_closed_select(&mut self) {
         self.closed_select = true;
+    }
+
+    pub(in crate::native) fn admit_closed_textarea(&mut self) {
+        self.closed_textarea = true;
+    }
+
+    #[must_use]
+    pub fn closed_textarea_owner(&self) -> Option<super::NativeTemplateClosedTextarea<'_, 'o, 'a>> {
+        self.closed_textarea
+            .then_some(super::NativeTemplateClosedTextarea { element: self })
     }
 
     /// Present only after this exact select's bounded children were checked.

@@ -16,7 +16,9 @@ mod owner;
 
 pub use context::NativeTemplateLintContext;
 pub use element::{NativeTemplateAttribute, NativeTemplateAttributeKind, NativeTemplateElement};
-pub use owner::{NativeTemplateClosedSelect, NativeTemplateOwnerProfile};
+pub use owner::{
+    NativeTemplateClosedSelect, NativeTemplateClosedTextarea, NativeTemplateOwnerProfile,
+};
 
 /// Authentic enabled callbacks must all admit the wider source profile.
 /// Empty callback sets and callbacks that do not opt in retain StaticOnly.

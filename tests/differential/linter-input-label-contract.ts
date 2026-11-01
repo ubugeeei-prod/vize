@@ -86,12 +86,6 @@ export function expectedInputLabelReason(input: unknown, api: string) {
   const original = ORIGINAL_INPUT_LABEL_WIRES.find((wire) => wire.id === id);
   assert(original, "only the six whole original form-label wires are registered");
   assert.deepEqual(input, original, "complete original form-label input/options must stay exact");
-  if (original.source.startsWith("<input") || original.source.startsWith("<select")) return null;
-  const end = original.source.indexOf(">") + 1;
-  return {
-    api,
-    entry: "template",
-    kind: "UnsupportedContext",
-    detail: `UnsupportedContext { span: Span { start: 0, end: ${end} } }`,
-  };
+  assert.equal(api, "--native-current-api");
+  return null;
 }

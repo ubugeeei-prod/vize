@@ -1,8 +1,8 @@
 //! Original configured product output at the native callback host boundary.
 
 use super::{
-    NativeTemplateAttribute, NativeTemplateClosedSelect, NativeTemplateElement,
-    NativeTemplateLintRefusal, NativeTemplateOwnerProfile,
+    NativeTemplateAttribute, NativeTemplateClosedSelect, NativeTemplateClosedTextarea,
+    NativeTemplateElement, NativeTemplateLintRefusal, NativeTemplateOwnerProfile,
 };
 use crate::{HelpLevel, LintDiagnostic, LintResult, Linter, Severity};
 use vize_carton::i18n::{Locale, t, t_fmt};
@@ -168,10 +168,35 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         owner: &NativeTemplateClosedSelect<'_, '_, 'a>,
     ) -> Result<Span, NativeTemplateLintRefusal> {
         let range = self.element_opening_range(owner.element)?;
-        if self.current_owner_profile != NativeTemplateOwnerProfile::ClosedSelect {
+        if !self.current_owner_profile.allows_select() {
             return Err(NativeTemplateLintRefusal::UnsupportedContext { span: range });
         }
         Ok(range)
+    }
+
+    /// Authenticate even clean textarea outcomes against the frozen callback.
+    pub fn textarea_opening_range(
+        &self,
+        owner: &NativeTemplateClosedTextarea<'_, '_, 'a>,
+    ) -> Result<Span, NativeTemplateLintRefusal> {
+        let range = self.element_opening_range(owner.element)?;
+        if self.current_owner_profile != NativeTemplateOwnerProfile::ClosedSelectAndTextarea {
+            return Err(NativeTemplateLintRefusal::UnsupportedContext { span: range });
+        }
+        Ok(range)
+    }
+
+    /// Report the original textarea opening, never its opaque body extent.
+    pub fn warn_textarea_with_help(
+        &mut self,
+        owner: &NativeTemplateClosedTextarea<'_, '_, 'a>,
+        message_key: &str,
+        variables: &[(&str, &str)],
+        help_key: &str,
+    ) -> Result<(), NativeTemplateLintRefusal> {
+        let range = self.textarea_opening_range(owner)?;
+        self.warn_with_help(range, message_key, variables, help_key);
+        Ok(())
     }
 
     fn warn_with_help(
