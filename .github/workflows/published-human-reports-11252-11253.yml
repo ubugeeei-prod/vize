@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - "tools/support/release/human_reports_11252_11253_public/**"
-      - "tests/tooling/release/human-reports-11252-11253*.test.ts"
+      - "tests/tooling/release/human-reports-11252-11253*.ts"
       - ".github/workflows/published-human-reports-11252-11253.yml"
   workflow_dispatch:
     inputs:

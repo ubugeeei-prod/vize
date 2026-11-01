@@ -11,6 +11,9 @@ export function validateBeforeRecord(
   request: Request,
   authority: ReleaseAuthority,
 ): void {
+  const expected = request.publicBefore;
+  assert(expected);
+  assert.deepEqual(bundle.request.reviewedController, expected.reviewedController);
   assert.equal(bundle.request.role, request.role);
   assert.equal(bundle.request.mode, "CAPTURE_BEFORE");
   assert.equal(bundle.request.release.phase, "before");
@@ -33,7 +36,13 @@ export function validateBeforeRecord(
     recipe.tsrs ? ["original", "tsrs-supplement"] : ["original"],
   );
   for (const install of bundle.installs)
-    validateRecordedInstall(install, request.fixture, recipe, authority);
+    validateRecordedInstall(
+      install,
+      request.fixture,
+      recipe,
+      authority,
+      bundle.request.reviewedController,
+    );
   const observer = bundle.controller.files.filter((f) =>
     f.path.endsWith("/tools/support/release/human_reports_11252_11253_public/native-observer.ts"),
   );
@@ -80,8 +89,6 @@ export function validateBeforeRecord(
     companionIds,
     "closed companion vector required",
   );
-  const expected = request.publicBefore;
-  assert(expected);
   assert.deepEqual(
     expected.oracles.map((v) => v.id),
     ids,

@@ -141,6 +141,26 @@ export interface Observation {
   companionOf?: string;
   backend?: "UNKNOWN";
 }
+export interface PackageBase {
+  name: string;
+  version: string;
+  directory: string;
+  resolved: string;
+  integrity: string;
+  archiveSha512: string;
+  files: Image[];
+}
+export type PackageReceipt = PackageBase &
+  (
+    | { allInstalledBytesEqualArchive: true; binContext?: never; sourceConformance?: never }
+    | {
+        allInstalledBytesEqualArchive: false;
+        binContext: import("./dependency-bin-context.ts").BinContext;
+        sourceConformance: ReturnType<
+          typeof import("./dependency-bin-partition.ts").humanDependencyBinPartition
+        >;
+      }
+  );
 export interface InstallReceipt {
   schema: "vize.humanReports11252_11253.install.v1";
   kind: "original" | "tsrs-supplement";
@@ -160,16 +180,8 @@ export interface InstallReceipt {
   managerFiles: import("./optional-residency.ts").ManagerFile[];
   declaredOptionalNotInstalled: import("./optional-residency.ts").OptionalAbsence[];
   packageManagerEnvironment: Record<string, string>;
-  packages: Array<{
-    name: string;
-    version: string;
-    directory: string;
-    resolved: string;
-    integrity: string;
-    archiveSha512: string;
-    allInstalledBytesEqualArchive: true;
-    files: Image[];
-  }>;
+  binPolicy: import("./dependency-bin-policy.ts").BinPolicy;
+  packages: PackageReceipt[];
   cli: Image;
   sdk: Image[];
   mapperExec: string[];

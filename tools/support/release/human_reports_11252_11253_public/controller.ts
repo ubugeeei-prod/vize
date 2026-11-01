@@ -17,13 +17,22 @@ export function controllerFiles(): Image[] {
     resolve(here, "original-inputs.json"),
     resolve(here, "after-input-plan.json.txt"),
     resolve(here, "pnpm-bootstrap.json"),
+    resolve(here, "pnpm-shim-templates.json.txt"),
+    resolve(here, "dependency-bin-policy.json.txt"),
     resolve(root, ".github/workflows/published-human-reports-11252-11253.yml"),
   );
   for (let index = 0; index < pending.length; index++) {
     const file = pending[index]!;
     if (seen.has(file)) continue;
     assert(inside(root, file));
-    assert(/\.(?:ts|json|yml)$/u.test(file) || file === resolve(here, "after-input-plan.json.txt"));
+    assert(
+      /\.(?:ts|json|yml)$/u.test(file) ||
+        [
+          "after-input-plan.json.txt",
+          "pnpm-shim-templates.json.txt",
+          "dependency-bin-policy.json.txt",
+        ].some((name) => file === resolve(here, name)),
+    );
     seen.add(file);
     const source = readFileSync(file, "utf8");
     for (const match of source.matchAll(

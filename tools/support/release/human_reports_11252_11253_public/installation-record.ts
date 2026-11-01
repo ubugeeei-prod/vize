@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import path from "node:path";
-import type { Fixture, InstallReceipt, Recipe, ReleaseAuthority } from "./model.ts";
+import type { Fixture, InstallReceipt, Recipe, ReleaseAuthority, Request } from "./model.ts";
 import { manifestBytes } from "./installation.ts";
 import { array, bytes, hash, object, sha256, text, wholeJson } from "./value.ts";
 import {
@@ -8,6 +8,8 @@ import {
   checkManagerFiles,
   validateOptionalAbsence,
 } from "./optional-residency.ts";
+import { assertRecordedBinPolicy } from "./dependency-bin-policy.ts";
+import { validateBinRecord } from "./dependency-bin-record.ts";
 const under = (root: string, file: string) =>
   file.startsWith(root + "/") && path.posix.normalize(file) === file;
 export function validateRecordedInstall(
@@ -15,6 +17,7 @@ export function validateRecordedInstall(
   fixture: Fixture,
   recipe: Recipe,
   authority: ReleaseAuthority,
+  reviewed: Request["reviewedController"],
 ): void {
   assert.equal(row.schema, "vize.humanReports11252_11253.install.v1");
   assert(path.posix.isAbsolute(row.root));
@@ -34,6 +37,7 @@ export function validateRecordedInstall(
   checkHostFacts(row.host, recipe.platform, recipe.arch);
   checkManagerFiles(row.managerFiles, bytes(row.lockRawBase64), manifest);
   assert.equal(sha256(bytes(row.lockRawBase64)), row.lockSha256);
+  assertRecordedBinPolicy(row.binPolicy, reviewed);
   for (const image of [row.node, row.pnpm, row.cli, row.native, ...row.sdk]) {
     hash(image.sha256);
     assert(Number.isSafeInteger(image.bytes) && image.bytes > 0);
@@ -58,7 +62,8 @@ export function validateRecordedInstall(
     assert(!seen.has(pkg.directory));
     seen.add(pkg.directory);
     assert(pkg.files.length > 0);
-    assert.equal(pkg.allInstalledBytesEqualArchive, true);
+    if (pkg.allInstalledBytesEqualArchive === false) validateBinRecord(pkg, row, reviewed);
+    else assert.equal(pkg.allInstalledBytesEqualArchive, true);
     const names = new Set<string>();
     for (const image of pkg.files) {
       assert(under(pkg.directory, image.path));
