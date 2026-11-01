@@ -154,6 +154,7 @@ fn the_retained_navigation_source_retirement_aborts_and_drops_its_waiter() {
     let project = crate::source_project::SourceQueryProject::new_server(child);
     let (query, _) = project.begin_query(&a).unwrap();
     let (dropped, observed) = std::sync::mpsc::channel();
+    let (entered, observed_entry) = std::sync::mpsc::channel();
     struct OnDrop(std::sync::mpsc::Sender<()>);
     impl Drop for OnDrop {
         fn drop(&mut self) {
@@ -162,9 +163,16 @@ fn the_retained_navigation_source_retirement_aborts_and_drops_its_waiter() {
     }
     let mut work = Box::pin(query.run(move |_| async move {
         let _owner = OnDrop(dropped);
+        entered.send(()).unwrap();
         std::future::pending::<()>().await;
     }));
+    // SourceQuery::run deliberately yields to cancellation before polling compute.
     assert!(work.as_mut().now_or_never().is_none());
+    assert!(observed_entry.try_recv().is_err());
+    assert!(work.as_mut().now_or_never().is_none());
+    observed_entry
+        .try_recv()
+        .expect("the held computation actually entered");
     // This is the same source retirement called by NativeNavigationProject::retire.
     project.retire();
     assert!(crate::runtime::block_on(work).is_err());
