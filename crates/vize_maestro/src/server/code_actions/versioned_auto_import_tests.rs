@@ -32,7 +32,8 @@ fn expected(
     } else {
         serde_json::json!({"changes":{(uri.as_str()):edits}})
     };
-    serde_json::json!([{"title":format!("Auto-import `MyButton` from `{specifier}`"),"kind":"quickfix","edit":edit,"isPreferred":true}])
+    let title = ["Auto-import `MyButton` from `", specifier, "`"].concat();
+    serde_json::json!([{"title":title,"kind":"quickfix","edit":edit,"isPreferred":true}])
 }
 
 fn exercise(quoted: bool) {
@@ -152,7 +153,10 @@ fn exercise(quoted: bool) {
     let mut applied = SOURCE.to_owned();
     applied.insert_str(start, &edit.new_text);
     eprintln!("whole source after applying the actual import edit: {applied:?}");
-    assert_eq!(applied, SOURCE.replacen('\n', &format!("\n{statement}"), 1));
+    assert_eq!(
+        applied,
+        SOURCE.replacen('\n', &["\n", statement].concat(), 1)
+    );
     assert!(server.state.documents.apply_changes(
         &uri,
         vec![TextDocumentContentChangeEvent {

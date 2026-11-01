@@ -34,7 +34,8 @@ mod script_lint_tests;
 #[cfg(test)]
 mod source_position_tests;
 mod template_lint;
-#[cfg(all(test, feature = "native"))]
+#[cfg(test)]
+#[cfg(feature = "native")]
 mod versioned_auto_import_tests;
 #[cfg(feature = "native")]
 mod versioned_lint_edits;
