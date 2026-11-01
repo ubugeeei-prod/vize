@@ -15,7 +15,7 @@ on:
       - tools/benchmarks/scripts/public-typechecker-11317/**
       - tests/tooling/public-typechecker-11317*.test.ts
       - tests/_fixtures/differential/typechecker/package-import-redirects-11317/**
-permissions: { contents: read, actions: read }
+permissions: { contents: read }
 concurrency:
   group: public-typechecker-consumer-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
@@ -69,7 +69,7 @@ jobs:
           path: ${{ runner.temp }}/public-acceptance.tgz
           retention-days: 14
   contracts-11317:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -79,6 +79,7 @@ jobs:
       - name: Check the closed npm role without executing a public package
         run: node --test tests/tooling/public-typechecker-11317*.test.ts
   public-11317:
+    permissions: { contents: read, actions: read }
     if: github.event_name == 'workflow_dispatch' && inputs.consumer == 'package-import-redirects-11317' && github.repository == 'ubugeeei-prod/vize'
     needs: contracts-11317
     runs-on: blacksmith-8vcpu-ubuntu-2404

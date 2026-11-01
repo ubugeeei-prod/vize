@@ -89,6 +89,10 @@ export function managerImages(npm: string, npx: string) {
     fileImage(process.execPath),
   ];
 }
+export function assertManager(images: FileImage[], npm: string, npx: string) {
+  assertCustody(images);
+  assert.deepEqual(managerImages(npm, npx), images);
+}
 export function projectBin(root: string, cli: string) {
   const link = join(root, "node_modules/.bin/vize");
   assert.equal(lstatSync(link).isSymbolicLink(), true, "npm's Linux vize link must be explicit");
@@ -109,7 +113,9 @@ export async function install(
   original: SourceFile[],
   authority: Awaited<ReturnType<typeof authenticate>>,
   record: Recorder,
+  verifyManager: () => void,
 ) {
+  verifyManager();
   rejectOverrides(process.env);
   assert.equal(process.version, "v24.22.1");
   assert.equal(process.platform, "linux");
@@ -131,6 +137,7 @@ export async function install(
     manifest: readFileSync(join(root, "package.json"), "utf8"),
     lifecycle: "original default npm install; no ignore-scripts or dependency/provider override",
   });
+  verifyManager();
   const installed = capture(record, "npm-install", [process.execPath, npm, "install"], root);
   for (const file of ["package.json", "package-lock.json"])
     if (existsSync(join(root, file)))
@@ -251,6 +258,7 @@ export async function install(
     assert.equal(file.bytes, source.bytes);
     assert.equal(file.sha256, source.sha256);
   }
+  verifyManager();
   const nativeLoad = requireNativeLoadPrerequisite(
     root,
     packageFacts,
@@ -311,6 +319,7 @@ export async function install(
   });
   assertNativeIdentity(token, imageToken, binding);
   validateNative(role, authority.capsule, binary, asString(token));
+  verifyManager();
   const cliVersion = capture(
     record,
     "installed-cli-version",
@@ -321,12 +330,14 @@ export async function install(
   assert.equal(cliVersion.stdout, "vize " + version + "\n");
   assert.equal(cliVersion.stderr, "");
   const resolver = join(modules, "typescript-native/lib/getExePath.js");
+  verifyManager();
   const checkerModule = asRecord(await import(pathToFileURL(resolver).href));
   assert.equal(typeof checkerModule.default, "function");
   const checker = realpathSync(
     asString(Reflect.apply(checkerModule.default as () => unknown, undefined, [])),
   );
   assert.ok(inside(realpathSync(join(modules, "@typescript/typescript-linux-x64")), checker));
+  verifyManager();
   const checkerVersion = capture(record, "installed-checker-version", [checker, "--version"], root);
   healthy(checkerVersion, 0);
   assert.equal(checkerVersion.stdout, "Version 7.0.2\n");
@@ -364,6 +375,7 @@ export async function install(
     completeNodeModulesFileSetAsserted: false,
   });
   const verifyRoute = () => {
+    verifyManager();
     assert.deepEqual(projectBin(root, cli), bin);
     recheckNativeLoadPrerequisite(
       { root, packages: packageFacts, sdk: graph.files, nativeLoad },

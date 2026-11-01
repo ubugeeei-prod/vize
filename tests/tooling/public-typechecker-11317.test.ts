@@ -357,7 +357,21 @@ test("the new closed manual role preserves the old 0.602 job body and never sele
     );
   assert.equal(sha256(oldJob), "08e442156bc782895a717f5a3d7fa7ce77bd7bc965202713fd3eab3e246370b1");
   assert.ok(workflow.includes("inputs.consumer == 'package-import-redirects-11317'"));
-  assert.ok(workflow.includes("node-version: 24.22.1"));
-  assert.ok(workflow.includes("npm@11.19.1"));
+  const controls = workflow.slice(
+    workflow.indexOf("  contracts-11317:\n"),
+    workflow.indexOf("  public-11317:\n"),
+  );
+  const publicRole = workflow.slice(workflow.indexOf("  public-11317:\n"));
+  for (const job of [controls, publicRole]) {
+    assert.ok(job.includes("node-version: 24.22.1"), "each job pins Node");
+    assert.ok(job.includes("runs-on: blacksmith-8vcpu-ubuntu-2404"), "registered runner");
+  }
+  assert.ok(publicRole.includes("permissions: { contents: read, actions: read }"));
+  assert.ok(publicRole.includes("needs: contracts-11317"));
+  assert.ok(publicRole.includes("github.repository == 'ubugeeei-prod/vize'"));
+  assert.ok(publicRole.includes("npm@11.19.1"));
+  assert.ok(publicRole.includes("- uses: actions/upload-artifact@"));
+  assert.ok(publicRole.includes("        if: always()"));
+  assert.ok(!workflow.slice(0, workflow.indexOf("  public-11317:\n")).includes("actions: read"));
   assert.ok(!workflow.includes("CORSA_PATH"));
 });

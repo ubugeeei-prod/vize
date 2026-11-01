@@ -246,3 +246,35 @@ export function assess(role: Role, observation: ReturnType<typeof execute>, reco
   });
   return assessments;
 }
+
+export function assessCaptured(
+  rows: { role: Role; outcomes: ReturnType<typeof execute>; owned: Recorder }[],
+  record: Recorder,
+) {
+  const verdicts = rows.map((row) => {
+    try {
+      return { role: row.role, value: assess(row.role, row.outcomes, row.owned), error: null };
+    } catch (error) {
+      return {
+        role: row.role,
+        value: null,
+        error: error instanceof Error ? error : new Error(String(error)),
+      };
+    }
+  });
+  record.json(
+    "all-semantic-assessments.json",
+    verdicts.map((row) => ({
+      role: row.role,
+      value: row.value,
+      error: row.error ? { name: row.error.name, message: row.error.message } : null,
+      publicAcceptance: false,
+    })),
+  );
+  const failed = verdicts.find((row) => row.error !== null);
+  if (failed) throw failed.error;
+  return verdicts.map((row) => {
+    assert.ok(row.value);
+    return row.value;
+  });
+}

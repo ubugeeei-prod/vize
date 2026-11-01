@@ -7,8 +7,8 @@ import { assertCustody, fileImage } from "../../../support/release/computed_even
 import { rejectOverrides } from "../../../support/release/public_install/identity.ts";
 import { authenticate } from "./authority.ts";
 import { fixturePath, input, ownerSource, profiles, type Role } from "./contract.ts";
-import { assess, execute, recorder } from "./execute.ts";
-import { install, managerImages } from "./install.ts";
+import { assessCaptured, execute, recorder } from "./execute.ts";
+import { assertManager, install, managerImages } from "./install.ts";
 
 export function argumentsFor(argv: string[]) {
   assert.equal(argv.length, 6);
@@ -64,7 +64,16 @@ export async function main(argv: string[]) {
       record.json("phase.json", { stage: "public-role", role, accepted: false });
       const authority = await authenticate(role, owned);
       const manager = managerImages(options.npm, options.npx);
-      const installed = await install(root, role, options.npm, original, authority, owned);
+      const verifyManager = () => assertManager(manager, options.npm, options.npx);
+      const installed = await install(
+        root,
+        role,
+        options.npm,
+        original,
+        authority,
+        owned,
+        verifyManager,
+      );
       owned.json("manager-inputs.json", manager);
       const outcomes = execute(root, role, options.npx, original, owned, installed.verifyRoute);
       captured.push({ role, owned, installed, manager, outcomes });
@@ -73,8 +82,9 @@ export async function main(argv: string[]) {
       "all-twenty-observations.json",
       captured.map((row) => ({ role: row.role, outcomes: row.outcomes })),
     );
-    const results = captured.map((row) => {
-      const outcomes = assess(row.role, row.outcomes, row.owned);
+    const assessments = assessCaptured(captured, record);
+    const results = captured.map((row, index) => {
+      const outcomes = assessments[index];
       assertCustody(row.installed.images);
       assertCustody(row.manager);
       row.installed.verifyRoute();

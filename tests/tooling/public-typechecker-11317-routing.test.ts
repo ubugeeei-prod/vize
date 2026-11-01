@@ -18,6 +18,7 @@ import { nativeLoaderProgram } from "../../tools/support/release/human_reports_1
 import { probeAfterNativePrerequisite } from "../../tools/support/release/human_reports_11252_11253_public/native-loader-prerequisite.ts";
 import type { PackageBase } from "../../tools/support/release/human_reports_11252_11253_public/model.ts";
 import {
+  assertManager,
   managerImages,
   projectBin,
 } from "../../tools/benchmarks/scripts/public-typechecker-11317/install.ts";
@@ -31,6 +32,7 @@ import {
 } from "../../tools/benchmarks/scripts/public-typechecker-11317/contract.ts";
 import {
   assess,
+  assessCaptured,
   recorder,
   retain,
 } from "../../tools/benchmarks/scripts/public-typechecker-11317/execute.ts";
@@ -62,7 +64,16 @@ test("npm/npx declared entries and the actual default vize link refuse foreign r
         bin: { npm: "bin/npm-cli.js", npx: "bin/npx-cli.js" },
       }),
     );
-    assert.equal(managerImages(npm, npx).length, 4);
+    const manager = managerImages(npm, npx);
+    assert.equal(manager.length, 4);
+    write(npx, "changed-after-install");
+    let executes = 0;
+    assert.throws(() => {
+      assertManager(manager, npm, npx);
+      executes++;
+    });
+    assert.equal(executes, 0);
+    write(npx, "npx");
     write(join(root, "foreign-npx.js"), "foreign");
     assert.throws(() => managerImages(npm, join(root, "foreign-npx.js")));
     const cli = join(root, "node_modules/vize/bin/vize"),
@@ -116,7 +127,26 @@ test("a semantic pass followed by changed installed bytes leaves every saved acc
       };
     });
     const text = packet("text", null, true);
-    assess("after", { textBefore: [], textAfter: [], text, outcomes }, record);
+    const observation = { textBefore: [], textAfter: [], text, outcomes };
+    const before = recorder(join(root, "before"));
+    mkdirSync(before.root);
+    const after = recorder(join(root, "after"));
+    mkdirSync(after.root);
+    const failedBefore = { ...observation, text: { ...text, status: 2 } };
+    assert.throws(() =>
+      assessCaptured(
+        [
+          { role: "before", outcomes: failedBefore, owned: before },
+          { role: "after", outcomes: observation, owned: after },
+        ],
+        record,
+      ),
+    );
+    assert.equal(
+      JSON.parse(readFileSync(join(after.root, "semantic-assessment.json"), "utf8")).semanticMatch,
+      true,
+    );
+    assess("after", observation, record);
     const file = join(root, "image.bin");
     write(file, "before");
     const images = [fileImage(file)];
