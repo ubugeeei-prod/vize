@@ -329,28 +329,49 @@ pub(super) async fn observe(api: &ApiClient, data: &mut ObservationData) -> cors
             .filter_map(|record| record.signature.declaration.clone()),
     );
     for declaration in declarations {
-        let Ok(parsed) = declaration.parse() else {
-            data.unavailable
-                .push(Unavailable::DeclarationRangeUnavailable(declaration));
-            continue;
+        let parsed = match declaration.parse() {
+            Ok(parsed) => Some(parsed),
+            Err(_) => {
+                data.unavailable
+                    .push(Unavailable::DeclarationRangeUnavailable(
+                        declaration.clone(),
+                    ));
+                None
+            }
         };
-        data.stage = "declaration-source";
-        let Some(index) = source(api, data, parsed.path.as_str()).await? else {
-            continue;
-        };
-        let Some(decoded) = data.sources[index].decoded.as_ref() else {
-            data.unavailable.push(Unavailable::IncompleteSourceRecord(
-                parsed.path.as_str().into(),
+        // A compact handle can name a source without supplying node offsets.
+        // Retain its body on this owner without inventing a native call range.
+        let path: Option<String> = parsed
+            .as_ref()
+            .map(|value| value.path.as_str().into())
+            .or_else(|| {
+                declaration
+                    .declaring_path()
+                    .map(|path| path.as_str().into())
+            });
+        let Some(path) = path else {
+            data.unavailable.push(Unavailable::DeclarationMetadata(
+                declaration.as_str().into(),
             ));
             continue;
         };
-        if decoded.file_name != parsed.path.as_str()
-            || decoded.path != parsed.path.as_str()
-            || utf16_byte(&decoded.text, parsed.pos).is_none()
-            || utf16_byte(&decoded.text, parsed.end).is_none()
-        {
+        data.stage = "declaration-source";
+        let Some(index) = source(api, data, path.as_str()).await? else {
+            continue;
+        };
+        let Some(decoded) = data.sources[index].decoded.as_ref() else {
             data.unavailable
-                .push(Unavailable::SourceIdentity(parsed.path.as_str().into()));
+                .push(Unavailable::IncompleteSourceRecord(path));
+            continue;
+        };
+        if decoded.file_name != path.as_str()
+            || decoded.path != path.as_str()
+            || parsed.as_ref().is_some_and(|parsed| {
+                utf16_byte(&decoded.text, parsed.pos).is_none()
+                    || utf16_byte(&decoded.text, parsed.end).is_none()
+            })
+        {
+            data.unavailable.push(Unavailable::SourceIdentity(path));
         }
     }
     data.stage = "observed-not-admitted";

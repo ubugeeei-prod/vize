@@ -203,6 +203,12 @@ fn sdk_missing_generic_metadata_is_not_proof_of_a_nongeneric_signature() {
 fn compact_or_malformed_declarations_cannot_supply_native_call_ranges() {
     let full = NodeHandle::from("1.5.176./p/component.ts");
     assert_eq!(full.parse().unwrap().path.as_str(), "/p/component.ts");
+    let compact = NodeHandle::from("42.176./p/component.ts");
+    assert_eq!(compact.declaring_path().as_deref(), Some("/p/component.ts"));
+    assert!(
+        compact.parse().is_err(),
+        "a native filename is not a native call range"
+    );
     for node in ["42.176./p/component.ts", "1.5.176.", "bad"] {
         assert!(NodeHandle::from(node).parse().is_err());
     }
