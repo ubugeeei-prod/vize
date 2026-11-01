@@ -11689,6 +11689,11 @@
           "sha256": "99b09821cc165be149ad5fc949bcc96f95ff4d824a38d323e908e5733cc5c30d"
         },
         {
+          "file": "src/Never.vue",
+          "path": "legacy-typed-mixin-methods/src/Never.vue.txt",
+          "sha256": "51e1dd2ff928458f435f35a299b930218376ffd287c6cf99951a78073d3c3abd"
+        },
+        {
           "file": "src/Typed.vue",
           "path": "legacy-typed-mixin-methods/src/Typed.vue.txt",
           "sha256": "9f9ad5ff15c77a34f43042be89d4f9c22036f5f6d7bf9ed963c588b553547909"
@@ -11707,6 +11712,11 @@
           "file": "src/broad.ts",
           "path": "legacy-typed-mixin-methods/src/broad.ts.txt",
           "sha256": "f88afd5151d69c86fe1fda60c1682834459115a4da4c5e903711cb4faf5f628a"
+        },
+        {
+          "file": "src/never.d.ts",
+          "path": "legacy-typed-mixin-methods/src/never.d.ts.txt",
+          "sha256": "3f50457bad259f6ce70d5aa72dbe011319db80c11479efdfee17b2c1043f4d40"
         },
         {
           "file": "src/unknown.ts",

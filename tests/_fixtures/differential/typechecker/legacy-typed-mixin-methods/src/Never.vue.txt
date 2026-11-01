@@ -1,0 +1,5 @@
+<script lang="ts">
+import absent from "./never";
+export default { mixins: [absent], methods: { safe() { return 1; }, probe() { this.safe(); return this.$unbound(); } } };
+</script>
+<template><span /></template>

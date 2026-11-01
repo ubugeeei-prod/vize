@@ -4,7 +4,7 @@ interface Methods { $auth(token: string): number }
 type Laws = [
   Assert<Equal<$InheritedMembers<any>, $NoInheritedMembers>>,
   Assert<Equal<$InheritedMembers<unknown>, $NoInheritedMembers>>,
-  Assert<Equal<$InheritedMembers<never>, never>>,
+  Assert<Equal<$InheritedMembers<never>, $NoInheritedMembers>>,
   Assert<Equal<$InheritedMembers<new () => any>, $NoInheritedMembers>>,
   Assert<Equal<$InheritedMembers<new () => Methods>, Methods>>,
   Assert<Equal<$InheritedMembers<{ methods: Methods }>, Methods>>,

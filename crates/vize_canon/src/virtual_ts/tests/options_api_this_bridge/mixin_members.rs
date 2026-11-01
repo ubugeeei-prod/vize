@@ -43,7 +43,7 @@ fn legacy_bridge_header(script: &str) -> String {
 }
 
 const HELPERS: &str = concat!(
-    "  type $InheritedInstance<T> = 0 extends (1 & T) ? any : T extends abstract new (...args: any[]) => infer __I ? __I : T extends { methods: infer __M } ? 0 extends (1 & __M) ? $NoInheritedMembers : [__M] extends [never] ? $NoInheritedMembers : __M extends object ? [keyof __M] extends [never] ? $NoInheritedMembers : string extends keyof __M ? $NoInheritedMembers : number extends keyof __M ? $NoInheritedMembers : symbol extends keyof __M ? $NoInheritedMembers : __M : $NoInheritedMembers : $NoInheritedMembers;\n",
+    "  type $InheritedInstance<T> = 0 extends (1 & T) ? any : [T] extends [never] ? $NoInheritedMembers : T extends abstract new (...args: any[]) => infer __I ? __I : T extends { methods: infer __M } ? 0 extends (1 & __M) ? $NoInheritedMembers : [__M] extends [never] ? $NoInheritedMembers : __M extends object ? [keyof __M] extends [never] ? $NoInheritedMembers : string extends keyof __M ? $NoInheritedMembers : number extends keyof __M ? $NoInheritedMembers : symbol extends keyof __M ? $NoInheritedMembers : __M : $NoInheritedMembers : $NoInheritedMembers;\n",
     "  interface $NoInheritedMembers {}\n",
     "  type $InheritedMembers<T, __I = $InheritedInstance<T>> = [$IsAny<__I>] extends [true] ? $NoInheritedMembers : __I;",
 );

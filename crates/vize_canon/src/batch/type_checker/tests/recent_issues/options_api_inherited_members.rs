@@ -111,6 +111,12 @@ fn typed_options_object_mixin_methods_keep_arguments_and_unknown_members_checked
             ),
         ),
         (
+            "src/Never.vue",
+            include_str!(
+                "../../../../../../../tests/_fixtures/differential/typechecker/legacy-typed-mixin-methods/src/Never.vue.txt"
+            ),
+        ),
+        (
             "src/Typed.vue",
             include_str!(
                 "../../../../../../../tests/_fixtures/differential/typechecker/legacy-typed-mixin-methods/src/Typed.vue.txt"
@@ -132,6 +138,12 @@ fn typed_options_object_mixin_methods_keep_arguments_and_unknown_members_checked
             "src/broad.ts",
             include_str!(
                 "../../../../../../../tests/_fixtures/differential/typechecker/legacy-typed-mixin-methods/src/broad.ts.txt"
+            ),
+        ),
+        (
+            "src/never.d.ts",
+            include_str!(
+                "../../../../../../../tests/_fixtures/differential/typechecker/legacy-typed-mixin-methods/src/never.d.ts.txt"
             ),
         ),
         (
@@ -213,6 +225,15 @@ fn typed_options_object_mixin_methods_keep_arguments_and_unknown_members_checked
                 71,
                 1,
                 Some("script")
+            ),
+            (
+                "src/Never.vue".into(),
+                Some(2339),
+                "Property '$unbound' does not exist on type '$This'.".into(),
+                3,
+                104,
+                1,
+                Some("script"),
             ),
             (
                 "src/Typed.vue".into(),
