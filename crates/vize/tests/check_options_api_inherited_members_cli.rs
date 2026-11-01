@@ -43,11 +43,12 @@ enum Case {
     AuthoredType,
     UnicodeCrLf,
     Wrapped,
+    ExplicitThis,
 }
 
 fn sources(case: Case) -> Vec<(&'static str, String)> {
     let mut invalid = INVALID.to_owned();
-    if matches!(case, Case::Repair) {
+    if matches!(case, Case::Repair | Case::ExplicitThis) {
         invalid = invalid
             .replace("greet(1)", "greet('x')")
             .replace("isPC.toFixed()", "isPC ? 'pc' : 'sp'")
@@ -62,7 +63,17 @@ fn sources(case: Case) -> Vec<(&'static str, String)> {
             .replace('\n', "\r\n");
     }
     let mut files = vec![
-        ("src/shared.ts", SHARED.to_owned()),
+        (
+            "src/shared.ts",
+            if matches!(case, Case::ExplicitThis) {
+                SHARED.replace(
+                    "greet(name: string)",
+                    "greet(this: { currentDevice: string }, name: string)",
+                )
+            } else {
+                SHARED.to_owned()
+            },
+        ),
         ("src/base.ts", BASE.to_owned()),
         ("src/Invalid.vue", invalid),
         ("tsconfig.json", CONFIG.to_owned()),
@@ -135,7 +146,7 @@ fn portable_packet(packet: &serde_json::Value) -> serde_json::Value {
 }
 
 fn expected(case: Case) -> serde_json::Value {
-    let repaired = matches!(case, Case::Repair | Case::AuthoredType);
+    let repaired = matches!(case, Case::Repair | Case::AuthoredType | Case::ExplicitThis);
     let mut paths = vec!["src/Invalid.vue", "src/base.ts", "src/shared.ts"];
     if matches!(case, Case::Wrapped) {
         paths.push("src/Wrapped.vue");
@@ -190,6 +201,7 @@ fn original_inherited_options_cli_keeps_errors_repair_restore_and_authored_types
         Case::AuthoredType,
         Case::UnicodeCrLf,
         Case::Wrapped,
+        Case::ExplicitThis,
     ] {
         let extra = root.path().join("src/Wrapped.vue");
         if extra.exists() {
@@ -210,7 +222,7 @@ fn original_inherited_options_cli_keeps_errors_repair_restore_and_authored_types
         };
         let mut record = serde_json::json!({"case":format!("{case:?}"),"cwd":root.path(),"args":args,
             "inputs":files,"expected":if matches!(case,Case::OriginalText){serde_json::Value::Null}else{expected(case)},
-            "expectedStatus":if matches!(case,Case::Repair|Case::AuthoredType){0}else{1},
+            "expectedStatus":if matches!(case,Case::Repair|Case::AuthoredType|Case::ExplicitThis){0}else{1},
             "expectedStderr":format!("Building Corsa virtual project for {} files under {}...\nRunning Corsa diagnostics for {} files...\n",
                 files.len()-1, root.path().display(), files.len()-1),
             "status":null,"signal":null,"stdoutBytes":null,"stderrBytes":null,"parsed":null,

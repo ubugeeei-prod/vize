@@ -73,8 +73,15 @@ fn inherited_template_members_are_checked_with_their_declared_types() {
     checker.enable_options_api();
     checker.scan_project().expect("project scan should succeed");
     let result = checker.check_project().expect("project check should run");
-    retain_complete_result(&checker, &project_root, &native, &result)
-        .expect("retain complete API result before any wording or order adaptation");
+    retain_complete_result(
+        &checker,
+        &project_root,
+        &native,
+        &result,
+        &FILES,
+        "original",
+    )
+    .expect("retain complete API result before any wording or order adaptation");
     let mut diagnostics: Vec<(String, Option<u32>, String)> = result
         .diagnostics
         .into_iter()
@@ -177,29 +184,42 @@ fn retain_complete_result(
     root: &std::path::Path,
     native: &std::path::Path,
     result: &crate::batch::TypeCheckResult,
+    inputs: &[(&str, &str)],
+    label: &str,
 ) -> std::io::Result<()> {
     let packet = serde_json::json!({
         "schema":"vize.inherited-options-api-source-observation.v1",
         "scope":"Source batch API with real test Vue; no original CLI/public execution claim",
-        "projectRoot":root, "requestedNativePath":native, "inputs":FILES,
+        "projectRoot":root, "requestedNativePath":native, "inputs":inputs,
         "result":{"exitCode":result.exit_code,"success":result.success,
             "diagnostics":result.diagnostics.iter().map(|d| serde_json::json!({
                 "file":d.file,"line":d.line,"column":d.column,"message":d.message,
-                "code":d.code,"severity":d.severity,"blockType":cstr!("{:?}",d.block_type)
+                "code":d.code,"severity":d.severity,"blockType":d.block_type.as_ref().map(|value|cstr!("{value:?}"))
             })).collect::<Vec<_>>()},
     });
     let whole = serde_json::to_string_pretty(&packet).map_err(std::io::Error::other)?;
     eprintln!("11339 complete API result: {whole}");
     if let Some(capture) = std::env::var_os("VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR") {
-        let directory =
-            std::path::PathBuf::from(capture).join("options-api-inherited-template-members");
+        let directory = std::path::PathBuf::from(capture)
+            .join("options-api-inherited-template-members")
+            .join(label);
         std::fs::create_dir_all(&directory)?;
         std::fs::write(directory.join("raw-result.json"), whole)?;
         // Later source-capture errors cannot erase the raw result above.
         let (materialized, config) = checker.native_project_paths_for_test();
         let workspace = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../tests/node_modules/vue/package.json");
+        let generated = checker
+            .project
+            .virtual_files_sorted()
+            .into_iter()
+            .map(|file| {
+                serde_json::json!({"original":file.original_path,"virtual":file.virtual_path,
+                "code":file.content.as_str(),"sourceMap":cstr!("{:#?}",file.source_map)})
+            })
+            .collect::<Vec<_>>();
         let sources = serde_json::json!({
+            "generatedFiles":generated,
             "materializedRoot":materialized,"generatedConfig":{
                 "path":config,"bytes":std::fs::read(&config)?},
             "realVueManifest":{"path":std::fs::canonicalize(&workspace)?,
@@ -247,11 +267,13 @@ export default defineComponent({ mixins: [shared], data() { return { payload: { 
     checker.enable_options_api();
     checker.scan_project().expect("shadow scan");
     let result = checker.check_project().expect("shadow check");
+    retain_complete_result(&checker, &root, &native, &result, &files, "authored-shadow")
+        .expect("retain generated shadow source and complete result before verdict");
     let observations = serde_json::json!({"inputs":files,"exitCode":result.exit_code,
         "success":result.success,"diagnostics":result.diagnostics.iter().map(|d|
             serde_json::json!({"file":d.file,"line":d.line,"column":d.column,
                 "message":d.message,"code":d.code,"severity":d.severity,
-                "blockType":cstr!("{:?}",d.block_type)})).collect::<Vec<_>>()});
+                "blockType":d.block_type.as_ref().map(|value|cstr!("{value:?}"))})).collect::<Vec<_>>()});
     eprintln!("11339 authored shadow result: {observations:#}");
     if let Some(capture) = std::env::var_os("VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR") {
         let dir = std::path::PathBuf::from(capture).join("options-api-inherited-template-members");
