@@ -31,10 +31,16 @@ export function argumentsFor(argv: string[]) {
   assert.equal(values.size, 3);
   return { out: values.get("--out")!, npm: values.get("--npm")!, npx: values.get("--npx")! };
 }
-export function requireMainDispatch(environment: NodeJS.ProcessEnv) {
+export function requireOwnedDispatch(environment: NodeJS.ProcessEnv) {
   assert(environment.GITHUB_EVENT_NAME === "workflow_dispatch", "manual consumer event required");
   assert(environment.GITHUB_REPOSITORY === "ubugeeei-prod/vize", "consumer repository required");
-  assert(environment.GITHUB_REF === "refs/heads/main", "consumer requires the main source ref");
+  assert(
+    [
+      "refs/heads/main",
+      "refs/heads/test/published-options-inherited-members-11339-20261102",
+    ].includes(environment.GITHUB_REF ?? ""),
+    "consumer requires a registered source ref",
+  );
 }
 export function verifyAllBeforeAssessment(rows: { verify: () => void }[]) {
   const errors: unknown[] = [];
@@ -73,7 +79,7 @@ export async function main(argv: string[]) {
     requireDefaultProvider(process.env, (rows) =>
       record.json("default-provider-environment.json", rows),
     );
-    requireMainDispatch(process.env);
+    requireOwnedDispatch(process.env);
     const head = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
     assert.equal(head, process.env.GITHUB_SHA);
     record.json("controller.json", {

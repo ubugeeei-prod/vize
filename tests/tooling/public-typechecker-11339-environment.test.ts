@@ -12,7 +12,7 @@ import {
   guardedCapture,
   recorder,
 } from "../../tools/benchmarks/scripts/public-typechecker-11339/execute.ts";
-import { requireMainDispatch } from "../../tools/benchmarks/scripts/public-typechecker-11339/run.ts";
+import { requireOwnedDispatch } from "../../tools/benchmarks/scripts/public-typechecker-11339/run.ts";
 
 test("default provider requires true absence, including empty aliases, without value egress or execution", () => {
   assert.deepEqual(defaultProviderKeys, [
@@ -68,7 +68,11 @@ test("a foreign workflow ref refuses before the public callback", () => {
     GITHUB_REPOSITORY: "ubugeeei-prod/vize",
     GITHUB_REF: "refs/heads/main",
   };
-  requireMainDispatch(environment);
+  requireOwnedDispatch(environment);
+  requireOwnedDispatch({
+    ...environment,
+    GITHUB_REF: "refs/heads/test/published-options-inherited-members-11339-20261102",
+  });
   const root = realpathSync(mkdtempSync(join(tmpdir(), "public-11339-ref-")));
   try {
     let executed = 0;
@@ -78,7 +82,7 @@ test("a foreign workflow ref refuses before the public callback", () => {
       "ref-refusal",
       ["inert-vize", "check"],
       root,
-      () => requireMainDispatch({ ...environment, GITHUB_REF: "refs/heads/" + privateRef }),
+      () => requireOwnedDispatch({ ...environment, GITHUB_REF: "refs/heads/" + privateRef }),
       () => {
         executed++;
         throw Error("must not execute");
