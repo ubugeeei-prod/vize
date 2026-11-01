@@ -65,8 +65,8 @@ jobs:
         run: |
           set -euo pipefail
           [[ "${{ inputs.sfcs }}" == 2500 ]]
-          [[ "$BASE_SHA" == a193c99c824b54fbe7e900bb88a19f549cd25ea7 ]]
-          [[ "$HEAD_SHA" == 468c9beb2437029fed15746a20b8373307b3925e ]]
+          [[ "$BASE_SHA" == ec8474e0ea9ed05062542c57c857f36b9467ac15 ]]
+          [[ "$HEAD_SHA" == d2579c761944c5a1480f74443188bb4ba10c3913 ]]
           mkdir "$RUNNER_TEMP/cold-paired"
           git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"
           git worktree add --detach "$RUNNER_TEMP/cold-paired-base" "$BASE_SHA"

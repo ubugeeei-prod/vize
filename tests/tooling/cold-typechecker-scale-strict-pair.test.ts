@@ -10,6 +10,9 @@ import {
   verifySourceSdkPair,
   verifyStrictDebug,
   prepareStrictOutput,
+  verifyStrictSourceInputs,
+  strictPairSources,
+  strictPairPaths,
   type SdkScanner,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-strict-pair.ts";
 import { coldScalePacketView } from "../../tools/benchmarks/scripts/cold-typechecker-scale-packet.ts";
@@ -20,6 +23,68 @@ import {
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-paired-stats.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
+
+test("only the frozen fifteen-path input and whole SDK4 Cargo identities are admitted", () => {
+  const read = (file: string) =>
+    execFileSync("git", ["show", `${strictPairSources.base}:${file}`], { cwd: root });
+  const manifest = read("Cargo.toml"),
+    lock = read("Cargo.lock");
+  const make = (): Parameters<typeof verifyStrictSourceInputs>[0] => ({
+    sources: { ...strictPairSources },
+    changedPaths: [...strictPairPaths],
+    cargo: {
+      base: { "Cargo.toml": Buffer.from(manifest), "Cargo.lock": Buffer.from(lock) },
+      head: { "Cargo.toml": Buffer.from(manifest), "Cargo.lock": Buffer.from(lock) },
+    },
+  });
+  assert.deepEqual(verifyStrictSourceInputs(make()), {
+    sdkVersion: "2.0.0-beta.4",
+    files: [
+      {
+        file: "Cargo.toml",
+        bytes: 13168,
+        sha256: "6400cafce2abb1c16bb3c43dfc6498d0a0c695c88849bd5a6bdd4063b91377de",
+      },
+      {
+        file: "Cargo.lock",
+        bytes: 128818,
+        sha256: "e9a8659e79a919541b6cf29340886dabad787a18fa3051bd77873fc3a76194a4",
+      },
+    ],
+  });
+  for (const control of [
+    "base",
+    "head",
+    "extra",
+    "missing",
+    "order",
+    "duplicate",
+    "manifest-beta3",
+    "lock-beta3",
+    "same-extra-lock-byte",
+  ]) {
+    const input = make();
+    if (control === "base" || control === "head") input.sources[control] = "a".repeat(40);
+    else if (control === "extra") input.changedPaths.push("crates/vize/src/unreviewed.rs");
+    else if (control === "missing") input.changedPaths.pop();
+    else if (control === "order") input.changedPaths.reverse();
+    else if (control === "duplicate") input.changedPaths.push(input.changedPaths[0]);
+    else
+      for (const role of ["base", "head"] as const) {
+        if (control === "same-extra-lock-byte")
+          input.cargo[role]["Cargo.lock"] = Buffer.concat([lock, Buffer.from("\n")]);
+        else {
+          const file = control === "manifest-beta3" ? "Cargo.toml" : "Cargo.lock";
+          const before = input.cargo[role][file].toString("utf8");
+          const changed = before.replaceAll("2.0.0-beta.4", "2.0.0-beta.3");
+          assert.notEqual(changed, before);
+          input.cargo[role][file] = Buffer.from(changed);
+        }
+      }
+    assert.throws(() => verifyStrictSourceInputs(input), control);
+  }
+});
+
 test("a fresh owned output exists before receipts and any reused attempt is refused", () => {
   const parent = fs.mkdtempSync(path.join(os.tmpdir(), "vize-paired-output-"));
   try {
@@ -126,8 +191,8 @@ test("paired dispatch is isolated and the complete full-default job remains byte
   );
   assert(after.includes("inputs.mode == 'paired-comparison' && '-paired-comparison' || ''"));
   assert(after.includes("npm ci --ignore-scripts --no-audit --no-fund"));
-  assert(after.includes('[[ "$BASE_SHA" == a193c99c824b54fbe7e900bb88a19f549cd25ea7 ]]'));
-  assert(after.includes('[[ "$HEAD_SHA" == 468c9beb2437029fed15746a20b8373307b3925e ]]'));
+  assert(after.includes('[[ "$BASE_SHA" == ec8474e0ea9ed05062542c57c857f36b9467ac15 ]]'));
+  assert(after.includes('[[ "$HEAD_SHA" == d2579c761944c5a1480f74443188bb4ba10c3913 ]]'));
 });
 
 test("affinity and RSS controls retain sparse CPU sets and explicit GNU-time scope", () => {

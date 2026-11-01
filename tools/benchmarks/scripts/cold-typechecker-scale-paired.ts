@@ -14,7 +14,11 @@ import {
   coldScaleSupportScriptFiles,
 } from "./cold-typechecker-scale.ts";
 import { coldScalePacketView } from "./cold-typechecker-scale-packet.ts";
-import { linuxPeakRss, pairedColdStatistics } from "./cold-typechecker-scale-paired-stats.ts";
+import {
+  linuxPeakRss,
+  linuxCommandCpu,
+  pairedColdStatistics,
+} from "./cold-typechecker-scale-paired-stats.ts";
 import { verifyColdScaleBuildPair } from "./cold-typechecker-scale-build.ts";
 import {
   strictPairSources,
@@ -44,6 +48,7 @@ type Sample = {
   order: number;
   wallMs: number;
   peakRssBytes: number;
+  cpu: ReturnType<typeof linuxCommandCpu>;
   directory: string;
 };
 
@@ -220,11 +225,13 @@ export async function pairedColdComparison(options: {
         join(directory, "project/apps/web/tsconfig.json"),
         join(directory, "tsconfig.json"),
       );
+      const timeStderr = readFileSync(join(directory, "stderr.txt"), "utf8");
       collected.set(role, {
         role,
         order: index + 1,
         wallMs: measurement.wallMs,
-        peakRssBytes: linuxPeakRss(readFileSync(join(directory, "stderr.txt"), "utf8")),
+        peakRssBytes: linuxPeakRss(timeStderr),
+        cpu: linuxCommandCpu(timeStderr),
         directory,
       });
       // The exact common authored corpus is retained above; each sample keeps
@@ -277,6 +284,11 @@ export async function pairedColdComparison(options: {
     peakRssBytes: pairedColdStatistics(
       pairs.map((pair) => ({ base: pair.base.peakRssBytes, head: pair.head.peakRssBytes })),
     ),
+    cpuMs: pairedColdStatistics(
+      pairs.map((pair) => ({ base: pair.base.cpu.totalCpuMs, head: pair.head.cpu.totalCpuMs })),
+    ),
+    cpuScope:
+      "existing GNU time -v reported command user/system CPU, 10ms resolution; not native-only or function attribution",
     rssScope: "GNU time child high-water RSS; not simultaneous process-tree RSS",
     fullVirtualOutput:
       "same authored project path; complete JSON and debug bytes equal without normalization",
@@ -320,6 +332,7 @@ export async function pairedColdComparison(options: {
       head: head.sourceSha,
       wallMs: summary.wallMs,
       peakRssBytes: summary.peakRssBytes,
+      cpuMs: summary.cpuMs,
       allCorrectnessGuardsPassed: true,
     }),
   );

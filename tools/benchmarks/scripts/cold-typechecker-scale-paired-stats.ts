@@ -13,6 +13,36 @@ export function linuxPeakRss(stderr: string): number {
   return bytes;
 }
 
+/** Read the existing GNU time -v CPU records; no new observation enters the command. */
+export function linuxCommandCpu(stderr: string) {
+  const read = (label: string) => {
+    const rows = stderr
+      .split("\n")
+      .map((line) => line.trimStart())
+      .filter((line) => line.startsWith(label));
+    assert.equal(rows.length, 1, `one GNU time ${label} record required`);
+    const match = /^ (0|[1-9][0-9]*)\.([0-9]{2})$/u.exec(rows[0].slice(label.length));
+    assert(match, `malformed GNU time ${label} record`);
+    const milliseconds = Number(match[1]) * 1000 + Number(match[2]) * 10;
+    assert(Number.isSafeInteger(milliseconds) && milliseconds >= 0);
+    return { milliseconds, secondsRaw: `${match[1]}.${match[2]}` };
+  };
+  const user = read("User time (seconds):"),
+    system = read("System time (seconds):");
+  const totalCpuMs = user.milliseconds + system.milliseconds;
+  assert(
+    Number.isSafeInteger(totalCpuMs) && totalCpuMs > 0,
+    "positive GNU time aggregate CPU required",
+  );
+  return {
+    userCpuMs: user.milliseconds,
+    systemCpuMs: system.milliseconds,
+    totalCpuMs,
+    userSecondsRaw: user.secondsRaw,
+    systemSecondsRaw: system.secondsRaw,
+  };
+}
+
 export type PairedValue = { base: number; head: number };
 export function pairedColdStatistics(pairs: PairedValue[], seed = 11176) {
   assert.equal(pairs.length, 40, "forty complete base/head pairs required");
