@@ -7,7 +7,9 @@ on:
       - tools/support/release/formatter_profiles_public/**
       - tests/tooling/formatter-profiles-public.test.ts
       - tests/tooling/formatter-profiles-public-cache.test.ts
+      - tests/tooling/formatter-profiles-public-mac.test.ts
       - tests/tooling/fixtures/formatter-profiles-public-original.json
+      - tests/tooling/fixtures/formatter-profiles-public-mac-original.json
       - tests/tooling/support/lsp/installed-alias-replay/**
       - tools/support/release/editor_vite_stub/custody.ts
       - tools/support/release/editor_vite_stub/filesystem.ts
@@ -19,6 +21,12 @@ on:
       - tools/support/json-value.ts
   workflow_dispatch:
     inputs:
+      role:
+        description: Closed original consumer role (Linux defaults unchanged)
+        required: true
+        type: choice
+        default: linux-node24
+        options: [linux-node24, mac-arm64-node25-11264]
       version:
         description: Exact public containing release selected by the release owner
         required: true
@@ -30,6 +38,14 @@ on:
       authority_blob:
         description: Immutable genuine producer receipt and public package SRI capsule Git blob
         required: true
+        type: string
+      before_producer_run:
+        description: Mac role only - genuine original 0.627.0 producer run
+        required: false
+        type: string
+      before_authority_blob:
+        description: Mac role only - immutable genuine 0.627.0 public capsule
+        required: false
         type: string
 permissions: { contents: read, actions: read }
 env:
@@ -52,9 +68,20 @@ jobs:
         with: { node-version: "24.14.0", package-manager-cache: false }
       - name: Check immutable inputs, whole edits, initialization defaults and filesystem refusals
         run: node --test tests/tooling/formatter-profiles-public.test.ts tests/tooling/formatter-profiles-public-cache.test.ts
+      - name: Validate the closed role and all required tuples before public job routing
+        env:
+          PUBLIC_ROLE: ${{ inputs.role || 'linux-node24' }}
+          PUBLIC_VERSION: ${{ inputs.version }}
+          PRODUCER_RUN: ${{ inputs.producer_run }}
+          AUTHORITY_BLOB: ${{ inputs.authority_blob }}
+          BEFORE_PRODUCER_RUN: ${{ inputs.before_producer_run }}
+          BEFORE_AUTHORITY_BLOB: ${{ inputs.before_authority_blob }}
+        run: node tools/support/release/formatter_profiles_public/mac_contract.ts --validate-dispatch
+      - name: Check exact Mac report, closed routing and whole-file falsification controls
+        run: node --test tests/tooling/formatter-profiles-public-mac.test.ts
   published:
     needs: controls
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (inputs.role == 'linux-node24' || inputs.role == '')
     name: Original formatter CLI and LSP on Linux x64 Node24
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 30
@@ -80,4 +107,36 @@ jobs:
             ${{ runner.temp }}/formatter-profiles-public/*.stderr
             ${{ runner.temp }}/formatter-profiles-public/*.ndjson
             ${{ runner.temp }}/formatter-profiles-public/lsp/
+          if-no-files-found: error
+  published-mac:
+    needs: controls
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.role == 'mac-arm64-node25-11264'
+    name: Original 11264 joint boolean CLI on Mac arm64 Node25
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      PUBLIC_ROLE: ${{ inputs.role }}
+      PUBLIC_VERSION: ${{ inputs.version }}
+      PRODUCER_RUN: ${{ inputs.producer_run }}
+      AUTHORITY_BLOB: ${{ inputs.authority_blob }}
+      BEFORE_PRODUCER_RUN: ${{ inputs.before_producer_run }}
+      BEFORE_AUTHORITY_BLOB: ${{ inputs.before_authority_blob }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "25.8.1", package-manager-cache: false }
+      - name: Retain genuine before and after whole joint-false outputs and exact installed providers
+        run: node tools/support/release/formatter_profiles_public/mac_run.ts "$RUNNER_TEMP/formatter-profiles-public-mac"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: formatter-profiles-public-mac-11264-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/formatter-profiles-public-mac/*.json
+            ${{ runner.temp }}/formatter-profiles-public-mac/*/*.json
+            ${{ runner.temp }}/formatter-profiles-public-mac/*/*.stdout
+            ${{ runner.temp }}/formatter-profiles-public-mac/*/*.stderr
+            ${{ runner.temp }}/formatter-profiles-public-mac/*/*.ndjson
           if-no-files-found: error

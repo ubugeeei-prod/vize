@@ -1,0 +1,38 @@
+{
+  "schema": "vize.formatter-profiles-public-mac-original.v1",
+  "issue": 11264,
+  "reportSha256": "e40736f2951cab4ee3617aaa00930429adaeb287c826d7d9487a72015e02c8cd",
+  "reportRawBase64": "eyJhdXRob3IiOnsiaWQiOiJNRFE2VlhObGNqY3hNakF4TXpBNCIsImlzX2JvdCI6ZmFsc2UsImxvZ2luIjoidWJ1Z2VlZWkiLCJuYW1lIjoidWJ1Z2VlZWkifSwiYm9keSI6IiMjIyBBcmVhXG5cbkNMSVxuXG4jIyMgVmVyc2lvblxuXG52aXplIDAuNjI3LjBcblxuIyMjIE1pbmltYWwgcmVwcm9kdWN0aW9uXG5cbmBgYHNoXG5ucG0gaW5zdGFsbCB2aXplQDAuNjI3LjBcbmBgYFxuXG5gYS52dWVgOlxuXG5gYGB2dWVcbjxzY3JpcHQgc2V0dXAgbGFuZz1cInRzXCI+XG5jb25zdCBuYW1lID0gXCJhZGFcIlxuZnVuY3Rpb24gZ3JlZXQgKHZhbHVlOiBzdHJpbmcpIHtcbiAgcmV0dXJuIHsgbmFtZTogXCJhZGFcIiB9XG59XG48L3NjcmlwdD5cbjx0ZW1wbGF0ZT5cbiAgPGJ1dHRvbiB0eXBlPVwiYnV0dG9uXCIgY2xhc3M9XCJ4XCIgaWQ9XCJ5XCIgQGNsaWNrPVwiZ3JlZXQobmFtZSlcIj57eyBuYW1lIH19PC9idXR0b24+XG48L3RlbXBsYXRlPlxuYGBgXG5cbmBgYHNoXG4jIGRpc2FibGVzIGFsbCB0aHJlZSwgYXMgZG9jdW1lbnRlZFxudml6ZSBmbXQgYS52dWUgLS1uby1jb25maWcgLS13cml0ZSAtLXNlbWk9ZmFsc2UgLS1icmFja2V0LXNwYWNpbmc9ZmFsc2UgLS1zb3J0LWF0dHJpYnV0ZXM9ZmFsc2VcblxuIyBhY2NlcHRlZCwgYnV0IG5vbmUgb2YgdGhlIHRocmVlIGFyZSBkaXNhYmxlZFxudml6ZSBmbXQgYS52dWUgLS1uby1jb25maWcgLS13cml0ZSAtLXNlbWkgZmFsc2UgLS1icmFja2V0LXNwYWNpbmcgZmFsc2UgLS1zb3J0LWF0dHJpYnV0ZXMgZmFsc2VcbmBgYFxuXG5gdml6ZSBmbXQgLS1oZWxwYCBkb2N1bWVudHMgdGhlc2UgYXMgYC0tc2VtaVs9PFNFTUk+XWAsIGAtLWJyYWNrZXQtc3BhY2luZ1s9PEJSQUNLRVRfU1BBQ0lORz5dYCwgYW5kIGAtLXNvcnQtYXR0cmlidXRlc1s9PFNPUlRfQVRUUklCVVRFUz5dYCwgZWFjaCB3aXRoIHBvc3NpYmxlIHZhbHVlcyBgdHJ1ZSwgZmFsc2VgLlxuXG4jIyMgQWN0dWFsIGJlaGF2aW9yXG5cbmAtLWZsYWc9ZmFsc2VgIHdvcmtzLiBgLS1uby1zZW1pYCB3b3Jrcy4gQSBzcGFjZS1zZXBhcmF0ZWQgYHRydWVgIGFsc28gd29ya3MgKGAtLXNpbmdsZS1xdW90ZSB0cnVlYCBzd2l0Y2hlcyB0aGUgZmlsZSB0byBzaW5nbGUgcXVvdGVzKS5cblxuQSBzcGFjZS1zZXBhcmF0ZWQgYGZhbHNlYCBpcyBjb25zdW1lZC4gVGhlIGNvbW1hbmQgZXhpdHMgMCwgcmVwb3J0cyBgRm91bmQgMSBmaWxlKHMpYCwgYW5kIGRvZXMgbm90IHRyZWF0IHRoZSB3b3JkIGBmYWxzZWAgYXMgYSBwYXRoLiBUaGUgb3B0aW9uIHN0YXlzIGVuYWJsZWQ6XG5cbi0gYC0tc2VtaSBmYWxzZWAgcHJpbnRzIHNlbWljb2xvbnMgKGBjb25zdCBuYW1lID0gXCJhZGFcIjtgKVxuLSBgLS1icmFja2V0LXNwYWNpbmcgZmFsc2VgIGtlZXBzIGEgc3BhY2UgaW5zaWRlIGJyYWNlcyAoYHsgbmFtZTogXCJhZGFcIiB9YClcbi0gYC0tc29ydC1hdHRyaWJ1dGVzIGZhbHNlYCByZW9yZGVycyBhdHRyaWJ1dGVzIChgdHlwZWAsIGBjbGFzc2AsIGBpZGAgYmVjb21lcyBgaWRgLCBgY2xhc3NgLCBgdHlwZWApXG5cbkEgYmFyZSBgLS1zb3J0LWF0dHJpYnV0ZXNgIHNvcnRpbmcgYXR0cmlidXRlcyBpcyBmaW5lLiBUaGUgYnVnIGlzIHRoYXQgYSBmb2xsb3dpbmcgYGZhbHNlYCBkb2VzIG5vdCBtZWFuIGZhbHNlLlxuXG4jIyMgRXhwZWN0ZWQgYmVoYXZpb3JcblxuYC0tZmxhZyBmYWxzZWAgYW5kIGAtLWZsYWc9ZmFsc2VgIHNob3VsZCBib3RoIGRpc2FibGUgdGhlIG9wdGlvbiwgbWF0Y2hpbmcgdGhlIGhlbHAgdGV4dC5cblxuIyMjIEVudmlyb25tZW50XG5cbi0gT1M6IG1hY09TIDI2LjYuMlxuLSBBcmNoaXRlY3R1cmU6IGFybTY0XG4tIE5vZGUuanM6IDI1LjguMVxuLSBQYWNrYWdlIG1hbmFnZXI6IG5wbVxuLSBSdXN0OiBub3QgYnVpbHQgZnJvbSBzb3VyY2UgKG5wbSBwYWNrYWdlKVxuLSBGcmFtZXdvcms6IG5vbmUgKG9uZSBTRkMpXG5cbiMjIyBCZWZvcmUgc3VibWl0dGluZ1xuXG4tIFt4XSBJIGNoZWNrZWQgZXhpc3RpbmcgZml4IHJlcG9ydHMgYW5kIHB1bGwgcmVxdWVzdHMuXG4tIFt4XSBUaGlzIGlzIG5vdCBhIHByaXZhdGUgc2VjdXJpdHkgcmVwb3J0LlxuIiwiY3JlYXRlZEF0IjoiMjAyNi0xMS0wMVQwMjo1NDoyN1oiLCJsYWJlbHMiOlt7ImlkIjoiTEFfa3dET1F2anVhTThBQUFBQ2poenBzUSIsIm5hbWUiOiJwcmlvcml0eTpwMCIsImRlc2NyaXB0aW9uIjoiUmVsZWFzZSBibG9ja2VyIGZvciB2MSBhbHBoYSBwcm9kdWN0aW9uIHJlYWRpbmVzcyIsImNvbG9yIjoiQjYwMjA1In1dLCJudW1iZXIiOjExMjY0LCJzdGF0ZSI6Ik9QRU4iLCJ0aXRsZSI6ImZtdDogc3BhY2Utc2VwYXJhdGVkIGBmYWxzZWAgaXMgaWdub3JlZCBvbiBgLS1zZW1pYCwgYC0tYnJhY2tldC1zcGFjaW5nYCwgYW5kIGAtLXNvcnQtYXR0cmlidXRlc2AiLCJ1cGRhdGVkQXQiOiIyMDI2LTExLTAxVDAzOjU1OjQ5WiIsInVybCI6Imh0dHBzOi8vZ2l0aHViLmNvbS91YnVnZWVlaS1wcm9kL3ZpemUvaXNzdWVzLzExMjY0In0K",
+  "filename": "a.vue",
+  "source": "<script setup lang=\"ts\">\nconst name = \"ada\"\nfunction greet (value: string) {\n  return { name: \"ada\" }\n}\n</script>\n<template>\n  <button type=\"button\" class=\"x\" id=\"y\" @click=\"greet(name)\">{{ name }}</button>\n</template>\n",
+  "sourceBytes": 219,
+  "sourceSha256": "cbe837ee3a56dd7df80ed2c301295be38205faaf5f728c43f18b5c6670ead730",
+  "reportedEnvironment": {
+    "os": "macOS 26.6.2",
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "25.8.1",
+    "packageManager": "npm"
+  },
+  "equals": [
+    "fmt",
+    "a.vue",
+    "--no-config",
+    "--write",
+    "--semi=false",
+    "--bracket-spacing=false",
+    "--sort-attributes=false"
+  ],
+  "spaced": [
+    "fmt",
+    "a.vue",
+    "--no-config",
+    "--write",
+    "--semi",
+    "false",
+    "--bracket-spacing",
+    "false",
+    "--sort-attributes",
+    "false"
+  ]
+}
