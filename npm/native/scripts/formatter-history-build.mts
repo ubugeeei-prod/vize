@@ -5,6 +5,10 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
+import {
+  type NativeHistoryToolchain,
+  validateNativeHistoryToolchain,
+} from "./formatter-history-toolchain.mts";
 
 interface CargoArtifact extends Record<string, unknown> {
   target: { name: string; kind: string[]; src_path?: unknown };
@@ -17,6 +21,11 @@ type BuildEnvironment = Record<string, string | null>;
 type BeforeBuild = {
   source: ReturnType<typeof nativeHistorySource>;
   environment: BuildEnvironment;
+};
+type BeforeRealToolchainBuild = BeforeBuild & {
+  version: 2;
+  toolchain: NativeHistoryToolchain;
+  buildEnvironment: NodeJS.ProcessEnv;
 };
 
 function assertRecord(value: unknown): asserts value is Record<string, unknown> {
@@ -70,10 +79,8 @@ const buildEnvironmentKeys = [
   "CXX",
   "SDKROOT",
 ];
-export function nativeHistoryBuildEnvironment() {
-  return Object.fromEntries(
-    buildEnvironmentKeys.map((key) => [key, globalThis.process.env[key] ?? null]),
-  );
+export function nativeHistoryBuildEnvironment(environment = globalThis.process.env) {
+  return Object.fromEntries(buildEnvironmentKeys.map((key) => [key, environment[key] ?? null]));
 }
 export function validateNativeHistoryEnvironment(environment: unknown) {
   assertRecord(environment);
@@ -175,7 +182,7 @@ export function emittedNativeArtifact(stdout: Buffer) {
 
 export function captureNativeHistoryBuild(
   nativeDir: string,
-  before: BeforeBuild | null,
+  before: BeforeBuild | BeforeRealToolchainBuild | null,
   command: string[],
   result: SpawnSyncReturns<Buffer>,
 ) {
@@ -199,6 +206,17 @@ export function captureNativeHistoryBuild(
   assert.equal(process.error, null);
   validateNativeHistoryCommand(nativeDir, command);
   assert(before !== null);
+  if ("version" in before) {
+    assert.equal(before.version, 2);
+    assert.deepEqual(
+      {
+        CARGO: before.buildEnvironment.CARGO,
+        RUSTC: before.buildEnvironment.RUSTC,
+        PATH: before.buildEnvironment.PATH,
+      },
+      before.toolchain.buildEnvironment,
+    );
+  }
   assert.deepEqual(
     nativeHistorySource(nativeDir),
     before.source,
@@ -206,8 +224,14 @@ export function captureNativeHistoryBuild(
   );
   const environment = validateNativeHistoryEnvironment({
     before: before.environment,
-    after: nativeHistoryBuildEnvironment(),
+    after: nativeHistoryBuildEnvironment(
+      "version" in before ? before.buildEnvironment : globalThis.process.env,
+    ),
   });
+  const realToolchain =
+    "version" in before
+      ? validateNativeHistoryToolchain(nativeDir, before.toolchain, "producer-after-build")
+      : null;
   const emitted = emittedNativeArtifact(stdout);
   validateNativeHistoryProfile(emitted.cargo.profile);
   assert(typeof emitted.cargo.target.src_path === "string");
@@ -226,7 +250,7 @@ export function captureNativeHistoryBuild(
   fs.writeFileSync(frozen, generatedBytes, { flag: "wx" });
   const receipt = {
     schema: "vize.public-native-formatter-build",
-    version: 1,
+    version: realToolchain === null ? 1 : 2,
     source: before.source,
     environment,
     process,
@@ -234,10 +258,13 @@ export function captureNativeHistoryBuild(
     generated: { name: generated[0], sha256: hash(generatedBytes) },
     frozen: { path: frozen, sha256: hash(generatedBytes) },
     toolchain: {
-      rustc: execFileSync("rustc", ["-Vv"]).toString(),
-      cargo: cargoVersion(),
+      rustc: realToolchain?.rustc ?? execFileSync("rustc", ["-Vv"]).toString(),
+      cargo: realToolchain?.cargo ?? cargoVersion(),
       node: globalThis.process.version,
       napi: napiToolchain(nativeDir),
+      ...("version" in before
+        ? { provider: before.toolchain, after: realToolchain?.observation }
+        : {}),
     },
   };
   fs.writeFileSync(nativeHistoryReceipt(nativeDir), `${JSON.stringify(receipt)}\n`);
@@ -270,7 +297,7 @@ export function validateNativeHistoryBuild(nativeDir: string, receipt: unknown):
   if (receipt.schema === "vize.public-native-formatter-ci-build")
     return validateCiBuild(nativeDir, receipt);
   assert.equal(receipt.schema, "vize.public-native-formatter-build");
-  assert.equal(receipt.version, 1);
+  assert(receipt.version === 1 || receipt.version === 2);
   assert.deepEqual(receipt.source, nativeHistorySource(nativeDir));
   validateNativeHistoryEnvironment(receipt.environment);
   assertRecord(receipt.process);
@@ -311,8 +338,27 @@ export function validateNativeHistoryBuild(nativeDir: string, receipt: unknown):
   assert.equal(hash(fs.readFileSync(receipt.frozen.path)), receipt.frozen.sha256);
   assert.equal(receipt.frozen.sha256, receipt.generated.sha256);
   assertRecord(receipt.toolchain);
-  assert.equal(receipt.toolchain.rustc, execFileSync("rustc", ["-Vv"]).toString());
-  assert.equal(receipt.toolchain.cargo, cargoVersion());
+  if (receipt.version === 2) {
+    const actual = validateNativeHistoryToolchain(
+      nativeDir,
+      receipt.toolchain.provider,
+      "consumer",
+    );
+    assert.equal(receipt.toolchain.rustc, actual.rustc);
+    assert.equal(receipt.toolchain.cargo, actual.cargo);
+    assertRecord(receipt.toolchain.after);
+    assert.equal(receipt.toolchain.after.phase, "producer-after-build");
+    assert.equal(receipt.toolchain.after.cwd, actual.observation.cwd);
+    assert.equal(receipt.toolchain.after.qualified, true);
+    assert.deepEqual(receipt.toolchain.after.images, actual.observation.images);
+    for (const tool of ["rustc", "cargo"] as const) {
+      assertRecord(receipt.toolchain.after.versions);
+      assert.deepEqual(receipt.toolchain.after.versions[tool], actual.observation.versions[tool]);
+    }
+  } else {
+    assert.equal(receipt.toolchain.rustc, execFileSync("rustc", ["-Vv"]).toString());
+    assert.equal(receipt.toolchain.cargo, cargoVersion());
+  }
   assert.equal(receipt.toolchain.node, globalThis.process.version);
   assert.deepEqual(receipt.toolchain.napi, napiToolchain(nativeDir));
   return receipt;

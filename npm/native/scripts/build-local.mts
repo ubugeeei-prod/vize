@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync, spawnSync } from "node:child_process";
 import { nativeBuildEnvironment } from "./native-build-environment.mjs";
+import { prepareNativeHistoryToolchain } from "./formatter-history-toolchain.mts";
 
 import {
   captureNativeHistoryBuild,
@@ -89,14 +90,25 @@ if (isRelease) {
 
 const captureHistory =
   process.env.GITHUB_ACTIONS === "true" && process.platform === "linux" && !isRelease;
-const before = captureHistory
-  ? { source: nativeHistorySource(packageDir), environment: nativeHistoryBuildEnvironment() }
+const ambientBuildEnvironment = nativeBuildEnvironment(resolveDarwinBuildEnv());
+const selected = captureHistory
+  ? prepareNativeHistoryToolchain(packageDir, ambientBuildEnvironment)
+  : null;
+const buildEnvironment = Object.freeze(selected?.environment ?? ambientBuildEnvironment);
+const before = selected
+  ? {
+      version: 2 as const,
+      toolchain: selected.provider,
+      buildEnvironment,
+      source: nativeHistorySource(packageDir),
+      environment: nativeHistoryBuildEnvironment(buildEnvironment),
+    }
   : null;
 if (captureHistory) buildArgs.push("--", ...nativeHistoryCargoOptions);
 
 const buildResult = spawnSync("pnpm", buildArgs, {
   cwd: packageDir,
-  env: nativeBuildEnvironment(resolveDarwinBuildEnv()),
+  env: buildEnvironment,
   stdio: captureHistory ? ["inherit", "pipe", "pipe"] : "inherit",
   maxBuffer: 64 * 1024 * 1024,
 });
