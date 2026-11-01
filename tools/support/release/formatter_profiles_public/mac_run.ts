@@ -11,7 +11,7 @@ import {
 import { join, resolve } from "node:path";
 import { release } from "node:os";
 import { inspect } from "node:util";
-import { Recorder, success } from "../../config/windows_consumer/common.ts";
+import { Recorder, success, type Packet } from "../../config/windows_consumer/common.ts";
 import { hook, observed, verifyJournal } from "../editor_vite_stub/custody.ts";
 import { inside, inventory, type Entry } from "../editor_vite_stub/filesystem.ts";
 import { assertEnvironment } from "./run.ts";
@@ -49,6 +49,29 @@ export function macJournalExit(label: string): 0 | null {
   return label === "original-version" || label === "original-help" ? null : 0;
 }
 
+/** The execution carrier is private; persist only the explicit journal locator. */
+export function macObservation(input: {
+  label: string;
+  args: string[];
+  packet: Packet;
+  before: Entry[];
+  after: Entry[];
+  outputRawBase64: string | null;
+  custody: { journal: string };
+  writable: string[];
+}) {
+  return {
+    label: input.label,
+    args: input.args,
+    packet: input.packet,
+    before: input.before,
+    after: input.after,
+    outputRawBase64: input.outputRawBase64,
+    custody: { journal: input.custody.journal },
+    writable: input.writable,
+  };
+}
+
 /** Capture every packet and whole output; neither version is judged here. */
 export function observeMac(context: MacContext) {
   const { root, record, identity, cli } = context,
@@ -82,7 +105,7 @@ export function observeMac(context: MacContext) {
         ? readFileSync(path).toString("base64")
         : null;
     const after = inventory(root);
-    const observation = {
+    const observation = macObservation({
       label,
       args,
       packet,
@@ -91,7 +114,7 @@ export function observeMac(context: MacContext) {
       outputRawBase64: output,
       custody,
       writable,
-    };
+    });
     record.json(label + ".observation.json", observation);
     return observation;
   }
