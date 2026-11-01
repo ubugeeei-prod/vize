@@ -353,12 +353,12 @@ fn diff_paths(target: &std::path::Path, base: &std::path::Path) -> Option<std::p
             (None, _) => comps.push(Component::ParentDir),
             (Some(a), Some(b)) if comps.is_empty() && a == b => (),
             (Some(_), Some(Component::CurDir)) => (),
-            (Some(_), Some(_)) => {
+            (Some(a), Some(_)) => {
                 comps.push(Component::ParentDir);
                 for _ in itb {
                     comps.push(Component::ParentDir);
                 }
-                comps.push(ita.next()?);
+                comps.push(a);
                 comps.extend(ita.by_ref());
                 break;
             }

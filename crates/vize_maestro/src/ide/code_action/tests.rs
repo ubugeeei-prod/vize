@@ -86,14 +86,41 @@ fn test_diff_paths_relative_specifier() {
     let target = target_dir.join("MyButton.vue");
     std::fs::write(&target, "").unwrap();
     let result = relative_specifier(&from, &target).unwrap();
-    assert!(
-        result.contains("MyButton.vue"),
-        "expected MyButton.vue in result, got {result:?}",
-    );
-    assert!(
-        result.starts_with('.'),
-        "expected leading `./` or `../`, got {result:?}",
+    assert_eq!(
+        result,
+        std::path::Path::new("..")
+            .join("vize-ai-test-target")
+            .join("MyButton.vue")
+            .to_string_lossy(),
     );
     std::fs::remove_dir_all(&from).ok();
     std::fs::remove_dir_all(&target_dir).ok();
+}
+
+#[test]
+fn test_diff_paths_whole_relative_paths() {
+    use super::diff_paths;
+    use std::path::{Path, PathBuf};
+
+    for (from, target, expected) in [
+        ("project", "project", ""),
+        ("project", "project/MyButton.vue", "MyButton.vue"),
+        ("project/components", "project", ".."),
+        (
+            "project/from",
+            "project/target/MyButton.vue",
+            "../target/MyButton.vue",
+        ),
+    ] {
+        assert_eq!(
+            diff_paths(Path::new(target), Path::new(from)),
+            Some(PathBuf::from(expected)),
+        );
+    }
+    let absolute = std::env::current_dir().unwrap().join("MyButton.vue");
+    assert_eq!(
+        diff_paths(&absolute, Path::new("project")),
+        Some(absolute.clone())
+    );
+    assert_eq!(diff_paths(Path::new("project"), &absolute), None);
 }
