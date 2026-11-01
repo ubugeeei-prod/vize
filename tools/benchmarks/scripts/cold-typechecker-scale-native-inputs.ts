@@ -97,7 +97,9 @@ export function seal(roots: string[], buildInfo: string | null) {
     visited.add(physical);
     if (stat.isDirectory()) {
       rows.push({ path: physical, kind: "directory", mode: Number(stat.mode) });
-      for (const name of fs.readdirSync(physical, { encoding: "buffer" }).sort(Buffer.compare)) {
+      for (const name of fs
+        .readdirSync(physical, { encoding: "buffer" })
+        .sort((a, b) => Buffer.compare(a, b))) {
         visit(path.join(physical, utf8(name)));
       }
       return;
