@@ -6,6 +6,8 @@
 
 mod cache;
 mod coordinates;
+#[cfg(all(test, feature = "experimental-source-navigation"))]
+mod definition_acceptance;
 mod highlights;
 mod intrinsic;
 #[cfg(test)]
@@ -80,6 +82,8 @@ pub struct NativeNavigationProject<'host> {
     selected_workers: Mutex<FxHashMap<Url, CachedNavigation>>,
     names_workers: Mutex<FxHashMap<Url, CachedNavigation>>,
     live: Arc<AtomicUsize>,
+    #[cfg(all(test, feature = "experimental-source-navigation"))]
+    definition_publication: Mutex<Option<definition_acceptance::PublicationGate>>,
 }
 
 impl<'host> NativeNavigationProject<'host> {
@@ -90,6 +94,8 @@ impl<'host> NativeNavigationProject<'host> {
             selected_workers: Mutex::new(FxHashMap::default()),
             names_workers: Mutex::new(FxHashMap::default()),
             live: Arc::new(AtomicUsize::new(0)),
+            #[cfg(all(test, feature = "experimental-source-navigation"))]
+            definition_publication: Mutex::new(None),
         }
     }
 
@@ -168,6 +174,11 @@ impl<'host> NativeNavigationProject<'host> {
             })
             .await
             .map_err(NavigationRefusal::Host)?;
+        #[cfg(all(test, feature = "experimental-source-navigation"))]
+        self.wait_definition_publication_for_test(
+            ready.prepared().clone().and_then(|(_, response)| response),
+        )
+        .await;
         let result = ready
             .publish(|response| self.checked_response(response))
             .map_err(NavigationRefusal::Host)?;
