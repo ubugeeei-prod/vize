@@ -5,6 +5,7 @@ import {
   verifyCandidateSourceInputs,
   historicalSourceFix,
   componentChecksPath,
+  candidateProducerPaths,
   type BodyPin,
   type CandidateSources,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-candidate-source.ts";
@@ -18,6 +19,7 @@ function fixture() {
   const left = [Buffer.from("borrowed runner"), Buffer.from("borrowed prepare")];
   const right = [Buffer.from("owned runner"), Buffer.from("owned prepare")];
   const cargo = [Buffer.from("frozen whole manifest"), Buffer.from("frozen whole lock")];
+  const protocol = [Buffer.from("whole source printer"), Buffer.from("whole source materializer")];
   const frozen: CandidateSources = {
     kind: "route-move",
     base: { sha: "1".repeat(40), tree: "2".repeat(40) },
@@ -31,6 +33,7 @@ function fixture() {
       { file: "Cargo.toml", pin: pin(cargo[0]) },
       { file: "Cargo.lock", pin: pin(cargo[1]) },
     ],
+    protocol: candidateProducerPaths.map((file, index) => ({ file, pin: pin(protocol[index]) })),
   };
   const actual = {
     base: structuredClone(frozen.base),
@@ -38,6 +41,7 @@ function fixture() {
     changedPaths: frozen.changed.map((row) => row.path),
     bodies: { base: left, head: right },
     cargo: { base: cargo, head: cargo.map((body) => Buffer.from(body)) },
+    protocol: { base: protocol, head: protocol.map((body) => Buffer.from(body)) },
     ancestry: { base: [true, true], head: [true, true] },
   };
   return { frozen, actual };
@@ -110,6 +114,12 @@ test("candidate sources require complete unchanged Cargo bodies rather than a ve
     },
     (x: ReturnType<typeof fixture>) => {
       x.frozen.changed[0].base = null;
+    },
+    (x: ReturnType<typeof fixture>) => {
+      x.actual.protocol.head[0] = Buffer.from("changed printing wrapper");
+    },
+    (x: ReturnType<typeof fixture>) => {
+      x.frozen.protocol.reverse();
     },
   ]) {
     const x = fixture();

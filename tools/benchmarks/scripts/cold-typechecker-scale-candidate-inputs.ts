@@ -14,7 +14,43 @@ export interface CandidateInputSeal {
 const hash = (body: Buffer | string) => createHash("sha256").update(body).digest("hex");
 const inside = (root: string, file: string) => file === root || file.startsWith(root + path.sep);
 
-/** The two helper bodies come from the already source-authenticated complete debug prefixes. */
+/** output.rs prints SHARED plus one LF; materialize_stubs adds only this optional owned prefix. */
+export function materializedCandidateHelpers(
+  debug: { before: Buffer; after: Buffer },
+  observedBefore: { bytes: number; sha256: string },
+) {
+  const shared = (body: Buffer) => {
+    assert(body.length > 1 && body.at(-1) === 10, "exact eprintln wrapper LF required");
+    return body.subarray(0, -1); // Derive a separate body; original raw buffers remain unchanged.
+  };
+  const before = shared(debug.before),
+    after = shared(debug.after);
+  const wrappers = [Buffer.alloc(0), Buffer.from('/// <reference types="vue/jsx" />\n')];
+  const matches = wrappers
+    .map((prefix) => ({
+      before: Buffer.concat([prefix, before]),
+      after: Buffer.concat([prefix, after]),
+      prefix,
+    }))
+    .filter(
+      (row) =>
+        row.before.length === observedBefore.bytes && hash(row.before) === observedBefore.sha256,
+    );
+  assert.equal(
+    matches.length,
+    1,
+    "native helper must match one complete source-defined body wrapper",
+  );
+  return {
+    before: matches[0].before,
+    after: matches[0].after,
+    wrapper: matches[0].prefix.length === 0 ? "plain-shared-preamble" : "exact-vue-jsx-reference",
+    sourceLaw:
+      "one printer LF is outside the materialized body; optional exact owned JSX reference only; no raw packet bytes rewritten",
+  };
+}
+
+/** The two bodies are exact materialized bodies, with source-defined wrappers separately verified. */
 export function verifyCandidateInputSeals(
   before: CandidateInputSeal,
   after: CandidateInputSeal,

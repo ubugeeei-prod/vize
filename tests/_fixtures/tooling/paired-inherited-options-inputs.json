@@ -1,0 +1,76 @@
+{
+  "schema": "vize.pairedInheritedOptionsInputs.v1",
+  "sourceSha": "84c4fe5b8fcf5479817a9744683b00fe3841b478",
+  "sourceController": {
+    "path": "crates/vize/tests/check_options_api_inherited_members_cli.rs",
+    "bytes": 13459,
+    "sha256": "a8932cab5b8de6905c6cb711cfac6aa5e4fc370924dc6ae54638b1f3a6eeb594"
+  },
+  "scope": "SOURCE INPUTS ONLY; no portable receiver normalization, output oracle, provider or actual-main qualification transferred",
+  "files": [
+    {
+      "file": "src/shared.ts",
+      "sourcePath": "tests/_fixtures/differential/typechecker/options-api-inherited-template-members/src/shared.ts.txt",
+      "bytes": 299,
+      "sha256": "4682d621fbfdfd9ceb1d93e422ab6d83b54a927f4e3c0a2621724947afbccfe3",
+      "gitBlob": "ae541c78a4b69115cd7fb26b5239c4658d8b127a",
+      "base64": "aW1wb3J0IHsgZGVmaW5lQ29tcG9uZW50IH0gZnJvbSAndnVlJwoKZXhwb3J0IGNvbnN0IHNoYXJlZCA9IGRlZmluZUNvbXBvbmVudCh7CiAgZGF0YSgpIHsKICAgIHJldHVybiB7IGN1cnJlbnREZXZpY2U6ICdwYycgfQogIH0sCiAgY29tcHV0ZWQ6IHsKICAgIGlzUEMoKTogYm9vbGVhbiB7CiAgICAgIHJldHVybiB0aGlzLmN1cnJlbnREZXZpY2UgPT09ICdwYycKICAgIH0sCiAgfSwKICBtZXRob2RzOiB7CiAgICBncmVldChuYW1lOiBzdHJpbmcpIHsKICAgICAgcmV0dXJuIGBoaSAke25hbWV9YAogICAgfSwKICB9LAp9KQo="
+    },
+    {
+      "file": "src/base.ts",
+      "sourcePath": "tests/_fixtures/differential/typechecker/options-api-inherited-template-members/src/base.ts.txt",
+      "bytes": 146,
+      "sha256": "5f5d1cad14e80f58224306173db52efbebd4c12498d753c80ea328a3f9ad2f9b",
+      "gitBlob": "ae71becb62104b4e79fdbc2db4ea74166d290bdf",
+      "base64": "aW1wb3J0IHsgZGVmaW5lQ29tcG9uZW50IH0gZnJvbSAndnVlJwoKZXhwb3J0IGNvbnN0IGJhc2UgPSBkZWZpbmVDb21wb25lbnQoewogIGNvbXB1dGVkOiB7CiAgICBmcm9tQmFzZSgpOiBudW1iZXIgewogICAgICByZXR1cm4gMQogICAgfSwKICB9LAp9KQo="
+    },
+    {
+      "file": "src/Invalid.vue",
+      "sourcePath": "tests/_fixtures/differential/typechecker/options-api-inherited-template-members/src/Invalid.vue.txt",
+      "bytes": 350,
+      "sha256": "c0094aa36df53290e783e5b00d37dd1c3a04a92ced5dce7295a64e43ff5e3f1e",
+      "gitBlob": "d55d751668a3ec4ecb88f651ce42ba64c459d671",
+      "base64": "PHRlbXBsYXRlPgogIDxwIDp0aXRsZT0iZ3JlZXQoMSkiPnt7IGlzUEMudG9GaXhlZCgpIH19IHt7IGN1cnJlbnREZXZpY2UudG9GaXhlZCgpIH19IHt7IGZyb21CYXNlLnRvVXBwZXJDYXNlKCkgfX0ge3sgbWlzc2luZyB9fTwvcD4KPC90ZW1wbGF0ZT4KCjxzY3JpcHQgbGFuZz0idHMiPgppbXBvcnQgeyBkZWZpbmVDb21wb25lbnQgfSBmcm9tICd2dWUnCmltcG9ydCB7IGJhc2UgfSBmcm9tICcuL2Jhc2UnCmltcG9ydCB7IHNoYXJlZCB9IGZyb20gJy4vc2hhcmVkJwoKZXhwb3J0IGRlZmF1bHQgZGVmaW5lQ29tcG9uZW50KHsKICBleHRlbmRzOiBiYXNlLAogIG1peGluczogW3NoYXJlZF0sCn0pCjwvc2NyaXB0Pgo="
+    },
+    {
+      "file": "tsconfig.json",
+      "sourcePath": "tests/_fixtures/differential/typechecker/options-api-inherited-template-members/tsconfig.json.txt",
+      "bytes": 180,
+      "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0",
+      "gitBlob": "7960cc8b14b0a9f5196713c91c00ab063135ba3d",
+      "base64": "ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAic3RyaWN0IjogdHJ1ZSwKICAgICJ0YXJnZXQiOiAiRVMyMDIyIiwKICAgICJtb2R1bGUiOiAiRVNOZXh0IiwKICAgICJtb2R1bGVSZXNvbHV0aW9uIjogImJ1bmRsZXIiLAogICAgIm5vRW1pdCI6IHRydWUKICB9LAogICJpbmNsdWRlIjogWyJzcmMvKiovKiJdCn0K"
+    }
+  ],
+  "repair": [
+    [
+      "greet(1)",
+      "greet('x')"
+    ],
+    [
+      "isPC.toFixed()",
+      "isPC ? 'pc' : 'sp'"
+    ],
+    [
+      "currentDevice.toFixed()",
+      "currentDevice.toUpperCase()"
+    ],
+    [
+      "fromBase.toUpperCase()",
+      "fromBase.toFixed()"
+    ],
+    [
+      "{{ missing }}",
+      ""
+    ]
+  ],
+  "absent": [
+    "src/Typed.vue",
+    "src/Wrapped.vue"
+  ],
+  "args": [
+    "check",
+    "--format",
+    "json"
+  ],
+  "commandRole": "declared JSON companion of original check, no quiet/no-config override"
+}

@@ -4,7 +4,33 @@ import test from "node:test";
 import {
   verifyCandidateInputSeals,
   type CandidateInputSeal,
+  materializedCandidateHelpers,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-candidate-inputs.ts";
+
+test("native helper body has an exact source-defined printer LF and optional JSX prefix, no arbitrary drift", () => {
+  const before = Buffer.from("whole shared before\n"),
+    after = Buffer.from("whole shared after\n");
+  const debug = {
+    before: Buffer.concat([before, Buffer.from("\n")]),
+    after: Buffer.concat([after, Buffer.from("\n")]),
+  };
+  const saved = [Buffer.from(debug.before), Buffer.from(debug.after)];
+  for (const prefix of [Buffer.alloc(0), Buffer.from('/// <reference types="vue/jsx" />\n')]) {
+    const body = Buffer.concat([prefix, before]);
+    const result = materializedCandidateHelpers(debug, { bytes: body.length, sha256: hash(body) });
+    assert(result.before.equals(body));
+    assert(result.after.equals(Buffer.concat([prefix, after])));
+  }
+  assert(debug.before.equals(saved[0]) && debug.after.equals(saved[1]));
+  for (const body of [
+    debug.before,
+    before.subarray(0, -1),
+    Buffer.concat([Buffer.from("unowned prefix\n"), before]),
+  ])
+    assert.throws(() =>
+      materializedCandidateHelpers(debug, { bytes: body.length, sha256: hash(body) }),
+    );
+});
 
 const hash = (body: Buffer | string) => createHash("sha256").update(body).digest("hex");
 function seal(rows: Record<string, unknown>[]): CandidateInputSeal {

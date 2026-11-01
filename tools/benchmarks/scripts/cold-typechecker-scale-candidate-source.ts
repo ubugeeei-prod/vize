@@ -10,6 +10,10 @@ import { verifySourceSdkPair, type SdkScanner } from "./cold-typechecker-scale-s
 export const componentChecksPath =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt";
 export const historicalSourceFix = "0eb2f8db16f6541cd422ee610ab3e554bf041e0d";
+export const candidateProducerPaths = [
+  "crates/vize/src/commands/check/runner/output.rs",
+  "crates/vize_canon/src/batch/virtual_project/materialize_stubs.rs",
+] as const;
 const productPaths = {
   "type-work": [componentChecksPath],
   "route-move": [
@@ -41,6 +45,8 @@ export interface CandidateSources {
   containing: { optionsFix: string; historicalSourceFix: string };
   changed: { path: string; base: BodyPin | null; head: BodyPin | null }[];
   cargo: { file: "Cargo.toml" | "Cargo.lock"; pin: BodyPin }[];
+  /** Full reviewed producer bodies for printer LF and the optional owned JSX prefix. */
+  protocol: { file: string; pin: BodyPin }[];
 }
 type SourceInput = {
   base: { sha: string; tree: string };
@@ -48,6 +54,7 @@ type SourceInput = {
   changedPaths: string[];
   bodies: { base: (Buffer | null)[]; head: (Buffer | null)[] };
   cargo: { base: Buffer[]; head: Buffer[] };
+  protocol: { base: Buffer[]; head: Buffer[] };
   ancestry: { base: boolean[]; head: boolean[] };
 };
 const digest = (body: Buffer) => createHash("sha256").update(body).digest("hex");
@@ -119,11 +126,20 @@ export function verifyCandidateSourceInputs(frozen: CandidateSources, actual: So
     frozen.cargo.forEach((row, index) => pinBody(actual.cargo[role][index], row.pin));
   }
   assert(actual.cargo.base.every((body, index) => body.equals(actual.cargo.head[index])));
+  assert.deepEqual(
+    frozen.protocol.map((row) => row.file),
+    [...candidateProducerPaths],
+  );
+  for (const role of ["base", "head"] as const) {
+    assert.equal(actual.protocol[role].length, 2);
+    frozen.protocol.forEach((row, index) => pinBody(actual.protocol[role][index], row.pin));
+  }
   return {
     sources: { base: frozen.base, head: frozen.head },
     containing: frozen.containing,
     changedPaths: names,
     cargo: frozen.cargo,
+    protocol: frozen.protocol,
     scope:
       "whole frozen source bodies and Cargo identity; not loaded provider files or runtime qualification",
   };
@@ -151,6 +167,7 @@ export function verifyCandidateSources(
   const actual = {} as Pick<SourceInput, "base" | "head">;
   const bodies = { base: [], head: [] } as SourceInput["bodies"];
   const cargo = { base: [], head: [] } as SourceInput["cargo"];
+  const protocol = { base: [], head: [] } as SourceInput["protocol"];
   const ancestry = { base: [], head: [] } as SourceInput["ancestry"];
   for (const role of ["base", "head"] as const) {
     const root = roots[role];
@@ -162,6 +179,7 @@ export function verifyCandidateSources(
     };
     bodies[role] = frozen.changed.map((row) => body(root, row.path, row[role]));
     cargo[role] = frozen.cargo.map((row) => fs.readFileSync(path.join(root, row.file)));
+    protocol[role] = frozen.protocol.map((row) => fs.readFileSync(path.join(root, row.file)));
     ancestry[role] = Object.values(frozen.containing).map((commit) => {
       oid(commit);
       // Missing history is a refusal, not permission to infer ancestry or fetch in a unit test.
@@ -180,6 +198,7 @@ export function verifyCandidateSources(
     changedPaths,
     bodies,
     cargo,
+    protocol,
     ancestry,
   });
   const require = createRequire(path.join(provider, "package.json"));
