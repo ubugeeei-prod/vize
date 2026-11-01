@@ -4,27 +4,133 @@
   "bindings": {
     "runtime-prop-null-11252": {
       "role": "runtime-prop-null-11252",
-      "host": { "platform": "darwin", "arch": "arm64" },
-      "parent": { "name": "vue", "version": "3.5.44", "manifestSha256": "94139d37af28f8cd4bbfe2902d4e07fe920f786de8a0f35086aee1060243502e" },
-      "owner": { "name": "typescript", "version": "7.1.0-beta", "manifestSha256": "29955061fde038b8154a844f4d99837343143d057ef8feb2a588bbf5c7d2cbd1" },
-      "dependencyNames": ["@vue/compiler-dom", "@vue/compiler-sfc", "@vue/runtime-dom", "@vue/server-renderer", "@vue/shared", "typescript"],
+      "host": {
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "parent": {
+        "name": "vue",
+        "version": "3.5.44",
+        "manifestSha256": "94139d37af28f8cd4bbfe2902d4e07fe920f786de8a0f35086aee1060243502e"
+      },
+      "owner": {
+        "name": "typescript",
+        "version": "7.1.0-beta",
+        "manifestSha256": "29955061fde038b8154a844f4d99837343143d057ef8feb2a588bbf5c7d2cbd1"
+      },
+      "dependencyNames": [
+        "@vue/compiler-dom",
+        "@vue/compiler-sfc",
+        "@vue/runtime-dom",
+        "@vue/server-renderer",
+        "@vue/shared",
+        "typescript"
+      ],
+      "rootConstruction": "OUTPUT/consumer-KIND",
+      "generatorOutputObservedAsInput": false,
+      "placement": "DEPENDENCY"
+    },
+    "imports-vue-ts-11253": {
+      "role": "imports-vue-ts-11253",
+      "host": {
+        "platform": "linux",
+        "arch": "x64"
+      },
+      "parent": {
+        "name": "vue",
+        "version": "3.5.44",
+        "manifestSha256": "94139d37af28f8cd4bbfe2902d4e07fe920f786de8a0f35086aee1060243502e"
+      },
+      "owner": {
+        "name": "typescript",
+        "version": "5.9.3",
+        "manifestSha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+      },
+      "dependencyNames": [
+        "@vue/compiler-dom",
+        "@vue/compiler-sfc",
+        "@vue/runtime-dom",
+        "@vue/server-renderer",
+        "@vue/shared",
+        "typescript"
+      ],
+      "rootConstruction": "OUTPUT/consumer-KIND",
+      "generatorOutputObservedAsInput": false,
+      "placement": "DEPENDENCY"
+    }
+  },
+  "options": {
+    "extraNodePaths": [
+      "CONSUMER_VIRTUAL_NODE_MODULES"
+    ],
+    "preferSymlinkedExecutables": false,
+    "projectModulesDirName": null,
+    "relocatableRoot": "CONSUMER_ROOT"
+  },
+  "selfBindings": {
+    "runtime-prop-null-11252": {
+      "role": "runtime-prop-null-11252",
+      "host": {
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "parent": {
+        "name": "typescript",
+        "version": "7.1.0-beta",
+        "manifestSha256": "29955061fde038b8154a844f4d99837343143d057ef8feb2a588bbf5c7d2cbd1"
+      },
+      "owner": {
+        "name": "typescript",
+        "version": "7.1.0-beta",
+        "manifestSha256": "29955061fde038b8154a844f4d99837343143d057ef8feb2a588bbf5c7d2cbd1"
+      },
+      "dependencyNames": [
+        "@typescript/typescript-aix-ppc64",
+        "@typescript/typescript-android-arm64",
+        "@typescript/typescript-darwin-arm64",
+        "@typescript/typescript-darwin-x64",
+        "@typescript/typescript-freebsd-arm64",
+        "@typescript/typescript-freebsd-x64",
+        "@typescript/typescript-linux-arm",
+        "@typescript/typescript-linux-arm64",
+        "@typescript/typescript-linux-loong64",
+        "@typescript/typescript-linux-mips64el",
+        "@typescript/typescript-linux-ppc64",
+        "@typescript/typescript-linux-riscv64",
+        "@typescript/typescript-linux-s390x",
+        "@typescript/typescript-linux-x64",
+        "@typescript/typescript-netbsd-arm64",
+        "@typescript/typescript-netbsd-x64",
+        "@typescript/typescript-openbsd-arm64",
+        "@typescript/typescript-openbsd-x64",
+        "@typescript/typescript-sunos-x64",
+        "@typescript/typescript-win32-arm64",
+        "@typescript/typescript-win32-x64"
+      ],
+      "placement": "SELF",
       "rootConstruction": "OUTPUT/consumer-KIND",
       "generatorOutputObservedAsInput": false
     },
     "imports-vue-ts-11253": {
       "role": "imports-vue-ts-11253",
-      "host": { "platform": "linux", "arch": "x64" },
-      "parent": { "name": "vue", "version": "3.5.44", "manifestSha256": "94139d37af28f8cd4bbfe2902d4e07fe920f786de8a0f35086aee1060243502e" },
-      "owner": { "name": "typescript", "version": "5.9.3", "manifestSha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6" },
-      "dependencyNames": ["@vue/compiler-dom", "@vue/compiler-sfc", "@vue/runtime-dom", "@vue/server-renderer", "@vue/shared", "typescript"],
+      "host": {
+        "platform": "linux",
+        "arch": "x64"
+      },
+      "parent": {
+        "name": "typescript",
+        "version": "5.9.3",
+        "manifestSha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+      },
+      "owner": {
+        "name": "typescript",
+        "version": "5.9.3",
+        "manifestSha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+      },
+      "dependencyNames": [],
+      "placement": "SELF",
       "rootConstruction": "OUTPUT/consumer-KIND",
       "generatorOutputObservedAsInput": false
     }
-  },
-  "options": {
-    "extraNodePaths": ["CONSUMER_VIRTUAL_NODE_MODULES"],
-    "preferSymlinkedExecutables": false,
-    "projectModulesDirName": null,
-    "relocatableRoot": "CONSUMER_ROOT"
   }
 }

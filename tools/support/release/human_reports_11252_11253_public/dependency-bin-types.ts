@@ -24,6 +24,7 @@ export interface HumanBinFacts {
   /** Every dependency/optional/peer declared by the authenticated parent,
    * including public owner manifests that declare no executable. */
   dependencyOwners: PublicPackageFacts[];
+  excludedDependencies?: import("./optional-residency.ts").OptionalAbsence[];
   graph: {
     parentDirectory: string;
     dependencyName: string;

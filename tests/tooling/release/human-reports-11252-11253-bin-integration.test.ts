@@ -32,7 +32,12 @@ import {
   gitBlob,
   sha256,
 } from "../../../tools/support/release/human_reports_11252_11253_public/value.ts";
-import { fixture, pkg, configurationFixture } from "./human-reports-11252-11253-bin.fixture.ts";
+import {
+  fixture,
+  pkg,
+  configurationFixture,
+  expectedNode,
+} from "./human-reports-11252-11253-bin.fixture.ts";
 
 // Synthetic on-disk packages only: no install, manager, native or compiler run.
 async function setup() {
@@ -54,6 +59,10 @@ async function setup() {
     {},
   );
   packages.push(carrier);
+  facts.lock = Buffer.concat([
+    facts.lock,
+    Buffer.from(`\n  carrier@1.0.0:\n    resolution: {integrity: ${carrier.integrity}}\n`),
+  ]);
   for (const row of packages) {
     assert(row.archive);
     for (const member of readTarGz(row.archive)) {
@@ -69,6 +78,13 @@ async function setup() {
     assert(row.body);
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, row.body.toString().replaceAll(facts.root, root));
+  }
+  const typescript = deps.find((row) => row.name === "typescript");
+  assert(typescript);
+  for (const name of ["tsc", "tsserver"]) {
+    const target = join(typescript.directory, "node_modules/.bin", name);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, expectedNode(name, true, true));
   }
   writeFileSync(join(root, "package.json"), facts.settings.rootPackage);
   writeFileSync(join(root, "pnpm-lock.yaml"), facts.lock);
@@ -197,6 +213,7 @@ async function setup() {
     arch: "x64",
     lockRawBase64: facts.lock.toString("base64"),
     binPolicy: policy,
+    declaredOptionalNotInstalled: [],
   } as unknown as InstallReceipt;
   return { base, root, parent, graph, positive, install, reviewed, events };
 }

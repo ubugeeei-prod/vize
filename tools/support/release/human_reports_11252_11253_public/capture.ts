@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import type { CommandPlan, InstallReceipt, NativeEvent, Observation } from "./model.ts";
+import type { CommandPlan, InstallationFacts, NativeEvent, Observation } from "./model.ts";
 import { prohibited } from "./processes.ts";
 import { bytes, object, sha256, sourcePath, text } from "./value.ts";
 import { discard, type Sink } from "./evidence.ts";
@@ -85,7 +85,7 @@ export function writeInputs(plan: CommandPlan, root: string): void {
 }
 export function recordCommand(
   plan: CommandPlan,
-  install: InstallReceipt,
+  install: InstallationFacts,
   output: string,
   companion: boolean,
   sink: Sink = discard,

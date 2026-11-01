@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import type { CommandPlan, InstallReceipt, Request } from "./model.ts";
+import type { CommandPlan, InstallationFacts, Request } from "./model.ts";
 import { array, object, sha256, text, wholeJson } from "./value.ts";
 import { validateFiles } from "./fixtures.ts";
 export function argumentsFor(request: Request, id: string): string[] {
@@ -42,7 +42,7 @@ export function argumentsFor(request: Request, id: string): string[] {
   }
   throw new Error(`Unregistered issue-bound command: ${id}`);
 }
-export function validateOwnedCommands(request: Request, installs: InstallReceipt[]): void {
+export function validateOwnedCommands(request: Request, installs: InstallationFacts[]): void {
   assert(request.oracleOwnerReceipt);
   const raw = readFileSync(request.oracleOwnerReceipt.path);
   assert.equal(raw.length, request.oracleOwnerReceipt.bytes);

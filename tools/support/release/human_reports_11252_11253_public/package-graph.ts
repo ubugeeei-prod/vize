@@ -14,7 +14,7 @@ import {
   type OptionalAbsence,
 } from "./optional-residency.ts";
 import { lockPackageIntegrity } from "./lock-integrity.ts";
-import type { InstallReceipt } from "./model.ts";
+import type { InstallReceipt, PublicPayloadReceipt } from "./model.ts";
 import type { Sink } from "./evidence.ts";
 import { witnessKnownBins, type BinInstallContext } from "./bin-witness.ts";
 import {
@@ -27,10 +27,19 @@ import {
 import type { BinPolicy } from "./dependency-bin-policy.ts";
 import type { HumanBinFacts, PublicPackageFacts } from "./dependency-bin-types.ts";
 import { humanDependencyBinPartition } from "./dependency-bin-partition.ts";
+import { capturePublicPayload } from "./capture-payload.ts";
+
+export interface PreparedPackageGraph {
+  packages: PublicPayloadReceipt[];
+  absent: OptionalAbsence[];
+  catalog: ReadonlyMap<string, PublicPackageFacts>;
+  edges: readonly BinEdge[];
+  qualify: () => InstallReceipt["packages"];
+}
 
 /** Physical installed nodes and nonresident declarations are deliberately
  * separate. A pnpm list category never establishes optionality or presence. */
-export async function installedGraph(
+export async function prepareInstalledGraph(
   root: string,
   listing: unknown,
   lock: Buffer,
@@ -42,13 +51,12 @@ export async function installedGraph(
   installContext?: BinInstallContext & {
     conformance?: { role: HumanBinFacts["role"]; policy: BinPolicy; manager: BinManagerContext };
   },
-): Promise<{ packages: InstallReceipt["packages"]; absent: OptionalAbsence[] }> {
-  const packages: InstallReceipt["packages"] = [],
+): Promise<PreparedPackageGraph> {
+  const packages: PublicPayloadReceipt[] = [],
     absent: OptionalAbsence[] = [];
   const seen = new Set<string>();
   const catalog = new Map<string, PublicPackageFacts>(),
     edges: BinEdge[] = [];
-  const pending = new Map<string, PublicPackageFacts>();
   interface Parent {
     name: string;
     version: string;
@@ -168,6 +176,11 @@ export async function installedGraph(
             assert(prior.equals(downloaded.body), "package version cannot silently change archive");
           else archiveCache.set(name + "@" + version, downloaded.body);
           assert.equal(downloaded.resolved, row.resolved);
+          assert.equal(
+            lockPackageIntegrity(lock, name, version).integrity,
+            downloaded.integrity,
+            "actual published payload must match the generated lock before execution",
+          );
           const declaration: PublicPackageFacts = {
             name,
             version,
@@ -185,28 +198,10 @@ export async function installedGraph(
               : undefined,
             sink,
           );
-          if (installContext?.conformance && name === "vue" && version === "3.5.44") {
-            // Defer only this closed role-specific partition until every
-            // declared owner, including no-bin dependencies, is authenticated.
-            pending.set(directory, declaration);
-          } else {
-            const comparison = observedArchiveComparison(
-              directory,
-              downloaded.body,
-              downloaded.integrity,
-              sink,
-            );
-            packages.push({
-              name,
-              version,
-              directory,
-              resolved: downloaded.resolved,
-              integrity: downloaded.integrity,
-              archiveSha512: comparison.tarballSHA512,
-              allInstalledBytesEqualArchive: true,
-              files: comparison.files.map((file) => ({ ...file })),
-            });
-          }
+          // All shipped bytes are mandatory before any command. Complete set
+          // equality stays pending until the complete graph and raw collection
+          // have been retained; no first-package extra becomes an exemption.
+          packages.push(capturePublicPayload(declaration, sink));
           seen.add(directory);
         } else {
           assert(
@@ -224,42 +219,90 @@ export async function installedGraph(
   const roots = array(listing);
   assert.equal(roots.length, 1);
   await visit(roots[0], null);
-  for (const parent of pending.values()) {
-    assert(installContext?.conformance);
-    const context = collectBinContext(
-      root,
-      installContext.conformance.role,
-      parent,
-      catalog,
-      edges,
-      installContext.conformance.policy,
-      installContext.conformance.manager,
-    );
-    sink("source-conformant-bin-inputs", context);
-    const inventory = binInventory(parent.directory);
-    sink(
-      "source-conformant-bin-inventory",
-      inventory.map(({ body, ...row }) => ({
-        ...row,
-        bytes: body?.length ?? null,
-        sha256: body === null ? null : sha256(body),
-      })),
-    );
-    const proof = humanDependencyBinPartition(contextFacts(context, archiveCache, inventory));
-    sink("source-conformant-bin-partition", proof);
-    packages.push({
-      name: parent.name,
-      version: parent.version,
-      directory: parent.directory,
-      resolved: parent.resolved,
-      integrity: parent.integrity,
-      archiveSha512: Buffer.from(parent.integrity.slice(7), "base64").toString("hex"),
-      allInstalledBytesEqualArchive: false,
-      binContext: context,
-      sourceConformance: proof,
-      files: proof.files.map(({ path, bytes, sha256 }) => ({ path, bytes, sha256 })),
-    });
-  }
   assert(packages.length > 0);
-  return { packages, absent };
+  sink("complete-public-payload-graph-before-command", {
+    packages,
+    edges,
+    absent,
+    completeInstalledFileSetQualified: false,
+    productQualified: false,
+    afterQualified: false,
+    issueQualified: false,
+  });
+  const qualify = (): InstallReceipt["packages"] => {
+    const qualified: InstallReceipt["packages"] = [];
+    for (const parent of catalog.values()) {
+      const sourcePlaced =
+        installContext?.conformance &&
+        ((parent.name === "vue" && parent.version === "3.5.44") ||
+          (parent.name === "typescript" &&
+            parent.version ===
+              (installContext.conformance.role === "runtime-prop-null-11252"
+                ? "7.1.0-beta"
+                : "5.9.3")));
+      if (!sourcePlaced) {
+        assert(parent.archive);
+        const comparison = observedArchiveComparison(
+          parent.directory,
+          parent.archive,
+          parent.integrity,
+          sink,
+        );
+        qualified.push({
+          name: parent.name,
+          version: parent.version,
+          directory: parent.directory,
+          resolved: parent.resolved,
+          integrity: parent.integrity,
+          archiveSha512: comparison.tarballSHA512,
+          allInstalledBytesEqualArchive: true,
+          files: comparison.files.map((file) => ({ ...file })),
+        });
+        continue;
+      }
+      assert(installContext.conformance);
+      const context = collectBinContext(
+        root,
+        installContext.conformance.role,
+        parent,
+        catalog,
+        edges,
+        installContext.conformance.policy,
+        installContext.conformance.manager,
+        absent,
+      );
+      sink("source-conformant-bin-inputs", context);
+      const inventory = binInventory(parent.directory);
+      sink(
+        "source-conformant-bin-inventory",
+        inventory.map(({ body, ...row }) => ({
+          ...row,
+          bytes: body?.length ?? null,
+          sha256: body === null ? null : sha256(body),
+        })),
+      );
+      const proof = humanDependencyBinPartition(contextFacts(context, archiveCache, inventory));
+      sink("source-conformant-bin-partition", proof);
+      qualified.push({
+        name: parent.name,
+        version: parent.version,
+        directory: parent.directory,
+        resolved: parent.resolved,
+        integrity: parent.integrity,
+        archiveSha512: Buffer.from(parent.integrity.slice(7), "base64").toString("hex"),
+        allInstalledBytesEqualArchive: false,
+        binContext: context,
+        sourceConformance: proof,
+        files: proof.files.map(({ path, bytes, sha256 }) => ({ path, bytes, sha256 })),
+      });
+    }
+    return qualified;
+  };
+  return { packages, absent, catalog, edges, qualify };
+}
+
+/** Strict callers still require the complete final verdict immediately. */
+export async function installedGraph(...args: Parameters<typeof prepareInstalledGraph>) {
+  const prepared = await prepareInstalledGraph(...args);
+  return { packages: prepared.qualify(), absent: prepared.absent };
 }
