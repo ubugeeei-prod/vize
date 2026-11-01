@@ -1,9 +1,9 @@
 // One closed API/SourceFile ABI registration, outside authored-language rates.
 import { createHash } from "node:crypto";
 import { stripTypeScriptTypes } from "node:module";
-import { watcherSuccessor } from "./native-beta-dto-current-custody.ts";
+import { watcherSuccessor, postAckDependencies } from "./native-beta-dto-current-custody.ts";
 const currentAuthorityPath = "tools/support/compat/github/native-beta-dto-current-custody.ts";
-const currentAuthoritySha256 = "9fd741be52de06c90550fe16befb3a5fa216956361ec3f09c4b3188013c6a436";
+const currentAuthoritySha256 = "b0229cffcf8bc10e06ec1a280feaa8e3aa476641b2b8b0382cb2203a1f97e67b";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";
@@ -160,6 +160,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
         sha(Buffer.from(runtime(route))) ===
           watcherSuccessor.routeRuntimeSha256, "missing or changed registered beta semantic route runtime");
       for (const [path, physical, executable] of [
+        ...postAckDependencies,
         [
           watcherSuccessor.inflightWarningPath,
           watcherSuccessor.inflightWarningHash,

@@ -69,6 +69,7 @@ export function observeHistoricalSplitWatchLog(...args: [...ContextArgs, OwnerSt
       row.at === upper.at,
   );
   let exitUpperBound: OwnerState["exitGroups"][number] | undefined;
+  let threadUpperBound: OwnerState["threadExits"][number] | undefined;
   if (actor.rootAckFragmentOrder) {
     assert.equal(event.length, 0, "this EOF upper bound is the actual terminal thread exit");
     assert.deepEqual(
@@ -84,12 +85,28 @@ export function observeHistoricalSplitWatchLog(...args: [...ContextArgs, OwnerSt
         row.code === 0 &&
         row.rawResult === "?",
     );
-    assert.equal(
-      groups.length,
-      1,
-      "EOF upper bound requires exact same-thread IO or terminal exit-group provenance",
-    );
-    exitUpperBound = groups[0]!;
+    if (groups.length !== 0) {
+      assert.equal(groups.length, 1, "one exact terminal exit-group upper bound required");
+      exitUpperBound = groups[0]!;
+    } else {
+      assert.ok(
+        actor.watcherAck.parts.every((part) => part.tid === actor.eof.tid),
+        "terminal thread bound requires root ACK in the EOF reader",
+      );
+      const exits = owner.threadExits.filter(
+        (row) =>
+          row.tid === actor.eof.tid &&
+          row.at === upper.at &&
+          row.line === upper.line &&
+          row.code === 0,
+      );
+      assert.equal(
+        exits.length,
+        1,
+        "EOF upper bound requires exact same-thread terminal provenance",
+      );
+      threadUpperBound = exits[0]!;
+    }
   } else assert.equal(event.length, 1, "EOF upper bound requires its actual same-thread IO event");
   const expected = Buffer.from(
     `\t${actor.project}/**/*\n\n1 paths ineligible for watching\n` +
@@ -160,6 +177,7 @@ export function observeHistoricalSplitWatchLog(...args: [...ContextArgs, OwnerSt
     watcherAck: actor.watcherAck,
     nativeStdinEof: actor.eof,
     ...(exitUpperBound ? { eofReturnUpperBoundExitRequest: exitUpperBound } : {}),
+    ...(threadUpperBound ? { eofReturnUpperBoundThreadExit: threadUpperBound } : {}),
     ...(actor.rootAckFragmentOrder ? { rootAckFragmentOrder: actor.rootAckFragmentOrder } : {}),
     stderrWrites: relations,
     clientPackets: client,

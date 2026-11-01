@@ -2,8 +2,8 @@
 export const watcherSuccessor = {
   inflightWarningId: "before-stable-inflight-root-warning-41270804509",
   inflightWarningPath: "tests/tooling/support/native-beta-dto/historical-inflight-root-warning.ts",
-  inflightWarningHash: "a342c86cda28f091cdf085150d974a3157351c3f56a1f091bad41937321affd7",
-  inflightWarningRuntime: "e0d4d7e357c9c2648b67a1cfb05a02696f4d6a27074d2b46ace48f23ea37bb8a",
+  inflightWarningHash: "58165cd71c3282438e7a618ce645b33802c58576901d0f301b120d21ed558637",
+  inflightWarningRuntime: "c8f3775fe4c0d42c122d7a67b8ef6fe06648e24af150ca74fbb970aebad1abd1",
   after4CleanupId: "source-owned-sdk4-post-batch-cleanup-41265655424",
   after4SourcePath: "tests/tooling/support/native-beta-dto/after4-cleanup-source.ts",
   after4SourceHash: "fb94db02045535bc7ea696ea354847fe409b7ac7a179530493cb60302e98a75e",
@@ -55,8 +55,8 @@ export const watcherSuccessor = {
   timingSha256: "c023dcf8b0e937a01d224bb9829ecbcea948e848e207825688c10e3c175301fc",
   timingRuntimeSha256: "e525777159da6ce60bbbcbe84f70ad6ae62c8f8e425ecedbeb59620dd29eed1f",
   mixedPath: "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
-  mixedSha256: "4536e2116ede4f89d0cf73e49eee048388c51d5c7323b7d1381a54752940bee6",
-  mixedRuntimeSha256: "a27819fe05a86f95d56eec9835c8baf5a267b59c1bd98c3b58c101fb9ae48f8d",
+  mixedSha256: "405ec9fb51f76a5928eb7c58fca93f190cf474352cb853055525e56005399c9a",
+  mixedRuntimeSha256: "f42c6516ae29e776a544e282e48de674e72308e3e37626204eff5a0ec34a79ef",
   ioPath: "tests/tooling/support/native-beta-dto/native-io.ts",
   ioSha256: "03192aa835c6c0886b6176a32b4bd0dc7f04aa82f53116d998abbf22d744e93a",
   ioRuntimeSha256: "b0580f496f4e9c01d3419676bb0f3d79bbcdc860c84ad32215097dfb14d5e9ce",
@@ -66,7 +66,7 @@ export const watcherSuccessor = {
   terminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
   terminalSha256: "83b167d4146f812255b01a946ead297693bad85cdf904817e4207a2bf1c97c35",
   terminalRuntimeSha256: "2ed2edfda0877fa9a4b1093242f8501c5fb2ce834dfaf39ff478edfa9da18013",
-  auditRuntimeSha256: "791aeda61a63c2fdab1b9f4bca5f74a88e2c2e3e01e75be03f82484fd9f91838",
+  auditRuntimeSha256: "2878b9561584de24d1cc3d15f15b7f198a52ba1be6e2bfbe1a13733647091339",
   typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
   typesSha256: "3904cfaf07e59b501c2361b65410877f22780bfdc365cedf74300bb6fb88d127",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
@@ -91,3 +91,17 @@ export const watcherSuccessor = {
     ["identity.json", "990dc13e94623891b8781a37ea05fa96b61c3fb168e6d7e7bef0a2ef265cf05a"],
   ],
 };
+
+// Exactly two current source/runtime dependencies for the additive channel-only negative.
+export const postAckDependencies = [
+  [
+    "tests/tooling/support/native-beta-dto/historical-inflight-transcript.ts",
+    "eda591f26da50431cdcd5c9b50d7603f92237c072ca35965cd7d9fdb6af06243",
+    "c69191646f853d151ba2036d47d5332c478ef10a5db9da489938254df4e25d3b",
+  ],
+  [
+    "tests/tooling/support/native-beta-dto/historical-post-ack-root-warning.ts",
+    "2fca0d73bd9dedfd90d340882f5cdf0156fdeacf0e629a9e2c7d61e8d5b09c43",
+    "70e881ca8b0d0dd9ccf2054f6c4266035ae7057ac265eaa124697893f6003848",
+  ],
+] as const;
