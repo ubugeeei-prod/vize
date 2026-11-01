@@ -365,38 +365,43 @@ test("every final role custody completes before semantics; an early failure cann
 function requireRendererStep(workflow: string) {
   // Closed scalar-run step reader: no YAML dependency/install in this pure job.
   const lines = workflow.split("\n");
+  const jobs = lines.indexOf("jobs:");
+  assert(jobs >= 0);
+  const headers = lines.slice(jobs + 1).filter((line) => /^ {2}[^ #]/u.test(line));
+  assert(headers.every((line) => /^ {2}[A-Za-z0-9_-]+:$/u.test(line)));
+  assert.equal(new Set(headers).size, headers.length);
   const starts = lines.flatMap((line, index) => (line === "  contracts-11339:" ? [index] : []));
   assert.equal(starts.length, 1);
   const start = starts[0]!;
-  assert(start > lines.indexOf("jobs:") && lines.indexOf("jobs:") >= 0);
+  assert(start > jobs);
   const next = lines.findIndex((line, index) => index > start && /^ {2}\S/u.test(line));
   const job = lines.slice(start + 1, next < 0 ? undefined : next);
   const stepStart = job.indexOf("    steps:");
   assert(stepStart >= 0);
-  assert(
-    !job.slice(0, stepStart).some((line) => /^ {4}(?:if|uses|continue-on-error): /u.test(line)),
-  );
+  assert.equal(job.filter((line) => line === "    steps:").length, 1);
+  assert.deepEqual(job.slice(0, stepStart), [
+    "    runs-on: blacksmith-8vcpu-ubuntu-2404",
+    "    timeout-minutes: 10",
+  ]);
   const steps = job
     .slice(stepStart + 1)
     .join("\n")
     .split(/^ {6}- /mu)
     .slice(1);
-  const runnable = steps.map((step) => {
-    const fields = step.split("\n");
-    const run = fields.flatMap((line) => {
-      const match = /^(?:run:| {8}run:) (.+)$/u.exec(line);
-      return match ? [match[1]] : [];
-    });
-    const conditionalOrOtherAction = fields.some((line) =>
-      /^(?:if:|uses:|continue-on-error:| {8}(?:if:|uses:|continue-on-error:)) /u.test(line),
+  const command = "run: node --test tests/tooling/public-typechecker-11339*.test.ts";
+  const runnable = steps.filter((step) => {
+    const fields = step
+      .split("\n")
+      .filter((line) => line.trim() && !line.trimStart().startsWith("#"));
+    return (
+      (fields.length === 1 && fields[0] === command) ||
+      (fields.length === 2 &&
+        fields[0] ===
+          "name: Validate immutable inputs and refusal contracts without public execution" &&
+        fields[1] === "        " + command)
     );
-    return !conditionalOrOtherAction && run.length === 1 ? run[0] : undefined;
   });
-  assert.equal(
-    runnable.filter((run) => run === "node --test tests/tooling/public-typechecker-11339*.test.ts")
-      .length,
-    1,
-  );
+  assert.equal(runnable.length, 1);
 }
 test("new closed choice preserves old602 and11317 workflow bodies byte-for-byte", () => {
   const workflow = readFileSync(
@@ -443,4 +448,18 @@ test("new closed choice preserves old602 and11317 workflow bodies byte-for-byte"
     ],
   ])
     assert.throws(() => requireRendererStep(changed!), assert.AssertionError, name);
+  for (const key of ["if", "uses", "continue-on-error"])
+    for (const spelling of ['"' + key + '"', key + " "])
+      for (const placement of ["job", "step"]) {
+        const line = spelling + ": false\n";
+        const changed =
+          placement === "job"
+            ? workflow.replace("  contracts-11339:\n", "  contracts-11339:\n    " + line)
+            : workflow.replace(command, line + "        " + command);
+        assert.throws(
+          () => requireRendererStep(changed),
+          assert.AssertionError,
+          placement + ": " + spelling,
+        );
+      }
 });
