@@ -13,15 +13,20 @@ pub(super) fn validate(
     let Some(setup) = descriptor.script_setup.as_ref() else {
         return Ok(());
     };
-    // The normal full-SFC route lends its existing once-parsed program. Only
-    // the existing exceptional recovery fallback needs a temporary parse.
+    // The existing program indexes prepared text. Reuse it only when its
+    // offsets still identify the authored setup body; macro erasure and lazy
+    // hydration can otherwise move a later export in the original .vue file.
     let allocator = oxc_allocator::Allocator::default();
     let fallback;
     let program = match program {
-        Some(program) => program,
-        None => {
-            fallback = oxc_parser::Parser::new(&allocator, content, oxc_span::SourceType::ts())
-                .parse();
+        Some(program) if content == setup.content.as_ref() => program,
+        _ => {
+            fallback = oxc_parser::Parser::new(
+                &allocator,
+                setup.content.as_ref(),
+                oxc_span::SourceType::ts(),
+            )
+            .parse();
             &fallback.program
         }
     };
@@ -65,7 +70,10 @@ fn type_only(export: &ExportNamedDeclaration<'_>) -> bool {
         Some(_) => false,
         None => {
             !export.specifiers.is_empty()
-                && export.specifiers.iter().all(|value| value.export_kind.is_type())
+                && export
+                    .specifiers
+                    .iter()
+                    .all(|value| value.export_kind.is_type())
         }
     }
 }
