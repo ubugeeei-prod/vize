@@ -1,13 +1,15 @@
 //! Native rename dispatch shared by the public service.
 
 use std::sync::Arc;
-use tower_lsp::lsp_types::WorkspaceEdit;
+use tower_lsp::lsp_types::{PrepareRenameResponse, WorkspaceEdit};
 use vize_canon::CorsaBridge;
 
 use super::{
     ArtCursorPosition, BlockType, IdeContext, NativeRename, RenameService, canonical, corsa,
 };
 
+#[cfg(test)]
+mod prepare_tests;
 #[cfg(test)]
 mod private_tests;
 
@@ -149,6 +151,32 @@ impl RenameService {
             return None;
         }
         Some(edit)
+    }
+
+    /// Prepare only an exact private current token. The owned plain spans
+    /// below are proof data, never a native response or an executed edit.
+    pub(super) fn private_setup_prepare(ctx: &IdeContext<'_>) -> Option<PrepareRenameResponse> {
+        if ctx.uri.scheme() != "file" {
+            return None;
+        }
+        let resident = Self::private_rename_resident(ctx)?;
+        let (name, declaration) =
+            crate::ide::ReferencesService::private_setup_rename_declaration(ctx)?;
+        let (range, spans) =
+            crate::ide::references::structural::private_setup_prepare(ctx, &name, declaration)?;
+        let mut changes = std::collections::HashMap::new();
+        changes.insert(ctx.uri.clone(), spans);
+        let proof = WorkspaceEdit {
+            changes: Some(changes),
+            document_changes: None,
+            change_annotations: None,
+        };
+        if !corsa::RenameScope::native(ctx).admits_authored(&proof)
+            || Self::private_rename_resident(ctx)? != resident
+        {
+            return None;
+        }
+        Some(PrepareRenameResponse::Range(range))
     }
 
     fn private_rename_resident(ctx: &IdeContext<'_>) -> Option<(i32, u64)> {

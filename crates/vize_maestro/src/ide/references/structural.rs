@@ -259,6 +259,18 @@ pub(in crate::ide) fn private_setup_rename(
     declaration: (usize, usize),
 ) -> Option<Vec<tower_lsp::lsp_types::TextEdit>> {
     let entry = resolve_entry(ctx)?;
+    let selected = private_setup_component(ctx, Some(new_name), &entry, name, declaration)?;
+    render_rename(ctx, new_name, || Some(selected))
+}
+
+#[cfg(feature = "native")]
+fn private_setup_component(
+    ctx: &IdeContext<'_>,
+    new_name: Option<&str>,
+    entry: &snapshot::Entry,
+    name: &str,
+    declaration: (usize, usize),
+) -> Option<Vec<Occurrence>> {
     let mut declarations = entry
         .facts
         .occurrences
@@ -270,7 +282,7 @@ pub(in crate::ide) fn private_setup_rename(
     {
         return None;
     }
-    let selected = select(ctx, Some(new_name), &entry)?;
+    let selected = select(ctx, new_name, entry)?;
     // select starts from the actual cursor symbols and closes only explicit
     // generator links. A same-spelling shadow cannot supply this declaration.
     if !selected.iter().any(|occurrence| {
@@ -280,7 +292,77 @@ pub(in crate::ide) fn private_setup_rename(
     }) {
         return None;
     }
-    render_rename(ctx, new_name, || Some(selected))
+    Some(selected)
+}
+
+/// One exact half-open query token in the same private declaration component.
+/// Every retained span must be plain authored text, including the declaration.
+#[cfg(feature = "native")]
+pub(in crate::ide) fn private_setup_prepare(
+    ctx: &IdeContext<'_>,
+    name: &str,
+    declaration: (usize, usize),
+) -> Option<(Range, Vec<tower_lsp::lsp_types::TextEdit>)> {
+    let entry = resolve_entry(ctx)?;
+    let selected = private_setup_component(ctx, None, &entry, name, declaration)?;
+    if selected.iter().any(|occurrence| {
+        entry
+            .facts
+            .scoping
+            .get_resolved_references(occurrence.symbol)
+            .any(|reference| reference.is_write())
+    }) {
+        return None;
+    }
+    let shorthands = template::shorthands(ctx)?;
+    let mut spans = Vec::with_capacity(selected.len());
+    for occurrence in selected {
+        let span = occurrence.authored?;
+        if !matches!(occurrence.edit, edits::Kind::Identifier)
+            || shorthands.contains_key(&span)
+            || span.0 >= span.1
+            || ctx.content.get(span.0..span.1)? != name
+        {
+            return None;
+        }
+        let range = location(ctx, span).range;
+        if crate::ide::position_to_offset(&ctx.content, range.start.line, range.start.character)?
+            != span.0
+            || crate::ide::position_to_offset(&ctx.content, range.end.line, range.end.character)?
+                != span.1
+        {
+            return None;
+        }
+        spans.push(span);
+    }
+    spans.sort_unstable();
+    spans.dedup();
+    if !spans.contains(&declaration)
+        || spans.windows(2).any(|pair| {
+            pair.first()
+                .zip(pair.get(1))
+                .is_none_or(|(left, right)| left.1 > right.0)
+        })
+    {
+        return None;
+    }
+    let mut query = spans
+        .iter()
+        .filter(|&&(start, end)| start <= ctx.offset && ctx.offset < end);
+    let range = location(ctx, *query.next()?).range;
+    if query.next().is_some() {
+        return None;
+    }
+    Some((
+        range,
+        spans
+            .into_iter()
+            .map(|span| tower_lsp::lsp_types::TextEdit {
+                range: location(ctx, span).range,
+                new_text: name.into(),
+            })
+            .collect(),
+    ))
 }
 
 fn render_rename(
