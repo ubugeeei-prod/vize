@@ -67,7 +67,10 @@ await test("all pages and attempts use distinct Actions job IDs and preserve ful
     name: "unrelated check",
   }));
   const fixture = provider([...unrelated, ...observers], jobs);
-  assert.deepEqual(await readCanonicalJobs({ ...options, ...fixture }, run), jobs);
+  assert.deepEqual(
+    await readCanonicalJobs({ ...options, ...fixture }, run),
+    jobs.map((entry, index) => ({ ...entry, canonicalCheck: observers[index] })),
+  );
   assert.equal(fixture.requested.length, 5);
   assert(fixture.requested.every((path) => !path.includes("/actions/runs/12/jobs")));
 });
@@ -79,7 +82,10 @@ await test("inventory retains unknown, pending and repeated observer attempts fo
   jobs[1].conclusion = "";
   jobs[1].steps = [];
   const fixture = provider(checks, jobs);
-  assert.deepEqual(await readCanonicalJobs({ ...options, ...fixture }, run), jobs);
+  assert.deepEqual(
+    await readCanonicalJobs({ ...options, ...fixture }, run),
+    jobs.map((entry, index) => ({ ...entry, canonicalCheck: checks[index] })),
+  );
 });
 
 await test("eventually consistent observer completion is read from the same exact job", async () => {
@@ -109,7 +115,7 @@ await test("eventually consistent observer completion is read from the same exac
       },
       run,
     ),
-    [complete],
+    [{ ...complete, canonicalCheck: entry }],
   );
   assert.equal(jobReads, 2);
   assert.deepEqual(waits, [1_000]);
@@ -137,7 +143,7 @@ await test("persistent pending observer metadata remains fail-closed after a bou
       },
       run,
     ),
-    [pending],
+    [{ ...pending, canonicalCheck: entry }],
   );
   assert.equal(jobReads, 10);
   assert.deepEqual(

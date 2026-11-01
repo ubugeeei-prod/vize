@@ -93,11 +93,11 @@ export async function readCanonicalJobs(options: Options, run: Run) {
         assert.equal(job.run_id, run.id, "Foreign canonical job run");
         assert.equal(job.head_sha, run.head_sha, "Foreign canonical job head");
         assert.equal(job.name, check.name, "Foreign canonical job name");
-        if (job.status === "completed") return job;
+        if (job.status === "completed") return { ...job, canonicalCheck: check };
         if (attempt + 1 < visibilityAttempts) await sleep(visibilityDelayMs);
       }
       assert(job, "Missing canonical job");
-      return job;
+      return { ...job, canonicalCheck: check };
     }),
   );
 }
