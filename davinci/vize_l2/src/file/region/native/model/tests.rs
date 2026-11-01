@@ -8,6 +8,7 @@ use crate::op::{BindingOp, Op};
 use crate::resolution::Usage;
 use vize_l0::Allocator;
 
+mod lazy;
 mod refusal;
 mod support;
 mod trim;

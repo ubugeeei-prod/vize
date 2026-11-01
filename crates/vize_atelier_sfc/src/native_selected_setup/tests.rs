@@ -16,6 +16,7 @@ mod original_for_constant;
 mod original_for_key;
 mod original_for_value;
 mod original_input_model;
+mod original_input_model_modifiers;
 mod original_root_if;
 mod original_root_if_else;
 mod original_root_if_else_composite;

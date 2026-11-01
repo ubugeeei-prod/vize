@@ -88,4 +88,4 @@ pub(crate) fn static_event_head(
 }
 
 mod model;
-pub(crate) use model::model_parts;
+pub(crate) use model::{ModelModifier, model_parts};

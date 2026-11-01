@@ -42,19 +42,25 @@ pub(super) fn checked<'owner, 'arena>(
     {
         return None;
     }
-    match (
+    let modifier = match (
         original.input().operand().trim_span(),
-        model.attributes.as_slice(),
+        original.input().operand().lazy_span(),
     ) {
+        (None, None) => None,
+        (Some(span), None) => Some(("trim", span)),
+        (None, Some(span)) => Some(("lazy", span)),
+        _ => return None,
+    };
+    match (modifier, model.attributes.as_slice()) {
         (None, []) => {}
-        (Some(span), [attribute]) => {
+        (Some((name, span)), [attribute]) => {
             let authored = file
                 .artifact()
                 .source()
                 .get(span.start as usize..span.end as usize)?;
             if attribute.span != span
                 || attribute.value.is_some()
-                || attribute.name != "trim"
+                || attribute.name != name
                 || !core::ptr::eq(attribute.name, authored)
             {
                 return None;

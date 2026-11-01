@@ -15,4 +15,4 @@ fn text<'a>(value: &'a Value, key: &str) -> Result<&'a str, String> {
         .ok_or_else(|| cstr!("missing {key}"))
 }
 
-mod original_input_model;
+pub(crate) mod original_input_model;
