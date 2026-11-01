@@ -38,10 +38,11 @@
     {
       "id": "sfc-signature",
       "target": "sfc",
-      "input": "tests/_fixtures/differential/formatter-history/sfc-signature/input.vue.txt",
+      "input": "tests/_fixtures/differential/formatter/sfc-large-print-width-fallback-6098/App.vue.txt",
       "inputSha256": "b89cb12c7b688a7ceb2afd35ddc177a5187118dcb681a8ec550d4bd666cb4636",
       "defaultExpected": "crates/vize_glyph/tests/snapshots/history_sfc_signature.snap.txt",
-      "defaultExpectedSha256": "4e619c2f9c1df9eb87d71d1b0ee3ad033b97a99fc5c62d5ee3a572375b6bd162"
+      "defaultExpectedSha256": "4e619c2f9c1df9eb87d71d1b0ee3ad033b97a99fc5c62d5ee3a572375b6bd162",
+      "copiedFrom": "tests/_fixtures/differential/formatter-history/sfc-signature/input.vue.txt"
     },
     {
       "id": "indented-direct-call",

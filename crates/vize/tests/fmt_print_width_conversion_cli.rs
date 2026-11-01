@@ -84,6 +84,9 @@ fn original_sfc_inputs_retain_every_configured_cli_packet_before_verdicts() {
             case["input"].as_str().unwrap(),
             case["inputSha256"].as_str().unwrap(),
         );
+        if let Some(original) = case["copiedFrom"].as_str() {
+            assert_eq!(input, fs::read(root.join(original)).unwrap());
+        }
         for width in corpus["widths"].as_array().unwrap() {
             observations.extend(collect(
                 case,

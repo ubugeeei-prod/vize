@@ -32,6 +32,7 @@ struct Case {
     input_sha256: String,
     default_expected: String,
     default_expected_sha256: String,
+    copied_from: Option<String>,
 }
 
 fn hash(value: &[u8]) -> String {
@@ -90,6 +91,9 @@ fn whole_historical_outputs_and_all_width_boundaries_are_retained_before_verdict
     let mut observed = Vec::new();
     for case in &corpus.cases {
         let input = read_pinned(&root, &case.input, &case.input_sha256);
+        if let Some(original) = &case.copied_from {
+            assert_eq!(input.as_bytes(), fs::read(root.join(original)).unwrap());
+        }
         let expected = read_pinned(&root, &case.default_expected, &case.default_expected_sha256);
         for &width in &corpus.widths {
             let options = FormatOptions {
