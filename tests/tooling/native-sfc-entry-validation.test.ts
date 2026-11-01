@@ -64,6 +64,13 @@ function native(): { binding: Binding; build: unknown; image: string; imageSha25
 
 test("original SFC entry failures and type-only controls cross the actual public addon", () => {
   const provider = native();
+  console.log(
+    "sfc-entry-native-provider " +
+      JSON.stringify({
+        build: provider.build,
+        physicalImage: { path: provider.image, sha256: provider.imageSha256 },
+      }),
+  );
   const cases = loadSfcEntryCases(root);
   const observations: {
     row: (typeof cases)[number];

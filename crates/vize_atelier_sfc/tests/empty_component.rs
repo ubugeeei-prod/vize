@@ -27,10 +27,17 @@ fn fixture_root() -> PathBuf {
         .join("../../tests/_fixtures/differential/compiler/sfc-entry-validation-11262-11263")
 }
 
+fn sha256(bytes: &[u8]) -> String {
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
 fn cases() -> Vec<Case> {
     let raw = std::fs::read(fixture_root().join("cases.json")).unwrap();
     assert_eq!(
-        format!("{:x}", Sha256::digest(&raw)),
+        sha256(&raw),
         "a16ca0e07eaefff3925e7f6a015b6e22396034c4915a6ed518ecc7cc7f9e4710"
     );
     let value: serde_json::Value = serde_json::from_slice(&raw).unwrap();
@@ -46,7 +53,7 @@ fn cases() -> Vec<Case> {
 fn source(case: &Case) -> String {
     let raw = std::fs::read(fixture_root().join(&case.file)).unwrap();
     assert_eq!(raw.len(), case.bytes);
-    assert_eq!(format!("{:x}", Sha256::digest(&raw)), case.sha256);
+    assert_eq!(sha256(&raw), case.sha256);
     String::from_utf8(raw).unwrap()
 }
 

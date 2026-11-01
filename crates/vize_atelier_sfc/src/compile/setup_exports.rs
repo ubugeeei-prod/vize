@@ -1,8 +1,9 @@
 //! A setup body cannot retain module exports inside its generated function.
 //! Only the compile boundary uses this validator; editor analysis is unchanged.
 
+use crate::compile_script::statement_sections::is_type_only_export;
 use crate::types::{BlockLocation, SfcDescriptor, SfcError};
-use oxc_ast::ast::{Declaration, ExportNamedDeclaration, Program, Statement};
+use oxc_ast::ast::{Program, Statement};
 use oxc_span::Span;
 
 pub(super) fn validate(
@@ -44,37 +45,15 @@ pub(super) fn validate(
 
 fn runtime_export(statement: &Statement<'_>) -> Option<Span> {
     match statement {
-        Statement::ExportNamedDeclaration(export) if !type_only(export) => Some(export.span),
+        Statement::ExportNamedDeclaration(export) if !is_type_only_export(export) => {
+            Some(export.span)
+        }
         Statement::ExportDefaultDeclaration(export) => Some(export.span),
         Statement::ExportAllDeclaration(export) if !export.export_kind.is_type() => {
             Some(export.span)
         }
         Statement::TSExportAssignment(export) => Some(export.span),
         _ => None,
-    }
-}
-
-fn type_only(export: &ExportNamedDeclaration<'_>) -> bool {
-    if export.export_kind.is_type() {
-        return true;
-    }
-    match &export.declaration {
-        Some(Declaration::TSTypeAliasDeclaration(_) | Declaration::TSInterfaceDeclaration(_)) => {
-            true
-        }
-        Some(Declaration::VariableDeclaration(value)) => value.declare,
-        Some(Declaration::FunctionDeclaration(value)) => value.declare,
-        Some(Declaration::ClassDeclaration(value)) => value.declare,
-        Some(Declaration::TSEnumDeclaration(value)) => value.declare,
-        Some(Declaration::TSModuleDeclaration(value)) => value.declare,
-        Some(_) => false,
-        None => {
-            !export.specifiers.is_empty()
-                && export
-                    .specifiers
-                    .iter()
-                    .all(|value| value.export_kind.is_type())
-        }
     }
 }
 

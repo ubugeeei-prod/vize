@@ -25,7 +25,18 @@ void test("whole observations retain nonenumerable unknown errors, undefined, sy
     map = new Map<unknown, unknown>();
   map.set(symbol, error);
   map.set(map, symbol);
-  const actual = captureWholeValue({ error, symbol, map });
+  let invoked = false;
+  const accessor = Object.defineProperty({}, "value", {
+    get() {
+      invoked = true;
+      return 1;
+    },
+    set(_value: unknown) {
+      invoked = true;
+    },
+  });
+  const actual = captureWholeValue({ error, symbol, map, accessor });
+  assert.equal(invoked, false, "record actual getter/setter functions without invoking either");
   const encoded = JSON.stringify(actual);
   for (const required of [
     "complete message",

@@ -4,7 +4,7 @@
 //! precise OXC statement spans instead of line-based heuristics.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Declaration, Expression, Program, Statement};
+use oxc_ast::ast::{Declaration, ExportNamedDeclaration, Expression, Program, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 
@@ -210,21 +210,14 @@ fn classify_statement(
             StatementBucket::HoistedRuntime
         }
         Statement::ExportNamedDeclaration(export_decl) => {
-            if export_decl.export_kind.is_type()
-                || export_decl.declaration.as_ref().is_some_and(|decl| {
-                    matches!(
-                        decl,
-                        Declaration::TSInterfaceDeclaration(_)
-                            | Declaration::TSTypeAliasDeclaration(_)
-                    )
-                })
-                || trimmed.starts_with("export type ")
-                || trimmed.starts_with("export interface ")
-            {
+            if is_type_only_export(export_decl) {
                 StatementBucket::TypeDeclaration
             } else {
                 StatementBucket::Setup
             }
+        }
+        Statement::ExportAllDeclaration(export) if export.export_kind.is_type() => {
+            StatementBucket::TypeDeclaration
         }
         Statement::ExpressionStatement(expr_stmt) => {
             if unwrap_call_expression(&expr_stmt.expression).is_some_and(|call| {
@@ -250,6 +243,32 @@ fn classify_statement(
             }
         }
         _ => StatementBucket::Setup,
+    }
+}
+
+/// Share the setup admission and pre-wrapper erasure decision. Ambient
+/// declarations carry no runtime value; ordinary enums and namespaces do.
+pub(crate) fn is_type_only_export(export: &ExportNamedDeclaration<'_>) -> bool {
+    if export.export_kind.is_type() {
+        return true;
+    }
+    match &export.declaration {
+        Some(Declaration::TSTypeAliasDeclaration(_) | Declaration::TSInterfaceDeclaration(_)) => {
+            true
+        }
+        Some(Declaration::VariableDeclaration(value)) => value.declare,
+        Some(Declaration::FunctionDeclaration(value)) => value.declare,
+        Some(Declaration::ClassDeclaration(value)) => value.declare,
+        Some(Declaration::TSEnumDeclaration(value)) => value.declare,
+        Some(Declaration::TSModuleDeclaration(value)) => value.declare,
+        Some(_) => false,
+        None => {
+            !export.specifiers.is_empty()
+                && export
+                    .specifiers
+                    .iter()
+                    .all(|value| value.export_kind.is_type())
+        }
     }
 }
 

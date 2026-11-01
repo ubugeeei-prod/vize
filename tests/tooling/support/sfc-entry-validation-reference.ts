@@ -135,8 +135,12 @@ export function captureWholeValue(input: unknown): WholeValue {
           property.writable = !!descriptor.writable;
           property.value = capture(data);
         } else {
-          property.get = capture(descriptor.get);
-          property.set = capture(descriptor.set);
+          // Reflect on the descriptor's data fields; never invoke the
+          // observed object's accessor or replace its original functions.
+          const getter: unknown = Reflect.get(descriptor, "get");
+          const setter: unknown = Reflect.get(descriptor, "set");
+          property.get = capture(getter);
+          property.set = capture(setter);
         }
         return property;
       }),

@@ -20,12 +20,19 @@ struct Case {
     sha256: String,
 }
 
+fn sha256(bytes: &[u8]) -> String {
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
 fn cases() -> Vec<(Case, String)> {
     let directory = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/_fixtures/differential/compiler/sfc-entry-validation-11262-11263");
     let raw = fs::read(directory.join("cases.json")).unwrap();
     assert_eq!(
-        format!("{:x}", Sha256::digest(&raw)),
+        sha256(&raw),
         "a16ca0e07eaefff3925e7f6a015b6e22396034c4915a6ed518ecc7cc7f9e4710"
     );
     let json: serde_json::Value = serde_json::from_slice(&raw).unwrap();
@@ -36,7 +43,7 @@ fn cases() -> Vec<(Case, String)> {
         .map(|case| {
             let source = fs::read(directory.join(&case.file)).unwrap();
             assert_eq!(source.len(), case.bytes);
-            assert_eq!(format!("{:x}", Sha256::digest(&source)), case.sha256);
+            assert_eq!(sha256(&source), case.sha256);
             (case, String::from_utf8(source).unwrap())
         })
         .collect()
@@ -152,6 +159,12 @@ fn valid_type_only_and_single_block_controls_keep_complete_build_outputs() {
             options.template.id = Some(case.filename.as_str().into());
             options.style.id = case.filename.as_str().into();
             options.vapor = vapor;
+            let script_lang = descriptor
+                .script_setup
+                .as_ref()
+                .or(descriptor.script.as_ref())
+                .and_then(|script| script.lang.as_deref())
+                .unwrap_or("js");
             let compiled = compile_sfc(&descriptor, options).unwrap();
             assert!(compiled.errors.is_empty() && compiled.warnings.is_empty());
             for format in ["js", "json"] {
@@ -184,7 +197,7 @@ fn valid_type_only_and_single_block_controls_keep_complete_build_outputs() {
                         serde_json::json!({
                             "filename": case.filename, "code": compiled.code, "css": compiled.css,
                             "errors": [], "warnings": [],
-                            "script_lang": if source.contains("lang=\"ts\"") { "ts" } else { "js" },
+                        "script_lang": script_lang,
                             "macro_artifacts": [],
                         })
                     );
