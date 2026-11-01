@@ -47,6 +47,9 @@ test("both actual frozen source roles accept exactly four read hooks and explici
       ),
     };
     verifyFrozenReadOverlay(role, overlay);
+    const incompleteOverlay: Record<string, string | Buffer> = { ...overlay };
+    delete incompleteOverlay["project/owned_read_buffer_observation.rs"];
+    assert.throws(() => verifyFrozenReadOverlay(role, incompleteOverlay));
     assert.throws(() => verifyFrozenReadOverlay(role, { ...overlay, extra: "unknown" }));
     assert.throws(() =>
       verifyFrozenReadOverlay(role, { ...overlay, "project.rs": changed.project + "\n" }),
