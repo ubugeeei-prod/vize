@@ -79,14 +79,17 @@ function linkedCheck(job, context, run) {
   );
   assert.equal(check.status, "completed", "Canonical clock Check is incomplete");
   assert.equal(check.conclusion, "success", "Canonical clock Check did not succeed");
-  window(check);
   return check;
 }
 
 export function completedCanonicalWorker(job, command, context, run) {
   assert.equal(job.status, "completed", "Latest canonical observer is incomplete");
   assert.equal(job.conclusion, "success", "Latest canonical observer did not succeed");
-  const apiWindow = window(job);
+  const apiWindow = {
+    start: canonicalTimestamp(job.started_at),
+    end: canonicalTimestamp(job.completed_at),
+  };
+  const reversed = apiWindow.end < apiWindow.start;
   assert(Array.isArray(job.steps), "Invalid canonical execution window");
   const numbers = job.steps.map((step) => step.number);
   numbers.forEach((number) => positive(number, "Invalid canonical step number"));
@@ -112,7 +115,7 @@ export function completedCanonicalWorker(job, command, context, run) {
   });
   const upload = required.at(-1);
   const base = { apiJob: rawWindow(job), requiredSteps: required.map(stepRecord) };
-  if (required.every((step) => contains(apiWindow, window(step))))
+  if (!reversed && required.every((step) => contains(apiWindow, window(step))))
     return { upload, timing: { authority: "actions-job-envelope", ...base, contradiction: null } };
 
   // The Actions/Checks/artifact API clock can contradict the runner's step
@@ -123,10 +126,6 @@ export function completedCanonicalWorker(job, command, context, run) {
   assert.equal(complete.number, Math.max(...numbers), "Foreign canonical complete lifecycle");
   const runner = { start: window(setup).end, end: window(complete).start };
   assert(runner.end >= runner.start, "Reversed canonical runner lifecycle");
-  assert(
-    runner.end < apiWindow.start || runner.start > apiWindow.end,
-    "Canonical clocks are not independently disjoint",
-  );
   previous = runner.start;
   for (const step of required) {
     const current = window(step);
@@ -138,10 +137,25 @@ export function completedCanonicalWorker(job, command, context, run) {
     previous = current.end;
   }
   const check = linkedCheck(job, context, run);
+  if (reversed) {
+    // Starts can be unusable while the linked API completion and the artifact's
+    // original runner upload window still provide independent ordering anchors.
+    assert.equal(check.started_at, job.started_at, "Unmatched canonical reversed start");
+    assert.equal(check.completed_at, job.completed_at, "Unmatched canonical completion anchor");
+    assert(window(complete).end <= apiWindow.end, "Foreign canonical completion anchor");
+  } else {
+    window(check);
+    assert(
+      runner.end < apiWindow.start || runner.start > apiWindow.end,
+      "Canonical clocks are not independently disjoint",
+    );
+  }
   return {
     upload,
     timing: {
-      authority: "linked-check-api-and-runner-lifecycle",
+      authority: reversed
+        ? "linked-completion-and-runner-upload"
+        : "linked-check-api-and-runner-lifecycle",
       ...base,
       apiCheck: {
         id: check.id,
@@ -150,19 +164,30 @@ export function completedCanonicalWorker(job, command, context, run) {
         ...rawWindow(check),
       },
       runnerLifecycle: { setup: stepRecord(setup), complete: stepRecord(complete) },
-      contradiction: "API execution envelope and runner lifecycle are disjoint; no offset applied",
+      contradiction: reversed
+        ? "API starts follow their linked completions; starts are unusable, no offset applied"
+        : "API execution envelope and runner lifecycle are disjoint; no offset applied",
     },
   };
 }
 
 export function validateCanonicalUpload(artifact, worker) {
   const created = canonicalTimestamp(artifact.created_at);
-  if (worker.timing.authority === "actions-job-envelope") {
+  if (
+    worker.timing.authority === "actions-job-envelope" ||
+    worker.timing.authority === "linked-completion-and-runner-upload"
+  ) {
     assert(
       created >= canonicalTimestamp(worker.upload.started_at) &&
         created <= canonicalTimestamp(worker.upload.completed_at),
       "Foreign canonical upload window",
     );
+    if (worker.timing.authority === "linked-completion-and-runner-upload")
+      for (const anchor of [worker.timing.apiJob, worker.timing.apiCheck])
+        assert(
+          created <= canonicalTimestamp(anchor.completedAt),
+          "Foreign canonical completion upload",
+        );
     return;
   }
   for (const anchor of [worker.timing.apiJob, worker.timing.apiCheck]) {

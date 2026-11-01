@@ -11,6 +11,10 @@ import {
   checkBase64,
   jobBase64,
   provenance,
+  reversedArtifactBase64,
+  reversedCheckBase64,
+  reversedJobBase64,
+  reversedProvenance,
 } from "./fixtures/canonical-worker-clocks/c1fa-dom.ts";
 
 const decode = (value: string): unknown =>
@@ -342,4 +346,104 @@ await test("selection still rejects foreign run, attempt, head, digest and artif
     change(forged);
     assert.throws(() => selectCanonicalWorkers(context, run, jobs, forged));
   }
+});
+
+const reverseJob: Job = {
+  ...(decode(reversedJobBase64) as Job),
+  canonicalCheck: decode(reversedCheckBase64) as Check,
+};
+const reverseArtifact = decode(reversedArtifactBase64) as Artifact;
+const reverseContext = {
+  ...context,
+  runId: reverseJob.run_id,
+  sha: reverseJob.head_sha,
+  providerSha: reverseJob.head_sha,
+};
+const reverseRun = {
+  ...run,
+  id: reverseJob.run_id,
+  head_sha: reverseJob.head_sha,
+  check_suite_id: checkOf(reverseJob).check_suite.id,
+};
+const inspectReverse = (value: Job = reverseJob, item: Artifact = reverseArtifact) => {
+  const result = completedCanonicalWorker(value, command, reverseContext, reverseRun);
+  validateCanonicalUpload(item, result);
+  return result;
+};
+
+await test("retained reversed starts use linked completion and exact runner upload without rewriting", () => {
+  assert.equal(digest(reversedJobBase64), reversedProvenance.jobProjectionSha256);
+  assert.equal(digest(reversedCheckBase64), reversedProvenance.checkSha256);
+  assert.equal(digest(reversedArtifactBase64), reversedProvenance.selectedArtifactSha256);
+  const result = inspectReverse();
+  assert.equal(result.timing.authority, "linked-completion-and-runner-upload");
+  assert.ok("apiCheck" in result.timing && "runnerLifecycle" in result.timing);
+  assert.deepEqual(result.timing.apiJob, {
+    startedAt: "2026-11-01T09:57:37Z",
+    completedAt: "2026-11-01T09:01:53Z",
+  });
+  assert.equal(result.timing.apiCheck.startedAt, reverseJob.started_at);
+  assert.equal(result.timing.apiCheck.completedAt, reverseJob.completed_at);
+  assert.equal(result.timing.runnerLifecycle.setup.startedAt, "2026-11-01T08:57:38Z");
+  assert.equal(result.timing.runnerLifecycle.complete.completedAt, "2026-11-01T09:01:50Z");
+  assert.equal(result.upload.started_at, "2026-11-01T09:01:45Z");
+  assert.equal(result.upload.completed_at, "2026-11-01T09:01:49Z");
+  assert.equal(reverseArtifact.created_at, "2026-11-01T09:01:48Z");
+  assert.equal(reverseJob.started_at, "2026-11-01T09:57:37Z");
+});
+
+await test("reversed starts cannot borrow missing, foreign or incoherent completion authority", () => {
+  for (const change of [
+    (value) => {
+      delete value.canonicalCheck;
+    },
+    (value) => {
+      checkOf(value).id += 1;
+    },
+    (value) => {
+      checkOf(value).head_sha = "b".repeat(40);
+    },
+    (value) => {
+      checkOf(value).check_suite.id += 1;
+    },
+    (value) => {
+      checkOf(value).details_url += "1";
+    },
+    (value) => {
+      checkOf(value).conclusion = "failure";
+    },
+    (value) => {
+      checkOf(value).started_at = "2026-11-01T09:57:36Z";
+    },
+    (value) => {
+      checkOf(value).completed_at = "2026-11-01T09:01:54Z";
+    },
+    (value) => {
+      value.completed_at = checkOf(value).completed_at = "2026-11-01T09:01:49Z";
+    },
+    (value) => {
+      stepOf(value, "Set up job").name = "foreign setup";
+    },
+    (value) => {
+      value.steps.push({ ...stepOf(value, "Complete job"), number: 99 });
+    },
+    (value) => {
+      stepOf(value, command).started_at = "2026-11-01T08:57:37Z";
+    },
+    (value) => {
+      stepOf(value, command).completed_at = "2026-11-01T09:01:49Z";
+    },
+    (value) => {
+      stepOf(value, command).conclusion = "skipped";
+    },
+    (value) => {
+      stepOf(value, "Complete job").started_at = "2026-11-01T08:57:37Z";
+    },
+  ] satisfies ((value: Job) => void)[]) {
+    const forged = structuredClone(reverseJob);
+    change(forged);
+    assert.throws(() => inspectReverse(forged));
+  }
+  for (const created_at of ["2026-11-01T09:01:44Z", "2026-11-01T09:01:50Z", "2026-11-01T09:57:37Z"])
+    assert.throws(() => inspectReverse(reverseJob, { ...reverseArtifact, created_at }));
 });
