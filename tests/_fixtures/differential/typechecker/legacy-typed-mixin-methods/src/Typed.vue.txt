@@ -1,0 +1,12 @@
+<script lang="ts">
+import auth from "./auth";
+export default {
+  mixins: [auth],
+  methods: {
+    valid() { return this.$auth("ok"); },
+    wrong() { return this.$auth(123); },
+    missing() { return this.$missing(); },
+  },
+};
+</script>
+<template><span /></template>

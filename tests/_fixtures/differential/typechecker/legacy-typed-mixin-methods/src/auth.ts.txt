@@ -1,0 +1,1 @@
+export default { methods: { $auth(token: string): number { return token.length; } } };
