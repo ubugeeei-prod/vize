@@ -379,10 +379,10 @@ function requireRendererStep(workflow: string) {
   const stepStart = job.indexOf("    steps:");
   assert(stepStart >= 0);
   assert.equal(job.filter((line) => line === "    steps:").length, 1);
-  assert.deepEqual(job.slice(0, stepStart), [
-    "    runs-on: blacksmith-8vcpu-ubuntu-2404",
-    "    timeout-minutes: 10",
-  ]);
+  assert.deepEqual(
+    job.filter((line) => /^ {4}[^ #]/u.test(line)),
+    ["    runs-on: blacksmith-8vcpu-ubuntu-2404", "    timeout-minutes: 10", "    steps:"],
+  );
   const steps = job
     .slice(stepStart + 1)
     .join("\n")
@@ -446,16 +446,22 @@ test("new closed choice preserves old602 and11317 workflow bodies byte-for-byte"
       "conditional job is insufficient",
       workflow.replace("  contracts-11339:\n", "  contracts-11339:\n    if: false\n"),
     ],
+    [
+      "post-steps conditional job is insufficient",
+      workflow.replace("  public-11339:\n", "    if: false\n  public-11339:\n"),
+    ],
   ])
     assert.throws(() => requireRendererStep(changed!), assert.AssertionError, name);
   for (const key of ["if", "uses", "continue-on-error"])
     for (const spelling of ['"' + key + '"', key + " "])
-      for (const placement of ["job", "step"]) {
+      for (const placement of ["job", "step", "post-steps"]) {
         const line = spelling + ": false\n";
         const changed =
           placement === "job"
             ? workflow.replace("  contracts-11339:\n", "  contracts-11339:\n    " + line)
-            : workflow.replace(command, line + "        " + command);
+            : placement === "step"
+              ? workflow.replace(command, line + "        " + command)
+              : workflow.replace("  public-11339:\n", "    " + line + "  public-11339:\n");
         assert.throws(
           () => requireRendererStep(changed),
           assert.AssertionError,
