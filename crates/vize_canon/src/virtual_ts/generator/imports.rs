@@ -107,36 +107,45 @@ pub(super) fn collect_imported_names<'a>(
 /// Syntactic value imports can still resolve to type-only exports when
 /// `verbatimModuleSyntax` is disabled. Until either the script or template
 /// proves a runtime read, generated code must not use those locals as values.
-pub(super) fn collect_imported_names_without_script_value_use(
+/// Keep one generation's parser result for its read-only consumers.
+/// Names keep their authored spelling and the existing binding-table filter.
+#[derive(Default)]
+pub(super) struct ValueImportNames {
+    pub(super) bindings: FxHashSet<CompactString>,
+    pub(super) without_script_value_use: FxHashSet<String>,
+}
+
+pub(super) fn collect_value_import_names(
     summary: &Croquis,
     script_content: Option<&str>,
     usage: &IdentifierUsage,
-) -> FxHashSet<String> {
+) -> ValueImportNames {
     let Some(script) = script_content else {
-        return FxHashSet::default();
+        return ValueImportNames::default();
     };
     let import_names = collect_value_import_binding_names(summary, script);
     if import_names.is_empty() {
-        return FxHashSet::default();
+        return ValueImportNames::default();
     }
 
-    import_names
-        .into_iter()
-        .filter(|name| !usage.value_refs.contains(name))
+    let without_script_value_use = import_names
+        .iter()
+        .filter(|name| !usage.value_refs.contains(*name))
         .map(|name| String::from(name.as_str()))
-        .collect()
+        .collect();
+    ValueImportNames {
+        bindings: import_names,
+        without_script_value_use,
+    }
 }
 
 pub(super) fn collect_setup_binding_anchor_names(
     summary: &Croquis,
-    script_content: Option<&str>,
+    imports: &ValueImportNames,
     usage: &IdentifierUsage,
     template_referenced_names: Option<&FxHashSet<String>>,
     template_value_names: &FxHashSet<String>,
 ) -> Vec<String> {
-    let imported_names_without_script_value_use =
-        collect_imported_names_without_script_value_use(summary, script_content, usage);
-
     let mut binding_names: Vec<String> =
         crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
             bindings
@@ -166,7 +175,7 @@ pub(super) fn collect_setup_binding_anchor_names(
     }
     binding_names.retain(|name| {
         !usage.const_enums.contains(name.as_str())
-            && (!imported_names_without_script_value_use.contains(name.as_str())
+            && (!imports.without_script_value_use.contains(name.as_str())
                 || template_value_names.contains(name.as_str()))
     });
     binding_names.sort_unstable();
@@ -295,6 +304,8 @@ pub(crate) fn extract_declared_name(stub: &str) -> Option<&str> {
 }
 
 fn extract_import_names(import_text: &str) -> Vec<&str> {
+    #[cfg(test)]
+    import_parse_count(true);
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, import_text, SourceType::ts()).parse();
     let Some(Statement::ImportDeclaration(declaration)) = parsed.program.body.first() else {
@@ -329,6 +340,19 @@ fn extract_import_names(import_text: &str) -> Vec<&str> {
 }
 
 #[cfg(test)]
+pub(super) fn import_parse_count(increment: bool) -> usize {
+    thread_local! {
+        static COUNT: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    }
+    COUNT.with(|count| {
+        if increment {
+            count.set(count.get() + 1);
+        }
+        count.get()
+    })
+}
+
+#[cfg(test)]
 mod tests {
     use super::extract_import_names;
 
@@ -347,5 +371,41 @@ mod tests {
             ["Badge", "badgeNs"]
         );
         assert!(extract_import_names("import type Badge from 'pkg'").is_empty());
+    }
+
+    #[test]
+    fn import_syntax_keeps_complete_authored_local_name_lists() {
+        for (source, expected) in [
+            ("", vec![]),
+            ("import 'side-effect'", vec![]),
+            ("import type * as Types from 'pkg'", vec![]),
+            (
+                "import { type Model, value as local } from 'pkg'",
+                vec!["local"],
+            ),
+            (
+                "import Value, { type Model, value } from 'pkg'",
+                vec!["Value", "value"],
+            ),
+            (
+                "import Value, * as space from 'pkg'",
+                vec!["Value", "space"],
+            ),
+            (
+                "import { café as résumé, $value } from 'pkg'",
+                vec!["résumé", "$value"],
+            ),
+            (
+                r"import { value as \u006cocal } from 'pkg'",
+                vec![r"\u006cocal"],
+            ),
+            (
+                "import data from './data.json' with { type: 'json' }",
+                vec!["data"],
+            ),
+            ("export { value } from 'pkg'", vec![]),
+        ] {
+            assert_eq!(extract_import_names(source), expected, "{source}");
+        }
     }
 }
