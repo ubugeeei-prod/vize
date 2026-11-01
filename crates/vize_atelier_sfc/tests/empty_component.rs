@@ -1,3 +1,9 @@
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "whole original-source compiler diagnostics and module regression evidence"
+)]
+
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
