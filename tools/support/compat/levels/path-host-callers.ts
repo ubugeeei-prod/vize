@@ -79,4 +79,5 @@ export const pathHostCallers: Record<string, readonly [number, number, number, n
   "crates/vize_maestro/src/server/state/workspace_folders.rs": [0, 0, 0, 1],
   "crates/vize_maestro/src/server/state/workspace_project_files.rs": [2, 0, 0, 0],
   "crates/vize_maestro/src/server/state/workspace_vue_files.rs": [4, 0, 0, 0],
+  "crates/vize_patina/src/linter/corsa_session/probe/signature_owner_tests.rs": [0, 1, 0, 0],
 };

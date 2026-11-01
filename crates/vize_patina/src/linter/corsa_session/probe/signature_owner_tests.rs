@@ -158,7 +158,7 @@ async fn inspect(session: &ProjectSession, file: &str, position: u32) -> Value {
 
 fn observe(runtime: &Path, case: &Case, imported: bool) -> Value {
     let owner = tempfile::tempdir().unwrap();
-    let root = vize_l0::path::canonicalize_non_verbatim(owner.path());
+    let root = vize_carton::path::canonicalize_non_verbatim(owner.path());
     fs::write(root.join("package.json"), fixture!("package.json.txt")).unwrap();
     fs::write(root.join("tsconfig.json"), fixture!("tsconfig.json.txt")).unwrap();
     fs::write(root.join("dependency.ts"), case.source).unwrap();
@@ -179,7 +179,7 @@ fn observe(runtime: &Path, case: &Case, imported: bool) -> Value {
     let position = source[..source.find("probe =").unwrap()]
         .encode_utf16()
         .count() as u32;
-    let mode = if vize_l0::corsa_api_mode::uses_async_json_rpc_api(runtime) {
+    let mode = if vize_carton::corsa_api_mode::uses_async_json_rpc_api(runtime) {
         ApiMode::AsyncJsonRpcStdio
     } else {
         ApiMode::SyncMsgpackStdio
