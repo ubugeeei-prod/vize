@@ -95,6 +95,18 @@ pub(super) fn resolve<'a>(
     Ok(sink.occurrences)
 }
 
+pub(super) fn resolve_model<'a>(
+    input: &crate::lang::js::NativeModelInput<'a>,
+    bindings: &impl BindingLookup,
+) -> Result<Vec<Occurrence<'a>>, ResolutionError> {
+    let mut sink = Immediate {
+        bindings,
+        occurrences: Vec::new(),
+    };
+    walk::original_model(input, &mut sink)?;
+    Ok(sink.occurrences)
+}
+
 struct Immediate<'a, 'b, B> {
     bindings: &'b B,
     occurrences: Vec<Occurrence<'a>>,

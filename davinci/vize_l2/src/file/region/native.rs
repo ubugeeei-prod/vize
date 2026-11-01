@@ -21,6 +21,7 @@ mod for_head;
 mod for_tests;
 mod handler;
 mod interpolation;
+mod model;
 mod pair;
 mod text_value;
 mod visibility;

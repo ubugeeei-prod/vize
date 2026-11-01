@@ -113,6 +113,9 @@ impl<'a> NativeSelectedSetupSfcDomCompilation<'a> {
 /// Else may own another Element with the same bounded body shape. Either paired
 /// branch may also combine one original literal Text and one bare primitive
 /// setup interpolation in their authored order.
+/// One original root input may bind a bare Model Identifier to a genuine direct
+/// mutable setup declaration with primitive initial value. Its same-File Model
+/// record grants the distinct read/write receipt; ordinary reads remain read-only.
 /// Imports, wider TS, compound reads, outer handler accesses and
 /// nested/mixed-body For families remain
 /// precise lower/target refusals with no partial module.

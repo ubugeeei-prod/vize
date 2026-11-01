@@ -20,6 +20,7 @@ mod dependencies;
 mod file;
 mod for_head;
 mod handler;
+mod model;
 use super::vue::policy::FileReads;
 
 pub(in crate::decision) struct DomBuilder<'facts, 'owner, 'arena, F, R> {

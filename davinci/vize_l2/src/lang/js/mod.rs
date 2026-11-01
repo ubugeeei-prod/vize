@@ -1,6 +1,8 @@
 //! Shared JS/TS semantic production over actual retained language syntax.
 
 mod conditional;
+mod model;
+pub use model::{NativeModelInput, NativeModelInputError};
 pub(crate) mod file;
 pub use conditional::{NativeConditionalInput, NativeConditionalInputError};
 mod for_head;

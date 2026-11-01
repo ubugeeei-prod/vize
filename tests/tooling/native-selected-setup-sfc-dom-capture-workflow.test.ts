@@ -62,6 +62,19 @@ test("actual selected setup consumers require source-built whole-module runtime 
     "tests/tooling/native-original-root-if-else-composite-sfc-dom-reference.test.ts",
     "tests/tooling/support/native-original-root-if-else-composite-sfc-dom-runtime.ts",
     "tests/tooling/support/native-original-root-if-else-composite-sfc-dom-primary.ts",
+    "davinci/vize_l1/src/markup/native/operand/model.rs",
+    "davinci/vize_l1/src/markup/native/operand/model/head.rs",
+    "davinci/vize_l1/src/markup/native/operand/model/tests.rs",
+    "davinci/vize_l2/src/lang/js/model.rs",
+    "davinci/vize_l2/src/artifact/builder/binding/model.rs",
+    "davinci/vize_l2/src/file/region/native/model.rs",
+    "davinci/vize_l3/src/decision/dom/build/model.rs",
+    "davinci/vize_l4/src/targets/dom/model.rs",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_inputs_vue_3_5_35.json",
+    "tests/tooling/native-original-input-model-sfc-dom-reference.test.ts",
+    "tests/tooling/support/native-original-input-model-sfc-dom-environment.ts",
+    "tests/tooling/support/native-original-input-model-sfc-dom-primary.ts",
+    "tests/tooling/support/native-original-input-model-sfc-dom-runtime.ts",
     "davinci/vize_l3/src/decision/dom/build/for_head/value.rs",
   ])
     assert(nativeSetupCaptureRequired([path]), path);
@@ -205,6 +218,19 @@ test("actual selected setup consumers require source-built whole-module runtime 
     );
   assert.match(action, /native-original-root-if-else-composite-sfc-dom-primary\.\*\.json/);
   assert.match(action, /native-original-root-if-else-composite-sfc-dom-runtime\.\*\.json/);
+  assert.match(action, /VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_REQUIRE_CAPTURE: "1"/);
+  assert.match(
+    action,
+    /original_input_model::fourteen_whole_original_input_model_components_and_raw_maps_are_captured -- --exact --nocapture/,
+  );
+  for (const mode of ["development", "production"])
+    assert(
+      action.includes(
+        `NODE_ENV=${mode} vp node --test tests/tooling/native-original-input-model-sfc-dom-reference.test.ts`,
+      ),
+    );
+  assert.match(action, /native-original-input-model-sfc-dom-primary\.\*\.json/);
+  assert.match(action, /native-original-input-model-sfc-dom-runtime\.\*\.json/);
   assert.doesNotMatch(action, /continue-on-error|hashFiles|existsSync|--test-name-pattern/);
 });
 
@@ -243,6 +269,19 @@ test("individual For resolver, DOM collector and writer changes keep mandatory a
     "tests/tooling/native-original-root-if-else-composite-sfc-dom-reference.test.ts",
     "tests/tooling/support/native-original-root-if-else-composite-sfc-dom-runtime.ts",
     "tests/tooling/support/native-original-root-if-else-composite-sfc-dom-primary.ts",
+    "davinci/vize_l1/src/markup/native/operand/model.rs",
+    "davinci/vize_l1/src/markup/native/operand/model/head.rs",
+    "davinci/vize_l1/src/markup/native/operand/model/tests.rs",
+    "davinci/vize_l2/src/lang/js/model.rs",
+    "davinci/vize_l2/src/artifact/builder/binding/model.rs",
+    "davinci/vize_l2/src/file/region/native/model.rs",
+    "davinci/vize_l3/src/decision/dom/build/model.rs",
+    "davinci/vize_l4/src/targets/dom/model.rs",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_inputs_vue_3_5_35.json",
+    "tests/tooling/native-original-input-model-sfc-dom-reference.test.ts",
+    "tests/tooling/support/native-original-input-model-sfc-dom-environment.ts",
+    "tests/tooling/support/native-original-input-model-sfc-dom-primary.ts",
+    "tests/tooling/support/native-original-input-model-sfc-dom-runtime.ts",
     "davinci/vize_l4/src/expr.rs",
     "davinci/vize_l4/src/expr/vue.rs",
   ]) {
