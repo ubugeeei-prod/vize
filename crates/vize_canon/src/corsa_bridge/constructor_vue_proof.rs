@@ -59,10 +59,20 @@ pub(crate) struct NativeSource {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(tag = "state", content = "value", rename_all = "camelCase")]
+enum SignatureTypeParametersRaw {
+    NotRequested,
+    Requested,
+    Received(Value),
+}
+
+#[derive(Debug, Serialize)]
 pub(crate) struct SignatureReturn {
     signature: SignatureResponse,
     returned: Option<TypeResponse>,
     symbol: Option<SymbolResponse>,
+    type_parameters_raw: SignatureTypeParametersRaw,
+    type_parameters: Option<Vec<TypeResponse>>,
 }
 
 #[derive(Debug, Serialize)]
@@ -292,4 +302,19 @@ fn retain_signatures(
     let signatures: Vec<SignatureResponse> = serde_json::from_value(raw)?;
     data.construct_signatures = Some(signatures.clone());
     Ok(signatures)
+}
+
+fn retain_signature_type_parameters(
+    record: &mut SignatureReturn,
+    response: corsa::Result<Value>,
+) -> corsa::Result<()> {
+    let raw = response?;
+    // A native null is missing data, not the SDK wrapper's normalized [].
+    // Keep the complete value even when the local typed decode fails.
+    record.type_parameters_raw = SignatureTypeParametersRaw::Received(raw.clone());
+    record.type_parameters = None;
+    if !raw.is_null() {
+        record.type_parameters = Some(serde_json::from_value(raw)?);
+    }
+    Ok(())
 }
