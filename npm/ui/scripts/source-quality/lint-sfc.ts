@@ -104,19 +104,50 @@ export function formatSfcLintResults(results: readonly LintedFile[]): string {
 
 const shardVariable = "VIZE_UI_SFC_LINT_SHARD";
 
+/**
+ * Retain exactly Node's already-captured UTF8 stderr, including unknown text.
+ * Bytes before Node's UTF8 decoding are unavailable; do not change encoding or
+ * maxBuffer to pretend otherwise. Observation cannot replace a child outcome.
+ */
+export async function retainCapturedWorkerStderr<T>(
+  operation: Promise<T>,
+  retain: (value: string) => void = (value) => {
+    process.stderr.write(value);
+  },
+): Promise<T> {
+  let result: T;
+  try {
+    result = await operation;
+  } catch (error) {
+    forwardCapturedStderr(error, retain);
+    throw error;
+  }
+  forwardCapturedStderr(result, retain);
+  return result;
+}
+
+function forwardCapturedStderr(value: unknown, retain: (value: string) => void): void {
+  try {
+    if (typeof value === "object" && value !== null && "stderr" in value) {
+      const captured = value.stderr;
+      if (typeof captured === "string") retain(captured);
+    }
+  } catch {
+    // A missing/hostile field or failed diagnostic sink is not a child failure.
+  }
+}
+
 // Each file's type-aware lint is synchronous and mostly waits on Corsa, so the
 // CLI re-runs its own script over disjoint shards and merges them in path order.
 async function lintInShards(): Promise<readonly LintedFile[]> {
   const total = Math.min(8, availableParallelism());
   const shards = await Promise.all(
     Array.from({ length: total }, async (_, index) => {
-      const { stdout } = await promisify(execFile)(
-        process.execPath,
-        [...process.execArgv, ...process.argv.slice(1)],
-        {
+      const { stdout } = await retainCapturedWorkerStderr(
+        promisify(execFile)(process.execPath, [...process.execArgv, ...process.argv.slice(1)], {
           env: { ...process.env, [shardVariable]: `${index}/${total}` },
           maxBuffer: 256 * 1024 * 1024,
-        },
+        }),
       );
       return JSON.parse(stdout) as LintedFile[];
     }),

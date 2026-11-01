@@ -19,3 +19,9 @@ pub(super) fn compact_error(prefix: &str, detail: &str) -> String {
     }
     message
 }
+
+/// The resolver's selected path is context, not proof of a running image/PID.
+pub(super) fn initialization_error(executable: &Path, detail: &str) -> String {
+    let cause = compact_error("Failed to start corsa type-aware session", detail);
+    vize_l0::cstr!("{cause} [resolved executable: {}]", executable.display())
+}

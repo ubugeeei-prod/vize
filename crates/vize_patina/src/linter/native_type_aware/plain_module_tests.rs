@@ -119,7 +119,8 @@ fn plain_typescript_reports_a_floating_promise() {
     };
     assert_eq!(
         starts(&result, RULE_NO_FLOATING_PROMISES),
-        vec![call as u32]
+        vec![call as u32],
+        "{result:#?}"
     );
     assert_eq!(
         count(
