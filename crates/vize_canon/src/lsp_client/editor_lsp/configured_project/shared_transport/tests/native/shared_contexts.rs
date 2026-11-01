@@ -219,3 +219,5 @@ fn clean() -> Value {
 mod tests;
 
 mod production;
+
+mod attachments;

@@ -18,6 +18,10 @@ on:
         description: Add the private 7.1 two-client versus one-client BCCB resource discriminator
         type: boolean
         default: false
+      api_attachment_probe:
+        description: Probe two actual API attachments on one editor, retaining readers until final reap
+        type: boolean
+        default: false
 permissions: { contents: read }
 concurrency:
   group: native-beta-dto-${{ github.event.pull_request.number || github.ref }}
@@ -88,6 +92,25 @@ jobs:
       - name: Probe two configs on one actual native editor owner
         if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && (inputs.shared_context_probe || inputs.shared_context_resource_probe) && matrix.role == 'after' }}
         run: node tests/tooling/support/native-beta-dto/shared-contexts-run.ts
+      - name: Probe separate API attachments with retained reader owners
+        if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.api_attachment_probe && matrix.role == 'after' }}
+        env:
+          VIZE_NATIVE_API_ATTACHMENT_PROBE: "1"
+        run: node tests/tooling/support/native-beta-dto/shared-contexts-run.ts
+      - name: Retain the finite attachment packets separately from syscall archives
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.api_attachment_probe && matrix.role == 'after' }}
+        with:
+          name: native-api-attachments-${{ matrix.sdk.version }}-${{ env.HEAD_SHA }}
+          path: |
+            target/vize-tests/native-beta-dto/after-${{ matrix.sdk.version }}/api-attachments/packets/
+            target/vize-tests/native-beta-dto/after-${{ matrix.sdk.version }}/api-attachments/source.json
+            target/vize-tests/native-beta-dto/after-${{ matrix.sdk.version }}/api-attachments/execution.json
+            target/vize-tests/native-beta-dto/after-${{ matrix.sdk.version }}/api-attachments/packet-roster.json
+            target/vize-tests/native-beta-dto/after-${{ matrix.sdk.version }}/api-attachments/stdout.bin
+            target/vize-tests/native-beta-dto/after-${{ matrix.sdk.version }}/api-attachments/stderr.bin
+          if-no-files-found: error
+          retention-days: 7
       - name: Measure the same two configs with independent or combined actual clients
         if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.shared_context_resource_probe && matrix.role == 'after' && matrix.sdk.version == '7.1.0-beta' }}
         run: |
