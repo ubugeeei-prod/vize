@@ -14,7 +14,7 @@ const INPUT: &str = include_str!(concat!(
 ));
 
 struct Graph {
-    _directory: tempfile::TempDir,
+    _directory: Option<tempfile::TempDir>,
     root: PathBuf,
     importers: Vec<PathBuf>,
     sources: Vec<PathBuf>,
@@ -25,6 +25,10 @@ impl Graph {
     fn new() -> Self {
         let directory = tempfile::tempdir().unwrap();
         let root = vize_carton::path::canonicalize_non_verbatim(directory.path());
+        Self::at(root, Some(directory))
+    }
+
+    fn at(root: PathBuf, directory: Option<tempfile::TempDir>) -> Self {
         let input: serde_json::Value = serde_json::from_str(INPUT).unwrap();
         assert_eq!(
             input["id"],
@@ -114,9 +118,6 @@ impl Graph {
         reset();
         project.register_package_route_targets().unwrap();
         assert!(!project.package_shadows_initialized);
-        assert!(work().cold_calls > 0);
-        assert_eq!(work().pushed, 0);
-        assert_eq!(work().popped, 0);
         for source in &self.sources {
             assert!(project.find_by_original(source).is_some(), "{source:?}");
         }
@@ -267,6 +268,18 @@ fn snapshot(project: &VirtualProject, graph: &Graph) -> Snapshot {
 fn prepared_pnpm_cycles_keep_complete_cold_warm_rebind_and_owner_repair_state() {
     let graph = Graph::new();
     let mut project = graph.registered();
+    assert!(work().cold_calls > 0);
+    assert_eq!(work().pushed, 0);
+    assert_eq!(work().popped, 0);
+    history(&graph, &mut project, |_, _| {});
+}
+
+fn history(
+    graph: &Graph,
+    project: &mut VirtualProject,
+    mut observe: impl FnMut(&str, &VirtualProject),
+) {
+    reset();
     // Removed owners before first initialization still have explicit dirty seeds.
     let removed = project
         .package_routes_snapshot()
@@ -284,14 +297,20 @@ fn prepared_pnpm_cycles_keep_complete_cold_warm_rebind_and_owner_repair_state() 
     assert!(project.package_shadows_initialized);
     assert!(project.package_shadow_dirty_keys.is_empty());
     assert!(!project.package_shadow_files.is_empty());
-    let cold = snapshot(&project, &graph);
+    let cold = snapshot(project, graph);
+    observe("cold", project);
+    reset();
     project.finalize_package_routes().unwrap();
-    assert_eq!(snapshot(&project, &graph), cold);
+    assert_eq!(snapshot(project, graph), cold);
+    observe("warm-noop", project);
 
     // Warm rebind must retain all co-owners, full code/maps, reverse keys and aliases.
+    reset();
     project.insert_package_route_binding(removed.clone());
     project.finalize_package_routes().unwrap();
-    assert_eq!(snapshot(&project, &graph), cold);
+    assert_eq!(snapshot(project, graph), cold);
+    observe("warm-rebind", project);
+    reset();
     project
         .remove_package_route_binding(&removed.key())
         .unwrap();
@@ -309,10 +328,14 @@ fn prepared_pnpm_cycles_keep_complete_cold_warm_rebind_and_owner_repair_state() 
             .values()
             .any(|owners| !owners.is_empty())
     );
+    observe("owner-removed", project);
+    reset();
     project.insert_package_route_binding(removed);
     project.finalize_package_routes().unwrap();
-    assert_eq!(snapshot(&project, &graph), cold);
+    assert_eq!(snapshot(project, graph), cold);
+    observe("owner-repair", project);
 
+    reset();
     let bindings = project.package_routes_snapshot();
     for binding in &bindings {
         project
@@ -324,8 +347,13 @@ fn prepared_pnpm_cycles_keep_complete_cold_warm_rebind_and_owner_repair_state() 
     assert!(project.package_shadow_manifests.is_empty());
     assert!(project.package_shadow_file_owners.is_empty());
     assert!(project.package_shadow_manifest_owners.is_empty());
+    observe("all-removed", project);
+    reset();
     project.set_package_routes(bindings);
     project.register_package_route_targets().unwrap();
     project.finalize_package_routes().unwrap();
-    assert_eq!(snapshot(&project, &graph), cold);
+    assert_eq!(snapshot(project, graph), cold);
+    observe("all-repair", project);
 }
+
+mod capture;

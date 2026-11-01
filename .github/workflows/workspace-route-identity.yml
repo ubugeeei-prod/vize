@@ -1,12 +1,22 @@
 name: Workspace route identity admission
 on:
   workflow_dispatch:
+    inputs:
+      package_route_base:
+        description: Optional exact pre-deferral source for controlled package-shadow graph comparison
+        type: string
+        default: ""
   pull_request:
     paths:
       - .github/workflows/workspace-route-identity.yml
       - tools/benchmarks/scripts/workspace-route-identity-admission.ts
+      - tools/benchmarks/scripts/package-shadow-work-admission.ts
+      - tests/tooling/package-shadow-work-admission.test.ts
       - crates/vize_canon/src/batch/virtual_project/project/package_routes.rs
       - crates/vize_canon/src/batch/virtual_project/project/package_routes/identity/**
+      - crates/vize_canon/src/batch/virtual_project/workspace_aliases.rs
+      - crates/vize_canon/src/batch/virtual_project/workspace_aliases/**
+      - tests/_fixtures/differential/typechecker/cold-package-shadow-routes-11265/**
 permissions: { contents: read }
 concurrency:
   group: workspace-route-identity-${{ github.event.pull_request.number || github.ref }}
@@ -26,17 +36,21 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
       - name: Build one fresh Canon test image and run eight exact source laws
+        env:
+          PACKAGE_ROUTE_BASE: ${{ github.event.pull_request.base.sha || inputs.package_route_base }}
         shell: bash
         run: |
           set -euo pipefail
-          node tools/benchmarks/scripts/workspace-route-identity-admission.ts --source-root "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/workspace-identity"
+          arguments=()
+          if [[ -n "$PACKAGE_ROUTE_BASE" ]]; then arguments+=(--route-work-base "$PACKAGE_ROUTE_BASE"); fi
+          node tools/benchmarks/scripts/workspace-route-identity-admission.ts --source-root "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/workspace-identity" "${arguments[@]}"
       - name: Package source and test receipts
         if: always()
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/workspace-identity"
-          tar --exclude=cargo-target -czf "$RUNNER_TEMP/workspace-identity.tgz" -C "$RUNNER_TEMP" workspace-identity
+          tar --exclude=cargo-target --exclude=base-cargo-target --exclude=base-source --exclude=runtime -czf "$RUNNER_TEMP/workspace-identity.tgz" -C "$RUNNER_TEMP" workspace-identity
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

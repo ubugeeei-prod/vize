@@ -5,9 +5,14 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
+import { qualifyPackageShadowWork } from "./package-shadow-work-admission.ts";
 
 const { values } = parseArgs({
-  options: { "source-root": { type: "string" }, out: { type: "string" } },
+  options: {
+    "source-root": { type: "string" },
+    out: { type: "string" },
+    "route-work-base": { type: "string" },
+  },
 });
 assert.ok(values["source-root"] && values.out);
 const sourceRoot = fs.realpathSync(values["source-root"]),
@@ -198,3 +203,12 @@ const receipt = {
 };
 fs.writeFileSync(path.join(out, "acceptance.json"), JSON.stringify(receipt, null, 2) + "\n");
 assert.equal(receipt.passed, true, "all eight exact tests must each pass once with zero ignored");
+if (values["route-work-base"])
+  qualifyPackageShadowWork({
+    sourceRoot,
+    out: path.join(out, "package-shadow-work"),
+    baseSha: values["route-work-base"],
+    headExecutable: executable,
+    compilerEnvironment: env,
+    buildArgs: args,
+  });
