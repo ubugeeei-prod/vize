@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import { retainFinalCustody } from "../../tools/benchmarks/scripts/public-typechecker-11317/run.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -40,6 +41,11 @@ import {
   retain,
 } from "../../tools/benchmarks/scripts/public-typechecker-11317/execute.ts";
 
+const assertionData = (actual: unknown, expected: unknown) => (error: unknown) =>
+  error instanceof assert.AssertionError &&
+  isDeepStrictEqual(error.actual, actual) &&
+  isDeepStrictEqual(error.expected, expected);
+
 const scratch = (action: (root: string) => void) => {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "public-11317-route-")));
   try {
@@ -71,14 +77,23 @@ test("npm/npx declared entries and the actual default vize link refuse foreign r
     assert.equal(manager.length, 4);
     write(npx, "changed-after-install");
     let executes = 0;
-    assert.throws(() => {
-      assertManager(manager, npm, npx);
-      executes++;
-    });
+    assert.throws(
+      () => {
+        assertManager(manager, npm, npx);
+        executes++;
+      },
+      assertionData(
+        fileImage(npx),
+        manager.find((image) => image.path === npx),
+      ),
+    );
     assert.equal(executes, 0);
     write(npx, "npx");
     write(join(root, "foreign-npx.js"), "foreign");
-    assert.throws(() => managerImages(npm, join(root, "foreign-npx.js")));
+    assert.throws(
+      () => managerImages(npm, join(root, "foreign-npx.js")),
+      assertionData(realpathSync(join(root, "foreign-npx.js")), realpathSync(npx)),
+    );
     const cli = join(root, "node_modules/vize/bin/vize"),
       shim = join(root, "node_modules/.bin/vize");
     write(cli, "authenticated-cli");
@@ -92,10 +107,13 @@ test("npm/npx declared entries and the actual default vize link refuse foreign r
     assert.equal(before.resolved, cli);
     rmSync(shim);
     symlinkSync(join(root, "foreign-npx.js"), shim);
-    assert.throws(() => projectBin(root, cli));
+    assert.throws(
+      () => projectBin(root, cli),
+      assertionData(realpathSync(join(root, "foreign-npx.js")), realpathSync(cli)),
+    );
     rmSync(shim);
     write(shim, "foreign shell shim");
-    assert.throws(() => projectBin(root, cli));
+    assert.throws(() => projectBin(root, cli), assertionData(false, true));
   }));
 
 test("a semantic pass followed by changed installed bytes leaves every saved acceptance false", () =>
@@ -156,7 +174,7 @@ test("a semantic pass followed by changed installed bytes leaves every saved acc
     write(file, "before");
     const images = [fileImage(file)];
     write(file, "mutate");
-    assert.throws(() => assertCustody(images));
+    assert.throws(() => assertCustody(images), assertionData(fileImage(file), images[0]));
     const saved = JSON.parse(readFileSync(join(root, "semantic-assessment.json"), "utf8"));
     assert.equal(saved.publicAcceptance, false);
     assert.equal(saved.semanticMatch, true);
@@ -272,7 +290,7 @@ test("authenticated loader prerequisites execute zero probes for a local native 
     called = 0;
     const local = join(core, "vize-vitrine.linux-x64-gnu.node");
     write(local, "unshipped");
-    assert.throws(() => probeAfterNativePrerequisite(request, probe));
+    assert.throws(() => probeAfterNativePrerequisite(request, probe), assertionData(0, 1));
     assert.equal(called, 0);
     rmSync(local);
     const shadow = join(core, "native-binding");
@@ -318,7 +336,7 @@ test("exact nonquiet progress refuses extras/root/count/order and final custody 
           stderr: Buffer.from(stderr),
         },
       );
-      assert.throws(() => assessJson(packet, oracle, true));
+      assert.throws(() => assessJson(packet, oracle, true), assertionData(stderr, progress));
     }
     const beforeRoot = join(root, "before"),
       afterRoot = join(root, "after");
