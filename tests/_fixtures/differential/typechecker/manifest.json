@@ -11823,6 +11823,26 @@
       }
     },
     {
+      "id": "typechecker/regression/private-constructor-return",
+      "state": "active",
+      "targets": ["batch"],
+      "adapters": {"legacy": null, "native": null},
+      "inputs": [{
+        "path": "private-constructor-return/Props.vue.txt",
+        "sha256": "7dd7b6a44c9b5628fd8ddce0440b59181edc27788a68e0939dea7fa2408d02b6",
+        "role": "complete-sfc-generation-geometry-control"
+      }],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [{
+          "kind": "source-inspection",
+          "dialects": ["vue3-sfc", "html-template", "ts"],
+          "selector": "batch::virtual_project::private_return::edit::tests::actual_pinned_sfc_keeps_whole_output_and_projection_except_owned_return; compile-included full SFC feeds production document generation and finite proposed edit/rollback geometry controls; planned batch input only, null adapters, no native diagnostic packet or admitted transform"
+        }]
+      }
+    },
+    {
       "id": "typechecker/regression/runtime-null-prop-11252",
       "state": "active",
       "targets": ["batch"],
