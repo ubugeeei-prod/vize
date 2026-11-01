@@ -161,16 +161,24 @@ pub(super) fn format_directive_value(
             (value, indent, false)
         }
         Some(formatted) => {
-            let Some(formatted) = entities::protect_formatted_reference_data(
-                formatted,
-                value,
-                options,
-                attribute_depth,
-                name,
-            ) else {
-                let (value, indent) =
-                    reanchor_continuation_lines(value, options, Representation::Html);
-                return (value, indent, false);
+            // Without an actual printed ampersand, HTML cannot form a new
+            // reference. Keep the common path out of the rare-path call and
+            // its reference-position collection entirely.
+            let formatted = if formatted.code.contains('&') {
+                let Some(formatted) = entities::protect_formatted_reference_data(
+                    formatted,
+                    value,
+                    options,
+                    attribute_depth,
+                    name,
+                ) else {
+                    let (value, indent) =
+                        reanchor_continuation_lines(value, options, Representation::Html);
+                    return (value, indent, false);
+                };
+                formatted
+            } else {
+                formatted
             };
             let indent_multiline_value = formatted.code.contains('\n')
                 || (options.end_of_line == crate::EndOfLine::Cr && formatted.code.contains('\r'));
