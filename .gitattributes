@@ -160,3 +160,7 @@ tests/_fixtures/differential/typechecker/generation-value-import-facts/Imports.v
 tests/_fixtures/differential/typechecker/prepared-type-only-import-facts/Imports.vue.txt text eol=lf
 # Controlled route graph is hashed and consumed literally by ordinary Rust tests.
 tests/_fixtures/differential/typechecker/cold-package-shadow-routes-11265/input.json text eol=lf
+
+# Byte-pinned source of the untimed owned read-buffer observer.
+tools/benchmarks/scripts/cold-typechecker-scale-read-buffer.rs.txt text eol=lf
+tests/_fixtures/tooling/native-forward/backend.ts text eol=lf
