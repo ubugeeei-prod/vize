@@ -246,7 +246,6 @@ crates/vize_canon/src/virtual_ts/generator/global_components/tests.rs	9
 crates/vize_canon/src/virtual_ts/generator/global_components/tests/dynamic_props.rs	14
 crates/vize_canon/src/virtual_ts/generator/script_module/plain_exports/tests.rs	7
 crates/vize_canon/src/virtual_ts/interface_extends_tests.rs	1
-crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs	21
 crates/vize_canon/src/virtual_ts/mapping/tests.rs	2
 crates/vize_canon/src/virtual_ts/public_instance_guard_tests.rs	12
 crates/vize_canon/src/virtual_ts/strict_template_global_enum_tests.rs	2

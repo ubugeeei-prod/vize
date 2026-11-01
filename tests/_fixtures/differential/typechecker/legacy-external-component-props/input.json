@@ -1,0 +1,42 @@
+{
+  "schema": "vize.synthetic-legacy-external-component-props.v1",
+  "id": "typechecker/regression/legacy-external-component-props",
+  "scope": "Authored synthetic constructor declarations. Not a reproduction of an installed Vuetify or original reporter application.",
+  "files": [
+    {
+      "path": "src/External.vue",
+      "source": "<script setup lang=\"ts\">\nconst count = \"wrong\";\n</script>\n<template><TypedControl :count=\"count\" /></template>\n"
+    },
+    {
+      "path": "src/Local.vue",
+      "source": "<script setup lang=\"ts\">\nimport LocalControl from \"./control\";\nconst count = \"wrong\";\n</script>\n<template><LocalControl :count=\"count\" /></template>\n"
+    },
+    {
+      "path": "src/Valid.vue",
+      "source": "<script setup lang=\"ts\">\nimport LocalControl from \"./control\";\n</script>\n<template><TypedControl :count=\"42\" /><LocalControl :count=\"42\" /></template>\n"
+    },
+    {
+      "path": "src/Any.vue",
+      "source": "<template><AnyControl :count=\"'wrong'\" /></template>\n"
+    },
+    {
+      "path": "src/Unknown.vue",
+      "source": "<template><UnknownControl :count=\"'wrong'\" /></template>\n"
+    },
+    {
+      "path": "src/control.d.ts",
+      "source": "declare const LocalControl: { new (): { $props: { count: number } } };\nexport default LocalControl;\n"
+    }
+  ],
+  "repairedExternal": "<script setup lang=\"ts\">\nconst count = 42;\n</script>\n<template><TypedControl :count=\"count\" /></template>\n",
+  "externalDeclarations": [
+    "declare const TypedControl: { new (): { $props: { count: number } } };",
+    "declare const AnyControl: any;",
+    "declare const UnknownControl: unknown;"
+  ],
+  "externalBindings": [
+    "TypedControl",
+    "AnyControl",
+    "UnknownControl"
+  ]
+}

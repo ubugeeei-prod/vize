@@ -4,6 +4,9 @@ patches/*.patch text eol=lf
 # Byte-pinned untimed owned read-buffer observer and Node-only refusal fixture.
 tools/benchmarks/scripts/cold-typechecker-scale-read-buffer.rs.txt text eol=lf
 tests/_fixtures/tooling/native-forward/backend.ts text eol=lf
+# Exact provider source inputs from the bounded owned-buffer comparison.
+tests/_fixtures/tooling/owned-read-buffer-provider/package.json.txt text eol=lf
+tests/_fixtures/tooling/owned-read-buffer-provider/package-lock.json.txt text eol=lf
 # Diagnostic workflow custody compares complete source bytes on every host.
 tests/_fixtures/tooling/typescript-plugin-metadata-observer-11260.json -text
 # Keep the JSX packet source guard's original full input/argv/oracle fragments byte-exact.

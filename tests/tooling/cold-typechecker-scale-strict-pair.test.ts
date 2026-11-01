@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import {
@@ -235,4 +236,73 @@ test("affinity and RSS controls retain sparse CPU sets and explicit GNU-time sco
   assert.throws(() =>
     linuxPeakRss("Maximum resident set size (kbytes): 1\nMaximum resident set size (kbytes): 2\n"),
   );
+});
+
+// These exact JSON bodies are source inputs, not installed packages or images.
+test("the frozen provider survives artifact expiry without changing graph or install policy", () => {
+  const fixtures = path.join(root, "tests/_fixtures/tooling/owned-read-buffer-provider");
+  const expected = [
+    ["package.json", "bb62ff5452cbfd7866d232c6e1a78d1d7b6d82ec5f6cbf67e08aa6deff9c324e"],
+    ["package-lock.json", "9c2974672b5f5358e643276e6ec98c6084681ef609e8f25922ba4aa7adb0f0a6"],
+  ] as const;
+  const bodies = expected.map(([name, sha256]) => {
+    const body = fs.readFileSync(path.join(fixtures, name + ".txt"));
+    const verify = (bytes: Buffer) =>
+      assert.equal(createHash("sha256").update(bytes).digest("hex"), sha256);
+    verify(body);
+    assert.throws(() => verify(Buffer.concat([body, Buffer.from("\n")])));
+    return JSON.parse(body.toString()) as Record<string, unknown>;
+  });
+  const packages = bodies[1].packages as Record<string, { version: string; name?: string }>;
+  assert.equal(packages["node_modules/typescript"].version, "6.0.3");
+  assert.equal(packages["node_modules/typescript-native"].name, "typescript");
+  assert.equal(packages["node_modules/typescript-native"].version, "7.1.0-beta");
+  assert.equal(packages["node_modules/@typescript/typescript-linux-x64"].version, "7.1.0-beta");
+  assert.equal(
+    packages["node_modules/vize/node_modules/@typescript/typescript-linux-x64"].version,
+    "7.0.2",
+  );
+  const workflow = fs.readFileSync(
+    path.join(root, ".github/workflows/cold-typechecker-scale.yml"),
+    "utf8",
+  );
+  const verifyInstall = (source: string) => {
+    const job = source.slice(
+      source.indexOf("  paired-comparison:\n"),
+      source.indexOf("  profile:\n"),
+    );
+    assert(
+      !job.includes("actions/artifacts/") &&
+        !job.includes("actions: read") &&
+        !job.includes("GH_TOKEN"),
+    );
+    for (const [name, sha256] of expected) {
+      assert(
+        job.includes(
+          "cp tests/_fixtures/tooling/owned-read-buffer-provider/" +
+            name +
+            '.txt "$RUNNER_TEMP/provider/' +
+            name +
+            '"',
+        ),
+      );
+      assert(job.includes(sha256 + "  " + name));
+    }
+    assert(job.includes('[[ "$(node --version)" == v24.14.0 ]]'));
+    assert(job.includes('[[ "$(npm --version)" == 11.9.0 ]]'));
+    assert(job.includes("npm ci --ignore-scripts --no-audit --no-fund"));
+    assert(job.indexOf("sha256sum --check -") < job.indexOf("npm ci "));
+  };
+  verifyInstall(workflow);
+  for (const changed of [
+    workflow.replace(expected[1][1], "a".repeat(64)),
+    workflow.replace(
+      'package-lock.json.txt "$RUNNER_TEMP/provider/package-lock.json"',
+      'package-lock.json.txt "$RUNNER_TEMP/provider/wrong.json"',
+    ),
+    workflow.replace("npm ci --ignore-scripts", "npm ci"),
+    workflow.replace('[[ "$(npm --version)" == 11.9.0 ]]', '[[ "$(npm --version)" == 12.0.0 ]]'),
+    workflow.replace('mkdir "$RUNNER_TEMP/provider"', "gh api actions/artifacts/expired"),
+  ])
+    assert.throws(() => verifyInstall(changed));
 });

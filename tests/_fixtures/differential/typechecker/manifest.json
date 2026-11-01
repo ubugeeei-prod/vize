@@ -11837,6 +11837,40 @@
       }
     },
     {
+      "id": "typechecker/regression/legacy-external-component-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "legacy-external-component-props/input.json",
+          "sha256": "d7e9384eb53b418384c233f54cd25f4ecf365753eca6390f5e90aeb0f47d35a2",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "legacy-external-component-props/loose-controls.json",
+          "sha256": "f06c701a6e35012496de20891e5c9517db70a94325ab3f1af0db157d3adb19f2",
+          "role": "regression-control"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::legacy_external_component_props::legacy_external_component_props_preserve_typed_values_and_unknown_fallbacks; compile-included synthetic declarations and six whole batch API observations; input registration only, no installed Vuetify or native diagnostic-pack admission"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/mixed-vue-package-imports-11253",
       "state": "active",
       "targets": ["batch"],

@@ -243,6 +243,21 @@ fn is_false(value: &bool) -> bool {
     !*value
 }
 
+/// Preserve the formatter's existing fallback for widths outside its domain.
+/// Narrowing first would reinterpret a large configured width modulo 65536.
+pub(crate) fn javascript_line_width(width: u32) -> oxc_formatter_core::LineWidth {
+    use oxc_formatter_core::LineWidth;
+
+    // Apply the provider's existing domain before narrowing the integer.
+    let min: u16 = LineWidth::MIN;
+    let max: u16 = LineWidth::MAX;
+    if !(u32::from(min)..=u32::from(max)).contains(&width) {
+        return LineWidth::default();
+    }
+    // Both provider bounds are u16, so the admitted width narrows losslessly.
+    LineWidth::try_from(width as u16).unwrap_or_default()
+}
+
 fn default_print_width() -> u32 {
     100
 }
@@ -327,13 +342,20 @@ impl FormatOptions {
 
     /// Convert to `oxc_formatter::JsFormatOptions`
     pub fn to_oxc_format_options(&self) -> oxc_formatter::JsFormatOptions {
+        self.to_oxc_format_options_with_line_width(javascript_line_width(self.print_width))
+    }
+
+    pub(crate) fn to_oxc_format_options_with_line_width(
+        &self,
+        line_width: oxc_formatter_core::LineWidth,
+    ) -> oxc_formatter::JsFormatOptions {
         // Oxc 0.142 renamed FormatOptions to JsFormatOptions; shared layout types
         // live in oxc_formatter_core and are not re-exported by oxc_formatter.
         use oxc_formatter::{
             ArrowParentheses, BracketSameLine, BracketSpacing, QuoteProperties, QuoteStyle,
             Semicolons, TrailingCommas,
         };
-        use oxc_formatter_core::{IndentStyle, IndentWidth, LineEnding, LineWidth};
+        use oxc_formatter_core::{IndentStyle, IndentWidth, LineEnding};
 
         oxc_formatter::JsFormatOptions {
             indent_style: if self.use_tabs {
@@ -342,7 +364,7 @@ impl FormatOptions {
                 IndentStyle::Space
             },
             indent_width: IndentWidth::try_from(self.tab_width).unwrap_or_default(),
-            line_width: LineWidth::try_from(self.print_width as u16).unwrap_or_default(),
+            line_width,
             line_ending: match self.end_of_line {
                 EndOfLine::Lf | EndOfLine::Auto => LineEnding::Lf,
                 EndOfLine::Crlf => LineEnding::Crlf,

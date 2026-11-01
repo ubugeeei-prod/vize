@@ -1,0 +1,70 @@
+{
+  "schema": "vize.synthetic-legacy-external-loose-controls.v1",
+  "scope": "Known scalar validation may coexist with legacy unknown attributes. Callback-bearing external uses remain on the preexisting route; mixed wrong scalar is captured as a remaining limitation, not successful checking.",
+  "files": [
+    {
+      "path": "src/Partial.vue",
+      "source": "<template><PartialControl :width=\"320\" :hide-details=\"true\" chips /></template>\n"
+    },
+    {
+      "path": "src/AnyCallbacks.vue",
+      "source": "<template><AnyControl :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/UnknownCallbacks.vue",
+      "source": "<template><UnknownControl :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/KnownCallbacks.vue",
+      "source": "<template><TypedControl :rules=\"[(value) => value.length > 0]\" /></template>\n"
+    },
+    {
+      "path": "src/MixedCallbacks.vue",
+      "source": "<template><TypedControl :count=\"'wrong'\" :rules=\"[(value) => !!value]\" /></template>\n"
+    },
+    {
+      "path": "src/Shadow.vue",
+      "source": "<script setup lang=\"ts\">\nimport TypedControl from \"./shadow\";\n</script>\n<template><TypedControl :count=\"'wrong'\" /></template>\n"
+    },
+    {
+      "path": "src/shadow.d.ts",
+      "source": "declare const TypedControl: { new (): { $props: { count: number } } };\nexport default TypedControl;\n"
+    },
+    {
+      "path": "src/AnyMethods.vue",
+      "source": "<template><AnyControl :rules=\"{ format(value) { return !!value } }\" /></template>\n"
+    },
+    {
+      "path": "src/UnknownMethods.vue",
+      "source": "<template><UnknownControl :rules=\"{ format(value) { return !!value } }\" /></template>\n"
+    },
+    {
+      "path": "src/QuotedArrow.vue",
+      "source": "<template><TypedControl :count=\"'a=>b'\" /></template>\n"
+    },
+    {
+      "path": "src/RecordShadowValid.vue",
+      "source": "<script setup lang=\"ts\">\nimport type { Record } from \"./record-shadow\"; const marker: Record<string, unknown> = { blocked: true }; void marker;\n</script>\n<template><TypedControl :count=\"42\" width=\"wide\" /></template>\n"
+    },
+    {
+      "path": "src/RecordShadowWrong.vue",
+      "source": "<script setup lang=\"ts\">\nimport type { Record } from \"./record-shadow\"; const marker: Record<string, unknown> = { blocked: true }; void marker;\n</script>\n<template><TypedControl :count=\"'wrong'\" width=\"wide\" /></template>\n"
+    },
+    {
+      "path": "src/record-shadow.d.ts",
+      "source": "export type Record<K extends PropertyKey, V> = { [P in K]: V } & { blocked: true };\n"
+    }
+  ],
+  "externalDeclarations": [
+    "declare const PartialControl: { new (): { $props: { mini?: boolean } } };",
+    "declare const TypedControl: { new (): { $props: { count?: number; rules?: Array<(value: string) => boolean> } } };",
+    "declare const AnyControl: any;",
+    "declare const UnknownControl: unknown;"
+  ],
+  "externalBindings": [
+    "PartialControl",
+    "TypedControl",
+    "AnyControl",
+    "UnknownControl"
+  ]
+}
