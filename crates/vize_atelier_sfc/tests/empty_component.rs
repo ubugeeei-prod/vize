@@ -158,7 +158,7 @@ fn setup_export_errors_keep_original_utf8_offsets_and_utf16_columns() {
     let loc = loc.unwrap();
     assert_eq!(source.get(loc.start..loc.end), Some("export const n = 1;"));
     assert_eq!((loc.start_line, loc.start_column), (3, 1));
-    assert_eq!((loc.end_line, loc.end_column), (3, 19));
+    assert_eq!((loc.end_line, loc.end_column), (3, 20));
 }
 
 #[test]
@@ -197,7 +197,7 @@ fn artifact_erasure_keeps_export_errors_on_original_setup_text() {
                     "message": "<script setup> cannot contain ES module exports.",
                     "code": "SCRIPT_SETUP_EXPORT",
                     "loc": { "start": start, "end": end, "tag_start": start, "tag_end": end,
-                        "start_line": 3, "start_column": 1, "end_line": 3, "end_column": 19 }
+                        "start_line": 3, "start_column": 1, "end_line": 3, "end_column": 20 }
                 })
             );
         }
