@@ -323,6 +323,97 @@ fn options_api_lexical_members_do_not_gain_public_instance_reads() {
     );
 }
 
+/// A member the analyzer cannot list — contributed by an imported `mixins:`
+/// entry or an `extends:` base — is declared from the authored instance's own
+/// type, so the authored expression is checked against it as `vue-tsc` checks
+/// `__VLS_ctx.<name>`. A name the instance lacks keeps the `any` fallback and
+/// its single mapped instance read.
+#[test]
+fn options_api_inherited_members_are_declared_from_the_authored_instance() {
+    let script = r#"import { defineComponent } from 'vue'
+import { base } from './base'
+import { shared } from './shared'
+export default defineComponent({
+  extends: base,
+  mixins: [shared],
+  data() { return { count: 1 }; },
+});
+"#;
+    let template = "<p>{{ count }}:{{ fromBase.toFixed() }}:{{ fromMixin.toFixed() }}:{{ fromMixin }}:{{ missing }}</p>";
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
+    analyzer.analyze_script_plain(script);
+    analyzer.analyze_template(&root);
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &analyzer.finish(),
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions::default(),
+    );
+
+    assert_eq!(
+        output
+            .code
+            .matches("  type $AuthoredInstanceMember<__K extends string> = __K extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[__K] : any;\n")
+            .count(),
+        1,
+        "the authored-instance member helper is declared once:\n{}",
+        output.code
+    );
+    assert_eq!(
+        output
+            .code
+            .matches("$OptionsBinding<typeof __default__, \"count\"")
+            .count(),
+        1,
+        "the component's own data member keeps its lexical binding:\n{}",
+        output.code
+    );
+    for name in ["fromBase", "fromMixin", "missing"] {
+        assert_eq!(
+            output
+                .code
+                .matches(&format!(
+                    "  var {name}!: $AuthoredInstanceMember<\"{name}\">; void ({name});\n"
+                ))
+                .count(),
+            1,
+            "inherited or unknown member {name} is declared once from the authored instance:\n{}",
+            output.code
+        );
+        assert_eq!(
+            output
+                .code
+                .matches(&format!("void (__vize_template_instance.{name});"))
+                .count(),
+            1,
+            "inherited or unknown member {name} keeps one mapped instance read:\n{}",
+            output.code
+        );
+        assert_eq!(
+            output
+                .code
+                .matches(&format!("var {name}: any = undefined;"))
+                .count(),
+            0,
+            "inherited or unknown member {name} must not be declared as a bare any:\n{}",
+            output.code
+        );
+    }
+    assert_eq!(
+        output
+            .code
+            .matches("  void (fromMixin.toFixed()); // Interpolation\n")
+            .count(),
+        1,
+        "the authored expression is checked against the declared member:\n{}",
+        output.code
+    );
+}
+
 /// Disabling Options API removes its generated declarations, so authored
 /// member reads must remain free names (TS2304). They must not be converted to
 /// public-instance reads (TS2339), while a truly unknown name still uses the

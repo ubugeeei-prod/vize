@@ -670,9 +670,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         summary,
                         options,
                         script_content,
-                        &options_script,
+                        (
+                            &options_script,
+                            declared_default_alias && !legacy_vue2 && !has_script_setup,
+                        ),
                         &mut mappings,
-                        &script_source_offset
+                        &script_source_offset,
                     ))
                 );
             }

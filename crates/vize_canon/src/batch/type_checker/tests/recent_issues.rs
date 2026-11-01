@@ -50,6 +50,7 @@ mod options_api_declaration_instance;
 mod options_api_global_augmentation;
 mod options_api_import_shadow;
 mod options_api_inherited_members;
+mod options_api_inherited_template_members;
 mod package_local_vue_identity;
 mod pascal_case_prop_names;
 mod plain_options_global_augmentation;

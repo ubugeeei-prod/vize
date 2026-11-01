@@ -1,0 +1,9 @@
+import { defineComponent } from 'vue'
+
+export const base = defineComponent({
+  computed: {
+    fromBase(): number {
+      return 1
+    },
+  },
+})
