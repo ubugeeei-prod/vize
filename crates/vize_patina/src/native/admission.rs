@@ -13,6 +13,7 @@ use super::{
 };
 
 mod select;
+mod textarea;
 
 pub(in crate::native) fn component(component: &NativeComponent<'_>) -> Result<(), Refusal> {
     carrier(component, 0)?;
@@ -160,15 +161,28 @@ fn walk<'o, 'a>(
                         return Err(Refusal::UnsupportedAttribute { span });
                     }
                     let tag = element.surface().tag();
-                    let child_parent =
-                        select::check(owner_profile, parent, &element, &attributes, opening)?;
+                    let child_parent = if textarea::check(
+                        owner_profile,
+                        parent,
+                        &element,
+                        &attributes,
+                        opening,
+                    )? {
+                        select::Parent::Textarea
+                    } else {
+                        select::check(owner_profile, parent, &element, &attributes, opening)?
+                    };
                     if receipt.kind() != NativeLintTagKind::Element
                         || receipt.header_is_literal()
                         || element.surface().open.is_verbatim()
                         || !is_html_tag(tag)
                         || is_svg_tag(tag)
                         || is_math_ml_tag(tag)
-                        || (excluded_owner(tag) && child_parent != select::Parent::Option)
+                        || (excluded_owner(tag)
+                            && !matches!(
+                                child_parent,
+                                select::Parent::Option | select::Parent::Textarea
+                            ))
                     {
                         return Err(Refusal::UnsupportedContext { span: opening });
                     }
@@ -192,7 +206,10 @@ fn walk<'o, 'a>(
                     }
                     let children = element.children();
                     let mut view = NativeTemplateElement::new(element, attributes);
-                    if child_parent == select::Parent::Select {
+                    if matches!(
+                        child_parent,
+                        select::Parent::Select | select::Parent::Textarea
+                    ) {
                         // Only this bounded owner is postorder: its complete
                         // original children must pass before proof/reporting.
                         walk(
@@ -204,7 +221,11 @@ fn walk<'o, 'a>(
                             child_parent,
                             visit_element,
                         )?;
-                        view.admit_closed_select();
+                        if child_parent == select::Parent::Select {
+                            view.admit_closed_select();
+                        } else {
+                            view.admit_closed_textarea();
+                        }
                         return visit_element(&view);
                     }
                     visit_element(&view)?;
@@ -227,6 +248,7 @@ fn walk<'o, 'a>(
                     // Text custody alone cannot certify the legacy parser result.
                     if token.text.contains("{{")
                         || token.text.contains('<')
+                        || (parent == select::Parent::Textarea && token.text.contains('&'))
                         || ((text_profile == NativeTemplateTextProfile::WhitespaceOnly
                             || parent == select::Parent::Select)
                             && !token

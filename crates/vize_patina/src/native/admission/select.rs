@@ -10,6 +10,7 @@ pub(super) enum Parent {
     Ordinary,
     Select,
     Option,
+    Textarea,
 }
 
 pub(super) fn check(
@@ -21,10 +22,12 @@ pub(super) fn check(
 ) -> Result<Parent, Refusal> {
     let tag = element.surface().tag();
     let refuse = || Refusal::UnsupportedContext { span: opening };
-    if parent == Parent::Option || (parent == Parent::Select && tag != "option") {
+    if matches!(parent, Parent::Option | Parent::Textarea)
+        || (parent == Parent::Select && tag != "option")
+    {
         return Err(refuse());
     }
-    if profile != NativeTemplateOwnerProfile::ClosedSelect {
+    if !profile.allows_select() {
         return Ok(Parent::Ordinary);
     }
     if tag != "select" && tag != "option" {

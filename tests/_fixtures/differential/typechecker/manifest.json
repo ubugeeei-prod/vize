@@ -11401,40 +11401,32 @@
       ]
     },
     {
-      "id": "typechecker/ambient-template-ref-10980",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "ambient-template-ref-10980/Probe.vue.txt",
-          "sha256": "158a66cf752f4ba13fe3715e5a71b01a4d5f9fce9157468fb20086fd427c58b3",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
-          }
-        ]
-      }
-    },
+              "id": "typechecker/ambient-template-ref-10980",
+              "state": "active",
+              "targets": ["batch"],
+              "inputs": [
+                {
+                  "path": "ambient-template-ref-10980/Probe.vue.txt",
+                  "sha256": "158a66cf752f4ba13fe3715e5a71b01a4d5f9fce9157468fb20086fd427c58b3",
+                  "role": "regression-reproduction"
+                }
+              ],
+              "dialectCoverage": {
+                "state": "source-inspected",
+                "registryRef": null,
+                "evidence": [
+                  {
+                    "kind": "source-inspection",
+                    "dialects": ["vue3-sfc", "html-template", "ts"],
+                    "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+                  }
+                ]
+              }
+            },
     {
       "id": "typechecker/ambient-template-ref-10980/authored-global-ownership",
       "state": "active",
-      "targets": [
-        "batch"
-      ],
+      "targets": ["batch"],
       "test": "content_mapper_tsgo_cli::support::ambient_template_ref::ambient_template_ref_retains_native_cli_and_mapper_errors_through_repairs",
       "sourceRevision": "630f9c060e8e879a25402de099ed3931b6e42468",
       "inputs": [
@@ -11460,11 +11452,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "ambient_template_ref_retains_native_cli_and_mapper_errors_through_repairs; original ambient contract, typed repair, restore, missing global and real Vue import on CLI and mapper"
           }
         ]
@@ -11586,34 +11574,28 @@
       }
     },
     {
-      "id": "typechecker/expect-sibling-interpolation-10871",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "expect-sibling-interpolation-10871/Probe.vue.txt",
-          "sha256": "a57f563535d4e9e049121ad11abdf26cd4fee2a9802cf686711ba8c9ffcebb00",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          "id": "typechecker/expect-sibling-interpolation-10871",
+          "state": "active",
+          "targets": ["batch"],
+          "inputs": [
+            {
+              "path": "expect-sibling-interpolation-10871/Probe.vue.txt",
+              "sha256": "a57f563535d4e9e049121ad11abdf26cd4fee2a9802cf686711ba8c9ffcebb00",
+              "role": "regression-reproduction"
+            }
+          ],
+          "dialectCoverage": {
+            "state": "source-inspected",
+            "registryRef": null,
+            "evidence": [
+              {
+                "kind": "source-inspection",
+                "dialects": ["vue3-sfc", "html-template", "ts"],
+                "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+              }
+            ]
           }
-        ]
-      }
-    },
+        },
     {
       "id": "typechecker/jsx-child-expression-control-6890",
       "state": "active",
@@ -11666,34 +11648,28 @@
       }
     },
     {
-      "id": "typechecker/options-api-lexical-members-11069",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "options-api-lexical-members-11069/Options.vue.txt",
-          "sha256": "7831b78440cd5f971abbbd2a980ef94fb188742e1993437bdfdf3128a40891e8",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          "id": "typechecker/options-api-lexical-members-11069",
+          "state": "active",
+          "targets": ["batch"],
+          "inputs": [
+            {
+              "path": "options-api-lexical-members-11069/Options.vue.txt",
+              "sha256": "7831b78440cd5f971abbbd2a980ef94fb188742e1993437bdfdf3128a40891e8",
+              "role": "regression-reproduction"
+            }
+          ],
+          "dialectCoverage": {
+            "state": "source-inspected",
+            "registryRef": null,
+            "evidence": [
+              {
+                "kind": "source-inspection",
+                "dialects": ["vue3-sfc", "html-template", "ts"],
+                "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+              }
+            ]
           }
-        ]
-      }
-    },
+        },
     {
       "id": "typechecker/project-session-retirement-11168/crlf-both-repaired",
       "state": "active",
@@ -11726,6 +11702,25 @@
             "selector": "content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs; newly pinned original CRLF repaired reference input, not a new semantic program"
           }
         ]
+      }
+    },
+    {
+      "id": "typechecker/regression/mixed-vue-package-imports-11253",
+      "state": "active",
+      "targets": ["batch"],
+      "inputs": [{
+        "path": "mixed-vue-package-imports-11253/input.json",
+        "sha256": "41f272617bd60acc5c737f4d72327edcc0e85e53ca161ef076ca8509072c1ed6",
+        "role": "regression-reproduction"
+      }],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [{
+          "kind": "source-inspection",
+          "dialects": ["vue3-sfc", "html-template", "ts"],
+          "selector": "check_mixed_vue_package_imports_cli::check_json_mixed_vue_and_private_imports_keep_every_authored_diagnostic; compile-included original five files and package imports scope; input registration only, no diagnostic pack or native admission"
+        }]
       }
     },
     {
@@ -11791,9 +11786,7 @@
     {
       "id": "typechecker/router-mapper-capability-10579/automatic-route-props",
       "state": "active",
-      "targets": [
-        "batch"
-      ],
+      "targets": ["batch"],
       "test": "tests/tooling/router-preview-automatic.ts",
       "sourceRevision": "c488c1b2d14acc1818f768ee976634e36c5db0bf",
       "inputs": [
@@ -11809,11 +11802,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "tests/tooling/router-preview-automatic.ts; newly pinned original automatic64 source physically supplied to source native check and independent vue-tsc; not a new semantic program or native mapper authority"
           }
         ]
@@ -11822,9 +11811,7 @@
     {
       "id": "typechecker/runtime/project-native-runtime-authority-10694",
       "state": "active",
-      "targets": [
-        "batch"
-      ],
+      "targets": ["batch"],
       "inputs": [
         {
           "path": "project-native-runtime-authority-10694/App.vue.txt",
@@ -11843,11 +11830,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -11856,9 +11839,7 @@
     {
       "id": "typechecker/shorthand-double-diagnostic-10920",
       "state": "active",
-      "targets": [
-        "batch"
-      ],
+      "targets": ["batch"],
       "inputs": [
         {
           "path": "shorthand-double-diagnostic-10920/Probe.vue.txt",
@@ -11872,45 +11853,35 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
       }
     },
     {
-      "id": "typechecker/slot-type-message-10902",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "slot-type-message-10902/Probe.vue.txt",
-          "sha256": "eae7608fc9a4d1a5ead540a8b57d9b5dc1c3d280b9965b523453067296833546",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          "id": "typechecker/slot-type-message-10902",
+          "state": "active",
+          "targets": ["batch"],
+          "inputs": [
+            {
+              "path": "slot-type-message-10902/Probe.vue.txt",
+              "sha256": "eae7608fc9a4d1a5ead540a8b57d9b5dc1c3d280b9965b523453067296833546",
+              "role": "regression-reproduction"
+            }
+          ],
+          "dialectCoverage": {
+            "state": "source-inspected",
+            "registryRef": null,
+            "evidence": [
+              {
+                "kind": "source-inspection",
+                "dialects": ["vue3-sfc", "html-template", "ts"],
+                "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+              }
+            ]
           }
-        ]
-      }
-    },
+        },
     {
       "id": "typechecker/template-callback-listener-11023/parent-beside-quit",
       "state": "active",
