@@ -2,7 +2,7 @@
 
 use super::{SetupBindingAnchors, emit_setup_binding_anchors};
 use crate::virtual_ts::generator::imports::{
-    IdentifierUsage, collect_identifier_usage, collect_value_import_names, import_parse_count,
+    IdentifierUsage, ImportNames, collect_identifier_usage, import_parse_count,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -36,7 +36,7 @@ fn pinned_import_facts_keep_whole_sets_and_both_anchor_modes() {
     let script = descriptor.script_setup.as_ref().unwrap().content.as_ref();
     let (summary, usage) = analyze(script);
     let before = import_parse_count(false);
-    let imports = collect_value_import_names(&summary, Some(script), &usage);
+    let imports = ImportNames::collect(&summary, Some(script), &usage).values;
     assert_eq!(import_parse_count(false) - before, 4);
     assert_eq!(
         imports
@@ -94,13 +94,14 @@ fn pinned_import_facts_keep_whole_sets_and_both_anchor_modes() {
 fn import_facts_own_their_generation_and_preserve_the_binding_filter() {
     let first_script = "import { value as first } from 'one'; const local = 1;";
     let (first_summary, first_usage) = analyze(first_script);
-    let first = collect_value_import_names(&first_summary, Some(first_script), &first_usage);
+    let first = ImportNames::collect(&first_summary, Some(first_script), &first_usage).values;
     let (second_summary, second_usage) = analyze("import { second } from 'two'; second();");
-    let second = collect_value_import_names(
+    let second = ImportNames::collect(
         &second_summary,
         Some("import { second } from 'two'; second();"),
         &second_usage,
-    );
+    )
+    .values;
     assert_eq!(first.without_script_value_use, names(&["first"]));
     assert_eq!(second.without_script_value_use, names(&[]));
     assert_eq!(
@@ -134,13 +135,13 @@ fn import_facts_own_their_generation_and_preserve_the_binding_filter() {
         "\n  // Reference setup bindings used by template generation\n  void (null as unknown as keyof typeof first); void local;\n"
     );
 
-    let empty = collect_value_import_names(&first_summary, None, &first_usage);
+    let empty = ImportNames::collect(&first_summary, None, &first_usage).values;
     assert_eq!(empty.bindings.len(), 0);
     assert_eq!(empty.without_script_value_use, names(&[]));
     let escaped_script = r"import { value as \u006cocal } from 'pkg';";
     let (escaped_summary, escaped_usage) = analyze(escaped_script);
     let escaped =
-        collect_value_import_names(&escaped_summary, Some(escaped_script), &escaped_usage);
+        ImportNames::collect(&escaped_summary, Some(escaped_script), &escaped_usage).values;
     // The existing collector filters raw authored spelling against decoded binding names.
     assert_eq!(escaped.bindings.len(), 0);
     assert_eq!(escaped.without_script_value_use, names(&[]));

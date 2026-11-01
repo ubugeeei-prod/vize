@@ -268,7 +268,7 @@ mod tests {
         let summary = analyzer.finish();
         let usage = super::super::imports::collect_identifier_usage(&parsed.program);
         let imports =
-            super::super::imports::collect_value_import_names(&summary, Some(script), &usage);
+            super::super::imports::ImportNames::collect(&summary, Some(script), &usage).values;
         let mut anchors = String::default();
         super::emit_setup_binding_anchors(
             &mut anchors,
@@ -324,7 +324,7 @@ const state = ref(State.Idle);"#;
         let summary = analyzer.finish();
         let usage = super::super::imports::collect_identifier_usage(&parsed.program);
         let imports =
-            super::super::imports::collect_value_import_names(&summary, Some(script), &usage);
+            super::super::imports::ImportNames::collect(&summary, Some(script), &usage).values;
         let mut anchors = String::default();
         super::emit_setup_binding_anchors(
             &mut anchors,
