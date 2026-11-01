@@ -5,7 +5,10 @@ mod bindings;
 mod closure_scopes;
 mod duplicate_listeners;
 mod dynamic_reference;
-pub(super) use bindings::{collect_checkable_usages, component_usage_has_checkable_binding};
+pub(super) use bindings::{
+    collect_checkable_usages, component_name_matches_external_template_binding,
+    component_usage_has_checkable_binding, has_script_binding,
+};
 use duplicate_listeners::append_duplicate_listener_checks;
 pub(super) use dynamic_reference::named_dynamic_reference;
 
@@ -263,9 +266,18 @@ fn generate_usage_declarations(
     usage: &ComponentUsage,
 ) {
     let summary = ctx.summary;
+    let named_dynamic = named_dynamic_reference(ctx, usage);
+    // Among admitted legacy usages, a non-script/non-dynamic reference is an
+    // explicit external binding. Only this validation view keeps loose attrs;
+    // it does not widen the actual component or its known property values.
+    let loose_legacy_attrs = ctx.legacy_vue2
+        && named_dynamic.is_none()
+        && crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+            !bindings::has_script_binding(bindings, usage)
+        });
     let component_ref = ctx.explicit_generics.usage_reference(
         usage.start,
-        named_dynamic_reference(ctx, usage).unwrap_or_else(|| {
+        named_dynamic.unwrap_or_else(|| {
             component_binding_reference(
                 summary,
                 ctx.options,
@@ -324,6 +336,7 @@ fn generate_usage_declarations(
         (
             ctx.relaxed_required_usage_starts.contains(&usage.start),
             ctx.hoist_shared_preamble,
+            loose_legacy_attrs,
         ),
         (
             shared
