@@ -1,0 +1,26 @@
+{
+  "schema": "vize.package-import-redirects",
+  "id": "typechecker/regression/package-import-redirects-11317",
+  "files": [
+    {
+      "path": "package.json",
+      "source": "{\n  \"name\": \"vize-repro\",\n  \"version\": \"0.0.0\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"imports\": {\n    \"#src/*\": \"./src/*.ts\"\n  },\n  \"devDependencies\": {\n    \"typescript-native\": \"npm:typescript@7.0.2\",\n    \"vize\": \"0.632.0\",\n    \"vue\": \"3.5.44\"\n  }\n}\n"
+    },
+    {
+      "path": "tsconfig.json",
+      "source": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true\n  },\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n"
+    },
+    {
+      "path": "src/main.ts",
+      "source": "import { value } from \"#src/plain\";\nexport const v2 = value;\n"
+    },
+    {
+      "path": "src/plain.ts",
+      "source": "import Other from \"./Other.vue\";\n\nexport const value = 1;\n\nconst probe: number = \"not a number\";\nexport { Other, probe };\n"
+    },
+    {
+      "path": "src/Other.vue",
+      "source": "<template>\n  <p>other</p>\n</template>\n"
+    }
+  ]
+}
