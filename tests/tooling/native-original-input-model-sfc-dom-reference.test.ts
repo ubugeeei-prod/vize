@@ -108,7 +108,7 @@ test("original Model capture keeps all fourteen source/mode/owner/attempt rows",
       fixtures.map((row) => ({ id: row.id, mode: entryMode, source: row.source })),
     );
     for (const field of ["fixtures", "custody", "attempts"]) {
-      const entries = captured[field];
+      const entries: unknown = captured[field];
       assert(Array.isArray(entries));
       assert.deepEqual(
         entries.map((entry: unknown) => {
@@ -145,7 +145,7 @@ test("original Model capture keeps all fourteen source/mode/owner/attempt rows",
       assert.equal(entry.mapped.code, entry.plain.code);
       assert.equal(entry.plain.nativeMapRaw, null);
       assert.equal(entry.plain.nativeMap, null);
-      const actual = captured.fixtures.find((candidate: unknown) => {
+      const actual: unknown = captured.fixtures.find((candidate: unknown) => {
         object(candidate);
         return candidate.id === entry.id && candidate.mode === entry.mode;
       });

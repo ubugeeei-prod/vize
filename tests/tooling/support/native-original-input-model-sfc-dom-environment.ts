@@ -16,7 +16,8 @@ export const dataUrl = (text: string) =>
   `data:text/javascript;base64,${Buffer.from(text).toString("base64")}`;
 export type ModelMode = "development" | "production";
 export type Primitive =
-  | { kind: "null" | "undefined" }
+  | { kind: "null" }
+  | { kind: "undefined" }
   | { kind: "string"; value: string }
   | { kind: "boolean"; value: boolean }
   | { kind: "number"; value: number }
@@ -30,10 +31,12 @@ export function primitive(value: unknown): Primitive {
     assert(Number.isFinite(value) && !Object.is(value, -0));
     return { kind: "number", value };
   }
-  assert.equal(typeof value, "bigint", "closed primitive observation, never coercion");
-  return { kind: "bigint", decimal: String(value) };
+  assert(typeof value === "bigint", "closed primitive observation, never coercion");
+  return { kind: "bigint", decimal: value.toString() };
 }
-export function primitiveValue(value: Primitive): unknown {
+export function primitiveValue(
+  value: Primitive,
+): null | undefined | string | number | boolean | bigint {
   if (value.kind === "null") return null;
   if (value.kind === "undefined") return undefined;
   if (value.kind === "bigint") return BigInt(value.decimal);
