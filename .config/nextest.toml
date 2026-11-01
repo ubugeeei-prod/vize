@@ -1,6 +1,11 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Retain complete deprecated-native Case/Observation and refusal packets only.
+[[profile.default.overrides]]
+filter = 'package(=vize_patina) & (test(~no_deprecated_v_on_native_modifier::native::tests::) | test(~native::template::context::event::tests::native_modifier::))'
+junit.store-success-output = true
+
 # Retain whole numeric modifier Case/fix/requery packets; execution is unchanged.
 [[profile.default.overrides]]
 filter = 'package(=vize_patina) & test(~no_deprecated_v_on_number_modifiers::native::tests::)'

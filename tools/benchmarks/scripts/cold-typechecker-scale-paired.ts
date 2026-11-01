@@ -383,6 +383,15 @@ export async function pairedColdComparison(options: {
   assert.equal(hash(head.binary), head.binarySha256);
   const summary = {
     instrumented,
+    commandPopulation: {
+      normalPreflights: 2,
+      instrumentedPreflights: 2,
+      primaryNormal: 8,
+      secondaryInvalidSource: 2,
+      secondaryFrozenPublic: 4,
+      outerTotal: 18,
+      timedNativeProcessCount: "unobserved",
+    },
     order: readBufferOrders,
     source: { base, head },
     providerLock,
@@ -405,7 +414,7 @@ export async function pairedColdComparison(options: {
     mapperReference: "unchanged frozen public0.596; not current source SDK acceptance",
     nativeLoadedFiles: "unobserved",
     untimedFlags:
-      "--show-virtual-ts and --quiet only; timed argv and direct physical native remain unchanged",
+      "two normal preflights add --show-virtual-ts/--quiet; two separate instrumented preflights additionally use --profile-json and VIZE_OWNED_READ_BUFFER_TRACE; all eight primary commands use normal images/direct native and neither instrumentation flag nor trace environment",
     secondaryUntimedCommands:
       "after eight timings: two invalid source CLI controls plus valid/invalid frozen-public mapper and VueTSC (four commands)",
     environment: Object.fromEntries(
