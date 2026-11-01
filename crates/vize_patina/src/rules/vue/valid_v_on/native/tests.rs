@@ -60,7 +60,6 @@ fn original_absent_value_clean_and_error_inputs_keep_complete_results() {
         ("<div @click.once.stop />", 0),
         ("<div @keyup.enter.prevent />", 0),
         ("<div @click></div>", 1),
-        ("<form @submit.prevent></form>", 0),
         ("<div title=\"@click.nativeish\" />", 0),
     ] {
         pair(&case(

@@ -5,6 +5,24 @@ use crate::{Linter, RuleRegistry};
 use vize_l0::config::VueVersion;
 
 #[test]
+fn original_clean_form_retains_the_existing_whole_owner_refusal() {
+    let source = "<form @submit.prevent></form>";
+    let input = case("old-original-clean-form", source, Order::ValidOnly, 0, 0);
+    let linter = configured(&input);
+    let legacy = observe(&linter, &input, false);
+    let actual = linter.lint_native_template(source, input.filename);
+    println!("original-form-refusal:{input:#?}\nlegacy:{legacy:#?}\nnative:{actual:#?}");
+    assert!(legacy.initial.diagnostics.is_empty());
+    assert!(legacy.applications.is_empty());
+    assert_eq!(
+        actual.unwrap_err(),
+        Refusal::UnsupportedContext {
+            span: span(source, "<form @submit.prevent>")
+        }
+    );
+}
+
+#[test]
 fn second_on_or_any_value_refuses_wholesale_even_after_numeric_first_findings() {
     for order in ORDERS {
         let input = case("new-explicit-refusal", ORIGINAL, order, 0, 0);

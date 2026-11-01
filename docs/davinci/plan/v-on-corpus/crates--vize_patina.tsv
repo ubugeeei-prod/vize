@@ -138,7 +138,6 @@ crates/vize_patina/src/rules/vue/valid_v_on/native/tests.rs	@click.stop
 crates/vize_patina/src/rules/vue/valid_v_on/native/tests.rs	@submit.prevent
 crates/vize_patina/src/rules/vue/valid_v_on/native/tests.rs	@click.once.stop
 crates/vize_patina/src/rules/vue/valid_v_on/native/tests.rs	@keyup.enter.prevent
-crates/vize_patina/src/rules/vue/valid_v_on/native/tests.rs	@submit.prevent
 crates/vize_patina/src/rules/vue/valid_v_on/native/tests.rs	@click.custom
 crates/vize_patina/src/rules/vue/valid_v_on/native/tests/ordering.rs	@click.native.13
 crates/vize_patina/src/rules/vue/valid_v_on/native/tests/ordering.rs	@click.13.native
@@ -146,6 +145,8 @@ crates/vize_patina/src/rules/vue/valid_v_on/native/tests/ordering.rs	@keyup.nati
 crates/vize_patina/src/rules/vue/valid_v_on/native/tests/ordering.rs	@keyup.native.0.13
 crates/vize_patina/src/rules/vue/valid_v_on/native/tests/ordering.rs	@keyup.native.enter
 crates/vize_patina/src/rules/vue/valid_v_on/native/tests/ordering.rs	@click.native.13
+crates/vize_patina/src/rules/vue/valid_v_on/native/tests/refusal.rs	@submit.prevent
+crates/vize_patina/src/rules/vue/valid_v_on/native/tests/refusal.rs	@submit.prevent
 crates/vize_patina/src/rules/vue/valid_v_on/native/tests/refusal.rs	@keyup.13
 crates/vize_patina/src/rules/vue/valid_v_on/native/tests/refusal.rs	@click.native
 crates/vize_patina/src/rules/vue/valid_v_on/native/tests/refusal.rs	@click.native
