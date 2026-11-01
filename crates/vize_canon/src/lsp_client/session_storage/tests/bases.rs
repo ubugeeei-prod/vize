@@ -91,17 +91,25 @@ pub(super) fn all_unsafe_bases_refuse() {
     let package_temp = fixture.path().join("node_modules/package/tmp");
     fs::create_dir_all(&local_temp).unwrap();
     fs::create_dir_all(&package_temp).unwrap();
-    let error = SessionStorage::new_with_bases(
+    let Err(error) = SessionStorage::new_with_bases(
         &project,
         [
             local_temp.clone(),
             package_temp.clone(),
             project.join("missing/deep"),
         ],
-    )
-    .err()
-    .expect("all unsafe bases must refuse");
-    assert!(error.starts_with("No usable private Corsa storage base:"));
+    ) else {
+        panic!("all unsafe bases must refuse");
+    };
+    assert_eq!(
+        error.as_str(),
+        concat!(
+            "No usable private Corsa storage base: ",
+            "Private Corsa storage cannot be inside the authored or package tree; ",
+            "Private Corsa storage cannot be inside the authored or package tree; ",
+            "Private Corsa storage cannot be inside the authored or package tree"
+        )
+    );
     assert_eq!(fs::read_dir(&local_temp).unwrap().count(), 0);
     assert_eq!(fs::read_dir(&package_temp).unwrap().count(), 0);
     assert!(!project.join("missing").exists());

@@ -30,20 +30,20 @@ impl SessionStorage {
         let authored = project_root
             .canonicalize()
             .unwrap_or_else(|_| project_root.to_path_buf());
-        let mut failures = Vec::new();
+        let mut failures = String::default();
         let directory = bases
             .into_iter()
             .find_map(|candidate| match private_owner_in(&authored, &candidate) {
                 Ok(directory) => Some(directory),
                 Err(error) => {
-                    failures.push(error.to_string());
+                    if !failures.is_empty() {
+                        failures.push_str("; ");
+                    }
+                    failures.push_str(error.as_str());
                     None
                 }
             })
-            .ok_or_else(|| {
-                let errors = failures.join("; ");
-                cstr!("No usable private Corsa storage base: {errors}")
-            })?;
+            .ok_or_else(|| cstr!("No usable private Corsa storage base: {failures}"))?;
         let root = directory.path().join("project");
         // Document URIs use the normal Windows spelling, without a verbatim
         // prefix. Keep the owned boundary in that same physical spelling so
