@@ -24,6 +24,10 @@ on:
       - crates/vize/tests/main.rs
       - crates/vize/tests/support/**
       - crates/vize/Cargo.toml
+      - Cargo.toml
+      - Cargo.lock
+      - crates/vize_canon/Cargo.toml
+      - tools/support/compat/github/full-rust-runtime.ts
       - tests/_fixtures/differential/typechecker/native-overlay-input-custody-11145/**
       - tests/_fixtures/differential/lsp/default-log-installation-custody-11145/**
 

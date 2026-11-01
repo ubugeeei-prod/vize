@@ -70,6 +70,14 @@ test("overlay custody preserves the exact source checkout, two hosts and read-on
     ref: "${{ github.event.pull_request.head.sha }}",
     "persist-credentials": false,
   });
+  for (const input of [
+    "Cargo.toml",
+    "Cargo.lock",
+    "crates/vize_canon/Cargo.toml",
+    "tools/support/compat/github/full-rust-runtime.ts",
+  ]) {
+    assert.equal(workflow.on.pull_request.paths.filter((path: string) => path === input).length, 1);
+  }
 });
 
 test("overlay custody runs the exact platform controls, mandatory native case and strict workspace compiler", () => {
