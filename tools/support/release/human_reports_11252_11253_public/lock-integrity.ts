@@ -23,7 +23,7 @@ export function lockPackageIntegrity(raw: Buffer, name: string, version: string)
   for (const line of lines) {
     if (!line || /^\s*#/u.test(line) || line === "---") continue;
     assert.equal((/^ */u.exec(line)?.[0].length ?? 0) % 2, 0, "noncanonical lock indentation");
-    if (/^ /u.test(line)) continue;
+    if (line.startsWith(" ")) continue;
     const header = /^([A-Za-z][A-Za-z0-9]*):(?: |$)/u.exec(line)?.[1];
     assert(header && canonical.has(header), "noncanonical top-level lock header");
     assert(!rootKeys.has(header), "duplicate top-level lock header");
