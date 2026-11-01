@@ -64,8 +64,9 @@ export async function installPublic(
   const host = hostFacts(),
     manager = managerFiles(root),
     lockRaw = readFileSync(join(root, "pnpm-lock.yaml"));
+  const installContextPath = join(output, `${kind}-install-context.json`);
   writeFileSync(
-    join(output, `${kind}-install-context.json`),
+    installContextPath,
     JSON.stringify(
       {
         root,
@@ -123,6 +124,8 @@ export async function installPublic(
     required,
     archiveCache,
     sink,
+    undefined,
+    { path: installContextPath, managerVersion: recipe.pnpm },
   );
   const packages = graph.packages;
   const probe = capture(

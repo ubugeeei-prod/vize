@@ -16,6 +16,7 @@ import {
 import { lockPackageIntegrity } from "./lock-integrity.ts";
 import type { InstallReceipt } from "./model.ts";
 import type { Sink } from "./evidence.ts";
+import { witnessKnownBins, type BinInstallContext } from "./bin-witness.ts";
 
 /** Physical installed nodes and nonresident declarations are deliberately
  * separate. A pnpm list category never establishes optionality or presence. */
@@ -28,6 +29,7 @@ export async function installedGraph(
   archiveCache: Map<string, Buffer>,
   sink: Sink,
   readers = { archive: publicArchive, metadata: publicPackageMetadata },
+  installContext?: BinInstallContext,
 ): Promise<{ packages: InstallReceipt["packages"]; absent: OptionalAbsence[] }> {
   const packages: InstallReceipt["packages"] = [],
     absent: OptionalAbsence[] = [];
@@ -143,6 +145,13 @@ export async function installedGraph(
           if (prior)
             assert(prior.equals(downloaded.body), "package version cannot silently change archive");
           else archiveCache.set(name + "@" + version, downloaded.body);
+          await witnessKnownBins(
+            directory,
+            installContext
+              ? { ...installContext, root, lock, archive: readers.archive }
+              : undefined,
+            sink,
+          );
           const comparison = observedArchiveComparison(
             directory,
             downloaded.body,
