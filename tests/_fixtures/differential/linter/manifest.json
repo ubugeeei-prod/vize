@@ -3113,6 +3113,16 @@
             "path": "tsconfig.json.txt",
             "role": "project-configuration",
             "sha256": "4d2cc180f026c57b51bfc101123ca7e19e8d1be54755e2f9e9f826868fb2c642"
+          },
+          {
+            "path": "App.vue.txt",
+            "role": "causal-regression",
+            "sha256": "9534d47afd07e350aff5521da92f3ad7b960788ab8a66ce061437ccfc9a943ef"
+          },
+          {
+            "path": "Untyped.ts.txt",
+            "role": "causal-regression",
+            "sha256": "e0bd6c85fa4bf04f3aea48d8444a73d8ffd32ed9ec9bceaa47d01d0b1f5d68d1"
           }
         ]
       },
@@ -3122,7 +3132,7 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts"],
+            "dialects": ["vue3-sfc", "html-template", "ts"],
             "selector": "linter manifest pinned authored sources"
           }
         ]

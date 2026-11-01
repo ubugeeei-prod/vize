@@ -20,6 +20,8 @@ const pinned = [
   ["Probe.ts.txt", "e0a254faa8138b02e3a7a571f338a2ac2e58e983be461891d57a954eb0e46a14"],
   ["package.json.txt", "a90fc33418afa2b9cbf4768524b021135b965ecdf993457505bfae3ac44a8428"],
   ["tsconfig.json.txt", "4d2cc180f026c57b51bfc101123ca7e19e8d1be54755e2f9e9f826868fb2c642"],
+  ["App.vue.txt", "9534d47afd07e350aff5521da92f3ad7b960788ab8a66ce061437ccfc9a943ef"],
+  ["Untyped.ts.txt", "e0bd6c85fa4bf04f3aea48d8444a73d8ffd32ed9ec9bceaa47d01d0b1f5d68d1"],
 ] as const;
 const files = pinned.map(([filename]) => ({
   filename,
@@ -28,10 +30,12 @@ const files = pinned.map(([filename]) => ({
 const sha = (raw: Buffer) => createHash("sha256").update(raw).digest("hex");
 
 test("all seven signature forms and the project inputs are pinned and consumed by the real owner test", () => {
-  const consumer = fs.readFileSync(
-    path.join(root, "crates/vize_patina/src/linter/corsa_session/probe/signature_owner_tests.rs"),
-    "utf8",
-  );
+  const consumer = [
+    "crates/vize_patina/src/linter/corsa_session/probe/signature_owner_tests.rs",
+    "crates/vize/tests/lint_strict_boolean_cli/signature_owner.rs",
+  ]
+    .map((file) => fs.readFileSync(path.join(root, file), "utf8"))
+    .join("\n");
   assert.deepEqual(
     files.map(({ filename, source }) => [filename, sha(Buffer.from(source))]),
     pinned,
@@ -67,7 +71,7 @@ test("the real authored input-only row carries no invented native acceptance", (
     root: "symbol-owner-probes-11267",
     files: pinned.map(([filename, sha256]) => ({
       path: filename,
-      role: filename.endsWith(".ts.txt") ? "causal-regression" : "project-configuration",
+      role: filename.endsWith(".json.txt") ? "project-configuration" : "causal-regression",
       sha256,
     })),
   });

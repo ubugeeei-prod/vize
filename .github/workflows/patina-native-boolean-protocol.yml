@@ -62,12 +62,17 @@ jobs:
       - name: Preserve all complete boolean reports with the stable runtime
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          VIZE_SYMBOL_OWNER_CLI_CAPTURE: ${{ github.workspace }}/target/patina-native-boolean/stable-owner-cli.json
         run: |
           set -o pipefail
+          unset VIZE_TEST_DISABLE_TSGO
           cargo test --locked --profile ci -p vize --test integration lint_strict_boolean_cli:: -- --nocapture 2>&1 | tee target/patina-native-boolean/stable-tests.txt
       - name: Preserve the same complete reports with the reported tsrs runtime
+        env:
+          VIZE_SYMBOL_OWNER_CLI_CAPTURE: ${{ github.workspace }}/target/patina-native-boolean/tsrs-owner-cli.json
         run: |
           set -o pipefail
+          unset VIZE_TEST_DISABLE_TSGO
           export CORSA_PATH="$RUNNER_TEMP/patina-tsrs/node_modules/@tsrs/linux-x64-gnu/tsrs"
           cargo test --locked --profile ci -p vize --test integration lint_strict_boolean_cli:: -- --nocapture 2>&1 | tee target/patina-native-boolean/tsrs-tests.txt
       - name: Capture cold and materialized signature owners with the stable runtime
