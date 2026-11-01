@@ -18,6 +18,7 @@ mod corsa_session_flight;
 mod corsa_session_pool;
 pub(crate) mod css_rules;
 mod engine;
+mod formatter_policy;
 mod musea_config;
 pub(crate) mod musea_rules;
 #[cfg(not(target_arch = "wasm32"))]

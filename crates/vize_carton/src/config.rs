@@ -1,5 +1,7 @@
 //! Host discovery and evaluation of Vize configuration.
 
+#[cfg(feature = "lint-glob")]
+pub mod formatter_lint_plan;
 #[expect(
     clippy::disallowed_types,
     reason = "host config evaluation retains its existing std error and process strings"

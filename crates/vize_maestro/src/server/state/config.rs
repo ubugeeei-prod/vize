@@ -16,8 +16,6 @@ use vize_l0::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
 
 use super::ServerState;
 use super::features::LspConfigSection;
-#[cfg(feature = "glyph")]
-use host::CompilerWhitespacePlan;
 use host::LoadedLspConfig;
 #[cfg(not(feature = "native"))]
 use host::load_lsp_config_snapshot;
@@ -397,19 +395,11 @@ impl ServerState {
             let config = loaded.config;
             #[cfg(feature = "glyph")]
             {
-                let config_dir = formatting::formatter_config_dir(
+                self.install_project_formatter_snapshot(
+                    &loaded.project.document,
                     loaded.project.project_root.as_deref(),
                     &source_path,
-                );
-                let whitespace = CompilerWhitespacePlan::new(
                     loaded.compiler_whitespace,
-                    &loaded.project.document.compiler_entries(),
-                    &config_dir,
-                );
-                self.install_formatter_snapshot(
-                    loaded.project.document.formatter_profile(),
-                    loaded.project.document.formatter_sort_imports(),
-                    whitespace,
                 );
                 tracing::info!("Loaded format config from {}", source);
             }

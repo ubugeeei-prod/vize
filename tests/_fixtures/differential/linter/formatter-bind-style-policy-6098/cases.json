@@ -1,0 +1,27 @@
+{
+  "schema": "vize.formatter-bind-style-policy-6098",
+  "source": {
+    "revision": "36d76a54ebdef00cfa83f8788224d0c69dad59a9",
+    "originalPath": "tests/_fixtures/differential/linter/v-bind-prop-longform-6097/Original.vue.txt",
+    "originalSha256": "75c8e6b56baba055c15f17153083627217eea010bc90081f6289afc1ca99e0cf",
+    "referencePath": "tests/_fixtures/differential/linter/v-bind-prop-longform-6097/cases.json",
+    "referenceSha256": "c9b6aa51d99e794802efdb43d27907e54201aa806a6ed0665d0e084b2526b5fa",
+    "case": "original-longform"
+  },
+  "config": {
+    "formatter": {
+      "normalizeDirectiveShorthands": true
+    },
+    "linter": {
+      "preset": "incremental",
+      "ruleOptions": {
+        "vue/v-bind-style": "longform"
+      },
+      "rules": {
+        "vue/v-bind-style": "error"
+      }
+    }
+  },
+  "expectedConflict": "normalizeDirectiveShorthands=true conflicts with active vue/v-bind-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand binding style",
+  "scope": "New host configuration interaction using the unchanged original11232 input and complete independent lint-fix output. No standalone formatter golden, native parity or new independent-reference execution is claimed."
+}

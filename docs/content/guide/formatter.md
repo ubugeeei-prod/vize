@@ -106,30 +106,30 @@ export default defineConfig({}).withVue({
 
 The same options are available as CLI flags:
 
-| Flag                               | What it does                                                  |
-| ---------------------------------- | ------------------------------------------------------------- |
-| `--print-width`                    | Sets the maximum line width.                                  |
-| `--tab-width`                      | Sets the number of spaces per indentation level.              |
-| `--use-tabs`                       | Indents with tabs instead of spaces.                          |
-| `--single-quote`                   | Uses single quotes instead of double quotes.                  |
-| `--trailing-comma`                 | Chooses `all`, `es5` or `none` trailing commas.               |
-| `--arrow-parens`                   | Chooses `always` or `avoid` for sole arrow parameters.        |
-| `--bracket-spacing`                | Toggles spaces inside object literal braces.                  |
-| `--bracket-same-line`              | Keeps a multi-line tag's `>` on its final attribute line.     |
-| `--end-of-line`                    | Chooses `lf`, `crlf`, `cr` or source-detected `auto`.          |
-| `--no-semi`                        | Omits semicolons at the ends of statements.                   |
-| `--semi[=true\|false]`             | Overrides the configured semicolon policy in either direction. |
-| `--sort-attributes`                | Sorts attributes in the template and on block tags.           |
-| `--attribute-sort-order`           | Chooses `alphabetical` or `as-written` within priority groups. |
-| `--single-attribute-per-line`      | Puts each attribute on its own line.                          |
-| `--vue-indent-script-and-style`    | Indents the contents of `<script>` and `<style>`.              |
-| `--max-attributes-per-line`        | Wraps after the given number of attributes.                   |
-| `--normalize-directive-shorthands` | Turns `v-bind:`, `v-on:` and `v-slot:` into `:`, `@` and `#`. |
-| `--sort-blocks`                    | Toggles canonical SFC block ordering.                         |
-| `--normalize-css-quotes`          | Re-quotes CSS, SCSS and Less strings with the string quote preference. |
-| `--normalize-inline-styles`       | Lays out plain static `style` declarations on one line. |
-| `--normalize-v-for-parens`        | Wraps multiple `v-for` aliases in parentheses.         |
-| `--reindent-preprocessor-styles`  | Re-indents SCSS and Less blocks by nesting depth.      |
+| Flag                               | What it does                                                           |
+| ---------------------------------- | ---------------------------------------------------------------------- |
+| `--print-width`                    | Sets the maximum line width.                                           |
+| `--tab-width`                      | Sets the number of spaces per indentation level.                       |
+| `--use-tabs`                       | Indents with tabs instead of spaces.                                   |
+| `--single-quote`                   | Uses single quotes instead of double quotes.                           |
+| `--trailing-comma`                 | Chooses `all`, `es5` or `none` trailing commas.                        |
+| `--arrow-parens`                   | Chooses `always` or `avoid` for sole arrow parameters.                 |
+| `--bracket-spacing`                | Toggles spaces inside object literal braces.                           |
+| `--bracket-same-line`              | Keeps a multi-line tag's `>` on its final attribute line.              |
+| `--end-of-line`                    | Chooses `lf`, `crlf`, `cr` or source-detected `auto`.                  |
+| `--no-semi`                        | Omits semicolons at the ends of statements.                            |
+| `--semi[=true\|false]`             | Overrides the configured semicolon policy in either direction.         |
+| `--sort-attributes`                | Sorts attributes in the template and on block tags.                    |
+| `--attribute-sort-order`           | Chooses `alphabetical` or `as-written` within priority groups.         |
+| `--single-attribute-per-line`      | Puts each attribute on its own line.                                   |
+| `--vue-indent-script-and-style`    | Indents the contents of `<script>` and `<style>`.                      |
+| `--max-attributes-per-line`        | Wraps after the given number of attributes.                            |
+| `--normalize-directive-shorthands` | Turns `v-bind:`, `v-on:` and `v-slot:` into `:`, `@` and `#`.          |
+| `--sort-blocks`                    | Toggles canonical SFC block ordering.                                  |
+| `--normalize-css-quotes`           | Re-quotes CSS, SCSS and Less strings with the string quote preference. |
+| `--normalize-inline-styles`        | Lays out plain static `style` declarations on one line.                |
+| `--normalize-v-for-parens`         | Wraps multiple `v-for` aliases in parentheses.                         |
+| `--reindent-preprocessor-styles`   | Re-indents SCSS and Less blocks by nesting depth.                      |
 
 `--semi` means `--semi=true`; `--semi=false` and the existing `--no-semi`
 omit semicolons. Without either flag, the configured value stays in effect.
@@ -177,6 +177,29 @@ Every option below can be set under `vue.formatter`. An option you leave out tak
 | `selfCloseVoidElements`        | `false`          | Closes void elements, as in `<img />`.                                                                                             |
 | `reindentPreprocessorStyles`   | `false`          | Re-indents SCSS and Less blocks by nesting depth and tidies their blank lines.                                                     |
 | `sortImports`                  | off              | Sorts imports in scripts. See [Sort imports](./formatter-import-sorting.md).                                                       |
+
+When an active `vue/v-bind-style` lint rule requests `"longform"`, project
+formatting requires `normalizeDirectiveShorthands: false`. Its default `true`
+would otherwise undo the lint fix. For example:
+
+```ts
+export default {
+  vue: {
+    formatter: { normalizeDirectiveShorthands: false },
+    linter: {
+      rules: { "vue/v-bind-style": "error" },
+      ruleOptions: { "vue/v-bind-style": "longform" },
+    },
+  },
+};
+```
+
+The CLI also accepts `--normalize-directive-shorthands=false`. A conflict
+exits with status 2 before any selected file is written. The editor's document,
+range and on-type formatting requests return `null` and log the actionable
+conflict as a warning. Rule activation follows the same file scopes, presets,
+disabled rules and categories as linting. The standalone formatter APIs retain
+their existing option defaults.
 
 The native Node `formatSfc` API accepts the five Prettier migration booleans
 `normalizeCssQuotes`, `normalizeInlineStyles`, `normalizeVForParens`,
