@@ -48,10 +48,10 @@ assert.equal(fs.realpathSync(artifact.target!.src_path!),
   fs.realpathSync(path.join(root, "crates/vize_canon/src/lib.rs")));
 const relativeExecutable = path.relative(fs.realpathSync(required("CARGO_TARGET_DIR")), fs.realpathSync(executable));
 assert.ok(relativeExecutable && !relativeExecutable.startsWith("..") && !path.isAbsolute(relativeExecutable));
-const test = version === "7.1.0-beta"
-  ? "native_two_config_shared_owner_preserves_sibling_and_held_revision"
-  : "native_two_config_shared_owner_legacy_dialect_refuses_without_closing_owner";
-const selector = `lsp_client::editor_lsp::configured_project::shared_transport::tests::native::shared_contexts::tests::${test}`;
+const selector = "lsp_client::editor_lsp::configured_project::shared_transport::tests::native::shared_contexts::"
+  + (version === "7.1.0-beta"
+    ? "production::native_two_config_shared_owner_uses_production_editor_fallback"
+    : "tests::native_two_config_shared_owner_legacy_dialect_refuses_without_closing_owner");
 const files = [
   "Cargo.toml", "Cargo.lock",
   ".github/workflows/native-beta-diagnostic-dto.yml",
@@ -60,6 +60,7 @@ const files = [
   "crates/vize_canon/src/lsp_client/editor_lsp/configured_project/shared_transport/tests/native.rs",
   "crates/vize_canon/src/lsp_client/editor_lsp/configured_project/shared_transport/tests/native/shared_contexts.rs",
   "crates/vize_canon/src/lsp_client/editor_lsp/configured_project/shared_transport/tests/native/shared_contexts/tests.rs",
+  "crates/vize_canon/src/lsp_client/editor_lsp/configured_project/shared_transport/tests/native/shared_contexts/production.rs",
 ];
 fs.writeFileSync(path.join(output, "source.json"), JSON.stringify({
   source: required("HEAD_SHA"), sdkVersion: version, native, nativeSHA256: image,
@@ -71,10 +72,10 @@ fs.writeFileSync(path.join(output, "source.json"), JSON.stringify({
     assert.deepEqual(bytes, committed, `whole source ${file} must equal actual After HEAD`);
     return { path: file, bytes: bytes.length, sha256: hash(bytes) };
   }),
-  selector, scope: "test-only functional feasibility, no resource or entered-native-read claim",
+  selector, scope: "test-only production-routed LSP sharing; current derived API refused; old readonly leases/config only; no resource or entered-native-read claim",
 }, null, 2) + "\n");
 const args = ["-ff", "-ttt", "-s", "16777216", "-xx", "-e",
-  "trace=read,write,readv,writev,process", "-o", path.join(output, "syscalls"),
+  "trace=read,write,readv,writev,process,network", "-o", path.join(output, "syscalls"),
   executable, selector, "--ignored", "--exact", "--nocapture", "--test-threads=1"];
 const stdout = fs.openSync(path.join(output, "stdout.bin"), "wx");
 const stderr = fs.openSync(path.join(output, "stderr.bin"), "wx");
