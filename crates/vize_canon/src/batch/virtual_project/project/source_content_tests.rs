@@ -52,11 +52,17 @@ impl ReadCapture {
     }
 
     fn assert_retained(&self, project: &VirtualProject) {
-        let allocations = READ_ALLOCATIONS.get().unwrap().lock().unwrap();
-        for path in &self.0 {
-            let reads = &allocations[path];
+        let snapshots = {
+            let allocations = READ_ALLOCATIONS.get().unwrap().lock().unwrap();
+            self.0
+                .iter()
+                .map(|path| (path.clone(), allocations[path].clone()))
+                .collect::<Vec<_>>()
+        };
+        // Assertions may unwind; never hold the shared observation lock here.
+        for (path, reads) in snapshots {
             assert_eq!(reads.len(), 1, "one filesystem allocation per fixture path");
-            let file = project.find_by_original(path).unwrap();
+            let file = project.find_by_original(&path).unwrap();
             let source = &project.original_contents[&file.virtual_path];
             assert_eq!(
                 (source.as_ptr() as usize, source.len(), source.capacity()),
@@ -70,7 +76,11 @@ impl ReadCapture {
 
 impl Drop for ReadCapture {
     fn drop(&mut self) {
-        let mut allocations = READ_ALLOCATIONS.get().unwrap().lock().unwrap();
+        let mut allocations = READ_ALLOCATIONS
+            .get()
+            .unwrap()
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         for path in &self.0 {
             allocations.remove(path);
         }
@@ -147,6 +157,21 @@ fn source_for(extension: &str, comment_repetitions: usize) -> std::string::Strin
         "d.ts" => format!("/*{comment}*/\r\nexport declare const label: string;\r\n"),
         _ => format!("/*{comment}*/\r\nexport const label = '雪🌸';\r\n"),
     }
+}
+
+#[test]
+fn owned_source_read_capture_failure_releases_only_its_fixture_lease() {
+    let fixture = tempfile::TempDir::new().unwrap();
+    let root = vize_carton::path::canonicalize_non_verbatim(fixture.path());
+    let paths = [root.join("Unreached.ts")];
+    let failure = std::panic::catch_unwind(|| {
+        let capture = ReadCapture::new(&paths);
+        let project = VirtualProject::new(&root).unwrap();
+        // No read occurred: retain the first assertion failure, including cleanup.
+        capture.assert_retained(&project);
+    });
+    assert!(failure.is_err());
+    let _next_lease = ReadCapture::new(&paths);
 }
 
 #[test]
