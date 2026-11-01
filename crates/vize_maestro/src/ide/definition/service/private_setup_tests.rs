@@ -186,6 +186,20 @@ fn cases() -> Vec<Case> {
             "message }}",
         ),
         (
+            "template-member-property",
+            "const message = 1;",
+            "{{ other.message }}",
+            "",
+            "message }}",
+        ),
+        (
+            "template-object-key",
+            "const message = 1;",
+            "{{ { message: 1 } }}",
+            "",
+            "message: 1",
+        ),
+        (
             "attribute-shorthand",
             "const message = 1;",
             "<Child :message />",
@@ -293,7 +307,7 @@ fn expected(uri: &Url, source: &str) -> GotoDefinitionResponse {
 #[test]
 fn private_template_definition_requires_exact_declaration_and_half_open_query() {
     let cases = cases();
-    assert_eq!(cases.len(), 34);
+    assert_eq!(cases.len(), 36);
     for case in cases {
         let (directory, uri) = project(&case.source);
         let state = opened(directory.path(), &uri, &case.source);
