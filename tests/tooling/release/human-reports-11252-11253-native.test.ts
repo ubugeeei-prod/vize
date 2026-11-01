@@ -151,22 +151,22 @@ test("bounded registry metadata rejects overflow and strict UTF8 before package/
   const sink = (kind: string, value: unknown) => receipts.push({ kind, value });
   const over: typeof fetch = async (input) =>
     response(new Uint8Array(1024 * 1024 + 1), requestUrl(input));
-  await assert.rejects(publicArchive("synthetic-overflow", "0", sink, over), /byte limit/);
+  await assert.rejects(publicArchive("synthetic-overflow", "0.0.0", sink, over), /byte limit/);
   assert(receipts.some((v) => (v as { kind: string }).kind === "registry-body-refusal"));
   const invalid: typeof fetch = async (input) =>
     response(new Uint8Array([0xff]), requestUrl(input));
-  await assert.rejects(publicArchive("synthetic-utf8", "0", sink, invalid));
+  await assert.rejects(publicArchive("synthetic-utf8", "0.0.0", sink, invalid));
   assert(receipts.some((v) => (v as { kind: string }).kind === "registry-body"));
   const badSri: typeof fetch = async (input) =>
     response(
       JSON.stringify({
         name: "synthetic-sri",
-        version: "0",
+        version: "0.0.0",
         dist: { tarball: "https://registry.npmjs.org/synthetic.tgz", integrity: "invalid" },
       }),
       requestUrl(input),
     );
-  await assert.rejects(publicArchive("synthetic-sri", "0", sink, badSri));
+  await assert.rejects(publicArchive("synthetic-sri", "0.0.0", sink, badSri));
   assert(receipts.some((v) => (v as { kind: string }).kind === "registry-metadata"));
 });
 test("public execution context refuses PR, non-main, local and other repositories", () => {
