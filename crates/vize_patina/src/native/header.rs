@@ -78,3 +78,12 @@ pub(super) fn wide_binding<'o, 'a>(
     let binding = checked.binding::<true>()?;
     Ok((checked, binding))
 }
+
+pub(super) fn event_binding<'o, 'a>(
+    element: &NativeElement<'_, 'a>,
+    original: NativeAttribute<'o, 'a>,
+) -> Result<(CheckedAttribute<'o, 'a>, AttributeBinding<'a>), NativeLintRefusal> {
+    let checked = CheckedAttribute::check::<true>(element, original)?;
+    let binding = checked.event_binding()?;
+    Ok((checked, binding))
+}

@@ -1,0 +1,1079 @@
+{
+  "schema": "vize.native-sfc.input-model-current-outside",
+  "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+  "inputPack": {
+    "filename": "OriginalInputModelModifiers.vue",
+    "fixtures": [
+      {
+        "binding": "draft",
+        "bindings": [
+          "draft"
+        ],
+        "change": " \tchanged 雪🌸  ",
+        "composing": " \tIME 雪🌸  ",
+        "id": "trim-let-string",
+        "initial": {
+          "kind": "string",
+          "value": " initial "
+        },
+        "input": " \t雪🌸  ",
+        "programmatic": " programmatic 雪🌸 ",
+        "script": "let draft=' initial '",
+        "source": "<script setup>let draft=' initial '</script><template><input v-model.trim='draft'/></template>",
+        "template": "<input v-model.trim='draft'/>"
+      },
+      {
+        "binding": "count",
+        "bindings": [
+          "count"
+        ],
+        "change": " 0101 ",
+        "composing": " 0099 ",
+        "id": "trim-var-number",
+        "initial": {
+          "kind": "number",
+          "value": 7
+        },
+        "input": " 007 ",
+        "programmatic": " 0042 ",
+        "script": "var count=7",
+        "source": "<script setup>var count=7</script><template><input v-model.trim=count /></template>",
+        "template": "<input v-model.trim=count />"
+      },
+      {
+        "binding": "café",
+        "bindings": [
+          "café"
+        ],
+        "change": "  changed café \t",
+        "composing": " \tcomposé 雪🌸  ",
+        "id": "trim-ts-unicode-crlf",
+        "initial": {
+          "kind": "string",
+          "value": " 雪🌸 "
+        },
+        "input": "  café 雪🌸 \t",
+        "programmatic": " original setter café ",
+        "script": "let café:string=' 雪🌸 '",
+        "source": "<!-- import \"vue\" 雪🌸 -->\r\n<script setup lang='ts'>let café:string=' 雪🌸 '</script>\r\n<template><input v-model.trim='café'/></template>\r\n",
+        "template": "<input v-model.trim='café'/>"
+      },
+      {
+        "binding": "draft",
+        "bindings": [
+          "draft"
+        ],
+        "change": " changed 🌸 ",
+        "composing": " composé café ",
+        "id": "lazy-original-modifier",
+        "initial": {
+          "kind": "string",
+          "value": "x"
+        },
+        "input": " typed 🌸 ",
+        "programmatic": " programmatic 雪 ",
+        "script": "let draft='x'",
+        "source": "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>",
+        "template": "<input v-model.lazy='draft'/>"
+      },
+      {
+        "binding": "count",
+        "bindings": [
+          "count"
+        ],
+        "change": " 0101 ",
+        "composing": " 0099 ",
+        "id": "lazy-var-number",
+        "initial": {
+          "kind": "number",
+          "value": 7
+        },
+        "input": " 007 ",
+        "programmatic": " 0042 ",
+        "script": "var count=7",
+        "source": "<script setup>var count=7</script><template><input v-model.lazy=count /></template>",
+        "template": "<input v-model.lazy=count />"
+      },
+      {
+        "binding": "café",
+        "bindings": [
+          "café"
+        ],
+        "change": "  更新 🌸 \t",
+        "composing": " 入力🌸 ",
+        "id": "lazy-ts-unicode-crlf",
+        "initial": {
+          "kind": "string",
+          "value": " 初🌸 "
+        },
+        "input": "  typed 雪 \t",
+        "programmatic": " new café ",
+        "script": "let café:string=' 初🌸 '",
+        "source": "<!-- import \"vue\" 雪🌸 -->\r\n<script setup lang='ts'>let café:string=' 初🌸 '</script>\r\n<template><input v-model.lazy='café'/></template>\r\n",
+        "template": "<input v-model.lazy='café'/>"
+      }
+    ],
+    "groups": [
+      {
+        "filename": "OriginalInputModelTrim.vue",
+        "ids": [
+          "trim-let-string",
+          "trim-var-number",
+          "trim-ts-unicode-crlf"
+        ],
+        "modifier": "trim"
+      },
+      {
+        "filename": "OriginalInputModelLazy.vue",
+        "ids": [
+          "lazy-original-modifier",
+          "lazy-var-number",
+          "lazy-ts-unicode-crlf"
+        ],
+        "modifier": "lazy"
+      }
+    ],
+    "history": {
+      "intentionalOutsideSuccessor": {
+        "currentExpectedOutcome": "emitted",
+        "id": "modifier",
+        "previousOutcome": "refused",
+        "source": "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>",
+        "targets": [
+          "dom",
+          "ssr",
+          "vapor"
+        ]
+      },
+      "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
+      "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
+      "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+    },
+    "qualification": "new-current-inputs-not-native-execution-evidence",
+    "schema": "vize.native-sfc.original-input-model-modifier-inputs",
+    "targets": {
+      "dom": {
+        "compiler": "3.5.35",
+        "runtime": "3.5.35"
+      },
+      "ssr": {
+        "compiler": "3.5.35",
+        "renderer": "3.5.35",
+        "runtime": "3.5.35"
+      },
+      "vapor": {
+        "compiler": "3.6.0-rc.9",
+        "runtime": "3.6.0-rc.9"
+      }
+    },
+    "typescript": "6.0.3"
+  },
+  "provenance": {
+    "independentlyReviewedBeforeFreeze": true,
+    "peerFile": "/private/tmp/vize-overnight-20261031/davinci/native-model-lazy-20261101/independent-peer-clear-owner-record.json",
+    "peerSha256": "164bd99f125f20caf024c545ac06602ba8c8223d620c61c424789488c39a0f32",
+    "peer": {
+      "schema": "vize.native-model-lazy.independent-peer-message-owner-record",
+      "reviewer": "/root/lsp_lead/lsp_qualification_audit",
+      "head": "4eeefc35a681081f83a99e1f20825cb817a8abe1",
+      "executionSource": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
+      "executionSourceTree": "aa1e06bb600028054981830c49626756bae05001",
+      "independentObservationFieldFreezeClear": true,
+      "currentStrictQualification": false,
+      "goldenAdoptionByReviewer": false,
+      "newExecutionByReviewer": false,
+      "ownerCopiedActualFinalMessage": true,
+      "archiveWholeReadByReviewer": false,
+      "localMergeBlobAuthority": false,
+      "whole47OldPacksIndependentlyHashed": true,
+      "finalMessage": "FINAL independent OFFLINE review: CLEAR for the held first-observation packet only; no source finding, no adoption or overall-green claim. Exact tuple H4eeefc35a681081f83a99e1f20825cb817a8abe1 / Check41301565222 / Vapor124833514234 / executionM3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066 treeaa1e06bb600028054981830c49626756bae05001. Held API repo/event/attempt/job/artifact and M parents [2f58513e,H] join PASS. Held run snapshot remains in_progress; completed Vapor job is FAILURE. I made no network, CI/build/native/provider execution, edits, or ZIP/image-body reads.\n\nCustody: archive-receipt.json full SHAbb7fd59365014e8e524608c989d3f7d875d8d148b80dd8fc3f7ca12ae7362034 verified. All14 extracted whole members independently SHA256/CRC32/length matched (29,260,209 B/max7,171,669); archive2,134,494/APIc79c020a…fad3a is joined through your retained receipt, not a new independent wholeZIP claim. All41 immutable H source bodies matched source-v3 manifest03aaeeab…c577. All47 old packs (53,030,887 B) independently hashed from Git and actual base/H blob IDs equal; golden16,097,711 B SHAa086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550 exact.\n\nWhole data: native36 code/raw maps/map objects + mapped/plain/default code, UTF8 authored declaration/read/write/modifier spans and custody fields pass. All old trim fixtures/custody/attempts AND all12 primary/runtime old3 subsets retain every field/property/array order. All77 nonmodifier outside rows whole/order equal. Exactly7 deliberate refusal→emission rows are ONE identical oldlazy source: main refusal indices3/15/27; compatibility DOM6/7, SSR3, Vapor3. These replace old error/state (Vapor also old stage) with full emitted code/map fields; they are not old-refusal successes.\n\nReal behavior: all36 primary +36 runtime pairs joined by exact actor code to primary.runtimeModule/native capture, raw primary maps72 checked, sourceCapture/input/context hashes+whole fields retained. All48 client actors +384 SSR cases whole official/native outcomes equal without pruning. Lazy DOM12 actors have original setup once,6 actual renders,5 actual dispatched/observed events, input/compositionend leave binding unchanged, real vnode setter updates model and render, change assigns untrimmed string. Document witness is actual HTMLDocument, window.Document false/exported Document true. Lazy Vapor12 actors forward ONE actual applyTextModel call with4 args/current owned instance; original getter/setter, no public proxy/render; diagnostic setter changes model while DOM remains typed value (no invented render), change assigns original full string. All cleanup/unmount/scope/global restoration pass. Vapor original/adapted code was reconstructed with exact UTF16 import-address edits only; observer forwards Reflect.apply(actual.applyTextModel,undefined,args). Runtime observed3.6.0-rc.9 devSHAf38a…2f7/prod017c…c0b2; HappyDOM21.0.4/ef245…b00; DOM/SSR3.5.35 and TS6.0.3 remain exact source/provider guards. SSR8 contexts×2 phases keep actual sixth setup argument, original initial values, explicit setter counts0/1, full outputs and restored wrappers.\n\nAll10 new statuses0 and all14 qualification boundaries remain observed-unqualified/nativeGoldenComparisonPerformed=false/wholePacketQualification=false. The old job failures remain genuine; source authority is retained M GitAPI+runtime sourceRevision, not H/M tree equality or protected-main/public acceptance. Safe to prepare the explicit whole current-outside successor while preserving old47 and all seven deliberate differences; fresh strict source/Actions adoption remains required under your existing plan."
+    },
+    "head": "4eeefc35a681081f83a99e1f20825cb817a8abe1",
+    "tree": "4d0982fa70cbd2564be667375e7bc5ffa6205113",
+    "base": "1b8cb055d226b8e85f42ffbfd4050c5ef627bb01",
+    "executionSource": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
+    "executionSourceTree": "aa1e06bb600028054981830c49626756bae05001",
+    "sourceAuthority": "retained Git API parents/tree plus actual runtime sourceRevision; no local full M blob or H/M tree equality claim",
+    "originRun": 41301565222,
+    "originCheckSnapshot": {
+      "status": "in_progress",
+      "conclusion": null
+    },
+    "originNativeJob": 124833514234,
+    "originNativeJobConclusion": "failure",
+    "artifact": 13081337066,
+    "archiveSha256": "c79c020a1a74201612edd1d4d2c530cbd50a568bda5084e2ca43d049e84fad3a",
+    "archiveBytes": 2134494,
+    "archiveReceiptSha256": "bb7fd59365014e8e524608c989d3f7d875d8d148b80dd8fc3f7ca12ae7362034",
+    "sourceManifestSha256": "03aaeeabfc218b8d22c126b6361d3bf54a9064921504e45047d4bf386d47c577",
+    "rawNativeLogSha256": "c838793b5d237501baec3c40fd0f5360231e8a0ea3787de83ab07bcd1d2b2683",
+    "originalMembers": [
+      {
+        "name": "native-original-input-model-modifiers-capture.json",
+        "bytes": 284958,
+        "sha256": "cc28c88594c59dd4b11a52a71f05540e3ab64e62fdc3939bb8940448161ee883",
+        "crc32": 398089209
+      },
+      {
+        "name": "native-original-input-model-modifiers-capture.json.statuses.json",
+        "bytes": 147,
+        "sha256": "0141ea1cc17514b53f8eaac0252904c72f6bd5e163e4afb10f9a8876022ed889",
+        "crc32": 4293449325
+      },
+      {
+        "name": "native-original-input-model-modifiers-primary.dom.development.json",
+        "bytes": 569782,
+        "sha256": "8f0a6395835a567d6d5390e9c11b289244ba2a96ce08acbe13d83954fcf7838e",
+        "crc32": 3793635432
+      },
+      {
+        "name": "native-original-input-model-modifiers-runtime.dom.development.json",
+        "bytes": 2871564,
+        "sha256": "7f0bb774518ecb308ae2828b6a8371025ea39b9878e9ac84be9634fe2f1fd92b",
+        "crc32": 368224107
+      },
+      {
+        "name": "native-original-input-model-modifiers-primary.dom.production.json",
+        "bytes": 569361,
+        "sha256": "fd0c634b98aaf141367e19edd1d363017fbbb20f68275bfdfa84b8b8d72e5f8a",
+        "crc32": 2817056390
+      },
+      {
+        "name": "native-original-input-model-modifiers-runtime.dom.production.json",
+        "bytes": 2871149,
+        "sha256": "60f3c97e4b2788f2bf612d4c384dc8a722d84e542e07626fd6e842845a0dc551",
+        "crc32": 2735468210
+      },
+      {
+        "name": "native-original-input-model-modifiers-primary.ssr.development.json",
+        "bytes": 595399,
+        "sha256": "c6fc3b4716a4b69a9392200b878b7288caea990408877687acc78cdfb6541aba",
+        "crc32": 3563174093
+      },
+      {
+        "name": "native-original-input-model-modifiers-runtime.ssr.development.json",
+        "bytes": 7171669,
+        "sha256": "aba3dd936c55ad785ac1aad4e83600b6d79189581b4f38d273b1c78f56d51e78",
+        "crc32": 3998602754
+      },
+      {
+        "name": "native-original-input-model-modifiers-primary.ssr.production.json",
+        "bytes": 595386,
+        "sha256": "b542bfe3c620c25db83f80f5f0f254294bde99c190ceefebb9f50ae1e1da9153",
+        "crc32": 2448530456
+      },
+      {
+        "name": "native-original-input-model-modifiers-runtime.ssr.production.json",
+        "bytes": 7171662,
+        "sha256": "7a14a130389cc797e8168b1e8138d2f06463cc6a02a3443def69069e13205d75",
+        "crc32": 2133228495
+      },
+      {
+        "name": "native-original-input-model-modifiers-primary.vapor.development.json",
+        "bytes": 1887287,
+        "sha256": "0179caf359c8ec2a39dff0a7344c638d54f5fdde04fdc0fec7ce103b59919b8d",
+        "crc32": 2967107082
+      },
+      {
+        "name": "native-original-input-model-modifiers-runtime.vapor.development.json",
+        "bytes": 1393293,
+        "sha256": "92bad0afbe81afea45e277777af5aea00efa487ca9c8d89ea2c2428f2fb6890e",
+        "crc32": 3783866365
+      },
+      {
+        "name": "native-original-input-model-modifiers-primary.vapor.production.json",
+        "bytes": 1887250,
+        "sha256": "79dace3a86104ca1235195e0dc6cb0c34c76085dade541ac5521140766ebb22a",
+        "crc32": 2675527735
+      },
+      {
+        "name": "native-original-input-model-modifiers-runtime.vapor.production.json",
+        "bytes": 1391302,
+        "sha256": "837742cac90b7b1c0d9044a44727839a805235b52483a9fb89741489aacf4266",
+        "crc32": 441627545
+      }
+    ],
+    "statuses": {
+      "l1": 0,
+      "l2": 0,
+      "l3": 0,
+      "rust": 0,
+      "domDevelopment": 0,
+      "domProduction": 0,
+      "ssrDevelopment": 0,
+      "ssrProduction": 0,
+      "vaporDevelopment": 0,
+      "vaporProduction": 0
+    },
+    "all47OldPacksByteIdentical": true,
+    "nativeGoldenComparisonPerformedAtCapture": false,
+    "wholePacketQualificationAtCapture": false,
+    "scope": "single original lazy/trim, six original inputs and explicit current outside successors; no default/general/public Model or whole Davinci qualification"
+  },
+  "arrays": {
+    "dom": [
+      {
+        "id": "const",
+        "mode": "development",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>const draft='x'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "const",
+        "mode": "production",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>const draft='x'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "unresolved",
+        "mode": "development",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let other='x'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "unresolved",
+        "mode": "production",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let other='x'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "member",
+        "mode": "development",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft.value'/></template>"
+      },
+      {
+        "id": "member",
+        "mode": "production",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft.value'/></template>"
+      },
+      {
+        "id": "modifier",
+        "mode": "development",
+        "result": {
+          "code": "import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet draft='x'\n;\n    const __returned__ = {\n      get draft() { return draft },\n      set draft(__value) { draft = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _withDirectives((_openBlock(), _createElementBlock(\"input\", {\n    \"onUpdate:modelValue\": $event => (($setup.draft) = $event)\n  }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"])), [\n    [_vModelText, $setup.draft, void 0, { lazy: true }]\n  ])\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+          "nativeMapRaw": null,
+          "state": "emitted"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>"
+      },
+      {
+        "id": "modifier",
+        "mode": "production",
+        "result": {
+          "code": "import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet draft='x'\n;\n    const __returned__ = {\n      get draft() { return draft },\n      set draft(__value) { draft = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _withDirectives((_openBlock(), _createElementBlock(\"input\", {\n    \"onUpdate:modelValue\": $event => (($setup.draft) = $event)\n  }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"])), [\n    [_vModelText, $setup.draft, void 0, { lazy: true }]\n  ])\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+          "nativeMapRaw": null,
+          "state": "emitted"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>"
+      },
+      {
+        "id": "argument",
+        "mode": "development",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model:value='draft'/></template>"
+      },
+      {
+        "id": "argument",
+        "mode": "production",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model:value='draft'/></template>"
+      },
+      {
+        "id": "late-header",
+        "mode": "development",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft' :class='draft'/></template>"
+      },
+      {
+        "id": "late-header",
+        "mode": "production",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft' :class='draft'/></template>"
+      },
+      {
+        "id": "sibling",
+        "mode": "development",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft'/><b/></template>"
+      },
+      {
+        "id": "sibling",
+        "mode": "production",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft'/><b/></template>"
+      },
+      {
+        "id": "nested",
+        "mode": "development",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><div><input v-model='draft'/></div></template>"
+      },
+      {
+        "id": "nested",
+        "mode": "production",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><div><input v-model='draft'/></div></template>"
+      },
+      {
+        "id": "unknown-initializer",
+        "mode": "development",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "unknown-initializer",
+        "mode": "production",
+        "result": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "nul-string",
+        "mode": "development",
+        "result": {
+          "error": "Dom(DomError { node: Some(NodeId(1)), span: Span { start: 56, end: 71 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='a\\0b'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "nul-string",
+        "mode": "production",
+        "result": {
+          "error": "Dom(DomError { node: Some(NodeId(1)), span: Span { start: 56, end: 71 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='a\\0b'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "cr-string",
+        "mode": "development",
+        "result": {
+          "error": "Dom(DomError { node: Some(NodeId(1)), span: Span { start: 56, end: 71 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='a\\rb'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "cr-string",
+        "mode": "production",
+        "result": {
+          "error": "Dom(DomError { node: Some(NodeId(1)), span: Span { start: 56, end: 71 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='a\\rb'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "lone-surrogate",
+        "mode": "development",
+        "result": {
+          "error": "Dom(DomError { node: Some(NodeId(1)), span: Span { start: 58, end: 73 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='\\uD800'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "lone-surrogate",
+        "mode": "production",
+        "result": {
+          "error": "Dom(DomError { node: Some(NodeId(1)), span: Span { start: 58, end: 73 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='\\uD800'</script><template><input v-model='draft'/></template>"
+      }
+    ],
+    "ssr": [
+      {
+        "id": "const",
+        "result": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 48, end: 72 }, kind: Template(NativeTemplateIssue { span: Span { start: 48, end: 72 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "source": "<script setup>const draft='x'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "unresolved",
+        "result": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 70 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 70 }, kind: Artifact(InvalidSpan { node: None, span: Span { start: 62, end: 67 } }) }) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let other='x'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "member",
+        "result": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 76 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 76 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft.value'/></template>"
+      },
+      {
+        "id": "modifier",
+        "result": {
+          "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrGetDynamicModelProps as _ssrGetDynamicModelProps } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet draft='x'\n;\n    const __returned__ = {\n      get draft() { return draft },\n      set draft(__value) { draft = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<input${_ssrRenderAttrs(_mergeProps(_attrs, _ssrGetDynamicModelProps(_attrs, $setup.draft)))}>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+          "nativeMapRaw": null,
+          "state": "emitted"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>"
+      },
+      {
+        "id": "argument",
+        "result": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 76 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 76 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model:value='draft'/></template>"
+      },
+      {
+        "id": "late-header",
+        "result": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 85 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 85 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft' :class='draft'/></template>"
+      },
+      {
+        "id": "sibling",
+        "result": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 74 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 74 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft'/><b/></template>"
+      },
+      {
+        "id": "nested",
+        "result": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 81 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 81 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><div><input v-model='draft'/></div></template>"
+      },
+      {
+        "id": "unknown-initializer",
+        "result": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 14, end: 23 }, kind: Template(NativeTemplateIssue { span: Span { start: 14, end: 23 }, kind: SetupPolicy(UnsupportedSyntax) }) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "nul-string",
+        "result": {
+          "error": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 56, end: 71 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='a\\0b'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "cr-string",
+        "result": {
+          "error": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 56, end: 71 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='a\\rb'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "lone-surrogate",
+        "result": {
+          "error": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 58, end: 73 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='\\uD800'</script><template><input v-model='draft'/></template>"
+      }
+    ],
+    "vapor": [
+      {
+        "id": "const",
+        "result": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 48, end: 72 }, kind: Template(NativeTemplateIssue { span: Span { start: 48, end: 72 }, kind: UnsupportedChild }) })",
+          "stage": "source",
+          "state": "refused"
+        },
+        "source": "<script setup>const draft='x'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "unresolved",
+        "result": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 70 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 70 }, kind: Artifact(InvalidSpan { node: None, span: Span { start: 62, end: 67 } }) }) })",
+          "stage": "source",
+          "state": "refused"
+        },
+        "source": "<script setup>let other='x'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "member",
+        "result": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 76 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 76 }, kind: UnsupportedChild }) })",
+          "stage": "source",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft.value'/></template>"
+      },
+      {
+        "id": "modifier",
+        "result": {
+          "code": "import { applyTextModel as _applyTextModel, unref as _unref, isRef as _isRef, template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst __vizeModelRuntime = { apply: _applyTextModel, read: _unref, isRef: _isRef }\nconst t0 = _template(\"<input>\", 1)\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nlet draft='x'\n;\n\n    const n0 = t0()\n    __vizeModelRuntime.apply(n0, () => __vizeModelRuntime.read(draft), __vizeModelValue => (__vizeModelRuntime.isRef(draft) ? (draft.value = __vizeModelValue) : (draft = __vizeModelValue)), { lazy: true })\n    return n0\n  }\n})\nexport default _sfc_main\n",
+          "nativeMapRaw": null,
+          "state": "emitted"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>"
+      },
+      {
+        "id": "argument",
+        "result": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 76 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 76 }, kind: UnsupportedChild }) })",
+          "stage": "source",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model:value='draft'/></template>"
+      },
+      {
+        "id": "late-header",
+        "result": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 85 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 85 }, kind: UnsupportedChild }) })",
+          "stage": "source",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft' :class='draft'/></template>"
+      },
+      {
+        "id": "sibling",
+        "result": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 74 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 74 }, kind: UnsupportedChild }) })",
+          "stage": "source",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft'/><b/></template>"
+      },
+      {
+        "id": "nested",
+        "result": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 81 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 81 }, kind: UnsupportedChild }) })",
+          "stage": "source",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='x'</script><template><div><input v-model='draft'/></div></template>"
+      },
+      {
+        "id": "unknown-initializer",
+        "result": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 14, end: 23 }, kind: Template(NativeTemplateIssue { span: Span { start: 14, end: 23 }, kind: SetupPolicy(UnsupportedSyntax) }) })",
+          "stage": "source",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "nul-string",
+        "result": {
+          "error": "Vapor(VaporError { node: Some(NodeId(0)), span: Span { start: 49, end: 73 }, kind: Unsupported(ElementSemantics) })",
+          "stage": "vapor",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='a\\0b'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "cr-string",
+        "result": {
+          "error": "Vapor(VaporError { node: Some(NodeId(0)), span: Span { start: 49, end: 73 }, kind: Unsupported(ElementSemantics) })",
+          "stage": "vapor",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='a\\rb'</script><template><input v-model='draft'/></template>"
+      },
+      {
+        "id": "lone-surrogate",
+        "result": {
+          "error": "Vapor(VaporError { node: Some(NodeId(0)), span: Span { start: 51, end: 75 }, kind: Unsupported(ElementSemantics) })",
+          "stage": "vapor",
+          "state": "refused"
+        },
+        "source": "<script setup>let draft='\\uD800'</script><template><input v-model='draft'/></template>"
+      }
+    ],
+    "trim": [
+      {
+        "attempt": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "id": "const",
+        "source": "<script setup>const draft='x'</script><template><input v-model='draft'/></template>",
+        "target": "dom"
+      },
+      {
+        "attempt": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "id": "unresolved",
+        "source": "<script setup>let other='x'</script><template><input v-model='draft'/></template>",
+        "target": "dom"
+      },
+      {
+        "attempt": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "id": "member",
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft.value'/></template>",
+        "target": "dom"
+      },
+      {
+        "attempt": {
+          "code": "import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet draft='x'\n;\n    const __returned__ = {\n      get draft() { return draft },\n      set draft(__value) { draft = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _withDirectives((_openBlock(), _createElementBlock(\"input\", {\n    \"onUpdate:modelValue\": $event => (($setup.draft) = $event)\n  }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"])), [\n    [_vModelText, $setup.draft, void 0, { lazy: true }]\n  ])\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+          "linkCount": 0,
+          "nativeMap": null,
+          "nativeMapRaw": null,
+          "state": "emitted"
+        },
+        "id": "modifier",
+        "source": "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>",
+        "target": "dom"
+      },
+      {
+        "attempt": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "id": "argument",
+        "source": "<script setup>let draft='x'</script><template><input v-model:value='draft'/></template>",
+        "target": "dom"
+      },
+      {
+        "attempt": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "id": "late-header",
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft' :class='draft'/></template>",
+        "target": "dom"
+      },
+      {
+        "attempt": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "id": "sibling",
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft'/><b/></template>",
+        "target": "dom"
+      },
+      {
+        "attempt": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "id": "nested",
+        "source": "<script setup>let draft='x'</script><template><div><input v-model='draft'/></div></template>",
+        "target": "dom"
+      },
+      {
+        "attempt": {
+          "error": "Observation",
+          "state": "refused"
+        },
+        "id": "unknown-initializer",
+        "source": "<script setup>let draft</script><template><input v-model='draft'/></template>",
+        "target": "dom"
+      },
+      {
+        "attempt": {
+          "error": "Dom(DomError { node: Some(NodeId(1)), span: Span { start: 56, end: 71 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "id": "nul-string",
+        "source": "<script setup>let draft='a\\0b'</script><template><input v-model='draft'/></template>",
+        "target": "dom"
+      },
+      {
+        "attempt": {
+          "error": "Dom(DomError { node: Some(NodeId(1)), span: Span { start: 56, end: 71 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "id": "cr-string",
+        "source": "<script setup>let draft='a\\rb'</script><template><input v-model='draft'/></template>",
+        "target": "dom"
+      },
+      {
+        "attempt": {
+          "error": "Dom(DomError { node: Some(NodeId(1)), span: Span { start: 58, end: 73 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "id": "lone-surrogate",
+        "source": "<script setup>let draft='\\uD800'</script><template><input v-model='draft'/></template>",
+        "target": "dom"
+      },
+      {
+        "attempt": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 48, end: 72 }, kind: Template(NativeTemplateIssue { span: Span { start: 48, end: 72 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "id": "const",
+        "source": "<script setup>const draft='x'</script><template><input v-model='draft'/></template>",
+        "target": "ssr"
+      },
+      {
+        "attempt": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 70 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 70 }, kind: Artifact(InvalidSpan { node: None, span: Span { start: 62, end: 67 } }) }) })",
+          "state": "refused"
+        },
+        "id": "unresolved",
+        "source": "<script setup>let other='x'</script><template><input v-model='draft'/></template>",
+        "target": "ssr"
+      },
+      {
+        "attempt": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 76 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 76 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "id": "member",
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft.value'/></template>",
+        "target": "ssr"
+      },
+      {
+        "attempt": {
+          "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrGetDynamicModelProps as _ssrGetDynamicModelProps } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet draft='x'\n;\n    const __returned__ = {\n      get draft() { return draft },\n      set draft(__value) { draft = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<input${_ssrRenderAttrs(_mergeProps(_attrs, _ssrGetDynamicModelProps(_attrs, $setup.draft)))}>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+          "linkCount": 0,
+          "nativeMap": null,
+          "nativeMapRaw": null,
+          "state": "emitted"
+        },
+        "id": "modifier",
+        "source": "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>",
+        "target": "ssr"
+      },
+      {
+        "attempt": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 76 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 76 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "id": "argument",
+        "source": "<script setup>let draft='x'</script><template><input v-model:value='draft'/></template>",
+        "target": "ssr"
+      },
+      {
+        "attempt": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 85 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 85 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "id": "late-header",
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft' :class='draft'/></template>",
+        "target": "ssr"
+      },
+      {
+        "attempt": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 74 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 74 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "id": "sibling",
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft'/><b/></template>",
+        "target": "ssr"
+      },
+      {
+        "attempt": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 81 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 81 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "id": "nested",
+        "source": "<script setup>let draft='x'</script><template><div><input v-model='draft'/></div></template>",
+        "target": "ssr"
+      },
+      {
+        "attempt": {
+          "error": "Lowering(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 14, end: 23 }, kind: Template(NativeTemplateIssue { span: Span { start: 14, end: 23 }, kind: SetupPolicy(UnsupportedSyntax) }) })",
+          "state": "refused"
+        },
+        "id": "unknown-initializer",
+        "source": "<script setup>let draft</script><template><input v-model='draft'/></template>",
+        "target": "ssr"
+      },
+      {
+        "attempt": {
+          "error": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 56, end: 71 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "id": "nul-string",
+        "source": "<script setup>let draft='a\\0b'</script><template><input v-model='draft'/></template>",
+        "target": "ssr"
+      },
+      {
+        "attempt": {
+          "error": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 56, end: 71 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "id": "cr-string",
+        "source": "<script setup>let draft='a\\rb'</script><template><input v-model='draft'/></template>",
+        "target": "ssr"
+      },
+      {
+        "attempt": {
+          "error": "Ssr(SsrError { node: Some(NodeId(1)), span: Span { start: 58, end: 73 }, kind: Unsupported(FileBinding) })",
+          "state": "refused"
+        },
+        "id": "lone-surrogate",
+        "source": "<script setup>let draft='\\uD800'</script><template><input v-model='draft'/></template>",
+        "target": "ssr"
+      },
+      {
+        "attempt": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 48, end: 72 }, kind: Template(NativeTemplateIssue { span: Span { start: 48, end: 72 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "id": "const",
+        "source": "<script setup>const draft='x'</script><template><input v-model='draft'/></template>",
+        "target": "vapor"
+      },
+      {
+        "attempt": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 70 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 70 }, kind: Artifact(InvalidSpan { node: None, span: Span { start: 62, end: 67 } }) }) })",
+          "state": "refused"
+        },
+        "id": "unresolved",
+        "source": "<script setup>let other='x'</script><template><input v-model='draft'/></template>",
+        "target": "vapor"
+      },
+      {
+        "attempt": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 76 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 76 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "id": "member",
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft.value'/></template>",
+        "target": "vapor"
+      },
+      {
+        "attempt": {
+          "code": "import { applyTextModel as _applyTextModel, unref as _unref, isRef as _isRef, template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst __vizeModelRuntime = { apply: _applyTextModel, read: _unref, isRef: _isRef }\nconst t0 = _template(\"<input>\", 1)\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nlet draft='x'\n;\n\n    const n0 = t0()\n    __vizeModelRuntime.apply(n0, () => __vizeModelRuntime.read(draft), __vizeModelValue => (__vizeModelRuntime.isRef(draft) ? (draft.value = __vizeModelValue) : (draft = __vizeModelValue)), { lazy: true })\n    return n0\n  }\n})\nexport default _sfc_main\n",
+          "linkCount": 0,
+          "nativeMap": null,
+          "nativeMapRaw": null,
+          "state": "emitted"
+        },
+        "id": "modifier",
+        "source": "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>",
+        "target": "vapor"
+      },
+      {
+        "attempt": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 76 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 76 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "id": "argument",
+        "source": "<script setup>let draft='x'</script><template><input v-model:value='draft'/></template>",
+        "target": "vapor"
+      },
+      {
+        "attempt": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 85 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 85 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "id": "late-header",
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft' :class='draft'/></template>",
+        "target": "vapor"
+      },
+      {
+        "attempt": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 74 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 74 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "id": "sibling",
+        "source": "<script setup>let draft='x'</script><template><input v-model='draft'/><b/></template>",
+        "target": "vapor"
+      },
+      {
+        "attempt": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 46, end: 81 }, kind: Template(NativeTemplateIssue { span: Span { start: 46, end: 81 }, kind: UnsupportedChild }) })",
+          "state": "refused"
+        },
+        "id": "nested",
+        "source": "<script setup>let draft='x'</script><template><div><input v-model='draft'/></div></template>",
+        "target": "vapor"
+      },
+      {
+        "attempt": {
+          "error": "Source(NativeSelectedSfcIssue { container_index: Some(1), span: Span { start: 14, end: 23 }, kind: Template(NativeTemplateIssue { span: Span { start: 14, end: 23 }, kind: SetupPolicy(UnsupportedSyntax) }) })",
+          "state": "refused"
+        },
+        "id": "unknown-initializer",
+        "source": "<script setup>let draft</script><template><input v-model='draft'/></template>",
+        "target": "vapor"
+      },
+      {
+        "attempt": {
+          "error": "Vapor(VaporError { node: Some(NodeId(0)), span: Span { start: 49, end: 73 }, kind: Unsupported(ElementSemantics) })",
+          "state": "refused"
+        },
+        "id": "nul-string",
+        "source": "<script setup>let draft='a\\0b'</script><template><input v-model='draft'/></template>",
+        "target": "vapor"
+      },
+      {
+        "attempt": {
+          "error": "Vapor(VaporError { node: Some(NodeId(0)), span: Span { start: 49, end: 73 }, kind: Unsupported(ElementSemantics) })",
+          "state": "refused"
+        },
+        "id": "cr-string",
+        "source": "<script setup>let draft='a\\rb'</script><template><input v-model='draft'/></template>",
+        "target": "vapor"
+      },
+      {
+        "attempt": {
+          "error": "Vapor(VaporError { node: Some(NodeId(0)), span: Span { start: 51, end: 75 }, kind: Unsupported(ElementSemantics) })",
+          "state": "refused"
+        },
+        "id": "lone-surrogate",
+        "source": "<script setup>let draft='\\uD800'</script><template><input v-model='draft'/></template>",
+        "target": "vapor"
+      }
+    ]
+  }
+}

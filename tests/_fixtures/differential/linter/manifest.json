@@ -2518,6 +2518,35 @@
       }
     },
     {
+      "id": "linter/native-numeric-key-modifiers-6848",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "native-numeric-key-modifiers-6848",
+        "files": [
+          {
+            "path": "Original.html.txt",
+            "sha256": "a26b5565bfcd95210a970e18e00f2f5b6bf41f3d01debdfd22f75335ba228713"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/next-tick-vapor-gating-10784",
       "state": "active",
       "targets": ["lint"],

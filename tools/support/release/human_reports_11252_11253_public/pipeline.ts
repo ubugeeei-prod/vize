@@ -3,12 +3,22 @@ import { mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { inside } from "../computed_event_custody.ts";
-import type { Bundle, CommandPlan, Fixture, Observation, Request, SourceFile } from "./model.ts";
+import type {
+  Bundle,
+  CaptureInstallReceipt,
+  CommandPlan,
+  Fixture,
+  InstallationFacts,
+  InstallReceipt,
+  Observation,
+  Request,
+  SourceFile,
+} from "./model.ts";
 import { authenticateRelease } from "./authority.ts";
 import { beforeCommands, requireCaptureReady } from "./recipes.ts";
 import { assertOriginal, validateFiles } from "./fixtures.ts";
 import { argumentsFor, validateOwnedCommands } from "./commands.ts";
-import { installPublic, recheckInstalled } from "./installer.ts";
+import { preparePublic, recheckInstalled } from "./installer.ts";
 import { manifestBytes } from "./installation.ts";
 import { githubReader } from "./network.ts";
 import { recordCommand } from "./capture.ts";
@@ -44,6 +54,56 @@ function sourceInputs(fixture: Fixture, version: string, supplement: boolean): S
 function checkInputs(command: CommandPlan, root: string): void {
   for (const source of command.sourceFiles)
     assert(readFileSync(join(root, source.path)).equals(bytes(source.base64)));
+}
+export function retainCaptureBeforeQualification(
+  capture: {
+    request: Request;
+    release: Bundle["release"];
+    installs: CaptureInstallReceipt[];
+    observations: Observation[];
+    companions: Observation[];
+    controller: Bundle["controller"];
+  },
+  save: (value: unknown) => void,
+  qualify: () => InstallReceipt[],
+): InstallReceipt[] {
+  for (const install of capture.installs)
+    assert.equal(install.schema, "vize.humanReports11252_11253.capturePrerequisites.v1");
+  save({
+    ...capture,
+    schema: "vize.humanReports11252_11253.unqualifiedCapture.v1",
+    completeInstalledFileSetQualified: false,
+    accepted: false,
+    productQualified: false,
+    afterQualified: false,
+    issueQualified: false,
+    outcomeAssessed: false,
+  });
+  const qualified = qualify();
+  assert.deepEqual(
+    qualified.map((i) => i.kind),
+    capture.installs.map((i) => i.kind),
+  );
+  for (const install of qualified) {
+    assert.equal(
+      install.schema,
+      "vize.humanReports11252_11253.install.v1",
+      "pending capture cannot become a qualified installation",
+    );
+    assert(
+      !("completeInstalledFileSetQualified" in install),
+      "pending verdict cannot cross strict egress",
+    );
+    assert(install.packages.length > 0);
+    for (const pkg of install.packages) {
+      assert(
+        !("completeInstalledFileSetQualified" in pkg),
+        "pending package cannot cross strict egress",
+      );
+      assert(typeof pkg.allInstalledBytesEqualArchive === "boolean");
+    }
+  }
+  return qualified;
 }
 export async function runPublic(
   request: Request,
@@ -81,6 +141,12 @@ export async function runPublic(
   };
   write("execution-start.json", running);
   const toolFiles = controllerFiles();
+  const checkController = () =>
+    assert.deepEqual(
+      controllerFiles(),
+      toolFiles,
+      "controller/generic helper bytes changed; execute no further command",
+    );
   const sink = evidenceSink(output),
     github = githubReader(sink);
   const controller = {
@@ -111,8 +177,9 @@ export async function runPublic(
           : await authenticateSourceAdmission(request, github),
       );
     const archiveCache = new Map<string, Buffer>();
-    const installs = [
-      await installPublic(
+    checkController();
+    const prepared = [
+      await preparePublic(
         join(output, "consumer-original"),
         "original",
         fixture,
@@ -126,8 +193,8 @@ export async function runPublic(
       ),
     ];
     if (recipe.tsrs)
-      installs.push(
-        await installPublic(
+      prepared.push(
+        await preparePublic(
           join(output, "consumer-tsrs-supplement"),
           "tsrs-supplement",
           fixture,
@@ -140,7 +207,26 @@ export async function runPublic(
           binPolicy,
         ),
       );
+    // A pending capture installation is never an InstallReceipt or a Bundle.
+    // Strict acceptance still qualifies before execution. Observation-only
+    // modes preserve complete raw vectors before the final complete-set guard.
+    const qualifiedBeforeCommands =
+      request.mode === "ACCEPT_AFTER"
+        ? prepared.map((installation) => installation.qualify())
+        : null;
+    const installs: InstallationFacts[] = qualifiedBeforeCommands ?? prepared.map((p) => p.capture);
+    const recheck = (install: InstallationFacts, expectedManifest?: Buffer) => {
+      const current = prepared.find((row) => row.capture.kind === install.kind);
+      assert(current);
+      current.recheck(expectedManifest);
+      if (qualifiedBeforeCommands) {
+        const qualified = qualifiedBeforeCommands.find((row) => row.kind === install.kind);
+        assert(qualified);
+        recheckInstalled(qualified, expectedManifest);
+      }
+    };
     if (request.release.phase === "before") {
+      checkController();
       request.commands = beforeCommands[request.role].map((id): CommandPlan => {
         const consumer = id.includes("tsrs") ? "tsrs-supplement" : "original";
         const install = installs.find((v) => v.kind === consumer);
@@ -168,6 +254,7 @@ export async function runPublic(
         };
       });
     } else {
+      checkController();
       for (const command of request.commands) {
         const install = installs.find((v) => v.kind === command.consumer);
         assert(install);
@@ -227,8 +314,9 @@ export async function runPublic(
           );
         }
         sink("pre-payload-witness", payloadWitness(install));
+        checkController();
         const beforePackage = planned?.before.present.find((f) => f.path === "package.json");
-        recheckInstalled(install, beforePackage ? bytes(beforePackage.base64) : undefined);
+        recheck(install, beforePackage ? bytes(beforePackage.base64) : undefined);
         const row = recordCommand(command, install, output, companion, sink, Boolean(planned));
         (companion ? companions : observations).push(row);
         write(`${command.id}.${companion ? "companion" : "original"}.observation.json`, row);
@@ -240,14 +328,35 @@ export async function runPublic(
         sink("post-payload-witness", payloadWitness(install));
         checkInputs(command, install.root);
         const afterPackage = planned?.after.present.find((f) => f.path === "package.json");
-        recheckInstalled(install, afterPackage ? bytes(afterPackage.base64) : undefined);
+        recheck(install, afterPackage ? bytes(afterPackage.base64) : undefined);
       }
     assert.deepEqual(
       controllerFiles(),
       toolFiles,
       "controller/generic helper bytes changed during public collection",
     );
-    const bundle: Bundle = { request, release, installs, observations, companions, controller };
+    const qualified =
+      qualifiedBeforeCommands ??
+      retainCaptureBeforeQualification(
+        {
+          request,
+          release,
+          installs: prepared.map((p) => p.capture),
+          observations,
+          companions,
+          controller,
+        },
+        (raw) => write("unqualified-capture.json", raw),
+        () => prepared.map((installation) => installation.qualify()),
+      );
+    const bundle: Bundle = {
+      request,
+      release,
+      installs: qualified,
+      observations,
+      companions,
+      controller,
+    };
     write("bundle.json", bundle);
     if (request.release.phase === "before") {
       for (const plan of request.commands) {

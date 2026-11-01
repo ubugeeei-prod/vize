@@ -28,6 +28,7 @@ import {
 import {
   assertMacFiles,
   macJournalExit,
+  macObservation,
   macVerdicts,
 } from "../../tools/support/release/formatter_profiles_public/mac_run.ts";
 import {
@@ -35,7 +36,7 @@ import {
   assertFullFalse,
 } from "../../tools/support/release/formatter_profiles_public/mac_reference.ts";
 import { inventory } from "../../tools/support/release/editor_vite_stub/filesystem.ts";
-import { sha256 } from "../../tools/support/config/windows_consumer/common.ts";
+import { Recorder, sha256 } from "../../tools/support/config/windows_consumer/common.ts";
 
 const valid = {
   version: "0.628.0",
@@ -128,6 +129,103 @@ test("original help and version preserve Rust clap exits while successful fmt re
   assert.equal(macJournalExit("original-version"), null);
   for (const label of ["equals-original", "spaced-rewrite", "true-control-check"])
     assert.equal(macJournalExit(label), 0);
+});
+
+test("per-command and whole reports never serialize the private child environment or unknown secrets", () => {
+  const temporary = mkdtempSync(join(tmpdir(), "vize-mac-custody-canary-"));
+  const token = "synthetic-private-github-canary",
+    unknown = "synthetic-unknown-custody-canary";
+  const privateCustody = {
+    journal: "/controlled/original.native.ndjson",
+    env: {
+      GITHUB_TOKEN: token,
+      UNKNOWN_SECRET: unknown,
+      ENCODED_SECRET: Buffer.from(unknown).toString("base64"),
+    },
+    extraPrivateCarrier: { token, nested: [unknown] },
+  };
+  const input = {
+    label: "original",
+    args: ["fmt", "a.vue", "--no-config"],
+    packet: {
+      label: "original",
+      argv: ["node", "cli", "fmt", "a.vue", "--no-config"],
+      cwd: "/controlled",
+      status: 0,
+      signal: null,
+      error: null,
+      stdout: "complete original stdout\n",
+      stderr: "complete original stderr\n",
+      durationMs: 3,
+    },
+    before: [],
+    after: [],
+    outputRawBase64: Buffer.from("complete product output").toString("base64"),
+    custody: privateCustody,
+    writable: ["a.vue"],
+    extraUnknownSecret: unknown,
+  };
+  try {
+    const row = macObservation(input);
+    assert.deepEqual(row, {
+      label: input.label,
+      args: input.args,
+      packet: input.packet,
+      before: input.before,
+      after: input.after,
+      outputRawBase64: input.outputRawBase64,
+      custody: { journal: privateCustody.journal },
+      writable: input.writable,
+    });
+    const record = new Recorder(temporary);
+    record.json("original.observation.json", row);
+    record.json("whole-observations.json", {
+      rows: [row],
+      outcomes: [{ name: "equals", rawBase64: row.outputRawBase64 }],
+    });
+    const forbidden = [
+      token,
+      unknown,
+      Buffer.from(token).toString("base64"),
+      Buffer.from(unknown).toString("base64"),
+    ];
+    function inspect(value: unknown): void {
+      if (typeof value === "string")
+        for (const canary of forbidden) assert(!value.includes(canary));
+      else if (Array.isArray(value)) for (const item of value) inspect(item);
+      else if (value !== null && typeof value === "object")
+        for (const [key, item] of Object.entries(value)) {
+          assert(
+            ![
+              "env",
+              "GITHUB_TOKEN",
+              "UNKNOWN_SECRET",
+              "ENCODED_SECRET",
+              "extraPrivateCarrier",
+              "extraUnknownSecret",
+            ].includes(key),
+          );
+          inspect(item);
+        }
+    }
+    for (const name of ["original.observation.json", "whole-observations.json"]) {
+      const raw = readFileSync(join(temporary, name), "utf8");
+      for (const canary of forbidden) assert(!raw.includes(canary));
+      inspect(JSON.parse(raw));
+    }
+    assert.throws(
+      () => inspect(JSON.parse(JSON.stringify({ ...row, custody: privateCustody }))),
+      "the former full-carrier serialization must fail the recursive privacy guard",
+    );
+    assert.equal(
+      privateCustody.env.GITHUB_TOKEN,
+      token,
+      "the original child execution environment remains intact",
+    );
+    assert.equal(privateCustody.env.UNKNOWN_SECRET, unknown);
+  } finally {
+    rmSync(temporary, { recursive: true });
+  }
 });
 
 test("whole source reference rejects false agreement assembled from every genuinely observed wrong alternative", () => {

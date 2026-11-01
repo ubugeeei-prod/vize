@@ -23,6 +23,9 @@ pub(in crate::native) enum AttributeBinding<'a> {
     DynamicBind {
         argument: Span,
     },
+    On {
+        argument: Span,
+    },
     Other {
         full_directive_name: Option<&'a str>,
     },
@@ -120,12 +123,39 @@ impl<'o, 'a> CheckedAttribute<'o, 'a> {
                 full_directive_name,
                 range,
             },
-            AttributeBinding::DynamicBind { .. } => {
+            AttributeBinding::DynamicBind { .. } | AttributeBinding::On { .. } => {
                 return Err(NativeLintRefusal::UnresolvedBinding {
                     span: self.head_span,
                 });
             }
         })
+    }
+
+    /// Separate event-only capability. Other profiles never acquire this head.
+    pub(in crate::native) fn event_binding(
+        &self,
+    ) -> Result<AttributeBinding<'a>, NativeLintRefusal> {
+        let Some(head) = self.head.filter(|_| !self.literal) else {
+            return self.binding::<false>();
+        };
+        let on = head.prefix == DirectivePrefix::On
+            || (head.prefix == DirectivePrefix::Full
+                && attribute::project(self.original.component().block(), head.name)? == "on");
+        if !on {
+            return self.binding::<false>();
+        }
+        let Some(argument @ ArgSyntax::Static(range)) = head.arg else {
+            return Err(NativeLintRefusal::UnsupportedDirective {
+                span: self.head_span,
+            });
+        };
+        self.binding_geometry(head, argument)?;
+        if range.is_empty() || head.modifiers.end != self.head_span.end {
+            return Err(NativeLintRefusal::UnsupportedDirective {
+                span: self.head_span,
+            });
+        }
+        Ok(AttributeBinding::On { argument: range })
     }
 
     pub(in crate::native) fn binding<const WIDE: bool>(
@@ -214,7 +244,9 @@ impl<'o, 'a> CheckedAttribute<'o, 'a> {
         };
         let block = self.original.component().block();
         let origin = match head.prefix {
-            DirectivePrefix::Bind | DirectivePrefix::Prop => self.head_span.start + 1,
+            DirectivePrefix::Bind | DirectivePrefix::Prop | DirectivePrefix::On => {
+                self.head_span.start + 1
+            }
             DirectivePrefix::Full if head.name.end < self.head_span.end => {
                 if attribute::project(block, Span::new(head.name.end, head.name.end + 1))? != ":" {
                     return Err(refusal());

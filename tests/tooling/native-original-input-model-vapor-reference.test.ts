@@ -4,6 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { after, test } from "node:test";
 import {
+  currentModelOutside,
+  isLazyOriginalOutside,
+} from "./support/native-input-model-current-outside.ts";
+import {
   assertModelFixture,
   hash,
   object,
@@ -82,7 +86,7 @@ assert.deepEqual(golden.target, {
 object(golden.provenance);
 assert.equal(golden.provenance.independentlyReviewedBeforeFreeze, true);
 object(golden.native);
-const expectedNative = golden.native;
+const expectedNative: ObjectValue = { ...golden.native, refusals: currentModelOutside("vapor") };
 object(golden.primary);
 object(golden.runtimeResults);
 const expectedPrimary = golden.primary[mode],
@@ -132,7 +136,7 @@ function remember(error: unknown) {
 }
 
 test(
-  "Vapor capture preserves all seven original owners, attempts and twelve actual refusal stages",
+  "Vapor capture preserves all seven original owners, attempts and twelve current outside cases",
   { skip: !captureRequested },
   () => {
     try {
@@ -211,11 +215,16 @@ test(
         captured.refusals.map((row: unknown) => {
           object(row);
           object(row.result);
-          assert.equal(row.result.state, "refused");
-          assert(typeof row.result.error === "string" && row.result.error.length > 0);
-          assert(
-            ["source", "vapor", "analysis", "orchestration"].includes(String(row.result.stage)),
-          );
+          if (isLazyOriginalOutside(row.id, row.source)) {
+            assert.equal(row.result.state, "emitted");
+            assert(typeof row.result.code === "string");
+          } else {
+            assert.equal(row.result.state, "refused");
+            assert(typeof row.result.error === "string" && row.result.error.length > 0);
+            assert(
+              ["source", "vapor", "analysis", "orchestration"].includes(String(row.result.stage)),
+            );
+          }
           return { id: row.id, source: row.source };
         }),
         contextPack.refusals,

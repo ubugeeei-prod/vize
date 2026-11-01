@@ -55,12 +55,18 @@ export interface NaturalSource {
   source: string;
 }
 
+/** Includes absent/deleted carriers so the PR selector cannot omit their removal. */
+export function isNaturalVOnSource(file: string): boolean {
+  return file !== V_ON_GATE && templateCarrierExtensions.has(path.extname(file));
+}
+
+export function isVOnCorpusInput(file: string): boolean {
+  return isNaturalVOnSource(file) || file.startsWith(`${V_ON_CORPUS_DIR}/`);
+}
+
 export function trackedNaturalSources(): NaturalSource[] {
   return gitTrackedFiles(repoRoot)
-    .filter(
-      (file) =>
-        file !== "" && file !== V_ON_GATE && templateCarrierExtensions.has(path.extname(file)),
-    )
+    .filter(isNaturalVOnSource)
     .map((file) => ({
       file,
       source: readFileSync(path.join(repoRoot, file), "utf8").replace(syntheticBoundary, ""),

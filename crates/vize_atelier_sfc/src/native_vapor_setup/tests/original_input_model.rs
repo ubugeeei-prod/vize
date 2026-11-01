@@ -4,7 +4,7 @@ use super::*;
 use sha2::{Digest, Sha256};
 mod custody;
 mod finish;
-mod refusal;
+pub(crate) mod refusal;
 
 #[test]
 fn seven_whole_original_input_model_vapor_components_and_raw_maps_are_captured()

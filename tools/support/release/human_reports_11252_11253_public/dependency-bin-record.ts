@@ -16,8 +16,12 @@ export function validateBinRecord(
   install: InstallReceipt,
   reviewed?: Request["reviewedController"],
 ): void {
-  assert.equal(pkg.name, "vue");
-  assert.equal(pkg.version, "3.5.44");
+  const self = pkg.name === "typescript";
+  assert(self || pkg.name === "vue");
+  assert.equal(
+    pkg.version,
+    self ? (pkg.binContext.role === "runtime-prop-null-11252" ? "7.1.0-beta" : "5.9.3") : "3.5.44",
+  );
   const context = pkg.binContext,
     proof = pkg.sourceConformance;
   assert.equal(context.root, install.root);
@@ -29,6 +33,10 @@ export function validateBinRecord(
   assert.equal(sha256(rawPolicy), context.policy.sha256);
   assert.equal(rawPolicy.length, context.policy.bytes);
   assert.equal(context.lockRawBase64, install.lockRawBase64);
+  assert.deepEqual(
+    context.excludedDependencies ?? [],
+    install.declaredOptionalNotInstalled.filter((row) => row.parentDirectory === pkg.directory),
+  );
   assert.deepEqual(context.manager.originalImage, install.pnpm);
   assert.deepEqual(context.manager.currentImage, install.pnpm);
   assert.equal(context.manager.reportedVersion, install.pnpmVersion);
@@ -53,7 +61,9 @@ export function validateBinRecord(
     assert.equal(images[0]!.bytes, manifest.length);
     assert.equal(images[0]!.sha256, sha256(manifest));
   }
-  const owner = context.dependencyOwners.find((row) => row.name === "typescript");
+  const owner = self
+    ? context.parent
+    : context.dependencyOwners.find((row) => row.name === "typescript");
   assert(owner);
   const ownerRecord = install.packages.find((row) => row.directory === owner.directory);
   assert(ownerRecord);
@@ -78,11 +88,12 @@ export function validateBinRecord(
   assert.equal(proof.generatorSourceConformanceOnly, true);
   assert.equal(proof.publicPayloadBytesEqualArchive, true);
   assert.equal(proof.everyActualEntryAccountedFor, true);
-  assert.equal(proof.publicPayloadCount, 37);
+  if (!self) assert.equal(proof.publicPayloadCount, 37);
+  assert(proof.publicPayloadCount > 0);
   assert.equal(proof.sourceConformantBinCount, bins.length);
   const published = proof.files.filter((row) => row.bucket === "PUBLIC_PAYLOAD");
   const generated = proof.files.filter((row) => row.bucket === "SOURCE_CONFORMANT_BIN");
-  assert.equal(published.length, 37);
+  assert.equal(published.length, proof.publicPayloadCount);
   assert.equal(generated.length, bins.length);
   assert.equal(published.length + generated.length, proof.files.length);
   assert.equal(new Set(proof.files.map((row) => row.path)).size, proof.files.length);

@@ -57,8 +57,8 @@ function pkg(
 }
 /** Independent fixed expected source branch: c7b46a sh.rs:185. This is
  * specified before observed inventory; the production renderer is not called. */
-function expectedNode(bin: string, canonical = false): Buffer {
-  const relative = "../../../typescript/bin/" + bin,
+function expectedNode(bin: string, canonical = false, self = false): Buffer {
+  const relative = (self ? "../../bin/" : "../../../typescript/bin/") + bin,
     p = `"$basedir_abs/${relative}"`,
     w = `"$basedir_win/${relative}"`;
   const exec = `if [ -n "$exe" ] && [ -x "$basedir/node.exe" ]; then\n  exec "$basedir/node.exe"  ${w} "$@"\nelif [ -x "$basedir/node" ]; then\n  exec "$basedir/node"  ${p} "$@"\nelif [ -n "$msys" ] && command -v node >/dev/null 2>&1; then\n  exec node  ${w} "$@"\nelif command -v node >/dev/null 2>&1; then\n  exec node  ${p} "$@"\nelif [ -n "$exe" ] && command -v node.exe >/dev/null 2>&1; then\n  exec node.exe  ${w} "$@"\nelse\n  exec node  ${p} "$@"\nfi\n`;
@@ -67,7 +67,9 @@ function expectedNode(bin: string, canonical = false): Buffer {
       pnpmSource.physicalPrelude +
       pnpmSource.platform +
       (canonical
-        ? 'if [ -z "$NODE_PATH" ]; then\n  export NODE_PATH="$basedir_abs/../../../typescript/node_modules:$basedir_abs/../../..:$basedir_abs/../../../.pnpm/node_modules"\nelse\n  export NODE_PATH="$basedir_abs/../../../typescript/node_modules:$basedir_abs/../../..:$basedir_abs/../../../.pnpm/node_modules:$NODE_PATH"\nfi\n'
+        ? self
+          ? 'if [ -z "$NODE_PATH" ]; then\n  export NODE_PATH="$basedir_abs/..:$basedir_abs/../../..:$basedir_abs/../../../.pnpm/node_modules"\nelse\n  export NODE_PATH="$basedir_abs/..:$basedir_abs/../../..:$basedir_abs/../../../.pnpm/node_modules:$NODE_PATH"\nfi\n'
+          : 'if [ -z "$NODE_PATH" ]; then\n  export NODE_PATH="$basedir_abs/../../../typescript/node_modules:$basedir_abs/../../..:$basedir_abs/../../../.pnpm/node_modules"\nelse\n  export NODE_PATH="$basedir_abs/../../../typescript/node_modules:$basedir_abs/../../..:$basedir_abs/../../../.pnpm/node_modules:$NODE_PATH"\nfi\n'
         : "") +
       exec +
       `# cmd-shim-target=${canonical ? relative : ownerDir + "/bin/" + bin}\n`,
@@ -257,6 +259,14 @@ function fixture(role: HumanBinFacts["role"] = "imports-vue-ts-11253"): HumanBin
     schema: "vize.humanPnpm12161InputPolicy.v1",
     sourceCommit: pnpmSource.sourceCommit,
     bindings: { [role]: sourceInputBinding(facts) },
+    selfBindings: {
+      [role]: sourceInputBinding({
+        ...facts,
+        parent: facts.owner,
+        dependencyOwners: [],
+        graph: [],
+      }),
+    },
     options: {
       extraNodePaths: ["CONSUMER_VIRTUAL_NODE_MODULES"],
       preferSymlinkedExecutables: false,

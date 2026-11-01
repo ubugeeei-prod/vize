@@ -1,4 +1,4 @@
-//! All original outside inputs remain actual attempts with complete errors.
+//! All original outside inputs remain whole current attempts, including lazy.
 
 use serde_json::{Value, json};
 use vize_atelier_sfc::{
@@ -45,8 +45,15 @@ pub(super) fn capture() -> (Vec<Value>, Vec<String>) {
                     continue;
                 }
             };
-            if attempt["state"] != "refused" {
-                failures.push(format!("{target}/{} unexpectedly emitted", input["id"]));
+            let current_lazy = input["id"] == "modifier"
+                && source
+                    == "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>";
+            let expected = if current_lazy { "emitted" } else { "refused" };
+            if attempt["state"] != expected {
+                failures.push(format!(
+                    "{target}/{} differs from current {expected}",
+                    input["id"]
+                ));
             }
             rows.push(json!({"id":input["id"],"source":source,"target":target,"attempt":attempt}));
         }

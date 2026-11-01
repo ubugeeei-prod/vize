@@ -198,6 +198,7 @@ impl NativeTemplateRule for Audit {
                     ("bind", Some(argument_range))
                 }
                 Kind::DynamicBind { argument_range } => ("dynamic-bind", Some(argument_range)),
+                Kind::On { .. } => return Err(Refusal::UnsupportedAttribute { span }),
             };
             let observation = AttributeObservation {
                 ordinal: original.ordinal(),

@@ -137,6 +137,140 @@
       ]
     },
     {
+      "id": "formatter/sfc/attribute-group-order-6098",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-attribute-group-order-6098",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "ada24286d008878ee02a397d5e6054b7d5edc7b979fb1eebabefa835926e6397",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "5d80627a944090e83d09c8a51356709e3bc1a218f93c9d255c8049aa6fd9d25f",
+            "role": "uncapped-custom-attribute-groups"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          6098
+        ],
+        "commits": [
+          {
+            "sha": "0e4909756e345fce0d6b98c6a1d29a3a378bd261",
+            "role": "pre-fix-source",
+            "paths": [
+              "crates/vize_glyph/src/template/directives.rs",
+              "crates/vize_glyph/src/template/attributes.rs",
+              "crates/vize_glyph/src/template/directives/normalize.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "source-authored-boundary-control",
+            "issue": 6098,
+            "path": "crates/vize/tests/fmt_attribute_group_order_cli.rs",
+            "symbol": "canonical_config_keeps_wide_group_order_and_complete_cli_fixed_points"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize/tests/fmt_attribute_group_order_cli.rs",
+          "symbol": "canonical_config_keeps_wide_group_order_and_complete_cli_fixed_points",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "whole-config-and-unselected-file-preservation",
+            "idempotence"
+          ],
+          "limitations": [
+            "Newly authored counterexample, not an original reporter reproduction.",
+            "Actual hosted BEFORE and HEAD qualification are recorded separately."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "static-template-attributes",
+              "custom-attribute-groups"
+            ],
+            "selector": "formatter.attributeGroups; literal group0 and group256"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built canonical-config CLI consumes the physical 257-group input; whole output and three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-attribute-group-order-6098/reference.expected.txt",
+              "sha256": "46e9c66930d99d198b8e1a10d910985e66cad87f7f8d35795b03f4636a67d75b",
+              "role": "source-authored-complete-output",
+              "provenance": {
+                "issue": 6098,
+                "path": "crates/vize/tests/fmt_attribute_group_order_cli.rs",
+                "symbol": "canonical_config_keeps_wide_group_order_and_complete_cli_fixed_points",
+                "assertion": "Uncapped group ordinal0 precedes ordinal256; unmatched fallback follows all groups."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed is not compared by the CLI adapter"
+          ],
+          "referenceState": "authored complete ordinal contract; fresh Actions required, not a pre-fix capture"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/auto-cr",
       "state": "active",
       "targets": [

@@ -8,6 +8,7 @@ import type { BinPolicy } from "./dependency-bin-policy.ts";
 import type { FileFacts, HumanBinFacts, PublicPackageFacts } from "./dependency-bin-types.ts";
 import { bytes, object, sha256, text, wholeJson } from "./value.ts";
 import type { BinConfiguration } from "./bin-configuration.ts";
+import type { OptionalAbsence } from "./optional-residency.ts";
 
 export interface BinEdge {
   parentDirectory: string;
@@ -36,6 +37,7 @@ export interface BinContext {
   policy: BinPolicy;
   parent: PublicDeclaration;
   dependencyOwners: PublicDeclaration[];
+  excludedDependencies?: OptionalAbsence[];
   graph: BinEdge[];
   lockRawBase64: string;
   manager: {
@@ -105,9 +107,14 @@ export function collectBinContext(
   allEdges: readonly BinEdge[],
   policy: BinPolicy,
   manager: BinManagerContext,
+  absent: readonly OptionalAbsence[] = [],
 ): BinContext {
-  assert.equal(parent.name, "vue");
-  assert.equal(parent.version, "3.5.44");
+  const self = parent.name === "typescript";
+  assert(self || parent.name === "vue");
+  assert.equal(
+    parent.version,
+    self ? (role === "runtime-prop-null-11252" ? "7.1.0-beta" : "5.9.3") : "3.5.44",
+  );
   assert(inside(root, parent.directory));
   const manifest = object(wholeJson(parent.manifest));
   const names = new Set<string>();
@@ -116,7 +123,11 @@ export function collectBinContext(
       for (const name of Object.keys(object(manifest[kind]))) names.add(name);
   const graph: BinEdge[] = [],
     dependencyOwners: PublicDeclaration[] = [];
+  const excludedDependencies = absent.filter((row) => row.parentDirectory === parent.directory);
+  const excludedNames = new Set(excludedDependencies.map((row) => row.name));
+  assert.equal(excludedNames.size, excludedDependencies.length);
   for (const name of [...names].sort()) {
+    if (excludedNames.has(name)) continue;
     const candidates = allEdges.filter(
       (edge) => edge.parentDirectory === parent.directory && edge.dependencyName === name,
     );
@@ -129,7 +140,9 @@ export function collectBinContext(
     graph.push(edge);
     dependencyOwners.push(declaration(owner));
   }
-  const owner = dependencyOwners.filter((row) => row.name === "typescript");
+  const owner = self
+    ? [declaration(parent)]
+    : dependencyOwners.filter((row) => row.name === "typescript");
   assert.equal(owner.length, 1);
   const targetOwner = owner[0]!,
     targetManifest = object(wholeJson(bytes(targetOwner.manifestRawBase64)));
@@ -169,6 +182,7 @@ export function collectBinContext(
     policy,
     parent: declaration(parent),
     dependencyOwners,
+    excludedDependencies,
     graph,
     lockRawBase64: readFileSync(join(root, "pnpm-lock.yaml")).toString("base64"),
     manager: {
@@ -231,7 +245,10 @@ export function contextFacts(
   };
   const parent = pkg(context.parent),
     dependencyOwners = context.dependencyOwners.map(pkg);
-  const owners = dependencyOwners.filter((row) => row.name === "typescript");
+  const owners =
+    context.parent.name === "typescript"
+      ? [parent]
+      : dependencyOwners.filter((row) => row.name === "typescript");
   assert.equal(owners.length, 1);
   const manager = context.manager,
     version = manager.version;
@@ -245,6 +262,7 @@ export function contextFacts(
     parent,
     owner: owners[0]!,
     dependencyOwners,
+    excludedDependencies: context.excludedDependencies ?? [],
     graph: context.graph,
     lock: bytes(context.lockRawBase64),
     inventory,

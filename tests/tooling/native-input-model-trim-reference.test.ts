@@ -3,6 +3,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { after, test } from "node:test";
 import {
+  currentModelOutside,
+  isLazyOriginalOutside,
+} from "./support/native-input-model-current-outside.ts";
+import {
   assertTrimFixture,
   hash,
   object,
@@ -77,8 +81,8 @@ assert.equal(goldens.inputHash, hash(inputRaw));
 assert.deepEqual(goldens.inputPack, pack);
 object(goldens.provenance);
 assert.equal(goldens.provenance.independentlyReviewedBeforeFreeze, true);
-const expectedNative = goldens.native;
-object(expectedNative);
+object(goldens.native);
+const expectedNative: ObjectValue = { ...goldens.native, refusals: currentModelOutside("trim") };
 object(goldens.primary);
 object(goldens.runtimeResults);
 const expectedPrimaryTarget = goldens.primary[target];
@@ -210,8 +214,13 @@ test(
         captured.refusals.map((value: unknown) => {
           object(value);
           object(value.attempt);
-          assert.equal(value.attempt.state, "refused");
-          assert(typeof value.attempt.error === "string");
+          if (isLazyOriginalOutside(value.id, value.source)) {
+            assert.equal(value.attempt.state, "emitted");
+            assert(typeof value.attempt.code === "string");
+          } else {
+            assert.equal(value.attempt.state, "refused");
+            assert(typeof value.attempt.error === "string");
+          }
           return [value.id, value.source, value.target];
         }),
         expectedRefusals,

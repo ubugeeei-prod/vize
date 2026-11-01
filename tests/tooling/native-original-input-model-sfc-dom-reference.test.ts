@@ -3,6 +3,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { after, test } from "node:test";
 import {
+  currentModelOutside,
+  isLazyOriginalOutside,
+} from "./support/native-input-model-current-outside.ts";
+import {
   assertModelFixture,
   hash,
   openModelDom,
@@ -58,7 +62,8 @@ assert.equal(goldens.filename, pack.filename);
 assert.deepEqual(goldens.inputPack, pack);
 object(goldens.provenance);
 assert.equal(goldens.provenance.independentlyReviewedBeforeFreeze, true);
-const expectedNative = goldens.native;
+object(goldens.native);
+const expectedNative: ObjectValue = { ...goldens.native, refusals: currentModelOutside("dom") };
 const expectedPrimary = goldens.primary;
 const expectedRuntime = goldens.runtimeResults;
 object(expectedNative);
@@ -206,8 +211,13 @@ test("original Model capture keeps all fourteen source/mode/owner/attempt rows",
         object(entry);
         assert(typeof entry.source === "string" && entry.source.length > 0);
         object(entry.result);
-        assert.equal(entry.result.state, "refused");
-        assert(typeof entry.result.error === "string");
+        if (isLazyOriginalOutside(entry.id, entry.source)) {
+          assert.equal(entry.result.state, "emitted");
+          assert(typeof entry.result.code === "string");
+        } else {
+          assert.equal(entry.result.state, "refused");
+          assert(typeof entry.result.error === "string");
+        }
         return { id: entry.id, mode: entry.mode };
       }),
       refusalIds.flatMap((id) => ["development", "production"].map((mode) => ({ id, mode }))),

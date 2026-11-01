@@ -1,7 +1,7 @@
 import { closeSync, openSync, readFileSync, readSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
-import type { CommandPlan, InstallReceipt } from "./model.ts";
+import type { CommandPlan, InstallationFacts } from "./model.ts";
 import { installedFiles } from "../public_install/archive.ts";
 import { absentPackage, managerFiles, physicalPathWitness } from "./optional-residency.ts";
 function image(path: string): unknown {
@@ -24,7 +24,7 @@ function image(path: string): unknown {
     return { path, error: String(error) };
   }
 }
-export function payloadWitness(install: InstallReceipt): unknown {
+export function payloadWitness(install: InstallationFacts): unknown {
   return {
     scope: "authenticated package payloads only; not whole node_modules",
     declaredOptionalNotInstalled: install.declaredOptionalNotInstalled.map((row) => {

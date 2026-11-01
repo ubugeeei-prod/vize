@@ -67,7 +67,7 @@ function fixture() {
   mkdirSync(join(root, "node_modules/.pnpm"), { recursive: true });
   const body = Buffer.from("synthetic unused child integrity only; never executed");
   const metadata = published(child, body, { os: ["darwin"], cpu: ["arm64"] });
-  const lock = Buffer.from(
+  let lock = Buffer.from(
     `---\nlockfileVersion: '9.0'\npackages:\n  '${child}@${version}':\n    resolution: {integrity: ${metadata.integrity}}\n    cpu: [arm64]\n    os: [darwin]\n\nsnapshots:\n  '${child}@${version}':\n    optional: true\n`,
   );
   const path = join(
@@ -95,6 +95,14 @@ function fixture() {
     const archive = writeTarGz([{ name: "package/package.json", data: raw }]);
     const parentMetadata = published(name, archive);
     archives.set(name, { body: archive, metadata: parentMetadata });
+    lock = Buffer.from(
+      lock
+        .toString()
+        .replace(
+          "\nsnapshots:",
+          `\n  '${name}@${version}':\n    resolution: {integrity: ${parentMetadata.integrity}}\n\nsnapshots:`,
+        ),
+    );
     return {
       from: name,
       version,
@@ -107,8 +115,13 @@ function fixture() {
     parents: ReturnType<typeof parent>[],
     required = new Map<string, string>(),
     actualHost = host,
-  ) =>
-    installedGraph(
+  ) => {
+    const presentChild = archives.get(child);
+    if (presentChild)
+      lock = Buffer.from(
+        lock.toString().replace(metadata.integrity, presentChild.metadata.integrity),
+      );
+    return installedGraph(
       root,
       [{ devDependencies: Object.fromEntries(parents.map((row) => [row.from, row])) }],
       lock,
@@ -130,11 +143,14 @@ function fixture() {
         },
       },
     );
+  };
   return {
     root,
     path,
     metadata,
-    lock,
+    get lock() {
+      return lock;
+    },
     parent,
     run,
     archives,
@@ -240,7 +256,10 @@ test("present payload mismatch refuses before its children or metadata can be wa
   const f = fixture();
   try {
     const parent = f.parent("parent");
-    writeFileSync(join(parent.path, "unexpected"), "different installed payload");
+    writeFileSync(
+      join(parent.path, "package.json"),
+      readFileSync(join(parent.path, "package.json"), "utf8") + " ",
+    );
     await assert.rejects(f.run([parent]));
     assert.deepEqual(f.metadataCalls, []);
   } finally {

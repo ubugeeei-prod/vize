@@ -1,8 +1,8 @@
-//! Outside this Model family, whole public compilation exposes no prefix module.
+//! Original outside inputs retain all refusals and the explicit lazy successor.
 
 use super::*;
 
-pub(super) fn capture() -> (Vec<Value>, Vec<String>) {
+pub(crate) fn capture() -> (Vec<Value>, Vec<String>) {
     let mut observations = Vec::new();
     let mut failures = Vec::new();
     for (id, source) in [
@@ -55,15 +55,25 @@ pub(super) fn capture() -> (Vec<Value>, Vec<String>) {
             "<script setup>let draft='\\uD800'</script><template><input v-model='draft'/></template>",
         ),
     ] {
+        let current_lazy = id == "modifier"
+            && source
+                == "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>";
         let arena = Allocator::default();
         let compilation =
             compile_native_setup_ssr_sfc(&arena, source, NativeSsrSfcCompileOptions::default());
         let state = match compilation.result() {
             Ok(output) => {
-                failures.push(cstr!("{id}: unsupported Model emitted a whole SSR module"));
-                serde_json::json!({"state":"unexpected-emitted","code":output.code(),"nativeMapRaw":output.source_map()})
+                if !current_lazy {
+                    failures.push(cstr!("{id}: unsupported Model emitted a whole SSR module"));
+                }
+                serde_json::json!({"state":if current_lazy {"emitted"} else {"unexpected-emitted"},"code":output.code(),"nativeMapRaw":output.source_map()})
             }
-            Err(error) => serde_json::json!({"state":"refused","error":cstr!("{error:?}")}),
+            Err(error) => {
+                if current_lazy {
+                    failures.push(cstr!("{id}: current lazy source refused"));
+                }
+                serde_json::json!({"state":"refused","error":cstr!("{error:?}")})
+            }
         };
         observations.push(serde_json::json!({"id":id,"source":source,"result":state}));
     }

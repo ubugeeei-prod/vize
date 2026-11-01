@@ -23,15 +23,38 @@ pub(super) fn write(mut capture: Value, complete: bool) -> Result<(), String> {
                     "whole current input/independent golden authority mismatch"
                 ));
             } else {
-                compared = true;
-                matched = complete;
-                for field in ["fixtures", "custody", "attempts", "refusals"] {
-                    if capture[field] != expected["native"][field] {
-                        failures.push(json!(format!(
-                            "whole native {field} differs from reviewed origin"
-                        )));
-                        matched = false;
+                let current = serde_json::from_str::<Value>(include_str!(
+                    "../fixtures/native_original_input_model_current_outside.json"
+                ))
+                .map_err(|error| format!("{error}"));
+                match current {
+                    Ok(current)
+                        if current["schema"] == "vize.native-sfc.input-model-current-outside"
+                            && current["inputPack"]["history"]["trimInputsSha256"]
+                                == capture["inputHash"]
+                            && current["provenance"]["independentlyReviewedBeforeFreeze"]
+                                == true
+                            && current["arrays"]["trim"]
+                                .as_array()
+                                .is_some_and(|rows| rows.len() == 36) =>
+                    {
+                        compared = true;
+                        matched = complete;
+                        for field in ["fixtures", "custody", "attempts", "refusals"] {
+                            let expected_field = if field == "refusals" {
+                                &current["arrays"]["trim"]
+                            } else {
+                                &expected["native"][field]
+                            };
+                            if &capture[field] != expected_field {
+                                failures.push(json!(format!(
+                                    "whole native {field} differs from reviewed origin"
+                                )));
+                                matched = false;
+                            }
+                        }
                     }
+                    _ => failures.push(json!("whole reviewed current outside authority mismatch")),
                 }
             }
         }

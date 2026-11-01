@@ -7,6 +7,7 @@ import { runInNewContext } from "node:vm";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
+import { requiredUiConformance } from "./support/ui-conformance-contract.ts";
 import {
   readRepoFile,
   requireDailySourceContracts,
@@ -103,7 +104,7 @@ void test("required source reports include selected product gates and mandatory 
   }
   const jsCommands = Object.values(js.jobs).map(commands).join("\n");
   assert.match(jsCommands, /vp run --workspace-root "test:js:\$VIZE_JS_PACKAGE_GROUP"/);
-  assert.match(jsCommands, /vp run --filter '\.\/npm\/ui' check/);
+  requiredUiConformance(js.jobs["pr-js-package-conformance"]);
   assert.match(
     commands(source.jobs["pr-playground-test"]),
     /vp run --filter '\.\/playground' test:browser/,

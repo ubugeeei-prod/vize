@@ -22,7 +22,7 @@ pub(crate) struct ParsedAttribute {
     /// Attribute value (without quotes), None for boolean attrs like `v-else`
     pub(crate) value: Option<String>,
     /// Sort priority (lower = earlier in output)
-    pub(crate) priority: u8,
+    pub(crate) priority: usize,
     /// Original index in the source for stable sorting
     pub(crate) original_index: usize,
     pub(crate) indent_multiline_value: bool,

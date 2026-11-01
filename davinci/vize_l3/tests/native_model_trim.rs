@@ -147,8 +147,9 @@ fn original_trim_tokens_and_write_bindings_are_shared_without_generic_read_promo
 #[test]
 fn other_model_modifiers_and_arguments_remain_lower_refusals() {
     for head in [
-        "v-model.lazy",
         "v-model.number",
+        "v-model.lazy.lazy",
+        "v-model.lazy.number",
         "v-model.trim.trim",
         "v-model.trim.lazy",
         "v-model:arg.trim",

@@ -16,4 +16,4 @@ fn text<'a>(value: &'a Value, key: &str) -> Result<&'a str, String> {
 }
 
 mod hygiene;
-mod original_input_model;
+pub(crate) mod original_input_model;

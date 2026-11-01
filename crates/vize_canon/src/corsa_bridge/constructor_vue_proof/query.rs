@@ -90,6 +90,8 @@ pub(super) async fn observe(api: &ApiClient, data: &mut ObservationData) -> cors
                 signature,
                 returned: None,
                 symbol: None,
+                type_parameters_raw: SignatureTypeParametersRaw::NotRequested,
+                type_parameters: None,
             });
             let record = &mut data.declared_returns[index];
             data.stage = "declared-signature-return";
@@ -378,7 +380,35 @@ pub(super) async fn observe(api: &ApiClient, data: &mut ObservationData) -> cors
             data.unavailable.push(Unavailable::SourceIdentity(path));
         }
     }
+    // Append to the old observation prefix: no existing query changes order.
+    observe_signature_type_parameters(api, data).await?;
     data.stage = "observed-not-admitted";
+    Ok(())
+}
+
+async fn observe_signature_type_parameters(
+    api: &ApiClient,
+    data: &mut ObservationData,
+) -> corsa::Result<()> {
+    for record in &mut data.declared_returns {
+        data.stage = "declared-signature-type-parameters";
+        record.type_parameters_raw = SignatureTypeParametersRaw::Requested;
+        // Exact existing SDK SignatureOnlyRequest route and owner handles.
+        // The raw route preserves null before the typed wrapper defaults it.
+        let response = api
+            .raw_json_request(
+                "getTypeParametersOfSignature",
+                json!({
+                    "snapshot":data.snapshot,"project":data.project.id,
+                    "signature":record.signature.id
+                }),
+            )
+            .await;
+        if response.is_ok() {
+            data.stage = "decode-signature-type-parameters";
+        }
+        retain_signature_type_parameters(record, response)?;
+    }
     Ok(())
 }
 

@@ -18,9 +18,16 @@ pub(super) fn write(mut capture: Value, complete: bool) -> Result<(), String> {
                 && golden["provenance"]["independentlyReviewedBeforeFreeze"] == true,
             "whole reviewed original Vapor authority"
         );
+        let current =
+            crate::native_selected_setup::tests::current_model_outside::expected("vapor")?;
         compared = true;
         for key in ["fixtures", "custody", "attempts", "refusals"] {
-            if capture[key] != golden["native"][key] {
+            let expected = if key == "refusals" {
+                &current
+            } else {
+                &golden["native"][key]
+            };
+            if &capture[key] != expected {
                 failures.push(cstr!(
                     "whole current native Vapor {key} differs from reviewed golden"
                 ));

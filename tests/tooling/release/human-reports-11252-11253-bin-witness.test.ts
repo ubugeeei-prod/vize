@@ -226,7 +226,10 @@ test("the real package graph persists bin facts before the unchanged strict file
       installedGraph(
         f.root,
         [{ dependencies: { vue: { version: "3.5.44", path: f.directory, resolved } } }],
-        f.context.lock,
+        Buffer.concat([
+          f.context.lock,
+          Buffer.from(`\n  vue@3.5.44:\n    resolution: {integrity: ${integrity}}\n`),
+        ]),
         {
           os: "linux",
           cpu: "x64",

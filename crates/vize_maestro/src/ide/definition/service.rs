@@ -196,6 +196,10 @@ impl super::DefinitionService {
             return Some(def);
         }
 
+        if let Some(definition) = Self::private_template_definition(ctx, corsa_bridge.as_deref()) {
+            return Some(definition);
+        }
+
         if let Some(definition) =
             Self::definition_via_canonical_corsa(ctx, corsa_bridge.as_ref()).await
         {
@@ -234,6 +238,70 @@ impl super::DefinitionService {
         // import-alias answer so template-local shadowing remains intact.
         let definition = Self::definition_in_template_sync(ctx)?;
         import_target::normalize_bound_name_definition(ctx, definition)
+    }
+
+    /// A positive exact private declaration, never a spelling-based answer.
+    #[cfg(feature = "native")]
+    fn private_template_definition(
+        ctx: &IdeContext<'_>,
+        bridge: Option<&CorsaBridge>,
+    ) -> Option<GotoDefinitionResponse> {
+        bridge.filter(|bridge| bridge.is_initialized())?;
+        Self::private_template_declaration(ctx)
+    }
+
+    #[cfg(feature = "native")]
+    fn private_template_declaration(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse> {
+        use tower_lsp::lsp_types::{Location, WorkspaceEdit};
+
+        if ctx.uri.scheme() != "file"
+            || !matches!(ctx.block_type, Some(BlockType::Template))
+            || !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
+        {
+            return None;
+        }
+        let resident = Self::private_definition_resident(ctx)?;
+        let (name, declaration) =
+            crate::ide::ReferencesService::private_setup_rename_declaration(ctx)?;
+        let (_, spans) =
+            crate::ide::references::structural::private_setup_prepare(ctx, &name, declaration)?;
+        let (line, character) = crate::ide::offset_to_position(&ctx.content, declaration.0);
+        let (end_line, end_character) = crate::ide::offset_to_position(&ctx.content, declaration.1);
+        let range = tower_lsp::lsp_types::Range::new(
+            tower_lsp::lsp_types::Position::new(line, character),
+            tower_lsp::lsp_types::Position::new(end_line, end_character),
+        );
+        if !spans
+            .iter()
+            .any(|span| span.range == range && span.new_text == name.as_str())
+        {
+            return None;
+        }
+        let mut changes = std::collections::HashMap::new();
+        changes.insert(ctx.uri.clone(), spans);
+        let proof = WorkspaceEdit {
+            changes: Some(changes),
+            document_changes: None,
+            change_annotations: None,
+        };
+        if !corsa_support::RenameScope::native(ctx).admits_authored(&proof)
+            || Self::private_definition_resident(ctx)? != resident
+        {
+            return None;
+        }
+        Some(GotoDefinitionResponse::Scalar(Location {
+            uri: ctx.uri.clone(),
+            range,
+        }))
+    }
+
+    #[cfg(feature = "native")]
+    fn private_definition_resident(ctx: &IdeContext<'_>) -> Option<(i32, u64)> {
+        let document = ctx.state.documents.get(ctx.uri)?;
+        (document.uri == *ctx.uri
+            && document.language_id == "vue"
+            && Arc::ptr_eq(&document.text_snapshot(), &ctx.content))
+        .then_some((document.version, document.revision()))
     }
 
     /// Find definition in script with Corsa support.
@@ -350,3 +418,8 @@ impl super::DefinitionService {
         locations::convert(locations)
     }
 }
+
+// Plain `cfg(test)` lets clippy recognize the fixture helpers as test code.
+#[cfg(test)]
+#[cfg(feature = "native")]
+mod private_setup_tests;

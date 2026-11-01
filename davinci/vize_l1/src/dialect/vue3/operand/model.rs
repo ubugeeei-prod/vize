@@ -3,8 +3,14 @@
 use crate::markup::{DirectiveName, DirectivePrefix, NativeAttributeOperandError};
 use vize_l0::{SourceBlock, Span};
 
+#[derive(Clone, Copy)]
+pub(crate) enum ModelModifier {
+    Trim(Span),
+    Lazy(Span),
+}
+
 pub(crate) struct ModelParts {
-    pub(crate) trim: Option<Span>,
+    pub(crate) modifier: Option<ModelModifier>,
 }
 
 pub(crate) fn model_parts(
@@ -20,15 +26,17 @@ pub(crate) fn model_parts(
     if head.arg.is_some() {
         return Err(NativeAttributeOperandError::UnsupportedDirective);
     }
-    let trim = if head.name.end == block.end() && head.modifiers.start == head.modifiers.end {
+    let modifier = if head.name.end == block.end() && head.modifiers.start == head.modifiers.end {
         None
-    } else if head.name.end == head.modifiers.start
-        && head.modifiers.end == block.end()
-        && head.modifiers.slice(block.root_source()) == ".trim"
-    {
-        Some(Span::new(head.modifiers.start + 1, head.modifiers.end))
+    } else if head.name.end == head.modifiers.start && head.modifiers.end == block.end() {
+        let span = Span::new(head.modifiers.start + 1, head.modifiers.end);
+        Some(match head.modifiers.slice(block.root_source()) {
+            ".trim" => ModelModifier::Trim(span),
+            ".lazy" => ModelModifier::Lazy(span),
+            _ => return Err(NativeAttributeOperandError::UnsupportedDirective),
+        })
     } else {
         return Err(NativeAttributeOperandError::UnsupportedDirective);
     };
-    Ok(Some(ModelParts { trim }))
+    Ok(Some(ModelParts { modifier }))
 }

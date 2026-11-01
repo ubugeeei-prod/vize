@@ -3,12 +3,12 @@ import { readFileSync, realpathSync } from "node:fs";
 import { join } from "node:path";
 import { fileImage } from "../computed_event_custody.ts";
 import { capture, cleanEnvironment } from "./capture.ts";
-import type { CheckerEvidence, InstallReceipt } from "./model.ts";
+import type { CheckerEvidence, InstallationFacts } from "./model.ts";
 import { bytes, object, text, wholeJson } from "./value.ts";
 import { discard, type Sink } from "./evidence.ts";
 export function identifyLauncher(
   id: string,
-  install: InstallReceipt,
+  install: InstallationFacts,
   output: string,
   sink: Sink = discard,
 ): CheckerEvidence {

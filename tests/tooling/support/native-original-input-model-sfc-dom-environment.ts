@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
-import { Window } from "happy-dom";
+import { Document, Window } from "happy-dom";
 import type { HTMLElement } from "happy-dom";
 
 const fromUi = createRequire(new URL("../../../npm/ui/package.json", import.meta.url));
@@ -131,6 +131,15 @@ export async function openModelDom() {
     "runtime-dom must see the real document on first load",
   );
   const window = new Window({ url: "https://native-model.test/" });
+  // Happy DOM wraps window.Document and window.HTMLDocument independently.
+  // Its actual HTMLDocument inherits this exported implementation, not the
+  // independent window.Document wrapper. Vue uses the real instanceof join.
+  const documentIdentity = {
+    constructor: window.document.constructor.name,
+    instanceOfWindowDocument: window.document instanceof window.Document,
+    instanceOfImplementationDocument: window.document instanceof Document,
+  };
+  assert(documentIdentity.instanceOfImplementationDocument);
   const globals = [
     "window",
     "document",
@@ -175,11 +184,12 @@ export async function openModelDom() {
       Object.defineProperty(globalThis, name, {
         configurable: true,
         writable: true,
-        value: name === "window" ? window : Reflect.get(window, name),
+        value:
+          name === "window" ? window : name === "Document" ? Document : Reflect.get(window, name),
       });
     const runtime = fromModelVue("vue") as ModelRuntime;
     assert.equal(runtime.version, "3.5.35");
-    return { window, runtime, close };
+    return { window, runtime, close, documentIdentity };
   } catch (error) {
     try {
       await close();
