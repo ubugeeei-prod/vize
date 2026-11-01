@@ -14,6 +14,7 @@ test("original Model and all Vapor consumers select the actual native lane", () 
     "crates/vize_atelier_sfc/src/native_vapor_setup/tests/original_input_model/custody.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_inputs_vue_3_5_35.json",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_ssr_contexts_vue_3_5_35.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_vapor_sfc_vue_3_6_rc9.json",
     "tests/tooling/native-original-input-model-vapor-reference.test.ts",
     "tests/tooling/support/native-original-input-model-vapor-boundary.ts",
     "tests/tooling/support/native-original-input-model-vapor-primary.ts",

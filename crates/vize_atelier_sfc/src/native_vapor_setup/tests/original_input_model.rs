@@ -3,6 +3,7 @@
 use super::*;
 use sha2::{Digest, Sha256};
 mod custody;
+mod finish;
 mod refusal;
 
 #[test]
@@ -108,17 +109,5 @@ fn seven_whole_original_input_model_vapor_components_and_raw_maps_are_captured()
         "nativeGoldenComparisonPerformed":false,"wholePacketQualification":false,
         "failures":failures,"fixtures":captures,"custody":owners,"attempts":attempts,"refusals":refusals,
     });
-    if let Ok(path) = std::env::var("VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_CAPTURE") {
-        std::fs::write(
-            path,
-            serde_json::to_vec_pretty(&capture).map_err(|error| cstr!("{error}"))?,
-        )
-        .map_err(|error| cstr!("{error}"))?;
-    }
-    require!(
-        complete,
-        "whole actual Vapor observations incomplete: {}",
-        capture["failures"]
-    );
-    Ok(())
+    finish::write(capture, complete)
 }

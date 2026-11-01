@@ -1,4 +1,4 @@
-// First whole original-input Vapor observations; no historical native golden is loaded.
+// Strict current whole-input Vapor arrays against independently reviewed new goldens.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -65,6 +65,30 @@ assert(Array.isArray(contextPack.refusals) && contextPack.refusals.length === 12
 const rawMode = process.env.NODE_ENV ?? "development";
 assert(rawMode === "development" || rawMode === "production");
 const mode: ModelVaporMode = rawMode;
+const golden: unknown = JSON.parse(
+  fs.readFileSync(
+    new URL("native_original_input_model_vapor_sfc_vue_3_6_rc9.json", fixtureRoot),
+    "utf8",
+  ),
+);
+object(golden);
+assert.equal(golden.schema, "vize.native-vapor.original-input-model-complete-goldens");
+assert.equal(golden.inputHash, hash(inputRaw));
+assert.deepEqual(golden.inputPack, pack);
+assert.deepEqual(golden.target, {
+  compiler: "@vue/compiler-sfc@3.6.0-rc.9",
+  runtime: "vue@3.6.0-rc.9",
+});
+object(golden.provenance);
+assert.equal(golden.provenance.independentlyReviewedBeforeFreeze, true);
+object(golden.native);
+const expectedNative = golden.native;
+object(golden.primary);
+object(golden.runtimeResults);
+const expectedPrimary = golden.primary[mode],
+  expectedRuntime = golden.runtimeResults[mode];
+assert(Array.isArray(expectedPrimary) && expectedPrimary.length === 7);
+assert(Array.isArray(expectedRuntime) && expectedRuntime.length === 7);
 const capturePath = process.env.VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_CAPTURE;
 const requireCapture = process.env.VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_REQUIRE_CAPTURE === "1";
 const primaryPrefix = process.env.VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_PRIMARY_CAPTURE;
@@ -94,6 +118,10 @@ const primaryRows = new Map<string, ReturnType<typeof compileInputModelVaporPrim
 const primaryAttempts: ObjectValue[] = [],
   runtimeAttempts: ObjectValue[] = [];
 let captureComplete = false;
+let nativeGoldenComparisonPerformed = false;
+let nativeGoldensMatched = false;
+let primaryGoldenMatches = 0;
+let runtimeGoldenMatches = 0;
 let failed = false;
 let firstFailure: unknown;
 function remember(error: unknown) {
@@ -124,8 +152,9 @@ test(
         compiler: "@vue/compiler-sfc@3.6.0-rc.9",
         runtime: "vue@3.6.0-rc.9",
       });
-      assert.equal(captured.qualification, "observed-unqualified-current-oracles-pending");
-      assert.equal(captured.nativeGoldenComparisonPerformed, false);
+      assert.equal(captured.qualification, "current-complete-native-goldens-matched");
+      assert.equal(captured.nativeGoldenComparisonPerformed, true);
+      assert.equal(captured.nativeGoldensMatched, true);
       assert.equal(captured.wholePacketQualification, false);
       assert.deepEqual(captured.failures, []);
       if (requireCapture) assert.equal(captured.sourceRevision, process.env.GITHUB_SHA);
@@ -191,8 +220,12 @@ test(
         }),
         contextPack.refusals,
       );
+      nativeGoldenComparisonPerformed = true;
+      for (const key of ["fixtures", "custody", "attempts", "refusals"])
+        assert.deepEqual(captured[key], expectedNative[key], `whole current native ${key}`);
+      nativeGoldensMatched = true;
       captureComplete = true;
-      captureObservation.state = "complete-first-observation-no-native-golden-comparison";
+      captureObservation.state = "complete-current-native-goldens-matched";
     } catch (error) {
       Object.assign(captureObservation, { state: "failed", error: modelVaporError(error) });
       remember(error);
@@ -222,6 +255,14 @@ for (const fixture of fixtures) {
       assert.equal(primary.runtime, "vue@3.6.0-rc.9");
       assert.equal(primary.typescript, "6.0.3");
       attempt.state = "observed-unqualified";
+      // Preserve the original observed row label; current qualification comes
+      // only from this full comparison, never from that historical metadata.
+      assert.deepEqual(
+        attempt,
+        expectedPrimary[fixtures.indexOf(fixture)],
+        "whole current official primary attempt",
+      );
+      primaryGoldenMatches += 1;
     } catch (error) {
       Object.assign(attempt, { state: "failed", error: modelVaporError(error) });
       remember(error);
@@ -281,6 +322,12 @@ for (const fixture of fixtures) {
           "whole actual DOM, event and explicitly diagnostic getter/setter outcomes",
         );
         attempt.state = "matched-observation-unqualified";
+        assert.deepEqual(
+          attempt,
+          expectedRuntime[fixtures.indexOf(fixture)],
+          "whole current paired runtime attempt",
+        );
+        runtimeGoldenMatches += 1;
       } catch (error) {
         Object.assign(attempt, { state: "failed", error: modelVaporError(error) });
         remember(error);
@@ -299,9 +346,12 @@ after(() => {
     runtimeAttempts.every((row) => row.state === "matched-observation-unqualified");
   try {
     assert(primaryComplete, "all seven complete primary attempts");
+    assert.equal(primaryGoldenMatches, 7);
     if (captureRequested) {
       assert(captureComplete, "the complete actual current source capture is required");
       assert(runtimeMatched, "all seven paired actual runtime attempts");
+      assert(nativeGoldensMatched && nativeGoldenComparisonPerformed);
+      assert.equal(runtimeGoldenMatches, 7);
     }
   } catch (error) {
     remember(error);
@@ -312,7 +362,7 @@ after(() => {
         ? "official-primary-only-native-not-executed"
         : failed
           ? "failed-first-complete-observation"
-          : "observed-unqualified-current-oracles-pending",
+          : "complete-current-oracles-matched",
     adapter: "compile_native_vapor_setup_sfc",
     target: {
       compiler: "@vue/compiler-sfc@3.6.0-rc.9",
@@ -320,8 +370,17 @@ after(() => {
       dom: "happy-dom@21.0.4",
       typescript: "6.0.3",
     },
-    nativeGoldenComparisonPerformed: false,
-    wholePacketQualification: false,
+    nativeGoldenComparisonPerformed,
+    nativeGoldensMatched,
+    primaryGoldenMatches,
+    runtimeGoldenMatches,
+    wholePacketQualification:
+      captureRequested &&
+      !failed &&
+      captureComplete &&
+      nativeGoldensMatched &&
+      primaryGoldenMatches === 7 &&
+      runtimeGoldenMatches === 7,
     mode,
     sourceRevision: process.env.GITHUB_SHA ?? null,
     runId: process.env.GITHUB_RUN_ID ?? null,
@@ -338,7 +397,7 @@ after(() => {
     runtimeMatched,
     finalFailure: failed ? modelVaporError(firstFailure) : null,
     limits:
-      "First observations, no historical native golden; captured getter/setter actors are diagnostic, not public proxy state. Raw compiler/maps/component metadata and actor-specific helper observations remain separate from compared actual DOM/event outcomes.",
+      "Current whole native/primary/runtime packets are compared with independently reviewed new goldens. Original observed row labels are retained metadata, never skipped qualification inputs. Captured getter/setter actors remain diagnostic, not public proxy state; default routing/general Vapor/public acceptance remains separate.",
   };
   const write = (prefix: string | undefined, schema: string, rows: ObjectValue[]) => {
     if (!prefix) return;

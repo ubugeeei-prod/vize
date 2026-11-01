@@ -2,7 +2,7 @@
 // Protected merge groups remain unconditional and prose stays outside this hook.
 export function nativeVaporCaptureRequired(paths) {
   const inputModel =
-    /^(?:davinci\/vize_l3\/tests\/native_model_vapor\.rs$|crates\/vize_atelier_sfc\/tests\/fixtures\/native_original_input_model_(?:inputs|ssr_contexts)_vue_3_5_35\.json$|tests\/tooling\/native-original-input-model-vapor-reference\.test\.ts$|tests\/tooling\/support\/native-original-input-model-vapor-(?:boundary|primary|runtime|observation)\.ts$)/;
+    /^(?:davinci\/vize_l3\/tests\/native_model_vapor\.rs$|crates\/vize_atelier_sfc\/tests\/fixtures\/native_original_input_model_(?:(?:inputs|ssr_contexts)_vue_3_5_35|vapor_sfc_vue_3_6_rc9)\.json$|tests\/tooling\/native-original-input-model-vapor-reference\.test\.ts$|tests\/tooling\/support\/native-original-input-model-vapor-(?:boundary|primary|runtime|observation)\.ts$)/;
   return paths.some(
     (path) =>
       inputModel.test(path) ||
