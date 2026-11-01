@@ -1,0 +1,5 @@
+<script setup lang="ts">
+type Label = { label: string };
+export { type Label };
+const label: Label = { label: "ready" };
+</script>

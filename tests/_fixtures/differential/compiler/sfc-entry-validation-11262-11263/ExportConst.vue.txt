@@ -1,0 +1,4 @@
+<!-- ExportConst.vue -->
+<script setup lang="ts">
+export const n = 1
+</script>

@@ -1,0 +1,4 @@
+<!-- CustomOnly.vue -->
+<i18n>
+{ "en": { "hi": "hi" } }
+</i18n>

@@ -1,0 +1,4 @@
+<script setup lang="ts">
+export interface Label { label: string };
+const label: Label = { label: "ready" };
+</script>

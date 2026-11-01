@@ -11,6 +11,7 @@ mod module_trace;
 mod normal_script;
 pub(crate) mod output_module;
 mod props_rest;
+mod setup_exports;
 mod stage_capture;
 #[cfg(test)]
 mod stage_capture_tests;
@@ -70,6 +71,7 @@ fn compile_sfc_inner(
     pug_source_map: Option<&PugSourceMap>,
     mut capture: Option<&mut StageCapture>,
 ) -> Result<SfcCompileResult, SfcError> {
+    empty_component::validate_component(descriptor)?;
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
     let mut code = String::default();
@@ -369,18 +371,7 @@ fn compile_sfc_inner(
 
     // Case 3: Script setup with inline template
     let Some(script_setup) = descriptor.script_setup.as_ref() else {
-        return Ok(empty_component::compile_empty_component(
-            empty_component::EmptyComponentContext {
-                is_vapor,
-                compiled_styles: &compiled_styles,
-                css,
-                errors,
-                warnings,
-                macro_artifacts,
-                options: &options,
-                codegen_options: &codegen_options,
-            },
-        ));
+        return Err(empty_component::missing_block());
     };
 
     // Extract normal script content if present (for type definitions, imports, etc.)
@@ -406,6 +397,7 @@ fn compile_sfc_inner(
     let setup_ast_allocator = oxc_allocator::Allocator::default();
     let setup_program =
         crate::script::parse_script_setup_program(&setup_ast_allocator, &script_setup_content);
+    setup_exports::validate(setup_program.as_ref(), &script_setup_content, descriptor)?;
 
     // 1. Croquis parser: rich analysis with ReactivityTracker
     let mut croquis = profile!(

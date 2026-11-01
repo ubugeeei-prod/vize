@@ -1,0 +1,6 @@
+<!-- ExportFunction.vue -->
+<script setup lang="ts">
+export function label(v: number) {
+  return String(v)
+}
+</script>

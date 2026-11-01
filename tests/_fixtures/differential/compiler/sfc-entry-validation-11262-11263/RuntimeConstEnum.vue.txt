@@ -1,0 +1,3 @@
+<script setup lang="ts">
+export const enum Status { Ready }
+</script>

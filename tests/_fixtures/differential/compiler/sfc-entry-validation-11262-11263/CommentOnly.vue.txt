@@ -1,0 +1,2 @@
+<!-- CommentOnly.vue -->
+<!-- just a comment -->
