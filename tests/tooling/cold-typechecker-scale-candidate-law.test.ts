@@ -1,9 +1,41 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  candidateCommandIds,
+  verifyCandidateCommandPopulation,
   verifyComponentChecksTransition,
   classifyRoutePopulation,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-candidate-law.ts";
+
+test("candidate population keeps all30 outer commands, exactly8 primary and the balanced order", () => {
+  const result = verifyCandidateCommandPopulation([...candidateCommandIds], true);
+  assert.equal(result.outerCommandsObserved, 30);
+  assert.equal(result.primaryCommandsObserved, 8);
+  assert.deepEqual(
+    candidateCommandIds.filter((id) => id.startsWith("primary-")),
+    [
+      "primary-1-base",
+      "primary-1-head",
+      "primary-2-head",
+      "primary-2-base",
+      "primary-3-head",
+      "primary-3-base",
+      "primary-4-base",
+      "primary-4-head",
+    ],
+  );
+  const partial = verifyCandidateCommandPopulation(candidateCommandIds.slice(0, 9), false);
+  assert.equal(partial.completedPopulation, false);
+  assert.equal(partial.primaryCommandsObserved, 1);
+  assert.equal(verifyCandidateCommandPopulation([], false).outerCommandsObserved, 0);
+  for (const wrong of [
+    candidateCommandIds.slice(0, -1),
+    [...candidateCommandIds].reverse(),
+    [...candidateCommandIds, candidateCommandIds[0]],
+    [...candidateCommandIds.slice(0, 8), ...candidateCommandIds.slice(9)],
+  ])
+    assert.throws(() => verifyCandidateCommandPopulation(wrong, true));
+});
 
 const cwd = "/owned/project/apps/web";
 const assets = {
