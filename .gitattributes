@@ -160,3 +160,6 @@ tests/_fixtures/differential/typechecker/generation-value-import-facts/Imports.v
 tests/_fixtures/differential/typechecker/prepared-type-only-import-facts/Imports.vue.txt text eol=lf
 # Controlled route graph is hashed and consumed literally by ordinary Rust tests.
 tests/_fixtures/differential/typechecker/cold-package-shadow-routes-11265/input.json text eol=lf
+
+# Original #11317 package-import input is byte-pinned and compile-included.
+tests/_fixtures/differential/typechecker/package-import-redirects-11317/input.json -text

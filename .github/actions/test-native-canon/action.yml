@@ -158,6 +158,14 @@ runs:
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize --test integration -- check_mixed_vue_package_imports_cli:: --nocapture
+    - name: Test redirected package diagnostics with the actual CLI
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize --test integration -- check_package_import_redirects_cli:: --nocapture
     - name: Test complete native diagnostic profiling and source repair
       shell: bash
       env:
