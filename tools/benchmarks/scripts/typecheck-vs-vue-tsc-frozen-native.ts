@@ -113,6 +113,6 @@ export function collect(out: string, native: string, project: string, provider: 
     historicalDebt:
       "prior retained2500 observed624 TS5097/status2 while authored CLI0; current whole packets classified independently; no native-clean transfer",
   };
-  save(path.join(path.dirname(out), "native-observations.json"), result);
+  save(path.join(path.dirname(out), path.basename(out) + "-observations.json"), result);
   return result;
 }

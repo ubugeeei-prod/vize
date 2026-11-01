@@ -28,7 +28,10 @@ import {
   seal,
   validateNativeArgs,
 } from "../../tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen-inputs.ts";
-import { readCall } from "../../tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen-native.ts";
+import {
+  collect,
+  readCall,
+} from "../../tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen-native.ts";
 import { sourceBodies } from "../../tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen-projects.ts";
 function temporary<T>(run: (root: string) => T): T {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "comparative-pure-")));
@@ -293,3 +296,23 @@ test("only manual frontdoor executes the fixed cohort; all failure raw is upload
   assert.match(workflow, /--exclude=provider\/node_modules/u);
   assert.doesNotMatch(workflow, /latest|schedule:|maxFalse|drop_caches/u);
 });
+
+test("two sibling cohorts preserve independent complete observation receipts", () =>
+  temporary((root) => {
+    for (const name of ["retained-2500-calls", "misskey-810faa-calls"]) {
+      const calls = path.join(root, name);
+      fs.mkdirSync(calls);
+      const result = collect(calls, "/unused-native", root, root);
+      assert.equal(result.complete, false);
+      assert.deepEqual(
+        JSON.parse(fs.readFileSync(path.join(root, name + "-observations.json"), "utf8")),
+        result,
+      );
+    }
+    assert.deepEqual(fs.readdirSync(root).sort(), [
+      "misskey-810faa-calls",
+      "misskey-810faa-calls-observations.json",
+      "retained-2500-calls",
+      "retained-2500-calls-observations.json",
+    ]);
+  }));
