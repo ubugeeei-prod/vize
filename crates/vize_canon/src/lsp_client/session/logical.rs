@@ -2,7 +2,6 @@
 
 use super::CorsaProjectClient;
 use crate::file_uri::file_uri_to_path;
-use corsa::api::ApiDialect;
 use std::path::Component;
 use vize_l0::{FxHashMap, String, cstr};
 
@@ -107,9 +106,6 @@ impl CorsaProjectClient {
             && !self.document_texts.is_empty()
             && self.logical_api_reset_pending
             && self.project_session_attached_to_editor
-            && self.session.as_ref().is_some_and(|session| {
-                session.client().dialect() == Some(ApiDialect::DerivedSnapshots)
-            })
         {
             return Err(cstr!(
                 "Logical editor API snapshot does not own the current retained revision"

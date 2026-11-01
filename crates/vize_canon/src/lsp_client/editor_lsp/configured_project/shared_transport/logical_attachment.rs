@@ -10,13 +10,15 @@ use vize_l0::{String, cstr};
 
 impl CorsaProjectClient {
     pub(in crate::lsp_client) fn refresh_logical_attached_project(&mut self) -> Result<(), String> {
-        if !self.project_session_attached_to_editor
-            || !self.session.as_ref().is_some_and(|session| {
-                session.client().dialect() == Some(ApiDialect::DerivedSnapshots)
-            })
-        {
+        if !self.project_session_attached_to_editor {
             return Ok(());
         }
+        self.logical_api_reset_pending = true;
+        let dialect = self
+            .session
+            .as_ref()
+            .and_then(|session| session.client().dialect())
+            .ok_or_else(|| cstr!("Attached editor snapshot dialect is unavailable"))?;
         let uri = self
             .document_texts
             .keys()
@@ -27,18 +29,24 @@ impl CorsaProjectClient {
             .explicit_project_config
             .clone()
             .unwrap_or_else(|| workspace_config_path(&self.project_root));
-        // This response acknowledges every dirty retained identity, including
-        // partial closes, before a fresh API lineage acquires its initial head.
+        #[cfg(test)]
+        record_logical_refresh(self, "before-ack", dialect, &config);
+        // Acknowledge every dirty retained identity and partial close before
+        // acquiring the replacement snapshot on this same connection.
         self.editor_lsp_session()?.ready_document_uri(&uri)?;
-        let fork = self
+        let previous = self
             .session
             .as_ref()
             .ok_or_else(|| cstr!("Attached editor snapshot owner is unavailable"))?
-            .client()
-            .fork_snapshot_lineage()
-            .map_err(|error| cstr!("Cannot fork current editor snapshot lineage: {error}"))?;
+            .client();
+        let client = match dialect {
+            ApiDialect::SessionSnapshots => previous.clone(),
+            ApiDialect::DerivedSnapshots => previous
+                .fork_snapshot_lineage()
+                .map_err(|error| cstr!("Cannot fork current editor snapshot lineage: {error}"))?,
+        };
         let replacement = block_on(ProjectSession::open(
-            fork,
+            client,
             crate::file_uri::path_to_typescript_name(&config).as_str(),
             None,
         ))
@@ -68,6 +76,39 @@ impl CorsaProjectClient {
         // explicit close would close every fork's shared transport and is wrong.
         drop(previous_session);
         drop(previous_client);
+        #[cfg(test)]
+        record_logical_refresh(self, "published", dialect, &config);
         Ok(())
     }
+}
+
+#[cfg(test)]
+fn record_logical_refresh(
+    client: &CorsaProjectClient,
+    phase: &str,
+    dialect: ApiDialect,
+    config: &Path,
+) {
+    use std::io::Write;
+
+    let Some(capture) = std::env::var_os("VIZE_PRIVATE_OVERLAY_CAPTURE") else {
+        return;
+    };
+    if std::env::var("VIZE_TEST_REQUIRE_TSGO").as_deref() != Ok("1") {
+        return;
+    }
+    let packet = serde_json::json!({
+        "phase":phase,"dialect":dialect.as_str(),"config":config,
+        "processId":std::process::id(),"testThread":std::thread::current().name(),
+        "documents":client.document_texts,
+        "snapshot":client.session.as_ref().map(|session| &session.snapshot().handle),
+        "pending":client.logical_api_reset_pending,
+    });
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(Path::new(&capture).join("shared-api-revisions.ndjson"))
+        .expect("open the existing private native capture");
+    writeln!(file, "{packet}").expect("retain the whole native API revision before assertions");
+    file.flush().expect("flush the native API revision capture");
 }
