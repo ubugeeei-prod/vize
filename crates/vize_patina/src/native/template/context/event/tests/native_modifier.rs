@@ -1,11 +1,33 @@
 use super::{Allocator, NativeLintComponent, NativeTemplateLintContext, SourceRoot, attributes};
 use crate::native::template::{NativeTemplateEventModifier, NativeTemplateLintRefusal as Refusal};
 use crate::rules::vue::NoDeprecatedVOnNativeModifier;
-use crate::{LintResult, Linter, RuleRegistry};
+use crate::{LintResult, Linter, Rule, RuleMeta, RuleRegistry};
 
 const RULE: &str = "vue/no-deprecated-v-on-native-modifier";
 const MESSAGE: &str = "vue/no-deprecated-v-on-native-modifier.message";
 const HELP: &str = "vue/no-deprecated-v-on-native-modifier.help";
+
+#[test]
+fn namesake_metadata_does_not_grant_the_actual_event_callback() {
+    const ORIGINAL: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/linter/native-event-modifier-6848/Original.html.txt"
+    ));
+    struct Namesake;
+    impl Rule for Namesake {
+        fn meta(&self) -> &'static RuleMeta {
+            Rule::meta(&NoDeprecatedVOnNativeModifier)
+        }
+    }
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(Namesake));
+    let actual = Linter::with_registry(registry).lint_native_template(ORIGINAL, "Namesake.vue");
+    println!("namesake_source:{ORIGINAL:?}\nnative:{actual:#?}");
+    assert_eq!(
+        actual.unwrap_err(),
+        Refusal::UnprovidedRule { rule: RULE.into() }
+    );
+}
 
 fn rejected(scenario: &str, verdict: Result<(), Refusal>, actual: LintResult) {
     println!("authority_case:{scenario}\nverdict:{verdict:#?}\nwhole_result:{actual:#?}");

@@ -1,7 +1,7 @@
 use super::support::{ORIGINAL, Order, RULE, case, configured, observe, span};
 use crate::native::template::NativeTemplateLintRefusal as Refusal;
 use crate::rules::vue::{NoDeprecatedHtmlElementIs, NoDeprecatedVOnNativeModifier};
-use crate::{HelpLevel, Linter, Locale, Rule, RuleMeta, RuleRegistry};
+use crate::{HelpLevel, Linter, Locale, RuleRegistry};
 use vize_l0::config::VueVersion;
 
 #[test]
@@ -91,20 +91,6 @@ fn late_unknown_dynamic_missing_and_foreign_owner_contexts_never_publish_pending
 
 #[test]
 fn actual_instance_disabled_unknown_mixed_profile_and_vue_version_authority_stay_closed() {
-    struct Namesake;
-    impl Rule for Namesake {
-        fn meta(&self) -> &'static RuleMeta {
-            Rule::meta(&NoDeprecatedVOnNativeModifier)
-        }
-    }
-    let mut registry = RuleRegistry::new();
-    registry.register(Box::new(Namesake));
-    assert_eq!(
-        Linter::with_registry(registry)
-            .lint_native_template(ORIGINAL, "Namesake.vue")
-            .unwrap_err(),
-        Refusal::UnprovidedRule { rule: RULE.into() }
-    );
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(NoDeprecatedVOnNativeModifier));
     registry.register(Box::new(NoDeprecatedHtmlElementIs));
