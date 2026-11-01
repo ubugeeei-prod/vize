@@ -34,7 +34,7 @@ test("shared genuine Model identity always qualifies both actual target consumer
     assert.equal(nativeSsrCaptureRequired([path]), false, path);
 });
 
-test("Model SSR retains every real first attempt before an unqualified verdict", () => {
+test("Model SSR retains every real attempt before its whole current verdict", () => {
   const action = parse(fs.readFileSync(".github/actions/test-native-ssr/action.yml", "utf8"));
   const step = action.runs.steps.find(
     (entry: { id?: string }) => entry.id === "native-input-model-ssr",

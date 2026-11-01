@@ -67,8 +67,8 @@ export function assertContext(value: unknown): asserts value is ModelSsrContext 
 const fromUi = createRequire(new URL("../../../npm/ui/package.json", import.meta.url));
 export const fromSsrVue = createRequire(fromUi.resolve("vue/package.json"));
 export type SsrModelComponent = {
-  setup(props: unknown, context: unknown): unknown;
-  ssrRender(this: unknown, ...args: unknown[]): unknown;
+  setup: (this: unknown, props: unknown, context: unknown) => unknown;
+  ssrRender: (this: unknown, ...args: unknown[]) => unknown;
 };
 export type SsrModelApp = {
   config: {

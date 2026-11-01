@@ -1,4 +1,4 @@
-// First authentic SSR observation; native/current complete goldens are pending.
+// Strict current whole-source/primary/SSR comparison to independently reviewed packets.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { after, test } from "node:test";
@@ -60,11 +60,40 @@ assert(Array.isArray(contextPack.refusals) && contextPack.refusals.length === 12
 const actualMode = process.env.NODE_ENV ?? "development";
 assert(actualMode === "development" || actualMode === "production");
 const mode: ModelSsrMode = actualMode;
+const goldens: unknown = JSON.parse(
+  fs.readFileSync(
+    new URL("native_original_input_model_ssr_sfc_vue_3_5_35.json", fixtureRoot),
+    "utf8",
+  ),
+);
+object(goldens);
+assert.equal(goldens.schema, "vize.native-sfc.original-input-model-ssr-complete-goldens");
+assert.equal(goldens.inputHash, hash(inputRaw));
+assert.equal(goldens.contextHash, hash(contextRaw));
+assert.deepEqual(goldens.inputPack, pack);
+assert.deepEqual(goldens.contextPack, contextPack);
+object(goldens.provenance);
+assert.equal(goldens.provenance.independentlyReviewedBeforeFreeze, true);
+const expectedNative = goldens.native;
+const expectedPrimary = goldens.primary;
+const expectedRuntime = goldens.runtimeResults;
+object(expectedNative);
+object(expectedPrimary);
+object(expectedRuntime);
+const expectedPrimaryRows = expectedPrimary[mode];
+const expectedRuntimeRows = expectedRuntime[mode];
+assert(Array.isArray(expectedPrimaryRows) && expectedPrimaryRows.length === 7);
+assert(Array.isArray(expectedRuntimeRows) && expectedRuntimeRows.length === 7);
 const capturePath = process.env.VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_CAPTURE;
 const requireCapture = process.env.VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_REQUIRE_CAPTURE === "1";
 const primaryPrefix = process.env.VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_PRIMARY_CAPTURE;
 const runtimePrefix = process.env.VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_RUNTIME_CAPTURE;
-if (requireCapture) assert(capturePath && primaryPrefix && runtimePrefix);
+if (requireCapture) {
+  assert(capturePath && primaryPrefix && runtimePrefix);
+  assert(
+    typeof process.env.GITHUB_SHA === "string" && /^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA),
+  );
+}
 let captured: unknown;
 let captureRaw: string | null = null;
 const captureObservation: ObjectValue = { state: "absent" };
@@ -89,6 +118,10 @@ const primaryRows = new Map<string, ReturnType<typeof compileInputModelSsrPrimar
 const primaryAttempts: ObjectValue[] = [];
 const runtimeAttempts: ObjectValue[] = [];
 let captureComplete = false;
+let nativeGoldenComparisonPerformed = false;
+let nativeGoldensMatched = false;
+let primaryGoldenMatches = 0;
+let runtimeGoldenMatches = 0;
 let runtimeMatches = 0;
 let failed = false;
 let firstFailure: unknown;
@@ -111,8 +144,9 @@ test("original SSR Model capture retains seven real owners and all twelve outsid
     object(captured);
     assert.equal(captured.schema, "vize.native-sfc.original-input-model-ssr-capture");
     assert.equal(captured.adapter, "vize_atelier_sfc::compile_native_setup_ssr_sfc");
-    assert.equal(captured.qualification, "observed-unqualified-current-oracles-pending");
-    assert.equal(captured.nativeGoldenComparisonPerformed, false);
+    assert.equal(captured.qualification, "current-complete-native-goldens-matched");
+    assert.equal(captured.nativeGoldenComparisonPerformed, true);
+    assert.equal(captured.nativeGoldensMatched, true);
     assert.deepEqual(captured.failures, []);
     assert.deepEqual(captured.inputPack, pack);
     if (requireCapture) assert.equal(captured.sourceRevision, process.env.GITHUB_SHA);
@@ -172,8 +206,16 @@ test("original SSR Model capture retains seven real owners and all twelve outsid
       }),
       contextPack.refusals,
     );
+    nativeGoldenComparisonPerformed = true;
+    for (const field of ["fixtures", "custody", "attempts", "refusals"])
+      assert.deepEqual(
+        captured[field],
+        expectedNative[field],
+        `whole ordered current native ${field}`,
+      );
+    nativeGoldensMatched = true;
     captureComplete = true;
-    captureObservation.state = "complete-observation-unqualified";
+    captureObservation.state = "complete-current-native-goldens-matched";
   } catch (error) {
     Object.assign(captureObservation, { state: "failed", error: modelSsrError(error) });
     remember(error);
@@ -196,6 +238,12 @@ for (const fixture of fixtures) {
       attempt.result = primary;
       attempt.state = "observed-unqualified";
       primaryRows.set(fixture.id, primary);
+      assert.deepEqual(
+        primary,
+        expectedPrimaryRows[fixtures.indexOf(fixture)],
+        "whole official SSR primary",
+      );
+      primaryGoldenMatches += 1;
     } catch (error) {
       Object.assign(attempt, { state: "failed", error: modelSsrError(error) });
       remember(error);
@@ -260,7 +308,15 @@ for (const fixture of fixtures) {
           "whole actual SSR outcome, no normalization",
         );
         runtimeMatches += 1;
+        // Preserve the reviewed row's original observation label; current
+        // qualification is derived only from all mandatory comparisons below.
         attempt.state = "matched-observation-unqualified";
+        assert.deepEqual(
+          attempt,
+          expectedRuntimeRows[fixtures.indexOf(fixture)],
+          "whole actual SSR attempt/observations/outcomes",
+        );
+        runtimeGoldenMatches += 1;
       } catch (error) {
         Object.assign(attempt, { state: "failed", error: modelSsrError(error) });
         remember(error);
@@ -271,8 +327,15 @@ for (const fixture of fixtures) {
 }
 
 after(() => {
-  const primaryComplete = primaryRows.size === 7;
-  const runtimeComplete = captureComplete && runtimeMatches === 7 && !failed;
+  const primaryComplete = primaryRows.size === 7 && primaryGoldenMatches === 7;
+  const runtimeComplete =
+    captureComplete &&
+    nativeGoldensMatched &&
+    primaryComplete &&
+    runtimeMatches === 7 &&
+    runtimeGoldenMatches === 7 &&
+    !failed;
+  const qualified = requireCapture && runtimeComplete;
   const common = {
     schema: "vize.native-sfc.original-input-model-ssr-primary",
     mode,
@@ -281,11 +344,16 @@ after(() => {
     contextHash: hash(contextRaw),
     inputPack: pack,
     contextPack,
-    qualification: failed
-      ? "failed-current-runtime-observation"
-      : "observed-unqualified-current-oracles-pending",
-    nativeGoldenComparisonPerformed: false,
-    wholePacketQualification: false,
+    qualification: qualified
+      ? "complete-current-oracles-matched"
+      : failed
+        ? "failed-current-runtime-comparison"
+        : "partial-current-observation-unqualified",
+    nativeGoldenComparisonPerformed,
+    nativeGoldensMatched,
+    primaryGoldenMatches,
+    runtimeGoldenMatches,
+    wholePacketQualification: qualified,
     captureComplete,
     primaryComplete,
     runtimeComplete,
@@ -319,5 +387,8 @@ after(() => {
   }
   if (writeFailed) throw writeFailure;
   if (requireCapture)
-    assert(primaryComplete && runtimeComplete, "all genuine current observations must complete");
+    assert(
+      primaryComplete && runtimeComplete,
+      "all current whole native/primary/runtime comparisons must pass",
+    );
 });

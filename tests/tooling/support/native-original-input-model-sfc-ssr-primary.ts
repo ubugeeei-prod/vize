@@ -32,6 +32,8 @@ export function compileInputModelSsrPrimary(
   });
   assert.deepEqual(parsed.errors, []);
   assert.equal(parsed.descriptor.script, null);
+  assert.deepEqual(parsed.descriptor.styles, []);
+  assert.deepEqual(parsed.descriptor.cssVars, []);
   const setup = parsed.descriptor.scriptSetup;
   const template = parsed.descriptor.template;
   assert(setup && template);
@@ -55,6 +57,7 @@ export function compileInputModelSsrPrimary(
     id: fixture.id,
     isProd: mode === "production",
     ssr: true,
+    ssrCssVars: parsed.descriptor.cssVars,
     compilerOptions: {
       sourceMap: true,
       mode: "module",

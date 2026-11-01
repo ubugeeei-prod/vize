@@ -1,7 +1,8 @@
-//! First source-built SSR observations; no native goldens are admitted here.
+//! Genuine source-built SSR Models with complete independently reviewed oracles.
 
 use super::*;
 mod custody;
+mod finish;
 mod refusal;
 
 #[test]
@@ -93,28 +94,5 @@ fn seven_whole_original_input_model_ssr_components_and_raw_maps_are_captured() -
             Err(error) => failures.push(error),
         }
     }
-    let complete =
-        failures.is_empty() && captures.len() == 7 && owners.len() == 7 && attempts.len() == 7;
-    let capture = serde_json::json!({
-        "schema":"vize.native-sfc.original-input-model-ssr-capture",
-        "adapter":"vize_atelier_sfc::compile_native_setup_ssr_sfc",
-        "sourceRevision":std::env::var("GITHUB_SHA").ok(),"inputPack":pack,
-        "qualification":if complete {"observed-unqualified-current-oracles-pending"}
-            else {"failed-current-source-observation"},
-        "nativeGoldenComparisonPerformed":false,"failures":failures,
-        "fixtures":captures,"custody":owners,"attempts":attempts,"refusals":refusals,
-    });
-    if let Ok(path) = std::env::var("VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_CAPTURE") {
-        std::fs::write(
-            path,
-            serde_json::to_vec_pretty(&capture).map_err(|error| cstr!("{error}"))?,
-        )
-        .map_err(|error| cstr!("{error}"))?;
-    }
-    require!(
-        complete,
-        "whole original SSR Model observation failures: {}",
-        capture["failures"]
-    );
-    Ok(())
+    finish::write(&pack, captures, owners, attempts, refusals, failures)
 }
