@@ -57,6 +57,7 @@ pub(crate) use forwarded_roots::{FORWARDED_RETURN_KEY, FORWARDED_ROOT_HELPERS, S
 pub(crate) use globals::{
     authored_instance_declares_unknown_names, is_declared_template_context_name,
     is_strict_template_context_candidate, is_template_instance_global_name,
+    script_top_level_binding_names,
 };
 pub(crate) use inline_callback_classifier::is_direct_inline_function_prop_value;
 pub(crate) use ref_instances::{REF_INSTANCE_HELPERS, REFS_RETURN_KEY, instantiated_ref_starts};

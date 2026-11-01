@@ -10,13 +10,14 @@ use super::reserved_props::{is_identifier_continue, is_identifier_start};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use std::ops::Range;
 
-use oxc_ast::ast::{IdentifierReference, ObjectProperty};
-use oxc_ast_visit::{Visit, walk::walk_object_property};
+mod references;
+use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
-use oxc_semantic::{Scoping, SemanticBuilder};
+use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
+use references::ReferenceCollector;
 use vize_carton::{FxHashSet, String, append};
-use vize_croquis::{ScopeChain, ScopeId, ScopeKind};
+use vize_croquis::{ScopeChain, ScopeId};
 
 const PARSE_PREFIX: &str = "const __vize_spread = (";
 const PARSE_SUFFIX: &str = ");";
@@ -45,6 +46,7 @@ struct Replacement {
     /// A normalized value binding actually visible at this particular read.
     receiver_shadowed: bool,
     shorthand: bool,
+    authored_callee: bool,
 }
 
 /// Parsed relative references and actual semantic names. No AST or allocator
@@ -231,6 +233,7 @@ fn collect_with_wrapper(
         template_scopes,
         usage_scope_id,
         only_instance,
+        callees: FxHashSet::default(),
     };
     collector.visit_program(&parsed.program);
     collector
@@ -262,101 +265,6 @@ fn collect_with_wrapper(
     })
 }
 
-struct ReferenceCollector<'a> {
-    expression_len: usize,
-    offset: u32,
-    replacements: Vec<Replacement>,
-    scoping: &'a Scoping,
-    template_binding_access: &'a TemplateBindingAccess<'a>,
-    template_scopes: &'a ScopeChain,
-    usage_scope_id: ScopeId,
-    only_instance: bool,
-}
-
-impl ReferenceCollector<'_> {
-    fn replacement(&self, ident: &IdentifierReference<'_>, shorthand: bool) -> Option<Replacement> {
-        if !self.template_binding_access.contains(ident.name.as_str()) {
-            return None;
-        }
-        let instance = self
-            .template_binding_access
-            .is_instance_global(ident.name.as_str());
-        if self.only_instance && !instance {
-            return None;
-        }
-        if is_visible_template_binding(
-            self.template_scopes,
-            self.usage_scope_id,
-            ident.name.as_str(),
-        ) {
-            return None;
-        }
-        let reference_id = ident.reference_id.get()?;
-        let reference = self.scoping.get_reference(reference_id);
-        if reference.symbol_id().is_some()
-            || (reference.flags().is_type() && !reference.flags().is_value_as_type())
-            || (reference.flags().is_value_as_type() && !instance)
-        {
-            return None;
-        }
-
-        let start = ident.span.start.checked_sub(self.offset)? as usize;
-        let end = ident.span.end.checked_sub(self.offset)? as usize;
-        (start < end && end <= self.expression_len).then_some(Replacement {
-            source: start..end,
-            name: String::from(ident.name.as_str()),
-            receiver_shadowed: instance
-                && (self
-                    .scoping
-                    .find_binding(reference.scope_id(), "__ctx".into())
-                    .is_some_and(|symbol| self.scoping.symbol_flags(symbol).is_value())
-                    || is_visible_template_binding(
-                        self.template_scopes,
-                        self.usage_scope_id,
-                        "__ctx",
-                    )),
-            shorthand,
-        })
-    }
-}
-
-fn is_visible_template_binding(scopes: &ScopeChain, start: ScopeId, name: &str) -> bool {
-    let mut current = Some(start);
-    while let Some(id) = current {
-        let Some(scope) = scopes.get_scope(id) else {
-            return false;
-        };
-        if matches!(
-            scope.kind,
-            ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::EventHandler
-        ) && scope.has_binding(name)
-        {
-            return true;
-        }
-        current = scope.parent();
-    }
-    false
-}
-
-impl<'a> Visit<'a> for ReferenceCollector<'_> {
-    fn visit_identifier_reference(&mut self, ident: &IdentifierReference<'a>) {
-        if let Some(replacement) = self.replacement(ident, false) {
-            self.replacements.push(replacement);
-        }
-    }
-
-    fn visit_object_property(&mut self, property: &ObjectProperty<'a>) {
-        if property.shorthand
-            && let oxc_ast::ast::Expression::Identifier(ident) = &property.value
-            && let Some(replacement) = self.replacement(ident, true)
-        {
-            self.replacements.push(replacement);
-            return;
-        }
-        walk_object_property(self, property);
-    }
-}
-
 fn apply_replacements(
     expression: &str,
     replacements: &[Replacement],
@@ -375,6 +283,33 @@ fn apply_replacements(
             &mut code,
             &mut segments,
         );
+        if replacement.authored_callee {
+            let Some((name, receiver)) = expression
+                .get(replacement.source.clone())
+                .zip(bindings.authored_callee_receiver())
+            else {
+                source_cursor = replacement.source.start;
+                continue;
+            };
+            let receiver_start = code.len();
+            append!(
+                code,
+                "({receiver} as unknown as (\"{key}\" extends keyof typeof {receiver} ? typeof {receiver} : {{ \"{key}\": any }})).",
+                key = replacement.name
+            );
+            let key_start = code.len();
+            diagnostic_prefixes.push(SpreadRewriteSegment {
+                generated: receiver_start..key_start,
+                source: replacement.source.clone(),
+            });
+            code.push_str(name);
+            segments.push(SpreadRewriteSegment {
+                generated: key_start..code.len(),
+                source: replacement.source.clone(),
+            });
+            source_cursor = replacement.source.end;
+            continue;
+        }
         let Some((name, receiver)) = expression
             .get(replacement.source.clone())
             .and_then(|name| Some((name, bindings.receiver(replacement.name.as_str())?)))

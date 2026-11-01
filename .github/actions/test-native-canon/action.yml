@@ -127,6 +127,7 @@ runs:
         cargo test --locked --profile ci -p vize_canon --features cache-custody --lib batch::type_checker::tests::recent_issues::options_api_inherited_template_members:: -- --nocapture
         cargo test --locked --profile ci -p vize_canon --lib virtual_ts::scope::globals::instance::tests::options_api_inherited_members_are_declared_from_the_authored_instance -- --exact --nocapture
         cargo test --locked --profile ci -p vize_canon --lib virtual_ts::tests::inherited_options::test_options_api_unresolved_extends_declares_template_refs_from_the_instance -- --exact --nocapture
+        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::tests::inherited_calls:: -- --nocapture
     - name: Test memberless Vue preparation against its acknowledged same-owner pull
       shell: bash
       env:

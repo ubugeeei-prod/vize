@@ -435,7 +435,7 @@ fn has_script_setup(summary: &Croquis) -> bool {
 /// plain source type is tried first and TSX second. `None` means neither parsed
 /// the script cleanly: its top-level names are then unknown, and no template
 /// name may be classified against the public instance on a partial program.
-fn script_top_level_binding_names(script: &str) -> Option<FxHashSet<String>> {
+pub(crate) fn script_top_level_binding_names(script: &str) -> Option<FxHashSet<String>> {
     for source_type in [SourceType::ts(), SourceType::tsx()] {
         let allocator = Allocator::default();
         let parsed = Parser::new(&allocator, script, source_type.with_module(true)).parse();

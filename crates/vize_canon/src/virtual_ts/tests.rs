@@ -12,6 +12,7 @@ mod component_spread_prop_order;
 mod context_undefined;
 mod define_props_scope;
 mod generic_module_type_exports;
+mod inherited_calls;
 mod inherited_options;
 mod keyed_template_diagnostics;
 mod legacy_nuxt2_page_context;

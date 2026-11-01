@@ -9,6 +9,8 @@ use super::real_vue::create_project_case;
 use crate::batch::{BatchTypeCheckerOptions, TypeChecker};
 use vize_l0::{String, cstr};
 
+mod receiver_controls;
+
 const FILES: [(&str, &str); 6] = [
     (
         "src/base.ts",
@@ -306,10 +308,7 @@ fn inherited_method_explicit_this_keeps_valid_calls_clean() {
         );
         return;
     };
-    let shared = FILES[1].1.replace(
-        "greet(name: string)",
-        "greet(this: { currentDevice: string }, name: string)",
-    );
+    let shared = receiver_controls::shared_with_receiver_methods();
     let repaired = FILES[3]
         .1
         .replace("greet(1)", "greet('x')")
@@ -317,10 +316,13 @@ fn inherited_method_explicit_this_keeps_valid_calls_clean() {
         .replace("currentDevice.toFixed()", "currentDevice.toUpperCase()")
         .replace("fromBase.toUpperCase()", "fromBase.toFixed()")
         .replace("{{ missing }}", "");
+    let optional = repaired.replace("greet('x')", "greet?.('x')").replace("</p>",
+        "{{ identity<number>(1).toFixed() }} {{ overloaded(1).toFixed() }} {{ overloaded('x').toUpperCase() }}</p>");
     let files = [
         FILES[0],
         ("src/shared.ts", shared.as_str()),
         ("src/Invalid.vue", repaired.as_str()),
+        ("src/Optional.vue", optional.as_str()),
         FILES[5],
     ];
     let root = create_project_case("options-api-inherited-explicit-this", &files);
