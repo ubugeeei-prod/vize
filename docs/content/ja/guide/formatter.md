@@ -108,30 +108,30 @@ export default defineConfig({}).withVue({
 
 同じオプションは CLI のフラグでも指定できます。
 
-| フラグ                             | 説明                                                               |
-| ---------------------------------- | ------------------------------------------------------------------ |
-| `--print-width`                    | 1 行の最大幅を指定します。                                         |
-| `--tab-width`                      | インデント 1 段あたりのスペース数を指定します。                    |
-| `--use-tabs`                       | スペースの代わりにタブでインデントします。                         |
-| `--single-quote`                   | ダブルクォートの代わりにシングルクォートを使います。               |
-| `--trailing-comma`                 | 末尾のカンマを `all`、`es5`、`none` から選びます。                 |
-| `--arrow-parens`                   | 1 引数のアロー関数の括弧を `always`、`avoid` から選びます。        |
-| `--bracket-spacing`                | オブジェクトリテラルの波括弧内の空白を切り替えます。               |
-| `--bracket-same-line`              | 複数行タグの `>` を最後の属性行に置きます。                        |
-| `--end-of-line`                    | 改行を `lf`、`crlf`、`cr`、自動検出の `auto` から選びます。        |
-| `--no-semi`                        | 文末のセミコロンを省略します。                                     |
+| フラグ                             | 説明                                                            |
+| ---------------------------------- | --------------------------------------------------------------- |
+| `--print-width`                    | 1 行の最大幅を指定します。                                      |
+| `--tab-width`                      | インデント 1 段あたりのスペース数を指定します。                 |
+| `--use-tabs`                       | スペースの代わりにタブでインデントします。                      |
+| `--single-quote`                   | ダブルクォートの代わりにシングルクォートを使います。            |
+| `--trailing-comma`                 | 末尾のカンマを `all`、`es5`、`none` から選びます。               |
+| `--arrow-parens`                   | 1 引数のアロー関数の括弧を `always`、`avoid` から選びます。      |
+| `--bracket-spacing`                | オブジェクトリテラルの波括弧内の空白を切り替えます。            |
+| `--bracket-same-line`              | 複数行タグの `>` を最後の属性行に置きます。                      |
+| `--end-of-line`                    | 改行を `lf`、`crlf`、`cr`、自動検出の `auto` から選びます。       |
+| `--no-semi`                        | 文末のセミコロンを省略します。                                  |
 | `--semi[=true\|false]`             | 設定のセミコロン方針を、付ける側と省略する側の両方へ上書きします。 |
-| `--sort-attributes`                | テンプレートとブロックタグの属性を並べ替えます。                   |
-| `--attribute-sort-order`           | 優先グループ内で `alphabetical` または `as-written` を選びます。   |
-| `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ書きます。                                   |
-| `--vue-indent-script-and-style`    | `<script>` と `<style>` の内容をインデントします。                 |
-| `--max-attributes-per-line`        | 指定した数を超えると、属性を折り返します。                         |
-| `--normalize-directive-shorthands` | `v-bind:`、`v-on:`、`v-slot:` を `:`、`@`、`#` に置き換えます。    |
-| `--sort-blocks`                    | SFC ブロックの標準順序を切り替えます。                             |
-| `--normalize-css-quotes`           | CSS・SCSS・Less の文字列の引用符を指定した形式に合わせます。       |
-| `--normalize-inline-styles`        | 静的な `style` 宣言を一行に整えます。                              |
-| `--normalize-v-for-parens`         | 複数の `v-for` エイリアスを括弧で囲みます。                        |
-| `--reindent-preprocessor-styles`   | SCSS・Less を入れ子の深さでインデントします。                      |
+| `--sort-attributes`                | テンプレートとブロックタグの属性を並べ替えます。                |
+| `--attribute-sort-order`           | 優先グループ内で `alphabetical` または `as-written` を選びます。 |
+| `--single-attribute-per-line`      | 属性を 1 行に 1 つずつ書きます。                                |
+| `--vue-indent-script-and-style`    | `<script>` と `<style>` の内容をインデントします。               |
+| `--max-attributes-per-line`        | 指定した数を超えると、属性を折り返します。                      |
+| `--normalize-directive-shorthands` | `v-bind:`、`v-on:`、`v-slot:` を `:`、`@`、`#` に置き換えます。 |
+| `--sort-blocks`                    | SFC ブロックの標準順序を切り替えます。                          |
+| `--normalize-css-quotes`          | CSS・SCSS・Less の文字列の引用符を指定した形式に合わせます。 |
+| `--normalize-inline-styles`       | 静的な `style` 宣言を一行に整えます。                 |
+| `--normalize-v-for-parens`        | 複数の `v-for` エイリアスを括弧で囲みます。             |
+| `--reindent-preprocessor-styles`  | SCSS・Less を入れ子の深さでインデントします。           |
 
 `--semi` は `--semi=true` と同じです。`--semi=false` と既存の `--no-semi`
 はセミコロンを省略します。どちらも指定しなければ設定値を使います。
