@@ -54,8 +54,8 @@ use self::generics::HoistedGenericAliases;
 use self::global_components::{GlobalComponentDiagnostics, GlobalComponentPlan};
 pub(crate) use self::imports::extract_declared_name;
 use self::imports::{
-    collect_component_imported_names, collect_imported_names_without_script_value_use,
-    emit_reference_path_directives, emit_reference_type_directives,
+    collect_component_imported_names, collect_value_import_names, emit_reference_path_directives,
+    emit_reference_type_directives,
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::macro_anchors::emit_setup_scope_macro_anchors;
@@ -200,11 +200,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let module_plan = script_content
         .map(|script| script_module::collect_script_module_plan(script, recover_lone_setup))
         .unwrap_or_default();
-    let imported_names_without_script_value_use = collect_imported_names_without_script_value_use(
-        summary,
-        script_content,
-        &module_plan.identifier_usage,
-    );
+    let value_import_names =
+        collect_value_import_names(summary, script_content, &module_plan.identifier_usage);
     let mut module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
         let module_spans = module_plan.module_spans(summary, &namespace_hoist);
         script_blocks.module_spans(summary, script_content, module_spans)
@@ -232,7 +229,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // and user code that merely mentions the name (#3888).
     let binding_anchors = SetupBindingAnchors {
         summary,
-        script_content,
+        imports: &value_import_names,
         usage: &module_plan.identifier_usage,
         template_usage_names: &template_usage_names,
         template_value_usage_names: &template_value_usage_names,
@@ -628,7 +625,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 options_api,
                 &template_usage_names,
                 &template_value_usage_names,
-                &imported_names_without_script_value_use,
+                &value_import_names.without_script_value_use,
                 script_content,
                 &imported_names,
                 options,
