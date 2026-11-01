@@ -11,6 +11,7 @@ use vize_l0::Allocator;
 use vize_l4::targets::dom::DomMode;
 
 mod custody;
+mod finish;
 mod output;
 mod refusal;
 
@@ -159,23 +160,5 @@ fn three_original_trim_models_retain_all_target_mode_attempts_before_verdict() -
         "nativeCaptureComplete":complete,"failures":failures,
         "fixtures":captures,"custody":owners,"attempts":attempts,"refusals":refusals,
     });
-    if let Ok(path) = std::env::var("VIZE_NATIVE_MODEL_TRIM_CAPTURE") {
-        std::fs::write(
-            path,
-            serde_json::to_string_pretty(&capture).map_err(|error| format!("{error}"))?,
-        )
-        .map_err(|error| format!("{error}"))?;
-    }
-    println!(
-        "{}",
-        serde_json::to_string(&capture).map_err(|error| format!("{error}"))?
-    );
-    if complete {
-        Ok(())
-    } else {
-        Err(format!(
-            "incomplete actual trim capture: {}",
-            capture["failures"]
-        ))
-    }
+    finish::write(capture, complete)
 }
