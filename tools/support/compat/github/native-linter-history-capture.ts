@@ -5,8 +5,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const SOURCE = "7941040978a0f26fdca70a9b8947fda9bb28f31e";
-const TREE = "d4ef2126cd125a92f93a8eab4d351afef0c114b7";
+const SOURCE = "c4aa5c7a244e581d7edf30b27ad19e88e09f0f53";
+const TREE = "11a6765bc4e7b4f1f4e2e0531e2040b791d5861a";
 const WORKFLOW = ".github/workflows/patina-native-boolean-protocol.yml";
 const SELF = "tools/support/compat/github/native-linter-history-capture.ts";
 const PINS: Record<string, string> = {
@@ -14,7 +14,7 @@ const PINS: Record<string, string> = {
   "pnpm-lock.yaml": "bc0ff0b8a3b617d02c86d27540ba3046fe55ef5d41c2e9179dec155caaf5c38c",
   "package.json": "703095a422cfc630a5d29ef5f4a5230b1c853c6013b8e8080809643cc5b4c6a0",
   "tests/_fixtures/differential/linter/manifest.json":
-    "ac0c219d2bff32982f7946903660e75262b0a27bb7054bf0f4020f2a579a8f8f",
+    "345746d75ada639abd110d0ab43665cbe27af0629e230fbdddb1e65acd40d7e4",
   "tests/_fixtures/differential/linter/oracle-index.json":
     "4ca3b59baec2b4377da10d68fb3de000f3d18b753289c616e7f21a7184405bf1",
   "crates/vize_patina/tests/fixtures/lint-history/cases.json":
@@ -242,11 +242,11 @@ if (phase === "controller") {
     legacyMatches: 79,
     legacyFailures: 0,
     baselineDrift: 0,
-    nativeUnsupported: 63,
+    nativeUnsupported: 62,
     nativeFailures: 0,
-    nativeHandled: 16,
-    nativeEquivalent: 16,
-    pairedComparisons: 16,
+    nativeHandled: 17,
+    nativeEquivalent: 17,
+    pairedComparisons: 17,
   });
   write("capture.json", {
     schema: "vize.native-linter-history-capture",
