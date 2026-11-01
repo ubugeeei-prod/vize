@@ -36,6 +36,10 @@ on:
         type: choice
         default: capture
         options: [capture, native-props-origin]
+      native_vue_return_observation:
+        description: "Observe source-owned Vue return metadata in the existing Origin session; no admission"
+        type: boolean
+        default: false
 permissions: { contents: read }
 concurrency:
   group: canon-slot-constructor-${{ github.event.pull_request.number || github.run_id }}
@@ -192,6 +196,7 @@ jobs:
     env:
       CAPTURE_SOURCE: ${{ inputs.original27_source }}
       ORIGINAL27_MODE: ${{ inputs.original27_mode || 'capture' }}
+      NATIVE_VUE_RETURN_OBSERVATION: ${{ inputs.native_vue_return_observation && 'true' || 'false' }}
       CARGO_BUILD_JOBS: "4"
       CARGO_INCREMENTAL: "0"
       GOMAXPROCS: "2"
@@ -200,8 +205,11 @@ jobs:
     steps:
       - name: Require one literal source commit
         run: |
-          [[ "$CAPTURE_SOURCE" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$ORIGINAL27_MODE" == capture || "$ORIGINAL27_MODE" == native-props-origin ]]
+          set -euo pipefail
+          [[ "$CAPTURE_SOURCE" =~ ^[0-9a-f]{40}$ ]] || exit 1
+          [[ "$ORIGINAL27_MODE" == capture || "$ORIGINAL27_MODE" == native-props-origin ]] || exit 1
+          [[ "$NATIVE_VUE_RETURN_OBSERVATION" == false || "$NATIVE_VUE_RETURN_OBSERVATION" == true ]] || exit 1
+          [[ "$NATIVE_VUE_RETURN_OBSERVATION" == false || "$ORIGINAL27_MODE" == native-props-origin ]] || exit 1
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -243,7 +251,11 @@ jobs:
           evidence="$RUNNER_TEMP/original27-current-evidence"
           export CARGO_TARGET_DIR="$RUNNER_TEMP/original27-current-target"
           (cd original27-source && cargo test --locked --profile ci-opt -p vize_canon --lib --no-run --message-format=json) > "$evidence/origin-cargo.jsonl" 2> "$evidence/origin-cargo.stderr"
-          node tools/support/compat/content-mapper/constructor-native-props-origin.ts build "$GITHUB_WORKSPACE/original27-source" "$CAPTURE_SOURCE" "$GITHUB_WORKSPACE/original27-fixtures" "$RUNNER_TEMP/original27-current-provider" "$evidence"
+          sidecar_args=()
+          if [[ "$NATIVE_VUE_RETURN_OBSERVATION" == true ]]; then
+            sidecar_args+=(--vue-return-observation)
+          fi
+          node tools/support/compat/content-mapper/constructor-native-props-origin.ts build "$GITHUB_WORKSPACE/original27-source" "$CAPTURE_SOURCE" "$GITHUB_WORKSPACE/original27-fixtures" "$RUNNER_TEMP/original27-current-provider" "$evidence" "${sidecar_args[@]}"
       - name: Install the original provider without executing its published Vize
         run: |
           set -euo pipefail
@@ -258,7 +270,12 @@ jobs:
       - name: Observe both actual instance hosts and Vue declaration identities in one snapshot
         if: inputs.original27_mode == 'native-props-origin'
         run: |
-          node tools/support/compat/content-mapper/constructor-native-props-origin.ts run "$GITHUB_WORKSPACE/original27-source" "$CAPTURE_SOURCE" "$GITHUB_WORKSPACE/original27-fixtures" "$RUNNER_TEMP/original27-current-provider" "$RUNNER_TEMP/original27-current-evidence"
+          set -euo pipefail
+          sidecar_args=()
+          if [[ "$NATIVE_VUE_RETURN_OBSERVATION" == true ]]; then
+            sidecar_args+=(--vue-return-observation)
+          fi
+          node tools/support/compat/content-mapper/constructor-native-props-origin.ts run "$GITHUB_WORKSPACE/original27-source" "$CAPTURE_SOURCE" "$GITHUB_WORKSPACE/original27-fixtures" "$RUNNER_TEMP/original27-current-provider" "$RUNNER_TEMP/original27-current-evidence" "${sidecar_args[@]}"
       - name: Preserve complete raw failures and original authored inputs
         if: always()
         run: |
