@@ -16,8 +16,8 @@ impl CorsaProjectClient {
         // Startup must see the complete batch, including a typed overlay API
         // fallback while replay temporarily owns the retained document map.
         for (uri, content) in documents {
-            let previous = self.document_texts.insert((*uri).into(), (*content).into());
-            if previous.as_deref() != Some(*content) {
+            let previous = self.retain_document_text(uri, content);
+            if previous.changed() {
                 self.editor_lsp_documents_dirty = true;
             }
         }

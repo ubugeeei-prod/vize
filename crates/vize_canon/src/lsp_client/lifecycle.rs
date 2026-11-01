@@ -133,7 +133,7 @@ impl CorsaProjectClient {
         if self.logical_workspace_overlays {
             for (uri, content) in documents {
                 self.clear_document_state(uri);
-                self.document_texts.insert((*uri).into(), (*content).into());
+                let _ = self.retain_document_text(uri, content);
             }
             return self.retain_logical_workspace_revision();
         }
@@ -144,8 +144,8 @@ impl CorsaProjectClient {
                 if self.materialized_project_session {
                     self.sync_overlay_document(uri, content)?;
                 } else {
-                    let previous = self.document_texts.insert((*uri).into(), (*content).into());
-                    if previous.as_deref() != Some(*content) {
+                    let previous = self.retain_document_text(uri, content);
+                    if previous.changed() {
                         self.editor_lsp_documents_dirty = true;
                     }
                 }
@@ -172,10 +172,10 @@ impl CorsaProjectClient {
         let mut changed = false;
         for (uri, content) in documents {
             self.clear_document_state(uri);
-            let previous = self.document_texts.insert((*uri).into(), (*content).into());
+            let previous = self.retain_document_text(uri, content);
 
             let document_uri = self.session_document_uri(uri);
-            if previous.as_deref() == Some(*content) {
+            if !previous.changed() {
                 continue;
             }
             self.editor_lsp_documents_dirty = true;
@@ -193,7 +193,7 @@ impl CorsaProjectClient {
                         uri,
                         document_uri.as_str(),
                         &self.project_root,
-                        previous.is_some(),
+                        previous.was_present(),
                     )
                 }),
             );

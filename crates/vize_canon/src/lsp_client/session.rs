@@ -66,8 +66,8 @@ impl CorsaProjectClient {
     }
 
     pub(super) fn sync_overlay_document(&mut self, uri: &str, content: &str) -> Result<(), String> {
-        let previous = self.document_texts.insert(uri.into(), content.into());
-        if previous.as_deref() != Some(content) {
+        let previous = self.retain_document_text(uri, content);
+        if previous.changed() {
             self.editor_lsp_documents_dirty = true;
         }
 
@@ -84,7 +84,7 @@ impl CorsaProjectClient {
         }
 
         let document_uri = self.session_document_uri(uri);
-        if previous.as_deref() == Some(content) {
+        if !previous.changed() {
             return Ok(());
         }
 
@@ -113,7 +113,7 @@ impl CorsaProjectClient {
                 uri,
                 document_uri.as_str(),
                 &self.project_root,
-                previous.is_some(),
+                previous.was_present(),
             )
         });
         let version = next_overlay_version(&mut self.overlay_versions, uri);
