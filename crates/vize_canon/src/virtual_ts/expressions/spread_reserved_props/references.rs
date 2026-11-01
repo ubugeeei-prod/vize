@@ -1,12 +1,15 @@
 //! The existing unresolved-reference and template-scope owner, including call roles.
-use super::*;
+use super::Replacement;
+use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use oxc_ast::ast::{CallExpression, Expression, IdentifierReference, ObjectProperty};
 use oxc_ast_visit::{
     Visit,
     walk::{walk_call_expression, walk_object_property},
 };
 use oxc_semantic::Scoping;
+use vize_carton::{FxHashSet, String};
 use vize_croquis::ScopeKind;
+use vize_croquis::{ScopeChain, ScopeId};
 
 pub(super) struct ReferenceCollector<'a> {
     pub(super) expression_len: usize,

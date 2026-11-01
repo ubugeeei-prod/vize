@@ -3,7 +3,7 @@ use super::*;
 use crate::virtual_ts::VirtualTsOutput;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
-const SCRIPT: &str = "import { shared } from './shared'; export default { mixins: [shared] };";
+const SCRIPT: &str = "import { shared } from './shared'; import Child from './Child.vue'; export default { mixins: [shared] };";
 fn generate(template: &str, script: &str) -> VirtualTsOutput {
     let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
@@ -26,7 +26,7 @@ fn callee(receiver: &str, name: &str) -> vize_carton::String {
 }
 #[test]
 fn direct_optional_generic_and_grouped_calls_retain_affine_property_tokens() {
-    let template = "<p :title=\"greet('x')\">{{ greet?.('x') }} {{ identity<number>(1) }} {{ (greet)('x') }} {{ ({ greet, member: holder.greet, text: 'greet' }) }}</p>";
+    let template = "<p :title=\"greet('x')\">{{ greet?.('x') }} {{ identity<number>(1) }} {{ (greet)('x') }} {{ ({ greet, member: holder.greet, text: 'greet' }) }}</p><Child :title=\"/* comment */greet('x')\"/>";
     let output = generate(template, SCRIPT);
     let receiver = "__vize_template_instance";
     assert!(
@@ -85,6 +85,14 @@ fn direct_optional_generic_and_grouped_calls_retain_affine_property_tokens() {
         })
         .collect::<Vec<_>>();
     assert!(!prefixes.is_empty(), "{}", output.code);
+    let comment_start = template.find("/* comment */greet").unwrap() + "/* comment */".len();
+    assert!(
+        prefixes
+            .iter()
+            .any(|p| p.src_range == (comment_start..comment_start + 5)),
+        "comment-stripped prop keeps its source offsets: {:#?}",
+        output.mapping.spans()
+    );
     for prefix in prefixes {
         let authored = template.get(prefix.src_range.clone()).unwrap();
         assert!(matches!(authored, "greet" | "identity"), "{authored}");

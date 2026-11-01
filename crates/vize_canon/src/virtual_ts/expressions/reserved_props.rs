@@ -16,7 +16,9 @@ pub(crate) fn rewrite_reserved_template_binding(
     expression: &str,
     template_binding_access: &TemplateBindingAccess,
 ) -> Option<String> {
-    if template_binding_access.has_instance_globals() && expression.contains('$') {
+    if template_binding_access.has_instance_globals()
+        && (template_binding_access.has_authored_instance_calls() || expression.contains('$'))
+    {
         return super::instance_rewrite::rewrite(expression, template_binding_access).map(
             |rewrite| {
                 vize_carton::profiler::global_profiler()
@@ -78,7 +80,9 @@ pub(super) fn map_rewritten_binding_source(
     source: super::binding_mapping::BindingSource<'_>,
     bindings: &TemplateBindingAccess,
 ) {
-    if bindings.has_instance_globals() && source.expression.contains('$') {
+    if bindings.has_instance_globals()
+        && (bindings.has_authored_instance_calls() || source.expression.contains('$'))
+    {
         if let Some(rewrite) = super::instance_rewrite::rewrite(source.expression, bindings) {
             super::binding_mapping::map_rewrite(
                 ts, mappings, generated, &source, &rewrite, bindings,

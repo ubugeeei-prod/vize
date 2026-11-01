@@ -17,12 +17,12 @@ fn portable_negative(message: &str) -> String {
         return cstr!("{MISSING}<authored instance>'.");
     }
     const THIS: &str = "The 'this' context of type '";
-    const VOID: &str = "' is not assignable to method's 'this' of type 'void'.";
+    const NUMBER: &str = "' is not assignable to method's 'this' of type 'number'.";
     if let Some(rest) = message.strip_prefix(THIS)
         && rest.starts_with("CreateComponentPublicInstance")
-        && rest.ends_with(VOID)
+        && rest.ends_with(NUMBER)
     {
-        return cstr!("{THIS}<authored instance>{VOID}");
+        return cstr!("{THIS}<authored instance>{NUMBER}");
     }
     String::from(message)
 }
@@ -59,11 +59,11 @@ fn absent_call_generic_argument_and_wrong_receiver_keep_their_complete_errors() 
             shared
                 .replace(
                     "greet(this: { currentDevice: string }, name: string)",
-                    "greet(this: void, name: string)",
+                    "greet(this: number, name: string)",
                 )
                 .into(),
             2684,
-            "The 'this' context of type '<authored instance>' is not assignable to method's 'this' of type 'void'.",
+            "The 'this' context of type '<authored instance>' is not assignable to method's 'this' of type 'number'.",
         ),
     ] {
         let source = cstr!(

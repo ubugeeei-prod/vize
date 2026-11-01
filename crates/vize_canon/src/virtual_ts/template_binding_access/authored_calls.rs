@@ -1,9 +1,12 @@
 //! Authored-instance call receivers share the existing semantic rewrite plan.
-use super::*;
+use super::{InstanceAccess, InstanceOwner, InstanceStorage, TemplateBindingAccess};
 use crate::virtual_ts::scope::{
     ScopeGenerationOptions, is_declared_template_context_name,
     is_strict_template_context_candidate, script_top_level_binding_names,
 };
+use std::cell::RefCell;
+use vize_carton::{FxHashSet, String};
+use vize_croquis::Croquis;
 
 impl<'a> TemplateBindingAccess<'a> {
     pub(crate) fn for_template(
