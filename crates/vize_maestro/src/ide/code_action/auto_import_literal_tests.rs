@@ -129,7 +129,7 @@ fn exercise(quoted_target: bool, specifier: &str, statement: &str) {
     assert_eq!(fs::read_to_string(&file).unwrap(), SOURCE);
 
     let CodeActionOrCommand::CodeAction(action) = &actual[0] else {
-        unreachable!();
+        panic!("expected a complete code action, got {actual:#?}");
     };
     let changes = action.edit.as_ref().unwrap().changes.as_ref().unwrap();
     let edit = &changes.get(&uri).unwrap()[0];
