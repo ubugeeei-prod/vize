@@ -1,6 +1,12 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Retain whole legacy/native inline-template observations in normal PR/full JUnit.
+# This changes output retention only, not selection, runtime or retry policy.
+[[profile.default.overrides]]
+filter = 'package(=vize_patina) & binary(=integration) & test(~native_deprecated_inline_template::)'
+junit.store-success-output = true
+
 # Retain complete new native/legacy Case+Observation packets without changing execution.
 [[profile.default.overrides]]
 filter = 'package(=vize_patina) & test(~no_deprecated_html_element_is::native::tests::)'

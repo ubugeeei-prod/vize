@@ -1,0 +1,1 @@
+<div inline-template>Content</div>

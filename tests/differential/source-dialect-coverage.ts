@@ -73,7 +73,7 @@ export function sourceInspectedDialectCoverage(
         else if (/\blang\s*=\s*["']jsx["']/i.test(attributes)) dialects.add("jsx");
         else dialects.add("js");
       }
-    } else if (input.entry === "template") {
+    } else if (input.entry === "template" || (input.entry === undefined && extension === ".html")) {
       dialects.add("html-template");
     } else if (extension === ".tsx") dialects.add("tsx");
     else if (extension === ".jsx") dialects.add("jsx");

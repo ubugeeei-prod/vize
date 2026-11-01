@@ -1,0 +1,7 @@
+# Original inline-template native-element control
+
+`Original.html.txt` is the exact 34 UTF-8 bytes of the existing `reports_inline_template_on_native_element` input in `crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs` at `7ea42da746a0d6e40d8ab15cd201c2c0586afd6f` (Git blob `35a18fd711808443cbbe44bbb72192c62a9dcc7b`). The unchanged original was introduced by `d3ac222521b12a901a12be4dd65113529cd5719f` (PR #5675, authored by ubugeeei). This is an original rule unit input, not a newly claimed member of the frozen historical case catalog. There is no final newline; SHA256 is `eba44a30525a87d2121e058a0a63d59fcb8a6fe0ea8bf4942612e9b88836460c`.
+
+The Rust product law physically includes this file and passes the same source and original `App.vue` filename to both configured legacy and native bare-template APIs. Every diagnostic field, help level, severity, null fix, count and unchanged requery is compared. The manifest registers this source as source-inspected HTML only; it confers no whole-catalog native admission.
+
+The original component snapshot `crates/vize_patina/src/rules/vue/snapshots/vize_patina__rules__vue__no_deprecated_inline_template__tests__reports_inline_template_on_component.snap` (Git blob `9e164eedf0d16ed3787313f542f4a682aa33eb95`) remains unchanged. Component owners and SFC ownership remain unsupported by this native callback. The old 48 historical cases, shared 79 observations and prior native counts are untouched. Related issues: #6848 and #6881; broader acceptance remains open.
