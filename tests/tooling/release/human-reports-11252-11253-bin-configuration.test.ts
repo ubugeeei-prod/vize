@@ -8,11 +8,14 @@ import {
   globalBinConfigPath,
   recheckBinConfiguration,
   validateBinConfiguration,
+  safeAgeWorkspace,
 } from "../../../tools/support/release/human_reports_11252_11253_public/bin-configuration.ts";
 import { configurationFixture } from "./human-reports-11252-11253-bin.fixture.ts";
 import { sha256 } from "../../../tools/support/release/human_reports_11252_11253_public/value.ts";
 
-const manifest = Buffer.from('{"name":"synthetic-original-consumer"}\n');
+const manifest = Buffer.from(
+  '{"name":"synthetic-original-consumer","devDependencies":{"vize":"0.0.0"}}\n',
+);
 function setup() {
   const base = realpathSync(mkdtempSync(join(tmpdir(), "human-config-inputs-")));
   const root = join(base, "consumer-original"),
@@ -168,4 +171,52 @@ test("postinstall change to global or controlled npmrc is retained before refusa
       rmSync(s.base, { recursive: true, force: true });
     }
   }
+});
+test("unexpected controlled npmrc/package/workspace bytes are hashed and never emitted before refusal", () => {
+  const secret = "synthetic-unexpected-token-body";
+  for (const when of ["before", "after"] as const)
+    for (const kind of ["user", "global", "package", "workspace"] as const) {
+      const s = setup();
+      try {
+        const input =
+          when === "after" ? collectBinConfiguration(s.root, s.env, manifest, s.sink) : null;
+        const path =
+          kind === "user"
+            ? s.user
+            : kind === "global"
+              ? s.global
+              : join(s.root, kind === "package" ? "package.json" : "pnpm-workspace.yaml");
+        const body =
+          kind === "workspace"
+            ? `minimumReleaseAgeExclude:\n  - '${secret}'\n`
+            : `token=${secret}\n`;
+        writeFileSync(path, body);
+        assert.throws(() =>
+          input
+            ? recheckBinConfiguration(input, manifest, s.sink)
+            : collectBinConfiguration(s.root, s.env, manifest, s.sink),
+        );
+        const raw = JSON.stringify(s.events);
+        assert(raw.includes(sha256(body)));
+        assert(!raw.includes(secret));
+        assert(!raw.includes(Buffer.from(body).toString("base64")));
+      } finally {
+        rmSync(s.base, { recursive: true, force: true });
+      }
+    }
+});
+test("age workspace allows only unique release-bound package values, including pnpm's unquoted vize scalar", () => {
+  assert(
+    safeAgeWorkspace(
+      Buffer.from("minimumReleaseAgeExclude:\n  - '@vizejs/native@0.0.0'\n  - vize@0.0.0\n"),
+      manifest,
+    ),
+  );
+  for (const body of [
+    "minimumReleaseAgeExclude:\n  - arbitrary-secret\n",
+    "minimumReleaseAgeExclude:\n  - 'vize@1.0.0'\n",
+    "minimumReleaseAgeExclude:\n  - vize@0.0.0\n  - vize@0.0.0\n",
+    "minimumReleaseAgeExclude:\n  - vize@0.0.0\nnodeLinker: hoisted\n",
+  ])
+    assert(!safeAgeWorkspace(Buffer.from(body), manifest));
 });

@@ -74,7 +74,8 @@ export function globalBinConfigPath(
     ? join(home, "Library/Preferences/pnpm/config.yaml")
     : join(home, ".config/pnpm/config.yaml");
 }
-function fileInput(path: string, controlled: boolean): FileInput {
+type SafeBytes = Buffer | ((raw: Buffer) => boolean) | null;
+function fileInput(path: string, expected: SafeBytes): FileInput {
   absolute(path);
   const stat = lstatSync(path, { throwIfNoEntry: false });
   if (stat === undefined)
@@ -96,8 +97,55 @@ function fileInput(path: string, controlled: boolean): FileInput {
     kind,
     bytes: stat.size,
     sha256: raw === null ? null : sha256(raw),
-    rawBase64: controlled && raw !== null ? raw.toString("base64") : null,
+    rawBase64:
+      raw !== null &&
+      expected !== null &&
+      (Buffer.isBuffer(expected) ? raw.equals(expected) : expected(raw))
+        ? raw.toString("base64")
+        : null,
   };
+}
+/** Closed generated age exclusions; no arbitrary scalar, setting or secret
+ * may become an approved body merely because its YAML shape looks familiar. */
+export function safeAgeWorkspace(raw: Buffer, manifest: Buffer): boolean {
+  try {
+    const version = object(object(wholeJson(manifest)).devDependencies).vize;
+    if (typeof version !== "string" || !/^\d+\.\d+\.\d+$/u.test(version)) return false;
+    const allowed = new Set(
+      [
+        "vize",
+        "@vizejs/native",
+        ...[
+          "darwin-arm64",
+          "darwin-x64",
+          "linux-arm64-gnu",
+          "linux-arm64-musl",
+          "linux-x64-gnu",
+          "linux-x64-musl",
+          "win32-arm64-msvc",
+          "win32-x64-msvc",
+        ].map((target) => "@vizejs/native-" + target),
+      ].map((name) => name + "@" + version),
+    );
+    const text = new TextDecoder("utf8", { fatal: true }).decode(raw);
+    const prefix = "minimumReleaseAgeExclude:\n";
+    if (!text.startsWith(prefix) || !text.endsWith("\n")) return false;
+    const lines = text.slice(prefix.length, -1).split("\n"),
+      seen = new Set<string>();
+    if (lines.length === 0 || lines.length > allowed.size) return false;
+    for (const line of lines) {
+      if (!line.startsWith("  - ")) return false;
+      const token = line.slice(4),
+        quoted = token.startsWith("'") && token.endsWith("'");
+      const value = quoted ? token.slice(1, -1) : token;
+      if (!allowed.has(value) || seen.has(value) || (value.startsWith("@") && !quoted))
+        return false;
+      seen.add(value);
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 export function workspaceInputPaths(root: string): string[] {
   absolute(root);
@@ -228,9 +276,9 @@ export function collectBinConfiguration(
   for (const value of Object.values(paths)) if (value !== null) absolute(value);
   assert.equal(paths.HOME, home);
   const globalPath = globalBinConfigPath(process.platform, home, paths);
-  const observe = (path: string, controlled: boolean): FileInput => {
+  const observe = (path: string, expected: SafeBytes): FileInput => {
     try {
-      const input = fileInput(path, controlled);
+      const input = fileInput(path, expected);
       sink("bin-configuration-file-input", input);
       return input;
     } catch (error) {
@@ -249,12 +297,12 @@ export function collectBinConfiguration(
     explicitEnvironment: expected,
     argv: ["install"],
     configDirPreseeded: false,
-    global: observe(globalPath, false),
-    userNpmrc: observe(absolute(expected.npm_config_userconfig), true),
-    globalNpmrc: observe(absolute(expected.npm_config_globalconfig), true),
-    rootNpmrc: observe(join(root, ".npmrc"), false),
-    rootPackage: observe(join(root, "package.json"), true),
-    workspace: workspaceInputPaths(root).map((path) => observe(path, false)),
+    global: observe(globalPath, null),
+    userNpmrc: observe(absolute(expected.npm_config_userconfig), Buffer.alloc(0)),
+    globalNpmrc: observe(absolute(expected.npm_config_globalconfig), Buffer.alloc(0)),
+    rootNpmrc: observe(join(root, ".npmrc"), null),
+    rootPackage: observe(join(root, "package.json"), expectedManifest),
+    workspace: workspaceInputPaths(root).map((path) => observe(path, null)),
     writerRuntimeAttribution: false,
   };
   sink("bin-configuration-before-install", input);
@@ -274,10 +322,15 @@ export function recheckBinConfiguration(
     ...input.workspace.filter((row) => row.path !== join(input.root, "pnpm-workspace.yaml")),
   ].map((row) => ({
     expected: row,
-    actual: fileInput(row.path, row === input.userNpmrc || row === input.globalNpmrc),
+    actual: fileInput(
+      row.path,
+      row === input.userNpmrc || row === input.globalNpmrc ? Buffer.alloc(0) : null,
+    ),
   }));
-  const manifest = fileInput(join(input.root, "package.json"), true);
-  const workspace = fileInput(join(input.root, "pnpm-workspace.yaml"), true);
+  const manifest = fileInput(join(input.root, "package.json"), expectedManifest);
+  const workspace = fileInput(join(input.root, "pnpm-workspace.yaml"), (raw) =>
+    safeAgeWorkspace(raw, expectedManifest),
+  );
   sink("bin-configuration-after-install-or-command", { observations, manifest, workspace });
   for (const row of observations) assert.deepEqual(row.actual, row.expected);
   assert.equal(manifest.rawBase64, expectedManifest.toString("base64"));
@@ -286,10 +339,6 @@ export function recheckBinConfiguration(
   if (workspace.state === "PRESENT") {
     assert.equal(workspace.kind, "file");
     assert(workspace.rawBase64 !== null);
-    const text = Buffer.from(workspace.rawBase64, "base64").toString("utf8");
-    assert(
-      /^minimumReleaseAgeExclude:\n(?:  - '[^'\n]+'\n)+$/u.test(text),
-      "only the registered age-exclusion field may be generated by the original install",
-    );
+    assert(safeAgeWorkspace(Buffer.from(workspace.rawBase64, "base64"), expectedManifest));
   }
 }

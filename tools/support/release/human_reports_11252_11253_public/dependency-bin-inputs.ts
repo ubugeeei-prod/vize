@@ -11,7 +11,7 @@ import type {
   HumanBinFacts,
   PublicPackageFacts,
 } from "./dependency-bin-types.ts";
-import { validateBinConfiguration } from "./bin-configuration.ts";
+import { safeAgeWorkspace, validateBinConfiguration } from "./bin-configuration.ts";
 
 export function regular(file: FileFacts, expected: string): Buffer {
   assert.equal(file.path, expected);
@@ -218,9 +218,9 @@ function deriveMetadataBins(facts: HumanBinFacts): DerivedBin[] {
   assert.equal(facts.settings.rootNpmrc, null, "unowned .npmrc options refuse");
   const rootPackage = object(wholeJson(facts.settings.rootPackage));
   assert.equal(rootPackage.pnpm, undefined);
-  const workspace = facts.settings.rootWorkspace.toString("utf8");
   assert(
-    workspace === "" || /^minimumReleaseAgeExclude:\n(?:  - '[^'\n]+'\n)+$/u.test(workspace),
+    facts.settings.rootWorkspace.length === 0 ||
+      safeAgeWorkspace(facts.settings.rootWorkspace, facts.settings.rootPackage),
     "unknown workspace generator options",
   );
   assert(
