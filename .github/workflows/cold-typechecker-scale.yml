@@ -65,10 +65,17 @@ jobs:
         run: |
           set -euo pipefail
           [[ "${{ inputs.sfcs }}" == 2500 ]]
-          [[ "$BASE_SHA" == e57fd021bf08b197956807eb122941c9cd13b056 ]]
-          [[ "$HEAD_SHA" == d440bf04becabbb71d916915c640d39c8d8c6450 ]]
           mkdir "$RUNNER_TEMP/cold-paired"
-          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"
+          selection=$(node tools/benchmarks/scripts/cold-typechecker-scale-candidate-plan.ts --plan tools/benchmarks/scripts/cold-typechecker-scale-candidate-cases.json --out "$RUNNER_TEMP/cold-paired/selection" --base "$BASE_SHA" --head "$HEAD_SHA" --sfcs "${{ inputs.sfcs }}")
+          [[ "$selection" == PAIRED_ROUTE=legacy || "$selection" == PAIRED_ROUTE=candidate ]]
+          printf '%s\n' "$selection" >> "$GITHUB_ENV"
+          if [[ "$selection" == PAIRED_ROUTE=legacy ]]; then
+            git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"
+          elif [[ "$(git rev-parse --is-shallow-repository)" == true ]]; then
+            git fetch --no-tags --unshallow "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"
+          else
+            git fetch --no-tags "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"
+          fi
           git worktree add --detach "$RUNNER_TEMP/cold-paired-base" "$BASE_SHA"
           git worktree add --detach "$RUNNER_TEMP/cold-paired-head" "$HEAD_SHA"
           git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/cold-paired/driver.txt"
@@ -89,7 +96,11 @@ jobs:
           set -euo pipefail
           mkdir -p node_modules
           ln -s "$RUNNER_TEMP/provider/node_modules/typescript" node_modules/typescript
-          node --test tests/tooling/cold-typechecker-scale-native-forward.test.ts tests/tooling/cold-typechecker-scale-paired.test.ts tests/tooling/cold-typechecker-scale-strict-pair.test.ts tests/tooling/cold-typechecker-scale-read-buffer.test.ts
+          node --test tests/tooling/cold-typechecker-scale-native-forward.test.ts tests/tooling/cold-typechecker-scale-paired.test.ts tests/tooling/cold-typechecker-scale-strict-pair.test.ts tests/tooling/cold-typechecker-scale-read-buffer.test.ts tests/tooling/cold-typechecker-scale-candidate-{law,source,inputs,native,archive,allocation,observations,originals,flow,plan}.test.ts tests/tooling/cold-typechecker-scale-{native-command,cpu-report,memory-proto,memory-report}.test.ts
+      - name: Authenticate complete frozen candidate sources before any image build
+        if: env.PAIRED_ROUTE == 'candidate'
+        run: |
+          node tools/benchmarks/scripts/cold-typechecker-scale-candidate-prepare.ts --stage verify --plan tools/benchmarks/scripts/cold-typechecker-scale-candidate-cases.json --base "$RUNNER_TEMP/cold-paired-base" --head "$RUNNER_TEMP/cold-paired-head" --provider "$RUNNER_TEMP/provider" --out "$RUNNER_TEMP/cold-paired"
       - name: Build normal exact base and head with equal compiler settings
         run: |
           set -euo pipefail
@@ -98,6 +109,7 @@ jobs:
           done
           node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --base-receipt "$RUNNER_TEMP/cold-paired/builds/base.json" --head-receipt "$RUNNER_TEMP/cold-paired/builds/head.json" --receipt "$RUNNER_TEMP/cold-paired/builds/pair.json"
       - name: Build separate read-buffer instrumentation after normal image sealing
+        if: env.PAIRED_ROUTE == 'legacy'
         run: |
           set -euo pipefail
           for role in base head; do
@@ -105,7 +117,28 @@ jobs:
             if [[ "$role" == head ]]; then source_sha="$HEAD_SHA"; fi
             node tools/benchmarks/scripts/cold-typechecker-scale-read-buffer.ts "$RUNNER_TEMP/cold-paired-$role" "$source_sha" "$RUNNER_TEMP/cold-read-probe-$role" "$RUNNER_TEMP/cold-paired/instrumented/$role"
           done
+      - name: Build separate allocation and custody roles after both normal images are sealed
+        if: env.PAIRED_ROUTE == 'candidate'
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/cold-paired/allocation"
+          for role in base head; do
+            node tools/benchmarks/scripts/cold-typechecker-scale-candidate-prepare.ts --stage allocation --plan tools/benchmarks/scripts/cold-typechecker-scale-candidate-cases.json --base "$RUNNER_TEMP/cold-paired-base" --head "$RUNNER_TEMP/cold-paired-head" --provider "$RUNNER_TEMP/provider" --out "$RUNNER_TEMP/cold-paired" --role "$role"
+            source_sha="$BASE_SHA"
+            if [[ "$role" == head ]]; then source_sha="$HEAD_SHA"; fi
+            node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/cold-paired-$role" --target-dir "$RUNNER_TEMP/cold-candidate-custody-target-$role" --binary "$RUNNER_TEMP/cold-paired/custody-images/$role/vize" --receipt "$RUNNER_TEMP/cold-paired/builds/custody-$role.json" --role "custody-$role" --observer-source-sha "$source_sha"
+          done
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c
+        if: env.PAIRED_ROUTE == 'candidate'
+        with: { go-version: "1.27.2", cache: false }
+      - name: Require original controls and full output before eight candidate primaries and separate profile blocks
+        if: env.PAIRED_ROUTE == 'candidate'
+        run: |
+          set -euo pipefail
+          export VIZE_BENCH_CPU_SET=$(node tools/benchmarks/scripts/cold-typechecker-scale-affinity.ts)
+          taskset -c "$VIZE_BENCH_CPU_SET" node tools/benchmarks/scripts/cold-typechecker-scale-candidate-paired.ts --provider "$RUNNER_TEMP/provider" --out "$RUNNER_TEMP/cold-paired/observations" --case "$RUNNER_TEMP/cold-paired/selection/source-case.json" --base "$RUNNER_TEMP/cold-paired/builds/base.json" --head "$RUNNER_TEMP/cold-paired/builds/head.json" --allocation-base "$RUNNER_TEMP/cold-paired/allocation/base/build.json" --allocation-head "$RUNNER_TEMP/cold-paired/allocation/head/build.json" --custody-base "$RUNNER_TEMP/cold-paired/builds/custody-base.json" --custody-head "$RUNNER_TEMP/cold-paired/builds/custody-head.json"
       - name: Require full output and read ownership observations before four balanced pairs
+        if: env.PAIRED_ROUTE == 'legacy'
         run: |
           set -euo pipefail
           export VIZE_BENCH_CPU_SET=$(node tools/benchmarks/scripts/cold-typechecker-scale-affinity.ts)
@@ -115,7 +148,21 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/cold-paired"
-          tar --exclude='*/project' --exclude='*/xdg-cache' --exclude='*/tmp' --exclude='*/binaries' --exclude='*/binary' --exclude='*/target' -czf "$RUNNER_TEMP/cold-paired-evidence.tgz" -C "$RUNNER_TEMP" cold-paired
+          exclusions=(--exclude='*/project' --exclude='*/xdg-cache' --exclude='*/tmp' --exclude='*/binaries' --exclude='*/binary' --exclude='*/target')
+          if [[ "${PAIRED_ROUTE:-}" == candidate ]]; then
+            exclusions+=(--exclude='*/input-blobs' --exclude='*/native-profile-data' --exclude='*/custody-images' --exclude='*/allocation/*/vize')
+          fi
+          tar "${exclusions[@]}" -czf "$RUNNER_TEMP/cold-paired-evidence.tgz" -C "$RUNNER_TEMP" cold-paired
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always() && env.PAIRED_ROUTE == 'candidate'
+        with:
+          name: cold-typechecker-candidate-raw-${{ inputs.head_sha }}-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/cold-paired/observations/native/*/native-profile-data
+            ${{ runner.temp }}/cold-paired/observations/native/*/input-blobs
+            ${{ runner.temp }}/cold-paired/observations/native-current/native-profile-data
+            ${{ runner.temp }}/cold-paired/observations/native-current/input-blobs
+          retention-days: 14
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

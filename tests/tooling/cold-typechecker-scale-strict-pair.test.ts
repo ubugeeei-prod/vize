@@ -190,35 +190,42 @@ test("paired dispatch is isolated and the complete full-default job remains byte
   );
   assert(after.includes("inputs.mode == 'paired-comparison' && '-paired-comparison' || ''"));
   assert(after.includes("npm ci --ignore-scripts --no-audit --no-fund"));
-  assert(after.includes('[[ "$BASE_SHA" == e57fd021bf08b197956807eb122941c9cd13b056 ]]'));
-  assert(after.includes('[[ "$HEAD_SHA" == d440bf04becabbb71d916915c640d39c8d8c6450 ]]'));
-  const fetch =
-    '          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"';
-  const pure =
-    "          node --test tests/tooling/cold-typechecker-scale-native-forward.test.ts tests/tooling/cold-typechecker-scale-paired.test.ts tests/tooling/cold-typechecker-scale-strict-pair.test.ts tests/tooling/cold-typechecker-scale-read-buffer.test.ts";
+  const select =
+    "selection=$(node tools/benchmarks/scripts/cold-typechecker-scale-candidate-plan.ts";
+  const legacyFetch =
+    '            git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"';
+  const candidateShallow =
+    '            git fetch --no-tags --unshallow "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"';
+  const candidateFull =
+    '            git fetch --no-tags "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"';
+  const pure = "          node --test tests/tooling/cold-typechecker-scale-native-forward.test.ts";
   const verifyProductFetch = (workflow: string) => {
     const job = workflow.slice(
       workflow.indexOf("  paired-comparison:\n"),
       workflow.indexOf("  profile:\n"),
     );
+    assert.equal(job.split(select).length, 2, "one closed source selector, before any acquisition");
     assert.deepEqual(
       job.split("\n").filter((line) => line.trimStart().startsWith("git fetch ")),
-      [fetch],
+      [legacyFetch, candidateShallow, candidateFull],
     );
-    assert.deepEqual(
-      job.split("\n").filter((line) => line.trimStart().startsWith("node --test ")),
-      [pure],
-    );
+    assert(job.includes('if [[ "$selection" == PAIRED_ROUTE=legacy ]]; then\n' + legacyFetch));
     assert(
-      job.indexOf(fetch) < job.indexOf(pure),
-      "acquire the exact product sources before setup and tests",
+      job.includes(
+        '[[ "$selection" == PAIRED_ROUTE=legacy || "$selection" == PAIRED_ROUTE=candidate ]]',
+      ),
     );
+    for (const fetch of [legacyFetch, candidateShallow, candidateFull]) {
+      assert(job.indexOf(select) >= 0 && job.indexOf(fetch) > job.indexOf(select));
+      assert(job.indexOf(pure) > job.indexOf(fetch), "exact history acquired before pure controls");
+    }
   };
   verifyProductFetch(after);
   for (const changed of [
-    after.replace(fetch, fetch.replace(' "$HEAD_SHA"', "")),
-    after.replace(fetch, fetch.replace('"$HEAD_SHA"', "a".repeat(40))),
-    after.replace(fetch + "\n", "").replace(pure, pure + "\n" + fetch),
+    after.replace(select, "missingSourceSelector("),
+    after.replace(legacyFetch, legacyFetch.replace(' "$HEAD_SHA"', "")),
+    after.replace(candidateShallow, candidateShallow.replace('"$HEAD_SHA"', '"wrong"')),
+    after.replace(candidateFull + "\n", "").replace(pure, pure + "\n" + candidateFull),
   ])
     assert.throws(() => verifyProductFetch(changed));
 });
