@@ -25,6 +25,52 @@ const FIX: &str = "Replace the numeric keyCode modifier with a named key";
 const RULE: &str = "vue/no-deprecated-v-on-number-modifiers";
 
 #[test]
+fn existing_callbacks_do_not_gain_event_authority_from_an_exhaustive_match_arm() {
+    use crate::native::template::NativeTemplateElement;
+    use crate::rules::a11y::{
+        FormControlHasLabel, NoAccessKey, NoAutofocus, PlaceholderLabelOption,
+    };
+    let arena = Allocator::new();
+    let source = r#"<input @keyup.13="submit" />"#;
+    let root =
+        NativeLintComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+            .unwrap();
+    let original = root.children().next().unwrap().into_element().unwrap();
+    let view = NativeTemplateElement::new(original, attributes(&root).into_iter().collect());
+    let callbacks: [&dyn NativeTemplateRule; 4] = [
+        &NoAccessKey,
+        &NoAutofocus,
+        &FormControlHasLabel,
+        &PlaceholderLabelOption,
+    ];
+    let configured = crate::Linter::new();
+    for callback in callbacks {
+        let mut context = NativeTemplateLintContext::new(&configured, &root, "OtherRule.vue");
+        context.current_rule = RULE;
+        context.current_callback = Some(0);
+        context.current_owner_profile = callback.owner_profile();
+        assert_eq!(
+            callback.run_on_element(&mut context, &view),
+            Err(NativeTemplateLintRefusal::UnsupportedAttribute {
+                span: Span::new(7, 25)
+            })
+        );
+        assert_eq!(
+            format!("{:#?}", context.finish()),
+            format!(
+                "{:#?}",
+                crate::LintResult {
+                    filename: "OtherRule.vue".into(),
+                    diagnostics: vec![],
+                    error_count: 0,
+                    warning_count: 0
+                }
+            )
+        );
+    }
+}
+
+#[test]
 fn events_remain_a_separate_closed_profile_and_raw_tokens_are_unconstructible() {
     for a in [Profile::StaticOnly, Profile::Bindings, Profile::Events] {
         for b in [Profile::StaticOnly, Profile::Bindings, Profile::Events] {

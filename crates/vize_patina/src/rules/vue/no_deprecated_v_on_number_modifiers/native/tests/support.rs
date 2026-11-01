@@ -89,7 +89,14 @@ pub fn observe(linter: &Linter, case: &Case<'_>, native: bool) -> Observation {
             })
         })
         .collect();
-    assert_eq!(applications.len(), case.fixes, "{case:#?}\n{initial:#?}");
+    println!(
+        "completed prefix before fix-count assertion:\n{case:#?}\ninitial:{initial:#?}\napplications:{applications:#?}\nunchanged_requery:UNREACHED"
+    );
+    assert_eq!(
+        applications.len(),
+        case.fixes,
+        "{case:#?}\n{initial:#?}\n{applications:#?}"
+    );
     let unchanged_requery = applications
         .is_empty()
         .then(|| query(linter, case.source, case.filename, native));
