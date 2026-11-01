@@ -11803,6 +11803,26 @@
       }
     },
     {
+      "id": "typechecker/regression/prepared-type-only-import-facts",
+      "state": "active",
+      "targets": ["batch"],
+      "adapters": {"legacy": null, "native": null},
+      "inputs": [{
+        "path": "prepared-type-only-import-facts/Imports.vue.txt",
+        "sha256": "73d98e1625eac89e544e822565ea41e066bec3b3f38f747ed3263dda9b02358a",
+        "role": "complete-sfc-source-generation-control"
+      }],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [{
+          "kind": "source-inspection",
+          "dialects": ["vue3-sfc", "html-template", "ts"],
+          "selector": "virtual_ts::generator::type_only_imports::prepared_tests::pinned_sfc_uses_exact_facts_and_generates_default_and_hoisted_documents; compile-included full SFC feeds both production document modes; planned batch input only, null adapters, no native diagnostic packet or acceptance"
+        }]
+      }
+    },
+    {
       "id": "typechecker/regression/runtime-null-prop-11252",
       "state": "active",
       "targets": ["batch"],

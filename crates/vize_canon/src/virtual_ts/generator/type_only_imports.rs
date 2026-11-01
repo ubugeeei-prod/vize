@@ -8,13 +8,14 @@ use vize_carton::{CompactString, FxHashSet};
 use vize_croquis::Croquis;
 
 use super::global_components::GlobalComponentPlan;
+use super::imports::TypeOnlyImportPlan;
 
 /// The names every `import type` declares, when anything reads them.
 pub(super) fn syntactic_type_only_imported_names(
     summary: &Croquis,
     global_components: &GlobalComponentPlan<'_>,
     has_options_api_props: bool,
-    script_content: Option<&str>,
+    plan: TypeOnlyImportPlan<'_>,
 ) -> FxHashSet<CompactString> {
     if !should_collect_syntactic_type_only_imported_names(
         summary,
@@ -25,7 +26,11 @@ pub(super) fn syntactic_type_only_imported_names(
     }
     vize_carton::profile!(
         "canon.virtual_ts.extract_syntactic_type_only_imported_names",
-        collect_syntactic_type_only_imported_names(summary, script_content)
+        plan.prepared
+            .unwrap_or_else(|| collect_syntactic_type_only_imported_names(
+                summary,
+                plan.script_content
+            ))
     )
 }
 
@@ -65,6 +70,8 @@ fn collect_syntactic_type_only_imported_names(
 }
 
 fn extract_syntactic_type_only_import_names(import_text: &str) -> Vec<&str> {
+    #[cfg(test)]
+    super::imports::import_parse_count(true);
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, import_text, SourceType::ts()).parse();
     let Some(Statement::ImportDeclaration(declaration)) = parsed.program.body.first() else {
@@ -99,6 +106,9 @@ fn extract_syntactic_type_only_import_names(import_text: &str) -> Vec<&str> {
         })
         .collect()
 }
+
+#[cfg(test)]
+mod prepared_tests;
 
 #[cfg(test)]
 mod tests {

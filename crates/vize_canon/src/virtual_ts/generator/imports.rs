@@ -115,27 +115,48 @@ pub(super) struct ValueImportNames {
     pub(super) without_script_value_use: FxHashSet<String>,
 }
 
-pub(super) fn collect_value_import_names(
-    summary: &Croquis,
-    script_content: Option<&str>,
-    usage: &IdentifierUsage,
-) -> ValueImportNames {
-    let Some(script) = script_content else {
-        return ValueImportNames::default();
-    };
-    let import_names = collect_value_import_binding_names(summary, script);
-    if import_names.is_empty() {
-        return ValueImportNames::default();
-    }
+pub(super) struct TypeOnlyImportPlan<'a> {
+    pub(super) script_content: Option<&'a str>,
+    /// Some(empty) is a completed extraction, distinct from the late fallback.
+    pub(super) prepared: Option<FxHashSet<CompactString>>,
+}
 
-    let without_script_value_use = import_names
-        .iter()
-        .filter(|name| !usage.value_refs.contains(*name))
-        .map(|name| String::from(name.as_str()))
-        .collect();
-    ValueImportNames {
-        bindings: import_names,
-        without_script_value_use,
+pub(super) struct ImportNames<'a> {
+    pub(super) values: ValueImportNames,
+    pub(super) type_only: TypeOnlyImportPlan<'a>,
+}
+
+impl<'a> ImportNames<'a> {
+    pub(super) fn collect(
+        summary: &Croquis,
+        script_content: Option<&'a str>,
+        usage: &IdentifierUsage,
+    ) -> Self {
+        // This existing macro fact guarantees the later reader gate. Other
+        // readers keep their original late extraction and admission order.
+        let mut prepared = summary
+            .macros
+            .define_props()
+            .is_some()
+            .then(FxHashSet::default);
+        let bindings = script_content
+            .map(|script| collect_value_import_binding_names(summary, script, prepared.as_mut()))
+            .unwrap_or_default();
+        let without_script_value_use = bindings
+            .iter()
+            .filter(|name| !usage.value_refs.contains(*name))
+            .map(|name| String::from(name.as_str()))
+            .collect();
+        Self {
+            values: ValueImportNames {
+                bindings,
+                without_script_value_use,
+            },
+            type_only: TypeOnlyImportPlan {
+                script_content,
+                prepared,
+            },
+        }
     }
 }
 
@@ -186,6 +207,7 @@ pub(super) fn collect_setup_binding_anchor_names(
 pub(super) fn collect_value_import_binding_names(
     summary: &Croquis,
     script: &str,
+    mut type_only: Option<&mut FxHashSet<CompactString>>,
 ) -> FxHashSet<CompactString> {
     let mut names = summary
         .import_statements
@@ -194,7 +216,7 @@ pub(super) fn collect_value_import_binding_names(
             let text = script
                 .get(imp.start as usize..imp.end as usize)
                 .unwrap_or("");
-            extract_import_names(text)
+            extract_import_names_with_types(text, type_only.as_deref_mut())
                 .into_iter()
                 .map(CompactString::new)
                 .collect::<Vec<_>>()
@@ -304,6 +326,13 @@ pub(crate) fn extract_declared_name(stub: &str) -> Option<&str> {
 }
 
 fn extract_import_names(import_text: &str) -> Vec<&str> {
+    extract_import_names_with_types(import_text, None)
+}
+
+fn extract_import_names_with_types<'a>(
+    import_text: &'a str,
+    mut type_only: Option<&mut FxHashSet<CompactString>>,
+) -> Vec<&'a str> {
     #[cfg(test)]
     import_parse_count(true);
     let allocator = Allocator::default();
@@ -311,32 +340,49 @@ fn extract_import_names(import_text: &str) -> Vec<&str> {
     let Some(Statement::ImportDeclaration(declaration)) = parsed.program.body.first() else {
         return Vec::new();
     };
-    if declaration.import_kind == ImportOrExportKind::Type {
+    let whole_type = declaration.import_kind == ImportOrExportKind::Type;
+    if whole_type && type_only.is_none() {
         return Vec::new();
     }
+    let mut values = Vec::new();
+    for specifier in declaration.specifiers.iter().flatten() {
+        let (span, is_type) = match specifier {
+            ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                if whole_type || specifier.import_kind == ImportOrExportKind::Type =>
+            {
+                (specifier.local.span, true)
+            }
+            ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                if specifier.import_kind == ImportOrExportKind::Value =>
+            {
+                (specifier.local.span, false)
+            }
+            ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
+                (specifier.local.span, whole_type)
+            }
+            ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                (specifier.local.span, whole_type)
+            }
+            ImportDeclarationSpecifier::ImportSpecifier(_) => continue,
+        };
+        if let Some(name) = import_text.get(span.start as usize..span.end as usize) {
+            if is_type {
+                if let Some(names) = type_only.as_mut() {
+                    names.insert(CompactString::new(name));
+                }
+            } else {
+                values.push(name);
+            }
+        }
+    }
+    values
+}
 
-    declaration
-        .specifiers
-        .iter()
-        .flatten()
-        .filter_map(|specifier| {
-            let span = match specifier {
-                ImportDeclarationSpecifier::ImportSpecifier(specifier)
-                    if specifier.import_kind == ImportOrExportKind::Value =>
-                {
-                    specifier.local.span
-                }
-                ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
-                    specifier.local.span
-                }
-                ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
-                    specifier.local.span
-                }
-                ImportDeclarationSpecifier::ImportSpecifier(_) => return None,
-            };
-            import_text.get(span.start as usize..span.end as usize)
-        })
-        .collect()
+#[cfg(test)]
+pub(super) fn extract_import_facts_for_test(source: &str) -> (Vec<&str>, FxHashSet<CompactString>) {
+    let mut types = FxHashSet::default();
+    let values = extract_import_names_with_types(source, Some(&mut types));
+    (values, types)
 }
 
 #[cfg(test)]
