@@ -67,7 +67,7 @@ pub(super) fn expected_public(kind: &str, source: &str) -> (Value, CompactString
         let context = if index == 0 {
             text.trim().into()
         } else {
-            cstr!("{}; binding: :textConverter", text.trim())
+            cstr!("{}; binding: 'textConverter'", text.trim())
         };
         mapped.push(cstr!(
             "error:{}:{} [TS{code}] {message} (source: {context})",
@@ -144,18 +144,33 @@ pub(super) fn assert_native(calls: &Value, geometry: &Value, kind: &str) {
     // CURRENT image4f2de/7.0.2 fixture debt, proven by f45's full body/config/raw; never native-clean.
     let mut expected:CompactString="src/Parent.vue.ts(11,23): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.\n".into();
     let negatives = geometry["negative"].as_array().unwrap();
+    let owners = negatives
+        .iter()
+        .map(|node| node["owner"].clone())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        owners,
+        if kind.is_empty() {
+            json!([])
+        } else {
+            json!(["interpolation", "inference-only", "checked-callback"])
+        }
+        .as_array()
+        .unwrap()
+        .to_vec()
+    );
     if kind.is_empty() {
         assert_eq!(negatives, &Vec::<Value>::new());
     } else {
-        for (marker, code, message) in markers(kind) {
+        for (index, (marker, code, message)) in markers(kind).into_iter().enumerate() {
             let selected = negatives
                 .iter()
                 .filter(|node| node["marker"] == marker)
                 .collect::<Vec<_>>();
-            assert_ne!(
+            assert_eq!(
                 selected.len(),
-                0,
-                "native emitted source lost owned marker {marker}"
+                if index == 0 { 1 } else { 2 },
+                "native emitted source changed owned marker multiplicity {marker}"
             );
             for node in selected {
                 assert_eq!(node["code"], code);
@@ -164,6 +179,13 @@ pub(super) fn assert_native(calls: &Value, geometry: &Value, kind: &str) {
         }
     }
     for node in negatives {
+        // The emitter's exact guarded inference copy is retained in geometry.
+        // Only interpolation and the mapped callback owner report diagnostics.
+        match node["owner"].as_str().unwrap() {
+            "inference-only" => continue,
+            "interpolation" | "checked-callback" => {}
+            other => panic!("unknown emitted diagnostic owner {other}"),
+        }
         expected.push_str(
             cstr!(
                 "src/Parent.vue.ts({},{}): error TS{}: {}\n",
