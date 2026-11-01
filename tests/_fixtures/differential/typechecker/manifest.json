@@ -11667,6 +11667,90 @@
       }
     },
     {
+      "id": "typechecker/legacy-typed-mixin-methods/finite-typed-methods",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "file": "src/Any.vue",
+          "path": "legacy-typed-mixin-methods/src/Any.vue.txt",
+          "sha256": "16e905551941e0686b0dfbf0aee7037fd95237a8445423e1838e4661341b0732"
+        },
+        {
+          "file": "src/Broad.vue",
+          "path": "legacy-typed-mixin-methods/src/Broad.vue.txt",
+          "sha256": "378d5a1d66ca1ea4ae3a934040479152f9ac04be35b430c315e946dda8378fd7"
+        },
+        {
+          "file": "src/Extended.vue",
+          "path": "legacy-typed-mixin-methods/src/Extended.vue.txt",
+          "sha256": "99b09821cc165be149ad5fc949bcc96f95ff4d824a38d323e908e5733cc5c30d"
+        },
+        {
+          "file": "src/Never.vue",
+          "path": "legacy-typed-mixin-methods/src/Never.vue.txt",
+          "sha256": "b5db3553f60350a0366c5f8f0de82f31d91340b6f45f5ee7d3920f1efddf8f7e"
+        },
+        {
+          "file": "src/Typed.vue",
+          "path": "legacy-typed-mixin-methods/src/Typed.vue.txt",
+          "sha256": "9f9ad5ff15c77a34f43042be89d4f9c22036f5f6d7bf9ed963c588b553547909"
+        },
+        {
+          "file": "src/Unknown.vue",
+          "path": "legacy-typed-mixin-methods/src/Unknown.vue.txt",
+          "sha256": "739b046ebb25c5fbcc2dea4fa3bac68c1ef8682dd23e503d75c629b073926232"
+        },
+        {
+          "file": "src/auth.ts",
+          "path": "legacy-typed-mixin-methods/src/auth.ts.txt",
+          "sha256": "418cbd43a339ec7b7963d39b9880e96fae6eac49d18f722916f3318e5392f1bd"
+        },
+        {
+          "file": "src/broad.ts",
+          "path": "legacy-typed-mixin-methods/src/broad.ts.txt",
+          "sha256": "f88afd5151d69c86fe1fda60c1682834459115a4da4c5e903711cb4faf5f628a"
+        },
+        {
+          "file": "src/never.d.ts",
+          "path": "legacy-typed-mixin-methods/src/never.d.ts.txt",
+          "sha256": "3f50457bad259f6ce70d5aa72dbe011319db80c11479efdfee17b2c1043f4d40"
+        },
+        {
+          "file": "src/unknown.ts",
+          "path": "legacy-typed-mixin-methods/src/unknown.ts.txt",
+          "sha256": "6f1ff6c3f1dc5bcfd4d0763c014e5ffc8c516e7e94ab41e678d2b56c5b6d5202"
+        },
+        {
+          "file": "src/untyped.d.ts",
+          "path": "legacy-typed-mixin-methods/src/untyped.d.ts.txt",
+          "sha256": "d1313af926cde48e1bad7901354a06ce0fe624ae96947f8a91c6b8f6e5e8046d"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "legacy-typed-mixin-methods/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue2.7-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "required native options_api_inherited_members fixture selects enable_legacy_vue2(); original app and installed Vue2/Vuetify runtime unverified"
+          }
+        ]
+      }
+    },
+    {
           "id": "typechecker/options-api-lexical-members-11069",
           "state": "active",
           "targets": ["batch"],
