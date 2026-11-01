@@ -14,8 +14,16 @@ import {
 } from "../../tools/support/json-value.ts";
 
 interface Host {
-  verify(source: string, config: unknown[], options: { filename: string }): unknown[];
-  verifyAndFix(source: string, config: unknown[], options: { filename: string }): unknown;
+  verify(
+    source: string,
+    config: unknown[],
+    options: { filename: string; allowInlineConfig: false },
+  ): unknown[];
+  verifyAndFix(
+    source: string,
+    config: unknown[],
+    options: { filename: string; allowInlineConfig: false },
+  ): unknown;
 }
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const directory = join(root, "tests/_fixtures/differential/linter/slot-existence-negation-10822");
@@ -78,6 +86,8 @@ test("the pinned Vue rule retains complete original slot-presence and boundary o
     originalSha256: hash(original),
     casesSha256: hash(caseBytes),
     provenance,
+    inlineConfig:
+      "disabled for this isolated-rule host; original non-target directives remain literal input",
     currentRuleSha256: hash(
       readFileSync(join(root, "crates/vize_patina/src/rules/script/require_slots_as_functions.rs")),
     ),
@@ -102,7 +112,8 @@ test("the pinned Vue rule retains complete original slot-presence and boundary o
   ];
   const observations = inputs.map((input) => {
     const host = new Linter(),
-      filename = { filename: "SlotPresence.vue" };
+      // Keep every source byte; run only the explicitly configured target rule.
+      filename = { filename: "SlotPresence.vue", allowInlineConfig: false as const };
     const verify = host.verify(input.source, config, filename);
     const fixResult = host.verifyAndFix(input.source, config, filename);
     const output = asString(asRecord(fixResult).output);

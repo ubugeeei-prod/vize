@@ -3229,7 +3229,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "whole original and authored direct-negation controls consumed by normal CLI/API/reference tests"
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }
