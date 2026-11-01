@@ -52,6 +52,7 @@ mod options_api_import_shadow;
 mod options_api_inherited_members;
 mod package_local_vue_identity;
 mod pascal_case_prop_names;
+mod plain_options_global_augmentation;
 mod public_instance_contract;
 mod real_project_parity;
 mod real_vue;
