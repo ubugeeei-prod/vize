@@ -1,0 +1,120 @@
+{
+  "schema": "vize.glyph.encoded-ampersand-boundaries.v1",
+  "origin": "Source peer operator-vs-DATA and JS escape normalization controls; original cases.json remains byte-identical.",
+  "provider": {
+    "node": "v26.6.0",
+    "prettier": "3.8.3",
+    "vue": "3.5.35",
+    "happyDom": "21.0.4",
+    "files": [
+      {
+        "file": "node_modules/.pnpm/prettier@3.8.3/node_modules/prettier/index.cjs",
+        "bytes": 40298,
+        "sha256": "7be9217223fd24e4628e649964126d39d1fa371c159e5a93ca4697ccf8957dff"
+      },
+      {
+        "file": "node_modules/.pnpm/@vue+compiler-sfc@3.5.35/node_modules/@vue/compiler-sfc/dist/compiler-sfc.cjs.js",
+        "bytes": 867304,
+        "sha256": "ba385b877d16db089c6d16dd41a3c8026aa3e2092ae784c283567757b015fb56"
+      },
+      {
+        "file": "node_modules/.pnpm/@vue+compiler-dom@3.5.35/node_modules/@vue/compiler-dom/index.js",
+        "bytes": 189,
+        "sha256": "21407fc5cebe255208627dd039f2284156be88abbd9123281a79581d349b48c1"
+      },
+      {
+        "file": "node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/index.js",
+        "bytes": 171,
+        "sha256": "a5287f6056bc5c2c569d318063ee043f55a0d323fa7262f64456d58fd574f928"
+      },
+      {
+        "file": "node_modules/.pnpm/happy-dom@21.0.4/node_modules/happy-dom/lib/index.js",
+        "bytes": 16922,
+        "sha256": "ef24535de425ea58d8650fca46be1ad4ec33dc817524a500c097e5f4df1e0b00"
+      }
+    ],
+    "limits": "Pure installed official JavaScript providers only; entry bytes/version hashes, not whole tarball SRI verification. No Vize/native execution."
+  },
+  "cases": [
+    {
+      "id": "operator-named-prefix",
+      "file": "operator-named-prefix.vue.txt",
+      "head": ":title",
+      "bytes": 58,
+      "sha256": "e60ab1cfedaac87ccc2e0902af4892457073457b10dd48fd08dd68ac8bf31a24",
+      "expected": {
+        "expression": null,
+        "result": "3",
+        "calls": []
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div :title=\"value &amp;copy\"></div></template>\n"
+      }
+    },
+    {
+      "id": "escaped-amp-reference",
+      "file": "escaped-amp-reference.vue.txt",
+      "head": ":title",
+      "bytes": 56,
+      "sha256": "1fa472292d58c74eb569b1c3772833fa49b97894f5d3dbd5d0d3ccf9e9fea1da",
+      "expected": {
+        "expression": null,
+        "result": "&quot;",
+        "calls": []
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div :title=\"'&amp;qu\\ot;'\"></div></template>\n"
+      }
+    },
+    {
+      "id": "escaped-raw-reference",
+      "file": "escaped-raw-reference.vue.txt",
+      "head": ":title",
+      "bytes": 52,
+      "sha256": "1c95cd765831c294239b76f0b658b85f3b5262bee4970e244c445c07d6e9e9f4",
+      "expected": {
+        "expression": null,
+        "result": "&quot;",
+        "calls": []
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div :title=\"'&qu\\ot;'\"></div></template>\n"
+      }
+    },
+    {
+      "id": "existing-reference-control",
+      "file": "existing-reference-control.vue.txt",
+      "head": ":title",
+      "bytes": 49,
+      "sha256": "27f6451172567af289b2e1e4fc89cbd855a79f5b4e47fa1e406abc020980ac92",
+      "expected": {
+        "expression": null,
+        "result": "<",
+        "calls": []
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div :title=\"'&lt;'\"></div></template>\n"
+      }
+    },
+    {
+      "id": "spaced-reference-data",
+      "file": "spaced-reference-data.vue.txt",
+      "head": ":title",
+      "bytes": 68,
+      "sha256": "e8ce34fb11ff3617734fef387f9fff5038c8717c815c3c41da3413cbc6d248fd",
+      "expected": {
+        "expression": null,
+        "result": "&quot;tail",
+        "calls": []
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div :title=\"'&amp;quot;' + 'tail'\"></div></template>\n"
+      }
+    }
+  ]
+}

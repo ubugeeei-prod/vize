@@ -160,19 +160,18 @@ pub(super) fn format_directive_value(
                 reanchor_continuation_lines(&code, options, Representation::JavaScript);
             (value, indent, false)
         }
-        Some(_)
-            if decoded
-                .as_ref()
-                .is_some_and(|value| value.reference_data_would_decode()) =>
-        {
-            // Formatting can move amp DATA away from its original byte offset.
-            // Keep its authored HTML encoding instead of reinterpreting DATA
-            // as a new reference on the consumer's next HTML parse. Retained
-            // bare sequences above keep their exact mapped encoding path.
-            let (value, indent) = reanchor_continuation_lines(value, options, Representation::Html);
-            (value, indent, false)
-        }
         Some(formatted) => {
+            let Some(formatted) = entities::protect_formatted_reference_data(
+                formatted,
+                value,
+                options,
+                attribute_depth,
+                name,
+            ) else {
+                let (value, indent) =
+                    reanchor_continuation_lines(value, options, Representation::Html);
+                return (value, indent, false);
+            };
             let indent_multiline_value = formatted.code.contains('\n')
                 || (options.end_of_line == crate::EndOfLine::Cr && formatted.code.contains('\r'));
             (

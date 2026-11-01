@@ -62,50 +62,129 @@ pub(super) fn decode_expression_attribute_entities(value: &str) -> Option<Decode
     })
 }
 
-impl DecodedExpression {
-    /// The decoded amp belongs to string/comment DATA only if another HTML
-    /// parse would consume it as a reference. Ordinary operators and unknown
-    /// references do not need this fallback. The formatter has no mapping from
-    /// these original byte offsets to arbitrary reprinted JavaScript offsets.
-    pub(super) fn reference_data_would_decode(&self) -> bool {
-        self.amp_positions.iter().any(|&index| {
-            self.code.as_bytes().get(index) == Some(&b'&')
-                && decode_one(
-                    self.code.get(index..).unwrap_or_default().as_bytes(),
-                    EntityContext::Attribute,
-                )
-                .is_some()
-        })
+/// Decode each authored HTML reference exactly once. This is the consumer's
+/// attribute context, not a DATA classification from an amp's neighboring bytes.
+fn decode_attribute(value: &str) -> String {
+    let mut output = String::with_capacity(value.len());
+    let mut rest = value;
+    while let Some(index) = rest.find('&') {
+        output.push_str(rest.get(..index).unwrap_or_default());
+        let tail = rest.get(index..).unwrap_or_default();
+        if let Some((entity, width)) = decode_one(tail.as_bytes(), EntityContext::Attribute) {
+            entity.for_each(|character| output.push(character));
+            rest = tail.get(width..).unwrap_or_default();
+        } else {
+            output.push('&');
+            rest = tail.get(1..).unwrap_or_default();
+        }
     }
+    output.push_str(rest);
+    output
+}
+
+fn reference_positions(value: &str) -> SmallVec<[usize; 2]> {
+    value
+        .match_indices('&')
+        .filter_map(|(index, _)| {
+            decode_one(value.get(index..)?.as_bytes(), EntityContext::Attribute).map(|_| index)
+        })
+        .collect()
+}
+
+/// Preserve already-correct emission byte for byte. Only a recognized reference
+/// in ACTUAL printed JavaScript can change the next HTML consumer. Comparing
+/// complete canonical JS after each HTML decode distinguishes existing encoded
+/// source from newly exposed DATA, including JS escape normalization.
+///
+/// On a real change, print the actual original consumer program, then protect
+/// reference candidates in that printed output. No source offsets are guessed
+/// across the JavaScript printer; operators such as `value & copy` still format.
+pub(super) fn protect_formatted_reference_data(
+    formatted: crate::script::FormattedExpression,
+    authored: &str,
+    options: &crate::options::FormatOptions,
+    attribute_depth: usize,
+    name: &str,
+) -> Option<crate::script::FormattedExpression> {
+    if reference_positions(&formatted.code).is_empty() {
+        return Some(formatted);
+    }
+    let original = decode_attribute(authored.trim());
+    let consumed = decode_attribute(&formatted.code);
+    let original_canonical = crate::script::format_js_expression_in_attribute(&original, options)?;
+    if crate::script::format_js_expression_in_attribute(&consumed, options)
+        .is_some_and(|candidate| candidate == original_canonical)
+    {
+        return Some(formatted);
+    }
+    let mut repaired = crate::script::format_js_expression_in_attribute_with_layout(
+        &original,
+        options,
+        attribute_depth,
+        name,
+        authored,
+        authored.trim(),
+    )?;
+    if repaired.retained_bare_sequence {
+        // A changed parse shape cannot borrow the old bare branch's offsets.
+        return None;
+    }
+    let positions = reference_positions(&repaired.code);
+    repaired.code = super::super::literal_lines::encode_reference_data(repaired.code, &positions);
+    Some(repaired)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::decode_expression_attribute_entities;
+    use super::protect_formatted_reference_data;
+    use crate::{FormatOptions, script};
 
     #[test]
-    fn only_decoded_amp_data_that_forms_an_html_reference_needs_authored_bytes() {
-        for source in [
-            "'&amp;quot;'",
-            "read('&amp;#34;')",
-            "read('&lt; &amp;quot;')",
+    fn actual_printed_refs_preserve_data_without_suppressing_operator_formatting() {
+        let options = FormatOptions::default();
+        for (authored, expected) in [
+            ("value &amp;copy", "value & copy"),
+            ("'&amp;quot;'", "'&amp;quot;'"),
+            ("'&amp;apos;'", "'&amp;apos;'"),
+            (r"'&amp;qu\ot;'", "'&amp;quot;'"),
+            (r"'&qu\ot;'", "'&amp;quot;'"),
+            ("'&#38;quot;'", "'&#38;quot;'"),
+            ("'&lt;'", "'&lt;'"),
+            ("left &amp;&amp; right", "left && right"),
+            ("'&amp;quot;'   +   'tail'", "'&amp;quot;' + 'tail'"),
         ] {
-            assert!(
-                decode_expression_attribute_entities(source)
-                    .is_some_and(|decoded| decoded.reference_data_would_decode())
+            let decoded = super::decode_expression_attribute_entities(authored);
+            let expression = decoded
+                .as_ref()
+                .map_or(authored, |value| value.code.as_str());
+            let formatted = script::format_js_expression_in_attribute_with_layout(
+                expression, &options, 0, ":title", authored, authored,
+            );
+            let result = formatted.and_then(|formatted| {
+                protect_formatted_reference_data(formatted, authored, &options, 0, ":title")
+            });
+            assert_eq!(
+                result.as_ref().map(|value| value.code.as_str()),
+                Some(expected),
+                "{authored}"
             );
         }
-        for source in [
-            "left &amp;&amp; right",
-            "'a&amp;b'",
-            "'&amp;unknown;'",
-            "'&#38;quot;'",
-            "prefix + &quot;ab&quot;",
-        ] {
-            assert!(
-                !decode_expression_attribute_entities(source)
-                    .is_some_and(|decoded| decoded.reference_data_would_decode())
-            );
-        }
+    }
+
+    #[test]
+    fn an_unparseable_true_consumer_cannot_borrow_the_partial_decode_result() {
+        let authored = "'&NewLine;'";
+        let options = FormatOptions::default();
+        let formatted = script::format_js_expression_in_attribute_with_layout(
+            authored, &options, 0, ":title", authored, authored,
+        );
+        assert!(formatted.is_some());
+        assert!(
+            formatted
+                .and_then(|formatted| protect_formatted_reference_data(
+                    formatted, authored, &options, 0, ":title",
+                ))
+                .is_none()
+        );
     }
 }

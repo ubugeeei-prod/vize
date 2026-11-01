@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { compileFunction } from "node:vm";
 import { captureWholeValue, isRecord } from "./sfc-entry-validation-reference.ts";
 
 export { captureWholeValue, isRecord };
@@ -16,7 +17,7 @@ export interface AmpCase {
   bytes: number;
   sha256: string;
   source: string;
-  expected: { expression: string; result: string; calls: unknown[] };
+  expected: { expression: string | null; result: string; calls: unknown[] };
   reference: { kind: "return"; code: string } | { kind: "throw"; error: unknown };
 }
 export function loadAmpCases(root: string) {
@@ -29,7 +30,18 @@ export function loadAmpCases(root: string) {
   };
   assert.equal(corpus.schema, "vize.glyph.encoded-ampersand-data.v1");
   assert.equal(corpus.cases.length, 13);
-  const cases = corpus.cases.map((row): AmpCase => {
+  const boundaryBytes = fs.readFileSync(path.join(root, directory, "boundaries.json"));
+  assert.equal(
+    hash(boundaryBytes),
+    "9f14048ed84ef0655c5cdcc3ddec9182bac1f51a9a9c0e596d84a912f5e36079",
+  );
+  const boundary = JSON.parse(boundaryBytes.toString("utf8")) as {
+    schema: string;
+    cases: Omit<AmpCase, "source">[];
+  };
+  assert.equal(boundary.schema, "vize.glyph.encoded-ampersand-boundaries.v1");
+  assert.equal(boundary.cases.length, 5);
+  const cases = [...corpus.cases, ...boundary.cases].map((row): AmpCase => {
     assert.match(row.file, /^[a-z-]+\.vue\.txt$/u);
     assert.equal(row.file, `${row.id}.vue.txt`);
     const bytes = fs.readFileSync(path.join(root, directory, row.file));
@@ -40,8 +52,31 @@ export function loadAmpCases(root: string) {
     assert(row.head === ":title" || row.head === "@click");
     return { ...row, source };
   });
-  assert.equal(new Set(cases.map((row) => row.id)).size, 13);
-  return { cases, options: corpus.options, catalogSha256: hash(bytes) };
+  assert.equal(new Set(cases.map((row) => row.id)).size, 18);
+  return {
+    cases,
+    options: corpus.options,
+    catalogSha256: hash(bytes),
+    boundarySha256: hash(boundaryBytes),
+  };
+}
+
+export function loadBaselineControls(root: string) {
+  const bytes = fs.readFileSync(path.join(root, directory, "baseline-controls.json"));
+  assert.equal(hash(bytes), "c2a84e74895cf2b62902c9e684f80a8d38cb50b90bc4f0d133a719bd5bd8abab");
+  const data = JSON.parse(bytes.toString("utf8")) as {
+    schema: string;
+    controls: {
+      id: string;
+      sourceSha256: string;
+      first: unknown;
+      second: unknown;
+      third: unknown;
+    }[];
+  };
+  assert.equal(data.schema, "vize.glyph.ampersand.unchanged-baseline-controls.v1");
+  assert.equal(data.controls.length, 6);
+  return data.controls;
 }
 export function observe(run: () => unknown) {
   try {
@@ -152,7 +187,7 @@ export function domConsumer(providers: ReturnType<typeof sourceProviders>) {
     });
     assert(isRecord(compiled) && typeof compiled.code === "string");
     // Authenticated finite authored fixtures only; no imported user program.
-    const render: unknown = new Function("Vue", compiled.code)(vue);
+    const render: unknown = compileFunction(compiled.code, ["Vue"])(vue);
     const calls: unknown[] = [],
       warnings: string[] = [],
       errors: unknown[] = [];
@@ -173,6 +208,8 @@ export function domConsumer(providers: ReturnType<typeof sourceProviders>) {
           left: "L",
           right: "R",
           prefix: "P",
+          value: 7,
+          copy: 3,
           read(value: unknown) {
             calls.push(["read", value]);
             return value;

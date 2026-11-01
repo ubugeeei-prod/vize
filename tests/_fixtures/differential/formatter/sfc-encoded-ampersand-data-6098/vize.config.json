@@ -1,0 +1,12 @@
+{
+  "vue": {
+    "version": "3"
+  },
+  "formatter": {
+    "printWidth": 100,
+    "tabWidth": 2,
+    "singleQuote": false,
+    "semi": true,
+    "endOfLine": "lf"
+  }
+}

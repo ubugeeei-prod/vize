@@ -14,6 +14,7 @@ import {
   hash,
   isRecord,
   loadAmpCases,
+  loadBaselineControls,
   observe,
   sourceProviders,
 } from "./support/glyph-ampersand-contract.ts";
@@ -65,6 +66,18 @@ test("encoded ampersand DATA survives complete public formatter and real Vue DOM
   const providers = sourceProviders();
   const consumer = domConsumer(providers);
   const corpus = loadAmpCases(root);
+  const baselineControls = loadBaselineControls(root);
+  console.log(
+    "glyph-ampersand-provider " +
+      JSON.stringify({
+        source: process.env.GITHUB_SHA,
+        image: provider.image,
+        imageSha256: provider.imageSha256,
+        receiptSha256: provider.receiptSha256,
+        receipt: provider.receipt,
+        reference: providers.receipt,
+      }),
+  );
   const observations: Record<string, unknown>[] = [];
   const nativeResults: {
     first: ReturnType<typeof observe>;
@@ -86,6 +99,7 @@ test("encoded ampersand DATA survives complete public formatter and real Vue DOM
           provider: { ...provider, binding: undefined },
           referenceProvider: providers.receipt,
           catalogSha256: corpus.catalogSha256,
+          boundarySha256: corpus.boundarySha256,
           observations,
         },
         null,
@@ -164,7 +178,7 @@ test("encoded ampersand DATA survives complete public formatter and real Vue DOM
       persist();
       console.log("glyph-ampersand-packet " + JSON.stringify(observation));
     }
-    assert.equal(observations.length, 13);
+    assert.equal(observations.length, 18);
     assert.equal(hash(fs.readFileSync(provider.image)), provider.imageSha256);
     for (const [index, entry] of observations.entries()) {
       const row = entry.row as (typeof corpus.cases)[number];
@@ -180,6 +194,13 @@ test("encoded ampersand DATA survives complete public formatter and real Vue DOM
         value: { code: actual.first.value.code, changed: false },
       });
       assert.deepEqual(actual.third, actual.second);
+      const baseline = baselineControls.find((control) => control.id === row.id);
+      if (baseline) {
+        assert.equal(baseline.sourceSha256, row.sha256);
+        assert.deepEqual(actual.first, { kind: "returned", value: baseline.first });
+        assert.deepEqual(actual.second, { kind: "returned", value: baseline.second });
+        assert.deepEqual(actual.third, { kind: "returned", value: baseline.third });
+      }
       assert.deepEqual(entry.options, entry.optionsBefore);
       const before = entry.before,
         after = entry.after;

@@ -1,0 +1,108 @@
+{
+  "schema": "vize.glyph.ampersand.unchanged-baseline-controls.v1",
+  "source": "d524235549aec8a61401f866444e2e9760232581",
+  "head": "df8d87e276b425a148868c1ec2f017d06b9dfa06",
+  "run": 41283720250,
+  "job": 124780840467,
+  "rawSha256": "65e7f3ee32e5816d22ab9824def13dbf0e8f6e0668ef6f599ff6da6d74cebebb",
+  "wholeObservationSha256": "6bb445aaf31d7c67beccd3992f9a6b394423c2d95f6931131eefe2bd4a26d05f",
+  "limits": "Exact complete returned NAPI results for the six already-correct controls; the original whole thirteen observations remain retained separately. Source execution validation authenticated the physical image, but this first log did not print its per-test image digest.",
+  "controls": [
+    {
+      "id": "bare-sequence-reference",
+      "sourceSha256": "069d40ae9403b3b4f42878f21d052975e3ade303491dabdff0017d2ceac3bcef",
+      "first": {
+        "code": "<template>\n  <div @click=\"read('&amp;quot;'), done()\"></div>\n</template>\n",
+        "changed": true
+      },
+      "second": {
+        "code": "<template>\n  <div @click=\"read('&amp;quot;'), done()\"></div>\n</template>\n",
+        "changed": false
+      },
+      "third": {
+        "code": "<template>\n  <div @click=\"read('&amp;quot;'), done()\"></div>\n</template>\n",
+        "changed": false
+      }
+    },
+    {
+      "id": "operator-control",
+      "sourceSha256": "ef3824aefe0b913737db8e0e6761ce16aef58637a92b7da24e3e3249e5c15a17",
+      "first": {
+        "code": "<template>\n  <div :title=\"left && right\"></div>\n</template>\n",
+        "changed": true
+      },
+      "second": {
+        "code": "<template>\n  <div :title=\"left && right\"></div>\n</template>\n",
+        "changed": false
+      },
+      "third": {
+        "code": "<template>\n  <div :title=\"left && right\"></div>\n</template>\n",
+        "changed": false
+      }
+    },
+    {
+      "id": "ordinary-amp-control",
+      "sourceSha256": "def40a86a3a127a6d7b8165abc406adfb372f55830c76b1093cf152f17c0b01c",
+      "first": {
+        "code": "<template>\n  <div @click=\"read('a&b')\"></div>\n</template>\n",
+        "changed": true
+      },
+      "second": {
+        "code": "<template>\n  <div @click=\"read('a&b')\"></div>\n</template>\n",
+        "changed": false
+      },
+      "third": {
+        "code": "<template>\n  <div @click=\"read('a&b')\"></div>\n</template>\n",
+        "changed": false
+      }
+    },
+    {
+      "id": "unknown-reference-control",
+      "sourceSha256": "cb9f5cd7761157939441c50b8f3533dc914588b7fa47080013b8ab88b5cdaa18",
+      "first": {
+        "code": "<template>\n  <div :title=\"prefix + '&unknown;'\"></div>\n</template>\n",
+        "changed": true
+      },
+      "second": {
+        "code": "<template>\n  <div :title=\"prefix + '&unknown;'\"></div>\n</template>\n",
+        "changed": false
+      },
+      "third": {
+        "code": "<template>\n  <div :title=\"prefix + '&unknown;'\"></div>\n</template>\n",
+        "changed": false
+      }
+    },
+    {
+      "id": "numeric-amp-control",
+      "sourceSha256": "291d765e33026fd0978033bf23c290189deda34acc7a56eb34e7426ba2b52d2c",
+      "first": {
+        "code": "<template>\n  <div :title=\"'&#38;quot;'\"></div>\n</template>\n",
+        "changed": true
+      },
+      "second": {
+        "code": "<template>\n  <div :title=\"'&#38;quot;'\"></div>\n</template>\n",
+        "changed": false
+      },
+      "third": {
+        "code": "<template>\n  <div :title=\"'&#38;quot;'\"></div>\n</template>\n",
+        "changed": false
+      }
+    },
+    {
+      "id": "quote-entity-control",
+      "sourceSha256": "1923e4ff785f8c408f7aadd3dce675a927c60480a2b923a5150998a8efe71042",
+      "first": {
+        "code": "<template>\n  <div :title=\"prefix + 'ab'\"></div>\n</template>\n",
+        "changed": true
+      },
+      "second": {
+        "code": "<template>\n  <div :title=\"prefix + 'ab'\"></div>\n</template>\n",
+        "changed": false
+      },
+      "third": {
+        "code": "<template>\n  <div :title=\"prefix + 'ab'\"></div>\n</template>\n",
+        "changed": false
+      }
+    }
+  ]
+}

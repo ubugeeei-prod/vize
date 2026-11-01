@@ -935,6 +935,135 @@
       ]
     },
     {
+      "id": "formatter/sfc/encoded-ampersand-data-6098",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-encoded-ampersand-data-6098",
+        "files": [
+          {
+            "path": "bare-sequence-reference.vue.txt",
+            "sha256": "069d40ae9403b3b4f42878f21d052975e3ade303491dabdff0017d2ceac3bcef",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "BareSequence.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "0a117fd22d9a22e4eb2714ae8d1d59cc8e4bf2c2170e5f8d96d2d3ba7bd82e67",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          6098
+        ],
+        "commits": [
+          {
+            "sha": "df8d87e276b425a148868c1ec2f017d06b9dfa06",
+            "role": "genuine-pre-fix-hosted-public-formatter-capture",
+            "paths": [
+              "crates/vize_glyph/src/template/directives.rs",
+              "tests/tooling/glyph-ampersand-native.test.ts"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "authored-round-trip-control",
+            "path": "crates/vize_glyph/tests/directive_ampersand_data.rs",
+            "symbol": "complete_encoded_ampersand_outputs_retain_data_and_reach_fixed_points"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/directive_ampersand_data.rs",
+          "symbol": "complete_encoded_ampersand_outputs_retain_data_and_reach_fixed_points",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence"
+          ],
+          "limitations": [
+            "The entry is the genuine already-correct retained bare-sequence control; normal-expression repair is qualified separately by full Rust/NAPI/official DOM laws."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CLI compares complete bytes to the actual source-bound public NAPI baseline of the same retained-bare control; no repaired negative golden is fabricated.",
+          "native": "No admitted whole native formatter adapter; public NAPI Glyph execution is a separate producer role."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-encoded-ampersand-data-6098/reference.expected.txt",
+              "sha256": "2dcefbf18cdffccd8e6ef0e18b2d176125aa9edf496a8727e1b6e3865fd548d8",
+              "role": "genuine-hosted-public-formatter-positive-control",
+              "provenance": {
+                "issue": 6098,
+                "path": "tests/tooling/glyph-ampersand-native.test.ts",
+                "symbol": "encoded ampersand DATA survives complete public formatter and real Vue DOM round trips",
+                "assertion": "Actual baseline Check41283720250/job124780840467 retained complete bare-sequence bytes and the unchanged original consumer outcome."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "BareSequence.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "CLI adapter cannot prove whole NAPI provider/DOM result; the separate mandatory tooling laws retain those results."
+          ],
+          "referenceState": "Actual pre-fix source-bound public formatter observation; candidate CLI comparison pending Actions."
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "BareSequence.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/hugged-child-width-fast-paths",
       "state": "active",
       "targets": [
