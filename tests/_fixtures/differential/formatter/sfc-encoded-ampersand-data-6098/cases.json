@@ -1,0 +1,610 @@
+{
+  "schema": "vize.glyph.encoded-ampersand-data.v1",
+  "issue": 6098,
+  "origin": {
+    "baselineSource": "ec8474e0ea9ed05062542c57c857f36b9467ac15",
+    "oldAmpLaw": {
+      "path": "crates/vize_glyph/tests/fix_history_template_older.rs",
+      "symbol": "directive_entity_decode_branches_have_complete_public_output",
+      "commit": "86ca0ba60"
+    },
+    "referenceCaptureSha256": "b073fbe5026bb4f0351e4f99d117c4a48806729d80d48ddb2ae303b8b229ccb8",
+    "limits": "Pure pinned Prettier/Vue compiler observations; no Vize execution. Unknown-reference Prettier refusal is retained; no universal output parity."
+  },
+  "reference": {
+    "prettier": "3.8.3",
+    "vue": "3.5.35",
+    "happyDom": "21.0.4"
+  },
+  "options": {
+    "parser": "vue",
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": false,
+    "bracketSpacing": true,
+    "bracketSameLine": false,
+    "singleAttributePerLine": false,
+    "endOfLine": "lf",
+    "htmlWhitespaceSensitivity": "css",
+    "vueIndentScriptAndStyle": false
+  },
+  "cases": [
+    {
+      "id": "quoted-reference",
+      "file": "quoted-reference.vue.txt",
+      "head": ":title",
+      "bytes": 55,
+      "sha256": "9981e96cf9e77c22650b0a52b1f05b9eff69839ac11e6323499773dd50b9c101",
+      "expected": {
+        "expression": "'&quot;'",
+        "result": "&quot;",
+        "calls": []
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div :title=\"'&amp;quot;'\"></div></template>\n"
+      }
+    },
+    {
+      "id": "decimal-reference",
+      "file": "decimal-reference.vue.txt",
+      "head": ":title",
+      "bytes": 54,
+      "sha256": "18a9d006fff0d4f92d16f7234232ed64469f11f380441b4dbbd25dcc886b4d1f",
+      "expected": {
+        "expression": "'&#34;'",
+        "result": "&#34;",
+        "calls": []
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div :title=\"'&amp;#34;'\"></div></template>\n"
+      }
+    },
+    {
+      "id": "hex-reference",
+      "file": "hex-reference.vue.txt",
+      "head": ":title",
+      "bytes": 55,
+      "sha256": "345ff2fe6512f61ddc6a676b016f31a6b6a1ab3bb30b8994dc23493463a073bc",
+      "expected": {
+        "expression": "'&#x22;'",
+        "result": "&#x22;",
+        "calls": []
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div :title=\"'&amp;#x22;'\"></div></template>\n"
+      }
+    },
+    {
+      "id": "amp-reference",
+      "file": "amp-reference.vue.txt",
+      "head": ":title",
+      "bytes": 54,
+      "sha256": "00252ca69152c57eee473ec7b14a65f246801f8f3b8c1bc76e1307e0194df881",
+      "expected": {
+        "expression": "'&amp;'",
+        "result": "&amp;",
+        "calls": []
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div :title=\"'&amp;amp;'\"></div></template>\n"
+      }
+    },
+    {
+      "id": "call-reference",
+      "file": "call-reference.vue.txt",
+      "head": "@click",
+      "bytes": 61,
+      "sha256": "f1a31c13912cd69fb0fe0a941e97cc639c16b6c0a6d34b131d7b251fee4188b5",
+      "expected": {
+        "expression": "read('&quot;')",
+        "result": "&quot;",
+        "calls": [
+          [
+            "read",
+            "&quot;"
+          ]
+        ]
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div @click=\"read('&amp;quot;')\"></div></template>\n"
+      }
+    },
+    {
+      "id": "bare-sequence-reference",
+      "file": "bare-sequence-reference.vue.txt",
+      "head": "@click",
+      "bytes": 69,
+      "sha256": "069d40ae9403b3b4f42878f21d052975e3ade303491dabdff0017d2ceac3bcef",
+      "expected": {
+        "expression": "read('&quot;'), done()",
+        "result": "done",
+        "calls": [
+          [
+            "read",
+            "&quot;"
+          ],
+          [
+            "done"
+          ]
+        ]
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div @click=\"(read('&amp;quot;'), done())\"></div></template>\n"
+      }
+    },
+    {
+      "id": "grouped-sequence-reference",
+      "file": "grouped-sequence-reference.vue.txt",
+      "head": "@click",
+      "bytes": 71,
+      "sha256": "6840dacf5ba5fe39537595e066b492753524ccfa8d04b5ad598085b0c9bb354f",
+      "expected": {
+        "expression": "(read('&quot;'), done())",
+        "result": "done",
+        "calls": [
+          [
+            "read",
+            "&quot;"
+          ],
+          [
+            "done"
+          ]
+        ]
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div @click=\"(read('&amp;quot;'), done())\"></div></template>\n"
+      }
+    },
+    {
+      "id": "operator-control",
+      "file": "operator-control.vue.txt",
+      "head": ":title",
+      "bytes": 64,
+      "sha256": "ef3824aefe0b913737db8e0e6761ce16aef58637a92b7da24e3e3249e5c15a17",
+      "expected": {
+        "expression": "left && right",
+        "result": "R",
+        "calls": []
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div :title=\"left &amp;&amp; right\"></div></template>\n"
+      }
+    },
+    {
+      "id": "ordinary-amp-control",
+      "file": "ordinary-amp-control.vue.txt",
+      "head": "@click",
+      "bytes": 58,
+      "sha256": "def40a86a3a127a6d7b8165abc406adfb372f55830c76b1093cf152f17c0b01c",
+      "expected": {
+        "expression": "read('a&b')",
+        "result": "a&b",
+        "calls": [
+          [
+            "read",
+            "a&b"
+          ]
+        ]
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div @click=\"read('a&amp;b')\"></div></template>\n"
+      }
+    },
+    {
+      "id": "unknown-reference-control",
+      "file": "unknown-reference-control.vue.txt",
+      "head": ":title",
+      "bytes": 63,
+      "sha256": "cb9f5cd7761157939441c50b8f3533dc914588b7fa47080013b8ab88b5cdaa18",
+      "expected": {
+        "expression": "prefix + '&unknown;'",
+        "result": "P&unknown;",
+        "calls": []
+      },
+      "reference": {
+        "kind": "throw",
+        "error": {
+          "id": 0,
+          "kind": "[object Error]",
+          "prototype": "SyntaxError",
+          "properties": [
+            {
+              "key": "stack",
+              "enumerable": false,
+              "configurable": true,
+              "get": {
+                "id": 1,
+                "kind": "[object Function]",
+                "prototype": "Function",
+                "properties": [
+                  {
+                    "key": "length",
+                    "enumerable": false,
+                    "configurable": true,
+                    "writable": false,
+                    "value": 0
+                  },
+                  {
+                    "key": "name",
+                    "enumerable": false,
+                    "configurable": true,
+                    "writable": false,
+                    "value": ""
+                  }
+                ],
+                "source": "function () { [native code] }"
+              },
+              "set": {
+                "id": 2,
+                "kind": "[object Function]",
+                "prototype": "Function",
+                "properties": [
+                  {
+                    "key": "length",
+                    "enumerable": false,
+                    "configurable": true,
+                    "writable": false,
+                    "value": 1
+                  },
+                  {
+                    "key": "name",
+                    "enumerable": false,
+                    "configurable": true,
+                    "writable": false,
+                    "value": ""
+                  }
+                ],
+                "source": "function () { [native code] }"
+              }
+            },
+            {
+              "key": "message",
+              "enumerable": false,
+              "configurable": true,
+              "writable": true,
+              "value": "Opening tag \"div\" not terminated. (1:11)\n> 1 | <template><div :title=\"prefix + '&unknown;'\"></div></template>\n    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  2 |"
+            },
+            {
+              "key": "loc",
+              "enumerable": true,
+              "configurable": true,
+              "writable": true,
+              "value": {
+                "id": 3,
+                "kind": "[object Object]",
+                "prototype": "Object",
+                "properties": [
+                  {
+                    "key": "start",
+                    "enumerable": true,
+                    "configurable": true,
+                    "writable": true,
+                    "value": {
+                      "id": 4,
+                      "kind": "[object Object]",
+                      "prototype": "Object",
+                      "properties": [
+                        {
+                          "key": "line",
+                          "enumerable": true,
+                          "configurable": true,
+                          "writable": true,
+                          "value": 1
+                        },
+                        {
+                          "key": "column",
+                          "enumerable": true,
+                          "configurable": true,
+                          "writable": true,
+                          "value": 11
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "key": "end",
+                    "enumerable": true,
+                    "configurable": true,
+                    "writable": true,
+                    "value": {
+                      "id": 5,
+                      "kind": "[object Object]",
+                      "prototype": "Object",
+                      "properties": [
+                        {
+                          "key": "line",
+                          "enumerable": true,
+                          "configurable": true,
+                          "writable": true,
+                          "value": 1
+                        },
+                        {
+                          "key": "column",
+                          "enumerable": true,
+                          "configurable": true,
+                          "writable": true,
+                          "value": 43
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "key": "cause",
+              "enumerable": true,
+              "configurable": true,
+              "writable": true,
+              "value": {
+                "id": 6,
+                "kind": "[object Error]",
+                "prototype": "Ri",
+                "properties": [
+                  {
+                    "key": "stack",
+                    "enumerable": false,
+                    "configurable": true,
+                    "get": {
+                      "ref": 1
+                    },
+                    "set": {
+                      "ref": 2
+                    }
+                  },
+                  {
+                    "key": "message",
+                    "enumerable": false,
+                    "configurable": true,
+                    "writable": true,
+                    "value": "Opening tag \"div\" not terminated."
+                  },
+                  {
+                    "key": "span",
+                    "enumerable": true,
+                    "configurable": true,
+                    "writable": true,
+                    "value": {
+                      "id": 7,
+                      "kind": "[object Object]",
+                      "prototype": "h",
+                      "properties": [
+                        {
+                          "key": "start",
+                          "enumerable": true,
+                          "configurable": true,
+                          "writable": true,
+                          "value": {
+                            "id": 8,
+                            "kind": "[object Object]",
+                            "prototype": "gi",
+                            "properties": [
+                              {
+                                "key": "file",
+                                "enumerable": true,
+                                "configurable": true,
+                                "writable": true,
+                                "value": {
+                                  "id": 9,
+                                  "kind": "[object Object]",
+                                  "prototype": "nt",
+                                  "properties": [
+                                    {
+                                      "key": "content",
+                                      "enumerable": true,
+                                      "configurable": true,
+                                      "writable": true,
+                                      "value": "<template><div :title=\"prefix + '&unknown;'\"></div></template>\n"
+                                    },
+                                    {
+                                      "key": "url",
+                                      "enumerable": true,
+                                      "configurable": true,
+                                      "writable": true,
+                                      "value": "angular-html-parser"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "key": "offset",
+                                "enumerable": true,
+                                "configurable": true,
+                                "writable": true,
+                                "value": 10
+                              },
+                              {
+                                "key": "line",
+                                "enumerable": true,
+                                "configurable": true,
+                                "writable": true,
+                                "value": 0
+                              },
+                              {
+                                "key": "col",
+                                "enumerable": true,
+                                "configurable": true,
+                                "writable": true,
+                                "value": 10
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "key": "end",
+                          "enumerable": true,
+                          "configurable": true,
+                          "writable": true,
+                          "value": {
+                            "id": 10,
+                            "kind": "[object Object]",
+                            "prototype": "gi",
+                            "properties": [
+                              {
+                                "key": "file",
+                                "enumerable": true,
+                                "configurable": true,
+                                "writable": true,
+                                "value": {
+                                  "ref": 9
+                                }
+                              },
+                              {
+                                "key": "offset",
+                                "enumerable": true,
+                                "configurable": true,
+                                "writable": true,
+                                "value": 42
+                              },
+                              {
+                                "key": "line",
+                                "enumerable": true,
+                                "configurable": true,
+                                "writable": true,
+                                "value": 0
+                              },
+                              {
+                                "key": "col",
+                                "enumerable": true,
+                                "configurable": true,
+                                "writable": true,
+                                "value": 42
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "key": "fullStart",
+                          "enumerable": true,
+                          "configurable": true,
+                          "writable": true,
+                          "value": {
+                            "ref": 8
+                          }
+                        },
+                        {
+                          "key": "details",
+                          "enumerable": true,
+                          "configurable": true,
+                          "writable": true,
+                          "value": null
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "key": "msg",
+                    "enumerable": true,
+                    "configurable": true,
+                    "writable": true,
+                    "value": "Opening tag \"div\" not terminated."
+                  },
+                  {
+                    "key": "level",
+                    "enumerable": true,
+                    "configurable": true,
+                    "writable": true,
+                    "value": 1
+                  },
+                  {
+                    "key": "relatedError",
+                    "enumerable": true,
+                    "configurable": true,
+                    "writable": true,
+                    "value": {
+                      "type": "undefined"
+                    }
+                  },
+                  {
+                    "key": "elementName",
+                    "enumerable": true,
+                    "configurable": true,
+                    "writable": true,
+                    "value": "div"
+                  }
+                ],
+                "errorName": "Error",
+                "errorMessage": "Opening tag \"div\" not terminated.",
+                "errorStack": "Error: Opening tag \"div\" not terminated."
+              }
+            },
+            {
+              "key": "codeFrame",
+              "enumerable": true,
+              "configurable": true,
+              "writable": true,
+              "value": "> 1 | <template><div :title=\"prefix + '&unknown;'\"></div></template>\n    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  2 |"
+            }
+          ],
+          "errorName": "SyntaxError",
+          "errorMessage": "Opening tag \"div\" not terminated. (1:11)\n> 1 | <template><div :title=\"prefix + '&unknown;'\"></div></template>\n    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  2 |",
+          "errorStack": "SyntaxError: Opening tag \"div\" not terminated. (1:11)\n> 1 | <template><div :title=\"prefix + '&unknown;'\"></div></template>\n    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  2 |"
+        }
+      }
+    },
+    {
+      "id": "numeric-amp-control",
+      "file": "numeric-amp-control.vue.txt",
+      "head": ":title",
+      "bytes": 55,
+      "sha256": "291d765e33026fd0978033bf23c290189deda34acc7a56eb34e7426ba2b52d2c",
+      "expected": {
+        "expression": "'&quot;'",
+        "result": "&quot;",
+        "calls": []
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div :title=\"'&#38;quot;'\"></div></template>\n"
+      }
+    },
+    {
+      "id": "mixed-reference",
+      "file": "mixed-reference.vue.txt",
+      "head": "@click",
+      "bytes": 66,
+      "sha256": "889e06f41a100674a17430a4375b36ce91c462da31703c78cb08291c20d59263",
+      "expected": {
+        "expression": "read('< &quot;')",
+        "result": "< &quot;",
+        "calls": [
+          [
+            "read",
+            "< &quot;"
+          ]
+        ]
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div @click=\"read('&lt; &amp;quot;')\"></div></template>\n"
+      }
+    },
+    {
+      "id": "quote-entity-control",
+      "file": "quote-entity-control.vue.txt",
+      "head": ":title",
+      "bytes": 66,
+      "sha256": "1923e4ff785f8c408f7aadd3dce675a927c60480a2b923a5150998a8efe71042",
+      "expected": {
+        "expression": "prefix + \"ab\"",
+        "result": "Pab",
+        "calls": []
+      },
+      "reference": {
+        "kind": "return",
+        "code": "<template><div :title=\"prefix + 'ab'\"></div></template>\n"
+      }
+    }
+  ]
+}

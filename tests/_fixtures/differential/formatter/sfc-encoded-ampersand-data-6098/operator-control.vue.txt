@@ -1,0 +1,1 @@
+<template><div :title="left &amp;&amp; right"></div></template>
