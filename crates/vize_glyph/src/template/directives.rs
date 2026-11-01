@@ -122,7 +122,13 @@ pub(super) fn format_directive_value(
         return (formatted, false, false);
     }
 
-    let decoded = decode_expression_attribute_entities(trimmed);
+    // The decoder's first guard returns None without an ampersand. Keep that
+    // common case out of the out-of-line decoder, without changing its grammar.
+    let decoded = if trimmed.as_bytes().contains(&b'&') {
+        decode_expression_attribute_entities(trimmed)
+    } else {
+        None
+    };
     let expression = decoded
         .as_ref()
         .map_or(trimmed, |value| value.code.as_str());
@@ -159,6 +165,14 @@ pub(super) fn format_directive_value(
             let (value, indent) =
                 reanchor_continuation_lines(&code, options, Representation::JavaScript);
             (value, indent, false)
+        }
+        Some(formatted)
+            if options.end_of_line != crate::EndOfLine::Cr
+                && memchr::memchr2(b'&', b'\n', formatted.code.as_bytes()).is_none() =>
+        {
+            // One scan proves both no reference and the original false LF
+            // indentation flag. Preserve the complete line-ownership metadata.
+            (formatted.code, false, formatted.owns_attribute_lines)
         }
         Some(formatted) => {
             // Without an actual printed ampersand, HTML cannot form a new
