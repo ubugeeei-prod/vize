@@ -54,6 +54,34 @@ runs:
         set -e
         test "$rust_status" -eq 0
         test "$runtime_status" -eq 0
+    - name: Capture genuine original input Model SSR values in both runtime modes
+      id: native-input-model-ssr
+      if: ${{ !cancelled() }}
+      shell: bash
+      env:
+        VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_CAPTURE: ${{ runner.temp }}/native-original-input-model-sfc-ssr-capture.json
+        VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_REQUIRE_CAPTURE: "1"
+        VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_PRIMARY_CAPTURE: ${{ runner.temp }}/native-original-input-model-sfc-ssr-primary
+        VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_RUNTIME_CAPTURE: ${{ runner.temp }}/native-original-input-model-sfc-ssr-runtime
+      run: |
+        model_l3_status=0
+        cargo test --locked --profile ci -p vize_l3 --test native_model_ssr -- --nocapture || model_l3_status=$?
+        model_rust_status=0
+        cargo test --locked --profile ci -p vize_atelier_sfc native_ssr_setup::tests::original_input_model::seven_whole_original_input_model_ssr_components_and_raw_maps_are_captured -- --exact --nocapture || model_rust_status=$?
+        model_development_status=0
+        NODE_ENV=development vp node --test tests/tooling/native-original-input-model-sfc-ssr-reference.test.ts || model_development_status=$?
+        model_production_status=0
+        NODE_ENV=production vp node --test tests/tooling/native-original-input-model-sfc-ssr-reference.test.ts || model_production_status=$?
+        printf '{"l3":%s,"rust":%s,"development":%s,"production":%s}\n' "$model_l3_status" "$model_rust_status" "$model_development_status" "$model_production_status" > "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_CAPTURE}.statuses.json"
+        test "$model_l3_status" -eq 0
+        test "$model_rust_status" -eq 0
+        test "$model_development_status" -eq 0
+        test "$model_production_status" -eq 0
+        test -s "$VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_CAPTURE"
+        test -s "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_PRIMARY_CAPTURE}.development.json"
+        test -s "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_PRIMARY_CAPTURE}.production.json"
+        test -s "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_RUNTIME_CAPTURE}.development.json"
+        test -s "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_RUNTIME_CAPTURE}.production.json"
     - name: Preserve fresh SSR modules and actual runtime outcomes
       if: ${{ always() && steps.native-ssr.outcome != 'skipped' }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -81,5 +109,9 @@ runs:
           ${{ runner.temp }}/native-setup-ssr-runtime.json
           ${{ runner.temp }}/native-setup-ssr-modules.json.direct-child.json
           ${{ runner.temp }}/native-setup-ssr-runtime.json.direct-child.json
+          ${{ runner.temp }}/native-original-input-model-sfc-ssr-capture.json
+          ${{ runner.temp }}/native-original-input-model-sfc-ssr-capture.json.statuses.json
+          ${{ runner.temp }}/native-original-input-model-sfc-ssr-primary.*.json
+          ${{ runner.temp }}/native-original-input-model-sfc-ssr-runtime.*.json
         if-no-files-found: error
         retention-days: 14

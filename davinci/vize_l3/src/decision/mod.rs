@@ -17,6 +17,7 @@ mod attribute_value;
 pub use attribute_value::OriginalAttributeFacts;
 mod build;
 pub mod dom;
+mod model;
 pub mod native;
 pub mod policy;
 pub mod ssr;

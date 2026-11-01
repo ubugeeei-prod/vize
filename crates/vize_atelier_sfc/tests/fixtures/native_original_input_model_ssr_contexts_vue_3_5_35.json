@@ -1,0 +1,130 @@
+{
+  "schema": "vize.native-sfc.original-input-model-ssr-contexts",
+  "runtime": "vue@3.5.35",
+  "renderer": "@vue/server-renderer@3.5.35",
+  "qualification": "new-runtime-inputs-not-native-execution-evidence",
+  "sourceInputHash": "10da733252ab40b696ca4b52aae71ac00570da0a0f24df0f86d214d82a839329",
+  "contexts": [
+    {
+      "id": "empty",
+      "props": {}
+    },
+    {
+      "id": "escaped-class-style",
+      "props": {
+        "id": "attrs雪🌸",
+        "title": "<&\"'",
+        "data-snow": "雪🌸",
+        "class": [
+          "input",
+          {
+            "active": true
+          }
+        ],
+        "style": {
+          "color": "red",
+          "--snow": "雪"
+        }
+      }
+    },
+    {
+      "id": "value-collision",
+      "props": {
+        "value": "caller value🌸",
+        "data-track": "value"
+      }
+    },
+    {
+      "id": "checkbox",
+      "props": {
+        "type": "checkbox",
+        "value": "candidate雪",
+        "checked": true
+      }
+    },
+    {
+      "id": "radio-number",
+      "props": {
+        "type": "radio",
+        "value": 7
+      }
+    },
+    {
+      "id": "radio-string",
+      "props": {
+        "type": "radio",
+        "value": "雪🌸"
+      }
+    },
+    {
+      "id": "text",
+      "props": {
+        "type": "text",
+        "value": "callertext",
+        "disabled": true
+      }
+    },
+    {
+      "id": "file",
+      "props": {
+        "type": "file",
+        "value": "callerfile"
+      }
+    }
+  ],
+  "refusalInputOrigin": {
+    "path": "native_original_input_model_sfc_vue_3_5_35.json",
+    "sha256": "9189ebb7ac164fe25e7d35892fc59e8687b135b0bf953b04ebe4a20180145f03",
+    "scope": "Only immutable original negative id/source inputs; no DOM error/qualification transfer to SSR"
+  },
+  "refusals": [
+    {
+      "id": "const",
+      "source": "<script setup>const draft='x'</script><template><input v-model='draft'/></template>"
+    },
+    {
+      "id": "unresolved",
+      "source": "<script setup>let other='x'</script><template><input v-model='draft'/></template>"
+    },
+    {
+      "id": "member",
+      "source": "<script setup>let draft='x'</script><template><input v-model='draft.value'/></template>"
+    },
+    {
+      "id": "modifier",
+      "source": "<script setup>let draft='x'</script><template><input v-model.lazy='draft'/></template>"
+    },
+    {
+      "id": "argument",
+      "source": "<script setup>let draft='x'</script><template><input v-model:value='draft'/></template>"
+    },
+    {
+      "id": "late-header",
+      "source": "<script setup>let draft='x'</script><template><input v-model='draft' :class='draft'/></template>"
+    },
+    {
+      "id": "sibling",
+      "source": "<script setup>let draft='x'</script><template><input v-model='draft'/><b/></template>"
+    },
+    {
+      "id": "nested",
+      "source": "<script setup>let draft='x'</script><template><div><input v-model='draft'/></div></template>"
+    },
+    {
+      "id": "unknown-initializer",
+      "source": "<script setup>let draft</script><template><input v-model='draft'/></template>"
+    },
+    {
+      "id": "nul-string",
+      "source": "<script setup>let draft='a\\0b'</script><template><input v-model='draft'/></template>"
+    },
+    {
+      "id": "cr-string",
+      "source": "<script setup>let draft='a\\rb'</script><template><input v-model='draft'/></template>"
+    },
+    {
+      "id": "lone-surrogate",
+      "source": "<script setup>let draft='\\uD800'</script><template><input v-model='draft'/></template>"
+    }
+  ]
+}

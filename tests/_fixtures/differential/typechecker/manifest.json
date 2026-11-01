@@ -11724,6 +11724,35 @@
       }
     },
     {
+      "id": "typechecker/regression/cold-package-shadow-routes-11265",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "cold-package-shadow-routes-11265/input.json",
+          "sha256": "1f83760a419f911d2af39b2c12f08b11862acf4f3f2828111d2d2c4bd820dbd8",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "workspace_aliases::dirty_propagation_tests::fixture::prepared_pnpm_cycles_keep_complete_cold_warm_rebind_and_owner_repair_state; compile-included complete controlled graph inputs; no private Nuxt or native-checker reproduction claim"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/mixed-vue-package-imports-11253",
       "state": "active",
       "targets": ["batch"],

@@ -2,6 +2,15 @@
 
 use clap::{Parser, Subcommand};
 
+#[cfg(feature = "glyph")]
+mod fmt_bool_args;
+
+fn parse_from(args: impl IntoIterator<Item = std::ffi::OsString>) -> Cli {
+    #[cfg(feature = "glyph")]
+    let args = fmt_bool_args::normalize(args);
+    Cli::parse_from(args)
+}
+
 #[derive(Parser)]
 #[command(name = "vize")]
 #[command(about = "High-performance Vue.js toolchain in Rust", long_about = None)]
@@ -89,13 +98,14 @@ enum Commands {
 }
 
 pub fn run_from_env() {
-    run(Cli::parse());
+    run(parse_from(std::env::args_os()));
 }
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub fn run_from_args(args: Vec<String>) {
-    let args = std::iter::once("vize").chain(args.iter().map(String::as_str));
-    run(Cli::parse_from(args));
+    let args = std::iter::once(std::ffi::OsString::from("vize"))
+        .chain(args.into_iter().map(std::ffi::OsString::from));
+    run(parse_from(args));
 }
 
 /// One-shot project commands reuse validated config evaluations; servers and

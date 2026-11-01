@@ -40,13 +40,21 @@ impl<'owner, 'arena> SsrSetupRead<'owner, 'arena> {
 /// Complete original resolution and read list published together or absent.
 pub struct SsrSetupExpression<'owner, 'arena> {
     pub(super) resolution: FileResolution<'owner, 'arena>,
-    pub(super) read: Option<SsrSetupRead<'owner, 'arena>>,
+    pub(super) access: SsrSetupAccess<'owner, 'arena>,
+}
+
+/// A Model retains its real ReadWrite occurrence without granting a normal
+/// interpolation read. Only the dedicated Model value receiver consumes it.
+pub(super) enum SsrSetupAccess<'owner, 'arena> {
+    Literal,
+    Read(SsrSetupRead<'owner, 'arena>),
+    ModelValue,
 }
 impl core::fmt::Debug for SsrSetupExpression<'_, '_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("SsrSetupExpression")
             .field("node", &self.resolution.node())
-            .field("read_count", &self.read.as_slice().len())
+            .field("read_count", &self.reads().len())
             .finish_non_exhaustive()
     }
 }
@@ -57,7 +65,13 @@ impl<'owner, 'arena> SsrSetupExpression<'owner, 'arena> {
     }
     #[must_use]
     pub fn reads(&self) -> &[SsrSetupRead<'owner, 'arena>] {
-        self.read.as_slice()
+        match &self.access {
+            SsrSetupAccess::Read(read) => core::slice::from_ref(read),
+            SsrSetupAccess::Literal | SsrSetupAccess::ModelValue => &[],
+        }
+    }
+    pub(super) fn is_model(&self) -> bool {
+        matches!(self.access, SsrSetupAccess::ModelValue)
     }
 }
 

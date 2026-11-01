@@ -1,6 +1,8 @@
 //! Join actual original interpolation and setup rows at the existing Enter.
 
-use super::super::{SsrSetupExpression, SsrSetupRead, SsrSetupReadKind, SsrUnsupported};
+use super::super::{
+    SsrSetupAccess, SsrSetupExpression, SsrSetupRead, SsrSetupReadKind, SsrUnsupported,
+};
 use oxc_ast::ast::Expression;
 use vize_l0::id::NodeId;
 use vize_l2::{
@@ -113,5 +115,8 @@ pub(super) fn classify<'owner, 'arena>(
             kind,
         });
     }
-    Ok(SsrSetupExpression { resolution, read })
+    Ok(SsrSetupExpression {
+        resolution,
+        access: read.map_or(SsrSetupAccess::Literal, SsrSetupAccess::Read),
+    })
 }

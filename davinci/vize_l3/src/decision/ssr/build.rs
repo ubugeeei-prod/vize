@@ -10,6 +10,7 @@ use vize_l2::{
     op::{BindingOp, ElementOp, Namespace, Op},
     walk::NodeRef,
 };
+mod model;
 mod read;
 
 pub(in crate::decision) struct SsrBuilder<'facts, 'owner, 'arena> {
@@ -225,11 +226,25 @@ impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
         }
     }
 
-    pub fn binding(&mut self, node: NodeId, binding: &BindingOp<'arena>, owner: BindingOwner) {
+    pub fn binding(
+        &mut self,
+        node: NodeId,
+        binding: &'owner BindingOp<'arena>,
+        owner: BindingOwner,
+    ) {
         // SSR has no event listeners on native HTML; cloak is compile-time only.
         if owner == BindingOwner::Element
             && matches!(binding, BindingOp::On(_) | BindingOp::VueCloak(_))
         {
+            return;
+        }
+        if owner == BindingOwner::Element
+            && let BindingOp::Model(model) = binding
+            && self.setup.is_some()
+        {
+            if let Err(reason) = self.model_binding(node, binding, model) {
+                self.reject(node, model.span, reason);
+            }
             return;
         }
         self.reject(
@@ -272,6 +287,7 @@ impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
         {
             self.reject(node, span, SsrUnsupported::Operation);
         }
+        self.finish_model();
         self.facts.fragment = self.roots > 1;
         self.facts.inherit_attrs = (self.non_comments == 1)
             .then_some(self.root_element)
