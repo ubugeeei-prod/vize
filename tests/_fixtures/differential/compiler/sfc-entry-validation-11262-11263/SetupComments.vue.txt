@@ -1,0 +1,4 @@
+<script setup lang="ts">
+// export default is only a comment
+const label = "export const value";
+</script>

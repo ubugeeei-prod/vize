@@ -1,0 +1,4 @@
+<!-- StyleOnly.vue -->
+<style scoped>
+.a { color: red }
+</style>
