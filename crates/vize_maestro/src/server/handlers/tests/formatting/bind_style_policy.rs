@@ -227,7 +227,8 @@ fn editor_policy_matches_actual_lint_option_registration_and_category_handling()
     let project = tempfile::tempdir().unwrap();
     let root = project.path();
     let file = root.join("VBindProp.vue");
-    let source = "<template>\n  <a :title.prop=\"t\"></a>\n</template>\n";
+    // The retained range/on-type requests address the original single line.
+    let source = "<template><a :title.prop=\"t\"></a></template>\n";
     std::fs::write(&file, source).unwrap();
     let uri = Url::from_file_path(&file).unwrap();
     let service = server_with(&uri, source, "vue");
