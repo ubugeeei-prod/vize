@@ -108,12 +108,12 @@ fn bound_names_dynamic_arguments_and_recovery_are_not_silent_clean_results() {
     assert_eq!(result.unwrap_err(), Refusal::Recovered { offset: 4 });
     let expected = expected(vec![
         vize_patina::LintDiagnostic {
-            rule_name: "parser/template", severity: Severity::Warning,
+            rule_name: "parser/template", severity: Severity::Error,
             message: "Unexpected end of input inside a tag; inferred the missing tag close so parsing can continue.".into(),
             start: 3, end: 4, help: None, labels: vec![], fix: None,
         },
         vize_patina::LintDiagnostic {
-            rule_name: "parser/template", severity: Severity::Warning,
+            rule_name: "parser/template", severity: Severity::Error,
             message: "Element is missing end tag.".into(), start: 0, end: 4,
             help: None, labels: vec![], fix: None,
         },
