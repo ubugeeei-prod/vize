@@ -389,16 +389,15 @@ function requireRendererStep(workflow: string) {
     .split(/^ {6}- /mu)
     .slice(1);
   const command = "run: node --test tests/tooling/public-typechecker-11339*.test.ts";
+  const scalarName =
+    /^name: (?:"(?:[^"\\\p{Cc}]|\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4}))*"|'(?:[^'\p{Cc}]|'')*'|[A-Za-z0-9][A-Za-z0-9 _()./-]*)$/u;
   const runnable = steps.filter((step) => {
     const fields = step
       .split("\n")
       .filter((line) => line.trim() && !line.trimStart().startsWith("#"));
     return (
       (fields.length === 1 && fields[0] === command) ||
-      (fields.length === 2 &&
-        fields[0] ===
-          "name: Validate immutable inputs and refusal contracts without public execution" &&
-        fields[1] === "        " + command)
+      (fields.length === 2 && scalarName.test(fields[0]!) && fields[1] === "        " + command)
     );
   });
   assert.equal(runnable.length, 1);
@@ -428,9 +427,24 @@ test("new closed choice preserves old602 and11317 workflow bodies byte-for-byte"
   assert(workflow.includes("options-inherited-members-11339"));
   assert(workflow.includes("needs: contracts-11339"));
   requireRendererStep(workflow);
+  const stepName = "name: Validate immutable inputs and refusal contracts without public execution";
+  for (const name of [
+    "name: Renamed renderer contracts",
+    'name: "Renamed renderer 🧪"',
+    "name: 'Renderer''s contracts'",
+  ])
+    requireRendererStep(workflow.replace(stepName, name));
   const command = "run: node --test tests/tooling/public-typechecker-11339*.test.ts";
   for (const [name, changed] of [
     ["comment is not executable", workflow.replace(command, "# " + command)],
+    ["block name is not an executable run", workflow.replace(stepName, "name: |")],
+    [
+      "post-steps condition after a second step",
+      workflow.replace(
+        "  public-11339:\n",
+        "      - run: echo supplemental\n    if: false\n  public-11339:\n",
+      ),
+    ],
     [
       "command in another job is insufficient",
       workflow.replace(command, "run: node --test other.test.ts") +
