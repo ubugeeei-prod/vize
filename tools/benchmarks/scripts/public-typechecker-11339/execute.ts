@@ -10,6 +10,7 @@ import {
 } from "node:fs";
 import { dirname, join, sep } from "node:path";
 import { isDeepStrictEqual } from "node:util";
+import { originalFiles, wrappedSupplement } from "./original.ts";
 import { asArray, asRecord, asString } from "../../../support/json-value.ts";
 import {
   capture,
@@ -157,6 +158,57 @@ export function execute(
   return results;
 }
 export type Result = ReturnType<typeof execute>;
+// Finite derivation of the source-owned renderer for the existing frozen inputs.
+// Neither context nor authored tokens are selected from observed output text.
+function factSourceContext(
+  fact: { file: string; line: number; column: number },
+  files: SourceFile[],
+) {
+  const original = originalFiles.find((file) => file.path === fact.file);
+  const expected =
+    original?.source ?? (fact.file === "src/Wrapped.vue" ? wrappedSupplement : undefined);
+  const actual = files.find((file) => file.path === fact.file);
+  assert(
+    expected !== undefined && actual?.source === expected,
+    "renderer input must remain the exact frozen source",
+  );
+  assert(fact.line === 2, "only the frozen authored diagnostic line is admitted");
+  const line = expected.split("\n")[1]!;
+  const trimmed = line.trim();
+  assert(
+    /^[\x20-\x7e]*$/u.test(line) && trimmed.length <= 160,
+    "renderer derivation is bounded to the frozen ASCII input lines",
+  );
+  const tokens =
+    fact.file === "src/Invalid.vue"
+      ? new Map([
+          [20, "1"],
+          [32, "toFixed"],
+          [62, "toFixed"],
+          [87, "toUpperCase"],
+          [107, "missing"],
+        ])
+      : new Map([[34, "toFixed"]]);
+  const token = tokens.get(fact.column);
+  assert(
+    token !== undefined && line.slice(fact.column - 1, fact.column - 1 + token.length) === token,
+    "diagnostic start must join to the input-owned token",
+  );
+  const tagEnd = line.indexOf(">") + 1;
+  assert(tagEnd > 0, "frozen input requires its source-owned start tag");
+  const title = fact.file === "src/Invalid.vue" && fact.column === 20;
+  if (title)
+    assert(
+      line.slice(0, tagEnd) === '  <p :title="greet(1)">',
+      "bound title context must derive from the frozen input",
+    );
+  else
+    assert(
+      fact.column - 1 >= tagEnd,
+      "all other frozen findings are interpolations after the start tag",
+    );
+  return ` (source: ${trimmed}${title ? "; binding: 'title'" : ""})`;
+}
 export function factRows(parsed: unknown) {
   const dto = asRecord(parsed);
   assert.deepEqual(
@@ -236,13 +288,36 @@ export function assessFacts(role: Role, id: Case, packet: Packet, files: SourceF
     const row = rows[index]!;
     for (const key of ["file", "line", "column", "code"] as const)
       assert.equal(row[key], fact[key]);
-    if (fact.message !== null) assert.equal(row.message, fact.message);
+    assert(
+      row.raw === `error:${fact.line}:${fact.column} [${fact.code}] ${row.message}`,
+      "diagnostic header differs from the closed source grammar",
+    );
+    const context = factSourceContext(fact, files);
+    if (fact.message !== null) assert.equal(row.message, fact.message + context);
+    else assert(row.message.endsWith(context), "missing-member context differs");
   }
   return {
     dto,
     rows,
     assessment: "PARTIAL_AUTHORED_POSITION_CODE_MESSAGE_FACTS",
     missingReceiverWholeMessageOwned: false,
+    diagnosticEndOrLengthClaimed: false,
+    diagnosticPrinterTextClaimedForFifth: false,
+    missingMemberIntent:
+      id === "Repair"
+        ? null
+        : {
+            findingObserved: true,
+            file: "src/Invalid.vue",
+            line1: 2,
+            startColumn1: 107,
+            code: "TS2339",
+            authoredToken: "missing",
+            authoredUtf16Interval0: [106, 113],
+            outputEnd: null,
+            outputLength: null,
+            receiverTextClaimed: false,
+          },
     publicAcceptance: false,
   };
 }

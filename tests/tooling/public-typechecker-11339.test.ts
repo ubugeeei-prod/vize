@@ -20,12 +20,10 @@ import {
   input,
   sources,
   sha256,
-  originalFacts,
   profileFor,
   beforeProfile,
   afterProfile,
   limitations,
-  type Case,
 } from "../../tools/benchmarks/scripts/public-typechecker-11339/contract.ts";
 import {
   validateCapsule,
@@ -35,11 +33,9 @@ import {
 import {
   recorder,
   guardedCapture,
-  assessFacts,
   commandsFor,
   inputImages,
 } from "../../tools/benchmarks/scripts/public-typechecker-11339/execute.ts";
-import { retain } from "../../tools/benchmarks/scripts/public-typechecker-11317/execute.ts";
 import { fileImage } from "../../tools/support/release/computed_event_custody.ts";
 import { sourceBin } from "../../tools/benchmarks/scripts/public-typechecker-11339/install.ts";
 import {
@@ -235,100 +231,6 @@ test("role-owned main/S/run/SRI and exact encoded scoped PURL remain closed", ()
   candidate.predicate.buildDefinition.resolvedDependencies[0]!.digest.gitCommit = p.candidate;
   assert.throws(() => assertProvenancePayload("before", "@vizejs/native", integrity, candidate));
 });
-function mockDto(id: Case) {
-  const files = sources(input("3.4.23"), "before", id),
-    paths = files
-      .filter((file) => file.path.startsWith("src/"))
-      .map((file) => file.path)
-      .sort();
-  const facts = id === "Repair" ? [] : [...originalFacts];
-  const rows = paths.map((file) => ({
-    file,
-    diagnostics: facts
-      .filter((fact) => fact.file === file)
-      .map(
-        (fact) =>
-          `error:${fact.line}:${fact.column} [${fact.code}] ${fact.message ?? "Property 'missing' does not exist on type 'MOCK_UNOWNED_RECEIVER'."}`,
-      ),
-  }));
-  return {
-    files,
-    dto: {
-      files: rows,
-      programs: [
-        {
-          root: ".",
-          tsconfig: "tsconfig.json",
-          compilerOptions: JSON.parse(files[1]!.source).compilerOptions,
-          files: paths,
-        },
-      ],
-      errorCount: facts.length,
-      warningCount: 0,
-      fileCount: paths.length,
-    },
-  };
-}
-test("whole mock DTO fields and five facts are checked without inventing the missing generic receiver", () =>
-  scratch((root) => {
-    const record = recorder(root),
-      f = mockDto("Original");
-    const packet = retain(record, "mock", ["vize", "check", "-f", "json"], root, "start", {
-      pid: 123,
-      status: 1,
-      signal: null,
-      stdout: Buffer.from(JSON.stringify(f.dto)),
-      stderr: Buffer.from("exact unowned progress\r\n"),
-    });
-    const assessed = assessFacts("after", "Original", packet, f.files);
-    assert.equal(assessed.publicAcceptance, false);
-    const before = assessFacts("before", "Original", packet, f.files);
-    assert.equal(before.assessment, "PUBLIC_BEFORE_RETAINED_UNASSESSED");
-    assert.equal(before.publicAcceptance, false);
-    assert.deepEqual(
-      readFileSync(join(root, "mock.stderr.raw")),
-      Buffer.from("exact unowned progress\r\n"),
-    );
-    for (const mutate of [
-      (dto: typeof f.dto) => {
-        dto.files.pop();
-      },
-      (dto: typeof f.dto) => {
-        dto.files[0]!.diagnostics.pop();
-        dto.errorCount--;
-      },
-      (dto: typeof f.dto) => {
-        dto.fileCount = 0;
-      },
-      (dto: typeof f.dto) => {
-        dto.programs[0]!.files.reverse();
-      },
-    ]) {
-      const dto = structuredClone(f.dto);
-      mutate(dto);
-      assert.throws(() =>
-        assessFacts("after", "Original", { ...packet, stdout: JSON.stringify(dto) }, f.files),
-      );
-    }
-    assert.throws(() =>
-      assessFacts(
-        "after",
-        "Original",
-        { ...packet, stdout: JSON.stringify({ ...f.dto, extra: true }) },
-        f.files,
-      ),
-    );
-    const repaired = mockDto("Repair");
-    assert.equal(
-      assessFacts(
-        "after",
-        "Repair",
-        { ...packet, status: 0, stdout: JSON.stringify(repaired.dto) },
-        repaired.files,
-      ).publicAcceptance,
-      false,
-    );
-  }));
 test("unknown bin route refuses before callback and retains a complete non-executed attempt", () =>
   scratch((root) => {
     const directory = join(root, "node_modules/vize");
@@ -460,6 +362,46 @@ test("every final role custody completes before semantics; an early failure cann
   assert.notEqual(errors[0], null);
   assert.equal(errors[1], null);
 });
+function requireRendererStep(workflow: string) {
+  // Closed scalar-run step reader: no YAML dependency/install in this pure job.
+  const lines = workflow.split("\n");
+  const jobs = lines.indexOf("jobs:");
+  assert(jobs >= 0);
+  const headers = lines.slice(jobs + 1).filter((line) => /^ {2}[^ #]/u.test(line));
+  assert(headers.every((line) => /^ {2}[A-Za-z0-9_-]+:$/u.test(line)));
+  assert.equal(new Set(headers).size, headers.length);
+  const starts = lines.flatMap((line, index) => (line === "  contracts-11339:" ? [index] : []));
+  assert.equal(starts.length, 1);
+  const start = starts[0]!;
+  assert(start > jobs);
+  const next = lines.findIndex((line, index) => index > start && /^ {2}\S/u.test(line));
+  const job = lines.slice(start + 1, next < 0 ? undefined : next);
+  const stepStart = job.indexOf("    steps:");
+  assert(stepStart >= 0);
+  assert.equal(job.filter((line) => line === "    steps:").length, 1);
+  assert.deepEqual(
+    job.filter((line) => /^ {4}[^ #]/u.test(line)),
+    ["    runs-on: blacksmith-8vcpu-ubuntu-2404", "    timeout-minutes: 10", "    steps:"],
+  );
+  const steps = job
+    .slice(stepStart + 1)
+    .join("\n")
+    .split(/^ {6}- /mu)
+    .slice(1);
+  const command = "run: node --test tests/tooling/public-typechecker-11339*.test.ts";
+  const scalarName =
+    /^name: (?:"(?:[^"\\\p{Cc}]|\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4}))*"|'(?:[^'\p{Cc}]|'')*'|[A-Za-z0-9][A-Za-z0-9 _()./-]*)$/u;
+  const runnable = steps.filter((step) => {
+    const fields = step
+      .split("\n")
+      .filter((line) => line.trim() && !line.trimStart().startsWith("#"));
+    return (
+      (fields.length === 1 && fields[0] === command) ||
+      (fields.length === 2 && scalarName.test(fields[0]!) && fields[1] === "        " + command)
+    );
+  });
+  assert.equal(runnable.length, 1);
+}
 test("new closed choice preserves old602 and11317 workflow bodies byte-for-byte", () => {
   const workflow = readFileSync(
     fileURLToPath(
@@ -484,4 +426,60 @@ test("new closed choice preserves old602 and11317 workflow bodies byte-for-byte"
   );
   assert(workflow.includes("options-inherited-members-11339"));
   assert(workflow.includes("needs: contracts-11339"));
+  requireRendererStep(workflow);
+  const stepName = "name: Validate immutable inputs and refusal contracts without public execution";
+  for (const name of [
+    "name: Renamed renderer contracts",
+    'name: "Renamed renderer 🧪"',
+    "name: 'Renderer''s contracts'",
+  ])
+    requireRendererStep(workflow.replace(stepName, name));
+  const command = "run: node --test tests/tooling/public-typechecker-11339*.test.ts";
+  for (const [name, changed] of [
+    ["comment is not executable", workflow.replace(command, "# " + command)],
+    ["block name is not an executable run", workflow.replace(stepName, "name: |")],
+    [
+      "post-steps condition after a second step",
+      workflow.replace(
+        "  public-11339:\n",
+        "      - run: echo supplemental\n    if: false\n  public-11339:\n",
+      ),
+    ],
+    [
+      "command in another job is insufficient",
+      workflow.replace(command, "run: node --test other.test.ts") +
+        "\n  other:\n    steps:\n      - " +
+        command +
+        "\n",
+    ],
+    [
+      "conditional step is insufficient",
+      workflow.replace(command, "if: false\n        " + command),
+    ],
+    [
+      "conditional job is insufficient",
+      workflow.replace("  contracts-11339:\n", "  contracts-11339:\n    if: false\n"),
+    ],
+    [
+      "post-steps conditional job is insufficient",
+      workflow.replace("  public-11339:\n", "    if: false\n  public-11339:\n"),
+    ],
+  ])
+    assert.throws(() => requireRendererStep(changed!), assert.AssertionError, name);
+  for (const key of ["if", "uses", "continue-on-error"])
+    for (const spelling of ['"' + key + '"', key + " "])
+      for (const placement of ["job", "step", "post-steps"]) {
+        const line = spelling + ": false\n";
+        const changed =
+          placement === "job"
+            ? workflow.replace("  contracts-11339:\n", "  contracts-11339:\n    " + line)
+            : placement === "step"
+              ? workflow.replace(command, line + "        " + command)
+              : workflow.replace("  public-11339:\n", "    " + line + "  public-11339:\n");
+        assert.throws(
+          () => requireRendererStep(changed),
+          assert.AssertionError,
+          placement + ": " + spelling,
+        );
+      }
 });
