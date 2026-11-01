@@ -9,6 +9,28 @@ export function lockPackageIntegrity(raw: Buffer, name: string, version: string)
   const source = new TextDecoder("utf-8", { fatal: true }).decode(raw);
   assert(!source.includes("\t") && !source.includes("\0"));
   const lines = source.replaceAll("\r\n", "\n").split("\n");
+  const rootKeys = new Set<string>();
+  const canonical = new Set([
+    "lockfileVersion",
+    "settings",
+    "importers",
+    "packages",
+    "snapshots",
+    "overrides",
+    "catalogs",
+    "patchedDependencies",
+  ]);
+  for (const line of lines) {
+    if (!line || /^\s*#/u.test(line) || line === "---") continue;
+    assert.equal((/^ */u.exec(line)?.[0].length ?? 0) % 2, 0, "noncanonical lock indentation");
+    if (/^ /u.test(line)) continue;
+    const header = /^([A-Za-z][A-Za-z0-9]*):(?: |$)/u.exec(line)?.[1];
+    assert(header && canonical.has(header), "noncanonical top-level lock header");
+    assert(!rootKeys.has(header), "duplicate top-level lock header");
+    rootKeys.add(header);
+    if (header !== "lockfileVersion")
+      assert.equal(line, `${header}:`, "top-level maps require canonical block syntax");
+  }
   const versions = lines.filter((line) => line.startsWith("lockfileVersion:"));
   assert.equal(versions.length, 1, "one lockfileVersion declaration required");
   assert.equal(
@@ -52,12 +74,7 @@ export function lockPackageIntegrity(raw: Buffer, name: string, version: string)
   const inline = /^    resolution: \{integrity: (['"]?)(sha512-[A-Za-z0-9+/]+={0,2})\1\}$/u.exec(
     resolutions[0]!,
   );
-  let integrity = inline?.[2];
-  if (!integrity && resolutions[0] === "    resolution:") {
-    const fields = block.filter((line) => line.startsWith("      integrity:"));
-    assert.equal(fields.length, 1);
-    integrity = /^      integrity: (['"]?)(sha512-[A-Za-z0-9+/]+={0,2})\1$/u.exec(fields[0]!)?.[2];
-  }
+  const integrity = inline?.[2];
   assert(integrity, "unsupported or missing locked SHA512 resolution");
   assert(
     !block.some((line) => /^    (?:<<:|[^:]+: [*&!])/u.test(line)),

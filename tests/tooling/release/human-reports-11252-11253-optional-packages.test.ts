@@ -318,6 +318,33 @@ test("lock proof is package-scoped and refuses duplicate declarations or documen
   try {
     assert.equal(lockPackageIntegrity(f.lock, child, version).integrity, f.metadata.integrity);
     assert.throws(() => lockPackageIntegrity(Buffer.concat([f.lock, f.lock]), child, version));
+    for (const noncanonical of [
+      '"packages": {}',
+      "packages : {}",
+      "'packages': {}",
+      "\"lockfileVersion\": '9.0'",
+    ])
+      assert.throws(() =>
+        lockPackageIntegrity(
+          Buffer.from(f.lock.toString() + "\n" + noncanonical + "\n"),
+          child,
+          version,
+        ),
+      );
+    assert.throws(() =>
+      lockPackageIntegrity(
+        Buffer.from(
+          f.lock
+            .toString()
+            .replace(
+              `resolution: {integrity: ${f.metadata.integrity}}`,
+              `resolution:\n      tarball: wrong\n    other:\n      integrity: ${f.metadata.integrity}`,
+            ),
+        ),
+        child,
+        version,
+      ),
+    );
     assert.throws(() =>
       lockPackageIntegrity(
         Buffer.from(f.lock.toString().replace("packages:", "lockfileVersion: '9.0'\npackages:")),
