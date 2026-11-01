@@ -6,6 +6,7 @@ import { requireRustTier } from "../../tools/support/compat/github/require-rust-
 import { canonicalSourceReport } from "../../tools/support/compat/github/canonical-corpus-selection.mjs";
 import { rustDifferentialLanes } from "../../tools/support/compat/github/rust-differential-lanes.ts";
 import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
+import { requiredUiConformance } from "./support/ui-conformance-contract.ts";
 type Step = {
   name?: string;
   if?: string;
@@ -113,7 +114,7 @@ test("queue scope reaches the planner and every selected source lane remains req
   const jsCommands = Object.values(jsChecks.jobs).map(commands).join("\n");
   assert.match(jsCommands, /vp run --workspace-root "test:js:\$VIZE_JS_PACKAGE_GROUP"/);
   assert.match(jsCommands, /node npm\/oxlint\/scripts\/check-project-transport\.mjs/);
-  assert.match(jsCommands, /vp run --filter '\.\/npm\/ui' check/);
+  requiredUiConformance(jsChecks.jobs["pr-js-package-conformance"]);
   assert.equal(jsHistory.runs.using, "composite");
   const fullPackageTest = jsHistory.runs.steps.find((step) => step.name === "Test JS packages");
   assert.equal(

@@ -18,6 +18,7 @@ import {
   readJsWorkspace,
 } from "../../tools/support/compat/github/plan-affected-js.ts";
 import { checkWorkflowJobSources, readRepoFile, root } from "./support/github-workflows.ts";
+import { requiredUiConformance } from "./support/ui-conformance-contract.ts";
 
 type Manifest = {
   name: string;
@@ -313,9 +314,11 @@ void test("PR CI runs each affected group once and keeps qualification and confo
   );
   assert.ok(build >= 0 && build < qualify, "the job builds the addon and bundles it qualifies");
 
-  const conformance = (jsChecks.jobs["pr-js-package-conformance"]?.steps ?? [])
-    .flatMap((step) => step.run ?? [])
-    .join(" && ");
+  const conformanceJob = jsChecks.jobs["pr-js-package-conformance"];
+  const conformance = [
+    ...(conformanceJob?.steps ?? []).flatMap((step) => step.run ?? []),
+    ...requiredUiConformance(conformanceJob),
+  ].join(" && ");
   const trusted = (check.jobs["build-js-packages"]?.steps ?? [])
     .flatMap((step) => step.run ?? [])
     .join("\n");
