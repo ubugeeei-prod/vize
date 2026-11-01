@@ -30,7 +30,7 @@ fn case(id: &'static str, source: &str, query: &str, delta: usize, private: bool
     Case {
         id,
         source: source.into(),
-        offset: source.rfind(query).expect("query") + delta,
+        offset: source.rfind(query).unwrap_or_else(|| panic!("query")) + delta,
         private,
     }
 }
@@ -251,7 +251,8 @@ fn cases() -> Vec<Case> {
     cases
 }
 fn project(source: &str) -> (tempfile::TempDir, Url) {
-    let directory = crate::test_support::tempdir().expect("physical project");
+    let directory = crate::test_support::tempdir()
+        .unwrap_or_else(|error| panic!("physical project: {error:?}"));
     for (name, contents) in [
         ("App.vue", source),
         ("Child.vue", CHILD),
@@ -261,15 +262,18 @@ fn project(source: &str) -> (tempfile::TempDir, Url) {
             r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"bundler","noEmit":true},"include":["./**/*"]}"#,
         ),
     ] {
-        fs::write(directory.path().join(name), contents).expect("authored input");
+        fs::write(directory.path().join(name), contents)
+            .unwrap_or_else(|error| panic!("authored input: {error:?}"));
     }
-    let uri = Url::from_file_path(directory.path().join("App.vue")).expect("source URI");
+    let uri = Url::from_file_path(directory.path().join("App.vue"))
+        .unwrap_or_else(|error| panic!("source URI: {error:?}"));
     (directory, uri)
 }
 fn opened(root: &Path, uri: &Url, source: &str) -> ServerState {
     let state = ServerState::new();
     state.set_workspace_root(root.to_path_buf());
-    let child = Url::from_file_path(root.join("Child.vue")).expect("child URI");
+    let child = Url::from_file_path(root.join("Child.vue"))
+        .unwrap_or_else(|error| panic!("child URI: {error:?}"));
     for (uri, text) in [(uri, source), (&child, CHILD)] {
         state
             .documents
@@ -279,7 +283,10 @@ fn opened(root: &Path, uri: &Url, source: &str) -> ServerState {
     state
 }
 fn expected(uri: &Url, source: &str) -> GotoDefinitionResponse {
-    let start = source.find("const message").expect("declaration") + "const ".len();
+    let start = source
+        .find("const message")
+        .unwrap_or_else(|| panic!("declaration"))
+        + "const ".len();
     let (line, character) = crate::ide::offset_to_position(source, start);
     let (end_line, end_character) = crate::ide::offset_to_position(source, start + "message".len());
     GotoDefinitionResponse::Scalar(Location {
@@ -396,8 +403,12 @@ async fn native_packet(
         working_dir: Some(root.to_path_buf()),
         ..Default::default()
     }));
-    bridge.spawn().await.expect("actual pinned native owner");
-    let ctx = IdeContext::new(&state, uri, case.offset).expect("native template context");
+    bridge
+        .spawn()
+        .await
+        .unwrap_or_else(|error| panic!("actual pinned native owner: {error:?}"));
+    let ctx = IdeContext::new(&state, uri, case.offset)
+        .unwrap_or_else(|| panic!("native template context"));
     assert!(matches!(
         ctx.block_type,
         Some(crate::virtual_code::BlockType::Template)
@@ -410,7 +421,10 @@ async fn native_packet(
     let admitted = (!original).then(|| {
         DefinitionService::private_template_definition(&ctx, Some(bridge.as_ref())).is_some()
     });
-    bridge.shutdown().await.expect("native shutdown");
+    bridge
+        .shutdown()
+        .await
+        .unwrap_or_else(|error| panic!("native shutdown: {error:?}"));
     (packet, admitted)
 }
 #[test]
