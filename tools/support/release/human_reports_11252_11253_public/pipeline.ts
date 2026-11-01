@@ -162,7 +162,7 @@ export async function runPublic(
             (request.role === "imports-vue-ts-11253" && id !== "original-cli-json")
               ? null
               : "Explicit report-note/supplement command; original script, sources and compiler settings remain separate",
-          checker: identifyLauncher(id, install, output),
+          checker: identifyLauncher(id, install, output, sink),
           requiresNativeLoad: id !== "original-vue-tsc",
           oracle: null,
         };
@@ -173,7 +173,7 @@ export async function runPublic(
         assert(install);
         command.executable = install.pnpm.path;
         command.argv = argumentsFor(request, command.id);
-        command.checker = identifyLauncher(command.id, install, output);
+        command.checker = identifyLauncher(command.id, install, output, sink);
       }
       if (request.mode === "UNQUALIFIED_AFTER")
         assert.deepEqual(

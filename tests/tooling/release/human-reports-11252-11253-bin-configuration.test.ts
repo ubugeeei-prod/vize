@@ -12,6 +12,7 @@ import {
 } from "../../../tools/support/release/human_reports_11252_11253_public/bin-configuration.ts";
 import { configurationFixture } from "./human-reports-11252-11253-bin.fixture.ts";
 import { sha256 } from "../../../tools/support/release/human_reports_11252_11253_public/value.ts";
+import { cleanEnvironment } from "../../../tools/support/release/human_reports_11252_11253_public/capture.ts";
 
 const manifest = Buffer.from(
   '{"name":"synthetic-original-consumer","devDependencies":{"vize":"0.0.0"}}\n',
@@ -219,4 +220,48 @@ test("age workspace allows only unique release-bound package values, including p
     "minimumReleaseAgeExclude:\n  - vize@0.0.0\nnodeLinker: hoisted\n",
   ])
     assert(!safeAgeWorkspace(Buffer.from(body), manifest));
+});
+test("real cleanup caller witnesses and rejects ambient NPM/PNPM overrides before they can disappear", () => {
+  const secret = "synthetic-ambient-private-value";
+  for (const name of [
+    "npm_config_node_linker",
+    "NPM_CONFIG_NODE_LINKER",
+    "pnpm_config_node_linker",
+    "PNPM_CONFIG_NODE_LINKER",
+  ])
+    for (const value of [secret, ""]) {
+      const ambient = { PATH: "/synthetic/bin", [name]: value },
+        before = { ...ambient };
+      const events: Array<{ kind: string; value: unknown }> = [];
+      assert.throws(() => cleanEnvironment((kind, value) => events.push({ kind, value }), ambient));
+      assert.deepEqual(ambient, before, "refusal must not delete or rewrite inherited settings");
+      assert.equal(events[0]?.kind, "ambient-package-manager-configuration-before-cleanup");
+      const raw = JSON.stringify(events);
+      assert(raw.includes(name));
+      assert(raw.includes(sha256(value)));
+      assert(raw.includes(`"empty":${value === ""}`));
+      assert(!raw.includes(secret));
+      assert(!raw.includes(Buffer.from(secret).toString("base64")));
+    }
+});
+test("accepted ambient caller keeps safe settings unchanged and only existing credential removal applies", () => {
+  const ambient = {
+    PATH: "/synthetic/bin",
+    HOME: "/synthetic/home",
+    PNPM_HOME: "/synthetic/pnpm",
+    CI: "true",
+    GITHUB_TOKEN: "synthetic-auth",
+  };
+  const events: Array<{ kind: string; value: unknown }> = [];
+  const cleaned = cleanEnvironment((kind, value) => events.push({ kind, value }), ambient);
+  assert.deepEqual(cleaned, {
+    PATH: ambient.PATH,
+    HOME: ambient.HOME,
+    PNPM_HOME: ambient.PNPM_HOME,
+    CI: "true",
+  });
+  assert.equal(ambient.GITHUB_TOKEN, "synthetic-auth");
+  assert.deepEqual(events, [
+    { kind: "ambient-package-manager-configuration-before-cleanup", value: { rows: [] } },
+  ]);
 });

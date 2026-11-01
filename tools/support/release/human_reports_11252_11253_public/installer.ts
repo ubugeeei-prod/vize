@@ -37,7 +37,7 @@ export async function installPublic(
   assert.equal(process.arch, recipe.arch);
   mkdirSync(root);
   root = realpathSync(root);
-  const env = cleanEnvironment(),
+  const env = cleanEnvironment(sink),
     node = fileImage(process.execPath),
     pnpm = fileImage(realpathSync(pnpmPath));
   const checkVersion = capture(pnpm.path, ["--version"], root, env, output, `${kind}-pnpm-version`);

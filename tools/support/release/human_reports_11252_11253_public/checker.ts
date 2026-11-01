@@ -5,10 +5,12 @@ import { fileImage } from "../computed_event_custody.ts";
 import { capture, cleanEnvironment } from "./capture.ts";
 import type { CheckerEvidence, InstallReceipt } from "./model.ts";
 import { bytes, object, text, wholeJson } from "./value.ts";
+import { discard, type Sink } from "./evidence.ts";
 export function identifyLauncher(
   id: string,
   install: InstallReceipt,
   output: string,
+  sink: Sink = discard,
 ): CheckerEvidence {
   const provider = id.includes("tsrs")
     ? ["tsrs", "tsrs"]
@@ -40,7 +42,7 @@ export function identifyLauncher(
     install.pnpm.path,
     ["exec", bin, "--version"],
     install.root,
-    cleanEnvironment(),
+    cleanEnvironment(sink),
     output,
     `${id}-launcher-version`,
   );

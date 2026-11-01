@@ -55,6 +55,31 @@ export interface BinConfiguration {
   workspace: FileInput[];
   writerRuntimeAttribution: false;
 }
+/** This guard belongs at the actual ambient caller, before any sanitization.
+ * Never publish an unowned config value or make it disappear before evidence. */
+export function requireAmbientBinConfiguration(env: NodeJS.ProcessEnv, sink: Sink = discard): void {
+  const rows = Object.keys(env)
+    .filter((name) => /^(?:pnpm_config_|npm_config_)/iu.test(name))
+    .sort()
+    .map((name) => {
+      const value = env[name];
+      assert(value !== undefined);
+      return {
+        name,
+        present: true,
+        empty: value === "",
+        bytes: Buffer.byteLength(value),
+        sha256: sha256(value),
+        value: null,
+      };
+    });
+  sink("ambient-package-manager-configuration-before-cleanup", { rows });
+  assert.equal(
+    rows.length,
+    0,
+    "unowned ambient package-manager configuration must be witnessed and refused before cleanup",
+  );
+}
 function absolute(value: string): string {
   assert(isAbsolute(value) && normalize(value) === value && !/[\0\r\n]/u.test(value));
   return value;
