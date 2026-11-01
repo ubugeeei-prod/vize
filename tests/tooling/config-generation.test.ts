@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
@@ -57,12 +58,74 @@ test("root config generation resolves and reproduces checked-in artifacts", () =
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-config-generation-"));
   const schemaPath = path.join(tempDir, "npm", "cli", "schemas", "vize.config.schema.json");
   const typesPath = path.join(tempDir, "npm", "cli", "src", "types", "generated.ts");
+  const evidence = process.env.RUNNER_TEMP
+    ? path.join(process.env.RUNNER_TEMP, "vize-config-generation")
+    : undefined;
+  function retain(
+    stage: string,
+    command: string[],
+    result: {
+      status: number | null;
+      stdout: string;
+      stderr: string;
+      signal?: unknown;
+      error?: Error;
+    },
+  ) {
+    if (!evidence) return;
+    fs.mkdirSync(evidence, { recursive: true });
+    const files = [];
+    for (const [name, filename] of [
+      ["schema.json", schemaPath],
+      ["types.ts", typesPath],
+    ]) {
+      if (!fs.existsSync(filename)) continue;
+      const body = fs.readFileSync(filename);
+      const captured = `${stage}-${name}`;
+      fs.writeFileSync(path.join(evidence, captured), body, { flag: "wx" });
+      files.push({
+        name: captured,
+        bytes: body.length,
+        sha256: createHash("sha256").update(body).digest("hex"),
+      });
+    }
+    fs.writeFileSync(
+      path.join(evidence, `${stage}-process.json`),
+      JSON.stringify(
+        {
+          schema: "vize.config-generation.process.v1",
+          stage,
+          command,
+          cwd: root,
+          source: process.env.GITHUB_SHA ?? null,
+          run: process.env.GITHUB_RUN_ID ?? null,
+          attempt: process.env.GITHUB_RUN_ATTEMPT ?? null,
+          producerSha256: createHash("sha256")
+            .update(fs.readFileSync(new URL(import.meta.url)))
+            .digest("hex"),
+          environment: {
+            VIZE_REPO_ROOT: stage === "postprocess" ? tempDir : null,
+            VIZE_PKL_SCHEMA_CACHE: process.env.VIZE_PKL_SCHEMA_CACHE ?? null,
+          },
+          status: result.status,
+          signal: "signal" in result ? result.signal : "not-exposed-by-existing-helper",
+          error: result.error?.message ?? null,
+          stdout: result.stdout,
+          stderr: result.stderr,
+          files,
+        },
+        null,
+        2,
+      ) + "\n",
+      { flag: "wx" },
+    );
+  }
 
   try {
     fs.mkdirSync(path.dirname(schemaPath), { recursive: true });
     fs.mkdirSync(path.dirname(typesPath), { recursive: true });
 
-    const pklResult = runPkl([
+    const pklArgs = [
       "eval",
       "--project-dir",
       "npm/cli/pkl",
@@ -71,18 +134,62 @@ test("root config generation resolves and reproduces checked-in artifacts", () =
       "npm/cli/pkl/jsonschema/generate.pkl",
       "-o",
       schemaPath,
-    ]);
+    ];
+    const pklResult = runPkl(pklArgs);
+    const cache = process.env.VIZE_PKL_SCHEMA_CACHE;
+    retain(
+      "pkl",
+      [
+        path.join(
+          root,
+          "npm/cli/node_modules/.bin",
+          process.platform === "win32" ? "pkl.cmd" : "pkl",
+        ),
+        ...(cache ? [pklArgs[0], "--cache-dir", cache, ...pklArgs.slice(1)] : pklArgs),
+      ],
+      pklResult,
+    );
     assertCommandSucceeded(pklResult, "Pkl schema generation failed");
 
     const json2tsResult = runWorkspaceBinary("json2ts", ["-i", schemaPath, "-o", typesPath]);
+    retain(
+      "json2ts",
+      [
+        process.platform === "win32" ? "pnpm.cmd" : "pnpm",
+        "exec",
+        "json2ts",
+        "-i",
+        schemaPath,
+        "-o",
+        typesPath,
+      ],
+      json2tsResult,
+    );
     assertCommandSucceeded(json2tsResult, "TypeScript declaration generation failed");
 
     const postprocessResult = runToolCommand("tools/support/tasks/postprocess-types.ts", [], {
       env: { VIZE_REPO_ROOT: tempDir },
     });
+    retain(
+      "postprocess",
+      [process.execPath, path.join(root, "tools/support/tasks/postprocess-types.ts")],
+      postprocessResult,
+    );
     assertCommandSucceeded(postprocessResult, "Generated declaration post-processing failed");
 
     const formatResult = runWorkspaceBinary("oxfmt", ["--write", schemaPath, typesPath]);
+    retain(
+      "format",
+      [
+        process.platform === "win32" ? "pnpm.cmd" : "pnpm",
+        "exec",
+        "oxfmt",
+        "--write",
+        schemaPath,
+        typesPath,
+      ],
+      formatResult,
+    );
     assertCommandSucceeded(formatResult, "Generated artifact formatting failed");
 
     assert.equal(

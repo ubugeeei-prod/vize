@@ -12,17 +12,20 @@ const REFERENCE: &str = include_str!(
 );
 fn source(file: &str) -> &'static str {
     match file {
-        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt" => {
+        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt" =>
+        {
             include_str!(
                 "../../../tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt"
             )
         }
-        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt" => {
+        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt" =>
+        {
             include_str!(
                 "../../../tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt"
             )
         }
-        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt" => {
+        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt" =>
+        {
             include_str!(
                 "../../../tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt"
             )

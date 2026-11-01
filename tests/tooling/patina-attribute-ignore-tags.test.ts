@@ -50,6 +50,7 @@ function native() {
     assert.equal(typeof value.lintPatinaSfc, "function");
     binding = value as unknown as Binding;
     custody = { source: receipt.source, frozen: receipt.frozen, receiptSha256: hash(bytes) };
+    console.log("vize-attribute-ignore-tags-native-custody " + JSON.stringify(custody));
   } finally {
     for (const [key, value] of previous) {
       if (value === undefined) delete process.env[key];
