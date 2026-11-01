@@ -11,7 +11,7 @@ import {
   type ReadyCandidate,
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-candidate-plan.ts";
 
-const pending = () =>
+const literalPlan = () =>
   JSON.parse(
     fs.readFileSync(
       new URL(
@@ -21,6 +21,18 @@ const pending = () =>
       "utf8",
     ),
   ) as CandidatePlan;
+const pending = (): CandidatePlan => ({
+  schemaVersion: 1,
+  optionsFix: null,
+  historicalSourceFix: "0eb2f8db16f6541cd422ee610ab3e554bf041e0d",
+  cases: ["type-work", "route-move"].map((kind) => ({
+    kind: kind as "type-work" | "route-move",
+    state: "pending",
+    sources: null,
+    allocation: null,
+    sourceCi: null,
+  })),
+});
 const id = (letter: string) => letter.repeat(40);
 function ready() {
   const plan = pending();
@@ -49,7 +61,7 @@ function ready() {
   };
   return plan;
 }
-test("pending literal plan has null unknowns and refuses any candidate before source acquisition/build", () => {
+test("synthetic pending plan has null unknowns and refuses any candidate before source acquisition/build", () => {
   assert.doesNotThrow(() => validateCandidatePlan(pending()));
   assert.throws(() => selectCandidatePlan(pending(), id("c"), id("e"), "2500"), /pending/u);
   const legacy = selectCandidatePlan(
@@ -60,6 +72,20 @@ test("pending literal plan has null unknowns and refuses any candidate before so
   );
   assert.deepEqual(legacy, { route: "legacy" });
   assert.throws(() => selectCandidatePlan(pending(), id("c"), id("e"), "10000"));
+});
+test("each source-bound controller case selects only its own exact pair", () => {
+  const plan = validateCandidatePlan(literalPlan());
+  for (const row of plan.cases) {
+    if (row.state !== "ready") continue;
+    const selected = selectCandidatePlan(plan, row.sources.base.sha, row.sources.head.sha, "2500");
+    assert.equal(selected.route, "candidate");
+    assert(selected.route === "candidate");
+    assert.equal(selected.selected.kind, row.kind);
+    assert.deepEqual(selected.selected, row);
+    assert.throws(() =>
+      selectCandidatePlan(plan, row.sources.head.sha, row.sources.base.sha, "2500"),
+    );
+  }
 });
 test("one frozen ready case selects only its exact pair; both cases remain independent", () => {
   const plan = ready();
@@ -109,17 +135,15 @@ test("pending CLI retains the exact literal plan and explicit zero-work refusal"
     "../../tools/benchmarks/scripts/cold-typechecker-scale-candidate-plan.ts",
     import.meta.url,
   );
-  const plan = new URL(
-    "../../tools/benchmarks/scripts/cold-typechecker-scale-candidate-cases.json",
-    import.meta.url,
-  );
+  const plan = path.join(root, "pending.json");
+  fs.writeFileSync(plan, JSON.stringify(pending()) + "\n");
   const out = path.join(root, "out");
   const result = spawnSync(
     process.execPath,
     [
       script.pathname,
       "--plan",
-      plan.pathname,
+      plan,
       "--out",
       out,
       "--base",
