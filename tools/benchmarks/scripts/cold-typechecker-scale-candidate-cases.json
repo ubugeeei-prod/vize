@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "optionsFix": null,
+  "historicalSourceFix": "0eb2f8db16f6541cd422ee610ab3e554bf041e0d",
+  "cases": [
+    {
+      "kind": "type-work",
+      "state": "pending",
+      "sources": null,
+      "allocation": null,
+      "sourceCi": null
+    },
+    {
+      "kind": "route-move",
+      "state": "pending",
+      "sources": null,
+      "allocation": null,
+      "sourceCi": null
+    }
+  ]
+}
