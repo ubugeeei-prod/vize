@@ -211,7 +211,10 @@ function processText(filename: string, limit = processLimits.textBytes): string 
 
 function processStat(filename: string): { pid: number; parent: number; start: string } {
   const stat = processText(filename, 16_384);
-  const tail = stat.slice(stat.lastIndexOf(")") + 2).trim().split(/\s+/);
+  const tail = stat
+    .slice(stat.lastIndexOf(")") + 2)
+    .trim()
+    .split(/\s+/);
   const pid = Number(stat.slice(0, stat.indexOf(" ")));
   const parent = Number(tail[1]);
   const start = tail[19];
@@ -346,7 +349,11 @@ export function observeDescendants(
           deadline,
         );
       } catch (error) {
-        executableIdentity = { path: executable, identity: "UNKNOWN", unavailable: errorName(error) };
+        executableIdentity = {
+          path: executable,
+          identity: "UNKNOWN",
+          unavailable: errorName(error),
+        };
       }
       const mapped = new Map<string, string>();
       for (const line of maps.split("\n")) {
@@ -361,7 +368,8 @@ export function observeDescendants(
         let item: Packet = { path: filename, mappedInode };
         try {
           const image = imageIdentity(filename, filename, retainedProviders, deadline);
-          if (BigInt(image.inode) !== BigInt(inode)) throw new Error("Mapped provider inode changed");
+          if (BigInt(image.inode) !== BigInt(inode))
+            throw new Error("Mapped provider inode changed");
           item = { ...image, mappedInode };
         } catch (error) {
           item.unavailable = errorName(error);
