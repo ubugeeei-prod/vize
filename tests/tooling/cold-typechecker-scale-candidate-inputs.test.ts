@@ -139,3 +139,31 @@ test("candidate input seal refuses stale/tampered hash, missing helper and a wro
     verifyCandidateInputSeals(plain.before, plain.before, "/owned/materialized", null, false),
   );
 });
+
+test("four-root attribution keeps the complete tmp root and does not loosen its authored parent", () => {
+  const x = fixture();
+  for (const s of [x.before, x.after]) {
+    s.roots.push("/owned/tmp");
+    s.rows.push({ path: "/owned/tmp", kind: "directory", mode: 16877 });
+    s.sha256 = hash(JSON.stringify(s.rows));
+  }
+  assert.doesNotThrow(() =>
+    verifyCandidateInputSeals(
+      x.before,
+      x.after,
+      "/owned/materialized",
+      x.helpers,
+      true,
+      "/owned/tmp",
+    ),
+  );
+  const bad = structuredClone(x.after);
+  bad.rows[0].mtimeNs = "different-authored-time";
+  bad.sha256 = hash(JSON.stringify(bad.rows));
+  assert.throws(() =>
+    verifyCandidateInputSeals(x.before, bad, "/owned/materialized", x.helpers, true, "/owned/tmp"),
+  );
+  assert.throws(() =>
+    verifyCandidateInputSeals(x.before, x.after, "/owned/materialized", x.helpers, true),
+  );
+});

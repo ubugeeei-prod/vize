@@ -21,12 +21,17 @@ export function verifyCandidateInputSeals(
   materializedRoot: string | null,
   helpers: { before: Buffer; after: Buffer } | null,
   expectApplied: boolean,
+  additionalRuntimeRoot?: string,
 ) {
   assert.deepEqual(after.roots, before.roots, "whole potential-input roots changed");
-  assert.equal(before.roots.length, materializedRoot === null ? 2 : 3);
+  assert.equal(before.roots.length, materializedRoot === null ? 2 : additionalRuntimeRoot ? 4 : 3);
   assert(before.roots.every((root) => path.isAbsolute(root) && path.normalize(root) === root));
   assert.equal(new Set(before.roots).size, before.roots.length);
   if (materializedRoot !== null) assert.equal(before.roots[2], materializedRoot);
+  if (additionalRuntimeRoot) assert.equal(before.roots[3], additionalRuntimeRoot);
+  const recreatedRoots = [materializedRoot, additionalRuntimeRoot].filter(
+    (root): root is string => root !== null && root !== undefined,
+  );
   assert(!expectApplied || (materializedRoot !== null && helpers !== null));
   const rows = (seal: CandidateInputSeal) => {
     assert.deepEqual(Object.keys(seal).sort(), ["bytes", "files", "roots", "rows", "sha256"]);
@@ -47,7 +52,7 @@ export function verifyCandidateInputSeals(
       assert.equal(typeof row.mtimeNs, "string");
       files += 1;
       bytes += Number(row.bytes);
-      if (materializedRoot === null || !inside(materializedRoot, file)) return row;
+      if (!recreatedRoots.some((root) => inside(root, file))) return row;
       const { mtimeNs: _recreatedFileTime, ...rest } = row;
       return rest;
     });
