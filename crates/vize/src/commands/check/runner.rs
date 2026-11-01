@@ -324,7 +324,7 @@ fn prepare_candidate(
         ProgramExecutionInput {
             files: &candidate.files,
             reported_files: candidate.reported,
-            package_routes: &package_routes,
+            package_routes,
             project_root: &project_root,
             program_root: logical_program_root,
             tsconfig_path: program_tsconfig_path,
