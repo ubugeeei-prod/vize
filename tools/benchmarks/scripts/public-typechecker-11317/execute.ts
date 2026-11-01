@@ -196,6 +196,11 @@ export function execute(
     text: { before: textBefore, after: textAfter, packet: text },
     outcomes,
   });
+  return { textBefore, textAfter, text, outcomes };
+}
+
+export function assess(role: Role, observation: ReturnType<typeof execute>, record: Recorder) {
+  const { textBefore, textAfter, text, outcomes } = observation;
   assert.deepEqual(textAfter, textBefore);
   const assessments = outcomes.map((row) => {
     assert.deepEqual(row.after, row.before, "authored input mutated during the command");

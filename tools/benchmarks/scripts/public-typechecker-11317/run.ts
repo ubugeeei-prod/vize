@@ -7,7 +7,7 @@ import { assertCustody, fileImage } from "../../../support/release/computed_even
 import { rejectOverrides } from "../../../support/release/public_install/identity.ts";
 import { authenticate } from "./authority.ts";
 import { fixturePath, input, ownerSource, profiles, type Role } from "./contract.ts";
-import { execute, recorder } from "./execute.ts";
+import { assess, execute, recorder } from "./execute.ts";
 import { install } from "./install.ts";
 
 export function argumentsFor(argv: string[]) {
@@ -55,7 +55,7 @@ export async function main(argv: string[]) {
         identityCompanionsDoNotAttestOriginalPid: true,
       },
     });
-    const results = [];
+    const captured = [];
     for (const role of ["before", "after"] as Role[]) {
       const out = join(options.out, role);
       mkdirSync(out);
@@ -67,11 +67,28 @@ export async function main(argv: string[]) {
       const manager = [fileImage(options.npm), fileImage(options.npx), fileImage(process.execPath)];
       owned.json("manager-inputs.json", manager);
       const outcomes = execute(root, role, options.npx, original, owned);
-      assertCustody(installed.images);
-      assertCustody(manager);
-      owned.json("custody-after.json", { unchanged: true, images: installed.images, manager });
-      results.push({ role, profile: profiles[role], outcomes, publicAcceptance: role === "after" });
+      captured.push({ role, owned, installed, manager, outcomes });
     }
+    record.json(
+      "all-twenty-observations.json",
+      captured.map((row) => ({ role: row.role, outcomes: row.outcomes })),
+    );
+    const results = captured.map((row) => {
+      const outcomes = assess(row.role, row.outcomes, row.owned);
+      assertCustody(row.installed.images);
+      assertCustody(row.manager);
+      row.owned.json("custody-after.json", {
+        unchanged: true,
+        images: row.installed.images,
+        manager: row.manager,
+      });
+      return {
+        role: row.role,
+        profile: profiles[row.role],
+        outcomes,
+        publicAcceptance: row.role === "after",
+      };
+    });
     record.json("result.json", {
       status: "complete",
       results,
