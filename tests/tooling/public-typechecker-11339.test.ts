@@ -20,12 +20,10 @@ import {
   input,
   sources,
   sha256,
-  originalFacts,
   profileFor,
   beforeProfile,
   afterProfile,
   limitations,
-  type Case,
 } from "../../tools/benchmarks/scripts/public-typechecker-11339/contract.ts";
 import {
   validateCapsule,
@@ -35,11 +33,9 @@ import {
 import {
   recorder,
   guardedCapture,
-  assessFacts,
   commandsFor,
   inputImages,
 } from "../../tools/benchmarks/scripts/public-typechecker-11339/execute.ts";
-import { retain } from "../../tools/benchmarks/scripts/public-typechecker-11317/execute.ts";
 import { fileImage } from "../../tools/support/release/computed_event_custody.ts";
 import { sourceBin } from "../../tools/benchmarks/scripts/public-typechecker-11339/install.ts";
 import {
@@ -235,100 +231,6 @@ test("role-owned main/S/run/SRI and exact encoded scoped PURL remain closed", ()
   candidate.predicate.buildDefinition.resolvedDependencies[0]!.digest.gitCommit = p.candidate;
   assert.throws(() => assertProvenancePayload("before", "@vizejs/native", integrity, candidate));
 });
-function mockDto(id: Case) {
-  const files = sources(input("3.4.23"), "before", id),
-    paths = files
-      .filter((file) => file.path.startsWith("src/"))
-      .map((file) => file.path)
-      .sort();
-  const facts = id === "Repair" ? [] : [...originalFacts];
-  const rows = paths.map((file) => ({
-    file,
-    diagnostics: facts
-      .filter((fact) => fact.file === file)
-      .map(
-        (fact) =>
-          `error:${fact.line}:${fact.column} [${fact.code}] ${fact.message ?? "Property 'missing' does not exist on type 'MOCK_UNOWNED_RECEIVER'."}`,
-      ),
-  }));
-  return {
-    files,
-    dto: {
-      files: rows,
-      programs: [
-        {
-          root: ".",
-          tsconfig: "tsconfig.json",
-          compilerOptions: JSON.parse(files[1]!.source).compilerOptions,
-          files: paths,
-        },
-      ],
-      errorCount: facts.length,
-      warningCount: 0,
-      fileCount: paths.length,
-    },
-  };
-}
-test("whole mock DTO fields and five facts are checked without inventing the missing generic receiver", () =>
-  scratch((root) => {
-    const record = recorder(root),
-      f = mockDto("Original");
-    const packet = retain(record, "mock", ["vize", "check", "-f", "json"], root, "start", {
-      pid: 123,
-      status: 1,
-      signal: null,
-      stdout: Buffer.from(JSON.stringify(f.dto)),
-      stderr: Buffer.from("exact unowned progress\r\n"),
-    });
-    const assessed = assessFacts("after", "Original", packet, f.files);
-    assert.equal(assessed.publicAcceptance, false);
-    const before = assessFacts("before", "Original", packet, f.files);
-    assert.equal(before.assessment, "PUBLIC_BEFORE_RETAINED_UNASSESSED");
-    assert.equal(before.publicAcceptance, false);
-    assert.deepEqual(
-      readFileSync(join(root, "mock.stderr.raw")),
-      Buffer.from("exact unowned progress\r\n"),
-    );
-    for (const mutate of [
-      (dto: typeof f.dto) => {
-        dto.files.pop();
-      },
-      (dto: typeof f.dto) => {
-        dto.files[0]!.diagnostics.pop();
-        dto.errorCount--;
-      },
-      (dto: typeof f.dto) => {
-        dto.fileCount = 0;
-      },
-      (dto: typeof f.dto) => {
-        dto.programs[0]!.files.reverse();
-      },
-    ]) {
-      const dto = structuredClone(f.dto);
-      mutate(dto);
-      assert.throws(() =>
-        assessFacts("after", "Original", { ...packet, stdout: JSON.stringify(dto) }, f.files),
-      );
-    }
-    assert.throws(() =>
-      assessFacts(
-        "after",
-        "Original",
-        { ...packet, stdout: JSON.stringify({ ...f.dto, extra: true }) },
-        f.files,
-      ),
-    );
-    const repaired = mockDto("Repair");
-    assert.equal(
-      assessFacts(
-        "after",
-        "Repair",
-        { ...packet, status: 0, stdout: JSON.stringify(repaired.dto) },
-        repaired.files,
-      ).publicAcceptance,
-      false,
-    );
-  }));
 test("unknown bin route refuses before callback and retains a complete non-executed attempt", () =>
   scratch((root) => {
     const directory = join(root, "node_modules/vize");
@@ -484,4 +386,5 @@ test("new closed choice preserves old602 and11317 workflow bodies byte-for-byte"
   );
   assert(workflow.includes("options-inherited-members-11339"));
   assert(workflow.includes("needs: contracts-11339"));
+  assert(workflow.includes("node --test tests/tooling/public-typechecker-11339*.test.ts"));
 });
