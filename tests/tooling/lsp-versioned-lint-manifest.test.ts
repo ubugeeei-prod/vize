@@ -120,12 +120,12 @@ void test("source-built stdio preserves every original response and the whole ve
   });
   const unsupported = loaded.cases.filter((fixture) => fixture.data.sourceSession).length;
   assert.deepEqual(report.summary, {
-    plannedCases: 80,
-    legacyMatches: 80 - unsupported,
+    plannedCases: 81,
+    legacyMatches: 81 - unsupported,
     legacyFailures: 0,
     legacyUnsupported: unsupported,
     baselineDrift: 0,
-    nativeUnsupported: 80,
+    nativeUnsupported: 81,
     pairedComparisons: 0,
     nativeHandled: 0,
     nativeEquivalent: 0,

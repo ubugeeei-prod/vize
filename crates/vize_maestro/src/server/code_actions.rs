@@ -199,6 +199,10 @@ fn code_action_kind_is_requested(kind: &CodeActionKind, requested: &[CodeActionK
 }
 
 #[cfg(test)]
+#[cfg(feature = "native")]
+mod versioned_auto_import_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
