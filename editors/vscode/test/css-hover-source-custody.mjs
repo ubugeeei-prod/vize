@@ -4,7 +4,12 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { isDeepStrictEqual } from "node:util";
+
+import {
+  assertExactCssTree,
+  composeForegroundPreparationCheckout,
+} from "./css-hover-foreground-source.mjs";
+export { assertExactCssTree };
 
 const directory = path.dirname(fileURLToPath(import.meta.url));
 export const historicalBaselineRevision = "2934b35b18393c188b3da5f8e50595299589fb8c";
@@ -167,26 +172,6 @@ export function composeReviewedCssTrees(baseline, layers) {
   return sorted(current.values());
 }
 
-export function assertExactCssTree(actual, expected) {
-  const current = new Map(actual.map((entry) => [entry.path, entry]));
-  const reviewed = new Map(expected.map((entry) => [entry.path, entry]));
-  assert.equal(current.size, actual.length, "duplicate actual tree path");
-  assert.equal(reviewed.size, expected.length, "duplicate reviewed tree path");
-  const differences = [...new Set([...current.keys(), ...reviewed.keys()])]
-    .sort(compareStrings)
-    .filter((name) => !isDeepStrictEqual(current.get(name), reviewed.get(name)))
-    .map((name) => ({
-      path: name,
-      actual: current.get(name) ?? null,
-      expected: reviewed.get(name) ?? null,
-    }));
-  assert.deepEqual(
-    differences,
-    [],
-    "current crates tree differs from reviewed blob/mode composition",
-  );
-}
-
 export function composeCurrentVsixInputs(inputs, changes) {
   assert.deepEqual(
     changes.map(({ path }) => path),
@@ -343,7 +328,12 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
       "crates/vize_maestro/src/server/handlers/typed.rs",
     ],
   );
-  const currentExpected = composeReviewedCssTrees(expected, currentCheckoutLayers);
+  const foregroundCheckout = composeForegroundPreparationCheckout(
+    composeReviewedCssTrees(expected, currentCheckoutLayers),
+    readTree(head, ownedSourcePaths),
+    (name) => Buffer.from(git("show", `${head}:${name}`)),
+  );
+  const currentExpected = foregroundCheckout.entries;
   assert.equal(
     hash(git("show", `HEAD:${currentCheckoutPath}`)),
     hash(currentCheckoutBytes),
@@ -445,6 +435,7 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     successorMain: successor,
     currentContracts,
     currentCheckoutLayers,
+    ...(foregroundCheckout.layer ? { currentForegroundPreparation: foregroundCheckout.layer } : {}),
     vsixInfrastructure: infrastructure,
     cratesSha256: fingerprint(actual),
     // The pinned product revision need not be fetched; only a checkout has current inputs.
@@ -492,6 +483,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
         sourceRevision: report.sourceRevision,
         historicalBaselineRevision,
         productionChanges: report.productionChanges,
+        ...(report.currentForegroundPreparation
+          ? { currentForegroundPreparation: report.currentForegroundPreparation }
+          : {}),
       },
       null,
       2,
