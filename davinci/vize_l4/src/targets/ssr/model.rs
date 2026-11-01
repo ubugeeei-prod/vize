@@ -41,7 +41,7 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     writer.use_helper(dynamic_model);
     // Root attrs may carry a real input type/value. The actual pinned runtime
     // chooses value/checked semantics before rendering the merged attributes.
-    // `.trim` and `.lazy` belong to client handlers, never eager SSR values.
+    // `.trim`, `.lazy` and `.number` are client handlers, never eager SSR values.
     writer.push("${_ssrRenderAttrs(_mergeProps(_attrs, _ssrGetDynamicModelProps(_attrs, ");
     writer.push_named_parts(
         ["$setup.", row.occurrence().name],

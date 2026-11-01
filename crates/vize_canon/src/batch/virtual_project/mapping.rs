@@ -69,8 +69,22 @@ impl VirtualProject {
         line: u32,
         column: u32,
     ) -> Option<OriginalPosition> {
+        let source_path = if let Some(canonical) = self.package_shadow_files.get(path) {
+            let file = self.virtual_files.get(canonical)?;
+            let authored = self.original_contents.get(canonical)?;
+            let materialized = self.package_shadow_content(path, canonical).ok()?;
+            // Relocated TS copies retain authored bytes, not the canonical
+            // import rewrite. Only that exact owned identity can retain these
+            // coordinates; synthetic companions must not borrow either map.
+            if materialized.as_str() != authored.as_str() {
+                return None;
+            }
+            file.original_path.clone()
+        } else {
+            self.diagnostic_path(path)?.to_path_buf()
+        };
         Some(OriginalPosition {
-            path: self.diagnostic_path(path)?.to_path_buf(),
+            path: source_path,
             line,
             column,
             block_type: None,
@@ -259,3 +273,6 @@ impl VirtualProject {
         self.virtual_files.is_empty()
     }
 }
+
+#[cfg(test)]
+mod authored_shadow_diagnostics_tests;

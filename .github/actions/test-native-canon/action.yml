@@ -71,6 +71,27 @@ runs:
       run: |
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::setup_custom_properties::loop_sources_keep_authored_reads_and_parent_scope -- --exact --nocapture
+    - name: Test typed legacy mixin methods without erasing native findings
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::options_api_inherited_members:: -- --nocapture
+        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::generator::options_api_bridge::inherited::tests::native_mixin_method_laws_preserve_opaque_and_constructor_types -- --exact --nocapture
+    - name: Test typed external props in the selected legacy dialect
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::legacy_external_component_props:: -- --nocapture
+        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::legacy_vue2_vuetify_tests:: -- --nocapture --test-threads=1
+        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::scope::inline_callback_classifier:: -- --nocapture
     - name: Install locked Vue dependency and pinned syntax corpus
       shell: bash
       run: |
@@ -158,6 +179,14 @@ runs:
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize --test integration -- check_mixed_vue_package_imports_cli:: --nocapture
+    - name: Test redirected package diagnostics with the actual CLI
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize --test integration -- check_package_import_redirects_cli:: --nocapture
     - name: Test complete native diagnostic profiling and source repair
       shell: bash
       env:

@@ -1,12 +1,116 @@
 //! Direct inline-function classification for generic component props.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::Expression;
+use oxc_ast::ast::{ArrowFunctionExpression, Expression, Function};
+use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use oxc_syntax::scope::ScopeFlags;
+use vize_carton::FxHashMap;
+use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 use super::expression_scanner::{has_top_level_comma, skip_js_trivia};
 use super::handler_shape::inline_callback_event_argument;
+
+/// Syntax facts for the opt-in legacy external-component route. Reuse the
+/// retained expression AST once per lookup domain; modern generation never
+/// walks this table. Equal expression contents have equal callback syntax.
+#[derive(Default)]
+pub(super) struct LegacyInlineCallbacks<'template> {
+    values: FxHashMap<&'template str, bool>,
+}
+
+impl<'template> LegacyInlineCallbacks<'template> {
+    pub(super) fn from_root(root: Option<&RootNode<'template>>, enabled: bool) -> Self {
+        let mut facts = Self::default();
+        if enabled && let Some(root) = root {
+            facts.collect(&root.children);
+        }
+        facts
+    }
+
+    pub(super) fn has_inline_function(&self, value: &str) -> bool {
+        let value = value.trim();
+        if !may_contain_function(value) {
+            return false;
+        }
+        self.values.get(value).copied().unwrap_or_else(|| {
+            if !vize_l0::expression_guard::expression_is_safe_to_parse(value) {
+                return super::component_prop_checker::contains_inline_function_prop_value(value);
+            }
+            let allocator = Allocator::new();
+            match Parser::new(&allocator, value, SourceType::ts()).parse_expression() {
+                Ok(expression) => contains_function(&expression),
+                // Keep the preexisting recovery behavior; this classifier
+                // must not grant a new exemption to invalid expressions.
+                Err(_) => super::component_prop_checker::contains_inline_function_prop_value(value),
+            }
+        })
+    }
+
+    fn collect(&mut self, children: &[TemplateChildNode<'template>]) {
+        for child in children {
+            match child {
+                TemplateChildNode::Element(element) => {
+                    for prop in &element.props {
+                        let PropNode::Directive(directive) = prop else {
+                            continue;
+                        };
+                        if !matches!(directive.name, "bind" | "model") {
+                            continue;
+                        }
+                        let Some(ExpressionNode::Simple(simple)) = directive.exp.as_ref() else {
+                            continue;
+                        };
+                        let value = simple.content.trim();
+                        if !may_contain_function(value) || self.values.contains_key(value) {
+                            continue;
+                        }
+                        let callback = simple
+                            .js_ast
+                            .and_then(|ast| ast.as_expression())
+                            .filter(|retained| retained.raw == simple.content)
+                            .map(|retained| contains_function(retained.ast))
+                            .unwrap_or_else(|| {
+                                super::component_prop_checker::contains_inline_function_prop_value(
+                                    value,
+                                )
+                            });
+                        self.values.insert(value, callback);
+                    }
+                    self.collect(&element.children);
+                }
+                TemplateChildNode::If(node) => {
+                    for branch in &node.branches {
+                        self.collect(&branch.children);
+                    }
+                }
+                TemplateChildNode::For(node) => self.collect(&node.children),
+                _ => {}
+            }
+        }
+    }
+}
+
+fn may_contain_function(value: &str) -> bool {
+    value.contains('(') || value.contains("=>") || value.contains("function")
+}
+
+fn contains_function(expression: &Expression<'_>) -> bool {
+    let mut visitor = InlineFunctions(false);
+    visitor.visit_expression(expression);
+    visitor.0
+}
+
+struct InlineFunctions(bool);
+impl<'a> Visit<'a> for InlineFunctions {
+    fn visit_function(&mut self, _: &Function<'a>, _: ScopeFlags) {
+        self.0 = true;
+    }
+    fn visit_arrow_function_expression(&mut self, _: &ArrowFunctionExpression<'a>) {
+        self.0 = true;
+    }
+}
 
 /// Whether the value itself is a callback, rather than an expression that only
 /// contains one (for example `items.map((item) => item.id)`).
@@ -87,7 +191,7 @@ fn expression_is_inline_function(expression: &Expression<'_>) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::is_direct_inline_function_prop_value;
+    use super::{LegacyInlineCallbacks, is_direct_inline_function_prop_value};
 
     #[test]
     fn distinguishes_direct_callbacks_from_nested_callbacks() {
@@ -124,5 +228,45 @@ mod tests {
                 "expected only a nested callback: {value}"
             );
         }
+    }
+    #[test]
+    fn legacy_callback_syntax_uses_functions_instead_of_text_markers() {
+        let facts = LegacyInlineCallbacks::default();
+        let values = [
+            "{ format(value) { return !!value } }",
+            "class { format(value) { return value } }",
+            "[(value) => !!value]",
+            "{ get format() { return 1 } }",
+            "'a=>b'",
+            "/=>/.test(value)",
+            "items.map(format)",
+            "{ format: 1 }",
+            "{ format(value) {",
+        ];
+        assert_eq!(
+            values.map(|value| facts.has_inline_function(value)),
+            [true, true, true, true, false, false, false, false, false]
+        );
+    }
+
+    #[test]
+    fn legacy_facts_reuse_retained_expressions() {
+        let allocator = vize_carton::Allocator::new();
+        let (root, errors) = vize_armature::parse(
+            &allocator,
+            r#"<Comp :method="{ format(value) { return !!value } }" :count="'a=>b'" />"#,
+        );
+        assert_eq!(errors.len(), 0);
+        let facts = LegacyInlineCallbacks::from_root(Some(&root), true);
+        assert_eq!(facts.values.len(), 2);
+        assert_eq!(
+            [
+                facts.has_inline_function("{ format(value) { return !!value } }"),
+                facts.has_inline_function("'a=>b'")
+            ],
+            [true, false]
+        );
+        let disabled = LegacyInlineCallbacks::from_root(Some(&root), false);
+        assert_eq!(disabled.values.len(), 0);
     }
 }

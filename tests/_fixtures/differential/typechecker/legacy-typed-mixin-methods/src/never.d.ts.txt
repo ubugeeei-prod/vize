@@ -1,0 +1,1 @@
+declare const absent: never; export default absent;

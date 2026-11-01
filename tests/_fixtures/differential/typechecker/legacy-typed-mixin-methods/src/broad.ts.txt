@@ -1,0 +1,1 @@
+export default undefined as unknown as { methods: Record<string, (value: string) => number> };

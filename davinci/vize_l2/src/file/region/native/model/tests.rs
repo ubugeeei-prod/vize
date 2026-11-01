@@ -9,6 +9,7 @@ use crate::resolution::Usage;
 use vize_l0::Allocator;
 
 mod lazy;
+mod number;
 mod refusal;
 mod support;
 mod trim;

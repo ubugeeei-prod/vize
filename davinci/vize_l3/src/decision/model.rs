@@ -45,10 +45,12 @@ pub(super) fn checked<'owner, 'arena>(
     let modifier = match (
         original.input().operand().trim_span(),
         original.input().operand().lazy_span(),
+        original.input().operand().number_span(),
     ) {
-        (None, None) => None,
-        (Some(span), None) => Some(("trim", span)),
-        (None, Some(span)) => Some(("lazy", span)),
+        (None, None, None) => None,
+        (Some(span), None, None) => Some(("trim", span)),
+        (None, Some(span), None) => Some(("lazy", span)),
+        (None, None, Some(span)) => Some(("number", span)),
         _ => return None,
     };
     match (modifier, model.attributes.as_slice()) {

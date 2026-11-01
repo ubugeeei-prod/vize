@@ -1611,6 +1611,136 @@
       ]
     },
     {
+      "id": "formatter/sfc/large-print-width-fallback-6098",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-large-print-width-fallback-6098",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "b89cb12c7b688a7ceb2afd35ddc177a5187118dcb681a8ec550d4bd666cb4636",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "3831dfcd68766b032bfee4ab42cfb6a176a2da7b070ff6df9848d3b794fa6c3f",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          6098
+        ],
+        "commits": [
+          {
+            "sha": "08c8248cc5c477ad93a03826746e90a85f74b728",
+            "role": "genuine-hosted-unchecked-width-baseline",
+            "paths": [
+              "crates/vize_glyph/tests/print_width_conversion.rs",
+              "crates/vize/tests/fmt_print_width_conversion_cli.rs",
+              "tests/_fixtures/differential/formatter-history/sfc-signature/input.vue.txt"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "original-historical-input-and-whole-output",
+            "path": "crates/vize_glyph/tests/fix_history_script.rs",
+            "symbol": "sfc_signature_reaches_the_pinned_fixed_point"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/print_width_conversion.rs",
+          "symbol": "whole_historical_outputs_and_all_width_boundaries_are_retained_before_verdicts",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence"
+          ],
+          "limitations": [
+            "Only these short historical inputs share complete layout with the original downstream invalid-width fallback control; raw u32 template layout policy is unchanged."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "The actual configured CLI must match the immutable historical 100-column output; genuine BEFORE core default and the existing 65535 fallback control both authenticate that complete reference.",
+          "native": "No whole native formatter adapter admission is claimed by the Rust Glyph producer law."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-large-print-width-fallback-6098/reference.expected.txt",
+              "sha256": "4e619c2f9c1df9eb87d71d1b0ee3ad033b97a99fc5c62d5ee3a572375b6bd162",
+              "role": "immutable-history-output-and-hosted-existing-fallback-control",
+              "provenance": {
+                "issue": 6098,
+                "path": "crates/vize_glyph/tests/snapshots/history_sfc_signature.snap.txt",
+                "symbol": "sfc_signature_reaches_the_pinned_fixed_point",
+                "assertion": "Frozen full output, also observed whole at widths100 and65535 in Check41310233004/job124859173249 before either source conversion changed."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "No whole native formatter adapter or broad high-width template equivalence."
+          ],
+          "referenceState": "Immutable original script-history bytes and genuine hosted existing fallback; candidate checked-conversion CLI remains pending Actions."
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/leading-line-comment-directive",
       "state": "active",
       "targets": [

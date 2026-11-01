@@ -1,0 +1,54 @@
+{
+  "schema": "vize.compiler.ideographic-if-whitespace.v1",
+  "scope": "Independently authored regression inputs; original app, versions and reproduction are unknown.",
+  "cases": [
+    {
+      "id": "leading",
+      "expression": "　ready",
+      "template": "<div v-if=\"　ready\">ok</div>",
+      "source": "<!-- 雪🌸 -->\r\n<template><div v-if=\"　ready\">ok</div></template>\r\n",
+      "accepted": true,
+      "literal": null
+    },
+    {
+      "id": "middle",
+      "expression": "left　&&　right",
+      "template": "<div v-if=\"left　&&　right\">ok</div>",
+      "source": "<!-- 雪🌸 -->\r\n<template><div v-if=\"left　&&　right\">ok</div></template>\r\n",
+      "accepted": true,
+      "literal": null
+    },
+    {
+      "id": "trailing",
+      "expression": "ready　",
+      "template": "<div v-if=\"ready　\">ok</div>",
+      "source": "<!-- 雪🌸 -->\r\n<template><div v-if=\"ready　\">ok</div></template>\r\n",
+      "accepted": true,
+      "literal": null
+    },
+    {
+      "id": "ascii",
+      "expression": "left && right",
+      "template": "<div v-if=\"left && right\">ok</div>",
+      "source": "<!-- 雪🌸 -->\r\n<template><div v-if=\"left && right\">ok</div></template>\r\n",
+      "accepted": true,
+      "literal": null
+    },
+    {
+      "id": "quoted-literal",
+      "expression": "value === '　'",
+      "template": "<div v-if=\"value === '　'\">ok</div>",
+      "source": "<!-- 雪🌸 -->\r\n<template><div v-if=\"value === '　'\">ok</div></template>\r\n",
+      "accepted": true,
+      "literal": "　"
+    },
+    {
+      "id": "invalid",
+      "expression": "left　&&",
+      "template": "<div v-if=\"left　&&\">ok</div>",
+      "source": "<!-- 雪🌸 -->\r\n<template><div v-if=\"left　&&\">ok</div></template>\r\n",
+      "accepted": false,
+      "literal": null
+    }
+  ]
+}

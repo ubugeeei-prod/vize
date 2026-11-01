@@ -23,6 +23,7 @@ import {
 import { validateCapturedLspReport, validateLspReport } from "../differential/lsp-report.ts";
 import { referenceReport } from "./support/lsp/differential-reference.ts";
 import { loadAutoImportSymlink } from "../differential/lsp-auto-import-manifest.ts";
+import { VERSIONED_AUTO_IMPORT_ID } from "../differential/lsp-versioned-auto-import-manifest.ts";
 import type { FixtureData } from "../differential/lsp-types.ts";
 
 const manifest = fileURLToPath(
@@ -122,7 +123,7 @@ void test("explicit symlink metadata keeps every earlier workspace and initializ
   assert.deepEqual(fixture.data, before);
   let originals = 0;
   for (const row of loaded.cases) {
-    if (row.id === fixture.id) continue;
+    if (row.id === fixture.id || row.id === VERSIONED_AUTO_IMPORT_ID) continue;
     originals += 1;
     assert.equal(row.data.workspaceSymlinks, undefined);
     assert.deepEqual(Object.keys(lspWorkspace(row).mapping), [

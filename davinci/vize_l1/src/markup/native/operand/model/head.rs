@@ -36,7 +36,7 @@ pub struct NativeModelHead<'h, 'o, 'a> {
 }
 
 impl<'o, 'a> NativeAttributeHead<'o, 'a> {
-    /// Select a full `v-model`, optionally with one original `.trim` or `.lazy`.
+    /// Select full `v-model` with at most one original `.trim`, `.lazy` or `.number`.
     /// Other families return None; arguments and other modifiers are unsupported.
     /// Conditional and static-binding expression routes keep their own contracts.
     pub fn model(
