@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { test } from "node:test";
 import {
+  canonicalTimestamp,
   completedCanonicalWorker,
   validateCanonicalUpload,
 } from "../../tools/support/compat/github/canonical-corpus-workers.mjs";
@@ -21,6 +22,12 @@ const decode = (value: string): unknown =>
   JSON.parse(Buffer.from(value, "base64").toString("utf8"));
 const digest = (value: string) =>
   createHash("sha256").update(Buffer.from(value, "base64")).digest("hex");
+const refuses = (run: () => unknown, message?: string) =>
+  assert.throws(run, (error: unknown) => {
+    assert.ok(error instanceof assert.AssertionError);
+    if (message !== undefined) assert.equal(error.message.split("\n")[0], message);
+    return true;
+  });
 type Step = {
   name: string;
   number: number;
@@ -147,7 +154,7 @@ await test("missing, duplicate, incomplete or reversed lifecycle anchors refuse 
   ] satisfies ((value: Job) => void)[]) {
     const forged = structuredClone(job);
     change(forged);
-    assert.throws(() => inspect(forged));
+    refuses(() => inspect(forged));
   }
 });
 
@@ -180,12 +187,12 @@ await test("one foreign, failed, skipped, reversed or overlapping required step 
   ] satisfies ((value: Step) => void)[]) {
     const forged = structuredClone(job);
     change(stepOf(forged, command));
-    assert.throws(() => inspect(forged));
+    refuses(() => inspect(forged));
   }
 });
 
 await test("Check job, suite, head, completion and artifact API-window authorities are mandatory", () => {
-  for (const change of [
+  const mutations = [
     (value) => {
       delete value.canonicalCheck;
     },
@@ -219,13 +226,32 @@ await test("Check job, suite, head, completion and artifact API-window authoriti
     (value) => {
       value.completed_at = "2026-11-01T09:09:24Z";
     },
-  ] satisfies ((value: Job) => void)[]) {
+  ] satisfies ((value: Job) => void)[];
+  const errors = [
+    "Missing canonical clock Check authority",
+    "Foreign canonical clock Check head",
+    "Foreign canonical clock check suite",
+    "Foreign canonical clock Check URL",
+    "Foreign canonical clock Check job",
+    "Foreign canonical clock Check name",
+    "Canonical clock Check is incomplete",
+    "Canonical clock Check did not succeed",
+    "Foreign canonical clock job Check",
+    "Foreign canonical API artifact window",
+    "Foreign canonical API artifact window",
+  ];
+  for (const [index, change] of mutations.entries()) {
     const forged = structuredClone(job);
     change(forged);
-    assert.throws(() => inspect(forged));
+    const message = errors[index];
+    assert.ok(message);
+    refuses(() => inspect(forged), message);
   }
   for (const created_at of ["2026-11-01T09:05:05Z", "2026-11-01T09:09:31Z"])
-    assert.throws(() => inspect(job, { ...artifact, created_at }));
+    refuses(
+      () => inspect(job, { ...artifact, created_at }),
+      "Foreign canonical API artifact window",
+    );
 });
 
 await test("coherent runner timestamps are never corrected by a fixed offset", () => {
@@ -246,10 +272,10 @@ await test("agreeing clocks retain original strict upload window instead of weak
   agreeing.completed_at = "2026-11-01T08:09:30Z";
   const result = inspect(agreeing, { ...artifact, created_at: "2026-11-01T08:09:25Z" });
   assert.equal(result.timing.authority, "actions-job-envelope");
-  assert.throws(() => inspect(agreeing, { ...artifact, created_at: "2026-11-01T08:09:29Z" }));
+  refuses(() => inspect(agreeing, { ...artifact, created_at: "2026-11-01T08:09:29Z" }));
   const oneForeign = structuredClone(agreeing);
   stepOf(oneForeign, command).started_at = "2026-11-01T08:05:05Z";
-  assert.throws(() => inspect(oneForeign, { ...artifact, created_at: "2026-11-01T08:09:25Z" }));
+  refuses(() => inspect(oneForeign, { ...artifact, created_at: "2026-11-01T08:09:25Z" }));
 });
 
 await test("selection still rejects foreign run, attempt, head, digest and artifact identity", () => {
@@ -312,7 +338,7 @@ await test("selection still rejects foreign run, attempt, head, digest and artif
   );
   checkOf(carried).started_at = "2026-11-01T10:00:00Z";
   checkOf(carried).completed_at = "2026-11-01T10:10:00Z";
-  assert.throws(() => selectCanonicalWorkers(later, laterRun, [...jobs, carried], artifacts));
+  refuses(() => selectCanonicalWorkers(later, laterRun, [...jobs, carried], artifacts));
   for (const change of [
     (value) => {
       firstJob(value).run_id += 1;
@@ -326,7 +352,7 @@ await test("selection still rejects foreign run, attempt, head, digest and artif
   ] satisfies ((value: Job[]) => void)[]) {
     const forged = structuredClone(jobs);
     change(forged);
-    assert.throws(() => selectCanonicalWorkers(context, run, forged, artifacts));
+    refuses(() => selectCanonicalWorkers(context, run, forged, artifacts));
   }
   for (const change of [
     (value) => {
@@ -344,7 +370,7 @@ await test("selection still rejects foreign run, attempt, head, digest and artif
   ] satisfies ((value: Artifact[]) => void)[]) {
     const forged = structuredClone(artifacts);
     change(forged);
-    assert.throws(() => selectCanonicalWorkers(context, run, jobs, forged));
+    refuses(() => selectCanonicalWorkers(context, run, jobs, forged));
   }
 });
 
@@ -442,8 +468,26 @@ await test("reversed starts cannot borrow missing, foreign or incoherent complet
   ] satisfies ((value: Job) => void)[]) {
     const forged = structuredClone(reverseJob);
     change(forged);
-    assert.throws(() => inspectReverse(forged));
+    refuses(() => inspectReverse(forged));
   }
   for (const created_at of ["2026-11-01T09:01:44Z", "2026-11-01T09:01:50Z", "2026-11-01T09:57:37Z"])
-    assert.throws(() => inspectReverse(reverseJob, { ...reverseArtifact, created_at }));
+    refuses(() => inspectReverse(reverseJob, { ...reverseArtifact, created_at }));
+});
+
+await test("clock authorities require exact ISO calendar seconds or supported milliseconds", () => {
+  for (const value of [
+    "2026-11-01T09:01:48Z",
+    "2026-11-01T09:01:48.1Z",
+    "2026-11-01T09:01:48.12Z",
+    "2026-11-01T09:01:48.123Z",
+  ])
+    assert.equal(canonicalTimestamp(value), Date.parse(value));
+  for (const value of [
+    "November 1, 2026Z",
+    "2026-02-30T00:00:00Z",
+    "2026-11-01T24:00:00Z",
+    "2026-11-01T09:01:48.1234Z",
+    "2026-11-01T09:01:48.123000001Z",
+  ])
+    refuses(() => canonicalTimestamp(value), "Invalid canonical execution timestamp");
 });
