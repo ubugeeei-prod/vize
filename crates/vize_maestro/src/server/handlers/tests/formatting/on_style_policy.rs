@@ -58,7 +58,7 @@ impl<S: tracing::Subscriber> Layer<S> for CapturedWarnings {
         event: &tracing::Event<'_>,
         _context: tracing_subscriber::layer::Context<'_, S>,
     ) {
-        let mut message = Message(String::new());
+        let mut message = Message(String::default());
         event.record(&mut message);
         LOGS.with_borrow_mut(|rows| rows.push((cstr!("{}", event.metadata().level()), message.0)));
     }
