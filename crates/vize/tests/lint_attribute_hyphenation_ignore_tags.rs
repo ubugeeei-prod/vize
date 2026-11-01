@@ -12,13 +12,21 @@ const REFERENCE: &str = include_str!(
 );
 fn source(file: &str) -> &'static str {
     match file {
-        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt" => include_str!(
-            "../../../tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt"
-        ),
-        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt" => include_str!(
-            "../../../tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt"
-        ),
-        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt" => include_str!("../../../tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt"),
+        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt" => {
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt"
+            )
+        }
+        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt" => {
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt"
+            )
+        }
+        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt" => {
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt"
+            )
+        }
         _ => panic!("unknown independent literal tag input"),
     }
 }
@@ -47,13 +55,23 @@ fn expected(reference: &Value) -> Value {
 fn literal_tag_vite_cli_preserves_sixteen_whole_reports_actual_fixes_and_fixed_points() {
     let corpus: Value = serde_json::from_str(CORPUS).unwrap();
     let original: Value = serde_json::from_str(REFERENCE).unwrap();
-    let rows = corpus["rows"].as_array().unwrap().iter().filter(|row| row["scope"] == "literal").collect::<Vec<_>>();
+    let rows = corpus["rows"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|row| row["scope"] == "literal")
+        .collect::<Vec<_>>();
     assert_eq!(rows.len(), 16);
     let project = tempfile::tempdir().unwrap();
     for dynamic in [false, true] {
         for row in &rows {
             let source = source(row["file"].as_str().unwrap());
-            let reference = original["rows"].as_array().unwrap().iter().find(|reference| reference["id"] == row["id"]).unwrap();
+            let reference = original["rows"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|reference| reference["id"] == row["id"])
+                .unwrap();
             assert_eq!(reference["id"], row["id"]);
             assert_eq!(reference["source"], source);
             let config = vite_config::source(json!({"linter":{"preset":"incremental","rules":{RULE:"error"},"ruleOptions":{RULE:{"style":row["style"],"ignoreTags":row["ignoreTags"]}}}}).to_string());
@@ -83,13 +101,19 @@ fn literal_tag_vite_cli_preserves_sixteen_whole_reports_actual_fixes_and_fixed_p
                 let file = fs::read_to_string(project.path().join("src/Probe.vue")).unwrap();
                 let packet = serde_json::to_vec(&json!({"id":row["id"],"dynamic":dynamic,"pass":pass,"status":output.status.code(),"source":source,"file":file,"stdout":std::str::from_utf8(&output.stdout).unwrap(),"stderr":std::str::from_utf8(&output.stderr).unwrap()})).unwrap();
                 let mut stdout = std::io::stdout().lock();
-                stdout.write_all(b"vize-attribute-ignore-tags-cli ").unwrap();
+                stdout
+                    .write_all(b"vize-attribute-ignore-tags-cli ")
+                    .unwrap();
                 stdout.write_all(&packet).unwrap();
                 stdout.write_all(b"\n").unwrap();
                 assert_eq!(
                     output.status.code(),
                     Some(i32::from(
-                        pass == 0 && !reference["verify"][0]["messages"].as_array().unwrap().is_empty()
+                        pass == 0
+                            && !reference["verify"][0]["messages"]
+                                .as_array()
+                                .unwrap()
+                                .is_empty()
                     )),
                     "{}",
                     row["id"]
@@ -115,7 +139,9 @@ fn literal_tag_vite_cli_preserves_sixteen_whole_reports_actual_fixes_and_fixed_p
             }
         }
     }
-    let input = source("tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt");
+    let input = source(
+        "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+    );
     write(project.path(), "src/Probe.vue", input);
     write(project.path(),"vite.config.mjs",&vite_config::source(json!({"linter":{"preset":"incremental","rules":{RULE:"off"},"ruleOptions":{RULE:{"ignoreTags":[]}}}}).to_string()));
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
