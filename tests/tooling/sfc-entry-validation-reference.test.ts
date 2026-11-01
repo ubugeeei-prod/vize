@@ -149,7 +149,7 @@ void test(
     for (const actual of outcomes) {
       if (actual.fixture.expect === "missing-block") {
         assert.equal(actual.parseErrorCount, 1, actual.fixture.id);
-        assert.deepEqual(actual.parseMessages, [missing]);
+        assert.deepEqual(actual.parseMessages, [`${missing} ${actual.fixture.filename}`]);
       } else assert.equal(actual.parseErrorCount, 0, actual.fixture.id);
       if (actual.fixture.expect === "export-error") {
         assert.equal(actual.scriptStatus, "threw", actual.fixture.id);
