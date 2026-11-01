@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const enabled = true
+</script>
+
+<template>
+  <MyButton v-if="enabled" />
+</template>

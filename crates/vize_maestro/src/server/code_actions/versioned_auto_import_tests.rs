@@ -151,6 +151,7 @@ fn exercise(quoted: bool) {
     assert_eq!(start, end);
     let mut applied = SOURCE.to_owned();
     applied.insert_str(start, &edit.new_text);
+    eprintln!("whole source after applying the actual import edit: {applied:?}");
     assert_eq!(applied, SOURCE.replacen('\n', &format!("\n{statement}"), 1));
     assert!(server.state.documents.apply_changes(
         &uri,
@@ -168,9 +169,10 @@ fn exercise(quoted: bool) {
     let mut requery = params;
     requery.range = Range::new(position, position);
     let clean = futures::executor::block_on(code_actions(server, &requery));
-    eprintln!("whole applied auto-import requery: {clean:#?}");
+    let current_source = server.state.documents.text(&uri).unwrap();
+    eprintln!("whole applied auto-import document: {current_source:?}; requery: {clean:#?}");
     assert!(clean.is_none());
-    assert_eq!(server.state.documents.text(&uri).unwrap(), applied);
+    assert_eq!(current_source, applied);
     assert_eq!(std::fs::read_to_string(file).unwrap(), SOURCE);
     assert_eq!(std::fs::read_to_string(indexed).unwrap(), COMPONENT);
 }
