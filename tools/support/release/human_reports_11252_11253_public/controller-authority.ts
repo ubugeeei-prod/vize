@@ -15,6 +15,7 @@ export async function remoteControllerClosure(
         "native-observer.ts",
         "identity-probe.ts",
         "original-inputs.json",
+        "after-input-plan.json",
         "pnpm-bootstrap.json",
       ].map((n) => ns + n),
       ".github/workflows/published-human-reports-11252-11253.yml",

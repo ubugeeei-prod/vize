@@ -23,6 +23,15 @@ import { authenticateSourceAdmission } from "./source-admission.ts";
 import { mainManualContext } from "./context.ts";
 import { inputWitness, payloadWitness } from "./witness.ts";
 import { bytes, sha256 } from "./value.ts";
+import { afterPlan, inputCommand, unqualifiedAfterVerdict } from "./after-plan.ts";
+import { authenticateAfterInputs } from "./after-admission.ts";
+import {
+  assertInputState,
+  checkCaseManagers,
+  inputStateWitness,
+  restoreInputState,
+} from "./input-state.ts";
+import { managerFiles } from "./optional-residency.ts";
 function file(path: string, raw: Buffer): SourceFile {
   return { path, base64: raw.toString("base64"), sha256: sha256(raw) };
 }
@@ -57,6 +66,16 @@ export async function runPublic(
     role: request.role,
     phase: request.release.phase,
     accepted: false,
+    ...(request.mode === "UNQUALIFIED_AFTER"
+      ? {
+          productQualified: false,
+          afterQualified: false,
+          issueQualified: false,
+          outcomeAssessed: false,
+          knownBugReproductionJudged: false,
+          backend: "UNKNOWN",
+        }
+      : {}),
     status: "RUNNING",
   };
   write("execution-start.json", running);
@@ -82,7 +101,12 @@ export async function runPublic(
         await authenticatePublicBefore(request, github, sink),
       );
     if (request.release.phase === "after")
-      write("source-admission.json", await authenticateSourceAdmission(request, github));
+      write(
+        "source-admission.json",
+        request.mode === "UNQUALIFIED_AFTER"
+          ? await authenticateAfterInputs(request, release, github)
+          : await authenticateSourceAdmission(request, github),
+      );
     const archiveCache = new Map<string, Buffer>();
     const installs = [
       await installPublic(
@@ -146,11 +170,18 @@ export async function runPublic(
         command.argv = argumentsFor(request, command.id);
         command.checker = identifyLauncher(command.id, install, output);
       }
-      validateOwnedCommands(request, installs);
+      if (request.mode === "UNQUALIFIED_AFTER")
+        assert.deepEqual(
+          request.commands.map(inputCommand),
+          afterPlan(request.role, release.version).map((p) => inputCommand(p.command)),
+        );
+      else validateOwnedCommands(request, installs);
     }
     write("effective-request.json", request);
     const observations: Observation[] = [],
       companions: Observation[] = [];
+    const after =
+      request.mode === "UNQUALIFIED_AFTER" ? afterPlan(request.role, release.version) : null;
     // Complete the entire original uninstrumented vector before any companion
     // preload. All authentic installed payloads are rechecked around each run.
     for (const companion of [false, true])
@@ -158,15 +189,53 @@ export async function runPublic(
         if (companion && !command.requiresNativeLoad) continue;
         const install = installs.find((v) => v.kind === command.consumer);
         assert(install);
+        const planned = after?.find((p) => p.command.id === command.id);
+        const inputSink = (kind: string, value: unknown) =>
+          sink(kind, {
+            role: request.role,
+            commandId: command.id,
+            consumer: command.consumer,
+            companion,
+            value,
+          });
+        if (planned && after) {
+          restoreInputState(
+            install.root,
+            planned.before,
+            after
+              .filter((p) => p.command.consumer === command.consumer)
+              .flatMap((p) => [p.before, p.after]),
+            inputSink,
+            (current) => {
+              const rootPackage = current.present.find((f) => f.path === "package.json");
+              assert(rootPackage);
+              checkCaseManagers(
+                install.managerFiles,
+                managerFiles(install.root),
+                bytes(rootPackage.base64),
+              );
+            },
+          );
+          inputSink(
+            "complete-input-before-process",
+            inputStateWitness(install.root, planned.before),
+          );
+        }
         sink("pre-payload-witness", payloadWitness(install));
-        recheckInstalled(install);
-        const row = recordCommand(command, install, output, companion, sink);
+        const beforePackage = planned?.before.present.find((f) => f.path === "package.json");
+        recheckInstalled(install, beforePackage ? bytes(beforePackage.base64) : undefined);
+        const row = recordCommand(command, install, output, companion, sink, Boolean(planned));
         (companion ? companions : observations).push(row);
         write(`${command.id}.${companion ? "companion" : "original"}.observation.json`, row);
         sink("actual-input-after-process", inputWitness(command, install.root));
+        if (planned) {
+          inputSink("complete-input-after-process", inputStateWitness(install.root, planned.after));
+          assertInputState(install.root, planned.after);
+        }
         sink("post-payload-witness", payloadWitness(install));
         checkInputs(command, install.root);
-        recheckInstalled(install);
+        const afterPackage = planned?.after.present.find((f) => f.path === "package.json");
+        recheckInstalled(install, afterPackage ? bytes(afterPackage.base64) : undefined);
       }
     assert.deepEqual(
       controllerFiles(),
@@ -200,6 +269,27 @@ export async function runPublic(
         sourceBeforeTransferred: false,
         backend: "UNKNOWN",
       });
+    } else if (request.mode === "UNQUALIFIED_AFTER") {
+      assert.deepEqual(
+        observations.map((r) => r.id),
+        request.commands.map((c) => c.id),
+      );
+      assert.deepEqual(
+        companions.map((r) => r.id),
+        request.commands.filter((c) => c.requiresNativeLoad).map((c) => c.id),
+      );
+      for (const plan of request.commands) {
+        const install = installs.find((v) => v.kind === plan.consumer);
+        const original = observations.find((r) => r.id === plan.id);
+        assert(install && original);
+        validateCapture(plan, original, install);
+        if (plan.requiresNativeLoad) {
+          const companion = companions.find((r) => r.id === plan.id);
+          assert(companion);
+          validateCapture(plan, companion, install, true);
+        }
+      }
+      write("verdict.json", unqualifiedAfterVerdict(request.role));
     } else write("verdict.json", await receive(bundle, fixture, github, archiveCache, release));
     // Only records/declarations/virtual source are proof uploads. The consumer
     // directories, public tarball buffers and native binary bodies are excluded.

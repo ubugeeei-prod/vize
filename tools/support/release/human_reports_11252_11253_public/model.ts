@@ -85,7 +85,7 @@ export interface CommandPlan {
 export interface Request {
   schema: "vize.humanReports11252_11253.request.v1";
   role: Role;
-  mode: "CAPTURE_BEFORE" | "ACCEPT_AFTER";
+  mode: "CAPTURE_BEFORE" | "ACCEPT_AFTER" | "UNQUALIFIED_AFTER";
   reviewedController: {
     head: string;
     files: Array<{ path: string; bytes: number; sha256: string; gitBlob: string }>;

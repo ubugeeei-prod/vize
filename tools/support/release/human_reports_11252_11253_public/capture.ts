@@ -85,6 +85,7 @@ export function recordCommand(
   output: string,
   companion: boolean,
   sink: Sink = discard,
+  inputAlreadyPrepared = false,
 ): Observation {
   const env = { ...cleanEnvironment(), ...install.packageManagerEnvironment },
     journalRoot = join(output, `${plan.id}-native-journal`);
@@ -103,7 +104,7 @@ export function recordCommand(
       rootPid: process.pid,
     });
   }
-  writeInputs(plan, install.root);
+  if (!inputAlreadyPrepared) writeInputs(plan, install.root);
   sink("actual-input-before-process", inputWitness(plan, install.root));
   const id = plan.id + (companion ? "-companion" : "-original");
   const result = capture(plan.executable, plan.argv, install.root, env, output, id);

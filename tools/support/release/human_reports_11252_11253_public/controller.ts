@@ -15,6 +15,7 @@ export function controllerFiles(): Image[] {
   const seen = new Set<string>();
   pending.push(
     resolve(here, "original-inputs.json"),
+    resolve(here, "after-input-plan.json"),
     resolve(here, "pnpm-bootstrap.json"),
     resolve(root, ".github/workflows/published-human-reports-11252-11253.yml"),
   );
