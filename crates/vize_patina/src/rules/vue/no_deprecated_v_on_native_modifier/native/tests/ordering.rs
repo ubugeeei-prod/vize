@@ -8,7 +8,7 @@ fn ordered(input: &Case<'_>) {
         .initial
         .diagnostics
         .iter()
-        .map(|d| d.rule_name.as_str())
+        .map(|d| d.rule_name)
         .collect();
     let (expected, index) = match input.registration {
         Order::NativeNumeric => ([RULE, NUMERIC], 1),
@@ -53,13 +53,7 @@ fn same_attribute_registry_order_and_numeric_fix_requery_remain_whole() {
         ] {
             let observed = pair(&case("numeric-first-zero-or-named", source, order, 1, 0));
             assert_eq!(
-                observed
-                    .initial
-                    .diagnostics
-                    .first()
-                    .unwrap()
-                    .rule_name
-                    .as_str(),
+                observed.initial.diagnostics.first().unwrap().rule_name,
                 RULE
             );
         }

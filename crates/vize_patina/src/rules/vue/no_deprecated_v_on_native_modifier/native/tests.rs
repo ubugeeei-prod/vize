@@ -19,7 +19,7 @@ fn genuine_cross_rule_original_retains_whole_legacy_diagnostic_without_a_fix() {
         0,
     ));
     let diagnostic = observed.initial.diagnostics.first().unwrap();
-    assert_eq!(diagnostic.rule_name.as_str(), RULE);
+    assert_eq!(diagnostic.rule_name, RULE);
     assert_eq!(diagnostic.start, 12);
     assert_eq!(diagnostic.end, 18);
     assert_eq!(diagnostic.severity, Severity::Error);
