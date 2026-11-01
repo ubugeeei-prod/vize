@@ -11871,6 +11871,35 @@
       }
     },
     {
+      "id": "typechecker/regression/legacy-mixed-scalar-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "legacy-mixed-scalar-props/input.json",
+          "sha256": "19824c6c8d31c0e21977d3ab8b92e3f83f1ef00de6d857f60dbb511ad3264e5b",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "legacy_external_component_props::mixed::mixed_known_scalar_props_preserve_callbacks_and_all_existing_findings; consumes pinned synthetic files for modern/legacy bad-repair-restore full native API captures; Vue3 SFC parser plus opt-in legacy switch, no installed Vue2/Vuetify claim; input registration only, no diagnostic pack or native admission"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/mixed-vue-package-imports-11253",
       "state": "active",
       "targets": ["batch"],

@@ -5,7 +5,7 @@ on:
       consumer:
         type: choice
         default: legacy-0.602
-        options: [legacy-0.602, package-import-redirects-11317]
+        options: [legacy-0.602, package-import-redirects-11317, options-inherited-members-11339]
         description: Closed public consumer role
   pull_request:
     paths:
@@ -14,6 +14,8 @@ on:
       - tests/_fixtures/differential/typechecker/dependency-probe-history-10936/**
       - tools/benchmarks/scripts/public-typechecker-11317/**
       - tests/tooling/public-typechecker-11317*.test.ts
+      - tools/benchmarks/scripts/public-typechecker-11339/**
+      - tests/tooling/public-typechecker-11339*.test.ts
       - tests/_fixtures/differential/typechecker/package-import-redirects-11317/**
 permissions: { contents: read }
 concurrency:
@@ -111,4 +113,44 @@ jobs:
         with:
           name: public-typechecker-11317-${{ github.sha }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/public-11317-evidence.tgz
+          retention-days: 14
+  contracts-11339:
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: 24.22.1, package-manager-cache: false }
+      - name: Validate immutable inputs and refusal contracts without public execution
+        run: node --test tests/tooling/public-typechecker-11339*.test.ts
+  public-11339:
+    permissions: { contents: read, actions: read }
+    if: github.event_name == 'workflow_dispatch' && inputs.consumer == 'options-inherited-members-11339' && github.repository == 'ubugeeei-prod/vize' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test/published-options-inherited-members-11339-20261102')
+    needs: contracts-11339
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: 24.22.1, package-manager-cache: false }
+      - name: Provision the declared standalone manager control
+        run: npm install --prefix "$RUNNER_TEMP/11339-manager" npm@11.19.1 --ignore-scripts --no-audit --no-fund
+      - name: Capture all default CLI and independent framework controls
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node tools/benchmarks/scripts/public-typechecker-11339/run.ts --out "$RUNNER_TEMP/public-11339-evidence" --npm "$RUNNER_TEMP/11339-manager/node_modules/npm/bin/npm-cli.js" --npx "$RUNNER_TEMP/11339-manager/node_modules/npm/bin/npx-cli.js"
+      - name: Package owned data after success or refusal
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/public-11339-evidence"
+          tar -czf "$RUNNER_TEMP/public-11339-evidence.tgz" -C "$RUNNER_TEMP" public-11339-evidence
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: public-typechecker-11339-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/public-11339-evidence.tgz
           retention-days: 14

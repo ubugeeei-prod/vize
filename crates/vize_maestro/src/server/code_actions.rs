@@ -201,6 +201,9 @@ fn code_action_kind_is_requested(kind: &CodeActionKind, requested: &[CodeActionK
 #[cfg(test)]
 #[cfg(feature = "native")]
 mod versioned_auto_import_tests;
+#[cfg(test)]
+#[cfg(feature = "native")]
+mod versioned_template_suppression_tests;
 
 #[cfg(test)]
 mod tests {
@@ -208,7 +211,7 @@ mod tests {
 
     #[cfg(feature = "native")]
     #[test]
-    fn advertised_client_gets_the_actual_document_version_only_for_the_lint_fix() {
+    fn advertised_client_gets_the_actual_document_version_for_template_fixes_and_suppressions() {
         use tower_lsp::{
             LspService,
             lsp_types::{
@@ -269,12 +272,20 @@ mod tests {
             } else {
                 serde_json::json!({"changes":{(uri.as_str()):edits}})
             };
+            let suppression_edits = serde_json::json!([{
+                "range":{"start":{"line":1,"character":0},"end":{"line":1,"character":0}},
+                "newText":"  <!-- @vize:forget vue/html-self-closing -->\n"
+            }]);
+            let suppression = if versioned {
+                serde_json::json!({"documentChanges":[{
+                    "textDocument":{"uri":uri,"version":version},"edits":suppression_edits
+                }]})
+            } else {
+                serde_json::json!({"changes":{(uri.as_str()):suppression_edits}})
+            };
             serde_json::json!([
                 {"title":"Fix: Use self-closing syntax","kind":"quickfix","diagnostics":[diagnostic],"edit":fix,"isPreferred":true},
-                {"title":"Suppress with @vize:forget (vue/html-self-closing)","kind":"quickfix","diagnostics":[diagnostic],"edit":{"changes":{(uri.as_str()):[{
-                    "range":{"start":{"line":1,"character":0},"end":{"line":1,"character":0}},
-                    "newText":"  <!-- @vize:forget vue/html-self-closing -->\n"
-                }]}},"isPreferred":false}
+                {"title":"Suppress with @vize:forget (vue/html-self-closing)","kind":"quickfix","diagnostics":[diagnostic],"edit":suppression,"isPreferred":false}
             ])
         };
         for advertised in [None, Some(false), Some(true)] {

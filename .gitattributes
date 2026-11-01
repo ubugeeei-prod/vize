@@ -7,6 +7,8 @@ tests/_fixtures/tooling/native-forward/backend.ts text eol=lf
 # Exact provider source inputs from the bounded owned-buffer comparison.
 tests/_fixtures/tooling/owned-read-buffer-provider/package.json.txt text eol=lf
 tests/_fixtures/tooling/owned-read-buffer-provider/package-lock.json.txt text eol=lf
+# Historical pure-test inputs must not depend on fetched Git history.
+tests/_fixtures/tooling/cold-typechecker-frozen-source/** text eol=lf
 # Frozen comparative provider inputs retain their exact authenticated lock bytes.
 tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package.json.txt text eol=lf
 tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package-lock.json.txt text eol=lf

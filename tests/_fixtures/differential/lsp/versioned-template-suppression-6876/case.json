@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "id": "lsp/regression/versioned-template-suppression-6876",
+  "provenance": {
+    "fixCommit": "3cd259fd698baa8c38518d3542b7333816a84189",
+    "originalDiagnostic": {
+      "path": "code-action-diagnostics/references.json",
+      "sha256": "241817138323e3fbe957cae2d67f1ccd94782c2f71e3eb25987bdc901ed190e2"
+    },
+    "inputOrigin": "Exact existing selected no-fix diagnostic caller App/config; no new reporter-authored witness claim.",
+    "contractOrigin": "Authored full supporting-client one-suppression envelope; original diagnostic, range, indentation and LF text retained. Hosted observation is separate."
+  },
+  "documentVersion": 1,
+  "workspaceEditDocumentChanges": true,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false,
+    "codeActions": true
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "7dcf16fe1a2d823b8d63ef69e16f7016bd0f6054158acc8cdeda0a6c3ffb6e19"
+    },
+    {
+      "source": "vize.config.json",
+      "runtimePath": "vize.config.json",
+      "sha256": "1d297caf631fad17f18d5ba9577567b7ccb77db5f299df777c88469ae604f75a"
+    }
+  ],
+  "entry": "App.vue",
+  "method": "textDocument/codeAction",
+  "request": {
+    "params": {
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 2
+        },
+        "end": {
+          "line": 1,
+          "character": 23
+        }
+      },
+      "context": {
+        "diagnostics": [
+          {
+            "range": {
+              "start": {
+                "line": 1,
+                "character": 2
+              },
+              "end": {
+                "line": 1,
+                "character": 23
+              }
+            },
+            "severity": 2,
+            "code": "a11y/alt-text",
+            "codeDescription": {
+              "href": "https://eslint.vuejs.org/rules/a11y/alt-text.html"
+            },
+            "source": "vize/lint",
+            "message": "<img> elements must have an alt attribute\n\nHelp: Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+          }
+        ]
+      }
+    }
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "9336ed7587e516187fc0b381af2c7f9a2380b221041b13ccb74ff6becd351231"
+  }
+}

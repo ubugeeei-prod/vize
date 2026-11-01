@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "id": "lsp/regression/versioned-template-lint-edits-6876",
+  "provenance": {
+    "fixCommit": "3cd259fd698baa8c38518d3542b7333816a84189",
+    "witnessPath": "tests/_fixtures/differential/lsp/code-action-utf16-original/response.expected.json",
+    "inputOrigin": "Exact unchanged original UTF-16 code-action fixture; SHA4e334c5f8bdef19e5e77408a7aff23ef11f57362c5171401f6a5f5932c3fc1fd",
+    "contractOrigin": "Authored whole-response successor: existing fix unchanged; only both original suppression edit envelopes become versioned. Original action order, titles, metadata, ranges and text retained.",
+    "previousCase": {
+      "path": "case.json",
+      "sha256": "6d94d5c8ce5a79261c1a1110a80d9e24387289c4c612346eb12e66a4143b85f9"
+    },
+    "previousExpected": {
+      "path": "response.expected.json",
+      "sha256": "3888a6a6fff7c9c9b7151957100f0f9e06e04e830439929f8c359565af62e24c"
+    }
+  },
+  "input": {
+    "source": "CodeActionUtf16.vue.txt",
+    "runtimePath": "CodeActionUtf16.vue",
+    "sha256": "4e334c5f8bdef19e5e77408a7aff23ef11f57362c5171401f6a5f5932c3fc1fd"
+  },
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false,
+    "codeActions": true
+  },
+  "entry": "CodeActionUtf16.vue",
+  "documentVersion": 1,
+  "workspaceEditDocumentChanges": true,
+  "method": "textDocument/codeAction",
+  "request": {
+    "params": {
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 17
+        },
+        "end": {
+          "line": 1,
+          "character": 19
+        }
+      },
+      "context": {
+        "diagnostics": []
+      }
+    }
+  },
+  "expected": {
+    "source": "response.with-versioned-suppressions.expected.json",
+    "sha256": "e670e0fb80450c3a0641c3ba8400995eba183574c1792052e37eeec9c957f7fa"
+  },
+  "scope": "Advertised-client template fixes and suppressions share original-source/version authority. Previous mixed case/oracle remain at original paths. Authored expected contract; hosted observation is separate. Other action families and public/whole-product native admission remain unqualified."
+}

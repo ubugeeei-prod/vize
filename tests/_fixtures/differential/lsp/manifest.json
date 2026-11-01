@@ -3175,8 +3175,8 @@
         ]
       },
       "case": {
-        "path": "versioned-template-lint-edits-6876/case.json",
-        "sha256": "6d94d5c8ce5a79261c1a1110a80d9e24387289c4c612346eb12e66a4143b85f9"
+        "path": "versioned-template-lint-edits-6876/case.with-versioned-suppressions.json",
+        "sha256": "d03ff6dc4f561b0a98dd9d1f8fb4b413001f4955475d5b4dad9ee79d7acfd0b1"
       },
       "requestCount": 1,
       "initializationOptions": {
@@ -3192,6 +3192,51 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template"],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/versioned-template-suppression-6876",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "versioned-template-suppression-6876",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "7dcf16fe1a2d823b8d63ef69e16f7016bd0f6054158acc8cdeda0a6c3ffb6e19"
+          },
+          {
+            "path": "vize.config.json",
+            "sha256": "1d297caf631fad17f18d5ba9577567b7ccb77db5f299df777c88469ae604f75a"
+          }
+        ]
+      },
+      "case": {
+        "path": "versioned-template-suppression-6876/case.json",
+        "sha256": "a77c681637eb43ad084d2885c224ef4469850dd46675bd2b4ca39acb21f967f1"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": false,
+        "codeActions": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
