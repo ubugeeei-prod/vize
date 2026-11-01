@@ -161,8 +161,8 @@ export type PackageReceipt = PackageBase &
         >;
       }
   );
-export interface InstallReceipt {
-  schema: "vize.humanReports11252_11253.install.v1";
+/** Facts needed to bind a command, without claiming complete file-set qualification. */
+export interface InstallationFacts {
   kind: "original" | "tsrs-supplement";
   root: string;
   packageManifest: Json;
@@ -181,11 +181,34 @@ export interface InstallReceipt {
   declaredOptionalNotInstalled: import("./optional-residency.ts").OptionalAbsence[];
   packageManagerEnvironment: Record<string, string>;
   binPolicy: import("./dependency-bin-policy.ts").BinPolicy;
-  packages: PackageReceipt[];
+  packages: PackageBase[];
   cli: Image;
   sdk: Image[];
   mapperExec: string[];
   native: Image & { packageName: string; token: string; identityProbeOnly: true };
+}
+export interface InstallReceipt extends InstallationFacts {
+  schema: "vize.humanReports11252_11253.install.v1";
+  packages: PackageReceipt[];
+}
+export interface PublicPayloadReceipt extends PackageBase {
+  publicPayloadBytesEqualArchive: true;
+  completeInstalledFileSetQualified: false;
+  manifestRawBase64: string;
+}
+/** Collection can retain raw outcomes while final qualification is still pending.
+ * This schema is deliberately not an InstallReceipt and cannot enter receive(). */
+export interface CaptureInstallReceipt extends InstallationFacts {
+  schema: "vize.humanReports11252_11253.capturePrerequisites.v1";
+  packages: PublicPayloadReceipt[];
+  mandatoryExecutableChainsAuthenticated: true;
+  executableChains: import("./command-chains.ts").ExecutableChains;
+  binConfiguration: import("./bin-configuration.ts").BinConfiguration;
+  completeInstalledFileSetQualified: false;
+  accepted: false;
+  productQualified: false;
+  afterQualified: false;
+  issueQualified: false;
 }
 export interface ReleaseAuthority {
   version: string;

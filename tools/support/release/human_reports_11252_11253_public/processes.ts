@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import type { CommandPlan, InstallReceipt, Observation } from "./model.ts";
+import type { CommandPlan, InstallationFacts, Observation } from "./model.ts";
 import type { Oracle } from "./model.ts";
 import { bytes, wholeJson } from "./value.ts";
 import { assertRenderedTimings } from "./timing-oracle.ts";
@@ -24,7 +24,7 @@ export const prohibited = [
 export function validateCapture(
   plan: CommandPlan,
   row: Observation,
-  install: InstallReceipt,
+  install: InstallationFacts,
   companion = false,
   archivedObserverPath?: string,
 ): void {
@@ -110,7 +110,7 @@ export function validateCapture(
 export function validateObservation(
   plan: CommandPlan,
   row: Observation,
-  install: InstallReceipt,
+  install: InstallationFacts,
   companion = false,
   archivedObserverPath?: string,
 ): void {

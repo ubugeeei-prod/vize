@@ -3,7 +3,14 @@ import { readFileSync, realpathSync } from "node:fs";
 import { join } from "node:path";
 import { archiveComparison } from "../public_install/archive.ts";
 import { captureDeclarationGraph, fileImage, inside } from "../computed_event_custody.ts";
-import type { Fixture, InstallReceipt, Recipe, ReleaseAuthority } from "./model.ts";
+import type {
+  CaptureInstallReceipt,
+  Fixture,
+  InstallationFacts,
+  InstallReceipt,
+  Recipe,
+  ReleaseAuthority,
+} from "./model.ts";
 import { array, bytes, object, sha256, text, wholeJson } from "./value.ts";
 import {
   absentPackage,
@@ -16,6 +23,8 @@ import {
 import { binInventory, contextFacts } from "./dependency-bin-context.ts";
 import { humanDependencyBinPartition } from "./dependency-bin-partition.ts";
 import { validateBinRecord } from "./dependency-bin-record.ts";
+import { capturePublicPayload } from "./capture-payload.ts";
+import type { Sink } from "./evidence.ts";
 export function manifestBytes(fixture: Fixture, version: string, supplement: boolean): Buffer {
   const source = fixture.files.find((f) => f.path === "package.json");
   assert(source);
@@ -28,14 +37,12 @@ export function manifestBytes(fixture: Fixture, version: string, supplement: boo
   object(manifest.devDependencies).tsrs = "0.20.1-ts7.1.0-beta";
   return Buffer.from(JSON.stringify(manifest, null, 2) + "\n");
 }
-export function validateInstallation(
-  receipt: InstallReceipt,
+function validateInstallationIdentity(
+  receipt: InstallationFacts,
   fixture: Fixture,
   recipe: Recipe,
   authority: ReleaseAuthority,
-  archiveBodies: ReadonlyMap<string, Buffer>,
-): void {
-  assert.equal(receipt.schema, "vize.humanReports11252_11253.install.v1");
+) {
   assert.equal(receipt.platform, recipe.platform);
   assert.equal(receipt.arch, recipe.arch);
   assert.equal(receipt.nodeVersion, recipe.node);
@@ -73,6 +80,13 @@ export function validateInstallation(
   ]);
   if (recipe.vueTsc) expected.set("vue-tsc", recipe.vueTsc);
   if (receipt.kind === "tsrs-supplement") expected.set("tsrs", "0.20.1-ts7.1.0-beta");
+  return expected;
+}
+function validatePackagePopulation(
+  receipt: InstallationFacts,
+  expected: ReadonlyMap<string, string>,
+  authority: ReleaseAuthority,
+): void {
   const seen = new Set<string>(),
     seenExpected = new Set<string>(),
     sri = object(authority.capsule.npmSRI);
@@ -90,25 +104,16 @@ export function validateInstallation(
       assert.equal(row.tarball, pkg.resolved);
     }
     assert(pkg.files.length > 0);
-    const archive = archiveBodies.get(pkg.name + "@" + pkg.version);
-    assert(archive, `whole public archive required for ${pkg.name}`);
-    if (pkg.allInstalledBytesEqualArchive === true) {
-      const comparison = archiveComparison(pkg.directory, archive, pkg.integrity);
-      assert.equal(comparison.tarballSHA512, pkg.archiveSha512);
-      assert.deepEqual(comparison.files, pkg.files);
-    } else {
-      assert.equal(pkg.allInstalledBytesEqualArchive, false);
-      validateBinRecord(pkg, receipt);
-      assert.deepEqual(
-        humanDependencyBinPartition(
-          contextFacts(pkg.binContext, archiveBodies, binInventory(pkg.directory)),
-        ),
-        pkg.sourceConformance,
-      );
-    }
   }
   for (const name of expected.keys())
     assert(seenExpected.has(name), `missing original provider ${name}`);
+}
+function validateNativeAndDeclarations(
+  receipt: InstallationFacts,
+  authority: ReleaseAuthority,
+  expected: ReadonlyMap<string, string>,
+): void {
+  const lockBytes = bytes(receipt.lockRawBase64);
   assert(Array.isArray(receipt.declaredOptionalNotInstalled));
   for (const row of receipt.declaredOptionalNotInstalled) {
     assert(!expected.has(row.name), "a required provider cannot be recorded absent");
@@ -132,6 +137,25 @@ export function validateInstallation(
   }
   assert.equal(fileImage(receipt.cli.path).sha256, receipt.cli.sha256);
   assert.equal(fileImage(receipt.native.path).sha256, receipt.native.sha256);
+  const requiredNative =
+    receipt.platform === "darwin" ? "@vizejs/native-darwin-arm64" : "@vizejs/native-linux-x64-gnu";
+  assert.equal(receipt.native.packageName, requiredNative);
+  for (const [name, image] of [
+    ["vize", receipt.cli],
+    [requiredNative, receipt.native],
+  ] as const) {
+    const owner = receipt.packages.find(
+      (pkg) => pkg.name === name && pkg.version === authority.version,
+    );
+    assert(
+      owner &&
+        owner.files.some(
+          (file) =>
+            file.path === image.path && file.bytes === image.bytes && file.sha256 === image.sha256,
+        ),
+      "mandatory executable/native image is not an authenticated public payload member",
+    );
+  }
   assert.equal(
     receipt.native.identityProbeOnly,
     true,
@@ -149,7 +173,7 @@ export function validateInstallation(
     assert.equal(providerReceipt.source, authority.candidate);
     assert.equal(providerReceipt.version, authority.version);
     const provider = object(providerReceipt.provider);
-    if (provider.targetPlatform !== `${recipe.platform}-${recipe.arch}`) continue;
+    if (provider.targetPlatform !== `${receipt.platform}-${receipt.arch}`) continue;
     assert.equal(provider.source, authority.candidate);
     assert.equal(provider.releaseVersion, authority.version);
     assert.equal(provider.nativeBuildToken, receipt.native.token);
@@ -162,4 +186,73 @@ export function validateInstallation(
     matched++;
   }
   assert.equal(matched, 1, "exactly one genuine physical producer native receipt required");
+}
+
+export function validateInstallation(
+  receipt: InstallReceipt,
+  fixture: Fixture,
+  recipe: Recipe,
+  authority: ReleaseAuthority,
+  archiveBodies: ReadonlyMap<string, Buffer>,
+): void {
+  assert.equal(receipt.schema, "vize.humanReports11252_11253.install.v1");
+  const expected = validateInstallationIdentity(receipt, fixture, recipe, authority);
+  validatePackagePopulation(receipt, expected, authority);
+  for (const pkg of receipt.packages) {
+    const archive = archiveBodies.get(pkg.name + "@" + pkg.version);
+    assert(archive, `whole public archive required for ${pkg.name}`);
+    if (pkg.allInstalledBytesEqualArchive === true) {
+      const comparison = archiveComparison(pkg.directory, archive, pkg.integrity);
+      assert.equal(comparison.tarballSHA512, pkg.archiveSha512);
+      assert.deepEqual(comparison.files, pkg.files);
+    } else {
+      assert.equal(pkg.allInstalledBytesEqualArchive, false);
+      validateBinRecord(pkg, receipt);
+      assert.deepEqual(
+        humanDependencyBinPartition(
+          contextFacts(pkg.binContext, archiveBodies, binInventory(pkg.directory)),
+        ),
+        pkg.sourceConformance,
+      );
+    }
+  }
+  validateNativeAndDeclarations(receipt, authority, expected);
+}
+
+export function validateCapturePrerequisites(
+  receipt: CaptureInstallReceipt,
+  fixture: Fixture,
+  recipe: Recipe,
+  authority: ReleaseAuthority,
+  archiveBodies: ReadonlyMap<string, Buffer>,
+  sink: Sink,
+): void {
+  assert.equal(receipt.schema, "vize.humanReports11252_11253.capturePrerequisites.v1");
+  assert.equal(receipt.mandatoryExecutableChainsAuthenticated, true);
+  for (const key of [
+    "completeInstalledFileSetQualified",
+    "accepted",
+    "productQualified",
+    "afterQualified",
+    "issueQualified",
+  ] as const)
+    assert.equal(receipt[key], false);
+  const expected = validateInstallationIdentity(receipt, fixture, recipe, authority);
+  validatePackagePopulation(receipt, expected, authority);
+  for (const pkg of receipt.packages) {
+    const archive = archiveBodies.get(pkg.name + "@" + pkg.version);
+    assert(archive, `whole public archive required before execution: ${pkg.name}`);
+    assert.deepEqual(
+      capturePublicPayload(
+        {
+          ...pkg,
+          archive,
+          manifest: bytes(pkg.manifestRawBase64),
+        },
+        sink,
+      ),
+      pkg,
+    );
+  }
+  validateNativeAndDeclarations(receipt, authority, expected);
 }

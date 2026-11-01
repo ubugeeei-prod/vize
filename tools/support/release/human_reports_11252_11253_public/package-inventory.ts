@@ -15,12 +15,7 @@ interface PhysicalEntry {
 
 /** Diagnostic observations only. The shared comparison still decides whether
  * every installed file and every public payload byte are exactly equal. */
-export function observedArchiveComparison(
-  directory: string,
-  payload: Buffer,
-  integrity: unknown,
-  sink: Sink,
-) {
+export function observePackageInventory(directory: string, payload: Buffer, sink: Sink) {
   const physical: PhysicalEntry[] = [];
   const walk = (relative: string): void => {
     for (const name of readdirSync(join(directory, relative)).sort()) {
@@ -97,5 +92,15 @@ export function observedArchiveComparison(
     bodyBytesExcluded: true,
     payloadOrExtraFilesWaived: false,
   });
+  return { physical, archive };
+}
+
+export function observedArchiveComparison(
+  directory: string,
+  payload: Buffer,
+  integrity: unknown,
+  sink: Sink,
+) {
+  observePackageInventory(directory, payload, sink);
   return archiveComparison(directory, payload, integrity);
 }

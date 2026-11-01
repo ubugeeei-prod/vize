@@ -68,11 +68,12 @@ export function humanDependencyBinPartition(facts: HumanBinFacts) {
       publicSriCredit: expected.owner === "PUBLIC_PAYLOAD",
     };
   });
-  assert.equal(files.filter((file) => file.bucket === "PUBLIC_PAYLOAD").length, 37);
+  if (facts.parent.name === "vue") assert.equal(payload.size, 37);
+  assert.equal(files.filter((file) => file.bucket === "PUBLIC_PAYLOAD").length, payload.size);
   return {
     schema: "vize.humanPnpm12161ClosedPartition.v1",
     role: facts.role,
-    publicPayloadCount: 37,
+    publicPayloadCount: payload.size,
     sourceConformantBinCount: bins.length,
     actualInventoryEntries: physical.size,
     everyActualEntryAccountedFor: true,

@@ -12,6 +12,7 @@ import type {
   PublicPackageFacts,
 } from "./dependency-bin-types.ts";
 import { safeAgeWorkspace, validateBinConfiguration } from "./bin-configuration.ts";
+import { validateOptionalAbsence } from "./optional-residency.ts";
 
 export function regular(file: FileFacts, expected: string): Buffer {
   assert.equal(file.path, expected);
@@ -46,7 +47,9 @@ export function publicFiles(pkg: PublicPackageFacts): Map<string, Buffer> {
 }
 function completeOwnerCensus(facts: HumanBinFacts): void {
   const parent = object(wholeJson(facts.parent.manifest));
-  assert.equal(parent.bin, undefined, "parent-owned bins need a separately reviewed branch");
+  const self = facts.parent.name === "typescript";
+  if (self) assert.equal(facts.owner.directory, facts.parent.directory);
+  else assert.equal(parent.bin, undefined, "dependency-only placement cannot add parent bins");
   const declarations = new Map<string, string>();
   for (const kind of ["dependencies", "optionalDependencies", "peerDependencies"]) {
     if (parent[kind] === undefined) continue;
@@ -58,13 +61,39 @@ function completeOwnerCensus(facts: HumanBinFacts): void {
     }
   }
   const names = [...declarations.keys()].sort();
+  const absent = facts.excludedDependencies ?? [];
+  const absentNames = new Set(absent.map((row) => row.name));
+  assert.equal(absentNames.size, absent.length);
+  for (const row of absent) {
+    assert.equal(row.parentDirectory, facts.parent.directory);
+    assert.equal(row.host.os, facts.host.platform);
+    assert.equal(row.host.cpu, facts.host.arch);
+    assert.equal(object(parent.optionalDependencies)[row.name], row.version);
+    assert(!object(parent.dependencies ?? {})[row.name]);
+    assert(!object(parent.peerDependencies ?? {})[row.name]);
+    validateOptionalAbsence(
+      row,
+      facts.root,
+      facts.lock,
+      row.host,
+      [facts.parent, ...facts.dependencyOwners].map((pkg) => ({
+        ...pkg,
+        files: [{ path: path.join(pkg.directory, "package.json"), sha256: sha256(pkg.manifest) }],
+      })),
+    );
+  }
+  assert([...absentNames].every((name) => names.includes(name)));
+  const presentNames = names.filter((name) => !absentNames.has(name));
   assert.deepEqual(
     facts.dependencyOwners.map((row) => row.name).sort(),
-    names,
+    presentNames,
     "complete authenticated parent dependency/optional/peer owner census required",
   );
-  assert.equal(facts.graph.length, names.length);
+  assert.equal(facts.graph.length, presentNames.length);
   const candidates = new Map<string, string[]>();
+  if (self)
+    for (const name of Object.keys(object(parent.bin)))
+      candidates.set(name, [facts.parent.directory]);
   for (const owner of facts.dependencyOwners) {
     assert(within(facts.root, owner.directory));
     assert.equal(
@@ -91,7 +120,9 @@ function completeOwnerCensus(facts: HumanBinFacts): void {
       candidates.set(name, owners);
     }
   }
-  const selected = facts.dependencyOwners.filter((row) => row.name === facts.owner.name);
+  const selected = self
+    ? [facts.parent]
+    : facts.dependencyOwners.filter((row) => row.name === facts.owner.name);
   assert.equal(selected.length, 1);
   assert.equal(selected[0]!.directory, facts.owner.directory);
   assert(selected[0]!.manifest.equals(facts.owner.manifest));
@@ -124,6 +155,10 @@ function observeManager(facts: HumanBinFacts): void {
   // owner or attributing its target image to the generator's source tag.
 }
 function inputBinding(facts: HumanBinFacts) {
+  const manifest = object(wholeJson(facts.parent.manifest));
+  const names = new Set<string>();
+  for (const category of ["dependencies", "optionalDependencies", "peerDependencies"])
+    for (const name of Object.keys(object(manifest[category] ?? {}))) names.add(name);
   return {
     role: facts.role,
     host: facts.host,
@@ -137,7 +172,8 @@ function inputBinding(facts: HumanBinFacts) {
       version: facts.owner.version,
       manifestSha256: sha256(facts.owner.manifest),
     },
-    dependencyNames: facts.dependencyOwners.map((row) => row.name).sort(),
+    dependencyNames: [...names].sort(),
+    placement: facts.parent.name === "typescript" ? "SELF" : "DEPENDENCY",
     rootConstruction: "OUTPUT/consumer-KIND",
     generatorOutputObservedAsInput: false,
   };
@@ -169,20 +205,25 @@ function deriveMetadataBins(facts: HumanBinFacts): DerivedBin[] {
       ? { platform: "darwin", arch: "arm64" }
       : { platform: "linux", arch: "x64" },
   );
-  assert.equal(facts.parent.name, "vue");
-  assert.equal(facts.parent.version, "3.5.44");
+  const self = facts.parent.name === "typescript";
+  assert(self || facts.parent.name === "vue");
+  assert.equal(facts.parent.version, self ? version : "3.5.44");
   assert.equal(facts.owner.name, "typescript");
   assert.equal(facts.owner.version, version);
-  assert.equal(lockPackageIntegrity(facts.lock, "vue", "3.5.44").integrity, facts.parent.integrity);
+  assert.equal(
+    lockPackageIntegrity(facts.lock, facts.parent.name, facts.parent.version).integrity,
+    facts.parent.integrity,
+  );
   assert.equal(
     lockPackageIntegrity(facts.lock, "typescript", version).integrity,
     facts.owner.integrity,
   );
   const parent = object(wholeJson(facts.parent.manifest));
   assert(
-    [parent.dependencies, parent.optionalDependencies, parent.peerDependencies].some(
-      (value) => value !== undefined && typeof object(value).typescript === "string",
-    ),
+    self ||
+      [parent.dependencies, parent.optionalDependencies, parent.peerDependencies].some(
+        (value) => value !== undefined && typeof object(value).typescript === "string",
+      ),
     "parent has no authenticated TypeScript dependency declaration",
   );
   completeOwnerCensus(facts);
@@ -232,11 +273,11 @@ function deriveMetadataBins(facts: HumanBinFacts): DerivedBin[] {
   const plan = object(wholeJson(facts.inputPolicyRaw));
   assert.deepEqual(
     Object.keys(plan).sort(),
-    ["bindings", "options", "schema", "sourceCommit"].sort(),
+    ["bindings", "selfBindings", "options", "schema", "sourceCommit"].sort(),
   );
   assert.equal(plan.schema, "vize.humanPnpm12161InputPolicy.v1");
   assert.equal(plan.sourceCommit, pnpmSource.sourceCommit);
-  const bindings = object(plan.bindings);
+  const bindings = object(self ? plan.selfBindings : plan.bindings);
   assert(
     Object.keys(bindings).every((role) =>
       ["runtime-prop-null-11252", "imports-vue-ts-11253"].includes(role),
@@ -293,7 +334,9 @@ function deriveMetadataBins(facts: HumanBinFacts): DerivedBin[] {
 /** Live path: every owner manifest/target is authenticated against the actual
  * complete public tarball before the shared metadata derivation is reached. */
 export function deriveHumanBins(facts: HumanBinFacts): DerivedBin[] {
-  assert.equal(publicFiles(facts.parent).size, 37);
+  const payload = publicFiles(facts.parent);
+  if (facts.parent.name === "vue") assert.equal(payload.size, 37);
+  else assert(payload.size > 0);
   for (const owner of facts.dependencyOwners) publicFiles(owner);
   const files = publicFiles(facts.owner);
   for (const target of facts.targets) {
