@@ -16,12 +16,22 @@ on:
       - tests/tooling/support/template-global-*.ts
       - tests/_fixtures/differential/compiler/template-global-policy/**
   workflow_dispatch:
+    inputs:
+      reference_only:
+        type: boolean
+        default: false
+        description: Capture one exact valid SFC SSR control from the retained source CLI only
+      source_sha:
+        type: string
+        default: ""
+        description: Exact controller commit required by reference-only mode
 permissions: { contents: read }
 concurrency:
   group: template-global-policy-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
   whole-modules:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.reference_only != true }}
     name: Complete compiler modules (${{ matrix.role }})
     strategy:
       fail-fast: false
@@ -107,6 +117,7 @@ jobs:
           path: ${{ github.workspace }}/target/vize-tests/template-global-${{ matrix.role }}
           if-no-files-found: error
   runtime:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.reference_only != true }}
     name: Actual stock and native component runtimes
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 25
@@ -157,3 +168,41 @@ jobs:
           name: template-global-runtime-${{ env.VIZE_TEMPLATE_GLOBAL_SOURCE_SHA }}
           path: ${{ env.VIZE_TEMPLATE_GLOBAL_RUNTIME_PROOF }}
           if-no-files-found: error
+  retained-ssr-reference:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.reference_only }}
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 10
+    permissions: { contents: read, actions: read }
+    env:
+      SOURCE_SHA: ${{ inputs.source_sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ inputs.source_sha }}", persist-credentials: false }
+      - name: Read the separate immutable reference producer checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: 3e67833be5b3ccd85b871a2bfa2d05683e77c3a4
+          path: reference-source
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - name: Authenticate the original producer and immutable artifact digest
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: node tools/support/compat/github/sfc-entry-reference-capture.ts authenticate
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          artifact-ids: 13070015036
+          merge-multiple: true
+          run-id: 41271259992
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/sfc-entry-reference-runtime
+          digest-mismatch: error
+      - name: Capture complete SSR process packets without rebuilding the producer
+        run: node tools/support/compat/github/sfc-entry-reference-capture.ts capture
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: retained-ssr-reference-${{ inputs.source_sha }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/sfc-entry-reference-evidence
+          if-no-files-found: error
+          retention-days: 14
