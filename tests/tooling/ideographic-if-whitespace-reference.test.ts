@@ -116,7 +116,10 @@ test("locked Vue preserves authored ideographic conditional whitespace and rejec
     assert.equal(observed.parsed.state, "returned");
     if (observed.parsed.state !== "returned") continue;
     object(observed.parsed.value);
-    assert.deepEqual(observed.parsed.value.errors, []);
+    const parseErrors: unknown = observed.parsed.value.errors;
+    assert(Array.isArray(parseErrors));
+    if (observed.fixture.accepted) assert.deepEqual(parseErrors, []);
+    else assert.equal(parseErrors.length, 1);
     const descriptor: unknown = observed.parsed.value.descriptor;
     object(descriptor);
     const template: unknown = descriptor.template;

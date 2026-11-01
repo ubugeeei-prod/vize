@@ -10,7 +10,7 @@ use oxc_ast::ast::StringLiteral;
 use oxc_ast_visit::Visit;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
-use vize_atelier_core::TemplateSyntaxMode;
+use vize_atelier_core::{CodegenResult, TemplateSyntaxMode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
 use vize_atelier_sfc::{SfcCompileOptions, compile_sfc_with_template_syntax, parse_sfc};
 
@@ -41,7 +41,11 @@ fn module_observation(code: &str) -> Value {
 
 #[test]
 fn all_template_syntax_modes_preserve_ideographic_if_expression_semantics() {
-    assert_eq!(format!("{:x}", Sha256::digest(INPUT)), INPUT_SHA);
+    let input_hash = Sha256::digest(INPUT)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    assert_eq!(input_hash, INPUT_SHA);
     let input: Value = serde_json::from_str(INPUT).unwrap();
     assert_eq!(
         input["schema"],
@@ -141,6 +145,11 @@ fn invalid_ideographic_condition_retains_the_whole_original_byte_span() {
         };
         let (root, errors, generated) =
             compile_template_with_template_syntax(&allocator, source, options, syntax);
+        let CodegenResult {
+            code,
+            preamble,
+            map,
+        } = generated;
         let error_spans = errors
             .iter()
             .map(|error| {
@@ -155,7 +164,7 @@ fn invalid_ideographic_condition_retains_the_whole_original_byte_span() {
         observations.push(json!({
             "templateSyntax":format!("{syntax:?}"),"source":source,
             "root":format!("{root:#?}"),"errors":format!("{errors:#?}"),
-            "generated":format!("{generated:#?}"),"errorSpans":error_spans
+            "generated":{"code":code,"preamble":preamble,"map":map},"errorSpans":error_spans
         }));
     }
     eprintln!(
