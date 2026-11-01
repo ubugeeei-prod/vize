@@ -10,6 +10,7 @@ import {
 } from "./optional-residency.ts";
 import { assertRecordedBinPolicy } from "./dependency-bin-policy.ts";
 import { validateBinRecord } from "./dependency-bin-record.ts";
+import { validateNativeLoadRecord } from "./native-loader-prerequisite.ts";
 const under = (root: string, file: string) =>
   file.startsWith(root + "/") && path.posix.normalize(file) === file;
 export function validateRecordedInstall(
@@ -27,10 +28,6 @@ export function validateRecordedInstall(
   assert.equal(row.nodeVersion, recipe.node);
   assert.equal(row.pnpmVersion, recipe.pnpm);
   assert(row.kernel);
-  assert.equal(
-    row.native.packageName,
-    recipe.platform === "darwin" ? "@vizejs/native-darwin-arm64" : "@vizejs/native-linux-x64-gnu",
-  );
   const manifest = manifestBytes(fixture, authority.version, row.kind === "tsrs-supplement");
   assert(bytes(row.packageRawBase64).equals(manifest));
   assert.deepEqual(row.packageManifest, wholeJson(manifest));
@@ -92,6 +89,7 @@ export function validateRecordedInstall(
     assert(!direct.has(absent.name), "a required provider cannot be recorded absent");
     validateOptionalAbsence(absent, row.root, bytes(row.lockRawBase64), row.host, row.packages);
   }
+  validateNativeLoadRecord(row, authority);
   const cli = row.packages.filter((p) => p.name === "vize" && p.version === authority.version);
   assert.equal(cli.length, 1);
   assert(under(cli[0]!.directory, row.cli.path));
