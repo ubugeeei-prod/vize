@@ -129,8 +129,10 @@ fn foreign_equal_roots_do_not_replace_original_model_ownership() -> Result<(), S
     let arena = Allocator::default();
     let first = lower_selected_setup_sfc_native(&arena, source, descriptor());
     let second = lower_selected_setup_sfc_native(&arena, source, descriptor());
-    let first_setup = first.admitted().ok_or("first setup")?.setup();
-    let second_setup = second.admitted().ok_or("second setup")?.setup();
+    let first_view = first.admitted().ok_or("first setup")?;
+    let second_view = second.admitted().ok_or("second setup")?;
+    let first_setup = first_view.setup();
+    let second_setup = second_view.setup();
     let first = build_native_selected_setup_vapor_decisions(first_setup)
         .map_err(|error| format!("{error:?}"))?;
     let second = build_native_selected_setup_vapor_decisions(second_setup)
@@ -173,7 +175,8 @@ fn ordinary_input_keeps_its_old_nonvoid_refusal_and_lexical_reads_stay_reads() -
         let source = format!("<script setup>let draft='x'</script><template>{template}</template>");
         let arena = Allocator::default();
         let observation = lower_selected_setup_sfc_native(&arena, &source, descriptor());
-        let setup = observation.admitted().ok_or("actual setup")?.setup();
+        let selected = observation.admitted().ok_or("actual setup")?;
+        let setup = selected.setup();
         let analysis = build_native_selected_setup_vapor_decisions(setup)
             .map_err(|error| format!("{error:?}"))?;
         let facts = analysis.vapor().ok_or("facts")?;

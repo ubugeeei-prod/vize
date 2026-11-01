@@ -93,11 +93,16 @@ fn seven_whole_original_input_model_vapor_components_and_raw_maps_are_captured()
         && owners.len() == 7
         && attempts.len() == 7
         && refusals.len() == 12;
+    let digest = Sha256::digest(input_raw.as_bytes());
+    let mut input_hash = String::with_capacity(64);
+    for nibble in digest.iter().flat_map(|byte| [byte >> 4, byte & 0x0f]) {
+        input_hash.push(char::from_digit(u32::from(nibble), 16).ok_or("SHA256 nibble")?);
+    }
     let capture = serde_json::json!({
         "schema":"vize.native-vapor.original-input-model-capture",
         "adapter":"compile_native_vapor_setup_sfc",
         "sourceRevision":std::env::var("GITHUB_SHA").ok(),
-        "inputHash":format!("{:x}", Sha256::digest(input_raw.as_bytes())),"inputPack":pack,
+        "inputHash":input_hash,"inputPack":pack,
         "target":{"compiler":"@vue/compiler-sfc@3.6.0-rc.9","runtime":"vue@3.6.0-rc.9"},
         "qualification":"observed-unqualified-current-oracles-pending",
         "nativeGoldenComparisonPerformed":false,"wholePacketQualification":false,
