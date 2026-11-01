@@ -36,21 +36,33 @@ export function githubReader(sink: Sink) {
   };
 }
 export const github = githubReader(discard);
-interface PublicArchive {
+export interface PublicMetadata {
+  name: string;
+  version: string;
+  url: string;
+  status: 200;
+  date: string | null;
+  rawBase64: string;
+  rawSha256: string;
   resolved: string;
   integrity: string;
+  metadata: Record<string, unknown>;
+}
+interface PublicArchive extends PublicMetadata {
   body: Buffer;
-  metadata: unknown;
 }
 const cache = new Map<string, PublicArchive>();
-export async function publicArchive(
+const metadataCache = new Map<string, PublicMetadata>();
+export async function publicPackageMetadata(
   name: string,
   version: string,
   sink: Sink = discard,
   fetcher: typeof fetch = fetch,
-): Promise<PublicArchive> {
+): Promise<PublicMetadata> {
+  assert.match(name, /^(?:@[a-z0-9._-]+\/)?[a-z0-9._-]+$/u);
+  assert.match(version, /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u);
   const key = name + "@" + version,
-    previous = cache.get(key);
+    previous = metadataCache.get(key);
   if (previous) return previous;
   const metadataUrl = `https://registry.npmjs.org/${encodeURIComponent(name)}/${version}`;
   const response = await fetcher(metadataUrl, { signal: AbortSignal.timeout(30_000) });
@@ -92,6 +104,33 @@ export async function publicArchive(
   const dist = object(metadata.dist),
     resolved = publicUrl(text(dist.tarball)),
     integrity = text(dist.integrity);
+  sriSha512(integrity);
+  const result: PublicMetadata = {
+    name,
+    version,
+    url: metadataUrl,
+    status: 200,
+    date: response.headers.get("date"),
+    rawBase64: raw.toString("base64"),
+    rawSha256: sha256(raw),
+    resolved,
+    integrity,
+    metadata,
+  };
+  metadataCache.set(key, result);
+  return result;
+}
+export async function publicArchive(
+  name: string,
+  version: string,
+  sink: Sink = discard,
+  fetcher: typeof fetch = fetch,
+): Promise<PublicArchive> {
+  const key = name + "@" + version;
+  const previous = cache.get(key);
+  if (previous) return previous;
+  const published = await publicPackageMetadata(name, version, sink, fetcher);
+  const { resolved, integrity } = published;
   const expected = sriSha512(integrity);
   const payload = await fetcher(resolved, { signal: AbortSignal.timeout(120_000) });
   sink("registry-archive-status", {
@@ -122,7 +161,7 @@ export async function publicArchive(
     expectedIntegrity: integrity,
   });
   assert(createHash("sha512").update(body).digest().equals(expected));
-  const result = { resolved, integrity, body, metadata };
+  const result = { ...published, body };
   cache.set(key, result);
   return result;
 }

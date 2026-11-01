@@ -3,6 +3,11 @@ import path from "node:path";
 import type { Fixture, InstallReceipt, Recipe, ReleaseAuthority } from "./model.ts";
 import { manifestBytes } from "./installation.ts";
 import { array, bytes, hash, object, sha256, text, wholeJson } from "./value.ts";
+import {
+  checkHostFacts,
+  checkManagerFiles,
+  validateOptionalAbsence,
+} from "./optional-residency.ts";
 const under = (root: string, file: string) =>
   file.startsWith(root + "/") && path.posix.normalize(file) === file;
 export function validateRecordedInstall(
@@ -26,6 +31,8 @@ export function validateRecordedInstall(
   const manifest = manifestBytes(fixture, authority.version, row.kind === "tsrs-supplement");
   assert(bytes(row.packageRawBase64).equals(manifest));
   assert.deepEqual(row.packageManifest, wholeJson(manifest));
+  checkHostFacts(row.host, recipe.platform, recipe.arch);
+  checkManagerFiles(row.managerFiles, bytes(row.lockRawBase64), manifest);
   assert.equal(sha256(bytes(row.lockRawBase64)), row.lockSha256);
   for (const image of [row.node, row.pnpm, row.cli, row.native, ...row.sdk]) {
     hash(image.sha256);
@@ -75,6 +82,11 @@ export function validateRecordedInstall(
       row.packages.some((p) => p.name === name && p.version === version),
       `missing exact recorded provider ${name}`,
     );
+  assert(Array.isArray(row.declaredOptionalNotInstalled));
+  for (const absent of row.declaredOptionalNotInstalled) {
+    assert(!direct.has(absent.name), "a required provider cannot be recorded absent");
+    validateOptionalAbsence(absent, row.root, bytes(row.lockRawBase64), row.host, row.packages);
+  }
   const cli = row.packages.filter((p) => p.name === "vize" && p.version === authority.version);
   assert.equal(cli.length, 1);
   assert(under(cli[0]!.directory, row.cli.path));

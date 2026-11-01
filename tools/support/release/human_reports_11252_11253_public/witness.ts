@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { join } from "node:path";
 import type { CommandPlan, InstallReceipt } from "./model.ts";
 import { installedFiles } from "../public_install/archive.ts";
+import { absentPackage, managerFiles, physicalPathWitness } from "./optional-residency.ts";
 function image(path: string): unknown {
   try {
     const stat = statSync(path),
@@ -26,6 +27,44 @@ function image(path: string): unknown {
 export function payloadWitness(install: InstallReceipt): unknown {
   return {
     scope: "authenticated package payloads only; not whole node_modules",
+    declaredOptionalNotInstalled: install.declaredOptionalNotInstalled.map((row) => {
+      const physical = physicalPathWitness(
+        install.root,
+        row.physical.path,
+        row.parentDirectory,
+        row.name,
+      );
+      try {
+        return {
+          name: row.name,
+          version: row.version,
+          parent: row.parentDirectory,
+          actual: absentPackage(
+            install.root,
+            row.physical.path,
+            row.parentDirectory,
+            row.name,
+            row.version,
+          ),
+          physical,
+        };
+      } catch (error) {
+        return {
+          name: row.name,
+          version: row.version,
+          parent: row.parentDirectory,
+          error: String(error),
+          physical,
+        };
+      }
+    }),
+    managerFiles: (() => {
+      try {
+        return managerFiles(install.root);
+      } catch (error) {
+        return { error: String(error) };
+      }
+    })(),
     packages: install.packages.map((pkg) => {
       let actual: unknown;
       try {
