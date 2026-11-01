@@ -118,25 +118,37 @@ fn authored_options_methods_keep_module_augmentations_typed() {
             "wholeDiagnostics": whole_diagnostics,
         });
         retain_packet(name, &packet);
-        let mut actual: Vec<_> = result
-            .diagnostics
-            .iter()
-            .map(|diagnostic| {
-                (
-                    relative_path(&project_root, &diagnostic.file),
-                    diagnostic.line + 1,
-                    diagnostic.code,
-                )
-            })
-            .collect();
-        actual.sort();
         assert_eq!(
-            actual,
-            [
-                ("src/App.vue".into(), 6, Some(2345)),
-                ("src/App.vue".into(), 7, Some(2339)),
-                ("src/App.vue".into(), 8, Some(2571)),
-            ],
+            serde_json::json!(whole_diagnostics),
+            serde_json::json!([
+                {
+                    "blockType": "Script",
+                    "code": 2345,
+                    "column": 50,
+                    "file": "src/App.vue",
+                    "line": 5,
+                    "message": "Argument of type 'number' is not assignable to parameter of type 'string'.",
+                    "severity": 1
+                },
+                {
+                    "blockType": "Script",
+                    "code": 2339,
+                    "column": 27,
+                    "file": "src/App.vue",
+                    "line": 6,
+                    "message": "Property '$unregistered' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, { valid(): number; invalid(): number; missing(): void; opaque(): void; dynamic(): void; }, ComponentOptionsMixin, ... 19 more ..., {}>'.",
+                    "severity": 1
+                },
+                {
+                    "blockType": "Script",
+                    "code": 2571,
+                    "column": 21,
+                    "file": "src/App.vue",
+                    "line": 7,
+                    "message": "Object is of type 'unknown'.",
+                    "severity": 1
+                }
+            ]),
             "complete augmentation packet {name}: {packet:#}"
         );
         drop(checker);
