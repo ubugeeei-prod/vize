@@ -23,8 +23,8 @@ import { observeHistoricalTerminalStderr } from "./terminal-stderr-unavailable.t
 import { observeHistoricalSplitWatchLog } from "./stable-watcher-mixed.ts";
 import {
   historicalRootWarning,
-  observeHistoricalRootWatchWarning,
-} from "./historical-root-watch-warning.ts";
+  observeRootWatchWarning as observeHistoricalRootWatchWarning,
+} from "./historical-inflight-root-warning.ts";
 import { buildRoleDisposition } from "./role-disposition.ts";
 
 const root = process.env.VIZE_NATIVE_DTO_CAPTURE!;

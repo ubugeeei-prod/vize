@@ -1,5 +1,9 @@
 // Finite current producer authority. Historical archives and ABI identities remain separate.
 export const watcherSuccessor = {
+  inflightWarningId: "before-stable-inflight-root-warning-41270804509",
+  inflightWarningPath: "tests/tooling/support/native-beta-dto/historical-inflight-root-warning.ts",
+  inflightWarningHash: "a342c86cda28f091cdf085150d974a3157351c3f56a1f091bad41937321affd7",
+  inflightWarningRuntime: "e0d4d7e357c9c2648b67a1cfb05a02696f4d6a27074d2b46ace48f23ea37bb8a",
   after4CleanupId: "source-owned-sdk4-post-batch-cleanup-41265655424",
   after4SourcePath: "tests/tooling/support/native-beta-dto/after4-cleanup-source.ts",
   after4SourceHash: "fb94db02045535bc7ea696ea354847fe409b7ac7a179530493cb60302e98a75e",
@@ -62,7 +66,7 @@ export const watcherSuccessor = {
   terminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
   terminalSha256: "83b167d4146f812255b01a946ead297693bad85cdf904817e4207a2bf1c97c35",
   terminalRuntimeSha256: "2ed2edfda0877fa9a4b1093242f8501c5fb2ce834dfaf39ff478edfa9da18013",
-  auditRuntimeSha256: "2319c830b708b8cc15ff4744640100728fe5c47f28e41930b8ea114588535e00",
+  auditRuntimeSha256: "791aeda61a63c2fdab1b9f4bca5f74a88e2c2e3e01e75be03f82484fd9f91838",
   typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
   typesSha256: "3904cfaf07e59b501c2361b65410877f22780bfdc365cedf74300bb6fb88d127",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",

@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { stripTypeScriptTypes } from "node:module";
 import { watcherSuccessor } from "./native-beta-dto-current-custody.ts";
 const currentAuthorityPath = "tools/support/compat/github/native-beta-dto-current-custody.ts";
-const currentAuthoritySha256 = "8fb2eac16a840037816e2254e08f4531d99fb50cce4f692c134362d057233854";
+const currentAuthoritySha256 = "9fd741be52de06c90550fe16befb3a5fa216956361ec3f09c4b3188013c6a436";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";
@@ -161,6 +161,11 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
           watcherSuccessor.routeRuntimeSha256, "missing or changed registered beta semantic route runtime");
       for (const [path, physical, executable] of [
         [
+          watcherSuccessor.inflightWarningPath,
+          watcherSuccessor.inflightWarningHash,
+          watcherSuccessor.inflightWarningRuntime,
+        ],
+        [
           watcherSuccessor.after4SourcePath,
           watcherSuccessor.after4SourceHash,
           watcherSuccessor.after4SourceRuntime,
@@ -274,6 +279,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
       currentAfter4CleanupRegistration: index === 3 ? watcherSuccessor.after4CleanupId : null,
       currentMembershipRegistration: index === 3 ? watcherSuccessor.membershipId : null,
       currentRootWarningRegistration: index === 3 ? watcherSuccessor.rootWarningId : null,
+      currentInflightWarningRegistration: index === 3 ? watcherSuccessor.inflightWarningId : null,
       currentStorageRegistration: index === 1 || index === 3 ? watcherSuccessor.storageId : null,
       currentStorageObserverDependency:
         index === 1 || index === 3

@@ -94,6 +94,15 @@ void test("typed producers retain historical bytes and only the exact registered
   }
   const current = custody.find((entry) => entry.currentPath.endsWith("audit-wire.ts"))!;
   assert.equal(
+    current.currentInflightWarningRegistration,
+    "before-stable-inflight-root-warning-41270804509",
+  );
+  assert(
+    custody
+      .filter((entry) => entry !== current)
+      .every((entry) => entry.currentInflightWarningRegistration === null),
+  );
+  assert.equal(
     current.currentRootWarningRegistration,
     "before-stable-root-watch-warning-41214579457",
   );
@@ -262,6 +271,7 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/logical-attached-route.ts",
     "tools/support/compat/github/native-beta-dto-current-custody.ts",
     "tests/tooling/support/native-beta-dto/historical-root-watch-warning.ts",
+    "tests/tooling/support/native-beta-dto/historical-inflight-root-warning.ts",
     "tests/tooling/support/native-beta-dto/role-disposition.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
@@ -314,6 +324,7 @@ void test("current observer successor requires its exact bounded runtime and act
     "tests/tooling/support/native-beta-dto/logical-attached-route.ts",
     "tools/support/compat/github/native-beta-dto-current-custody.ts",
     "tests/tooling/support/native-beta-dto/historical-root-watch-warning.ts",
+    "tests/tooling/support/native-beta-dto/historical-inflight-root-warning.ts",
     "tests/tooling/support/native-beta-dto/role-disposition.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-timing.ts",
     "tests/tooling/support/native-beta-dto/stable-watcher-mixed.ts",
