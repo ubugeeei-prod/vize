@@ -664,8 +664,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             });
             emit_options_api_variables(
                 options_api,
-                &mut ts,
-                &mut semantic_links,
+                (&mut ts, &mut semantic_links, &mut mappings),
                 summary,
                 options,
                 script_content,
@@ -673,7 +672,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     &options_script,
                     declared_default_alias && !legacy_vue2 && !has_script_setup,
                 ),
-                &mut mappings,
                 &script_source_offset,
             );
             let template_binding_access = profile!(

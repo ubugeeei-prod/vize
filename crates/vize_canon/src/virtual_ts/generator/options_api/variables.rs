@@ -13,18 +13,21 @@ use vize_croquis::{BindingType, Croquis};
 /// Emit the profiled Options API variables without growing the root generator.
 pub(in crate::virtual_ts::generator) fn emit_options_api_variables(
     enabled: bool,
-    ts: &mut String,
-    links: &mut Vec<VizeSemanticLink>,
+    output: (
+        &mut String,
+        &mut Vec<VizeSemanticLink>,
+        &mut Vec<VizeMapping>,
+    ),
     summary: &Croquis,
     options: &VirtualTsOptions,
     script: Option<&str>,
     script_facts: (&OptionsApiScriptFacts, bool),
-    mappings: &mut Vec<VizeMapping>,
     offset: &dyn Fn(usize) -> usize,
 ) {
     if !enabled {
         return;
     }
+    let (ts, links, mappings) = output;
     vize_carton::profile!(
         "canon.virtual_ts.generate_options_api_variables",
         links.extend(generate_options_api_variables(

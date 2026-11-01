@@ -262,9 +262,13 @@ export default defineComponent({ mixins: [shared], data() { return { payload: { 
         )
         .expect("persist shadow before verdict");
     }
-    assert_eq!(result.diagnostics.len(), 0, "{observations:#}");
+    assert_eq!(
+        observations["diagnostics"],
+        serde_json::json!([]),
+        "{observations:#}"
+    );
     assert_eq!(result.exit_code, 0, "{observations:#}");
-    assert_eq!(result.success, true, "{observations:#}");
+    assert!(result.success, "{observations:#}");
     drop(checker);
     std::fs::remove_dir_all(&root).expect("remove completed shadow fixture");
 }
