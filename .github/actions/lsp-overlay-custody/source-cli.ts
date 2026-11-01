@@ -97,6 +97,10 @@ function libraryExecution(capture: string, nativeSha: string): void {
         prefix +
           "replay::native_editor_resolves_package_alias_from_monorepo_root_replays_unsaved_api_after_disk_events",
       ],
+      [
+        "shared-api-currentness",
+        "lsp_client::editor_lsp::configured_project::shared_transport::tests::logical_currentness::native_logical_revision_refusal_quarantines_current_api_but_preserves_held_snapshot",
+      ],
     ]) {
       execution(fs.readFileSync(path.join(capture, `${name}.stdout`), "utf8"), [test!]);
     }

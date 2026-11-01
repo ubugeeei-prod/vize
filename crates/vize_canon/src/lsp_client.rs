@@ -55,7 +55,8 @@ pub struct CorsaProjectClient {
     authored_workspace: bool,
     /// This live revision has no owning API overlay; semantic requests use LSP.
     logical_workspace_overlays: bool,
-    /// A previous API revision must retire before closed-file API reuse.
+    /// A newer logical revision has no accepted current API head; an empty
+    /// logical view requires the existing readonly owner reset.
     logical_api_reset_pending: bool,
     project_root: PathBuf,
     /// Explicit Batch configuration, retained across editor fallback/retries.

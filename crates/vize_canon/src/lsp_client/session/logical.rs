@@ -2,6 +2,7 @@
 
 use super::CorsaProjectClient;
 use crate::file_uri::file_uri_to_path;
+use corsa::api::ApiDialect;
 use std::path::Component;
 use vize_l0::{FxHashMap, String, cstr};
 
@@ -40,6 +41,7 @@ impl CorsaProjectClient {
     pub(in crate::lsp_client) fn retain_logical_workspace_revision(
         &mut self,
     ) -> Result<(), String> {
+        self.logical_api_reset_pending |= self.has_project_session();
         self.validate_logical_workspace_documents(&self.document_texts)?;
         let uris = self.document_texts.keys().cloned().collect::<Vec<_>>();
         for uri in uris {
@@ -80,6 +82,7 @@ impl CorsaProjectClient {
         &mut self,
         uri: &str,
     ) -> Result<(), String> {
+        self.logical_api_reset_pending |= self.has_project_session();
         self.document_texts.remove(uri);
         self.overlay_versions.remove(uri);
         if let Some(mapped) = self.session_document_uris.remove(uri) {
@@ -97,6 +100,22 @@ impl CorsaProjectClient {
         } else {
             self.refresh_logical_attached_project()
         }
+    }
+
+    pub(super) fn require_current_logical_api_revision(&self) -> Result<(), String> {
+        if self.logical_workspace_overlays
+            && !self.document_texts.is_empty()
+            && self.logical_api_reset_pending
+            && self.project_session_attached_to_editor
+            && self.session.as_ref().is_some_and(|session| {
+                session.client().dialect() == Some(ApiDialect::DerivedSnapshots)
+            })
+        {
+            return Err(cstr!(
+                "Logical editor API snapshot does not own the current retained revision"
+            ));
+        }
+        Ok(())
     }
 }
 

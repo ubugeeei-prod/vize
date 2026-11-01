@@ -51,6 +51,7 @@ impl CorsaProjectClient {
 
     pub(super) fn project_session(&mut self) -> Result<&ProjectSession, String> {
         self.ensure_project_transport()?;
+        self.require_current_logical_api_revision()?;
         self.session
             .as_ref()
             .ok_or_else(|| cstr!("Corsa project-session API is unavailable"))
@@ -58,6 +59,7 @@ impl CorsaProjectClient {
 
     pub(super) fn project_session_mut(&mut self) -> Result<&mut ProjectSession, String> {
         self.ensure_project_transport()?;
+        self.require_current_logical_api_revision()?;
         self.session
             .as_mut()
             .ok_or_else(|| cstr!("Corsa project-session API is unavailable"))
