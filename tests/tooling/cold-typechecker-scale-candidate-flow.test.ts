@@ -10,6 +10,7 @@ import {
 } from "../../tools/benchmarks/scripts/cold-typechecker-scale-candidate-source.ts";
 import { currentProfileSource } from "../../tools/benchmarks/scripts/cold-typechecker-scale-native-source.ts";
 import { resetCandidateCache } from "../../tools/benchmarks/scripts/cold-typechecker-scale-candidate-normal.ts";
+import { verifyCandidatePhasePrimary } from "../../tools/benchmarks/scripts/cold-typechecker-scale-candidate-profile.ts";
 
 const text = (file: string) =>
   fs.readFileSync(new URL("../../tools/benchmarks/scripts/" + file, import.meta.url), "utf8");
@@ -39,6 +40,7 @@ test("paired source requires original+debug+census before primaries and all nati
     assert(p.includes("comparisonQualified: false"));
     ordered(q, "reportCpuProfile(capture)", "archiveCandidateNativeBlock(capture");
     ordered(q, "reportMemoryProfile(capture)", "archiveCandidateNativeBlock(capture");
+    ordered(q, "const phasePrimary = verifyCandidatePhasePrimary(", "reportCpuProfile(capture)");
     assert(q.includes('"phase-vize"') && q.includes('"native-profile"'));
   };
   check(normal, paired, profile);
@@ -65,6 +67,27 @@ test("paired source requires original+debug+census before primaries and all nati
   assert.throws(() =>
     check(normal, paired, profile.replace("reportMemoryProfile(capture)", "missingMemoryReader()")),
   );
+});
+
+test("normal phase joins its SAME-role primary whole packet after persistence, with no stream/status filtering", () => {
+  const primary = {
+    status: 0,
+    stdout: Buffer.from("whole unknown JSON bytes\n"),
+    stderr: Buffer.from("complete progress\n"),
+  };
+  const phase = { ...primary, signal: null, error: null };
+  assert.deepEqual(verifyCandidatePhasePrimary(primary, phase), {
+    wholeStatusStdoutStderrEqual: true,
+    sameRoleNormalPrimary: true,
+  });
+  for (const changed of [
+    { ...phase, status: 2 },
+    { ...phase, stdout: Buffer.concat([phase.stdout, Buffer.from("extra")]) },
+    { ...phase, stderr: Buffer.alloc(0) },
+    { ...phase, signal: "SIGTERM" },
+    { ...phase, error: "spawn failed" },
+  ])
+    assert.throws(() => verifyCandidatePhasePrimary(primary, changed));
 });
 
 test("all seven real SDK4 role checksums stay distinct from mutable source graph pins", () => {

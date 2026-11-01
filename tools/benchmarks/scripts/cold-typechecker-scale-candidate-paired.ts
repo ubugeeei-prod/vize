@@ -132,6 +132,7 @@ export async function pairedCandidateComparison(options: {
       normal,
       custody,
       helpers: first.helperTransition,
+      primaryRaw: first.primaryRaw,
       enter,
     });
     for (const role of ["base", "head"] as const) {

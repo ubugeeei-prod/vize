@@ -15,11 +15,28 @@ import {
   type CandidateBuild,
 } from "./cold-typechecker-scale-candidate-normal.ts";
 import type { CandidateSources } from "./cold-typechecker-scale-candidate-source.ts";
+import { compareInheritedOptionsRaw } from "./cold-typechecker-scale-candidate-originals.ts";
 
 const hash = (file: string) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 const read = (root: string, file: string) =>
   JSON.parse(fs.readFileSync(path.join(root, file), "utf8"));
 const nativeSha = "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70";
+
+export function verifyCandidatePhasePrimary(
+  primary: { status: number | null; stdout: Buffer; stderr: Buffer },
+  phase: {
+    status: number | null;
+    signal: string | null;
+    error: string | null;
+    stdout: Buffer;
+    stderr: Buffer;
+  },
+) {
+  assert.equal(phase.signal, null);
+  assert.equal(phase.error, null);
+  compareInheritedOptionsRaw(primary, phase);
+  return { wholeStatusStdoutStderrEqual: true, sameRoleNormalPrimary: true };
+}
 
 function providerImages(provider: string) {
   const lock = read(provider, "package-lock.json") as {
@@ -74,6 +91,7 @@ export function candidateProfileCommands(options: {
   normal: Record<"base" | "head", CandidateBuild & { receipt: string }>;
   custody: Record<"base" | "head", CandidateBuild & { receipt: string }>;
   helpers?: { before: Buffer; after: Buffer };
+  primaryRaw: Record<"base" | "head", { status: number | null; stdout: Buffer; stderr: Buffer }>;
   enter: (id: string) => void;
 }) {
   const { provider, out, common, corpus, frozen, normal, custody, enter } = options;
@@ -146,12 +164,17 @@ export function candidateProfileCommands(options: {
       }
     }
     assert(captured);
+    const phasePrimary = verifyCandidatePhasePrimary(options.primaryRaw[role], {
+      ...read(capture, "phase-vize.status.json"),
+      stdout: fs.readFileSync(path.join(capture, "phase-vize.stdout.bin")),
+      stderr: fs.readFileSync(path.join(capture, "phase-vize.stderr.bin")),
+    });
     // These nine/CPU reader calls are post-exit Go readers, not target commands or timing samples.
     reportCpuProfile(capture);
     reportMemoryProfile(capture);
     const archive = path.join(nativeRoot, role);
     const archived = archiveCandidateNativeBlock(capture, archive);
-    profiles.push({ role, archive, archived });
+    profiles.push({ role, archive, archived, phasePrimary });
   }
   const before = path.join(nativeRoot, "base"),
     after = path.join(nativeRoot, "head");

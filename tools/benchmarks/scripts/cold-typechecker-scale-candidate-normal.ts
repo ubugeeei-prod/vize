@@ -352,6 +352,7 @@ export async function candidateNormalCommands(options: {
         "empty initialized route binding input; outer Vec capacity and retained memory impact remain unknown",
     };
   const samples: Sample[] = [];
+  const primaryRaw = {} as Record<Role, Raw>;
   let completeRaw: Raw | undefined;
   for (const [pairIndex, order] of orders.entries())
     for (const [position, role] of order.entries()) {
@@ -366,6 +367,7 @@ export async function candidateNormalCommands(options: {
       });
       assert.equal(observed.report.corpusSha256, corpus.corpusSha256);
       const raw = { status: 0, stdout: observed.stdout, stderr: observed.stderr };
+      if (primaryRaw[role] === undefined) primaryRaw[role] = raw;
       compareInheritedOptionsRaw(allocationPackets[role], raw); // Full primary-argv parity closes here, after this raw measured command.
       if (completeRaw) compareInheritedOptionsRaw(completeRaw, raw);
       else completeRaw = raw;
@@ -424,6 +426,7 @@ export async function candidateNormalCommands(options: {
     preflights,
     nativeProof,
     allocationReports,
+    primaryRaw,
     samples,
     statistics: {
       wallMs: describe((row) => row.wallMs),
