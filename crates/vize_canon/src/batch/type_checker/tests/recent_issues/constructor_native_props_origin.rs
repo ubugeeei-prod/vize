@@ -168,6 +168,7 @@ fn current_native_instance_props_declaration_origins() {
         None,
     ));
     let mut calls = Vec::new();
+    let mut consumer_result = Ok(());
     let (result, cleanup) = match spawned {
         Ok(session) => {
             let client = session.client().clone();
@@ -190,6 +191,22 @@ fn current_native_instance_props_declaration_origins() {
                     &mut calls,
                 )
             };
+            if result.is_ok() {
+                consumer_result = super::constructor_vue_return_consumer::capture_if_requested(
+                    &session,
+                    &lease,
+                    evidence,
+                    super::constructor_vue_return_consumer::Input {
+                        project: &checker.project,
+                        root,
+                        config: &config,
+                        generated_file: &generated.virtual_path,
+                        generated_text: generated.content.as_str(),
+                        authored_text: TINY,
+                        component_text: COMPONENT,
+                    },
+                );
+            }
             let current = std::sync::Arc::ptr_eq(&lease, &session.snapshot_lease())
                 && session.project() == &project;
             calls.push(json!({"label":"sameOwnerAfterQueries","current":current,
@@ -231,4 +248,5 @@ fn current_native_instance_props_declaration_origins() {
         receipt["cleanup"]["clientClose"].get("Ok").is_some(),
         "native close failed: {receipt}"
     );
+    consumer_result.expect("separate optional constructor observation refused");
 }
