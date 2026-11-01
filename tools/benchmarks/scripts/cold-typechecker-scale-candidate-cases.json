@@ -1,21 +1,300 @@
 {
   "schemaVersion": 1,
-  "optionsFix": null,
+  "optionsFix": {
+    "sha": "0dd3941dc3c090879c2c4ca540233b27fb0b8129",
+    "tree": "c23d0216b3d11e1ee00f7e02be80dfc1574e74e5"
+  },
   "historicalSourceFix": "0eb2f8db16f6541cd422ee610ab3e554bf041e0d",
   "cases": [
     {
       "kind": "type-work",
-      "state": "pending",
-      "sources": null,
-      "allocation": null,
-      "sourceCi": null
+      "state": "ready",
+      "sources": {
+        "kind": "type-work",
+        "base": {
+          "sha": "0dd3941dc3c090879c2c4ca540233b27fb0b8129",
+          "tree": "c23d0216b3d11e1ee00f7e02be80dfc1574e74e5"
+        },
+        "head": {
+          "sha": "a663240a408548df3da8a54ead2dbc49121a3276",
+          "tree": "4d8eedc4088672de302c500e724bb94e166e1512"
+        },
+        "containing": {
+          "optionsFix": "0dd3941dc3c090879c2c4ca540233b27fb0b8129",
+          "historicalSourceFix": "0eb2f8db16f6541cd422ee610ab3e554bf041e0d"
+        },
+        "changed": [
+          {
+            "path": "crates/vize_canon/src/batch/virtual_project/snapshots/vize_canon__batch__virtual_project__tests__pruned_helpers.snap",
+            "base": {
+              "bytes": 44093,
+              "sha256": "ab0a4270adec1363466e99b8c591cf454f156532822ad3592e26d76077093455",
+              "gitBlob": "c86372d117ce2e3932b88dc92602394795fdd114"
+            },
+            "head": {
+              "bytes": 44351,
+              "sha256": "2ec0f07c99b572cfaf521356843c5e655e7c3e789a37f2bd8294fa3ac7d3ce4e",
+              "gitBlob": "4c87abf11efc81b511fec08979d7f42d986098ad"
+            }
+          },
+          {
+            "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt",
+            "base": {
+              "bytes": 8324,
+              "sha256": "8b78a238856c7599da7d38bd9f1f354d9394481282230845c5c52ba9056cb133",
+              "gitBlob": "04fb545163534db96939ce212a5bb60258abe82a"
+            },
+            "head": {
+              "bytes": 8582,
+              "sha256": "e01818ae55dd7002479b86569a50a0bc491b7a6600785e8d45df6298754c5898",
+              "gitBlob": "1ce7bdda9c80984222ca061aebc7b16437a8b11c"
+            }
+          },
+          {
+            "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update.rs",
+            "base": {
+              "bytes": 7930,
+              "sha256": "3ef756a73fee830b7e2f62b9e5c4cacbdb67da07f7f9bc296a6ba039a957fe01",
+              "gitBlob": "dff8f1f6c440f8b488fb544e676914909e7baf59"
+            },
+            "head": {
+              "bytes": 8119,
+              "sha256": "65c6349ddaa124d65fe77fd2011e08fbd67d1c8ed39cfbba3400661f691d984a",
+              "gitBlob": "da70a5d198c2479767d4f3045cf3c1bbbb94128e"
+            }
+          },
+          {
+            "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/instance_props.rs",
+            "base": null,
+            "head": {
+              "bytes": 4249,
+              "sha256": "0415ec286c38e0615da3c0dd48e5fdaae83836b007f1fe0a94b0d2ba40cc0144",
+              "gitBlob": "751c110c7f299770d2e748848313cd6950e2ca0c"
+            }
+          },
+          {
+            "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/instance-prop-metadata-update.json",
+            "base": null,
+            "head": {
+              "bytes": 142591,
+              "sha256": "b7dea15af178ef4594fc42e764a6875903d0861850065cfa958c392cfd8b9792",
+              "gitBlob": "1c23d09721d4b549c76861fa7db66e1272b2f933"
+            }
+          },
+          {
+            "path": "tests/tooling/canon-instance-prop-ambient.test.ts",
+            "base": null,
+            "head": {
+              "bytes": 9995,
+              "sha256": "2c817af4dd1c6250b323864111e50bb08dd22457f14a5a87494dc27f9acd7ed4",
+              "gitBlob": "ed5603e0a904513c4516e0d4316a80a60b171541"
+            }
+          },
+          {
+            "path": "tests/tooling/canon-instance-prop-metadata.test.ts",
+            "base": null,
+            "head": {
+              "bytes": 12607,
+              "sha256": "d0ca5d309b7e3ca8f41e9677228597376b3e0f873fff98fbac25f2670ab4c61c",
+              "gitBlob": "1c8187ce90ed4ab43e55fc6b4b905fb5bd78173b"
+            }
+          },
+          {
+            "path": "tests/tooling/fixtures/canon-instance-prop-metadata-before.json",
+            "base": null,
+            "head": {
+              "bytes": 1442,
+              "sha256": "38aed781ebd05dd7e86dae2b06e46b46724830d23d2ae0eebb6df15d1081c5fe",
+              "gitBlob": "b029c65d4373e73a8648aa7eb245396f55c56386"
+            }
+          }
+        ],
+        "cargo": [
+          {
+            "file": "Cargo.toml",
+            "pin": {
+              "bytes": 13168,
+              "sha256": "6400cafce2abb1c16bb3c43dfc6498d0a0c695c88849bd5a6bdd4063b91377de",
+              "gitBlob": "679d57dd112ec6cac98ede4d1481787eaeef5397"
+            }
+          },
+          {
+            "file": "Cargo.lock",
+            "pin": {
+              "bytes": 128818,
+              "sha256": "e9a8659e79a919541b6cf29340886dabad787a18fa3051bd77873fc3a76194a4",
+              "gitBlob": "c95d868c4a6ab932a918a4399f5a78d4e1633e27"
+            }
+          }
+        ],
+        "protocol": [
+          {
+            "file": "crates/vize/src/commands/check/runner/output.rs",
+            "pin": {
+              "bytes": 9574,
+              "sha256": "4348cbf296120a240f593b7b2291fb2ac7824a6732452b869a992ea75d9c3fc5",
+              "gitBlob": "aa6ad6dae0756689e3bcd86fc7d225e42e3040bb"
+            }
+          },
+          {
+            "file": "crates/vize_canon/src/batch/virtual_project/materialize_stubs.rs",
+            "pin": {
+              "bytes": 8309,
+              "sha256": "a862ffb5cd5d1ef30982eef15122156bd9c559f9586a5c3f0c5a7e5a95c6675f",
+              "gitBlob": "76c80e31d7e67156ff12f2d879ed50d7b0ddc94c"
+            }
+          }
+        ]
+      },
+      "allocation": {
+        "base": {
+          "cli": {
+            "bytes": 9213,
+            "sha256": "a835b281b56032c10e7be4ed008c0478754b73c65aafa105baf9f7a03cdc8016",
+            "gitBlob": "517b179b0fccf25ae5099a0c51aad5ce1e9340da"
+          },
+          "execution": {
+            "bytes": 12134,
+            "sha256": "7de27d42dc63ec244d677755cf38bef97b77a30fbd0fa554c373cdcff10f284d",
+            "gitBlob": "54ee10127e0172e046aaa8355242a2a930ef2091"
+          }
+        },
+        "head": {
+          "cli": {
+            "bytes": 9213,
+            "sha256": "a835b281b56032c10e7be4ed008c0478754b73c65aafa105baf9f7a03cdc8016",
+            "gitBlob": "517b179b0fccf25ae5099a0c51aad5ce1e9340da"
+          },
+          "execution": {
+            "bytes": 12134,
+            "sha256": "7de27d42dc63ec244d677755cf38bef97b77a30fbd0fa554c373cdcff10f284d",
+            "gitBlob": "54ee10127e0172e046aaa8355242a2a930ef2091"
+          }
+        }
+      },
+      "sourceCi": {
+        "headSha": "a663240a408548df3da8a54ead2dbc49121a3276",
+        "runId": "41358054749",
+        "executedSourceSha": "9c7d7f4ca5d227a8bf86e7ea67500ac1b5d7d83c",
+        "executedTreeSha": "4d8eedc4088672de302c500e724bb94e166e1512",
+        "requiredChecks": "success"
+      }
     },
     {
       "kind": "route-move",
-      "state": "pending",
-      "sources": null,
-      "allocation": null,
-      "sourceCi": null
+      "state": "ready",
+      "sources": {
+        "kind": "route-move",
+        "base": {
+          "sha": "0dd3941dc3c090879c2c4ca540233b27fb0b8129",
+          "tree": "c23d0216b3d11e1ee00f7e02be80dfc1574e74e5"
+        },
+        "head": {
+          "sha": "936567c39d506bee3a2a8dac7e1f2db6652e7cc7",
+          "tree": "cfce51c7ae5bbc1de6483ce14fa0c2b782f26167"
+        },
+        "containing": {
+          "optionsFix": "0dd3941dc3c090879c2c4ca540233b27fb0b8129",
+          "historicalSourceFix": "0eb2f8db16f6541cd422ee610ab3e554bf041e0d"
+        },
+        "changed": [
+          {
+            "path": "crates/vize/src/commands/check/runner.rs",
+            "base": {
+              "bytes": 12525,
+              "sha256": "2e24b70da2d0ea14734f2bd2250dc0d9776229d170aec53176463dc0a5da103b",
+              "gitBlob": "0c8a67cd57ff0a7a7402aa49c79ba816b5d3cb99"
+            },
+            "head": {
+              "bytes": 12508,
+              "sha256": "027ccfa005a784735950492847a217bb8ff351440b787e07d3b5b508e66c383f",
+              "gitBlob": "66c390d2e43f0f5205f3ca8adcd58cb1394c900c"
+            }
+          },
+          {
+            "path": "crates/vize/src/commands/check/runner/execution.rs",
+            "base": {
+              "bytes": 12134,
+              "sha256": "7de27d42dc63ec244d677755cf38bef97b77a30fbd0fa554c373cdcff10f284d",
+              "gitBlob": "54ee10127e0172e046aaa8355242a2a930ef2091"
+            },
+            "head": {
+              "bytes": 12117,
+              "sha256": "1d80f3b493e62cdf1ea29fe496466e38f00874d6dbd47da6c6f0070819b76e84",
+              "gitBlob": "e49381dc2b82f43d3dae7ada93964b749d8c5f0a"
+            }
+          }
+        ],
+        "cargo": [
+          {
+            "file": "Cargo.toml",
+            "pin": {
+              "bytes": 13168,
+              "sha256": "6400cafce2abb1c16bb3c43dfc6498d0a0c695c88849bd5a6bdd4063b91377de",
+              "gitBlob": "679d57dd112ec6cac98ede4d1481787eaeef5397"
+            }
+          },
+          {
+            "file": "Cargo.lock",
+            "pin": {
+              "bytes": 128818,
+              "sha256": "e9a8659e79a919541b6cf29340886dabad787a18fa3051bd77873fc3a76194a4",
+              "gitBlob": "c95d868c4a6ab932a918a4399f5a78d4e1633e27"
+            }
+          }
+        ],
+        "protocol": [
+          {
+            "file": "crates/vize/src/commands/check/runner/output.rs",
+            "pin": {
+              "bytes": 9574,
+              "sha256": "4348cbf296120a240f593b7b2291fb2ac7824a6732452b869a992ea75d9c3fc5",
+              "gitBlob": "aa6ad6dae0756689e3bcd86fc7d225e42e3040bb"
+            }
+          },
+          {
+            "file": "crates/vize_canon/src/batch/virtual_project/materialize_stubs.rs",
+            "pin": {
+              "bytes": 8309,
+              "sha256": "a862ffb5cd5d1ef30982eef15122156bd9c559f9586a5c3f0c5a7e5a95c6675f",
+              "gitBlob": "76c80e31d7e67156ff12f2d879ed50d7b0ddc94c"
+            }
+          }
+        ]
+      },
+      "allocation": {
+        "base": {
+          "cli": {
+            "bytes": 9213,
+            "sha256": "a835b281b56032c10e7be4ed008c0478754b73c65aafa105baf9f7a03cdc8016",
+            "gitBlob": "517b179b0fccf25ae5099a0c51aad5ce1e9340da"
+          },
+          "execution": {
+            "bytes": 12134,
+            "sha256": "7de27d42dc63ec244d677755cf38bef97b77a30fbd0fa554c373cdcff10f284d",
+            "gitBlob": "54ee10127e0172e046aaa8355242a2a930ef2091"
+          }
+        },
+        "head": {
+          "cli": {
+            "bytes": 9213,
+            "sha256": "a835b281b56032c10e7be4ed008c0478754b73c65aafa105baf9f7a03cdc8016",
+            "gitBlob": "517b179b0fccf25ae5099a0c51aad5ce1e9340da"
+          },
+          "execution": {
+            "bytes": 12117,
+            "sha256": "1d80f3b493e62cdf1ea29fe496466e38f00874d6dbd47da6c6f0070819b76e84",
+            "gitBlob": "e49381dc2b82f43d3dae7ada93964b749d8c5f0a"
+          }
+        }
+      },
+      "sourceCi": {
+        "headSha": "936567c39d506bee3a2a8dac7e1f2db6652e7cc7",
+        "runId": "41358032718",
+        "executedSourceSha": "a2ea05601d474cacf2a5d1e6c4d3de9133d3551f",
+        "executedTreeSha": "cfce51c7ae5bbc1de6483ce14fa0c2b782f26167",
+        "requiredChecks": "success"
+      }
     }
   ]
 }
