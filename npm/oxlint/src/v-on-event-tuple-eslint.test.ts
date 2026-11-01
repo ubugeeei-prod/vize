@@ -51,6 +51,8 @@ let custody: Record<string, unknown> = {},
   complete = false,
   primaryFailed = false;
 let primaryFailure: unknown;
+let evidenceFailed = false;
+let evidenceFailure: unknown;
 function record(kind: string, packet: unknown) {
   observations.push(packet);
   console.log("vize-v-on-tuple-eslint-" + kind + " " + JSON.stringify(packet));
@@ -364,56 +366,54 @@ try {
 } catch (error) {
   primaryFailed = true;
   primaryFailure = error;
-  throw error;
-} finally {
+}
+try {
+  const proof = {
+    schema: "vize.patina.event-tuple-eslint-host.v1",
+    complete,
+    node: process.version,
+    ...custody,
+    observations,
+    firstFailure: primaryFailed ? wholeError(primaryFailure) : null,
+    limits:
+      "22 unchanged original provider vectors: 44 actual tuple/canonical host outcomes plus 22 current official outcomes, reset/off/refusals. Unicode identity-edit/circular frontier retained whole; no universal fixedpoint claim. New tuple supports existing autofix/ignore only; ignoreTags stays unsupported. Schema-only baseline metadata clone is not an old product execution. No Core/native/default change, whole-matrix or public-release claim.",
+  };
+  const invocation = mkdtempSync(join(nativeHistoryDirectory(directory), "v-on-event-tuple-"));
+  const destination = join(invocation, "v-on-event-tuple-eslint-host.json");
+  const body = JSON.stringify(proof, null, 2) + "\n";
+  writeFileSync(destination, body, { flag: "wx" });
+  const actualBytes = readFileSync(destination);
+  assert.deepEqual(actualBytes, Buffer.from(body));
+  console.log(
+    "vize-v-on-tuple-eslint-custody " +
+      JSON.stringify({
+        schema: "vize.patina.event-tuple-eslint-receipt.v1",
+        complete,
+        path: destination,
+        bytes: actualBytes.length,
+        sha256: hash(actualBytes),
+        observations: observations.length,
+        sourceHead: asRecord(receipt.source).head,
+        primaryFailureObserved: primaryFailed,
+      }),
+  );
+  console.log("vize-v-on-tuple-eslint-path " + destination);
+} catch (error) {
+  evidenceFailed = true;
+  evidenceFailure = error;
   try {
-    const proof = {
-      schema: "vize.patina.event-tuple-eslint-host.v1",
-      complete,
-      node: process.version,
-      ...custody,
-      observations,
-      firstFailure: primaryFailed ? wholeError(primaryFailure) : null,
-      limits:
-        "22 unchanged original provider vectors: 44 actual tuple/canonical host outcomes plus 22 current official outcomes, reset/off/refusals. Unicode identity-edit/circular frontier retained whole; no universal fixedpoint claim. New tuple supports existing autofix/ignore only; ignoreTags stays unsupported. Schema-only baseline metadata clone is not an old product execution. No Core/native/default change, whole-matrix or public-release claim.",
-    };
-    const invocation = mkdtempSync(join(nativeHistoryDirectory(directory), "v-on-event-tuple-"));
-    const destination = join(invocation, "v-on-event-tuple-eslint-host.json");
-    const body = JSON.stringify(proof, null, 2) + "\n";
-    writeFileSync(destination, body, { flag: "wx" });
-    const actualBytes = readFileSync(destination);
-    assert.deepEqual(actualBytes, Buffer.from(body));
-    console.log(
-      "vize-v-on-tuple-eslint-custody " +
-        JSON.stringify({
-          schema: "vize.patina.event-tuple-eslint-receipt.v1",
-          complete,
-          path: destination,
-          bytes: actualBytes.length,
-          sha256: hash(actualBytes),
-          observations: observations.length,
-          sourceHead: asRecord(receipt.source).head,
-          primaryFailureObserved: primaryFailed,
-        }),
+    console.error(
+      "vize-v-on-tuple-eslint-evidence-error " +
+        JSON.stringify({ primaryFailureObserved: primaryFailed, error: wholeError(error) }),
     );
-    console.log("vize-v-on-tuple-eslint-path " + destination);
-  } catch (error) {
-    try {
-      console.error(
-        "vize-v-on-tuple-eslint-evidence-error " +
-          JSON.stringify({
-            primaryFailureAlreadyThrown: primaryFailed,
-            error: wholeError(error),
-          }),
-      );
-    } catch {
-      /* Retain the original product or evidence failure if reporting also fails. */
-    }
-    if (!primaryFailed) throw error;
-  } finally {
-    for (const [key, value] of previous) {
-      if (value === undefined) delete process.env[key];
-      else process.env[key] = value;
-    }
+  } catch {
+    /* Retain the original product or evidence failure if reporting also fails. */
+  }
+} finally {
+  for (const [key, value] of previous) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
   }
 }
+if (primaryFailed) throw primaryFailure;
+if (evidenceFailed) throw evidenceFailure;
