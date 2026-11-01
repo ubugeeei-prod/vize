@@ -264,6 +264,7 @@ jobs:
           cp .github/actions/test-js-packages-with-history/native-fault-evidence.ts "$RUNNER_TEMP/native-fault-evidence.ts"
           cp .github/actions/test-js-packages-with-history/native-fault-core.ts "$RUNNER_TEMP/native-fault-core.ts"
           cp .github/actions/test-js-packages-with-history/native-fault-support.ts "$RUNNER_TEMP/native-fault-support.ts"
+          cp .github/actions/test-js-packages-with-history/native-fault-retention.ts "$RUNNER_TEMP/native-fault-retention.ts"
           node --input-type=module <<'NODE'
           import { execFileSync } from 'node:child_process';
           import { createHash } from 'node:crypto';
@@ -272,7 +273,7 @@ jobs:
           const directory = process.env.RUNNER_TEMP;
           const receipt = {
             orchestration: execFileSync('git', ['rev-parse', 'HEAD', 'HEAD^{tree}'], { encoding: 'utf8' }).trim().split('\n'),
-            helpers: ['native-fault-evidence.ts', 'native-fault-core.ts', 'native-fault-support.ts'].map(file => ({
+            helpers: ['native-fault-evidence.ts', 'native-fault-core.ts', 'native-fault-support.ts', 'native-fault-retention.ts'].map(file => ({
               file, sha256: createHash('sha256').update(readFileSync(path.join(directory, file))).digest('hex'),
             })),
             reportedFailureHead: '17bb01881b3e9721c273048d4698a1fb887c6a2e',
