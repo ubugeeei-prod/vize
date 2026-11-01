@@ -10,6 +10,7 @@ use vize_l0::Allocator;
 
 mod refusal;
 mod support;
+mod trim;
 use support::{completed, owner};
 
 std::thread_local! {

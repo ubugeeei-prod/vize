@@ -92,6 +92,11 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         spell(&mut self.writer, self.vocabulary, model_text);
         self.writer.push(", ");
         access(&mut self.writer, &row);
+        if let Some(span) = row.original().input().operand().trim_span() {
+            self.writer.push(", void 0, { ");
+            self.writer.push_named("trim", span, "trim");
+            self.writer.push(": true }");
+        }
         self.writer.push("]");
         self.writer.deindent();
         self.writer.newline();
