@@ -92,7 +92,9 @@ fn sequential_expanded_owners_keep_separate_incremental_state() {
     fs::write(&first_config, b"{}").unwrap();
     fs::write(&second_config, b"{}").unwrap();
     let a = PersistentStorageOwner::capture(&first_root, Some(&first_config));
-    let b = PersistentStorageOwner::capture(&second_root, Some(&second_config));
+    // Hold the original config fixed so the sequential control isolates root
+    // identity; `changed_config` below independently isolates the config path.
+    let b = PersistentStorageOwner::capture(&second_root, Some(&first_config));
     let changed_config = PersistentStorageOwner::capture(&first_root, Some(&second_config));
     let mut first = project(&owner);
     assert_ne!(purpose_key(&first, Some(&a)), purpose_key(&first, Some(&b)));
