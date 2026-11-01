@@ -113,8 +113,8 @@ const chosen = palette.tone;
         `${JSON.stringify({ terminalAfterOpenMs: performance.now() - openedAt, version: terminal.version, diagnostics: terminal.diagnostics })}\n`,
       );
       assert.ok(
-        performance.now() - openedAt >= 1000,
-        "terminal type diagnostics must preserve the entire initial grace",
+        session.stderrText.includes(`starting initial type diagnostics for ${uri} version 1`),
+        "terminal type diagnostics require the original full native collector",
       );
       assert.ok(
         session.stderrText.includes(`prepared initial native project for ${uri} version 1`),

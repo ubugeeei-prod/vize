@@ -20,9 +20,26 @@ pub(super) fn run_worker(
                     let project = worker
                         .for_initial_document(&uri, job.version, job.continuation.as_ref())
                         .await;
-                    project
+                    if let Some(stamp) = project
                         .prepare_initial_native_document(&uri, job.version)
-                        .await;
+                        .await
+                    {
+                        // Only atomic stamp reads occur under the queue lock.
+                        // Publication still owns all original freshness guards.
+                        let advanced = pending.lock().advance_prepared_open(
+                            &uri,
+                            &job,
+                            stamp,
+                            &project.state,
+                            Instant::now(),
+                        );
+                        if advanced {
+                            tracing::info!(
+                                uri = %uri, version = job.version, sequence = job.sequence,
+                                "initial native preparation released open grace"
+                            );
+                        }
+                    }
                 });
                 continue;
             }
@@ -52,7 +69,7 @@ pub(super) fn run_worker(
                     1,
                 );
                 let project = match job.cause {
-                    DiagnosticsJobCause::Open => {
+                    DiagnosticsJobCause::Open | DiagnosticsJobCause::Retry => {
                         worker
                             .for_initial_document(&uri, job.version, job.continuation.as_ref())
                             .await
@@ -61,7 +78,7 @@ pub(super) fn run_worker(
                 };
                 phase.finish();
                 match job.cause {
-                    DiagnosticsJobCause::Open => {
+                    DiagnosticsJobCause::Open | DiagnosticsJobCause::Retry => {
                         project
                             .publish_initial_api_diagnostics_if_version(
                                 &uri,

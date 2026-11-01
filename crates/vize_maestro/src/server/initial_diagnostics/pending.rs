@@ -2,6 +2,7 @@
 
 use super::EDIT_DIAGNOSTIC_DEBOUNCE;
 use super::queue::JobQueue;
+use crate::server::state::{CorsaRequestStamp, ServerState};
 use std::time::{Duration, Instant};
 use tower_lsp::lsp_types::Url;
 
@@ -22,6 +23,8 @@ pub(super) struct InitialDiagnosticsJob {
 pub(super) enum DiagnosticsJobCause {
     Open,
     Edit,
+    /// A retained pass retries under its original grace, even after preparation.
+    Retry,
 }
 
 #[derive(Default)]
@@ -57,6 +60,7 @@ impl PendingInitialDiagnostics {
         }
     }
 
+    #[cfg(test)]
     pub(super) fn insert(&mut self, uri: Url, version: i32, not_before: Instant) {
         self.insert_with_continuation(
             uri,
@@ -66,6 +70,31 @@ impl PendingInitialDiagnostics {
             None,
             None,
         );
+    }
+
+    pub(super) fn insert_retry(&mut self, uri: Url, version: i32, not_before: Instant) {
+        self.insert_with_continuation(
+            uri,
+            version,
+            not_before,
+            DiagnosticsJobCause::Retry,
+            None,
+            None,
+        );
+    }
+
+    pub(super) fn advance_prepared_open(
+        &mut self,
+        uri: &Url,
+        job: &InitialDiagnosticsJob,
+        stamp: CorsaRequestStamp,
+        state: &ServerState,
+        now: Instant,
+    ) -> bool {
+        stamp.is_current(state)
+            && self
+                .jobs
+                .advance_prepared_open(uri, job.version, job.sequence, now)
     }
 
     pub(super) fn insert_with_continuation(
@@ -96,7 +125,7 @@ impl PendingInitialDiagnostics {
                 sequence,
                 sync_pending: cause == DiagnosticsJobCause::Open,
                 sync_running: false,
-                preparation_pending: cause == DiagnosticsJobCause::Open,
+                preparation_pending: cause != DiagnosticsJobCause::Edit,
                 sync,
                 continuation,
             },
