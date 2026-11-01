@@ -23,6 +23,11 @@ import type { Packet } from "./native-fault-support.ts";
 import { processRetention } from "./native-fault-retention.ts";
 
 export const observers = { sourceSnapshot, privateGuest, observeDescendants, diagnoseCore };
+const uiPhases = [
+  { name: "native-build", command: ["vp", "run", "--filter", "./npm/native", "build:ci"] },
+  { name: "ui-check", command: ["vp", "run", "--filter", "./npm/ui", "check"] },
+];
+type Invocation = { command: string[] } | { uiConformance: true };
 
 function attempt<T>(receipt: Packet, name: string, action: () => T): T | undefined {
   const started = performance.now();
@@ -36,7 +41,7 @@ function attempt<T>(receipt: Packet, name: string, action: () => T): T | undefin
   }
 }
 
-function prepareObservation(command: string[]): { output: string; receipt: Packet } {
+function prepareObservation(invocation: Invocation): { output: string; receipt: Packet } {
   const identity = ["GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_JOB"]
     .map((key) => {
       if (!process.env[key]) throw new Error(`Missing ${key}`);
@@ -47,7 +52,9 @@ function prepareObservation(command: string[]): { output: string; receipt: Packe
   fs.mkdirSync(output);
   const helper = fileURLToPath(import.meta.url);
   const receipt: Packet = {
-    command,
+    ...("command" in invocation
+      ? { command: invocation.command }
+      : { mode: "ui-conformance", declaredPhases: uiPhases }),
     cwd: process.cwd(),
     startedAt: Date.now() / 1000,
     orchestrationSha: process.env.GITHUB_SHA,
@@ -105,10 +112,12 @@ async function runOriginal(
   const completion = new Promise<number>((resolve) => {
     child.once("error", (error) => {
       spawnError = error;
+      receipt.spawnError = errorName(error);
       completed = true;
       resolve(1);
     });
     child.once("exit", (status, signal) => {
+      Object.assign(receipt, { commandExitCode: status, commandSignal: signal });
       completed = true;
       resolve(returnCode(status, signal));
     });
@@ -128,8 +137,8 @@ async function runOriginal(
       await Promise.race([completion, setTimeout(250, undefined, { ref: false })]);
     }
     const status = await completion;
-    if (spawnError) throw spawnError;
     Object.assign(receipt, { commandReturnCode: status, commandFinishedAt: Date.now() / 1000 });
+    if (spawnError) throw spawnError;
     return status;
   } finally {
     for (const [index, signal] of signals.entries()) {
@@ -139,7 +148,50 @@ async function runOriginal(
   }
 }
 
-async function observeCommand(command: string[], output: string, receipt: Packet): Promise<number> {
+async function runInvocation(
+  invocation: Invocation,
+  receipt: Packet,
+  sample?: (pid: number) => void,
+  checkpoint: () => void = () => {},
+  packetCount: () => number = () => 0,
+): Promise<number> {
+  if ("command" in invocation) return runOriginal(invocation.command, receipt, sample);
+  receipt.commandStartedAt = Date.now() / 1000;
+  receipt.phases = [];
+  let status = 0;
+  for (const declared of uiPhases) {
+    const phase: Packet = { ...declared, sampleSequenceStart: packetCount() };
+    receipt.phases.push(phase);
+    receipt.activePhase = declared.name;
+    checkpoint();
+    try {
+      status = await runOriginal(
+        declared.command,
+        phase,
+        sample &&
+          ((pid) => {
+            receipt.pid = pid;
+            sample(pid);
+          }),
+      );
+    } finally {
+      receipt.pid = phase.pid;
+      phase.sampleSequenceEnd = packetCount();
+      checkpoint();
+    }
+    // The original shell && reports 128+signal instead of signalling its parent.
+    receipt.commandReturnCode = status < 0 ? 128 - status : status;
+    receipt.commandFinishedAt = phase.commandFinishedAt;
+    if (status !== 0) break;
+  }
+  return receipt.commandReturnCode;
+}
+
+async function observeCommand(
+  invocation: Invocation,
+  output: string,
+  receipt: Packet,
+): Promise<number> {
   attempt(receipt, "source-before", () =>
     writeJson(path.join(output, "source-before.json"), observers.sourceSnapshot()),
   );
@@ -181,11 +233,20 @@ async function observeCommand(command: string[], output: string, receipt: Packet
   const providers = new Map<string, Packet>();
   let status: number;
   try {
-    status = await runOriginal(command, receipt, (pid) => {
-      attempt(receipt, "process-maps", () =>
-        observers.observeDescendants(pid, seen, providers, output),
-      );
-    });
+    status = await runInvocation(
+      invocation,
+      receipt,
+      (pid) => {
+        attempt(receipt, "process-maps", () =>
+          observers.observeDescendants(pid, seen, providers, output),
+        );
+      },
+      () =>
+        attempt(receipt, "phase-outcome", () =>
+          writeJson(path.join(output, "outcome.json"), receipt),
+        ),
+      () => processRetention(seen).observedPackets,
+    );
   } finally {
     if (typeof receipt.pid === "number")
       attempt(receipt, "process-maps-terminal", () =>
@@ -229,21 +290,24 @@ async function observeCommand(command: string[], output: string, receipt: Packet
 }
 
 export async function main(argv: string[], platform = process.platform): Promise<number> {
-  if (argv[0] !== "--" || argv.length < 2)
+  const uiConformance = argv.length === 1 && argv[0] === "--ui-conformance";
+  if (!uiConformance && (argv[0] !== "--" || argv.length < 2))
     throw new Error("Expected -- followed by the original command");
-  const command = argv.slice(1);
+  const invocation: Invocation = uiConformance
+    ? { uiConformance: true }
+    : { command: argv.slice(1) };
   let observation: ReturnType<typeof prepareObservation> | undefined;
   if (platform === "linux" && process.env.GITHUB_ACTIONS === "true") {
     // Setup refusal must still execute the original command once, unchanged.
     try {
-      observation = prepareObservation(command);
+      observation = prepareObservation(invocation);
     } catch {
       /* pass through */
     }
   }
   const status = observation
-    ? await observeCommand(command, observation.output, observation.receipt)
-    : await runOriginal(command, {});
+    ? await observeCommand(invocation, observation.output, observation.receipt)
+    : await runInvocation(invocation, {});
   if (status < 0) {
     if (platform === "linux")
       attempt(observation?.receipt ?? {}, "observer-core-limit", () =>
