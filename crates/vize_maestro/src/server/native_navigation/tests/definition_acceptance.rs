@@ -177,7 +177,7 @@ fn observe(case: Case) -> Observation {
             "crossFileComponentAuthority":false
         })
     );
-    assert_eq!(deadline_elapsed, false, "whole observation deadline");
+    assert!(!deadline_elapsed, "whole observation deadline");
     let client: Vec<u8> = serde_json::from_value(tape["clientConsumed"].clone()).unwrap();
     let server: Vec<u8> = serde_json::from_value(tape["serverWritten"].clone()).unwrap();
     Observation {
@@ -302,7 +302,7 @@ fn same_file_artifact_definition_retains_complete_native_wire_and_unknown_refusa
     }
     assert_eq!(
         response(&observed, 4),
-        fixtures::error(4, -32601, "Method not found")
+        fixtures::method_not_found(4, "vize/unknownArtifactDefinition")
     );
     assert_eq!(
         response(&observed, 5),
@@ -328,7 +328,7 @@ fn native_definition_registration_disabled_cannot_borrow_standard_maestro_succes
     );
     assert_eq!(
         response(&observed, 2),
-        fixtures::error(2, -32601, "Method not found")
+        fixtures::method_not_found(2, "vize/nativeDefinition")
     );
 }
 

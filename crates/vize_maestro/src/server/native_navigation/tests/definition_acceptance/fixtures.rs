@@ -63,6 +63,13 @@ pub(super) fn error(id: i32, code: i32, message: &str) -> Value {
     json!({"jsonrpc":"2.0","id":id,"error":{"code":code,"message":message}})
 }
 
+pub(super) fn method_not_found(id: i32, method: &str) -> Value {
+    // tower-lsp 0.20 Router::call retains the exact unregistered method in data.
+    json!({"jsonrpc":"2.0","id":id,"error":{
+        "code":-32601,"message":"Method not found","data":method
+    }})
+}
+
 pub(super) fn initialized_log() -> Value {
     json!({"jsonrpc":"2.0","method":"window/logMessage",
         "params":{"type":3,"message":"vize_maestro LSP server initialized"}})
