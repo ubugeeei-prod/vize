@@ -66,7 +66,7 @@ export const watcherSuccessor = {
   terminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr.ts",
   terminalSha256: "83b167d4146f812255b01a946ead297693bad85cdf904817e4207a2bf1c97c35",
   terminalRuntimeSha256: "2ed2edfda0877fa9a4b1093242f8501c5fb2ce834dfaf39ff478edfa9da18013",
-  auditRuntimeSha256: "2878b9561584de24d1cc3d15f15b7f198a52ba1be6e2bfbe1a13733647091339",
+  auditRuntimeSha256: "b940021290406abfa0bd15876925d8008b13a9e97395812bd7cf638f96d9d823",
   typesPath: "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
   typesSha256: "3904cfaf07e59b501c2361b65410877f22780bfdc365cedf74300bb6fb88d127",
   helperPath: "tests/tooling/support/native-beta-dto/stable-watcher-boundary.ts",
@@ -92,7 +92,7 @@ export const watcherSuccessor = {
   ],
 };
 
-// Exactly two current source/runtime dependencies for the additive channel-only negative.
+// Exact current source/runtime dependencies; historical producer archives remain immutable.
 export const postAckDependencies = [
   [
     "tests/tooling/support/native-beta-dto/historical-inflight-transcript.ts",
@@ -103,5 +103,10 @@ export const postAckDependencies = [
     "tests/tooling/support/native-beta-dto/historical-post-ack-root-warning.ts",
     "2fca0d73bd9dedfd90d340882f5cdf0156fdeacf0e629a9e2c7d61e8d5b09c43",
     "70e881ca8b0d0dd9ccf2054f6c4266035ae7057ac265eaa124697893f6003848",
+  ],
+  [
+    "tests/tooling/support/native-beta-dto/historical-acknowledged-root-warning.ts",
+    "63357f1167ea598895bb365b023a1dc1759a0ef7432ef46bfcd17d62d8cc1a1d",
+    "b5034526697353f77d83bc5b0a148efe6f202cb389accbbf3d5f6a7c4334548f",
   ],
 ] as const;
