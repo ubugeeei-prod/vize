@@ -166,6 +166,7 @@ mod dump_roundtrip_cli;
 mod dump_script_cli;
 mod env_info_cli;
 mod fmt_bind_style_policy_cli;
+mod fmt_boolean_values_cli;
 mod fmt_config_cli;
 mod fmt_import_sorting_cli;
 mod fmt_json_layout_cli;

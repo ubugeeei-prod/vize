@@ -1,6 +1,12 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Keep all original #11264 CLI argv/streams/files in ordinary PR/full JUnit.
+# This changes retention only; the four tests keep the normal execution policy.
+[[profile.default.overrides]]
+filter = 'package(=vize) & binary(=integration) & test(~fmt_boolean_values_cli::)'
+junit.store-success-output = true
+
 # Retain the original inline-ref observation and lexical-scope controls in
 # ordinary PR/full receipts without changing which tests execute.
 [[profile.default.overrides]]
