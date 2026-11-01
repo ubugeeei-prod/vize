@@ -4,7 +4,7 @@
 //! `v-slot:` -> `#`) and JS expression formatting in directive values.
 
 use crate::{options::FormatOptions, script};
-use vize_l0::{Allocator, SmallVec, Span, String, ToCompactString, is_simple_identifier};
+use vize_l0::{Allocator, Span, String, ToCompactString, is_simple_identifier};
 use vize_l1::{
     embed::{
         Embed, EmbedSource, Grammar, Lang, Shape,
@@ -16,7 +16,9 @@ use vize_l1::{
 use super::literal_lines::{Representation, encode_reference_data};
 use super::literal_spans::ValueLines;
 
+mod entities;
 mod normalize;
+use entities::decode_expression_attribute_entities;
 pub(crate) use normalize::normalize_attribute_with_vue_version;
 
 /// Determine if an attribute's value should be formatted as a JS expression.
@@ -158,6 +160,18 @@ pub(super) fn format_directive_value(
                 reanchor_continuation_lines(&code, options, Representation::JavaScript);
             (value, indent, false)
         }
+        Some(_)
+            if decoded
+                .as_ref()
+                .is_some_and(|value| value.reference_data_would_decode()) =>
+        {
+            // Formatting can move amp DATA away from its original byte offset.
+            // Keep its authored HTML encoding instead of reinterpreting DATA
+            // as a new reference on the consumer's next HTML parse. Retained
+            // bare sequences above keep their exact mapped encoding path.
+            let (value, indent) = reanchor_continuation_lines(value, options, Representation::Html);
+            (value, indent, false)
+        }
         Some(formatted) => {
             let indent_multiline_value = formatted.code.contains('\n')
                 || (options.end_of_line == crate::EndOfLine::Cr && formatted.code.contains('\r'));
@@ -269,65 +283,6 @@ fn dedent(line: &str, columns: usize) -> &str {
 
 fn blank_prefix_len(line: &str) -> usize {
     line.len() - line.trim_start_matches([' ', '\t']).len()
-}
-
-struct DecodedExpression {
-    code: String,
-    amp_positions: SmallVec<[usize; 2]>,
-}
-
-fn decode_expression_attribute_entities(value: &str) -> Option<DecodedExpression> {
-    if !value.contains('&') {
-        return None;
-    }
-
-    let mut decoded = String::with_capacity(value.len());
-    let mut amp_positions = SmallVec::new();
-    let mut changed = false;
-    let mut rest = value;
-    while !rest.is_empty() {
-        if let Some(tail) = rest.strip_prefix("&quot;") {
-            decoded.push('"');
-            rest = tail;
-            changed = true;
-        } else if let Some(tail) = rest
-            .strip_prefix("&#34;")
-            .or_else(|| rest.strip_prefix("&#x22;"))
-            .or_else(|| rest.strip_prefix("&#X22;"))
-        {
-            decoded.push('"');
-            rest = tail;
-            changed = true;
-        } else if let Some(tail) = rest.strip_prefix("&apos;") {
-            decoded.push('\'');
-            rest = tail;
-            changed = true;
-        } else if let Some(tail) = rest
-            .strip_prefix("&#39;")
-            .or_else(|| rest.strip_prefix("&#x27;"))
-            .or_else(|| rest.strip_prefix("&#X27;"))
-        {
-            decoded.push('\'');
-            rest = tail;
-            changed = true;
-        } else if let Some(tail) = rest.strip_prefix("&amp;") {
-            amp_positions.push(decoded.len());
-            decoded.push('&');
-            rest = tail;
-            changed = true;
-        } else {
-            let Some(ch) = rest.chars().next() else {
-                break;
-            };
-            decoded.push(ch);
-            rest = rest.get(ch.len_utf8()..).unwrap_or_default();
-        }
-    }
-
-    changed.then_some(DecodedExpression {
-        code: decoded,
-        amp_positions,
-    })
 }
 
 /// Format `v-for` expression: normalize spacing in `(item, index) in items`.
