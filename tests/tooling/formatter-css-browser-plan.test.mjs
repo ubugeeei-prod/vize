@@ -2,7 +2,7 @@ import { checkWorkflowJobSources } from "./support/github-workflows.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
-import { needsFormatterCssBrowser } from "../../tools/support/compat/github/formatter-css-browser-plan.mjs";
+import { needsFormatterCssBrowser } from "../../tools/support/compat/github/formatter-css-browser-plan.ts";
 import {
   selectToolingShard,
   toolingShardMatrix,

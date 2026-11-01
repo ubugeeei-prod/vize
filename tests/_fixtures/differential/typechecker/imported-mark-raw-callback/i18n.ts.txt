@@ -1,0 +1,10 @@
+import { markRaw } from 'vue';
+export interface Priority { readonly low: string; readonly middle: string; readonly high: string }
+export interface Locale { readonly _role: { readonly _priority: Priority } }
+export class I18n<T> {
+  constructor(public locale: T) {}
+  public get ts(): T { return this.locale; }
+}
+export const i18n = markRaw(new I18n<Locale>({
+  _role: { _priority: { low: 'low', middle: 'middle', high: 'high' } },
+}));

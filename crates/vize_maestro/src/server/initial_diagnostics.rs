@@ -31,7 +31,8 @@ pub(super) use retry::RetainedDiagnostics;
 use worker::run_worker;
 
 /// Let the editor's first interactive request claim Corsa before validation.
-/// Initial diagnostics remain prompt, while completion/hover no longer queue
+/// Successful current preparation releases the same open job early; unknown
+/// preparation and retries retain this grace. Completion/hover no longer queue
 /// behind bridge startup and a full project diagnostic request.
 const INTERACTIVE_GRACE: Duration = Duration::from_secs(1);
 /// A short quiet period keeps an edit burst from queueing one whole native
@@ -149,7 +150,7 @@ impl InitialDiagnosticsScheduler {
             }
             let now = Instant::now();
             let not_before = match cause {
-                DiagnosticsJobCause::Open => now + INTERACTIVE_GRACE,
+                DiagnosticsJobCause::Open | DiagnosticsJobCause::Retry => now + INTERACTIVE_GRACE,
                 DiagnosticsJobCause::Edit => pending.edit_not_before(&uri, now),
             };
             pending.insert_with_continuation(uri, version, not_before, cause, sync, continuation);
@@ -212,7 +213,7 @@ impl InitialDiagnosticsScheduler {
                 .get(&uri)
                 .is_some_and(|job| job.version >= version)
             {
-                pending.insert(uri.clone(), version, Instant::now() + INTERACTIVE_GRACE);
+                pending.insert_retry(uri.clone(), version, Instant::now() + INTERACTIVE_GRACE);
                 // This retry needs a complete pass; its initial feedback
                 // was already attempted. Keep existing initial jobs intact.
                 pending.jobs.skip_sync(&uri);

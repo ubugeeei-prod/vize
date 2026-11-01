@@ -5,6 +5,7 @@ use tower_lsp::lsp_types::Url;
 use super::{EDIT_DIAGNOSTIC_DEBOUNCE, PendingInitialDiagnostics};
 
 mod conservation_tests;
+mod prepared_readiness;
 use conservation_tests::capacity_uri;
 
 fn finish_sync(pending: &mut PendingInitialDiagnostics) {

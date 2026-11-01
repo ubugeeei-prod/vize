@@ -15,6 +15,10 @@ import {
   VERSIONED_AUTO_IMPORT_ID,
   loadVersionedAutoImport,
 } from "./lsp-versioned-auto-import-manifest.ts";
+import {
+  VERSIONED_TEMPLATE_SUPPRESSION_ID,
+  loadVersionedTemplateSuppression,
+} from "./lsp-versioned-template-suppression.ts";
 import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } from "./lsp-types.ts";
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
@@ -121,6 +125,8 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
           : validateLocalResolveSourceSession;
       validate(data, new Map(files.map((file) => [file.runtimePath, file.bytes])), expected);
       requests = [];
+    } else if (data.id === VERSIONED_TEMPLATE_SUPPRESSION_ID) {
+      requests = loadVersionedTemplateSuppression(packRoot, data, files, expected);
     } else if (data.id === VERSIONED_AUTO_IMPORT_ID) {
       requests = loadVersionedAutoImport(data, files, expected);
     } else if (data.id === AUTO_IMPORT_SYMLINK_ID) {

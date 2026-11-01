@@ -207,9 +207,13 @@ test("the previous eighty SDK7 results remain bound to their immutable review", 
   }
 });
 
-test("CURRENT retains all eighty actual SDK9 packets without captured qualification credit", () => {
+test("the previous SDK9 population retains all eighty actual packets without captured qualification credit", () => {
   const { authority, files, cases } = readGlobalsFixture();
-  const golden = selectPacketGoldens(authority, files, cases)!;
+  const golden = selectPacketGoldens(
+    { ...authority, currentSourcePackets: "source-packets-current-4543862023a0.json" },
+    files,
+    cases,
+  )!;
   const previous = selectPacketGoldens(
     { ...authority, currentSourcePackets: "source-packets-current-b66e208809ed.json" },
     files,
@@ -309,4 +313,106 @@ test("CURRENT retains all eighty actual SDK9 packets without captured qualificat
     );
   }
   assert.deepEqual(observedChanges, changed);
+});
+
+test("CURRENT resolves the complete authenticated population in authored case order", () => {
+  const { authority, files, cases } = readGlobalsFixture();
+  const golden = selectPacketGoldens(authority, files, cases)!;
+  assert.equal(golden.complete, true);
+  assert.equal(golden.packets.length, 80);
+  const producer = golden.producer as { sourceRevision: string };
+  assert.equal(
+    authority.currentSourcePackets,
+    `source-packets-current-${producer.sourceRevision.slice(0, 12)}.json`,
+  );
+  assert.ok(files.has(golden.provenance as string));
+  for (const [index, packet] of golden.packets.entries()) {
+    const entry = cases[index % 40]!;
+    const source =
+      index < 40
+        ? entry.source
+        : entry.source.replace("{{ ", '{{ "日本語🍣" + ').replaceAll("\n", "\r\n");
+    assert.equal(packet.label, `${index < 40 ? "lf" : "crlf-unicode"}/${entry.id}`);
+    assert.equal(packet.sourceSha256, sha(source));
+    assert.equal(packet.globalsSha256, sha(entry.globals));
+  }
+});
+
+test("the observed comment-offset population preserves whole results and failed capture credit", () => {
+  const { authority, files, cases } = readGlobalsFixture();
+  const golden = selectPacketGoldens(
+    { ...authority, currentSourcePackets: "source-packets-current-d0f4e1da7022.json" },
+    files,
+    cases,
+  )!;
+  const previous = selectPacketGoldens(
+    { ...authority, currentSourcePackets: "source-packets-current-4543862023a0.json" },
+    files,
+    cases,
+  )!;
+  const provenance = JSON.parse(files.get(golden.provenance as string)!);
+  assert.equal(provenance.source.sourceRevision, "d0f4e1da7022399172ba9a414ce90bdd7fc00145");
+  assert.equal(provenance.source.sourceTree, "64bb277f63ba3152cae051595b7500eb4c6d9f3f");
+  assert.equal(provenance.sourceLaunch.receipt.sourceRevision, provenance.source.sourceRevision);
+  assert.equal(provenance.sourceLaunch.receipt.binarySha256, provenance.source.binarySha256);
+  assert.equal(provenance.actualQualification.status, "unqualified");
+  assert.equal(provenance.actualQualification.fullPacketQualification, false);
+  assert.equal(provenance.actualQualification.hostMatrixQualification, false);
+  assert.equal(provenance.limits.publicAcceptance, false);
+  assert.equal(provenance.limits.newNativeExecution, false);
+  assert.deepEqual(provenance.actualQualification.outcomes, provenance.actualOutcomes);
+  const changed = ["lf/string-comment-role", "crlf-unicode/string-comment-role"];
+  const outcomes = provenance.actualOutcomes as Array<{ id: string; outcome: string }>;
+  assert.equal(outcomes.length, 398);
+  assert.deepEqual(
+    outcomes.filter((row) => row.outcome !== "pass").map((row) => row.id),
+    changed.map((label) => `whole-packet/${label}`),
+  );
+  assert.equal(provenance.actualInputs.length, 80);
+  const observed: string[] = [];
+  for (const [index, packet] of golden.packets.entries()) {
+    const entry = cases[index % 40]!;
+    const source =
+      index < 40
+        ? entry.source
+        : entry.source.replace("{{ ", '{{ "日本語🍣" + ').replaceAll("\n", "\r\n");
+    assert.equal(packet.sourceSha256, sha(source));
+    assert.equal(packet.globalsSha256, sha(entry.globals));
+    assert.deepEqual(provenance.actualInputs[index], {
+      label: packet.label,
+      bytes: Buffer.byteLength(source),
+      sha256: sha(source),
+    });
+    const old = previous.packets[index]!.result;
+    if (JSON.stringify(old) === JSON.stringify(packet.result)) continue;
+    observed.push(packet.label);
+    assert.equal(
+      JSON.stringify({ ...old, mappings: packet.result.mappings }),
+      JSON.stringify(packet.result),
+      "every nonmapping field and its order stays unchanged",
+    );
+    assert.deepEqual(packet.result.mappings.slice(0, -2), old.mappings.slice(0, -1));
+    const authored = Buffer.from(source),
+      generated = Buffer.from(packet.result.text);
+    const known = Buffer.from(".known "),
+      tail = Buffer.from(' + "$ghost"');
+    const a = authored.indexOf(known),
+      b = authored.indexOf(tail);
+    const x = generated.indexOf(known),
+      y = generated.indexOf(tail);
+    for (const start of [a, b, x, y]) assert.ok(start >= 0);
+    assert.equal(authored.subarray(a + known.length, b).toString(), "/* $ghost */");
+    assert.deepEqual(packet.result.mappings.slice(-2), [
+      [x, known.length, a, known.length, 0, 1048575],
+      [y, tail.length, b, tail.length, 0, 1048575],
+    ]);
+    const proof = provenance.wholeComparison.changedResults.find(
+      (row: { label: string }) => row.label === packet.label,
+    );
+    assert.equal(proof.wholeSource, source);
+    assert.deepEqual(proof.previousMappings, old.mappings);
+    assert.deepEqual(proof.currentMappings, packet.result.mappings);
+  }
+  assert.deepEqual(observed, changed);
+  assert.equal(provenance.wholeComparison.unchangedWholePackets, 78);
 });

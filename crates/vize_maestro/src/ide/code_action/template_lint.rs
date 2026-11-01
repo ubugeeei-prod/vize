@@ -117,6 +117,7 @@ impl CodeActionService {
         range: Range,
         lint: &TemplateLint,
         requested: &[Diagnostic],
+        #[cfg(feature = "native")] stamp: Option<super::versioned_lint_edits::LintEditStamp>,
     ) -> Vec<CodeActionOrCommand> {
         let mut actions = Vec::new();
 
@@ -132,6 +133,20 @@ impl CodeActionService {
         };
 
         for lint_diag in &lint.result.diagnostics {
+            #[cfg(feature = "native")]
+            if stamp.is_some()
+                && (template_content
+                    .get(lint_diag.start as usize..lint_diag.end as usize)
+                    .is_none()
+                    || lint
+                        .start_offset
+                        .checked_add(template_content.len())
+                        .and_then(|end| ctx.content.get(lint.start_offset..end))
+                        .is_none())
+            {
+                continue;
+            }
+
             // Convert diagnostic position to SFC position
             let diag_range = Range {
                 start: template_position(&ctx.content, lint.start_offset, lint_diag.start as usize),
@@ -170,14 +185,29 @@ impl CodeActionService {
                 new_text,
             };
 
-            let mut changes = std::collections::HashMap::new();
-            changes.insert(ctx.uri.clone(), vec![edit]);
-
-            let workspace_edit = WorkspaceEdit {
-                changes: Some(changes),
-                document_changes: None,
-                change_annotations: None,
+            #[cfg(feature = "native")]
+            let workspace_edit = if let Some(stamp) = stamp {
+                let Ok(offset) = u32::try_from(line_start) else {
+                    continue;
+                };
+                let Some(checked) = super::versioned_lint_edits::workspace_edit(
+                    ctx,
+                    stamp,
+                    template_content,
+                    lint.start_offset,
+                    &[vize_patina::TextEdit::insert(
+                        offset,
+                        edit.new_text.as_str(),
+                    )],
+                ) else {
+                    continue;
+                };
+                checked
+            } else {
+                unversioned_suppression_edit(ctx, edit)
             };
+            #[cfg(not(feature = "native"))]
+            let workspace_edit = unversioned_suppression_edit(ctx, edit);
 
             let action = CodeAction {
                 title: format!("Suppress with @vize:forget ({})", lint_diag.rule_name),
@@ -194,6 +224,16 @@ impl CodeActionService {
         }
 
         actions
+    }
+}
+
+fn unversioned_suppression_edit(ctx: &IdeContext, edit: TextEdit) -> WorkspaceEdit {
+    let mut changes = std::collections::HashMap::new();
+    changes.insert(ctx.uri.clone(), vec![edit]);
+    WorkspaceEdit {
+        changes: Some(changes),
+        document_changes: None,
+        change_annotations: None,
     }
 }
 
@@ -241,3 +281,7 @@ pub(super) fn selected_diagnostics(
         })
         .map(|diagnostic| vec![diagnostic.clone()])
 }
+
+#[cfg(test)]
+#[cfg(feature = "native")]
+mod versioned_suppression_tests;

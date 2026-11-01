@@ -23,8 +23,9 @@ import { observeHistoricalTerminalStderr } from "./terminal-stderr-unavailable.t
 import { observeHistoricalSplitWatchLog } from "./stable-watcher-mixed.ts";
 import {
   historicalRootWarning,
+  matchesHistoricalRootWarning,
   observeRootWatchWarning as observeHistoricalRootWatchWarning,
-} from "./historical-post-ack-root-warning.ts";
+} from "./historical-acknowledged-root-warning.ts";
 import { buildRoleDisposition } from "./role-disposition.ts";
 
 const root = process.env.VIZE_NATIVE_DTO_CAPTURE!;
@@ -446,7 +447,7 @@ if (baseline) {
     }
     if (provider.version === "7.0.2") {
       if (source.role === "after") requireCandidateStableStderr(bytes);
-      else if (stableRegistrationBaseline && bytes.equals(historicalRootWarning))
+      else if (stableRegistrationBaseline && matchesHistoricalRootWarning(bytes))
         rootWarning(receipt, terminal);
       else if (stableRegistrationBaseline && bytes[0] === 0x09) {
         assert.equal(receipt.registrationRefusals, 0);

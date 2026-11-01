@@ -53,6 +53,7 @@ mod check_explicit_tsconfig_files_node_modules_cli;
 mod check_flow_depth_isolation_cli;
 mod check_function_props_cli;
 mod check_hoisted_workspace_cli;
+mod check_imported_raw_callback_cli;
 mod check_importer_scoped_package_cli;
 mod check_instance_props_cli;
 mod check_jsx_component_contract_cli;

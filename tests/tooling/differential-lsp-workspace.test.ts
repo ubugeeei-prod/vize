@@ -37,13 +37,31 @@ function appendDeclared(fixture: LspFixture, runtimePath: string, source: string
   fixture.inputs.files.push({ path: runtimePath, sha256: sha256(bytes) });
 }
 
-test("all pinned LSP cases retain their inputs and only the two configured outline cases gain a carrier", () => {
+test("all pinned LSP cases retain their inputs and only the configured cases gain a carrier", () => {
+  const expectedPaths: Record<string, string[]> = {
+    "lsp/regression/document-symbol-outline-myswitch": [
+      "src/MySwitch.vue",
+      "src/Parent.vue",
+      "tsconfig.json",
+      "vize.config.json.fixture",
+      "vite.config.mjs",
+    ],
+    "lsp/regression/document-symbol-outline-parent": [
+      "src/MySwitch.vue",
+      "src/Parent.vue",
+      "tsconfig.json",
+      "vize.config.json.fixture",
+      "vite.config.mjs",
+    ],
+    "lsp/regression/versioned-template-suppression-6876": [
+      "App.vue",
+      "vize.config.json.fixture",
+      "vite.config.mjs",
+    ],
+  };
   assert.deepEqual(
     configured.map((fixture) => fixture.id),
-    [
-      "lsp/regression/document-symbol-outline-myswitch",
-      "lsp/regression/document-symbol-outline-parent",
-    ],
+    Object.keys(expectedPaths),
   );
   for (const fixture of loaded.cases) {
     const before = fixture.files.map((file) => ({
@@ -59,13 +77,7 @@ test("all pinned LSP cases retain their inputs and only the two configured outli
       assert.equal(plan.mapping.configurations.length, 1);
       assert.deepEqual(
         plan.files.map((file) => file.runtimePath),
-        [
-          "src/MySwitch.vue",
-          "src/Parent.vue",
-          "tsconfig.json",
-          "vize.config.json.fixture",
-          "vite.config.mjs",
-        ],
+        expectedPaths[fixture.id],
       );
     }
     assert.deepEqual(

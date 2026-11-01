@@ -1,6 +1,8 @@
 tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 # Dependency patch filenames must retain LF when Windows checks out the repository.
 patches/*.patch text eol=lf
+# Derived imported markRaw callback inputs are physically consumed by native tests.
+tests/_fixtures/differential/typechecker/imported-mark-raw-callback/** text eol=lf
 # Byte-pinned untimed owned read-buffer observer and Node-only refusal fixture.
 tools/benchmarks/scripts/cold-typechecker-scale-read-buffer.rs.txt text eol=lf
 tests/_fixtures/tooling/native-forward/backend.ts text eol=lf
@@ -9,6 +11,9 @@ tests/_fixtures/tooling/owned-read-buffer-provider/package.json.txt text eol=lf
 tests/_fixtures/tooling/owned-read-buffer-provider/package-lock.json.txt text eol=lf
 # Historical pure-test inputs must not depend on fetched Git history.
 tests/_fixtures/tooling/cold-typechecker-frozen-source/** text eol=lf
+# Frozen comparative provider inputs retain their exact authenticated lock bytes.
+tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package.json.txt text eol=lf
+tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package-lock.json.txt text eol=lf
 # Diagnostic workflow custody compares complete source bytes on every host.
 tests/_fixtures/tooling/typescript-plugin-metadata-observer-11260.json -text
 # Keep the JSX packet source guard's original full input/argv/oracle fragments byte-exact.
@@ -174,3 +179,4 @@ tests/_fixtures/differential/typechecker/package-import-redirects-11317/input.js
 
 # The authored Unicode conditional corpus is compile-included and byte-pinned.
 crates/vize_atelier_sfc/tests/fixtures/ideographic_if_whitespace.json -text
+tests/tooling/fixtures/formatter-css-browser-plan-8840/formatter-css-browser-plan.mjs.txt -text

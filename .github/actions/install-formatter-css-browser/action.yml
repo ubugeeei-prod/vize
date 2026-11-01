@@ -11,7 +11,7 @@ runs:
       id: formatter-css-browser
       if: env.VIZE_TOOLING_TEST_PLAN != ''
       shell: bash
-      run: node tools/support/compat/github/formatter-css-browser-plan.mjs
+      run: node tools/support/compat/github/formatter-css-browser-plan.ts
     - uses: ./.github/actions/setup-ubuntu-archive
       if: env.VIZE_TOOLING_TEST_PLAN == '' || steps.formatter-css-browser.outputs.required == 'true'
     - name: Install the actual tests-package Chromium

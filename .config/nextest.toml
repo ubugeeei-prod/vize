@@ -11,6 +11,11 @@ junit.store-success-output = true
 filter = 'package(=vize_maestro) & (test(~ide::code_action::versioned_auto_import_tests::) | test(~server::code_actions::versioned_auto_import_tests::))'
 junit.store-success-output = true
 
+# Retain whole template-suppression applications, peer-rule and refusal records.
+[[profile.default.overrides]]
+filter = 'package(=vize_maestro) & (test(~template_lint::versioned_suppression_tests::) | test(~code_actions::versioned_template_suppression_tests::))'
+junit.store-success-output = true
+
 # Retain whole valid-v-on legacy/native Case, fix requery and refusal records.
 [[profile.default.overrides]]
 filter = 'package(=vize_patina) & test(~valid_v_on::native::tests::)'

@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Formatter from './Formatter.vue';
+import { i18n } from './i18n.js';
+</script>
+<template>
+  <p>{{ i18n.ts._role._priority.low }}</p>
+  <Formatter :textConverter="(v) => i18n.ts._role._priority.low" />
+</template>
