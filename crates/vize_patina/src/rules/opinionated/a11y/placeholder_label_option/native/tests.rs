@@ -123,6 +123,7 @@ fn text_derived_bound_entity_grouped_unknown_or_late_invalid_values_never_return
         "<select required size='&#49;'><option value='a'>A</option></select>",
         "<select required><option value='&#32;'>Space</option></select>",
         "<select required><option value='a'>A</option><option value='&amp;'>Amp</option></select>",
+        "<select required><option value='a'>A</option><option>Unknown value</option></select>",
         "<select required><optgroup label='G'><option value=''>Choose</option></optgroup></select>",
         "<select required><option value='a'>{{ value }}</option></select>",
         "<select required><option value='a' v-if='ok'>A</option></select>",
@@ -142,4 +143,45 @@ fn text_derived_bound_entity_grouped_unknown_or_late_invalid_values_never_return
             );
         }
     }
+}
+
+#[test]
+fn actual_callback_selection_and_original_host_modes_remain_fail_closed() {
+    use vize_l0::config::VueVersion;
+    pair(
+        &configured().with_disabled_rules(vec![RULE.into()]),
+        "<input>",
+        0,
+    );
+    let source = "<select required><option value='a'>A</option></select>";
+    assert_eq!(
+        configured()
+            .with_enabled_rules(Some(vec![RULE.into(), "unprovided/rule".into()]))
+            .lint_native_template(source, "Unknown.vue")
+            .unwrap_err(),
+        Refusal::UnprovidedRule {
+            rule: "unprovided/rule".into()
+        }
+    );
+    assert_eq!(
+        configured()
+            .with_vue_version(Some(VueVersion::V2))
+            .lint_native_template(source, "Vue2.vue")
+            .unwrap_err(),
+        Refusal::UnsupportedVueVersion {
+            requested: VueVersion::V2
+        }
+    );
+    assert_eq!(
+        configured()
+            .with_vapor_mode(Some(true))
+            .lint_native_template(source, "Vapor.vue")
+            .unwrap_err(),
+        Refusal::UnsupportedVaporMode { requested: true }
+    );
+    assert!(
+        configured()
+            .lint_native_sfc(&format!("<template>{source}</template>"), "Sfc.vue")
+            .is_err()
+    );
 }
