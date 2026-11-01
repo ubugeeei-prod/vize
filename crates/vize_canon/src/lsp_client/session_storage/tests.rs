@@ -5,6 +5,23 @@ use crate::{
 };
 use std::{fs, path::Path};
 
+mod bases;
+
+#[test]
+fn private_storage_falls_back_without_touching_rejected_bases() {
+    bases::fallback_preserves_rejected_trees();
+}
+
+#[test]
+fn private_storage_checks_aliases_and_unusable_bases_before_fallback() {
+    bases::aliases_and_unusable_bases();
+}
+
+#[test]
+fn private_storage_refuses_when_every_candidate_is_unsafe() {
+    bases::all_unsafe_bases_refuse();
+}
+
 #[test]
 fn preferred_materialized_member_skips_hidden_directories_but_keeps_package_members() {
     let project = tempfile::tempdir().unwrap();

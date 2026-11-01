@@ -17,27 +17,33 @@ pub(super) struct SessionStorage {
 
 impl SessionStorage {
     pub(super) fn new(project_root: &Path) -> Result<Self, String> {
-        let base = std::env::temp_dir()
-            .canonicalize()
-            .map_err(|error| cstr!("Failed to resolve private Corsa storage base: {error}"))?;
+        Self::new_with_bases(
+            project_root,
+            std::iter::once(std::env::temp_dir()).chain(dirs::cache_dir()),
+        )
+    }
+
+    fn new_with_bases(
+        project_root: &Path,
+        bases: impl IntoIterator<Item = PathBuf>,
+    ) -> Result<Self, String> {
         let authored = project_root
             .canonicalize()
             .unwrap_or_else(|_| project_root.to_path_buf());
-        if base.starts_with(&authored)
-            || base.components().any(|part| {
-                part.as_os_str()
-                    .to_string_lossy()
-                    .eq_ignore_ascii_case("node_modules")
+        let mut failures = Vec::new();
+        let directory = bases
+            .into_iter()
+            .find_map(|candidate| match private_owner_in(&authored, &candidate) {
+                Ok(directory) => Some(directory),
+                Err(error) => {
+                    failures.push(error.to_string());
+                    None
+                }
             })
-        {
-            return Err(cstr!(
-                "Private Corsa storage cannot be inside the authored or package tree"
-            ));
-        }
-        let directory = tempfile::Builder::new()
-            .prefix("vize-corsa-overlay-")
-            .tempdir_in(base)
-            .map_err(|error| cstr!("Failed to create private Corsa storage: {error}"))?;
+            .ok_or_else(|| {
+                let errors = failures.join("; ");
+                cstr!("No usable private Corsa storage base: {errors}")
+            })?;
         let root = directory.path().join("project");
         // Document URIs use the normal Windows spelling, without a verbatim
         // prefix. Keep the owned boundary in that same physical spelling so
@@ -87,6 +93,48 @@ impl SessionStorage {
     pub(super) fn retain_after_failed_shutdown(&self) {
         self.retain_after_failure.store(true, Ordering::Release);
     }
+}
+
+fn private_owner_in(authored: &Path, candidate: &Path) -> Result<tempfile::TempDir, String> {
+    // A cache directory may not exist yet. Allocate only our private owner
+    // beneath its nearest existing ancestor; never create cache parents or
+    // mutate a rejected authored/package candidate.
+    let mut existing = candidate;
+    let base = loop {
+        match existing.canonicalize() {
+            Ok(base) => break base,
+            Err(error) if error.kind() == ErrorKind::NotFound => {
+                existing = existing
+                    .parent()
+                    .ok_or_else(|| cstr!("Private Corsa storage has no existing base"))?;
+            }
+            Err(error) => {
+                return Err(cstr!(
+                    "Failed to resolve private Corsa storage base: {error}"
+                ));
+            }
+        }
+    };
+    if !base.is_dir() {
+        return Err(cstr!("Private Corsa storage base is not a directory"));
+    }
+    if base.starts_with(authored) || is_package_path(&base) {
+        return Err(cstr!(
+            "Private Corsa storage cannot be inside the authored or package tree"
+        ));
+    }
+    tempfile::Builder::new()
+        .prefix("vize-corsa-overlay-")
+        .tempdir_in(base)
+        .map_err(|error| cstr!("Failed to create private Corsa storage: {error}"))
+}
+
+fn is_package_path(path: &Path) -> bool {
+    path.components().any(|part| {
+        part.as_os_str()
+            .to_string_lossy()
+            .eq_ignore_ascii_case("node_modules")
+    })
 }
 
 impl Drop for SessionStorage {
