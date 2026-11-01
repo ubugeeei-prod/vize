@@ -2,9 +2,7 @@
 
 use std::{path::PathBuf, time::Duration, time::Instant};
 
-use vize_canon::{
-    BatchTypeCheckResult, BatchTypeChecker, BatchTypeCheckerOptions, CliDiagnosticBatch,
-};
+use vize_canon::{BatchTypeCheckResult, BatchTypeChecker, BatchTypeCheckerOptions};
 use vize_l0::{FxHashSet, String, config::VueVersion, cstr};
 
 use super::nuxt_tsconfig::{
@@ -17,8 +15,13 @@ use super::{
 };
 use crate::commands::check::nuxt;
 
+mod checker;
+use checker::ProgramChecker;
+pub(super) use checker::ProgramPurpose;
+
 #[derive(Clone)]
 pub(super) struct CheckerSettings {
+    pub(super) purpose: ProgramPurpose,
     pub(super) virtual_ts_options: vize_canon::virtual_ts::VirtualTsOptions,
     pub(super) corsa_path: Option<PathBuf>,
     pub(super) servers: Option<usize>,
@@ -38,7 +41,7 @@ pub(super) struct CheckerSettings {
 }
 
 pub(super) struct ProgramExecution {
-    pub(super) checker: CliDiagnosticBatch,
+    pub(super) checker: ProgramChecker,
     pub(super) result: BatchTypeCheckResult,
     pub(super) input_files: Vec<PathBuf>,
     pub(super) reported_files: FxHashSet<PathBuf>,
@@ -52,7 +55,7 @@ pub(super) struct ProgramExecution {
 
 /// A generated program whose native check has not run yet.
 pub(super) struct PendingProgram {
-    checker: CliDiagnosticBatch,
+    checker: ProgramChecker,
     input_files: Vec<PathBuf>,
     reported_files: FxHashSet<PathBuf>,
     tsconfig_path: Option<PathBuf>,
@@ -189,7 +192,7 @@ pub(super) fn prepare_program(
     );
     checker.set_package_route_resolver(input.package_route_resolver);
     checker.set_package_routes(input.package_routes.iter().cloned());
-    let mut checker = checker.into_cli_diagnostics();
+    let mut checker = ProgramChecker::new(checker, settings.purpose);
     checker
         .scan_paths(input.files)
         .map_err(|error| cstr!("{}", error))?;

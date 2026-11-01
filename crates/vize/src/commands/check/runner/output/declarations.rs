@@ -30,8 +30,10 @@ pub(super) fn emit_declarations(
             &execution.program_root,
         );
         directories.insert(options.out_dir.clone());
-        let result = execution
-            .checker
+        let checker = execution.checker.declaration_owner().ok_or_else(|| {
+            String::from("declaration output was not prepared with a retained program owner")
+        })?;
+        let result = checker
             .emit_declarations(&options)
             .map_err(|error| cstr!("{}", error))?;
         files.extend(result.files.into_iter().map(|file| file.path));

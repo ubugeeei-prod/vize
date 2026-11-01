@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 
 use super::VirtualProject;
 
+mod closure_syntax;
 mod edit;
 mod libraries;
 mod materialization;

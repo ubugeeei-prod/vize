@@ -130,6 +130,12 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         &mut canonical_paths,
     );
     let settings = CheckerSettings {
+        purpose: super::execution::ProgramPurpose::from_outputs(
+            args.declaration,
+            args.show_virtual_ts,
+            !args.save_virtual_ts_for.is_empty(),
+            args.profile,
+        ),
         virtual_ts_options: build_virtual_ts_options(&config, config_dir),
         corsa_path: effective_corsa_path,
         servers: corsa_servers,
