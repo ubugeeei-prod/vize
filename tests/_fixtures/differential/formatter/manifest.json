@@ -944,11 +944,11 @@
         "root": "sfc-encoded-ampersand-data-6098",
         "files": [
           {
-            "path": "bare-sequence-reference.vue.txt",
+            "path": "App.vue.txt",
             "sha256": "069d40ae9403b3b4f42878f21d052975e3ade303491dabdff0017d2ceac3bcef",
             "role": "entry",
             "kind": "vue",
-            "runtimeFileName": "BareSequence.vue"
+            "runtimeFileName": "App.vue"
           }
         ],
         "config": [
@@ -1032,7 +1032,7 @@
                 "assertion": "Actual baseline Check41283720250/job124780840467 retained complete bare-sequence bytes and the unchanged original consumer outcome."
               },
               "mediaType": "text/x-vue",
-              "runtimeFileName": "BareSequence.vue"
+              "runtimeFileName": "App.vue"
             }
           ],
           "contract": "formatter-byte-output-v1",
@@ -1058,7 +1058,7 @@
       "scenarios": [
         {
           "id": "initial",
-          "inputRef": "BareSequence.vue",
+          "inputRef": "App.vue",
           "operations": []
         }
       ]

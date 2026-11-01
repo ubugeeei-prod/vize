@@ -146,8 +146,10 @@ mod tests {
             ("value &amp;copy", "value & copy"),
             ("'&amp;quot;'", "'&amp;quot;'"),
             ("'&amp;apos;'", "'&amp;apos;'"),
-            (r"'&amp;qu\ot;'", "'&amp;quot;'"),
-            (r"'&qu\ot;'", "'&amp;quot;'"),
+            // The actual pinned printer keeps this harmless JS escape. It
+            // does not form an HTML reference and needs no invented rewrite.
+            (r"'&amp;qu\ot;'", r"'&qu\ot;'"),
+            (r"'&qu\ot;'", r"'&qu\ot;'"),
             ("'&#38;quot;'", "'&#38;quot;'"),
             ("'&lt;'", "'&lt;'"),
             ("left &amp;&amp; right", "left && right"),

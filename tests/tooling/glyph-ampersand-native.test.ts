@@ -11,6 +11,7 @@ import {
 import {
   captureWholeValue,
   domConsumer,
+  directory,
   hash,
   isRecord,
   loadAmpCases,
@@ -111,6 +112,11 @@ test("encoded ampersand DATA survives complete public formatter and real Vue DOM
   try {
     // Every native/reference/DOM observation is retained before any row verdict.
     for (const row of corpus.cases) {
+      const physicalInput = row.id === "bare-sequence-reference" ? "App.vue.txt" : row.file;
+      const physicalBytes = fs.readFileSync(path.join(root, directory, physicalInput));
+      assert.equal(hash(physicalBytes), row.sha256);
+      const source = physicalBytes.toString("utf8");
+      assert.equal(source, row.source, "the canonical CLI entry is the unchanged original source");
       const options = {
         printWidth: 100,
         tabWidth: 2,
@@ -120,7 +126,7 @@ test("encoded ampersand DATA survives complete public formatter and real Vue DOM
         vueVersion: "3",
       };
       const optionsBefore = structuredClone(options);
-      const first = observe(() => provider.binding.formatSfc(row.source, options));
+      const first = observe(() => provider.binding.formatSfc(source, options));
       const code =
         first.kind === "returned" && isRecord(first.value) && typeof first.value.code === "string"
           ? first.value.code
@@ -156,7 +162,7 @@ test("encoded ampersand DATA survives complete public formatter and real Vue DOM
           return { kind: "threw", error: captureWholeValue(error) };
         }
       };
-      const before = await consume(row.source);
+      const before = await consume(source);
       const after = code === undefined ? undefined : await consume(code);
       const referenceAfter =
         isRecord(reference) && typeof reference.code === "string"
@@ -164,6 +170,11 @@ test("encoded ampersand DATA survives complete public formatter and real Vue DOM
           : undefined;
       const observation = {
         row,
+        physicalInput: {
+          path: `${directory}/${physicalInput}`,
+          sha256: hash(physicalBytes),
+          bytes: physicalBytes.length,
+        },
         options,
         optionsBefore,
         first: captureWholeValue(first),

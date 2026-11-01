@@ -18,6 +18,15 @@ fn complete_encoded_ampersand_outputs_retain_data_and_reach_fixed_points() {
             let id = row["id"].as_str().unwrap();
             let source =
                 std::fs::read_to_string(directory.join(row["file"].as_str().unwrap())).unwrap();
+            // The closed CLI adapter requires App.vue. Consume the canonical
+            // registered bytes here too; keep the original corpus file frozen.
+            let source = if id == "bare-sequence-reference" {
+                let registered = std::fs::read_to_string(directory.join("App.vue.txt")).unwrap();
+                assert_eq!(registered, source);
+                registered
+            } else {
+                source
+            };
             let first = format_sfc(&source, &FormatOptions::default()).unwrap();
             let second = format_sfc(&first.code, &FormatOptions::default()).unwrap();
             let third = format_sfc(&second.code, &FormatOptions::default()).unwrap();
