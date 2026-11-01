@@ -28,7 +28,12 @@ export function payloadWitness(install: InstallReceipt): unknown {
   return {
     scope: "authenticated package payloads only; not whole node_modules",
     declaredOptionalNotInstalled: install.declaredOptionalNotInstalled.map((row) => {
-      const physical = physicalPathWitness(install.root, row.physical.path, row.parentDirectory, row.name);
+      const physical = physicalPathWitness(
+        install.root,
+        row.physical.path,
+        row.parentDirectory,
+        row.name,
+      );
       try {
         return {
           name: row.name,
@@ -48,7 +53,8 @@ export function payloadWitness(install: InstallReceipt): unknown {
           name: row.name,
           version: row.version,
           parent: row.parentDirectory,
-          error: String(error), physical,
+          error: String(error),
+          physical,
         };
       }
     }),
