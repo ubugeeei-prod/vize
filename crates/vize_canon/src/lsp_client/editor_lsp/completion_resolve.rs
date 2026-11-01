@@ -56,6 +56,15 @@ impl EditorLspSession {
         Ok(response)
     }
 
+    #[cfg(all(test, target_os = "linux"))]
+    pub(super) fn completion_resolve_for_shared_context_test(
+        &mut self,
+        uri: &str,
+        item: Value,
+    ) -> Result<Option<Value>, String> {
+        self.completion_resolve(uri, item)
+    }
+
     fn completion_resolve(&mut self, uri: &str, item: Value) -> Result<Option<Value>, String> {
         if self.closed
             || !self

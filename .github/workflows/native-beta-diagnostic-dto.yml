@@ -8,7 +8,12 @@ on:
       - .github/workflows/native-beta-diagnostic-dto.yml
       - Cargo.toml
       - Cargo.lock
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      shared_context_probe:
+        description: Add the private two-config shared-owner functional experiment
+        type: boolean
+        default: false
 permissions: { contents: read }
 concurrency:
   group: native-beta-dto-${{ github.event.pull_request.number || github.ref }}
@@ -76,6 +81,9 @@ jobs:
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::initial_diagnostics::
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::
           cargo clippy --locked --profile ci -p vize_canon --lib -- -D warnings
+      - name: Probe two configs on one actual native editor owner
+        if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.shared_context_probe && matrix.role == 'after' }}
+        run: node tests/tooling/support/native-beta-dto/shared-contexts-run.ts
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
