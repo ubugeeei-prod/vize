@@ -83,15 +83,13 @@ function fixture(context: TestContext) {
   });
   const directory = path.join(nativeDir, ".artifacts/native/formatter-history/toolchain");
   function packets() {
-    return fs
-      .readdirSync(directory)
-      .map((name) => ({
-        name,
-        body: JSON.parse(fs.readFileSync(path.join(directory, name), "utf8")) as Record<
-          string,
-          unknown
-        >,
-      }));
+    return fs.readdirSync(directory).map((name) => ({
+      name,
+      body: JSON.parse(fs.readFileSync(path.join(directory, name), "utf8")) as Record<
+        string,
+        unknown
+      >,
+    }));
   }
   return {
     root,
@@ -166,6 +164,14 @@ void test("a same-reply custom executable cannot replace the real selected compi
       /neither the selected real image nor the authenticated rustup proxy/,
     );
     assert(f.packets().find(({ name }) => name === "selection.json")?.body.error);
+    assert.throws(
+      () =>
+        prepareNativeHistoryToolchain(f.nativeDir, {
+          ...f.environment,
+          [key]: f.rustup,
+        }),
+      /neither the selected real image nor the authenticated rustup proxy/,
+    );
   }
   assert(
     f.calls.every(({ file }) => file === f.rustup),

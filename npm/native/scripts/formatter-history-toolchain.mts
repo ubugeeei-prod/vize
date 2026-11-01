@@ -171,7 +171,8 @@ export function prepareNativeHistoryToolchain(nativeDir: string, environment: No
     assert.equal(path.dirname(before.rustc.realpath), path.dirname(before.cargo.realpath));
     for (const tool of ["rustc", "cargo"] as const)
       assert(
-        requested[tool].sha256 === rustup.sha256 ||
+        (requested[tool].sha256 === rustup.sha256 &&
+          path.basename(requested[tool].path) === tool) ||
           requested[tool].realpath === before[tool].realpath,
         `ambient ${tool} is neither the selected real image nor the authenticated rustup proxy`,
       );
@@ -289,7 +290,8 @@ export function validateNativeHistoryToolchain(nativeDir: string, value: unknown
       assert.equal(successful(selection), `${actual[tool].path}\n`);
       const requested = value.requested[tool] as Image;
       assert(
-        requested.sha256 === value.rustup.sha256 || requested.realpath === actual[tool].realpath,
+        (requested.sha256 === value.rustup.sha256 && path.basename(requested.path) === tool) ||
+          requested.realpath === actual[tool].realpath,
       );
       record(value.versions[tool]);
       const oldVersion = value.versions[tool] as unknown as Packet;
