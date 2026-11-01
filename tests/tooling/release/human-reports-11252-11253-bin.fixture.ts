@@ -277,7 +277,10 @@ function fixture(role: HumanBinFacts["role"] = "imports-vue-ts-11253"): HumanBin
       parentDir + "/node_modules/.bin/" + name,
       image(parentDir + "/node_modules/.bin/" + name, expectedNode(name, true)),
     );
-  for (const file of [...inventory.keys()]) {
+  // Preserve the authored file population while structural directories are
+  // inserted into the same map below.
+  const authoredFiles = [...inventory.keys()];
+  for (const file of authoredFiles) {
     let directory = path.dirname(file);
     while (directory !== parentDir) {
       inventory.set(directory, {
