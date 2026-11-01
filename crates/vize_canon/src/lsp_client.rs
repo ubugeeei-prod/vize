@@ -27,6 +27,9 @@ mod lifecycle_setup;
 mod materialized_refresh;
 pub(crate) mod paths;
 mod queries;
+mod retained_text;
+#[cfg(test)]
+mod retained_text_tests;
 mod session;
 mod session_paths;
 mod session_storage;
