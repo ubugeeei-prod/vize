@@ -8,6 +8,7 @@ use super::executor::CorsaExecutor;
 use super::virtual_project::VirtualProject;
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
+mod cli_diagnostics;
 mod declarations;
 mod diagnostic_paths;
 mod generic_private_names;
@@ -18,6 +19,7 @@ mod metrics;
 mod paths;
 mod registered;
 mod result;
+pub use cli_diagnostics::CliDiagnosticBatch;
 pub use declarations::{DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput};
 pub use metrics::IncrementalCheckMetrics;
 use paths::{IncrementalPaths, collect_project_paths};

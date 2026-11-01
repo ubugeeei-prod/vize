@@ -3,8 +3,7 @@
 use std::{path::PathBuf, time::Duration, time::Instant};
 
 use vize_canon::{
-    BatchTypeCheckResult, BatchTypeChecker, BatchTypeCheckerOptions,
-    batch::TypeChecker as BatchTypeCheckerTrait,
+    BatchTypeCheckResult, BatchTypeChecker, BatchTypeCheckerOptions, CliDiagnosticBatch,
 };
 use vize_l0::{FxHashSet, String, config::VueVersion, cstr};
 
@@ -39,7 +38,7 @@ pub(super) struct CheckerSettings {
 }
 
 pub(super) struct ProgramExecution {
-    pub(super) checker: BatchTypeChecker,
+    pub(super) checker: CliDiagnosticBatch,
     pub(super) result: BatchTypeCheckResult,
     pub(super) input_files: Vec<PathBuf>,
     pub(super) reported_files: FxHashSet<PathBuf>,
@@ -53,7 +52,7 @@ pub(super) struct ProgramExecution {
 
 /// A generated program whose native check has not run yet.
 pub(super) struct PendingProgram {
-    checker: BatchTypeChecker,
+    checker: CliDiagnosticBatch,
     input_files: Vec<PathBuf>,
     reported_files: FxHashSet<PathBuf>,
     tsconfig_path: Option<PathBuf>,
@@ -190,6 +189,7 @@ pub(super) fn prepare_program(
     );
     checker.set_package_route_resolver(input.package_route_resolver);
     checker.set_package_routes(input.package_routes.iter().cloned());
+    let mut checker = checker.into_cli_diagnostics();
     checker
         .scan_paths(input.files)
         .map_err(|error| cstr!("{}", error))?;
@@ -231,7 +231,7 @@ impl PendingProgram {
     /// overlap this with preparing the next program.
     pub(super) fn check(self) -> Result<ProgramExecution, String> {
         let Self {
-            checker,
+            mut checker,
             input_files,
             reported_files,
             tsconfig_path,

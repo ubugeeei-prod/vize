@@ -152,9 +152,9 @@ pub use corsa_bridge::{
 pub use batch::{
     BatchTopologyMetrics, BatchTypeChecker, BatchTypeCheckerOptions,
     CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE, CONTENT_MAPPER_SFC_PARSE_ERROR_CODE,
-    CONTENT_MAPPER_VIRTUAL_EXTENSION, CompilerConfigurationAttempt, CompilerConfigurationSnapshot,
-    CompilerOptionsSnapshot, ConfigurationObservations, ContentMapperDiagnostic,
-    ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives,
+    CONTENT_MAPPER_VIRTUAL_EXTENSION, CliDiagnosticBatch, CompilerConfigurationAttempt,
+    CompilerConfigurationSnapshot, CompilerOptionsSnapshot, ConfigurationObservations,
+    ContentMapperDiagnostic, ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives,
     ContentMapperProjectConfiguration, ContentMapperProjectContext, ContentMapperSemanticLink,
     ContentMapperSpan, ContentMapperTransform, ContentMapperTransformOptions,
     ContentMapperUnusedExpectDiagnostic, CorsaError, CorsaExecutor, CorsaNotFoundError,

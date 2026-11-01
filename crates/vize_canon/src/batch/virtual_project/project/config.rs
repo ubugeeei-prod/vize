@@ -13,6 +13,24 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 use super::super::VirtualProject;
 
 impl VirtualProject {
+    /// A terminal CLI owner can change storage only before any generated or
+    /// editor artifact exists. This is storage isolation, not a semantic grant.
+    pub(crate) fn can_scope_cli_diagnostics(&self) -> bool {
+        self.virtual_files.is_empty()
+            && self.passthrough_files.is_empty()
+            && self.package_shadow_files.is_empty()
+            && self.package_shadow_manifests.is_empty()
+            && self.materialized_package_links.is_empty()
+            && self.editor_document_options.is_none()
+            && self.compiler_configuration.is_none()
+    }
+
+    pub(crate) fn scope_cli_diagnostics(&mut self, storage_root: &Path) {
+        debug_assert!(self.can_scope_cli_diagnostics());
+        self.scope_batch_namespace(storage_root);
+        self.private_batch_namespace = true;
+    }
+
     pub(crate) fn scope_editor_namespace(&mut self, storage_root: &Path, identity: u64) {
         debug_assert!(self.virtual_files.is_empty());
         debug_assert!(self.package_routes.is_empty());
