@@ -35,6 +35,9 @@ impl<'template> LegacyInlineCallbacks<'template> {
             return false;
         }
         self.values.get(value).copied().unwrap_or_else(|| {
+            if !vize_l0::expression_guard::expression_is_safe_to_parse(value) {
+                return super::component_prop_checker::contains_inline_function_prop_value(value);
+            }
             let allocator = Allocator::new();
             match Parser::new(&allocator, value, SourceType::ts()).parse_expression() {
                 Ok(expression) => contains_function(&expression),
@@ -68,7 +71,11 @@ impl<'template> LegacyInlineCallbacks<'template> {
                             .and_then(|ast| ast.as_expression())
                             .filter(|retained| retained.raw == simple.content)
                             .map(|retained| contains_function(retained.ast))
-                            .unwrap_or_else(|| self.contains(value));
+                            .unwrap_or_else(|| {
+                                super::component_prop_checker::contains_inline_function_prop_value(
+                                    value,
+                                )
+                            });
                         self.values.insert(value, callback);
                     }
                     self.collect(&element.children);

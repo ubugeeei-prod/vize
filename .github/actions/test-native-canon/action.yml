@@ -89,12 +89,9 @@ runs:
       run: |
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
-        native_status=0
-        cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::legacy_external_component_props:: -- --nocapture || native_status=$?
-        # Capture unaccepted changed tails; every command failure remains fatal.
-        INSTA_UPDATE=new cargo test --locked --profile ci -p vize_canon --lib virtual_ts::legacy_vue2_vuetify_tests:: -- --nocapture --test-threads=1 || native_status=$?
-        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::scope::inline_callback_classifier:: -- --nocapture || native_status=$?
-        exit "$native_status"
+        cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::legacy_external_component_props:: -- --nocapture
+        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::legacy_vue2_vuetify_tests:: -- --nocapture --test-threads=1
+        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::scope::inline_callback_classifier:: -- --nocapture
     - name: Install locked Vue dependency and pinned syntax corpus
       shell: bash
       run: |
@@ -245,7 +242,6 @@ runs:
         path: |
           ${{ runner.temp }}/native-snapshot-source
           ${{ runner.temp }}/native-syntax-semantics
-          crates/vize_canon/src/virtual_ts/snapshots/vize_canon__virtual_ts__legacy_vue2_vuetify_tests__*.snap.new
           target/vize-tests/flow-depth-isolation
         if-no-files-found: ignore
         retention-days: 7

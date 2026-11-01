@@ -402,7 +402,7 @@ function __setup() {
   type __VDatePicker_Props_0 = typeof VDatePicker extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof VDatePicker> : Record<string, unknown>) : $ComponentRawProps<typeof VDatePicker>;
   type __VDatePicker_Component_0 = typeof VDatePicker;
   type __VDatePicker_CheckProps_0 = __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & $RequiredFallthroughProps<__VDatePicker_Component_0>;
-  type __VDatePicker_CheckTail_0 = Record<string, unknown>;
+  type __VDatePicker_CheckTail_0 = { [__K in string]: unknown };
   type __VDatePicker_ValueProps_0 = $IsLibraryGenericExport<__VDatePicker_Component_0> extends true ? Record<string, any> : __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & $PublicComponentAttrs;
   type __VDatePicker_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__VDatePicker_Component_0, K>;
   type __VDatePicker_Check_0 = $PropChecker<__VDatePicker_Component_0, __VDatePicker_CheckProps_0, __VDatePicker_CheckTail_0>;

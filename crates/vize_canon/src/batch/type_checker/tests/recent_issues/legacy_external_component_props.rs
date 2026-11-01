@@ -165,7 +165,7 @@ fn legacy_external_callbacks_and_partial_declarations_keep_the_loose_surface() {
     let old_route = observe(&old_route_input, true, "unregistered-method-controls");
     let capture = json!({
         "schema":"vize.legacy-external-props-compatibility-observation.v1",
-        "scope":"Synthetic declarations. MixedCallbacks.vue is a raw remaining-gap control, not evidence its wrong count is checked.",
+        "scope":"Synthetic declarations. MixedCallbacks.vue remains unqualified. The second observation removes only Any/Unknown registrations to retain the preexisting unregistered-method TS7006 evidence; it is not proof of a fixed unregistered fallback.",
         "input":input, "observation":observation, "unregisteredMethodObservation":old_route,
     });
     let whole = serde_json::to_string_pretty(&capture).expect("complete compatibility API capture");
@@ -191,7 +191,11 @@ fn legacy_external_callbacks_and_partial_declarations_keep_the_loose_surface() {
     }
     assert_eq!(
         qualified,
-        vec![count_mismatch(root, "src/Shadow.vue", 3)],
+        vec![
+            count_mismatch(root, "src/QuotedArrow.vue", 0),
+            count_mismatch(root, "src/RecordShadowWrong.vue", 3),
+            count_mismatch(root, "src/Shadow.vue", 3),
+        ],
         "complete diagnostic vector for qualified compatibility files: {observation:#}"
     );
     // Do not pin MixedCallbacks.vue to a false-clean result. Its full result

@@ -86,6 +86,12 @@ pub(super) fn collect_component_prop_expression_ranges(
             if !has_checkable_binding && !options.legacy_vue2 {
                 continue;
             }
+            let legacy_external = options.legacy_vue2
+                && !has_script_binding(bindings, &usage)
+                && component_name_matches_external_template_binding(
+                    usage.name.as_str(),
+                    &external_template_bindings,
+                );
             if let Some(collector) = options.diagnostic_ownership {
                 refuse_ambiguous_prop_spans(collector, &usage);
             }
@@ -135,12 +141,6 @@ pub(super) fn collect_component_prop_expression_ranges(
                     continue;
                 }
                 let value = value.as_str().trim();
-                let legacy_external = options.legacy_vue2
-                    && !has_script_binding(bindings, &usage)
-                    && component_name_matches_external_template_binding(
-                        usage.name.as_str(),
-                        &external_template_bindings,
-                    );
                 let contains_callback = if legacy_external {
                     callbacks.contains(value)
                 } else {
