@@ -19,6 +19,8 @@ use tower_lsp::lsp_types::{
 // Shared, UTF-16-correct offset->(line, column) conversion (#1389).
 use vize_l0::line_index::offset_to_line_col;
 
+#[cfg(all(test, unix))]
+mod auto_import_literal_tests;
 #[cfg(test)]
 mod diagnostic_selection_tests;
 mod ref_value;
@@ -154,14 +156,16 @@ impl CodeActionService {
             Some(s) => s,
             None => return Vec::new(),
         };
-        let import_statement = match entry.kind {
+        let mut import_statement = match entry.kind {
             crate::ide::auto_import::AutoImportKind::VueComponent => {
-                format!("import {} from '{}'\n", entry.name, import_specifier)
+                format!("import {} from ", entry.name)
             }
             crate::ide::auto_import::AutoImportKind::Composable => {
-                format!("import {{ {} }} from '{}'\n", entry.name, import_specifier)
+                format!("import {{ {} }} from ", entry.name)
             }
         };
+        push_import_specifier(&mut import_statement, &import_specifier);
+        import_statement.push('\n');
 
         // Insert on the first line of script setup if present, otherwise of
         // the regular script block, not after `<script …>` on its own line.
@@ -275,6 +279,22 @@ impl CodeActionService {
             document_changes: None,
             change_annotations: None,
         })
+    }
+}
+
+/// Preserve ordinary edit bytes and encode paths that need a JS literal escape.
+fn push_import_specifier(output: &mut String, value: &str) {
+    if value
+        .bytes()
+        .any(|byte| matches!(byte, b'\'' | b'\\' | 0..=0x1f))
+    {
+        let mut literal = vize_l0::String::default();
+        vize_l0::js_string::push_js_string_literal(&mut literal, value);
+        output.push_str(literal.as_str());
+    } else {
+        output.push('\'');
+        output.push_str(value);
+        output.push('\'');
     }
 }
 
