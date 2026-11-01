@@ -171,6 +171,12 @@
           "default": true,
           "description": "Enable Vize type checking diagnostics and type-aware backend features."
         },
+        "vize.memory.releaseClosedProjectContexts": {
+          "type": "boolean",
+          "default": false,
+          "scope": "window",
+          "description": "Allow cached non-primary project contexts to be released after all Vize-managed documents close. This may reduce retained RAM; reopening can require initialization again. Active requests and workers drain naturally, so RSS may not drop immediately. Changing this setting restarts Vize."
+        },
         "vize.typecheck.timeoutMs": {
           "type": "integer",
           "minimum": 1,

@@ -52,6 +52,15 @@ export function sourceTests(
     )
     .map((match) => prefix + match[2]!);
 }
+/** The existing Rust module filter also executes this explicit owned-read child. */
+export function initialReadTests(): string[] {
+  const base = "crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics/tests";
+  const prefix = "corsa_bridge::bridge::initial_diagnostics::tests::";
+  return [
+    ...sourceTests(base + ".rs", prefix),
+    ...sourceTests(base + "/owned_read.rs", prefix + "owned_read::"),
+  ];
+}
 function libraryExecution(capture: string, nativeSha: string): void {
   const groups = [
     [
@@ -80,7 +89,7 @@ function libraryExecution(capture: string, nativeSha: string): void {
       : []),
   ];
   for (const [name, file, prefix] of groups) {
-    const expected = sourceTests(file!, prefix!);
+    const expected = name === "leases" ? initialReadTests() : sourceTests(file!, prefix!);
     assert.ok(expected.length > 0);
     execution(fs.readFileSync(path.join(capture, `${name}.stdout`), "utf8"), expected);
   }

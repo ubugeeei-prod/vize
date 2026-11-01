@@ -214,6 +214,8 @@ impl ServerState {
     }
 
     fn apply_lsp_config_locked(&self, config: LspConfigSection) -> super::LspFeatureConfig {
+        #[cfg(feature = "native")]
+        self.set_closed_context_release(config.release_closed_project_contexts);
         #[cfg(feature = "experimental-source-navigation")]
         if let Some(enabled) = config.native_linked_editing {
             self.native_linked_editing.store(enabled, Ordering::SeqCst);

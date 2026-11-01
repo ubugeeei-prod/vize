@@ -64,6 +64,21 @@ impl UriSnapshotCache {
         Arc::clone(&state.snapshot)
     }
 
+    /// A closed-set operation linearizes before any later open/rename commit.
+    /// Never waits for a document mutation or invokes native work under these guards.
+    #[cfg(feature = "native")]
+    pub(super) fn try_while_empty<T>(&self, apply: impl FnOnce() -> T) -> Option<T> {
+        let _guards = self
+            .mutation_stripes
+            .iter()
+            .map(Mutex::try_lock)
+            .collect::<Option<Vec<_>>>()?;
+        if !self.snapshot().is_empty() {
+            return None;
+        }
+        Some(apply())
+    }
+
     /// Serialize only mutations that touch the same URI stripe. Independent
     /// documents keep mutating concurrently, while conflicting map operations
     /// and their committed deltas cannot be observed in different orders.

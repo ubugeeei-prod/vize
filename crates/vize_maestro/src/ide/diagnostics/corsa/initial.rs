@@ -38,7 +38,11 @@ pub(crate) struct PreparedInitialApiDiagnostics {
 impl PreparedInitialApiDiagnostics {
     pub(crate) async fn read(&mut self) -> Option<PendingInitialApiDiagnostics> {
         let request = self.request.take()?;
-        Some(self.bridge.read_initial_api_diagnostics(request).await)
+        Some(
+            self.bridge
+                .read_owned_initial_api_diagnostics(request)
+                .await,
+        )
     }
 
     pub(crate) fn into_bridge(self) -> Arc<CorsaBridge> {

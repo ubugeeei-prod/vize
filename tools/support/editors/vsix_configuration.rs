@@ -47,8 +47,20 @@ pub fn assert_configuration_defaults(package_json: &Value) -> Result<(), String>
             return Err(format!("{timeout_key}.{field} must be integer {expected}"));
         }
     }
+    let closed_context_key = "vize.memory.releaseClosedProjectContexts";
+    let closed_context = properties
+        .get(closed_context_key)
+        .ok_or_else(|| format!("missing {closed_context_key}"))?;
+    if closed_context.get("type").and_then(Value::as_str) != Some("boolean") {
+        return Err(format!("{closed_context_key} must have boolean type"));
+    }
+    if closed_context.get("default").and_then(Value::as_bool) != Some(false) {
+        return Err(format!("{closed_context_key} must default to false"));
+    }
+    editor_archive::expect_json_string(closed_context, &["scope"], "window")?;
     for (key, property) in properties {
-        if key == timeout_key
+        if key == closed_context_key
+            || key == timeout_key
             || key == "vize.serverPath"
             || key == "vize.trace.server"
             || (key.starts_with("vize.autoInsert.") && key != "vize.autoInsert.enable")
@@ -240,5 +252,72 @@ mod tests {
             json!({"type":"integer","default":10_000}),
         );
         assert!(assert_configuration_defaults(&package).is_err());
+    }
+
+    #[test]
+    fn closed_context_policy_requires_boolean_false_window_contract() {
+        assert_configuration_defaults(&manifest()).expect("current policy must pass");
+        let key = "vize.memory.releaseClosedProjectContexts";
+        let mut package = manifest();
+        properties(&mut package).remove(key);
+        assert!(assert_configuration_defaults(&package).is_err());
+        for field in ["type", "default", "scope"] {
+            let mut package = manifest();
+            properties(&mut package)
+                .get_mut(key)
+                .and_then(Value::as_object_mut)
+                .expect("policy must be a schema object")
+                .remove(field);
+            assert!(assert_configuration_defaults(&package).is_err(), "{field}");
+        }
+        for (field, values) in [
+            (
+                "type",
+                vec![json!("integer"), json!("string"), json!(false), json!(null)],
+            ),
+            (
+                "default",
+                vec![json!(true), json!(0), json!("false"), json!(null)],
+            ),
+            (
+                "scope",
+                vec![
+                    json!("resource"),
+                    json!("application"),
+                    json!(true),
+                    json!(null),
+                ],
+            ),
+        ] {
+            for value in values {
+                let mut package = manifest();
+                replace_field(&mut package, key, field, value.clone());
+                assert!(
+                    assert_configuration_defaults(&package).is_err(),
+                    "{field}={value}"
+                );
+            }
+        }
+        for value in [json!(null), json!(false), json!([]), json!({})] {
+            let mut package = manifest();
+            properties(&mut package).insert(key.to_string(), value.clone());
+            assert!(assert_configuration_defaults(&package).is_err(), "{value}");
+        }
+    }
+
+    #[test]
+    fn unknown_false_and_misspelled_closed_context_properties_are_rejected() {
+        for key in [
+            "vize.futureFalse",
+            "vize.memory.releaseClosedProjectContext",
+            "vize.memory.releaseClosedProjectContexts.enable",
+        ] {
+            let mut package = manifest();
+            properties(&mut package).insert(
+                key.to_string(),
+                json!({"type":"boolean","default":false,"scope":"window"}),
+            );
+            assert!(assert_configuration_defaults(&package).is_err(), "{key}");
+        }
     }
 }
