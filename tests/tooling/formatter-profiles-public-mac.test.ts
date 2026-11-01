@@ -1,5 +1,14 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  renameSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -10,7 +19,12 @@ import {
   assertMacHost,
   validateDispatch,
 } from "../../tools/support/release/formatter_profiles_public/mac_contract.ts";
-import { macInstallArgs } from "../../tools/support/release/formatter_profiles_public/mac_install.ts";
+import {
+  assertMacInputs,
+  macInstallArgs,
+  macRootSeal,
+  resetMacInput,
+} from "../../tools/support/release/formatter_profiles_public/mac_install.ts";
 import {
   assertMacFiles,
   macJournalExit,
@@ -158,6 +172,37 @@ test("a failed old formatting verdict cannot suppress containing-release evaluat
     ["failed", "passed"],
   );
   assert.throws(() => macVerdicts([]));
+});
+
+test("owned fixture resets refuse foreign links and changed roots before any write or command reuse", () => {
+  const temporary = realpathSync(mkdtempSync(join(tmpdir(), "vize-formatter-mac-reset-")));
+  const root = join(temporary, "consumer"),
+    foreign = join(temporary, "foreign");
+  try {
+    mkdirSync(root);
+    mkdirSync(foreign);
+    for (const name of ["a.vue", "Unselected.vue", "vite.config.mjs"])
+      writeFileSync(join(root, name), "long original");
+    const seal = macRootSeal(root);
+    resetMacInput(seal, "short");
+    assert.equal(readFileSync(join(root, "a.vue"), "utf8"), "short");
+    const outside = join(foreign, "outside.vue");
+    writeFileSync(outside, "foreign immutable");
+    rmSync(join(root, "a.vue"));
+    symlinkSync(outside, join(root, "a.vue"));
+    assert.throws(() => assertMacInputs(seal));
+    assert.throws(() => resetMacInput(seal, "must not write"));
+    assert.equal(readFileSync(outside, "utf8"), "foreign immutable");
+    rmSync(join(root, "a.vue"));
+    writeFileSync(join(root, "a.vue"), "owned");
+    renameSync(root, root + "-saved");
+    symlinkSync(foreign, root);
+    assert.throws(() => assertMacInputs(seal));
+    assert.throws(() => resetMacInput(seal, "must not write"));
+    assert.equal(readFileSync(outside, "utf8"), "foreign immutable");
+  } finally {
+    rmSync(temporary, { recursive: true });
+  }
 });
 
 test("whole Mac filesystem guard rejects unselected, unrelated module, extra file and link mutation", () => {

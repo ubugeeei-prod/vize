@@ -1,6 +1,17 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { mkdirSync, realpathSync, statSync, writeFileSync } from "node:fs";
+import {
+  closeSync,
+  constants,
+  fstatSync,
+  ftruncateSync,
+  lstatSync,
+  mkdirSync,
+  openSync,
+  realpathSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { asArray, asRecord, asString, readJsonRecord } from "../../json-value.ts";
@@ -15,6 +26,39 @@ import type { MacAuthority } from "./mac_authority.ts";
 
 const platformPackage = "@vizejs/native-darwin-arm64";
 export const macInstallArgs = (version: string): string[] => ["install", "vize@" + version];
+
+export function macRootSeal(root: string) {
+  const stat = lstatSync(root);
+  assert(stat.isDirectory() && !stat.isSymbolicLink());
+  assert.equal(realpathSync(root), root);
+  return { root, dev: stat.dev, ino: stat.ino };
+}
+export type MacRootSeal = ReturnType<typeof macRootSeal>;
+export function assertMacInputs(seal: MacRootSeal): void {
+  assert.deepEqual(macRootSeal(seal.root), seal, "the owned consumer directory identity changed");
+  for (const name of ["a.vue", "Unselected.vue", "vite.config.mjs"]) {
+    const file = join(seal.root, name),
+      stat = lstatSync(file);
+    assert(
+      stat.isFile() && !stat.isSymbolicLink() && stat.nlink === 1,
+      "command input must be one owned regular file: " + name,
+    );
+    assert.equal(realpathSync(file), file);
+  }
+}
+export function resetMacInput(seal: MacRootSeal, source: string): void {
+  assertMacInputs(seal);
+  const fd = openSync(join(seal.root, "a.vue"), constants.O_WRONLY | constants.O_NOFOLLOW);
+  try {
+    const stat = fstatSync(fd);
+    assert(stat.isFile() && stat.nlink === 1);
+    // Truncate only after validating the opened non-symlink descriptor.
+    ftruncateSync(fd, 0);
+    writeFileSync(fd, source);
+  } finally {
+    closeSync(fd);
+  }
+}
 
 /** A separate process loads only the freshly installed arm64 addon, then exposes its real identity. */
 export function probeMac(rootArg: string, output: string): void {
@@ -179,7 +223,16 @@ export function installMac(root: string, authority: MacAuthority, record: Record
   const final = inventory(root);
   record.json("installed-complete.json", final);
   assert.deepEqual(final, before, "all registry reads must preserve the whole installation");
-  return { root, identity, cli: asString(identity.cli), record, version: authority.version };
+  const rootSeal = macRootSeal(root);
+  record.json("owned-root-seal.json", rootSeal);
+  return {
+    root,
+    rootSeal,
+    identity,
+    cli: asString(identity.cli),
+    record,
+    version: authority.version,
+  };
 }
 export type MacContext = ReturnType<typeof installMac>;
 

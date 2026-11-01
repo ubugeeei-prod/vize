@@ -10,13 +10,20 @@ import {
 } from "node:fs";
 import { join, resolve } from "node:path";
 import { release } from "node:os";
+import { inspect } from "node:util";
 import { Recorder, success } from "../../config/windows_consumer/common.ts";
 import { hook, observed, verifyJournal } from "../editor_vite_stub/custody.ts";
 import { inside, inventory, type Entry } from "../editor_vite_stub/filesystem.ts";
 import { assertEnvironment } from "./run.ts";
 import { assertMacHost, macOriginal, macRole, validateDispatch } from "./mac_contract.ts";
 import { authenticateMac } from "./mac_authority.ts";
-import { installMac, type MacContext } from "./mac_install.ts";
+import {
+  assertMacInputs,
+  installMac,
+  macRootSeal,
+  resetMacInput,
+  type MacContext,
+} from "./mac_install.ts";
 import { assertFullFalse, macReference } from "./mac_reference.ts";
 import { asString } from "../../json-value.ts";
 
@@ -46,6 +53,7 @@ export function macJournalExit(label: string): 0 | null {
 export function observeMac(context: MacContext) {
   const { root, record, identity, cli } = context,
     original = macOriginal();
+  assert.deepEqual(macRootSeal(root), context.rootSeal);
   writeFileSync(join(root, "a.vue"), original.source, { flag: "wx" });
   writeFileSync(join(root, "Unselected.vue"), original.source, { flag: "wx" });
   writeFileSync(join(root, "vite.config.mjs"), "export default { unrelated: 'unchanged' };\n", {
@@ -57,6 +65,7 @@ export function observeMac(context: MacContext) {
   ];
   const rows: ReturnType<typeof capture>[] = [];
   function capture(label: string, args: string[], writable: string[]) {
+    assertMacInputs(context.rootSeal);
     const before = inventory(root);
     record.json(label + ".before.json", before);
     const custody = observed(root, identity, record, label);
@@ -66,6 +75,7 @@ export function observeMac(context: MacContext) {
       root,
       custody.env,
     );
+    assert.deepEqual(macRootSeal(root), context.rootSeal, "command replaced its owned root");
     const path = join(root, "a.vue");
     const output =
       existsSync(path) && lstatSync(path).isFile() && !lstatSync(path).isSymbolicLink()
@@ -103,7 +113,7 @@ export function observeMac(context: MacContext) {
       ],
     ],
   ] as const) {
-    writeFileSync(join(root, "a.vue"), original.source);
+    resetMacInput(context.rootSeal, original.source);
     for (const [step, argv] of [
       ["original", args],
       ["rewrite", args],
@@ -117,6 +127,21 @@ export function observeMac(context: MacContext) {
 }
 
 export type MacObservation = ReturnType<typeof observeMac>;
+
+function observedFailure(error: unknown) {
+  return {
+    name: error instanceof Error ? error.name : null,
+    message: error instanceof Error ? error.message : String(error),
+    rawInspection: inspect(error, {
+      showHidden: true,
+      depth: null,
+      getters: false,
+      customInspect: false,
+      maxStringLength: null,
+      maxArrayLength: null,
+    }),
+  };
+}
 
 /** Called only after both versions' complete observations have been retained. */
 export function validateMac(context: MacContext, observation: MacObservation, expected: Buffer) {
@@ -242,7 +267,11 @@ export async function runMac(): Promise<void> {
     ],
   });
   const results: unknown[] = [];
-  const phases: { context: MacContext; observation: MacObservation }[] = [];
+  const phases: {
+    context: MacContext;
+    observation: MacObservation | null;
+    collectionError: unknown;
+  }[] = [];
   try {
     for (const [version, producer, blob] of [
       ["0.627.0", process.env.BEFORE_PRODUCER_RUN, process.env.BEFORE_AUTHORITY_BLOB],
@@ -252,11 +281,26 @@ export async function runMac(): Promise<void> {
       const phase = new Recorder(join(output, version));
       const authority = await authenticateMac(version, producer, blob, phase);
       const context = installMac(join(phase.root, "consumer"), authority, phase);
-      const observation = observeMac(context);
-      phases.push({ context, observation });
+      let observation: MacObservation | null = null,
+        collectionError: unknown = null;
+      try {
+        observation = observeMac(context);
+      } catch (error) {
+        collectionError = error;
+        // The complete already-recorded commands/observations remain in this
+        // phase directory. Never reuse an unsafe input to finish a command list.
+        phase.json("collection-failure.json", {
+          state: "failed",
+          error: observedFailure(error),
+          packetsCompleted: phase.packets,
+          expectedFormatterCommands: 11,
+          scope: "partial collection; no missing command or filesystem change is accepted",
+        });
+      }
+      phases.push({ context, observation, collectionError });
       results.push({
         version,
-        state: "captured-before-verdict",
+        state: observation ? "captured-before-verdict" : "collection-failed",
         candidate: authority.candidate,
         producerSource: authority.ownership.producerSource,
         producer,
@@ -267,9 +311,12 @@ export async function runMac(): Promise<void> {
     // Authority and provider trust checks precede execution. Formatting verdicts
     // follow collection of BOTH releases, including an unexpected old result.
     const verdicts = macVerdicts(
-      phases.map(({ context, observation }) => ({
+      phases.map(({ context, observation, collectionError }) => ({
         version: context.version,
-        evaluate: () => validateMac(context, observation, reference.output),
+        evaluate: () => {
+          if (!observation) throw collectionError;
+          return validateMac(context, observation, reference.output);
+        },
       })),
     );
     record.json("verdicts.json", verdicts);
