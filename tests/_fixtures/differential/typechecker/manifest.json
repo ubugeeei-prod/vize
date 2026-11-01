@@ -11740,7 +11740,7 @@
         },
         {
           "path": "runtime-null-prop-11252/package.json.txt",
-          "sha256": "977df9171d18b33cc334e4eae36dd4b6b44b8fb02b7e6d35903d8cf924e2e13b",
+          "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
           "role": "regression-reproduction"
         }
       ],
