@@ -106,9 +106,15 @@ test("valid repair changes only the authored template line; restore retains ever
   assert.deepEqual(supplemental.slice(0, -1), files);
   assert.equal(supplemental.at(-1)!.path, "src/Wrapped.vue");
 });
-test("the unknown containing release refuses before any public operation", () => {
-  assert.equal(afterProfile, null);
-  assert.throws(() => profileFor("after"), /UNKNOWN/u);
+test("the first containing release has one closed AFTER tuple and preserves fixed635 BEFORE", () => {
+  assert.deepEqual(afterProfile, {
+    version: "0.639.0",
+    source: "0dd3941dc3c090879c2c4ca540233b27fb0b8129",
+    candidate: "5f69b49d868345c7dd18b0c25db2b1905fdba377",
+    run: "41358672565",
+    capsule: "d45d6012f4ad597b247ff8264e6af6a05adf4575",
+  });
+  assert.equal(profileFor("after"), afterProfile);
   assert.equal(profileFor("before").capsule, "9b9242d60d7121df1b8454697d1eec37e2d16309");
   assert.throws(() => argumentsFor(["--out", "relative", "--npm", "/b", "--npx", "/c"]));
   assert.throws(() => argumentsFor(["--out", "/a", "--npm", "/b", "--npm", "/c"]));
@@ -126,8 +132,8 @@ test("default installed Vize retains literal check argv without Options API or p
     },
   ]);
 });
-function mockCapsule() {
-  const p = beforeProfile,
+function mockCapsule(role: "before" | "after" = "before") {
+  const p = profileFor(role),
     integrity = "sha512-" + Buffer.alloc(64, 1).toString("base64");
   return {
     version: p.version,
@@ -162,7 +168,7 @@ function mockCapsule() {
         {
           integrity,
           tarball: "https://registry.npmjs.org/pkg/-/pkg.tgz",
-          metadataOrigin: "https://registry.npmjs.org/pkg/0.635.0",
+          metadataOrigin: "https://registry.npmjs.org/pkg/" + p.version,
         },
       ]),
     ),
@@ -172,6 +178,10 @@ test("synthetic authority controls refuse wrong source, image, role and duplicat
   const good = mockCapsule();
   validateCapsule("before", good);
   validateNative("before", good, { bytes: 3, sha256: "a".repeat(64) }, "b".repeat(32));
+  const current = mockCapsule("after");
+  validateCapsule("after", current);
+  validateNative("after", current, { bytes: 3, sha256: "a".repeat(64) }, "b".repeat(32));
+  assert.throws(() => validateCapsule("before", current), assert.AssertionError);
   assert.throws(() => validateCapsule("after", good));
   assert.throws(() =>
     validateCapsule("before", { ...good, producerSource: beforeProfile.candidate }),
