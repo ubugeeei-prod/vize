@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import {
   assertExactCssTree,
   composeForegroundPreparationCheckout,
-} from "./css-hover-foreground-source.mjs";
+} from "./css-hover-foreground-source.ts";
 export { assertExactCssTree };
 
 const directory = path.dirname(fileURLToPath(import.meta.url));

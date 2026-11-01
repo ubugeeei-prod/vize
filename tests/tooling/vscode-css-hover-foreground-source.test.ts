@@ -3,15 +3,19 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import test from "node:test";
 import {
+  type SourceTreeEntry,
   composeForegroundPreparationCheckout,
   invertForegroundPreparationSource,
   originalTypedSourceSha256,
   typedSourcePath,
-} from "../../editors/vscode/test/css-hover-foreground-source.mjs";
+} from "../../editors/vscode/test/css-hover-foreground-source.ts";
 import { assertExactCssTree } from "../../editors/vscode/test/css-hover-source-custody.mjs";
 
 const source = fs.readFileSync(new URL(`../../${typedSourcePath}`, import.meta.url));
-const row = (oid, extra = {}) => ({
+const row = (
+  oid: string,
+  extra: Partial<SourceTreeEntry> & { unreviewed?: boolean } = {},
+): SourceTreeEntry & { unreviewed?: boolean } => ({
   path: typedSourcePath,
   mode: "100644",
   type: "blob",
@@ -21,11 +25,11 @@ const row = (oid, extra = {}) => ({
 const before = row("d378281fbcda6dda2f550e21fa3ccde3905d8a7d");
 const after = row("a4b1e81960029f488921f917e46589f1d7655da9");
 const other = { ...before, path: "crates/vize_maestro/src/ide/style.rs", oid: "1".repeat(40) };
-const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const blob = (bytes) =>
+const sha256 = (bytes: Uint8Array): string => createHash("sha256").update(bytes).digest("hex");
+const blob = (bytes: Uint8Array): string =>
   createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
 
-test("complete reviewed typed source reverses to the whole original blob and CSS functions", () => {
+await test("complete reviewed typed source reverses to the whole original blob and CSS functions", () => {
   const original = invertForegroundPreparationSource(source);
   assert.equal(sha256(original), originalTypedSourceSha256);
   assert.equal(blob(original), before.oid);
@@ -38,7 +42,7 @@ test("complete reviewed typed source reverses to the whole original blob and CSS
   );
   const expected = [before, other];
   const actual = [after, other];
-  const names = [];
+  const names: string[] = [];
   const composed = composeForegroundPreparationCheckout(expected, actual, (name) => {
     names.push(name);
     return source;
@@ -56,7 +60,7 @@ test("complete reviewed typed source reverses to the whole original blob and CSS
   assertExactCssTree(actual, composed.entries);
 });
 
-test("the old profile is unchanged and never reads a new source body", () => {
+await test("the old profile is unchanged and never reads a new source body", () => {
   for (const expected of [[before, other], [other]]) {
     const result = composeForegroundPreparationCheckout(expected, expected, () => {
       throw new Error("old profile must not read source");
@@ -67,7 +71,7 @@ test("the old profile is unchanged and never reads a new source body", () => {
   }
 });
 
-test("missing duplicate moved and changed readiness or CSS bytes cannot pass the inverse", () => {
+await test("missing duplicate moved and changed readiness or CSS bytes cannot pass the inverse", () => {
   const text = source.toString("utf8");
   const marker = "        let ctx = ctx.with_foreground_preparation(preparation);\n";
   const mutants = [
@@ -88,7 +92,7 @@ test("missing duplicate moved and changed readiness or CSS bytes cannot pass the
     assert.throws(() => invertForegroundPreparationSource(bytes));
 });
 
-test("unknown blob mode type path or row fields remain refusals", () => {
+await test("unknown blob mode type path or row fields remain refusals", () => {
   for (const current of [
     row("2".repeat(40)),
     row(after.oid, { mode: "100755" }),
@@ -101,11 +105,11 @@ test("unknown blob mode type path or row fields remain refusals", () => {
   for (const [expected, actual] of [
     [[before, before], [after]],
     [[before], [after, after]],
-  ])
+  ] as const)
     assert.throws(() => composeForegroundPreparationCheckout(expected, actual, () => source));
 });
 
-test("full actual trees retain missing renamed extra and foreign unrelated rows", () => {
+await test("full actual trees retain missing renamed extra and foreign unrelated rows", () => {
   for (const actual of [
     [],
     [{ ...after, path: `${typedSourcePath}.moved` }],
@@ -118,7 +122,7 @@ test("full actual trees retain missing renamed extra and foreign unrelated rows"
   assert.throws(() => assertExactCssTree([after], [before]), /reviewed blob\/mode/);
 });
 
-test("a row identity cannot substitute foreign or absent full source bytes", () => {
+await test("a row identity cannot substitute foreign or absent full source bytes", () => {
   for (const bytes of [Buffer.from("foreign"), Buffer.alloc(0), undefined])
     assert.throws(() => composeForegroundPreparationCheckout([before], [after], () => bytes));
 });

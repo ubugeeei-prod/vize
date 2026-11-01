@@ -2,12 +2,25 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 
+export type SourceTreeEntry = Readonly<{ path: string; mode: string; type: string; oid: string }>;
+type SourceLayer = Readonly<{
+  name: string;
+  reviewedRevision: string;
+  sourceSha256: string;
+  inverseSha256: string;
+  changes: readonly Readonly<{ path: string; before: SourceTreeEntry; after: SourceTreeEntry }>[];
+}>;
+type CheckoutComposition = Readonly<{
+  entries: readonly SourceTreeEntry[];
+  layer: SourceLayer | null;
+}>;
+
 export const typedSourcePath = "crates/vize_maestro/src/server/handlers/typed.rs";
 export const originalTypedSourceSha256 =
   "a287bbc3060de2a5c01963fe82962501b5f688091c912ec10e97adc402e6859a";
 const reviewedTypedSourceSha256 =
   "752179a706971407290c7144720bbcbc63261031bf6b5378bdb8cc9427b601ac";
-const before = Object.freeze({
+const before: SourceTreeEntry = Object.freeze({
   path: typedSourcePath,
   mode: "100644",
   type: "blob",
@@ -17,8 +30,8 @@ const after = Object.freeze({
   ...before,
   oid: "a4b1e81960029f488921f917e46589f1d7655da9",
 });
-const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const blob = (bytes) =>
+const hash = (bytes: Uint8Array): string => createHash("sha256").update(bytes).digest("hex");
+const blob = (bytes: Uint8Array): string =>
   createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
 
 const hoverHeader = `    async fn hover_request_with_preparation(
@@ -68,7 +81,12 @@ impl super::super::project_contexts::DocumentServer<'_> {
 }
 `;
 
-function replaceExactly(source, selected, replacement, count) {
+function replaceExactly(
+  source: string,
+  selected: string,
+  replacement: string,
+  count: number,
+): string {
   const pieces = source.split(selected);
   assert.equal(pieces.length, count + 1, "foreign foreground source structure");
   return pieces.join(replacement);
@@ -76,7 +94,7 @@ function replaceExactly(source, selected, replacement, count) {
 
 // Authenticate the complete current body, perform the finite source inverse,
 // then authenticate its complete original body. No CSS code is normalized.
-export function invertForegroundPreparationSource(bytes) {
+export function invertForegroundPreparationSource(bytes: unknown): Buffer {
   assert.ok(Buffer.isBuffer(bytes), "complete committed source bytes required");
   assert.equal(hash(bytes), reviewedTypedSourceSha256, "unreviewed typed source bytes");
   assert.equal(blob(bytes), after.oid, "unreviewed typed source blob");
@@ -92,7 +110,11 @@ export function invertForegroundPreparationSource(bytes) {
 
 // This changes only the expected current-checkout composition. The caller must
 // still compare its ENTIRE actual owned tree with the returned entries.
-export function composeForegroundPreparationCheckout(expected, actual, readSource) {
+export function composeForegroundPreparationCheckout(
+  expected: readonly SourceTreeEntry[],
+  actual: readonly SourceTreeEntry[],
+  readSource: (name: string) => unknown,
+): CheckoutComposition {
   assert.equal(new Set(expected.map((row) => row.path)).size, expected.length);
   assert.equal(new Set(actual.map((row) => row.path)).size, actual.length);
   const original = expected.find((row) => row.path === typedSourcePath);
@@ -114,9 +136,12 @@ export function composeForegroundPreparationCheckout(expected, actual, readSourc
   };
 }
 
-const compareStrings = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+const compareStrings = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
-export function assertExactCssTree(actual, expected) {
+export function assertExactCssTree(
+  actual: readonly SourceTreeEntry[],
+  expected: readonly SourceTreeEntry[],
+): void {
   const current = new Map(actual.map((entry) => [entry.path, entry]));
   const reviewed = new Map(expected.map((entry) => [entry.path, entry]));
   assert.equal(current.size, actual.length, "duplicate actual tree path");
