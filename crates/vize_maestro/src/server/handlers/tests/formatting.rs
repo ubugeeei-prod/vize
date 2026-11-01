@@ -10,6 +10,8 @@ use super::*;
 use tower_lsp::lsp_types::DocumentOnTypeFormattingParams;
 
 #[cfg(feature = "glyph")]
+mod bind_style_policy;
+#[cfg(feature = "glyph")]
 mod import_sorting;
 
 const STANDALONE_HTML: &str = "<!DOCTYPE html>\n<html><body>\n<div   v-scope=\"{ count: 0 }\" >{{ count }}</div>\n</body></html>\n";

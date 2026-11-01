@@ -7,6 +7,7 @@ import { BINDING_SESSION, loadBindingOccurrences } from "./lsp-binding-occurrenc
 import { sourceInspectedDialectCoverage } from "./source-dialect-coverage.ts";
 import { validateLocalResolveSourceSession } from "./lsp-source-sessions.ts";
 import { validateNativeCapacitySourceSession } from "./lsp-native-capacity-session.ts";
+import { FORMATTER_BIND_POLICY_ID, loadFormatterBindPolicy } from "./lsp-formatter-bind-policy.ts";
 import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } from "./lsp-types.ts";
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
@@ -112,6 +113,8 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
           : validateLocalResolveSourceSession;
       validate(data, new Map(files.map((file) => [file.runtimePath, file.bytes])), expected);
       requests = [];
+    } else if (data.id === FORMATTER_BIND_POLICY_ID) {
+      requests = loadFormatterBindPolicy(data, files, expected);
     } else if (data.id === BINDING_SESSION) {
       requests = loadBindingOccurrences(packRoot, data, expected);
     } else if (data.id === "lsp/fix-history/document-link-module-resolution-original") {

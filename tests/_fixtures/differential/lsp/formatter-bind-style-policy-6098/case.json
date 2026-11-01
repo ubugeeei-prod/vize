@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "lsp/regression/formatter-bind-style-policy-6098",
+  "provenance": {
+    "fixCommit": "36d76a54ebdef00cfa83f8788224d0c69dad59a9",
+    "inputOrigin": "Unchanged original11232 independently fixed longform bytes; fixCommit names that original lint fix, not the current formatter-policy repair.",
+    "contractOrigin": "New authored host-policy refusal contract. Nulls are not an independent old legacy formatter golden; three actionable warning/no-write controls are executed by the Rust handler regression."
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "formatting": true
+  },
+  "files": [
+    {
+      "source": "Fixed.vue.txt",
+      "runtimePath": "VBindProp.vue",
+      "sha256": "83d741c78b8e8de60767a95724ae2e882446dbafce92edff32f512616e024952"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "70e3a95ec9117f04998f30308271d11f9495340557acf2103a91be199e51e00b"
+    }
+  ],
+  "entry": "VBindProp.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "d8599bd7a7f09cca388c8837da001857e0519120de026f346aa953f811522eef"
+  },
+  "method": "textDocument/formatting",
+  "options": {
+    "tabSize": 2,
+    "insertSpaces": true
+  }
+}

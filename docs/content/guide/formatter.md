@@ -178,6 +178,30 @@ Every option below can be set under `vue.formatter`. An option you leave out tak
 | `reindentPreprocessorStyles`   | `false`          | Re-indents SCSS and Less blocks by nesting depth and tidies their blank lines.                                                     |
 | `sortImports`                  | off              | Sorts imports in scripts. See [Sort imports](./formatter-import-sorting.md).                                                       |
 
+When an active `vue/v-bind-style` lint rule requests `"longform"`, project
+formatting requires `normalizeDirectiveShorthands: false`. Its default `true`
+would otherwise undo the lint fix. For example:
+
+```ts
+export default {
+  vue: {
+    formatter: { normalizeDirectiveShorthands: false },
+    linter: {
+      rules: { "vue/v-bind-style": "error" },
+      ruleOptions: { "vue/v-bind-style": "longform" },
+    },
+  },
+};
+```
+
+The CLI also accepts `--normalize-directive-shorthands=false`. A conflict
+exits with status 2 before any selected file is written. The editor's document,
+range and on-type formatting requests return `null` and log the actionable
+conflict as a warning. Activation follows each host's existing lint builders,
+file scopes and disabled rules. This includes option-driven rule registration;
+category handling follows the CLI or editor respectively. The standalone
+formatter APIs retain their existing option defaults.
+
 The native Node `formatSfc` API accepts the five Prettier migration booleans
 `normalizeCssQuotes`, `normalizeInlineStyles`, `normalizeVForParens`,
 `selfCloseVoidElements` and `reindentPreprocessorStyles` under the same names.
