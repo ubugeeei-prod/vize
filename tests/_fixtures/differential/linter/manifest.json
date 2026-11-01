@@ -3193,6 +3193,53 @@
       }
     },
     {
+      "id": "linter/slot-existence-conditions-10822",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "slot-existence-conditions-10822",
+        "files": [
+          {
+            "path": "Collapse.vue.txt",
+            "sha256": "c1f3d53987b9d6177d123ba26e632f9ca843cbf14a01461ef10100e8631cd11a",
+            "role": "original-real-project-component"
+          },
+          {
+            "path": "Field.vue.txt",
+            "sha256": "5ea1d76f10f26cba807c105cdd3b9906e0d438c9ebfd678ee58a3de45cffa00b",
+            "role": "original-real-project-component"
+          },
+          {
+            "path": "cases.json",
+            "sha256": "49fe9e0fe0544c6b41f047bb2c67eabcb067f7c5f8e62430085a65b038055da7",
+            "role": "authored-scope-controls"
+          },
+          {
+            "path": "source-provenance.json",
+            "sha256": "75f0d546557a17ef12f7c79547a98a495c12d4af142ae9608515d0e1e5a19e4e",
+            "role": "source-custody"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/slot-existence-negation-10822",
       "state": "active",
       "targets": [

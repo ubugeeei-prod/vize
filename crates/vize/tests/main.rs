@@ -243,6 +243,7 @@ mod lint_rule_options_casing_cli;
 mod lint_rule_severity_cli;
 mod lint_scoped_slots_template_cli;
 mod lint_sibling_script_imports_cli;
+mod lint_slot_condition_tests_cli;
 mod lint_slot_presence_negation_cli;
 mod lint_solution_tsconfig_cli;
 mod lint_storybook_tsx_cli;

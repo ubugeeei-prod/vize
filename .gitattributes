@@ -192,3 +192,9 @@ tools/benchmarks/scripts/cold-typechecker-scale-candidate-cases.json text eol=lf
 tests/_fixtures/differential/linter/slot-existence-negation-10822/Autocomplete.vue.txt -text
 tests/_fixtures/differential/linter/slot-existence-negation-10822/cases.json -text
 tests/_fixtures/differential/linter/slot-existence-negation-10822/source-provenance.json -text
+
+# The original direct-condition files and authored controls are byte-pinned.
+tests/_fixtures/differential/linter/slot-existence-conditions-10822/Collapse.vue.txt -text
+tests/_fixtures/differential/linter/slot-existence-conditions-10822/Field.vue.txt -text
+tests/_fixtures/differential/linter/slot-existence-conditions-10822/cases.json -text
+tests/_fixtures/differential/linter/slot-existence-conditions-10822/source-provenance.json -text
