@@ -37,6 +37,7 @@ import {
   guardedCapture,
   assessFacts,
   commandsFor,
+  inputImages,
 } from "../../tools/benchmarks/scripts/public-typechecker-11339/execute.ts";
 import { retain } from "../../tools/benchmarks/scripts/public-typechecker-11317/execute.ts";
 import { fileImage } from "../../tools/support/release/computed_event_custody.ts";
@@ -355,6 +356,41 @@ test("unknown bin route refuses before callback and retains a complete non-execu
     assert.equal(packet.status, null);
     assert(packet.error);
     assert.equal(packet.stdout, null);
+  }));
+test("changed or extra authored source refuses before each command callback", () =>
+  scratch((root) => {
+    const files = input("3.4.23");
+    mkdirSync(join(root, "src"));
+    for (const file of files) writeFileSync(join(root, file.path), file.source);
+    inputImages(root, files);
+    const changed = files.find((file) => file.path === "src/Invalid.vue")!;
+    for (const mutate of [
+      () => writeFileSync(join(root, changed.path), changed.source + "\n"),
+      () => writeFileSync(join(root, "src/foreign.ts"), "foreign"),
+      () => rmSync(join(root, changed.path)),
+    ]) {
+      writeFileSync(join(root, changed.path), changed.source);
+      rmSync(join(root, "src/foreign.ts"), { force: true });
+      mutate();
+      let executed = 0;
+      const packet = guardedCapture(
+        recorder(root),
+        "input-refusal",
+        commandsFor(root, "/manager/npx")[0]!.argv,
+        root,
+        () => {
+          inputImages(root, files);
+        },
+        () => {
+          executed++;
+          throw Error("must not execute");
+        },
+      );
+      assert.equal(executed, 0);
+      assert.equal(packet.status, null);
+      assert.equal(packet.stdout, null);
+      assert(packet.error);
+    }
   }));
 test("every final role custody completes before semantics; an early failure cannot skip another custody", () => {
   const order: string[] = [];

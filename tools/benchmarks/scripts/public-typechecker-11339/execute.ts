@@ -31,6 +31,10 @@ export function inputImages(root: string, files: SourceFile[]) {
   assert.deepEqual(readdirSync(join(root, "src")).sort(), expected, "unknown/missing source file");
   return files.map((file) => {
     const raw = readFileSync(join(root, file.path));
+    assert(
+      raw.equals(Buffer.from(file.source)),
+      "source bytes differ from the literal/authored input: " + file.path,
+    );
     return {
       path: file.path,
       source: new TextDecoder("utf-8", { fatal: true }).decode(raw),
@@ -94,7 +98,10 @@ export function execute(
     record.json(id + ".inputs-before.json", before);
     const attempts = commandsFor(root, npx).map((command) => ({
       ...command,
-      packet: guardedCapture(record, id + "." + command.kind, command.argv, root, verify),
+      packet: guardedCapture(record, id + "." + command.kind, command.argv, root, () => {
+        verify();
+        inputImages(root, files);
+      }),
     }));
     const after = inputImages(root, files);
     record.json(id + ".inputs-after.json", after);
