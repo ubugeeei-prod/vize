@@ -1,0 +1,14 @@
+<template>
+  <p :title="greet(1)">{{ isPC.toFixed() }} {{ currentDevice.toFixed() }} {{ fromBase.toUpperCase() }} {{ missing }}</p>
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'vue'
+import { base } from './base'
+import { shared } from './shared'
+
+export default defineComponent({
+  extends: base,
+  mixins: [shared],
+})
+</script>

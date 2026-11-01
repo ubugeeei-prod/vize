@@ -85,6 +85,7 @@ mod check_nuxt_tsconfig_isolation_cli;
 mod check_nuxt_tsconfig_options_cli;
 mod check_nuxt_tsconfig_paths_cli;
 mod check_opaque_with_defaults_cli;
+mod check_options_api_inherited_members_cli;
 mod check_options_api_writable_computed_cli;
 mod check_outside_import_types_cli;
 mod check_package_cwd_cli;

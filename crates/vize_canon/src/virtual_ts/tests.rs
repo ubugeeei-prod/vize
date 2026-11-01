@@ -12,6 +12,8 @@ mod component_spread_prop_order;
 mod context_undefined;
 mod define_props_scope;
 mod generic_module_type_exports;
+mod inherited_calls;
+mod inherited_options;
 mod keyed_template_diagnostics;
 mod legacy_nuxt2_page_context;
 mod model_update_payload;
@@ -109,48 +111,6 @@ fn analyze_options_api_script(script: &str) -> vize_croquis::Croquis {
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
     analyzer.analyze_script_plain(script);
     analyzer.finish()
-}
-
-#[test]
-fn test_options_api_unresolved_extends_exposes_template_refs_as_inherited_any() {
-    use vize_croquis::{Analyzer, AnalyzerOptions};
-
-    let script = r#"import BaseButton from './BaseButton.vue'
-
-export default {
-    name: 'Button',
-    extends: BaseButton
-}
-"#;
-    let template = r#"<component v-if="!asChild" :is="as" :class="cx('root')">
-  <span v-if="label">{{ label }}</span>
-</component>"#;
-
-    let allocator = vize_carton::Allocator::new();
-    let (root, _) = vize_armature::parse(&allocator, template);
-
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
-    analyzer.analyze_script_plain(script);
-    analyzer.analyze_template(&root);
-    let summary = analyzer.finish();
-    let output = generate_virtual_ts_with_offsets_options_api(
-        &summary,
-        Some(script),
-        Some(&root),
-        0,
-        0,
-        &Default::default(),
-    );
-
-    for name in ["asChild", "as", "cx", "label"] {
-        assert!(
-            output
-                .code
-                .contains(&format!("const {name}: any = undefined as any;")),
-            "unresolved imported extends should expose inherited `{name}`:\n{}",
-            output.code
-        );
-    }
 }
 
 #[test]

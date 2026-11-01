@@ -11751,6 +11751,60 @@
       }
     },
     {
+      "id": "typechecker/options-api-inherited-template-members/declared-member-types",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "file": "src/Invalid.vue",
+          "path": "options-api-inherited-template-members/src/Invalid.vue.txt",
+          "sha256": "c0094aa36df53290e783e5b00d37dd1c3a04a92ced5dce7295a64e43ff5e3f1e"
+        },
+        {
+          "file": "src/Typed.vue",
+          "path": "options-api-inherited-template-members/src/Typed.vue.txt",
+          "sha256": "3c946ac17084d393e6551a005a09a6a457c536b4f3ea8626d50d7f929f742025"
+        },
+        {
+          "file": "src/Wrapped.vue",
+          "path": "options-api-inherited-template-members/src/Wrapped.vue.txt",
+          "sha256": "0a48d6f8366ba8fd8acc4cdf06cd93727ae1ed68629a5cce395d5dc1eab986a6"
+        },
+        {
+          "file": "src/base.ts",
+          "path": "options-api-inherited-template-members/src/base.ts.txt",
+          "sha256": "5f5d1cad14e80f58224306173db52efbebd4c12498d753c80ea328a3f9ad2f9b"
+        },
+        {
+          "file": "src/shared.ts",
+          "path": "options-api-inherited-template-members/src/shared.ts.txt",
+          "sha256": "4682d621fbfdfd9ceb1d93e422ab6d83b54a927f4e3c0a2621724947afbccfe3"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "options-api-inherited-template-members/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "required native options_api_inherited_template_members fixture selects enable_options_api() against the installed workspace Vue; original application unverified"
+          }
+        ]
+      }
+    },
+    {
           "id": "typechecker/options-api-lexical-members-11069",
           "state": "active",
           "targets": ["batch"],

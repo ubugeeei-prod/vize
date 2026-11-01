@@ -5,6 +5,8 @@
 //! reserved names through the same typed object.
 
 use super::{helpers::is_reserved_identifier, props::collect_template_prop_names};
+
+mod authored_calls;
 use std::{
     borrow::Cow,
     cell::{Ref, RefCell},
@@ -32,7 +34,17 @@ enum RewriteEntry {
 /// Immutable admission and relative rewrite results for one generated file.
 /// Scope-specific views borrow this value; no emission offset enters the cache.
 #[derive(Debug)]
+enum InstanceOwner {
+    PublicGlobals,
+    AuthoredCalls {
+        eligible: FxHashSet<String>,
+        script_names: FxHashSet<String>,
+    },
+}
+
+#[derive(Debug)]
 struct InstanceAccess<'a> {
+    owner: InstanceOwner,
     summary: &'a Croquis,
     options: &'a VirtualTsOptions,
     setup_spread_bindings: &'a [String],
@@ -140,6 +152,7 @@ impl<'a> TemplateBindingAccess<'a> {
     ) -> Self {
         if enabled {
             self.instance = Some(InstanceStorage::Owned(InstanceAccess {
+                owner: InstanceOwner::PublicGlobals,
                 summary,
                 options,
                 setup_spread_bindings,
@@ -161,19 +174,23 @@ impl<'a> TemplateBindingAccess<'a> {
             return;
         };
         let summary = instance.summary;
-        self.prepare_expression_plans(summary, true);
+        let authored = matches!(instance.owner, InstanceOwner::AuthoredCalls { .. });
+        self.prepare_expression_plans(summary, !authored);
         let has_references = instance.cache.borrow().values().any(|scope| {
             scope.values().any(|entry| matches!(entry, RewriteEntry::Prepared(plan) if plan.has_instance_references()))
         });
         let collides = instance.cache.borrow().values().any(|scope| {
             scope.values().any(|entry| matches!(entry, RewriteEntry::Prepared(plan) if plan.receiver_is_shadowed()))
         });
-        let receiver = if has_references && collides {
+        let receiver = if has_references && (authored || collides) {
             // A missing candidate-name read may be in a non-dollar expression.
             // Reserve its semantic identity too; never let the alias make that
             // previously invalid authored program clean.
             self.prepare_expression_plans(summary, false);
             let mut names = FxHashSet::default();
+            if let InstanceOwner::AuthoredCalls { script_names, .. } = &instance.owner {
+                names.extend(script_names.iter().cloned());
+            }
             super::script_facts::with_bindings(summary, |bindings| {
                 names.extend(bindings.typed().map(|(name, _)| String::from(name)));
             });
@@ -311,11 +328,19 @@ impl<'a> TemplateBindingAccess<'a> {
         if let Some(instance) = self.instance.as_ref().map(InstanceStorage::get)
             && instance.receiver != "__ctx"
         {
-            vize_carton::append!(
-                *output,
-                "  const {name} = __ctx;\n",
-                name = instance.receiver
-            );
+            if matches!(instance.owner, InstanceOwner::AuthoredCalls { .. }) {
+                vize_carton::append!(
+                    *output,
+                    "  const {name} = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {{}});\n",
+                    name = instance.receiver
+                );
+            } else {
+                vize_carton::append!(
+                    *output,
+                    "  const {name} = __ctx;\n",
+                    name = instance.receiver
+                );
+            }
         }
     }
 
@@ -349,7 +374,8 @@ impl<'a> TemplateBindingAccess<'a> {
         let Some(instance) = self.instance.as_ref().map(InstanceStorage::get) else {
             return false;
         };
-        super::scope::is_template_instance_global_name(name)
+        matches!(instance.owner, InstanceOwner::PublicGlobals)
+            && super::scope::is_template_instance_global_name(name)
             && name != "$props"
             && !(name == "$el" && instance.infer_dollar_el)
             && !super::scope::is_declared_template_context_name(name, instance.options)

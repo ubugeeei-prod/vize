@@ -56,13 +56,19 @@ fn unresolved_options_extends_never_declares_template_literals() {
     }
 }
 
+/// A legal inherited name is declared from the authored instance (typed when
+/// the imported `extends:` base carries it, `any` otherwise), not as the
+/// untyped `const {name}: any` fallback the instance pass would redeclare.
 #[test]
 fn unresolved_options_extends_keeps_legal_inherited_names() {
     let virtual_ts = generate_virtual_ts(EXTENDS_SOURCE);
 
     for name in ["falsey", "trueValue", "nullish", "inheritedHandler"] {
         assert!(
-            virtual_ts.contains(cstr!("const {name}: any = undefined as any;").as_str()),
+            virtual_ts.contains(
+                cstr!("  var {name}!: $AuthoredInstanceMember<\"{name}\">; void ({name});\n")
+                    .as_str()
+            ),
             "legal inherited template binding `{name}` must remain available:\n{virtual_ts}"
         );
     }

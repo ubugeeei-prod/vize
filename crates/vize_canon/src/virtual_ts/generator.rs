@@ -59,7 +59,7 @@ use self::imports::{
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::macro_anchors::emit_setup_scope_macro_anchors;
-use self::options_api::{analyze_options_api_script, generate_options_api_variables};
+use self::options_api::{analyze_options_api_script, emit_options_api_variables};
 use self::options_api_bridge::generate_options_api_bridge;
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::options_api_support::find_options_api_props;
@@ -662,33 +662,42 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     ),
                 )
             });
-            if options_api {
-                profile!(
-                    "canon.virtual_ts.generate_options_api_variables",
-                    semantic_links.extend(generate_options_api_variables(
-                        &mut ts,
-                        summary,
-                        options,
-                        script_content,
-                        &options_script,
-                        &mut mappings,
-                        &script_source_offset
-                    ))
-                );
-            }
+            emit_options_api_variables(
+                options_api,
+                (&mut ts, &mut semantic_links, &mut mappings),
+                summary,
+                options,
+                script_content,
+                (
+                    &options_script,
+                    declared_default_alias && !legacy_vue2 && !has_script_setup,
+                ),
+                &script_source_offset,
+            );
+            let scope_options = ScopeGenerationOptions {
+                diagnostic_ownership: generation_options.diagnostic_ownership,
+                generic_parameters,
+                check_options,
+                virtual_ts_options: options,
+                hoist_shared_preamble,
+                setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
+                keyed_prop_bindings: &keyed_prop_bindings,
+                syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
+                template_ast,
+                component_binding_check: global_components.component_check(),
+                legacy_vue2,
+                options_api,
+                preserve_event_navigation: generation_options.preserve_event_navigation,
+                has_default_alias: declared_default_alias,
+                script_content,
+                experimental_strict_slot_children: generation_options
+                    .experimental_strict_slot_children,
+                forwarded_root_starts: template_record.forwarded.starts(),
+                instantiated_ref_starts: template_record.ref_starts(),
+            };
             let template_binding_access = profile!(
                 "canon.virtual_ts.collect_template_prop_names",
-                TemplateBindingAccess::collect(summary, options_api).with_instance_globals(
-                    summary,
-                    options,
-                    template_ref_unwraps.setup_spread_bindings(),
-                    check_options.infer_template_dollar_el,
-                    check_options.check_template_bindings
-                        && !legacy_vue2
-                        && !options.strict_instance_globals
-                        && template_ast.is_some_and(|root| root.source.contains('$'))
-                        && !(options_api && declared_default_alias && !has_script_setup),
-                )
+                TemplateBindingAccess::for_template(summary, &scope_options)
             );
             template_binding_access.emit_instance_receiver_alias(&mut ts);
             if check_options.any_enabled() {
@@ -701,27 +710,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         summary,
                         &template_binding_access,
                         template_offset,
-                        ScopeGenerationOptions {
-                            diagnostic_ownership: generation_options.diagnostic_ownership,
-                            generic_parameters,
-                            check_options,
-                            virtual_ts_options: options,
-                            hoist_shared_preamble,
-                            setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
-                            keyed_prop_bindings: &keyed_prop_bindings,
-                            syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
-                            template_ast,
-                            component_binding_check: global_components.component_check(),
-                            legacy_vue2,
-                            options_api,
-                            preserve_event_navigation: generation_options.preserve_event_navigation,
-                            has_default_alias: declared_default_alias,
-                            script_content,
-                            experimental_strict_slot_children: generation_options
-                                .experimental_strict_slot_children,
-                            forwarded_root_starts: template_record.forwarded.starts(),
-                            instantiated_ref_starts: template_record.ref_starts(),
-                        },
+                        scope_options,
                     )
                 );
             }

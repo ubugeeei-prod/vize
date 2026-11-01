@@ -114,6 +114,20 @@ runs:
         set -euo pipefail
         node tools/support/github/vp-install.ts --filter './npm/builder/vite...' --filter './npm/cli...'
         git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus
+    - name: Test inherited Options API template members keep their declared types
+      if: ${{ !cancelled() }}
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_CACHE_CUSTODY_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/inherited-options-native-raw
+        VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize_canon --features cache-custody --lib batch::type_checker::tests::recent_issues::options_api_inherited_template_members:: -- --nocapture
+        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::scope::globals::instance::tests::options_api_inherited_members_are_declared_from_the_authored_instance -- --exact --nocapture
+        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::tests::inherited_options::test_options_api_unresolved_extends_declares_template_refs_from_the_instance -- --exact --nocapture
+        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::tests::inherited_calls:: -- --nocapture
     - name: Test memberless Vue preparation against its acknowledged same-owner pull
       shell: bash
       env:
@@ -195,6 +209,16 @@ runs:
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize --test integration -- check_mixed_vue_package_imports_cli:: --nocapture
+    - name: Test original imported Options API members with the actual CLI
+      if: ${{ !cancelled() }}
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize --test integration -- check_options_api_inherited_members_cli:: --nocapture
     - name: Test redirected package diagnostics with the actual CLI
       shell: bash
       env:
@@ -250,6 +274,60 @@ runs:
         if ! command -v strace >/dev/null; then sudo apt-get update && sudo apt-get install -y strace; fi
         cargo test --locked --profile ci -p vize_canon --lib --no-run --message-format=json >"$capture/build.jsonl"
         node tests/tooling/support/native-beta-shutdown/source.mjs
+    - name: Test inherited Options API calls with the authenticated beta checker
+      if: ${{ !cancelled() }}
+      shell: bash
+      env:
+        CORSA_PATH: ${{ runner.temp }}/native-beta-10741/node_modules/@typescript/typescript-linux-x64/lib/tsc
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_TEST_INHERITED_PROVIDER_ROLE: "a183-ts7.1"
+        VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/inherited-options-beta
+        VIZE_CACHE_CUSTODY_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/inherited-options-beta/native-raw
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        capture="$VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR"
+        mkdir -p "$capture"
+        node --input-type=module - "$CORSA_PATH" "$capture" <<'NODE'
+        import assert from 'node:assert/strict';
+        import fs from 'node:fs';
+        import path from 'node:path';
+        import { createHash } from 'node:crypto';
+        import { spawnSync } from 'node:child_process';
+        const program = fs.realpathSync(process.argv[2]);
+        const directory = process.argv[3];
+        const manifestPath = path.join(path.dirname(path.dirname(program)), 'package.json');
+        const manifestBytes = fs.readFileSync(manifestPath);
+        const manifest = JSON.parse(manifestBytes);
+        const sha256 = createHash('sha256').update(fs.readFileSync(program)).digest('hex');
+        const save = (name, value) => fs.writeFileSync(path.join(directory, name), JSON.stringify(value, null, 2) + '\n', {flag: 'wx'});
+        save('identity-preflight.json', {program, sha256, providerRole: process.env.VIZE_TEST_INHERITED_PROVIDER_ROLE, expectedDiagnosticExitCode: 2, manifestPath, manifestBytes: [...manifestBytes], scope: 'Authenticated supplemental source 7.1 control; reporter binary identity is unknown'});
+        assert.equal(process.env.VIZE_TEST_INHERITED_PROVIDER_ROLE, 'a183-ts7.1');
+        assert.equal(manifest.name, '@typescript/typescript-linux-x64');
+        assert.equal(manifest.version, '7.1.0-beta');
+        assert.equal(sha256, 'a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70');
+        const result = spawnSync(program, ['--version']);
+        fs.writeFileSync(path.join(directory, 'version.stdout'), result.stdout ?? Buffer.alloc(0), {flag: 'wx'});
+        fs.writeFileSync(path.join(directory, 'version.stderr'), result.stderr ?? Buffer.alloc(0), {flag: 'wx'});
+        save('version-result.json', {program, sha256, args: ['--version'], status: result.status, signal: result.signal, pid: result.pid ?? null, error: result.error ? String(result.error) : null, companionOnly: true});
+        assert.equal(result.error, undefined);
+        assert.equal(result.status, 0);
+        assert.equal(result.signal, null);
+        assert.equal(result.stdout.toString(), 'Version 7.1.0-beta\n');
+        assert.equal(result.stderr.length, 0);
+        NODE
+        set +e
+        cargo test --locked --profile ci -p vize_canon --features cache-custody --lib batch::type_checker::tests::recent_issues::options_api_inherited_template_members:: -- --nocapture
+        api_status=$?
+        cargo test --locked --profile ci -p vize --test integration -- check_options_api_inherited_members_cli:: --nocapture
+        cli_status=$?
+        set -e
+        printf '%s\n' "$api_status" >"$capture/api.status"
+        printf '%s\n' "$cli_status" >"$capture/cli.status"
+        sha256sum "$CORSA_PATH" >"$capture/native.after.sha256"
+        test "$(cut -d ' ' -f 1 "$capture/native.after.sha256")" = a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70
+        test "$api_status" -eq 0
+        test "$cli_status" -eq 0
     - name: Preserve actual native inputs and responses
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

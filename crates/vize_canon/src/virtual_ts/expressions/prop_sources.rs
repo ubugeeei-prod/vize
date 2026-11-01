@@ -168,7 +168,7 @@ fn generated_prop_span_with_comment_policy<'a>(
     let rewritten_value = rewrite_reserved_template_binding(trimmed_value, template_binding_access);
     let maps_instance_binding = rewritten_value.is_some()
         && template_binding_access.has_instance_globals()
-        && trimmed_value.contains('$');
+        && (template_binding_access.has_authored_instance_calls() || trimmed_value.contains('$'));
     let raw = rewritten_value
         .as_ref()
         .map_or_else(|| value.as_ref(), |rewritten| rewritten.as_str());

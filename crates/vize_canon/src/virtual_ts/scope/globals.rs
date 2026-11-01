@@ -21,9 +21,9 @@ mod member_root;
 mod strict_candidate;
 mod strict_expression;
 mod template_scope;
+pub(crate) use strict_candidate::is_strict_template_context_candidate;
 use {
     member_root::{is_call_root_occurrence, is_member_root_occurrence},
-    strict_candidate::is_strict_template_context_candidate,
     strict_expression::generate_strict_expression_refs,
     template_scope::is_visible_template_binding,
 };
@@ -242,17 +242,21 @@ pub(super) fn generate_undefined_refs(
             // `TS2339` naming the instance type (the code and shape `vue-tsc`
             // emits for Options API templates), while the declared binding lets
             // the interpolation expression itself resolve, so the bare `TS2304`
-            // disappears instead of doubling up (#3888).
-            ts.push_str(
-                "  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n  void __vize_template_instance;\n",
-            );
+            // disappears instead of doubling up (#3888). The declaration carries
+            // the member's own type when the instance has it — a `mixins:` /
+            // `extends:` computed, data or method the analyzer cannot list — so
+            // the authored expression is checked against it the way `vue-tsc`
+            // checks `__VLS_ctx.<name>`; only a name the instance lacks stays
+            // `any`, and that name reports exactly once, from the read below.
+            ts.push_str(AUTHORED_INSTANCE_PRELUDE);
             emitted_instance = true;
         }
 
         // Use void expression to reference the name without creating an unused variable
         let expr_code = if on_instance {
             cstr!(
-                "  var {}: any = undefined; void ({});\n  void (__vize_template_instance.{});\n",
+                "  var {}!: $AuthoredInstanceMember<\"{}\">; void ({});\n  void (__vize_template_instance.{});\n",
+                undef.name,
                 undef.name,
                 undef.name,
                 undef.name
@@ -279,6 +283,10 @@ pub(super) fn generate_undefined_refs(
             *ts,
             "  // @vize-map: {gen_name_start}:{gen_name_end} -> {src_start}:{src_end}\n",
         );
+    }
+
+    if emitted_instance {
+        ts.push_str("  } // End generated inherited-member declarations.\n");
     }
 
     if (options.virtual_ts_options.strict_instance_globals || check_keyed) && !resolve_on_instance {
@@ -309,6 +317,12 @@ pub(super) fn generate_undefined_refs(
 const PUBLIC_INSTANCE_PRELUDE: &str = "  type $TemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };\n  type $TemplateInstanceMember<__K extends string> = __K extends keyof $TemplateInstance ? $TemplateInstance[__K] : any;\n  const __vize_public_instance = undefined as unknown as $TemplateInstance;\n  void __vize_public_instance;\n";
 
 const PUBLIC_INSTANCE_RECEIVER: &str = "__vize_public_instance";
+
+/// These generated declarations need a generic key constraint for Vue's
+/// intersection instance types. A generated-only block keeps the helper type
+/// and receiver out of authored template type expressions. The `var` bindings
+/// remain function-scoped, with their annotations resolved inside this block.
+const AUTHORED_INSTANCE_PRELUDE: &str = "  { // Generated inherited-member declarations only.\n  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n  void __vize_template_instance;\n  type $AuthoredInstanceMember<__K extends string> = __K extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[__K] : any;\n";
 
 /// Same-name shorthand (`:aria-labelledby`) stores the camelized binding while
 /// the authored token is longer. A prefix range overlaps the attribute and is
@@ -390,6 +404,17 @@ pub(super) fn resolves_on_authored_instance(
         && !has_script_setup(summary)
 }
 
+/// Whether the authored-instance form can declare this template's unknown
+/// names at all. [`generate_undefined_refs`] classifies a name against the
+/// script's own top-level bindings, which it can read only from a script that
+/// parses cleanly ([`script_top_level_binding_names`]); a script with parse
+/// diagnostics keeps the free-name emission instead. Another emitter must
+/// therefore not drop its own declarations on the strength of the instance
+/// form unless this holds as well.
+pub(crate) fn authored_instance_declares_unknown_names(script: Option<&str>) -> bool {
+    script.is_none_or(|script| script_top_level_binding_names(script).is_some())
+}
+
 /// Whether the SFC authored a `<script setup>` block: its bindings are the
 /// template's real surface, and the plain script's default export next to it
 /// carries only the options the setup form cannot express.
@@ -410,7 +435,7 @@ fn has_script_setup(summary: &Croquis) -> bool {
 /// plain source type is tried first and TSX second. `None` means neither parsed
 /// the script cleanly: its top-level names are then unknown, and no template
 /// name may be classified against the public instance on a partial program.
-fn script_top_level_binding_names(script: &str) -> Option<FxHashSet<String>> {
+pub(crate) fn script_top_level_binding_names(script: &str) -> Option<FxHashSet<String>> {
     for source_type in [SourceType::ts(), SourceType::tsx()] {
         let allocator = Allocator::default();
         let parsed = Parser::new(&allocator, script, source_type.with_module(true)).parse();

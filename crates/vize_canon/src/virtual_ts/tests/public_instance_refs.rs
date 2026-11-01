@@ -183,7 +183,10 @@ fn an_options_api_default_export_keeps_its_own_instance_form() {
         "{code}"
     );
     assert_eq!(
-        count_lines(&code, "  var missing: any = undefined; void (missing);"),
+        count_lines(
+            &code,
+            "  var missing!: $AuthoredInstanceMember<\"missing\">; void (missing);"
+        ),
         1,
         "{code}"
     );
