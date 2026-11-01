@@ -1,6 +1,16 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Preserve complete original SFC validation errors, valid modules and CLI
+# packets. Only these exact tests retain stdout; execution policies stay fixed.
+[[profile.default.overrides]]
+filter = '''(package(=vize_atelier_sfc) & binary(=empty_component)) |
+(package(=vize) & binary(=integration) & (
+  test(=build_sfc_entry_validation_cli::invalid_sfc_entries_fail_without_emitting_a_module) |
+  test(=build_sfc_entry_validation_cli::valid_type_only_and_single_block_controls_keep_complete_build_outputs)
+))'''
+junit.store-success-output = true
+
 # Keep all original #11264 CLI argv/streams/files in ordinary PR/full JUnit.
 # This changes retention only; the four tests keep the normal execution policy.
 [[profile.default.overrides]]

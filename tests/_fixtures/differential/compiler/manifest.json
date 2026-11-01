@@ -1734,6 +1734,48 @@
       }
     },
     {
+      "id": "compiler/sfc/sfc-entry-validation-11262-11263",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "sfc-entry-validation-11262-11263",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "7ec65634a398549830e6f1dc6b770f268cb4423c53e539f1746a911dc7057660",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "sfc-entry-validation-11262-11263/module.expected.txt",
+        "sha256": "561fc249ed1cabb86d1e8a1ee8f57b7f54e3f17089bcb257c0816591012d834f",
+        "source": "Actual source3e67833be5b3ccd85b871a2bfa2d05683e77c3a4 CLI SSR; run41273931066/job124752153713/artifact13070228796; complete original process is reference-observation.json, source/build/image custody in reference-provenance.json."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "This valid control records the legacy source CLI SSR adapter; compiler-entry error and native whole-product admission are separate contracts."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/sfc-runtime-options-native",
       "state": "active",
       "targets": ["ssr"],

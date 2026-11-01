@@ -115,7 +115,9 @@ createApp(Clipboard).mount('#app');`,
     configFile: false,
     base: "/site/",
     resolve: { alias: { vue: vueAlias } },
-    plugins: [vize()],
+    // This independent clipboard consumer compiles the copied SFC only. The
+    // surrounding gallery's raw Art files still require their active Musea owner.
+    plugins: [vize({ scanPatterns: ["src/Clipboard.vue"] })],
     build: {
       outDir: path.join(root, "dist"),
       emptyOutDir: false,

@@ -1,0 +1,4 @@
+<script setup lang="ts">
+export declare const external: string;
+const label = "ready";
+</script>

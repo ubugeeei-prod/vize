@@ -44,6 +44,7 @@ import { attachMuseaOptions } from "./options.js";
 import { registerSourceGalleryDependencies } from "../gallery-dependencies.js";
 import { resolveMuseaGalleryUrls } from "./gallery-url.js";
 import { transformPreprocessedArtStyle } from "../art-style-module.js";
+import { createRawArtInputOwner } from "./raw-input-owner.js";
 
 export function musea(options: MuseaOptions = {}): Plugin[] {
   let include = options.include ?? ["**/*.art.vue"];
@@ -63,6 +64,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   const devSessionToken = createDevSessionToken();
 
   let config: ResolvedConfig;
+  const rawInputOwners = new WeakMap<ResolvedConfig, ReturnType<typeof createRawArtInputOwner>>();
   let server: ViteDevServer | null = null;
   const artFiles = new Map<string, ArtFileInfo>();
   let resolvedPreviewCss: string[] = [];
@@ -92,6 +94,12 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
 
   const mainPlugin: Plugin = {
     name: "vite-plugin-musea",
+    api: {
+      vizePrecompileInputOwner: Object.freeze({
+        version: 1,
+        forConfig: (resolved: ResolvedConfig) => rawInputOwners.get(resolved),
+      }),
+    },
     enforce: "pre",
     apply(_config, env) {
       return shouldApplyMuseaPlugin(env);
@@ -154,6 +162,10 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       virtualState.resolvedPreviewCss = resolvedPreviewCss;
       virtualState.resolvedPreviewSetup = resolvedPreviewSetup;
       scanRoots = resolveScanRoots(resolvedConfig.root, include);
+      rawInputOwners.set(
+        resolvedConfig,
+        createRawArtInputOwner({ root: resolvedConfig.root, include, exclude, scanRoots }),
+      );
     },
 
     configureServer(devServer) {

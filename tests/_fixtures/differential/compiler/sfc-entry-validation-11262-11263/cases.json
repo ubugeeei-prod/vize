@@ -1,0 +1,217 @@
+{
+  "schema": "vize.sfc-entry-validation-originals",
+  "version": 1,
+  "sourceBodies": [
+    {
+      "issue": 11262,
+      "sha256": "4b46928281b7ed965f14e6127083a5a863450cfb21b852a9849cd641d82b26a3"
+    },
+    {
+      "issue": 11263,
+      "sha256": "aa624f4879ebdd79390d3c7970df5d72cba3030d785e551394ab0d1a5f5ef020"
+    }
+  ],
+  "emptyFileAuthority": "The original Empty.vue fence explicitly says zero bytes; Empty.vue.txt contains exactly zero bytes. Other seven original fences are preserved whole including their authored filename comments and final LF.",
+  "cases": [
+    {
+      "id": "exportconst",
+      "file": "ExportConst.vue.txt",
+      "filename": "ExportConst.vue",
+      "issue": 11262,
+      "original": true,
+      "expect": "export-error",
+      "bytes": 79,
+      "sha256": "a4ee4ab61d9eefa43dfc1d240ba7e9ba662792866fa649a529937de7fef009f4"
+    },
+    {
+      "id": "exportdefault",
+      "file": "ExportDefault.vue.txt",
+      "filename": "ExportDefault.vue",
+      "issue": 11262,
+      "original": true,
+      "expect": "export-error",
+      "bytes": 95,
+      "sha256": "eefb162582d0131acc33f460fda20a57e2b6e79fdaf2a41d2c3fc40f83f26447"
+    },
+    {
+      "id": "exportnamed",
+      "file": "ExportNamed.vue.txt",
+      "filename": "ExportNamed.vue",
+      "issue": 11262,
+      "original": true,
+      "expect": "export-error",
+      "bytes": 85,
+      "sha256": "e3bddabee26d9c5342038bcc78170e50aae88f8ece6326b1e4d09170e529902b"
+    },
+    {
+      "id": "exportfunction",
+      "file": "ExportFunction.vue.txt",
+      "filename": "ExportFunction.vue",
+      "issue": 11262,
+      "original": true,
+      "expect": "export-error",
+      "bytes": 119,
+      "sha256": "6d6796a21e6053e44eb4ad19f3a69ffc1e63ea20b110acd9427661c5347e2e74"
+    },
+    {
+      "id": "empty",
+      "file": "Empty.vue.txt",
+      "filename": "Empty.vue",
+      "issue": 11263,
+      "original": true,
+      "expect": "missing-block",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "commentonly",
+      "file": "CommentOnly.vue.txt",
+      "filename": "CommentOnly.vue",
+      "issue": 11263,
+      "original": true,
+      "expect": "missing-block",
+      "bytes": 49,
+      "sha256": "eba8a44d8fa3c66ca598167d8bcbc4a19ec23c6a45c15d7b3c86f699bc2268ef"
+    },
+    {
+      "id": "customonly",
+      "file": "CustomOnly.vue.txt",
+      "filename": "CustomOnly.vue",
+      "issue": 11263,
+      "original": true,
+      "expect": "missing-block",
+      "bytes": 64,
+      "sha256": "515f7728508aef6310aa554480fd9aa6867805efeacb457cd1c978fd7c966329"
+    },
+    {
+      "id": "styleonly",
+      "file": "StyleOnly.vue.txt",
+      "filename": "StyleOnly.vue",
+      "issue": 11263,
+      "original": true,
+      "expect": "missing-block",
+      "bytes": 65,
+      "sha256": "43e38973f2e4cfd8a56aa9eacddccafdd68a9cb096dbc5d541f9b1f72e501634"
+    },
+    {
+      "id": "type-alias",
+      "file": "TypeAlias.vue.txt",
+      "filename": "TypeAlias.vue",
+      "issue": 0,
+      "original": false,
+      "expect": "valid",
+      "bytes": 115,
+      "sha256": "23dcded789e7caddd741be2ed82e8c0eede91ef5d0483809d09d3b731f9ae367"
+    },
+    {
+      "id": "type-interface",
+      "file": "TypeInterface.vue.txt",
+      "filename": "TypeInterface.vue",
+      "issue": 0,
+      "original": false,
+      "expect": "valid",
+      "bytes": 118,
+      "sha256": "9324114bfd92876d5e3145efb8c913be1edc5c3d82d3a161bd61b89a9b4dbc08"
+    },
+    {
+      "id": "type-specifiers",
+      "file": "TypeSpecifiers.vue.txt",
+      "filename": "TypeSpecifiers.vue",
+      "issue": 0,
+      "original": false,
+      "expect": "valid",
+      "bytes": 131,
+      "sha256": "83556e421b43c365ff0dd65f268cb9731a32a55f4d20efef7eecb140cd77eece"
+    },
+    {
+      "id": "type-all",
+      "file": "TypeAll.vue.txt",
+      "filename": "TypeAll.vue",
+      "issue": 0,
+      "original": false,
+      "expect": "valid",
+      "bytes": 88,
+      "sha256": "44e6b9a5c2953d86a23d64310c3c02a1fde29ad02862db6247feb0287850f8a2"
+    },
+    {
+      "id": "ambient-value",
+      "file": "AmbientValue.vue.txt",
+      "filename": "AmbientValue.vue",
+      "issue": 0,
+      "original": false,
+      "expect": "valid",
+      "bytes": 97,
+      "sha256": "1774f5701dd432f3e5f848cb59fb4a166d47f54df82ce6f9aeff7de5c9143308"
+    },
+    {
+      "id": "mixed-specifiers",
+      "file": "MixedSpecifiers.vue.txt",
+      "filename": "MixedSpecifiers.vue",
+      "issue": 0,
+      "original": false,
+      "expect": "export-error",
+      "bytes": 138,
+      "sha256": "d52543436b0733d1bc30260585772b4e8b4f74b48e97575aa9fb43815556c31c"
+    },
+    {
+      "id": "runtime-enum",
+      "file": "RuntimeEnum.vue.txt",
+      "filename": "RuntimeEnum.vue",
+      "issue": 0,
+      "original": false,
+      "expect": "export-error",
+      "bytes": 64,
+      "sha256": "80bc6af97ea52d88d1a76819ac0c98330447fb3b9d68975681847f74f75a0a1c"
+    },
+    {
+      "id": "runtime-const-enum",
+      "file": "RuntimeConstEnum.vue.txt",
+      "filename": "RuntimeConstEnum.vue",
+      "issue": 0,
+      "original": false,
+      "expect": "export-error",
+      "bytes": 70,
+      "sha256": "2ff53b8ac8050023d71ad51c4564752be356cfeeaad2862a20eb14ecfb77671c"
+    },
+    {
+      "id": "runtime-namespace",
+      "file": "RuntimeNamespace.vue.txt",
+      "filename": "RuntimeNamespace.vue",
+      "issue": 0,
+      "original": false,
+      "expect": "export-error",
+      "bytes": 90,
+      "sha256": "26650c8e43950648f807afd5a8b6747a92fb9c8565cd3daf2e03515fa50f7b2b"
+    },
+    {
+      "id": "normal-script",
+      "file": "NormalScript.vue.txt",
+      "filename": "NormalScript.vue",
+      "issue": 0,
+      "original": false,
+      "expect": "valid",
+      "bytes": 100,
+      "sha256": "89ab81c8541e1b9bbd5326f20eacbec0c07e69ece3032c6d7c40a17bb0f73ea8"
+    },
+    {
+      "id": "template-only",
+      "file": "Layout.vue.txt",
+      "filename": "Layout.vue",
+      "issue": 0,
+      "original": false,
+      "expect": "valid",
+      "bytes": 34,
+      "sha256": "7ec65634a398549830e6f1dc6b770f268cb4423c53e539f1746a911dc7057660"
+    },
+    {
+      "id": "setup-comments",
+      "file": "SetupComments.vue.txt",
+      "filename": "SetupComments.vue",
+      "issue": 0,
+      "original": false,
+      "expect": "valid",
+      "bytes": 107,
+      "sha256": "f9d35a0b7e03a53089b3b38511bb5158a47bd05599f1a3b29daf39ca3bc99426"
+    }
+  ]
+}

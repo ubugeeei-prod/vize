@@ -1,0 +1,19 @@
+{
+  "schema": "vize.sfc-entry-validation.ssr-reference.v1",
+  "controller": "198cc0bdd4d330076b38fe20e2a6537cab2533a0",
+  "source": "3e67833be5b3ccd85b871a2bfa2d05683e77c3a4",
+  "sourceTree": "64de3a23acdf285826f84c434139c3f74c0fcf74",
+  "run": 41273931066,
+  "job": 124752153713,
+  "artifact": 13070228796,
+  "artifactSha256": "a705d922f1def6a08fa480428f0943a6ea17c96fdb66c6332a10b5a100d57c28",
+  "auditSha256": "b7532d2e09af257a04884f2f55f341c46b320866e0f62847ab87c8bc7eb037ac",
+  "observationSha256": "eb5aa5f0d9f4731d0c6eb18fe236102a12552895b41a2b9742863ffd968ce6af",
+  "moduleSha256": "561fc249ed1cabb86d1e8a1ee8f57b7f54e3f17089bcb257c0816591012d834f",
+  "scope": "One valid source SSR baseline; no original-negative, candidate-native or public acceptance.",
+  "originalIssues": [
+    11262,
+    11263
+  ],
+  "note": "This unchanged valid template-only source is shared by public API, CLI and Rust controls; original negative inputs retain their own official-reference observations."
+}

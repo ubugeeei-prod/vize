@@ -31,6 +31,7 @@ import {
 } from "./state.ts";
 import { compileScopedBatch } from "./precompile-scopes.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
+import type { PrecompileInputOwner } from "./precompile-owner.ts";
 
 /**
  * The options the pre-compile batch actually compiles with.
@@ -67,7 +68,10 @@ function openCacheForRun(
 /**
  * Pre-compile all Vue files matching scan patterns.
  */
-export async function compileAll(state: VizePluginState): Promise<void> {
+export async function compileAll(
+  state: VizePluginState,
+  owners: readonly PrecompileInputOwner[] = [],
+): Promise<void> {
   const startTime = performance.now();
   const files = await glob(state.scanPatterns!, {
     cwd: state.root,
@@ -90,11 +94,14 @@ export async function compileAll(state: VizePluginState): Promise<void> {
     }
   }
 
-  const { changedFiles, deletedFiles } = diffPrecompileFiles(
+  const { changedFiles: changed, deletedFiles } = diffPrecompileFiles(
     sfcFiles,
     currentMetadata,
     state.precompileMetadata,
   );
+  // A newly active companion must not be hidden by unchanged in-memory metadata.
+  // Re-read its candidates before either in-memory or persistent cache reuse.
+  const changedFiles = owners.length > 0 ? sfcFiles : changed;
   const cachedFileCount = sfcFiles.length - changedFiles.length;
 
   for (const file of deletedFiles) {
@@ -155,6 +162,15 @@ export async function compileAll(state: VizePluginState): Promise<void> {
         cache.delete(file);
         precompileFailures.push(`[vize] Failed to read ${file}: ${formatUnknownError(e)}`);
         state.logger.error(`Failed to read ${file}:`, e);
+        continue;
+      }
+
+      if (owners.some((ownsInput) => ownsInput(file, source))) {
+        state.cache.delete(file);
+        state.ssrCache.delete(file);
+        state.collectedCss.delete(file);
+        state.precompileMetadata.delete(file);
+        cache.delete(file);
         continue;
       }
 

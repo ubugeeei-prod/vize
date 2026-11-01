@@ -1,0 +1,3 @@
+<script setup lang="ts">
+export namespace Status { export const ready = true; }
+</script>

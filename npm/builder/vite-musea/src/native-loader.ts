@@ -27,6 +27,11 @@ export interface SfcAnalysis {
 
 // Native binding types
 export interface NativeBinding {
+  /** Structural descriptor parsing; this does not compile or relax SFC validation. */
+  parseSfc: (
+    source: string,
+    options?: { filename?: string },
+  ) => { customBlocks: Array<{ type: string }> };
   parseArtStatusWarnings?: (source: string, options?: { filename?: string }) => string[];
   parseArt: (
     source: string,

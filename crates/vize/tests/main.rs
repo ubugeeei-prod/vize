@@ -8,6 +8,7 @@ mod build_inputs_cli;
 mod build_legacy_for_alias_cli;
 mod build_output_paths_cli;
 mod build_profile_cli;
+mod build_sfc_entry_validation_cli;
 mod build_sfc_errors_cli;
 mod build_stage_dump;
 mod build_stage_dump_safety;

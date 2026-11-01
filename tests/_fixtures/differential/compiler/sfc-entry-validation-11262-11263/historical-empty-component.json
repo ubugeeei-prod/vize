@@ -1,0 +1,6 @@
+{
+  "source": "3e67833be5b3ccd85b871a2bfa2d05683e77c3a4",
+  "path": "crates/vize_atelier_sfc/tests/empty_component.rs",
+  "sha256": "d9773833b5d6891bb0d480bf7083c685a9451500e9db2eb5706a240fa584f247",
+  "scope": "Preserved prior active acceptance. The original11263 official rejection replaces this empty-module expectation; editor descriptor parsing remains tolerant."
+}

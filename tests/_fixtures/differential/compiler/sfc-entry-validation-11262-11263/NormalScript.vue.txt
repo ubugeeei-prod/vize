@@ -1,0 +1,4 @@
+<script lang="ts">
+export const label = "ready";
+export default { name: "NormalScript" };
+</script>
