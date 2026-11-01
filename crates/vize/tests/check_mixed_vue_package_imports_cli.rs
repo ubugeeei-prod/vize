@@ -82,9 +82,7 @@ fn source_files(input: &serde_json::Value, case: Case) -> Vec<(String, String)> 
 }
 
 fn diagnostic(line: u32) -> String {
-    format!(
-        "error:{line}:7 [TS2322] Type 'string' is not assignable to type 'number'. (source: const probe: number = \"not a number\";)"
-    )
+    format!("error:{line}:7 [TS2322] Type 'string' is not assignable to type 'number'.")
 }
 
 #[test]
