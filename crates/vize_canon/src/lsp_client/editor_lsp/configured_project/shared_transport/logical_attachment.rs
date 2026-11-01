@@ -40,7 +40,7 @@ impl CorsaProjectClient {
             .map_err(|error| cstr!("Cannot fork current editor snapshot lineage: {error}"))?;
         let replacement = block_on(ProjectSession::open(
             fork,
-            crate::file_uri::path_to_typescript_name(&config).as_ref(),
+            crate::file_uri::path_to_typescript_name(&config).as_str(),
             None,
         ))
         .map_err(|error| cstr!("Cannot open current logical editor snapshot: {error}"))?;
