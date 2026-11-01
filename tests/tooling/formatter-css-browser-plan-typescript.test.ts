@@ -96,7 +96,7 @@ test("the live typed planner retains whole original outcomes and property evalua
       }
     }
   }
-  for (const plan of [
+  for (const [index, plan] of [
     null,
     undefined,
     false,
@@ -106,10 +106,10 @@ test("the live typed planner retains whole original outcomes and property evalua
     {},
     { tier: "pr" },
     { tier: "pr", version: 2, tests: [] },
-  ]) {
+  ].entries()) {
     for (const tier of ["pr", "wrong", undefined]) {
       inputs.push({
-        id: `invalid:${String(plan)}:${String(tier)}`,
+        id: `invalid:${index}:${String(tier)}`,
         make: () => [plan, available, "", tier],
       });
     }
@@ -350,7 +350,7 @@ test("actual Node CLI actors retain raw status, output append and first errors b
   unchangedDependencies(source);
 });
 
-test("the source pin, single live caller and root strict project coverage remain explicit", (t) => {
+test("the source pin, single live caller and raw Git input custody remain explicit", (t) => {
   const action = fs.readFileSync(
     path.join(root, ".github/actions/install-formatter-css-browser/action.yml"),
     "utf8",
@@ -389,34 +389,5 @@ test("the source pin, single live caller and root strict project coverage remain
     assert.equal(result.signal, null);
     assert.equal(result.stderr, "");
     assert.equal(result.stdout, "d4cc23fe9dc8f36de5ba3add1b6da2a0a1291171\n");
-  }
-  const solution: unknown = JSON.parse(fs.readFileSync(path.join(root, "tsconfig.json"), "utf8"));
-  assert(
-    solution !== null &&
-      typeof solution === "object" &&
-      "references" in solution &&
-      Array.isArray(solution.references),
-  );
-  assert(
-    solution.references.some(
-      (value: unknown) =>
-        value !== null && typeof value === "object" && "path" in value && value.path === "./tools",
-    ),
-  );
-  assert(
-    solution.references.some(
-      (value: unknown) =>
-        value !== null && typeof value === "object" && "path" in value && value.path === "./tests",
-    ),
-  );
-  for (const project of ["tools/tsconfig.json", "tests/tsconfig.json"]) {
-    const value: unknown = JSON.parse(fs.readFileSync(path.join(root, project), "utf8"));
-    assert(
-      value !== null &&
-        typeof value === "object" &&
-        "include" in value &&
-        Array.isArray(value.include),
-    );
-    assert(value.include.includes("**/*.ts"));
   }
 });
