@@ -49,6 +49,7 @@ impl Helpers {
             DomDependency::CollectionIteration => return vocabulary.helper("renderList"),
             DomDependency::TextModel => return vocabulary.helper("vModelText"),
             DomDependency::DirectiveApplication => return vocabulary.helper("withDirectives"),
+            DomDependency::CheckboxModel => return vocabulary.helper("vModelCheckbox"),
         })
     }
 }

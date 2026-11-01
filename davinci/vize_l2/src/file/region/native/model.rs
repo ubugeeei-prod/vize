@@ -5,7 +5,8 @@ use crate::artifact::RegionBuilder;
 use crate::file::build::ScopedResolution;
 use crate::file::region::{FileRegion, Lookup, TemplatePolicy};
 use crate::file::{
-    DeclarationKind, FileIssueKind, Namespace, NativeFileModel, NativeFileModelState,
+    DeclarationKind, FileIssueKind, Namespace, NativeFileModel, NativeFileModelKind,
+    NativeFileModelState,
 };
 use crate::lang::js::{NativeModelInput, NativeTemplateIssueKind as Kind};
 use crate::resolution::{ResolutionErrorKind, Usage, resolve_model_facts};
@@ -57,6 +58,7 @@ where
             binding: None,
             original: None,
             element: None,
+            kind: None,
         });
         #[cfg(test)]
         tests::after_park();
@@ -78,7 +80,11 @@ where
 
     /// A genuine mutable declaration grants the write, never an initializer tag.
     /// Target-specific primitive value policy remains a separate L3 decision.
-    pub(super) fn attach_model(&mut self, index: usize) -> Result<NodeId, Kind> {
+    pub(super) fn attach_model(
+        &mut self,
+        index: usize,
+        kind: NativeFileModelKind,
+    ) -> Result<NodeId, Kind> {
         let record = self
             .facts
             .native_models()
@@ -141,7 +147,7 @@ where
         }
         let (node, pointer) = self
             .region
-            .native_model(&record.input)
+            .native_model(&record.input, kind)
             .map_err(Kind::Artifact)?;
         self.facts.expressions.insert(
             node,

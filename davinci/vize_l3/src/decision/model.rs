@@ -5,7 +5,7 @@ use vize_l2::{
     expr::ExprRef,
     file::{
         DeclarationKind, FileArtifact, FileResolution, InitializerKind, Namespace,
-        NativeFileModelState,
+        NativeFileModelKind, NativeFileModelState,
     },
     op::{BindingOp, ElementOp, ModelOp},
     resolution::Usage,
@@ -27,7 +27,6 @@ pub(super) fn checked<'owner, 'arena>(
     if model.argument.is_some()
         || element.tag != "input"
         || element.namespace != vize_l2::op::Namespace::Html
-        || !element.attributes.is_empty()
         || !element.children.ops.is_empty()
         || !core::ptr::eq(actual_binding, binding)
     {
@@ -41,6 +40,33 @@ pub(super) fn checked<'owner, 'arena>(
         || original.input().attribute_span() != Some(model.span)
     {
         return None;
+    }
+    match original.kind()? {
+        NativeFileModelKind::Text if element.attributes.is_empty() => {}
+        NativeFileModelKind::Checkbox => {
+            let [attribute] = element.attributes.as_slice() else {
+                return None;
+            };
+            let [_record] = file.native_attribute_values() else {
+                return None;
+            };
+            let value = file.native_attribute_value_for(0, element, 0)?;
+            let observation = value.observation()?;
+            if attribute.name != "type"
+                || attribute.value != Some("checkbox")
+                || !model.attributes.is_empty()
+                || observation.source().decode_map().is_some()
+                || !core::ptr::eq(
+                    observation.source().authored_root(),
+                    file.artifact().source(),
+                )
+                || attribute.span.start != observation.name_span().start
+                || attribute.span.end != observation.full_value_span().end
+            {
+                return None;
+            }
+        }
+        _ => return None,
     }
     let modifier = match (
         original.input().operand().trim_span(),

@@ -52,7 +52,17 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
             | (u32::from(changes.properties) << 3);
         let normalizers = if has_props {
             self.writer.push(", ");
-            self.props(node, element, &row.dynamic_bindings, branch_key)?
+            let early_model = match model {
+                Some(id) if self.model_precedes_type(id, element)? => Some(id),
+                _ => None,
+            };
+            self.props(
+                node,
+                element,
+                &row.dynamic_bindings,
+                branch_key,
+                early_model,
+            )?
         } else {
             if has_children || flag != 0 {
                 self.writer.push(", null");
@@ -128,6 +138,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         element: &ElementOp<'_>,
         bindings: &[NodeId],
         branch_key: Option<u32>,
+        early_model: Option<NodeId>,
     ) -> Result<u8, DomError> {
         let complex_value = bindings.iter().any(|&id| {
             self.facts.binding(id).is_some_and(|fact| {
@@ -154,6 +165,17 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
             number(&mut self.writer, key);
             index += 1;
         }
+        if let Some(id) = early_model {
+            let row = self
+                .facts
+                .file_model(id)
+                .ok_or_else(|| self.error(id, DomErrorKind::FileOwnerMismatch))?;
+            self.property_start(index, multiline);
+            quoted(&mut self.writer, "onUpdate:modelValue", row.model().span);
+            self.writer.push(": ");
+            self.model_update(id, row.model())?;
+            index += 1;
+        }
         for attribute in &element.attributes {
             self.property_start(index, multiline);
             property(&mut self.writer, attribute.name, attribute.span);
@@ -163,6 +185,9 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
             index += 1;
         }
         for &id in bindings {
+            if early_model == Some(id) {
+                continue;
+            }
             let fact = self
                 .facts
                 .binding(id)

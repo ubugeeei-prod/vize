@@ -114,6 +114,7 @@ export function openModelSsr() {
 type ImportNode = {
   type: string;
   source?: { type: string; value: string; start: number; end: number };
+  specifiers?: { type: string; imported?: { type: string; name?: string } }[];
 };
 const parser = createRequire(fromSsrVue.resolve("@vue/compiler-sfc/package.json"))(
   "@babel/parser",
@@ -139,6 +140,30 @@ export function modelSsrModuleSource(code: string) {
     .parse(code, { sourceType: "module" })
     .program.body.filter((node) => node.type === "ImportDeclaration");
   assert(imports.length > 0);
+  const needsCheckbox = imports.some(
+    (node) =>
+      (node.source?.value === "@vue/server-renderer" ||
+        node.source?.value === "vue/server-renderer") &&
+      node.specifiers?.some(
+        (entry) =>
+          entry.type === "ImportSpecifier" &&
+          entry.imported?.type === "Identifier" &&
+          entry.imported.name === "ssrLooseContain",
+      ),
+  );
+  let selectedServerUrl = serverUrl;
+  if (needsCheckbox) {
+    const actual: unknown = fromSsrVue("@vue/server-renderer");
+    object(actual);
+    assert(Object.hasOwn(actual, "ssrLooseContain"));
+    assert.equal(typeof actual.ssrLooseContain, "function");
+    selectedServerUrl = runtimeUrl("@vue/server-renderer", [
+      "ssrRenderAttrs",
+      "ssrRenderAttr",
+      "ssrGetDynamicModelProps",
+      "ssrLooseContain",
+    ]);
+  }
   let rewritten = code;
   for (const node of imports.toReversed()) {
     assert(node.source?.type === "StringLiteral");
@@ -153,7 +178,7 @@ export function modelSsrModuleSource(code: string) {
     assert(value === "vue" || value === "@vue/server-renderer" || value === "vue/server-renderer");
     rewritten =
       rewritten.slice(0, start) +
-      JSON.stringify(value === "vue" ? vueUrl : serverUrl) +
+      JSON.stringify(value === "vue" ? vueUrl : selectedServerUrl) +
       rewritten.slice(end);
   }
   if (code.includes("/* from 'vue' 雪🌸 */")) assert(rewritten.includes("/* from 'vue' 雪🌸 */"));

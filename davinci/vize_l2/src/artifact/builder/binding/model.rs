@@ -2,6 +2,7 @@
 
 use super::super::{ArtifactError, Builder, Owner, check};
 use crate::expr::ExprRef;
+use crate::file::NativeFileModelKind;
 use crate::lang::js::NativeModelInput;
 use crate::op::{Attribute, BindingContract, BindingOp, ModelOp, Namespace};
 use vize_l0::{Box, id::NodeId};
@@ -10,6 +11,7 @@ impl<'a> Builder<'a> {
     pub(in crate::artifact::builder) fn native_model(
         &mut self,
         input: &NativeModelInput<'a>,
+        kind: NativeFileModelKind,
     ) -> Result<(NodeId, core::ptr::NonNull<ModelOp<'a>>), ArtifactError> {
         let span = input.attribute_span().ok_or(ArtifactError::InvalidSpan {
             node: None,
@@ -23,8 +25,10 @@ impl<'a> Builder<'a> {
             .frames
             .last()
             .ok_or(ArtifactError::BindingWithoutOwner { span })?;
-        if !matches!(&frame.owner, Owner::Element { tag: "input", namespace: Namespace::Html, attributes } if attributes.is_empty())
-            || !frame.bindings.is_empty()
+        if !matches!(&frame.owner, Owner::Element { tag: "input", namespace: Namespace::Html, attributes } if match kind {
+            NativeFileModelKind::Text => attributes.is_empty(),
+            NativeFileModelKind::Checkbox => matches!(attributes.as_slice(), [attribute] if attribute.name == "type" && attribute.value == Some("checkbox")),
+        }) || !frame.bindings.is_empty()
         {
             return Err(ArtifactError::BindingWithoutOwner { span });
         }

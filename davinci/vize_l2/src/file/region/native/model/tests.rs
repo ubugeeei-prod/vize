@@ -2,12 +2,15 @@
 
 extern crate std;
 
-use crate::file::{DeclarationKind, InitializerKind, Namespace, NativeFileModelState};
+use crate::file::{
+    DeclarationKind, InitializerKind, Namespace, NativeFileModelKind, NativeFileModelState,
+};
 use crate::lang::js::NativeTemplateIssueKind as Kind;
 use crate::op::{BindingOp, Op};
 use crate::resolution::Usage;
 use vize_l0::Allocator;
 
+mod checkbox;
 mod lazy;
 mod number;
 mod refusal;

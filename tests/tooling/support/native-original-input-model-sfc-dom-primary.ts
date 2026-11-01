@@ -18,7 +18,7 @@ const ts = typescript;
 type ObjectValue = Record<string, unknown>;
 
 export function compileInputModelPrimary(
-  fixture: ModelFixture,
+  fixture: Pick<ModelFixture, "id" | "source" | "script" | "template" | "bindings">,
   attempt: Record<string, unknown>,
   filename: string,
   mode: ModelMode,

@@ -1,0 +1,82 @@
+{
+  "schema": "vize.native-sfc.original-input-model-checkbox-inputs",
+  "qualification": "new-current-inputs-not-native-execution-evidence",
+  "filename": "OriginalInputModelCheckbox.vue",
+  "typescript": "6.0.3",
+  "targets": {
+    "dom": { "compiler": "3.5.35", "runtime": "3.5.35" },
+    "ssr": { "compiler": "3.5.35", "runtime": "3.5.35", "renderer": "3.5.35" },
+    "vapor": { "compiler": "3.6.0-rc.9", "runtime": "3.6.0-rc.9" }
+  },
+  "fixtures": [
+    {
+      "id": "checkbox-empty-inline-successor",
+      "source": "<script setup>let draft=''</script><template><input v-model='draft' type='checkbox'/></template>",
+      "script": "let draft=''",
+      "template": "<input v-model='draft' type='checkbox'/>",
+      "bindings": ["draft"],
+      "binding": "draft",
+      "initial": { "kind": "string", "value": "" },
+      "programmatic": " SSR checkbox string ",
+      "successorOf": {
+        "sourceBase": "ae65bd3add7768081384a44a72aaad23a9fc2947",
+        "path": "davinci/vize_l2/src/file/region/native/model/tests/refusal.rs",
+        "law": "actual_root_geometry_and_late_header_failures_keep_inputs_without_publishing_any_model",
+        "oldState": "Refused(UnsupportedChild)",
+        "historicalCompleteNativePacket": false
+      },
+      "checkboxRuntime": {
+        "initialChecked": false,
+        "firstClick": true,
+        "programmatic": false,
+        "dom": { "afterProgrammatic": false, "secondClick": true, "thirdClick": false },
+        "vapor": { "afterProgrammatic": true, "secondClick": false, "thirdClick": true }
+      }
+    },
+    {
+      "id": "checkbox-let-boolean-type-first",
+      "source": "<script setup>let enabled=false</script><template><input type=\"checkbox\" v-model=\"enabled\" /></template>",
+      "script": "let enabled=false",
+      "template": "<input type=\"checkbox\" v-model=\"enabled\" />",
+      "bindings": ["enabled"],
+      "binding": "enabled",
+      "initial": { "kind": "boolean", "value": false },
+      "programmatic": " SSR enabled ",
+      "checkboxRuntime": {
+        "initialChecked": false,
+        "firstClick": true,
+        "programmatic": false,
+        "dom": { "afterProgrammatic": false, "secondClick": true, "thirdClick": false },
+        "vapor": { "afterProgrammatic": true, "secondClick": false, "thirdClick": true }
+      }
+    },
+    {
+      "id": "checkbox-var-ts-unicode-crlf",
+      "source": "\r\n<script setup lang='ts'>/* 雪🌸 import { fake } from 'vue'; */var café:boolean=true</script>\r\n<template><input v-model='café' type='checkbox'/></template>\r\n",
+      "script": "/* 雪🌸 import { fake } from 'vue'; */var café:boolean=true",
+      "template": "<input v-model='café' type='checkbox'/>",
+      "bindings": ["café"],
+      "binding": "café",
+      "initial": { "kind": "boolean", "value": true },
+      "programmatic": " SSR café ",
+      "checkboxRuntime": {
+        "initialChecked": true,
+        "firstClick": false,
+        "programmatic": true,
+        "dom": { "afterProgrammatic": true, "secondClick": false, "thirdClick": true },
+        "vapor": { "afterProgrammatic": false, "secondClick": true, "thirdClick": false }
+      }
+    }
+  ],
+  "groups": [
+    {
+      "kind": "checkbox",
+      "filename": "OriginalInputModelCheckbox.vue",
+      "ids": [
+        "checkbox-empty-inline-successor",
+        "checkbox-let-boolean-type-first",
+        "checkbox-var-ts-unicode-crlf"
+      ]
+    }
+  ]
+}

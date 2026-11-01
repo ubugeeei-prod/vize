@@ -134,6 +134,9 @@ fn encode<'owner, 'arena, L: LinkSink>(
     });
     writer.indent();
     writer.newline();
+    if let Some(setup) = setup {
+        model::prelude(&mut writer, setup);
+    }
     if !facts.parts().is_empty() {
         writer.push("_push(`");
         if facts.fragment() {

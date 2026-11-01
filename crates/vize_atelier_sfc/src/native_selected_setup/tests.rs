@@ -17,6 +17,7 @@ mod original_for_constant;
 mod original_for_key;
 mod original_for_value;
 mod original_input_model;
+mod original_input_model_checkbox;
 mod original_input_model_modifiers;
 mod original_input_model_number;
 mod original_root_if;
