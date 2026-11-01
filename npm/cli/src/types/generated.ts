@@ -339,6 +339,7 @@ export interface LintRuleOptions {
     | {
         style?: "always" | "never";
         ignore?: string[];
+        ignoreTags?: string[];
       };
   "vue/valid-v-on"?: {
     modifiers?: string[];
