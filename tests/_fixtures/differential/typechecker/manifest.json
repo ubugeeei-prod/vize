@@ -6067,25 +6067,6 @@
       "diagnostics": []
     },
     {
-      "id": "typechecker/generation-value-import-facts",
-      "state": "active",
-      "targets": ["batch"],
-      "inputs": [{
-        "path": "generation-value-import-facts/Imports.vue.txt",
-        "sha256": "295378aec0c3b8185a0445a3aac9ea137e0be1eaa1562594eeccdd796aeaaea3",
-        "role": "script-import-and-anchor-source-control"
-      }],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [{
-          "kind": "source-inspection",
-          "dialects": ["vue3-sfc", "html-template", "ts"],
-          "selector": "virtual_ts::generator::anchors::value_import_names::pinned_import_facts_keep_whole_sets_and_both_anchor_modes; compile-included pinned script physically feeds the actual import collector and anchor emitter; input-only registration, no native or diagnostic pack admission"
-        }]
-      }
-    },
-    {
       "id": "typechecker/generic-constructor-slots-10416/props-infer-plain-and-covariant-slots",
       "state": "active",
       "targets": [
@@ -11615,6 +11596,25 @@
             ]
           }
         },
+    {
+      "id": "typechecker/generation-value-import-facts",
+      "state": "active",
+      "targets": ["batch"],
+      "inputs": [{
+        "path": "generation-value-import-facts/Imports.vue.txt",
+        "sha256": "295378aec0c3b8185a0445a3aac9ea137e0be1eaa1562594eeccdd796aeaaea3",
+        "role": "script-import-and-anchor-source-control"
+      }],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [{
+          "kind": "source-inspection",
+          "dialects": ["vue3-sfc", "html-template", "ts"],
+          "selector": "virtual_ts::generator::anchors::value_import_names::pinned_import_facts_keep_whole_sets_and_both_anchor_modes; compile-included pinned script physically feeds the actual import collector and anchor emitter; input-only registration, no native or diagnostic pack admission"
+        }]
+      }
+    },
     {
       "id": "typechecker/jsx-child-expression-control-6890",
       "state": "active",
