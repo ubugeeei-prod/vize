@@ -297,6 +297,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // original/pair/requery calls and two each for duplicate/select controls.
     // Their complete outputs run in the focused native tests; each remains
     // honestly counted as a variable-input skip in this literal-only scan.
+    // Native placeholder-option history adds three nonliteral legacy calls:
+    // the original snapshot query, complete pair baseline and pair requery.
+    // All four whole originals and the policy matrix run in focused tests;
+    // their variables remain skips without changing the 913 literal fixtures.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -307,8 +311,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 2
         + 2
         + 1
-        + 7,
-    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1 + 3 + 1 + 5 + 1 + 1 + 2 + 1 + 7,
+        + 7
+        + 3,
+    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1 + 3 + 1 + 5 + 1 + 1 + 2 + 1 + 7 + 3,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42,
     restructured: 0,
