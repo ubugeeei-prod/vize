@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
 import { fileURLToPath } from "node:url";
 import { loadLspManifest } from "../differential/lsp-manifest.ts";
 import {
@@ -14,6 +15,16 @@ import { referenceObservation, rewriteFrames } from "./support/lsp/differential-
 import { asRecord } from "../../tools/support/json-value.ts";
 
 const root = new URL("../../", import.meta.url);
+
+test("the formatter matcher crosses only the exact existing Carton host facade", () => {
+  const declaration =
+    "pub(in crate::server::state) use vize_carton::config::formatter_lint_plan::FormatterLinterPlan;";
+  const host = "crates/vize_maestro/src/server/state/config/host.rs";
+  assert.equal(withoutHostRuntimeReferences(declaration, host), "host_formatter_lint_plan_facade");
+  assert.equal(withoutHostRuntimeReferences(declaration, host + ".other"), declaration);
+  const unknown = declaration.replace("FormatterLinterPlan", "UnknownPolicy");
+  assert.equal(withoutHostRuntimeReferences(unknown, host), unknown);
+});
 const read = (path: string) => readFileSync(new URL(path, root));
 const linterRoot = "tests/_fixtures/differential/linter/formatter-bind-style-policy-6098/";
 const originalRoot = "tests/_fixtures/differential/linter/v-bind-prop-longform-6097/";

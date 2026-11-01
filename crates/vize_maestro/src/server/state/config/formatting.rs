@@ -1,9 +1,8 @@
 //! Resolve a config file's formatter options into native formatter options.
 
-use super::host::{self, CompilerWhitespacePlan};
+use super::host::{self, CompilerWhitespacePlan, FormatterLinterPlan};
 use crate::server::{ServerState, format::FormatterContext};
 use std::path::{Path, PathBuf};
-use vize_carton::config::formatter_lint_plan::FormatterLinterPlan;
 use vize_l0::{
     String, ToCompactString,
     config::{ConfigDocument, FormatterProfile},
@@ -116,7 +115,7 @@ impl ServerState {
             .is_some_and(|extension| extension.eq_ignore_ascii_case("vue"))
             && let Some(resolved) = snapshot.lint.as_ref().and_then(|plan| plan.resolve(path))
         {
-            vize_patina::Linter::validate_directive_normalization(
+            vize_patina::Linter::validate_editor_directive_normalization(
                 &resolved.config,
                 &resolved.rule_options,
                 snapshot.options.normalize_directive_shorthands,

@@ -2,6 +2,7 @@
 
 use super::Linter;
 use crate::LintPreset;
+use crate::rules::vue::VBindStyleOption;
 use vize_l0::{
     String,
     config::{ConfigLintRuleOptions, LinterConfig, VBindStyle},
@@ -15,7 +16,25 @@ impl Linter {
         options: &ConfigLintRuleOptions,
         normalize: bool,
     ) -> Result<(), String> {
-        if normalize && Self::has_active_longform_bind(config, options)? {
+        Self::validate_bind_normalization(config, options, normalize, false)
+    }
+
+    /// Match the editor's existing constructor, including its category handling.
+    pub fn validate_editor_directive_normalization(
+        config: &LinterConfig,
+        options: &ConfigLintRuleOptions,
+        normalize: bool,
+    ) -> Result<(), String> {
+        Self::validate_bind_normalization(config, options, normalize, true)
+    }
+
+    fn validate_bind_normalization(
+        config: &LinterConfig,
+        options: &ConfigLintRuleOptions,
+        normalize: bool,
+        editor: bool,
+    ) -> Result<(), String> {
+        if normalize && Self::active_configured_bind(config, options, editor)? {
             return Err(String::from(
                 "normalizeDirectiveShorthands=true conflicts with active vue/v-bind-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand binding style",
             ));
@@ -31,19 +50,53 @@ impl Linter {
         config: &LinterConfig,
         options: &ConfigLintRuleOptions,
     ) -> Result<bool, String> {
+        Self::active_configured_bind(config, options, false)
+    }
+
+    fn active_configured_bind(
+        config: &LinterConfig,
+        options: &ConfigLintRuleOptions,
+        editor: bool,
+    ) -> Result<bool, String> {
         if !config.enabled || options.v_bind_style() != Some(VBindStyle::Longform) {
             return Ok(false);
         }
-        let linter = match config.preset.as_deref() {
+        let disabled = config.disabled_rules();
+        let mut additional = config.enabled_rules();
+        for (name, configured) in [
+            (
+                "script/no-restricted-members",
+                !options.restricted_members().is_empty(),
+            ),
+            (
+                "musea/prefer-design-tokens",
+                !options.musea_design_tokens().is_empty(),
+            ),
+        ] {
+            if configured
+                && !disabled.iter().any(|rule| rule == name)
+                && !additional.iter().any(|rule| rule == name)
+            {
+                additional.push(name.into());
+            }
+        }
+        let mut linter = match config.preset.as_deref() {
             None => Self::new(),
-            Some("all") => Self::with_all(),
+            Some("all") if !editor => Self::with_all(),
             Some(name) => Self::with_preset(
                 LintPreset::parse(name).ok_or_else(|| cstr!("Unknown lint preset '{name}'"))?,
             ),
         }
-        .with_additional_rules(config.enabled_rules())
-        .with_disabled_rules(config.disabled_rules())
-        .with_disabled_categories(config.disabled_categories());
+        .with_additional_rules(additional)
+        .with_disabled_rules(disabled);
+        // The existing CLI applies categories before configurable rules. The
+        // editor constructor currently does not apply disabled categories.
+        if !editor {
+            linter = linter.with_disabled_categories(config.disabled_categories());
+        }
+        // This existing builder can register a missing rule; its actual
+        // enabled/disabled sets, rather than the option's presence, decide.
+        let linter = linter.with_v_bind_style(VBindStyleOption::Longform);
         Ok(linter.registry().has_rule("vue/v-bind-style")
             && linter.is_rule_enabled("vue/v-bind-style"))
     }
@@ -64,14 +117,14 @@ mod tests {
     }
 
     #[test]
-    fn option_does_not_enable_a_rule_and_effective_disabled_policy_wins() {
+    fn mirrors_actual_configurable_rule_registration_and_disabled_selection() {
         let contract: serde_json::Value = serde_json::from_str(include_str!(
             "../../../../tests/_fixtures/differential/linter/formatter-bind-style-policy-6098/cases.json"
         ))
         .unwrap();
         assert!(active(contract["config"]["linter"].clone()).unwrap());
         for linter in [
-            serde_json::json!({"preset":"incremental","ruleOptions":{"vue/v-bind-style":"longform"}}),
+            serde_json::json!({"preset":"incremental","rules":{"vue/no-v-html":"error"},"ruleOptions":{"vue/v-bind-style":"longform"}}),
             serde_json::json!({"enabled":false,"preset":"opinionated","ruleOptions":{"vue/v-bind-style":"longform"}}),
             serde_json::json!({"preset":"opinionated","rules":{"vue/v-bind-style":"off"},"ruleOptions":{"vue/v-bind-style":"longform"}}),
             serde_json::json!({"preset":"opinionated","categories":{"style":"off"},"ruleOptions":{"vue/v-bind-style":"longform"}}),
@@ -79,6 +132,9 @@ mod tests {
             serde_json::json!({"preset":"incremental","rules":{"vue/v-bind-style":"error"},"ruleOptions":{"vue/v-bind-style":"shorthand"}}),
         ] {
             assert!(!active(linter).unwrap());
+        }
+        for categories in [serde_json::json!({}), serde_json::json!({"style":"off"})] {
+            assert!(active(serde_json::json!({"preset":"incremental","categories":categories,"ruleOptions":{"vue/v-bind-style":"longform"}})).unwrap());
         }
         for severity in ["warn", "error"] {
             assert!(active(serde_json::json!({"preset":"incremental","rules":{"vue/v-bind-style":severity},"ruleOptions":{"vue/v-bind-style":"longform"}})).unwrap());

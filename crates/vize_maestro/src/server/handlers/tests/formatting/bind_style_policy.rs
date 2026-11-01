@@ -7,6 +7,7 @@ use std::{
     io::{self, Write},
     path::Path,
 };
+use tower_lsp::lsp_types::NumberOrString;
 
 const RULE: &str = "vue/v-bind-style";
 const CORPUS: &str = include_str!(concat!(
@@ -125,7 +126,8 @@ fn every_handler_logs_the_conflict_returns_null_and_keeps_authored_bytes() {
                 .count(),
                 3
             );
-            assert!(logs.contains("formatter.normalizeDirectiveShorthands=false"));
+            let reasons = logs.lines().map(|line| line.split_once(": normalizeDirectiveShorthands=").unwrap().1).collect::<Vec<_>>();
+            assert_eq!(reasons, ["true conflicts with active vue/v-bind-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand binding style"; 3]);
         });
         assert_eq!(std::fs::read_to_string(&file).unwrap(), source);
         assert_eq!(
@@ -149,7 +151,10 @@ fn every_handler_logs_the_conflict_returns_null_and_keeps_authored_bytes() {
     let full = result[0].as_ref().unwrap();
     assert_eq!(full.len(), 1);
     assert_eq!(full[0].new_text, formatted.as_str());
-    assert!(formatted.contains("v-bind:title.prop="));
+    assert_eq!(
+        formatted.as_str(),
+        "<template>\n  <a v-bind:title.prop=\"t\"></a>\n</template>\n"
+    );
     server
         .state
         .documents
@@ -213,6 +218,71 @@ fn each_formatter_request_resolves_entry_order_negations_and_inactive_files() {
             server.state.documents.text_snapshot(&uri).unwrap().as_str(),
             source,
             "{name}"
+        );
+    }
+}
+
+#[test]
+fn editor_policy_matches_actual_lint_option_registration_and_category_handling() {
+    let project = tempfile::tempdir().unwrap();
+    let root = project.path();
+    let file = root.join("VBindProp.vue");
+    let source = "<template>\n  <a :title.prop=\"t\"></a>\n</template>\n";
+    std::fs::write(&file, source).unwrap();
+    let uri = Url::from_file_path(&file).unwrap();
+    let service = server_with(&uri, source, "vue");
+    let server = service.inner();
+    for (linter, active) in [
+        (
+            json!({"preset":"incremental","ruleOptions":{RULE:"longform"}}),
+            true,
+        ),
+        (
+            json!({"preset":"incremental","categories":{"style":"off"},"ruleOptions":{RULE:"longform"}}),
+            true,
+        ),
+        (
+            json!({"preset":"opinionated","categories":{"style":"off"},"ruleOptions":{RULE:"longform"}}),
+            true,
+        ),
+        (
+            json!({"preset":"incremental","rules":{RULE:"off"},"ruleOptions":{RULE:"longform"}}),
+            false,
+        ),
+        (
+            json!({"preset":"incremental","rules":{"vue/no-v-html":"error"},"ruleOptions":{RULE:"longform"}}),
+            false,
+        ),
+        (
+            json!({"preset":"incremental","ruleOptions":{RULE:"longform","script/no-restricted-members":{"members":[{"object":"window","property":"localStorage"}]}}}),
+            false,
+        ),
+        (
+            json!({"preset":"incremental","ruleOptions":{RULE:"longform","musea/prefer-design-tokens":{"tokens":[{"path":"color.primary","value":"#3b82f6"}]}}}),
+            false,
+        ),
+    ] {
+        configure(
+            server,
+            root,
+            json!({"languageServer":{"lint":true},"linter":linter}),
+        );
+        server.state.load_lsp_config(root);
+        let diagnostics = crate::ide::DiagnosticService::collect_lint_only(&server.state, &uri);
+        let binding_count = diagnostics
+            .iter()
+            .filter(|row| row.code == Some(NumberOrString::String(RULE.into())))
+            .count();
+        assert_eq!(binding_count, usize::from(active), "{linter}");
+        let results = requests(server, &uri);
+        assert_eq!(results.iter().all(Option::is_none), active, "{linter}");
+        if !active {
+            assert!(results.iter().all(Option::is_some), "{linter}");
+        }
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), source);
+        assert_eq!(
+            server.state.documents.text_snapshot(&uri).unwrap().as_str(),
+            source
         );
     }
 }

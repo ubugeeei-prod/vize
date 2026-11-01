@@ -197,9 +197,10 @@ export default {
 The CLI also accepts `--normalize-directive-shorthands=false`. A conflict
 exits with status 2 before any selected file is written. The editor's document,
 range and on-type formatting requests return `null` and log the actionable
-conflict as a warning. Rule activation follows the same file scopes, presets,
-disabled rules and categories as linting. The standalone formatter APIs retain
-their existing option defaults.
+conflict as a warning. Activation follows each host's existing lint builders,
+file scopes and disabled rules. This includes option-driven rule registration;
+category handling follows the CLI or editor respectively. The standalone
+formatter APIs retain their existing option defaults.
 
 The native Node `formatSfc` API accepts the five Prettier migration booleans
 `normalizeCssQuotes`, `normalizeInlineStyles`, `normalizeVForParens`,
