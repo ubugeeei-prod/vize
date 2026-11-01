@@ -71,15 +71,19 @@ pub(super) async fn observe(api: &ApiClient, data: &mut ObservationData) -> cors
         .await?;
     if let Some(component) = &data.constructor_type {
         data.stage = "declared-construct-signatures";
-        let signatures = api
-            .get_signatures_of_type(
-                data.snapshot.clone(),
-                data.project.id.clone(),
-                component.id.clone(),
-                1,
+        // Same existing endpoint/parameters as the typed SDK method. The raw
+        // route retains DerivedSnapshots ID adoption before local DTO decode.
+        let raw = api
+            .raw_json_request(
+                "getSignaturesOfType",
+                json!({
+                    "snapshot":data.snapshot,"project":data.project.id,
+                    "type":component.id,"kind":1
+                }),
             )
             .await?;
-        data.construct_signatures = Some(signatures.clone());
+        data.stage = "decode-construct-signatures";
+        let signatures = retain_signatures(data, raw)?;
         for signature in signatures {
             let index = data.declared_returns.len();
             data.declared_returns.push(SignatureReturn {

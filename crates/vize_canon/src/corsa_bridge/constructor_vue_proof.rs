@@ -103,8 +103,9 @@ pub(crate) enum Unavailable {
     DeclarationRangeUnavailable(NodeHandle),
     /// This SDK reader does not expose an authenticated call-like AST node.
     SelectedSignatureRequiresNativeCallNode,
-    /// Both the DTO and getter normalize absent generic metadata to `[]`.
-    GenericMetadataPresence,
+    /// Raw signature field presence is retained, but a closed nongeneric
+    /// return is not admitted from typed outer/local metadata or empty arrays.
+    GenericClosureNotAdmitted,
     /// Equality of declarations or instance shape alone is not admission.
     VueReturnOriginNotAdmitted,
 }
@@ -124,6 +125,7 @@ pub(crate) struct ObservationData {
     pending_source: Option<String>,
     sources: Vec<NativeSource>,
     constructor_type: Option<TypeResponse>,
+    construct_signatures_raw: Option<Value>,
     construct_signatures: Option<Vec<SignatureResponse>>,
     declared_returns: Vec<SignatureReturn>,
     hosts: Vec<HostObservation>,
@@ -172,13 +174,14 @@ impl ObservationData {
             pending_source: None,
             sources: Vec::new(),
             constructor_type: None,
+            construct_signatures_raw: None,
             construct_signatures: None,
             declared_returns: Vec::new(),
             hosts: Vec::new(),
             vue: VueObservation::default(),
             unavailable: vec![
                 Unavailable::SelectedSignatureRequiresNativeCallNode,
-                Unavailable::GenericMetadataPresence,
+                Unavailable::GenericClosureNotAdmitted,
                 Unavailable::VueReturnOriginNotAdmitted,
             ],
         }
@@ -276,4 +279,17 @@ fn source_member(names: Option<&Value>, file: &str) -> bool {
                 .count()
                 == 1
     })
+}
+
+fn retain_signatures(
+    data: &mut ObservationData,
+    raw: Value,
+) -> corsa::Result<Vec<SignatureResponse>> {
+    // Retain the complete SDK-boundary value before a DTO default or a
+    // decode error can erase missing/null/empty distinctions and extra fields.
+    data.construct_signatures_raw = Some(raw.clone());
+    data.construct_signatures = None;
+    let signatures: Vec<SignatureResponse> = serde_json::from_value(raw)?;
+    data.construct_signatures = Some(signatures.clone());
+    Ok(signatures)
 }

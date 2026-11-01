@@ -191,11 +191,48 @@ fn sdk_missing_generic_metadata_is_not_proof_of_a_nongeneric_signature() {
         absent, empty,
         "the actual SDK DTO cannot distinguish these inputs"
     );
-    let data = ObservationData::new(request(), "snapshot".into(), project());
-    assert!(
-        data.unavailable
-            .contains(&Unavailable::GenericMetadataPresence)
+    for raw in [
+        json!([{"id":"signature","flags":0,"parameters":[],"extra":{"text":"😀\r\n"}}]),
+        json!([{"id":"signature","flags":0,"parameters":[],"typeParameters":[]}]),
+        json!([{"id":"signature","flags":0,"parameters":[],"typeParameters":null}]),
+    ] {
+        let mut data = ObservationData::new(request(), "snapshot".into(), project());
+        let decoded = retain_signatures(&mut data, raw.clone());
+        assert_eq!(data.construct_signatures_raw.as_ref(), Some(&raw));
+        if raw[0].get("typeParameters") == Some(&Value::Null) {
+            assert!(decoded.is_err());
+            assert!(data.construct_signatures.is_none());
+        } else {
+            assert!(decoded.unwrap()[0].type_parameters.is_empty());
+        }
+        assert!(
+            data.unavailable
+                .contains(&Unavailable::GenericClosureNotAdmitted)
+        );
+        assert!(!data.native_admission);
+    }
+}
+
+#[test]
+fn raw_signatures_keep_order_unknown_fields_and_failures_before_decode() {
+    let raw = json!([
+        {"id":"first","flags":1,"parameters":["p"],"typeParameters":["T"],"future":42},
+        {"id":"last","flags":2,"parameters":[],"future":{"value":"complete"}}
+    ]);
+    let mut data = ObservationData::new(request(), "snapshot".into(), project());
+    let decoded = retain_signatures(&mut data, raw.clone()).unwrap();
+    assert_eq!(
+        decoded
+            .iter()
+            .map(|signature| signature.id.as_str())
+            .collect::<Vec<_>>(),
+        ["first", "last"]
     );
+    assert_eq!(data.construct_signatures_raw.as_ref(), Some(&raw));
+    let malformed = json!({"unexpected":"whole response"});
+    assert!(retain_signatures(&mut data, malformed.clone()).is_err());
+    assert_eq!(data.construct_signatures_raw.as_ref(), Some(&malformed));
+    assert!(data.construct_signatures.is_none());
     assert!(!data.native_admission);
 }
 
@@ -209,7 +246,12 @@ fn compact_or_malformed_declarations_cannot_supply_native_call_ranges() {
         compact.parse().is_err(),
         "a native filename is not a native call range"
     );
-    for node in ["42.176./p/component.ts", "1.5.176.", "bad"] {
+    for node in [
+        "42.176./p/component.ts",
+        "5.1.176./p/component.ts",
+        "1.5.176.",
+        "bad",
+    ] {
         assert!(NodeHandle::from(node).parse().is_err());
     }
     let data = ObservationData::new(request(), "snapshot".into(), project());
