@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { archiveComparison } from "../public_install/archive.ts";
+import { observedArchiveComparison } from "./package-inventory.ts";
 import { array, object, sha256, text, wholeJson } from "./value.ts";
 import { publicArchive, publicPackageMetadata } from "./network.ts";
 import {
@@ -143,7 +143,12 @@ export async function installedGraph(
           if (prior)
             assert(prior.equals(downloaded.body), "package version cannot silently change archive");
           else archiveCache.set(name + "@" + version, downloaded.body);
-          const comparison = archiveComparison(directory, downloaded.body, downloaded.integrity);
+          const comparison = observedArchiveComparison(
+            directory,
+            downloaded.body,
+            downloaded.integrity,
+            sink,
+          );
           assert.equal(downloaded.resolved, row.resolved);
           packages.push({
             name,
