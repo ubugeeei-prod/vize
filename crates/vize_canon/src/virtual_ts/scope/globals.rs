@@ -255,7 +255,8 @@ pub(super) fn generate_undefined_refs(
         // Use void expression to reference the name without creating an unused variable
         let expr_code = if on_instance {
             cstr!(
-                "  var {}!: $AuthoredInstanceMember<\"{}\">; void ({});\n  void (__vize_template_instance.{});\n",
+                "  var {}!: \"{}\" extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[keyof typeof __vize_template_instance & \"{}\"] : any; void ({});\n  void (__vize_template_instance.{});\n",
+                undef.name,
                 undef.name,
                 undef.name,
                 undef.name,
@@ -315,12 +316,13 @@ const PUBLIC_INSTANCE_PRELUDE: &str = "  type $TemplateInstance = { [__K in keyo
 const PUBLIC_INSTANCE_RECEIVER: &str = "__vize_public_instance";
 
 /// The value a Vue 3 Options API template reads its unknown names off: the
-/// authored default export's instance. `$AuthoredInstanceMember` types each
+/// authored default export's instance. An inline conditional types each
 /// hoisted name declaration from that instance, so a member a `mixins:` or
 /// `extends:` entry contributes keeps its declared type in the authored
-/// expression, and degrades to `any` only for a name the instance does not
+/// expression without introducing a type binding that can capture authored names.
+/// It degrades to `any` only for a name the instance does not
 /// carry, whose single report is the mapped instance read.
-const AUTHORED_INSTANCE_PRELUDE: &str = "  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n  void __vize_template_instance;\n  type $AuthoredInstanceMember<__K extends string> = __K extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[__K] : any;\n";
+const AUTHORED_INSTANCE_PRELUDE: &str = "  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n  void __vize_template_instance;\n";
 
 /// Same-name shorthand (`:aria-labelledby`) stores the camelized binding while
 /// the authored token is longer. A prefix range overlaps the attribute and is

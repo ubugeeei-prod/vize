@@ -124,7 +124,7 @@ runs:
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::options_api_inherited_template_members:: -- --nocapture
         cargo test --locked --profile ci -p vize_canon --lib virtual_ts::scope::globals::instance::tests::options_api_inherited_members_are_declared_from_the_authored_instance -- --exact --nocapture
-        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::tests::test_options_api_unresolved_extends_declares_template_refs_from_the_instance -- --exact --nocapture
+        cargo test --locked --profile ci -p vize_canon --lib virtual_ts::tests::inherited_options::test_options_api_unresolved_extends_declares_template_refs_from_the_instance -- --exact --nocapture
     - name: Test memberless Vue preparation against its acknowledged same-owner pull
       shell: bash
       env:
@@ -206,6 +206,14 @@ runs:
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize --test integration -- check_mixed_vue_package_imports_cli:: --nocapture
+    - name: Test original imported Options API members with the actual CLI
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize --test integration -- check_options_api_inherited_members_cli:: --nocapture
     - name: Test redirected package diagnostics with the actual CLI
       shell: bash
       env:

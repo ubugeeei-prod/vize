@@ -10,6 +10,35 @@ use crate::virtual_ts::{VirtualTsOptions, VizeMapping, VizeSemanticLink, VizeSem
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{BindingType, Croquis};
 
+/// Emit the profiled Options API variables without growing the root generator.
+pub(in crate::virtual_ts::generator) fn emit_options_api_variables(
+    enabled: bool,
+    ts: &mut String,
+    links: &mut Vec<VizeSemanticLink>,
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+    script: Option<&str>,
+    script_facts: (&OptionsApiScriptFacts, bool),
+    mappings: &mut Vec<VizeMapping>,
+    offset: &dyn Fn(usize) -> usize,
+) {
+    if !enabled {
+        return;
+    }
+    vize_carton::profile!(
+        "canon.virtual_ts.generate_options_api_variables",
+        links.extend(generate_options_api_variables(
+            ts,
+            summary,
+            options,
+            script,
+            script_facts,
+            mappings,
+            offset,
+        ))
+    );
+}
+
 // Emit declarations for Options API template bindings (`data`/`computed`/
 // `methods`/`inject`/`setup`/`props`, plus legacy globals) when the caller
 // enables Options API / legacy checking.
@@ -23,7 +52,7 @@ use vize_croquis::{BindingType, Croquis};
 // instance, so the untyped `any` fallback is kept only for the names that pass
 // cannot declare; a second `const` for a declared name would redeclare it
 // (`TS2451`) and win with `any`.
-pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
+fn generate_options_api_variables(
     mut ts: &mut String,
     summary: &Croquis,
     options: &VirtualTsOptions,

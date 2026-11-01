@@ -73,6 +73,8 @@ fn inherited_template_members_are_checked_with_their_declared_types() {
     checker.enable_options_api();
     checker.scan_project().expect("project scan should succeed");
     let result = checker.check_project().expect("project check should run");
+    retain_complete_result(&checker, &project_root, &native, &result)
+        .expect("retain complete API result before any wording or order adaptation");
     let mut diagnostics: Vec<(String, Option<u32>, String)> = result
         .diagnostics
         .into_iter()
@@ -166,4 +168,103 @@ fn with_portable_instance_wording(message: &str) -> String {
         }
         _ => String::from(message),
     }
+}
+
+/// The original ordered seven-field vector and result status are evidence;
+/// the portable six-tuple oracle above is a separate, adapted assertion.
+fn retain_complete_result(
+    checker: &BatchTypeChecker,
+    root: &std::path::Path,
+    native: &std::path::Path,
+    result: &crate::batch::TypeCheckResult,
+) -> std::io::Result<()> {
+    let packet = serde_json::json!({
+        "schema":"vize.inherited-options-api-source-observation.v1",
+        "scope":"Source batch API with real test Vue; no original CLI/public execution claim",
+        "projectRoot":root, "requestedNativePath":native, "inputs":FILES,
+        "result":{"exitCode":result.exit_code,"success":result.success,
+            "diagnostics":result.diagnostics.iter().map(|d| serde_json::json!({
+                "file":d.file,"line":d.line,"column":d.column,"message":d.message,
+                "code":d.code,"severity":d.severity,"blockType":cstr!("{:?}",d.block_type)
+            })).collect::<Vec<_>>()},
+    });
+    let whole = serde_json::to_string_pretty(&packet).map_err(std::io::Error::other)?;
+    eprintln!("11339 complete API result: {whole}");
+    if let Some(capture) = std::env::var_os("VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR") {
+        let directory =
+            std::path::PathBuf::from(capture).join("options-api-inherited-template-members");
+        std::fs::create_dir_all(&directory)?;
+        std::fs::write(directory.join("raw-result.json"), whole)?;
+        // Later source-capture errors cannot erase the raw result above.
+        let (materialized, config) = checker.native_project_paths_for_test();
+        let workspace = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/node_modules/vue/package.json");
+        let sources = serde_json::json!({
+            "materializedRoot":materialized,"generatedConfig":{
+                "path":config,"bytes":std::fs::read(&config)?},
+            "realVueManifest":{"path":std::fs::canonicalize(&workspace)?,
+                "bytes":std::fs::read(&workspace)?},
+            "requestedNativeImage":{"path":std::fs::canonicalize(native)?,
+                "bytes":std::fs::metadata(native)?.len()},
+            "selectedNativeProcessId":null,
+        });
+        std::fs::write(
+            directory.join("source-identities.json"),
+            serde_json::to_vec_pretty(&sources).map_err(std::io::Error::other)?,
+        )?;
+    }
+    Ok(())
+}
+
+/// A generated helper must not capture a legal authored type used in a cast.
+#[test]
+fn authored_type_named_like_the_old_member_helper_is_not_captured() {
+    let Some(native) = resolve_test_tsgo_binary() else {
+        assert!(
+            std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
+            "required authored type shadow control needs the native checker"
+        );
+        return;
+    };
+    let source = r#"<template>
+  <p>{{ (payload as $AuthoredInstanceMember).valid.toUpperCase() }} {{ isPC ? 'pc' : 'sp' }}</p>
+</template>
+<script lang="ts">
+import { defineComponent } from 'vue'
+import { shared } from './shared'
+type $AuthoredInstanceMember = { valid: string }
+export default defineComponent({ mixins: [shared], data() { return { payload: { valid: 'ok' } } } })
+</script>
+"#;
+    let files = [FILES[0], FILES[1], ("src/Shadow.vue", source), FILES[5]];
+    let root = create_project_case("options-api-authored-member-type-shadow", &files);
+    let mut checker = BatchTypeChecker::with_options_and_corsa_path(
+        &root,
+        BatchTypeCheckerOptions::default(),
+        Some(&native),
+    )
+    .expect("real Vue shadow checker");
+    checker.enable_options_api();
+    checker.scan_project().expect("shadow scan");
+    let result = checker.check_project().expect("shadow check");
+    let observations = serde_json::json!({"inputs":files,"exitCode":result.exit_code,
+        "success":result.success,"diagnostics":result.diagnostics.iter().map(|d|
+            serde_json::json!({"file":d.file,"line":d.line,"column":d.column,
+                "message":d.message,"code":d.code,"severity":d.severity,
+                "blockType":cstr!("{:?}",d.block_type)})).collect::<Vec<_>>()});
+    eprintln!("11339 authored shadow result: {observations:#}");
+    if let Some(capture) = std::env::var_os("VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR") {
+        let dir = std::path::PathBuf::from(capture).join("options-api-inherited-template-members");
+        std::fs::create_dir_all(&dir).expect("shadow capture directory");
+        std::fs::write(
+            dir.join("authored-shadow.json"),
+            serde_json::to_vec_pretty(&observations).expect("complete shadow observations"),
+        )
+        .expect("persist shadow before verdict");
+    }
+    assert_eq!(result.diagnostics.len(), 0, "{observations:#}");
+    assert_eq!(result.exit_code, 0, "{observations:#}");
+    assert_eq!(result.success, true, "{observations:#}");
+    drop(checker);
+    std::fs::remove_dir_all(&root).expect("remove completed shadow fixture");
 }

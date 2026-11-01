@@ -59,7 +59,7 @@ use self::imports::{
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::macro_anchors::emit_setup_scope_macro_anchors;
-use self::options_api::{analyze_options_api_script, generate_options_api_variables};
+use self::options_api::{analyze_options_api_script, emit_options_api_variables};
 use self::options_api_bridge::generate_options_api_bridge;
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::options_api_support::find_options_api_props;
@@ -662,23 +662,20 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     ),
                 )
             });
-            if options_api {
-                profile!(
-                    "canon.virtual_ts.generate_options_api_variables",
-                    semantic_links.extend(generate_options_api_variables(
-                        &mut ts,
-                        summary,
-                        options,
-                        script_content,
-                        (
-                            &options_script,
-                            declared_default_alias && !legacy_vue2 && !has_script_setup,
-                        ),
-                        &mut mappings,
-                        &script_source_offset,
-                    ))
-                );
-            }
+            emit_options_api_variables(
+                options_api,
+                &mut ts,
+                &mut semantic_links,
+                summary,
+                options,
+                script_content,
+                (
+                    &options_script,
+                    declared_default_alias && !legacy_vue2 && !has_script_setup,
+                ),
+                &mut mappings,
+                &script_source_offset,
+            );
             let template_binding_access = profile!(
                 "canon.virtual_ts.collect_template_prop_names",
                 TemplateBindingAccess::collect(summary, options_api).with_instance_globals(

@@ -357,10 +357,10 @@ export default defineComponent({
     assert_eq!(
         output
             .code
-            .matches("  type $AuthoredInstanceMember<__K extends string> = __K extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[__K] : any;\n")
+            .matches("  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n")
             .count(),
         1,
-        "the authored-instance member helper is declared once:\n{}",
+        "the authored instance receiver is declared once:\n{}",
         output.code
     );
     assert_eq!(
@@ -377,7 +377,7 @@ export default defineComponent({
             output
                 .code
                 .matches(&format!(
-                    "  var {name}!: $AuthoredInstanceMember<\"{name}\">; void ({name});\n"
+                    "  var {name}!: \"{name}\" extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[keyof typeof __vize_template_instance & \"{name}\"] : any; void ({name});\n"
                 ))
                 .count(),
             1,
