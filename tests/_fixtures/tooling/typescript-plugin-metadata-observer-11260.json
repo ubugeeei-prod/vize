@@ -1,0 +1,38 @@
+{
+  "schema": "vize.language-project.metadata-observer.v1",
+  "scope": "source-only diagnostic instrumentation; prior native evidence is not transferred",
+  "predecessorPortSha256": "de52e7c0ca46c0e1584c699cabe9763b95b0ac0e689beaf1a64fa22b74e54edc",
+  "workflow": {
+    "path": ".github/workflows/typescript-plugin.yml",
+    "beforeSha256": "734f5482d5cacd69668dad12e43a43985823cad8c56322dd674c0a4dbce2d288",
+    "afterSha256": "3c9ed480a8ff672eaca469a3de1304d44c76425a7c55c76279abfb0e3d34303b",
+    "edits": [
+      {
+        "before": "      - tests/tooling/vscode-typescript*\n",
+        "after": "      - tests/tooling/vscode-typescript*\n      - tests/tooling/cargo-metadata-observer.test.ts\n      - tools/support/ci/cargo-metadata-observer.ts\n"
+      },
+      {
+        "before": "tests/tooling/vscode-vsix-policy.test.ts\n",
+        "after": "tests/tooling/vscode-vsix-policy.test.ts tests/tooling/cargo-metadata-observer.test.ts\n"
+      },
+      {
+        "before": "        run: vp run --filter './npm/native' build:ci\n",
+        "after": "        run: |\n          export NODE_OPTIONS=\"${NODE_OPTIONS:-} --import=file://$GITHUB_WORKSPACE/tools/support/ci/cargo-metadata-observer.ts?capture=$RUNNER_TEMP/typescript-plugin-cargo-metadata\"\n          vp run --filter './npm/native' build:ci\n"
+      },
+      {
+        "before": "",
+        "after": "      - name: Validate complete Cargo metadata capture packets\n        if: always()\n        run: vp node tools/support/ci/cargo-metadata-observer.ts --validate-dir \"$RUNNER_TEMP/typescript-plugin-cargo-metadata\"\n      - name: Preserve actual Cargo metadata child streams and exit state\n        if: always()\n        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1\n        with:\n          name: typescript-plugin-cargo-metadata-${{ github.event.pull_request.head.sha || github.sha }}\n          path: ${{ runner.temp }}/typescript-plugin-cargo-metadata\n          if-no-files-found: error\n          retention-days: 7\n"
+      }
+    ]
+  },
+  "dependencies": [
+    {
+      "path": "tools/support/ci/cargo-metadata-observer.ts",
+      "sha256": "2a896b6b707c403e931ee55f93d9fe6698ee72671845f1d8cdcc5fcc868f8969"
+    },
+    {
+      "path": "tests/tooling/cargo-metadata-observer.test.ts",
+      "sha256": "9cbb8e5cc6cc5b9c30dc9275e0fb1ca43a796eedf00908158daa7161ffcc9e15"
+    }
+  ]
+}

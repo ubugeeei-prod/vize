@@ -1,0 +1,1 @@
+export declare function check(value: number, label: string): boolean;

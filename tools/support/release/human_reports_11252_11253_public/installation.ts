@@ -5,6 +5,14 @@ import { archiveComparison } from "../public_install/archive.ts";
 import { captureDeclarationGraph, fileImage, inside } from "../computed_event_custody.ts";
 import type { Fixture, InstallReceipt, Recipe, ReleaseAuthority } from "./model.ts";
 import { array, bytes, object, sha256, text, wholeJson } from "./value.ts";
+import {
+  absentPackage,
+  checkHostFacts,
+  checkManagerFiles,
+  hostFacts,
+  managerFiles,
+  validateOptionalAbsence,
+} from "./optional-residency.ts";
 export function manifestBytes(fixture: Fixture, version: string, supplement: boolean): Buffer {
   const source = fixture.files.find((f) => f.path === "package.json");
   assert(source);
@@ -40,6 +48,10 @@ export function validateInstallation(
   );
   assert(readFileSync(join(receipt.root, "package.json")).equals(manifest));
   assert.deepEqual(receipt.packageManifest, wholeJson(manifest));
+  checkHostFacts(receipt.host, recipe.platform, recipe.arch);
+  assert.deepEqual(receipt.host, hostFacts());
+  checkManagerFiles(receipt.managerFiles, bytes(receipt.lockRawBase64), manifest);
+  assert.deepEqual(managerFiles(receipt.root), receipt.managerFiles);
   const lockBytes = readFileSync(join(receipt.root, "pnpm-lock.yaml"));
   assert.equal(sha256(lockBytes), receipt.lockSha256);
   assert(
@@ -84,6 +96,15 @@ export function validateInstallation(
   }
   for (const name of expected.keys())
     assert(seenExpected.has(name), `missing original provider ${name}`);
+  assert(Array.isArray(receipt.declaredOptionalNotInstalled));
+  for (const row of receipt.declaredOptionalNotInstalled) {
+    assert(!expected.has(row.name), "a required provider cannot be recorded absent");
+    validateOptionalAbsence(row, receipt.root, lockBytes, receipt.host, receipt.packages);
+    assert.deepEqual(
+      absentPackage(receipt.root, row.physical.path, row.parentDirectory, row.name, row.version),
+      row.physical,
+    );
+  }
   assert.deepEqual(receipt.mapperExec, ["node", "./bin/vize", "content-mapper"]);
   const cliRoot = realpathSync(join(receipt.root, "node_modules/vize"));
   const installed = object(wholeJson(readFileSync(join(cliRoot, "package.json"))));

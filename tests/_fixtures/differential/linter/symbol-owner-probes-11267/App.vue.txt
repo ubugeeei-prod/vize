@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { check } from "./dependency";
+defineEmits({ submit: check });
+declare const count: number;
+if (count) {}
+</script>
+<template><div /></template>

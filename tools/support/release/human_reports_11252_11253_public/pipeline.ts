@@ -158,8 +158,8 @@ export async function runPublic(
         if (companion && !command.requiresNativeLoad) continue;
         const install = installs.find((v) => v.kind === command.consumer);
         assert(install);
-        recheckInstalled(install);
         sink("pre-payload-witness", payloadWitness(install));
+        recheckInstalled(install);
         const row = recordCommand(command, install, output, companion, sink);
         (companion ? companions : observations).push(row);
         write(`${command.id}.${companion ? "companion" : "original"}.observation.json`, row);

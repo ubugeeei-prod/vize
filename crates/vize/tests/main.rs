@@ -174,6 +174,7 @@ mod fmt_json_layout_cli;
 mod fmt_jsonc_config_cli;
 mod fmt_leading_line_comment_cli;
 mod fmt_lint_agreement_cli;
+mod fmt_on_style_policy_cli;
 mod fmt_plain_cli;
 mod fmt_preserved_template_text_cli;
 mod fmt_semicolon_cli;

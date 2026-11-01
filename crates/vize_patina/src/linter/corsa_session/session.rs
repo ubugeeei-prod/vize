@@ -279,4 +279,4 @@ fn api_mode_for_executable(path: &std::path::Path) -> ApiMode {
 }
 
 #[cfg(test)]
-mod tests;
+pub(super) mod tests;

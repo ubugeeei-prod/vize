@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Badge, { value as local, type Payload } from "./model";
+import type { Badge as TypeBadge, Props as \u0050rops } from "./model";
+import type * as TypeSpace from "./model";
+import * as values from "./model";
+import "./side-effect";
+const props = defineProps<{ model: Payload }>();
+type Query = typeof values;
+const current = Badge;
+</script>
+
+<template><Badge /><TypeBadge />{{ props.model }}{{ local }}</template>

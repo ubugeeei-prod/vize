@@ -203,6 +203,10 @@ CLI では `--normalize-directive-shorthands=false` でも上書きできます�
 無効なルールに従い、オプションによるルール登録も反映します。カテゴリの扱いは
 CLI とエディターそれぞれの既存動作に従います。単独の整形 API の既定値は従来どおりです。
 
+有効な `vue/v-on-style: "longform"` にも同じ検査が適用されます。
+`v-on:click` への修正を保つには `normalizeDirectiveShorthands` を `false` にします。
+有効性と整形要求の拒否は、上記と同じ各ホストの動作に従います。
+
 Node の native `formatSfc` API でも、Prettier 移行用の 5 つの真偽値
 `normalizeCssQuotes`、`normalizeInlineStyles`、`normalizeVForParens`、
 `selfCloseVoidElements`、`reindentPreprocessorStyles` を同じ名前で指定できます。

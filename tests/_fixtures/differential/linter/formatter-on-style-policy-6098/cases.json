@@ -1,0 +1,33 @@
+{
+  "schema": "vize.formatter-on-style-policy-6098",
+  "source": {
+    "revision": "eaa7a48705b53e6572ba27b9c382a82a11111a21",
+    "originalProducer": "b46054f5ca8cf890f13d6e75488c052a442ba39b",
+    "originalPath": "crates/vize/tests/lint_rule_options_casing_cli.rs",
+    "originalConsumerSha256": "531c092139d0f1a2a44cc1e2838acb9e7a7cf5b3139284110cfe0282277b2792",
+    "originalSha256": "8f8c972caf14cd49fffd4786c601e774d9cf3548f7184bf85ee5edf78f59753c"
+  },
+  "reference": {
+    "kind": "new independent whole lint-fix expectation verified by the ordinary Actions reference test",
+    "package": "eslint-plugin-vue",
+    "version": "10.9.2",
+    "ruleSourceSha256": "286179656ee0f4db8d55e3bf476803385d6c2ee7e54ee3f1332c7cac4da46500",
+    "fixedSha256": "d9a03b58b3a05f01a87b09c72e5e382f2829d7eef26eff8a5f74f474e080cdae"
+  },
+  "config": {
+    "formatter": {
+      "normalizeDirectiveShorthands": true
+    },
+    "linter": {
+      "preset": "incremental",
+      "ruleOptions": {
+        "vue/v-on-style": "longform"
+      },
+      "rules": {
+        "vue/v-on-style": "error"
+      }
+    }
+  },
+  "expectedConflict": "normalizeDirectiveShorthands=true conflicts with active vue/v-on-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand event style",
+  "scope": "Original configured v-on SFC from #10135; new host-policy refusal and new independent lint-fix check. No historical reference capture, standalone formatter golden, transport execution or native parity is asserted by these inputs."
+}

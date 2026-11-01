@@ -1,0 +1,2 @@
+import { check } from "./dependency";
+export const probe = check;

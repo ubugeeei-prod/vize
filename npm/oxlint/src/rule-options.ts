@@ -8,8 +8,8 @@ import {
 import { isVOnEventHyphenationOptions } from "./v-on-event-options.js";
 import { getAttributeHyphenationOptions } from "./attribute-options.js";
 import { getPropNameCasingOptions } from "./prop-name-options.js";
+import { getComponentNameCasingOptions } from "./component-name-options.js";
 import type {
-  ComponentNameInTemplateCasingOption,
   CustomEventNameCasingOption,
   DefineMacrosOrderOption,
   HtmlQuoteStyle,
@@ -33,11 +33,7 @@ export function getRuleOptions(
     case "vue/prop-name-casing":
       return getPropNameCasingOptions(options);
     case "vue/component-name-in-template-casing":
-      if (isComponentNameInTemplateCasingOption(firstOption)) {
-        return { componentNameInTemplateCasing: firstOption };
-      }
-      if (isRecord(firstOption)) return cliRuleOptions(ruleName, firstOption);
-      break;
+      return getComponentNameCasingOptions(options);
     case "script/custom-event-name-casing":
       if (isCustomEventNameCasingOption(firstOption)) {
         return { customEventNameCasing: firstOption };
@@ -146,12 +142,6 @@ function isDefineMacrosOrderOption(value: unknown): value is DefineMacrosOrderOp
 
 function cliRuleOptions(ruleName: string, option: Record<string, unknown>): PatinaRuleOptions {
   return { ruleOptions: { [ruleName]: structuredClone(option) } };
-}
-
-function isComponentNameInTemplateCasingOption(
-  value: unknown,
-): value is ComponentNameInTemplateCasingOption {
-  return value === "PascalCase" || value === "kebab-case";
 }
 
 function isCustomEventNameCasingOption(value: unknown): value is CustomEventNameCasingOption {

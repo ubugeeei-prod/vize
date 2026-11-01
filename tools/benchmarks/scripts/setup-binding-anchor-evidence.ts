@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 
 const directory = process.argv[2];
 assert.ok(directory);
@@ -11,10 +11,60 @@ const digest = (text: string) => createHash("sha256").update(text).digest("hex")
 const median = (values: number[]) => [...values].sort((a, b) => a - b)[1];
 const binaries = read("binaries.json");
 assert.notEqual(binaries.base.sha256, binaries.head.sha256, "role-isolated binaries must differ");
+const pinnedSha256 = "73d98e1625eac89e544e822565ea41e066bec3b3f38f747ed3263dda9b02358a";
+let pinnedInput: unknown;
+
+function completeDocuments(row: {
+  source: string;
+  documents: Record<string, unknown>[];
+  pinnedInput: { path: string; source: string };
+}) {
+  assert.ok(isAbsolute(row.pinnedInput.path));
+  assert.deepEqual(Object.keys(row.pinnedInput).sort(), ["path", "source"]);
+  assert.equal(digest(row.pinnedInput.source), pinnedSha256, "exact pinned input bytes");
+  pinnedInput ??= row.pinnedInput;
+  assert.deepEqual(row.pinnedInput, pinnedInput, "one physical input in every role and cell");
+  assert.equal(row.documents.length, 4);
+  for (const [index, document] of row.documents.entries()) {
+    const kind = index < 2 ? "measured" : "pinned";
+    assert.deepEqual(Object.keys(document).sort(), [
+      "code",
+      "hoist",
+      "importSourceMapDebug",
+      "kind",
+      "mappingDebug",
+      "preRewriteCode",
+      "source",
+      "sourceTypeDebug",
+      "virtualFile",
+      "virtualSuffix",
+    ]);
+    assert.equal(document.kind, kind);
+    assert.equal(document.hoist, index % 2 === 1);
+    assert.equal(
+      document.virtualFile,
+      kind === "measured" ? "src/Bindings.vue" : "src/Imports.vue",
+    );
+    assert.equal(document.source, kind === "measured" ? row.source : row.pinnedInput.source);
+    for (const field of [
+      "code",
+      "preRewriteCode",
+      "mappingDebug",
+      "importSourceMapDebug",
+      "sourceTypeDebug",
+      "virtualSuffix",
+    ])
+      assert.equal(typeof document[field], "string", field);
+  }
+  return { documents: row.documents, pinnedInput: row.pinnedInput };
+}
+
 const summary = [];
 for (const shape of ["locals", "imports"]) {
   for (const count of [32, 128, 512]) {
-    let reference: { source: string; packet: unknown } | undefined;
+    let reference:
+      | { source: string; packet: unknown; documents: unknown; pinnedInput: unknown }
+      | undefined;
     const roles = new Map<
       string,
       {
@@ -39,7 +89,7 @@ for (const shape of ["locals", "imports"]) {
           assert.equal(row.sourceRevision, binaries[role].source);
           assert.deepEqual([row.shape, row.count, row.mode], [shape, count, mode]);
           assert.deepEqual(row.cold, { generationCalls: 1, warmups: 0, persistentCache: false });
-          const packet = { source: row.source, packet: row.packet };
+          const packet = { source: row.source, packet: row.packet, ...completeDocuments(row) };
           reference ??= packet;
           assert.deepEqual(
             packet,
@@ -80,11 +130,16 @@ for (const shape of ["locals", "imports"]) {
       median(head.allocations) <= median(base.allocations),
       "whole-generation allocation count must not regress",
     );
+    assert.ok(
+      median(head.bytes) <= median(base.bytes),
+      "whole-generation requested bytes must not regress",
+    );
     summary.push({
       shape,
       count,
       sourceSha256: digest(reference!.source),
       packetSha256: digest(JSON.stringify(reference!.packet)),
+      documentsSha256: digest(JSON.stringify(reference!.documents)),
       base,
       head,
       median: {
@@ -102,6 +157,8 @@ const receipt = {
   schema: "vize.setup-binding-anchor-comparison",
   binaries,
   completeObservations: 72,
+  completeDocumentObservations: 288,
+  pinnedInputSha256: pinnedSha256,
   summary,
   scope:
     "actual single-source generation and allocations; runtime-off timing is a profiling build, not normal release cold-check latency",

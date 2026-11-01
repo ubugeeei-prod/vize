@@ -2124,6 +2124,44 @@
       }
     },
     {
+      "id": "linter/formatter-on-style-policy-6098",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "formatter-on-style-policy-6098",
+        "files": [
+          {
+            "path": "Original.vue.txt",
+            "sha256": "8f8c972caf14cd49fffd4786c601e774d9cf3548f7184bf85ee5edf78f59753c"
+          },
+          {
+            "path": "Fixed.vue.txt",
+            "sha256": "d9a03b58b3a05f01a87b09c72e5e382f2829d7eef26eff8a5f74f474e080cdae"
+          },
+          {
+            "path": "cases.json",
+            "sha256": "adacad5b6d7eeedddadcdde38ea57d514809b39eb46b9002d323302d9d7cfa1e"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/jsx-child-expression-control-6890",
       "state": "active",
       "targets": [
@@ -3053,6 +3091,87 @@
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template"],
             "selector": "static-class pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/symbol-owner-probes-11267",
+      "state": "active",
+      "targets": ["lint"],
+      "inputs": {
+        "root": "symbol-owner-probes-11267",
+        "files": [
+          {
+            "path": "Required.ts.txt",
+            "role": "causal-regression",
+            "sha256": "a16feef8a905ea3918e924764f56d4ba3f07be149254f52cd80c08453d5cfa28"
+          },
+          {
+            "path": "Optional.ts.txt",
+            "role": "causal-regression",
+            "sha256": "b194898883ef4107518f6d242296d794f5c4a95e79c46b25ab7ee70dc4850bea"
+          },
+          {
+            "path": "Rest.ts.txt",
+            "role": "causal-regression",
+            "sha256": "81cebcbf1ff41c3d1bac1fe2349857d74e4c4dd944b33f493e9b3363ab9eb634"
+          },
+          {
+            "path": "This.ts.txt",
+            "role": "causal-regression",
+            "sha256": "40b96eff2b668bff75199a9c19e15115e9f2396c8ec48c3bb8539119538cb7c5"
+          },
+          {
+            "path": "Overloads.ts.txt",
+            "role": "causal-regression",
+            "sha256": "8f3cfe2f3b7fb8f7021a58c206e155a2278e09d31e6ab5727f2aed29a31d8cc1"
+          },
+          {
+            "path": "Generic.ts.txt",
+            "role": "causal-regression",
+            "sha256": "26826ea287e287279f72a009af9279b301dfea8a4d7433214921cd865a471b08"
+          },
+          {
+            "path": "Zero.ts.txt",
+            "role": "causal-regression",
+            "sha256": "ff4f1805a4fd39bdf48be10878b102265a9b3b3bd31d3182c88364443b3e9495"
+          },
+          {
+            "path": "Probe.ts.txt",
+            "role": "causal-regression",
+            "sha256": "e0a254faa8138b02e3a7a571f338a2ac2e58e983be461891d57a954eb0e46a14"
+          },
+          {
+            "path": "package.json.txt",
+            "role": "project-configuration",
+            "sha256": "a90fc33418afa2b9cbf4768524b021135b965ecdf993457505bfae3ac44a8428"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "role": "project-configuration",
+            "sha256": "4d2cc180f026c57b51bfc101123ca7e19e8d1be54755e2f9e9f826868fb2c642"
+          },
+          {
+            "path": "App.vue.txt",
+            "role": "causal-regression",
+            "sha256": "9534d47afd07e350aff5521da92f3ad7b960788ab8a66ce061437ccfc9a943ef"
+          },
+          {
+            "path": "Untyped.ts.txt",
+            "role": "causal-regression",
+            "sha256": "e0bd6c85fa4bf04f3aea48d8444a73d8ffd32ed9ec9bceaa47d01d0b1f5d68d1"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

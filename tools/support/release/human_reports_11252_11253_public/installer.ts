@@ -2,13 +2,19 @@ import assert from "node:assert/strict";
 import { copyFileSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { archiveComparison, recheckFiles } from "../public_install/archive.ts";
+import { recheckFiles } from "../public_install/archive.ts";
 import { captureDeclarationGraph, fileImage } from "../computed_event_custody.ts";
 import { capture, cleanEnvironment } from "./capture.ts";
 import { manifestBytes, validateInstallation } from "./installation.ts";
-import { publicArchive } from "./network.ts";
+import { installedGraph } from "./package-graph.ts";
+import {
+  absentPackage,
+  hostFacts,
+  managerFiles,
+  validateOptionalAbsence,
+} from "./optional-residency.ts";
 import type { Fixture, InstallReceipt, Recipe, ReleaseAuthority } from "./model.ts";
-import { array, bytes, object, sha256, text, wholeJson } from "./value.ts";
+import { bytes, object, sha256, text, wholeJson } from "./value.ts";
 import { discard, type Sink } from "./evidence.ts";
 export async function installPublic(
   root: string,
@@ -54,6 +60,38 @@ export async function installPublic(
   assert.equal(installed.error, null);
   assert.equal(installed.signal, null);
   assert.equal(installed.status, 0);
+  const host = hostFacts(),
+    manager = managerFiles(root),
+    lockRaw = readFileSync(join(root, "pnpm-lock.yaml"));
+  writeFileSync(
+    join(output, `${kind}-install-context.json`),
+    JSON.stringify(
+      {
+        root,
+        host,
+        node,
+        pnpm,
+        originalArgv: ["install"],
+        managerFiles: manager,
+        registryEnvironment: {
+          npm_config_userconfig: user,
+          npm_config_globalconfig: global,
+          npm_config_registry: env.npm_config_registry,
+        },
+      },
+      null,
+      2,
+    ) + "\n",
+    { flag: "wx" },
+  );
+  writeFileSync(join(output, `${kind}-pnpm-lock.yaml.txt`), lockRaw, { flag: "wx" });
+  for (const file of manager)
+    if (file.state === "PRESENT")
+      writeFileSync(
+        join(output, `${kind}-root-${file.path.replaceAll("/", "--")}.txt`),
+        bytes(text(file.rawBase64)),
+        { flag: "wx" },
+      );
   const listed = capture(
     pnpm.path,
     ["list", "--depth", "Infinity", "--json"],
@@ -64,57 +102,28 @@ export async function installPublic(
   );
   assert.equal(listed.status, 0);
   assert.equal(listed.stderrBase64, "");
-  const list = array(wholeJson(bytes(listed.stdoutBase64)));
-  assert.equal(list.length, 1);
-  const entries = new Map<string, { name: string; version: string; directory: string }>();
-  const visit = (value: unknown): void => {
-    const current = object(value);
-    for (const key of ["dependencies", "devDependencies", "optionalDependencies"]) {
-      if (current[key] === undefined) continue;
-      for (const [name, raw] of Object.entries(object(current[key]))) {
-        const row = object(raw),
-          directory = realpathSync(text(row.path));
-        const pkg = object(wholeJson(readFileSync(join(directory, "package.json"))));
-        assert.equal(pkg.name, name);
-        assert.equal(pkg.version, row.version);
-        const id = directory;
-        if (!entries.has(id)) {
-          entries.set(id, { name, version: text(pkg.version), directory });
-          visit(row);
-        }
-      }
-    }
-  };
-  visit(list[0]);
-  assert(entries.size > 0);
-  const packages: InstallReceipt["packages"] = [];
-  for (const entry of entries.values()) {
-    const downloaded = await publicArchive(entry.name, entry.version, sink);
-    sink("installed-package-before-archive-assertion", {
-      entry,
-      metadata: downloaded.metadata,
-      manifestRawBase64: readFileSync(join(entry.directory, "package.json")).toString("base64"),
-    });
-    const archiveId = entry.name + "@" + entry.version,
-      prior = archiveCache.get(archiveId);
-    if (prior)
-      assert(
-        prior.equals(downloaded.body),
-        "one role cannot silently merge different provider package versions",
-      );
-    else archiveCache.set(archiveId, downloaded.body);
-    const comparison = archiveComparison(entry.directory, downloaded.body, downloaded.integrity);
-    packages.push({
-      name: entry.name,
-      version: entry.version,
-      directory: entry.directory,
-      resolved: downloaded.resolved,
-      integrity: downloaded.integrity,
-      archiveSha512: comparison.tarballSHA512,
-      allInstalledBytesEqualArchive: true,
-      files: comparison.files.map((v) => ({ ...v })),
-    });
-  }
+  const required = new Map([
+    ["vize", authority.version],
+    ["vue", recipe.vue],
+    ["typescript", recipe.typescript],
+    ["@vizejs/native", authority.version],
+    [
+      recipe.platform === "darwin" ? "@vizejs/native-darwin-arm64" : "@vizejs/native-linux-x64-gnu",
+      authority.version,
+    ],
+  ]);
+  if (recipe.vueTsc) required.set("vue-tsc", recipe.vueTsc);
+  if (kind === "tsrs-supplement") required.set("tsrs", "0.20.1-ts7.1.0-beta");
+  const graph = await installedGraph(
+    root,
+    wholeJson(bytes(listed.stdoutBase64)),
+    lockRaw,
+    host,
+    required,
+    archiveCache,
+    sink,
+  );
+  const packages = graph.packages;
   const probe = capture(
     node.path,
     [fileURLToPath(new URL("./identity-probe.ts", import.meta.url)), root],
@@ -129,7 +138,6 @@ export async function installPublic(
     wholeJson(bytes(probe.stdoutBase64)),
   ) as unknown as InstallReceipt["native"];
   const cliRoot = realpathSync(join(root, "node_modules/vize"));
-  const lockRaw = readFileSync(join(root, "pnpm-lock.yaml"));
   const receipt: InstallReceipt = {
     schema: "vize.humanReports11252_11253.install.v1",
     kind,
@@ -144,6 +152,9 @@ export async function installPublic(
     pnpmVersion: recipe.pnpm,
     platform: process.platform,
     arch: process.arch,
+    host,
+    managerFiles: manager,
+    declaredOptionalNotInstalled: graph.absent,
     packageManagerEnvironment: {
       npm_config_userconfig: user,
       npm_config_globalconfig: global,
@@ -172,6 +183,21 @@ export async function installPublic(
   return receipt;
 }
 export function recheckInstalled(receipt: InstallReceipt): void {
+  assert.deepEqual(managerFiles(receipt.root), receipt.managerFiles);
+  assert.deepEqual(hostFacts(), receipt.host);
+  for (const row of receipt.declaredOptionalNotInstalled) {
+    validateOptionalAbsence(
+      row,
+      receipt.root,
+      bytes(receipt.lockRawBase64),
+      receipt.host,
+      receipt.packages,
+    );
+    assert.deepEqual(
+      absentPackage(receipt.root, row.physical.path, row.parentDirectory, row.name, row.version),
+      row.physical,
+    );
+  }
   recheckFiles(
     receipt.packages.map((pkg) => ({
       packageDirectory: pkg.directory,

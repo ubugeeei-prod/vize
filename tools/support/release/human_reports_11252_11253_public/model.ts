@@ -156,6 +156,9 @@ export interface InstallReceipt {
   platform: string;
   arch: string;
   kernel: string;
+  host: import("./optional-residency.ts").HostFacts;
+  managerFiles: import("./optional-residency.ts").ManagerFile[];
+  declaredOptionalNotInstalled: import("./optional-residency.ts").OptionalAbsence[];
   packageManagerEnvironment: Record<string, string>;
   packages: Array<{
     name: string;

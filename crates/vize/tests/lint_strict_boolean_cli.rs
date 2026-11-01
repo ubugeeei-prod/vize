@@ -8,6 +8,7 @@ mod lsp;
 #[cfg(unix)]
 mod project_runtime;
 mod runtime_failure;
+mod signature_owner;
 use crate::support::lsp_process;
 use crate::support::vite_config;
 use serde_json::{Value, json};
