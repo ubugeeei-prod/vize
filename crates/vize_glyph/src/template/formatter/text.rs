@@ -23,16 +23,26 @@ impl TemplateFormatter<'_> {
         if text.is_empty() {
             return;
         }
-        let formatted =
-            format_interpolations_with_vue_version(text.as_str(), self.options, self.vue_version);
+        let original = text.as_str();
+        // Plain text has no interpolation work. Borrow the retained run rather
+        // than copying it into a temporary string only to emit and drop it.
+        let interpolated = if memchr::memchr(b'{', original.as_bytes()).is_some() {
+            Some(format_interpolations_with_vue_version(
+                original,
+                self.options,
+                self.vue_version,
+            ))
+        } else {
+            None
+        };
+        let formatted = interpolated.as_deref().unwrap_or(original);
         let start = text.start();
         let end = text.end();
         let multiline = formatted.contains('\n');
         let depth = if multiline
-            && parse_interpolation_range(text.as_str().as_bytes(), 0).is_some_and(
+            && parse_interpolation_range(original.as_bytes(), 0).is_some_and(
                 |(_, _, interpolation_end)| {
-                    let tail = text
-                        .as_str()
+                    let tail = original
                         .as_bytes()
                         .get(interpolation_end..)
                         .unwrap_or_default();
@@ -43,14 +53,12 @@ impl TemplateFormatter<'_> {
         } else {
             depth
         };
-        text.clear();
         // If the formatted expression wraps onto multiple lines, single-line
         // `{{ expr }}` emission would leave the wrapped lines indented
         // relative to column 0 instead of the interpolation's depth. Emit the
         // canonical multi-line shape on the first pass. (#957)
         if multiline
-            && let Some(rewrapped) =
-                self.rewrap_text_with_multiline_interpolation(&formatted, depth)
+            && let Some(rewrapped) = self.rewrap_text_with_multiline_interpolation(formatted, depth)
         {
             let join = joiner.open(start);
             if join.is_continuation() {
@@ -64,22 +72,24 @@ impl TemplateFormatter<'_> {
                 }
                 output.extend_from_slice(rewrapped.as_bytes());
             }
+            text.clear();
             joiner.finish(end);
             return;
         }
         let join = joiner.open(start);
         self.open_chunk(output, depth, join);
-        if CANONICAL && self.write_wrapped_text_run(output, &formatted, (start, end), depth, joiner)
+        if CANONICAL && self.write_wrapped_text_run(output, formatted, (start, end), depth, joiner)
         {
+            text.clear();
             joiner.finish(end);
             return;
         }
         let wrapped = if formatted.starts_with("{{ ") {
-            self.write_wrapped_hugged_child(output, &formatted, start, end, depth, joiner)
+            self.write_wrapped_hugged_child(output, formatted, start, end, depth, joiner)
         } else {
             self.write_wrapped_text_interpolation(
                 output,
-                &formatted,
+                formatted,
                 (start, end),
                 depth,
                 joiner,
@@ -87,11 +97,13 @@ impl TemplateFormatter<'_> {
             )
         };
         if wrapped {
+            text.clear();
             joiner.finish(end);
             return;
         }
         output.extend_from_slice(formatted.as_bytes());
         output.extend_from_slice(self.newline);
+        text.clear();
         joiner.finish(end);
     }
 

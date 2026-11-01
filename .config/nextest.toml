@@ -63,6 +63,12 @@ junit.store-success-output = true
 filter = 'package(=vize) & binary(=integration) & test(~fmt_boolean_values_cli::)'
 junit.store-success-output = true
 
+# Preserve all width-boundary API/CLI packets without changing test selection.
+[[profile.default.overrides]]
+filter = '''(package(=vize_glyph) & binary(=print_width_conversion)) |
+(package(=vize) & binary(=integration) & test(~fmt_print_width_conversion_cli::))'''
+junit.store-success-output = true
+
 # Retain the original inline-ref observation and lexical-scope controls in
 # ordinary PR/full receipts without changing which tests execute.
 [[profile.default.overrides]]
