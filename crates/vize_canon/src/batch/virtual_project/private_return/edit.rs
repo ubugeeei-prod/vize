@@ -25,7 +25,7 @@ pub(super) fn propose(
     relative_module: &str,
 ) -> Option<ProposedEdit> {
     if !relative_module.is_ascii()
-        || !relative_module.starts_with('.')
+        || !(relative_module.starts_with("./") || relative_module.starts_with("../"))
         || relative_module.contains('\\')
         || !relative_module.ends_with(".js")
         || source.get(site.range.clone()).is_none()

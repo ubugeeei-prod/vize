@@ -77,6 +77,16 @@ fn authored_or_supplemental_link_overlap_refuses_without_mutation() {
 }
 
 #[test]
+fn dot_prefixed_bare_names_are_not_relative_imports() {
+    let original = original();
+    let source = original.pre_rewrite_code.as_str();
+    let site = super::super::syntax::analyze(source).unwrap();
+    assert!(propose(source, &original.mapping, &site, ".private-return.js").is_none());
+    assert!(propose(source, &original.mapping, &site, "private-return.js").is_none());
+    assert!(propose(source, &original.mapping, &site, "../private-return.js").is_some());
+}
+
+#[test]
 fn a_real_original_root_declaration_cannot_steal_the_introduced_import() {
     let owner = tempfile::tempdir().unwrap();
     let source_root = owner.path().join("source");
