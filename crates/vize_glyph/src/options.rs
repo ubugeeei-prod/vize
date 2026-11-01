@@ -249,13 +249,13 @@ pub(crate) fn javascript_line_width(width: u32) -> oxc_formatter_core::LineWidth
     use oxc_formatter_core::LineWidth;
 
     // Apply the provider's existing domain before narrowing the integer.
-    if !(u32::from(LineWidth::MIN)..=u32::from(LineWidth::MAX)).contains(&width) {
+    let min: u16 = LineWidth::MIN;
+    let max: u16 = LineWidth::MAX;
+    if !(u32::from(min)..=u32::from(max)).contains(&width) {
         return LineWidth::default();
     }
-    u16::try_from(width)
-        .ok()
-        .and_then(|width| LineWidth::try_from(width).ok())
-        .unwrap_or_default()
+    // Both provider bounds are u16, so the admitted width narrows losslessly.
+    LineWidth::try_from(width as u16).unwrap_or_default()
 }
 
 fn default_print_width() -> u32 {
