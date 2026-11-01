@@ -190,6 +190,7 @@ class VOnEventHyphenationOptions {
 class AttributeHyphenationOptions {
   style: HyphenationStyle = "always"
   ignore: Listing<String> = new Listing {}
+  ignoreTags: Listing<String> = new Listing {}
 }
 
 class LintRuleOptions {

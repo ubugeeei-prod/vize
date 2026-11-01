@@ -196,7 +196,11 @@ impl ResolvedLinterRuleGroups {
                     let style = attribute_hyphenation_style(style);
                     linter = match rule_options.attribute_hyphenation_ignore() {
                         Some(ignore) => {
-                            linter.with_attribute_hyphenation_options(style, ignore.to_vec())
+                            linter.with_attribute_hyphenation_policy(
+                                style,
+                                ignore.to_vec(),
+                                rule_options.attribute_hyphenation_ignore_tags().unwrap_or_default().to_vec(),
+                            )
                         }
                         None => linter.with_attribute_hyphenation(style),
                     };

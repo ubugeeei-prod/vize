@@ -19,14 +19,14 @@ import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 export default defineConfig({
   vue: {
     linter: {
-      "rules": {
-        "vue/attribute-hyphenation": "warn"
+      rules: {
+        "vue/attribute-hyphenation": "warn",
       },
-      "ruleOptions": {
-        "vue/attribute-hyphenation": "never"
-      }
-    }
-  }
+      ruleOptions: {
+        "vue/attribute-hyphenation": "never",
+      },
+    },
+  },
 });
 ```
 
@@ -53,3 +53,11 @@ export default defineConfig({
 `style` の省略時は `always` になります。空の配列や空のオブジェクトは追加の例外をリセットします。空白だけの値、`:exit` で終わる値、重複する値は拒否します。ルールの有効化と severity は `linter.rules` で指定します。
 
 Oxlint のルール設定では `["warn", "always", {"ignore":["libraryProp"]}]` も使えます。ネイティブ API では `attributeHyphenationIgnore` または同じオブジェクトを含む `ruleOptionsJson` に渡します。
+
+### タグ名の例外
+
+`{"style":"always","ignoreTags":["LibraryWidget"]}` は、記述されたタグ名が完全一致する要素の属性を対象外にします。大文字小文字を区別し、ドットやコロンも文字どおりに比較します。親が一致しても、子要素や隣の要素はそれぞれ独立して検査します。
+
+空の配列やオブジェクトは追加のタグ例外をリセットします。空文字列、空白、`:exit` は有効な literal の値ですが、通常のタグ名には一致しません。重複や文字列以外の値は拒否します。`/^Library/` のような正規表現の表記は未対応として明示的に拒否します。
+
+Oxlint では `["warn", "always", {"ignoreTags":["LibraryWidget"]}]` を使えます。ネイティブ API では `attributeHyphenationIgnoreTags` または同じオブジェクトを含む `ruleOptionsJson` に渡します。ルールの有効化と severity は別に指定します。

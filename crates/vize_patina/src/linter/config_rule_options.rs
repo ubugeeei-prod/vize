@@ -135,7 +135,11 @@ impl Linter {
                 ConfigHyphenationStyle::Never => HyphenationStyle::Never,
             };
             self = match options.attribute_hyphenation_ignore() {
-                Some(ignore) => self.with_attribute_hyphenation_options(style, ignore.to_vec()),
+                Some(ignore) => self.with_attribute_hyphenation_policy(
+                    style,
+                    ignore.to_vec(),
+                    options.attribute_hyphenation_ignore_tags().unwrap_or_default().to_vec(),
+                ),
                 None => self.with_attribute_hyphenation(style),
             };
         }

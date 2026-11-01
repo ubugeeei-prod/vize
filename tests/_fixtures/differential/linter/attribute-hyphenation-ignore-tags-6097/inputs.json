@@ -1,0 +1,166 @@
+{
+  "schema": "vize.attribute-ignore-tags.inputs.v1",
+  "files": [
+    {
+      "path": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "bytes": 169,
+      "sha256": "b2cf95bd98040714cccacb63a312255eed7ee31aa162ab4b9afdd84628bb27db"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt",
+      "bytes": 172,
+      "sha256": "bd9adf1e9a5161b727da0da9d037a2844d50f21dd63ee0300316e4618ac67129"
+    },
+    {
+      "path": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "bytes": 370,
+      "sha256": "f8b246b925fe489f2ce1b7e2f6f8643605d01d3c8f243d77236e68e4a7ab0274"
+    }
+  ],
+  "rows": [
+    {
+      "id": "camel-empty",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": [],
+      "scope": "literal"
+    },
+    {
+      "id": "camel-exact",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": ["MyWidget"],
+      "scope": "literal"
+    },
+    {
+      "id": "camel-case",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": ["mywidget"],
+      "scope": "literal"
+    },
+    {
+      "id": "camel-prefix",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": ["Widget"],
+      "scope": "literal"
+    },
+    {
+      "id": "camel-nonmatching-literals",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": ["", " ", ":exit", "//", "/name", "/x/\n"],
+      "scope": "literal"
+    },
+    {
+      "id": "never-empty",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt",
+      "filename": "RegisteredHyphen.vue",
+      "style": "never",
+      "ignoreTags": [],
+      "scope": "literal"
+    },
+    {
+      "id": "never-exact",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredHyphen.vue.txt",
+      "filename": "RegisteredHyphen.vue",
+      "style": "never",
+      "ignoreTags": ["MyWidget"],
+      "scope": "literal"
+    },
+    {
+      "id": "authored-empty",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": [],
+      "scope": "literal"
+    },
+    {
+      "id": "parent-only",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": ["Ignored"],
+      "scope": "literal"
+    },
+    {
+      "id": "dot-only",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": ["Foo.Bar"],
+      "scope": "literal"
+    },
+    {
+      "id": "dot-case",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": ["foo.bar"],
+      "scope": "literal"
+    },
+    {
+      "id": "namespace-only",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": ["ns:Widget"],
+      "scope": "literal"
+    },
+    {
+      "id": "namespace-case",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": ["NS:Widget"],
+      "scope": "literal"
+    },
+    {
+      "id": "customized-raw-div",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": ["div"],
+      "scope": "literal"
+    },
+    {
+      "id": "customized-semantic-name",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": ["MyRow"],
+      "scope": "literal"
+    },
+    {
+      "id": "authored-combined",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-tags-6097/AuthoredTags.vue.txt",
+      "filename": "AuthoredTags.vue",
+      "style": "always",
+      "ignoreTags": ["Ignored", "Foo.Bar", "ns:Widget", "div"],
+      "scope": "literal"
+    },
+    {
+      "id": "regexp-prefix-reference-only",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": ["/^My/"],
+      "scope": "upstream-regexp-only"
+    },
+    {
+      "id": "regexp-case-reference-only",
+      "file": "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/RegisteredCamel.vue.txt",
+      "filename": "RegisteredCamel.vue",
+      "style": "always",
+      "ignoreTags": ["/^my/i"],
+      "scope": "upstream-regexp-only"
+    }
+  ]
+}

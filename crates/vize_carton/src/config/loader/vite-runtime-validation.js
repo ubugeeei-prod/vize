@@ -21,6 +21,15 @@ export function createVueOptionValidator(definitions, object, attributePolicy) {
         }
       });
       if (matches.length !== 1) refuse("must match one documented native option type");
+      if (
+        schema === attributePolicy &&
+        object(value) &&
+        Array.isArray(value.ignoreTags) &&
+        value.ignoreTags.some((tag) => /^\/(.+)\/(.*)$/u.test(tag))
+      )
+        refuse(
+          "ignoreTags supports literal tag names only; regular-expression policies are unsupported",
+        );
       return;
     }
     if (schema.enum && !schema.enum.includes(value)) refuse("unsupported native option value");

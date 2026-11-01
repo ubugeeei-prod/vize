@@ -1144,6 +1144,8 @@ export interface PatinaLintOptionsNapi {
   attributeHyphenation?: string;
   /** Case-sensitive literal attribute-name substrings added to the built-in exemptions. */
   attributeHyphenationIgnore?: Array<string>;
+  /** Exact authored tag names; regular-expression policies are unsupported. */
+  attributeHyphenationIgnoreTags?: Array<string>;
   /** CLI-compatible `linter.ruleOptions` encoded as JSON. */
   ruleOptionsJson?: string;
 }

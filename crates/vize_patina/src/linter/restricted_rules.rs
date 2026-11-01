@@ -318,13 +318,25 @@ impl Linter {
     /// Configure additional literal exemptions while retaining the rule's built-in defaults.
     #[inline]
     pub fn with_attribute_hyphenation_options(
+        self,
+        style: HyphenationStyle,
+        ignore: Vec<vize_l0::String>,
+    ) -> Self {
+        self.with_attribute_hyphenation_policy(style, ignore, Vec::new())
+    }
+
+    /// Configure one complete literal attribute/tag policy without enabling an unselected rule.
+    #[inline]
+    pub fn with_attribute_hyphenation_policy(
         mut self,
         style: HyphenationStyle,
         ignore: Vec<vize_l0::String>,
+        ignore_tags: Vec<vize_l0::String>,
     ) -> Self {
         if self.registry.has_rule("vue/attribute-hyphenation") {
             let mut rule = AttributeHyphenation::new(style);
             rule.ignore.extend(ignore);
+            rule.ignore_tags = ignore_tags;
             self.registry.replace(Box::new(rule));
         }
         self

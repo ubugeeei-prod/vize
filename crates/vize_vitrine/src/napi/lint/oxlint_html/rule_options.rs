@@ -165,6 +165,7 @@ pub(super) fn apply_rule_options(
         linter,
         options.attribute_hyphenation.as_deref(),
         options.attribute_hyphenation_ignore.as_deref(),
+        options.attribute_hyphenation_ignore_tags.as_deref(),
     )
 }
 

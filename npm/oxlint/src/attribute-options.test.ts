@@ -37,7 +37,6 @@ await test("malformed or conflicting complete policies produce no partial native
     ["always", { ignore: ["a", "a"] }],
     ["always", { ignore: [1] }],
     ["always", { ignore: null }],
-    ["always", { ignoreTags: [] }],
     [{ style: null }],
     [{ style: "sometimes" }],
     [{ ignore: [" "] }],

@@ -94,6 +94,7 @@ export interface PatinaBinding {
       vOnEventHyphenation?: HyphenationStyle;
       attributeHyphenation?: HyphenationStyle;
       attributeHyphenationIgnore?: string[];
+      attributeHyphenationIgnoreTags?: string[];
       /** Full CLI-compatible per-rule option map. */
       ruleOptionsJson?: string;
     },
@@ -130,6 +131,7 @@ export interface PatinaRuleOptions {
   vOnEventHyphenation?: HyphenationStyle;
   attributeHyphenation?: HyphenationStyle;
   attributeHyphenationIgnore?: string[];
+  attributeHyphenationIgnoreTags?: string[];
   /** Full CLI-compatible per-rule option map. */
   ruleOptions?: VizeRuleOptions;
 }
