@@ -43,7 +43,7 @@ impl<'a> TemplateBindingAccess<'a> {
             },
             None => FxHashSet::default(),
         };
-        let eligible = super::super::script_facts::undefined_refs(summary)
+        let eligible: FxHashSet<String> = super::super::script_facts::undefined_refs(summary)
             .into_iter()
             .map(|row| String::from(row.name.as_str()))
             .filter(|name| {
@@ -55,6 +55,9 @@ impl<'a> TemplateBindingAccess<'a> {
                     && !source.keyed_prop_bindings.contains(name)
             })
             .collect();
+        if eligible.is_empty() {
+            return result;
+        }
         let mut result = result;
         result.instance = Some(InstanceStorage::Owned(InstanceAccess {
             owner: InstanceOwner::AuthoredCalls {
