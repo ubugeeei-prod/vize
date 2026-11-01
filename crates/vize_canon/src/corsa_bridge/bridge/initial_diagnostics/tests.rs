@@ -496,3 +496,5 @@ fn explicit_release_still_invalidates_the_remote_snapshot_without_double_release
     );
     assert_eq!(peer.finish(bridge), vec![OLD]);
 }
+
+mod owned_read;

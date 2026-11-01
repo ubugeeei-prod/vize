@@ -38,17 +38,36 @@ impl CorsaBridge {
         &self,
         request: InitialApiDiagnostics,
     ) -> PendingInitialApiDiagnostics {
+        self.read_initial_api_diagnostics_with_owner(request, None)
+            .await
+    }
+
+    /// Preserve this exact connection owner through an entered independent read,
+    /// including cancellation of the awaiting editor operation.
+    pub async fn read_owned_initial_api_diagnostics(
+        self: &Arc<Self>,
+        request: InitialApiDiagnostics,
+    ) -> PendingInitialApiDiagnostics {
+        self.read_initial_api_diagnostics_with_owner(request, Some(Arc::clone(self)))
+            .await
+    }
+
+    async fn read_initial_api_diagnostics_with_owner(
+        &self,
+        request: InitialApiDiagnostics,
+        owner: Option<Arc<Self>>,
+    ) -> PendingInitialApiDiagnostics {
         let read = Arc::clone(&request.read);
         let result = self
             .initial_diagnostics_worker
             .submit_async(
                 Duration::from_millis(self.config.timeout_ms.max(1)),
                 move |_| {
+                    // SDK read and mirror locals drop before their connection owner.
+                    let _owner = owner;
                     let _mirror = request.mirror;
-                    request
-                        .read
-                        .run()
-                        .map_err(CorsaBridgeError::CommunicationError)
+                    let read = request.read;
+                    read.run().map_err(CorsaBridgeError::CommunicationError)
                 },
             )
             .await;

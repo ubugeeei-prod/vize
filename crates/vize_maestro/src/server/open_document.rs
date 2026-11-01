@@ -66,6 +66,8 @@ impl MaestroServer {
         }
         let project = self.for_document(&uri).await;
         project.finish_close_document(uri).await;
+        #[cfg(feature = "native")]
+        self.state.release_closed_child_contexts();
     }
 
     async fn finish_close_document(&self, uri: tower_lsp::lsp_types::Url) {
