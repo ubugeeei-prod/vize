@@ -10,6 +10,22 @@ pub(in crate::batch::type_checker) struct PersistentStorageOwner {
     config: Option<PathBuf>,
 }
 
+impl PersistentStorageOwner {
+    pub(in crate::batch::type_checker) fn capture(
+        owner: &Path,
+        identity_config: Option<&Path>,
+    ) -> Self {
+        Self {
+            root: vize_carton::path::canonicalize_non_verbatim(owner),
+            config: identity_config.map(vize_carton::path::canonicalize_non_verbatim),
+        }
+    }
+
+    pub(in crate::batch::type_checker) fn identity_paths(&self) -> (&Path, Option<&Path>) {
+        (&self.root, self.config.as_deref())
+    }
+}
+
 impl BatchTypeChecker {
     /// Reuse a private, owner-keyed namespace when this program needs an
     /// expanded resolution root or explicitly registered installed files.
@@ -27,10 +43,8 @@ impl BatchTypeChecker {
             )
             .into());
         }
-        self.persistent_storage_owner = Some(PersistentStorageOwner {
-            root: vize_carton::path::canonicalize_non_verbatim(owner),
-            config: identity_config.map(vize_carton::path::canonicalize_non_verbatim),
-        });
+        self.persistent_storage_owner =
+            Some(PersistentStorageOwner::capture(owner, identity_config));
         Ok(())
     }
 

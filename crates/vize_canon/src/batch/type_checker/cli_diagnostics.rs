@@ -28,7 +28,9 @@ impl BatchTypeChecker {
         let storage = if self.scanned || self.owned_storage.is_some() {
             None
         } else {
-            storage::claim(&mut self.project).ok().flatten()
+            storage::claim(&mut self.project, self.persistent_storage_owner.as_ref())
+                .ok()
+                .flatten()
         };
         let isolated = storage.is_some();
         if let Some(storage) = storage {
