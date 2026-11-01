@@ -20,7 +20,7 @@ fn generate(template: &str, script: &str) -> VirtualTsOutput {
     )
 }
 fn callee(receiver: &str, name: &str) -> vize_carton::String {
-    format!(
+    vize_carton::cstr!(
         "({receiver} as unknown as (\"{name}\" extends keyof typeof {receiver} ? typeof {receiver} : {{ \"{name}\": any }})).{name}"
     )
 }
