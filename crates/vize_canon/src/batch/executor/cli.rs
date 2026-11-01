@@ -86,6 +86,15 @@ fn run_cli_for_config(
             recorded.global_scope_changed(&build_info)
         )
     }) {
+        if project.owned_cli_support_path().is_some() {
+            return Err(CliCheckFailure::Runtime(CorsaError::CorsaExecution {
+                exit_code: output.status.code().unwrap_or(1).max(1),
+                message: cstr!(
+                    "witnessed CLI program requires a global-scope rebuild; original native packet:\n{}",
+                    output_message(&output)
+                ),
+            }));
+        }
         // Corsa reused diagnostics computed without the new globals.
         std::fs::remove_file(&build_info)?;
         output = run_cli_command(corsa_path, project, config_path, &build_info, checkers)?;
