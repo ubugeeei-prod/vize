@@ -26,6 +26,7 @@ interface Original {
   schema: string;
   sourceRoot: string;
   inputsSha256: string;
+  versions: Record<string, string>;
   rows: ReferenceTagRow[];
 }
 const referenceBytes = fs.readFileSync(path.join(directory, "official.original.json"));
