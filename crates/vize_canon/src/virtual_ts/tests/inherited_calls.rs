@@ -1,5 +1,6 @@
 //! Authored callees keep receiver ownership without changing other references.
 use super::*;
+use crate::virtual_ts::VirtualTsOutput;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 const SCRIPT: &str = "import { shared } from './shared'; export default { mixins: [shared] };";
@@ -18,7 +19,7 @@ fn generate(template: &str, script: &str) -> VirtualTsOutput {
         &Default::default(),
     )
 }
-fn callee(receiver: &str, name: &str) -> std::string::String {
+fn callee(receiver: &str, name: &str) -> vize_carton::String {
     format!(
         "({receiver} as unknown as (\"{name}\" extends keyof typeof {receiver} ? typeof {receiver} : {{ \"{name}\": any }})).{name}"
     )
@@ -67,7 +68,10 @@ fn direct_optional_generic_and_grouped_calls_retain_affine_property_tokens() {
         .code
         .find("const __vize_template_instance = undefined as unknown as")
         .unwrap();
-    let first_call = output.code.find(&callee(receiver, "greet")).unwrap();
+    let first_call = output
+        .code
+        .find(callee(receiver, "greet").as_str())
+        .unwrap();
     assert!(early < first_call);
     let prefixes = output
         .mapping
@@ -106,14 +110,14 @@ fn receiver_hygiene_and_missing_member_guard_keep_distinct_owners() {
     assert!(
         output
             .code
-            .contains(&callee("__vize_template_instance_", "greet")),
+            .contains(callee("__vize_template_instance_", "greet").as_str()),
         "{}",
         output.code
     );
     assert!(
         output
             .code
-            .contains(&callee("__vize_template_instance_", "missingInherited")),
+            .contains(callee("__vize_template_instance_", "missingInherited").as_str()),
         "{}",
         output.code
     );
