@@ -153,7 +153,6 @@ const profile = () => ({
   allocation: null,
   budget: {},
   counters: [],
-  micro: [],
   spans: [{ key: "canon.corsa.cli.command", count: 1, wall_ns: { total: 1 } }],
   truncation: { dropped_spans: 0, dropped_counters: 0 },
 });
@@ -183,6 +182,7 @@ test("normal primary flags, environment and nonempty coarse profile refuse debug
     { spans: [{ key: "canon.corsa.cli.command", count: 0, wall_ns: { total: 1 } }] },
     { truncation: { dropped_spans: 1, dropped_counters: 0 } },
     { extra: true },
+    { micro: [] },
   ])
     assert.throws(() => assertNormalPhase({ ...profile(), ...change }));
 });

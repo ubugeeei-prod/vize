@@ -55,7 +55,6 @@ export function assertNormalPhase(value: unknown) {
     "budget",
     "command",
     "counters",
-    "micro",
     "schema_version",
     "spans",
     "tool",
