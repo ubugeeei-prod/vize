@@ -1,0 +1,1 @@
+{"private":true,"dependencies":{"vize":"0.596.0","@vizejs/native":"0.596.0","vue":"3.6.0-rc.13","typescript":"6.0.3","typescript-native":"npm:typescript@7.1.0-beta","vue-tsc":"3.3.13"}}

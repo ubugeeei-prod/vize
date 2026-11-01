@@ -1,0 +1,195 @@
+//! Instrumented-only filesystem read and final retained-source observations.
+//! The normal binaries are sealed before this module is imported.
+
+use std::cell::Cell;
+use std::collections::BTreeMap;
+use std::fs::{File, OpenOptions};
+use std::io::Write;
+use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
+
+use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
+
+use super::super::VirtualProject;
+
+struct State {
+    file: File,
+    next_id: u64,
+    reads: BTreeMap<u64, Value>,
+    owners: BTreeMap<PathBuf, Option<u64>>,
+}
+thread_local! { static CURRENT: Cell<Option<u64>> = const { Cell::new(None) }; }
+
+static STATE: OnceLock<Option<Mutex<State>>> = OnceLock::new();
+
+fn state() -> Option<&'static Mutex<State>> {
+    STATE
+        .get_or_init(|| {
+            let path = std::env::var_os("VIZE_OWNED_READ_BUFFER_TRACE")?;
+            let file = OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(path)
+                .expect("create a fresh read-buffer trace");
+            Some(Mutex::new(State {
+                file,
+                next_id: 0,
+                reads: BTreeMap::new(),
+                owners: BTreeMap::new(),
+            }))
+        })
+        .as_ref()
+}
+
+fn sha256(source: &str) -> std::string::String {
+    Sha256::digest(source.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
+fn append(state: &mut State, value: &Value) {
+    serde_json::to_writer(&mut state.file, value).expect("write whole read-buffer observation");
+    state.file.write_all(b"\n").expect("terminate trace row");
+    state.file.flush().expect("flush read-buffer observation");
+}
+
+pub(in crate::batch::virtual_project) fn read(
+    path: &Path,
+    source: &std::string::String,
+    route: &str,
+) {
+    let Some(state) = state() else { return };
+    let mut state = state.lock().expect("read-buffer observation lock");
+    let canonical = vize_carton::path::canonicalize_non_verbatim(path);
+    let value = json!({
+        "kind": "read",
+        "id": state.next_id,
+        "path": path,
+        "canonical": canonical,
+        "route": route,
+        "length": source.len(),
+        "capacity": source.capacity(),
+        "pointer": format!("{:p}", source.as_ptr()),
+        "sha256": sha256(source),
+    });
+    let id = state.next_id;
+    state.next_id += 1;
+    append(&mut state, &value);
+    state.reads.insert(id, value);
+    CURRENT.set(Some(id));
+}
+
+pub(in crate::batch::virtual_project) struct BuildObservation {
+    id: Option<u64>,
+    owned: bool,
+    completed: bool,
+}
+
+pub(in crate::batch::virtual_project) fn begin(
+    path: &Path,
+    source: &str,
+    owned: bool,
+) -> BuildObservation {
+    let id = CURRENT.take();
+    if let Some(id) = id {
+        let state = state()
+            .expect("read observer state")
+            .lock()
+            .expect("observer lock");
+        let read = &state.reads[&id];
+        assert_eq!(
+            read["canonical"],
+            json!(vize_carton::path::canonicalize_non_verbatim(path))
+        );
+        assert_eq!(read["pointer"], json!(format!("{:p}", source.as_ptr())));
+        assert_eq!(read["length"], json!(source.len()));
+        assert_eq!(read["sha256"], json!(sha256(source)));
+    }
+    BuildObservation {
+        id,
+        owned,
+        completed: false,
+    }
+}
+
+impl BuildObservation {
+    pub(in crate::batch::virtual_project) fn success(
+        mut self,
+        retained: &vize_carton::String,
+    ) -> Option<u64> {
+        if let Some(id) = self.id {
+            let mut state = state()
+                .expect("observer state")
+                .lock()
+                .expect("observer lock");
+            append(
+                &mut state,
+                &json!({"kind":"built", "id":id, "inputOwned":self.owned,
+                "length":retained.len(), "capacity":retained.capacity(), "pointer":format!("{:p}",retained.as_ptr()), "sha256":sha256(retained.as_str())}),
+            );
+        }
+        self.completed = true;
+        self.id
+    }
+}
+
+impl Drop for BuildObservation {
+    fn drop(&mut self) {
+        if !self.completed
+            && let Some(id) = self.id
+        {
+            let mut state = state()
+                .expect("observer state")
+                .lock()
+                .expect("observer lock");
+            append(&mut state, &json!({"kind":"build-aborted", "id":id}));
+        }
+    }
+}
+
+pub(in crate::batch::virtual_project) fn registered(id: Option<u64>, virtual_path: &Path) {
+    let Some(state) = state() else { return };
+    let mut state = state.lock().expect("registration observer lock");
+    append(
+        &mut state,
+        &json!({"kind":"registered", "id":id, "virtualPath":virtual_path}),
+    );
+    state.owners.insert(virtual_path.to_path_buf(), id);
+}
+
+pub(in crate::batch::virtual_project) fn final_project(project: &VirtualProject) {
+    let Some(state) = state() else { return };
+    let mut state = state.lock().expect("read-buffer final observation lock");
+    let mut rows = project.original_index.iter().collect::<Vec<_>>();
+    rows.sort_by_key(|(original, _)| *original);
+    let rows = rows
+        .into_iter()
+        .map(|(original, virtual_path)| {
+            let retained = project
+                .original_contents
+                .get(virtual_path)
+                .expect("indexed source has final retained content");
+            let id = state.owners.get(virtual_path).copied().flatten();
+            json!({
+                "original": original,
+                "virtualPath": virtual_path,
+                "read": id.and_then(|id| state.reads.get(&id)),
+                "retainedLength": retained.len(),
+                "retainedCapacity": retained.capacity(),
+                "retainedPointer": format!("{:p}", retained.as_ptr()),
+                "retainedSha256": sha256(retained.as_str()),
+            })
+        })
+        .collect::<Vec<_>>();
+    append(
+        &mut state,
+        &json!({
+            "kind": "final-project",
+            "projectRoot": project.project_root,
+            "virtualRoot": project.virtual_root,
+            "rows": rows,
+        }),
+    );
+}
