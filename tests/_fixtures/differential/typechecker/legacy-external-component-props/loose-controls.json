@@ -41,6 +41,18 @@
     {
       "path": "src/QuotedArrow.vue",
       "source": "<template><TypedControl :count=\"'a=>b'\" /></template>\n"
+    },
+    {
+      "path": "src/RecordShadowValid.vue",
+      "source": "<script setup lang=\"ts\">\nimport type { Record } from \"./record-shadow\"; const marker: Record<string, unknown> = { blocked: true }; void marker;\n</script>\n<template><TypedControl :count=\"42\" width=\"wide\" /></template>\n"
+    },
+    {
+      "path": "src/RecordShadowWrong.vue",
+      "source": "<script setup lang=\"ts\">\nimport type { Record } from \"./record-shadow\"; const marker: Record<string, unknown> = { blocked: true }; void marker;\n</script>\n<template><TypedControl :count=\"'wrong'\" width=\"wide\" /></template>\n"
+    },
+    {
+      "path": "src/record-shadow.d.ts",
+      "source": "export type Record<K extends PropertyKey, V> = { [P in K]: V } & { blocked: true };\n"
     }
   ],
   "externalDeclarations": [
