@@ -30,6 +30,7 @@ import { nativeScopedCaptureRequired } from "./native-scoped-capture.mjs";
 
 import { nativeVaporCaptureRequired } from "./native-vapor-capture.mjs";
 import { nativeAttributeValues7502CaptureRequired } from "./native-attribute-values-7502-capture.mjs";
+import { isVOnCorpusInput, V_ON_GATE } from "../davinci/lib/v-on-corpus.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const globalInputs = [...cacheInputs.workspace, "pnpm-workspace.yaml"];
@@ -269,6 +270,9 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
     if (tier === "merge") return true;
     if (mergeOnly.has(file)) return false;
     if (unknown || global || paths.includes(file)) return true;
+    // The natural corpus scans tracked carriers across the checkout, including
+    // prose and deleted files; literal import/path inference cannot name them all.
+    if (file === V_ON_GATE && paths.some(isVOnCorpusInput)) return true;
     if (ledgerDrift && file === retiredToolingLedgerTest) return true;
     if (typeProjects.has(file) && paths.some(typeProjects.get(file))) return true;
     const imports = closures.get(file);
