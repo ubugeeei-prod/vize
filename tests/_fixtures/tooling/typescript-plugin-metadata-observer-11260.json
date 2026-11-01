@@ -5,7 +5,7 @@
   "workflow": {
     "path": ".github/workflows/typescript-plugin.yml",
     "beforeSha256": "734f5482d5cacd69668dad12e43a43985823cad8c56322dd674c0a4dbce2d288",
-    "afterSha256": "b72749d2b7ce07ff13885a7d74a2dcaf0c40e62f416846adc487ea229e992270",
+    "afterSha256": "3c9ed480a8ff672eaca469a3de1304d44c76425a7c55c76279abfb0e3d34303b",
     "edits": [
       {
         "before": "      - tests/tooling/vscode-typescript*\n",
@@ -21,18 +21,18 @@
       },
       {
         "before": "",
-        "after": "      - name: Preserve actual Cargo metadata child streams and exit state\n        if: always()\n        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1\n        with:\n          name: typescript-plugin-cargo-metadata-${{ github.event.pull_request.head.sha || github.sha }}\n          path: ${{ runner.temp }}/typescript-plugin-cargo-metadata\n          if-no-files-found: error\n          retention-days: 7\n"
+        "after": "      - name: Validate complete Cargo metadata capture packets\n        if: always()\n        run: vp node tools/support/ci/cargo-metadata-observer.ts --validate-dir \"$RUNNER_TEMP/typescript-plugin-cargo-metadata\"\n      - name: Preserve actual Cargo metadata child streams and exit state\n        if: always()\n        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1\n        with:\n          name: typescript-plugin-cargo-metadata-${{ github.event.pull_request.head.sha || github.sha }}\n          path: ${{ runner.temp }}/typescript-plugin-cargo-metadata\n          if-no-files-found: error\n          retention-days: 7\n"
       }
     ]
   },
   "dependencies": [
     {
       "path": "tools/support/ci/cargo-metadata-observer.ts",
-      "sha256": "bce1e94869cf2408407e39f5275f2ed7e27d32b0427498f69f4ef38e1f93b1bc"
+      "sha256": "2a896b6b707c403e931ee55f93d9fe6698ee72671845f1d8cdcc5fcc868f8969"
     },
     {
       "path": "tests/tooling/cargo-metadata-observer.test.ts",
-      "sha256": "42f8992943ca0bd47d879a803c175cd2874c06d3c0ec4d28975c7a00c8b01027"
+      "sha256": "9cbb8e5cc6cc5b9c30dc9275e0fb1ca43a796eedf00908158daa7161ffcc9e15"
     }
   ]
 }

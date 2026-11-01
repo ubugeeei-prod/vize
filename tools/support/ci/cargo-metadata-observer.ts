@@ -113,8 +113,37 @@ export function metadataCaptureDirectory(url: string, environment: NodeJS.Proces
   return new URL(url).searchParams.get("capture") || environment.VIZE_CARGO_METADATA_CAPTURE;
 }
 
+/** A partial write is retained for upload but must never qualify as a packet. */
+export function validateMetadataCapture(directory: string): void {
+  const invocations = fs.readdirSync(directory, { withFileTypes: true });
+  if (!invocations.length) throw new Error("No Cargo metadata capture packets");
+  for (const invocation of invocations) {
+    if (!invocation.isDirectory() || !/^[1-9]\d*-\d+$/.test(invocation.name))
+      throw new Error("Invalid Cargo metadata invocation directory");
+    const root = path.join(directory, invocation.name);
+    const packets = fs.readdirSync(root, { withFileTypes: true });
+    if (!packets.length) throw new Error("No Cargo metadata event packets");
+    for (const packet of packets) {
+      if (!packet.isDirectory() || !/^\d+-(?:error|close)$/.test(packet.name))
+        throw new Error("Invalid Cargo metadata event directory");
+      const files = path.join(root, packet.name);
+      for (const name of ["stdout.bin", "stderr.bin", "process.json"])
+        if (!fs.lstatSync(path.join(files, name)).isFile())
+          throw new Error(`Missing regular Cargo metadata packet file: ${name}`);
+      JSON.parse(fs.readFileSync(path.join(files, "process.json"), "utf8"));
+    }
+  }
+}
+
 const output = metadataCaptureDirectory(import.meta.url, process.env);
 if (output) {
   childProcess.spawn = observeMetadataSpawn(childProcess.spawn, path.resolve(output));
   syncBuiltinESMExports();
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const [mode, directory, ...extra] = process.argv.slice(2);
+  if (mode !== "--validate-dir" || !directory || extra.length)
+    throw new Error("--validate-dir capture-directory required");
+  validateMetadataCapture(directory);
 }

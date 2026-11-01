@@ -5,7 +5,7 @@ const custodyPath =
   "tests/_fixtures/tooling/typescript-plugin-producer-port-10890/custody.json.txt";
 const custodySha256 = "de52e7c0ca46c0e1584c699cabe9763b95b0ac0e689beaf1a64fa22b74e54edc";
 const observerPath = "tests/_fixtures/tooling/typescript-plugin-metadata-observer-11260.json";
-const observerSha256 = "20b748ba87cdda3fb496b4c839fbcb27e4d8f895ffacba4a18d229707603d2ed";
+const observerSha256 = "c52cb733f7ca69d7bb7a869ec7a0d24e61d600a08d9c10b50dd6eb34d01a1f27";
 const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 function require(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error("invalid language project producer port: " + message);

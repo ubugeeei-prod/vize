@@ -9,6 +9,7 @@ import { test } from "node:test";
 import {
   metadataCaptureDirectory,
   observeMetadataSpawn,
+  validateMetadataCapture,
 } from "../../tools/support/ci/cargo-metadata-observer.ts";
 
 test("scoped preload URL retains its directory in a clean task environment", () => {
@@ -144,6 +145,34 @@ test("non-metadata commands pass through once and produce no packet", () => {
     f.child.emit("close", 0, null);
     assert.equal(f.calls.length, 1);
     assert.deepEqual(fs.readdirSync(f.directory), []);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test("capture validation refuses empty and partial packets without deleting available bytes", () => {
+  const f = fixture();
+  try {
+    assert.throws(() => validateMetadataCapture(f.directory), /No Cargo metadata/);
+    f.observed("cargo", ["metadata"], { stdio: "pipe" });
+    f.child.stdout!.emit("data", Buffer.from("whole stdout\0"));
+    f.child.stderr!.emit("data", Buffer.from("whole stderr\r\n"));
+    f.child.emit("close", 0, null);
+    validateMetadataCapture(f.directory);
+    const packet = f.packet();
+    const names = ["stdout.bin", "stderr.bin", "process.json"];
+    const original = names.map((name) => fs.readFileSync(path.join(packet, name)));
+    for (const [index, name] of names.entries()) {
+      fs.unlinkSync(path.join(packet, name));
+      assert.throws(() => validateMetadataCapture(f.directory), /ENOENT/);
+      for (const [other, retained] of names.entries())
+        if (other !== index)
+          assert.deepEqual(fs.readFileSync(path.join(packet, retained)), original[other]);
+      fs.writeFileSync(path.join(packet, name), original[index]);
+    }
+    fs.writeFileSync(path.join(packet, "process.json"), "{");
+    assert.throws(() => validateMetadataCapture(f.directory), SyntaxError);
+    assert.deepEqual(fs.readFileSync(path.join(packet, "stdout.bin")), original[0]);
   } finally {
     f.cleanup();
   }
