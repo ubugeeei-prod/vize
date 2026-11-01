@@ -19,6 +19,7 @@ export function controllerFiles(): Image[] {
     resolve(here, "pnpm-bootstrap.json"),
     resolve(here, "pnpm-shim-templates.json.txt"),
     resolve(here, "dependency-bin-policy.json.txt"),
+    resolve(here, "before-capture-policy.json.txt"),
     resolve(root, ".github/workflows/published-human-reports-11252-11253.yml"),
   );
   for (let index = 0; index < pending.length; index++) {
@@ -31,6 +32,7 @@ export function controllerFiles(): Image[] {
           "after-input-plan.json.txt",
           "pnpm-shim-templates.json.txt",
           "dependency-bin-policy.json.txt",
+          "before-capture-policy.json.txt",
         ].some((name) => file === resolve(here, name)),
     );
     seen.add(file);

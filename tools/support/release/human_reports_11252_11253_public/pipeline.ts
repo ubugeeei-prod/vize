@@ -25,6 +25,7 @@ import { recordCommand } from "./capture.ts";
 import { identifyLauncher } from "./checker.ts";
 import { receive } from "./receive.ts";
 import { authenticatePublicBefore } from "./public-before.ts";
+import { authenticateCapturedBefore } from "./public-before-capture.ts";
 import { controllerFiles } from "./controller.ts";
 import { validateCapture } from "./processes.ts";
 import { evidenceSink } from "./evidence.ts";
@@ -166,8 +167,12 @@ export async function runPublic(
     write("release-authority.json", release);
     if (request.release.phase === "after")
       write(
-        "authenticated-public-before.json",
-        await authenticatePublicBefore(request, github, sink),
+        request.mode === "UNQUALIFIED_AFTER"
+          ? "authenticated-before-capture.json"
+          : "authenticated-public-before.json",
+        request.mode === "UNQUALIFIED_AFTER"
+          ? await authenticateCapturedBefore(request, release, github, sink)
+          : await authenticatePublicBefore(request, github, sink),
       );
     if (request.release.phase === "after")
       write(
