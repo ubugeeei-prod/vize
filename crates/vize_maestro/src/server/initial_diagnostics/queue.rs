@@ -125,6 +125,41 @@ impl JobQueue {
         Some((entry.uri.as_ref().clone(), entry.job.clone()))
     }
 
+    pub(super) fn advance_prepared_open(
+        &mut self,
+        uri: &Url,
+        version: i32,
+        sequence: u64,
+        now: Instant,
+    ) -> bool {
+        let Some(slot) = self.by_uri.get(uri).copied() else {
+            return false;
+        };
+        let Some(Some(entry)) = self.slots.get(slot) else {
+            return false;
+        };
+        let job = &entry.job;
+        if job.cause != super::pending::DiagnosticsJobCause::Open
+            || job.version != version
+            || job.sequence != sequence
+            || job.sync_pending
+            || job.sync_running
+            || job.preparation_pending
+            || job.not_before <= now
+        {
+            return false;
+        }
+        self.unindex(slot);
+        let advanced = if let Some(Some(entry)) = self.slots.get_mut(slot) {
+            entry.job.not_before = now;
+            true
+        } else {
+            false
+        };
+        self.index(slot);
+        advanced
+    }
+
     pub(super) fn next_not_before(&self) -> Option<Instant> {
         self.ready.peek().map(|(_, key)| key.0)
     }
