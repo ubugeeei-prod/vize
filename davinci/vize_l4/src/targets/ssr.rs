@@ -15,6 +15,7 @@ use crate::module::ScopeId;
 use crate::runtime::{Runtime, vocabulary};
 use crate::write::{LinkSink, Writer};
 
+mod model;
 mod setup;
 use super::static_class;
 mod write;
@@ -99,11 +100,11 @@ pub fn emit_scoped_template<L: LinkSink>(
     )
 }
 
-fn encode<L: LinkSink>(
+fn encode<'owner, 'arena, L: LinkSink>(
     source: &str,
-    facts: Option<&SsrFacts<'_, '_>>,
+    facts: Option<&SsrFacts<'owner, 'arena>>,
     scope: Option<ScopeId<'_>>,
-    setup: Option<&NativeSelectedSetupSsrAnalysis<'_, '_, '_>>,
+    setup: Option<&NativeSelectedSetupSsrAnalysis<'_, 'owner, 'arena>>,
 ) -> Result<Writer<L>, SsrError> {
     let error = |kind| SsrError {
         node: None,
@@ -143,7 +144,11 @@ fn encode<L: LinkSink>(
                 SsrPart::Open { node, element, .. } => {
                     writer.push("<");
                     write::template(&mut writer, element.tag, element.span, false);
-                    if facts.inherit_attrs() == Some(node) {
+                    let model = match setup {
+                        Some(setup) => model::write(&mut writer, setup, node, element)?,
+                        None => false,
+                    };
+                    if !model && facts.inherit_attrs() == Some(node) {
                         writer.use_helper(attrs);
                         writer.push("${_ssrRenderAttrs(");
                         if element.attributes.is_empty() {
@@ -185,7 +190,7 @@ fn encode<L: LinkSink>(
                             write::quoted(&mut writer, element.tag, element.span);
                         }
                         writer.push(")}");
-                    } else {
+                    } else if !model {
                         for attribute in &element.attributes {
                             writer.push(" ");
                             write::template(&mut writer, attribute.name, attribute.span, false);

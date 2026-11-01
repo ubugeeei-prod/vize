@@ -19,6 +19,7 @@ export function nativeSetupCaptureRequired(paths) {
     (path) =>
       selectedSfcInput.test(path) ||
       inputModel.test(path) ||
+      path === "davinci/vize_l3/src/decision/model.rs" ||
       rootIfInput.test(path) ||
       path === "tests/tooling/support/native-static-class-primary.ts" ||
       staticClassInput.test(path) ||

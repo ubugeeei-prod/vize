@@ -69,6 +69,7 @@ test("actual selected setup consumers require source-built whole-module runtime 
     "davinci/vize_l2/src/artifact/builder/binding/model.rs",
     "davinci/vize_l2/src/file/region/native/model.rs",
     "davinci/vize_l3/src/decision/dom/build/model.rs",
+    "davinci/vize_l3/src/decision/model.rs",
     "davinci/vize_l4/src/targets/dom/model.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_inputs_vue_3_5_35.json",
     "tests/tooling/native-original-input-model-sfc-dom-reference.test.ts",

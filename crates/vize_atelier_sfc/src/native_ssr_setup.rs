@@ -65,6 +65,9 @@ impl<'a> NativeSetupSsrSfcCompilation<'a> {
 /// interpolation beside comments or static markup, or a sole direct interpolation
 /// child of one non-void HTML root, uses Vue's actual sixth setup-state argument.
 /// Original HTML listeners stay owned and are omitted without evaluation.
+/// A sole attribute-free input Model may read its actual direct mutable
+/// primitive setup binding; real fallthrough type/value props use the pinned
+/// server renderer's dynamic Model rules. This SSR read adds no update handler.
 /// Adjacent root text runs, deeper/mixed children, extra roots,
 /// For/components/dynamic markup and unsupported original scripts/styles/profiles
 /// remain typed refusals with no partial module.
@@ -124,3 +127,6 @@ fn emit<L: LinkSink>(
     });
     Ok(NativeSsrSfcOutput::new(document, map))
 }
+
+#[cfg(test)]
+mod tests;
