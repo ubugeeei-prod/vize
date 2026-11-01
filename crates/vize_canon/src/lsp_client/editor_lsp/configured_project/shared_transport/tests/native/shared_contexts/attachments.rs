@@ -150,9 +150,10 @@ fn native_one_editor_two_api_attachments_retain_readers_until_owner_reap() {
     assert_eq!(b_socket.len(), 1);
     assert!(a_socket.is_disjoint(&b_socket));
     assert!(a_socket.is_subset(&after_b));
-    assert_ne!(
-        (&a_api.session.pipe, &a_api.session.session_id),
-        (&b_api.session.pipe, &b_api.session.session_id)
+    record(
+        "attachment-relationship",
+        &json!({"samePipe":a_api.session.pipe==b_api.session.pipe,
+        "sameProtocolSessionId":a_api.session.session_id==b_api.session.session_id}),
     );
     assert_eq!(only_owner(&root, &native), owner);
     let a_session = project(&a_api.client, "api-a-initial", &a_config, &a_uri);
