@@ -3,6 +3,7 @@
 //! [`super::build`] so it can run in parallel, then absorbs the results into
 //! the project's indexes.
 
+use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
@@ -17,6 +18,8 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 mod artifacts;
 mod config;
 mod package_routes;
+#[cfg(test)]
+mod source_content_tests;
 
 pub(super) use package_routes::RouteBatch;
 
@@ -126,7 +129,13 @@ impl VirtualProject {
 
     pub fn register_path(&mut self, path: &Path) -> CorsaResult<()> {
         let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
-        self.register_path_with_content(path, &content)
+        let registered = build_registered_file(
+            path,
+            Cow::Owned(content),
+            self.path_build_context(path, None),
+        )?;
+        self.absorb_registered_file(registered)?;
+        Ok(())
     }
 
     /// Register a supported file path with already-loaded content.
@@ -163,7 +172,7 @@ impl VirtualProject {
     ) -> CorsaResult<()> {
         let registered = build_registered_file(
             path,
-            content,
+            Cow::Borrowed(content),
             self.path_build_context(path, runtime_prop_resolve_cache),
         )?;
         self.absorb_registered_file(registered)?;
@@ -192,7 +201,7 @@ impl VirtualProject {
             .zip(contexts)
             .map(|(path, context)| {
                 let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
-                build_registered_file(path, &content, context)
+                build_registered_file(path, Cow::Owned(content), context)
             })
             .collect::<Vec<_>>();
         let mut registered_any = false;
@@ -323,7 +332,7 @@ impl VirtualProject {
                 let mut context = build_context;
                 context.preserve_relative_declarations =
                     package_paths.contains(path) || self.session_scripts;
-                build_registered_file(path, &content, context)
+                build_registered_file(path, Cow::Owned(content), context)
             })
             .collect();
 
@@ -343,7 +352,7 @@ impl VirtualProject {
     pub fn register_vue_file(&mut self, path: &Path, content: &str) -> CorsaResult<()> {
         let registered = build_vue_registered_file(
             path,
-            content,
+            Cow::Borrowed(content),
             VirtualBuildContext {
                 project_root: &self.project_root,
                 virtual_root: &self.virtual_root,
@@ -383,7 +392,7 @@ impl VirtualProject {
         let source_type = source_type_for_path(path).ok_or_else(|| CorsaError::PathError {
             path: path.to_path_buf(),
         })?;
-        self.register_script_file(path, &content, source_type)
+        self.register_script_content(path, Cow::Owned(content), source_type)
     }
 
     /// Register a `.d.ts` file.
@@ -396,6 +405,15 @@ impl VirtualProject {
         &mut self,
         path: &Path,
         content: &str,
+        source_type: SourceType,
+    ) -> CorsaResult<()> {
+        self.register_script_content(path, Cow::Borrowed(content), source_type)
+    }
+
+    fn register_script_content(
+        &mut self,
+        path: &Path,
+        content: Cow<'_, str>,
         source_type: SourceType,
     ) -> CorsaResult<()> {
         let registered = build_script_registered_file(

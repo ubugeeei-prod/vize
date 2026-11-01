@@ -1,7 +1,8 @@
+use std::borrow::Cow;
 use std::path::Path;
 
 use oxc_span::SourceType;
-use vize_carton::{ToCompactString, profile};
+use vize_carton::profile;
 
 use crate::batch::error::CorsaResult;
 use crate::batch::import_rewriter::VirtualProjectRewriteOptions;
@@ -10,14 +11,15 @@ use crate::batch::source_map::CompositeSourceMap;
 use super::super::VirtualFile;
 use super::super::esm_declaration_spelling::should_preserve_esm_declaration_spelling;
 use super::super::passthrough::collect_passthrough_modules;
-use super::{RegisteredFile, ScriptBuildContext};
+use super::{RegisteredFile, ScriptBuildContext, retain_source_content};
 
 pub(in crate::batch::virtual_project) fn build_script_registered_file(
     path: &Path,
-    content: &str,
+    source: Cow<'_, str>,
     source_type: SourceType,
     context: ScriptBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
+    let content = source.as_ref();
     let (rewritten, stars) = profile!("canon.import.rewrite.script", {
         context
             .rewriter
@@ -57,7 +59,6 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
             virtual_path,
         },
         extra_virtual_files: Vec::new(),
-        original_content: content.to_compact_string(),
         pre_rewrite_code: None,
         passthrough_files: collect_passthrough_modules(
             path,
@@ -70,5 +71,6 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
         typed_router_import: false,
         empty_module_exports: false,
         module_exports: None,
+        original_content: retain_source_content(source),
     })
 }
