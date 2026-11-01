@@ -198,16 +198,22 @@ export function verifySource(root: string, provider?: string) {
       "whole Cargo files/seven locked SDK4 roles and ten declaration bodies; source identity, not native loaded-library membership",
   };
 }
+/** Package exports govern imports, not reading our own npm-ci-owned metadata file. */
+export function readProviderVersions(provider: string) {
+  return Object.fromEntries(
+    ["vue", "vue-tsc", "typescript", "typescript-native", "vize", "@vizejs/native"].map((name) => {
+      const file = path.join(provider, "node_modules", name, "package.json");
+      const manifest = JSON.parse(fs.readFileSync(file, "utf8")) as { version: unknown };
+      assert.equal(typeof manifest.version, "string");
+      return [name, manifest.version];
+    }),
+  );
+}
 export function verifyProvider(provider: string) {
   assert.equal(hash(fs.readFileSync(path.join(provider, "package.json"))), providerPins.package);
   assert.equal(hash(fs.readFileSync(path.join(provider, "package-lock.json"))), providerPins.lock);
   const require = createRequire(path.join(provider, "package.json"));
-  const versions = Object.fromEntries(
-    ["vue", "vue-tsc", "typescript", "typescript-native", "vize", "@vizejs/native"].map((name) => [
-      name,
-      require(name + "/package.json").version,
-    ]),
-  );
+  const versions = readProviderVersions(provider);
   assert.deepEqual(versions, {
     vue: "3.6.0-rc.13",
     "vue-tsc": "3.3.13",

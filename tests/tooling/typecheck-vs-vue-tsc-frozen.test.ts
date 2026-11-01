@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { createRequire } from "node:module";
 import {
   compareFindings,
   diagnostics,
@@ -41,6 +42,7 @@ import {
   assertInputs,
   inputSnapshot,
   sourceBodies,
+  readProviderVersions,
 } from "../../tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen-projects.ts";
 function temporary<T>(run: (root: string) => T): T {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "comparative-pure-")));
@@ -254,20 +256,17 @@ test("potential-input seal detects whole body/mode/symlink/root changes", () =>
   }));
 test("unexpected policy refuses before environment projection and unrelated secrets are absent", () =>
   temporary((root) => {
-    const key = "GOGC",
-      previous = process.env[key];
-    process.env[key] = "500";
-    try {
-      assert.throws(() => environment(root), /GOGC/u);
-    } finally {
-      if (previous === undefined) delete process.env[key];
-      else process.env[key] = previous;
-    }
-    const env = environment(root);
+    for (const input of [
+      { GOGC: "500" },
+      { NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169" },
+    ])
+      assert.throws(() => environment(root, input), /unexpected inherited policy/u);
+    const env = environment(root, { PATH: process.env.PATH, GITHUB_TOKEN: "fixture-secret" });
     assert.equal(env.HOME, path.join(root, "home"));
     assert.equal(env.LC_ALL, "C");
     assert.equal((env as NodeJS.ProcessEnv).GITHUB_TOKEN, undefined);
   }));
+
 test("command failure keeps complete streams/status before any verdict", async () => {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "comparative-command-")));
   try {
@@ -280,7 +279,7 @@ test("command failure keeps complete streams/status before any verdict", async (
     );
     fs.chmodSync(fake, 0o755);
     const out = path.join(root, "call"),
-      env = environment(path.join(root, "cache"));
+      env = environment(path.join(root, "cache"), { PATH: process.env.PATH });
     await assert.rejects(
       command(out, { executable: process.execPath, args: [fake], cwd: root }, env, 10_000, fake),
     );
@@ -387,3 +386,32 @@ test("status drift, clean-output failure and every unknown stream remain unquali
     true,
   );
 });
+
+test("physical pinned package metadata remains readable when exports hides package.json", () =>
+  temporary((root) => {
+    for (const name of [
+      "vue",
+      "vue-tsc",
+      "typescript",
+      "typescript-native",
+      "vize",
+      "@vizejs/native",
+    ]) {
+      const dir = path.join(root, "node_modules", name);
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(
+        path.join(dir, "package.json"),
+        JSON.stringify({ name, version: "1.2.3", exports: { ".": "./entry.cjs" } }),
+      );
+    }
+    const require = createRequire(path.join(root, "package.json"));
+    assert.throws(() => require.resolve("vize/package.json"), /not defined by "exports"/u);
+    assert.deepEqual(readProviderVersions(root), {
+      vue: "1.2.3",
+      "vue-tsc": "1.2.3",
+      typescript: "1.2.3",
+      "typescript-native": "1.2.3",
+      vize: "1.2.3",
+      "@vizejs/native": "1.2.3",
+    });
+  }));

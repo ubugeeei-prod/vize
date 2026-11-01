@@ -5,7 +5,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { gnuTime, identity, inventory, save } from "./typecheck-vs-vue-tsc-frozen-evidence.ts";
 export type Command = { executable: string; args: string[]; cwd: string };
-export function environment(cache: string) {
+/** Explicit source data is test-only; the campaign always uses the real process.env default. */
+export function environment(cache: string, sourceEnvironment: NodeJS.ProcessEnv = process.env) {
   for (const key of [
     "GOGC",
     "GOMEMLIMIT",
@@ -21,12 +22,12 @@ export function environment(cache: string) {
     "RUSTFLAGS",
     "CARGO_ENCODED_RUSTFLAGS",
   ])
-    assert(!process.env[key], "unexpected inherited policy: " + key);
+    assert(!sourceEnvironment[key], "unexpected inherited policy: " + key);
   fs.mkdirSync(cache, { recursive: true });
   const inherited = Object.fromEntries(
     ["PATH", "USER", "LOGNAME", "SHELL", "SYSTEMROOT", "LD_LIBRARY_PATH"]
-      .filter((key) => process.env[key] !== undefined)
-      .map((key) => [key, process.env[key]]),
+      .filter((key) => sourceEnvironment[key] !== undefined)
+      .map((key) => [key, sourceEnvironment[key]]),
   );
   assert(!inherited.LD_LIBRARY_PATH, "unexpected loader policy");
   const env = {
