@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
-import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import {
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, join, sep } from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { asArray, asRecord, asString } from "../../../support/json-value.ts";
 import {
   capture,
@@ -24,13 +33,32 @@ export { capture, healthy, recorder };
 export type { Recorder };
 
 export function inputImages(root: string, files: SourceFile[]) {
+  assert(realpathSync(root) === root, "input root must be canonical");
+  const directory = join(root, "src"),
+    info = lstatSync(directory);
+  assert(info.isDirectory() && !info.isSymbolicLink(), "source directory must be physical");
+  assert(
+    realpathSync(directory) === directory,
+    "source directory must remain inside the canonical root",
+  );
   const expected = files
     .filter((file) => file.path.startsWith("src/"))
     .map((file) => file.path.slice(4))
     .sort();
-  assert.deepEqual(readdirSync(join(root, "src")).sort(), expected, "unknown/missing source file");
+  assert(
+    isDeepStrictEqual(readdirSync(join(root, "src")).sort(), expected),
+    "unknown/missing source file",
+  );
   return files.map((file) => {
-    const raw = readFileSync(join(root, file.path));
+    const path = join(root, file.path);
+    assert(path.startsWith(root + sep), "input path must remain inside the canonical root");
+    const stat = lstatSync(path);
+    assert(
+      stat.isFile() && !stat.isSymbolicLink(),
+      "input must be a regular physical file: " + file.path,
+    );
+    assert(realpathSync(path) === path, "input path must be canonical: " + file.path);
+    const raw = readFileSync(path);
     assert(
       raw.equals(Buffer.from(file.source)),
       "source bytes differ from the literal/authored input: " + file.path,
@@ -91,8 +119,10 @@ export function execute(
   record: Recorder,
   verify: () => void,
 ) {
+  let previous = sources(original, role, "Original");
   const results = cases.map((id) => {
     const files = sources(original, role, id);
+    inputImages(root, previous);
     apply(root, files);
     const before = inputImages(root, files);
     record.json(id + ".inputs-before.json", before);
@@ -105,6 +135,7 @@ export function execute(
     }));
     const after = inputImages(root, files);
     record.json(id + ".inputs-after.json", after);
+    previous = files;
     return {
       id,
       sourceRole:

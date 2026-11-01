@@ -363,14 +363,15 @@ test("changed or extra authored source refuses before each command callback", ()
     mkdirSync(join(root, "src"));
     for (const file of files) writeFileSync(join(root, file.path), file.source);
     inputImages(root, files);
-    const changed = files.find((file) => file.path === "src/Invalid.vue")!;
+    const changed = files.find((file) => file.path === "src/Invalid.vue")!,
+      secretCanary = "PRIVATE_11339_SOURCE_CANARY_MUST_NOT_EGRESS";
     for (const mutate of [
-      () => writeFileSync(join(root, changed.path), changed.source + "\n"),
-      () => writeFileSync(join(root, "src/foreign.ts"), "foreign"),
+      () => writeFileSync(join(root, changed.path), changed.source + secretCanary),
+      () => writeFileSync(join(root, "src/" + secretCanary + ".ts"), "foreign"),
       () => rmSync(join(root, changed.path)),
     ]) {
       writeFileSync(join(root, changed.path), changed.source);
-      rmSync(join(root, "src/foreign.ts"), { force: true });
+      rmSync(join(root, "src/" + secretCanary + ".ts"), { force: true });
       mutate();
       let executed = 0;
       const packet = guardedCapture(
@@ -390,8 +391,53 @@ test("changed or extra authored source refuses before each command callback", ()
       assert.equal(packet.status, null);
       assert.equal(packet.stdout, null);
       assert(packet.error);
+      assert(!JSON.stringify(packet).includes(secretCanary));
+      assert(
+        !readFileSync(join(root, "input-refusal.process.json"), "utf8").includes(secretCanary),
+      );
     }
   }));
+test("same-byte input file or source-directory symlinks refuse before execution", () => {
+  for (const target of [
+    "src/Invalid.vue",
+    "src/base.ts",
+    "src/shared.ts",
+    "package.json",
+    "tsconfig.json",
+    "src",
+  ])
+    scratch((root) => {
+      const files = input("3.4.23");
+      mkdirSync(join(root, "src"));
+      for (const file of files) writeFileSync(join(root, file.path), file.source);
+      inputImages(root, files);
+      const physical = join(root, "same-bytes");
+      if (target === "src") {
+        mkdirSync(physical);
+        for (const file of files.filter((file) => file.path.startsWith("src/")))
+          writeFileSync(join(physical, file.path.slice(4)), file.source);
+      } else writeFileSync(physical, readFileSync(join(root, target)));
+      rmSync(join(root, target), { recursive: true });
+      symlinkSync(physical, join(root, target));
+      let executed = 0;
+      const packet = guardedCapture(
+        recorder(root),
+        "symlink-refusal",
+        commandsFor(root, "/npx")[0]!.argv,
+        root,
+        () => {
+          inputImages(root, files);
+        },
+        () => {
+          executed++;
+          throw Error("must not execute");
+        },
+      );
+      assert.equal(executed, 0);
+      assert.equal(packet.status, null);
+      assert(packet.error);
+    });
+});
 test("every final role custody completes before semantics; an early failure cannot skip another custody", () => {
   const order: string[] = [];
   const errors = verifyAllBeforeAssessment([

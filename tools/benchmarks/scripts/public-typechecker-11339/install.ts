@@ -39,7 +39,7 @@ import {
 import type { PackageBase } from "../../../support/release/human_reports_11252_11253_public/model.ts";
 import { authenticateProvenance, validateNative, type authenticate } from "./authority.ts";
 import { profileFor, sources, limitations, type Role, type SourceFile } from "./contract.ts";
-import { capture, healthy, type Recorder } from "./execute.ts";
+import { capture, healthy, inputImages, type Recorder } from "./execute.ts";
 
 export function sourceBin(root: string, name: "vize" | "vue-tsc", files: FileImage[]) {
   const directory = realpathSync(join(root, "node_modules", name));
@@ -86,10 +86,15 @@ export async function install(
   record.json("install-input.json", { manager, sourceFiles: initial, limitations });
   checkManager();
   const attempt = capture(record, "npm-install", [process.execPath, npm, "install"], root);
+  healthy(attempt, 0);
+  inputImages(root, initial);
+  const lockPath = join(root, "package-lock.json"),
+    lockStat = lstatSync(lockPath);
+  assert(lockStat.isFile() && !lockStat.isSymbolicLink(), "lock must be a regular physical file");
+  assert(realpathSync(lockPath) === lockPath, "lock path must remain in the canonical project");
   for (const name of ["package.json", "package-lock.json"])
     if (existsSync(join(root, name)))
       writeFileSync(join(record.root, "installed-" + name), readFileSync(join(root, name)));
-  healthy(attempt, 0);
   const lock = asRecord(JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8")));
   assert.equal(lock.lockfileVersion, 3);
   const rows = asRecord(lock.packages),
