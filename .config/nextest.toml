@@ -1,6 +1,11 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Retain the whole authored conditional-whitespace compiler observations.
+[[profile.default.overrides]]
+filter = 'package(=vize_atelier_sfc) & binary(=ideographic_if_whitespace)'
+junit.store-success-output = true
+
 # Retain complete deprecated-native Case/Observation and refusal packets only.
 [[profile.default.overrides]]
 filter = 'package(=vize_patina) & (test(~no_deprecated_v_on_native_modifier::native::tests::) | test(~native::template::context::event::tests::native_modifier::))'
