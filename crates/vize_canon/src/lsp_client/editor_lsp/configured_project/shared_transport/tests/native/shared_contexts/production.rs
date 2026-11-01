@@ -268,3 +268,5 @@ fn native_two_config_shared_owner_uses_production_editor_fallback() {
     assert_eq!(fs::read(&a).unwrap(), a_config_before);
     assert_eq!(fs::read(&b).unwrap(), b_config_before);
 }
+
+mod resource;

@@ -14,6 +14,10 @@ on:
         description: Add the private two-config shared-owner functional experiment
         type: boolean
         default: false
+      shared_context_resource_probe:
+        description: Add the private 7.1 two-client versus one-client BCCB resource discriminator
+        type: boolean
+        default: false
 permissions: { contents: read }
 concurrency:
   group: native-beta-dto-${{ github.event.pull_request.number || github.ref }}
@@ -82,8 +86,21 @@ jobs:
           cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::
           cargo clippy --locked --profile ci -p vize_canon --lib -- -D warnings
       - name: Probe two configs on one actual native editor owner
-        if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.shared_context_probe && matrix.role == 'after' }}
+        if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && (inputs.shared_context_probe || inputs.shared_context_resource_probe) && matrix.role == 'after' }}
         run: node tests/tooling/support/native-beta-dto/shared-contexts-run.ts
+      - name: Measure the same two configs with independent or combined actual clients
+        if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.shared_context_resource_probe && matrix.role == 'after' && matrix.sdk.version == '7.1.0-beta' }}
+        run: |
+          node tests/tooling/support/native-beta-dto/shared-contexts-resource-run.ts --controls
+          node tests/tooling/support/native-beta-dto/shared-contexts-resource-run.ts
+      - name: Retain the finite resource discriminator separately from old syscall archives
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.shared_context_resource_probe && matrix.role == 'after' && matrix.sdk.version == '7.1.0-beta' }}
+        with:
+          name: native-shared-resource-${{ env.HEAD_SHA }}
+          path: target/vize-tests/native-beta-dto/after-7.1.0-beta/shared-contexts-resource/
+          if-no-files-found: error
+          retention-days: 7
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
