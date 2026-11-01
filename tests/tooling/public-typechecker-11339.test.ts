@@ -282,6 +282,9 @@ test("whole mock DTO fields and five facts are checked without inventing the mis
     });
     const assessed = assessFacts("after", "Original", packet, f.files);
     assert.equal(assessed.publicAcceptance, false);
+    const before = assessFacts("before", "Original", packet, f.files);
+    assert.equal(before.assessment, "PUBLIC_BEFORE_RETAINED_UNASSESSED");
+    assert.equal(before.publicAcceptance, false);
     assert.deepEqual(
       readFileSync(join(root, "mock.stderr.raw")),
       Buffer.from("exact unowned progress\r\n"),

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { overrides } from "../../../support/release/public_install/identity.ts";
 import { originalFiles, wrappedSupplement } from "./original.ts";
 export type Role = "before" | "after";
 export interface Profile {
@@ -24,6 +25,36 @@ export function profileFor(role: Role): Profile {
   return value;
 }
 export const sha256 = (raw: string | Buffer) => createHash("sha256").update(raw).digest("hex");
+export const defaultProviderKeys = [
+  ...overrides,
+  "VIZE_PUBLIC_NATIVE_CUSTODY",
+  "VIZE_OXLINT_NATIVE_CUSTODY",
+] as const;
+export interface DefaultProviderPresence {
+  name: (typeof defaultProviderKeys)[number];
+  present: boolean;
+  empty: boolean;
+}
+export function requireDefaultProvider(
+  environment: NodeJS.ProcessEnv,
+  observe: (rows: DefaultProviderPresence[]) => void = () => {},
+) {
+  const evidence = defaultProviderKeys.map((name) => ({
+    name,
+    present: name in environment,
+    empty: environment[name] === "",
+  }));
+  observe(evidence);
+  assert(
+    evidence.every((row) => !row.present),
+    "default provider requires absent override names: " +
+      evidence
+        .filter((row) => row.present)
+        .map((row) => row.name)
+        .join(", "),
+  );
+  return evidence;
+}
 export const vueVersions = ["3.4.23", "3.6.0-beta.10"] as const;
 export type VueVersion = (typeof vueVersions)[number];
 export const cases = ["Original", "Repair", "RestoreOriginal", "WrappedSupplement"] as const;

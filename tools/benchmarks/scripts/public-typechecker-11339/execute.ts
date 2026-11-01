@@ -210,28 +210,27 @@ export function assessFacts(role: Role, id: Case, packet: Packet, files: SourceF
   assert.equal(value.warningCount, 0);
   assert.equal(value.errorCount, rows.length);
   healthy(packet, rows.length ? 1 : 0);
-  // A before-only authored Wrapped result has no predeclared bug oracle.
-  if (role === "before" && id === "WrappedSupplement")
-    return { dto, rows, assessment: "SUPPLEMENT_RETAINED_UNASSESSED", publicAcceptance: false };
+  // No genuine public 0.635 observation exists yet; the report's unknown
+  // external compiler cannot supply a missing-only BEFORE semantic oracle.
+  if (role === "before")
+    return { dto, rows, assessment: "PUBLIC_BEFORE_RETAINED_UNASSESSED", publicAcceptance: false };
   const expected =
     id === "Repair"
       ? []
-      : role === "before"
-        ? [originalFacts[4]]
-        : [
-            ...originalFacts,
-            ...(id === "WrappedSupplement"
-              ? [
-                  {
-                    file: "src/Wrapped.vue",
-                    line: 2,
-                    column: 34,
-                    code: "TS2339",
-                    message: "Property 'toFixed' does not exist on type 'boolean'.",
-                  },
-                ]
-              : []),
-          ];
+      : [
+          ...originalFacts,
+          ...(id === "WrappedSupplement"
+            ? [
+                {
+                  file: "src/Wrapped.vue",
+                  line: 2,
+                  column: 34,
+                  code: "TS2339",
+                  message: "Property 'toFixed' does not exist on type 'boolean'.",
+                },
+              ]
+            : []),
+        ];
   assert.equal(rows.length, expected.length, "unexpected/missing diagnostic; no count expansion");
   for (const [index, fact] of expected.entries()) {
     const row = rows[index]!;

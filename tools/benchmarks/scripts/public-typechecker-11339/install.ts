@@ -19,7 +19,6 @@ import {
   type FileImage,
 } from "../../../support/release/computed_event_custody.ts";
 import { assertNativeIdentity } from "../../../support/release/computed_event_names.ts";
-import { rejectOverrides } from "../../../support/release/public_install/identity.ts";
 import {
   packageMetadata,
   read,
@@ -38,7 +37,14 @@ import {
 } from "../../../support/release/human_reports_11252_11253_public/native-loader-prerequisite.ts";
 import type { PackageBase } from "../../../support/release/human_reports_11252_11253_public/model.ts";
 import { authenticateProvenance, validateNative, type authenticate } from "./authority.ts";
-import { profileFor, sources, limitations, type Role, type SourceFile } from "./contract.ts";
+import {
+  profileFor,
+  sources,
+  limitations,
+  requireDefaultProvider,
+  type Role,
+  type SourceFile,
+} from "./contract.ts";
 import { capture, healthy, inputImages, type Recorder } from "./execute.ts";
 
 export function sourceBin(root: string, name: "vize" | "vue-tsc", files: FileImage[]) {
@@ -65,12 +71,21 @@ export async function install(
   record: Recorder,
   cache: Map<string, Buffer>,
 ) {
-  rejectOverrides(process.env);
+  const environments: ReturnType<typeof requireDefaultProvider>[] = [];
+  const checkEnvironment = () =>
+    requireDefaultProvider(process.env, (rows) => {
+      environments.push(rows);
+      record.json("default-provider-environments.json", environments);
+    });
+  checkEnvironment();
   assert.equal(process.version, "v24.22.1");
   assert.equal(process.platform, "linux");
   assert.equal(process.arch, "x64");
   const manager = managerImages(npm, npx),
-    checkManager = () => assertManager(manager, npm, npx);
+    checkManager = () => {
+      checkEnvironment();
+      assertManager(manager, npm, npx);
+    };
   mkdirSync(root);
   const initial = sources(original, role, "Original");
   for (const file of initial) {

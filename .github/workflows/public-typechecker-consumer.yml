@@ -126,7 +126,7 @@ jobs:
         run: node --test tests/tooling/public-typechecker-11339*.test.ts
   public-11339:
     permissions: { contents: read, actions: read }
-    if: github.event_name == 'workflow_dispatch' && inputs.consumer == 'options-inherited-members-11339' && github.repository == 'ubugeeei-prod/vize'
+    if: github.event_name == 'workflow_dispatch' && inputs.consumer == 'options-inherited-members-11339' && github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
     needs: contracts-11339
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 45

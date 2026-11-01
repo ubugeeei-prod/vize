@@ -4,9 +4,16 @@ import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertCustody, fileImage } from "../../../support/release/computed_event_custody.ts";
-import { rejectOverrides } from "../../../support/release/public_install/identity.ts";
 import { authenticate } from "./authority.ts";
-import { input, profileFor, vueVersions, limitations, reporter, type Role } from "./contract.ts";
+import {
+  input,
+  profileFor,
+  vueVersions,
+  limitations,
+  reporter,
+  requireDefaultProvider,
+  type Role,
+} from "./contract.ts";
 import { execute, assess, recorder } from "./execute.ts";
 import { install } from "./install.ts";
 
@@ -23,6 +30,11 @@ export function argumentsFor(argv: string[]) {
   }
   assert.equal(values.size, 3);
   return { out: values.get("--out")!, npm: values.get("--npm")!, npx: values.get("--npx")! };
+}
+export function requireMainDispatch(environment: NodeJS.ProcessEnv) {
+  assert(environment.GITHUB_EVENT_NAME === "workflow_dispatch", "manual consumer event required");
+  assert(environment.GITHUB_REPOSITORY === "ubugeeei-prod/vize", "consumer repository required");
+  assert(environment.GITHUB_REF === "refs/heads/main", "consumer requires the main source ref");
 }
 export function verifyAllBeforeAssessment(rows: { verify: () => void }[]) {
   const errors: unknown[] = [];
@@ -58,9 +70,10 @@ export async function main(argv: string[]) {
   ].map((name) => fileImage(fileURLToPath(new URL(name, import.meta.url))));
   const checkSource = () => assertCustody(own);
   try {
-    rejectOverrides(process.env);
-    assert.equal(process.env.GITHUB_EVENT_NAME, "workflow_dispatch");
-    assert.equal(process.env.GITHUB_REPOSITORY, "ubugeeei-prod/vize");
+    requireDefaultProvider(process.env, (rows) =>
+      record.json("default-provider-environment.json", rows),
+    );
+    requireMainDispatch(process.env);
     const head = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
     assert.equal(head, process.env.GITHUB_SHA);
     record.json("controller.json", {

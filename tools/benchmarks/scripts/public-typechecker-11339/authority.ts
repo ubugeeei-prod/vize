@@ -139,7 +139,7 @@ export async function authenticate(role: Role, record: Recorder) {
   return { capsule, ownership, sourceFiles };
 }
 
-/** These two original Release runs published from main/S, while C owns the
+/** The selected original Release publisher is main/S, while C owns the
  * separately authenticated tag, prepared manifests and compiled native image. */
 export function assertProvenancePayload(
   role: Role,
