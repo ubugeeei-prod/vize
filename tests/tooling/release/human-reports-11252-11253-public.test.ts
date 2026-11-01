@@ -339,7 +339,10 @@ test("whole ordered CLI summary cannot mask extra diagnostics, counts, unknown s
   assert.throws(() =>
     assertRenderedTimings(
       Buffer.from(rendered.replace("Type checked", "error TS9999: message Type checked")),
-      [literals[0]!.replace("Type checked", "error TS9999: message Type checked"), ...literals.slice(1)],
+      [
+        literals[0]!.replace("Type checked", "error TS9999: message Type checked"),
+        ...literals.slice(1),
+      ],
       fields,
     ),
   );
