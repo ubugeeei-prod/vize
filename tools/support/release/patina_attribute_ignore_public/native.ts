@@ -45,12 +45,16 @@ export function runNative(context: Context): void {
       ...extra,
     };
     const before = JSON.stringify(options);
+    const ownBefore = Object.getOwnPropertyNames(options);
+    const undefinedBefore = ownBefore.filter((name) => Reflect.get(options, name) === undefined);
     context.record.json("native-pending.json", {
       id,
       source,
       sourceSha256: digest(source),
       options,
       optionsBefore: before,
+      ownProperties: ownBefore,
+      undefinedProperties: undefinedBefore,
     });
     let outcome: unknown;
     try {
@@ -65,11 +69,19 @@ export function runNative(context: Context): void {
       options,
       optionsBefore: before,
       optionsAfter: JSON.stringify(options),
+      ownPropertiesBefore: ownBefore,
+      ownPropertiesAfter: Object.getOwnPropertyNames(options),
+      undefinedPropertiesBefore: undefinedBefore,
+      undefinedPropertiesAfter: Object.getOwnPropertyNames(options).filter(
+        (name) => Reflect.get(options, name) === undefined,
+      ),
       outcome,
     };
     packets.push(packet);
     context.record.json("native-packets.json", { complete: false, packets });
     assert.equal(packet.optionsAfter, before);
+    assert.deepEqual(packet.ownPropertiesAfter, ownBefore);
+    assert.deepEqual(packet.undefinedPropertiesAfter, undefinedBefore);
     return asRecord(outcome);
   };
   for (const row of corpus.valid) {

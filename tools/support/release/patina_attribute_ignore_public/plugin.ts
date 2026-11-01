@@ -13,6 +13,7 @@ import {
 } from "../../json-value.ts";
 import { hook, verifyJournal } from "../editor_vite_stub/custody.ts";
 import { preserve, type Context } from "./bootstrap.ts";
+import { errorPacket } from "./native.ts";
 import {
   corpus,
   custody,
@@ -105,20 +106,28 @@ export async function runEslint(context: Context): Promise<void> {
     const partial: JsonRecord = { id: row.id, source, policy: row.policy, filename: row.filename };
     packets.push(partial);
     const save = () => context.record.json("eslint-packets.json", { complete: false, packets });
-    save();
-    const verify = host.verify(source, config, options);
-    partial.verify = verify;
-    save();
-    const fixResult = host.verifyAndFix(source, config, options);
-    partial.fixResult = fixResult;
-    save();
+    const observed = <T>(name: string, invoke: () => T): T => {
+      partial.pending = name;
+      save();
+      try {
+        const value = invoke();
+        partial[name] = value;
+        delete partial.pending;
+        save();
+        return value;
+      } catch (error) {
+        partial[name + "Error"] = errorPacket(error);
+        save();
+        throw error;
+      }
+    };
+    const verify = observed("verify", () => host.verify(source, config, options));
+    const fixResult = observed("fixResult", () => host.verifyAndFix(source, config, options));
     const output = asString(asRecord(fixResult).output);
-    const requery = host.verify(output, config, options);
-    partial.requery = requery;
-    save();
-    const secondFixResult = host.verifyAndFix(output, config, options);
-    partial.secondFixResult = secondFixResult;
-    save();
+    const requery = observed("requery", () => host.verify(output, config, options));
+    const secondFixResult = observed("secondFixResult", () =>
+      host.verifyAndFix(output, config, options),
+    );
     const packet = {
       id: row.id,
       source,
