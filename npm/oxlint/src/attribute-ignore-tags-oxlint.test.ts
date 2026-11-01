@@ -27,6 +27,13 @@ const receipt = asRecord(parseJson(receiptBytes.toString()));
 validateNativeHistoryBuild(nativeDir, receipt);
 if (process.env.GITHUB_SHA) assert.equal(asRecord(receipt.source).head, process.env.GITHUB_SHA);
 const image = fs.realpathSync(asString(asRecord(receipt.frozen).path));
+const generated = fs.realpathSync(path.join(nativeDir, asString(asRecord(receipt.generated).name)));
+assert.equal(hash(fs.readFileSync(generated)), asRecord(receipt.frozen).sha256);
+assert.equal(path.dirname(generated), fs.realpathSync(nativeDir));
+// Oxlint and Vize both implement the generic NAPI override. Keep Oxlint on
+// its own engine; Vize's existing workspace loader selects this local image.
+const hostEnvironment: NodeJS.ProcessEnv = { ...process.env, VIZE_PREFER_WORKSPACE_BINDING: "1" };
+delete hostEnvironment.NAPI_RS_NATIVE_LIBRARY_PATH;
 const require = createRequire(path.join(root, "package.json"));
 assert.equal(asRecord(require("oxlint/package.json")).version, "1.78.0");
 const binary = path.join(path.dirname(require.resolve("oxlint/package.json")), "bin/oxlint");
@@ -39,6 +46,13 @@ const custody = {
   receiptSha256: hash(receiptBytes),
   providers: { oxlint: "1.78.0" },
   referenceProviders: original.versions,
+  frozenImagePath: image,
+  workspaceImage: { path: generated, sha256: hash(fs.readFileSync(generated)) },
+  hostEnvironment: {
+    inheritedNapiOverride: process.env.NAPI_RS_NATIVE_LIBRARY_PATH ?? null,
+    selectedNapiOverride: hostEnvironment.NAPI_RS_NATIVE_LIBRARY_PATH ?? null,
+    preferWorkspace: hostEnvironment.VIZE_PREFER_WORKSPACE_BINDING,
+  },
   pluginSha256: hash(fs.readFileSync(path.join(root, "npm/oxlint/dist/index.mjs"))),
 };
 const proofPath = path.join(nativeHistoryDirectory(nativeDir), "attribute-ignore-tags-oxlint.json");
@@ -73,7 +87,7 @@ function observe(row: ReferenceTagRow, options: unknown[]) {
   const args = ["--config", configPath, "--format", "json", row.filename];
   const result = spawnSync(binary, args, {
     cwd: directory,
-    env: { ...process.env, VIZE_PREFER_WORKSPACE_BINDING: "1", NAPI_RS_NATIVE_LIBRARY_PATH: image },
+    env: hostEnvironment,
     encoding: "utf8",
     maxBuffer: 4 * 1024 * 1024,
   });
@@ -90,6 +104,7 @@ function observe(row: ReferenceTagRow, options: unknown[]) {
     stdout: result.stdout,
     stderr: result.stderr,
     fileAfter: fs.readFileSync(sourcePath, "utf8"),
+    workspaceImageSha256After: hash(fs.readFileSync(generated)),
   };
   packets.push(packet);
   persist();
@@ -98,6 +113,7 @@ function observe(row: ReferenceTagRow, options: unknown[]) {
   assert.equal(result.signal, null);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(packet.fileAfter, row.source);
+  assert.equal(packet.workspaceImageSha256After, asRecord(receipt.frozen).sha256);
   const payload = asRecord(parseJson(result.stdout));
   const diagnostics = asArray(payload.diagnostics).map((value) => asRecord(value));
   assert.deepEqual(

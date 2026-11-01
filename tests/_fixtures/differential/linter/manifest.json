@@ -231,7 +231,9 @@
     {
       "id": "linter/attribute-hyphenation-ignore-tags-6097",
       "state": "active",
-      "targets": ["lint"],
+      "targets": [
+        "lint"
+      ],
       "inputs": {
         "root": "attribute-hyphenation-ignore-tags-6097",
         "files": [
@@ -268,8 +270,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
-            "selector": "Sixteen literal tag policies through dedicated native/CLI/ESLint tests; direct Oxlint only seven registered-script controls. Regexp policies remain unsupported; this input-only manifest row is not native differential adapter qualification."
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

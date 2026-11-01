@@ -259,7 +259,7 @@ pub struct BatteryCensus {
 /// The committed census. Re-pinned deliberately, in both lanes at once.
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
-    rule_fixtures: 869 + 38 + 1 + 1 + 5 + 1 - 5 + 2 + 1,
+    rule_fixtures: 869 + 38 + 1 + 1 + 5 + 1 - 5 + 2 + 1 + 1,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -304,6 +304,12 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // Native static-is pairs, disabled controls and refused owners add three
     // nonliteral legacy calls. Their complete Case/Observation tests execute;
     // this literal-only scanner records the three calls as skips, not fixtures.
+    // Literal attribute ignoreTags adds eight focused lint_template calls:
+    // seven retain source variables and remain counted scanner skips. The
+    // unselected-rule control adds one new literal, <MyWidget fooBar="x" />,
+    // whose complete Relief/L2 facade comparison contributes four trace lines.
+    // The nineteen original attribute tests only move to their owning leaf;
+    // their unchanged calls and literal sources remain in the same scan.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -316,7 +322,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 1
         + 7
         + 3
-        + 3,
+        + 3
+        + 8,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -335,9 +342,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 1
         + 7
         + 3
-        + 3,
+        + 3
+        + 7,
     matrix: 90,
-    template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42,
+    template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42 + 4,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,
