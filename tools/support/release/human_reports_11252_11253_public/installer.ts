@@ -17,6 +17,9 @@ import type { Fixture, InstallReceipt, Recipe, ReleaseAuthority } from "./model.
 import { bytes, object, sha256, text, wholeJson } from "./value.ts";
 import { discard, type Sink } from "./evidence.ts";
 import { checkCaseManagers } from "./input-state.ts";
+import type { BinPolicy } from "./dependency-bin-policy.ts";
+import { recheckBinPackage } from "./dependency-bin-record.ts";
+import { collectBinConfiguration, recheckBinConfiguration } from "./bin-configuration.ts";
 export async function installPublic(
   root: string,
   kind: InstallReceipt["kind"],
@@ -27,6 +30,7 @@ export async function installPublic(
   output: string,
   archiveCache: Map<string, Buffer>,
   sink: Sink = discard,
+  binPolicy: BinPolicy,
 ): Promise<InstallReceipt> {
   assert.equal(process.version, recipe.node);
   assert.equal(process.platform, recipe.platform);
@@ -57,7 +61,14 @@ export async function installPublic(
       flag: "wx",
     });
   }
+  const configuration = collectBinConfiguration(root, env, manifest, sink);
+  writeFileSync(
+    join(output, `${kind}-preinstall-bin-configuration.json`),
+    JSON.stringify(configuration, null, 2) + "\n",
+    { flag: "wx" },
+  );
   const installed = capture(pnpm.path, ["install"], root, env, output, `${kind}-install`);
+  recheckBinConfiguration(configuration, manifest, sink);
   assert.equal(installed.error, null);
   assert.equal(installed.signal, null);
   assert.equal(installed.status, 0);
@@ -125,7 +136,22 @@ export async function installPublic(
     archiveCache,
     sink,
     undefined,
-    { path: installContextPath, managerVersion: recipe.pnpm },
+    {
+      path: installContextPath,
+      managerVersion: recipe.pnpm,
+      conformance: {
+        role: recipe.issue === 11252 ? "runtime-prop-null-11252" : "imports-vue-ts-11253",
+        policy: binPolicy,
+        manager: {
+          node,
+          pnpm,
+          version: checkVersion,
+          reportedVersion: recipe.pnpm,
+          contextPath: installContextPath,
+          configuration,
+        },
+      },
+    },
   );
   const packages = graph.packages;
   const probe = capture(
@@ -166,6 +192,7 @@ export async function installPublic(
     },
     kernel: (await import("node:os")).release(),
     packages,
+    binPolicy,
     cli: fileImage(join(cliRoot, "bin/vize")),
     sdk: captureDeclarationGraph(cliRoot).files,
     mapperExec: ["node", "./bin/vize", "content-mapper"],
@@ -208,6 +235,11 @@ export function recheckInstalled(receipt: InstallReceipt, expectedCaseManifest?:
       files: pkg.files,
     })),
   );
+  for (const pkg of receipt.packages)
+    if (pkg.allInstalledBytesEqualArchive === false) {
+      recheckBinPackage(pkg, receipt);
+      recheckBinConfiguration(pkg.binContext.configuration, expectedCaseManifest);
+    }
   assert.deepEqual(
     captureDeclarationGraph(realpathSync(join(receipt.root, "node_modules/vize"))).files,
     receipt.sdk,

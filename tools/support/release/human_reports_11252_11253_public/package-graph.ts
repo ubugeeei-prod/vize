@@ -17,6 +17,16 @@ import { lockPackageIntegrity } from "./lock-integrity.ts";
 import type { InstallReceipt } from "./model.ts";
 import type { Sink } from "./evidence.ts";
 import { witnessKnownBins, type BinInstallContext } from "./bin-witness.ts";
+import {
+  collectBinContext,
+  binInventory,
+  contextFacts,
+  type BinEdge,
+  type BinManagerContext,
+} from "./dependency-bin-context.ts";
+import type { BinPolicy } from "./dependency-bin-policy.ts";
+import type { HumanBinFacts, PublicPackageFacts } from "./dependency-bin-types.ts";
+import { humanDependencyBinPartition } from "./dependency-bin-partition.ts";
 
 /** Physical installed nodes and nonresident declarations are deliberately
  * separate. A pnpm list category never establishes optionality or presence. */
@@ -29,11 +39,16 @@ export async function installedGraph(
   archiveCache: Map<string, Buffer>,
   sink: Sink,
   readers = { archive: publicArchive, metadata: publicPackageMetadata },
-  installContext?: BinInstallContext,
+  installContext?: BinInstallContext & {
+    conformance?: { role: HumanBinFacts["role"]; policy: BinPolicy; manager: BinManagerContext };
+  },
 ): Promise<{ packages: InstallReceipt["packages"]; absent: OptionalAbsence[] }> {
   const packages: InstallReceipt["packages"] = [],
     absent: OptionalAbsence[] = [];
   const seen = new Set<string>();
+  const catalog = new Map<string, PublicPackageFacts>(),
+    edges: BinEdge[] = [];
+  const pending = new Map<string, PublicPackageFacts>();
   interface Parent {
     name: string;
     version: string;
@@ -131,6 +146,13 @@ export async function installedGraph(
         const pkg = object(wholeJson(manifest));
         assert.equal(pkg.name, name);
         assert.equal(pkg.version, version);
+        if (parent)
+          edges.push({
+            parentDirectory: parent.directory,
+            dependencyName: name,
+            version,
+            directory,
+          });
         if (!seen.has(directory)) {
           const downloaded = await readers.archive(name, version, sink);
           const { body: archiveBody, ...metadata } = downloaded;
@@ -145,6 +167,17 @@ export async function installedGraph(
           if (prior)
             assert(prior.equals(downloaded.body), "package version cannot silently change archive");
           else archiveCache.set(name + "@" + version, downloaded.body);
+          assert.equal(downloaded.resolved, row.resolved);
+          const declaration: PublicPackageFacts = {
+            name,
+            version,
+            directory,
+            manifest,
+            archive: downloaded.body,
+            integrity: downloaded.integrity,
+            resolved: downloaded.resolved,
+          };
+          catalog.set(directory, declaration);
           await witnessKnownBins(
             directory,
             installContext
@@ -152,32 +185,81 @@ export async function installedGraph(
               : undefined,
             sink,
           );
-          const comparison = observedArchiveComparison(
-            directory,
-            downloaded.body,
-            downloaded.integrity,
-            sink,
-          );
-          assert.equal(downloaded.resolved, row.resolved);
-          packages.push({
-            name,
-            version,
-            directory,
-            resolved: downloaded.resolved,
-            integrity: downloaded.integrity,
-            archiveSha512: comparison.tarballSHA512,
-            allInstalledBytesEqualArchive: true,
-            files: comparison.files.map((file) => ({ ...file })),
-          });
+          if (installContext?.conformance && name === "vue" && version === "3.5.44") {
+            // Defer only this closed role-specific partition until every
+            // declared owner, including no-bin dependencies, is authenticated.
+            pending.set(directory, declaration);
+          } else {
+            const comparison = observedArchiveComparison(
+              directory,
+              downloaded.body,
+              downloaded.integrity,
+              sink,
+            );
+            packages.push({
+              name,
+              version,
+              directory,
+              resolved: downloaded.resolved,
+              integrity: downloaded.integrity,
+              archiveSha512: comparison.tarballSHA512,
+              allInstalledBytesEqualArchive: true,
+              files: comparison.files.map((file) => ({ ...file })),
+            });
+          }
           seen.add(directory);
-          await visit(row, { name, version, directory, manifest });
+        } else {
+          assert(
+            catalog.get(directory)?.manifest.equals(manifest),
+            "present owner changed between listed edges",
+          );
         }
+        // A first deduped occurrence may have no children. Walk every finite
+        // JSON occurrence; physical payload deduplication must not discard a
+        // later full occurrence's dependency closure.
+        await visit(row, { name, version, directory, manifest });
       }
     }
   };
   const roots = array(listing);
   assert.equal(roots.length, 1);
   await visit(roots[0], null);
+  for (const parent of pending.values()) {
+    assert(installContext?.conformance);
+    const context = collectBinContext(
+      root,
+      installContext.conformance.role,
+      parent,
+      catalog,
+      edges,
+      installContext.conformance.policy,
+      installContext.conformance.manager,
+    );
+    sink("source-conformant-bin-inputs", context);
+    const inventory = binInventory(parent.directory);
+    sink(
+      "source-conformant-bin-inventory",
+      inventory.map(({ body, ...row }) => ({
+        ...row,
+        bytes: body?.length ?? null,
+        sha256: body === null ? null : sha256(body),
+      })),
+    );
+    const proof = humanDependencyBinPartition(contextFacts(context, archiveCache, inventory));
+    sink("source-conformant-bin-partition", proof);
+    packages.push({
+      name: parent.name,
+      version: parent.version,
+      directory: parent.directory,
+      resolved: parent.resolved,
+      integrity: parent.integrity,
+      archiveSha512: Buffer.from(parent.integrity.slice(7), "base64").toString("hex"),
+      allInstalledBytesEqualArchive: false,
+      binContext: context,
+      sourceConformance: proof,
+      files: proof.files.map(({ path, bytes, sha256 }) => ({ path, bytes, sha256 })),
+    });
+  }
   assert(packages.length > 0);
   return { packages, absent };
 }

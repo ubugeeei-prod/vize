@@ -115,6 +115,13 @@ test("local and remote controller custody include bootstrap and source-owned inp
     };
   });
   assert(closure.some((file) => file.path === bootstrapPath));
+  for (const name of ["dependency-bin-policy.json.txt", "pnpm-shim-templates.json.txt"])
+    assert(
+      closure.some(
+        (file) => file.path === `tools/support/release/human_reports_11252_11253_public/${name}`,
+      ),
+      "non-imported policy/template data must be an explicit remote source seed",
+    );
   assert(
     closure.some(
       (file) =>
