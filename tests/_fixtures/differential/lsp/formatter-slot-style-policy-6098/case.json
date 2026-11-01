@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "lsp/regression/formatter-slot-style-policy-6098",
+  "provenance": {
+    "fixCommit": "699c512b2e8df3c69c2b3f957549a2287a33f372",
+    "inputOrigin": "Unchanged complete configured slot-style inputs from #10241; fixCommit identifies that option producer, not the new host-policy repair.",
+    "contractOrigin": "New authored host-policy refusal contract; these three nulls are not a historical formatter golden. Actual direct Rust handlers separately retain warnings and no-write assertions."
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "formatting": true
+  },
+  "files": [
+    {
+      "source": "Fixed.vue.txt",
+      "runtimePath": "Slots.vue",
+      "sha256": "e0badc3ad6008fec63eb26e5545ea877e0d6692e31220b5551640dc8e3cff285"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "50cc6ba97102e025e3de1fd2fc22edb1859e7d32ba1971ac0599e727d09a8fcf"
+    }
+  ],
+  "entry": "Slots.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "5d14817827a7e8dc72e4a9c13be3399ff4d61e8d687de76c049ff90692229e8f"
+  },
+  "method": "textDocument/formatting",
+  "options": {
+    "tabSize": 2,
+    "insertSpaces": true
+  }
+}

@@ -263,7 +263,7 @@ void test("four source-inspected and one adapter-verified row exhaust measuremen
 
   const linterUnknownReadinessCases = 130;
 
-  const lspUnknownReadinessCases = 78;
+  const lspUnknownReadinessCases = 79;
 
   const typecheckerUnknownReadinessCases = 259;
   assert.deepEqual(

@@ -2,10 +2,15 @@
 
 use super::Linter;
 use crate::LintPreset;
-use crate::rules::vue::{VBindStyleOption, VOnStyleOption};
+use crate::rules::vue::{
+    VBindStyleOption, VOnStyleOption, VSlotStyle as SlotRule, VSlotStyleOption,
+};
 use vize_l0::{
     String,
-    config::{ConfigLintRuleOptions, LinterConfig, VBindStyle, VOnStyle},
+    config::{
+        ConfigLintRuleOptions, LinterConfig, VBindStyle, VOnStyle, VSlotNamedStyle, VSlotStyle,
+        VSlotStyleValue, VSlotUniformStyle,
+    },
     cstr,
 };
 
@@ -13,10 +18,11 @@ use vize_l0::{
 enum StyleRule {
     Bind,
     On,
+    Slot,
 }
 
 impl Linter {
-    /// Validate the formatter's interaction with active bind/event style rules.
+    /// Validate the formatter's interaction with active directive style rules.
     pub fn validate_directive_normalization(
         config: &LinterConfig,
         options: &ConfigLintRuleOptions,
@@ -48,6 +54,11 @@ impl Linter {
         if normalize && Self::active_configured_style(config, options, editor, StyleRule::On)? {
             return Err(String::from(
                 "normalizeDirectiveShorthands=true conflicts with active vue/v-on-style=longform; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand event style",
+            ));
+        }
+        if normalize && Self::active_configured_style(config, options, editor, StyleRule::Slot)? {
+            return Err(String::from(
+                "normalizeDirectiveShorthands=true conflicts with an active vue/v-slot-style longform policy; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand/v-slot for the affected slot positions",
             ));
         }
         Ok(())
@@ -87,6 +98,18 @@ impl Linter {
                 options.v_on_style() == Some(VOnStyle::Longform),
                 "vue/v-on-style",
             ),
+            StyleRule::Slot => (
+                match options.v_slot_style() {
+                    Some(VSlotStyle::Uniform(style)) => style == VSlotUniformStyle::Longform,
+                    Some(VSlotStyle::ByPosition(style)) => {
+                        style.at_component == VSlotStyleValue::Longform
+                            || style.default_slot == VSlotStyleValue::Longform
+                            || style.named == VSlotNamedStyle::Longform
+                    }
+                    None => false,
+                },
+                "vue/v-slot-style",
+            ),
         };
         if !config.enabled || !longform {
             return Ok(false);
@@ -124,15 +147,21 @@ impl Linter {
         if !editor {
             linter = linter.with_disabled_categories(config.disabled_categories());
         }
-        // This existing builder can register a missing rule; its actual
-        // enabled/disabled sets, rather than the option's presence, decide.
+        // Bind/On can register a missing rule; Slot only replaces a selected
+        // instance. Their actual registry and enabled/disabled sets decide.
         let linter = match rule {
             StyleRule::Bind => linter.with_v_bind_style(VBindStyleOption::Longform),
             StyleRule::On => linter.with_v_on_style(VOnStyleOption::Longform),
+            StyleRule::Slot => {
+                linter.with_v_slot_style(SlotRule::uniform(VSlotStyleOption::Longform))
+            }
         };
         Ok(linter.registry().has_rule(name) && linter.is_rule_enabled(name))
     }
 }
+
+#[cfg(test)]
+mod slot_style_tests;
 
 #[cfg(test)]
 mod tests {
