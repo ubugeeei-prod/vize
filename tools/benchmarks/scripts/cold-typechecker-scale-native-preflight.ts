@@ -4,6 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { classifyRaw, validateNativeArgs } from "./cold-typechecker-scale-native-inputs.ts";
+import {
+  verifyCandidateInputSeals,
+  type CandidateInputSeal,
+} from "./cold-typechecker-scale-candidate-inputs.ts";
 
 const closure = [
   "cold-typechecker-scale-native-forward.ts",
@@ -242,6 +246,8 @@ export function compareNativePreflights(
     provider: string;
     materializedRoot: string;
     authoredCwd: string;
+    /** Complete source-authenticated debug helper bodies; absent keeps the original equality law. */
+    materializedHelperBodies?: { before: Buffer; after: Buffer };
   },
 ) {
   assert.equal(before.length, after.length);
@@ -274,8 +280,15 @@ export function compareNativePreflights(
           : [expected.project, expected.provider, cwd],
       );
     }
-    const materialized =
-      old.request.kind === "version"
+    const materialized = expected.materializedHelperBodies
+      ? verifyCandidateInputSeals(
+          oldInputs as unknown as CandidateInputSeal,
+          currentInputs as unknown as CandidateInputSeal,
+          old.request.kind === "version" ? null : (old.request.cwd as string),
+          expected.materializedHelperBodies,
+          old.request.kind === "main-cli",
+        )
+      : old.request.kind === "version"
         ? null
         : assertSameMaterializedProgram(oldInputs, currentInputs, old.request.cwd as string);
     assertSameObservedNative(old, current);
