@@ -258,6 +258,7 @@ export async function executeLazyModelDom(
   }
   try {
     app.mount(container);
+    record("actual-document-constructor-witness", dom.documentIdentity);
     record("mounted-before-comparisons");
     assert.equal(current().appContext.app, app);
     assert.equal(setupInvocations, 1);
