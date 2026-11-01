@@ -8,7 +8,10 @@ use super::stubs::{
     VUE_FACADE_TYPES, VUE_RUNTIME_CORE_STUB_PACKAGE_JSON, VUE_RUNTIME_CORE_STUB_TYPES,
     VUE_RUNTIME_DOM_STUB_PACKAGE_JSON, VUE_RUNTIME_DOM_STUB_TYPES,
 };
-use super::{ensure_stub_dir, package_link_source, prune_stub_dir, symlink_path};
+use super::{
+    RuntimeDependencyRoots, ensure_stub_dir, package_link_source, prune_stub_dir,
+    recorded_symlink_path,
+};
 use crate::batch::materialize_fs::write_if_changed;
 
 /// Names reserved by Canon's Vue runtime mirror. Other `@vue/*` packages may
@@ -46,11 +49,12 @@ pub(in crate::batch) fn protected_vue_namespace_packages(
 pub(super) fn materialize_vue_support(
     project_root: &Path,
     node_modules_dir: &Path,
+    roots: &mut RuntimeDependencyRoots,
 ) -> std::io::Result<()> {
     let vue_target = node_modules_dir.join("vue");
 
     if let Some(vue_source) = resolve_vue_package(project_root)
-        && symlink_path(&package_link_source(&vue_source), &vue_target).is_ok()
+        && recorded_symlink_path(&package_link_source(&vue_source), &vue_target, roots).is_ok()
     {
         match resolve_vue_runtime_packages(project_root, &vue_source) {
             VueRuntimePackages::Namespace(vue_namespace_source) => {
@@ -58,6 +62,7 @@ pub(super) fn materialize_vue_support(
                     node_modules_dir,
                     &vue_namespace_source,
                     resolve_package(project_root, "@vue/runtime-core").as_deref(),
+                    roots,
                 )?;
             }
             VueRuntimePackages::RuntimeDom(runtime_dom_source) => {
@@ -65,6 +70,7 @@ pub(super) fn materialize_vue_support(
                     node_modules_dir,
                     &runtime_dom_source,
                     resolve_package(project_root, "@vue/runtime-core").as_deref(),
+                    roots,
                 )?;
             }
             VueRuntimePackages::Stub => write_vue_runtime_dom_stub(node_modules_dir)?,
@@ -78,6 +84,7 @@ pub(super) fn materialize_vue_support(
             node_modules_dir,
             &runtime_dom_source,
             resolve_package(project_root, "@vue/runtime-core").as_deref(),
+            roots,
         )?;
         return Ok(());
     }
@@ -113,13 +120,15 @@ pub(crate) fn write_vue_facade(node_modules_dir: &Path) -> std::io::Result<()> {
 fn link_vue_runtime_dom_package(
     node_modules_dir: &Path,
     runtime_dom_source: &Path,
+    roots: &mut RuntimeDependencyRoots,
 ) -> std::io::Result<()> {
     let vue_namespace_dir = node_modules_dir.join("@vue");
     ensure_stub_dir(&vue_namespace_dir)?;
     let runtime_dom_target = vue_namespace_dir.join("runtime-dom");
-    symlink_path(
+    recorded_symlink_path(
         &package_link_source(runtime_dom_source),
         &runtime_dom_target,
+        roots,
     )
 }
 
@@ -127,6 +136,7 @@ fn materialize_vue_namespace_packages(
     node_modules_dir: &Path,
     vue_namespace_source: &Path,
     runtime_core_source: Option<&Path>,
+    roots: &mut RuntimeDependencyRoots,
 ) -> std::io::Result<()> {
     let vue_namespace_target = node_modules_dir.join("@vue");
     let runtime_dom_source = vue_namespace_source.join("runtime-dom");
@@ -142,7 +152,7 @@ fn materialize_vue_namespace_packages(
             let source = entry.path();
             let target = vue_namespace_target.join(entry.file_name());
             if source.is_dir() {
-                symlink_path(&source, &target)?;
+                recorded_symlink_path(&source, &target, roots)?;
             } else if source.is_file() {
                 write_if_changed(&target, &std::fs::read(source)?)?;
             }
@@ -154,6 +164,7 @@ fn materialize_vue_namespace_packages(
             node_modules_dir,
             &runtime_dom_source,
             runtime_core_source,
+            roots,
         );
     }
     write_vue_runtime_dom_stub(node_modules_dir)
@@ -163,15 +174,16 @@ fn link_vue_runtime_packages(
     node_modules_dir: &Path,
     runtime_dom_source: &Path,
     runtime_core_source: Option<&Path>,
+    roots: &mut RuntimeDependencyRoots,
 ) -> std::io::Result<()> {
-    link_vue_runtime_dom_package(node_modules_dir, runtime_dom_source)?;
+    link_vue_runtime_dom_package(node_modules_dir, runtime_dom_source, roots)?;
     let adjacent_core = resolve_adjacent_runtime_core_package(runtime_dom_source);
     let runtime_core_source = adjacent_core.as_deref().or(runtime_core_source);
     if let Some(runtime_core_source) = runtime_core_source {
-        link_vue_runtime_core_package(node_modules_dir, runtime_core_source)?;
+        link_vue_runtime_core_package(node_modules_dir, runtime_core_source, roots)?;
         if let Some(reactivity) = resolve_adjacent_named_package(runtime_core_source, "reactivity")
         {
-            link_named_vue_package(node_modules_dir, "reactivity", &reactivity)?;
+            link_named_vue_package(node_modules_dir, "reactivity", &reactivity, roots)?;
         }
         Ok(())
     } else {
@@ -197,10 +209,15 @@ fn link_named_vue_package(
     node_modules_dir: &Path,
     name: &str,
     source: &Path,
+    roots: &mut RuntimeDependencyRoots,
 ) -> std::io::Result<()> {
     let vue_namespace_dir = node_modules_dir.join("@vue");
     ensure_stub_dir(&vue_namespace_dir)?;
-    symlink_path(&package_link_source(source), &vue_namespace_dir.join(name))
+    recorded_symlink_path(
+        &package_link_source(source),
+        &vue_namespace_dir.join(name),
+        roots,
+    )
 }
 
 fn resolve_adjacent_runtime_core_package(runtime_dom_source: &Path) -> Option<PathBuf> {
@@ -223,13 +240,15 @@ fn resolve_adjacent_runtime_core_package(runtime_dom_source: &Path) -> Option<Pa
 fn link_vue_runtime_core_package(
     node_modules_dir: &Path,
     runtime_core_source: &Path,
+    roots: &mut RuntimeDependencyRoots,
 ) -> std::io::Result<()> {
     let vue_namespace_dir = node_modules_dir.join("@vue");
     ensure_stub_dir(&vue_namespace_dir)?;
     let runtime_core_target = vue_namespace_dir.join("runtime-core");
-    symlink_path(
+    recorded_symlink_path(
         &package_link_source(runtime_core_source),
         &runtime_core_target,
+        roots,
     )
 }
 

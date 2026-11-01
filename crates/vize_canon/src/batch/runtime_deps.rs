@@ -4,9 +4,11 @@ use super::error::CorsaResult;
 use super::materialize_fs::{ensure_dir, prune_dir_entries, remove_path, write_if_changed};
 use vize_carton::FxHashSet;
 
+mod owned_roots;
 #[cfg(test)]
 mod ownership_tests;
 mod resolver;
+pub(in crate::batch) use owned_roots::{RuntimeDependencyLink, RuntimeDependencyRoots};
 mod stubs;
 #[cfg(test)]
 mod tests;
@@ -35,14 +37,30 @@ pub(super) fn materialize_runtime_dependencies(
     virtual_root: &Path,
     preserved_entries: &[PathBuf],
 ) -> CorsaResult<()> {
+    materialize_with_roots(
+        project_root,
+        virtual_root,
+        preserved_entries,
+        &mut RuntimeDependencyRoots::default(),
+    )
+}
+
+/// The terminal owner requests observations from the same link-producing pass.
+/// Default/library/editor materialization keeps the unobserved wrapper above.
+pub(in crate::batch) fn materialize_with_roots(
+    project_root: &Path,
+    virtual_root: &Path,
+    preserved_entries: &[PathBuf],
+    roots: &mut RuntimeDependencyRoots,
+) -> CorsaResult<()> {
     let node_modules_dir = virtual_root.join("node_modules");
     // Runtime entries are owned writes; never follow a former whole-install
     // link into the authored project before writing stubs or pruning entries.
     ensure_stub_dir(&node_modules_dir)?;
 
-    materialize_vue_support(project_root, &node_modules_dir)?;
+    materialize_vue_support(project_root, &node_modules_dir, roots)?;
     prune_stale_vue_package_links(project_root, &node_modules_dir)?;
-    materialize_vite_support(project_root, &node_modules_dir)?;
+    materialize_vite_support(project_root, &node_modules_dir, roots)?;
     prune_runtime_node_modules(&node_modules_dir, preserved_entries)?;
 
     Ok(())
@@ -78,11 +96,15 @@ fn prune_stale_vue_package_links(
     Ok(())
 }
 
-fn materialize_vite_support(project_root: &Path, node_modules_dir: &Path) -> std::io::Result<()> {
+fn materialize_vite_support(
+    project_root: &Path,
+    node_modules_dir: &Path,
+    roots: &mut RuntimeDependencyRoots,
+) -> std::io::Result<()> {
     let vite_target = node_modules_dir.join("vite");
 
     if let Some(vite_source) = resolve_package(project_root, "vite")
-        && symlink_path(&vite_source, &vite_target).is_ok()
+        && recorded_symlink_path(&vite_source, &vite_target, roots).is_ok()
     {
         return Ok(());
     }
@@ -128,6 +150,18 @@ fn ensure_stub_dir(path: &Path) -> std::io::Result<()> {
 /// through the same canonicalization and idempotence rules.
 pub(super) fn symlink_package_dir(source: &Path, target: &Path) -> std::io::Result<()> {
     symlink_path(&package_link_source(source), target)
+}
+
+fn recorded_symlink_path(
+    source: &Path,
+    target: &Path,
+    roots: &mut RuntimeDependencyRoots,
+) -> std::io::Result<()> {
+    symlink_path(source, target)?;
+    // Observation failure disqualifies factoring. It never changes the old
+    // link/stub fallback decisions or repairs a target on the observer's behalf.
+    roots.record(source, target);
+    Ok(())
 }
 
 fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {

@@ -11,13 +11,19 @@ use crate::batch::error::CorsaResult;
 use crate::batch::materialize_fs::{
     ensure_dir, ensure_materialize_root, prune_unexpected_entries, write_if_changed,
 };
-use crate::batch::runtime_deps::materialize_runtime_dependencies;
+use crate::batch::runtime_deps::{
+    RuntimeDependencyLink, RuntimeDependencyRoots, materialize_runtime_dependencies,
+    materialize_with_roots,
+};
 
 use super::package_node_modules::materialize_package_node_modules;
 use super::{
     AUTO_IMPORT_STUBS_FILE, MODULE_AUGMENTATION_STUBS_FILE, PACKAGE_BOUNDARY_FILE,
     VUE_MODULE_STUBS_FILE, VirtualProject,
 };
+
+mod cli_inputs;
+pub(in crate::batch) use cli_inputs::CliMaterializedInputs;
 
 impl VirtualProject {
     /// Materialize the virtual project to disk for diagnostics collection.
@@ -30,8 +36,14 @@ impl VirtualProject {
     /// rewrite entirely, which avoids needless write IO and keeps mtimes stable
     /// so TypeScript's own filesystem caches are not invalidated.
     pub fn materialize(&self) -> CorsaResult<()> {
-        self.materialize_snapshot(&FxHashSet::default(), &Default::default(), None, false)
-            .map(|_| ())
+        self.materialize_snapshot(
+            &FxHashSet::default(),
+            &Default::default(),
+            None,
+            false,
+            None,
+        )
+        .map(|_| ())
     }
 
     pub(crate) fn materialize_editor_union(
@@ -48,6 +60,7 @@ impl VirtualProject {
             preserved_package_links,
             Some(query_paths),
             preserved_arbitrary_extensions,
+            None,
         )?;
         let mut expected_files = self.expected_materialized_files();
         expected_files.extend(preserved_files.iter().cloned());
@@ -66,6 +79,7 @@ impl VirtualProject {
         preserved_package_links: &vize_carton::FxHashMap<PathBuf, PathBuf>,
         query_paths: Option<&[PathBuf]>,
         preserved_arbitrary_extensions: bool,
+        runtime_roots: Option<&mut RuntimeDependencyRoots>,
     ) -> CorsaResult<vize_carton::FxHashMap<PathBuf, PathBuf>> {
         // A checkout owns one durable mirror, but deleted worktrees otherwise
         // leave their full mirrors in the user cache forever. Maintenance is
@@ -156,11 +170,20 @@ impl VirtualProject {
         runtime_preserved.dedup();
         profile!(
             "canon.project.runtime_deps",
-            materialize_runtime_dependencies(
-                &self.project_root,
-                &self.virtual_root,
-                &runtime_preserved,
-            )
+            if let Some(roots) = runtime_roots {
+                materialize_with_roots(
+                    &self.project_root,
+                    &self.virtual_root,
+                    &runtime_preserved,
+                    roots,
+                )
+            } else {
+                materialize_runtime_dependencies(
+                    &self.project_root,
+                    &self.virtual_root,
+                    &runtime_preserved,
+                )
+            }
         )?;
         self.ensure_workspace_alias_targets()?;
         profile!(

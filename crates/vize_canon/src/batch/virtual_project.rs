@@ -81,6 +81,7 @@ pub use jsx_codegen::{
 mod mapping;
 pub(crate) use mapping::MaterializedSourceMappingKind;
 mod materialize;
+pub(in crate::batch) use materialize::CliMaterializedInputs;
 mod materialize_delta;
 mod materialize_links;
 mod workspace_aliases;
