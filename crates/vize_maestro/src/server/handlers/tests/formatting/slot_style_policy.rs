@@ -195,6 +195,10 @@ fn slot_requests_follow_scopes_order_negation_ignore_and_actual_editor_activatio
     for (linter, active) in [
         (json!({"ruleOptions":{RULE:"longform"}}), true),
         (
+            json!({"preset":"opinionated","rules":{"vue/no-v-html":"error"},"ruleOptions":{RULE:"longform"}}),
+            true,
+        ),
+        (
             json!({"preset":"incremental","ruleOptions":{RULE:"longform"}}),
             false,
         ),

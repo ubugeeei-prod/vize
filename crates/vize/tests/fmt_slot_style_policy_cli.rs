@@ -20,15 +20,16 @@ const FIXED: &str = include_str!(
     "../../../tests/_fixtures/differential/linter/formatter-slot-style-policy-6098/Fixed.vue.txt"
 );
 const REASON: &str = "normalizeDirectiveShorthands=true conflicts with an active vue/v-slot-style longform policy; set formatter.normalizeDirectiveShorthands=false (CLI: --normalize-directive-shorthands=false) or use shorthand/v-slot for the affected slot positions";
+const HELP: &str = "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent.";
 
 fn target_messages(severity: u8) -> Value {
     json!([
         {"ruleId":RULE,"ruleDocsPath":"docs/content/rules/vue.md","severity":severity,
             "message":"[vize:vue/v-slot-style] Expected 'v-slot:default' instead of '#default'",
-            "line":2,"column":12,"endLine":2,"endColumn":27},
+            "line":2,"column":12,"endLine":2,"endColumn":27,"help":HELP},
         {"ruleId":RULE,"ruleDocsPath":"docs/content/rules/vue.md","severity":severity,
             "message":"[vize:vue/v-slot-style] Expected 'v-slot:header' instead of '#header'",
-            "line":3,"column":22,"endLine":3,"endColumn":29}
+            "line":3,"column":22,"endLine":3,"endColumn":29,"help":HELP}
     ])
 }
 
@@ -296,6 +297,10 @@ fn slot_policy_uses_the_actual_cli_rule_registration_and_base_preset() {
         ),
         (
             json!({"preset":"opinionated","ruleOptions":{RULE:"longform"}}),
+            true,
+        ),
+        (
+            json!({"preset":"opinionated","rules":{"vue/no-v-html":"error"},"ruleOptions":{RULE:"longform"}}),
             true,
         ),
         (json!({"ruleOptions":{RULE:"longform"}}), true),

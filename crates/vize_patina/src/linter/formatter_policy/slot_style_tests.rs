@@ -66,7 +66,7 @@ fn slot_configuration_does_not_append_an_unselected_rule_or_undo_host_categories
         json!({"preset":"incremental","categories":{"style":"off"},"ruleOptions":{RULE:"longform"}}),
         json!({"preset":"opinionated","rules":{RULE:"off"},"ruleOptions":{RULE:"longform"}}),
         json!({"enabled":false,"preset":"opinionated","ruleOptions":{RULE:"longform"}}),
-        json!({"preset":"opinionated","rules":{"vue/no-v-html":"error"},"ruleOptions":{RULE:"longform"}}),
+        json!({"preset":"incremental","rules":{"vue/no-v-html":"error"},"ruleOptions":{RULE:"longform"}}),
         json!({"preset":"incremental","ruleOptions":{RULE:"longform","script/no-restricted-members":{"members":[{"object":"window","property":"localStorage"}]}}}),
         json!({"preset":"incremental","ruleOptions":{RULE:"longform","musea/prefer-design-tokens":{"tokens":[{"path":"color.primary","value":"#3b82f6"}]}}}),
     ] {
@@ -77,6 +77,7 @@ fn slot_configuration_does_not_append_an_unselected_rule_or_undo_host_categories
         json!({"preset":"incremental","rules":{RULE:"warn"},"ruleOptions":{RULE:"longform"}}),
         json!({"preset":"incremental","rules":{RULE:"error"},"ruleOptions":{RULE:"longform"}}),
         json!({"preset":"opinionated","ruleOptions":{RULE:"longform"}}),
+        json!({"preset":"opinionated","rules":{"vue/no-v-html":"error"},"ruleOptions":{RULE:"longform"}}),
         json!({"preset":"all","ruleOptions":{RULE:"longform"}}),
         json!({"ruleOptions":{RULE:"longform"}}),
     ] {
