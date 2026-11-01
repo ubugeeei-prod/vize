@@ -275,7 +275,11 @@ export function validateNativeHistoryToolchain(nativeDir: string, value: unknown
       record(value.requested[tool]);
       const requested: Record<string, unknown> = value.requested[tool];
       assert(typeof requested.path === "string");
-      assert.deepEqual(nativeHistoryToolImage(requested.path, cwd), requested);
+      assert.deepEqual(
+        nativeHistoryToolImage(requested.path, cwd),
+        requested,
+        `requested ${tool} changed since producer selection`,
+      );
     }
     const actual: Record<string, Image> = {};
     const versions: Record<string, Packet> = {};

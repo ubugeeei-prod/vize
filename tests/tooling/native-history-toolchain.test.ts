@@ -214,10 +214,9 @@ void test("a same-reply custom executable cannot replace the real selected compi
   );
 });
 
-void test("changed physical bytes and symlink targets are refused before any new version execution", (context) => {
+void test("changed physical bytes are refused before any new version execution", (context) => {
   const f = fixture(context);
   const selected = prepareNativeHistoryToolchain(f.nativeDir, f.environment);
-  const old = fs.readFileSync(f.rustc);
   const count = f.calls.length;
   fs.appendFileSync(f.rustc, "changed physical bytes");
   assert.throws(
@@ -226,10 +225,23 @@ void test("changed physical bytes and symlink targets are refused before any new
   );
   assert.equal(f.calls.length, count);
   assert(f.packets().some(({ body }) => body.images && body.error));
-  fs.writeFileSync(f.rustc, old);
+});
+
+void test("a retargeted proxy symlink is independently refused before any new version execution", (context) => {
+  const f = fixture(context);
+  const selected = prepareNativeHistoryToolchain(f.nativeDir, f.environment);
+  const count = f.calls.length;
   fs.unlinkSync(path.join(f.proxy, "rustc"));
   fs.symlinkSync(f.cargo, path.join(f.proxy, "rustc"));
-  assert.throws(() => validateNativeHistoryToolchain(f.nativeDir, selected.provider, "consumer"));
+  assert.deepEqual(
+    nativeHistoryToolImage(f.rustc, f.nativeDir),
+    selected.provider.before.rustc,
+    "the physical compiler must stay untouched so it cannot mask the proxy rejection",
+  );
+  assert.throws(
+    () => validateNativeHistoryToolchain(f.nativeDir, selected.provider, "consumer"),
+    /requested rustc changed since producer selection/,
+  );
   assert.equal(f.calls.length, count);
 });
 
