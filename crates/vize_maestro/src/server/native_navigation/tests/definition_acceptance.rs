@@ -148,10 +148,19 @@ fn observe(case: Case) -> Observation {
         client.finish();
         observed
     };
-    let (driver, ()) = block_on(futures::future::join(driver, server));
+    let completed = block_on(crate::runtime::timeout(
+        std::time::Duration::from_secs(30),
+        futures::future::join(driver, server),
+    ));
+    let deadline_elapsed = completed.is_err();
+    let driver = completed.ok().and_then(|(driver, ())| driver);
     let tape = peer.tape();
     // Preserve the complete/partial byte record before decode or any verdict.
     println!("VIZE_ARTIFACT_DEFINITION_TAPE {}", tape);
+    println!(
+        "VIZE_ARTIFACT_DEFINITION_COMPLETION {}",
+        json!({"case":case.name(),"deadlineSeconds":30,"deadlineElapsed":deadline_elapsed})
+    );
     let executable = std::env::current_exe().unwrap();
     let image = std::fs::read(&executable).unwrap();
     println!(
@@ -161,11 +170,13 @@ fn observe(case: Case) -> Observation {
             "source":option_env!("GITHUB_SHA"),"testProcessPid":std::process::id(),
             "testExecutable":{"path":executable,"bytes":image.len(),"sha256":fixtures::hash(&image)},
             "compiledSources":fixtures::compiled_sources(),"inputs":fixtures::inputs(),
-            "driver":driver,"transport":"in-process actual tower-lsp framed codec",
+            "driver":driver,"deadlineSeconds":30,"deadlineElapsed":deadline_elapsed,
+            "transport":"in-process actual tower-lsp framed codec",
             "defaultShippingAdmission":false,"normalDifferentialNativeAdmission":false,
             "crossFileComponentAuthority":false
         })
     );
+    assert_eq!(deadline_elapsed, false, "whole observation deadline");
     let client: Vec<u8> = serde_json::from_value(tape["clientConsumed"].clone()).unwrap();
     let server: Vec<u8> = serde_json::from_value(tape["serverWritten"].clone()).unwrap();
     Observation {
