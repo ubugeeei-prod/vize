@@ -9,6 +9,8 @@ use vize_l0::{FxHashMap, String, profile};
 
 const SNAPSHOT_REGISTRY_NOT_FOUND: &str = "not found in snapshot registry";
 
+mod signature_parameters;
+
 impl CorsaTypeAwareSession {
     /// Resolve all type probes for one virtual document with batched position
     /// queries. Output order matches `requests`.
@@ -275,17 +277,7 @@ async fn probe_type_response(
             if signature.parameters.is_empty() {
                 probe.call_signatures.push(Vec::new());
             } else {
-                let parameter_count = signature.parameters.len();
-                let parameter_types = match profile!(
-                    "patina.corsa_session.types_of_symbols",
-                    session.get_types_of_symbols(signature.parameters).await
-                ) {
-                    Ok(parameter_types) => parameter_types,
-                    Err(error) if is_snapshot_registry_handle_error(&error) => {
-                        vec![None; parameter_count]
-                    }
-                    Err(error) => return Err(error),
-                };
+                let parameter_types = signature_parameters::load(session, &signature).await?;
                 let mut rendered_parameters = Vec::with_capacity(parameter_types.len());
 
                 for parameter_type in parameter_types {

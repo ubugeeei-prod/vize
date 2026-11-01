@@ -194,7 +194,9 @@ fn observe(runtime: &Path, case: &Case, imported: bool) -> Value {
         )
         .await?;
         let result = inspect(&session, &file, position).await;
-        let closed = session.close().await;
+        let client = session.client().clone();
+        drop(session);
+        let closed = client.close().await;
         Ok::<_, corsa::CorsaError>(json!({"result":result,
             "closed":match closed { Ok(())=>json!({"state":"closed"}),
                 Err(error)=>json!({"state":"error","error":format!("{error}"),
