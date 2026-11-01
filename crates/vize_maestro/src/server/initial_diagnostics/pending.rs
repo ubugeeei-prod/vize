@@ -91,10 +91,21 @@ impl PendingInitialDiagnostics {
         state: &ServerState,
         now: Instant,
     ) -> bool {
+        self.advance_foreground_open(uri, job.version, job.sequence, stamp, state, now)
+    }
+
+    pub(super) fn advance_foreground_open(
+        &mut self,
+        uri: &Url,
+        version: i32,
+        sequence: u64,
+        stamp: CorsaRequestStamp,
+        state: &ServerState,
+        now: Instant,
+    ) -> bool {
         stamp.is_current(state)
-            && self
-                .jobs
-                .advance_prepared_open(uri, job.version, job.sequence, now)
+            && state.documents.version(uri) == Some(version)
+            && self.jobs.advance_prepared_open(uri, version, sequence, now)
     }
 
     pub(super) fn insert_with_continuation(
