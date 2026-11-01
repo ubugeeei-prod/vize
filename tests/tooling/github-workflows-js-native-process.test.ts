@@ -131,11 +131,15 @@ void test(
       const actor = f.actor(100, 1, "111", executable);
       f.task(100, 100, "111");
       let reads = 0;
-      const interception = mock.method(fs, "openSync", (filename, ...args) => {
-        if (filename === path.join(actor, "stat") && ++reads === 2)
-          fs.writeFileSync(filename, stat(100, 1, "999"));
-        return originalOpen(filename, ...args);
-      });
+      const interception = mock.method(
+        fs,
+        "openSync",
+        (filename: fs.PathLike, flags: fs.OpenMode, mode?: fs.Mode) => {
+          if (filename === path.join(actor, "stat") && ++reads === 2)
+            fs.writeFileSync(filename, stat(100, 1, "999"));
+          return originalOpen(filename, flags, mode);
+        },
+      );
       try {
         observeDescendants(100, new Set(), new Map(), f.output, f.proc);
       } finally {

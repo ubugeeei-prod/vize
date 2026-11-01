@@ -199,7 +199,7 @@ function processText(filename: string, limit = processLimits.textBytes): string 
     const buffer = Buffer.alloc(limit + 1);
     let bytes = 0;
     for (;;) {
-      const size = fs.readSync(descriptor, buffer, bytes, buffer.length - bytes);
+      const size = fs.readSync(descriptor, buffer, bytes, buffer.length - bytes, null);
       bytes += size;
       if (bytes > limit) throw new Error("Process observation text limit");
       if (!size) return buffer.subarray(0, bytes).toString("utf8");
