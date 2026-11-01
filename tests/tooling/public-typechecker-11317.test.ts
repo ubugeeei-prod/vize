@@ -29,6 +29,7 @@ import {
 } from "../../tools/benchmarks/scripts/public-typechecker-11317/install.ts";
 import {
   assessJson,
+  expectedProgress,
   childEnvironment,
   healthy,
   recorder,
@@ -280,13 +281,13 @@ test("complete raw/null/UTF8/status2 failure data exists before semantic guards 
   scratch((root) => {
     const oracle = expected(original, "Original"),
       bytes = Buffer.from(JSON.stringify(oracle));
-    const good = packet(root, "good", bytes, Buffer.alloc(0), 1);
+    const good = packet(root, "good", bytes, Buffer.from(expectedProgress(root, 3)), 1);
     assert.equal(assessJson(good, oracle, true).matchesAuthoredLaw, true);
     const extra = packet(
       root,
       "extra",
       Buffer.from(JSON.stringify({ ...oracle, unknownField: true })),
-      Buffer.alloc(0),
+      Buffer.from(expectedProgress(root, 3)),
       1,
     );
     assert.throws(() => assessJson(extra, oracle, true));
@@ -309,7 +310,7 @@ test("complete raw/null/UTF8/status2 failure data exists before semantic guards 
       root,
       "debt",
       Buffer.from(JSON.stringify(expected(original, "Original", 0))),
-      Buffer.alloc(0),
+      Buffer.from(expectedProgress(root, 3)),
       0,
     );
     assert.equal(assessJson(debt, oracle, false).matchesAuthoredLaw, false);

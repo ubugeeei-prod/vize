@@ -1,3 +1,4 @@
+import { retainFinalCustody } from "../../tools/benchmarks/scripts/public-typechecker-11317/run.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import {
@@ -33,6 +34,8 @@ import {
 import {
   assess,
   assessCaptured,
+  assessJson,
+  expectedProgress,
   recorder,
   retain,
 } from "../../tools/benchmarks/scripts/public-typechecker-11317/execute.ts";
@@ -109,7 +112,9 @@ test("a semantic pass followed by changed installed bytes leaves every saved acc
             ? "src/plain.ts\nerror:5:7 [TS2322] Type 'string' is not assignable to type 'number'.\n"
             : JSON.stringify(value),
         ),
-        stderr: Buffer.alloc(0),
+        stderr: Buffer.from(
+          expectedProgress(root, Number((value as { fileCount?: number } | null)?.fileCount ?? 3)),
+        ),
       });
     const outcomes = cases.map((id) => {
       const files = sources(original, "after", id),
@@ -279,4 +284,76 @@ test("authenticated loader prerequisites execute zero probes for a local native 
     write(foreign, "foreign package");
     assert.throws(() => probeAfterNativePrerequisite(request, probe));
     assert.equal(called, 0);
+  }));
+
+test("exact nonquiet progress refuses extras/root/count/order and final custody is retained before verdict", () =>
+  scratch((root) => {
+    const progress = expectedProgress(root, 3);
+    assert.equal(
+      progress,
+      "Building Corsa virtual project for 3 files under " +
+        root +
+        "...\nRunning Corsa diagnostics for 3 files...\n",
+    );
+    const bad = [
+      progress + "backend failed\n",
+      progress + "warning: degraded\n",
+      progress.replace(root, root + "/foreign"),
+      progress.replaceAll("3 files", "4 files"),
+      progress.split("\n").slice(0, 2).reverse().join("\n") + "\n",
+    ];
+    const oracle = expected(input(), "Original");
+    for (const [index, stderr] of bad.entries()) {
+      const packet = retain(
+        recorder(root),
+        "progress-negative-" + index,
+        ["npx", "vize", "check", "-f", "json"],
+        root,
+        "start",
+        {
+          pid: 1,
+          status: 1,
+          signal: null,
+          stdout: Buffer.from(JSON.stringify(oracle)),
+          stderr: Buffer.from(stderr),
+        },
+      );
+      assert.throws(() => assessJson(packet, oracle, true));
+    }
+    const beforeRoot = join(root, "before"),
+      afterRoot = join(root, "after");
+    mkdirSync(beforeRoot);
+    mkdirSync(afterRoot);
+    const file = join(root, "image"),
+      manager = join(root, "manager");
+    write(file, "before");
+    write(manager, "manager");
+    const old = [fileImage(file)],
+      managed = [fileImage(manager)];
+    write(file, "mutated");
+    const failures = retainFinalCustody([
+      {
+        role: "before",
+        owned: recorder(beforeRoot),
+        images: old,
+        manager: managed,
+        verifyRoute: () => {},
+      },
+      {
+        role: "after",
+        owned: recorder(afterRoot),
+        images: [fileImage(file)],
+        manager: managed,
+        verifyRoute: () => {},
+      },
+    ]);
+    assert.ok(failures[0]);
+    assert.equal(failures[1], null);
+    assert.equal(
+      JSON.parse(readFileSync(join(beforeRoot, "custody-after.json"), "utf8")).unchanged,
+      false,
+    );
+    const saved = JSON.parse(readFileSync(join(afterRoot, "custody-after.json"), "utf8"));
+    assert.equal(saved.unchanged, true);
+    assert.equal(saved.publicAcceptance, false);
   }));

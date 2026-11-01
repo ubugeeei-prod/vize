@@ -3,7 +3,11 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { assertCustody, fileImage } from "../../../support/release/computed_event_custody.ts";
+import {
+  assertCustody,
+  fileImage,
+  type FileImage,
+} from "../../../support/release/computed_event_custody.ts";
 import { rejectOverrides } from "../../../support/release/public_install/identity.ts";
 import { authenticate } from "./authority.ts";
 import { fixturePath, input, ownerSource, profiles, type Role } from "./contract.ts";
@@ -23,6 +27,41 @@ export function argumentsFor(argv: string[]) {
   }
   assert.equal(values.size, 3);
   return { out: values.get("--out")!, npm: values.get("--npm")!, npx: values.get("--npx")! };
+}
+export function retainFinalCustody(
+  rows: {
+    role: Role;
+    owned: ReturnType<typeof recorder>;
+    images: FileImage[];
+    manager: FileImage[];
+    verifyRoute: () => void;
+  }[],
+) {
+  return rows.map((row) => {
+    try {
+      assertCustody(row.images);
+      assertCustody(row.manager);
+      row.verifyRoute();
+      row.owned.json("custody-after.json", {
+        unchanged: true,
+        images: row.images,
+        manager: row.manager,
+        routeRechecked: true,
+        publicAcceptance: false,
+      });
+      return null;
+    } catch (error) {
+      const failure = error instanceof Error ? error : new Error(String(error));
+      row.owned.json("custody-after.json", {
+        unchanged: false,
+        expectedImages: row.images,
+        expectedManager: row.manager,
+        error: { name: failure.name, message: failure.message },
+        publicAcceptance: false,
+      });
+      return failure;
+    }
+  });
 }
 export async function main(argv: string[]) {
   const options = argumentsFor(argv);
@@ -82,17 +121,26 @@ export async function main(argv: string[]) {
       "all-twenty-observations.json",
       captured.map((row) => ({ role: row.role, outcomes: row.outcomes })),
     );
-    const assessments = assessCaptured(captured, record);
-    const results = captured.map((row, index) => {
-      const outcomes = assessments[index];
-      assertCustody(row.installed.images);
-      assertCustody(row.manager);
-      row.installed.verifyRoute();
-      row.owned.json("custody-after.json", {
-        unchanged: true,
+    const custody = retainFinalCustody(
+      captured.map((row) => ({
+        role: row.role,
+        owned: row.owned,
         images: row.installed.images,
         manager: row.manager,
-      });
+        verifyRoute: row.installed.verifyRoute,
+      })),
+    );
+    let semanticError: Error | null = null;
+    let assessments: ReturnType<typeof assessCaptured> = [];
+    try {
+      assessments = assessCaptured(captured, record);
+    } catch (error) {
+      semanticError = error instanceof Error ? error : new Error(String(error));
+    }
+    const firstFailure = custody.find((error) => error !== null) ?? semanticError;
+    if (firstFailure) throw firstFailure;
+    const results = captured.map((row, index) => {
+      const outcomes = assessments[index];
       return {
         role: row.role,
         profile: profiles[row.role],

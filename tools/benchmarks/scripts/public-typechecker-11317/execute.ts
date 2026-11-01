@@ -131,13 +131,29 @@ export function captureInputs(root: string, files: SourceFile[]) {
 export function parsePacket(packet: Packet): unknown {
   return JSON.parse(packet.stdout ?? "");
 }
+export function expectedProgress(cwd: string, files: number) {
+  assert.ok(files === 3 || files === 4);
+  return (
+    "Building Corsa virtual project for " +
+    files +
+    " files under " +
+    cwd +
+    "...\nRunning Corsa diagnostics for " +
+    files +
+    " files...\n"
+  );
+}
 export function assessJson(packet: Packet, correct: unknown, accept: boolean) {
   const parsed: unknown = parsePacket(packet),
     value = asRecord(parsed);
   const count = value.errorCount;
   assert.ok(count === 0 || count === 1, "unexpected errors or degraded result");
   healthy(packet, count);
-  assert.equal(packet.stderr, "", "backend/warning stderr is not accepted");
+  assert.equal(
+    packet.stderr,
+    expectedProgress(packet.cwd, Number(asRecord(correct).fileCount)),
+    "whole normal progress must match the source renderer; warnings/backend extras refuse",
+  );
   assert.equal(value.warningCount, 0);
   assert.ok(asArray(value.files).length > 0);
   const matchesAuthoredLaw = isDeepStrictEqual(parsed, correct);
@@ -221,7 +237,11 @@ export function assess(role: Role, observation: ReturnType<typeof execute>, reco
   const textErrors = asRecord(originalResult.parsed).errorCount;
   assert.ok(textErrors === 0 || textErrors === 1);
   healthy(text, textErrors);
-  assert.equal(text.stderr, "", "unmodified original command emitted a degraded/backend warning");
+  assert.equal(
+    text.stderr,
+    expectedProgress(text.cwd, 3),
+    "whole original progress must match; warnings/backend extras refuse",
+  );
   assert.ok(text.stdout !== null);
   assert.ok(!/warn|fallback|degrad|failed|panic|timeout/iu.test(text.stdout));
   if (role === "after") {
