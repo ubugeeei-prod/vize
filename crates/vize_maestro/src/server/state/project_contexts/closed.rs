@@ -44,6 +44,9 @@ impl ServerState {
                 {
                     return Some(Vec::new());
                 }
+                let mut detached = root.project_contexts.detached_bridges.try_lock()?;
+                // This count removes expired WEAK metadata only, never admits idle work.
+                detached.retain(|bridge| bridge.strong_count() != 0);
                 let _change = root.project_routing_change();
                 let mut removed = Vec::new();
                 contexts.retain(|key, context| {
@@ -51,6 +54,17 @@ impl ServerState {
                         return true;
                     }
                     context.detach_closed();
+                    if let Some(state) = context.published_state()
+                        && let Some(bridge) = state.corsa_bridge.read().as_ref()
+                    {
+                        let weak = Arc::downgrade(bridge);
+                        if !detached
+                            .iter()
+                            .any(|known| super::Weak::ptr_eq(known, &weak))
+                        {
+                            detached.push(weak);
+                        }
+                    }
                     removed.push(Arc::clone(context));
                     false
                 });
@@ -60,6 +74,15 @@ impl ServerState {
         // Context/navigation/worker drop may wake or cancel work: all document
         // and registry guards have already been released at this boundary.
         removed.map_or(0, |removed| removed.len())
+    }
+
+    pub(super) fn take_detached_corsa_bridges(&self) -> Vec<Arc<vize_canon::CorsaBridge>> {
+        let detached = std::mem::take(&mut *self.project_contexts.detached_bridges.lock());
+        // Upgrade outside the metadata guard; no final owner drops under it.
+        detached
+            .into_iter()
+            .filter_map(|bridge| bridge.upgrade())
+            .collect()
     }
 }
 

@@ -93,6 +93,12 @@ fn detached_state_keeps_its_bridge_and_reopen_version_one_cannot_revive_old_stam
         weak_bridge.upgrade().is_some(),
         "held old state owns its exact connection"
     );
+    assert_eq!(root.project_contexts.detached_bridges.lock().len(), 1);
+    let discovered = root.take_detached_corsa_bridges();
+    assert_eq!(discovered.len(), 1);
+    assert!(Arc::ptr_eq(&discovered[0], &weak_bridge.upgrade().unwrap()));
+    assert!(root.project_contexts.detached_bridges.lock().is_empty());
+    drop(discovered);
     open(&root, &a, "<template>after</template>");
     let fresh = root.document_project_state(&a).unwrap();
     assert!(!Arc::ptr_eq(&old, &fresh));
@@ -188,51 +194,67 @@ fn cancelled_configuration_initialization_drains_into_a_detached_old_owner() {
         task::Context,
         time::{Duration, Instant},
     };
-    let (files, root, a, _) = fixture();
-    let package = files.path().join("packages/a");
-    let release = package.join("release");
-    struct Release(std::path::PathBuf);
-    impl Drop for Release {
-        fn drop(&mut self) {
-            let _ = std::fs::write(&self.0, "1");
+    for stop in [false, true] {
+        let (files, root, a, _) = fixture();
+        let package = files.path().join("packages/a");
+        let release = package.join("release");
+        struct Release(std::path::PathBuf);
+        impl Drop for Release {
+            fn drop(&mut self) {
+                let _ = std::fs::write(&self.0, "1");
+            }
         }
+        let _release_on_failure = Release(release.clone());
+        std::fs::write(package.join("vite.config.mjs"), "import {existsSync,writeFileSync} from 'node:fs'; writeFileSync(new URL('./started',import.meta.url),'1'); while(!existsSync(new URL('./release',import.meta.url))) await new Promise(r=>setTimeout(r,10)); export default {vue:{languageServer:{hover:false}}};").unwrap();
+        root.apply_lsp_initialization_options(Some(
+            &serde_json::json!({"releaseClosedProjectContexts":true}),
+        ));
+        let old = root.document_project_context(&a).unwrap();
+        let mut request = Box::pin(old.initialize_async(&root));
+        let deadline = Instant::now() + Duration::from_secs(10);
+        let mut cx = Context::from_waker(futures::task::noop_waker_ref());
+        while !package.join("started").exists() {
+            assert!(
+                Instant::now() < deadline,
+                "actual configuration worker must enter"
+            );
+            assert!(request.as_mut().poll(&mut cx).is_pending());
+            std::thread::yield_now();
+        }
+        assert_eq!(root.release_closed_child_contexts(), 1);
+        assert!(root.project_contexts.detached_bridges.lock().is_empty());
+        drop(request);
+        if stop {
+            crate::runtime::block_on(root.shutdown_project_contexts()).unwrap();
+        }
+        std::fs::write(&release, "1").unwrap();
+        let deadline = Instant::now() + Duration::from_secs(10);
+        while !old
+            .published_state()
+            .is_some_and(|state| state.project_context_retired())
+        {
+            assert!(
+                Instant::now() < deadline,
+                "entered initializer must finish and mark its old owner"
+            );
+            std::thread::yield_now();
+        }
+        assert!(old.initialized_state().is_none());
+        let previous = Arc::clone(old.published_state().unwrap());
+        if stop {
+            assert!(previous.project_routing_shutting_down());
+            assert!(crate::runtime::block_on(previous.get_corsa_bridge()).is_none());
+            assert!(
+                previous.corsa_init_failure().is_none(),
+                "aborted config publication starts no native owner"
+            );
+            assert!(root.project_contexts.detached_bridges.lock().is_empty());
+            continue;
+        }
+        let fresh = root.document_project_state(&a).unwrap();
+        assert!(!Arc::ptr_eq(&previous, &fresh));
+        assert!(!fresh.project_context_retired());
+        assert!(!fresh.lsp_features().hover);
+        assert!(!fresh.has_corsa_bridge());
     }
-    let _release_on_failure = Release(release.clone());
-    std::fs::write(package.join("vite.config.mjs"), "import {existsSync,writeFileSync} from 'node:fs'; writeFileSync(new URL('./started',import.meta.url),'1'); while(!existsSync(new URL('./release',import.meta.url))) await new Promise(r=>setTimeout(r,10)); export default {vue:{languageServer:{hover:false}}};").unwrap();
-    root.apply_lsp_initialization_options(Some(
-        &serde_json::json!({"releaseClosedProjectContexts":true}),
-    ));
-    let old = root.document_project_context(&a).unwrap();
-    let mut request = Box::pin(old.initialize_async(&root));
-    let deadline = Instant::now() + Duration::from_secs(10);
-    let mut cx = Context::from_waker(futures::task::noop_waker_ref());
-    while !package.join("started").exists() {
-        assert!(
-            Instant::now() < deadline,
-            "actual configuration worker must enter"
-        );
-        assert!(request.as_mut().poll(&mut cx).is_pending());
-        std::thread::yield_now();
-    }
-    assert_eq!(root.release_closed_child_contexts(), 1);
-    drop(request);
-    std::fs::write(&release, "1").unwrap();
-    let deadline = Instant::now() + Duration::from_secs(10);
-    while !old
-        .published_state()
-        .is_some_and(|state| state.project_context_retired())
-    {
-        assert!(
-            Instant::now() < deadline,
-            "entered initializer must finish and mark its old owner"
-        );
-        std::thread::yield_now();
-    }
-    assert!(old.initialized_state().is_none());
-    let previous = Arc::clone(old.published_state().unwrap());
-    let fresh = root.document_project_state(&a).unwrap();
-    assert!(!Arc::ptr_eq(&previous, &fresh));
-    assert!(!fresh.project_context_retired());
-    assert!(!fresh.lsp_features().hover);
-    assert!(!fresh.has_corsa_bridge());
 }

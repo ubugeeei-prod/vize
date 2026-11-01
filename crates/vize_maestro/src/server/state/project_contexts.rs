@@ -90,6 +90,8 @@ pub(super) struct ProjectContexts {
     retired: AtomicBool,
     /// Explicit last-close policy; absent/false retains existing warm owners.
     release_closed: AtomicBool,
+    /// Weak discovery only: final shutdown still reaches detached live owners.
+    detached_bridges: Mutex<Vec<Weak<vize_canon::CorsaBridge>>>,
     shutting_down: AtomicBool,
     generation: AtomicU64,
     routing_changes: AtomicUsize,

@@ -178,9 +178,12 @@ impl ProjectContext {
     }
 
     pub(super) fn initialized_state(&self) -> Option<Arc<ServerState>> {
-        (!self.retired.load(Ordering::Acquire))
-            .then(|| self.state.get().cloned())
-            .flatten()
+        if self.retired.load(Ordering::Acquire) {
+            return None;
+        }
+        let state = self.state.get()?.clone();
+        // A closed detach can race the OnceLock's first publication.
+        (!self.retired.load(Ordering::Acquire)).then_some(state)
     }
 
     pub(super) fn published_state(&self) -> Option<&Arc<ServerState>> {
@@ -211,7 +214,7 @@ impl ProjectContext {
     }
 
     fn retire_initialized_state(&self, state: &ServerState) {
-        if self.closed_detached.load(Ordering::Acquire) {
+        if self.closed_detached.load(Ordering::Acquire) && !state.project_routing_shutting_down() {
             state.mark_project_owner_retired();
         } else {
             state.retire_project_owner();
