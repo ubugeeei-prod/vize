@@ -1,21 +1,25 @@
+use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{ToCompactString, cstr, profile};
+use vize_carton::{cstr, profile};
 
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::source_map::{CompositeSourceMap, SfcSourceMap};
 
 use super::VirtualFile;
-use super::build::{RegisteredFile, VirtualBuildContext, mirrored_virtual_path};
+use super::build::{
+    RegisteredFile, VirtualBuildContext, mirrored_virtual_path, retain_source_content,
+};
 use super::passthrough::collect_passthrough_modules;
 
 /// Build a virtual file for a `.jsx`/`.tsx` Vize component (#1497, opt-in).
 pub(super) fn build_jsx_registered_file(
     path: &Path,
-    content: &str,
+    source: Cow<'_, str>,
     context: VirtualBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
+    let content = source.as_ref();
     let lang = jsx_lang_for_path(path);
     let generated = profile!(
         "canon.jsx.virtual_ts",
@@ -59,7 +63,6 @@ pub(super) fn build_jsx_registered_file(
             virtual_path,
         },
         extra_virtual_files: Vec::new(),
-        original_content: content.to_compact_string(),
         pre_rewrite_code: Some(code),
         passthrough_files: collect_passthrough_modules(
             path,
@@ -75,6 +78,7 @@ pub(super) fn build_jsx_registered_file(
         typed_router_import: false,
         empty_module_exports: false,
         module_exports: None,
+        original_content: retain_source_content(source),
     })
 }
 

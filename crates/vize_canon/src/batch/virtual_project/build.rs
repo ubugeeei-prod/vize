@@ -1,6 +1,7 @@
 //! Builds an owned [`RegisteredFile`] so SFC/template parsing and virtual-TS generation can run
 //! across rayon workers without shared `&mut` state.
 
+use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
@@ -17,12 +18,14 @@ use crate::virtual_ts::VizeMapping;
 mod context;
 mod css_modules;
 mod script_build;
+mod source_content;
 pub(super) use super::paths::source_type_for_path;
 pub(super) use context::{ScriptBuildContext, VirtualBuildContext};
 pub(super) use css_modules::{
     css_module_block_type, style_scoped_class_names, virtual_ts_options_for_descriptor,
 };
 pub(super) use script_build::build_script_registered_file;
+pub(super) use source_content::retain_source_content;
 
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
@@ -58,7 +61,7 @@ pub(super) struct RegisteredFile {
 
 pub(super) fn build_registered_file(
     path: &Path,
-    content: &str,
+    content: Cow<'_, str>,
     context: VirtualBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
     if path.extension().and_then(|extension| extension.to_str()) == Some("vue") {
@@ -92,9 +95,10 @@ pub(super) fn build_registered_file(
 
 pub(super) fn build_vue_registered_file(
     path: &Path,
-    authored_content: &str,
+    source: Cow<'_, str>,
     context: VirtualBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
+    let authored_content = source.as_ref();
     let authored = crate::authored_sfc::AuthoredSfc::new(authored_content);
     let content = authored.analyzed();
     let descriptor = profile!(
@@ -268,7 +272,6 @@ pub(super) fn build_vue_registered_file(
             virtual_path,
         },
         extra_virtual_files,
-        original_content: authored_content.to_compact_string(),
         pre_rewrite_code: (context.editor_document_options.is_some()
             || context.jsx_typecheck
             || preserve_module_source)
@@ -284,6 +287,7 @@ pub(super) fn build_vue_registered_file(
         typed_router_import,
         empty_module_exports: empty_module_exports && module_sources_known,
         module_exports: module_exports.filter(|_| module_sources_known),
+        original_content: retain_source_content(source),
     })
 }
 
