@@ -1,0 +1,3750 @@
+{
+  "schema": "vize.instance-global-current-packet-provenance",
+  "version": 1,
+  "source": {
+    "sourceRevision": "d0f4e1da7022399172ba9a414ce90bdd7fc00145",
+    "sourceTree": "64bb277f63ba3152cae051595b7500eb4c6d9f3f",
+    "pullRequestHead": "1e511d9026382a457916eca4632e4e803347553b",
+    "binarySha256": "05fab55435f48df7a93a2a30ca929186b9187bcf8a6639f5a468db25875a5001",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 41351216510,
+    "artifactId": 13100739258,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "sourceCommitApi": {
+    "sha": "d0f4e1da7022399172ba9a414ce90bdd7fc00145",
+    "tree": "64bb277f63ba3152cae051595b7500eb4c6d9f3f",
+    "parents": [
+      "41a34d040670fdcbc934cb2b224b7ffb985d4d15",
+      "1e511d9026382a457916eca4632e4e803347553b"
+    ],
+    "scope": "Retained GitCommit API metadata; not local merge-object blob attestation"
+  },
+  "sourceLaunch": {
+    "binary": "/home/runner/_work/vize/vize/target/ci/vize",
+    "expected": {
+      "sourceRevision": "d0f4e1da7022399172ba9a414ce90bdd7fc00145",
+      "binaryPath": "target/ci/vize",
+      "binarySha256": "05fab55435f48df7a93a2a30ca929186b9187bcf8a6639f5a468db25875a5001",
+      "cliVersion": "vize 0.474.0-dev"
+    },
+    "receipt": {
+      "schema": "vize.differential.build",
+      "version": 1,
+      "recipe": "cargo build --profile ci -p vize",
+      "sourceRevision": "d0f4e1da7022399172ba9a414ce90bdd7fc00145",
+      "binaryPath": "target/ci/vize",
+      "binarySha256": "05fab55435f48df7a93a2a30ca929186b9187bcf8a6639f5a468db25875a5001",
+      "cliVersion": "vize 0.474.0-dev"
+    },
+    "buildRecipe": "cargo build --profile ci -p vize",
+    "versionProbe": {
+      "exitStatus": 0,
+      "signal": null,
+      "stdoutBase64": "dml6ZSAwLjQ3NC4wLWRldgo=",
+      "stderrBase64": "",
+      "processError": null
+    }
+  },
+  "artifact": {
+    "id": 13100739258,
+    "bytes": 375019,
+    "sha256": "c27f2d50295ca0d081e6c77b9319f86842cf495aee6499740af909464eaef48f",
+    "archiveCrcChecked": true
+  },
+  "rawJob": {
+    "id": 124981942670,
+    "bytes": 728440,
+    "sha256": "ea7d43db0ece55e4639d0421c41c67210183893fdba524dd858a7bca3068243e"
+  },
+  "wholeProtocol": {
+    "member": "differential/instance-globals-10617/source-protocol.json",
+    "bytes": 391457,
+    "sha256": "642f578e0a5a0718359fe1ee8a93ac9fabd746daea07ccdd7a76ff6fe16a1fbe",
+    "responses": 82,
+    "transforms": 80,
+    "allResultObjectsCopiedWholeWithoutNormalization": true
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-4543862023a0.json",
+    "sha256": "ad50f1fa04ed8b052b8c782642c275386a4ec496700ebe44997d67ee837267ef",
+    "preservedByteForByte": true
+  },
+  "sourceCause": {
+    "revision": "0c25c98371da5c603c8c3dea50fc7ea462fa458c",
+    "path": "crates/vize_canon/src/virtual_ts/expressions/statements.rs",
+    "law": "Use the same stripped expression and existing source-offset owner for generated comments; keep synthetic receiver prefix ownership and map each surviving affine tail to its actual authored bytes."
+  },
+  "wholeComparison": {
+    "packets": 80,
+    "unchangedWholePackets": 78,
+    "changedResults": [
+      {
+        "label": "lf/string-comment-role",
+        "wholeSource": "<script setup lang=\"ts\">\nconst n = 1;\n</script>\n\n<template>\n  <div>{{ $declared.known /* $ghost */ + \"$ghost\" }}</div>\n</template>\n",
+        "sourceSha256": "16b8785dba2e134c3533bdbaf0ce8359f0a0438fcf1ceacf7653ded96e05fc33",
+        "previousMappings": [
+          [1058, 12, 25, 12, 0, 1048575],
+          [1714, 6, 70, 9, 1, 0],
+          [1720, 9, 70, 9, 0, 1048575],
+          [1729, 19, 79, 19, 1, 3]
+        ],
+        "currentMappings": [
+          [1058, 12, 25, 12, 0, 1048575],
+          [1714, 6, 70, 9, 1, 0],
+          [1720, 9, 70, 9, 0, 1048575],
+          [1729, 7, 79, 7, 0, 1048575],
+          [1737, 11, 98, 11, 0, 1048575]
+        ],
+        "onlyChangedField": "mappings",
+        "generatedTextUnchanged": true,
+        "allOpaqueFieldsAndOrderUnchanged": true,
+        "sourceOwnedAffineTail": [
+          [1729, 7, 79, 7, 0, 1048575],
+          [1737, 11, 98, 11, 0, 1048575]
+        ],
+        "commentIsUnmapped": true
+      },
+      {
+        "label": "crlf-unicode/string-comment-role",
+        "wholeSource": "<script setup lang=\"ts\">\r\nconst n = 1;\r\n</script>\r\n\r\n<template>\r\n  <div>{{ \"日本語🍣\" + $declared.known /* $ghost */ + \"$ghost\" }}</div>\r\n</template>\r\n",
+        "sourceSha256": "8311eab23fb2d5521257322193e8883435bda659ae6d9105cc5311a372b13219",
+        "previousMappings": [
+          [1058, 12, 26, 12, 0, 1048575],
+          [1714, 18, 75, 18, 0, 1048575],
+          [1732, 6, 93, 9, 1, 0],
+          [1738, 9, 93, 9, 0, 1048575],
+          [1747, 19, 102, 19, 1, 3]
+        ],
+        "currentMappings": [
+          [1058, 12, 26, 12, 0, 1048575],
+          [1714, 18, 75, 18, 0, 1048575],
+          [1732, 6, 93, 9, 1, 0],
+          [1738, 9, 93, 9, 0, 1048575],
+          [1747, 7, 102, 7, 0, 1048575],
+          [1755, 11, 121, 11, 0, 1048575]
+        ],
+        "onlyChangedField": "mappings",
+        "generatedTextUnchanged": true,
+        "allOpaqueFieldsAndOrderUnchanged": true,
+        "sourceOwnedAffineTail": [
+          [1747, 7, 102, 7, 0, 1048575],
+          [1755, 11, 121, 11, 0, 1048575]
+        ],
+        "commentIsUnmapped": true
+      }
+    ],
+    "allGeneratedTextsUnchanged": true,
+    "allNonmappingFieldsUnchanged": true
+  },
+  "actualInputs": [
+    {
+      "label": "lf/original",
+      "bytes": 166,
+      "sha256": "622c1d1a109b47a74717cbb749ed5b886503861a29fe8d0c397183ff17af64be"
+    },
+    {
+      "label": "lf/valid",
+      "bytes": 159,
+      "sha256": "9de814a59aa34c9cf3825d4e604c8a24aa94b34fee0e5292aebe4e58cee570ac"
+    },
+    {
+      "label": "lf/undeclared-only",
+      "bytes": 164,
+      "sha256": "9e0db50b4ba2b669903b63bb71254b49b1b8703e4824847e4384aa69714f803d"
+    },
+    {
+      "label": "lf/repaired",
+      "bytes": 159,
+      "sha256": "9de814a59aa34c9cf3825d4e604c8a24aa94b34fee0e5292aebe4e58cee570ac"
+    },
+    {
+      "label": "lf/repeated",
+      "bytes": 122,
+      "sha256": "ae384e5d4f364eeeac166580c436773c1632dfce2cb829407a33437187b9cc25"
+    },
+    {
+      "label": "lf/optional",
+      "bytes": 105,
+      "sha256": "c629022fb234ca99e5abd3a9c4b313acc4042ffc991fd6b92265f22d26b1775c"
+    },
+    {
+      "label": "lf/call",
+      "bytes": 101,
+      "sha256": "575f128315e1a816c0bcab404c432041a4d318fb6ce90fd01168bd8912d87cae"
+    },
+    {
+      "label": "lf/v-for-source",
+      "bytes": 119,
+      "sha256": "77f0364fb5b793f04fc0b40b428f39bbafcdd59ac65d6eb8512de12a1142c83b"
+    },
+    {
+      "label": "lf/intentional-any",
+      "bytes": 120,
+      "sha256": "3b1fc22107b9bb53420f59e4cd133f862c35682fa847d8233e6144933ca61c6a"
+    },
+    {
+      "label": "lf/declared-unknown",
+      "bytes": 108,
+      "sha256": "f6898b228c70292471846e119021e4993d801fdb9da7c7750e1f54e290c7c882"
+    },
+    {
+      "label": "lf/plugin-valid",
+      "bytes": 108,
+      "sha256": "e4a1b7882fc00e3d072e674b09c4f889825e13a17f49d1c211a6bf4b8d94ebb0"
+    },
+    {
+      "label": "lf/plugin-invalid",
+      "bytes": 108,
+      "sha256": "150dd107bbf3cf8d8d3688b52fa6296e3169dba4e57337b9354c24bfa99d5400"
+    },
+    {
+      "label": "lf/setup-shadow",
+      "bytes": 136,
+      "sha256": "23567f471d4f35ccbb3f0a5f287e977a194353981d1ffd63b535601e3cd67145"
+    },
+    {
+      "label": "lf/loop-shadow",
+      "bytes": 143,
+      "sha256": "41cc3c33a88b5ae4116dbd94e4f2796b89c61d5cdd6b4524bf4ebf65647bc143"
+    },
+    {
+      "label": "lf/slot-shadow",
+      "bytes": 277,
+      "sha256": "ed1dc0bd8affc039ffe80d5e667a5ea8c536946e974f15cdad28927a2c7c5291"
+    },
+    {
+      "label": "lf/css-module",
+      "bytes": 165,
+      "sha256": "90efdd9f8ffc656611d8dda8167c5b614f471f2260b61946d2f8fe80766c01f4"
+    },
+    {
+      "label": "lf/own-props",
+      "bytes": 135,
+      "sha256": "dd8016c32c7e9efc69cbf1a733413c51597ec7f506593999e37f05664e806130"
+    },
+    {
+      "label": "lf/options-own-method",
+      "bytes": 220,
+      "sha256": "4041db825feef7bb2a0c3617821d53d2092e5ab756d2ca0ad794787d7b334095"
+    },
+    {
+      "label": "lf/expect-error-opening-child",
+      "bytes": 135,
+      "sha256": "51969e444346cf09beef983cdd8fb4917f095b229642afa8842642e9febbc11d"
+    },
+    {
+      "label": "lf/ignore-opening-child",
+      "bytes": 129,
+      "sha256": "e43290732c91b884bebb45e13637b04a7d97d8e75d87850a41f15e734bbd31bd"
+    },
+    {
+      "label": "lf/expect-owned-interpolation",
+      "bytes": 124,
+      "sha256": "a014fba59149819006016e5a4670e22e997abf77c14e83894e0f2a772b58b102"
+    },
+    {
+      "label": "lf/ignore-owned-interpolation",
+      "bytes": 118,
+      "sha256": "33c7f4704b56065c14ff5611490b9f48b365222ef3eec40f23e56a9d24f45456"
+    },
+    {
+      "label": "lf/expect-owned-attribute",
+      "bytes": 139,
+      "sha256": "4f66d73019073aeb9558e17706afd455aa72935e275d612c8dd05f874c47f80e"
+    },
+    {
+      "label": "lf/ignore-owned-attribute",
+      "bytes": 133,
+      "sha256": "7dc461cf828ec255cd1db660af82a51275b1a1f27c165ce261bacb5f004c2848"
+    },
+    {
+      "label": "lf/expect-owned-foreign-sibling",
+      "bytes": 171,
+      "sha256": "33802ca26f04598522f6976dc09c2823bdde35c6dd7d72a16f5352b1bd4cee62"
+    },
+    {
+      "label": "lf/ignore-owned-foreign-sibling",
+      "bytes": 165,
+      "sha256": "8da7f9b29929aa86e2761a45b97d734e18bfc518acbe88d00641e27e6e167618"
+    },
+    {
+      "label": "lf/shorthand-free",
+      "bytes": 104,
+      "sha256": "3e405220077d7a351b739a62eedf748d3e37d625dd59d74653ce2bd3b3506c7d"
+    },
+    {
+      "label": "lf/typeof-value-free",
+      "bytes": 105,
+      "sha256": "d58fa2ff2b6d48d79261e5b4806d23839276eba468c4228313364c6a3073eea5"
+    },
+    {
+      "label": "lf/object-key",
+      "bytes": 124,
+      "sha256": "ca5e4fea52d07ce4ddadae5ffd7cf974bb061d2c179ffbcba333a6a67a522609"
+    },
+    {
+      "label": "lf/member-key",
+      "bytes": 132,
+      "sha256": "c5ae13a9dae7161291a77f24ec56031f0d341e9dd303cd69d1536f8c3fb99a06"
+    },
+    {
+      "label": "lf/string-comment-role",
+      "bytes": 131,
+      "sha256": "16b8785dba2e134c3533bdbaf0ce8359f0a0438fcf1ceacf7653ded96e05fc33"
+    },
+    {
+      "label": "lf/template-literal-raw",
+      "bytes": 123,
+      "sha256": "00e2445ee4c47c21c56a78043a954471e3faab96d8fbc3128c0cf5bded485f15"
+    },
+    {
+      "label": "lf/template-literal-value",
+      "bytes": 120,
+      "sha256": "2c44cb70f2c3f6f74868fe6b0b10702e42cd4b3b7585ba5afef9442223d9f5c9"
+    },
+    {
+      "label": "lf/callback-shadow",
+      "bytes": 136,
+      "sha256": "0decaa93f0d105e9cc6848d47659e0d1519e6b0f7642696bd5034cef23121ecb"
+    },
+    {
+      "label": "lf/callback-mixed",
+      "bytes": 134,
+      "sha256": "8cd3548281b84dc6b20f887fac406ec762b7d55a9443141467874fef681630fa"
+    },
+    {
+      "label": "lf/callback-free",
+      "bytes": 132,
+      "sha256": "61a6fe91d91758bdb8e240ddc721d6419649e7ea516b79387bd4e37e2bea4352"
+    },
+    {
+      "label": "lf/computed-key-free",
+      "bytes": 109,
+      "sha256": "38e8650a1fc3dccc787d1417260227e27c6ae682579e60304d1c814845ea9483"
+    },
+    {
+      "label": "lf/mixed-loop-scope",
+      "bytes": 175,
+      "sha256": "5ab67249086bdd8c57bb366e98a8cd28bc17715c3035b028e764ddf2dffa9eae"
+    },
+    {
+      "label": "lf/mixed-slot-scope",
+      "bytes": 309,
+      "sha256": "897c64666d107858bfc48f94a59c252471b02327e928521c7c18d30b6dfa61b5"
+    },
+    {
+      "label": "lf/destructured-callback-shadow",
+      "bytes": 158,
+      "sha256": "4861e2fd019a055669ff2835b96c5752a3597432a77546d7636b41db15fbe515"
+    },
+    {
+      "label": "crlf-unicode/original",
+      "bytes": 191,
+      "sha256": "239c1a2e10ea44c86298d86755a9974d555e6b428dca672593a62da476e93ab3"
+    },
+    {
+      "label": "crlf-unicode/valid",
+      "bytes": 184,
+      "sha256": "9b6d23d8061d40d4e4ea6cc6369d249707ebaabdf4bbf5ab2ca914e5f763b1b8"
+    },
+    {
+      "label": "crlf-unicode/undeclared-only",
+      "bytes": 189,
+      "sha256": "b927befb004aed4a8db3e074201430490cc248cfa20e6c11351b9725b35e213a"
+    },
+    {
+      "label": "crlf-unicode/repaired",
+      "bytes": 184,
+      "sha256": "9b6d23d8061d40d4e4ea6cc6369d249707ebaabdf4bbf5ab2ca914e5f763b1b8"
+    },
+    {
+      "label": "crlf-unicode/repeated",
+      "bytes": 147,
+      "sha256": "2c1e3cca9b91b93ec14f2bf308c0b66bb03e225bad12cbbc70a00146a20cf4be"
+    },
+    {
+      "label": "crlf-unicode/optional",
+      "bytes": 130,
+      "sha256": "959d85c14364fcc07dccc9f6549b251f830cb30b40112055c3e438aebc87ecc7"
+    },
+    {
+      "label": "crlf-unicode/call",
+      "bytes": 126,
+      "sha256": "45af353ecec424e6910e111b6a0618ba2159cdff951078f3f7ee2cba04126d85"
+    },
+    {
+      "label": "crlf-unicode/v-for-source",
+      "bytes": 144,
+      "sha256": "b0f89e7215408a0482199c126234d2021ea8bf344198d40affe645fadd3430fb"
+    },
+    {
+      "label": "crlf-unicode/intentional-any",
+      "bytes": 145,
+      "sha256": "48a1aed14cc3d9ab6f2f7e86ee63e79d42375b1d6c9cabe4b5a03a51c4fd4492"
+    },
+    {
+      "label": "crlf-unicode/declared-unknown",
+      "bytes": 133,
+      "sha256": "7cc2c1266ba7254670ef9ba3027e52d165799606c47593a94538e014d854da8b"
+    },
+    {
+      "label": "crlf-unicode/plugin-valid",
+      "bytes": 133,
+      "sha256": "2238582c46113e243701b8f7cecc92b5f8b2faa609cb5feba744fb3fbda1c2c8"
+    },
+    {
+      "label": "crlf-unicode/plugin-invalid",
+      "bytes": 133,
+      "sha256": "c4d4eff8fdc7ee9af43930dade2e3eaac5071f037cb960efae60e68ab44cae1c"
+    },
+    {
+      "label": "crlf-unicode/setup-shadow",
+      "bytes": 161,
+      "sha256": "6717e6d6e0a1c4de84202d5e8f6148699a7b73ef2a2dd9c3ae5e76085953df7d"
+    },
+    {
+      "label": "crlf-unicode/loop-shadow",
+      "bytes": 168,
+      "sha256": "d24a909f176b7bb8d8ebbca4f39772f6d21c27209ccfa0dbdeac9e2ece4ae64a"
+    },
+    {
+      "label": "crlf-unicode/slot-shadow",
+      "bytes": 303,
+      "sha256": "b893ab8ad7a4e2de18174debd5f74448f08dd47b4307f744b48a8e73e03f94aa"
+    },
+    {
+      "label": "crlf-unicode/css-module",
+      "bytes": 193,
+      "sha256": "11394e68d02a21b71c57c4fce7f17392614234b7951ee85b44743d13f1ac2f59"
+    },
+    {
+      "label": "crlf-unicode/own-props",
+      "bytes": 160,
+      "sha256": "7708f388e6514c6ec637f9ec629512d65dbe0f151d7446b33e5b574eeb27f633"
+    },
+    {
+      "label": "crlf-unicode/options-own-method",
+      "bytes": 243,
+      "sha256": "bb7b30fe9202f5ddcbad5505dcc3be7f1ab373505b48a4003fa51612ff787d54"
+    },
+    {
+      "label": "crlf-unicode/expect-error-opening-child",
+      "bytes": 160,
+      "sha256": "3e435efbffe03e437c41d0000db7eb36c8f40e11bab27d4d4f4dff88563cfac9"
+    },
+    {
+      "label": "crlf-unicode/ignore-opening-child",
+      "bytes": 154,
+      "sha256": "383bbff27690222f3fb64c6ffa8a387bfde1a7c9b7db74b6ed87d6eb764886bb"
+    },
+    {
+      "label": "crlf-unicode/expect-owned-interpolation",
+      "bytes": 149,
+      "sha256": "cdfe0108c764868ee5eef88977937182ca8a291527920d15b9d0a927aaa0e185"
+    },
+    {
+      "label": "crlf-unicode/ignore-owned-interpolation",
+      "bytes": 143,
+      "sha256": "33ae49b9ae067601bd810382d86e97b43deb5a210c559d48150fa866a21ebdcd"
+    },
+    {
+      "label": "crlf-unicode/expect-owned-attribute",
+      "bytes": 146,
+      "sha256": "de897136c473f1d7bde159d4066dafc08caca11e1349d1639d50b2a14e85293f"
+    },
+    {
+      "label": "crlf-unicode/ignore-owned-attribute",
+      "bytes": 140,
+      "sha256": "52458239b7694f358b69e7dc467b92cf60c760fce5bcd2ddcd20e36bf541482e"
+    },
+    {
+      "label": "crlf-unicode/expect-owned-foreign-sibling",
+      "bytes": 197,
+      "sha256": "b1f2812f351ec5775a965eb838c9506e8b9ba02fa1819390013a01f03ce94205"
+    },
+    {
+      "label": "crlf-unicode/ignore-owned-foreign-sibling",
+      "bytes": 191,
+      "sha256": "ccfe56bf3dba3e6a41a7995befff95a91b6bf93584477de4a7e6dc22093fc9a4"
+    },
+    {
+      "label": "crlf-unicode/shorthand-free",
+      "bytes": 129,
+      "sha256": "054afcd50138452cad72c0b6229a0f4c83dc58cc837243aa6c34a9341950610e"
+    },
+    {
+      "label": "crlf-unicode/typeof-value-free",
+      "bytes": 130,
+      "sha256": "d1dcf131a5ef62d701bd55c4a5b61c141fb2143c76adc2c3fc78320d29def0db"
+    },
+    {
+      "label": "crlf-unicode/object-key",
+      "bytes": 149,
+      "sha256": "48ba8e31c2893992c70949cb6aceb2543a7d44964da7b8dd8a398ba60a5640fc"
+    },
+    {
+      "label": "crlf-unicode/member-key",
+      "bytes": 157,
+      "sha256": "97b50a60e35f6bfccf29e13d013f2045f2f65eb4e31885a0b518e2901337e77f"
+    },
+    {
+      "label": "crlf-unicode/string-comment-role",
+      "bytes": 156,
+      "sha256": "8311eab23fb2d5521257322193e8883435bda659ae6d9105cc5311a372b13219"
+    },
+    {
+      "label": "crlf-unicode/template-literal-raw",
+      "bytes": 148,
+      "sha256": "bed7195315b9b4fa6c7d32fcd9e7e99ff4094708999c330e06b01c1f39509ad8"
+    },
+    {
+      "label": "crlf-unicode/template-literal-value",
+      "bytes": 145,
+      "sha256": "8d435065d6423ae5d3519beb107078a13f77c05204ce5a2d08b5866386fb4fae"
+    },
+    {
+      "label": "crlf-unicode/callback-shadow",
+      "bytes": 161,
+      "sha256": "d7eb092f28ca1c42cdedee509f10cee9f845a08d703c8b63c200e2bbe4308796"
+    },
+    {
+      "label": "crlf-unicode/callback-mixed",
+      "bytes": 159,
+      "sha256": "da4de69aa3a9a58b7b8a1d4553852bcbe48adb6ea08faf7373af9d8f521b2b74"
+    },
+    {
+      "label": "crlf-unicode/callback-free",
+      "bytes": 157,
+      "sha256": "5a667cc67ce134af71ec247047c30d0aaa75011b13391f89e5e334b605da9044"
+    },
+    {
+      "label": "crlf-unicode/computed-key-free",
+      "bytes": 134,
+      "sha256": "5c8b9f67e0be30749bd419d2e4f92109526ad1b241c7a6a17c133bd3b849fb76"
+    },
+    {
+      "label": "crlf-unicode/mixed-loop-scope",
+      "bytes": 201,
+      "sha256": "24a7859b546ee5cf637cd023806c79c6317970920fb16d2fa1c9679dc92e27f8"
+    },
+    {
+      "label": "crlf-unicode/mixed-slot-scope",
+      "bytes": 336,
+      "sha256": "78f17ce01988d1af113b2814988e763cb6dcaf5321c848ec6f8f730d70306214"
+    },
+    {
+      "label": "crlf-unicode/destructured-callback-shadow",
+      "bytes": 183,
+      "sha256": "cf585b2bdf01233476ca83cf08a97356ac823c289db44bafc46a44e4fe820e0c"
+    }
+  ],
+  "actualOutcomes": [
+    {
+      "id": "lf/original/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/original",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/valid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/undeclared-only/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/undeclared-only",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/repaired/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/repaired",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/repeated/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/repeated",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/optional/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/optional",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/call/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/call",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/v-for-source/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/v-for-source",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/intentional-any/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/intentional-any",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/declared-unknown/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/declared-unknown",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/plugin-valid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/plugin-valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/plugin-invalid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/plugin-invalid",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/setup-shadow/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/setup-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/loop-shadow/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/loop-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/slot-shadow/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/slot-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/css-module/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/css-module",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/own-props/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/own-props",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/options-own-method/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/options-own-method",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/expect-error-opening-child/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/expect-error-opening-child",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/ignore-opening-child/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/ignore-opening-child",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/expect-owned-interpolation/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/expect-owned-interpolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/ignore-owned-interpolation/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/ignore-owned-interpolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/expect-owned-attribute/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/expect-owned-attribute",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/ignore-owned-attribute/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/ignore-owned-attribute",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/expect-owned-foreign-sibling/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/expect-owned-foreign-sibling",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/ignore-owned-foreign-sibling/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/ignore-owned-foreign-sibling",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/shorthand-free/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/shorthand-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/typeof-value-free/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/typeof-value-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/object-key/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/object-key",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/member-key/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/member-key",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/string-comment-role/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/string-comment-role",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/template-literal-raw/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/template-literal-raw",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/template-literal-value/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/template-literal-value",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/callback-shadow/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/callback-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/callback-mixed/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/callback-mixed",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/callback-free/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/callback-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/computed-key-free/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/computed-key-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/mixed-loop-scope/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/mixed-loop-scope",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/mixed-slot-scope/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/mixed-slot-scope",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/destructured-callback-shadow/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "lf/destructured-callback-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/original/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/original",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/valid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/undeclared-only/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/undeclared-only",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/repaired/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/repaired",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/repeated/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/repeated",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/optional/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/optional",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/call/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/call",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/v-for-source/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/v-for-source",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/intentional-any/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/intentional-any",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/declared-unknown/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/declared-unknown",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/plugin-valid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/plugin-valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/plugin-invalid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/plugin-invalid",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/setup-shadow/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/setup-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/loop-shadow/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/loop-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/slot-shadow/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/slot-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/css-module/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/css-module",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/own-props/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/own-props",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/options-own-method/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/options-own-method",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/expect-error-opening-child/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/expect-error-opening-child",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/ignore-opening-child/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/ignore-opening-child",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/expect-owned-interpolation/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/expect-owned-interpolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/ignore-owned-interpolation/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/ignore-owned-interpolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/expect-owned-attribute/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/expect-owned-attribute",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/ignore-owned-attribute/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/ignore-owned-attribute",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/expect-owned-foreign-sibling/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/expect-owned-foreign-sibling",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/ignore-owned-foreign-sibling/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/ignore-owned-foreign-sibling",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/shorthand-free/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/shorthand-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/typeof-value-free/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/typeof-value-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/object-key/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/object-key",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/member-key/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/member-key",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/string-comment-role/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/string-comment-role",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/template-literal-raw/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/template-literal-raw",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/template-literal-value/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/template-literal-value",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/callback-shadow/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/callback-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/callback-mixed/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/callback-mixed",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/callback-free/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/callback-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/computed-key-free/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/computed-key-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/mixed-loop-scope/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/mixed-loop-scope",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/mixed-slot-scope/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/mixed-slot-scope",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/destructured-callback-shadow/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "crlf-unicode/destructured-callback-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "profile/no-dollar",
+      "outcome": "pass"
+    },
+    {
+      "id": "profile/disabled",
+      "outcome": "pass"
+    },
+    {
+      "id": "profile/same-scope-repeat",
+      "outcome": "pass"
+    },
+    {
+      "id": "profile/actual-scope-isolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/named/valid/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/named/valid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/named/invalid/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/named/invalid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/named/repaired/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/named/repaired/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/spread/valid/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/spread/valid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/spread/invalid/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/spread/invalid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/spread/repaired/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/spread/repaired/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/slot-expect/valid/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/slot-expect/valid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/slot-expect/invalid/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/slot-expect/invalid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/slot-expect/repaired/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/slot-expect/repaired/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/callback-expect/valid/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/callback-expect/valid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/callback-expect/invalid/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/callback-expect/invalid/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/callback-expect/repaired/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/callback-expect/repaired/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/slot-expect-strict-unused/unused/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/slot-expect-strict-unused/unused/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/callback-expect-strict-unused/unused/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/copy/callback-expect-strict-unused/unused/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/collision/loop-receiver-collision/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/collision/loop-receiver-collision/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/collision/callback-receiver-collision/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/collision/callback-receiver-collision/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/collision/escaped-callback-receiver-collision/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/collision/escaped-callback-receiver-collision/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/closed-protocol",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/named/valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/named/invalid",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/named/repaired",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/spread/valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/spread/invalid",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/spread/repaired",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/slot-expect/valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/slot-expect/invalid",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/slot-expect/repaired",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/callback-expect/valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/callback-expect/invalid",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/callback-expect/repaired",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/slot-expect-strict-unused/unused",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/copy/callback-expect-strict-unused/unused",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/collision/loop-receiver-collision",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/collision/callback-receiver-collision",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/protocol/collision/escaped-callback-receiver-collision",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/named/whole-repair-determinism",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/spread/whole-repair-determinism",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/slot-expect/whole-repair-determinism",
+      "outcome": "pass"
+    },
+    {
+      "id": "aux/callback-expect/whole-repair-determinism",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/unresolved-value/frozen-independent-5.9",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/unresolved-value/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/unresolved-value/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/unresolved-type-query/frozen-independent-5.9",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/unresolved-type-query/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/unresolved-type-query/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/unrelated-function-name/frozen-independent-5.9",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/unrelated-function-name/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/unrelated-function-name/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/outer-script-binding/frozen-independent-5.9",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/outer-script-binding/reported-beta",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/outer-script-binding/official-nightly",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/closed-protocol",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/unresolved-value/symbols-and-geometry",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/unresolved-type-query/symbols-and-geometry",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/unrelated-function-name/symbols-and-geometry",
+      "outcome": "pass"
+    },
+    {
+      "id": "receiver-plan/outer-script-binding/symbols-and-geometry",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/3/original",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/original",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/4/valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/5/undeclared-only",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/undeclared-only",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/6/repaired",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/repaired",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/7/repeated",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/repeated",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/8/optional",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/optional",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/9/call",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/call",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/10/v-for-source",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/v-for-source",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/11/intentional-any",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/intentional-any",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/12/declared-unknown",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/declared-unknown",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/13/plugin-valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/plugin-valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/14/plugin-invalid",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/plugin-invalid",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/15/setup-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/setup-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/16/loop-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/loop-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/17/slot-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/slot-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/18/css-module",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/css-module",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/19/own-props",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/own-props",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/20/options-own-method",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/options-own-method",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/21/expect-error-opening-child",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/expect-error-opening-child",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/22/ignore-opening-child",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/ignore-opening-child",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/23/expect-owned-interpolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/expect-owned-interpolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/24/ignore-owned-interpolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/ignore-owned-interpolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/25/expect-owned-attribute",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/expect-owned-attribute",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/26/ignore-owned-attribute",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/ignore-owned-attribute",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/27/expect-owned-foreign-sibling",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/expect-owned-foreign-sibling",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/28/ignore-owned-foreign-sibling",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/ignore-owned-foreign-sibling",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/29/shorthand-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/shorthand-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/30/typeof-value-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/typeof-value-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/31/object-key",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/object-key",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/32/member-key",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/member-key",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/33/string-comment-role",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/string-comment-role",
+      "outcome": "gap",
+      "detail": "AssertionError [ERR_ASSERTION]: complete generated text, mapping order, directives and all opaque fields\n+ actual - expected\n\n+ '{\"diagnostics\":[],\"extension\":\".tsx\",\"mappings\":[[1058,12,25,12,0,1048575],[1714,6,70,9,1,0],[1720,9,70,9,0,1048575],[1729,7,79,7,0,1048575],[1737,11,98,11,0,1048575]],\"text\":\"/// <reference lib=\\\\\"es2022\\\\\" />\\\\n/// <reference lib=\\\\\"dom\\\\\" />\\\\n/// <reference lib=\\\\\"dom.iterable\\\\\" />\\\\n// ============================================\\\\n// Virtual TypeScript for Vue SFC Type Checking\\\\n// Generated by vize\\\\n// ============================================\\\\n\\\\nimport type {} from \\\\\"vize/virtual-ts\\\\\";\\\\n// ========== Module Scope (imports) ==========\\\\n\\\\n// ========== Exported Types ==========\\\\nexport type Props = {};\\\\n\\\\n// ========== Setup Scope ==========\\\\nfunction __setup() {\\\\n  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)\\\\n  const defineProps = __vize_defineProps;\\\\n  const defineEmits = __vize_defineEmits;\\\\n  const defineExpose = __vize_defineExpose;\\\\n  const defineModel = __vize_defineModel;\\\\n  const defineSlots = __vize_defineSlots;\\\\n  const withDefaults = __vize_withDefaults;\\\\n  const useTemplateRef = __vize_useTemplateRef;\\\\n  // Mark compiler macros as used\\\\n  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;\\\\n\\\\n  // User setup code\\\\n  \\\\n  const n = 1;\\\\n  \\\\n  // @vize-map: 1053:1074 -> 0:14\\\\n\\\\n  // ========== Template Scope (inherits from setup) ==========\\\\n  ;(function __template() {\\\\n    // Vue template context (delegates to ComponentPublicInstance)\\\\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\\\\n    type __Ctx = import(\\'vue\\').ComponentPublicInstance;\\\\n    const __ctx = (void 0) as unknown as __Ctx;\\\\n    const $attrs = __ctx.$attrs;\\\\n    const $slots = __ctx.$slots;\\\\n    const $refs = __ctx.$refs;\\\\n    const $emit = __ctx.$emit;\\\\n    void __ctx; void $attrs; void $slots; void $refs; void $emit;\\\\n\\\\n  void (__ctx.$declared.known   + \\\\\"$ghost\\\\\"); // Interpolation\\\\n  // @vize-map: expr -> 70:109\\\\n\\\\n  // Reference setup bindings (used in template/CSS v-bind)\\\\n  void n;\\\\n  })();\\\\n}\\\\n\\\\n// Invoke setup to verify types\\\\n__setup();\\\\n\\\\nexport type Emits = {};\\\\ntype $Slots = {};\\\\nexport type { $Slots as Slots };\\\\n\\\\n// ========== Default Export ==========\\\\ntype $ComponentInstance = {\\\\n  $props: Props;\\\\n  readonly __vizeRawProps?: Props;\\\\n  $emit: $PublicEmit<Emits>;\\\\n  $slots: $PublicSlots<$Slots>;\\\\n} & $ComponentPublicBase;\\\\ntype $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;\\\\ntype $VueComponentOptions = {\\\\n  [key: string]: any;\\\\n  name?: string;\\\\n  __name?: string;\\\\n  __file?: string;\\\\n  __vccOpts?: any;\\\\n  props?: any;\\\\n  emits?: any;\\\\n  slots?: any;\\\\n  setup?: (this: void, props: Readonly<Props>, ctx: any) => any;\\\\n  render?: Function;\\\\n  components?: any;\\\\n  directives?: any;\\\\n  inheritAttrs?: boolean;\\\\n  compatConfig?: any;\\\\n  call?: (this: unknown, ...args: unknown[]) => never;\\\\n  __isFragment?: never;\\\\n  __isTeleport?: never;\\\\n  __isSuspense?: never;\\\\n  __defaults?: any;\\\\n  __vapor?: boolean;\\\\n  __multiRoot?: boolean;\\\\n  __isKeepAlive?: boolean;\\\\n  __isBuiltIn?: boolean;\\\\n};\\\\ndeclare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<\\\\\"div\\\\\">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;\\\\ndeclare const Globals: typeof __vize_component__;\\\\nexport default Globals;\\\\n\"}'\n- '{\"diagnostics\":[],\"extension\":\".tsx\",\"mappings\":[[1058,12,25,12,0,1048575],[1714,6,70,9,1,0],[1720,9,70,9,0,1048575],[1729,19,79,19,1,3]],\"text\":\"/// <reference lib=\\\\\"es2022\\\\\" />\\\\n/// <reference lib=\\\\\"dom\\\\\" />\\\\n/// <reference lib=\\\\\"dom.iterable\\\\\" />\\\\n// ============================================\\\\n// Virtual TypeScript for Vue SFC Type Checking\\\\n// Generated by vize\\\\n// ============================================\\\\n\\\\nimport type {} from \\\\\"vize/virtual-ts\\\\\";\\\\n// ========== Module Scope (imports) ==========\\\\n\\\\n// ========== Exported Types ==========\\\\nexport type Props = {};\\\\n\\\\n// ========== Setup Scope ==========\\\\nfunction __setup() {\\\\n  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)\\\\n  const defineProps = __vize_defineProps;\\\\n  const defineEmits = __vize_defineEmits;\\\\n  const defineExpose = __vize_defineExpose;\\\\n  const defineModel = __vize_defineModel;\\\\n  const defineSlots = __vize_defineSlots;\\\\n  const withDefaults = __vize_withDefaults;\\\\n  const useTemplateRef = __vize_useTemplateRef;\\\\n  // Mark compiler macros as used\\\\n  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;\\\\n\\\\n  // User setup code\\\\n  \\\\n  const n = 1;\\\\n  \\\\n  // @vize-map: 1053:1074 -> 0:14\\\\n\\\\n  // ========== Template Scope (inherits from setup) ==========\\\\n  ;(function __template() {\\\\n    // Vue template context (delegates to ComponentPublicInstance)\\\\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\\\\n    type __Ctx = import(\\'vue\\').ComponentPublicInstance;\\\\n    const __ctx = (void 0) as unknown as __Ctx;\\\\n    const $attrs = __ctx.$attrs;\\\\n    const $slots = __ctx.$slots;\\\\n    const $refs = __ctx.$refs;\\\\n    const $emit = __ctx.$emit;\\\\n    void __ctx; void $attrs; void $slots; void $refs; void $emit;\\\\n\\\\n  void (__ctx.$declared.known   + \\\\\"$ghost\\\\\"); // Interpolation\\\\n  // @vize-map: expr -> 70:109\\\\n\\\\n  // Reference setup bindings (used in template/CSS v-bind)\\\\n  void n;\\\\n  })();\\\\n}\\\\n\\\\n// Invoke setup to verify types\\\\n__setup();\\\\n\\\\nexport type Emits = {};\\\\ntype $Slots = {};\\\\nexport type { $Slots as Slots };\\\\n\\\\n// ========== Default Export ==========\\\\ntype $ComponentInstance = {\\\\n  $props: Props;\\\\n  readonly __vizeRawProps?: Props;\\\\n  $emit: $PublicEmit<Emits>;\\\\n  $slots: $PublicSlots<$Slots>;\\\\n} & $ComponentPublicBase;\\\\ntype $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;\\\\ntype $VueComponentOptions = {\\\\n  [key: string]: any;\\\\n  name?: string;\\\\n  __name?: string;\\\\n  __file?: string;\\\\n  __vccOpts?: any;\\\\n  props?: any;\\\\n  emits?: any;\\\\n  slots?: any;\\\\n  setup?: (this: void, props: Readonly<Props>, ctx: any) => any;\\\\n  render?: Function;\\\\n  components?: any;\\\\n  directives?: any;\\\\n  inheritAttrs?: boolean;\\\\n  compatConfig?: any;\\\\n  call?: (this: unknown, ...args: unknown[]) => never;\\\\n  __isFragment?: never;\\\\n  __isTeleport?: never;\\\\n  __isSuspense?: never;\\\\n  __defaults?: any;\\\\n  __vapor?: boolean;\\\\n  __multiRoot?: boolean;\\\\n  __isKeepAlive?: boolean;\\\\n  __isBuiltIn?: boolean;\\\\n};\\\\ndeclare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<\\\\\"div\\\\\">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;\\\\ndeclare const Globals: typeof __vize_component__;\\\\nexport default Globals;\\\\n\"}'\n"
+    },
+    {
+      "id": "protocol/34/template-literal-raw",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/template-literal-raw",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/35/template-literal-value",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/template-literal-value",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/36/callback-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/callback-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/37/callback-mixed",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/callback-mixed",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/38/callback-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/callback-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/39/computed-key-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/computed-key-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/40/mixed-loop-scope",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/mixed-loop-scope",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/41/mixed-slot-scope",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/mixed-slot-scope",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/42/destructured-callback-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/lf/destructured-callback-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/43/original",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/original",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/44/valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/45/undeclared-only",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/undeclared-only",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/46/repaired",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/repaired",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/47/repeated",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/repeated",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/48/optional",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/optional",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/49/call",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/call",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/50/v-for-source",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/v-for-source",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/51/intentional-any",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/intentional-any",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/52/declared-unknown",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/declared-unknown",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/53/plugin-valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/plugin-valid",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/54/plugin-invalid",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/plugin-invalid",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/55/setup-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/setup-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/56/loop-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/loop-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/57/slot-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/slot-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/58/css-module",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/css-module",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/59/own-props",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/own-props",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/60/options-own-method",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/options-own-method",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/61/expect-error-opening-child",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/expect-error-opening-child",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/62/ignore-opening-child",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/ignore-opening-child",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/63/expect-owned-interpolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/expect-owned-interpolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/64/ignore-owned-interpolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/ignore-owned-interpolation",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/65/expect-owned-attribute",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/expect-owned-attribute",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/66/ignore-owned-attribute",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/ignore-owned-attribute",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/67/expect-owned-foreign-sibling",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/expect-owned-foreign-sibling",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/68/ignore-owned-foreign-sibling",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/ignore-owned-foreign-sibling",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/69/shorthand-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/shorthand-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/70/typeof-value-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/typeof-value-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/71/object-key",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/object-key",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/72/member-key",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/member-key",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/73/string-comment-role",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/string-comment-role",
+      "outcome": "gap",
+      "detail": "AssertionError [ERR_ASSERTION]: complete generated text, mapping order, directives and all opaque fields\n+ actual - expected\n\n+ '{\"diagnostics\":[],\"extension\":\".tsx\",\"mappings\":[[1058,12,26,12,0,1048575],[1714,18,75,18,0,1048575],[1732,6,93,9,1,0],[1738,9,93,9,0,1048575],[1747,7,102,7,0,1048575],[1755,11,121,11,0,1048575]],\"text\":\"/// <reference lib=\\\\\"es2022\\\\\" />\\\\n/// <reference lib=\\\\\"dom\\\\\" />\\\\n/// <reference lib=\\\\\"dom.iterable\\\\\" />\\\\n// ============================================\\\\n// Virtual TypeScript for Vue SFC Type Checking\\\\n// Generated by vize\\\\n// ============================================\\\\n\\\\nimport type {} from \\\\\"vize/virtual-ts\\\\\";\\\\n// ========== Module Scope (imports) ==========\\\\n\\\\n// ========== Exported Types ==========\\\\nexport type Props = {};\\\\n\\\\n// ========== Setup Scope ==========\\\\nfunction __setup() {\\\\n  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)\\\\n  const defineProps = __vize_defineProps;\\\\n  const defineEmits = __vize_defineEmits;\\\\n  const defineExpose = __vize_defineExpose;\\\\n  const defineModel = __vize_defineModel;\\\\n  const defineSlots = __vize_defineSlots;\\\\n  const withDefaults = __vize_withDefaults;\\\\n  const useTemplateRef = __vize_useTemplateRef;\\\\n  // Mark compiler macros as used\\\\n  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;\\\\n\\\\n  // User setup code\\\\n  \\\\n  const n = 1;\\\\n  \\\\n  // @vize-map: 1053:1074 -> 0:16\\\\n\\\\n  // ========== Template Scope (inherits from setup) ==========\\\\n  ;(function __template() {\\\\n    // Vue template context (delegates to ComponentPublicInstance)\\\\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\\\\n    type __Ctx = import(\\'vue\\').ComponentPublicInstance;\\\\n    const __ctx = (void 0) as unknown as __Ctx;\\\\n    const $attrs = __ctx.$attrs;\\\\n    const $slots = __ctx.$slots;\\\\n    const $refs = __ctx.$refs;\\\\n    const $emit = __ctx.$emit;\\\\n    void __ctx; void $attrs; void $slots; void $refs; void $emit;\\\\n\\\\n  void (\\\\\"日本語🍣\\\\\" + __ctx.$declared.known   + \\\\\"$ghost\\\\\"); // Interpolation\\\\n  // @vize-map: expr -> 75:132\\\\n\\\\n  // Reference setup bindings (used in template/CSS v-bind)\\\\n  void n;\\\\n  })();\\\\n}\\\\n\\\\n// Invoke setup to verify types\\\\n__setup();\\\\n\\\\nexport type Emits = {};\\\\ntype $Slots = {};\\\\nexport type { $Slots as Slots };\\\\n\\\\n// ========== Default Export ==========\\\\ntype $ComponentInstance = {\\\\n  $props: Props;\\\\n  readonly __vizeRawProps?: Props;\\\\n  $emit: $PublicEmit<Emits>;\\\\n  $slots: $PublicSlots<$Slots>;\\\\n} & $ComponentPublicBase;\\\\ntype $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;\\\\ntype $VueComponentOptions = {\\\\n  [key: string]: any;\\\\n  name?: string;\\\\n  __name?: string;\\\\n  __file?: string;\\\\n  __vccOpts?: any;\\\\n  props?: any;\\\\n  emits?: any;\\\\n  slots?: any;\\\\n  setup?: (this: void, props: Readonly<Props>, ctx: any) => any;\\\\n  render?: Function;\\\\n  components?: any;\\\\n  directives?: any;\\\\n  inheritAttrs?: boolean;\\\\n  compatConfig?: any;\\\\n  call?: (this: unknown, ...args: unknown[]) => never;\\\\n  __isFragment?: never;\\\\n  __isTeleport?: never;\\\\n  __isSuspense?: never;\\\\n  __defaults?: any;\\\\n  __vapor?: boolean;\\\\n  __multiRoot?: boolean;\\\\n  __isKeepAlive?: boolean;\\\\n  __isBuiltIn?: boolean;\\\\n};\\\\ndeclare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<\\\\\"div\\\\\">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;\\\\ndeclare const Globals: typeof __vize_component__;\\\\nexport default Globals;\\\\n\"}'\n- '{\"diagnostics\":[],\"extension\":\".tsx\",\"mappings\":[[1058,12,26,12,0,1048575],[1714,18,75,18,0,1048575],[1732,6,93,9,1,0],[1738,9,93,9,0,1048575],[1747,19,102,19,1,3]],\"text\":\"/// <reference lib=\\\\\"es2022\\\\\" />\\\\n/// <reference lib=\\\\\"dom\\\\\" />\\\\n/// <reference lib=\\\\\"dom.iterable\\\\\" />\\\\n// ============================================\\\\n// Virtual TypeScript for Vue SFC Type Checking\\\\n// Generated by vize\\\\n// ============================================\\\\n\\\\nimport type {} from \\\\\"vize/virtual-ts\\\\\";\\\\n// ========== Module Scope (imports) ==========\\\\n\\\\n// ========== Exported Types ==========\\\\nexport type Props = {};\\\\n\\\\n// ========== Setup Scope ==========\\\\nfunction __setup() {\\\\n  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)\\\\n  const defineProps = __vize_defineProps;\\\\n  const defineEmits = __vize_defineEmits;\\\\n  const defineExpose = __vize_defineExpose;\\\\n  const defineModel = __vize_defineModel;\\\\n  const defineSlots = __vize_defineSlots;\\\\n  const withDefaults = __vize_withDefaults;\\\\n  const useTemplateRef = __vize_useTemplateRef;\\\\n  // Mark compiler macros as used\\\\n  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;\\\\n\\\\n  // User setup code\\\\n  \\\\n  const n = 1;\\\\n  \\\\n  // @vize-map: 1053:1074 -> 0:16\\\\n\\\\n  // ========== Template Scope (inherits from setup) ==========\\\\n  ;(function __template() {\\\\n    // Vue template context (delegates to ComponentPublicInstance)\\\\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\\\\n    type __Ctx = import(\\'vue\\').ComponentPublicInstance;\\\\n    const __ctx = (void 0) as unknown as __Ctx;\\\\n    const $attrs = __ctx.$attrs;\\\\n    const $slots = __ctx.$slots;\\\\n    const $refs = __ctx.$refs;\\\\n    const $emit = __ctx.$emit;\\\\n    void __ctx; void $attrs; void $slots; void $refs; void $emit;\\\\n\\\\n  void (\\\\\"日本語🍣\\\\\" + __ctx.$declared.known   + \\\\\"$ghost\\\\\"); // Interpolation\\\\n  // @vize-map: expr -> 75:132\\\\n\\\\n  // Reference setup bindings (used in template/CSS v-bind)\\\\n  void n;\\\\n  })();\\\\n}\\\\n\\\\n// Invoke setup to verify types\\\\n__setup();\\\\n\\\\nexport type Emits = {};\\\\ntype $Slots = {};\\\\nexport type { $Slots as Slots };\\\\n\\\\n// ========== Default Export ==========\\\\ntype $ComponentInstance = {\\\\n  $props: Props;\\\\n  readonly __vizeRawProps?: Props;\\\\n  $emit: $PublicEmit<Emits>;\\\\n  $slots: $PublicSlots<$Slots>;\\\\n} & $ComponentPublicBase;\\\\ntype $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;\\\\ntype $VueComponentOptions = {\\\\n  [key: string]: any;\\\\n  name?: string;\\\\n  __name?: string;\\\\n  __file?: string;\\\\n  __vccOpts?: any;\\\\n  props?: any;\\\\n  emits?: any;\\\\n  slots?: any;\\\\n  setup?: (this: void, props: Readonly<Props>, ctx: any) => any;\\\\n  render?: Function;\\\\n  components?: any;\\\\n  directives?: any;\\\\n  inheritAttrs?: boolean;\\\\n  compatConfig?: any;\\\\n  call?: (this: unknown, ...args: unknown[]) => never;\\\\n  __isFragment?: never;\\\\n  __isTeleport?: never;\\\\n  __isSuspense?: never;\\\\n  __defaults?: any;\\\\n  __vapor?: boolean;\\\\n  __multiRoot?: boolean;\\\\n  __isKeepAlive?: boolean;\\\\n  __isBuiltIn?: boolean;\\\\n};\\\\ndeclare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<\\\\\"div\\\\\">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;\\\\ndeclare const Globals: typeof __vize_component__;\\\\nexport default Globals;\\\\n\"}'\n"
+    },
+    {
+      "id": "protocol/74/template-literal-raw",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/template-literal-raw",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/75/template-literal-value",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/template-literal-value",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/76/callback-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/callback-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/77/callback-mixed",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/callback-mixed",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/78/callback-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/callback-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/79/computed-key-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/computed-key-free",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/80/mixed-loop-scope",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/mixed-loop-scope",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/81/mixed-slot-scope",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/mixed-slot-scope",
+      "outcome": "pass"
+    },
+    {
+      "id": "protocol/82/destructured-callback-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "whole-packet/crlf-unicode/destructured-callback-shadow",
+      "outcome": "pass"
+    },
+    {
+      "id": "geometry/mutation-negatives",
+      "outcome": "pass"
+    }
+  ],
+  "actualQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "hostMatrixRequired": false,
+    "outcomes": [
+      {
+        "id": "lf/original/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/original",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/undeclared-only/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/undeclared-only",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/repaired/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/repeated/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/repeated",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/optional/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/optional",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/call/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/call",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/v-for-source/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/v-for-source",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/intentional-any/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/intentional-any",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/declared-unknown/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/declared-unknown",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/plugin-valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/plugin-valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/plugin-invalid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/plugin-invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/setup-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/setup-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/loop-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/loop-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/slot-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/slot-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/css-module/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/css-module",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/own-props/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/own-props",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/options-own-method/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/options-own-method",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-error-opening-child/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-error-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-opening-child/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-owned-interpolation/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-owned-interpolation/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-owned-attribute/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-owned-attribute/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-owned-foreign-sibling/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/expect-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-owned-foreign-sibling/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/ignore-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/shorthand-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/shorthand-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/typeof-value-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/typeof-value-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/object-key/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/object-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/member-key/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/member-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/string-comment-role/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/string-comment-role",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/template-literal-raw/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/template-literal-raw",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/template-literal-value/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/template-literal-value",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/callback-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/callback-mixed/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/callback-mixed",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/callback-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/callback-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/computed-key-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/computed-key-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/mixed-loop-scope/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/mixed-loop-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/mixed-slot-scope/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/mixed-slot-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/destructured-callback-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "lf/destructured-callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/original/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/original",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/undeclared-only/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/undeclared-only",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/repaired/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/repeated/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/repeated",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/optional/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/optional",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/call/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/call",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/v-for-source/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/v-for-source",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/intentional-any/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/intentional-any",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/declared-unknown/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/declared-unknown",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/plugin-valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/plugin-valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/plugin-invalid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/plugin-invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/setup-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/setup-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/loop-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/loop-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/slot-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/slot-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/css-module/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/css-module",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/own-props/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/own-props",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/options-own-method/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/options-own-method",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-error-opening-child/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-error-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-opening-child/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-owned-interpolation/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-owned-interpolation/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-owned-attribute/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-owned-attribute/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-owned-foreign-sibling/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/expect-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-owned-foreign-sibling/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/ignore-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/shorthand-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/shorthand-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/typeof-value-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/typeof-value-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/object-key/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/object-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/member-key/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/member-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/string-comment-role/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/string-comment-role",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/template-literal-raw/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/template-literal-raw",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/template-literal-value/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/template-literal-value",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/callback-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/callback-mixed/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/callback-mixed",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/callback-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/callback-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/computed-key-free/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/computed-key-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/mixed-loop-scope/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/mixed-loop-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/mixed-slot-scope/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/mixed-slot-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/destructured-callback-shadow/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "crlf-unicode/destructured-callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "profile/no-dollar",
+        "outcome": "pass"
+      },
+      {
+        "id": "profile/disabled",
+        "outcome": "pass"
+      },
+      {
+        "id": "profile/same-scope-repeat",
+        "outcome": "pass"
+      },
+      {
+        "id": "profile/actual-scope-isolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/named/valid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/named/valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/named/invalid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/named/invalid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/named/repaired/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/named/repaired/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/spread/valid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/spread/valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/spread/invalid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/spread/invalid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/spread/repaired/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/spread/repaired/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect/valid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect/valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect/invalid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect/invalid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect/repaired/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect/repaired/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect/valid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect/valid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect/invalid/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect/invalid/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect/repaired/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect/repaired/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect-strict-unused/unused/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/slot-expect-strict-unused/unused/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect-strict-unused/unused/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/copy/callback-expect-strict-unused/unused/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/collision/loop-receiver-collision/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/collision/loop-receiver-collision/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/collision/callback-receiver-collision/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/collision/callback-receiver-collision/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/collision/escaped-callback-receiver-collision/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/collision/escaped-callback-receiver-collision/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/closed-protocol",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/named/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/named/invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/named/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/spread/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/spread/invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/spread/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/slot-expect/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/slot-expect/invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/slot-expect/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/callback-expect/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/callback-expect/invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/callback-expect/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/slot-expect-strict-unused/unused",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/copy/callback-expect-strict-unused/unused",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/collision/loop-receiver-collision",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/collision/callback-receiver-collision",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/protocol/collision/escaped-callback-receiver-collision",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/named/whole-repair-determinism",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/spread/whole-repair-determinism",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/slot-expect/whole-repair-determinism",
+        "outcome": "pass"
+      },
+      {
+        "id": "aux/callback-expect/whole-repair-determinism",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-value/frozen-independent-5.9",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-value/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-value/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-type-query/frozen-independent-5.9",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-type-query/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-type-query/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unrelated-function-name/frozen-independent-5.9",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unrelated-function-name/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unrelated-function-name/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/outer-script-binding/frozen-independent-5.9",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/outer-script-binding/reported-beta",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/outer-script-binding/official-nightly",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/closed-protocol",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-value/symbols-and-geometry",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unresolved-type-query/symbols-and-geometry",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/unrelated-function-name/symbols-and-geometry",
+        "outcome": "pass"
+      },
+      {
+        "id": "receiver-plan/outer-script-binding/symbols-and-geometry",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/3/original",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/original",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/4/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/5/undeclared-only",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/undeclared-only",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/6/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/7/repeated",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/repeated",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/8/optional",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/optional",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/9/call",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/call",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/10/v-for-source",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/v-for-source",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/11/intentional-any",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/intentional-any",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/12/declared-unknown",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/declared-unknown",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/13/plugin-valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/plugin-valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/14/plugin-invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/plugin-invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/15/setup-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/setup-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/16/loop-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/loop-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/17/slot-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/slot-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/18/css-module",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/css-module",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/19/own-props",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/own-props",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/20/options-own-method",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/options-own-method",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/21/expect-error-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/expect-error-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/22/ignore-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/ignore-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/23/expect-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/expect-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/24/ignore-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/ignore-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/25/expect-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/expect-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/26/ignore-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/ignore-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/27/expect-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/expect-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/28/ignore-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/ignore-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/29/shorthand-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/shorthand-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/30/typeof-value-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/typeof-value-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/31/object-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/object-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/32/member-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/member-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/33/string-comment-role",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/string-comment-role",
+        "outcome": "gap",
+        "detail": "AssertionError [ERR_ASSERTION]: complete generated text, mapping order, directives and all opaque fields\n+ actual - expected\n\n+ '{\"diagnostics\":[],\"extension\":\".tsx\",\"mappings\":[[1058,12,25,12,0,1048575],[1714,6,70,9,1,0],[1720,9,70,9,0,1048575],[1729,7,79,7,0,1048575],[1737,11,98,11,0,1048575]],\"text\":\"/// <reference lib=\\\\\"es2022\\\\\" />\\\\n/// <reference lib=\\\\\"dom\\\\\" />\\\\n/// <reference lib=\\\\\"dom.iterable\\\\\" />\\\\n// ============================================\\\\n// Virtual TypeScript for Vue SFC Type Checking\\\\n// Generated by vize\\\\n// ============================================\\\\n\\\\nimport type {} from \\\\\"vize/virtual-ts\\\\\";\\\\n// ========== Module Scope (imports) ==========\\\\n\\\\n// ========== Exported Types ==========\\\\nexport type Props = {};\\\\n\\\\n// ========== Setup Scope ==========\\\\nfunction __setup() {\\\\n  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)\\\\n  const defineProps = __vize_defineProps;\\\\n  const defineEmits = __vize_defineEmits;\\\\n  const defineExpose = __vize_defineExpose;\\\\n  const defineModel = __vize_defineModel;\\\\n  const defineSlots = __vize_defineSlots;\\\\n  const withDefaults = __vize_withDefaults;\\\\n  const useTemplateRef = __vize_useTemplateRef;\\\\n  // Mark compiler macros as used\\\\n  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;\\\\n\\\\n  // User setup code\\\\n  \\\\n  const n = 1;\\\\n  \\\\n  // @vize-map: 1053:1074 -> 0:14\\\\n\\\\n  // ========== Template Scope (inherits from setup) ==========\\\\n  ;(function __template() {\\\\n    // Vue template context (delegates to ComponentPublicInstance)\\\\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\\\\n    type __Ctx = import(\\'vue\\').ComponentPublicInstance;\\\\n    const __ctx = (void 0) as unknown as __Ctx;\\\\n    const $attrs = __ctx.$attrs;\\\\n    const $slots = __ctx.$slots;\\\\n    const $refs = __ctx.$refs;\\\\n    const $emit = __ctx.$emit;\\\\n    void __ctx; void $attrs; void $slots; void $refs; void $emit;\\\\n\\\\n  void (__ctx.$declared.known   + \\\\\"$ghost\\\\\"); // Interpolation\\\\n  // @vize-map: expr -> 70:109\\\\n\\\\n  // Reference setup bindings (used in template/CSS v-bind)\\\\n  void n;\\\\n  })();\\\\n}\\\\n\\\\n// Invoke setup to verify types\\\\n__setup();\\\\n\\\\nexport type Emits = {};\\\\ntype $Slots = {};\\\\nexport type { $Slots as Slots };\\\\n\\\\n// ========== Default Export ==========\\\\ntype $ComponentInstance = {\\\\n  $props: Props;\\\\n  readonly __vizeRawProps?: Props;\\\\n  $emit: $PublicEmit<Emits>;\\\\n  $slots: $PublicSlots<$Slots>;\\\\n} & $ComponentPublicBase;\\\\ntype $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;\\\\ntype $VueComponentOptions = {\\\\n  [key: string]: any;\\\\n  name?: string;\\\\n  __name?: string;\\\\n  __file?: string;\\\\n  __vccOpts?: any;\\\\n  props?: any;\\\\n  emits?: any;\\\\n  slots?: any;\\\\n  setup?: (this: void, props: Readonly<Props>, ctx: any) => any;\\\\n  render?: Function;\\\\n  components?: any;\\\\n  directives?: any;\\\\n  inheritAttrs?: boolean;\\\\n  compatConfig?: any;\\\\n  call?: (this: unknown, ...args: unknown[]) => never;\\\\n  __isFragment?: never;\\\\n  __isTeleport?: never;\\\\n  __isSuspense?: never;\\\\n  __defaults?: any;\\\\n  __vapor?: boolean;\\\\n  __multiRoot?: boolean;\\\\n  __isKeepAlive?: boolean;\\\\n  __isBuiltIn?: boolean;\\\\n};\\\\ndeclare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<\\\\\"div\\\\\">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;\\\\ndeclare const Globals: typeof __vize_component__;\\\\nexport default Globals;\\\\n\"}'\n- '{\"diagnostics\":[],\"extension\":\".tsx\",\"mappings\":[[1058,12,25,12,0,1048575],[1714,6,70,9,1,0],[1720,9,70,9,0,1048575],[1729,19,79,19,1,3]],\"text\":\"/// <reference lib=\\\\\"es2022\\\\\" />\\\\n/// <reference lib=\\\\\"dom\\\\\" />\\\\n/// <reference lib=\\\\\"dom.iterable\\\\\" />\\\\n// ============================================\\\\n// Virtual TypeScript for Vue SFC Type Checking\\\\n// Generated by vize\\\\n// ============================================\\\\n\\\\nimport type {} from \\\\\"vize/virtual-ts\\\\\";\\\\n// ========== Module Scope (imports) ==========\\\\n\\\\n// ========== Exported Types ==========\\\\nexport type Props = {};\\\\n\\\\n// ========== Setup Scope ==========\\\\nfunction __setup() {\\\\n  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)\\\\n  const defineProps = __vize_defineProps;\\\\n  const defineEmits = __vize_defineEmits;\\\\n  const defineExpose = __vize_defineExpose;\\\\n  const defineModel = __vize_defineModel;\\\\n  const defineSlots = __vize_defineSlots;\\\\n  const withDefaults = __vize_withDefaults;\\\\n  const useTemplateRef = __vize_useTemplateRef;\\\\n  // Mark compiler macros as used\\\\n  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;\\\\n\\\\n  // User setup code\\\\n  \\\\n  const n = 1;\\\\n  \\\\n  // @vize-map: 1053:1074 -> 0:14\\\\n\\\\n  // ========== Template Scope (inherits from setup) ==========\\\\n  ;(function __template() {\\\\n    // Vue template context (delegates to ComponentPublicInstance)\\\\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\\\\n    type __Ctx = import(\\'vue\\').ComponentPublicInstance;\\\\n    const __ctx = (void 0) as unknown as __Ctx;\\\\n    const $attrs = __ctx.$attrs;\\\\n    const $slots = __ctx.$slots;\\\\n    const $refs = __ctx.$refs;\\\\n    const $emit = __ctx.$emit;\\\\n    void __ctx; void $attrs; void $slots; void $refs; void $emit;\\\\n\\\\n  void (__ctx.$declared.known   + \\\\\"$ghost\\\\\"); // Interpolation\\\\n  // @vize-map: expr -> 70:109\\\\n\\\\n  // Reference setup bindings (used in template/CSS v-bind)\\\\n  void n;\\\\n  })();\\\\n}\\\\n\\\\n// Invoke setup to verify types\\\\n__setup();\\\\n\\\\nexport type Emits = {};\\\\ntype $Slots = {};\\\\nexport type { $Slots as Slots };\\\\n\\\\n// ========== Default Export ==========\\\\ntype $ComponentInstance = {\\\\n  $props: Props;\\\\n  readonly __vizeRawProps?: Props;\\\\n  $emit: $PublicEmit<Emits>;\\\\n  $slots: $PublicSlots<$Slots>;\\\\n} & $ComponentPublicBase;\\\\ntype $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;\\\\ntype $VueComponentOptions = {\\\\n  [key: string]: any;\\\\n  name?: string;\\\\n  __name?: string;\\\\n  __file?: string;\\\\n  __vccOpts?: any;\\\\n  props?: any;\\\\n  emits?: any;\\\\n  slots?: any;\\\\n  setup?: (this: void, props: Readonly<Props>, ctx: any) => any;\\\\n  render?: Function;\\\\n  components?: any;\\\\n  directives?: any;\\\\n  inheritAttrs?: boolean;\\\\n  compatConfig?: any;\\\\n  call?: (this: unknown, ...args: unknown[]) => never;\\\\n  __isFragment?: never;\\\\n  __isTeleport?: never;\\\\n  __isSuspense?: never;\\\\n  __defaults?: any;\\\\n  __vapor?: boolean;\\\\n  __multiRoot?: boolean;\\\\n  __isKeepAlive?: boolean;\\\\n  __isBuiltIn?: boolean;\\\\n};\\\\ndeclare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<\\\\\"div\\\\\">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;\\\\ndeclare const Globals: typeof __vize_component__;\\\\nexport default Globals;\\\\n\"}'\n"
+      },
+      {
+        "id": "protocol/34/template-literal-raw",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/template-literal-raw",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/35/template-literal-value",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/template-literal-value",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/36/callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/37/callback-mixed",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/callback-mixed",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/38/callback-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/callback-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/39/computed-key-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/computed-key-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/40/mixed-loop-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/mixed-loop-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/41/mixed-slot-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/mixed-slot-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/42/destructured-callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/lf/destructured-callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/43/original",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/original",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/44/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/45/undeclared-only",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/undeclared-only",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/46/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/repaired",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/47/repeated",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/repeated",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/48/optional",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/optional",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/49/call",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/call",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/50/v-for-source",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/v-for-source",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/51/intentional-any",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/intentional-any",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/52/declared-unknown",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/declared-unknown",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/53/plugin-valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/plugin-valid",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/54/plugin-invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/plugin-invalid",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/55/setup-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/setup-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/56/loop-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/loop-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/57/slot-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/slot-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/58/css-module",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/css-module",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/59/own-props",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/own-props",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/60/options-own-method",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/options-own-method",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/61/expect-error-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/expect-error-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/62/ignore-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/ignore-opening-child",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/63/expect-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/expect-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/64/ignore-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/ignore-owned-interpolation",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/65/expect-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/expect-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/66/ignore-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/ignore-owned-attribute",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/67/expect-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/expect-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/68/ignore-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/ignore-owned-foreign-sibling",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/69/shorthand-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/shorthand-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/70/typeof-value-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/typeof-value-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/71/object-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/object-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/72/member-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/member-key",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/73/string-comment-role",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/string-comment-role",
+        "outcome": "gap",
+        "detail": "AssertionError [ERR_ASSERTION]: complete generated text, mapping order, directives and all opaque fields\n+ actual - expected\n\n+ '{\"diagnostics\":[],\"extension\":\".tsx\",\"mappings\":[[1058,12,26,12,0,1048575],[1714,18,75,18,0,1048575],[1732,6,93,9,1,0],[1738,9,93,9,0,1048575],[1747,7,102,7,0,1048575],[1755,11,121,11,0,1048575]],\"text\":\"/// <reference lib=\\\\\"es2022\\\\\" />\\\\n/// <reference lib=\\\\\"dom\\\\\" />\\\\n/// <reference lib=\\\\\"dom.iterable\\\\\" />\\\\n// ============================================\\\\n// Virtual TypeScript for Vue SFC Type Checking\\\\n// Generated by vize\\\\n// ============================================\\\\n\\\\nimport type {} from \\\\\"vize/virtual-ts\\\\\";\\\\n// ========== Module Scope (imports) ==========\\\\n\\\\n// ========== Exported Types ==========\\\\nexport type Props = {};\\\\n\\\\n// ========== Setup Scope ==========\\\\nfunction __setup() {\\\\n  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)\\\\n  const defineProps = __vize_defineProps;\\\\n  const defineEmits = __vize_defineEmits;\\\\n  const defineExpose = __vize_defineExpose;\\\\n  const defineModel = __vize_defineModel;\\\\n  const defineSlots = __vize_defineSlots;\\\\n  const withDefaults = __vize_withDefaults;\\\\n  const useTemplateRef = __vize_useTemplateRef;\\\\n  // Mark compiler macros as used\\\\n  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;\\\\n\\\\n  // User setup code\\\\n  \\\\n  const n = 1;\\\\n  \\\\n  // @vize-map: 1053:1074 -> 0:16\\\\n\\\\n  // ========== Template Scope (inherits from setup) ==========\\\\n  ;(function __template() {\\\\n    // Vue template context (delegates to ComponentPublicInstance)\\\\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\\\\n    type __Ctx = import(\\'vue\\').ComponentPublicInstance;\\\\n    const __ctx = (void 0) as unknown as __Ctx;\\\\n    const $attrs = __ctx.$attrs;\\\\n    const $slots = __ctx.$slots;\\\\n    const $refs = __ctx.$refs;\\\\n    const $emit = __ctx.$emit;\\\\n    void __ctx; void $attrs; void $slots; void $refs; void $emit;\\\\n\\\\n  void (\\\\\"日本語🍣\\\\\" + __ctx.$declared.known   + \\\\\"$ghost\\\\\"); // Interpolation\\\\n  // @vize-map: expr -> 75:132\\\\n\\\\n  // Reference setup bindings (used in template/CSS v-bind)\\\\n  void n;\\\\n  })();\\\\n}\\\\n\\\\n// Invoke setup to verify types\\\\n__setup();\\\\n\\\\nexport type Emits = {};\\\\ntype $Slots = {};\\\\nexport type { $Slots as Slots };\\\\n\\\\n// ========== Default Export ==========\\\\ntype $ComponentInstance = {\\\\n  $props: Props;\\\\n  readonly __vizeRawProps?: Props;\\\\n  $emit: $PublicEmit<Emits>;\\\\n  $slots: $PublicSlots<$Slots>;\\\\n} & $ComponentPublicBase;\\\\ntype $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;\\\\ntype $VueComponentOptions = {\\\\n  [key: string]: any;\\\\n  name?: string;\\\\n  __name?: string;\\\\n  __file?: string;\\\\n  __vccOpts?: any;\\\\n  props?: any;\\\\n  emits?: any;\\\\n  slots?: any;\\\\n  setup?: (this: void, props: Readonly<Props>, ctx: any) => any;\\\\n  render?: Function;\\\\n  components?: any;\\\\n  directives?: any;\\\\n  inheritAttrs?: boolean;\\\\n  compatConfig?: any;\\\\n  call?: (this: unknown, ...args: unknown[]) => never;\\\\n  __isFragment?: never;\\\\n  __isTeleport?: never;\\\\n  __isSuspense?: never;\\\\n  __defaults?: any;\\\\n  __vapor?: boolean;\\\\n  __multiRoot?: boolean;\\\\n  __isKeepAlive?: boolean;\\\\n  __isBuiltIn?: boolean;\\\\n};\\\\ndeclare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<\\\\\"div\\\\\">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;\\\\ndeclare const Globals: typeof __vize_component__;\\\\nexport default Globals;\\\\n\"}'\n- '{\"diagnostics\":[],\"extension\":\".tsx\",\"mappings\":[[1058,12,26,12,0,1048575],[1714,18,75,18,0,1048575],[1732,6,93,9,1,0],[1738,9,93,9,0,1048575],[1747,19,102,19,1,3]],\"text\":\"/// <reference lib=\\\\\"es2022\\\\\" />\\\\n/// <reference lib=\\\\\"dom\\\\\" />\\\\n/// <reference lib=\\\\\"dom.iterable\\\\\" />\\\\n// ============================================\\\\n// Virtual TypeScript for Vue SFC Type Checking\\\\n// Generated by vize\\\\n// ============================================\\\\n\\\\nimport type {} from \\\\\"vize/virtual-ts\\\\\";\\\\n// ========== Module Scope (imports) ==========\\\\n\\\\n// ========== Exported Types ==========\\\\nexport type Props = {};\\\\n\\\\n// ========== Setup Scope ==========\\\\nfunction __setup() {\\\\n  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)\\\\n  const defineProps = __vize_defineProps;\\\\n  const defineEmits = __vize_defineEmits;\\\\n  const defineExpose = __vize_defineExpose;\\\\n  const defineModel = __vize_defineModel;\\\\n  const defineSlots = __vize_defineSlots;\\\\n  const withDefaults = __vize_withDefaults;\\\\n  const useTemplateRef = __vize_useTemplateRef;\\\\n  // Mark compiler macros as used\\\\n  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;\\\\n\\\\n  // User setup code\\\\n  \\\\n  const n = 1;\\\\n  \\\\n  // @vize-map: 1053:1074 -> 0:16\\\\n\\\\n  // ========== Template Scope (inherits from setup) ==========\\\\n  ;(function __template() {\\\\n    // Vue template context (delegates to ComponentPublicInstance)\\\\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\\\\n    type __Ctx = import(\\'vue\\').ComponentPublicInstance;\\\\n    const __ctx = (void 0) as unknown as __Ctx;\\\\n    const $attrs = __ctx.$attrs;\\\\n    const $slots = __ctx.$slots;\\\\n    const $refs = __ctx.$refs;\\\\n    const $emit = __ctx.$emit;\\\\n    void __ctx; void $attrs; void $slots; void $refs; void $emit;\\\\n\\\\n  void (\\\\\"日本語🍣\\\\\" + __ctx.$declared.known   + \\\\\"$ghost\\\\\"); // Interpolation\\\\n  // @vize-map: expr -> 75:132\\\\n\\\\n  // Reference setup bindings (used in template/CSS v-bind)\\\\n  void n;\\\\n  })();\\\\n}\\\\n\\\\n// Invoke setup to verify types\\\\n__setup();\\\\n\\\\nexport type Emits = {};\\\\ntype $Slots = {};\\\\nexport type { $Slots as Slots };\\\\n\\\\n// ========== Default Export ==========\\\\ntype $ComponentInstance = {\\\\n  $props: Props;\\\\n  readonly __vizeRawProps?: Props;\\\\n  $emit: $PublicEmit<Emits>;\\\\n  $slots: $PublicSlots<$Slots>;\\\\n} & $ComponentPublicBase;\\\\ntype $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;\\\\ntype $VueComponentOptions = {\\\\n  [key: string]: any;\\\\n  name?: string;\\\\n  __name?: string;\\\\n  __file?: string;\\\\n  __vccOpts?: any;\\\\n  props?: any;\\\\n  emits?: any;\\\\n  slots?: any;\\\\n  setup?: (this: void, props: Readonly<Props>, ctx: any) => any;\\\\n  render?: Function;\\\\n  components?: any;\\\\n  directives?: any;\\\\n  inheritAttrs?: boolean;\\\\n  compatConfig?: any;\\\\n  call?: (this: unknown, ...args: unknown[]) => never;\\\\n  __isFragment?: never;\\\\n  __isTeleport?: never;\\\\n  __isSuspense?: never;\\\\n  __defaults?: any;\\\\n  __vapor?: boolean;\\\\n  __multiRoot?: boolean;\\\\n  __isKeepAlive?: boolean;\\\\n  __isBuiltIn?: boolean;\\\\n};\\\\ndeclare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<\\\\\"div\\\\\">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;\\\\ndeclare const Globals: typeof __vize_component__;\\\\nexport default Globals;\\\\n\"}'\n"
+      },
+      {
+        "id": "protocol/74/template-literal-raw",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/template-literal-raw",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/75/template-literal-value",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/template-literal-value",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/76/callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/77/callback-mixed",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/callback-mixed",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/78/callback-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/callback-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/79/computed-key-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/computed-key-free",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/80/mixed-loop-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/mixed-loop-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/81/mixed-slot-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/mixed-slot-scope",
+        "outcome": "pass"
+      },
+      {
+        "id": "protocol/82/destructured-callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "whole-packet/crlf-unicode/destructured-callback-shadow",
+        "outcome": "pass"
+      },
+      {
+        "id": "geometry/mutation-negatives",
+        "outcome": "pass"
+      }
+    ]
+  },
+  "limits": {
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "publicAcceptance": false,
+    "timingClaim": false,
+    "newNativeExecution": false
+  },
+  "authority": "The complete population is expected data for the existing strict comparator. No check, mutation refusal, input, case, host admission or discovery flag is changed."
+}
