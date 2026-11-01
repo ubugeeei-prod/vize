@@ -15,6 +15,7 @@ import {
 } from "./state.ts";
 import { CompiledModuleCache } from "./compiled-module-cache.ts";
 import { compileAll } from "./precompile-run.ts";
+import { precompileInputOwners } from "./precompile-owner.ts";
 import { resolveIdHook } from "./resolve.ts";
 import { loadHook, transformHook } from "./load.ts";
 import {
@@ -58,6 +59,7 @@ export function vize(
     return [createLegacyVueCompatibilityPlugin(options)];
   }
 
+  let precompileConfig: ResolvedConfig | undefined;
   const state: VizePluginState = {
     // Indexed maps: hot updates need the SFCs owning a changed `src` dependency
     // in constant time rather than by scanning both caches. See
@@ -109,6 +111,7 @@ export function vize(
     },
 
     async configResolved(resolvedConfig: ResolvedConfig) {
+      precompileConfig = resolvedConfig;
       state.root = options.root ?? resolvedConfig.root;
       state.viteCacheDir = resolvedConfig.cacheDir;
       state.isProduction = options.isProduction ?? resolvedConfig.isProduction;
@@ -263,7 +266,10 @@ export function vize(
         // opted into on-demand compilation. Skip pre-compilation.
         return;
       }
-      await compileAll({ ...state, extractCss: shouldExtractCssForBuild(state, this) });
+      await compileAll(
+        { ...state, extractCss: shouldExtractCssForBuild(state, this) },
+        precompileInputOwners(this, precompileConfig),
+      );
       state.logger.log("Cache keys:", [...state.cache.keys()].slice(0, 3));
     },
 
