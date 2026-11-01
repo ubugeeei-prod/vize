@@ -141,3 +141,36 @@ void test("typed producer admission retains whole originals and rejects a manife
     /unreviewed producer registration/,
   );
 });
+
+void test("metadata instrumentation retains whole predecessor custody and refuses unregistered edits", () => {
+  const record = "tests/_fixtures/tooling/typescript-plugin-metadata-observer-11260.json";
+  const observer = "tools/support/ci/cargo-metadata-observer.ts";
+  const observerTest = "tests/tooling/cargo-metadata-observer.test.ts";
+  for (const source of [record, observer, observerTest]) {
+    assert.throws(
+      () =>
+        newLanguageProjectCases(undefined, rows, (side, file) => {
+          const bytes = read(side, file);
+          return side === "head" && file === source && bytes
+            ? Buffer.concat([bytes, Buffer.from("\n")])
+            : bytes;
+        }),
+      /metadata observer custody changed|observer dependency changed/,
+    );
+  }
+  const source = ".github/workflows/typescript-plugin.yml";
+  const changed = Buffer.concat([read("head", source)!, Buffer.from("\n")]);
+  const altered = copy();
+  altered[0].tests.find((row: { source: string }) => row.source === source).sha256 = createHash(
+    "sha256",
+  )
+    .update(changed)
+    .digest("hex");
+  assert.throws(
+    () =>
+      newLanguageProjectCases(undefined, altered, (side, file) =>
+        side === "head" && file === source ? changed : read(side, file),
+      ),
+    /unreviewed producer registration/,
+  );
+});
