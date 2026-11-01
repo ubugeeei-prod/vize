@@ -23,7 +23,7 @@ import type { Packet } from "./native-fault-support.ts";
 import { processRetention } from "./native-fault-retention.ts";
 
 export const observers = { sourceSnapshot, privateGuest, observeDescendants, diagnoseCore };
-const uiPhases = [
+export const uiConformancePhases = [
   { name: "native-build", command: ["vp", "run", "--filter", "./npm/native", "build:ci"] },
   { name: "ui-check", command: ["vp", "run", "--filter", "./npm/ui", "check"] },
 ];
@@ -54,7 +54,7 @@ function prepareObservation(invocation: Invocation): { output: string; receipt: 
   const receipt: Packet = {
     ...("command" in invocation
       ? { command: invocation.command }
-      : { mode: "ui-conformance", declaredPhases: uiPhases }),
+      : { mode: "ui-conformance", declaredPhases: uiConformancePhases }),
     cwd: process.cwd(),
     startedAt: Date.now() / 1000,
     orchestrationSha: process.env.GITHUB_SHA,
@@ -167,7 +167,7 @@ async function runInvocation(
   receipt.commandStartedAt = Date.now() / 1000;
   receipt.phases = [];
   let status = 0;
-  for (const declared of uiPhases) {
+  for (const declared of uiConformancePhases) {
     const phase: Packet = { ...declared, sampleSequenceStart: packetCount() };
     receipt.phases.push(phase);
     receipt.activePhase = declared.name;

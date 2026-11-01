@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
+import { requiredUiConformance } from "./support/ui-conformance-contract.ts";
 
 interface Step {
   name?: string;
@@ -60,6 +61,7 @@ function uiObservation(steps: Step[]) {
 }
 
 void test("UI conformance uses one closed observer route and retains only bounded JSON on failure", () => {
+  requiredUiConformance(job);
   uiObservation(job.steps);
   assert.deepEqual(job.strategy.matrix.surface, ["fresco", "ui"]);
   assert.equal(job.strategy["fail-fast"], false);
@@ -77,6 +79,26 @@ void test("UI conformance uses one closed observer route and retains only bounde
       run: "node --test tests/native/css-compile-source-maps.mjs tests/native/css-v-bind-source-maps.mjs",
     },
   );
+});
+
+void test("required UI source guards reject reordered, omitted, altered and additional phases", () => {
+  for (const phases of [
+    [
+      { name: "ui-check", command: ["vp", "run", "--filter", "./npm/ui", "check"] },
+      { name: "native-build", command: ["vp", "run", "--filter", "./npm/native", "build:ci"] },
+    ],
+    [{ name: "ui-check", command: ["vp", "run", "--filter", "./npm/ui", "check"] }],
+    [
+      { name: "native-build", command: ["vp", "run", "--filter", "./npm/native", "build"] },
+      { name: "ui-check", command: ["vp", "run", "--filter", "./npm/ui", "check"] },
+    ],
+    [
+      { name: "native-build", command: ["vp", "run", "--filter", "./npm/native", "build:ci"] },
+      { name: "ui-check", command: ["vp", "run", "--filter", "./npm/ui", "check"] },
+      { name: "extra", command: ["true"] },
+    ],
+  ])
+    assert.throws(() => requiredUiConformance(job, phases), assert.AssertionError);
 });
 
 function evidenceFields(steps: Step[]): Record<string, string | number> {
