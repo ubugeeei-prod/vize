@@ -24,7 +24,7 @@ pub(super) fn retain(directory: &Path, output: &Output, source: &str) {
     fs::create_dir_all(directory).unwrap();
     fs::write(directory.join("stdout.bin"), &output.stdout).unwrap();
     fs::write(directory.join("stderr.bin"), &output.stderr).unwrap();
-    fs::write(directory.join("i18n.ts"), source).unwrap();
+    fs::write(directory.join("input-source.txt"), source).unwrap();
     let value = json!({"status":output.status.code(),"success":output.status.success(),
         "stdoutBytes":output.stdout.len(),"stderrBytes":output.stderr.len(),"source":source,
         "stdoutSha256":digest(&output.stdout),"stderrSha256":digest(&output.stderr)});
@@ -70,6 +70,14 @@ console.log(JSON.stringify({vue,dom,core,reactivity,typescript,vueTsc,languageCo
     let mut value: Value = serde_json::from_slice(&output.stdout).unwrap();
     let bytes = fs::read(runtime).unwrap();
     value["native"] = json!({"path":fs::canonicalize(runtime).unwrap(),"bytes":bytes.len(),"sha256":digest(&bytes),"sourceOwner":"UNJOINED"});
+    let manifest_path = runtime
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("package.json");
+    let manifest = fs::read_to_string(&manifest_path).unwrap();
+    value["native"]["manifest"] = json!({"path":manifest_path,"body":manifest,"sha256":digest(manifest.as_bytes()),"package":serde_json::from_str::<Value>(&manifest).unwrap()});
     let cli = Path::new(env!("CARGO_BIN_EXE_vize"));
     let cli_bytes = fs::read(cli).unwrap();
     value["sourceCLI"] = json!({"path":fs::canonicalize(cli).unwrap(),"bytes":cli_bytes.len(),"sha256":digest(&cli_bytes),"crateVersion":env!("CARGO_PKG_VERSION")});
@@ -125,13 +133,62 @@ pub(super) fn native_calls(directory: &Path) -> Value {
         .collect::<Vec<_>>();
     paths.sort();
     let rows = paths.into_iter().map(|path| {
-        let read = |name| serde_json::from_slice::<Value>(&fs::read(path.join(name)).unwrap()).unwrap();
-        json!({"directory":path,"request":read("request.json"),"status":read("native-replay.status.json"),
+        let read=|name|serde_json::from_slice::<Value>(&fs::read(path.join(name)).unwrap()).unwrap();
+        let request=read("request.json");
+        let mut included=Vec::new();
+        if request["kind"]=="main-cli" {
+            let config_path=Path::new(request["config"].as_str().unwrap());
+            let config=read("config.bytes");
+            for entry in config["include"].as_array().unwrap() {
+                let physical=fs::canonicalize(config_path.parent().unwrap().join(entry.as_str().unwrap())).unwrap();
+                let body=fs::read_to_string(&physical).unwrap();
+                included.push(json!({"literal":entry,"physical":physical,"sha256":digest(body.as_bytes()),"body":body}));
+            }
+        }
+        json!({"directory":path,"request":request,"status":read("native-replay.status.json"),
             "stdout":fs::read(path.join("native-replay.stdout.bin")).unwrap(),
-            "stderr":fs::read(path.join("native-replay.stderr.bin")).unwrap()})
+            "stderr":fs::read(path.join("native-replay.stderr.bin")).unwrap(),"includedSourceBodies":included})
     }).collect::<Vec<_>>();
     let value = json!(rows);
     save(&directory.with_extension("json"), &value);
-    println!("imported-raw-callback-native {}", value);
+    println!(
+        "imported-raw-callback-native-custody {}",
+        json!({"file":directory.with_extension("json"),"sha256":digest(&fs::read(directory.with_extension("json")).unwrap())})
+    );
+    value
+}
+
+pub(super) fn geometry(evidence: &Path, providers: &Value, inputs: &Value) -> Value {
+    let input = evidence.join("geometry-input.json");
+    save(&input, inputs);
+    let script = r#"
+import fs from 'node:fs';import {createRequire} from 'node:module';
+const req=createRequire(process.argv[1]);const ts=req(process.argv[1]);
+const inputs=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+const rows=inputs.map(input=>{
+ const sf=ts.createSourceFile('Parent.vue.ts',input.virtualTs,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
+ const imports=[],negative=[];
+ const point=node=>{const p=sf.getLineAndCharacterOfPosition(node.getStart(sf));return {line:p.line+1,column:p.character+1}};
+ const stringMarkers=new Set(['direct_bad','callback_bad']);const missingMarkers=new Set(['directMissing','callbackMissing']);
+ function visit(node){
+  if(ts.isImportDeclaration(node)&&node.moduleSpecifier.text==='./Formatter.vue.ts')imports.push({...point(node.moduleSpecifier),text:node.moduleSpecifier.text});
+  if(ts.isStringLiteral(node)&&stringMarkers.has(node.text)&&ts.isCallExpression(node.parent)&&ts.isPropertyAccessExpression(node.parent.expression)&&node.parent.expression.name.text==='repeat')negative.push({...point(node),marker:"'"+node.text+"'",code:2345,message:"Argument of type 'string' is not assignable to parameter of type 'number'."});
+  if(ts.isPropertyAccessExpression(node)&&missingMarkers.has(node.name.text))negative.push({...point(node.name),marker:node.name.text,code:2339,message:"Property '"+node.name.text+"' does not exist on type 'Priority'."});
+  ts.forEachChild(node,visit);
+ }
+ visit(sf);negative.sort((a,b)=>a.line-b.line||a.column-b.column);
+ return {phase:input.phase,imports,negative,parseDiagnostics:sf.parseDiagnostics.map(d=>({code:d.code,start:d.start,length:d.length,messageText:d.messageText}))};
+});console.log(JSON.stringify({typescript:ts.version,rows}));
+"#;
+    let output = Command::new("node")
+        .args(["--input-type=module", "-e", script])
+        .arg(providers["typescript"]["entry"].as_str().unwrap())
+        .arg(&input)
+        .output()
+        .unwrap();
+    retain(&evidence.join("geometry-process"), &output, "");
+    assert!(output.status.success(), "{:?}", output);
+    let value = serde_json::from_slice(&output.stdout).unwrap();
+    save(&evidence.join("geometry.json"), &value);
     value
 }

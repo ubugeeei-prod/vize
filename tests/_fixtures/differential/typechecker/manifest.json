@@ -11837,6 +11837,55 @@
       }
     },
     {
+      "id": "typechecker/regression/imported-mark-raw-callback",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "imported-mark-raw-callback/Parent.vue.txt",
+          "sha256": "7d17ead616c6740ef6418be19de97006dd8593302877189e9791e509218708bd",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "imported-mark-raw-callback/Formatter.vue.txt",
+          "sha256": "fd21247dcf70367582fa892c825f1c3abb1bf12fc8581a664741c8e0baec13f2",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "imported-mark-raw-callback/i18n.ts.txt",
+          "sha256": "a3e88e006dee332c46fadb937d2c90d4b49ce45b5a03717802319efb762ad3c1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "imported-mark-raw-callback/package.json.txt",
+          "sha256": "a90fc33418afa2b9cbf4768524b021135b965ecdf993457505bfae3ac44a8428",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "imported-mark-raw-callback/tsconfig.json.txt",
+          "sha256": "0b8f78da87c46c3553bdec2766fa714f612539568aea5ed81fe0ee88e4af2421",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_imported_raw_callback_cli::imported_mark_raw_getter_reads_keep_direct_callback_and_authored_error_controls; five exact derived inputs physically copied into a real-Vue Linux-x64 project, direct and inline-callback wrong/missing repair/restore; planned batch source route, no historical Misskey118 or native-clean admission"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/legacy-external-component-props",
       "state": "active",
       "targets": [
@@ -14244,55 +14293,6 @@
               "ts"
             ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "typechecker/regression/imported-mark-raw-callback",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "imported-mark-raw-callback/Parent.vue.txt",
-          "sha256": "32a56ec5104948ca7e05273ae1f28286ad178bb0d6b0e948d78c2b44b219ad29",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "imported-mark-raw-callback/Formatter.vue.txt",
-          "sha256": "fd21247dcf70367582fa892c825f1c3abb1bf12fc8581a664741c8e0baec13f2",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "imported-mark-raw-callback/i18n.ts.txt",
-          "sha256": "a3e88e006dee332c46fadb937d2c90d4b49ce45b5a03717802319efb762ad3c1",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "imported-mark-raw-callback/package.json.txt",
-          "sha256": "a90fc33418afa2b9cbf4768524b021135b965ecdf993457505bfae3ac44a8428",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "imported-mark-raw-callback/tsconfig.json.txt",
-          "sha256": "0b8f78da87c46c3553bdec2766fa714f612539568aea5ed81fe0ee88e4af2421",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "check_imported_raw_callback_cli::imported_mark_raw_getter_reads_keep_direct_callback_and_authored_error_controls; five exact derived inputs physically copied into a standalone real-Vue project; planned batch source route, no native/public packet or historical Misskey118 admission"
           }
         ]
       }
