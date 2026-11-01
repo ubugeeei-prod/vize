@@ -2,6 +2,7 @@ use super::*;
 use crate::native::template::NativeTemplateRule;
 use crate::native::{header, template::NativeTemplateAttributeProfile as Profile};
 use vize_l0::{Allocator, SourceRoot};
+use vize_l1::markup::NativeLintComponent;
 
 fn attributes<'o, 'a>(root: &'o NativeLintComponent<'a>) -> Vec<NativeTemplateAttribute<'o, 'a>> {
     let mut attributes = Vec::new();

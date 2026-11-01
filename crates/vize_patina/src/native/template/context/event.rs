@@ -1,8 +1,13 @@
 //! Exact original modifier tokens, bound to the issuing callback and attribute.
 
-use super::*;
+use super::NativeTemplateLintContext;
+use crate::Severity;
 use crate::diagnostic::{Fix, TextEdit};
-use crate::native::{attribute, template::NativeTemplateAttributeKind};
+use crate::native::{
+    attribute,
+    template::{NativeTemplateAttribute, NativeTemplateAttributeKind, NativeTemplateLintRefusal},
+};
+use vize_l0::Span;
 
 /// A borrowed modifier of one actual checked event attribute. No raw-parts mint.
 ///
