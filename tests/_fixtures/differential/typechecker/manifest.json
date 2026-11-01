@@ -11724,37 +11724,6 @@
       }
     },
     {
-      "id": "typechecker/regression/runtime-null-prop-11252",
-      "state": "active",
-      "targets": ["batch"],
-      "inputs": [
-        {
-          "path": "runtime-null-prop-11252/Box.vue.txt",
-          "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "runtime-null-prop-11252/tsconfig.json.txt",
-          "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "runtime-null-prop-11252/package.json.txt",
-          "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [{
-          "kind": "source-inspection",
-          "dialects": ["vue3-sfc", "html-template", "ts"],
-          "selector": "content_mapper_tsgo_cli::runtime_null_prop::runtime_null_prop_keeps_original_acceptance_and_authored_error_repair; original Box/config/package physically copied to the checked project, source CLI and mapper; no public version or native admission claim"
-        }]
-      }
-    },
-    {
       "id": "typechecker/regression/native-overlay-input-custody-11145",
       "state": "active",
       "targets": [
@@ -11783,6 +11752,37 @@
             "selector": "source CLI original11145 physical input pin only; checker packet/native parity/filesystem/public acceptance unsupported"
           }
         ]
+      }
+    },
+    {
+      "id": "typechecker/regression/runtime-null-prop-11252",
+      "state": "active",
+      "targets": ["batch"],
+      "inputs": [
+        {
+          "path": "runtime-null-prop-11252/Box.vue.txt",
+          "sha256": "ed94abad4d158f959ca0358fbc40484ea6e4877c033ba5885975298426a9efc7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "runtime-null-prop-11252/tsconfig.json.txt",
+          "sha256": "2a0b4a22837c11e90687de22c38b0c5283fffd39d6aa904f9741342883f7a47f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "runtime-null-prop-11252/package.json.txt",
+          "sha256": "ae354c1bfea4681361209a04e013e1419bf5b9c21a27b29354184abd4b6cb716",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [{
+          "kind": "source-inspection",
+          "dialects": ["vue3-sfc", "html-template", "ts"],
+          "selector": "content_mapper_tsgo_cli::runtime_null_prop::runtime_null_prop_keeps_original_acceptance_and_authored_error_repair; original Box/config/package physically copied to the checked project, source CLI and mapper; no public version or native admission claim"
+        }]
       }
     },
     {
