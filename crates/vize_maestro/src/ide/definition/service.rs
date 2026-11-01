@@ -419,5 +419,7 @@ impl super::DefinitionService {
     }
 }
 
-#[cfg(all(test, feature = "native"))]
+// Plain `cfg(test)` lets clippy recognize the fixture helpers as test code.
+#[cfg(test)]
+#[cfg(feature = "native")]
 mod private_setup_tests;
