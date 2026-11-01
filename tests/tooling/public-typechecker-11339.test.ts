@@ -362,6 +362,42 @@ test("every final role custody completes before semantics; an early failure cann
   assert.notEqual(errors[0], null);
   assert.equal(errors[1], null);
 });
+function requireRendererStep(workflow: string) {
+  // Closed scalar-run step reader: no YAML dependency/install in this pure job.
+  const lines = workflow.split("\n");
+  const starts = lines.flatMap((line, index) => (line === "  contracts-11339:" ? [index] : []));
+  assert.equal(starts.length, 1);
+  const start = starts[0]!;
+  assert(start > lines.indexOf("jobs:") && lines.indexOf("jobs:") >= 0);
+  const next = lines.findIndex((line, index) => index > start && /^ {2}\S/u.test(line));
+  const job = lines.slice(start + 1, next < 0 ? undefined : next);
+  const stepStart = job.indexOf("    steps:");
+  assert(stepStart >= 0);
+  assert(
+    !job.slice(0, stepStart).some((line) => /^ {4}(?:if|uses|continue-on-error): /u.test(line)),
+  );
+  const steps = job
+    .slice(stepStart + 1)
+    .join("\n")
+    .split(/^ {6}- /mu)
+    .slice(1);
+  const runnable = steps.map((step) => {
+    const fields = step.split("\n");
+    const run = fields.flatMap((line) => {
+      const match = /^(?:run:| {8}run:) (.+)$/u.exec(line);
+      return match ? [match[1]] : [];
+    });
+    const conditionalOrOtherAction = fields.some((line) =>
+      /^(?:if:|uses:|continue-on-error:| {8}(?:if:|uses:|continue-on-error:)) /u.test(line),
+    );
+    return !conditionalOrOtherAction && run.length === 1 ? run[0] : undefined;
+  });
+  assert.equal(
+    runnable.filter((run) => run === "node --test tests/tooling/public-typechecker-11339*.test.ts")
+      .length,
+    1,
+  );
+}
 test("new closed choice preserves old602 and11317 workflow bodies byte-for-byte", () => {
   const workflow = readFileSync(
     fileURLToPath(
@@ -386,5 +422,25 @@ test("new closed choice preserves old602 and11317 workflow bodies byte-for-byte"
   );
   assert(workflow.includes("options-inherited-members-11339"));
   assert(workflow.includes("needs: contracts-11339"));
-  assert(workflow.includes("node --test tests/tooling/public-typechecker-11339*.test.ts"));
+  requireRendererStep(workflow);
+  const command = "run: node --test tests/tooling/public-typechecker-11339*.test.ts";
+  for (const [name, changed] of [
+    ["comment is not executable", workflow.replace(command, "# " + command)],
+    [
+      "command in another job is insufficient",
+      workflow.replace(command, "run: node --test other.test.ts") +
+        "\n  other:\n    steps:\n      - " +
+        command +
+        "\n",
+    ],
+    [
+      "conditional step is insufficient",
+      workflow.replace(command, "if: false\n        " + command),
+    ],
+    [
+      "conditional job is insufficient",
+      workflow.replace("  contracts-11339:\n", "  contracts-11339:\n    if: false\n"),
+    ],
+  ])
+    assert.throws(() => requireRendererStep(changed!), assert.AssertionError, name);
 });

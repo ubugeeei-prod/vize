@@ -70,7 +70,8 @@ function mockDto(id: Case, receiver: string = opaqueReceivers[0]) {
   };
 }
 type Mock = ReturnType<typeof mockDto>;
-const refuses = (action: () => void) => assert.throws(action, assert.AssertionError);
+const refuses = (action: () => void, label: string) =>
+  assert.throws(action, assert.AssertionError, label);
 function withPacket(action: (packet: ReturnType<typeof retain>, root: string) => void) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "public-11339-renderer-")));
   try {
@@ -171,23 +172,36 @@ test("source context, title binding and each owned base cannot be omitted or fit
           ),
       ),
     ];
-    for (const mutate of mutations) {
+    const labels = [
+      "title binding absent",
+      "interpolation has title binding",
+      "fifth context absent",
+      "fifth context token changed",
+      "fifth trailing bytes",
+      ...[0, 1, 2, 3].map((index) => `owned base ${index + 1} changed`),
+    ];
+    assert.equal(labels.length, mutations.length);
+    for (const [index, mutate] of mutations.entries()) {
       const f = mockDto("Original");
       mutate(f);
-      refuses(() =>
-        assessFacts("after", "Original", { ...packet, stdout: JSON.stringify(f.dto) }, f.files),
+      refuses(
+        () =>
+          assessFacts("after", "Original", { ...packet, stdout: JSON.stringify(f.dto) }, f.files),
+        labels[index]!,
       );
     }
     const wrapped = mockDto("WrappedSupplement");
     wrapped.dto.files.find((row) => row.file === "src/Wrapped.vue")!.diagnostics[0] =
       "error:2:34 [TS2339] Property 'toFixed' does not exist on type 'boolean'." + context;
-    refuses(() =>
-      assessFacts(
-        "after",
-        "WrappedSupplement",
-        { ...packet, stdout: JSON.stringify(wrapped.dto) },
-        wrapped.files,
-      ),
+    refuses(
+      () =>
+        assessFacts(
+          "after",
+          "WrappedSupplement",
+          { ...packet, stdout: JSON.stringify(wrapped.dto) },
+          wrapped.files,
+        ),
+      "Wrapped uses the original source context",
     );
   }));
 
@@ -223,11 +237,27 @@ test("file, code, exact canonical start header, ordering and population remain c
         f.dto.errorCount++;
       },
     ];
-    for (const mutate of mutations) {
+    const labels = [
+      "wrong start",
+      "wrong line",
+      "wrong code",
+      "noncanonical leading zero",
+      "wrong severity",
+      "wrong code decoration",
+      "foreign file",
+      "reordered findings",
+      "duplicated finding",
+      "missing finding",
+      "extra finding",
+    ];
+    assert.equal(labels.length, mutations.length);
+    for (const [index, mutate] of mutations.entries()) {
       const f = mockDto("Original");
       mutate(f);
-      refuses(() =>
-        assessFacts("after", "Original", { ...packet, stdout: JSON.stringify(f.dto) }, f.files),
+      refuses(
+        () =>
+          assessFacts("after", "Original", { ...packet, stdout: JSON.stringify(f.dto) }, f.files),
+        labels[index]!,
       );
     }
   }));
@@ -257,24 +287,44 @@ test("complete DTO, program, counters and frozen input joins retain strict refus
         f.files.find((row) => row.path === "src/Invalid.vue")!.source += "\n";
       },
     ];
-    for (const mutate of mutations) {
+    const labels = [
+      "missing file",
+      "wrong file count",
+      "wrong error count",
+      "warning introduced",
+      "reordered program files",
+      "wrong program options",
+      "changed frozen input",
+    ];
+    assert.equal(labels.length, mutations.length);
+    for (const [index, mutate] of mutations.entries()) {
       const f = mockDto("Original");
       mutate(f);
-      refuses(() =>
-        assessFacts("after", "Original", { ...packet, stdout: JSON.stringify(f.dto) }, f.files),
+      refuses(
+        () =>
+          assessFacts("after", "Original", { ...packet, stdout: JSON.stringify(f.dto) }, f.files),
+        labels[index]!,
       );
     }
     const f = mockDto("Original");
-    refuses(() =>
-      assessFacts(
-        "after",
-        "Original",
-        { ...packet, stdout: JSON.stringify({ ...f.dto, extra: true }) },
-        f.files,
-      ),
+    refuses(
+      () =>
+        assessFacts(
+          "after",
+          "Original",
+          { ...packet, stdout: JSON.stringify({ ...f.dto, extra: true }) },
+          f.files,
+        ),
+      "unknown DTO field",
     );
-    refuses(() => assessFacts("after", "Original", { ...packet, status: 0 }, f.files));
-    refuses(() => assessFacts("after", "Original", { ...packet, signal: "SIGTERM" }, f.files));
+    refuses(
+      () => assessFacts("after", "Original", { ...packet, status: 0 }, f.files),
+      "wrong exit status",
+    );
+    refuses(
+      () => assessFacts("after", "Original", { ...packet, signal: "SIGTERM" }, f.files),
+      "signal termination",
+    );
   }));
 
 test("BEFORE remains unassessed, repaired zero remains all-false, and whole stderr stays unchanged", () =>

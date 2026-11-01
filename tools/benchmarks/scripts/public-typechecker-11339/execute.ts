@@ -176,7 +176,7 @@ function factSourceContext(
   const line = expected.split("\n")[1]!;
   const trimmed = line.trim();
   assert(
-    /^[\x20-\x7e]*$/u.test(line) && [...trimmed].length <= 160,
+    /^[\x20-\x7e]*$/u.test(line) && trimmed.length <= 160,
     "renderer derivation is bounded to the frozen ASCII input lines",
   );
   const tokens =
