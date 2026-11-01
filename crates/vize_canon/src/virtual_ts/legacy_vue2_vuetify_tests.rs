@@ -74,19 +74,11 @@ function onClick(event: string) {
     let omitted = generated(false, false);
     let explicit_false = generated(false, true);
     let explicit_true = generated(true, true);
-    let marker = "_click_fallthrough_args";
-
-    for open in [&omitted, &explicit_false] {
-        assert_eq!(
-            open.matches(marker).count(),
-            0,
-            "Vue 2 omitted/false listener payloads must remain open:\n{open}"
-        );
-    }
-    assert_eq!(
-        explicit_true.matches(marker).count(),
-        2,
-        "Vue 2 explicit true must retain its existing fallthrough listener path:\n{explicit_true}"
+    insta::assert_snapshot!(
+        "legacy_fallthrough_listener_modes",
+        format!(
+            "=== omitted ===\n{omitted}\n=== explicit false ===\n{explicit_false}\n=== explicit true ===\n{explicit_true}"
+        )
     );
 }
 
@@ -127,15 +119,11 @@ function updateDate(newDate: string) {
     let template = r#"<VDatePicker @input="updateDate" />"#;
 
     let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
-    assert!(
-        standard.contains("? any :") && !standard.contains("? InputEvent :"),
-        "standard component event fallback should stay permissive:\n{standard}"
-    );
 
     let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
-    assert!(
-        legacy.contains("? any :") && !legacy.contains("? InputEvent :"),
-        "legacy Vue 2 component event fallback should not force DOM payloads:\n{legacy}"
+    insta::assert_snapshot!(
+        "legacy_vue2_component_event_fallback_stays_permissive",
+        format!("=== standard ===\n{standard}\n=== legacy ===\n{legacy}")
     );
 }
 
@@ -149,14 +137,9 @@ function updateDate(newDate: string) {
     let template = r#"<VDatePicker @input="updateDate($event)" />"#;
 
     let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
-    assert!(
-        legacy.contains("const $event = (__vize_args as unknown[])[0] as __VDatePicker_")
-            && legacy.contains("updateDate($event);  // handler expression"),
-        "legacy Vue 2 component events should scope explicit `$event` aliases:\n{legacy}"
-    );
-    assert!(
-        legacy.contains("? any :") && !legacy.contains("? InputEvent :"),
-        "legacy Vue 2 explicit `$event` should keep the permissive event fallback:\n{legacy}"
+    insta::assert_snapshot!(
+        "legacy_vue2_component_event_dollar_event_alias_stays_scoped",
+        legacy
     );
 }
 
@@ -171,14 +154,9 @@ function moveToDetail(item: Manager) {
     let template = r#"<DataTable @click:row="moveToDetail" />"#;
 
     let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
-    assert_eq!(
-        legacy.matches("$Vue2LooseEventArg<__A[0]>").count(),
-        1,
-        "legacy Vue 2 broad Object component event payloads should have one loose argument:\n{legacy}"
-    );
-    assert!(
-        legacy.contains("$Vue2LooseEmitArgs<__DataTable_"),
-        "legacy Vue 2 broad Object component event payloads should be loosened:\n{legacy}"
+    insta::assert_snapshot!(
+        "legacy_vue2_component_event_object_payloads_stay_permissive",
+        legacy
     );
 }
 
@@ -199,15 +177,9 @@ function submitHooks(hooks: { before?: () => void; after?: () => void }) {
     let template = r#"<CalendarRange @range-change="updateRange" @submit="submitHooks" />"#;
 
     let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
-    assert!(
-        legacy.contains("_range_change_legacy_args")
-            && legacy.contains("_submit_legacy_args")
-            && legacy.contains("extends [] ? any[] : unknown[] extends"),
-        "legacy Vue 2 unresolved/empty component event args should become variadic any[]:\n{legacy}"
-    );
-    assert!(
-        !legacy.contains(" ? (($event: "),
-        "legacy Vue 2 component listeners should not collapse unresolved events to one $event:\n{legacy}"
+    insta::assert_snapshot!(
+        "legacy_vue2_unresolved_component_event_payloads_stay_variadic",
+        legacy
     );
 }
 
@@ -224,16 +196,11 @@ fn legacy_vue2_checks_external_values_with_loose_extra_attributes() {
     };
 
     let standard = standard_virtual_ts(script, template, &options);
-    assert!(
-        standard.contains("type __VDatePicker_Props_0"),
-        "standard external component props should remain checkable:\n{standard}"
-    );
 
     let legacy = legacy_virtual_ts(script, template, &options);
-    assert!(
-        legacy.contains("type __VDatePicker_Props_0")
-            && legacy.contains("type __VDatePicker_CheckTail_0 = Record<string, unknown>;"),
-        "legacy external values keep known types without rejecting loose extra attrs:\n{legacy}"
+    insta::assert_snapshot!(
+        "legacy_vue2_checks_external_values_with_loose_extra_attributes",
+        format!("=== standard ===\n{standard}\n=== legacy ===\n{legacy}")
     );
 }
 
@@ -246,16 +213,11 @@ defineProps<Props>()
     let template = r#"<v-select :width="width" :hide-details="hideDetails" />"#;
 
     let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
-    assert!(
-        standard.contains("\"width\" satisfies keyof typeof __vize_keyed_template_context"),
-        "standard keyed prop fallback should still catch unknown props:\n{standard}"
-    );
 
     let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
-    assert!(
-        legacy.contains("(props as Record<string, unknown>)[\"width\"]")
-            && !legacy.contains("satisfies keyof typeof __vize_keyed_template_context"),
-        "legacy Vue 2 keyed prop fallback should not reject Vuetify/mixin names:\n{legacy}"
+    insta::assert_snapshot!(
+        "legacy_vue2_unresolved_keyed_props_are_unchecked",
+        format!("=== standard ===\n{standard}\n=== legacy ===\n{legacy}")
     );
 }
 
@@ -268,10 +230,6 @@ defineProps<Props>()
     let template = r#"<div>{{ isMini }} {{ hideDetails }} {{ chips }} {{ width }}</div>"#;
 
     let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
-    assert!(
-        standard.contains("\"isMini\" satisfies keyof typeof __vize_keyed_template_context"),
-        "standard keyed prop fallback should still catch unknown props:\n{standard}"
-    );
 
     let vue2 = dialect_virtual_ts(
         script,
@@ -279,13 +237,9 @@ defineProps<Props>()
         &VirtualTsOptions::default(),
         VueVersion::V2_7,
     );
-    assert!(
-        vue2.contains("(props as Record<string, unknown>)[\"isMini\"]")
-            && vue2.contains("(props as Record<string, unknown>)[\"hideDetails\"]")
-            && vue2.contains("(props as Record<string, unknown>)[\"chips\"]")
-            && vue2.contains("(props as Record<string, unknown>)[\"width\"]")
-            && !vue2.contains("satisfies keyof typeof __vize_keyed_template_context"),
-        "Vue 2 dialect keyed prop fallback should not reject Vuetify/mixin names:\n{vue2}"
+    insta::assert_snapshot!(
+        "vue2_dialect_unresolved_keyed_props_are_unchecked",
+        format!("=== standard ===\n{standard}\n=== vue2 ===\n{vue2}")
     );
 }
 
@@ -299,29 +253,19 @@ fn vue2_instance_members_are_declared_once() {
     let script = "";
     let template = r#"<div>{{ $listeners }} {{ $scopedSlots }}</div>"#;
 
-    for vue2 in [
-        legacy_virtual_ts(script, template, &VirtualTsOptions::default()),
-        dialect_virtual_ts(
-            script,
-            template,
-            &VirtualTsOptions::default(),
-            VueVersion::V2_7,
-        ),
-    ] {
-        for declaration in ["const $listeners", "const $scopedSlots"] {
-            assert_eq!(
-                vue2.matches(declaration).count(),
-                1,
-                "`{declaration}` should be emitted exactly once:\n{vue2}"
-            );
-        }
-    }
-
+    let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
+    let vue2 = dialect_virtual_ts(
+        script,
+        template,
+        &VirtualTsOptions::default(),
+        VueVersion::V2_7,
+    );
     let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
-    assert_eq!(
-        standard.matches("void (__ctx.$listeners);").count(),
-        1,
-        "Vue 3 should still resolve $listeners through the instance-global form:\n{standard}"
+    insta::assert_snapshot!(
+        "vue2_instance_member_declarations",
+        format!(
+            "=== legacy ===\n{legacy}\n=== Vue2 dialect ===\n{vue2}\n=== standard ===\n{standard}"
+        )
     );
 }
 
@@ -337,7 +281,10 @@ fn legacy_external_inline_callbacks_keep_the_existing_loose_route() {
         r#"<ExternalInput :rules="[(value) => !!value]" />"#,
         &options,
     );
-    assert!(!legacy.contains("type __ExternalInput_Props_0"), "{legacy}");
+    insta::assert_snapshot!(
+        "legacy_external_inline_callbacks_keep_the_existing_loose_route",
+        legacy
+    );
 }
 
 #[test]
@@ -352,10 +299,8 @@ fn legacy_local_import_shadow_keeps_the_original_strict_check_tail() {
         r#"<ExternalInput :count="'wrong'" />"#,
         &options,
     );
-    assert!(
-        legacy.contains(
-            "type __ExternalInput_CheckTail_0 = $ComponentCheckTail<__ExternalInput_Component_0>;"
-        ),
-        "{legacy}"
+    insta::assert_snapshot!(
+        "legacy_local_import_shadow_keeps_the_original_strict_check_tail",
+        legacy
     );
 }

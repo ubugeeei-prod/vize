@@ -60,30 +60,18 @@ fn legacy_external_component_props_preserve_typed_values_and_unknown_fallbacks()
         let diagnostics = observation["diagnostics"]
             .as_array()
             .expect("full diagnostics");
-        let has = |file: &str, code: u32| {
-            diagnostics.iter().any(|diagnostic| {
-                Path::new(diagnostic["file"].as_str().expect("diagnostic path")).ends_with(file)
-                    && diagnostic["code"] == code
-            })
-        };
-        assert_eq!(
-            has("src/External.vue", 2322),
-            phase != "repair",
-            "declared external count:number must reject a string in both dialects: {observation:#}"
-        );
-        assert!(
-            has("src/Local.vue", 2322),
-            "local import remains a positive control: {observation:#}"
-        );
-        for file in ["src/Valid.vue", "src/Any.vue", "src/Unknown.vue"] {
-            assert!(
-                diagnostics.iter().all(|diagnostic| {
-                    !Path::new(diagnostic["file"].as_str().expect("diagnostic path"))
-                        .ends_with(file)
-                }),
-                "valid and unresolved types must not acquire invented findings: {observation:#}"
-            );
+        let root = Path::new(observation["projectRoot"].as_str().expect("project root"));
+        let mut expected = Vec::new();
+        if phase != "repair" {
+            expected.push(count_mismatch(root, "src/External.vue", 3));
         }
+        expected.push(count_mismatch(root, "src/Local.vue", 4));
+        assert_eq!(
+            diagnostics, &expected,
+            "complete exact diagnostic vector: {observation:#}"
+        );
+        assert_eq!(observation["exitCode"], 1);
+        assert_eq!(observation["success"], false);
     }
 }
 
@@ -187,27 +175,27 @@ fn legacy_external_callbacks_and_partial_declarations_keep_the_loose_surface() {
     let diagnostics = observation["diagnostics"]
         .as_array()
         .expect("full diagnostics");
-    for file in [
-        "src/Partial.vue",
-        "src/AnyCallbacks.vue",
-        "src/UnknownCallbacks.vue",
-        "src/KnownCallbacks.vue",
-    ] {
-        assert!(
-            diagnostics.iter().all(|diagnostic| {
-                !Path::new(diagnostic["file"].as_str().expect("diagnostic path")).ends_with(file)
-            }),
-            "existing loose compatibility must not gain false findings: {observation:#}"
-        );
+    let root = Path::new(observation["projectRoot"].as_str().expect("project root"));
+    let mixed = root.join("src/MixedCallbacks.vue");
+    let mut qualified = Vec::new();
+    for diagnostic in diagnostics {
+        if Path::new(diagnostic["file"].as_str().expect("diagnostic path")) != mixed {
+            qualified.push(diagnostic.clone());
+        }
     }
-    assert!(
-        diagnostics.iter().any(|diagnostic| {
-            Path::new(diagnostic["file"].as_str().expect("diagnostic path"))
-                .ends_with("src/Shadow.vue")
-                && diagnostic["code"] == 2322
-        }),
-        "a local binding shadow must keep its existing typed check: {observation:#}"
+    assert_eq!(
+        qualified,
+        vec![count_mismatch(root, "src/Shadow.vue", 3)],
+        "complete diagnostic vector for qualified compatibility files: {observation:#}"
     );
     // Do not pin MixedCallbacks.vue to a false-clean result. Its full result
     // remains visible and may improve when callback ownership is qualified.
+}
+
+fn count_mismatch(root: &Path, file: &str, line: u32) -> Value {
+    json!({
+        "file":root.join(file), "line":line, "column":25,
+        "code":2322, "severity":1, "blockType":"Some(Template)",
+        "message":"Type 'string' is not assignable to type 'number'.",
+    })
 }
