@@ -2,6 +2,7 @@
 use super::*;
 use crate::native::template::{NativeTemplateElement, NativeTemplateRule};
 use crate::rules::vue::NoDeprecatedHtmlElementIs;
+use crate::{Rule, RuleMeta, RuleRegistry};
 use vize_l0::SmallVec;
 
 fn view<'o, 'a>(root: &'o NativeLintComponent<'a>) -> NativeTemplateElement<'o, 'a> {
@@ -64,4 +65,24 @@ fn html_is_callback_and_error_mint_refuse_equal_buffer_foreign_owners_even_when_
         };
         assert_eq!(format!("{:#?}", context.finish()), format!("{expected:#?}"));
     }
+}
+
+#[test]
+fn matching_html_is_metadata_does_not_grant_the_actual_rule_capability() {
+    struct Namesake;
+    impl Rule for Namesake {
+        fn meta(&self) -> &'static RuleMeta {
+            NoDeprecatedHtmlElementIs.meta()
+        }
+    }
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(Namesake));
+    assert_eq!(
+        Linter::with_registry(registry)
+            .lint_native_template("<div is=\"MyComponent\" />", "Namesake.vue")
+            .unwrap_err(),
+        NativeTemplateLintRefusal::UnprovidedRule {
+            rule: "vue/no-deprecated-html-element-is".into()
+        }
+    );
 }

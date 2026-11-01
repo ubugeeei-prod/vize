@@ -2,7 +2,7 @@
 mod support;
 
 use crate::native::template::NativeTemplateLintRefusal as Refusal;
-use crate::{HelpLevel, Linter, Locale, Rule, RuleCategory, RuleMeta, RuleRegistry, Severity};
+use crate::{HelpLevel, Linter, Locale, Severity};
 use support::*;
 use vize_l0::{Span, config::VueVersion};
 
@@ -193,25 +193,4 @@ fn component_dynamic_context_and_unprovided_instance_are_not_clean_certificates(
             expected
         );
     }
-    struct Namesake;
-    impl Rule for Namesake {
-        fn meta(&self) -> &'static RuleMeta {
-            static META: RuleMeta = RuleMeta {
-                name: RULE,
-                description: "not the real implementation",
-                category: RuleCategory::Essential,
-                fixable: false,
-                default_severity: Severity::Error,
-            };
-            &META
-        }
-    }
-    let mut registry = RuleRegistry::new();
-    registry.register(Box::new(Namesake));
-    assert_eq!(
-        Linter::with_registry(registry)
-            .lint_native_template(ORIGINAL, "Namesake.vue")
-            .unwrap_err(),
-        Refusal::UnprovidedRule { rule: RULE.into() }
-    );
 }
