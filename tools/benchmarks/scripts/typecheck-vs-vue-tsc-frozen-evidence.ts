@@ -200,3 +200,21 @@ export function inventory(root: string, exclude: string[] = []) {
   visit(root);
   return { root, rows, sha256: hash(JSON.stringify(rows)) };
 }
+
+export function statusConsistent(status: number | null, parsed: ReturnType<typeof diagnostics>) {
+  const errors = parsed.findings.filter((row) => row.severity === "error").length;
+  return (
+    parsed.unclassified.length === 0 && (errors > 0 ? status === 1 || status === 2 : status === 0)
+  );
+}
+
+export function assertStatusStable(before: number | null, after: number | null) {
+  assert.equal(after, before, "same-tool timed status drift");
+}
+export function assessStderr(stderr: string) {
+  return {
+    empty: stderr.length === 0,
+    unresolvedLines: stderr.split(/\r?\n/u).filter(Boolean),
+    classification: "all nonempty stderr unresolved; raw retained, no word-based clean inference",
+  };
+}

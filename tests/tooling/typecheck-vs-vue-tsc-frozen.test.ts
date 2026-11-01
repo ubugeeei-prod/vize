@@ -13,6 +13,9 @@ import {
   orders,
   providerPins,
   source,
+  statusConsistent,
+  assertStatusStable,
+  assessStderr,
 } from "../../tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen-evidence.ts";
 import {
   assertControl,
@@ -29,10 +32,16 @@ import {
   validateNativeArgs,
 } from "../../tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen-inputs.ts";
 import {
+  classifyStreams,
+  nativePacketClean,
   collect,
   readCall,
 } from "../../tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen-native.ts";
-import { sourceBodies } from "../../tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen-projects.ts";
+import {
+  assertInputs,
+  inputSnapshot,
+  sourceBodies,
+} from "../../tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen-projects.ts";
 function temporary<T>(run: (root: string) => T): T {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "comparative-pure-")));
   try {
@@ -316,3 +325,65 @@ test("two sibling cohorts preserve independent complete observation receipts", (
       "retained-2500-calls-observations.json",
     ]);
   }));
+
+test("whole physical source/config/dependency/JS seals refuse same-size mutations", () =>
+  temporary((root) => {
+    const project = path.join(root, "project"),
+      provider = path.join(root, "provider");
+    fs.mkdirSync(project);
+    fs.mkdirSync(provider);
+    fs.mkdirSync(path.join(project, "node_modules"));
+    const files = [
+      path.join(project, "source.ts"),
+      path.join(project, "tsconfig.json"),
+      path.join(project, "node_modules/dependency.js"),
+      path.join(provider, "typescript.js"),
+    ];
+    for (const file of files) fs.writeFileSync(file, "alpha");
+    const before = inputSnapshot(project, provider);
+    for (const file of files) {
+      fs.writeFileSync(file, "bravo");
+      assert.throws(
+        () => assertInputs(before, inputSnapshot(project, provider), []),
+        /identity changed/u,
+      );
+      fs.writeFileSync(file, "alpha");
+    }
+    const output = path.join(project, "declared.tsbuildinfo");
+    fs.writeFileSync(output, "cache");
+    const after = inputSnapshot(project, provider);
+    assertInputs(before, after, [output]);
+    assert(after.project.rows.some((row) => row.path === "declared.tsbuildinfo"));
+    fs.unlinkSync(output);
+    fs.symlinkSync("source.ts", output);
+    assert.throws(
+      () => assertInputs(before, inputSnapshot(project, provider), [output]),
+      /cannot mask/u,
+    );
+  }));
+test("status drift, clean-output failure and every unknown stream remain unqualified", () => {
+  const clean = diagnostics("vue-tsc", "", "/fixture");
+  assert.equal(statusConsistent(0, clean), true);
+  assert.equal(statusConsistent(2, clean), false);
+  assert.throws(() => assertStatusStable(0, 2), /status drift/u);
+  assert.deepEqual(assessStderr("mystery runtime note\n").unresolvedLines, [
+    "mystery runtime note",
+  ]);
+  const streams = classifyStreams(
+    Buffer.from("no terminal LF"),
+    Buffer.from("error TS5097: retained\n"),
+    "/fixture",
+    "/fixture",
+    "/provider",
+  );
+  assert.equal(streams.stdout.rows[0].raw, "no terminal LF");
+  assert.deepEqual(streams.stderr.groups, [['["5097","global"]', 1]]);
+  assert.equal(nativePacketClean(0, streams), false);
+  assert.equal(
+    nativePacketClean(
+      0,
+      classifyStreams(Buffer.alloc(0), Buffer.alloc(0), "/fixture", "/fixture", "/provider"),
+    ),
+    true,
+  );
+});

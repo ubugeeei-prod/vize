@@ -4,6 +4,29 @@ import fs from "node:fs";
 import path from "node:path";
 import { hash, identity, save } from "./typecheck-vs-vue-tsc-frozen-evidence.ts";
 import { classifyRaw, validateNativeArgs } from "./typecheck-vs-vue-tsc-frozen-inputs.ts";
+export function classifyStreams(
+  stdout: Buffer,
+  stderr: Buffer,
+  cwd: string,
+  project: string,
+  provider: string,
+) {
+  return {
+    stdout: classifyRaw(stdout, cwd, project, provider),
+    stderr: classifyRaw(stderr, cwd, project, provider),
+  };
+}
+export function nativePacketClean(
+  status: number | null,
+  streams: ReturnType<typeof classifyStreams>,
+) {
+  return (
+    status === 0 &&
+    [streams.stdout, streams.stderr].every((stream) =>
+      stream.rows.every((row) => row.raw.trim() === ""),
+    )
+  );
+}
 const files = [
   "typecheck-vs-vue-tsc-frozen-native-forward.ts",
   "typecheck-vs-vue-tsc-frozen-inputs.ts",
@@ -84,7 +107,7 @@ export function readCall(directory: string, native: string, project: string, pro
     inputs: before,
     stdout: identity(path.join(directory, "native-replay.stdout.bin")),
     stderr: identity(path.join(directory, "native-replay.stderr.bin")),
-    classification: classifyRaw(Buffer.concat([stdout, stderr]), request.cwd, project, provider),
+    classification: classifyStreams(stdout, stderr, request.cwd, project, provider),
   };
 }
 export function collect(out: string, native: string, project: string, provider: string) {
@@ -107,7 +130,7 @@ export function collect(out: string, native: string, project: string, provider: 
     complete: main.length > 0 && refusals.length === 0,
     nativeClean:
       main.length > 0 &&
-      main.every((call) => call.status.status === 0 && call.classification.groups.length === 0),
+      main.every((call) => nativePacketClean(call.status.status, call.classification)),
     loadedNativeFileVector:
       "UNOBSERVED; complete potential-input/materialized seals are not loaded-file membership",
     historicalDebt:

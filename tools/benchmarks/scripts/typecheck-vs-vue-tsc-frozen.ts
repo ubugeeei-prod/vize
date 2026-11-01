@@ -16,16 +16,21 @@ import {
   diagnostics,
   hash,
   identity,
-  inventory,
   orders,
   save,
   source,
+  statusConsistent,
+  assessStderr,
+  assertStatusStable,
 } from "./typecheck-vs-vue-tsc-frozen-evidence.ts";
 import {
   prepareProjects,
   verifyProvider,
   verifySource,
   type Project,
+  cacheFacts,
+  inputSnapshot,
+  assertInputs,
 } from "./typecheck-vs-vue-tsc-frozen-projects.ts";
 import { collect, forwarder } from "./typecheck-vs-vue-tsc-frozen-native.ts";
 type Tool = "vize" | "vue-tsc";
@@ -190,9 +195,9 @@ export async function campaign(options: {
       command: spec,
       measurement: measured,
       diagnostics: parsed,
+      statusConsistent: parsed ? statusConsistent(measured.status, parsed) : measured.status === 0,
       stderrAssessment: {
-        empty: stderr.length === 0,
-        degradedOrRuntimeWarning: /degrad|fallback|cannot|failed|error TS/iu.test(stderr),
+        ...assessStderr(stderr),
         raw: identity(path.join(directory, "stderr.bin")),
       },
     };
@@ -205,6 +210,10 @@ export async function campaign(options: {
     return result;
   }
   for (const project of projects) {
+    const cache = cacheFacts(project, provider),
+      inputsBefore = inputSnapshot(project.root, provider);
+    save(path.join(out, project.id + "-cache-facts.json"), cache);
+    save(path.join(out, project.id + "-inputs-before.json"), inputsBefore);
     const prefix = project.id,
       observed = path.join(out, prefix + "-calls");
     fs.mkdirSync(observed);
@@ -292,11 +301,9 @@ export async function campaign(options: {
     } finally {
       fs.unlinkSync(project.control);
     }
-    assert.deepEqual(
-      inventory(project.root, ["node_modules", ".git"]),
-      project.sourceInventory,
-      "controls restore complete original source/config corpus",
-    );
+    const afterControls = inputSnapshot(project.root, provider);
+    save(path.join(out, prefix + "-inputs-after-controls.json"), afterControls);
+    assertInputs(inputsBefore, afterControls, cache.excludedOwnedOutputs);
     const timed: Awaited<ReturnType<typeof invoke>>[] = [],
       warmups: typeof timed = [];
     for (const arm of ["fresh-app-cache", "process-restart-cache-reused"] as const) {
@@ -321,6 +328,10 @@ export async function campaign(options: {
             arm === "fresh-app-cache" ? path.join(out, name + "-cache") : warmCache[tool],
           );
           timed.push(result);
+          assertStatusStable(
+            timed.find((row) => row.tool === tool)!.measurement.status,
+            result.measurement.status,
+          );
           assert.deepEqual(
             result.diagnostics,
             proof.diagnostics && tool === "vize"
@@ -332,6 +343,9 @@ export async function campaign(options: {
           assert.equal(identity(native).sha256, frozenProvider.native.sha256);
         }
     }
+    const inputsAfter = inputSnapshot(project.root, provider);
+    save(path.join(out, prefix + "-inputs-after-timing.json"), inputsAfter);
+    assertInputs(inputsBefore, inputsAfter, cache.excludedOwnedOutputs);
     const first = (tool: Tool) => timed.find((row) => row.tool === tool)!;
     const comparison = compareFindings(
       first("vize").diagnostics!.findings,
@@ -347,6 +361,14 @@ export async function campaign(options: {
           medianWallMs: median(values.map((row) => row.measurement.wallMs)),
           medianCommandCpuMs: median(values.map((row) => row.measurement.cpuMs)),
           medianChildHighWaterKiB: median(values.map((row) => row.measurement.childHighWaterKiB)),
+          medianObservedSimultaneousTreeHighWaterKiB: median(
+            values.map((row) =>
+              Math.max(
+                0,
+                ...row.measurement.samples.map((sample) => sample.simultaneousObservedTreeRssKiB),
+              ),
+            ),
+          ),
         };
       });
       return {
@@ -369,7 +391,8 @@ export async function campaign(options: {
       timed.every(
         (row) =>
           row.diagnostics!.unclassified.length === 0 &&
-          !row.stderrAssessment.degradedOrRuntimeWarning,
+          row.statusConsistent &&
+          row.stderrAssessment.unresolvedLines.length === 0,
       );
     const summary = {
       project: project.id,
@@ -383,29 +406,38 @@ export async function campaign(options: {
       fileInventory: identity(path.join(out, prefix + "-incumbent-files.json")),
       rows,
       warmupsDiscarded: warmups.map((row) => row.name),
-      qualifiedHeadline: qualified,
+      qualifiedHeadline: false,
+      preliminaryChecksPass: qualified,
+      pendingFinalClosure: true,
       tenTimesFasterClaim: false,
       requiredHumanClassification: comparison.unmatched,
-      scope: qualified
-        ? "this frozen cross-engine cohort only"
-        : "UNQUALIFIED descriptive observations; unmatched findings/native debt remain, no speed headline",
+      scope:
+        "PROVISIONAL/UNQUALIFIED until final source/provider closure; all raw/descriptive rows retained",
     };
     summaries.push(summary);
     save(path.join(out, prefix + "-summary.json"), summary);
   }
   assert.equal(allTransactions.length, 56);
-  save(path.join(out, "summary.json"), {
-    source,
-    summaries,
-    completeOuterTransactions: allTransactions.length,
-    favorableRepeat: false,
-  });
   verifySource(sourceRoot, provider);
   verifyProvider(provider);
   assert.deepEqual(identity(binary), vize);
+  const finalSummaries = summaries.map((row) => ({
+    ...row,
+    qualifiedHeadline: row.preliminaryChecksPass,
+    pendingFinalClosure: false,
+    scope: row.preliminaryChecksPass
+      ? "this frozen cross-engine cohort only"
+      : "UNQUALIFIED descriptive observations; unmatched findings/native debt remain, no speed headline",
+  }));
+  save(path.join(out, "summary.json"), {
+    source,
+    summaries: finalSummaries,
+    completeOuterTransactions: allTransactions.length,
+    favorableRepeat: false,
+  });
   const markdown =
     "# Frozen typecheck comparison\n\n" +
-    summaries
+    finalSummaries
       .map(
         (row) =>
           `- ${row.project}: headline qualified=${row.qualifiedHeadline}; unmatched=${row.comparison.unmatched.length}. See complete raw summary.json.\n`,
@@ -413,7 +445,7 @@ export async function campaign(options: {
       .join("") +
     "\nJS/native engines differ. OS cache is uncontrolled. All raw command/resource packets and first/final-node controls are retained. No universal speedup claim.\n";
   fs.writeFileSync(path.join(out, "summary.md"), markdown, { flag: "wx" });
-  return summaries;
+  return finalSummaries;
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const { values } = parseArgs({

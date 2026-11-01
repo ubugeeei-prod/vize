@@ -341,3 +341,81 @@ export function prepareProjects(out: string, provider: string) {
     save(path.join(out, project.id + "-source.json"), project);
   return [synthetic, real];
 }
+
+/** TS6's existing config parser owns this finite output-path fact; no cache clearing. */
+export function cacheFacts(project: Project, provider: string) {
+  const ts = createRequire(path.join(provider, "package.json"))("typescript") as {
+    sys: { readFile(path: string): string | undefined };
+    readConfigFile(
+      path: string,
+      read: (path: string) => string | undefined,
+    ): { config: unknown; error?: unknown };
+    parseJsonConfigFileContent(
+      config: unknown,
+      host: unknown,
+      base: string,
+      options: undefined,
+      file: string,
+    ): {
+      options: Record<string, unknown>;
+      errors: { code: number; messageText: unknown; start?: number; length?: number }[];
+    };
+    getTsBuildInfoEmitOutputFilePath(options: Record<string, unknown>): string | undefined;
+  };
+  const config = path.resolve(project.cwd, project.tsconfig),
+    read = ts.readConfigFile(config, ts.sys.readFile);
+  const parsed = ts.parseJsonConfigFileContent(
+    read.config,
+    ts.sys,
+    path.dirname(config),
+    undefined,
+    config,
+  );
+  const errors = parsed.errors.map((row) => ({
+    code: row.code,
+    messageText: row.messageText,
+    start: row.start,
+    length: row.length,
+  }));
+  const buildInfo = ts.getTsBuildInfoEmitOutputFilePath(parsed.options);
+  const output = buildInfo ? path.resolve(buildInfo) : null;
+  const owned =
+    output &&
+    output.startsWith(project.root + path.sep) &&
+    (parsed.options.incremental === true || parsed.options.composite === true);
+  return {
+    config: identity(config),
+    options: parsed.options,
+    errors,
+    readError: read.error ?? null,
+    declaredBuildInfo: output,
+    excludedOwnedOutputs: !read.error && errors.length === 0 && owned ? [output] : [],
+    scope:
+      "TS6 resolved output paths only; Vize effective native incremental outputs remain separately observed; no cold-cache assertion",
+  };
+}
+export function inputSnapshot(projectRoot: string, provider: string) {
+  return { project: inventory(projectRoot, [".git"]), provider: inventory(provider) };
+}
+export function assertInputs(
+  before: ReturnType<typeof inputSnapshot>,
+  after: typeof before,
+  ownedCacheOutputs: string[],
+) {
+  const rows = (snapshot: typeof before, role: "project" | "provider") =>
+    snapshot[role].rows.filter((row) => {
+      const file = path.resolve(snapshot[role].root, String(row.path));
+      if (!ownedCacheOutputs.includes(file)) return true;
+      assert.equal(role, "project");
+      assert.equal(row.kind, "file", "owned cache output cannot mask a symlink/nonregular input");
+      return false;
+    });
+  for (const role of ["project", "provider"] as const) {
+    assert.equal(before[role].root, after[role].root);
+    assert.equal(
+      hash(JSON.stringify(rows(before, role))),
+      hash(JSON.stringify(rows(after, role))),
+      `${role} full source/config/dependency/engine input identity changed; full snapshots retained`,
+    );
+  }
+}
