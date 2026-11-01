@@ -6,6 +6,49 @@ use crate::virtual_ts::VirtualTsOptions;
 use super::unique_case_dir;
 
 #[test]
+fn inline_null_runtime_prop_retains_unknown_without_expression_type_query() {
+    let original = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/runtime-null-prop-11252/Box.vue.txt"
+    ));
+    for source in [original.to_owned(), original.replace(" lang=\"ts\"", "")] {
+        let path = std::path::Path::new("Box.vue");
+        let transform = crate::generate_vue_content_mapper_transform(path, &source).unwrap();
+        super::assert_ts_parses(&transform.text);
+        let props = transform.text.split_once("export type Props = ").unwrap().1;
+        let props = props.split_once("\n};").unwrap().0;
+        assert_eq!(props, "{\n  \"as\"?: unknown;");
+    }
+}
+
+#[test]
+fn inline_runtime_props_keep_typed_assertions_and_named_spreads() {
+    let source = r#"<script setup lang="ts">
+import type { PropType } from 'vue';
+const shared = { title: { type: String, required: true } } as const;
+defineProps({
+  ...shared,
+  as: { type: null, required: false },
+  count: { type: Number, required: true },
+  mode: { type: String as PropType<'a' | 'b'>, required: true },
+  flag: Boolean,
+});
+</script>
+<template><div /></template>
+"#;
+    let transform =
+        crate::generate_vue_content_mapper_transform(std::path::Path::new("Typed.vue"), source)
+            .unwrap();
+    super::assert_ts_parses(&transform.text);
+    let props = transform.text.split_once("export type Props = ").unwrap().1;
+    let props = props.split_once("\n};").unwrap().0;
+    assert_eq!(
+        props,
+        "{\n  \"title\": string;\n  \"as\"?: unknown;\n  \"count\": number;\n  \"mode\": 'a' | 'b';\n  \"flag\"?: boolean;"
+    );
+}
+
+#[test]
 fn document_generator_exposes_with_defaults_props_to_template_scope() {
     let case_dir = unique_case_dir("with-defaults-template-props");
     let _ = fs::remove_dir_all(&case_dir);

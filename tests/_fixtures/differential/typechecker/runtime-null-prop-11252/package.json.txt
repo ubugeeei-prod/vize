@@ -1,0 +1,8 @@
+{
+  "name": "vize-runtime-prop-type-null-repro",
+  "private": true,
+  "type": "module",
+  "scripts": { "check": "tsc --runExternalCode --noEmit -p tsconfig.json" },
+  "dependencies": { "vue": "3.5.44" },
+  "devDependencies": { "typescript": "7.1.0-beta", "vize": "0.627.0" }
+}

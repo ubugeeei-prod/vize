@@ -23,6 +23,7 @@ mod options_api_diagnostics;
 mod props_binding;
 mod pug_refusal;
 mod quoted_generic_parameters;
+mod runtime_null_prop;
 mod support;
 mod template_callback_event_navigation;
 mod template_expression_syntax;
