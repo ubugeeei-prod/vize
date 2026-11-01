@@ -10,6 +10,7 @@ test("all original trim source and consumer inputs select the actual runtime lan
     "crates/vize_atelier_sfc/tests/native_input_model_trim/custody.rs",
     "crates/vize_atelier_sfc/tests/native_input_model_trim/output.rs",
     "crates/vize_atelier_sfc/tests/native_input_model_trim/refusal.rs",
+    "crates/vize_atelier_sfc/tests/native_input_model_trim/finish.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_trim_inputs.json",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_trim_all_targets.json",
     "tests/tooling/native-input-model-trim-reference.test.ts",
