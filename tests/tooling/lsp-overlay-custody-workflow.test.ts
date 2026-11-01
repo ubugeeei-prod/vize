@@ -24,6 +24,28 @@ const run = steps.find(
     "Exercise native authored logical namespace and retained physical policy controls",
 )!.run!;
 
+function platformSelectors(script: string): [string, string, boolean, boolean][] {
+  let platform: string | undefined;
+  const selected: [string, string, boolean, boolean][] = [];
+  for (const sourceLine of script.split("\n")) {
+    const line = sourceLine.trim();
+    const guard = line.match(/^if \[ "\$RUNNER_OS" = (\w+) \]; then$/u);
+    if (guard) platform = guard[1];
+    else if (line === "fi") platform = undefined;
+    else if (platform) {
+      const command = line.match(/\bcargo test .* --lib (\S+) -- (.+)$/u);
+      if (command)
+        selected.push([
+          platform,
+          command[1]!,
+          line.startsWith("VIZE_TEST_REQUIRE_TSGO=1 "),
+          command[2]!.split(/\s+/u).includes("--exact"),
+        ]);
+    }
+  }
+  return selected;
+}
+
 test("overlay custody preserves the exact source checkout, two hosts and read-only job boundaries", () => {
   assert.deepEqual(Object.keys(workflow.on), ["pull_request"]);
   assert.deepEqual(workflow.on.pull_request.types, ["opened", "synchronize", "reopened"]);
@@ -51,35 +73,46 @@ test("overlay custody preserves the exact source checkout, two hosts and read-on
 });
 
 test("overlay custody runs the exact platform controls, mandatory native case and strict workspace compiler", () => {
-  const commands = [...run.matchAll(/^  (cargo test .+)$/gm)].map((match) => match[1]);
-  assert.deepEqual(commands, [
-    'cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::vue_document::build::tests::windows_overlays::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes -- --exact --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/windows-overlay-input.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/windows-overlay-input.stderr"',
-    'cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::bridge::initial_diagnostics::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stderr"',
-  ]);
-  assert.deepEqual(
+  const expected: [string, string, boolean, boolean][] = [
     [
-      ...run.matchAll(
-        /^  VIZE_TEST_REQUIRE_TSGO=1 cargo test .+ --lib (\S+) -- --exact --nocapture > "\$VIZE_PRIVATE_OVERLAY_CAPTURE\/([^"]+)"/gm,
-      ),
-    ].map((match) => match.slice(1)),
-    [
-      [
-        "lsp_client::editor_lsp::configured_project::shared_transport::tests::native::native_editor_resolves_package_alias_from_monorepo_root_with_one_api_editor_owner",
-        "shared-api-owner.stdout",
-      ],
-      [
-        "lsp_client::editor_lsp::configured_project::shared_transport::tests::native::replay::native_editor_resolves_package_alias_from_monorepo_root_replays_unsaved_api_after_disk_events",
-        "shared-api-replay.stdout",
-      ],
-      [
-        "lsp_client::editor_lsp::configured_project::shared_transport::tests::logical_currentness::native_logical_revision_refusal_quarantines_current_api_but_preserves_held_snapshot",
-        "shared-api-currentness.stdout",
-      ],
+      "Windows",
+      "corsa_bridge::vue_document::build::tests::windows_overlays::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes",
+      false,
+      true,
     ],
-  );
+    ["Linux", "corsa_bridge::bridge::initial_diagnostics::tests::", false, false],
+    [
+      "Linux",
+      "lsp_client::editor_lsp::configured_project::shared_transport::tests::native::native_editor_resolves_package_alias_from_monorepo_root_with_one_api_editor_owner",
+      true,
+      true,
+    ],
+    [
+      "Linux",
+      "lsp_client::editor_lsp::configured_project::shared_transport::tests::native::replay::native_editor_resolves_package_alias_from_monorepo_root_replays_unsaved_api_after_disk_events",
+      true,
+      true,
+    ],
+    [
+      "Linux",
+      "lsp_client::editor_lsp::configured_project::shared_transport::tests::logical_currentness::native_logical_revision_refusal_quarantines_current_api_but_preserves_held_snapshot",
+      true,
+      true,
+    ],
+  ];
+  assert.deepEqual(platformSelectors(run), expected);
   assert.deepEqual(
-    [...run.matchAll(/^if \[ "\$RUNNER_OS" = (\w+) \]; then$/gm)].map((match) => match[1]),
-    ["Windows", "Linux"],
+    platformSelectors(
+      run
+        .split("\n")
+        .map((line) => `    ${line}`)
+        .join("\n"),
+    ),
+    expected,
+  );
+  assert.notDeepEqual(
+    platformSelectors(run.replace('"$RUNNER_OS" = Windows', '"$RUNNER_OS" = Linux')),
+    expected,
   );
   assert.deepEqual(
     [...run.matchAll(/^cargo test .+ -- --exact --ignored --nocapture .+$/gm)].map(
