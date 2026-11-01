@@ -1,4 +1,4 @@
-name: Private initial readiness normal release paired comparison
+name: Private initial readiness native foreground and resources supplement
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: lsp-initial-ready-abba-${{ github.run_id }}
+  group: lsp-initial-ready-supplement-${{ github.run_id }}
   cancel-in-progress: false
 
 env:
@@ -26,7 +26,7 @@ env:
 
 jobs:
   compare:
-    name: Shipping B C C B; original 100 fresh and 100 warm each
+    name: Shipping B C C B foreground; separate observer and resources
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 180
     env:
@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.sha }}
-          fetch-depth: 4
+          fetch-depth: 5
           persist-credentials: false
       - name: Refuse foreign source or workflow ancestry; stage immutable controller
         shell: bash
@@ -48,14 +48,19 @@ jobs:
           parent() {
             git cat-file -p "$1" | awk 'BEGIN { header=1 } /^$/ { header=0 } header && /^parent / { print $2 }'
           }
-          test "$(parent "$GITHUB_SHA")" = "$REQUESTED_CANDIDATE"
+          test "$(parent "$GITHUB_SHA")" = 7c74351cf94507b42221cf52e7037c21a5dc7a0d
+          test "$(parent 7c74351cf94507b42221cf52e7037c21a5dc7a0d)" = "$REQUESTED_CANDIDATE"
           test "$(parent "$REQUESTED_CANDIDATE")" = b5aa51bf91e4642b16657a5deeaca311f8b5f250
           test "$(parent b5aa51bf91e4642b16657a5deeaca311f8b5f250)" = 51c31c6bfee4d0b6587b644c2aab39c6f3e83a1f
           case "$RUNNER_TEMP" in *$'\n'*|*$'\r'*) exit 1;; esac
-          control="$RUNNER_TEMP/initial-ready-control-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          control="$RUNNER_TEMP/initial-ready-supplement-control-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           mkdir -m 700 "$control"
-          for name in controller.ts controls.test.ts README.md shipping-adapter.ts readiness-parity.ts; do
-            install -m 400 ".github/actions/lsp-initial-ready-pair/$name" "$control/$name"
+          mkdir -m 700 "$control/lsp-initial-ready-pair" "$control/lsp-initial-ready-supplement"
+          for name in shipping-adapter.ts readiness-parity.ts; do
+            install -m 400 ".github/actions/lsp-initial-ready-pair/$name" "$control/lsp-initial-ready-pair/$name"
+          done
+          for name in controller.ts source-custody.ts custody-controls.test.ts workload.ts native-queries.ts fixtures.ts resources.ts controls.test.ts README.md; do
+            install -m 400 ".github/actions/lsp-initial-ready-supplement/$name" "$control/lsp-initial-ready-supplement/$name"
           done
           install -m 400 .github/workflows/lsp-current-baseline.yml "$control/workflow.yml"
           printf 'CONTROL_DIRECTORY=%s\n' "$control" >> "$GITHUB_ENV"
@@ -69,6 +74,18 @@ jobs:
       - name: Install original isolated comparison provider
         working-directory: tests/_fixtures/performance/lsp-dual-server/provider
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Hydrate only the exact reviewed Vben source fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          fixture=tests/_fixtures/_git/vue-vben-admin
+          expected=748b182e440863711dc9624924e92440f5ddc4d3
+          test "$(git rev-parse "HEAD:$fixture")" = "$expected"
+          git submodule update --init --depth 1 -- "$fixture"
+          test "$(git -C "$fixture" rev-parse HEAD)" = "$expected"
+          test -z "$(git -C "$fixture" status --porcelain=v1 --untracked-files=all)"
+          git -C "$fixture" rev-parse HEAD > "$CONTROL_DIRECTORY/vben-source.txt"
+          git -C "$fixture" ls-tree -r --full-tree HEAD > "$CONTROL_DIRECTORY/vben-tracked-tree.txt"
       - name: Strict typed controller and synthetic refusal controls
         shell: bash
         run: |
@@ -78,25 +95,31 @@ jobs:
           node "$compiler" --ignoreConfig --strict --noEmit --noUnusedLocals --noUnusedParameters --noImplicitAny \
             --noUncheckedIndexedAccess --exactOptionalPropertyTypes --erasableSyntaxOnly \
             --target es2023 --module esnext --moduleResolution bundler \
-            --allowImportingTsExtensions --skipLibCheck --types node \
+            --allowImportingTsExtensions --allowJs --skipLibCheck --types node \
             --typeRoots "$PWD/node_modules/@types" \
-            "$CONTROL_DIRECTORY/controller.ts" "$CONTROL_DIRECTORY/controls.test.ts" "$CONTROL_DIRECTORY/shipping-adapter.ts" "$CONTROL_DIRECTORY/readiness-parity.ts" \
+            "$CONTROL_DIRECTORY/lsp-initial-ready-supplement/controller.ts" \
+            "$CONTROL_DIRECTORY/lsp-initial-ready-supplement/workload.ts" \
+            "$CONTROL_DIRECTORY/lsp-initial-ready-supplement/native-queries.ts" \
+            "$CONTROL_DIRECTORY/lsp-initial-ready-supplement/fixtures.ts" \
+            "$CONTROL_DIRECTORY/lsp-initial-ready-supplement/resources.ts" \
+            "$CONTROL_DIRECTORY/lsp-initial-ready-supplement/controls.test.ts" \
+            "$CONTROL_DIRECTORY/lsp-initial-ready-supplement/custody-controls.test.ts" \
             > "$CONTROL_DIRECTORY/strict.stdout" 2> "$CONTROL_DIRECTORY/strict.stderr"
-          node --test "$CONTROL_DIRECTORY/controls.test.ts" \
+          node --test "$CONTROL_DIRECTORY/lsp-initial-ready-supplement/controls.test.ts" "$CONTROL_DIRECTORY/lsp-initial-ready-supplement/custody-controls.test.ts" \
             > "$CONTROL_DIRECTORY/controls.stdout" 2> "$CONTROL_DIRECTORY/controls.stderr"
       - name: Install the unchanged repository Rust toolchain
         run: rustup toolchain install || rustup show active-toolchain
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-      - name: Fresh normal release B/C builds; common17 plus C clock6 and both-role native2; original ABBA
-        run: vp exec node "$CONTROL_DIRECTORY/controller.ts"
+      - name: Fresh normal release B/C builds; matched foreground timing, separate observer and memory
+        run: vp exec node "$CONTROL_DIRECTORY/lsp-initial-ready-supplement/controller.ts"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:
-          name: lsp-initial-ready-abba-${{ github.run_id }}-${{ github.run_attempt }}
+          name: lsp-initial-ready-supplement-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            ${{ runner.temp }}/initial-ready-control-${{ github.run_id }}-${{ github.run_attempt }}/
-            ${{ runner.temp }}/initial-ready-comparison-${{ github.run_id }}-${{ github.run_attempt }}/
+            ${{ runner.temp }}/initial-ready-supplement-control-${{ github.run_id }}-${{ github.run_attempt }}/
+            ${{ runner.temp }}/initial-ready-supplement-${{ github.run_id }}-${{ github.run_attempt }}/
           if-no-files-found: error
           retention-days: 30
