@@ -302,23 +302,25 @@ mod tests {
     #[test]
     fn float_max_sentinel_reaches_fixed_point_in_one_pass() {
         let options = FormatOptions::default();
-        for source in [
-            ".a { max-height: 3.40282e38px; }",
-            concat!(
-                ".group\\/item.group\\/nested-items-open > * > ",
-                ".group\\/items.translate-x-0 .group\\/button { ",
-                "max-height: calc(infinity * 1px); display: flex; }",
+        for (source, expected) in [
+            (
+                ".a { max-height: 3.40282e38px; }",
+                include_str!("../../tests/snapshots/history_style_float_max.snap.txt"),
+            ),
+            (
+                concat!(
+                    ".group\\/item.group\\/nested-items-open > * > ",
+                    ".group\\/items.translate-x-0 .group\\/button { ",
+                    "max-height: calc(infinity * 1px); display: flex; }",
+                ),
+                include_str!("../../tests/snapshots/history_style_infinity.snap.txt"),
             ),
         ] {
             let result = format_style_content(source, &options).unwrap();
             let again = format_style_content(result.as_str(), &options).unwrap();
 
+            assert_eq!(result.as_str(), expected, "{source}");
             assert_eq!(result, again);
-            assert!(
-                result.as_str().contains("3.40282e38px")
-                    || result.as_str().contains("calc(infinity * 1px)"),
-                "{result}"
-            );
         }
     }
 
