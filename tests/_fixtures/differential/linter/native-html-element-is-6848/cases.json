@@ -1,0 +1,124 @@
+{
+  "schema": "vize.native-html-element-is-source-cases.v1",
+  "sourceRevision": "631f1ba0bbecc2a51349ca34c939851b50740ee5",
+  "producer": "a0617450b2c233be169ab586effe88a4b2cf5264",
+  "originalSourceSha256": "52ac934e9636796d4a2f4289e72cda19fbc10a7da53b0ef7f9013d942799b4cc",
+  "originalDocumentedSfc": {
+    "path": "OriginalDocumented.vue.txt",
+    "sha256": "18fb4fad08249c4fbfbbacda4d66fd57976c8c8c4bc9e2f7f811838209ca3959",
+    "scope": "Unchanged original module-doc input, executed as legacy SFC and native SFC explicit refusal; not synthetic framing or native credit."
+  },
+  "originalSnapshot": {
+    "path": "crates/vize_patina/src/rules/vue/snapshots/vize_patina__rules__vue__no_deprecated_html_element_is__tests__reports_is_on_native_element.snap",
+    "sha256": "e2def73f250b014953617124058b835e8f068927e7046b484e31b26c35c7350d"
+  },
+  "rule": "vue/no-deprecated-html-element-is",
+  "entry": "template",
+  "cases": [
+    {
+      "id": "original-unit",
+      "source": "<div is=\"MyComponent\" />",
+      "spans": [
+        [
+          5,
+          21
+        ]
+      ]
+    },
+    {
+      "id": "bare",
+      "source": "<span is></span>",
+      "spans": [
+        [
+          6,
+          8
+        ]
+      ]
+    },
+    {
+      "id": "single-quoted",
+      "source": "<div is='Other'>text</div>",
+      "spans": [
+        [
+          5,
+          15
+        ]
+      ]
+    },
+    {
+      "id": "unquoted",
+      "source": "<div is=Other></div>",
+      "spans": [
+        [
+          5,
+          13
+        ]
+      ]
+    },
+    {
+      "id": "spaced-equals",
+      "source": "<div is = 'Other'/>",
+      "spans": [
+        [
+          5,
+          17
+        ]
+      ]
+    },
+    {
+      "id": "unicode-crlf",
+      "source": "界🌸\r\n<div title=\"decoy is\" is=\"花\r\n雪\">text</div>",
+      "spans": [
+        [
+          31,
+          44
+        ]
+      ]
+    },
+    {
+      "id": "ordered-siblings",
+      "source": "<div is=\"One\"/><span is=\"Two\"/>",
+      "spans": [
+        [
+          5,
+          13
+        ],
+        [
+          21,
+          29
+        ]
+      ]
+    },
+    {
+      "id": "valid-prefix",
+      "source": "<div is=\"vue:MyComponent\"/>",
+      "spans": []
+    },
+    {
+      "id": "valid-empty-vue-prefix",
+      "source": "<div is=\"vue:\"/>",
+      "spans": []
+    },
+    {
+      "id": "valid-case-sensitive-prefix",
+      "source": "<div is=\"Vue:MyComponent\"/>",
+      "spans": [
+        [
+          5,
+          25
+        ]
+      ]
+    },
+    {
+      "id": "valid-neighbours",
+      "source": "<div data-is=\"Other\" title=\"is=Other\" IS=\"Other\">is</div>",
+      "spans": []
+    },
+    {
+      "id": "valid-absent",
+      "source": "<div class=\"x\"/>",
+      "spans": []
+    }
+  ],
+  "scope": "New actual bare-native rule unit qualification; original79 history inputs/oracles and prior native17 capture remain unchanged. No new history-adapter/campaign/public/native-rate credit."
+}

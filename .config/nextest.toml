@@ -1,6 +1,11 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Retain complete new native/legacy Case+Observation packets without changing execution.
+[[profile.default.overrides]]
+filter = 'package(=vize_patina) & test(~no_deprecated_html_element_is::native::tests::)'
+junit.store-success-output = true
+
 # Preserve complete original SFC validation errors, valid modules and CLI
 # packets. Only these exact tests retain stdout; execution policies stay fixed.
 [[profile.default.overrides]]
