@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { getAttributeHyphenationOptions } from "./attribute-options.ts";
 
-test("literal tag policies preserve canonical and official tuple forms without mutation", () => {
+await test("literal tag policies preserve canonical and official tuple forms without mutation", () => {
   for (const ignoreTags of [[], ["MyWidget"], ["", " ", ":exit", "//", "/name", "/x/\n"]]) {
     const policy = { ignoreTags };
     const before = structuredClone(policy);
@@ -18,7 +18,7 @@ test("literal tag policies preserve canonical and official tuple forms without m
   }
 });
 
-test("regex-looking tag policies explicitly refuse rather than silently changing matching semantics", () => {
+await test("regex-looking tag policies explicitly refuse rather than silently changing matching semantics", () => {
   for (const tag of ["/^My/", "/MyWidget/i", "/x/y", "/x/gg", "/[/"]) {
     for (const options of [[{ ignoreTags: [tag] }], ["always", { ignoreTags: [tag] }]])
       assert.throws(

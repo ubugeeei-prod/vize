@@ -138,7 +138,10 @@ impl Linter {
                 Some(ignore) => self.with_attribute_hyphenation_policy(
                     style,
                     ignore.to_vec(),
-                    options.attribute_hyphenation_ignore_tags().unwrap_or_default().to_vec(),
+                    options
+                        .attribute_hyphenation_ignore_tags()
+                        .unwrap_or_default()
+                        .to_vec(),
                 ),
                 None => self.with_attribute_hyphenation(style),
             };

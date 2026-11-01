@@ -29,8 +29,16 @@ pub(crate) fn configure_patina_attribute_ignore(
             style
                 .and_then(attribute_hyphenation_style)
                 .unwrap_or_default(),
-            ignore.unwrap_or_default().iter().map(|entry| entry.as_str().into()).collect(),
-            ignore_tags.unwrap_or_default().iter().map(|entry| entry.as_str().into()).collect(),
+            ignore
+                .unwrap_or_default()
+                .iter()
+                .map(|entry| entry.as_str().into())
+                .collect(),
+            ignore_tags
+                .unwrap_or_default()
+                .iter()
+                .map(|entry| entry.as_str().into())
+                .collect(),
         ),
     }
 }
@@ -43,9 +51,13 @@ pub(crate) fn validate_attribute_hyphenation_ignore_tags(
         return Err("attributeHyphenation must be always or never when ignoreTags is configured");
     }
     AttributeHyphenationOptions {
-        ignore_tags: ignore_tags.iter().map(|entry| entry.as_str().into()).collect(),
+        ignore_tags: ignore_tags
+            .iter()
+            .map(|entry| entry.as_str().into())
+            .collect(),
         ..Default::default()
-    }.validate()
+    }
+    .validate()
 }
 
 #[cfg(test)]

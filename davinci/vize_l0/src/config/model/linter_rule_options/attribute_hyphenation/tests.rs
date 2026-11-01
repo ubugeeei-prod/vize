@@ -91,16 +91,31 @@ fn malformed_lists_and_unknown_options_are_refused_instead_of_widening_exemption
 #[test]
 fn formerly_unknown_tag_field_admits_only_literal_unique_policies() {
     // This exact former unknown-field input now belongs to the literal-tag feature.
-    let value: AttributeHyphenationConfig = serde_json::from_value(json!({"ignoreTags":["MyWidget"]})).unwrap();
+    let value: AttributeHyphenationConfig =
+        serde_json::from_value(json!({"ignoreTags":["MyWidget"]})).unwrap();
     assert_eq!(value.style(), HyphenationStyle::Always);
     assert_eq!(value.ignore_tags().unwrap()[0].as_str(), "MyWidget");
     for tags in [vec![], vec!["", " ", ":exit", "//", "/name", "/x/\n"]] {
-        let value: AttributeHyphenationConfig = serde_json::from_value(json!({"ignoreTags":tags})).unwrap();
+        let value: AttributeHyphenationConfig =
+            serde_json::from_value(json!({"ignoreTags":tags})).unwrap();
         assert_eq!(value.ignore_tags().unwrap().len(), tags.len());
     }
-    for tags in [json!(["/^My/"]), json!(["/MyWidget/i"]), json!(["/x/y"]), json!(["MyWidget","MyWidget"]), json!([1]), json!(null)] {
-        assert!(serde_json::from_value::<AttributeHyphenationConfig>(json!({"ignoreTags":tags})).is_err());
+    for tags in [
+        json!(["/^My/"]),
+        json!(["/MyWidget/i"]),
+        json!(["/x/y"]),
+        json!(["MyWidget", "MyWidget"]),
+        json!([1]),
+        json!(null),
+    ] {
+        assert!(
+            serde_json::from_value::<AttributeHyphenationConfig>(json!({"ignoreTags":tags}))
+                .is_err()
+        );
     }
     let value: AttributeHyphenationConfig = serde_json::from_value(json!({})).unwrap();
-    assert_eq!(serde_json::to_value(value).unwrap(), json!({"style":"always", "ignore":[]}));
+    assert_eq!(
+        serde_json::to_value(value).unwrap(),
+        json!({"style":"always", "ignore":[]})
+    );
 }

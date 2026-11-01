@@ -228,7 +228,10 @@ impl Rule for AttributeHyphenation {
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Only check custom components
         if !Self::is_custom_component(element)
-            || self.ignore_tags.iter().any(|tag| tag.as_str() == element.tag)
+            || self
+                .ignore_tags
+                .iter()
+                .any(|tag| tag.as_str() == element.tag)
         {
             return;
         }
@@ -307,6 +310,6 @@ fn report(
 }
 
 #[cfg(test)]
-mod tests;
-#[cfg(test)]
 mod ignore_tags_tests;
+#[cfg(test)]
+mod tests;

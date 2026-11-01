@@ -75,9 +75,16 @@ impl AttributeHyphenationOptions {
         }
         for (index, tag) in self.ignore_tags.iter().enumerate() {
             if is_regex_tag_policy(tag) {
-                return Err("ignoreTags supports literal tag names only; regular-expression policies are unsupported");
+                return Err(
+                    "ignoreTags supports literal tag names only; regular-expression policies are unsupported",
+                );
             }
-            if self.ignore_tags.iter().take(index).any(|previous| previous == tag) {
+            if self
+                .ignore_tags
+                .iter()
+                .take(index)
+                .any(|previous| previous == tag)
+            {
                 return Err("ignoreTags entries must be unique");
             }
         }
@@ -122,7 +129,9 @@ impl TryFrom<RawOptions> for AttributeHyphenationOptions {
 // including empty/blank/:exit values, remain valid nonmatching literal names.
 fn is_regex_tag_policy(value: &str) -> bool {
     value.starts_with('/')
-        && !value.chars().any(|ch| matches!(ch, '\n' | '\r' | '\u{2028}' | '\u{2029}'))
+        && !value
+            .chars()
+            .any(|ch| matches!(ch, '\n' | '\r' | '\u{2028}' | '\u{2029}'))
         && value.rfind('/').is_some_and(|index| index > 1)
 }
 

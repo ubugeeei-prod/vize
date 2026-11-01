@@ -26,8 +26,8 @@ use lint_options::{
     LintOptionsNapi, LintResultNapi, PatinaLintOptionsNapi, configure_patina_attribute_ignore,
     configure_patina_event_ignore, configure_patina_rule_options, configure_type_aware_lint,
     create_patina_linter, patina_help_level_from_option, patina_locale_from_option,
-    patina_preset_from_option, validate_attribute_hyphenation_ignore, validate_attribute_hyphenation_ignore_tags,
-    validate_event_hyphenation_ignore,
+    patina_preset_from_option, validate_attribute_hyphenation_ignore,
+    validate_attribute_hyphenation_ignore_tags, validate_event_hyphenation_ignore,
 };
 pub use oxlint_html_binding::dto::{
     OxlintHtmlCompleted, OxlintHtmlDiagnostic, OxlintHtmlFile, OxlintHtmlLabel, OxlintHtmlOptions,

@@ -23,7 +23,13 @@ pub(super) fn parse_attribute_option(
                     .map(|entry| entry.as_str().to_owned())
                     .collect(),
             ),
-            Some(value.ignore_tags.into_iter().map(|entry| entry.as_str().to_owned()).collect()),
+            Some(
+                value
+                    .ignore_tags
+                    .into_iter()
+                    .map(|entry| entry.as_str().to_owned())
+                    .collect(),
+            ),
         )
     } else {
         (
