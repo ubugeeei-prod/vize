@@ -1,80 +1,101 @@
-name: Current-source LSP baseline
+name: Private setup prepare shipping paired comparison
 
-# Finite, manually approved RPC baseline. Ordinary PR checks run pure controls.
 on:
   workflow_dispatch:
     inputs:
       source_sha:
-        description: Exact reviewed source SHA (must equal the dispatched ref)
+        description: Reviewed finite candidate source (must match the controller)
         required: true
+        default: "e4675fd547632683ca1b258c128327392b38eb2c"
         type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: lsp-current-baseline-${{ inputs.source_sha }}
+  group: lsp-binding-range-abba-${{ github.run_id }}
   cancel-in-progress: false
 
 env:
+  CARGO_INCREMENTAL: "0"
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+  REQUESTED_CANDIDATE: ${{ inputs.source_sha }}
+  EXPECTED_WORKFLOW: ${{ github.workflow_sha }}
 
 jobs:
-  misskey:
+  compare:
+    name: Shipping B C C B; original 100 fresh and 100 warm each
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
+    timeout-minutes: 180
     env:
-      VIZE_BASELINE_EXPECTED_SOURCE: ${{ inputs.source_sha }}
-      VIZE_PERF_BUDGET_SCALE: "1"
-      RAYON_NUM_THREADS: "4"
+      CARGO_BUILD_JOBS: "16"
+      RAYON_NUM_THREADS: "8"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ inputs.source_sha }}
+          ref: ${{ github.sha }}
+          fetch-depth: 4
           persist-credentials: false
-      - name: Refuse a stale or different dispatch source
+      - name: Refuse foreign source or workflow ancestry; stage immutable controller
         shell: bash
         run: |
           set -euo pipefail
-          [[ "$VIZE_BASELINE_EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
-          test "$(git rev-parse HEAD)" = "$VIZE_BASELINE_EXPECTED_SOURCE"
-          test "$GITHUB_SHA" = "$VIZE_BASELINE_EXPECTED_SOURCE"
+          test "$REQUESTED_CANDIDATE" = e4675fd547632683ca1b258c128327392b38eb2c
+          test "$GITHUB_SHA" = "$EXPECTED_WORKFLOW"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          parent() {
+            git cat-file -p "$1" | awk 'BEGIN { header=1 } /^$/ { header=0 } header && /^parent / { print $2 }'
+          }
+          test "$(parent "$GITHUB_SHA")" = "$REQUESTED_CANDIDATE"
+          test "$(parent "$REQUESTED_CANDIDATE")" = ec8474e0ea9ed05062542c57c857f36b9467ac15
+          case "$RUNNER_TEMP" in *$'\n'*|*$'\r'*) exit 1;; esac
+          control="$RUNNER_TEMP/binding-range-control-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir -m 700 "$control"
+          for name in controller.ts controls.test.ts README.md shipping-adapter.ts; do
+            install -m 400 ".github/actions/lsp-binding-range-comparison/$name" "$control/$name"
+          done
+          install -m 400 .github/workflows/lsp-current-baseline.yml "$control/workflow.yml"
+          printf 'CONTROL_DIRECTORY=%s\n' "$control" >> "$GITHUB_ENV"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
           cache: true
           run-install: false
-      - name: Install locked JavaScript and native TypeScript dependencies
+      - name: Install exact original JavaScript stacks
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Hydrate only the pinned Misskey fixture
-        run: git submodule update --init --depth 1 tests/_fixtures/_git/misskey
-      - name: Install repository Rust toolchain
+      - name: Install original isolated comparison provider
+        working-directory: tests/_fixtures/performance/lsp-dual-server/provider
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Strict typed controller and synthetic refusal controls
+        shell: bash
         run: |
-          rustup toolchain install || rustup show active-toolchain
-          cargo --version
+          set -euo pipefail
+          compiler=node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/tsc.js
+          node "$compiler" --version > "$CONTROL_DIRECTORY/strict-version.txt"
+          node "$compiler" --ignoreConfig --strict --noEmit --noImplicitAny \
+            --noUncheckedIndexedAccess --exactOptionalPropertyTypes --erasableSyntaxOnly \
+            --target es2023 --module esnext --moduleResolution bundler \
+            --allowImportingTsExtensions --skipLibCheck --types node \
+            --typeRoots "$PWD/node_modules/@types" \
+            "$CONTROL_DIRECTORY/controller.ts" "$CONTROL_DIRECTORY/controls.test.ts" "$CONTROL_DIRECTORY/shipping-adapter.ts" \
+            > "$CONTROL_DIRECTORY/strict.stdout" 2> "$CONTROL_DIRECTORY/strict.stderr"
+          node --test "$CONTROL_DIRECTORY/controls.test.ts" \
+            > "$CONTROL_DIRECTORY/controls.stdout" 2> "$CONTROL_DIRECTORY/controls.stderr"
+      - name: Install the unchanged repository Rust toolchain
+        run: rustup toolchain install || rustup show active-toolchain
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: lsp-current-baseline
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Build and receipt the exact current source server
-        run: |
-          cargo build --profile ci -p vize
-          node tests/differential/build-receipt.ts
-      - name: Qualify pure observation and refusal laws
-        run: node --test tests/tooling/lsp-current-baseline*.test.ts tests/tooling/lsp-session-capture.test.ts
-      - name: Measure three serial fresh sessions with all original checks
-        run: node tests/performance/lsp-current-baseline.ts
+      - name: Fresh shipping B/C builds; common17 owned tests; all original ABBA workloads
+        run: vp exec node "$CONTROL_DIRECTORY/controller.ts"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
+        if: ${{ always() }}
         with:
-          name: lsp-current-baseline-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.source_sha }}
+          name: lsp-binding-range-abba-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            target/vize-tests/lsp-current-baseline/
-            target/differential/lsp-sessions/
+            ${{ runner.temp }}/binding-range-control-${{ github.run_id }}-${{ github.run_attempt }}/
+            ${{ runner.temp }}/binding-range-comparison-${{ github.run_id }}-${{ github.run_attempt }}/
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 30
