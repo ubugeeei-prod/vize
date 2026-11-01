@@ -52,6 +52,8 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
+mod native;
+
 #[derive(Default)]
 pub struct PlaceholderLabelOption;
 
@@ -210,6 +212,10 @@ impl MarkupRule for PlaceholderLabelOption {
 }
 
 impl Rule for PlaceholderLabelOption {
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        Some(self)
+    }
+
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
