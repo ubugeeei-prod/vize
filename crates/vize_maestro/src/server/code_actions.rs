@@ -43,11 +43,11 @@ pub(super) async fn code_actions(
     } else if crate::utils::is_jsx_path(uri.path()) {
         // `.jsx`/`.tsx`: surface the fixable Patina/JSX-compiler diagnostics.
         // Lint-based (parse-only), so not gated on `typeChecker.jsxTypecheck`.
-        crate::ide::JsxCodeActionService::code_actions(&content, uri, range)
+        crate::ide::JsxCodeActionService::code_actions(content, uri, range)
     } else {
         let ctx = context
             .get_or_init(|| {
-                let offset = position_to_offset(&content, range.start.line, range.start.character)?;
+                let offset = position_to_offset(content, range.start.line, range.start.character)?;
                 Some(IdeContext::with_content(
                     &server.state,
                     uri,
@@ -86,7 +86,7 @@ pub(super) async fn code_actions(
             let ctx = context
                 .get_or_init(|| {
                     let offset =
-                        position_to_offset(&content, range.start.line, range.start.character)?;
+                        position_to_offset(content, range.start.line, range.start.character)?;
                     Some(IdeContext::with_content(
                         &server.state,
                         uri,
@@ -104,7 +104,7 @@ pub(super) async fn code_actions(
             let ctx = context
                 .get_or_init(|| {
                     let offset =
-                        position_to_offset(&content, range.start.line, range.start.character)?;
+                        position_to_offset(content, range.start.line, range.start.character)?;
                     Some(IdeContext::with_content(
                         &server.state,
                         uri,

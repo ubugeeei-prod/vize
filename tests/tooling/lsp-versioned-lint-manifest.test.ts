@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import {
@@ -9,6 +11,7 @@ import {
   loadLspManifest,
 } from "../differential/lsp-manifest.ts";
 import { asArray, asRecord, parseJson } from "../../tools/support/json-value.ts";
+import { runLspPack } from "../differential/lsp.ts";
 
 const pack = new URL("../_fixtures/differential/lsp/", import.meta.url);
 const loaded = loadLspManifest(fileURLToPath(new URL("manifest.json", pack)));
@@ -96,4 +99,33 @@ void test("unknown or misrouted capability metadata refuses instead of silently 
   );
   assert.equal(current.data.workspaceEditDocumentChanges, true);
   assert.equal(current.data.method, "textDocument/codeAction");
+});
+
+void test("source-built stdio preserves every original response and the whole versioned lint edit", async (t) => {
+  const root = fileURLToPath(new URL("../../", import.meta.url));
+  const revision = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" });
+  assert.equal(revision.status, 0, revision.stderr);
+  const report = await runLspPack({
+    manifestPath: fileURLToPath(new URL("manifest.json", pack)),
+    binaryPath: path.join(root, "target/ci", process.platform === "win32" ? "vize.exe" : "vize"),
+    sourceRevision: revision.stdout.trim(),
+    repoRoot: root,
+  });
+  const output = path.join(root, "target/differential/versioned-lint-actions-6876.json");
+  mkdirSync(path.dirname(output), { recursive: true });
+  writeFileSync(output, `${JSON.stringify(report, null, 2)}\n`);
+  // PR workers retain ordinary logs; full workers also retain target/differential.
+  t.diagnostic(`versioned-lint-actions-whole-report ${JSON.stringify(report)}`);
+  const unsupported = loaded.cases.filter((fixture) => fixture.data.sourceSession).length;
+  assert.deepEqual(report.summary, {
+    plannedCases: 78,
+    legacyMatches: 78 - unsupported,
+    legacyFailures: 0,
+    legacyUnsupported: unsupported,
+    baselineDrift: 0,
+    nativeUnsupported: 78,
+    pairedComparisons: 0,
+    nativeHandled: 0,
+    nativeEquivalent: 0,
+  });
 });
