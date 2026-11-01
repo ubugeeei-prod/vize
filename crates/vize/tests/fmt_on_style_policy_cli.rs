@@ -168,19 +168,17 @@ fn original_event_fix_refuses_default_and_true_then_false_stays_lint_clean_and_f
         clean(root);
         expect(&run(root, &arguments), 0);
         assert_eq!(fs::read_to_string(&file).unwrap(), formatted);
-        expect(
-            &run(
-                root,
-                &[
-                    "fmt",
-                    "--config",
-                    "vite.config.mjs",
-                    "--check",
-                    "src/Events.vue",
-                ],
-            ),
-            0,
-        );
+        let mut check = vec![
+            "fmt",
+            "--config",
+            "vite.config.mjs",
+            "--check",
+            "src/Events.vue",
+        ];
+        if cli_override {
+            check.push("--normalize-directive-shorthands=false");
+        }
+        expect(&run(root, &check), 0);
         clean(root);
     }
     configure(root, policy(), Some(false));
@@ -320,17 +318,24 @@ fn event_policy_uses_the_actual_cli_rule_registration_and_base_preset() {
             ],
         );
         assert!(matches!(lint.status.code(), Some(0 | 1)), "{lint:?}");
-        let report: Value = serde_json::from_slice(&lint.stdout).unwrap();
-        let messages = report[0]["messages"].as_array().unwrap();
-        // Compare the actual constructor, including category-before-replacement behavior.
-        let count = messages
-            .iter()
-            .filter(|row| {
-                row["ruleId"] == RULE
-                    && row["message"] == "[vize:vue/v-on-style] Prefer `v-on:` over shorthand `@`"
-            })
-            .count();
-        assert_eq!(count, usize::from(active), "{linter}: {report}");
+        if linter["enabled"] == false {
+            expect(&lint, 0);
+            assert_eq!(lint.stdout, b"");
+            assert_eq!(lint.stderr, b"[vize] Skipping lint because linter.enabled is false in vite.config.* vue settings.\n");
+        } else {
+            let report: Value = serde_json::from_slice(&lint.stdout).unwrap();
+            let messages = report[0]["messages"].as_array().unwrap();
+            // Compare the actual constructor, including category-before-replacement behavior.
+            let count = messages
+                .iter()
+                .filter(|row| {
+                    row["ruleId"] == RULE
+                        && row["message"]
+                            == "[vize:vue/v-on-style] Prefer `v-on:` over shorthand `@`"
+                })
+                .count();
+            assert_eq!(count, usize::from(active), "{linter}: {report}");
+        }
         fs::write(&file, FIXED).unwrap();
         let output = run(
             root,
