@@ -13,6 +13,8 @@ use tower_lsp::lsp_types::DocumentOnTypeFormattingParams;
 mod bind_style_policy;
 #[cfg(feature = "glyph")]
 mod import_sorting;
+#[cfg(feature = "glyph")]
+mod on_style_policy;
 
 const STANDALONE_HTML: &str = "<!DOCTYPE html>\n<html><body>\n<div   v-scope=\"{ count: 0 }\" >{{ count }}</div>\n</body></html>\n";
 const SFC: &str = "<template>\n<div>hello</div>\n</template>\n";
