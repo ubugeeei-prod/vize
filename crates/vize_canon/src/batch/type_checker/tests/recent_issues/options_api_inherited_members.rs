@@ -230,7 +230,7 @@ fn typed_options_object_mixin_methods_keep_arguments_and_unknown_members_checked
                 "src/Never.vue".into(),
                 Some(2339),
                 "Property '$unbound' does not exist on type '$This'.".into(),
-                3,
+                5,
                 104,
                 1,
                 Some("script"),
