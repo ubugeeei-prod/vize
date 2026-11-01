@@ -13,6 +13,7 @@ use crate::write::{Emitted, LinkSink, Writer};
 
 mod component;
 mod literal;
+mod model;
 mod roots;
 mod setup;
 pub use component::emit_component;
