@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ textConverter: (value: number) => string }>();
+</script>
+<template><span>{{ textConverter(0) }}</span></template>
