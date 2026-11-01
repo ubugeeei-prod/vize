@@ -1,0 +1,205 @@
+{
+  "schema": "vize.slot-function-presence-negation",
+  "version": 1,
+  "scope": "Direct logical-negation only; other unary and direct-return differences intentionally remain outside this correction.",
+  "cases": [
+    {
+      "id": "not",
+      "script": "export default { render() { return !this.$slots.default } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "double-not",
+      "script": "export default { render() { return !!this.$slots.default } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "parenthesized-unicode",
+      "script": "export default { render() { /* 雪🌸 */ return !!((this.$slots.default)) } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "function-alias",
+      "script": "export default { render() { const slot = this.$slots.default; return !!slot } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "object-alias",
+      "script": "export default { render() { const slots = this.$slots; return !slots.default } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "nested-member",
+      "script": "export default { render() { /* 雪🌸 */ return !this.$slots.default.length } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 12,
+          "length": 7
+        }
+      ]
+    },
+    {
+      "id": "nested-array",
+      "script": "export default { render() { return ![this.$slots.default] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 12,
+          "length": 7
+        }
+      ]
+    },
+    {
+      "id": "mixed-peer",
+      "script": "export default { render() { return [!!this.$slots.default, this.$slots.named] } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.named",
+          "shift": 0,
+          "length": 17
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "this.$slots.named",
+          "shift": 12,
+          "length": 5
+        }
+      ]
+    },
+    {
+      "id": "plain-return",
+      "script": "export default { render() { return this.$slots.default } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "called",
+      "script": "export default { render() { return this.$slots.default() } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    },
+    {
+      "id": "alias-value-and-call",
+      "script": "export default { render() { const slot = this.$slots.default; return [slot, slot()] } }",
+      "nativeSpans": [
+        {
+          "needle": "slot,",
+          "shift": 0,
+          "length": 4
+        }
+      ],
+      "officialSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 12,
+          "length": 7
+        }
+      ]
+    },
+    {
+      "id": "typeof-outside-slice",
+      "script": "export default { render() { return typeof this.$slots.default } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "void-outside-slice",
+      "script": "export default { render() { return void this.$slots.default } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "plus-outside-slice",
+      "script": "export default { render() { return +this.$slots.default } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "minus-outside-slice",
+      "script": "export default { render() { return -this.$slots.default } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "bitwise-outside-slice",
+      "script": "export default { render() { return ~this.$slots.default } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "unknown-wrapper",
+      "script": "export default { render() { return !wrap(this.$slots.default) } }",
+      "nativeSpans": [
+        {
+          "needle": "this.$slots.default",
+          "shift": 0,
+          "length": 19
+        }
+      ],
+      "officialSpans": []
+    },
+    {
+      "id": "unrelated-object",
+      "script": "export default { render() { const other = { default: () => [] }; return !!other.default } }",
+      "nativeSpans": [],
+      "officialSpans": []
+    }
+  ]
+}

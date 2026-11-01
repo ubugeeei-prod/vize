@@ -3193,6 +3193,48 @@
       }
     },
     {
+      "id": "linter/slot-existence-negation-10822",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "slot-existence-negation-10822",
+        "files": [
+          {
+            "path": "Autocomplete.vue.txt",
+            "role": "original-real-project-component",
+            "sha256": "38580d4997ffb6104558c50bbcb01dd751295aad1a12a33dd921ef746e0ed366"
+          },
+          {
+            "path": "cases.json",
+            "role": "authored-scope-controls",
+            "sha256": "683a9b923ca916109703e44c3f4c67b1a71ac27abcdfc2872add504334a2dd0d"
+          },
+          {
+            "path": "source-provenance.json",
+            "role": "source-custody",
+            "sha256": "17799eff67320b2e6a5f2f8f7431c227171896723be20d279f1024fdcd03b4c8"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "whole original and authored direct-negation controls consumed by normal CLI/API/reference tests"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/static-class/adjacent-attribute",
       "state": "active",
       "targets": ["lint"],

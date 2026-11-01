@@ -187,3 +187,8 @@ tools/benchmarks/observers/paired-candidate-route-memory.rs text eol=lf
 tests/_fixtures/tooling/paired-inherited-options-inputs.json text eol=lf
 tests/_fixtures/tooling/paired-native-a183-libraries.json text eol=lf
 tools/benchmarks/scripts/cold-typechecker-scale-candidate-cases.json text eol=lf
+
+# The original slot-presence source and authored controls are byte-pinned.
+tests/_fixtures/differential/linter/slot-existence-negation-10822/Autocomplete.vue.txt -text
+tests/_fixtures/differential/linter/slot-existence-negation-10822/cases.json -text
+tests/_fixtures/differential/linter/slot-existence-negation-10822/source-provenance.json -text
