@@ -1,0 +1,931 @@
+{
+  "base": "ec8474e0ea9ed05062542c57c857f36b9467ac15",
+  "candidate": "437f32b11bb5d8ab9275583a4d0dbdb1f3e8b048",
+  "baseTree": "8a2c11545d844a97ca8a1a76a8c5a8685e380710",
+  "candidateTree": "6a6e5243bedad02beb65377203227e2b52de90cc",
+  "controllerPaths": [
+    ".github/workflows/lsp-current-baseline.yml",
+    ".github/retained-text/laws.ts",
+    ".github/retained-text/custody.ts",
+    ".github/retained-text/run.ts",
+    ".github/retained-text/laws.test.ts",
+    ".github/retained-text/manifest.json",
+    ".github/retained-text/post-guards.json"
+  ],
+  "changedSourcePaths": [
+    "crates/vize_canon/src/lsp_client.rs",
+    "crates/vize_canon/src/lsp_client/lifecycle.rs",
+    "crates/vize_canon/src/lsp_client/retained_text.rs",
+    "crates/vize_canon/src/lsp_client/retained_text_tests.rs",
+    "crates/vize_canon/src/lsp_client/session.rs",
+    "crates/vize_canon/src/lsp_client/session/replay.rs"
+  ],
+  "sources": [
+    {
+      "path": ".cargo/config.toml",
+      "B": "9087d9834c7170cfa25b764557d51b652081f674af8ee03f83e3a947eabb13e5",
+      "C": "9087d9834c7170cfa25b764557d51b652081f674af8ee03f83e3a947eabb13e5"
+    },
+    {
+      "path": ".github/workflows/lsp-config-diagnostics.yml",
+      "B": "77cc3931fc18a4bd519e4780fda07aec5ae3cbbd38fc5bed39054572a7c9f9d4",
+      "C": "77cc3931fc18a4bd519e4780fda07aec5ae3cbbd38fc5bed39054572a7c9f9d4"
+    },
+    {
+      "path": "Cargo.lock",
+      "B": "e9a8659e79a919541b6cf29340886dabad787a18fa3051bd77873fc3a76194a4",
+      "C": "e9a8659e79a919541b6cf29340886dabad787a18fa3051bd77873fc3a76194a4"
+    },
+    {
+      "path": "Cargo.toml",
+      "B": "6400cafce2abb1c16bb3c43dfc6498d0a0c695c88849bd5a6bdd4063b91377de",
+      "C": "6400cafce2abb1c16bb3c43dfc6498d0a0c695c88849bd5a6bdd4063b91377de"
+    },
+    {
+      "path": "crates/vize/Cargo.toml",
+      "B": "69d2a340d7690e1a340df270c9beb8cb459afaf43cc42bfaab848f4eb01d93a0",
+      "C": "69d2a340d7690e1a340df270c9beb8cb459afaf43cc42bfaab848f4eb01d93a0"
+    },
+    {
+      "path": "crates/vize/tests/lsp_completion_sibling_overlay_cli.rs",
+      "B": "7008dfcc2d94ce84d4437b8e191c174e3bec4286ea96d0c942789283a2389a90",
+      "C": "7008dfcc2d94ce84d4437b8e191c174e3bec4286ea96d0c942789283a2389a90"
+    },
+    {
+      "path": "crates/vize/tests/lsp_component_attribute_authority_cli.rs",
+      "B": "e3910843b482ef52e55031ea4a13566fd17c57f18912cb0e56aabc543f1b4d3b",
+      "C": "e3910843b482ef52e55031ea4a13566fd17c57f18912cb0e56aabc543f1b4d3b"
+    },
+    {
+      "path": "crates/vize/tests/lsp_component_attribute_authority_cli/library_refusal.rs",
+      "B": "f870575616a9698e26d54b4951426ff9ac08cfd5e77d615a0c68b711bedf388e",
+      "C": "f870575616a9698e26d54b4951426ff9ac08cfd5e77d615a0c68b711bedf388e"
+    },
+    {
+      "path": "crates/vize/tests/lsp_component_attribute_authority_cli/library_refusal/safe_update.rs",
+      "B": "669b61f4d546e3c527354a430dfd104f4604e015fc364f561edeb30b337ce8fe",
+      "C": "669b61f4d546e3c527354a430dfd104f4604e015fc364f561edeb30b337ce8fe"
+    },
+    {
+      "path": "crates/vize/tests/lsp_component_attribute_authority_cli/native_probe.rs",
+      "B": "edc57aa990ead01c59272f4422d04a082079989218035d6f6be2cce8448f15fe",
+      "C": "edc57aa990ead01c59272f4422d04a082079989218035d6f6be2cce8448f15fe"
+    },
+    {
+      "path": "crates/vize/tests/lsp_symlink_workspace_staging_cli.rs",
+      "B": "3e51f9a3af4c528e10b4d99b0da432c17cc701ffd436f8e630aaf55e1a7daab0",
+      "C": "3e51f9a3af4c528e10b4d99b0da432c17cc701ffd436f8e630aaf55e1a7daab0"
+    },
+    {
+      "path": "crates/vize/tests/lsp_symlink_workspace_staging_cli/fixture.rs",
+      "B": "9f8524060c3e43476f3e18bcb39e309453760648f1fed83e51449ca114b359fe",
+      "C": "9f8524060c3e43476f3e18bcb39e309453760648f1fed83e51449ca114b359fe"
+    },
+    {
+      "path": "crates/vize/tests/support/lsp_process.rs",
+      "B": "b1e594376a3a6c2f26ace16bf130a431ba6d29d55abeb09c211954f5d99114ee",
+      "C": "b1e594376a3a6c2f26ace16bf130a431ba6d29d55abeb09c211954f5d99114ee"
+    },
+    {
+      "path": "crates/vize_canon/Cargo.toml",
+      "B": "04887c025691d2ba0e027489f44bf69883af3c99739f51cdaa4b7e41bd769cfc",
+      "C": "04887c025691d2ba0e027489f44bf69883af3c99739f51cdaa4b7e41bd769cfc"
+    },
+    {
+      "path": "crates/vize_canon/src/batch.rs",
+      "B": "d91e3c27f7cf4fef8b5a8344f65a949bdb028df7ae9adc6d338a0c85a3662836",
+      "C": "d91e3c27f7cf4fef8b5a8344f65a949bdb028df7ae9adc6d338a0c85a3662836"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project.rs",
+      "B": "3109e8d7bd13254fde274e14030bfd9925b56089caad1372bb924ecd0ffe1ac1",
+      "C": "3109e8d7bd13254fde274e14030bfd9925b56089caad1372bb924ecd0ffe1ac1"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/materialize.rs",
+      "B": "3780adb2c19f54400cf8d12b6b2d5148ce22736fcf7498ee246eb495b2e0f671",
+      "C": "3780adb2c19f54400cf8d12b6b2d5148ce22736fcf7498ee246eb495b2e0f671"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/materialize/alias_transition_tests.rs",
+      "B": "478fa61f7f226913c402efd8e992f481cca8fca8136cb1f3fd7d8831ad763870",
+      "C": "478fa61f7f226913c402efd8e992f481cca8fca8136cb1f3fd7d8831ad763870"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/materialize_delta.rs",
+      "B": "d3d4269f555641ffae5786fa987468329d0a104b1a55bc2fbc9a18cb7b70e991",
+      "C": "d3d4269f555641ffae5786fa987468329d0a104b1a55bc2fbc9a18cb7b70e991"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/tests/workspace_package_dependency_shadows/pnpm_workspace_routes/lifecycle.rs",
+      "B": "7ec490df64ee853188afc773f8c9054ab3874de033e7587da600036dc4eede4a",
+      "C": "7ec490df64ee853188afc773f8c9054ab3874de033e7587da600036dc4eede4a"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/tests/workspace_package_dependency_shadows/pnpm_workspace_routes/lifecycle/cleanup.rs",
+      "B": "7e197edc8275ebba3adb55d3f1b3b77acba4eb462a760517c90a0bb0472c429e",
+      "C": "7e197edc8275ebba3adb55d3f1b3b77acba4eb462a760517c90a0bb0472c429e"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/tests/workspace_package_dependency_shadows/pnpm_workspace_routes/lifecycle/filesystem.rs",
+      "B": "2f5eb95c4c2da575f8961293c1f2227b4e1e43cb9458a56bcc62863ed0b3910e",
+      "C": "2f5eb95c4c2da575f8961293c1f2227b4e1e43cb9458a56bcc62863ed0b3910e"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/tsconfig_gen.rs",
+      "B": "0091865753d201f3d53fce69d55b804ac8fa6a96c303c80be05ea1d6bf177c57",
+      "C": "0091865753d201f3d53fce69d55b804ac8fa6a96c303c80be05ea1d6bf177c57"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_inputs.rs",
+      "B": "1c17f815c9f21cffe85ae2021b012f9de1b0d4e7849a32f146181014ebe5bafb",
+      "C": "1c17f815c9f21cffe85ae2021b012f9de1b0d4e7849a32f146181014ebe5bafb"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_options.rs",
+      "B": "05c2f68c8e149fc176ea53b0dd8c56f6f98d65614ca95487606d5c7257a27c61",
+      "C": "05c2f68c8e149fc176ea53b0dd8c56f6f98d65614ca95487606d5c7257a27c61"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_snapshot.rs",
+      "B": "3e58aa881bbb4757178e449fef65ade564cf965992ccb4af003cdd081a999224",
+      "C": "3e58aa881bbb4757178e449fef65ade564cf965992ccb4af003cdd081a999224"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_snapshot/tests.rs",
+      "B": "7ed34f8894c71dd0fdbcdcc03b2b05a9c5521e68678afa93f369c4017423c73b",
+      "C": "7ed34f8894c71dd0fdbcdcc03b2b05a9c5521e68678afa93f369c4017423c73b"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge.rs",
+      "B": "bbf1c9f8b5e107d6de473f55857df3bf294ccc3b640dd04a5724bde2860d3523",
+      "C": "bbf1c9f8b5e107d6de473f55857df3bf294ccc3b640dd04a5724bde2860d3523"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/bridge.rs",
+      "B": "91e321e78c98f33db894ad3ec073ff28551b26f739cc3d45a74fe7f292febcfb",
+      "C": "91e321e78c98f33db894ad3ec073ff28551b26f739cc3d45a74fe7f292febcfb"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/bridge/documents.rs",
+      "B": "d34e785609a2f24591fb0a459fcdac7ed1baff8ab2301c9e118f2e216052a110",
+      "C": "d34e785609a2f24591fb0a459fcdac7ed1baff8ab2301c9e118f2e216052a110"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics.rs",
+      "B": "1d094ea7f48f0aa106b0788353d09a8f3591b7dd20b699aaf4b4552de348086b",
+      "C": "1d094ea7f48f0aa106b0788353d09a8f3591b7dd20b699aaf4b4552de348086b"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/source_catalog.rs",
+      "B": "6578e435efcd153477ff57fac169bfe5d59ec1b85ec976caf7163d735297f6fc",
+      "C": "6578e435efcd153477ff57fac169bfe5d59ec1b85ec976caf7163d735297f6fc"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs",
+      "B": "a72efb188083b00dc70c80ea9d639e004f1146eaecae094ee6bb852fcbab90ff",
+      "C": "a72efb188083b00dc70c80ea9d639e004f1146eaecae094ee6bb852fcbab90ff"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/catalog.rs",
+      "B": "f6eb2b1debd8accd0feaa6c28c9fc7a8cdad89077202e81af9610bf4080c766d",
+      "C": "f6eb2b1debd8accd0feaa6c28c9fc7a8cdad89077202e81af9610bf4080c766d"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/tests.rs",
+      "B": "317294b23389cd4f98690b4139d08c2dd707ddf915ad296ba27ebbac2c9f6236",
+      "C": "317294b23389cd4f98690b4139d08c2dd707ddf915ad296ba27ebbac2c9f6236"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/prepare.rs",
+      "B": "f55d48c7fa08d517cc8e8bfe6cf121ef9c011390a078c99231db32aae950222f",
+      "C": "f55d48c7fa08d517cc8e8bfe6cf121ef9c011390a078c99231db32aae950222f"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/vue_document.rs",
+      "B": "6b53a07a035fc933828c8e68a5e13f432d86001394513aa344f06d2a9e419a4c",
+      "C": "6b53a07a035fc933828c8e68a5e13f432d86001394513aa344f06d2a9e419a4c"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/vue_document/build/tests.rs",
+      "B": "183b4f2731d23f7e0d90b106ab4eabf02f86adcf24a2c3fac4124852ac51152f",
+      "C": "183b4f2731d23f7e0d90b106ab4eabf02f86adcf24a2c3fac4124852ac51152f"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/vue_document/build/tests/native_union.rs",
+      "B": "082458dc2a9d3d9322928eb7884e94201f1163f5543c61f070f8ffbeecd6e83e",
+      "C": "082458dc2a9d3d9322928eb7884e94201f1163f5543c61f070f8ffbeecd6e83e"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/vue_document_package_tests/symlink_workspace.rs",
+      "B": "9c202327ad3402ea3426047762605ce5c5558158e2a85fa638c0c35d81de372c",
+      "C": "9c202327ad3402ea3426047762605ce5c5558158e2a85fa638c0c35d81de372c"
+    },
+    {
+      "path": "crates/vize_canon/src/lib.rs",
+      "B": "138a142d165848d6a093c9780553543a01023473592c634264bf161b06e7c24c",
+      "C": "138a142d165848d6a093c9780553543a01023473592c634264bf161b06e7c24c"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client.rs",
+      "B": "25b58783315d926f24204cc237a109a4b1e638a3093cac325706037bd7f0871b",
+      "C": "1177930a30b4ca9394d9dee0ed641c3f573952557b155b0cda8e6a41827d778d"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/diagnostics.rs",
+      "B": "998ea25cc0b45afaee00c9669a7485b7204721d194a10efe9b72fa194a53f7c1",
+      "C": "998ea25cc0b45afaee00c9669a7485b7204721d194a10efe9b72fa194a53f7c1"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/diagnostics/virtual_overlay_diagnostics.rs",
+      "B": "126857b63cb74ed0ea031085530d50a3cd3c6b63d26e74ba6938238c2fde4e5c",
+      "C": "126857b63cb74ed0ea031085530d50a3cd3c6b63d26e74ba6938238c2fde4e5c"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/initial_diagnostics.rs",
+      "B": "899e645bd93251fa12d05fec71f3add35f56bcace25dad1111d6c6361cd7393d",
+      "C": "899e645bd93251fa12d05fec71f3add35f56bcace25dad1111d6c6361cd7393d"
+    },
+    {
+      "path": "crates/vize_canon/src/package_route/stamp.rs",
+      "B": "44be8867e4ffd227cca3b23728bbae6cea08cc904437b484a0a30db47b585d12",
+      "C": "44be8867e4ffd227cca3b23728bbae6cea08cc904437b484a0a30db47b585d12"
+    },
+    {
+      "path": "crates/vize_canon/tests/lsp_import_resolution/compiler_snapshot.rs",
+      "B": "de42992bbbc7ead9617a33a48cd7eafc76b6debb3fa1a7b0c17d04cc5d8fe89a",
+      "C": "de42992bbbc7ead9617a33a48cd7eafc76b6debb3fa1a7b0c17d04cc5d8fe89a"
+    },
+    {
+      "path": "crates/vize_carton/Cargo.toml",
+      "B": "145fd782c1e7810de50083f0c76ecc0c7dcb89632fde9e13fe9254ea53ac6578",
+      "C": "145fd782c1e7810de50083f0c76ecc0c7dcb89632fde9e13fe9254ea53ac6578"
+    },
+    {
+      "path": "crates/vize_carton/src/config.rs",
+      "B": "c2051683df3c2301e85230fe52ba2d01f2fd851583b6af9c567ab1f79941a535",
+      "C": "c2051683df3c2301e85230fe52ba2d01f2fd851583b6af9c567ab1f79941a535"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader.rs",
+      "B": "670b2c7e8f79ca112232d555050abee83aed2c555df9cd105e3da457f8470aba",
+      "C": "670b2c7e8f79ca112232d555050abee83aed2c555df9cd105e3da457f8470aba"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/checked.rs",
+      "B": "fff649c9889635d90547dc9069918688cd2697e1d667f8c348de23d9e9317ddc",
+      "C": "fff649c9889635d90547dc9069918688cd2697e1d667f8c348de23d9e9317ddc"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/compiler_keys.rs",
+      "B": "893de63719ac4eb75cff7b5d28aba9877334ae1b6706152f7cf97ff28ae16405",
+      "C": "893de63719ac4eb75cff7b5d28aba9877334ae1b6706152f7cf97ff28ae16405"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/discovery.rs",
+      "B": "aa896a2d391292204bfc31a67bb6a1c93e341da4e7145f60d7738b2de0f3e7b5",
+      "C": "aa896a2d391292204bfc31a67bb6a1c93e341da4e7145f60d7738b2de0f3e7b5"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/experimental_tests.rs",
+      "B": "d2a001dfcff6d59afe5577d4a4d5b8027870c7cf55124e589bf592bdd475297a",
+      "C": "d2a001dfcff6d59afe5577d4a4d5b8027870c7cf55124e589bf592bdd475297a"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/extends_tests.rs",
+      "B": "7cadcaa9111e8a67ebdbead0d9242c4e96db51d1b3ba7324de9c05d249c04c47",
+      "C": "7cadcaa9111e8a67ebdbead0d9242c4e96db51d1b3ba7324de9c05d249c04c47"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/failure_identity.rs",
+      "B": "e068314d6081c18c7882f63ceffd622eea823383537ee1c799988663ac611c60",
+      "C": "e068314d6081c18c7882f63ceffd622eea823383537ee1c799988663ac611c60"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/formatter.rs",
+      "B": "64c6e8711816261554a2c2f8f78e57d3a69fbe552f5aa5e2acfd964e40a6081f",
+      "C": "64c6e8711816261554a2c2f8f78e57d3a69fbe552f5aa5e2acfd964e40a6081f"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/js.rs",
+      "B": "65ba498ea5bcc82189ce2ad3ccce253660ee8324978121fa6e5ef72695e7553a",
+      "C": "65ba498ea5bcc82189ce2ad3ccce253660ee8324978121fa6e5ef72695e7553a"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/js_observation.rs",
+      "B": "4cf781ca9e82db69c3fe37704dd20319ac8f1858a1c8702ccb5e444340fb0594",
+      "C": "4cf781ca9e82db69c3fe37704dd20319ac8f1858a1c8702ccb5e444340fb0594"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/jsx.rs",
+      "B": "4596c6134a87e7d4df952a84ee0088c6f3b53c6bebe1dc39654187d5d0b6e043",
+      "C": "4596c6134a87e7d4df952a84ee0088c6f3b53c6bebe1dc39654187d5d0b6e043"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/language_server.rs",
+      "B": "cab796f2c3f00092699cff1f34d9acac361b02f5d54ac751100083aa9b07a207",
+      "C": "cab796f2c3f00092699cff1f34d9acac361b02f5d54ac751100083aa9b07a207"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/legacy_dialect_tests.rs",
+      "B": "86b57bee3061a3f95fe1482149e0ec26ced0f51a56b2aabeb07e7b2c97a5a462",
+      "C": "86b57bee3061a3f95fe1482149e0ec26ced0f51a56b2aabeb07e7b2c97a5a462"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/library.rs",
+      "B": "d1a886db54774eacb2cde0f684e138fd3853275b19c73731c039b880eb8b05fc",
+      "C": "d1a886db54774eacb2cde0f684e138fd3853275b19c73731c039b880eb8b05fc"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/lint_features.rs",
+      "B": "e789e08ca0e5c76b23ec7a4e4d6eefe6d8986b55b08b8e50a08d738f8408aede",
+      "C": "e789e08ca0e5c76b23ec7a4e4d6eefe6d8986b55b08b8e50a08d738f8408aede"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/lsp_snapshot.rs",
+      "B": "3ed2cfc7114343feadb6c45e9b3d0d7def272eb0a50d56be14c11ef619b72040",
+      "C": "3ed2cfc7114343feadb6c45e9b3d0d7def272eb0a50d56be14c11ef619b72040"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/module-runtime.d.mts",
+      "B": "9caf4702c7677430dcb551788a75a4df7e2055b312ebc15a21c86cd7fe18dac3",
+      "C": "9caf4702c7677430dcb551788a75a4df7e2055b312ebc15a21c86cd7fe18dac3"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/module-runtime.mjs",
+      "B": "a660cd51c543e6a6b9a961d0abe03245ecc672be3ed8ce48fa9754a0e4ff327c",
+      "C": "a660cd51c543e6a6b9a961d0abe03245ecc672be3ed8ce48fa9754a0e4ff327c"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/parse.rs",
+      "B": "c0a8984c1174545d88ae1218f5279be9ad1c71c2486172efe25b46c3ebdc736c",
+      "C": "c0a8984c1174545d88ae1218f5279be9ad1c71c2486172efe25b46c3ebdc736c"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/pkl.rs",
+      "B": "788bc2888306f20b343730446ab4a2e60f72d9582305c016fa7df28624746ff3",
+      "C": "788bc2888306f20b343730446ab4a2e60f72d9582305c016fa7df28624746ff3"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/project_settings_tests.rs",
+      "B": "7b96f2601a2f3ee57d5b7c59e635e2c57a54c701f677cf599a54523c5224c68a",
+      "C": "7b96f2601a2f3ee57d5b7c59e635e2c57a54c701f677cf599a54523c5224c68a"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/snapshots/vize_carton__config__loader__tests__validate_explicit_config_path_malformed_errors.snap",
+      "B": "3a721915f593762b10033d29c481772bed3f934bd4317a7d084ad28067b58074",
+      "C": "3a721915f593762b10033d29c481772bed3f934bd4317a7d084ad28067b58074"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/tests.rs",
+      "B": "967b0257b15a19d988ef1bb3c3e5c811be475c7c6561be941716300e7c5cb867",
+      "C": "967b0257b15a19d988ef1bb3c3e5c811be475c7c6561be941716300e7c5cb867"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/tests/linter_plan_tests.rs",
+      "B": "8d7435d86c2569478b74e21eb0f5a4c8f039baf00a02a24c92cf1e084937263f",
+      "C": "8d7435d86c2569478b74e21eb0f5a4c8f039baf00a02a24c92cf1e084937263f"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/vapor.rs",
+      "B": "996a21eae0eebed0d3495c3b1f72e0c9e0dc305e010a238abfcc05c70a471f04",
+      "C": "996a21eae0eebed0d3495c3b1f72e0c9e0dc305e010a238abfcc05c70a471f04"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/vite-runtime.d.mts",
+      "B": "2287c3a54fcb44ea74079361cd36bd1c2dbb3f07f9f2a71ad254c50d3dd6ab24",
+      "C": "2287c3a54fcb44ea74079361cd36bd1c2dbb3f07f9f2a71ad254c50d3dd6ab24"
+    },
+    {
+      "path": "crates/vize_carton/src/config/loader/vite-runtime.mjs",
+      "B": "8cbd863757317f245d08daf8e0e171be44a36948fc875d1f9ab7f38a7f6fc048",
+      "C": "8cbd863757317f245d08daf8e0e171be44a36948fc875d1f9ab7f38a7f6fc048"
+    },
+    {
+      "path": "crates/vize_maestro/src/ide.rs",
+      "B": "6051ee167889430dcaedf2e27a0afdf46d4a7198a422fc96c2ab93de825a40b4",
+      "C": "6051ee167889430dcaedf2e27a0afdf46d4a7198a422fc96c2ab93de825a40b4"
+    },
+    {
+      "path": "crates/vize_maestro/src/ide/diagnostics.rs",
+      "B": "cea77bf85301aa18b7ad9d5dd305e4a6ab2641d418d2df366680af4f137e4dcb",
+      "C": "cea77bf85301aa18b7ad9d5dd305e4a6ab2641d418d2df366680af4f137e4dcb"
+    },
+    {
+      "path": "crates/vize_maestro/src/ide/diagnostics/corsa.rs",
+      "B": "7c0ce0ae387e5d99f7139f84a3825f6e2b9e58f2e560b48d3530816117a453bd",
+      "C": "7c0ce0ae387e5d99f7139f84a3825f6e2b9e58f2e560b48d3530816117a453bd"
+    },
+    {
+      "path": "crates/vize_maestro/src/ide/diagnostics/corsa/collect.rs",
+      "B": "46cf9bddb79890214273d84909569c29129e79811e3d73bd9b5894c20c8afe65",
+      "C": "46cf9bddb79890214273d84909569c29129e79811e3d73bd9b5894c20c8afe65"
+    },
+    {
+      "path": "crates/vize_maestro/src/ide/diagnostics/corsa/initial.rs",
+      "B": "72cc4f58342c5d0a7e3a465463ff880ac2a03aab15b311ecb2aa1a2b4dee7bea",
+      "C": "72cc4f58342c5d0a7e3a465463ff880ac2a03aab15b311ecb2aa1a2b4dee7bea"
+    },
+    {
+      "path": "crates/vize_maestro/src/ide/diagnostics/native.rs",
+      "B": "7d62fa1421a7305405db8ead104160c0a5fac38125c7cd835a8d0137f6850f2f",
+      "C": "7d62fa1421a7305405db8ead104160c0a5fac38125c7cd835a8d0137f6850f2f"
+    },
+    {
+      "path": "crates/vize_maestro/src/ide/diagnostics/native/timeout.rs",
+      "B": "d5637befecd10ea4a507218475a3e985dcbfa34c4425bbbcc4a7afcfa2f5ee88",
+      "C": "d5637befecd10ea4a507218475a3e985dcbfa34c4425bbbcc4a7afcfa2f5ee88"
+    },
+    {
+      "path": "crates/vize_maestro/src/server.rs",
+      "B": "3961feac1d3c4a8ec571e083fdbef58ed59390a9237b6dbbb85bc6925fd21265",
+      "C": "3961feac1d3c4a8ec571e083fdbef58ed59390a9237b6dbbb85bc6925fd21265"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/diagnostic_publishing.rs",
+      "B": "ddcd7456f6eed503cf48c7fbc61cb8771d3d0555f42f62d037864ce0cc5aa386",
+      "C": "ddcd7456f6eed503cf48c7fbc61cb8771d3d0555f42f62d037864ce0cc5aa386"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/diagnostic_publishing/configuration_failure_tests.rs",
+      "B": "213d1016267ad7d69afb9c46e941eb6bb2a2999b81d18f43a5925ce98af0bc2e",
+      "C": "213d1016267ad7d69afb9c46e941eb6bb2a2999b81d18f43a5925ce98af0bc2e"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/handlers.rs",
+      "B": "8b3fa0c391a207d8ec89ebab0766f407bafd033daa79193573981ddf10d226c2",
+      "C": "8b3fa0c391a207d8ec89ebab0766f407bafd033daa79193573981ddf10d226c2"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/handlers/typed.rs",
+      "B": "a287bbc3060de2a5c01963fe82962501b5f688091c912ec10e97adc402e6859a",
+      "C": "a287bbc3060de2a5c01963fe82962501b5f688091c912ec10e97adc402e6859a"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/helpers.rs",
+      "B": "88297a5a0848a9a79011ed88a485e9486243bc3838d9fd7fa581244c3003bb06",
+      "C": "88297a5a0848a9a79011ed88a485e9486243bc3838d9fd7fa581244c3003bb06"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/importers/canonical.rs",
+      "B": "a59c68f1b87b21a62744a35ed3000943a33ac50f207247708b5602007a2c4890",
+      "C": "a59c68f1b87b21a62744a35ed3000943a33ac50f207247708b5602007a2c4890"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/initial_diagnostics.rs",
+      "B": "cb8495628c6974f4b4067185970a4a91e7769490a02951745c07e625a6be38de",
+      "C": "cb8495628c6974f4b4067185970a4a91e7769490a02951745c07e625a6be38de"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/initial_diagnostics/api_read.rs",
+      "B": "20803e3890da4d25975e2104645b6e5bbccd82b331fc5f7cf1b44c4818aebf62",
+      "C": "20803e3890da4d25975e2104645b6e5bbccd82b331fc5f7cf1b44c4818aebf62"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/initial_diagnostics/open_importer_tests.rs",
+      "B": "7a3dc50c6bebfccf9f35884280f6d1f47179b0bec1c3dfe8e1af2502a9223e72",
+      "C": "7a3dc50c6bebfccf9f35884280f6d1f47179b0bec1c3dfe8e1af2502a9223e72"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/initial_diagnostics/preparation.rs",
+      "B": "8364c220e76f4c5a77c57b128965b14582b9934cfd82ffa6a53d9b5f0e54761d",
+      "C": "8364c220e76f4c5a77c57b128965b14582b9934cfd82ffa6a53d9b5f0e54761d"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/initial_diagnostics/tests.rs",
+      "B": "44b4b21d5671b6e0df251a57774f7e713c84297a5f658e9abe60fb57479d6d86",
+      "C": "44b4b21d5671b6e0df251a57774f7e713c84297a5f658e9abe60fb57479d6d86"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/native_requests.rs",
+      "B": "97c7d38b5110ee47d104f1d305af75b6aff59fd3cd75d3a3099f555ffd405489",
+      "C": "97c7d38b5110ee47d104f1d305af75b6aff59fd3cd75d3a3099f555ffd405489"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/native_requests/tests.rs",
+      "B": "e2aa209b6bde97b679e50acfc2e12044eb5825aee1040f534a9c8158d3714314",
+      "C": "e2aa209b6bde97b679e50acfc2e12044eb5825aee1040f534a9c8158d3714314"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/project_contexts.rs",
+      "B": "bab88463abc9bb505dfa5daf4c6759bab738de74a57e8571b1d44511f2ec3ae2",
+      "C": "bab88463abc9bb505dfa5daf4c6759bab738de74a57e8571b1d44511f2ec3ae2"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/project_contexts/operation_admission_tests.rs",
+      "B": "19e041fb9f70de3300646729bcde1d9142e1eeb6abb3b51bc83f587cfd17ae12",
+      "C": "19e041fb9f70de3300646729bcde1d9142e1eeb6abb3b51bc83f587cfd17ae12"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state.rs",
+      "B": "b105bde840bc00133236cecf188b64574e6966c600b06541c2ca8c35218cc3e8",
+      "C": "b105bde840bc00133236cecf188b64574e6966c600b06541c2ca8c35218cc3e8"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/config.rs",
+      "B": "783e66a96ea4055bbc7a1244ddf40daf37a61bbd3d7159159d687bbbbdc89432",
+      "C": "783e66a96ea4055bbc7a1244ddf40daf37a61bbd3d7159159d687bbbbdc89432"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/config/host.rs",
+      "B": "0558217986510c78190ec381b7c4b20debe6af60f3bd2122137dfb413e9da6e1",
+      "C": "0558217986510c78190ec381b7c4b20debe6af60f3bd2122137dfb413e9da6e1"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/config/project.rs",
+      "B": "a5defde6d25b22b01c27c2e14fe534d806b688cae65bcd336b9f81702e2a7ec1",
+      "C": "a5defde6d25b22b01c27c2e14fe534d806b688cae65bcd336b9f81702e2a7ec1"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/corsa.rs",
+      "B": "2a78202e5d8dbfbb1f502af16cdd45f6fe8170ff0aa7d6d82356ac255df43efa",
+      "C": "2a78202e5d8dbfbb1f502af16cdd45f6fe8170ff0aa7d6d82356ac255df43efa"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/corsa_requests.rs",
+      "B": "3e25058d4827dd0a24ae884ceb463d65154f6c33a135da69e875bf810aabed99",
+      "C": "3e25058d4827dd0a24ae884ceb463d65154f6c33a135da69e875bf810aabed99"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/project_contexts.rs",
+      "B": "1d3c51385aebffc88de76e7b3b53169b6904adf2f2b83635084a8238359cef2c",
+      "C": "1d3c51385aebffc88de76e7b3b53169b6904adf2f2b83635084a8238359cef2c"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/project_contexts/config_reload.rs",
+      "B": "290f178644b57b7b5a2e4b73d9672c4af974d99a7d5ea82ef01c6ac19970b51f",
+      "C": "290f178644b57b7b5a2e4b73d9672c4af974d99a7d5ea82ef01c6ac19970b51f"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/project_contexts/current.rs",
+      "B": "557cec459363af33d7232401e5d27c90f96da4f1de06dd95572f2906f3b85dbe",
+      "C": "557cec459363af33d7232401e5d27c90f96da4f1de06dd95572f2906f3b85dbe"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/project_contexts/current/tests.rs",
+      "B": "a41b632860885d67f67925ef7c4b8081757777bf29b871fc91573ca682729e00",
+      "C": "a41b632860885d67f67925ef7c4b8081757777bf29b871fc91573ca682729e00"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/project_contexts/freshness.rs",
+      "B": "b0dcd79dc65fb5c956072b880eb93dfd356bb900a82de2e349a4cf6ce287e9d0",
+      "C": "b0dcd79dc65fb5c956072b880eb93dfd356bb900a82de2e349a4cf6ce287e9d0"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/project_contexts/freshness_tests.rs",
+      "B": "edd1c79fa957facd396c943fba7620ca95c7416f92bea6a5f3ac6d1aef31573b",
+      "C": "edd1c79fa957facd396c943fba7620ca95c7416f92bea6a5f3ac6d1aef31573b"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/project_contexts/lock_order_tests.rs",
+      "B": "eab0b7d31f010fe5bfe0c6dc5f25bc9c4eb026825753e39dd62af6f974a49d31",
+      "C": "eab0b7d31f010fe5bfe0c6dc5f25bc9c4eb026825753e39dd62af6f974a49d31"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/project_contexts/references.rs",
+      "B": "0f1e5d9104f29cd6d544d95c18facd320c0e3cfcb56fe592482ea045e490ab40",
+      "C": "0f1e5d9104f29cd6d544d95c18facd320c0e3cfcb56fe592482ea045e490ab40"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/project_contexts/registry.rs",
+      "B": "2f7fcd5ae2f7f27129e4feeeca26ba19061c0ed0b2d8324df86c3c26b5f3484d",
+      "C": "2f7fcd5ae2f7f27129e4feeeca26ba19061c0ed0b2d8324df86c3c26b5f3484d"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/project_contexts/topology.rs",
+      "B": "80230c99b1ffb5a686261594d34eaa6d4862b625396b196b98d059610dcec889",
+      "C": "80230c99b1ffb5a686261594d34eaa6d4862b625396b196b98d059610dcec889"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/project_contexts/topology_tests.rs",
+      "B": "b80dc765ab393c9414b204576022cbfa09a61a070dbf2ad91b9cb60669d328d9",
+      "C": "b80dc765ab393c9414b204576022cbfa09a61a070dbf2ad91b9cb60669d328d9"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/project_contexts/watched.rs",
+      "B": "868c731c0d35f538c140149c9ef385f3aed3284da8a08fedb67a0d2bb5609e80",
+      "C": "868c731c0d35f538c140149c9ef385f3aed3284da8a08fedb67a0d2bb5609e80"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/workspace_folders/tests.rs",
+      "B": "199fdcce10ba20d49080407d1bd1c928999bd03e1d2be2d683a0627ee76d502f",
+      "C": "199fdcce10ba20d49080407d1bd1c928999bd03e1d2be2d683a0627ee76d502f"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/workspace_files.rs",
+      "B": "8bfe3a7a87f879ecbd6a545b816b1b44c2c9ec49923331b620d6297d7dc9e8b8",
+      "C": "8bfe3a7a87f879ecbd6a545b816b1b44c2c9ec49923331b620d6297d7dc9e8b8"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/workspace_files/config_watchers.rs",
+      "B": "f818647a48a03234500ca61980f4684300c06c4b44f4c23852a57377091fa9ce",
+      "C": "f818647a48a03234500ca61980f4684300c06c4b44f4c23852a57377091fa9ce"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/workspace_files/config_watchers/tests.rs",
+      "B": "fe1683908f6569f326deb860d6aa92117fa968820a00c4abbc926d1d1df6f080",
+      "C": "fe1683908f6569f326deb860d6aa92117fa968820a00c4abbc926d1d1df6f080"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/workspace_files/config_watchers/tests/lifecycle.rs",
+      "B": "df98c4d373fd616d54c00b79b1d50847268f8e2465e701284c5b5f38ad36fa02",
+      "C": "df98c4d373fd616d54c00b79b1d50847268f8e2465e701284c5b5f38ad36fa02"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/workspace_files/config_watchers/tests/protocol.rs",
+      "B": "4172c042f4ae5186b46b82499fb9eecb68733090db936f50f6a4c5733b8177ff",
+      "C": "4172c042f4ae5186b46b82499fb9eecb68733090db936f50f6a4c5733b8177ff"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/workspace_files/watched.rs",
+      "B": "493ad805a3bc39af8739115064014d41c04fa8b42527ea1f846f0909be89db86",
+      "C": "493ad805a3bc39af8739115064014d41c04fa8b42527ea1f846f0909be89db86"
+    },
+    {
+      "path": "crates/vize_maestro/src/server/workspace_folder_events.rs",
+      "B": "b2a6af6aa0b26d84330163d7fec4d6d820a7baf470612c3a11122f2a86e4c4fc",
+      "C": "b2a6af6aa0b26d84330163d7fec4d6d820a7baf470612c3a11122f2a86e4c4fc"
+    },
+    {
+      "path": "davinci/vize_l0/src/config/document.rs",
+      "B": "53484ba7d83e4066fbcf17d5729f5f6c70b36afd0e9ccc23451c999a598e00d8",
+      "C": "53484ba7d83e4066fbcf17d5729f5f6c70b36afd0e9ccc23451c999a598e00d8"
+    },
+    {
+      "path": "npm/cli/schemas/vize.config.schema.json",
+      "B": "dc0dbd8936d5e4852430f1f41f0b297d7038c0aa2b9d9a8b58741f5cb0d71ef3",
+      "C": "dc0dbd8936d5e4852430f1f41f0b297d7038c0aa2b9d9a8b58741f5cb0d71ef3"
+    },
+    {
+      "path": "package.json",
+      "B": "703095a422cfc630a5d29ef5f4a5230b1c853c6013b8e8080809643cc5b4c6a0",
+      "C": "703095a422cfc630a5d29ef5f4a5230b1c853c6013b8e8080809643cc5b4c6a0"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "B": "bc0ff0b8a3b617d02c86d27540ba3046fe55ef5d41c2e9179dec155caaf5c38c",
+      "C": "bc0ff0b8a3b617d02c86d27540ba3046fe55ef5d41c2e9179dec155caaf5c38c"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "B": "e183899daa4d3b95c151deba9b2457d7202f07f81f79f80879a35aa3eced32fd",
+      "C": "e183899daa4d3b95c151deba9b2457d7202f07f81f79f80879a35aa3eced32fd"
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "B": "cf13b173bea8eb5e0dfca16b32c015341369c3706301cf329415e96567ac9c71",
+      "C": "cf13b173bea8eb5e0dfca16b32c015341369c3706301cf329415e96567ac9c71"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/rename-library-refusal/8010/App.vue.txt",
+      "B": "4166a47d3a1e433f69690c43cd09a80097cdc10da07f98e32030928b0e450d32",
+      "C": "4166a47d3a1e433f69690c43cd09a80097cdc10da07f98e32030928b0e450d32"
+    },
+    {
+      "path": "tests/_fixtures/differential/lsp/rename-library-refusal/8010/Toggle.vue.txt",
+      "B": "9ee595b05e57189ca7141a486318162358784c2f929d6a2fd944f7013b3da0a8",
+      "C": "9ee595b05e57189ca7141a486318162358784c2f929d6a2fd944f7013b3da0a8"
+    },
+    {
+      "path": "tests/_fixtures/vue-ecosystem-fixtures.json",
+      "B": "a02aef1631faba5a05a72fb7914d353c75a6b65d88a7cf44a11fbf4decc4b3cc",
+      "C": "a02aef1631faba5a05a72fb7914d353c75a6b65d88a7cf44a11fbf4decc4b3cc"
+    },
+    {
+      "path": "tests/_helpers/realworld-patch.ts",
+      "B": "2ef05023f1619fc47b571b97162261c0ce656af86705e64b8474d06843a639a3",
+      "C": "2ef05023f1619fc47b571b97162261c0ce656af86705e64b8474d06843a639a3"
+    },
+    {
+      "path": "tests/_helpers/realworld-typecheck.ts",
+      "B": "0a56e4845f867104c3d3d12ddf29bbfca29b01e7e34d34c80c9eedf6319c0aba",
+      "C": "0a56e4845f867104c3d3d12ddf29bbfca29b01e7e34d34c80c9eedf6319c0aba"
+    },
+    {
+      "path": "tests/differential/build-receipt.ts",
+      "B": "a1878cb1514504700e3e587c4fe1a66b031cc5489f9f17cd060fd84790480dc3",
+      "C": "a1878cb1514504700e3e587c4fe1a66b031cc5489f9f17cd060fd84790480dc3"
+    },
+    {
+      "path": "tests/performance/support/churn-oracle.ts",
+      "B": "d7ed478f0bf14584b23e8b873b070ef8c19959e12d818cd63f4059c529db7340",
+      "C": "d7ed478f0bf14584b23e8b873b070ef8c19959e12d818cd63f4059c529db7340"
+    },
+    {
+      "path": "tests/performance/support/incremental-metrics.ts",
+      "B": "6e2c8a15a4ff2cf9ca8858bb228b0b421037297231cd8fed84870d77951b0b85",
+      "C": "6e2c8a15a4ff2cf9ca8858bb228b0b421037297231cd8fed84870d77951b0b85"
+    },
+    {
+      "path": "tests/performance/support/incremental-report.ts",
+      "B": "210adaebdb4d0a7df39b924c7080614dd2ed1224328cd8f021d9a58c221f2ab0",
+      "C": "210adaebdb4d0a7df39b924c7080614dd2ed1224328cd8f021d9a58c221f2ab0"
+    },
+    {
+      "path": "tests/performance/support/linux-process-custody.ts",
+      "B": "c99cae03893690893102983156706d430c051e43ed08977245bd62bbac9be4ce",
+      "C": "c99cae03893690893102983156706d430c051e43ed08977245bd62bbac9be4ce"
+    },
+    {
+      "path": "tests/performance/support/lsp-oracle.ts",
+      "B": "06f25d6b7fe17275403b9d750c3553589c083b246dcd40b4697cf56dc5f7cb23",
+      "C": "06f25d6b7fe17275403b9d750c3553589c083b246dcd40b4697cf56dc5f7cb23"
+    },
+    {
+      "path": "tests/performance/support/process-metrics.ts",
+      "B": "c1e605208e69481612621a25386b884029c3c2b491b529fab961ca7699e52dcf",
+      "C": "c1e605208e69481612621a25386b884029c3c2b491b529fab961ca7699e52dcf"
+    },
+    {
+      "path": "tests/performance/vben-lsp-incremental.test.ts",
+      "B": "e59185f0725edd88f8cd08f80a97d71e6364440e96fc6ce7c803f210c7c5ffb3",
+      "C": "e59185f0725edd88f8cd08f80a97d71e6364440e96fc6ce7c803f210c7c5ffb3"
+    },
+    {
+      "path": "tests/tooling/config-host-boundary.test.ts",
+      "B": "c08fdca5b03f0bd9ab43d95b17c7f13f63153d4c8ecd0fea9ceedf8a94cd3e81",
+      "C": "c08fdca5b03f0bd9ab43d95b17c7f13f63153d4c8ecd0fea9ceedf8a94cd3e81"
+    },
+    {
+      "path": "tests/tooling/lsp-config-diagnostics-workflow.test.ts",
+      "B": "f4ea2d4245f244af88d85be43886533e5bbd89f07e6c7da393a28c97821d0528",
+      "C": "f4ea2d4245f244af88d85be43886533e5bbd89f07e6c7da393a28c97821d0528"
+    },
+    {
+      "path": "tests/tooling/lsp-startup-local-interactive.test.ts",
+      "B": "9c26300dd9b1247409705dae306c65ca037a9448449a598fea830b5217752709",
+      "C": "9c26300dd9b1247409705dae306c65ca037a9448449a598fea830b5217752709"
+    },
+    {
+      "path": "tests/tooling/native-config-compile-cache.test.ts",
+      "B": "94a52f7fe9924d4d5e9f35a72923fcc407f737d5bdaf7e06e1bc0a1e0ae65353",
+      "C": "94a52f7fe9924d4d5e9f35a72923fcc407f737d5bdaf7e06e1bc0a1e0ae65353"
+    },
+    {
+      "path": "tests/tooling/native-config-preload-observations.test.ts",
+      "B": "bb9f8c5bc4fd0c58c3926e1e172cb1b02b833150cdd227508701eb1c2ccc8313",
+      "C": "bb9f8c5bc4fd0c58c3926e1e172cb1b02b833150cdd227508701eb1c2ccc8313"
+    },
+    {
+      "path": "tests/tooling/support/davinci-host-imports.ts",
+      "B": "07ec90c603d31e18b6a65709bef9a918bfc2ff33e4f54f871ec7bf87c917e01b",
+      "C": "07ec90c603d31e18b6a65709bef9a918bfc2ff33e4f54f871ec7bf87c917e01b"
+    },
+    {
+      "path": "tests/tooling/support/lsp/launch.ts",
+      "B": "37a594e9a0e9812e83ded5cdf332b6438dc3d77f7f67349270c8ad2e22697739",
+      "C": "37a594e9a0e9812e83ded5cdf332b6438dc3d77f7f67349270c8ad2e22697739"
+    },
+    {
+      "path": "tests/tooling/support/lsp/runtime-environment.ts",
+      "B": "bbbc7507486bda2e029c7ef8e546746da976ddcaf97e979ff6c6390a0abeb588",
+      "C": "bbbc7507486bda2e029c7ef8e546746da976ddcaf97e979ff6c6390a0abeb588"
+    },
+    {
+      "path": "tests/tooling/support/lsp/session-process.ts",
+      "B": "41bc766e754c720751badad16745fe537e627f798c75afcec8200be8b1ffb978",
+      "C": "41bc766e754c720751badad16745fe537e627f798c75afcec8200be8b1ffb978"
+    },
+    {
+      "path": "tests/tooling/support/lsp/session.ts",
+      "B": "8f4d49df4feeb9a5b49bc9f9c79fde58db59f0f19d1931c4990c6c2dfaeb5d92",
+      "C": "8f4d49df4feeb9a5b49bc9f9c79fde58db59f0f19d1931c4990c6c2dfaeb5d92"
+    },
+    {
+      "path": "tests/tooling/support/typecheck-dependency.ts",
+      "B": "67d1377869948aa23cd6d393103254f8aa68c76d86d9ecff51b9dd8c6310472e",
+      "C": "67d1377869948aa23cd6d393103254f8aa68c76d86d9ecff51b9dd8c6310472e"
+    },
+    {
+      "path": "tests/tooling/support/vue-config-fixture.ts",
+      "B": "44d6a55c5b0e3f58ce913977bb695f47f3c2f94e4667d142a9db29b89c9507d1",
+      "C": "44d6a55c5b0e3f58ce913977bb695f47f3c2f94e4667d142a9db29b89c9507d1"
+    },
+    {
+      "path": "tools/support/compat/github/full-rust-runtime.ts",
+      "B": "f6256f99885879dd945165c2358266fbcc79351f9e032e6b9b5419120d6cd3d9",
+      "C": "f6256f99885879dd945165c2358266fbcc79351f9e032e6b9b5419120d6cd3d9"
+    },
+    {
+      "path": "tools/support/compat/github/run-lsp-config-diagnostics.ts",
+      "B": "811820923a0a00edd0e83e364209d59526916eb58dc82fa60e3df8b81b345af3",
+      "C": "811820923a0a00edd0e83e364209d59526916eb58dc82fa60e3df8b81b345af3"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/lifecycle.rs",
+      "B": "0c83a533eb2612bcbc3926812bf7ce0424b1b4248c471e3165299fab94ef1365",
+      "C": "38db2d21d2f0ff2d07c06b9c03eb211eabfcd68309fbf63fe3d07247076c3598"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/retained_text.rs",
+      "B": null,
+      "C": "ae8b12cded8a7b2402fb520f59bcdc4da85a5817a2c54ec13217a81d6aed9c0d"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/retained_text_tests.rs",
+      "B": null,
+      "C": "5e1a86336ca5af5f4d1f240eebdd2542d7e07e120e70b18b80f351098eac6997"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/session.rs",
+      "B": "8de5237a3ade005e5c8322ec787aa663ecac57927503b3b91130b8d024b66d02",
+      "C": "6aa6ae8b13b7848a2b3713d3ee862fe02ce5473c14d110d6ec2523554db5983b"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/session/replay.rs",
+      "B": "6883e00fd209903f9d23a8108057d5105512c0b98ad6f9056cb2cce30a1055b6",
+      "C": "5b397308809fa33b74688e5a73ed77731a62eeca931dd7ec972b0867acec51f9"
+    }
+  ],
+  "provider": {
+    "package": "@typescript/typescript-linux-x64",
+    "version": "7.0.2",
+    "lockIntegrity": "sha512-EYdf2cNg7rgCWJnxCdJ+F3V39O8ihb37eHAu1LK8oAFizgTQbPOK7zHHXbPt8rX24COqODXeI3sIf0fCXG7H/A==",
+    "selection": "unchanged sourceLspRuntimeEnvironment -> stableTypeScriptRuntimePath -> node_modules/@typescript/typescript-linux-x64/lib/tsc",
+    "actualPhysicalImageSha256": null,
+    "actualVersionOutput": null,
+    "note": "Must be observed before/after on the hosted runner; no old native image hash is credited to B/C."
+  },
+  "fixture": {
+    "path": "tests/_fixtures/_git/vue-vben-admin",
+    "revision": "748b182e440863711dc9624924e92440f5ddc4d3",
+    "gitlink": "160000 commit 748b182e440863711dc9624924e92440f5ddc4d3\ttests/_fixtures/_git/vue-vben-admin",
+    "selectedApplicationPaths": [
+      "packages/effects/layouts/src/basic/copyright/copyright.vue",
+      "apps/web-antd/src/views/_core/fallback/offline.vue",
+      "apps/web-ele/src/views/_core/fallback/offline.vue"
+    ],
+    "corpusFileCounts": null,
+    "note": "Original withPinnedFixtureWorkspace copy/link procedure and scale assertions remain exact; actual counts must be retained per attempt."
+  },
+  "sdkPackages": [
+    {
+      "name": "corsa",
+      "version": "2.0.0-beta.4",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "a88d1e7cd3fa6919d9f2ab4b51de40645547606317ac3f04dfccc1ded0ce9dcc"
+    },
+    {
+      "name": "corsa_client",
+      "version": "2.0.0-beta.4",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "48683d933fc2fd2b2bf9f8563103c2bbcb249f0ec6a6ace1831644ca0a84d780"
+    },
+    {
+      "name": "corsa_core",
+      "version": "2.0.0-beta.4",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "c64b958bb6e54a0f6a13cde2f5df28ce95234b6bb90c289fd2a3b6027af951c7"
+    },
+    {
+      "name": "corsa_jsonrpc",
+      "version": "2.0.0-beta.4",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "5603d3a1ca6c9f0caadbf8e89c853b740f31f44e818a9c1a01f09c2b93da5c8f"
+    },
+    {
+      "name": "corsa_lsp",
+      "version": "2.0.0-beta.4",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "b6949c82fac11db1376c361c7e70a6ac6019dedce1d379110385229eb643ea25"
+    },
+    {
+      "name": "corsa_orchestrator",
+      "version": "2.0.0-beta.4",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "56a610d7d8fec2e576d461751bd7ccb7bf2348a030418b5dc6756473353e2c0c"
+    },
+    {
+      "name": "corsa_runtime",
+      "version": "2.0.0-beta.4",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "71b6fd0a075158abbb1c513e754eb73b368066bbccf5967c9a2be5d6305df637"
+    }
+  ],
+  "budget": {
+    "suite": "vben-lsp-incremental",
+    "laneHardTimeoutMs": 60000,
+    "maxPeakRssMiB": 256,
+    "maxPeakProcessTreeRssMiB": 512,
+    "maxProcessTreeSize": 4,
+    "laneBudgetsMs": {
+      "initialize": 1000,
+      "coldOpen": 8000,
+      "coldOpenSecondApp": 1500,
+      "completion": 1000,
+      "hover": 1000,
+      "warmNoop": 1500,
+      "leafBroken": 1500,
+      "leafRepaired": 1500,
+      "sharedBroken": 3000,
+      "sharedBrokenSecondApp": 3000,
+      "sharedRepaired": 3000,
+      "sharedRepairedSecondApp": 3000,
+      "warmNoopSecondApp": 1500,
+      "cancellationConverge": 6000
+    }
+  },
+  "originalWrapperSha256": "811820923a0a00edd0e83e364209d59526916eb58dc82fa60e3df8b81b345af3",
+  "originalWorkflowSha256": "77cc3931fc18a4bd519e4780fda07aec5ae3cbbd38fc5bed39054572a7c9f9d4",
+  "originalGuardFragmentSha256": "e59035aa5ed6f4ace55cf7d04f2c1ff47297cd2089f205aa4acd6c105bd5c057"
+}

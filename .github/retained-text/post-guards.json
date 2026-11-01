@@ -1,0 +1,301 @@
+{
+  "originalWorkflowSha256": "77cc3931fc18a4bd519e4780fda07aec5ae3cbbd38fc5bed39054572a7c9f9d4",
+  "originalGuardFragmentSha256": "e59035aa5ed6f4ace55cf7d04f2c1ff47297cd2089f205aa4acd6c105bd5c057",
+  "commands": [
+    {
+      "label": "controls",
+      "argv": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "tests/tooling/lsp-startup-local-interactive.test.ts",
+        "tests/tooling/lsp-initial-diagnostics-version.test.ts",
+        "tests/tooling/native-config-preload-observations.test.ts",
+        "tests/tooling/native-config-compile-cache.test.ts"
+      ]
+    },
+    {
+      "label": "initial-diagnostics",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_maestro",
+        "--features",
+        "legacy",
+        "--lib",
+        "server::initial_diagnostics::"
+      ],
+      "requireRust": true
+    },
+    {
+      "label": "native-requests",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_maestro",
+        "--features",
+        "legacy",
+        "--lib",
+        "server::native_requests::"
+      ],
+      "requireRust": true
+    },
+    {
+      "label": "project-contexts",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_maestro",
+        "--features",
+        "legacy",
+        "--lib",
+        "server::state::project_contexts::",
+        "--",
+        "--nocapture"
+      ],
+      "requireRust": true
+    },
+    {
+      "label": "vize_maestro-clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_maestro",
+        "--features",
+        "legacy",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "label": "symlink-workspace",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_canon",
+        "--features",
+        "legacy",
+        "--lib",
+        "corsa_bridge::vue_document_package_tests::symlink_workspace::"
+      ],
+      "requireRust": true
+    },
+    {
+      "label": "alias-transition",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_canon",
+        "--features",
+        "legacy",
+        "--lib",
+        "batch::virtual_project::materialize::alias_transition_tests::"
+      ],
+      "requireRust": true
+    },
+    {
+      "label": "alias-cache",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_canon",
+        "--features",
+        "legacy",
+        "--lib",
+        "corsa_bridge::vue_dependencies_alias::context::cache::tests::"
+      ],
+      "requireRust": true
+    },
+    {
+      "label": "vize_canon-clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_canon",
+        "--features",
+        "legacy",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "label": "native-view",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_canon",
+        "--features",
+        "legacy",
+        "--lib",
+        "corsa_bridge::vue_document::build::tests::",
+        "--",
+        "--nocapture"
+      ],
+      "requireRust": true
+    },
+    {
+      "label": "issued-candidates",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_canon",
+        "--features",
+        "legacy",
+        "--lib",
+        "lsp_client::editor_lsp::completion_resolve::issued::tests::",
+        "--",
+        "--nocapture"
+      ],
+      "requireRust": true
+    },
+    {
+      "label": "initial-api-read",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_canon",
+        "--features",
+        "legacy",
+        "--lib",
+        "corsa_bridge::bridge::initial_diagnostics::tests::",
+        "--",
+        "--nocapture"
+      ],
+      "requireRust": true
+    },
+    {
+      "label": "initial-api-dependencies",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_maestro",
+        "--features",
+        "legacy",
+        "--lib",
+        "server::importers::canonical::tests::",
+        "--",
+        "--nocapture"
+      ],
+      "requireRust": true
+    },
+    {
+      "label": "completion",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize",
+        "--features",
+        "legacy",
+        "--message-format=json",
+        "--test",
+        "integration",
+        "--",
+        "lsp_completion_sibling_overlay_cli::",
+        "--nocapture"
+      ],
+      "requireRust": true,
+      "retain": "--retain-completion-producer"
+    },
+    {
+      "label": "rename",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize",
+        "--features",
+        "profiling",
+        "--message-format=json",
+        "--test",
+        "integration",
+        "--",
+        "lsp_component_attribute_authority_cli::library_refusal::original_emit_string_keeps_atomic_owned_updates_and_unsafe_name_refusals_without_file_writes",
+        "--exact",
+        "--nocapture"
+      ],
+      "requireRust": true,
+      "retain": "--retain-rename-producer"
+    },
+    {
+      "label": "symlink",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize",
+        "--features",
+        "legacy",
+        "--message-format=json",
+        "--test",
+        "integration",
+        "--",
+        "lsp_symlink_workspace_staging_cli::original_include_and_open_order_controls_keep_all_authored_bytes",
+        "--nocapture"
+      ],
+      "requireRust": true,
+      "retain": "--retain-symlink-producer"
+    }
+  ]
+}
