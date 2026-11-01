@@ -72,7 +72,7 @@ pub(super) struct ProgramPreparation {
 pub(super) struct ProgramExecutionInput<'a> {
     pub(super) files: &'a [PathBuf],
     pub(super) reported_files: FxHashSet<PathBuf>,
-    pub(super) package_routes: &'a [vize_canon::PackageRouteBinding],
+    pub(super) package_routes: Vec<vize_canon::PackageRouteBinding>,
     pub(super) project_root: &'a std::path::Path,
     pub(super) program_root: PathBuf,
     pub(super) tsconfig_path: Option<PathBuf>,
@@ -189,7 +189,7 @@ pub(super) fn prepare_program(
         settings.check_emits,
     );
     checker.set_package_route_resolver(input.package_route_resolver);
-    checker.set_package_routes(input.package_routes.iter().cloned());
+    checker.set_package_routes(input.package_routes);
     checker
         .scan_paths(input.files)
         .map_err(|error| cstr!("{}", error))?;
