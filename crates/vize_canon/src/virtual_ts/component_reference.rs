@@ -168,7 +168,7 @@ fn resolved_component_binding_reference_with_bindings(
             binding_type,
             options,
         );
-        reference.push_str(&template_name[root.len()..]);
+        reference.push_str(template_name.strip_prefix(root)?);
         return Some((reference, true));
     }
     if let Some(reference) = super::component_aliases::inline_value(
