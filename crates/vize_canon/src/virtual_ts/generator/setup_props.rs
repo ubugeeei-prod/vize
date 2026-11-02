@@ -225,7 +225,7 @@ impl SetupPropsPlan {
             &mut binding_mappings,
             summary,
             check_props,
-            template_props_scope,
+            template_props_scope.with_component_contract(self.component_props_type_ref()),
         )
     }
 
@@ -322,6 +322,13 @@ impl SetupPropsPlan {
                 &emitted_model_prop_names(source.summary, source.summary.macros.models()),
             );
         }
+    }
+
+    /// Append props-owned setup return fields in their existing selection order.
+    pub(super) fn push_setup_return_fields(&self, setup_return_fields: &mut Vec<String>) {
+        let mut setup_artifact_return_fields = Vec::new();
+        self.push_return_field(&mut setup_artifact_return_fields);
+        setup_return_fields.extend(setup_artifact_return_fields.into_iter().map(String::from));
     }
 
     pub(super) fn push_return_field(&self, fields: &mut Vec<&'static str>) {

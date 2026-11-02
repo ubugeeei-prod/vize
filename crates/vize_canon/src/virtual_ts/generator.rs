@@ -675,6 +675,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 &script_source_offset,
             );
             let scope_options = ScopeGenerationOptions {
+                component_props_contract: setup_props_plan.component_props_type_ref(),
                 diagnostic_ownership: generation_options.diagnostic_ownership,
                 generic_parameters,
                 check_options,
@@ -750,9 +751,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     self::script_module::push_setup_return_fields(&named_value_exports, &mut setup_return_fields);
     namespace_hoist.push_captured_return_fields(&named_value_exports, &mut setup_return_fields);
     setup_type_exports.emit_setup_artifacts(&mut ts, &mut setup_return_fields);
-    let mut setup_artifact_return_fields = Vec::new();
-    setup_props_plan.push_return_field(&mut setup_artifact_return_fields);
-    setup_return_fields.extend(setup_artifact_return_fields.into_iter().map(String::from));
+    setup_props_plan.push_setup_return_fields(&mut setup_return_fields);
     authored_default =
         generation_options.authored_default(declared_default_alias, has_script_setup);
     let preserve_authored_value = authored_default != super::types::AuthoredDefaultKind::None;

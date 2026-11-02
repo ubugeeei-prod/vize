@@ -7,6 +7,10 @@ import { BINDING_SESSION, loadBindingOccurrences } from "./lsp-binding-occurrenc
 import { sourceInspectedDialectCoverage } from "./source-dialect-coverage.ts";
 import { validateLocalResolveSourceSession } from "./lsp-source-sessions.ts";
 import { validateNativeCapacitySourceSession } from "./lsp-native-capacity-session.ts";
+import {
+  modelBindingSourceUnitDialectInputs,
+  validateModelBindingSourceUnit,
+} from "./lsp-model-binding-source-unit.ts";
 import { FORMATTER_BIND_POLICY_ID, loadFormatterBindPolicy } from "./lsp-formatter-bind-policy.ts";
 import { FORMATTER_ON_POLICY_ID, loadFormatterOnPolicy } from "./lsp-formatter-on-policy.ts";
 import { FORMATTER_SLOT_POLICY_ID, loadFormatterSlotPolicy } from "./lsp-formatter-slot-policy.ts";
@@ -100,7 +104,11 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     assert.deepEqual(
       planned.dialectCoverage,
       sourceInspectedDialectCoverage(
-        files.map((file) => ({ filename: file.runtimePath, source: file.bytes })),
+        data.sourceSession?.kind === "reported-model-binding-source-unit-v1"
+          ? modelBindingSourceUnitDialectInputs(
+              new Map(files.map((file) => [file.runtimePath, file.bytes])),
+            )
+          : files.map((file) => ({ filename: file.runtimePath, source: file.bytes })),
         "LSP manifest pinned authored sources",
       ),
       `dialect coverage must match pinned authored sources: ${planned.id}`,
@@ -120,9 +128,11 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     let requests: LspFixture["requests"];
     if (data.sourceSession) {
       const validate =
-        data.sourceSession.kind === "native-diagnostic-capacity-v1"
-          ? validateNativeCapacitySourceSession
-          : validateLocalResolveSourceSession;
+        data.sourceSession.kind === "reported-model-binding-source-unit-v1"
+          ? validateModelBindingSourceUnit
+          : data.sourceSession.kind === "native-diagnostic-capacity-v1"
+            ? validateNativeCapacitySourceSession
+            : validateLocalResolveSourceSession;
       validate(data, new Map(files.map((file) => [file.runtimePath, file.bytes])), expected);
       requests = [];
     } else if (data.id === VERSIONED_TEMPLATE_SUPPRESSION_ID) {

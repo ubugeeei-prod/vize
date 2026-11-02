@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "lsp/regression/reported-model-binding-rename-11383",
+  "provenance": {
+    "fixCommit": "f848c7c31a9b623cd3fa7d62a2332b702f758d1b"
+  },
+  "documentVersion": 1,
+  "openDocument": false,
+  "initializationOptions": {
+    "typecheck": false,
+    "lint": false
+  },
+  "files": [
+    {
+      "source": "input.json",
+      "runtimePath": "input.json",
+      "sha256": "b0ed516dcd5c775548b863493f87a644d23d627e2e1ea171d997ed54c0b585a9"
+    }
+  ],
+  "entry": "input.json",
+  "expected": {
+    "source": "source-unit.expected.json",
+    "sha256": "1585eedd84816e7e2ed5c9d535fbea148c21931528f6e84e936f4c688a825fd5"
+  },
+  "method": "source-session/reported-model-binding-unit",
+  "sourceSession": {
+    "kind": "reported-model-binding-source-unit-v1",
+    "state": "source-inspected",
+    "executor": "crates/vize_maestro/src/ide/corsa_support/canonical/model_links.rs",
+    "test": "ide::corsa_support::canonical::model_links::tests::model_prop_locations_follow_the_distinct_native_update_identity",
+    "input": "input.json",
+    "sourceVariants": 8,
+    "plannedClientRpcCount": 0,
+    "nativeParityChecked": 0,
+    "capturedSessions": 0,
+    "qualified": false
+  }
+}

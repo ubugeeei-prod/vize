@@ -47,6 +47,7 @@ jobs:
           import json, os, pathlib, subprocess
           root=pathlib.Path(os.environ['EVIDENCE'])
           receipt={'eventBase':os.environ['EVENT_BASE_SHA'],'pullRequestHead':os.environ['PR_HEAD_SHA'],'productBase':os.environ['PRODUCT_BASE_SHA'],'productHead':os.environ['PRODUCT_HEAD_SHA'],'driver':os.environ['PRODUCT_HEAD_SHA'],'actualParents':subprocess.check_output(['git','show','-s','--format=%P','HEAD'],text=True).split(),'normalSource':'unmodified committed products; separate targets from all profiling overlays'}
+          receipt['observerPurpose']='correctness'; receipt['eventName']=os.environ['GITHUB_EVENT_NAME']
           assert receipt['actualParents']==[receipt['productBase'],receipt['pullRequestHead']]
           (root/'provenance.json').write_text(json.dumps(receipt,indent=2)+'\n')
           PY
@@ -68,7 +69,7 @@ jobs:
           (root/(role+'-normal-binary.json')).write_text(json.dumps(receipt,indent=2)+'\n')
           PY
           done
-          node --input-type=module -e 'import fs from "node:fs";const p=process.env.EVIDENCE;const b=Object.fromEntries(["base","head"].map(k=>[k,JSON.parse(fs.readFileSync(p+"/"+k+"-normal-binary.json"))]));if(b.base.sha256===b.head.sha256)throw Error("identical binaries");fs.writeFileSync(p+"/binaries.json",JSON.stringify(b,null,2));'
+          node --input-type=module -e 'import fs from "node:fs";const p=process.env.EVIDENCE;const b=Object.fromEntries(["base","head"].map(k=>[k,JSON.parse(fs.readFileSync(p+"/"+k+"-normal-binary.json"))]));if(JSON.parse(fs.readFileSync(p+"/provenance.json")).observerPurpose!=="correctness"&&b.base.sha256===b.head.sha256)throw Error("identical binaries");fs.writeFileSync(p+"/binaries.json",JSON.stringify(b,null,2));'
           rustc -Vv > "$EVIDENCE/rustc.txt"
           uname -a > "$EVIDENCE/kernel.txt"
           lscpu > "$EVIDENCE/cpu.txt"
@@ -136,7 +137,7 @@ jobs:
                 done
             done < "$evidence/cases.tsv"
           done
-          taskset -c "$affinity" node tools/benchmarks/scripts/component-scope-binding-evidence.ts "$evidence"
+          taskset -c "$affinity" node tools/benchmarks/scripts/component-scope-binding-evidence.ts "$evidence" --correctness
       - name: Require immutable complete constructor packets
         run: |
           set -euo pipefail

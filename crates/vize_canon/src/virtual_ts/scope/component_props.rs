@@ -369,6 +369,14 @@ fn generate_usage_declarations(
                 .filter(|shared| shared.canonical_idx != idx)
                 .map(|shared| shared.canonical_idx),
             shared.is_some_and(|shared| shared.needs_value_props),
+            (ctx.typed_fallthrough_values && !usage.spread_props.is_empty())
+                || (ctx.strict_v_model
+                    && usage.props.iter().any(|prop| {
+                        prop.value.is_some()
+                            && crate::virtual_ts::expressions::model_update::is_model_prop(
+                                usage, prop,
+                            )
+                    })),
         ),
     );
 

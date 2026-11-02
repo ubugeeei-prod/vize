@@ -2837,6 +2837,46 @@
       }
     },
     {
+      "id": "lsp/regression/reported-model-binding-rename-11383",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "reported-model-binding-rename-11383",
+        "files": [
+          {
+            "path": "input.json",
+            "sha256": "b0ed516dcd5c775548b863493f87a644d23d627e2e1ea171d997ed54c0b585a9"
+          }
+        ]
+      },
+      "case": {
+        "path": "reported-model-binding-rename-11383/case.json",
+        "sha256": "804f9b94903e3a33e2a9b7c66b5344f0c8a806a1609f4f818d5f3918a1aae524"
+      },
+      "requestCount": 0,
+      "initializationOptions": {
+        "typecheck": false,
+        "lint": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/required-default-props-11148",
       "state": "active",
       "targets": ["stdio"],
