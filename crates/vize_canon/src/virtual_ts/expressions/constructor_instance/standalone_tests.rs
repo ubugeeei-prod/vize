@@ -86,8 +86,13 @@ fn standalone_and_shared_props_use_the_actual_constructor_pair() {
         let raw = cstr!(
             "typeof el_badge extends {{ readonly __vizeComponentMarker: true }} ? {prefix}$ComponentRawProps<typeof el_badge> : 0 extends (1 & {selected}) ? {prefix}$ComponentRawProps<typeof el_badge> : {selected} extends {{ $props: infer __P }} ? unknown extends __P ? Record<string, unknown> : __P : {prefix}$ComponentRawProps<typeof el_badge>"
         );
+        let is_any = if hoisted {
+            "import(\"vize:virtual-ts\").IsAny"
+        } else {
+            "$IsAny"
+        };
         let props = cstr!(
-            "type __el_badge_Props_0 = typeof el_badge extends {{ __vizeCheck: infer __F }} ? ({prefix}$IsAny<__F> extends true ? {raw} : Record<string, unknown>) : {raw};"
+            "type __el_badge_Props_0 = typeof el_badge extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {raw} : Record<string, unknown>) : {raw};"
         );
         assert_eq!(
             declarations
