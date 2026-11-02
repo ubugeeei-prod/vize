@@ -34,10 +34,12 @@ pub use content_mapper::{
     CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE, CONTENT_MAPPER_SFC_PARSE_ERROR_CODE,
     CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperDiagnosticDirective,
     ContentMapperDiagnosticDirectives, ContentMapperSemanticLink, ContentMapperSpan,
-    ContentMapperTransform, ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic,
-    generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
+    ContentMapperTransform, ContentMapperTransformOptions, ContentMapperTypeSources,
+    ContentMapperUnusedExpectDiagnostic, generate_vue_content_mapper_transform,
+    generate_vue_content_mapper_transform_with_options,
     generate_vue_content_mapper_transform_with_project_context,
     generate_vue_content_mapper_transform_with_project_options,
+    generate_vue_content_mapper_transform_with_type_sources,
 };
 pub use content_mapper_config::{ContentMapperProjectConfiguration, ContentMapperProjectContext};
 mod cache_gc;

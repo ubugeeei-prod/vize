@@ -7,10 +7,13 @@ use std::path::Path;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Condvar, Mutex, PoisonError};
 use std::thread;
+use std::time::{Duration, Instant};
 
 use serde::Serialize;
 use serde_json::{Value, json};
-use vize_canon::generate_vue_content_mapper_transform_with_project_context;
+use vize_canon::{
+    ContentMapperTypeSources, generate_vue_content_mapper_transform_with_type_sources,
+};
 use vize_l0::cstr;
 
 use super::project::{
@@ -23,6 +26,46 @@ use super::{InitializeParams, Request, TransformParams, read_frame};
 // Debug v-for replay at 2,048 levels also completed with 32/64 MiB. Keep the
 // measured headroom independent of a host's inherited RUST_MIN_STACK setting.
 const TRANSFORM_WORKER_STACK_BYTES: usize = 64 * 1024 * 1024;
+
+/// Oldest imported-type snapshot a starting transform may still join.
+const TYPE_SOURCE_MAX_AGE: Duration = Duration::from_secs(1);
+
+/// Imported type modules shared while transforms overlap. A host burst reads
+/// each dependency once. An idle server, or a snapshot older than
+/// [`TYPE_SOURCE_MAX_AGE`], reads the filesystem again.
+#[derive(Default)]
+struct SharedTypeSources {
+    state: Mutex<TypeSourceGeneration>,
+}
+
+#[derive(Default)]
+struct TypeSourceGeneration {
+    active: usize,
+    current: Option<(ContentMapperTypeSources, Instant)>,
+}
+
+impl SharedTypeSources {
+    fn acquire(&self) -> ContentMapperTypeSources {
+        let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
+        state.active += 1;
+        if let Some((sources, created)) = &state.current
+            && created.elapsed() < TYPE_SOURCE_MAX_AGE
+        {
+            return sources.clone();
+        }
+        let sources = ContentMapperTypeSources::default();
+        state.current = Some((sources.clone(), Instant::now()));
+        sources
+    }
+
+    fn release(&self) {
+        let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
+        state.active = state.active.saturating_sub(1);
+        if state.active == 0 {
+            state.current = None;
+        }
+    }
+}
 
 struct TransformJob {
     seq: u64,
@@ -124,6 +167,7 @@ fn serve_with_worker_plan<R: BufRead, W: Write + Send>(
     let (job_tx, job_rx) = mpsc::channel::<TransformJob>();
     let job_rx = Mutex::new(job_rx);
     let (done_tx, done_rx) = mpsc::channel::<(u64, Vec<u8>)>();
+    let type_sources = SharedTypeSources::default();
     let mut receipt = WorkerPoolReceipt {
         requested_workers: worker_stacks.len(),
         effective_workers: 0,
@@ -141,9 +185,10 @@ fn serve_with_worker_plan<R: BufRead, W: Write + Send>(
         for stack_bytes in worker_stacks {
             let jobs = &job_rx;
             let done = done_tx.clone();
+            let type_sources = &type_sources;
             if let Err(error) = thread::Builder::new()
                 .stack_size(stack_bytes)
-                .spawn_scoped(scope, move || worker(jobs, done))
+                .spawn_scoped(scope, move || worker(jobs, done, type_sources))
             {
                 receipt.spawn_failure = Some(cstr!("{error}"));
                 if receipt.effective_workers > 0 {
@@ -178,7 +223,11 @@ fn serve_with_worker_plan<R: BufRead, W: Write + Send>(
     read_result.map(|()| receipt)
 }
 
-fn worker(jobs: &Mutex<Receiver<TransformJob>>, done: Sender<(u64, Vec<u8>)>) {
+fn worker(
+    jobs: &Mutex<Receiver<TransformJob>>,
+    done: Sender<(u64, Vec<u8>)>,
+    type_sources: &SharedTypeSources,
+) {
     loop {
         let job = {
             let receiver = jobs.lock().unwrap_or_else(PoisonError::into_inner);
@@ -186,12 +235,17 @@ fn worker(jobs: &Mutex<Receiver<TransformJob>>, done: Sender<(u64, Vec<u8>)>) {
         };
         let Ok(job) = job else { break };
         let seq = job.seq;
-        let bytes = match catch_unwind(AssertUnwindSafe(|| transform_frame(&job))) {
+        let sources = type_sources.acquire();
+        let bytes = match catch_unwind(AssertUnwindSafe(|| transform_frame(&job, &sources))) {
             Ok(Ok(bytes)) => bytes,
             Ok(Err(error)) => encode_error(&job.id, -32603, &cstr!("{error}")).unwrap_or_default(),
             Err(_) => encode_error(&job.id, -32603, "Transform failed").unwrap_or_default(),
         };
-        if done.send((seq, bytes)).is_err() {
+        let sent = done.send((seq, bytes));
+        // Release after the reply: the last holder frees the snapshot.
+        type_sources.release();
+        drop(sources);
+        if sent.is_err() {
             break;
         }
     }
@@ -359,12 +413,13 @@ fn dispatch_transform(
         .map_err(|_| io::Error::other("content-mapper workers stopped"))
 }
 
-fn transform_frame(job: &TransformJob) -> io::Result<Vec<u8>> {
-    match generate_vue_content_mapper_transform_with_project_context(
+fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io::Result<Vec<u8>> {
+    match generate_vue_content_mapper_transform_with_type_sources(
         Path::new(job.file_name.as_str()),
         job.content.as_str(),
         job.settings.transform_options,
         &job.settings.project_context,
+        sources,
     ) {
         Ok(result) => encode_result(&job.id, result),
         Err(error) => {
@@ -411,3 +466,24 @@ fn encode_frame(value: &impl Serialize) -> io::Result<Vec<u8>> {
 
 #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
 mod tests;
+
+#[cfg(test)]
+mod type_source_tests {
+    use super::SharedTypeSources;
+
+    #[test]
+    fn overlapping_transforms_share_type_sources_until_idle() {
+        let shared = SharedTypeSources::default();
+        let first = shared.acquire();
+        let overlapping = shared.acquire();
+        assert_eq!(first, overlapping);
+        shared.release();
+        let joined = shared.acquire();
+        assert_eq!(first, joined);
+        shared.release();
+        shared.release();
+        let after_idle = shared.acquire();
+        assert_ne!(first, after_idle);
+        shared.release();
+    }
+}
