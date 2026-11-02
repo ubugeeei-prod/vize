@@ -1,4 +1,6 @@
 //! TransformContext implementation.
+#[cfg(all(test, feature = "legacy"))]
+mod dialect_tests;
 mod for_bindings;
 use vize_croquis::reactivity::ReactiveKind;
 use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
@@ -323,23 +325,17 @@ impl<'a> TransformContext<'a> {
             .supports_filters
     }
 
-    /// Whether the resolved dialect is the Vue 2 / 2.7 template line, which
-    /// carried the removed v-on event-modifier sugar (`@click.native`, numeric
-    /// keycodes such as `@keyup.13`). Resolved from
-    /// [`vize_armature::legacy::LegacyVueVersion::from_dialect`] for the dialect
-    /// on [`TransformOptions::dialect`](crate::options::TransformOptions::dialect).
+    /// Whether the shared capability table enables Vue 2 / 2.7 event sugar
+    /// (`@click.native` and numeric keycodes such as `@keyup.13`).
     ///
-    /// Always `false` for the default Vue 3 dialect (and every other legacy
-    /// line), so the Vue 2 event-modifier desugaring is never entered there and
-    /// the directive's modifiers stay byte-identical to today's output.
-    /// Legacy-only.
+    /// Read the current [`TransformOptions::dialect`](crate::options::TransformOptions::dialect)
+    /// so option changes remain authoritative. Vue 3 and other legacy lines
+    /// leave event modifiers unchanged.
     #[cfg(feature = "legacy")]
     #[inline]
     pub(crate) fn supports_v2_event_sugar(&self) -> bool {
-        matches!(
-            vize_armature::legacy::LegacyVueVersion::from_dialect(self.options.dialect),
-            Some(vize_armature::legacy::LegacyVueVersion::V2)
-        )
+        vize_armature::legacy::LegacyDialectCapabilities::for_dialect(self.options.dialect)
+            .v2_event_sugar
     }
 
     /// Add an identifier to current scope

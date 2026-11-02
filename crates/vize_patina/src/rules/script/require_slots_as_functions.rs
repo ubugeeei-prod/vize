@@ -141,7 +141,10 @@ impl<'a> Visit<'a> for SlotsVisitor<'_> {
     }
 
     fn visit_unary_expression(&mut self, expression: &UnaryExpression<'a>) {
-        if expression.operator == UnaryOperator::LogicalNot {
+        if matches!(
+            expression.operator,
+            UnaryOperator::LogicalNot | UnaryOperator::Typeof
+        ) {
             self.suppress_direct_slot_function(&expression.argument);
         }
         walk_unary_expression(self, expression);
@@ -349,3 +352,6 @@ mod presence_tests;
 
 #[cfg(test)]
 mod condition_tests;
+
+#[cfg(test)]
+mod typeof_tests;

@@ -89,9 +89,12 @@ jobs:
         if: ${{ env.AFFECTED == 'true' }}
   # Tooling tests otherwise ran only in scheduled Full qualification, so docs
   # and tooling breaks reached main. The PR tier selects what a change affects.
-  # Built beside the planner, not after it: nearly every PR selects tooling.
+  # Only an explicitly empty PR tooling plan can omit this producer. Queue
+  # qualification and every selected or unknown consumer retain the original build.
   affected-tooling-cli:
     name: Affected tooling CLI
+    needs: pr-source-plan
+    if: ${{ github.event_name != 'pull_request' || needs.pr-source-plan.outputs.affected-tooling != 'false' }}
     uses: ./.github/workflows/full-source-cli.yml
   affected-tooling:
     name: Affected tooling (${{ matrix.name }})
@@ -123,14 +126,20 @@ jobs:
     steps:
       - name: Require every selected tooling worker
         env:
+          EVENT_NAME: ${{ github.event_name }}
           SELECTED: ${{ needs.pr-source-plan.outputs.affected-tooling }}
           CLI: ${{ needs.affected-tooling-cli.result }}
           WORKERS: ${{ needs.affected-tooling.result }}
         run: |
           echo "selected=$SELECTED cli=$CLI workers=$WORKERS"
-          [[ "$CLI" == success ]]
-          if [[ "$SELECTED" == true ]]; then [[ "$WORKERS" == success ]]
-          else [[ "$SELECTED" == false && "$WORKERS" == skipped ]]; fi
+          [[ "$EVENT_NAME" == pull_request || "$EVENT_NAME" == merge_group ]]
+          if [[ "$SELECTED" == true ]]; then
+            [[ "$CLI" == success && "$WORKERS" == success ]]
+          else
+            [[ "$SELECTED" == false && "$WORKERS" == skipped ]]
+            if [[ "$EVENT_NAME" == pull_request ]]; then [[ "$CLI" == skipped ]]
+            else [[ "$CLI" == success ]]; fi
+          fi
   # Beside the lanes, not before them: every lane already waits for the source
   # report, which requires this job.
   ci-selection-tests:

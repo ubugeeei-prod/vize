@@ -12438,6 +12438,36 @@
       }
     },
     {
+      "id": "typechecker/regression/tsconfig-reference-defaults-3984",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "tsconfig-reference-defaults-3984/input.json",
+          "sha256": "6ce35f9bdfe876a74d99568e12249c98d0e5a59f663b92cb2a6470b877ff119f",
+          "role": "physically-consumed-solution-reference-default-input-regression"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
+            "selector": "check_tsconfig_mixed_project_graph_cli::default_reference::later_default_reference_checks_vue_template_and_repair; physically consumes a solution with an excluded explicit file and a later implicit mixed program, wrong Vue template and repair. Input-only registration; no native, public or timing qualification."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/windows-verbatim-overlay-11145",
       "state": "active",
       "targets": [
@@ -12625,6 +12655,35 @@
             ]
           }
         },
+    {
+      "id": "typechecker/standalone-constructor-correlation-11023/actual-instance-public-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "virtual_ts::expressions::constructor_instance::standalone_tests::standalone_and_shared_props_use_the_actual_constructor_pair",
+      "sourceRevision": "f9841297edcadfe77ee0862b38840dfe41d81682",
+      "inputs": [
+        {
+          "file": "Template.html",
+          "path": "standalone-constructor-correlation-11023/Template.html.txt",
+          "sha256": "40c112798e619e78aa77ef915ef71fdd483419162dae104f5f9a62ab77dc95a8"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "html-template"
+            ],
+            "selector": "standalone_and_shared_props_use_the_actual_constructor_pair; full emitted constructor pair and public-props declarations in both helper modes"
+          }
+        ]
+      }
+    },
     {
       "id": "typechecker/static-template-ref-runtime-11377",
       "state": "active",

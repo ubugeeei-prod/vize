@@ -1,0 +1,16 @@
+{
+  "issue": 3984,
+  "role": "Derived solution/reference input-selection regression; no original external runtime claim",
+  "files": {
+    "tsconfig.json": "{\n  \"files\": [],\n  \"references\": [\n    {\n      \"path\": \"./alpha\"\n    },\n    {\n      \"path\": \"./beta\"\n    }\n  ]\n}\n",
+    "base.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"jsx\": \"preserve\",\n    \"types\": [],\n    \"noEmit\": true,\n    \"skipLibCheck\": true\n  }\n}\n",
+    "alpha/tsconfig.json": "{\n  \"extends\": \"../base.json\",\n  \"files\": [\n    \"src/owned.ts\"\n  ],\n  \"exclude\": [\n    \"src/**/*\"\n  ]\n}\n",
+    "alpha/src/owned.ts": "export const first: number = 1;\n",
+    "alpha/src/not-selected.ts": "export const ignored: number = \"wrong\";\n",
+    "beta/tsconfig.json": "{\n  \"extends\": \"../base.json\",\n  \"exclude\": [\n    \"src/excluded\"\n  ]\n}\n",
+    "beta/src/App.vue": "<script setup lang=\"ts\">\nimport { label } from \"./entry\"\nimport type { Props } from \"./contracts\"\ndefineProps<Props>()\n</script>\n<template>{{ title.missing }} {{ label }}</template>\n",
+    "beta/src/contracts.ts": "export interface Props { title: string }\n",
+    "beta/src/entry.tsx": "import App from \"./App.vue\";\nexport const label: string = \"ready\";\nexport { App };\n",
+    "beta/src/excluded/Unused.vue": "<script setup lang=\"ts\">\nconst ignored: number = \"wrong\"\n</script>\n<template>{{ ignored.missing }}</template>\n"
+  }
+}
