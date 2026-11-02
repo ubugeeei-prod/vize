@@ -416,22 +416,32 @@ declare global {
   // Emit-overload helpers (consumed by the per-file __EmitProps alias)
 
   type $OverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
+  // One inference per step; repeating one means a generic overload is stuck.
   type $OverloadUnionRecursive<
     TOverload,
     TPartialOverload = unknown,
     TDepth extends unknown[] = [],
     TAccumulated = never,
+    TLast = never,
   > = TDepth["length"] extends 900
     ? TAccumulated
     : TOverload extends (...args: infer TArgs) => infer TReturn
       ? TPartialOverload extends TOverload
         ? TAccumulated
-        : $OverloadUnionRecursive<
-            TPartialOverload & TOverload,
-            TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>,
-            [...TDepth, unknown],
-            TAccumulated | ((...args: TArgs) => TReturn)
-          >
+        : (<G>() => G extends (...args: TArgs) => TReturn ? 1 : 2) extends <G>() => G extends TLast
+              ? 1
+              : 2
+          ? TAccumulated
+          : $OverloadUnionRecursive<
+              TPartialOverload &
+                ((...args: TArgs) => TReturn) &
+                $OverloadProps<TOverload> &
+                TOverload,
+              TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>,
+              [...TDepth, unknown],
+              TAccumulated | ((...args: TArgs) => TReturn),
+              (...args: TArgs) => TReturn
+            >
       : TAccumulated;
   type $OverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<
     $OverloadUnionRecursive<(() => never) & TOverload>,
