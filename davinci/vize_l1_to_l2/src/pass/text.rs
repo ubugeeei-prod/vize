@@ -12,43 +12,15 @@
 //! mutation sites, where the op span and rebuilt compound spelling are
 //! still in hand.
 
-use alloc::vec::Vec as StdVec;
-
 use vize_l0::side_table::SideTable;
 
-use crate::lower::{Lowered, TextPart};
+use crate::lower::Lowered;
 
-/// One compound op's consumed view: the merged run's parts, validated at
-/// the lowering/mutation sites before DOM realization compiles from it.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TextFacts {
-    /// The parts, in document order ([`TextPart`]'s field docs).
-    pub parts: StdVec<TextPart>,
-}
-
-/// Facts cross compile boundaries with their artifact (P1-11).
-const _: () = {
-    const fn assert_owned<T: 'static>() {}
-    assert_owned::<TextFacts>();
-};
-
-/// 64-bit footprint, guarded like every node-size assert (the wasm32
-/// lane is 32-bit).
-#[cfg(target_pointer_width = "64")]
-const _: () = assert!(core::mem::size_of::<TextFacts>() == 24);
+pub use vize_l2::analysis::text_facts::TextFacts;
 
 /// Publish the lowering's already-validated compound text facts without
 /// walking the op tree.
 #[must_use]
 pub(super) fn facts_from_lowering(lowered: &Lowered<'_>) -> SideTable<TextFacts> {
-    let mut facts = SideTable::with_capacity(lowered.texts.len());
-    for (id, parts) in lowered.texts.iter() {
-        facts.insert(
-            id,
-            TextFacts {
-                parts: parts.parts.clone(),
-            },
-        );
-    }
-    facts
+    vize_l2::analysis::text_facts::publish_text_facts(&lowered.texts)
 }
