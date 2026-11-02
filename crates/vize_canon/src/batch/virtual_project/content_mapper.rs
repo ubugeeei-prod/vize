@@ -58,10 +58,12 @@ mod publish;
 pub use options::ContentMapperTransformOptions;
 
 mod project_context;
+pub use project_context::ContentMapperTypeSources;
 pub use project_context::{
     generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
     generate_vue_content_mapper_transform_with_project_context,
     generate_vue_content_mapper_transform_with_project_options,
+    generate_vue_content_mapper_transform_with_type_sources,
 };
 
 fn transform_with_router_context(
@@ -69,19 +71,22 @@ fn transform_with_router_context(
     content: &str,
     transform_options: ContentMapperTransformOptions,
     typed_router: Option<super::typed_router::Config<'_>>,
+    type_sources: Option<&super::setup_props::RuntimePropResolveCache>,
 ) -> CorsaResult<ContentMapperTransform> {
     vize_l0::profile!(
         "canon.content_mapper.transform",
-        transform_with_diagnostic_ownership(
+        transform_with_shared_sources(
             path,
             content,
             transform_options,
             typed_router,
             Some(Default::default()),
+            type_sources,
         )
     )
 }
 
+#[cfg(test)]
 fn transform_with_diagnostic_ownership(
     path: &Path,
     content: &str,
@@ -90,6 +95,26 @@ fn transform_with_diagnostic_ownership(
     diagnostic_ownership: Option<
         crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
     >,
+) -> CorsaResult<ContentMapperTransform> {
+    transform_with_shared_sources(
+        path,
+        content,
+        transform_options,
+        typed_router,
+        diagnostic_ownership,
+        None,
+    )
+}
+
+fn transform_with_shared_sources(
+    path: &Path,
+    content: &str,
+    transform_options: ContentMapperTransformOptions,
+    typed_router: Option<super::typed_router::Config<'_>>,
+    diagnostic_ownership: Option<
+        crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
+    >,
+    type_sources: Option<&super::setup_props::RuntimePropResolveCache>,
 ) -> CorsaResult<ContentMapperTransform> {
     let authored_content = content;
     let authored = crate::authored_sfc::AuthoredSfc::new(content);
@@ -163,7 +188,7 @@ fn transform_with_diagnostic_ownership(
             inline_auto_import_stubs: true,
             omit_vite_client_reference: true,
             tsx_module: true,
-            runtime_prop_resolve_cache: None,
+            runtime_prop_resolve_cache: type_sources,
         },
     )?;
 

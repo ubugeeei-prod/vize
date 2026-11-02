@@ -21,6 +21,17 @@ pub(crate) struct RuntimePropResolveCache {
 }
 
 impl RuntimePropResolveCache {
+    /// A per-root cache over a dependency snapshot owned elsewhere.
+    pub(in crate::batch::virtual_project) fn with_type_sources(
+        type_sources: Arc<TypeSourceSnapshot>,
+    ) -> Self {
+        Self {
+            type_sources,
+            props: Mutex::default(),
+            default_names: Mutex::default(),
+        }
+    }
+
     /// Keep source reads consistent within a walk, but resolve each root's
     /// runtime exports independently: cycle cuts depend on that root.
     pub(in crate::batch::virtual_project) fn with_shared_type_sources(&self) -> Self {
