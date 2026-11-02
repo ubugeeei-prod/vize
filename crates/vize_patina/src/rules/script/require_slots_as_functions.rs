@@ -137,6 +137,8 @@ impl<'a> Visit<'a> for SlotsVisitor<'_> {
 
     fn visit_conditional_expression(&mut self, expression: &ConditionalExpression<'a>) {
         self.suppress_direct_slot_function(&expression.test);
+        self.suppress_direct_slot_function(&expression.consequent);
+        self.suppress_direct_slot_function(&expression.alternate);
         walk_conditional_expression(self, expression);
     }
 
@@ -355,3 +357,6 @@ mod condition_tests;
 
 #[cfg(test)]
 mod typeof_tests;
+
+#[cfg(test)]
+mod conditional_tests;
