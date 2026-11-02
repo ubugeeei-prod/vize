@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { nativeScopedCaptureRequired } from "../../tools/support/compat/github/native-scoped-capture.mjs";
+import { nativeScopedCaptureRequired } from "../../tools/support/compat/github/native-scoped-capture.ts";
 import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/native-ssr-capture.mjs";
 import { planNativeRuntime } from "../../tools/support/compat/github/plan-native-runtime.ts";
 import { assertNativeRuntimeHook } from "./support/native-runtime-workflow.ts";
@@ -26,6 +26,7 @@ void test("every new original scoped dependency selects both source proofs even 
     "tests/tooling/support/native-scoped-ssr-browser.ts",
     ".github/actions/test-native-scoped-css/action.yml",
     "tools/support/compat/github/native-scoped-capture.mjs",
+    "tools/support/compat/github/native-scoped-capture.ts",
   ]) {
     assert.equal(nativeScopedCaptureRequired([path]), true, path);
     const plan = planNativeRuntime([path]);
@@ -51,6 +52,9 @@ void test("SSR input classification stays precise and affected changes select bo
   }
   for (const path of [
     "README.md",
+    "tools/support/compat/github/native-scoped-capture.tsx",
+    "tools/support/compat/github/native-scoped-capture.ts/child",
+    "tools/support/compat/github/native-scoped-capture.mjs.bak",
     "docs/davinci/decisions/2026-10-04-native-selected-scoped-ssr.md",
     "docs/davinci/plan/storage-inventory.tsv",
     "docs/davinci/plan/croquis-consumption/vize_atelier_sfc.md",
