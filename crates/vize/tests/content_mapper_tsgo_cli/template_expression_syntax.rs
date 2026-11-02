@@ -1,5 +1,7 @@
 //! Pin authored template-expression syntax diagnostics against vue-tsc.
 
+mod generic_arrows;
+
 use std::path::PathBuf;
 
 use serde_json::json;
