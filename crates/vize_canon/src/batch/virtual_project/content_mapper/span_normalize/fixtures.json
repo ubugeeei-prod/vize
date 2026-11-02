@@ -1,0 +1,283 @@
+{
+  "schema": "vize.content-mapper-span-normalize.v1",
+  "cases": [
+    {
+      "id": "broad-verbatim-around-duplicate",
+      "source": "abcdefghijklmnopqrstuvwxy",
+      "generated": "                                                                                                    klmno                                                                                               abcdefghijklmnopqrstuvwxy",
+      "candidates": [
+        {
+          "generated": [200, 225],
+          "original": [0, 25],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [100, 105],
+          "original": [10, 15],
+          "kind": "verbatim"
+        }
+      ],
+      "expected": [
+        {
+          "generated": [100, 105],
+          "original": [10, 15],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [200, 210],
+          "original": [0, 10],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [210, 215],
+          "original": [10, 15],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [215, 225],
+          "original": [15, 25],
+          "kind": "verbatim"
+        }
+      ]
+    },
+    {
+      "id": "shorter-generated-span-wins",
+      "source": "abcdefghijklmnopqrstuvwxy",
+      "generated": "                                                                                                    klmno                                                                                               abcdefghijklmnopqrstuvwxy",
+      "candidates": [
+        {
+          "generated": [200, 225],
+          "original": [0, 25],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [202, 207],
+          "original": [0, 5],
+          "kind": "atom"
+        }
+      ],
+      "expected": [
+        {
+          "generated": [202, 207],
+          "original": [0, 5],
+          "kind": "atom"
+        }
+      ]
+    },
+    {
+      "id": "partial-atom-original-is-refused",
+      "source": "abcdefghijklmnopqrstuvwxy",
+      "generated": "                                                                                                    klmno                                                                                               abcdefghijklmnopqrstuvwxy",
+      "candidates": [
+        {
+          "generated": [200, 225],
+          "original": [0, 25],
+          "kind": "atom"
+        },
+        {
+          "generated": [100, 105],
+          "original": [10, 15],
+          "kind": "verbatim"
+        }
+      ],
+      "expected": [
+        {
+          "generated": [100, 105],
+          "original": [10, 15],
+          "kind": "verbatim"
+        }
+      ]
+    },
+    {
+      "id": "touching-half-open-ranges",
+      "source": "abcdefghij",
+      "generated": "abcdefghij",
+      "candidates": [
+        {
+          "generated": [5, 10],
+          "original": [5, 10],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [0, 5],
+          "original": [0, 5],
+          "kind": "verbatim"
+        }
+      ],
+      "expected": [
+        {
+          "generated": [0, 5],
+          "original": [0, 5],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [5, 10],
+          "original": [5, 10],
+          "kind": "verbatim"
+        }
+      ]
+    },
+    {
+      "id": "same-original-different-generated",
+      "source": "abcde",
+      "generated": "abcde     abcde",
+      "candidates": [
+        {
+          "generated": [10, 15],
+          "original": [0, 5],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [0, 5],
+          "original": [0, 5],
+          "kind": "verbatim"
+        }
+      ],
+      "expected": [
+        {
+          "generated": [0, 5],
+          "original": [0, 5],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [10, 15],
+          "original": [0, 5],
+          "kind": "verbatim"
+        }
+      ]
+    },
+    {
+      "id": "unicode-byte-ranges",
+      "source": "雪🌸abc",
+      "generated": "                    🌸                雪🌸abc",
+      "candidates": [
+        {
+          "generated": [40, 50],
+          "original": [0, 10],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [20, 24],
+          "original": [3, 7],
+          "kind": "verbatim"
+        }
+      ],
+      "expected": [
+        {
+          "generated": [20, 24],
+          "original": [3, 7],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [40, 43],
+          "original": [0, 3],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [43, 47],
+          "original": [3, 7],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [47, 50],
+          "original": [7, 10],
+          "kind": "verbatim"
+        }
+      ]
+    },
+    {
+      "id": "empty-legacy-domain",
+      "source": "abcde",
+      "generated": "abcde",
+      "legacyDomain": true,
+      "candidates": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [0, 5],
+          "original": [0, 5],
+          "kind": "verbatim"
+        }
+      ],
+      "expected": [
+        {
+          "generated": [0, 0],
+          "original": [0, 0],
+          "kind": "verbatim"
+        },
+        {
+          "generated": [0, 5],
+          "original": [0, 5],
+          "kind": "verbatim"
+        }
+      ]
+    },
+    {
+      "id": "unequal-verbatim-legacy-domain",
+      "source": "abcde",
+      "generated": "abcde",
+      "legacyDomain": true,
+      "candidates": [
+        {
+          "generated": [0, 2],
+          "original": [0, 5],
+          "kind": "verbatim"
+        }
+      ],
+      "expected": [
+        {
+          "generated": [0, 2],
+          "original": [0, 5],
+          "kind": "verbatim"
+        }
+      ]
+    },
+    {
+      "id": "stable-equal-priority-kind",
+      "source": "abcdef",
+      "generated": "zzz",
+      "candidates": [
+        {
+          "generated": [0, 3],
+          "original": [0, 6],
+          "kind": "alias"
+        },
+        {
+          "generated": [0, 3],
+          "original": [0, 6],
+          "kind": "atom"
+        }
+      ],
+      "expected": [
+        {
+          "generated": [0, 3],
+          "original": [0, 6],
+          "kind": "alias"
+        }
+      ]
+    },
+    {
+      "id": "reversed-original-legacy-domain",
+      "source": "abcdef",
+      "generated": "zzz",
+      "legacyDomain": true,
+      "candidates": [
+        {
+          "generated": [0, 3],
+          "original": [4, 2],
+          "kind": "alias"
+        }
+      ],
+      "expected": [
+        {
+          "generated": [0, 3],
+          "original": [4, 2],
+          "kind": "alias"
+        }
+      ]
+    }
+  ]
+}

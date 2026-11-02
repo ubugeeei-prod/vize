@@ -1,11 +1,69 @@
 //! Protocol-valid normalization for overlapping authored projections.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
 
 use super::{ContentMapperSpanKind, SpanCandidate, ranges_overlap};
 
+/// The accepted generated ranges are disjoint, and accepted original ranges
+/// are disjoint or exact duplicates. Index only those accepted pieces, keeping
+/// the existing shortest-first priority and split order unchanged.
 pub(super) fn normalize(mut candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate> {
+    if candidates.iter().any(|row| {
+        row.generated.start >= row.generated.end
+            || row.original.start >= row.original.end
+            || (row.kind == ContentMapperSpanKind::Verbatim
+                && row.generated.len() != row.original.len())
+    }) {
+        return normalize_linear(candidates);
+    }
+    candidates.sort_by_key(|candidate| {
+        (
+            candidate.generated.len(),
+            candidate.original.len(),
+            candidate.generated.start,
+        )
+    });
+    let mut accepted = Vec::new();
+    let mut generated: BTreeMap<usize, usize> = BTreeMap::new();
+    let mut original: BTreeMap<usize, usize> = BTreeMap::new();
+    for candidate in candidates {
+        if generated
+            .range(..candidate.generated.end)
+            .next_back()
+            .is_some_and(|(_, end)| candidate.generated.start < *end)
+        {
+            continue;
+        }
+        let overlaps = overlapping_originals(&original, &candidate.original);
+        for piece in split_original_overlaps(candidate, &overlaps) {
+            generated.insert(piece.generated.start, piece.generated.end);
+            original.insert(piece.original.start, piece.original.end);
+            accepted.push(piece);
+        }
+    }
+    accepted
+}
+
+fn overlapping_originals(
+    accepted: &BTreeMap<usize, usize>,
+    range: &Range<usize>,
+) -> Vec<Range<usize>> {
+    let mut overlaps = Vec::new();
+    if let Some((&start, &end)) = accepted.range(..range.start).next_back()
+        && range.start < end
+    {
+        overlaps.push(start..end);
+    }
+    overlaps.extend(
+        accepted
+            .range(range.start..range.end)
+            .map(|(&start, &end)| start..end),
+    );
+    overlaps
+}
+
+fn normalize_linear(mut candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate> {
     candidates.sort_by_key(|candidate| {
         (
             candidate.generated.len(),
@@ -218,3 +276,6 @@ mod tests {
         })));
     }
 }
+
+#[cfg(test)]
+mod indexed_tests;
