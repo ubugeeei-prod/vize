@@ -607,10 +607,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         prop_source(&mut mappings, summary, script_content, source_offset),
         generic_parameters,
     );
-    has_root_el = root_element::emit_setup_type(
+    has_root_el = template_refs::emit_setup_artifacts(
         &mut ts,
         summary,
-        options,
+        (options, generation_options),
         &syntactic_type_only_imported_names,
         template_ast,
         check_options,

@@ -1,6 +1,8 @@
 //! Sticky unknown-owner storage follows the existing SessionStorage law.
 
-use super::{EditorMirrorSession, RETAINED_FAILURE, reap_abandoned_sessions};
+use super::{
+    EditorMirrorSession, RETAINED_FAILURE, open_existing_session_lock, reap_abandoned_sessions,
+};
 
 fn generated(session: &EditorMirrorSession) -> std::path::PathBuf {
     let file = session.root().unwrap().join("projects/current/App.vue.ts");
@@ -85,5 +87,39 @@ fn generic_unstarted_session_keeps_its_original_cleanup_without_sticky_claims() 
     );
     drop(session);
     assert!(!file.exists());
+    assert!(!root.exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn stale_reaper_observation_never_recreates_an_unlinked_lifetime_lock() {
+    let session = EditorMirrorSession::new();
+    let root = session.root().unwrap().to_path_buf();
+    let lock_path = root.join(".session.lock");
+    // The reaper has already observed this path before owner cleanup unlinks it.
+    assert!(lock_path.is_file());
+    std::fs::remove_file(&lock_path).unwrap();
+    let error = open_existing_session_lock(&lock_path).unwrap_err();
+    assert_eq!(error.kind(), std::io::ErrorKind::NotFound);
+    assert!(!lock_path.exists());
+    drop(session);
+    assert!(!root.exists());
+}
+
+#[test]
+fn reaper_open_respects_the_current_owner_lock_and_never_creates_missing_storage() {
+    let session = EditorMirrorSession::new();
+    let root = session.root().unwrap().to_path_buf();
+    let lock = open_existing_session_lock(&root.join(".session.lock")).unwrap();
+    assert!(matches!(
+        lock.try_lock(),
+        Err(std::fs::TryLockError::WouldBlock)
+    ));
+    drop(lock);
+    let missing = root.join("removed-session/.session.lock");
+    let error = open_existing_session_lock(&missing).unwrap_err();
+    assert_eq!(error.kind(), std::io::ErrorKind::NotFound);
+    assert!(!missing.parent().unwrap().exists());
+    drop(session);
     assert!(!root.exists());
 }

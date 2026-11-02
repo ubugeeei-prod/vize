@@ -26,8 +26,9 @@ pub(crate) struct EditorMirrorSession {
 }
 
 struct EditorStorage {
-    _lifetime_lock: File,
+    // Remove the directory before releasing its lifetime lock.
     directory: Option<tempfile::TempDir>,
+    _lifetime_lock: File,
     retain_after_failure: AtomicBool,
     retention_armed: AtomicBool,
 }
@@ -244,8 +245,8 @@ fn create_storage() -> std::io::Result<EditorStorage> {
         std::fs::set_permissions(directory.path(), std::fs::Permissions::from_mode(0o700))?;
     }
     Ok(EditorStorage {
-        _lifetime_lock: lifetime_lock,
         directory: Some(directory),
+        _lifetime_lock: lifetime_lock,
         retain_after_failure: AtomicBool::new(false),
         retention_armed: AtomicBool::new(false),
     })
@@ -258,6 +259,11 @@ fn open_lock(path: &Path) -> std::io::Result<File> {
         .truncate(false)
         .write(true)
         .open(path)
+}
+
+// A stale directory entry must never recreate a lock during owner cleanup.
+fn open_existing_session_lock(path: &Path) -> std::io::Result<File> {
+    OpenOptions::new().read(true).write(true).open(path)
 }
 
 fn reap_abandoned_sessions(base: &Path) {
@@ -278,7 +284,7 @@ fn reap_abandoned_sessions(base: &Path) {
         }
         let lock_path = path.join(".session.lock");
         let removable = if lock_path.exists() {
-            match open_lock(&lock_path) {
+            match open_existing_session_lock(&lock_path) {
                 Ok(lock) => match lock.try_lock() {
                     Ok(()) => true,
                     Err(TryLockError::WouldBlock | TryLockError::Error(_)) => false,
