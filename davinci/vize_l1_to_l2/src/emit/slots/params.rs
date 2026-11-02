@@ -7,7 +7,7 @@ use crate::emit::js::{escape_js_string, is_valid_js_identifier};
 use crate::emit::prefix::Site;
 use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
 use crate::pass::walk::PageWalk;
-use crate::pass::{SlotCarrier, SlotName, SlotParams};
+use vize_l2::analysis::slot_facts::{SlotCarrier, SlotName, SlotParams};
 
 pub(super) fn emit_slot_key(cx: &mut EmitCx<'_>, name: &SlotName) {
     match name {
