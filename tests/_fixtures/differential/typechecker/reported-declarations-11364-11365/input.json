@@ -1,0 +1,20 @@
+{
+  "issues": [
+    11364,
+    11365
+  ],
+  "bodySha256": {
+    "11364": "877aafb8b16d0492c6cad8dff03845462a44d5148849b55a31d5621e0bf19123",
+    "11365": "ca2c7f7ee632929432fc92c6363f987181e2311942ecfd7034d05d2c716f89fb"
+  },
+  "packageJson": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"6.0.3\",\n    \"vize\": \"0.638.0\",\n    \"vue\": \"3.5.44\",\n    \"vue-tsc\": \"3.3.11\"\n  }\n}\n",
+  "config": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.vue\"]\n}\n",
+  "noUnusedConfig": "{\n  \"compilerOptions\": {\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"noEmit\": true,\n    \"noUnusedLocals\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"target\": \"ESNext\"\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+  "child": "<script setup lang=\"ts\">\ndefineProps<{ bar: number }>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+  "fallthroughConsumer": "<script setup lang=\"ts\">\nimport Foo from \"./vendor/Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" disabled />\n</template>\n",
+  "repeatedChild": "<script setup lang=\"ts\">\ndefineProps<{ bar: number }>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+  "repeatedConsumer": "<script setup lang=\"ts\">\nimport Foo from \"./Foo.vue\";\n</script>\n\n<template>\n  <Foo :bar=\"1\" />\n  <Foo :bar=\"2\" />\n</template>\n",
+  "noUnusedPackageJson": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": { \"tsrs\": \"0.20.1-ts7.1.0-beta\", \"typescript\": \"6.0.3\", \"vize\": \"0.638.0\", \"vue\": \"3.5.44\" }\n}\n",
+  "originalCommand11365": "npm i && npx vize check --declaration --declaration-dir out src/Foo.vue src/Probe.vue\n",
+  "originalCommand11364": "cd producer && npx vize check --declaration --declaration-dir ../out src/Foo.vue\ncp ../out/Foo.vue.d.ts ../out/__vize_helpers.d.ts ../consumer/src/vendor/\ncd ../consumer && npx vue-tsc --noEmit -p tsconfig.json\n"
+}
