@@ -26,7 +26,7 @@ const mock: RegressionProfile = {
   run: "123",
   capsule: "4".repeat(40),
 };
-test("historical commented condition profile binds the genuine647 containing release and fetched capsule", () => {
+test("historical commented condition profile validates retained release fields", () => {
   assert.deepEqual(
     requireProfile({
       ...mock,

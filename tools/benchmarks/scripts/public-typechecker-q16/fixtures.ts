@@ -2,6 +2,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { asArray, asRecord, asString } from "../../../support/json-value.ts";
 import type { SuppliedSubset, Subset } from "./contract.ts";
+export function requirePairedPrinterFields(expected: object) {
+  assert.equal(
+    Object.hasOwn(expected, "sourceInputSha256"),
+    Object.hasOwn(expected, "stdoutKind"),
+    "sourceInputSha256 and stdoutKind must appear together",
+  );
+}
 export const fixtureNames = [
   "fixtures-d61-issue-11361.json",
   "fixtures-b60-68-issue-11360.json",
@@ -35,6 +42,7 @@ const parts: SuppliedSubset[] = asArray(raw).map((value) => {
           const state = asRecord(value),
             expected = asRecord(state.expectedTsrs);
           assert(Number.isSafeInteger(expected.status));
+          requirePairedPrinterFields(expected);
           const opaque = Object.hasOwn(expected, "stdoutKind");
           if (opaque) {
             assert.equal(id, "E90-91");
