@@ -9,44 +9,23 @@ import {
   coAuthorCredits,
   generateReleaseNotes,
   previousPublishedTag,
-  type PublishedRelease,
 } from "../../../tools/support/release/github_release_notes.ts";
+import {
+  coAuthorFixtures,
+  incompleteMetadataResponses,
+  integrationLineEndingCases,
+  metadataPage,
+  unrecognisedIntegrationBodies,
+  release,
+  publishedIntegrationIdentity,
+  publishedIntegrationFixture,
+  unprovedIntegrationMutations,
+} from "./release-notes-fixtures.ts";
 
 type Job = {
   env?: Record<string, string>;
   steps?: Array<{ name?: string; uses?: string; run?: string; with?: Record<string, unknown> }>;
 };
-
-const release = (
-  tag_name: string,
-  overrides: Partial<PublishedRelease> = {},
-): PublishedRelease => ({
-  tag_name,
-  draft: false,
-  prerelease: tag_name.includes("-"),
-  published_at: "2026-10-17T00:00:00Z",
-  ...overrides,
-});
-
-const metadataPage = (
-  releases: PublishedRelease[],
-  hasNextPage = false,
-  endCursor: string | null = null,
-) => ({
-  data: {
-    repository: {
-      releases: {
-        nodes: releases.map((item) => ({
-          tagName: item.tag_name,
-          isDraft: item.draft,
-          isPrerelease: item.prerelease,
-          publishedAt: item.published_at,
-        })),
-        pageInfo: { hasNextPage, endCursor },
-      },
-    },
-  },
-});
 
 // Real pinned topology: release metadata commits are siblings of main's later
 // integration, not ancestors of the following release's immutable source cut.
@@ -252,28 +231,7 @@ test("release pagination follows pageInfo even for short intermediate and full f
 });
 
 test("incomplete GraphQL data and repeated cursors fail before release-note generation", () => {
-  const valid = metadataPage([release("v0.457.0")]);
-  const page = valid.data.repository.releases;
-  for (const response of [
-    null,
-    { ...valid, errors: [{ message: "partial response" }] },
-    { data: { repository: null } },
-    { data: { repository: { releases: { ...page, nodes: null } } } },
-    { data: { repository: { releases: { ...page, nodes: [null] } } } },
-    {
-      data: {
-        repository: { releases: { ...page, nodes: [{ ...page.nodes[0], isPrerelease: "false" }] } },
-      },
-    },
-    {
-      data: {
-        repository: {
-          releases: { ...page, nodes: [{ ...page.nodes[0], publishedAt: undefined }] },
-        },
-      },
-    },
-    metadataPage([release("v0.457.0")], true, null),
-  ]) {
+  for (const response of incompleteMetadataResponses()) {
     const paths: string[] = [];
     assert.throws(
       () =>
@@ -471,40 +429,12 @@ test("the real command preserves generated notes and evergreen scope and refuses
 });
 
 void test("only the authenticated already-published integration bullet is removed byte-for-byte", () => {
-  const repository = "owner/repo";
-  const tag = "v0.457.0";
-  const [object, head, cut, integrationHead, merge, tree, gate] = "abcdef0"
-    .split("")
-    .map((x) => x.repeat(40));
+  const { repository, tag, object, head, merge } = publishedIntegrationIdentity;
   const url = `https://github.com/${repository}/pull/73`;
   const row = `* Any title, not a classification by @reporter in ${url}`;
   const original = `## What's Changed\n* Real fix by @user in https://github.com/${repository}/pull/74\n${row}\n\n**Full Changelog**: https://github.com/${repository}/compare/${tag}...v0.458.0\n`;
   const expected = original.replace(`${row}\n`, "");
-  const make = () => ({
-    reference: { ref: `refs/tags/${tag}`, object: { type: "tag", sha: object } },
-    annotated: {
-      sha: object,
-      tag,
-      object: { type: "commit", sha: head },
-      message: `Release ${tag}\n\nRelease-Mode: pinned\nRelease-PR: #72\nValidated-run: 19\nValidated-head: ${head}\nValidated-base: ${cut}\nIntegration-PR: #73\nIntegration-head: ${integrationHead}\nIntegration-merge: ${merge}\nIntegration-parent: ${cut}\nProtected-candidate: ${gate}\n`,
-    },
-    pr: {
-      number: 73,
-      merged: true,
-      state: "closed",
-      merged_at: "2026-10-17T00:00:00Z",
-      merge_commit_sha: merge,
-      base: { ref: "main", repo: { full_name: repository } },
-      head: { sha: integrationHead, repo: { full_name: repository } },
-      body: `<!-- vize-release-pin-source: 72 -->\n<!-- vize-release-pin-cut: ${cut} -->\n<!-- vize-release-pin-head: ${head} -->\n<!-- vize-release-pin-tag: ${tag} -->`,
-    },
-    h: { sha: head, parents: [{ sha: cut }], commit: { tree: { sha: tree } } },
-    m: {
-      sha: merge,
-      parents: [{ sha: cut }],
-      commit: { tree: { sha: tree }, verification: { verified: true, reason: "valid" } },
-    },
-  });
+  const make = publishedIntegrationFixture;
   const run = (fixture = make(), body = original) => {
     const calls: string[] = [];
     const objects: Record<string, unknown> = {
@@ -542,101 +472,14 @@ void test("only the authenticated already-published integration bullet is remove
       `commits/${merge}`,
     ].map((path) => `repos/${repository}/${path}`),
   ]);
-  for (const mutate of [
-    (f: ReturnType<typeof make>) => {
-      f.reference.object.type = "commit";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.reference.ref += "-other";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.annotated.sha = gate;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.annotated.object.sha = gate;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.annotated.tag = "v0.456.0";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.annotated.message += "Release-PR: #72\n";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.annotated.message = f.annotated.message.replace("Validated-run: 19", "Validated-run: 0");
-    },
-    (f: ReturnType<typeof make>) => {
-      f.annotated.message = f.annotated.message.replace(
-        `Integration-parent: ${cut}`,
-        `Integration-parent: ${gate}`,
-      );
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.number = 74;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.merged = false;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.state = "open";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.merge_commit_sha = gate;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.head.sha = gate;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.base.ref = "other";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.base.repo.full_name = "foreign/repo";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.head.repo.full_name = "foreign/repo";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.body = f.pr.body.replace(head, gate);
-    },
-    (f: ReturnType<typeof make>) => {
-      f.pr.body += "\n<!-- vize-release-pin-source: 99 -->";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.h.parents[0].sha = gate;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.m.parents.push({ sha: gate });
-    },
-    (f: ReturnType<typeof make>) => {
-      f.m.parents[0].sha = gate;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.m.commit.verification.verified = false;
-    },
-    (f: ReturnType<typeof make>) => {
-      f.m.commit.verification.reason = "unsigned";
-    },
-    (f: ReturnType<typeof make>) => {
-      f.m.commit.tree.sha = gate;
-    },
-  ]) {
+  for (const mutate of unprovedIntegrationMutations) {
     const fixture = make();
     mutate(fixture);
     assert.equal(run(fixture).notes.body, original, `unproved identity: ${String(mutate)}`);
   }
-  for (const body of [
-    original.replace(url, `${url}0`),
-    original.replace(url, `${url}?other`),
-    original.replace(row, `- ${row.slice(2)}`),
-    original.replace(row, `${row}\n${row}`),
-    original.replace(row, `${row}\nExtra mention: ${url}`),
-    original.replace(url, url.replace(repository, "foreign/repo")),
-  ])
+  for (const body of unrecognisedIntegrationBodies(original, row, url))
     assert.equal(run(make(), body).notes.body, body, "unrecognized/ambiguous rows stay whole");
-  for (const [body, removed] of [
-    [original.replaceAll("\n", "\r\n"), `${row}\r\n`],
-    [original.trimEnd(), `${row}\n`],
-    [original.replace(row, `${row} with unexpected suffix`), ""],
-  ]) {
+  for (const [body, removed] of integrationLineEndingCases(original, row)) {
     assert.equal(run(make(), body).notes.body, removed ? body.replace(removed, "") : body);
   }
   const titledRow = row.replace(
@@ -648,36 +491,10 @@ void test("only the authenticated already-published integration bullet is remove
 });
 
 test("release notes credit third-party co-authors with their PRs", () => {
-  const fix = (subject: string, ...trailers: string[]) => ({
-    message: `${subject}\n\nCloses #1\n\n${trailers.join("\n")}`,
-    author: "maintainer",
-  });
-  const claude = "Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>";
-  const credits = coAuthorCredits([
-    fix(
-      "fix(canon): a (#9768)",
-      "Co-authored-by: escaton <123+escaton@users.noreply.github.com>",
-      claude,
-    ),
-    fix(
-      "fix(patina): b (#9759)",
-      "Co-authored-by: naitokosuke <9+naitokosuke@users.noreply.github.com>",
-    ),
-    fix(
-      "fix(patina): c (#9770)",
-      "co-authored-by: naitokosuke <naitokosuke@users.noreply.github.com>",
-    ),
-    fix("fix: self (#1)", "Co-authored-by: Maintainer <1+maintainer@users.noreply.github.com>"),
-    fix(
-      "chore: bot (#2)",
-      "Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
-    ),
-    fix("fix: mail (#3)", "Co-authored-by: Jane Doe <jane@example.com>"),
-    { message: "Release v0.486.0", author: null },
-  ]);
+  const fixtures = coAuthorFixtures();
   assert.equal(
-    credits,
+    coAuthorCredits(fixtures.commits),
     "## Thanks\n\nReported and co-authored by @escaton (#9768), @naitokosuke (#9759, #9770), Jane Doe (#3).\n",
   );
-  assert.equal(coAuthorCredits([fix("fix: x (#4)", claude)]), "");
+  assert.equal(coAuthorCredits(fixtures.botOnly), "");
 });
