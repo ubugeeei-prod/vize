@@ -12,9 +12,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import {
-  afterProfile,
   commandsFor,
-  profileFor,
   filesFor,
   requireProfile,
   sha256,
@@ -34,6 +32,15 @@ import {
   writeEmitsInputs,
 } from "../../tools/benchmarks/scripts/public-typechecker-q16/run.ts";
 import { requirePairedPrinterFields } from "../../tools/benchmarks/scripts/public-typechecker-q16/fixtures.ts";
+const historicalE649 = requireProfile({
+  subset: "E90-91",
+  fix: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
+  source: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
+  candidate: "e2717b6a324d4e5244ca9556a5d2a7107f6d03dd",
+  version: "0.649.0",
+  run: "41495567070",
+  capsule: "e6f19da9028d1102f15292a5cf6318dba9a53163",
+});
 const mock: RegressionProfile = {
   subset: "E90-91",
   fix: "1".repeat(40),
@@ -64,7 +71,7 @@ const output = (status: number, stdout: string, stderr = ""): ProcessOutput => (
 });
 const opaque = (state: State) => state.expectedTsrs.stdoutKind === "OWNED_HEADER_OPAQUE_PRINTER";
 test("genuine 649 profile binds only the fixed E reports", () => {
-  assert.deepEqual(afterProfile, {
+  assert.deepEqual(historicalE649, {
     subset: "E90-91",
     fix: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
     source: "036feb01098b9d3a1803a26b0e0560a81f374ecb",
@@ -73,7 +80,7 @@ test("genuine 649 profile binds only the fixed E reports", () => {
     run: "41495567070",
     capsule: "e6f19da9028d1102f15292a5cf6318dba9a53163",
   });
-  assert.equal(profileFor(), afterProfile);
+  assert.equal(requireProfile(historicalE649), historicalE649);
   assert.throws(() => requireProfile(null), assert.AssertionError);
 });
 test("opaque fixture metadata is paired at the actual loader seam", () => {

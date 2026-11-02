@@ -143,7 +143,7 @@ pub(super) fn assert_native(calls: &Value, geometry: &Value, kind: &str) {
             .count(),
         1
     );
-    assert!(!generated.contains("'./Formatter.vue.ts'"));
+    assert_eq!(generated.matches("'./Formatter.vue.ts'").count(), 0);
     assert_eq!(
         geometry["imports"],
         json!([{"line":11,"column":23,"text":"./Formatter.vue.js"}])

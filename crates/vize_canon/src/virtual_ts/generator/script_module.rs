@@ -3,6 +3,7 @@
 mod namespace_hoist;
 mod navigation;
 mod plain_exports;
+pub(super) mod tsx_arrows;
 
 use super::imports::{IdentifierUsage, collect_identifier_usage};
 use oxc_allocator::Allocator;
@@ -24,6 +25,7 @@ pub(super) struct ScriptModulePlan {
     pub(super) exported_types: FxHashSet<CompactString>,
     pub(super) bound_types: FxHashSet<CompactString>,
     pub(super) identifier_usage: IdentifierUsage,
+    pub(super) tsx_arrows: Vec<tsx_arrows::ArrowComma>,
 }
 
 impl ScriptModulePlan {
@@ -48,6 +50,19 @@ impl ScriptModulePlan {
     }
 }
 
+/// Descriptor-owned syntax boundaries keep invalid TSX source diagnostic-only.
+pub(super) fn collect(
+    script: &str,
+    recover_lone_setup: bool,
+    generation_options: crate::virtual_ts::types::VirtualTsGenerationOptions<'_>,
+) -> ScriptModulePlan {
+    let mut plan = collect_script_module_plan(script, recover_lone_setup);
+    if !generation_options.script_syntax_boundaries.is_empty() {
+        plan.tsx_arrows.clear();
+    }
+    plan
+}
+
 pub(super) fn collect_script_module_plan(
     script: &str,
     recover_lone_setup: bool,
@@ -57,6 +72,11 @@ pub(super) fn collect_script_module_plan(
     let mut bound_types = FxHashSet::default();
     let allocator = Allocator::default();
     let parsed = parse_program_for_analysis(&allocator, script, SourceType::ts().with_module(true));
+    let tsx_arrows = if !parsed.panicked && parsed.diagnostics.is_empty() {
+        tsx_arrows::collect(&parsed.program, script)
+    } else {
+        Vec::new()
+    };
     let parsed = if parsed.panicked {
         let retry_source = recover_lone_setup
             .then(|| super::glued_import::terminated_lone_import_prefix(script))
@@ -156,6 +176,7 @@ pub(super) fn collect_script_module_plan(
         exported_types,
         bound_types,
         identifier_usage: collect_identifier_usage(&parsed.program),
+        tsx_arrows,
     }
 }
 

@@ -7,6 +7,7 @@
 
 use alloc::vec::Vec as StdVec;
 use vize_l0::id::NodeId;
+use vize_l0::side_table::SideTable;
 use vize_l0::{Span, String};
 
 /// One part of a merged run, owned (the fact crosses compile boundaries
@@ -29,6 +30,14 @@ pub struct TextPart {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TextParts {
     /// The parts, in document order.
+    pub parts: StdVec<TextPart>,
+}
+
+/// One compound op's consumed view: the merged run's parts, validated at
+/// the lowering/mutation sites before DOM realization compiles from it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TextFacts {
+    /// The parts, in document order ([`TextPart`]'s field docs).
     pub parts: StdVec<TextPart>,
 }
 
@@ -91,6 +100,7 @@ const _: () = {
     const fn assert_owned<T: 'static>() {}
     assert_owned::<TextPart>();
     assert_owned::<TextParts>();
+    assert_owned::<TextFacts>();
 };
 
 /// 64-bit footprints, guarded like every node-size assert (the wasm32
@@ -99,6 +109,7 @@ const _: () = {
 const _: () = {
     assert!(core::mem::size_of::<TextPart>() == 40);
     assert!(core::mem::size_of::<TextParts>() == 24);
+    assert!(core::mem::size_of::<TextFacts>() == 24);
 };
 
 /// The rebuild rule: the canonical template spelling of a merged run —
@@ -124,4 +135,23 @@ pub fn rebuild_source(parts: &[TextPart]) -> String {
         }
     }
     out
+}
+
+/// Publish already-validated compound text parts without walking an op tree.
+///
+/// This copies the consumed view beside the artifact, retaining every node id
+/// and owned part in the same order. Producer validation and dialect policy
+/// remain with the caller.
+#[must_use]
+pub fn publish_text_facts(texts: &SideTable<TextParts>) -> SideTable<TextFacts> {
+    let mut facts = SideTable::with_capacity(texts.len());
+    for (id, parts) in texts.iter() {
+        facts.insert(
+            id,
+            TextFacts {
+                parts: parts.parts.clone(),
+            },
+        );
+    }
+    facts
 }

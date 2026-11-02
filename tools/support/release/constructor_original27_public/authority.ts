@@ -7,7 +7,13 @@ import { Recorder, sha256 } from "../../config/windows_consumer/common.ts";
 import { githubSnapshot } from "../release/quota/http.ts";
 import { readReleaseOwnership } from "../release/quota_ownership.ts";
 
-export const requiredMerge = "ccd079c6dfb5c4ff50feddb23a6777154f33fab1";
+export const requiredMerge = "1d1bb26a7f7dcbcb9adf75075bd7ad301c0bb957";
+export const afterRelease = {
+  version: "0.650.0",
+  run: "41507479394",
+  source: "85ab7600097035afa060ca03f8a77108cdc5e337",
+  candidate: "3ec8f999df04a50b37aea7f12a5fa85161d43d8d",
+} as const;
 export const sdkFiles = [
   "virtual-ts.d.ts",
   "virtual-ts.d.mts",
@@ -19,6 +25,7 @@ export const sdkFiles = [
   "virtual-ts-globals.d.ts",
   "virtual-ts-patterns.d.ts",
 ] as const;
+export const afterSdkFiles = [...sdkFiles, "virtual-ts-slots.d.ts"] as const;
 export const gitBlob = (raw: Buffer) =>
   createHash("sha1")
     .update("blob " + raw.length + "\0")
@@ -43,9 +50,9 @@ export function validateNativeReceipt(
   candidate: string,
   run: string,
 ) {
-  // The manual release owner pins a reviewed capsule after authenticating whole
-  // producer ZIPs. This role binds those retained receipt bytes to the installed
-  // image; it does not independently download the platform archives again.
+  // The release owner pins selected producer receipt/source members under
+  // retained archive-digest custody. This role binds those receipt bytes to the
+  // installed image without independently rereading native archive bodies.
   let matched = 0;
   for (const value of asArray(capsule.receipts)) {
     const item = asRecord(value),
@@ -91,6 +98,8 @@ export function assertLockedPackage(
   assert.equal(new URL(asString(row.resolved)).origin, "https://registry.npmjs.org");
 }
 export async function authenticate(version: string, run: string, blob: string, record: Recorder) {
+  assert.equal(version, afterRelease.version);
+  assert.equal(run, afterRelease.run);
   assert.match(version, /^\d+\.\d+\.\d+$/u);
   assert.match(run, /^[1-9]\d*$/u);
   assert.match(blob, /^[a-f0-9]{40}$/u);
@@ -115,6 +124,7 @@ export async function authenticate(version: string, run: string, blob: string, r
   assert.equal(tag.ref, "refs/tags/v" + version);
   assert.equal(target.type, "commit");
   const candidate = asString(target.sha);
+  assert.equal(candidate, afterRelease.candidate);
   const publication = asRecord(await read("releases/tags/v" + version));
   assert.equal(publication.tag_name, "v" + version);
   assert.equal(publication.draft, false);
@@ -128,6 +138,7 @@ export async function authenticate(version: string, run: string, blob: string, r
   );
   const ownership = await readReleaseOwnership(version, candidate, run, read);
   record.json("producer-ownership.json", ownership);
+  assert.equal(ownership.producerSource, afterRelease.source);
   validateCapsule(capsule, version, candidate, ownership.producerSource);
   const ancestry = asRecord(
     await read("compare/" + requiredMerge + "..." + ownership.producerSource),
@@ -138,7 +149,7 @@ export async function authenticate(version: string, run: string, blob: string, r
   assert.ok(["ahead", "identical"].includes(asString(ancestry.status)));
   const sdk = [];
   let packageManifest: JsonRecord | undefined;
-  for (const name of ["package.json", ...sdkFiles]) {
+  for (const name of ["package.json", ...afterSdkFiles]) {
     const file = asRecord(await read("contents/npm/cli/" + name + "?ref=" + candidate));
     assert.equal(file.type, "file");
     assert.equal(file.path, "npm/cli/" + name);

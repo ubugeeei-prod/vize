@@ -3,10 +3,17 @@ use serde_json::{Value, json};
 use std::{fs, process::Command};
 
 const FIELD_BODY: &str = include_str!(
-    "../../../tests/_fixtures/differential/linter/slot-typeof-presence-10822/FieldBody.vue.txt"
+    "../../../tests/_fixtures/differential/linter/slot-conditional-arms-10822/FieldBody.vue.txt"
 );
 const CASES: &str = include_str!(
     "../../../tests/_fixtures/differential/linter/slot-typeof-presence-10822/cases.json"
+);
+
+const CONDITIONAL_CASES: &str = include_str!(
+    "../../../tests/_fixtures/differential/linter/slot-conditional-arms-10822/cases.json"
+);
+const CONDITIONAL_SUCCESSORS: &str = include_str!(
+    "../../../tests/_fixtures/differential/linter/slot-conditional-arms-10822/semantic-successors.json"
 );
 
 #[test]
@@ -21,10 +28,37 @@ fn original_and_boundaries_keep_complete_cli_json() {
     )
     .unwrap();
     let corpus: Value = serde_json::from_str(CASES).unwrap();
+    let successor: Value = serde_json::from_str(CONDITIONAL_SUCCESSORS).unwrap();
+    assert_eq!(
+        successor["schema"],
+        "vize.slot-conditional-arm-semantic-successors.v1"
+    );
+    assert_eq!(
+        successor["feature"],
+        "immediate-authenticated-conditional-arms-v1"
+    );
+    let original = &successor["originalCli"];
+    assert_eq!(original["id"], "original-field-body");
+    assert_eq!(
+        original["inputSha256"],
+        "549dd10935821983608154160721b6a600b8e4f74b74a60902872df81e934598"
+    );
+    let before: Value = serde_json::from_str(
+        original["beforeProducerLine"]
+            .as_str()
+            .unwrap()
+            .strip_prefix("vize-slot-typeof-cli ")
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(before["source"], FIELD_BODY);
+    assert_eq!(before["status"], 1);
+    assert_eq!(original["currentNativeSpans"], json!([]));
+    println!("vize-slot-conditional-original-successor complete={original}");
     let mut rows = vec![(
         "original-field-body",
         FIELD_BODY.to_owned(),
-        vec![json!({"needle":": this.$slots.default","shift":2,"length":19})],
+        original["currentNativeSpans"].as_array().unwrap().clone(),
     )];
     for id in [
         "direct-typeof",
@@ -32,6 +66,25 @@ fn original_and_boundaries_keep_complete_cli_json() {
         "nested-member-unicode",
     ] {
         let row = corpus["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|row| row["id"] == id)
+            .unwrap();
+        rows.push((
+            id,
+            format!("<script>\n{}\n</script>\n", row["script"].as_str().unwrap()),
+            row["nativeSpans"].as_array().unwrap().clone(),
+        ));
+    }
+    let arms: Value = serde_json::from_str(CONDITIONAL_CASES).unwrap();
+    for id in [
+        "conditional-arm-consequent",
+        "conditional-arm-parenthesized-both",
+        "conditional-arm-nested-array",
+        "conditional-arm-report-order",
+    ] {
+        let row = arms["cases"]
             .as_array()
             .unwrap()
             .iter()

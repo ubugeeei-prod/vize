@@ -198,7 +198,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         ts.push_str(legacy_vue2::define_component_helper(legacy_vue2, dialect));
     }
     let module_plan = script_content
-        .map(|script| script_module::collect_script_module_plan(script, recover_lone_setup))
+        .map(|script| script_module::collect(script, recover_lone_setup, generation_options))
         .unwrap_or_default();
     let imports = ImportNames::collect(summary, script_content, &module_plan.identifier_usage);
     let mut module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
@@ -411,7 +411,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             let named_value_export_starts =
                 self::script_module::collect_named_value_export_starts(script);
             let mut props_const_assertions = PropsConstAssertions::new(script, options_api);
-            let mut ref_keys = setup_helpers.template_refs.key_checks(has_ref_registry);
+            let mut ref_keys = module_plan.key_checks(&setup_helpers, has_ref_registry);
             let mut pending_wrap_close: Option<usize> = None;
             // Deferred class-component alias: `(class_end, name)`.
             let mut pending_class_alias: Option<(usize, &str)> = None;

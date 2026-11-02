@@ -32,9 +32,10 @@ mod vnode_props;
 
 use vize_l0::side_table::SideTable;
 use vize_l0::{FxHashSet, String};
-use vize_l1_to_l2::lower::{ForWrapper, TextParts, WrapperKeys};
+use vize_l1_to_l2::lower::{ForWrapper, WrapperKeys};
 use vize_l1_to_l2::{TransformContent, TransformExpressions};
 use vize_l2::analysis::if_facts::IfFacts;
+use vize_l2::analysis::text_facts::TextParts;
 use vize_l2::expr::ExprRef;
 use vize_l2_to_l3::PartitionKind;
 

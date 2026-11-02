@@ -4,6 +4,18 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { Recorder, sha256 } from "../../config/windows_consumer/common.ts";
 
+/** The controller credential stays in the controller, including custom journal environments. */
+export function childEnvironment(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  return Object.fromEntries(
+    Object.entries(env).filter(
+      ([name]) =>
+        !/(?:TOKEN|SECRET|PASSWORD|CREDENTIAL|(?:^|_)AUTH(?:_|$)|(?:^|_)PRIVATE_KEY(?:_|$))/iu.test(
+          name,
+        ),
+    ),
+  );
+}
+
 /** Raw buffers and complete process outcome are durable before any semantic assertions. */
 export function capture(
   record: Recorder,
@@ -15,7 +27,7 @@ export function capture(
 ) {
   const result = spawnSync(argv[0], argv.slice(1), {
     cwd,
-    env,
+    env: childEnvironment(env),
     input,
     encoding: "buffer",
     timeout: 600_000,

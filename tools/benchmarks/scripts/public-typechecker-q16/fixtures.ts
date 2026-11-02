@@ -21,6 +21,7 @@ export const fixtureNames = [
   "fixtures-f78-issue-11378.json",
   "fixtures-e90-91-issue-11390.json",
   "fixtures-e90-91-issue-11391.json",
+  "fixtures-r77-issue-11377.json",
 ] as const;
 const raw: unknown[] = fixtureNames.map((name) =>
   JSON.parse(readFileSync(new URL(name, import.meta.url), "utf8")),
@@ -28,7 +29,7 @@ const raw: unknown[] = fixtureNames.map((name) =>
 const parts: SuppliedSubset[] = asArray(raw).map((value) => {
   const row = asRecord(value),
     id = asString(row.id);
-  assert(["D61", "B60-68", "A59", "C62", "C4", "E90-91", "F78"].includes(id));
+  assert(["D61", "B60-68", "A59", "C62", "C4", "E90-91", "F78", "R77"].includes(id));
   return {
     id: id as Subset,
     sourceAuthority: row.sourceAuthority,
