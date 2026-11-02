@@ -56,6 +56,13 @@ runs:
       env:
         VIZE_DAVINCI_DIFFERENTIAL_CORPUS: ${{ github.workspace }}
       run: cargo test --locked --profile ci -p vize_canon --features legacy-differential --test davinci_projection_differential -- --nocapture
+    - name: Test complete model event overload contracts with the native checker
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+      run: |
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::generic_component_listener_payload::overload_depth::emit_overload_tail_accumulator_preserves_shapes_and_all_events -- --exact --nocapture
     - name: Test declared public-instance member types with the native checker
       shell: bash
       env:
@@ -227,6 +234,14 @@ runs:
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize --test integration -- check_package_import_redirects_cli:: --nocapture
+    - name: Test original static template refs and authored unused bindings with the actual CLI
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::dynamic_template_refs::native_cli_static_template_refs_keep_unused_and_shadow_diagnostics --exact --nocapture
     - name: Test complete native diagnostic profiling and source repair
       shell: bash
       env:

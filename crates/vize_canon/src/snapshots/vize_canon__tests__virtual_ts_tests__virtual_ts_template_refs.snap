@@ -137,6 +137,9 @@ void (null! as $TemplateRefs["btn"]);   const buttonEl = __vizeInferRef('btn')
   
   // @vize-map: 15488:15630 -> 0:135
 
+  // Runtime reads for static template refs
+  void (() => inputRef);
+
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)

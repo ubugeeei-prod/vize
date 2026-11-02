@@ -26,6 +26,7 @@ import {
 import { install } from "./install.ts";
 import { sourceCustody } from "./source.ts";
 import { runDeclaration } from "./declaration.ts";
+import { runA } from "./a-capture.ts";
 
 export function argumentsFor(argv: string[]) {
   assert.equal(argv.length, 6);
@@ -57,6 +58,7 @@ export async function main(argv: string[]) {
   // UNKNOWN release/fix/subset authority refuses before output allocation, network or install.
   requireOwnedDispatch(process.env);
   if (profile.subset === "A64") return runDeclaration(options, profile);
+  if (profile.subset === "A59-65") return runA(options, profile);
   const selected = subsetFor(profile.subset);
   assert.equal(realpathSync(dirname(options.out)), dirname(options.out));
   mkdirSync(options.out);

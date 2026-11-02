@@ -23,10 +23,31 @@ export function slotCliPacket(
   const text = helper.afterWholeUtf8 as string;
   assert.equal(Buffer.byteLength(text), helper.afterBytes);
   assert.equal(hash(text), helper.afterSha256);
+  // Preserve the historical slot evidence. Only the source-owned overload
+  // declaration changed; every other byte of its complete preamble stays fixed.
+  const prefix = "type $OverloadUnionRecursive<";
+  const historical = text.split("\n").filter((line) => line.startsWith(prefix));
+  const declarations = fs
+    .readFileSync(
+      "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
+      "utf8",
+    )
+    .split("\n")
+    .filter(Boolean);
+  const current = declarations.filter((line) => line.startsWith(prefix));
+  assert.equal(historical.length, 1);
+  assert.equal(current.length, 1);
+  const previous = historical[0],
+    replacement = current[0];
+  assert.ok(previous !== undefined && replacement !== undefined);
+  assert.equal(text.split(previous).length, 2);
+  for (const declaration of declarations)
+    if (declaration !== replacement) assert.equal(text.split(declaration).length, 2);
+  const currentPreamble = text.replace(previous, replacement);
   const files = observed.result.files.filter((file) => typeof file.virtualTs === "string");
   assert.ok(files.length > 0, "all actual virtual file bodies must remain in JSON");
   const expected =
-    `\n=== __vize_helpers.d.ts ===\n${text}\n` +
+    `\n=== __vize_helpers.d.ts ===\n${currentPreamble}\n` +
     files
       .map((file) => `\n=== ${path.resolve(project, file.file)} ===\n${file.virtualTs}\n`)
       .join("");
