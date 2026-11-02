@@ -21,6 +21,9 @@ use super::project::{
 };
 use super::{InitializeParams, Request, TransformParams, read_frame};
 
+mod wire;
+use wire::{encode_error, encode_result, encode_transform};
+
 // Actions measured both closure shapes at 4,094 levels in the optimized
 // ci-opt profile with 32 MiB and an independent 64 MiB output control.
 // Debug v-for replay at 2,048 levels also completed with 32/64 MiB. Keep the
@@ -421,47 +424,12 @@ fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io
         &job.settings.project_context,
         sources,
     ) {
-        Ok(result) => encode_result(&job.id, result),
+        Ok(result) => encode_transform(&job.id, &result),
         Err(error) => {
             let message = cstr!("Transform failed: {error}");
             encode_error(&job.id, -32603, &message)
         }
     }
-}
-
-fn encode_result(id: &Value, result: impl Serialize) -> io::Result<Vec<u8>> {
-    // The original server's json! envelope recursively ordered every object
-    // through Value. Preserve opaque nested fields as well as envelope keys.
-    // Consume the original packet so its large text/maps are dropped by
-    // to_value before the escaped wire buffer is allocated.
-    let result = serde_json::to_value(result).map_err(io::Error::other)?;
-    #[derive(Serialize)]
-    struct Envelope<'a> {
-        id: &'a Value,
-        jsonrpc: &'static str,
-        result: &'a Value,
-    }
-    encode_frame(&Envelope {
-        id,
-        jsonrpc: "2.0",
-        result: &result,
-    })
-}
-
-fn encode_error(id: &Value, code: i32, message: &str) -> io::Result<Vec<u8>> {
-    encode_frame(&json!({
-        "jsonrpc": "2.0",
-        "id": id,
-        "error": {"code": code, "message": message},
-    }))
-}
-
-fn encode_frame(value: &impl Serialize) -> io::Result<Vec<u8>> {
-    let body = serde_json::to_vec(value).map_err(io::Error::other)?;
-    let mut frame = Vec::with_capacity(body.len() + 32);
-    write!(&mut frame, "Content-Length: {}\r\n\r\n", body.len())?;
-    frame.extend_from_slice(&body);
-    Ok(frame)
 }
 
 #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
