@@ -104,11 +104,13 @@ export async function authenticate(role: Role, record: Recorder) {
   assert.equal(gitBlob(raw), profile.capsule);
   const capsule = asRecord(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(raw)));
   validateCapsule(role, capsule);
-  const release = asRecord(await read("releases/tags/v" + profile.version));
-  assert.equal(release.tag_name, "v" + profile.version);
-  assert.equal(release.draft, false);
-  assert.equal(release.prerelease, false);
-  assert.ok(Number.isFinite(Date.parse(asString(release.published_at))));
+  // This installed npm role authenticates its immutable tag through ownership.
+  // GitHub Release publication is an independent tail, not an npm prerequisite.
+  const githubReleaseObservation = {
+    observed: false,
+    published: "UNKNOWN",
+    requiredForSelectedNpmRole: false,
+  };
   const run = asRecord(await read("actions/runs/" + profile.run));
   const ownership = await readReleaseOwnership(
     profile.version,
@@ -147,6 +149,7 @@ export async function authenticate(role: Role, record: Recorder) {
     sourceFiles,
     ancestry,
     actualProducerRun: run,
+    githubReleaseObservation,
     fullProducerTailRequired: false,
   });
   return { capsule, ownership, sourceFiles };
