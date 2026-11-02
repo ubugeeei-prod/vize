@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use vize_carton::{String, cstr};
 
 #[test]
-fn inserted_comma_is_unmapped_and_all_authored_bytes_stay_exact() {
+fn inserted_comma_has_no_authored_subspan_and_original_bytes_stay_exact() {
     let source = "const 身分 = <名 /* , > */>(value: 名): 名 => value;";
     let plan = collect_script_module_plan(source, false);
     assert_eq!(plan.tsx_arrows.len(), 1);
