@@ -32,7 +32,8 @@ pub(super) fn owned_named_dynamic_component_ast<'a>(
     };
     let js = expression.js_ast?.as_expression()?;
     (js.raw == expression.content
-        && usage.name == expression.content.trim()
+        && (usage.name == expression.content.trim()
+            || usage.name == vize_croquis::drawer::dynamic_component_alias(usage.start))
         && matches!(
             js.ast,
             oxc_ast::ast::Expression::Identifier(_)
@@ -49,7 +50,16 @@ pub(crate) fn is_owned_dynamic_component_alias(
 ) -> bool {
     is_dynamic_component_alias(usage.name.as_str())
         && usage.name == vize_croquis::drawer::dynamic_component_alias(usage.start)
-        && template_ast.is_some_and(|root| is_expression(root, usage.start).is_some())
+        && template_ast.is_some_and(|root| {
+            let Some(ExpressionNode::Simple(expression)) = is_expression_node(root, usage.start)
+            else {
+                return false;
+            };
+            expression
+                .js_ast
+                .and_then(|js| js.as_expression())
+                .is_some_and(|js| js.raw == expression.content)
+        })
 }
 
 pub(super) fn emit_dynamic_component_aliases(

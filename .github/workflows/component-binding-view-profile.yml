@@ -6,6 +6,8 @@ on:
       - crates/vize_canon/src/virtual_ts/generator/unresolved_components.rs
       - tools/benchmarks/crates/vize/tests/component_binding_profile.rs
       - tools/benchmarks/scripts/component-binding-view-evidence.ts
+      - tools/benchmarks/scripts/component-binding-view-eligibility.ts
+      - tests/tooling/component-binding-view-eligibility.test.ts
       - .github/workflows/component-binding-view-profile.yml
 permissions: { contents: read }
 concurrency:
@@ -45,6 +47,7 @@ jobs:
           import json, os, pathlib, subprocess
           root=pathlib.Path(os.environ['EVIDENCE'])
           receipt={'eventBase':os.environ['EVENT_BASE_SHA'],'pullRequestHead':os.environ['PR_HEAD_SHA'],'productBase':os.environ['PRODUCT_BASE_SHA'],'productHead':os.environ['PRODUCT_HEAD_SHA'],'driver':os.environ['PRODUCT_HEAD_SHA'],'actualParents':subprocess.check_output(['git','show','-s','--format=%P','HEAD'],text=True).split(),'normalSource':'unmodified committed products; separate targets from all profiling overlays'}
+          receipt['observerPurpose']='correctness'; receipt['eventName']=os.environ['GITHUB_EVENT_NAME']
           assert receipt['actualParents']==[receipt['productBase'],receipt['pullRequestHead']]
           (root/'provenance.json').write_text(json.dumps(receipt,indent=2)+'\n')
           PY
@@ -135,7 +138,7 @@ jobs:
               done
             done
           done
-          taskset -c "$affinity" node tools/benchmarks/scripts/component-binding-view-evidence.ts "$evidence"
+          taskset -c "$affinity" node tools/benchmarks/scripts/component-binding-view-evidence.ts "$evidence" --correctness
       - name: Require immutable complete constructor packets
         run: |
           set -euo pipefail

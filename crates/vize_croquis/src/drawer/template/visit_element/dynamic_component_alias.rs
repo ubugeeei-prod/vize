@@ -64,6 +64,10 @@ impl Drawer {
         };
         self.croquis.bindings.is_script_setup
             && self.croquis.bindings.contains(root)
+            // Props can use a distinct generated local (for example `_as`).
+            // Keep their existing named-reference resolver rather than copying
+            // an authored spelling into this new inference-only capture.
+            && !self.croquis.bindings.is_prop(root)
             && self.croquis.scopes.lookup(root).is_none_or(|(scope, _)| {
                 matches!(
                     scope.kind,
