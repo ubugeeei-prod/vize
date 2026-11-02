@@ -9,7 +9,7 @@ fn authored_condition_owns_diagnostics_and_inference_guards_are_unmapped() {
     let source = r#"<script setup lang="ts">
 const value = { kind: 'x' as 'x' | 'y' }
 </script>
-<template><div v-if="value.kind === 'x'">{{ value.kind }}</div></template>
+<template><div v-if="value.kind === 'x'" @click="() => value.kind">{{ value.kind }}</div></template>
 "#;
     std::fs::write(&source_path, source).unwrap();
 
@@ -22,7 +22,10 @@ const value = { kind: 'x' as 'x' | 'y' }
         .match_indices(guard)
         .map(|(offset, _)| offset)
         .collect();
-    assert!(virtual_offsets.len() > 1, "inference must repeat the guard");
+    assert!(
+        virtual_offsets.len() > 1,
+        "the callback guard must repeat the condition"
+    );
     assert!(
         virtual_offsets.iter().all(|offset| *offset > source.len()),
         "the regression requires a generated offset past the source EOF"
