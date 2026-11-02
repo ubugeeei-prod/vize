@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { TextDecoder } from "node:util";
 import { scopeBindingCases } from "./component-scope-binding-cases.ts";
+import { auditScopeCompatibility } from "./component-scope-binding-compatibility.ts";
 type ObjectValue = Record<string, unknown>;
 function isRecord(value: unknown): value is ObjectValue {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -107,6 +108,28 @@ export function main(args: string[]): void {
     const binary = record(binaries[role]);
     assert.equal(sha(fs.readFileSync(string(binary.file))), binary.sha256);
     assert.equal(binary.fresh, false);
+  }
+  const incomparable = auditScopeCompatibility(root, provenance);
+  if (incomparable) {
+    save(path.join(root, "comparison.json"), {
+      schema: "vize.component-scope-binding-comparison.v1",
+      status: "INCOMPARABLE",
+      qualification: false,
+      reason: "Authenticated dead-alias output transition; no performance comparison",
+      provenance,
+      binaries,
+      ...incomparable,
+      scope: {
+        packets:
+          "All96 full profile packet pairs retained,12 intended differences and84 equal; no normalization",
+        normal: "Not executed: whole output parity is absent",
+        allocation:
+          "Raw profiling observations retained; no performance/nonregression qualification",
+        correctness:
+          "Independent correctness and LSP suites remain required; no pass credit from this refusal",
+      },
+    });
+    return;
   }
   const profiles: ObjectValue[] = [];
   for (const { shape, count, scriptBindings } of scopeBindingCases) {
@@ -316,6 +339,7 @@ export function main(args: string[]): void {
   save(path.join(root, "comparison.json"), {
     schema: "vize.component-scope-binding-comparison.v1",
     status: "pass",
+    qualification: true,
     provenance,
     binaries,
     profiles,

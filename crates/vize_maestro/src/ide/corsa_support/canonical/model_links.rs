@@ -260,14 +260,30 @@ mod tests {
 
     #[test]
     fn model_prop_locations_follow_the_distinct_native_update_identity() {
-        for (name, quote) in ["x", "title", "valueId", "saveItem"]
-            .into_iter()
-            .flat_map(|name| ['\'', '"'].map(|quote| (name, quote)))
-        {
+        let fixture: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../../../tests/_fixtures/differential/lsp/reported-model-binding-rename-11383/input.json"
+        ))
+        .unwrap();
+        assert_eq!(fixture["schema"], 1);
+        assert_eq!(
+            fixture["id"],
+            "lsp/regression/reported-model-binding-rename-11383"
+        );
+        assert_eq!(
+            fixture["names"],
+            serde_json::json!(["x", "title", "valueId", "saveItem"])
+        );
+        assert_eq!(fixture["quotes"], serde_json::json!(["'", "\""]));
+        let names = fixture["names"].as_array().unwrap();
+        let quotes = fixture["quotes"].as_array().unwrap();
+        let source_template = fixture["sourceTemplate"].as_str().unwrap();
+        for (name, quote) in names.iter().flat_map(|name| {
+            quotes
+                .iter()
+                .map(move |quote| (name.as_str().unwrap(), quote.as_str().unwrap()))
+        }) {
             let literal = vize_l0::cstr!("{quote}{name}{quote}");
-            let source = vize_l0::cstr!(
-                "<script setup lang=\"ts\">\nexport interface Props {{ value?: string }}\ndefineProps<Props>();\nconst prefix = '🌸'; defineModel<string>({literal}, {{ default: \"\" }});\n</script>\n<template><span /></template>"
-            );
+            let source = source_template.replace("__VIZE_MODEL_LITERAL__", literal.as_str());
             let uri = Url::parse("file:///workspace/Child.vue").unwrap();
             let state = ServerState::new();
             let ctx = IdeContext::testing(&state, &uri, 0, source.as_str().to_owned());

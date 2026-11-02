@@ -281,7 +281,12 @@ fn art_component_source<'a>(summary: &'a Croquis, usage_name: &str) -> Option<&'
 }
 
 fn append_global_component_stub(ts: &mut String, component_ref: &str, keys: [&str; 3]) {
-    append!(*ts, "declare const {component_ref}: $GlobalComponent<");
+    // Keep the real callable signature last: template-ref inference reads its
+    // exposed members instead of the open fallback's unconstrained argument.
+    append!(
+        *ts,
+        "declare const {component_ref}: $GlobalComponentFallback & $GlobalComponent<"
+    );
     let mut previous = None;
     for key in keys {
         if previous == Some(key) {
@@ -293,7 +298,7 @@ fn append_global_component_stub(ts: &mut String, component_ref: &str, keys: [&st
         push_ts_string_literal(ts, key);
         previous = Some(key);
     }
-    ts.push_str("> & $GlobalComponentFallback;\n");
+    ts.push_str(">;\n");
 }
 
 #[cfg(test)]

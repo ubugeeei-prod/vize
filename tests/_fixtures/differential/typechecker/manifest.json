@@ -11891,6 +11891,64 @@
       }
     },
     {
+      "id": "typechecker/regression/generic-alias-slots-11360",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-alias-slots-11360/input.json",
+          "sha256": "b10da8edfe828ef9d762697af340a43942cb24b5fae8762a6feef1698bd5c9e3",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_generic_components::reported_generic_slots_and_global_refs_keep_authored_members; physically consumes exact reported input at 86468a73203849d9337b15df149269cb12c8d32b for #11360; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/generic-global-template-ref-11368",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-global-template-ref-11368/input.json",
+          "sha256": "efb1945bdefb1b44db55b9967ebdfb8c6d77a9800ad240eac14b8e25c82f9d7d",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_generic_components::reported_generic_slots_and_global_refs_keep_authored_members; physically consumes exact reported input at 86468a73203849d9337b15df149269cb12c8d32b for #11368; original and genuine wrong/repair controls. Input-only registration, no native diagnostic pack, captured qualification or original Windows/public environment claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/imported-mark-raw-callback",
       "state": "active",
       "targets": [
