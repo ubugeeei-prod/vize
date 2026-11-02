@@ -227,7 +227,8 @@ fn find_branch_condition_expr(
     end: usize,
     condition: &str,
 ) -> Option<usize> {
-    let trimmed_condition = condition.trim();
+    let condition = strip_js_comments(condition);
+    let trimmed_condition = condition.as_ref().trim();
     (start..end).find(|&idx| {
         exprs.get(idx).is_some_and(|expr| {
             expr.kind == TemplateExpressionKind::VIf
@@ -235,3 +236,6 @@ fn find_branch_condition_expr(
         })
     })
 }
+
+#[cfg(test)]
+mod tests;

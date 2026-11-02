@@ -12160,6 +12160,40 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-commented-vif-11378",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "commented-vif-11378/CommentInElseIf.vue.txt",
+          "sha256": "12431907921914f26d5329bcf7fea4e98991f59ba7289a1eb8c4ab619d8537d7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "commented-vif-11378/tsconfig.json.txt",
+          "sha256": "72d5cdcc3b73d0dd1ba930a08b6d835568019876d0247024624f7099cba606c2",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::commented_vif_11378::commented_else_if_checks_authored_condition_once; exact cached #11378 source/config physically consumed with comment-free, wrong-member and repair controls. Input-only registration, no diagnostic pack or original macOS/provider qualification."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-declaration-unused-aliases-11365",
       "state": "active",
       "targets": [
@@ -12428,6 +12462,66 @@
               "ts"
             ],
             "selector": "corsa_bridge::vue_document::build::tests::windows_overlays::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes; compile-included main/Child.vue/support/config and all four overlay phases; input registration only, no diagnostic oracle or native admission"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/reported-model-events-11390",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "84f9a10757fd1d2b9151381c9b44b93339fce545",
+      "inputs": [
+        {
+          "path": "reported-model-events-11390-11391/input.json",
+          "sha256": "d9ee0ab0f0c5be0bf56fed8913f7c910076bc6f08d8166e42d7c6a55f611658f",
+          "role": "physically-consumed-original-and-event-payload-boundary-controls-11390"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_model_events_11390_11391::original_model_event_maps_preserve_boundaries_and_payload_errors; physically consumes the original issue 11390 input plus valid/wrong payload controls; input-only registration, no source/native/public or diagnostic oracle qualification"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/reported-model-events-11391",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "84f9a10757fd1d2b9151381c9b44b93339fce545",
+      "inputs": [
+        {
+          "path": "reported-model-events-11390-11391/input.json",
+          "sha256": "d9ee0ab0f0c5be0bf56fed8913f7c910076bc6f08d8166e42d7c6a55f611658f",
+          "role": "physically-consumed-original-and-event-payload-boundary-controls-11391"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::reported_model_events_11390_11391::original_model_event_maps_preserve_boundaries_and_payload_errors; physically consumes the original issue 11391 input plus valid/wrong payload controls; input-only registration, no source/native/public or diagnostic oracle qualification"
           }
         ]
       }
