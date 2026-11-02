@@ -296,7 +296,10 @@ pub fn homogeneous_index_property<'a>(
         }
         seen.push(id);
         let scope = croquis.scopes.get_scope(id)?;
-        if scope.get_binding(object).is_some() {
+        // Ordinary setup const declarations are held by the original-Program
+        // store, not ScopeBinding. Stop at its actual setup owner, while an
+        // earlier lexical binding still refuses through the exact root check.
+        if scope.get_binding(object).is_some() || scope.kind == crate::ScopeKind::ScriptSetup {
             return origins.homogeneous_import_property(object, id);
         }
         current = scope.parent();

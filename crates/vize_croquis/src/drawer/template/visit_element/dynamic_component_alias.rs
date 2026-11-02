@@ -35,7 +35,7 @@ impl Drawer {
                 .iter()
                 .all(|name| {
                     self.croquis.bindings.contains(name)
-                        && self.croquis.scopes.lookup(name).is_some_and(|(scope, _)| {
+                        && self.croquis.scopes.lookup(name).is_none_or(|(scope, _)| {
                             matches!(
                                 scope.kind,
                                 ScopeKind::Module
@@ -54,13 +54,17 @@ impl Drawer {
             && self.croquis.scopes.lookup(alias.as_str()).is_none()
     }
 
+    // Ordinary setup declarations live in BindingMetadata; ScopeChain only
+    // adds imports and lexical/template bindings. A present nearest binding
+    // must still belong to a script scope; absence never admits a name that
+    // the actual setup value table does not own.
     pub(super) fn dynamic_target_has_script_root(&self, target: &str) -> bool {
         let Some(root) = target.split('.').next() else {
             return false;
         };
         self.croquis.bindings.is_script_setup
             && self.croquis.bindings.contains(root)
-            && self.croquis.scopes.lookup(root).is_some_and(|(scope, _)| {
+            && self.croquis.scopes.lookup(root).is_none_or(|(scope, _)| {
                 matches!(
                     scope.kind,
                     ScopeKind::Module | ScopeKind::ScriptSetup | ScopeKind::ExternalModule
