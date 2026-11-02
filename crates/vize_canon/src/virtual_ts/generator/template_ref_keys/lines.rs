@@ -1,5 +1,7 @@
 //! Exact script spans around inferred template-ref calls.
 
+mod tsx;
+
 use super::TemplateRefKeyChecks;
 use crate::virtual_ts::{VizeMapping, VizeSubSpan};
 use std::borrow::Cow;
@@ -16,7 +18,12 @@ impl TemplateRefKeyChecks<'_> {
         source_offset: &dyn Fn(usize) -> usize,
     ) {
         let gen_start = ts.len();
-        let sub_spans = self.specialize_line(&mut line, start, gen_start, source_offset);
+        let sub_spans = if line.len() == original_length {
+            self.specialize_tsx_line(&mut line, start, gen_start, source_offset)
+                .unwrap_or_else(|| self.specialize_line(&mut line, start, gen_start, source_offset))
+        } else {
+            self.specialize_line(&mut line, start, gen_start, source_offset)
+        };
         ts.push_str(&line);
         let gen_end = ts.len();
         ts.push('\n');
@@ -108,5 +115,17 @@ impl TemplateRefKeyChecks<'_> {
         }
         *line = Cow::Owned(output.into());
         spans
+    }
+}
+
+impl super::super::script_module::ScriptModulePlan {
+    pub(in crate::virtual_ts::generator) fn key_checks<'a>(
+        &'a self,
+        helpers: &'a super::super::setup_helpers::SetupHelperPlan,
+        registered: bool,
+    ) -> TemplateRefKeyChecks<'a> {
+        let mut checks = helpers.template_refs.key_checks(registered);
+        checks.tsx_arrows = &self.tsx_arrows;
+        checks
     }
 }

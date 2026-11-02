@@ -8,13 +8,13 @@ import type { FileImage } from "../computed_event_custody.ts";
 import { hook, verifyJournal } from "../editor_vite_stub/custody.ts";
 import type { capture } from "./capture.ts";
 
-// Source 815972e4 check/runner/execution.rs emits both progress lines even for
+// Producer85ab check/runner/execution.rs emits both progress lines even for
 // ordinary JSON. output.rs:112-129 prints this exact shared constant followed by
 // every virtual file; output/json.rs emits those same file.content bytes.
-// The immutable fixture records preamble.rs blob3bc47842 and all18 include blobs.
+// The650 immutable fixture records the exact concat definition and all include blobs.
 export const sharedPreamble = {
-  bytes: 43628,
-  sha256: "36165195867281533ce9cb085cc646e3dcac6aafe287e9fbc8f9aa71bf48908e",
+  bytes: 44025,
+  sha256: "0e5c9ee5c5ee3278da0a5ded6609f7202d031167e6306a6577082413455d26e4",
 };
 export function verifyCliDebug(stderr: Buffer, result: CliResult, project: string) {
   assert.equal(result.fileCount, 54);

@@ -11616,6 +11616,36 @@
       }
     },
     {
+      "id": "typechecker/generic-arrow-tsx-projection/copied-typescript-arrows",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "21b4f98ac30584091b30c5227121ee931d87f90f",
+      "inputs": [
+        {
+          "path": "generic-arrow-tsx-projection/App.vue.txt",
+          "sha256": "14d54e14493903d7f65a7b2d98865c70dd427801c15da860233a1a70f6c3cd30",
+          "role": "physically-consumed-public-five-line-typescript-arrow-and-authored-error-controls"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_expression_syntax::generic_arrows::copied_generic_arrows_keep_native_syntax_and_authored_error_positions; input-only registration, source/native/public qualification remains independent"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/jsx-child-expression-control-6890",
       "state": "active",
       "targets": [

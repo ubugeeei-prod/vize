@@ -15,7 +15,7 @@ import {
 
 const fixture = readJsonRecord(
   new URL(
-    "../../../tools/support/release/constructor_original27_public/cli-shared-preamble-0614.json",
+    "../../../tools/support/release/constructor_original27_public/cli-shared-preamble-0650.json",
     import.meta.url,
   ),
 );
@@ -42,7 +42,7 @@ function render(value = result(), body = helper) {
   ]);
 }
 test("the exact source-pinned shared helper and all54 declared debug bodies are consumed", () => {
-  assert.equal(fixture.selectedSource, "815972e433217e45672735bdc38d7e737c055e41");
+  assert.equal(fixture.selectedSource, "85ab7600097035afa060ca03f8a77108cdc5e337");
   assert.equal(fixture.definitionGitBlob, "3bc47842bd494fb9ee3f98ef0e1e8c318bea251a");
   assert.equal(helper.length, sharedPreamble.bytes);
   assert.equal(sha256(helper), sharedPreamble.sha256);

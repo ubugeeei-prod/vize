@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const identity = <T>(value: T): T => value;
+const count = identity(1);
+</script>
+<template>{{ count }}</template>

@@ -31,7 +31,7 @@ import {
   vueFrameworkPackages,
 } from "../../../tools/support/release/constructor_original27_public/host-versions.ts";
 
-const version = "0.614.0",
+const version = "0.650.0",
   candidate = "c".repeat(40),
   source = "s".repeat(40),
   run = "123";
@@ -68,7 +68,8 @@ test("source reference retains the entire original population, both orders and a
   assert.equal(asArray(data.mapper).length, 16);
   assert.equal(asArray(data.cli).length, 14);
   assert.deepEqual(
-    expectedMapper(version)
+    asArray(data.mapper)
+      .map((row) => asRecord(row))
       .filter((row) => row.code === 2741)
       .map((row) => [row.file, row.line, row.column]),
     [
@@ -118,24 +119,15 @@ test("complete vectors accept explicit public labels and reject lost or changed 
   changed[0].code = 9999;
   assert.throws(() => assertOriginalVectors(version, changed, cli));
 });
-test("private generated diagnostics are not filtered, relocated or broadly relabelled", () => {
+test("new generated diagnostics are rejected without filtering or relocation", () => {
   const mapper = expectedMapper(version),
     cli = asArray(reference().cli);
-  assert.equal(JSON.stringify(mapper).includes("vize@0.0.0-source-"), false);
-  assert.equal(JSON.stringify(mapper).match(/vize@0\.614\.0/g)?.length, 2);
-  for (const change of [
-    (rows: ReturnType<typeof expectedMapper>) => rows.filter((row) => row.code !== 2741),
-    (rows: ReturnType<typeof expectedMapper>) => {
-      rows.find((row) => row.code === 2741)!.line = 58;
-      return rows;
-    },
-    (rows: ReturnType<typeof expectedMapper>) => {
-      rows.find((row) => row.code === 2741)!.message = "different debt";
-      return rows;
-    },
-    (rows: ReturnType<typeof expectedMapper>) => [...rows, structuredClone(rows[0])],
-  ])
-    assert.throws(() => assertOriginalVectors(version, change(structuredClone(mapper)), cli));
+  assert.equal(mapper.length, 14);
+  for (const debt of asArray(reference().mapper)
+    .map((row) => asRecord(row))
+    .filter((row) => row.code === 2741))
+    assert.throws(() => assertOriginalVectors(version, [...mapper, debt], cli));
+  assert.throws(() => assertOriginalVectors(version, [...mapper, mapper[0]], cli));
 });
 test("repair copy removes only its own authored error; bad and restored populations remain exact", () => {
   const mapper = expectedMapper(version),
@@ -147,30 +139,20 @@ test("repair copy removes only its own authored error; bad and restored populati
   assert.throws(() =>
     assertOriginalVectors(
       version,
-      mapper.filter((row) => keep(row) && row.code !== 2741),
+      mapper.filter((row) => keep(row) && row.file !== "callback-body/src/Tiny.vue"),
       cli.filter(keep),
       true,
     ),
   );
   assertOriginalVectors(version, mapper, cli); // Exact restored vector, no stateful waiver.
 });
-test("only the two complete known source-version continuation lines may be relabelled", () => {
-  const rows = structuredClone(asArray(reference().mapper));
-  const changed = structuredClone(rows),
-    debt = changed.map((row) => asRecord(row)).find((row) => row.code === 2741)!;
-  debt.continuation = asArray(debt.continuation).map((line) => asString(line) + " ");
+test("current expectation requires the complete independent AFTER vector", () => {
+  const rows = expectedMapper(version),
+    changed = structuredClone(rows);
+  changed[0].line = Number(changed[0].line) + 1;
   assert.throws(() => expectedMapper(version, changed));
-  assert.throws(() =>
-    expectedMapper(
-      version,
-      rows.filter((row) => asRecord(row).code !== 2741),
-    ),
-  );
-  const added = structuredClone(rows);
-  asRecord(added[0]).continuation = asRecord(
-    rows.find((row) => asRecord(row).code === 2741),
-  ).continuation;
-  assert.throws(() => expectedMapper(version, added), /unexpected source-version continuation/);
+  assert.throws(() => expectedMapper(version, asArray(reference().mapper)));
+  assert.throws(() => expectedMapper("0.649.0"));
 });
 test("repair derivation validates one complete original row before removing only that row", () => {
   for (const role of ["mapper", "cli"] as const) {
@@ -227,7 +209,7 @@ test("whole compiler continuations preserve trailing spaces and reject blank or 
     assertOriginalVectors(version, diagnostics(Buffer.from(finalHeaderSpace), "/project"), cli),
   );
   const changed = structuredClone(mapper),
-    debt = changed.find((row) => row.code === 2741)!;
+    debt = changed.find((row) => row.file === "missing-required/src/Tiny.vue")!;
   debt.continuation = asArray(debt.continuation).map((line) => String(line) + " ");
   assert.throws(() =>
     assertOriginalVectors(version, diagnostics(Buffer.from(render(changed)), "/project"), cli),
@@ -273,7 +255,7 @@ function mockedCapsule() {
     npmSRI: {
       vize: {
         integrity: "sha512-YQ==",
-        tarball: "https://registry.npmjs.org/vize/-/vize-0.614.0.tgz",
+        tarball: "https://registry.npmjs.org/vize/-/vize-0.650.0.tgz",
         metadataOrigin: "https://registry.npmjs.org/vize/0.614.0",
       },
     },
