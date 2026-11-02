@@ -1,5 +1,5 @@
 {
-  "scope": "Synthetic source-owned controls for #11374 receiver ownership. These are not additional original reporter inputs or an installed-public reproduction. End positions and exact diagnostic formatting are not preclaimed.",
+  "scope": "Synthetic source-owned controls for #11374 receiver ownership. These are not additional original reporter inputs or an installed-public reproduction. End positions and exact diagnostic formatting are not preclaimed. The fallthrough pair uses an actual generated Child.vue root forwarding Leaf.vue optional props, rather than unqualified handwritten external markers.",
   "packageJson": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"tsrs\": \"0.20.1-ts7.1.0-beta\",\n    \"typescript\": \"5.9.3\",\n    \"vize\": \"0.640.0\",\n    \"vue\": \"3.5.43\",\n    \"vue-tsc\": \"3.2.6\"\n  }\n}\n",
   "states": [
     {
@@ -49,8 +49,9 @@
     {
       "id": "typed-fallthrough-wrong",
       "sources": {
-        "external.d.ts": "declare const Child: {\n  readonly __vizeComponentMarker: true;\n  readonly __vizeHasFallthroughProps: true;\n  readonly __vizeFallthroughProps?: { extra?: { run: () => string } };\n  new(): { $props: {} };\n};\nexport default Child;\n",
-        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./external.js\";\nconst entries: { value: number; text: string }[] = [{value:123,text:\"ok\"}];\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return entries[0]!.value;}}\" />\n</template>\n"
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nconst entries: { value: number; text: string }[] = [{value:123,text:\"ok\"}];\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return entries[0]!.value;}}\" />\n</template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\nimport Leaf from \"./Leaf.vue\";\n</script>\n<template><Leaf /></template>\n",
+        "Leaf.vue": "<script setup lang=\"ts\">\ndefineProps<{extra?: {run:()=>string}}>();\n</script>\n<template><span /></template>\n"
       },
       "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\n      \"ES2022\",\n      \"DOM\"\n    ]\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"checkUnknownProps\": false,\n    \"fallthroughAttributes\": true\n  }\n}\n",
       "expectedStatus": 2,
@@ -60,8 +61,9 @@
     {
       "id": "typed-fallthrough-repair",
       "sources": {
-        "external.d.ts": "declare const Child: {\n  readonly __vizeComponentMarker: true;\n  readonly __vizeHasFallthroughProps: true;\n  readonly __vizeFallthroughProps?: { extra?: { run: () => string } };\n  new(): { $props: {} };\n};\nexport default Child;\n",
-        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./external.js\";\nconst entries: { value: number; text: string }[] = [{value:123,text:\"ok\"}];\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return entries[0]!.text;}}\" />\n</template>\n"
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nconst entries: { value: number; text: string }[] = [{value:123,text:\"ok\"}];\n</script>\n<template>\n  <Child :extra=\"{run:()=>{return entries[0]!.text;}}\" />\n</template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\nimport Leaf from \"./Leaf.vue\";\n</script>\n<template><Leaf /></template>\n",
+        "Leaf.vue": "<script setup lang=\"ts\">\ndefineProps<{extra?: {run:()=>string}}>();\n</script>\n<template><span /></template>\n"
       },
       "config": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true,\n    \"lib\": [\n      \"ES2022\",\n      \"DOM\"\n    ]\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"checkUnknownProps\": false,\n    \"fallthroughAttributes\": true\n  }\n}\n",
       "expectedStatus": 0,
