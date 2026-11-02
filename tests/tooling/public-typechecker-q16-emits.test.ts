@@ -216,6 +216,9 @@ test("opaque cases reject missing bodies extra records foreign sites codes statu
         { stderr: "unknown" },
         { wholeStreamsRetained: false },
         { stdout: header + ": body\n\n" },
+        ...Array.from({ length: 128 }, (_, code) => code)
+          .filter((code) => (code < 32 && code !== 10) || code === 127)
+          .map((code) => ({ stdout: header + ": before" + String.fromCharCode(code) + "after\n" })),
       ])
         assert.throws(() => assessTsrs(state, { ...packet, ...change }), assert.AssertionError);
       const files = state.files.map((file) => ({
