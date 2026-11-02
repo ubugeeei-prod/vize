@@ -29,6 +29,10 @@ fn request(id: Value, method: &str, params: Value) -> Value {
     }
 }
 
+fn shell_quoted_path(path: &std::path::Path) -> vize_l0::String {
+    vize_l0::cstr!("'{}'", path.to_str().unwrap().replace('\'', "'\\''"))
+}
+
 fn workspace(root: &Path) {
     std::fs::create_dir(root.join("src")).unwrap();
     std::fs::write(root.join("src/App.vue"), APP).unwrap();
@@ -40,7 +44,14 @@ fn workspace(root: &Path) {
     // discarding its input; the API handshake remains held until it is killed.
     std::fs::write(
         &backend,
-        "#!/bin/sh\necho $$ >> backend.pids\n: > backend.entered\nexec cat 3>&1 > /dev/null\n",
+        // Native startup may use the selected private Canon working directory.
+        // Both witnesses remain at the same owned paths read by this fixture.
+        vize_l0::cstr!(
+            "#!/bin/sh\necho $$ >> {}\n: > {}\nexec cat 3>&1 > /dev/null\n",
+            shell_quoted_path(&root.join("backend.pids")),
+            shell_quoted_path(&root.join("backend.entered"))
+        )
+        .as_bytes(),
     )
     .unwrap();
     std::fs::set_permissions(&backend, std::fs::Permissions::from_mode(0o755)).unwrap();

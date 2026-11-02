@@ -1,9 +1,7 @@
 use std::path::PathBuf;
 
 use tower_lsp::lsp_types::Url;
-use vize_canon::{
-    CorsaBridge, CorsaBridgeError, CorsaVueVirtualDocumentOptions, CorsaVueWorkspaceRequest,
-};
+use vize_canon::{CorsaBridge, CorsaBridgeError, CorsaVueWorkspaceRequest};
 
 use super::{CanonicalDependencyDocument, CanonicalMaterializedSource, CanonicalVirtualDocument};
 use crate::ide::IdeContext;
@@ -95,14 +93,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
         return Ok(None);
     };
     let virtual_ts_options = ctx.state.editor_virtual_ts_options().await;
-    let options = CorsaVueVirtualDocumentOptions {
-        options_api: ctx.state.options_api_enabled(),
-        legacy_vue2: ctx.state.legacy_vue2_enabled(),
-        jsx_typecheck: ctx.state.jsx_typecheck_enabled(),
-        experimental_patterned_template: ctx.state.patterned_template_enabled(),
-        preserve_event_navigation: true,
-        dialect: ctx.state.type_checker_vue_version(),
-    };
+    let options = ctx.state.canonical_vue_document_options();
     // Projecting a whole workspace takes long enough to starve every other
     // native request, so the transaction owner builds it between attempts.
     if !requested_sources.is_empty()
@@ -135,16 +126,35 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
             .defer(Box::pin(preparation))
             .await;
     }
-    let opened = bridge
-        .open_vue_virtual_workspace_document(
-            &source_path,
-            &ctx.content,
-            options,
-            overlays,
-            &virtual_ts_options,
-            requested_sources,
-        )
-        .await?;
+    let initial = requested_sources
+        .is_empty()
+        .then(|| ctx.take_initial_canonical_document(bridge))
+        .flatten();
+    let opened = if let Some(initial) = initial {
+        // Canon still builds and validates the ordinary complete current graph.
+        bridge
+            .open_initial_vue_project(
+                initial,
+                &source_path,
+                &ctx.content,
+                options,
+                overlays,
+                &virtual_ts_options,
+                requested_sources,
+            )
+            .await?
+    } else {
+        bridge
+            .open_vue_virtual_workspace_document(
+                &source_path,
+                &ctx.content,
+                options,
+                overlays,
+                &virtual_ts_options,
+                requested_sources,
+            )
+            .await?
+    };
     #[cfg(test)]
     ctx.state
         .record_editor_project_open("canonical", ctx.uri, &ctx.content, &opened);
