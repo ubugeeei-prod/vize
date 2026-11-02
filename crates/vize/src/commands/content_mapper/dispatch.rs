@@ -426,7 +426,7 @@ fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io
         &job.settings.project_context,
         sources,
     ) {
-        Ok(result) => encode_transform(&job.id, &result),
+        Ok(result) => encode_transform(&job.id, &result.with_unmapped_ignores()),
         Err(error) => {
             let message = cstr!("Transform failed: {error}");
             encode_error(&job.id, -32603, &message)

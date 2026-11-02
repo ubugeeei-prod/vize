@@ -1,0 +1,7 @@
+<script setup lang="ts">
+function onNavigate() {}
+const count: number = 'one';
+</script>
+<template>
+  <router-link to="/" @click="onNavigate">home</router-link>
+</template>

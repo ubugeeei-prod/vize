@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from './Child.vue';
+</script>
+<template>
+  <!-- @vue-expect-error -->
+  <Child :n="'a'" />
+  <!-- @vue-expect-error -->
+  <Child :n="'b'" />
+</template>

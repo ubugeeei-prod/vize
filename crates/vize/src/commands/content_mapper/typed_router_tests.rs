@@ -37,7 +37,8 @@ fn expected(config: &Path, root: &Path, file: &Path, source: &str) -> Value {
             settings.transform_options,
             typed_router_root.as_deref(),
         )
-        .unwrap(),
+        .unwrap()
+        .with_unmapped_ignores(),
     )
     .unwrap()
 }

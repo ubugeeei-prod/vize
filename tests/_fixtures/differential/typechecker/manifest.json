@@ -11982,6 +11982,55 @@
       }
     },
     {
+      "id": "typechecker/regression/content-mapper-directive-tables",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-directive-tables/Child.vue.txt",
+          "sha256": "ac05e4daeed3a5890344f176827e887c009f09a04934615e507e4df6a682ffeb",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-directive-tables/Kebab.vue.txt",
+          "sha256": "7e763750c261dec9b27d52467c29bff6dc3dd57415174029fd4784977d1a93a9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-directive-tables/Partial.vue.txt",
+          "sha256": "866d76eb3cdf72be04006df49fb447d1e7a35ddc7b8dd1d98b3dc60a1a977b6c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-directive-tables/Siblings.vue.txt",
+          "sha256": "17e76fcb31c5838d9c830fa0e54adc01d3081e86f92181380b7da7559a6ec03a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-directive-tables/Unknown.vue.txt",
+          "sha256": "4bd05b8d261ce260b0ab3cd175749df3a15dcf4ad7548e6e2780399c6f6c4494",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::directive_tables::directive_tables_keep_files_checked_and_hide_only_unmapped_scaffolding; sibling @vue-expect-error components (upstream vue-language-tools #3311 shape), an unknown-component expect with an input echo (#3539 shape), and a kebab-case unknown listener whose generated read is unmapped. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/generic-alias-slots-11360",
       "state": "active",
       "targets": [
